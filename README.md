@@ -25,6 +25,10 @@ The dashboard template for Vue is on https://github.com/nuxt-ui-templates/dashbo
 npx nuxi@latest init -t github:nuxt-ui-templates/dashboard
 ```
 
+## Deploy your own
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fnuxt-ui-templates%2Fdashboard)
+
 ## Setup
 
 Make sure to install the dependencies:
