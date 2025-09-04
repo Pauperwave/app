@@ -130,6 +130,9 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
   }, {
     label: 'Portfolio',
     to: 'https://portfolio-template.nuxt.dev/'
+  }, {
+    label: 'Changelog',
+    to: 'https://changelog-template.nuxt.dev/'
   }]
 }], [{
   label: 'Documentation',
