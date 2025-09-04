@@ -122,6 +122,7 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
   }, {
     label: 'Dashboard',
     to: 'https://dashboard-template.nuxt.dev/',
+    color: 'primary',
     checked: true,
     type: 'checkbox'
   }, {
