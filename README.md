@@ -15,14 +15,12 @@ Get started with the Nuxt dashboard template with multiple pages, collapsible si
   </picture>
 </a>
 
-## Vue Dashboard Template
-
-The dashboard template for Vue is on https://github.com/nuxt-ui-templates/dashboard-vue.
+> The dashboard template for Vue is on https://github.com/nuxt-ui-templates/dashboard-vue.
 
 ## Quick Start
 
 ```bash [Terminal]
-npx nuxi@latest init -t github:nuxt-ui-templates/dashboard
+npm create nuxt@latest -- -t github:nuxt-ui-templates/dashboard
 ```
 
 ## Deploy your own
