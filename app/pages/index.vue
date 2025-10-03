@@ -6,11 +6,15 @@ import type { Period, Range } from '~/types'
 const { isNotificationsSlideoverOpen } = useDashboard()
 
 const items = [[{
-  label: 'New mail',
-  icon: 'i-lucide-send',
+  label: 'New league',
+  icon: 'i-lucide-trophy',
   to: '/inbox'
 }, {
-  label: 'New customer',
+  label: 'New tournament',
+  icon: 'i-lucide-swords',
+  to: '/inbox'
+}, {
+  label: 'New associate',
   icon: 'i-lucide-user-plus',
   to: '/customers'
 }]] satisfies DropdownMenuItem[][]
@@ -32,12 +36,7 @@ const period = ref<Period>('daily')
 
         <template #right>
           <UTooltip text="Notifications" :shortcuts="['N']">
-            <UButton
-              color="neutral"
-              variant="ghost"
-              square
-              @click="isNotificationsSlideoverOpen = true"
-            >
+            <UButton color="neutral" variant="ghost" square @click="isNotificationsSlideoverOpen = true">
               <UChip color="error" inset>
                 <UIcon name="i-lucide-bell" class="size-5 shrink-0" />
               </UChip>
@@ -61,9 +60,12 @@ const period = ref<Period>('daily')
     </template>
 
     <template #body>
-      <HomeStats :period="period" :range="range" />
-      <HomeChart :period="period" :range="range" />
-      <HomeSales :period="period" :range="range" />
+      <div>
+        do dashboard
+      </div>
+      <!-- <HomeStats :period="period" :range="range" /> -->
+      <!-- <HomeChart :period="period" :range="range" /> -->
+      <!-- <HomeSales :period="period" :range="range" /> -->
     </template>
   </UDashboardPanel>
 </template>
