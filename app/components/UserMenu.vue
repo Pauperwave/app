@@ -12,10 +12,10 @@ const colors = ['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 
 const neutrals = ['slate', 'gray', 'zinc', 'neutral', 'stone']
 
 const user = ref({
-  name: 'Benjamin Canac',
+  name: 'Emanuele Nardi',
   avatar: {
-    src: 'https://github.com/benjamincanac.png',
-    alt: 'Benjamin Canac'
+    src: 'https://github.com/emanuelenardi.png',
+    alt: 'Emanuele Nardi'
   }
 })
 
@@ -26,9 +26,6 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
 }], [{
   label: 'Profile',
   icon: 'i-lucide-user'
-}, {
-  label: 'Billing',
-  icon: 'i-lucide-credit-card'
 }, {
   label: 'Settings',
   icon: 'i-lucide-settings',

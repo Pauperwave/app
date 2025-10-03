@@ -33,7 +33,7 @@ const filteredMembers = computed(() => {
         <UInput
           v-model="q"
           icon="i-lucide-search"
-          placeholder="Search members"
+          placeholder="Search organizers"
           autofocus
           class="w-full"
         />

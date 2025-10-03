@@ -6,22 +6,10 @@ defineProps<{
 }>()
 
 const teams = ref([{
-  label: 'Nuxt',
+  label: 'PauperWave',
   avatar: {
-    src: 'https://github.com/nuxt.png',
-    alt: 'Nuxt'
-  }
-}, {
-  label: 'NuxtHub',
-  avatar: {
-    src: 'https://github.com/nuxt-hub.png',
-    alt: 'NuxtHub'
-  }
-}, {
-  label: 'NuxtLabs',
-  avatar: {
-    src: 'https://github.com/nuxtlabs.png',
-    alt: 'NuxtLabs'
+    src: 'https://github.com/pauperwave.png',
+    alt: 'PauperWave'
   }
 }])
 const selectedTeam = ref(teams.value[0])
@@ -38,7 +26,8 @@ const items = computed<DropdownMenuItem[][]>(() => {
   }, {
     label: 'Manage teams',
     icon: 'i-lucide-cog'
-  }]]
+  }]
+]
 })
 </script>
 

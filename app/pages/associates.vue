@@ -21,7 +21,7 @@ const columnFilters = ref([{
 const columnVisibility = ref()
 const rowSelection = ref({ 1: true })
 
-const { data, status } = await useFetch<User[]>('/api/customers', {
+const { data, status } = await useFetch<User[]>('/api/associates', {
   lazy: true
 })
 
@@ -50,20 +50,20 @@ function getRowItems(row: Row<User>) {
       icon: 'i-lucide-list'
     },
     {
-      label: 'View customer payments',
+      label: 'View member payments',
       icon: 'i-lucide-wallet'
     },
     {
       type: 'separator'
     },
     {
-      label: 'Delete customer',
+      label: 'Delete member',
       icon: 'i-lucide-trash',
       color: 'error',
       onSelect() {
         toast.add({
-          title: 'Customer deleted',
-          description: 'The customer has been deleted.'
+          title: 'Member deleted',
+          description: 'The member has been deleted.'
         })
       }
     }
@@ -134,6 +134,11 @@ const columns: TableColumn<User>[] = [
     cell: ({ row }) => row.original.location
   },
   {
+    accessorKey: 'born_location',
+    header: 'Born Location',
+    cell: ({ row }) => row.original.born_location
+  },
+  {
     accessorKey: 'status',
     header: 'Status',
     filterFn: 'equals',
@@ -198,15 +203,15 @@ const pagination = ref({
 </script>
 
 <template>
-  <UDashboardPanel id="customers">
+  <UDashboardPanel id="associates">
     <template #header>
-      <UDashboardNavbar title="Customers">
+      <UDashboardNavbar title="Associates">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
 
         <template #right>
-          <CustomersAddModal />
+          <AssociatesAddModal />
         </template>
       </UDashboardNavbar>
     </template>
@@ -222,7 +227,7 @@ const pagination = ref({
         />
 
         <div class="flex flex-wrap items-center gap-1.5">
-          <CustomersDeleteModal :count="table?.tableApi?.getFilteredSelectedRowModel().rows.length">
+          <AssociatesDeleteModal :count="table?.tableApi?.getFilteredSelectedRowModel().rows.length">
             <UButton
               v-if="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
               label="Delete"
@@ -236,7 +241,7 @@ const pagination = ref({
                 </UKbd>
               </template>
             </UButton>
-          </CustomersDeleteModal>
+          </AssociatesDeleteModal>
 
           <USelect
             v-model="statusFilter"

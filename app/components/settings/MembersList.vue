@@ -42,7 +42,7 @@ const items = [{
       <div class="flex items-center gap-3">
         <USelect
           :model-value="member.role"
-          :items="['member', 'owner']"
+          :items="['owner', 'organizer', 'judge', 'writer']"
           color="neutral"
           :ui="{ value: 'capitalize', item: 'capitalize' }"
         />

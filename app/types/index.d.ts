@@ -4,12 +4,34 @@ export type UserStatus = 'subscribed' | 'unsubscribed' | 'bounced'
 export type SaleStatus = 'paid' | 'failed' | 'refunded'
 
 export interface User {
-  id: number
-  name: string
-  email: string
+  associate_type?: 'Ordinario' | 'Sostenitore'
+  association_date?: string | null
   avatar?: AvatarProps
-  status: UserStatus
-  location: string
+  born_date?: Date
+  born_location?: string
+  born_province?: string
+  born_state?: string
+  consent_data?: boolean
+  consent_social?: boolean
+  email: string
+  has_acknowledged_surveillance_notice?: boolean
+  has_read_statute?: boolean
+  id: number
+  location?: string
+  mtga_nickname?: string | null
+  mtgo_nickname?: string | null
+  name: string
+  pauperwave_associate_number?: number | null
+  phone_number?: string
+  request_date?: string
+  residency_address?: string
+  residency_cap?: string
+  residency_city?: string
+  residency_province?: string
+  status?: UserStatus
+  surname?: string
+  tax_code?: string | null
+  uuid?: string
 }
 
 export interface Mail {

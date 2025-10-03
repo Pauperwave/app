@@ -3,20 +3,28 @@ import { sub } from 'date-fns'
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Period, Range } from '~/types'
 
-const { isNotificationsSlideoverOpen } = useDashboard()
+// const { isNotificationsSlideoverOpen } = useDashboard()
 
 const items = [[{
-  label: 'New league',
-  icon: 'i-lucide-trophy',
-  to: '/inbox'
-}, {
-  label: 'New tournament',
-  icon: 'i-lucide-swords',
-  to: '/inbox'
+  label: 'New payment',
+  icon: 'i-lucide-banknote-arrow-down',
+  to: '/payments'
 }, {
   label: 'New associate',
   icon: 'i-lucide-user-plus',
-  to: '/customers'
+  to: '/associates'
+}, {
+  label: 'New event',
+  icon: 'i-lucide-calendar-plus',
+  to: '/events'
+}, {
+  label: 'New league',
+  icon: 'i-lucide-trophy',
+  to: '/leagues'
+}, {
+  label: 'New tournament',
+  icon: 'i-lucide-swords',
+  to: '/tournaments'
 }]] satisfies DropdownMenuItem[][]
 
 const range = shallowRef<Range>({
@@ -35,13 +43,13 @@ const period = ref<Period>('daily')
         </template>
 
         <template #right>
-          <UTooltip text="Notifications" :shortcuts="['N']">
+          <!-- <UTooltip text="Notifications" :shortcuts="['N']">
             <UButton color="neutral" variant="ghost" square @click="isNotificationsSlideoverOpen = true">
               <UChip color="error" inset>
                 <UIcon name="i-lucide-bell" class="size-5 shrink-0" />
               </UChip>
             </UButton>
-          </UTooltip>
+          </UTooltip> -->
 
           <UDropdownMenu :items="items">
             <UButton icon="i-lucide-plus" size="md" class="rounded-full" />
@@ -60,12 +68,9 @@ const period = ref<Period>('daily')
     </template>
 
     <template #body>
-      <div>
-        do dashboard
-      </div>
-      <!-- <HomeStats :period="period" :range="range" /> -->
-      <!-- <HomeChart :period="period" :range="range" /> -->
-      <!-- <HomeSales :period="period" :range="range" /> -->
+      <HomeStats :period="period" :range="range" />
+      <HomeChart :period="period" :range="range" />
+      <HomeSales :period="period" :range="range" />
     </template>
   </UDashboardPanel>
 </template>
