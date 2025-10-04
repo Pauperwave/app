@@ -118,10 +118,10 @@ const links = computed(() => [[{
   }] satisfies NavigationMenuItem[]
 }, {
   label: 'Settings',
+  type: 'link',
   to: '/settings',
   icon: 'i-lucide-settings',
-  defaultOpen: false,
-  type: 'trigger',
+  defaultOpen: true,
   children: [{
     label: 'General',
     to: '/settings',
