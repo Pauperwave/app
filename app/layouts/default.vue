@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from '@nuxt/ui'
+import type { CommandPaletteItem, NavigationMenuItem } from '@nuxt/ui'
 
 const route = useRoute()
 // const toast = useToast()
 
 const open = ref(false)
 
-const links = [[{
+// Make the entire links array computed so active states are reactive
+const links = computed(() => [[{
   label: 'Home',
   icon: 'i-lucide-house',
   to: '/',
@@ -23,20 +24,20 @@ const links = [[{
   },
   children: [{
     label: 'Association fee',
-    to: '/payments?type=association-fee'
-    // active: computed(() => route.query.type === 'association-fee')
+    to: '/payments?type=association-fee',
+    active: route.query.type === 'association-fee' // Direct boolean
   }, {
     label: 'Event fee',
-    to: '/payments?type=event-fee'
-    // active: computed(() => route.query.type === 'event-fee')
+    to: '/payments?type=event-fee',
+    active: route.query.type === 'event-fee' // Direct boolean
   }, {
     label: 'Donation',
-    to: '/payments?type=donation'
-    // active: computed(() => route.query.type === 'donation')
+    to: '/payments?type=donation',
+    active: route.query.type === 'donation' // Direct boolean
   }, {
     label: 'Refund',
-    to: '/payments?type=refund'
-    // active: computed(() => route.query.type === 'refund')
+    to: '/payments?type=refund',
+    active: route.query.type === 'refund' // Direct boolean
   }]
 }, {
   label: 'Associates',
@@ -46,27 +47,25 @@ const links = [[{
   defaultOpen: true,
   children: [{
     label: 'Waiting for approval',
-    to: '/associates?status=waiting'
-    // active: computed(() => route.query.status === 'waiting')
+    to: '/associates?status=waiting',
+    active: route.query.status === 'waiting' // Direct boolean
   }, {
     label: 'Active',
-    to: '/associates?status=active'
-    // active: computed(() => route.query.status === 'active')
+    to: '/associates?status=active',
+    active: route.query.status === 'active' // Direct boolean
   }, {
     label: 'Inactive',
-    to: '/associates?status=inactive'
-    // active: computed(() => route.query.status === 'inactive')
+    to: '/associates?status=inactive',
+    active: route.query.status === 'inactive' // Direct boolean
   }]
-},
-{
+}, {
   label: 'Events',
   icon: 'i-lucide-calendar',
   to: '/events',
   onSelect: () => {
     open.value = false
   }
-},
-{
+}, {
   label: 'Leagues',
   icon: 'i-lucide-trophy',
   to: '/leagues',
@@ -123,12 +122,38 @@ const links = [[{
   icon: 'i-lucide-info',
   to: 'https://t.me/emanuelenardi',
   target: '_blank'
-}]] satisfies NavigationMenuItem[][]
+}]] satisfies NavigationMenuItem[][])
+
+// The CommandPalette/DashboardSearch doesn't support nested children arrays,it only shows flat lists.
+// Each item in the items array should be a selectable command, not a group with children.
+// Helper function to flatten nested navigation items for search
+const flattenForSearch = (items: NavigationMenuItem[][]): CommandPaletteItem[] => {
+  return items.flat().flatMap((item) => {
+    // Parent item
+    const parent: CommandPaletteItem = {
+      label: item.label,
+      icon: item.icon,
+      to: item.to,
+      badge: item.badge,
+      onSelect: item.onSelect
+    }
+
+    // Children with parent context
+    const children = (item.children || []).map(child => ({
+      label: `${item.label} → ${child.label}`,
+      icon: child.icon || item.icon,
+      to: child.to,
+      onSelect: child.onSelect
+    }))
+
+    return [parent, ...children]
+  }) as CommandPaletteItem[]
+}
 
 const groups = computed(() => [{
   id: 'links',
   label: 'Go to',
-  items: links.flat()
+  items: flattenForSearch(links.value)
 }, {
   id: 'code',
   label: 'Code',
