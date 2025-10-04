@@ -11,15 +11,15 @@ const range = shallowRef<Range>({
 </script>
 
 <template>
-  <UDashboardPanel id="events">
+  <UDashboardPanel id="tournaments">
     <template #header>
-      <UDashboardNavbar title="Events">
+      <UDashboardNavbar title="Tornei">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
 
         <template #right>
-          <EventsAddModal />
+          <TournamentsAddModal />
         </template>
       </UDashboardNavbar>
 
@@ -35,8 +35,8 @@ const range = shallowRef<Range>({
     </template>
 
     <template #body>
-      <!-- <EventsTable :period="period" :range="range" /> -->
-      test
+      <!-- <LeaguesTable :period="period" :range="range" /> -->
+      Panoramica di tutti i tornei
     </template>
   </UDashboardPanel>
 </template>

@@ -8,18 +8,20 @@ const range = shallowRef<Range>({
   start: sub(new Date(), { days: 14 }),
   end: new Date()
 })
+
+const { data: events } = await useFetch('/api/events')
 </script>
 
 <template>
-  <UDashboardPanel id="leagues">
+  <UDashboardPanel id="events">
     <template #header>
-      <UDashboardNavbar title="Leagues">
+      <UDashboardNavbar title="Eventi">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
 
         <template #right>
-          <LeaguesAddModal />
+          <EventsAddModal />
         </template>
       </UDashboardNavbar>
 
@@ -35,8 +37,15 @@ const range = shallowRef<Range>({
     </template>
 
     <template #body>
-      <!-- <LeaguesTable :period="period" :range="range" /> -->
-      test
+      <ul class="list-disc ms-4">
+        <li>Panoramica eventi</li>
+        <li>TODO: Lista tutti gli eventi con filtri per data e stato</li>
+        <li>Visualizza dettagli evento</li>
+        <li>Aggiungi nuovo evento</li>
+        <li>Filtra eventi per periodo selezionato</li>
+      </ul>
+
+      <UTable :data="events" class="flex-1" />
     </template>
   </UDashboardPanel>
 </template>

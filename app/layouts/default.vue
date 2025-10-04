@@ -117,32 +117,32 @@ const links = computed(() => [[{
     }
   }] satisfies NavigationMenuItem[]
 }, {
-  label: 'Settings',
+  label: 'Impostazioni',
   type: 'link',
   to: '/settings',
   icon: 'i-lucide-settings',
   defaultOpen: true,
   children: [{
-    label: 'General',
+    label: 'Generali',
     to: '/settings',
     exact: true,
     onSelect: () => {
       open.value = false
     }
   }, {
-    label: 'Members',
+    label: 'Membri',
     to: '/settings/members',
     onSelect: () => {
       open.value = false
     }
   }, {
-    label: 'Notifications',
+    label: 'Notifiche',
     to: '/settings/notifications',
     onSelect: () => {
       open.value = false
     }
   }, {
-    label: 'Security',
+    label: 'Sicurezza',
     to: '/settings/security',
     onSelect: () => {
       open.value = false

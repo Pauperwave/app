@@ -11,15 +11,15 @@ const range = shallowRef<Range>({
 </script>
 
 <template>
-  <UDashboardPanel id="tournaments">
+  <UDashboardPanel id="leagues">
     <template #header>
-      <UDashboardNavbar title="Tournaments">
+      <UDashboardNavbar title="Leghe">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
 
         <template #right>
-          <TournamentsAddModal />
+          <LeaguesAddModal />
         </template>
       </UDashboardNavbar>
 
@@ -32,6 +32,11 @@ const range = shallowRef<Range>({
           <HomeDateRangePicker v-model="range" class="-ms-1" />
         </template>
       </UDashboardToolbar>
+    </template>
+
+    <template #body>
+      <!-- <LeaguesTable :period="period" :range="range" /> -->
+      test
     </template>
   </UDashboardPanel>
 </template>
