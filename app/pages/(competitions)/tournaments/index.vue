@@ -19,7 +19,7 @@ const range = shallowRef<Range>({
         </template>
 
         <template #right>
-          <TournamentsAddModal />
+          <TournamentsListAddModal />
         </template>
       </UDashboardNavbar>
 

@@ -21,7 +21,7 @@ const { data: events } = await useFetch('/api/events')
         </template>
 
         <template #right>
-          <EventsAddModal />
+          <EventsListAddModal />
         </template>
       </UDashboardNavbar>
 
