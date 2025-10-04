@@ -73,9 +73,9 @@ const links = computed(() => [[{
     active: route.query.status === 'active' // Direct boolean
   }, {
     label: 'Da rinnovare',
-    to: '/associates?status=inactive',
+    to: '/associates?status=expired',
     badge: '10',
-    active: route.query.status === 'inactive' // Direct boolean
+    active: route.query.status === 'expired' // Direct boolean
   }] satisfies NavigationMenuItem[]
 }, {
   label: 'Eventi',

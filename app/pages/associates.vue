@@ -5,9 +5,11 @@ import { getPaginationRowModel } from '@tanstack/table-core'
 import type { Row } from '@tanstack/table-core'
 import type { User } from '~/types'
 
+const { breadcrumbItems } = useBreadcrumbs()
+
 const UAvatar = resolveComponent('UAvatar')
 const UButton = resolveComponent('UButton')
-const UBadge = resolveComponent('UBadge')
+// const UBadge = resolveComponent('UBadge')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
 const UCheckbox = resolveComponent('UCheckbox')
 
@@ -214,6 +216,12 @@ const pagination = ref({
           <AssociatesAddModal />
         </template>
       </UDashboardNavbar>
+
+      <UDashboardToolbar>
+        <template #left>
+          <UBreadcrumb :items="breadcrumbItems" class="ms-2" />
+        </template>
+      </UDashboardToolbar>
     </template>
 
     <template #body>
