@@ -48,14 +48,17 @@ const links = computed(() => [[{
   children: [{
     label: 'Waiting for approval',
     to: '/associates?status=waiting',
+    badge: '5',
     active: route.query.status === 'waiting' // Direct boolean
   }, {
     label: 'Active',
     to: '/associates?status=active',
+    badge: '200',
     active: route.query.status === 'active' // Direct boolean
   }, {
-    label: 'Inactive',
+    label: 'Renewal required',
     to: '/associates?status=inactive',
+    badge: '10',
     active: route.query.status === 'inactive' // Direct boolean
   }]
 }, {
