@@ -5,32 +5,30 @@ import type { FormSubmitEvent } from '@nuxt/ui'
 
 const schema = z.object({
   associate_id: z.number().int().positive().optional(),
-  payer_is_associate: z.boolean().optional(),
+  payer_is_associate: z.boolean().default(false),
   payer_name: z.string().min(2).optional(),
   payer_surname: z.string().min(2).optional(),
   payer_email: z.string().email().optional(),
   payer_tax_code: z.string().optional(),
-  payment_date: z.string().optional(),
-  payment_amount: z.number().nonnegative().optional(),
-  payment_method: z.enum(['Cash', 'Card', 'Bank Transfer', 'Other']).optional(),
+  payment_date: z.string(),
+  payment_amount: z.number().nonnegative(),
+  payment_method: z.enum(['Cash', 'Card', 'Bank Transfer', 'Other']),
   received_by: z.string().optional(),
-  payment_type: z.enum(['Donation', 'Membership', 'Purchase', 'Other']).optional(),
+  payment_type: z.enum(['Donation', 'Membership', 'Purchase', 'Other']),
   event_name: z.string().optional(),
-  notes: z.string().optional(),
-  name: z.string().min(2, 'Too short'),
-  email: z.string().email('Invalid email address')
-}).refine((data) => {
-  // If the payer is not an associate, ensure name, surname, email and tax code are provided
+  notes: z.string().optional()
+}).superRefine((data, ctx) => {
   if (!data.payer_is_associate) {
-    return data.payer_name
-      && data.payer_surname
-      && data.payer_email
-      && data.payer_tax_code
+    if (!data.payer_name) ctx.addIssue({ code: 'custom', path: ['payer_name'], message: 'Nome richiesto' })
+    if (!data.payer_surname) ctx.addIssue({ code: 'custom', path: ['payer_surname'], message: 'Cognome richiesto' })
+    if (!data.payer_email) ctx.addIssue({ code: 'custom', path: ['payer_email'], message: 'Email richiesta' })
+    if (!data.payer_tax_code) ctx.addIssue({ code: 'custom', path: ['payer_tax_code'], message: 'Codice Fiscale richiesto' })
+  } else if (!data.associate_id) {
+    ctx.addIssue({ code: 'custom', path: ['associate_id'], message: 'ID associato richiesto' })
   }
-  return true
-}, { message: 'Provide payer name, surname, email and tax code if not associate' })
+})
 
-type Schema = z.infer<typeof schema>
+type Schema = z.output<typeof schema>
 
 // Utility function to get today's date in DD/MM/YYYY format
 function getTodayISOString(): string {
@@ -41,6 +39,24 @@ const state = reactive<Partial<Schema>>({
   payer_is_associate: false,
   payment_date: getTodayISOString()
 })
+
+watch(() => state.payer_is_associate, (isAssociate) => {
+  if (isAssociate) {
+    state.payer_name = ''
+    state.payer_surname = ''
+    state.payer_email = ''
+    state.payer_tax_code = ''
+  } else {
+    state.associate_id = undefined
+  }
+})
+
+const payerFields = [
+  { label: 'Nome', name: 'payer_name', type: 'text' },
+  { label: 'Cognome', name: 'payer_surname', type: 'text' },
+  { label: 'Email', name: 'payer_email', type: 'email' },
+  { label: 'Codice Fiscale', name: 'payer_tax_code', type: 'text' }
+]
 
 const open = ref(false)
 const toast = useToast()
@@ -77,6 +93,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     v-model:open="open"
     :dismissible="false"
     :ui="{ content: 'max-w-2xl' }"
+    :state="state"
+    validate-on="input"
     title="Nuova transazione"
     description="Aggiungi una nuova transazione al database"
   >
@@ -109,17 +127,12 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               </template>
               <template v-else>
               <UFormField
-                v-for="field in [
-                  { label: 'Nome', name: 'payer_name', type: 'text' },
-                  { label: 'Cognome', name: 'payer_surname', type: 'text' },
-                  { label: 'Email', name: 'payer_email', type: 'email' },
-                  { label: 'Codice Fiscale', name: 'payer_tax_code', type: 'text' }
-                ]"
-                :key="field.name"
-                :label="field.label"
-                :name="field.name"
+                v-for="f in payerFields"
+                :key="f.name"
+                :label="f.label"
+                :name="f.name"
               >
-                <UInput v-model="state[field.name]" :type="field.type" class="w-full" />
+                <UInput v-model="state[f.name]" :type="f.type" class="w-full" />
               </UFormField>
               </template>
             </div>
