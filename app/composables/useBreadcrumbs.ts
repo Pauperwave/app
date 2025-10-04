@@ -4,9 +4,16 @@ export const useBreadcrumbs = () => {
   const route = useRoute()
 
   // Solo i nomi che vuoi personalizzare (opzionale)
+  // Primo livello della route -> etichetta personalizzata
+  // Se non è presente, verrà formattato automaticamente
+  // (es: 'user-profile' -> 'User Profile')
   const customLabels: Record<string, string> = {
     transactions: 'Transazioni',
-    associates: 'Associati'
+    associates: 'Associati',
+    leagues: 'Leghe',
+    tournaments: 'Tornei',
+    events: 'Eventi',
+    statistics: 'Statistiche'
   }
 
   // Labels per i query params organizzati per route
@@ -24,6 +31,12 @@ export const useBreadcrumbs = () => {
         waiting: 'Da approvare',
         active: 'Attivi',
         expired: 'Da rinnovare'
+      }
+    },
+    tournaments: {
+      status: {
+        upcoming: 'In programma',
+        completed: 'Completati'
       }
     }
   }
