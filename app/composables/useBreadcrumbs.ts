@@ -28,7 +28,7 @@ export const useBreadcrumbs = () => {
     },
     associates: {
       status: {
-        waiting: 'Da approvare',
+        waiting: 'In attesa di approvazione',
         active: 'Attivi',
         expired: 'Da rinnovare'
       }
