@@ -18,35 +18,35 @@ const links = computed(() => [[{
   label: 'Transazioni',
   icon: 'i-lucide-wallet',
   type: 'link',
-  to: '/payments',
+  to: '/transactions',
   defaultOpen: true,
   onSelect: () => {
     open.value = false
   },
   children: [{
     label: 'Tutte le transazioni',
-    to: '/payments',
+    to: '/transactions',
     exact: true,
-    active: route.path === '/payments' && !route.query.type,
+    active: route.path === '/transactions' && !route.query.type,
     onSelect: () => {
       open.value = false
     }
   }, {
     label: 'Quote associative',
-    to: '/payments?type=association-fee',
+    to: '/transactions?type=association-fee',
     active: route.query.type === 'association-fee' // Direct boolean
   }, {
-    label: 'Quote per evento',
-    to: '/payments?type=event-fee',
+    label: 'Quote eventi',
+    to: '/transactions?type=event-fee',
     active: route.query.type === 'event-fee' // Direct boolean
   }, {
     label: 'Donazioni',
-    to: '/payments?type=donation',
-    active: route.query.type === 'donation' // Direct boolean
+    to: '/transactions?type=donations',
+    active: route.query.type === 'donations' // Direct boolean
   }, {
     label: 'Rimborsi',
-    to: '/payments?type=refund',
-    active: route.query.type === 'refund' // Direct boolean
+    to: '/transactions?type=refunds',
+    active: route.query.type === 'refunds' // Direct boolean
   }] satisfies NavigationMenuItem[]
 }, {
   label: 'Associati',
@@ -232,14 +232,8 @@ const groups = computed(() => [{
 
 <template>
   <UDashboardGroup unit="rem">
-    <UDashboardSidebar
-      id="default"
-      v-model:open="open"
-      collapsible
-      resizable
-      class="bg-elevated/25"
-      :ui="{ footer: 'lg:border-t lg:border-default' }"
-    >
+    <UDashboardSidebar id="default" v-model:open="open" collapsible resizable class="bg-elevated/25"
+      :ui="{ footer: 'lg:border-t lg:border-default' }">
       <template #header="{ collapsed }">
         <TeamsMenu :collapsed="collapsed" />
       </template>
@@ -247,21 +241,9 @@ const groups = computed(() => [{
       <template #default="{ collapsed }">
         <UDashboardSearchButton :collapsed="collapsed" class="bg-transparent ring-default" />
 
-        <UNavigationMenu
-          :collapsed="collapsed"
-          :items="links[0]"
-          orientation="vertical"
-          tooltip
-          popover
-        />
+        <UNavigationMenu :collapsed="collapsed" :items="links[0]" orientation="vertical" tooltip popover />
 
-        <UNavigationMenu
-          :collapsed="collapsed"
-          :items="links[1]"
-          orientation="vertical"
-          tooltip
-          class="mt-auto"
-        />
+        <UNavigationMenu :collapsed="collapsed" :items="links[1]" orientation="vertical" tooltip class="mt-auto" />
       </template>
 
       <template #footer="{ collapsed }">
