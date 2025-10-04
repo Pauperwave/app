@@ -8,7 +8,8 @@ const schema = z.object({
   payer_is_associate: z.boolean().default(false),
   payer_name: z.string().min(2).optional(),
   payer_surname: z.string().min(2).optional(),
-  payer_email: z.string().email().optional(),
+  // https://github.com/colinhacks/zod/issues/4642#issuecomment-2957508997
+  payer_email: z.string().check(z.trim(), z.email(), z.toLowerCase()),
   payer_tax_code: z.string().optional(),
   payment_date: z.string(),
   payment_amount: z.number().nonnegative(),
