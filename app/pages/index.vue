@@ -6,23 +6,23 @@ import type { Period, Range } from '~/types'
 // const { isNotificationsSlideoverOpen } = useDashboard()
 
 const items = [[{
-  label: 'New payment',
+  label: 'Registra transazione',
   icon: 'i-lucide-banknote-arrow-down',
   to: '/transactions'
 }, {
-  label: 'New associate',
+  label: 'Nuovo associato',
   icon: 'i-lucide-user-plus',
   to: '/associates'
 }, {
-  label: 'New event',
+  label: 'Nuovo evento',
   icon: 'i-lucide-calendar-plus',
   to: '/events'
 }, {
-  label: 'New league',
+  label: 'Nuova lega',
   icon: 'i-lucide-trophy',
   to: '/leagues'
 }, {
-  label: 'New tournament',
+  label: 'Nuovo torneo',
   icon: 'i-lucide-swords',
   to: '/tournaments'
 }]] satisfies DropdownMenuItem[][]
