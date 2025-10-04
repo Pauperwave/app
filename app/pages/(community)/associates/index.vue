@@ -21,7 +21,7 @@ const columnFilters = ref([{
   value: ''
 }])
 const columnVisibility = ref()
-const rowSelection = ref({ 1: true })
+const rowSelection = ref({})
 
 const { data, status } = await useFetch<User[]>('/api/associates', {
   lazy: true
