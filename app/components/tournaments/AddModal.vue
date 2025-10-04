@@ -17,14 +17,14 @@ const state = reactive<Partial<Schema>>({
 
 const toast = useToast()
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  toast.add({ title: 'Success', description: `New tournament ${event.data.name} added`, color: 'success' })
+  toast.add({ title: 'Success', description: `Nuovo torneo "${event.data.name}" aggiunto`, color: 'success' })
   open.value = false
 }
 </script>
 
 <template>
-  <UModal v-model:open="open" title="New tournament" description="Add a new tournament to the database">
-    <UButton label="New tournament" icon="i-lucide-plus" />
+  <UModal v-model:open="open" title="Nuovo torneo" description="Aggiungi un nuovo torneo al database">
+    <UButton label="Nuovo torneo" icon="i-lucide-plus" />
 
     <template #body>
       <UForm

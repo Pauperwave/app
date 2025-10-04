@@ -1,24 +1,19 @@
 <script lang="ts" setup>
-
+const { breadcrumbItems } = useBreadcrumbs()
 </script>
 
 <template>
-  <UDashboardPanel id="decks">
+  <UDashboardPanel id="statistics">
     <template #header>
-      <UDashboardNavbar title="Decks">
+      <UDashboardNavbar title="Statistics">
         <template #leading>
           <UDashboardSidebarCollapse />
-        </template>
-
-        <template #right>
-          <EventsAddModal />
         </template>
       </UDashboardNavbar>
 
       <UDashboardToolbar>
         <template #left>
-          <!-- NOTE: The `-ms-1` class is used to align with the `DashboardSidebarCollapse` button here. -->
-          <!-- <HomeDateRangePicker v-model="range" class="-ms-1" /> -->
+          <UBreadcrumb :items="breadcrumbItems" class="ms-2" />
         </template>
       </UDashboardToolbar>
     </template>
