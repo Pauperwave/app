@@ -100,7 +100,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       <UForm
         :schema="schema"
         :state="state"
-        class="space-y-4"
+        class="space-y-2"
         @submit="onSubmit"
       >
         <!-- eslint-disable -->

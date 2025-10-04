@@ -15,6 +15,10 @@ const { breadcrumbItems } = useBreadcrumbs()
         <template #left>
           <UBreadcrumb :items="breadcrumbItems" class="ms-2" />
         </template>
+
+        <template #right>
+          <TransactionsListAddModal />
+        </template>
       </UDashboardToolbar>
     </template>
   </UDashboardPanel>
