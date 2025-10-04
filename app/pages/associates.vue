@@ -128,32 +128,32 @@ const columns: TableColumn<User>[] = [
       })
     }
   },
-  {
-    accessorKey: 'location',
-    header: 'Location',
-    cell: ({ row }) => row.original.location
-  },
+  // {
+  //   accessorKey: 'location',
+  //   header: 'Location',
+  //   cell: ({ row }) => row.original.location
+  // },
   {
     accessorKey: 'born_location',
     header: 'Born Location',
     cell: ({ row }) => row.original.born_location
   },
-  {
-    accessorKey: 'status',
-    header: 'Status',
-    filterFn: 'equals',
-    cell: ({ row }) => {
-      const color = {
-        subscribed: 'success' as const,
-        unsubscribed: 'error' as const,
-        bounced: 'warning' as const
-      }[row.original.status]
+  // {
+  //   accessorKey: 'status',
+  //   header: 'Status',
+  //   filterFn: 'equals',
+  //   cell: ({ row }) => {
+  //     const color = {
+  //       subscribed: 'success' as const,
+  //       unsubscribed: 'error' as const,
+  //       bounced: 'warning' as const
+  //     }[row.original.status]
 
-      return h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () =>
-        row.original.status
-      )
-    }
-  },
+  //     return h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () =>
+  //       row.original.status
+  //     )
+  //   }
+  // },
   {
     id: 'actions',
     cell: ({ row }) => {
@@ -243,7 +243,7 @@ const pagination = ref({
             </UButton>
           </AssociatesDeleteModal>
 
-          <USelect
+          <!-- <USelect
             v-model="statusFilter"
             :items="[
               { label: 'All', value: 'all' },
@@ -254,7 +254,7 @@ const pagination = ref({
             :ui="{ trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200' }"
             placeholder="Filter status"
             class="min-w-28"
-          />
+          /> -->
           <UDropdownMenu
             :items="
               table?.tableApi
