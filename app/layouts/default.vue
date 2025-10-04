@@ -8,81 +8,114 @@ const open = ref(false)
 
 // Make the entire links array computed so active states are reactive
 const links = computed(() => [[{
-  label: 'Home',
+  label: 'Pannello di controllo',
   icon: 'i-lucide-house',
   to: '/',
   onSelect: () => {
     open.value = false
   }
 }, {
-  label: 'Payments',
+  label: 'Transazioni',
   icon: 'i-lucide-wallet',
+  type: 'link',
   to: '/payments',
   defaultOpen: true,
   onSelect: () => {
     open.value = false
   },
   children: [{
-    label: 'Association fee',
+    label: 'Tutte le transazioni',
+    to: '/payments',
+    exact: true,
+    active: route.path === '/payments' && !route.query.type,
+    onSelect: () => {
+      open.value = false
+    }
+  }, {
+    label: 'Quote associative',
     to: '/payments?type=association-fee',
     active: route.query.type === 'association-fee' // Direct boolean
   }, {
-    label: 'Event fee',
+    label: 'Quote per evento',
     to: '/payments?type=event-fee',
     active: route.query.type === 'event-fee' // Direct boolean
   }, {
-    label: 'Donation',
+    label: 'Donazioni',
     to: '/payments?type=donation',
     active: route.query.type === 'donation' // Direct boolean
   }, {
-    label: 'Refund',
+    label: 'Rimborsi',
     to: '/payments?type=refund',
     active: route.query.type === 'refund' // Direct boolean
-  }]
+  }] satisfies NavigationMenuItem[]
 }, {
-  label: 'Associates',
+  label: 'Associati',
   icon: 'i-lucide-users',
+  type: 'link',
   to: '/associates',
-  badge: '215',
   defaultOpen: true,
   children: [{
-    label: 'Waiting for approval',
+    label: 'Tutti gli associati',
+    to: '/associates',
+    active: route.path === '/associates' && !route.query.status, // attivo quando non c'è query
+    onSelect: () => {
+      open.value = false
+    }
+  }, {
+    label: 'In attesa di approvazione',
     to: '/associates?status=waiting',
     badge: '5',
     active: route.query.status === 'waiting' // Direct boolean
   }, {
-    label: 'Active',
+    label: 'Attivi',
     to: '/associates?status=active',
     badge: '200',
     active: route.query.status === 'active' // Direct boolean
   }, {
-    label: 'Renewal required',
+    label: 'Da rinnovare',
     to: '/associates?status=inactive',
     badge: '10',
     active: route.query.status === 'inactive' // Direct boolean
-  }]
+  }] satisfies NavigationMenuItem[]
 }, {
-  label: 'Events',
+  label: 'Eventi',
   icon: 'i-lucide-calendar',
   to: '/events',
   onSelect: () => {
     open.value = false
   }
 }, {
-  label: 'Leagues',
+  label: 'Leghe',
   icon: 'i-lucide-trophy',
   to: '/leagues',
   onSelect: () => {
     open.value = false
   }
 }, {
-  label: 'Tournaments',
+  label: 'Tornei',
   icon: 'i-lucide-swords',
   to: '/tournaments'
 }, {
-  label: 'Statistics',
+  label: 'Statistiche',
   icon: 'i-lucide-chart-pie',
-  to: '/statistics'
+  type: 'link',
+  to: '/statistics',
+  defaultOpen: true,
+  children: [{
+    label: 'Panoramica',
+    to: '/statistics',
+    active: route.path === '/statistics' && !route.query.type,
+    onSelect: () => {
+      open.value = false
+    }
+  }, {
+    label: 'Mazzi',
+    to: '/statistics/decks',
+    active: route.path === '/statistics/decks',
+    onSelect: () => {
+      open.value = false
+    }
+  }] satisfies NavigationMenuItem[]
 }, {
   label: 'Settings',
   to: '/settings',
@@ -114,7 +147,7 @@ const links = computed(() => [[{
     onSelect: () => {
       open.value = false
     }
-  }]
+  }] satisfies NavigationMenuItem[]
 }], [{
   label: 'Feedback',
   icon: 'i-lucide-message-circle',
