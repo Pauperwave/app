@@ -5,17 +5,27 @@ import type { FormSubmitEvent } from '@nuxt/ui'
 
 const schema = z.object({
   associate_id: z.number().int().positive().optional(),
-  payer_is_associate: z.boolean().default(false),
-  payer_name: z.string().min(2).optional(),
-  payer_surname: z.string().min(2).optional(),
+  payer_is_associate: z.boolean().default(true),
+  payer_name: z.string().min(2, { message: 'Nome troppo corto' }).optional(),
+  payer_surname: z.string().min(2, { message: 'Cognome troppo corto' }).optional(),
   // https://github.com/colinhacks/zod/issues/4642#issuecomment-2957508997
+  // - trim per rimuovere spazi
+  // - email per validare il formato
+  // - toLowerCase per normalizzare
   payer_email: z.string().check(z.trim(), z.email(), z.toLowerCase()),
-  payer_tax_code: z.string().optional(),
-  payment_date: z.string(),
-  payment_amount: z.number().nonnegative(),
-  payment_method: z.enum(['Cash', 'Card', 'Bank Transfer', 'Other']),
-  received_by: z.string().optional(),
-  payment_type: z.enum(['Donation', 'Membership', 'Purchase', 'Other']),
+  payer_tax_code: z.string().trim().optional(),
+  // le date possono essere sia passate che future
+  payment_date: z.date(),
+  payment_amount: z.number().nonnegative({
+    message: 'L\'importo non può essere negativo'
+  }),
+  payment_method: z.enum(['Cash', 'Card', 'Bank Transfer', 'Other'], {
+    message: 'Metodo di pagamento non valido'
+  }),
+  received_by: z.string().trim().optional(),
+  payment_type: z.enum(['Donation', 'Membership', 'Purchase', 'Other'], {
+    message: 'Tipo di pagamento non valido'
+  }),
   event_name: z.string().optional(),
   notes: z.string().optional()
 }).superRefine((data, ctx) => {
@@ -25,7 +35,11 @@ const schema = z.object({
     if (!data.payer_email) ctx.addIssue({ code: 'custom', path: ['payer_email'], message: 'Email richiesta' })
     if (!data.payer_tax_code) ctx.addIssue({ code: 'custom', path: ['payer_tax_code'], message: 'Codice Fiscale richiesto' })
   } else if (!data.associate_id) {
-    ctx.addIssue({ code: 'custom', path: ['associate_id'], message: 'ID associato richiesto' })
+    ctx.addIssue({
+      code: 'custom',
+      path: ['associate_id'],
+      message: 'ID associato richiesto'
+    })
   }
 })
 
