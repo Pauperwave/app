@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import * as z from 'zod'
-import { format } from 'date-fns'
 import type { FormSubmitEvent } from '@nuxt/ui'
-import { tr } from 'zod/locales'
 
 const schema = z.object({
   // Formato PW-0001 ... PW-9999
