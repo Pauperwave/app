@@ -4,7 +4,8 @@ import { format } from 'date-fns'
 import type { FormSubmitEvent } from '@nuxt/ui'
 
 const schema = z.object({
-  associate_id: z.number().int().positive().optional(),
+  // Formato PW-0001 ... PW-9999
+  associate_id: z.string().regex(/^PW-\d{4}$/, { message: 'ID associato non valido' }).optional(),
   payer_is_associate: z.boolean().default(true),
   payer_name: z.string().min(2, { message: 'Nome troppo corto' }).optional(),
   payer_surname: z.string().min(2, { message: 'Cognome troppo corto' }).optional(),
@@ -104,6 +105,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 </script>
 
 <template>
+  <!-- TODO rendere tutte le modali dismissible="false" e content: 'max-w-2xl' -->
   <UModal
     v-model:open="open"
     :dismissible="false"
@@ -113,7 +115,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     title="Nuova transazione"
     description="Aggiungi una nuova transazione al database"
   >
-    <UButton label="Nuova transazione" icon="i-lucide-banknote-arrow-down" />
+    <UButton label="Nuova transazione" icon="i-lucide-coins" />
 
     <template #body>
       <UForm
@@ -122,25 +124,37 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         class="space-y-2"
         @submit="onSubmit"
       >
-        <!-- eslint-disable -->
         <div>
+          <!-- eslint-disable-next-line -->
           <h3 class="text-lg font-semibold text-primary">Informazioni personali</h3>
-            <UFormField label="Associato" name="payer_is_associate">
-              <USwitch
-                v-model="state.payer_is_associate"
-                size="xl"
-                :ui="{ base: 'rounded-md', thumb: 'rounded-sm' }"
-              />
-            </UFormField>
-            <div class="grid grid-cols-2 gap-2 mt-2 min-h-[120px]">
-              <template v-if="state.payer_is_associate">
+          <UFormField label="Associato" name="payer_is_associate">
+            <USwitch
+              v-model="state.payer_is_associate"
+              size="xl"
+              :ui="{ base: 'rounded-md', thumb: 'rounded-sm' }"
+            />
+          </UFormField>
+          <div class="grid grid-cols-2 gap-2 mt-2 min-h-[120px]">
+            <template v-if="state.payer_is_associate">
               <UFormField label="Associate ID" name="associate_id">
-                <UInput v-model="state.associate_id" type="number" class="w-full" />
+                <UInput
+                  v-model="state.associate_id"
+                  type="text"
+                  class="w-full"
+                  :formatter="(value: string) => {
+                    // Rimuove tutto tranne numeri
+                    const digits = value.replace(/\D/g, '')
+                    // Formatta come PW-0001
+                    return `PW-${digits.padStart(4, '0')}`
+                  }"
+                  placeholder="Es: PW-0001"
+                  maxlength="7"
+                />
               </UFormField>
-              <div class="col-span-1"></div>
-              <div class="col-span-2"></div>
-              </template>
-              <template v-else>
+              <div class="col-span-1" />
+              <div class="col-span-2" />
+            </template>
+            <template v-else>
               <UFormField
                 v-for="f in payerFields"
                 :key="f.name"
@@ -149,9 +163,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               >
                 <UInput v-model="state[f.name]" :type="f.type" class="w-full" />
               </UFormField>
-              </template>
-            </div>
+            </template>
+          </div>
         </div>
+        <!-- eslint-disable-next-line -->
         <h3 class="text-lg font-semibold text-primary">Informazioni sul pagamento</h3>
         <div class="grid grid-cols-2 gap-2 mt-2">
           <UFormField label="Data pagamento" name="payment_date">
@@ -165,6 +180,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             />
           </UFormField>
           <UFormField label="Importo" name="payment_amount">
+            <!-- eslint-disable-next-line -->
             <UInput v-model="state.payment_amount" type="number" step="5.00" class="w-full" />
           </UFormField>
           <UFormField label="Metodo di Pagamento" name="payment_method">
