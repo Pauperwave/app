@@ -106,6 +106,15 @@ const onlyNumbers = (event: KeyboardEvent) => {
   }
 }
 
+// Handle paste events
+const handlePaste = (event: ClipboardEvent) => {
+  event.preventDefault()
+  const pastedText = event.clipboardData?.getData('text') || ''
+  // Extract only digits and get the LAST 3
+  const digits = pastedText.replace(/\D/g, '').slice(-3)
+  state.associate_id = digits
+}
+
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
     // Simulate transaction creation logic here (e.g., API call)
@@ -181,6 +190,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 }"
                 @keypress="onlyNumbers"
                 @input="handleAssociateIdInput($event)"
+                @paste="handlePaste($event)"
               >
                 <template #leading>
                   <p class="text-sm text-muted">
