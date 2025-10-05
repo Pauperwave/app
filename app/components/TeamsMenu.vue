@@ -27,7 +27,7 @@ const items = computed<DropdownMenuItem[][]>(() => {
     label: 'Manage teams',
     icon: 'i-lucide-cog'
   }]
-]
+  ]
 })
 </script>
 

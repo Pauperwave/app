@@ -85,7 +85,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     })
     open.value = false
   } catch (err) {
-    toast.add({ title: 'Errore', description: 'Qualcosa è andato storto', color: 'error' })
+    toast.add({
+      title: 'Errore',
+      description: `Qualcosa è andato storto: ${err instanceof Error ? err.message : String(err)}`,
+      color: 'error'
+    })
   }
 }
 </script>
