@@ -37,7 +37,7 @@ const y = (d: DataRecord) => d.amount
 
 const total = computed(() => data.value.reduce((acc: number, { amount }) => acc + amount, 0))
 
-const formatNumber = new Intl.NumberFormat('en', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format
+const formatNumber = new Intl.NumberFormat('it', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format
 
 const formatDate = (date: Date): string => {
   return ({
