@@ -179,11 +179,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           <UFormField label="Incassati da" name="received_by">
             <UInput v-model="state.received_by" class="w-full" />
           </UFormField>
-          <UFormField label="Event Name" name="event_name">
+          <UFormField label="Evento" name="event_name">
             <UInput v-model="state.event_name" class="w-full" />
           </UFormField>
         </div>
-        <UFormField label="Notes" name="notes">
+        <UFormField label="Note" name="notes">
           <UTextarea v-model="state.notes" class="w-full" />
         </UFormField>
         <!--  -->
