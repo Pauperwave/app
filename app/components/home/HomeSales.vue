@@ -51,7 +51,7 @@ const columns: TableColumn<Sale>[] = [
     accessorKey: 'date',
     header: 'Date',
     cell: ({ row }) => {
-      return new Date(row.getValue('date')).toLocaleString('en-US', {
+      return new Date(row.getValue('date')).toLocaleString('it-IT', {
         day: 'numeric',
         month: 'short',
         hour: '2-digit',
@@ -85,7 +85,7 @@ const columns: TableColumn<Sale>[] = [
     cell: ({ row }) => {
       const amount = Number.parseFloat(row.getValue('amount'))
 
-      const formatted = new Intl.NumberFormat('en-US', {
+      const formatted = new Intl.NumberFormat('it-IT', {
         style: 'currency',
         currency: 'EUR'
       }).format(amount)
