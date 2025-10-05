@@ -15,6 +15,9 @@ const schema = z.object({
   name: z.string().min(2, 'Nome troppo corto'),
   surname: z.string().min(2, 'Cognome troppo corto'),
   // https://github.com/colinhacks/zod/issues/4642#issuecomment-2957508997
+  // - trim per rimuovere spazi
+  // - email per validare il formato
+  // - toLowerCase per normalizzare
   email: z.string().check(z.trim(), z.email(), z.toLowerCase()),
   phone_number: z.string().regex(/^\d{10,15}$/, 'Numero di telefono non valido'),
   tax_code: z.string().regex(/^[A-Z0-9]{16}$/i, 'Codice fiscale non valido'),
