@@ -2,10 +2,12 @@
 import * as z from 'zod'
 import { format } from 'date-fns'
 import type { FormSubmitEvent } from '@nuxt/ui'
+import { tr } from 'zod/locales'
 
 const schema = z.object({
   // Formato PW-0001 ... PW-9999
-  associate_id: z.string().regex(/^PW-\d{4}$/, { message: 'ID associato non valido' }).optional(),
+  // associate_id: z.string().regex(/^PW-\d{4}$/, { message: 'ID associato non valido' }).optional(),
+  associate_id: z.string().optional(),
   payer_is_associate: z.boolean().default(true),
   payer_name: z.string().min(2, { message: 'Nome troppo corto' }).optional(),
   payer_surname: z.string().min(2, { message: 'Cognome troppo corto' }).optional(),
@@ -52,31 +54,59 @@ type Schema = z.output<typeof schema>
 // }
 
 const state = reactive<Partial<Schema>>({
-  payer_is_associate: false,
-  payment_date: new Date().toString()
+  payer_is_associate: true,
+  payment_date: new Date().toISOString()
 })
+
+const associateDigits = ref('')
 
 // Reset payer fields when toggling between associate and non-associate
-watch(() => state.payer_is_associate, (isAssociate) => {
-  if (isAssociate) {
-    state.payer_name = ''
-    state.payer_surname = ''
-    state.payer_email = ''
-    state.payer_tax_code = ''
-  } else {
-    state.associate_id = undefined
-  }
-})
-
-const payerFields = [
-  { label: 'Nome', name: 'payer_name', type: 'text' },
-  { label: 'Cognome', name: 'payer_surname', type: 'text' },
-  { label: 'Email', name: 'payer_email', type: 'email' },
-  { label: 'Codice Fiscale', name: 'payer_tax_code', type: 'text' }
-] as const
+// watch(() => state.payer_is_associate, (isAssociate) => {
+//   if (isAssociate) {
+//     state.payer_name = ''
+//     state.payer_surname = ''
+//     state.payer_email = ''
+//     state.payer_tax_code = ''
+//   } else {
+//     state.associate_id = undefined
+//   }
+// })
 
 const open = ref(false)
 const toast = useToast()
+
+// Handle associate ID input
+const handleAssociateIdInput = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  // Extract only digits and limit to 3
+  const digits = input.value.replace(/\D/g, '').slice(0, 3)
+  // Update both the input value and state
+  input.value = digits
+
+  console.info('digits', digits)
+
+  const newState = digits ? `PW-0${digits}` : ''
+  if (digits.length === 3) {
+    console.warn('newState', newState)
+  }
+  state.associate_id = digits.length === 3 ? newState : ''
+}
+
+// Prevent non-numeric key presses
+const onlyNumbers = (event: KeyboardEvent) => {
+  const key = event.key
+  // Allow: backspace, delete, tab, escape, enter
+  if (['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight'].includes(key)) {
+    return
+  }
+
+  console.log('key pressed: ', key)
+
+  // Prevent if not a number
+  if (!/^\d$/.test(key)) {
+    event.preventDefault()
+  }
+}
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
@@ -114,6 +144,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     title="Nuova transazione"
     description="Aggiungi una nuova transazione al database"
   >
+    <!-- Trigger button goes in the default slot -->
     <UButton label="Nuova transazione" icon="i-lucide-coins" />
 
     <template #body>
@@ -126,43 +157,137 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         <div>
           <!-- eslint-disable-next-line -->
           <h3 class="text-lg font-semibold text-primary">Informazioni personali</h3>
-          <UFormField label="Associato" name="payer_is_associate">
-            <USwitch
-              v-model="state.payer_is_associate"
-              size="xl"
-              :ui="{ base: 'rounded-md', thumb: 'rounded-sm' }"
-            />
-          </UFormField>
-          <div class="grid grid-cols-2 gap-2 mt-2 min-h-[120px]">
-            <template v-if="state.payer_is_associate">
-              <UFormField label="Associate ID" name="associate_id">
-                <UInput
-                  v-model="state.associate_id"
-                  type="text"
-                  class="w-full"
-                  :formatter="(value: string) => {
-                    // Rimuove tutto tranne numeri
-                    const digits = value.replace(/\D/g, '')
-                    // Formatta come PW-0001
-                    return `PW-${digits.padStart(4, '0')}`
-                  }"
-                  placeholder="Es: PW-0001"
-                  maxlength="7"
-                />
-              </UFormField>
-              <div class="col-span-1" />
-              <div class="col-span-2" />
-            </template>
-            <template v-else>
-              <UFormField
-                v-for="f in payerFields"
-                :key="f.name"
-                :label="f.label"
-                :name="f.name"
+          <div class="grid grid-cols-6 mt-2">
+            <UFormField label="Associato" name="payer_is_associate">
+              <USwitch
+                v-model="state.payer_is_associate"
+                size="xl"
+                :ui="{ base: 'rounded-md', thumb: 'rounded-sm' }"
+              />
+            </UFormField>
+            <UFormField label="ID Associato" name="associate_id">
+              <UInput
+                v-model="associateDigits"
+                placeholder="000"
+                icon="i-lucide-credit-card"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="3"
+                class="max-w-2xs"
+                :highlight="state.payer_is_associate"
+                :disabled="!state.payer_is_associate"
+                :ui="{
+                  base: 'pl-11.5',
+                  leading: 'pointer-events-none'
+                }"
+                @keypress="onlyNumbers"
+                @input="handleAssociateIdInput($event)"
               >
-                <UInput v-model="state[f.name]" :type="f.type" class="w-full" />
-              </UFormField>
-            </template>
+                <template #leading>
+                  <p class="text-sm text-muted">
+                    PW-0
+                  </p>
+                </template>
+              </UInput>
+            </UFormField>
+          </div>
+          <div class="grid grid-cols-2 gap-2 mt-2">
+            <UFormField label="Nome" name="payer_name" required>
+              <UInput
+                v-model="state.payer_name"
+                type="text"
+                class="w-full"
+                color="neutral"
+                :highlight="!state.payer_is_associate"
+                :disabled="state.payer_is_associate"
+              >
+                <template v-if="state.payer_name?.length" #trailing>
+                  <UButton
+                    color="neutral"
+                    variant="link"
+                    size="sm"
+                    icon="i-lucide-circle-x"
+                    aria-label="Clear input"
+                    @click="state.payer_name = ''"
+                  />
+                </template>
+              </UInput>
+            </UFormField>
+            <UFormField label="Cognome" name="payer_surname" required>
+              <UInput
+                v-model="state.payer_surname"
+                type="text"
+                class="w-full"
+                color="neutral"
+                :highlight="!state.payer_is_associate"
+                :disabled="state.payer_is_associate"
+              >
+                <template v-if="state.payer_surname?.length" #trailing>
+                  <UButton
+                    color="neutral"
+                    variant="link"
+                    size="sm"
+                    icon="i-lucide-circle-x"
+                    aria-label="Clear input"
+                    @click="state.payer_surname = ''"
+                  />
+                </template>
+              </UInput>
+            </UFormField>
+            <!-- eslint-disable-next-line -->
+            <UFormField label="Email" name="payer_email" help="Non condivideremo la tua email." required>
+              <UInput
+                v-model="state.payer_email"
+                type="email"
+                class="w-full"
+                color="neutral"
+                placeholder="Inserisci la tua email"
+                icon="i-lucide-at-sign"
+                :highlight="!state.payer_is_associate"
+                :disabled="state.payer_is_associate"
+              >
+                <template v-if="state.payer_email?.length" #trailing>
+                  <UButton
+                    color="neutral"
+                    variant="link"
+                    size="sm"
+                    icon="i-lucide-circle-x"
+                    aria-label="Clear input"
+                    @click="state.payer_email = ''"
+                  />
+                </template>
+              </UInput>
+            </UFormField>
+            <UFormField label="Codice Fiscale" name="payer_tax_code" required>
+              <UInput
+                v-model="state.payer_tax_code"
+                type="text"
+                class="w-full"
+                color="neutral"
+                :highlight="!state.payer_is_associate"
+                :disabled="state.payer_is_associate"
+              >
+                <template v-if="state.payer_tax_code?.length" #trailing>
+                  <UButton
+                    color="neutral"
+                    variant="link"
+                    size="sm"
+                    icon="i-lucide-circle-x"
+                    aria-label="Clear input"
+                    @click="state.payer_tax_code = ''"
+                  />
+                  <div
+                    id="character-count"
+                    class="text-xs text-muted tabular-nums"
+                    aria-live="polite"
+                    role="status"
+                  >
+                    {{ state.payer_tax_code?.length }}/{{ 16 }}
+                  </div>
+                </template>
+              </UInput>
+            </UFormField>
           </div>
         </div>
         <!-- eslint-disable-next-line -->
