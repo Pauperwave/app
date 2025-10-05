@@ -132,7 +132,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               <UInput v-model="state.email" autocomplete="email" class="w-full" />
             </UFormField>
             <UFormField label="Numero di cellulare" name="phone_number" required>
-              <UInput v-model="state.phone_number" autocomplete="tel" class="w-full" />
+              <UInput v-maska="'(+39) ### #######'" icon="i-lucide-phone" v-model="state.phone_number" autocomplete="tel" class="w-full" />
             </UFormField>
           </div>
         </div>
