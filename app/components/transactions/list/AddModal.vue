@@ -16,7 +16,7 @@ const schema = z.object({
   payer_email: z.string().check(z.trim(), z.email(), z.toLowerCase()),
   payer_tax_code: z.string().trim().optional(),
   // le date possono essere sia passate che future
-  payment_date: z.date(),
+  payment_date: z.string(),
   payment_amount: z.number().nonnegative({
     message: 'L\'importo non può essere negativo'
   }),
@@ -47,15 +47,16 @@ const schema = z.object({
 type Schema = z.output<typeof schema>
 
 // Utility function to get today's date in DD/MM/YYYY format
-function getTodayISOString(): string {
-  return format(new Date(), 'yyyy-MM-dd\'T\'HH:mm')
-}
+// function getTodayISOString(): string {
+//   return format(new Date(), 'yyyy-MM-dd\'T\'HH:mm')
+// }
 
 const state = reactive<Partial<Schema>>({
   payer_is_associate: false,
-  payment_date: getTodayISOString()
+  payment_date: new Date().toString()
 })
 
+// Reset payer fields when toggling between associate and non-associate
 watch(() => state.payer_is_associate, (isAssociate) => {
   if (isAssociate) {
     state.payer_name = ''
@@ -72,7 +73,7 @@ const payerFields = [
   { label: 'Cognome', name: 'payer_surname', type: 'text' },
   { label: 'Email', name: 'payer_email', type: 'email' },
   { label: 'Codice Fiscale', name: 'payer_tax_code', type: 'text' }
-]
+] as const
 
 const open = ref(false)
 const toast = useToast()
@@ -110,8 +111,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     v-model:open="open"
     :dismissible="false"
     :ui="{ content: 'max-w-2xl' }"
-    :state="state"
-    validate-on="input"
     title="Nuova transazione"
     description="Aggiungi una nuova transazione al database"
   >
