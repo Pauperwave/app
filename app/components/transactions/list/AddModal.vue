@@ -225,7 +225,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                     </template>
                   </UInput>
                 </UFormField>
-                
                 <UFormField label="Cognome" name="payer_surname" required>
                   <UInput
                     v-model="state.payer_surname"
@@ -245,7 +244,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                     </template>
                   </UInput>
                 </UFormField>
-                
                 <UFormField label="Email" name="payer_email" required>
                   <UInput
                     v-model="state.payer_email"
