@@ -25,24 +25,24 @@ const { data: tournaments } = await useFetch('/api/tournaments')
 type TournamentData = NonNullable<typeof tournaments.value>[number]
 
 const columns: TableColumn<TournamentData>[] = [
-  {
-    id: 'select',
-    header: ({ table }) =>
-      h(UCheckbox, {
-        'modelValue': table.getIsSomePageRowsSelected()
-          ? 'indeterminate'
-          : table.getIsAllPageRowsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
-          table.toggleAllPageRowsSelected(!!value),
-        'aria-label': 'Select all'
-      }),
-    cell: ({ row }) =>
-      h(UCheckbox, {
-        'modelValue': row.getIsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
-        'aria-label': 'Select row'
-      })
-  },
+  // {
+  //   id: 'select',
+  //   header: ({ table }) =>
+  //     h(UCheckbox, {
+  //       'modelValue': table.getIsSomePageRowsSelected()
+  //         ? 'indeterminate'
+  //         : table.getIsAllPageRowsSelected(),
+  //       'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
+  //         table.toggleAllPageRowsSelected(!!value),
+  //       'aria-label': 'Select all'
+  //     }),
+  //   cell: ({ row }) =>
+  //     h(UCheckbox, {
+  //       'modelValue': row.getIsSelected(),
+  //       'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
+  //       'aria-label': 'Select row'
+  //     })
+  // },
   {
     accessorKey: 'id',
     header: '#',
@@ -150,10 +150,14 @@ const columns: TableColumn<TournamentData>[] = [
 
 const table = useTemplateRef('table')
 
-const rowSelection = ref<Record<string, boolean>>({})
+// const rowSelection = ref<Record<string, boolean>>({})
 
 function onSelect(row: TableRow<TournamentData>) {
-  row.toggleSelected(!row.getIsSelected())
+  toast.add({
+    title: `Apri torneo del ${row.original.date}`,
+    color: 'info',
+    icon: 'i-lucide-info'
+  })
 }
 
 const items = ref<ContextMenuItem[]>([])
@@ -165,6 +169,7 @@ function getRowItems(row: TableRow<TournamentData>) {
   if (row.original.companion_app_code) {
     items.push({
       label: 'Copia codice Companion',
+      icon: 'i-lucide-copy',
       onSelect() {
         copy(row.original.companion_app_code!)
 
@@ -180,6 +185,7 @@ function getRowItems(row: TableRow<TournamentData>) {
   items.push(
     {
       label: 'Vedi dettagli torneo',
+      icon: 'i-lucide-swords',
       onSelect() {
         toast.add({
           title: 'Vedi dettagli torneo',
@@ -192,10 +198,11 @@ function getRowItems(row: TableRow<TournamentData>) {
 
   if (row.original.league) {
     items.push({
-      label: 'Vedi dettagli torneo',
+      label: 'Vedi dettagli lega',
+      icon: 'i-lucide-trophy',
       onSelect() {
         toast.add({
-          title: 'Vedi dettagli torneo',
+          title: 'Vedi dettagli lega',
           color: 'success',
           icon: 'i-lucide-circle-check'
         })
@@ -206,15 +213,32 @@ function getRowItems(row: TableRow<TournamentData>) {
   if (row.original.event) {
     items.push({
       label: 'Vedi dettagli evento',
+      icon: 'i-lucide-calendar',
       onSelect() {
         toast.add({
-          title: 'Vedi dettagli torneo',
+          title: 'Vedi dettagli evento',
           color: 'success',
           icon: 'i-lucide-circle-check'
         })
       }
     })
   }
+
+  items.push(
+    {
+      label: 'Elimina torneo',
+      icon: 'i-lucide-trash',
+      color: 'error',
+      disabled: row.getIsSelected() && row.getIsSelected() === false,
+      onSelect() {
+        toast.add({
+          title: 'Elimina torneo',
+          color: 'success',
+          icon: 'i-lucide-circle-check'
+        })
+      }
+    }
+  )
 
   return items
 }
@@ -306,10 +330,10 @@ const pagination = ref({
           />
         </UContextMenu>
 
-        <div class="px-4 py-3.5 border-t border-accented text-sm text-muted">
+        <!-- <div class="px-4 py-3.5 border-t border-accented text-sm text-muted">
           {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
           {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s) selected.
-        </div>
+        </div> -->
 
         <div class="flex justify-center border-t border-default pt-4">
           <UPagination
