@@ -142,9 +142,9 @@ const columns: TableColumn<TournamentData>[] = [
     }
   },
   {
-    accessorKey: 'companion_app_code',
-    header: 'Companion App Code',
-    cell: ({ row }) => row.getValue('companion_app_code')
+    accessorKey: 'companion_code',
+    header: 'Companion Code',
+    cell: ({ row }) => row.getValue('companion_code')
   }
 ]
 
@@ -165,13 +165,13 @@ const items = ref<ContextMenuItem[]>([])
 function getRowItems(row: TableRow<TournamentData>) {
   const items: ContextMenuItem[] = []
 
-  // Only add the copy option if companion_app_code exists
-  if (row.original.companion_app_code) {
+  // Only add the copy option if companion_code exists
+  if (row.original.companion_code) {
     items.push({
       label: 'Copia codice Companion',
       icon: 'i-lucide-copy',
       onSelect() {
-        copy(row.original.companion_app_code!)
+        copy(row.original.companion_code!)
 
         toast.add({
           title: 'Codice Companion copiato negli appunti!',

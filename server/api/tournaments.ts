@@ -34,7 +34,7 @@ const tournaments = Array.from({ length: 30 }, (_, i) => {
     description: `Evento ${format} numero ${id}.`,
     prizes: i % 2 === 0 ? 'Buoni acquisto' : 'Buoni acquisto e gadget',
     notes: i % 3 === 0 ? 'Iscrizioni dalle 19:45.' : 'Porta il tuo mazzo!',
-    companion_app_code: i < 5 ? `CODE${id}` : null,
+    companion_code: i < 5 ? `CODE${id}` : null,
     created_at: `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate() - 1)}T10:00:00Z`,
     updated_at: `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate() - 1)}T12:00:00Z`,
     updated_by: 'admin'
