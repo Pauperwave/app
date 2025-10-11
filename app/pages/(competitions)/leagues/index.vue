@@ -36,7 +36,7 @@ const range = shallowRef<Range>({
 
     <template #body>
       <!-- <LeaguesTable :period="period" :range="range" /> -->
-      test
+      Pagina leghe
     </template>
   </UDashboardPanel>
 </template>
