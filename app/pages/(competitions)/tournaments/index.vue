@@ -2,6 +2,7 @@
 import { sub } from 'date-fns'
 import type { Range } from '~/types'
 import { h, resolveComponent } from 'vue'
+import { getPaginationRowModel } from '@tanstack/vue-table'
 import type { ContextMenuItem, TableColumn, TableRow } from '@nuxt/ui'
 import { useClipboard } from '@vueuse/core'
 
@@ -227,6 +228,11 @@ const columnVisibility = ref({
 })
 
 const globalFilter = ref('')
+
+const pagination = ref({
+  pageIndex: 0,
+  pageSize: 15
+})
 </script>
 
 <template>
@@ -253,7 +259,7 @@ const globalFilter = ref('')
     </template>
 
     <template #body>
-      <div class="flex flex-col flex-1 w-full">
+      <div class="flex flex-col flex-1 w-full space-y-4 pb-4">
         <div class="flex justify-between px-4 py-3.5 border-t border-b bg-blue-900 border-accented">
           <UInput v-model="globalFilter" class="max-w-sm" placeholder="Filter..." />
           <UDropdownMenu
@@ -286,11 +292,15 @@ const globalFilter = ref('')
         <UContextMenu :items="items">
           <UTable
             ref="table"
+            v-model:pagination="pagination"
             v-model:global-filter="globalFilter"
             v-model:row-selection="rowSelection"
             v-model:column-visibility="columnVisibility"
             :data="tournaments"
             :columns="columns"
+            :pagination-options="{
+              getPaginationRowModel: getPaginationRowModel()
+            }"
             @select="onSelect"
             @contextmenu="onContextmenu"
           />
@@ -299,6 +309,15 @@ const globalFilter = ref('')
         <div class="px-4 py-3.5 border-t border-accented text-sm text-muted">
           {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
           {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s) selected.
+        </div>
+
+        <div class="flex justify-center border-t border-default pt-4">
+          <UPagination
+            :default-page="(table?.tableApi?.getState().pagination.pageIndex || 0) + 1"
+            :items-per-page="table?.tableApi?.getState().pagination.pageSize"
+            :total="table?.tableApi?.getFilteredRowModel().rows.length"
+            @update:page="(p) => table?.tableApi?.setPageIndex(p - 1)"
+          />
         </div>
       </div>
     </template>
