@@ -1,15 +1,40 @@
 <script lang="ts" setup>
 import { sub } from 'date-fns'
 import type { Range } from '~/types'
+// import { h, resolveComponent } from 'vue'
+// import type { TableColumn } from '@nuxt/ui'
 
 const { breadcrumbItems } = useBreadcrumbs()
+// const UBadge = resolveComponent('UBadge')
 
 const range = shallowRef<Range>({
   start: sub(new Date(), { days: 14 }),
   end: new Date()
 })
 
-const { data: events } = await useFetch('/api/events')
+// type Event = {
+//   id: number
+//   uuid: string
+//   league_uuid: string
+//   league: 'Magman Autunno 2025'
+//   organizer_uuid: string
+//   status: 'Completed' | 'Scheduled' | 'Cancelled' | 'Postponed' | 'In Progress'
+//   name: string
+//   location: 'Magman'
+//   date: string
+//   starts_at: string
+//   ends_at: string
+//   entry_fee: number
+//   description: string
+//   prizes: string
+//   notes: string
+//   companion_app_code: string
+//   created_at: string
+//   updated_at: string
+//   updated_by: string
+// }
+
+// const { data: events } = await useFetch('/api/events')
 </script>
 
 <template>
@@ -37,15 +62,7 @@ const { data: events } = await useFetch('/api/events')
     </template>
 
     <template #body>
-      <ul class="list-disc ms-4">
-        <li>Panoramica eventi</li>
-        <li>TODO: Lista tutti gli eventi con filtri per data e stato</li>
-        <li>Visualizza dettagli evento</li>
-        <li>Aggiungi nuovo evento</li>
-        <li>Filtra eventi per periodo selezionato</li>
-      </ul>
-
-      <UTable :data="events" class="flex-1" />
+      Pagina eventi
     </template>
   </UDashboardPanel>
 </template>
