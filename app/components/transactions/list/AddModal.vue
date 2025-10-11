@@ -3,8 +3,6 @@ import * as z from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'
 
 const schema = z.object({
-  // Formato PW-0001 ... PW-9999
-  // associate_id: z.string().regex(/^PW-\d{4}$/, { message: 'ID associato non valido' }).optional(),
   associate_id: z.string().optional(),
   payer_is_associate: z.boolean().default(true),
   payer_name: z.string().min(2, { message: 'Nome troppo corto' }).optional(),
@@ -46,11 +44,6 @@ const schema = z.object({
 
 type Schema = z.output<typeof schema>
 
-// Utility function to get today's date in DD/MM/YYYY format
-// function getTodayISOString(): string {
-//   return format(new Date(), 'yyyy-MM-dd\'T\'HH:mm')
-// }
-
 const state = reactive<Partial<Schema>>({
   payer_is_associate: true,
   payment_date: new Date().toISOString()
@@ -87,22 +80,14 @@ const handleAssociateIdInput = (event: Event) => {
   const input = event.target as HTMLInputElement
   // Extract only digits and limit to 3
   const digits = input.value.replace(/\D/g, '').slice(0, 3)
-  // Update both the input value and state
-  input.value = digits
-
-  console.info('digits', digits)
-
-  const newState = digits ? `PW-0${digits}` : ''
-  if (digits.length === 3) {
-    console.warn('newState', newState)
-  }
-  state.associate_id = digits.length === 3 ? newState : ''
+  associateDigits.value = digits
+  state.associate_id = digits.length === 3 ? `PW-0${digits}` : ''
 }
 
 // Prevent non-numeric key presses
 const onlyNumbers = (event: KeyboardEvent) => {
   const key = event.key
-  // Allow: backspace, delete, tab, escape, enter
+  // Allow control keys
   if (['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight'].includes(key)) {
     return
   }
@@ -119,9 +104,9 @@ const onlyNumbers = (event: KeyboardEvent) => {
 const handlePaste = (event: ClipboardEvent) => {
   event.preventDefault()
   const pastedText = event.clipboardData?.getData('text') || ''
-  // Extract only digits and get the LAST 3
   const digits = pastedText.replace(/\D/g, '').slice(-3)
-  state.associate_id = digits
+  associateDigits.value = digits
+  state.associate_id = digits.length === 3 ? `PW-0${digits}` : ''
 }
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
@@ -171,8 +156,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         @submit="onSubmit"
       >
         <div class="space-y-1">
-          <!-- eslint-disable-next-line -->
-          <h3 class="text-lg font-semibold text-primary">Informazioni personali</h3>
+          <p class="text-lg font-semibold text-primary">
+            Informazioni personali
+          </p>
+
+          <!-- Use v-model to track active tab -->
           <UTabs v-model="activeTab" :items="items">
             <template #associate>
               <div class="grid grid-cols-2 gap-2 mt-2">
@@ -225,6 +213,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                     </template>
                   </UInput>
                 </UFormField>
+
                 <UFormField label="Cognome" name="payer_surname" required>
                   <UInput
                     v-model="state.payer_surname"
@@ -244,6 +233,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                     </template>
                   </UInput>
                 </UFormField>
+
                 <UFormField label="Email" name="payer_email" required>
                   <UInput
                     v-model="state.payer_email"
@@ -297,8 +287,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             </template>
           </UTabs>
         </div>
-        <!-- eslint-disable-next-line -->
-        <h3 class="text-lg font-semibold text-primary">Informazioni sul pagamento</h3>
+
+        <p class="text-lg font-semibold text-primary">
+          Informazioni sul pagamento
+        </p>
+
         <div class="grid grid-cols-2 gap-2 mt-2">
           <UFormField label="Data pagamento" name="payment_date">
             <UInput v-model="state.payment_date" type="datetime-local" class="w-full" />
@@ -322,6 +315,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             />
           </UFormField>
         </div>
+
         <div class="grid grid-cols-2 gap-2 mt-2">
           <UFormField label="Incassati da" name="received_by">
             <UInput v-model="state.received_by" class="w-full" />
@@ -330,10 +324,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             <UInput v-model="state.event_name" class="w-full" />
           </UFormField>
         </div>
+
         <UFormField label="Note" name="notes">
           <UTextarea v-model="state.notes" class="w-full" />
         </UFormField>
-        <!--  -->
+
         <div class="flex justify-end gap-2">
           <UButton
             label="Cancel"
