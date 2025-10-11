@@ -25,24 +25,24 @@ const { data: tournaments } = await useFetch('/api/tournaments')
 type TournamentData = NonNullable<typeof tournaments.value>[number]
 
 const columns: TableColumn<TournamentData>[] = [
-  // {
-  //   id: 'select',
-  //   header: ({ table }) =>
-  //     h(UCheckbox, {
-  //       'modelValue': table.getIsSomePageRowsSelected()
-  //         ? 'indeterminate'
-  //         : table.getIsAllPageRowsSelected(),
-  //       'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
-  //         table.toggleAllPageRowsSelected(!!value),
-  //       'aria-label': 'Select all'
-  //     }),
-  //   cell: ({ row }) =>
-  //     h(UCheckbox, {
-  //       'modelValue': row.getIsSelected(),
-  //       'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
-  //       'aria-label': 'Select row'
-  //     })
-  // },
+  {
+    id: 'select',
+    header: ({ table }) =>
+      h(UCheckbox, {
+        'modelValue': table.getIsSomePageRowsSelected()
+          ? 'indeterminate'
+          : table.getIsAllPageRowsSelected(),
+        'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
+          table.toggleAllPageRowsSelected(!!value),
+        'aria-label': 'Select all'
+      }),
+    cell: ({ row }) =>
+      h(UCheckbox, {
+        'modelValue': row.getIsSelected(),
+        'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
+        'aria-label': 'Select row'
+      })
+  },
   {
     accessorKey: 'id',
     header: '#',
@@ -150,7 +150,7 @@ const columns: TableColumn<TournamentData>[] = [
 
 const table = useTemplateRef('table')
 
-// const rowSelection = ref<Record<string, boolean>>({})
+const rowSelection = ref<Record<string, boolean>>({})
 
 function onSelect(row: TableRow<TournamentData>) {
   toast.add({
@@ -284,7 +284,7 @@ const pagination = ref({
 
     <template #body>
       <div class="flex flex-col flex-1 w-full space-y-4 pb-4">
-        <div class="flex justify-between px-4 py-3.5 border-t border-b bg-blue-900 border-accented">
+        <div class="flex justify-between px-4 py-3.5 border-t border-b border-accented">
           <UInput v-model="globalFilter" class="max-w-sm" placeholder="Filter..." />
           <UDropdownMenu
             :items="
@@ -330,10 +330,10 @@ const pagination = ref({
           />
         </UContextMenu>
 
-        <!-- <div class="px-4 py-3.5 border-t border-accented text-sm text-muted">
-          {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
-          {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s) selected.
-        </div> -->
+        <div class="px-4 py-3.5 border-t border-accented text-sm text-muted">
+          {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} su
+          {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} riga(e) selezionata(e).
+        </div>
 
         <div class="flex justify-center border-t border-default pt-4">
           <UPagination
