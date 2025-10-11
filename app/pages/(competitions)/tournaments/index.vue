@@ -2,7 +2,6 @@
 import { sub } from 'date-fns'
 import type { Range } from '~/types'
 import { h, resolveComponent } from 'vue'
-import { upperFirst } from 'scule'
 import type { ContextMenuItem, TableColumn, TableRow } from '@nuxt/ui'
 import { useClipboard } from '@vueuse/core'
 
@@ -239,7 +238,7 @@ const globalFilter = ref('')
         </template>
 
         <template #right>
-          <EventsListAddModal />
+          <TournamentsListAddModal />
         </template>
       </UDashboardNavbar>
 
@@ -255,10 +254,8 @@ const globalFilter = ref('')
 
     <template #body>
       <div class="flex flex-col flex-1 w-full">
-        <div class="flex px-4 py-3.5 border-b border-accented">
+        <div class="flex justify-between px-4 py-3.5 border-t border-b bg-blue-900 border-accented">
           <UInput v-model="globalFilter" class="max-w-sm" placeholder="Filter..." />
-        </div>
-        <div class="flex justify-end px-4 py-3.5 border-b  border-accented">
           <UDropdownMenu
             :items="
               table?.tableApi
