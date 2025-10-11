@@ -24,7 +24,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
 <template>
   <UModal v-model:open="open" title="Nuovo torneo" description="Aggiungi un nuovo torneo al database">
-    <UButton label="Nuovo torneo" icon="i-lucide-plus" />
+    <UButton label="Nuovo torneo" icon="i-lucide-swords" />
 
     <template #body>
       <UForm
