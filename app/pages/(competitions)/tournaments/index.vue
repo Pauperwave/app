@@ -27,6 +27,7 @@ type TournamentData = NonNullable<typeof tournaments.value>[number]
 const columns: TableColumn<TournamentData>[] = [
   {
     id: 'select',
+    enableHiding: false,
     header: ({ table }) =>
       h(UCheckbox, {
         'modelValue': table.getIsSomePageRowsSelected()
@@ -81,10 +82,10 @@ const columns: TableColumn<TournamentData>[] = [
     header: 'Lega',
     cell: ({ row }) => {
       const leagueValue = row.getValue('league') as string
-      const colorMap: Record<string, 'secondary'> = {
-        'Magman Autunno 2025': 'secondary'
+      const colorMap: Record<string, 'neutral'> = {
+        'Magman Autunno 2025': 'neutral'
       }
-      const color = colorMap[leagueValue] || 'neutral'
+      const color = colorMap[leagueValue] || ('neutral' as const)
 
       return h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () => leagueValue)
     }
@@ -153,6 +154,7 @@ const table = useTemplateRef('table')
 const rowSelection = ref<Record<string, boolean>>({})
 
 function onSelect(row: TableRow<TournamentData>) {
+  console.info('Selected row:', row.original.id)
   toast.add({
     title: `Apri torneo del ${row.original.date}`,
     color: 'info',
@@ -251,6 +253,23 @@ const columnVisibility = ref({
   id: false
 })
 
+const visibilityItems = computed(() => 
+  table.value?.tableApi
+    ?.getAllColumns()
+    .filter(column => column.getCanHide())
+    .map(column => ({
+      label: column.id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+      type: 'checkbox' as const,
+      checked: column.getIsVisible(),
+      onUpdateChecked(checked: boolean) {
+        table.value?.tableApi?.getColumn(column.id)?.toggleVisibility(!!checked)
+      },
+      onSelect(e: Event) {
+        e.preventDefault()
+      }
+    }))
+)
+
 const globalFilter = ref('')
 
 const pagination = ref({
@@ -287,22 +306,7 @@ const pagination = ref({
         <div class="flex justify-between px-4 py-3.5 border-t border-b border-accented">
           <UInput v-model="globalFilter" class="max-w-sm" placeholder="Filter..." />
           <UDropdownMenu
-            :items="
-              table?.tableApi
-                ?.getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => ({
-                  label: column.id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-                  type: 'checkbox' as const,
-                  checked: column.getIsVisible(),
-                  onUpdateChecked(checked: boolean) {
-                    table?.tableApi?.getColumn(column.id)?.toggleVisibility(!!checked)
-                  },
-                  onSelect(e: Event) {
-                    e.preventDefault()
-                  }
-                }))
-            "
+            :items="visibilityItems"
             :content="{ align: 'end' }"
           >
             <UButton
