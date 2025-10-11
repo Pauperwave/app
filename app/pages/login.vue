@@ -33,7 +33,8 @@ const fields = [{
   name: 'email',
   type: 'text' as const,
   label: 'Email',
-  placeholder: 'Enter your email',
+  icon: 'i-lucide-at-sign',
+  placeholder: 'Inserisci la tua email',
   required: true
 }]
 
@@ -50,10 +51,12 @@ const email = ref('')
 const signInWithOtp = async (payload: FormSubmitEvent<Schema>) => {
   console.log('Submitted', payload)
 
-  const { error } = await supabase.auth.signInWithOtp({
+  const { data, error } = await supabase.auth.signInWithOtp({
     email: email.value,
     options: {
-      emailRedirectTo: 'http://localhost:3000/confirm'
+      // set this to false if you do not want the user to be automatically signed up
+      shouldCreateUser: false,
+      emailRedirectTo: 'http://localhost:3000/'
     }
   })
   if (error) console.log(error)
@@ -64,16 +67,16 @@ const signInWithOtp = async (payload: FormSubmitEvent<Schema>) => {
   <UAuthForm
     :fields="fields"
     :schema="schema"
-    title="Welcome back"
+    title="Bentornato"
     icon="i-lucide-lock"
     @submit="signInWithOtp"
   >
-    <!-- <template #description>
-      Don't have an account? <ULink
+    <template #description>
+      Non hai un account? <ULink
         to="/signup"
         class="text-primary font-medium"
-      >Sign up</ULink>.
-    </template> -->
+      >Registrati</ULink>.
+    </template>
 
     <template #password-hint>
       <ULink
@@ -83,11 +86,23 @@ const signInWithOtp = async (payload: FormSubmitEvent<Schema>) => {
       >Forgot password?</ULink>
     </template>
 
-    <!-- <template #footer>
-      By signing in, you agree to our <ULink
+    <template #footer>
+      Accedendo, accetti i nostri <ULink
         to="/"
         class="text-primary font-medium"
-      >Terms of Service</ULink>.
-    </template> -->
+      >Termini di servizio</ULink>.
+    </template>
+
+    <template #submit>
+      <UButton
+        type="submit"
+        color="primary"
+        icon="i-lucide-log-in"
+        size="lg"
+        block
+      >
+        Accedi
+      </UButton>
+    </template>
   </UAuthForm>
 </template>
