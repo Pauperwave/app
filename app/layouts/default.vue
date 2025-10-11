@@ -78,12 +78,9 @@ const links = computed(() => [[{
     active: route.query.status === 'expired' // Direct boolean
   }] satisfies NavigationMenuItem[]
 }, {
-  label: 'Eventi',
-  icon: 'i-lucide-calendar',
-  to: '/events',
-  onSelect: () => {
-    open.value = false
-  }
+  label: 'Tornei',
+  icon: 'i-lucide-swords',
+  to: '/tournaments'
 }, {
   label: 'Leghe',
   icon: 'i-lucide-trophy',
@@ -92,9 +89,12 @@ const links = computed(() => [[{
     open.value = false
   }
 }, {
-  label: 'Tornei',
-  icon: 'i-lucide-swords',
-  to: '/tournaments'
+  label: 'Eventi',
+  icon: 'i-lucide-calendar',
+  to: '/events',
+  onSelect: () => {
+    open.value = false
+  }
 }, {
   label: 'Statistiche',
   icon: 'i-lucide-chart-pie',
