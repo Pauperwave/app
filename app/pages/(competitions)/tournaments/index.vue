@@ -286,6 +286,7 @@ const globalFilter = ref('')
         <UContextMenu :items="items">
           <UTable
             ref="table"
+            v-model:global-filter="globalFilter"
             v-model:row-selection="rowSelection"
             v-model:column-visibility="columnVisibility"
             :data="tournaments"
