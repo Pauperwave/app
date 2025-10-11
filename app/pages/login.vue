@@ -13,6 +13,7 @@ useSeoMeta({
 
 const supabase = useSupabaseClient()
 const toast = useToast()
+const router = useRouter()
 
 const fields = [{
   name: 'email',
@@ -39,7 +40,7 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      shouldCreateUser: true, // TODO change to false if you want to restrict access
+      shouldCreateUser: true,
       emailRedirectTo: `${window.location.origin}/auth/callback`
     }
   })
@@ -52,10 +53,11 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
     })
   } else {
     toast.add({
-      title: 'Email inviata',
-      description: 'Controlla la tua casella di posta per il link magico.',
-      color: 'success'
+      title: 'Link inviato',
+      description: 'Controlla la tua casella email per accedere.',
+      color: 'primary'
     })
+    await router.push(`/`)
   }
 }
 </script>
@@ -69,26 +71,25 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
     @submit="sendMagicLink"
   >
     <template #description>
-      Non hai un account?
-      <ULink to="/signup" class="text-primary font-medium">Registrati</ULink>.
+      Utilizza l'email associata al tuo account PauperWave.
     </template>
 
-    <template #footer>
+    <!-- <template #footer>
       Accedendo, accetti i nostri
       <ULink to="/terms-of-service" class="text-primary font-medium">
         Termini di servizio
       </ULink>.
-    </template>
+    </template> -->
 
     <template #submit>
       <UButton
         type="submit"
         color="primary"
-        icon="i-lucide-log-in"
+        icon="i-lucide-mail"
         size="lg"
         block
       >
-        Invia link magico
+        Invia link per accedere
       </UButton>
     </template>
   </UAuthForm>

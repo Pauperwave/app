@@ -33,6 +33,12 @@ export default defineNuxtConfig({
 
   supabase: {
     url: process.env.SUPABASE_URL,
-    key: process.env.SUPABASE_KEY
+    key: process.env.SUPABASE_KEY,
+    redirect: false, // disattiva redirect automatici di Supabase
+    cookieOptions: {
+      domain: '', // lascia vuoto per default (usa il dominio corrente)
+      path: '/',
+      sameSite: 'lax'
+    }
   }
 })
