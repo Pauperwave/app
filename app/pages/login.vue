@@ -11,55 +11,52 @@ useSeoMeta({
   description: 'Login to your account to continue'
 })
 
-// const toast = useToast()
+const supabase = useSupabaseClient()
+const toast = useToast()
 
-// const fields = [{
-//   name: 'email',
-//   type: 'text' as const,
-//   label: 'Email',
-//   placeholder: 'Enter your email',
-//   required: true
-// }, {
-//   name: 'password',
-//   label: 'Password',
-//   type: 'password' as const,
-//   placeholder: 'Enter your password'
-// }, {
-//   name: 'remember',
-//   label: 'Remember me',
-//   type: 'checkbox' as const
-// }]
 const fields = [{
   name: 'email',
-  type: 'text' as const,
+  type: 'email' as const,
   label: 'Email',
   icon: 'i-lucide-at-sign',
   placeholder: 'Inserisci la tua email',
   required: true
 }]
 
-// TODO correggere email
 const schema = z.object({
-  email: z.string().check(z.trim(), z.email({ message: 'Please enter a valid email address.' }), z.toLowerCase())
+  email: z.string().check(
+    z.trim(),
+    z.email({ message: 'Please enter a valid email address.' }),
+    z.toLowerCase()
+  )
 })
 
 type Schema = z.output<typeof schema>
 
-const supabase = useSupabaseClient()
-const email = ref('')
+const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
+  const { email } = payload.data
 
-const signInWithOtp = async (payload: FormSubmitEvent<Schema>) => {
-  console.log('Submitted', payload)
-
-  const { data, error } = await supabase.auth.signInWithOtp({
-    email: email.value,
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
     options: {
-      // set this to false if you do not want the user to be automatically signed up
-      shouldCreateUser: false,
-      emailRedirectTo: 'http://localhost:3000/'
+      shouldCreateUser: true, // TODO change to false if you want to restrict access
+      emailRedirectTo: `${window.location.origin}/auth/callback`
     }
   })
-  if (error) console.log(error)
+
+  if (error) {
+    toast.add({
+      title: 'Errore',
+      description: error.message,
+      color: 'error'
+    })
+  } else {
+    toast.add({
+      title: 'Email inviata',
+      description: 'Controlla la tua casella di posta per il link magico.',
+      color: 'success'
+    })
+  }
 }
 </script>
 
@@ -69,28 +66,18 @@ const signInWithOtp = async (payload: FormSubmitEvent<Schema>) => {
     :schema="schema"
     title="Bentornato"
     icon="i-lucide-lock"
-    @submit="signInWithOtp"
+    @submit="sendMagicLink"
   >
     <template #description>
-      Non hai un account? <ULink
-        to="/signup"
-        class="text-primary font-medium"
-      >Registrati</ULink>.
-    </template>
-
-    <template #password-hint>
-      <ULink
-        to="/"
-        class="text-primary font-medium"
-        tabindex="-1"
-      >Forgot password?</ULink>
+      Non hai un account?
+      <ULink to="/signup" class="text-primary font-medium">Registrati</ULink>.
     </template>
 
     <template #footer>
-      Accedendo, accetti i nostri <ULink
-        to="/"
-        class="text-primary font-medium"
-      >Termini di servizio</ULink>.
+      Accedendo, accetti i nostri
+      <ULink to="/terms-of-service" class="text-primary font-medium">
+        Termini di servizio
+      </ULink>.
     </template>
 
     <template #submit>
@@ -101,7 +88,7 @@ const signInWithOtp = async (payload: FormSubmitEvent<Schema>) => {
         size="lg"
         block
       >
-        Accedi
+        Invia link magico
       </UButton>
     </template>
   </UAuthForm>
