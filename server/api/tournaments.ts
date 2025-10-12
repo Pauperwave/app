@@ -15,7 +15,14 @@ const tournaments = Array.from({ length: 30 }, (_, i) => {
   const entryFees = [5.00, 10.00, 7.00, 6.00, 8.00]
   const entry_fee = entryFees[i % entryFees.length]
 
-  const status = i < 5 ? 'Completed' : 'Scheduled'
+  const statuses = [
+    'Scheduled',
+    'Cancelled',
+    'Postponed',
+    'In Progress',
+    'Completed'
+  ]
+  const status = statuses[i % statuses.length]
 
   return {
     id,
