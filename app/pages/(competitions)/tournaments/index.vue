@@ -27,7 +27,7 @@ const { data: tournaments } = await useFetch('/api/tournaments')
 type TournamentData = NonNullable<typeof tournaments.value>[number]
 
 // TODO utilizzare il mapping per la traduzione delle intestazioni
-const columnHeaders = {
+const columnHeaders: Record<string, string> = {
   select: 'Seleziona',
   id: 'ID',
   status: 'Stato',
@@ -42,6 +42,14 @@ const columnHeaders = {
   entry_fee: 'Quota Iscrizione',
   companion_code: 'Codice Companion'
 } as const
+
+const statusOrder = [
+  'Scheduled',
+  'Postponed',
+  'Cancelled',
+  'In Progress',
+  'Completed'
+]
 
 const columns: TableColumn<TournamentData>[] = [
   {
@@ -74,6 +82,15 @@ const columns: TableColumn<TournamentData>[] = [
   {
     accessorKey: 'status',
     header: ({ column }) => getHeader(column, columnHeaders.status),
+    sortingFn: (rowA, rowB, columnId) => {
+      const statusA = rowA.getValue(columnId) as string
+      const statusB = rowB.getValue(columnId) as string
+
+      const indexA = statusOrder.indexOf(statusA)
+      const indexB = statusOrder.indexOf(statusB)
+
+      return indexA - indexB
+    },
     enableGlobalFilter: true,
     cell: ({ row }) => {
       const status = row.getValue('status') as string
