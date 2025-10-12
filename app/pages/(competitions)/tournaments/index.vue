@@ -52,7 +52,7 @@ const columns: TableColumn<TournamentData>[] = [
   }, // Added missing comma here
   {
     accessorKey: 'status',
-    header: 'Status',
+    header: 'Stato',
     cell: ({ row }) => {
       const color = {
         'Completed': 'success' as const,
@@ -68,19 +68,43 @@ const columns: TableColumn<TournamentData>[] = [
     }
   },
   {
-    accessorKey: 'date',
-    header: 'Date',
+    accessorKey: 'start_date',
+    header: 'Data e Ora',
     cell: ({ row }) => {
-      return new Date(row.getValue('date') as string).toLocaleString('it-IT', {
+      const value = row.getValue('start_date') as string
+      if (!value) return '-'
+      // Parse and format timestampz (ISO string)
+      const date = new Date(value)
+      return date.toLocaleString('it-IT', {
         day: 'numeric',
         month: 'long',
-        year: 'numeric'
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
       })
     }
   },
   {
+    accessorKey: 'round_count',
+    header: () => h('div', { class: 'text-center' }, 'Partite'),
+    cell: ({ row }) => row.getValue('round_count')
+  },
+  {
+    accessorKey: 'round_duration',
+    header: () => h('div', { class: 'text-center' }, 'Durata Partita'),
+    cell: ({ row }) => {
+      const duration = row.getValue('round_duration') as number
+      return `${duration} min`
+    }
+  },
+  {
+    accessorKey: 'registered_players',
+    header: 'Giocatori Iscritti',
+    cell: ({ row }) => row.getValue('registered_players')
+  },
+  {
     accessorKey: 'league',
-    header: 'Lega',
+    header: () => h('div', { class: 'text-center' }, 'Lega'),
     cell: ({ row }) => {
       const leagueValue = row.getValue('league') as string
       const colorMap: Record<string, 'neutral'> = {
@@ -93,7 +117,7 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'format',
-    header: 'Format',
+    header: () => h('div', { class: 'text-center' }, 'Formato'),
     cell: ({ row }) => {
       const color = {
         'Commander': 'primary' as const,
@@ -108,7 +132,7 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'location',
-    header: 'Location',
+    header: () => h('div', { class: 'text-center' }, 'Luogo'),
     cell: ({ row }) => {
       const locationValue = row.getValue('location') as string
       const colorMap: Record<string, 'neutral'> = {
@@ -120,18 +144,8 @@ const columns: TableColumn<TournamentData>[] = [
     }
   },
   {
-    accessorKey: 'starts_at',
-    header: 'Starts At',
-    cell: ({ row }) => row.getValue('starts_at')
-  },
-  {
-    accessorKey: 'ends_at',
-    header: 'Ends At',
-    cell: ({ row }) => row.getValue('ends_at')
-  },
-  {
     accessorKey: 'entry_fee',
-    header: () => h('div', { class: 'text-right' }, 'Entry Fee'),
+    header: () => h('div', { class: 'text-center' }, 'Quota Iscrizione'),
     cell: ({ row }) => {
       const amount = Number.parseFloat(row.getValue('entry_fee') as string)
 
@@ -145,7 +159,7 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'companion_code',
-    header: () => h('div', { class: 'text-center' }, 'Companion Code'),
+    header: () => h('div', { class: 'text-center' }, 'Codice Companion'),
     cell: ({ row }) =>
       h('div', { class: 'text-center' }, row.getValue('companion_code') || '-')
   }
@@ -158,7 +172,7 @@ const rowSelection = ref<Record<string, boolean>>({})
 function onSelect(row: TableRow<TournamentData>) {
   console.info('Selected row:', row.original.id)
   toast.add({
-    title: `Apri torneo del ${row.original.date}`,
+    title: `Apri torneo del ${row.original.start_date}`,
     color: 'info',
     icon: 'i-lucide-info'
   })
@@ -328,6 +342,14 @@ const pagination = ref({
             v-model:column-visibility="columnVisibility"
             :data="tournaments"
             :columns="columns"
+            class="shrink-0"
+            :ui="{
+              base: 'table-fixed border-separate border-spacing-0',
+              thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
+              tbody: '[&>tr]:last:[&>td]:border-b-0',
+              th: 'first:rounded-l-lg last:rounded-r-lg border-y border-default first:border-l last:border-r',
+              td: 'border-b border-default'
+            }"
             :pagination-options="{
               getPaginationRowModel: getPaginationRowModel()
             }"
