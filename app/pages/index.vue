@@ -7,7 +7,7 @@ import type { Period, Range } from '~/types'
 
 const items = [[{
   label: 'Registra transazione',
-  icon: 'i-lucide-banknote-arrow-down',
+  icon: 'i-lucide-coins',
   to: '/transactions'
 }, {
   label: 'Nuovo associato',
