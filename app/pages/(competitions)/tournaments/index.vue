@@ -118,7 +118,13 @@ const columns: TableColumn<TournamentData>[] = [
       }
       const { color, icon } = statusConfig[status] || { color: 'neutral', icon: 'i-lucide-help-circle' }
 
-      return h(UBadge, { class: 'capitalize gap-2', variant: 'subtle', icon, color }, () =>
+      return h(UBadge, {
+        class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity gap-2',
+        variant: 'subtle',
+        icon,
+        color,
+        onclick: (e: Event) => handleColumnFilter(e, 'status', status, 'Stato')
+      }, () =>
         row.getValue('status')
       )
     }
