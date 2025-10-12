@@ -563,7 +563,7 @@ if (import.meta.dev) {
               variant="soft"
               class="capitalize"
             >
-              {{ getColumnLabel(filter.id) }}: {{ formatFilterValue(filter.id, filter.value) }}
+              {{ getColumnLabel(filter.id) }}: {{ formatFilterValue(filter.id, filter.value as string) }}
               <UButton
                 icon="i-lucide-x"
                 size="xs"
