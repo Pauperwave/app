@@ -131,12 +131,12 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'start_date',
-    header: ({ column }) => getHeader(column, columnHeaders.start_date),
-    enableGlobalFilter: true,
-    cell: ({ row }) => {
-      const value = row.getValue('start_date') as string
+    // Custom accessor function for date formatting
+    // It is necessary to keep sorting working correctly
+    accessorFn: (row) => {
+      const value = row.start_date as string
       if (!value) return '-'
-      // Parse and format timestampz (ISO string)
+
       const date = new Date(value)
       return date.toLocaleString('it-IT', {
         day: 'numeric',
@@ -145,6 +145,14 @@ const columns: TableColumn<TournamentData>[] = [
         hour: '2-digit',
         minute: '2-digit'
       })
+    },
+    header: ({ column }) => getHeader(column, columnHeaders.start_date),
+    enableGlobalFilter: true,
+    // Custom sorting function, parse the original date strings instead of the formatted ones
+    sortingFn: (rowA, rowB) => {
+      const dateA = new Date(rowA.original.start_date).getTime()
+      const dateB = new Date(rowB.original.start_date).getTime()
+      return dateA - dateB
     }
   },
   {
