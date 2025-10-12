@@ -32,7 +32,7 @@ const columnHeaders: Record<string, string> = {
   start_date: 'Data e Ora',
   round_count: 'Partite',
   round_duration: 'Durata Partita',
-  registered_players: 'Giocatori Iscritti',
+  registered_players: 'Iscritti',
   league: 'Lega',
   format: 'Formato',
   organizer: 'Organizzatore',
@@ -46,6 +46,7 @@ const columns: TableColumn<TournamentData>[] = [
     id: 'select',
     enableHiding: false,
     enableSorting: false,
+    enableGlobalFilter: false,
     header: ({ table }) =>
       h(UCheckbox, {
         'modelValue': table.getIsSomePageRowsSelected()
@@ -65,11 +66,13 @@ const columns: TableColumn<TournamentData>[] = [
   {
     accessorKey: 'id',
     header: columnHeaders.id,
+    enableGlobalFilter: false,
     cell: ({ row }) => `#${row.getValue('id')}`
   },
   {
     accessorKey: 'status',
     header: columnHeaders.status,
+    enableGlobalFilter: true,
     cell: ({ row }) => {
       const status = row.getValue('status') as string
       const statusConfig: Record<string, { color: string, icon: string }> = {
@@ -89,6 +92,7 @@ const columns: TableColumn<TournamentData>[] = [
   {
     accessorKey: 'start_date',
     header: columnHeaders.start_date,
+    enableGlobalFilter: true,
     cell: ({ row }) => {
       const value = row.getValue('start_date') as string
       if (!value) return '-'
@@ -106,11 +110,13 @@ const columns: TableColumn<TournamentData>[] = [
   {
     accessorKey: 'round_count',
     header: columnHeaders.round_count,
+    enableGlobalFilter: false,
     cell: ({ row }) => row.getValue('round_count')
   },
   {
     accessorKey: 'round_duration',
     header: columnHeaders.round_duration,
+    enableGlobalFilter: true,
     cell: ({ row }) => {
       const duration = row.getValue('round_duration') as number
       return `${duration} min`
@@ -119,11 +125,13 @@ const columns: TableColumn<TournamentData>[] = [
   {
     accessorKey: 'registered_players',
     header: columnHeaders.registered_players,
+    enableGlobalFilter: false,
     cell: ({ row }) => row.getValue('registered_players')
   },
   {
     accessorKey: 'league',
     header: columnHeaders.league,
+    enableGlobalFilter: true,
     cell: ({ row }) => {
       const leagueValue = row.getValue('league') as string
       const colorMap: Record<string, 'neutral'> = {
@@ -137,6 +145,7 @@ const columns: TableColumn<TournamentData>[] = [
   {
     accessorKey: 'format',
     header: columnHeaders.format,
+    enableGlobalFilter: true,
     cell: ({ row }) => {
       const color = {
         'Commander': 'primary' as const,
@@ -152,6 +161,7 @@ const columns: TableColumn<TournamentData>[] = [
   {
     accessorKey: 'organizer',
     header: columnHeaders.organizer,
+    enableGlobalFilter: true,
     cell: ({ row }) => {
       const organizerValue = row.getValue('organizer') as string
       const colorMap: Record<string, 'neutral'> = {
@@ -165,6 +175,7 @@ const columns: TableColumn<TournamentData>[] = [
   {
     accessorKey: 'location',
     header: columnHeaders.location,
+    enableGlobalFilter: true,
     cell: ({ row }) => {
       const locationValue = row.getValue('location') as string
       const colorMap: Record<string, 'neutral'> = {
@@ -178,6 +189,7 @@ const columns: TableColumn<TournamentData>[] = [
   {
     accessorKey: 'entry_fee',
     header: columnHeaders.entry_fee,
+    enableGlobalFilter: false,
     cell: ({ row }) => {
       const amount = Number.parseFloat(row.getValue('entry_fee') as string)
 
@@ -192,6 +204,7 @@ const columns: TableColumn<TournamentData>[] = [
   {
     accessorKey: 'companion_code',
     header: columnHeaders.companion_code,
+    enableGlobalFilter: false,
     cell: ({ row }) =>
       h('div', { class: 'text-center' }, row.getValue('companion_code') || '-')
   }
@@ -382,7 +395,7 @@ const pagination = ref({
               thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
               tbody: '[&>tr]:last:[&>td]:border-b-0',
               th: 'first:rounded-l-lg last:rounded-r-lg border-y border-default first:border-l last:border-r',
-              td: 'border-b border-default'
+              td: 'border-b border-default py-3 leading-tight'
             }"
             :pagination-options="{
               getPaginationRowModel: getPaginationRowModel()
