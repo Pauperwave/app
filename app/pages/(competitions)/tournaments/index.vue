@@ -123,7 +123,7 @@ const columns: TableColumn<TournamentData>[] = [
         variant: 'subtle',
         icon,
         color,
-        onclick: (e: Event) => handleColumnFilter(e, 'status', status, 'Stato')
+        onClick: (e: Event) => handleColumnFilter(e, 'status', status, 'Stato')
       }, () =>
         row.getValue('status')
       )
@@ -133,6 +133,7 @@ const columns: TableColumn<TournamentData>[] = [
     accessorKey: 'start_date',
     // Custom accessor function for date formatting
     // It is necessary to keep sorting working correctly
+    id: 'start_date',
     accessorFn: (row) => {
       const value = row.start_date as string
       if (!value) return '-'
@@ -153,7 +154,8 @@ const columns: TableColumn<TournamentData>[] = [
       const dateA = new Date(rowA.original.start_date).getTime()
       const dateB = new Date(rowB.original.start_date).getTime()
       return dateA - dateB
-    }
+    },
+    cell: ({ row }) => row.getValue('start_date')
   },
   {
     accessorKey: 'round_count',
@@ -165,7 +167,11 @@ const columns: TableColumn<TournamentData>[] = [
     accessorKey: 'round_duration',
     header: ({ column }) => getHeader(column, columnHeaders.round_duration),
     enableGlobalFilter: false, // Prevents text search from matching "60"
-    filterFn: 'includesString', // Partial match because of number to string conversion
+    filterFn: (row, columnId, filterValue) => {
+      const cellValue = Number(row.getValue(columnId))
+      const targetValue = Number(filterValue)
+      return cellValue === targetValue
+    },
     cell: ({ row }) => {
       const duration = Number(row.getValue('round_duration'))
       let color: 'success' | 'neutral' | 'warning'
@@ -180,8 +186,8 @@ const columns: TableColumn<TournamentData>[] = [
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
         variant: 'subtle',
         color,
-        onclick: (e: Event) => handleColumnFilter(e, 'round_duration', duration.toString(), 'Durata Partita')
-      }, () => `${duration} min`)
+        onClick: (e: Event) => handleColumnFilter(e, 'round_duration', duration.toString(), 'Durata Partita')
+      }, () => `${duration} minuti`)
     }
   },
   {
@@ -205,7 +211,7 @@ const columns: TableColumn<TournamentData>[] = [
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
         variant: 'subtle',
         color,
-        onclick: (e: Event) => handleColumnFilter(e, 'league', leagueValue, 'Lega')
+        onClick: (e: Event) => handleColumnFilter(e, 'league', leagueValue, 'Lega')
       }, () => leagueValue)
     }
   },
@@ -225,7 +231,7 @@ const columns: TableColumn<TournamentData>[] = [
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
         variant: 'subtle',
         color,
-        onclick: (e: Event) => handleColumnFilter(e, 'format', row.getValue('format') as string, 'Formato')
+        onClick: (e: Event) => handleColumnFilter(e, 'format', row.getValue('format') as string, 'Formato')
       }, () =>
         row.getValue('format')
       )
@@ -246,7 +252,7 @@ const columns: TableColumn<TournamentData>[] = [
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
         variant: 'subtle',
         color,
-        onclick: (e: Event) => handleColumnFilter(e, 'organizer', organizerValue, 'Organizzatore')
+        onClick: (e: Event) => handleColumnFilter(e, 'organizer', organizerValue, 'Organizzatore')
       }, () => organizerValue)
     }
   },
@@ -491,6 +497,16 @@ function clearAllFilters() {
   })
 }
 
+// Format filter values for display in active filters section
+function formatFilterValue(filterId: string, value: string): string {
+  // Formatta numeri
+  if (filterId === 'round_duration') {
+    return `${value} minuti`
+  }
+
+  return String(value)
+}
+
 // pagination
 const pagination = ref({
   pageIndex: 0,
@@ -499,8 +515,13 @@ const pagination = ref({
 
 if (import.meta.dev) {
   watch(columnFilters, (newFilters) => {
-    console.log('Column filters changed:', newFilters)
+    console.log('Column filters changed:', JSON.stringify(newFilters, null, 2))
   }, { deep: true })
+
+  // Aggiungi anche questo per debug
+  watch(globalFilter, (newValue) => {
+    console.log('Global filter changed:', newValue)
+  })
 }
 </script>
 
@@ -542,7 +563,7 @@ if (import.meta.dev) {
               variant="soft"
               class="capitalize"
             >
-              {{ getColumnLabel(filter.id) }}: {{ filter.value }}
+              {{ getColumnLabel(filter.id) }}: {{ formatFilterValue(filter.id, filter.value) }}
               <UButton
                 icon="i-lucide-x"
                 size="xs"
