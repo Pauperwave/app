@@ -27,7 +27,7 @@ const { data: tournaments } = await useFetch('/api/tournaments')
 type TournamentData = NonNullable<typeof tournaments.value>[number]
 
 // TODO utilizzare il mapping per la traduzione delle intestazioni
-const columnHeaders: Record<string, string> = {
+const columnHeaders = {
   select: 'Seleziona',
   id: 'ID',
   status: 'Stato',
@@ -43,6 +43,20 @@ const columnHeaders: Record<string, string> = {
   companion_code: 'Codice Companion'
 } as const
 
+// Define a type for the keys of columnHeaders
+type ColumnHeaderKey = keyof typeof columnHeaders
+
+// Helper to get column label with fallback
+function getColumnLabel(id: string): string {
+  if (id in columnHeaders) {
+    return columnHeaders[id as ColumnHeaderKey]
+  }
+  return id
+}
+
+// Custom order for status sorting
+// Change as needed
+// Statuses not in this list will be sorted alphabetically after these
 const statusOrder = [
   'Scheduled',
   'Postponed',
@@ -51,6 +65,7 @@ const statusOrder = [
   'Completed'
 ]
 
+// Define table columns
 const columns: TableColumn<TournamentData>[] = [
   {
     id: 'select',
@@ -374,7 +389,7 @@ const getVisibilityItems = (): DropdownMenuItem[] => {
     ?.getAllColumns()
     .filter(column => column.getCanHide())
     .map(column => ({
-      label: columnHeaders[column.id] || column.id,
+      label: getColumnLabel(column.id),
       type: 'checkbox' as const,
       checked: column.getIsVisible(),
       onUpdateChecked(checked: boolean) {
