@@ -274,10 +274,10 @@ function getHeader(column: Column<TournamentData>, label: string) {
 }
 
 const sorting = ref([
-  // {
-  //   id: 'status',
-  //   desc: false
-  // }
+  {
+    id: 'status',
+    asc: true
+  }
 ])
 
 const rowSelection = ref<Record<string, boolean>>({})
