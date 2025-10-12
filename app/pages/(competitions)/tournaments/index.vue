@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { sub } from 'date-fns'
+import { sub, add } from 'date-fns'
 import { h, resolveComponent } from 'vue'
 import { getPaginationRowModel } from '@tanstack/vue-table'
 import type { Range } from '~/types'
@@ -16,15 +16,44 @@ const UButton = resolveComponent('UButton')
 const toast = useToast()
 const { copy } = useClipboard()
 
-const range = shallowRef<Range>({
-  start: sub(new Date(), { days: 14 }),
-  end: new Date()
+// date range filter
+// Mostra tornei dal mese scorso al mese prossimo
+const range = ref<Range>({
+  start: sub(new Date(), { months: 1 }), // 1 mese fa
+  end: add(new Date(), { months: 1 }) // 1 mese nel futuro
 })
 
 const { data: tournaments } = await useFetch('/api/tournaments')
 
 // Use the actual type from useFetch
 type TournamentData = NonNullable<typeof tournaments.value>[number]
+
+// Computed per filtrare i tornei in base al range
+const filteredTournaments = computed(() => {
+  if (!tournaments.value) return []
+
+  // Validazione del range
+  if (!range.value?.start || !range.value?.end) return tournaments.value
+
+  const startDate = new Date(range.value.start)
+  const endDate = new Date(range.value.end)
+
+  // Imposta ore per il confronto corretto
+  startDate.setHours(0, 0, 0, 0)
+  endDate.setHours(23, 59, 59, 999)
+
+  return tournaments.value.filter((tournament) => {
+    // Gestisci il caso in cui start_date sia null/undefined
+    if (!tournament.start_date) return false
+
+    const tournamentDate = new Date(tournament.start_date)
+
+    // Validazione della data
+    if (isNaN(tournamentDate.getTime())) return false
+
+    return tournamentDate >= startDate && tournamentDate <= endDate
+  })
+})
 
 // TODO utilizzare il mapping per la traduzione delle intestazioni
 const columnHeaders = {
@@ -123,7 +152,7 @@ const columns: TableColumn<TournamentData>[] = [
         variant: 'subtle',
         icon,
         color,
-        onClick: (e: Event) => handleColumnFilter(e, 'status', status, 'Stato')
+        onclick: (e: Event) => handleColumnFilter(e, 'status', status, 'Stato')
       }, () =>
         row.getValue('status')
       )
@@ -186,7 +215,7 @@ const columns: TableColumn<TournamentData>[] = [
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
         variant: 'subtle',
         color,
-        onClick: (e: Event) => handleColumnFilter(e, 'round_duration', duration.toString(), 'Durata Partita')
+        onclick: (e: Event) => handleColumnFilter(e, 'round_duration', duration.toString(), 'Durata Partita')
       }, () => `${duration} minuti`)
     }
   },
@@ -211,7 +240,7 @@ const columns: TableColumn<TournamentData>[] = [
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
         variant: 'subtle',
         color,
-        onClick: (e: Event) => handleColumnFilter(e, 'league', leagueValue, 'Lega')
+        onclick: (e: Event) => handleColumnFilter(e, 'league', leagueValue, 'Lega')
       }, () => leagueValue)
     }
   },
@@ -231,7 +260,7 @@ const columns: TableColumn<TournamentData>[] = [
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
         variant: 'subtle',
         color,
-        onClick: (e: Event) => handleColumnFilter(e, 'format', row.getValue('format') as string, 'Formato')
+        onclick: (e: Event) => handleColumnFilter(e, 'format', row.getValue('format') as string, 'Formato')
       }, () =>
         row.getValue('format')
       )
@@ -252,7 +281,7 @@ const columns: TableColumn<TournamentData>[] = [
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
         variant: 'subtle',
         color,
-        onClick: (e: Event) => handleColumnFilter(e, 'organizer', organizerValue, 'Organizzatore')
+        onclick: (e: Event) => handleColumnFilter(e, 'organizer', organizerValue, 'Organizzatore')
       }, () => organizerValue)
     }
   },
@@ -311,7 +340,7 @@ function getHeader(column: Column<TournamentData>, label: string) {
         : 'i-lucide-arrow-down-wide-narrow'
       : 'i-lucide-arrow-up-down',
     class: '-mx-2.5',
-    onClick: () => {
+    onclick: () => {
       // Cycle: unsorted -> asc -> desc -> unsorted
       if (!isSorted) {
         column.toggleSorting(false) // asc
@@ -606,7 +635,7 @@ if (import.meta.dev) {
             v-model:row-selection="rowSelection"
             v-model:column-visibility="columnVisibility"
             v-model:column-filters="columnFilters"
-            :data="tournaments"
+            :data="filteredTournaments"
             :columns="columns"
             class="shrink-0"
             :ui="{
