@@ -284,7 +284,7 @@ function getHeader(column: Column<TournamentData>, label: string) {
 const sorting = ref([
   {
     id: 'status',
-    asc: true
+    desc: false
   }
 ])
 
