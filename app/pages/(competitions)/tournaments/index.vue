@@ -47,9 +47,9 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'id',
-    header: '#',
+    header: 'id',
     cell: ({ row }) => `#${row.getValue('id')}`
-  }, // Added missing comma here
+  },
   {
     accessorKey: 'status',
     header: 'Stato',
@@ -88,12 +88,12 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'round_count',
-    header: () => h('div', { class: 'text-center' }, 'Partite'),
+    header: 'Partite',
     cell: ({ row }) => row.getValue('round_count')
   },
   {
     accessorKey: 'round_duration',
-    header: () => h('div', { class: 'text-center' }, 'Durata Partita'),
+    header: 'Durata Partita',
     cell: ({ row }) => {
       const duration = row.getValue('round_duration') as number
       return `${duration} min`
@@ -106,7 +106,7 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'league',
-    header: () => h('div', { class: 'text-center' }, 'Lega'),
+    header: 'Lega',
     cell: ({ row }) => {
       const leagueValue = row.getValue('league') as string
       const colorMap: Record<string, 'neutral'> = {
@@ -119,7 +119,7 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'format',
-    header: () => h('div', { class: 'text-center' }, 'Formato'),
+    header: 'Formato',
     cell: ({ row }) => {
       const color = {
         'Commander': 'primary' as const,
@@ -134,7 +134,7 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'organizer',
-    header: () => h('div', { class: 'text-center' }, 'Organizzatore'),
+    header: 'Organizzatore',
     cell: ({ row }) => {
       const organizerValue = row.getValue('organizer') as string
       const colorMap: Record<string, 'neutral'> = {
@@ -147,7 +147,7 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'location',
-    header: () => h('div', { class: 'text-center' }, 'Luogo'),
+    header: 'Luogo',
     cell: ({ row }) => {
       const locationValue = row.getValue('location') as string
       const colorMap: Record<string, 'neutral'> = {
@@ -160,7 +160,7 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'entry_fee',
-    header: () => h('div', { class: 'text-center' }, 'Quota Iscrizione'),
+    header: 'Quota Iscrizione',
     cell: ({ row }) => {
       const amount = Number.parseFloat(row.getValue('entry_fee') as string)
 
@@ -169,12 +169,12 @@ const columns: TableColumn<TournamentData>[] = [
         currency: 'EUR'
       }).format(amount)
 
-      return h('div', { class: 'text-right font-medium' }, formatted)
+      return h('div', { class: 'text-right' }, formatted)
     }
   },
   {
     accessorKey: 'companion_code',
-    header: () => h('div', { class: 'text-center' }, 'Codice Companion'),
+    header: 'Codice Companion',
     cell: ({ row }) =>
       h('div', { class: 'text-center' }, row.getValue('companion_code') || '-')
   }
@@ -291,7 +291,7 @@ const getVisibilityItems = (): DropdownMenuItem[] => {
     ?.getAllColumns()
     .filter(column => column.getCanHide())
     .map(column => ({
-      label: column.id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+      label: column.columnDef.header as string,
       type: 'checkbox' as const,
       checked: column.getIsVisible(),
       onUpdateChecked(checked: boolean) {
