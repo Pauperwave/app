@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import { sub } from 'date-fns'
-import type { Range } from '~/types'
 import { h, resolveComponent } from 'vue'
 import { getPaginationRowModel } from '@tanstack/vue-table'
+import type { Range } from '~/types'
+import type { Column } from '@tanstack/vue-table'
 import type { DropdownMenuItem, ContextMenuItem, TableColumn, TableRow } from '@nuxt/ui'
 import { useClipboard } from '@vueuse/core'
 
@@ -10,6 +11,7 @@ const { breadcrumbItems } = useBreadcrumbs()
 
 const UCheckbox = resolveComponent('UCheckbox')
 const UBadge = resolveComponent('UBadge')
+const UButton = resolveComponent('UButton')
 
 const toast = useToast()
 const { copy } = useClipboard()
@@ -25,7 +27,7 @@ const { data: tournaments } = await useFetch('/api/tournaments')
 type TournamentData = NonNullable<typeof tournaments.value>[number]
 
 // TODO utilizzare il mapping per la traduzione delle intestazioni
-const columnHeaders: Record<string, string> = {
+const columnHeaders = {
   select: 'Seleziona',
   id: 'ID',
   status: 'Stato',
@@ -39,7 +41,7 @@ const columnHeaders: Record<string, string> = {
   location: 'Luogo',
   entry_fee: 'Quota Iscrizione',
   companion_code: 'Codice Companion'
-}
+} as const
 
 const columns: TableColumn<TournamentData>[] = [
   {
@@ -71,7 +73,7 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'status',
-    header: columnHeaders.status,
+    header: ({ column }) => getHeader(column, columnHeaders.status),
     enableGlobalFilter: true,
     cell: ({ row }) => {
       const status = row.getValue('status') as string
@@ -91,7 +93,7 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'start_date',
-    header: columnHeaders.start_date,
+    header: ({ column }) => getHeader(column, columnHeaders.start_date),
     enableGlobalFilter: true,
     cell: ({ row }) => {
       const value = row.getValue('start_date') as string
@@ -124,13 +126,13 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'registered_players',
-    header: columnHeaders.registered_players,
+    header: ({ column }) => getHeader(column, columnHeaders.registered_players),
     enableGlobalFilter: false,
     cell: ({ row }) => row.getValue('registered_players')
   },
   {
     accessorKey: 'league',
-    header: columnHeaders.league,
+    header: ({ column }) => getHeader(column, columnHeaders.league),
     enableGlobalFilter: true,
     cell: ({ row }) => {
       const leagueValue = row.getValue('league') as string
@@ -144,7 +146,7 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'format',
-    header: columnHeaders.format,
+    header: ({ column }) => getHeader(column, columnHeaders.format),
     enableGlobalFilter: true,
     cell: ({ row }) => {
       const color = {
@@ -160,7 +162,7 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'organizer',
-    header: columnHeaders.organizer,
+    header: ({ column }) => getHeader(column, columnHeaders.organizer),
     enableGlobalFilter: true,
     cell: ({ row }) => {
       const organizerValue = row.getValue('organizer') as string
@@ -211,6 +213,40 @@ const columns: TableColumn<TournamentData>[] = [
 ]
 
 const table = useTemplateRef('table')
+
+// Helper to create sortable headers with dropdown menu
+function getHeader(column: Column<TournamentData>, label: string) {
+  const isSorted = column.getIsSorted()
+
+  return h(UButton, {
+    color: 'neutral',
+    variant: 'ghost',
+    label,
+    icon: isSorted
+      ? isSorted === 'asc'
+        ? 'i-lucide-arrow-up-narrow-wide'
+        : 'i-lucide-arrow-down-wide-narrow'
+      : 'i-lucide-arrow-up-down',
+    class: '-mx-2.5',
+    onClick: () => {
+      // Cycle: unsorted -> asc -> desc -> unsorted
+      if (!isSorted) {
+        column.toggleSorting(false) // asc
+      } else if (isSorted === 'asc') {
+        column.toggleSorting(true) // desc
+      } else {
+        column.clearSorting() // unsorted
+      }
+    }
+  })
+}
+
+const sorting = ref([
+  // {
+  //   id: 'status',
+  //   desc: false
+  // }
+])
 
 const rowSelection = ref<Record<string, boolean>>({})
 
@@ -384,6 +420,7 @@ const pagination = ref({
           <UTable
             ref="table"
             v-model:pagination="pagination"
+            v-model:sorting="sorting"
             v-model:global-filter="globalFilter"
             v-model:row-selection="rowSelection"
             v-model:column-visibility="columnVisibility"
