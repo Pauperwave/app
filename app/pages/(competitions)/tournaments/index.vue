@@ -152,8 +152,16 @@ const columns: TableColumn<TournamentData>[] = [
     header: columnHeaders.round_duration,
     enableGlobalFilter: true,
     cell: ({ row }) => {
-      const duration = row.getValue('round_duration') as number
-      return `${duration} min`
+      const duration = Number(row.getValue('round_duration'))
+      let color: 'success' | 'neutral' | 'warning'
+      if (duration < 60) {
+        color = 'warning'
+      } else if (duration === 60) {
+        color = 'neutral'
+      } else {
+        color = 'success'
+      }
+      return h(UBadge, { color, variant: 'subtle', class: 'capitalize' }, () => `${duration} min`)
     }
   },
   {
