@@ -3,7 +3,7 @@ import { sub } from 'date-fns'
 import type { Range } from '~/types'
 import { h, resolveComponent } from 'vue'
 import { getPaginationRowModel } from '@tanstack/vue-table'
-import type { ContextMenuItem, TableColumn, TableRow } from '@nuxt/ui'
+import type { DropdownMenuItem, ContextMenuItem, TableColumn, TableRow } from '@nuxt/ui'
 import { useClipboard } from '@vueuse/core'
 
 const { breadcrumbItems } = useBreadcrumbs()
@@ -28,6 +28,7 @@ const columns: TableColumn<TournamentData>[] = [
   {
     id: 'select',
     enableHiding: false,
+    enableSorting: false,
     header: ({ table }) =>
       h(UCheckbox, {
         'modelValue': table.getIsSomePageRowsSelected()
@@ -113,7 +114,7 @@ const columns: TableColumn<TournamentData>[] = [
       const colorMap: Record<string, 'neutral'> = {
         Magman: 'neutral'
       }
-      const color = colorMap[locationValue] || 'neutral'
+      const color = colorMap[locationValue] || ('neutral' as const)
 
       return h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () => locationValue)
     }
@@ -144,8 +145,9 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'companion_code',
-    header: 'Companion Code',
-    cell: ({ row }) => row.getValue('companion_code')
+    header: () => h('div', { class: 'text-center' }, 'Companion Code'),
+    cell: ({ row }) =>
+      h('div', { class: 'text-center' }, row.getValue('companion_code') || '-')
   }
 ]
 
@@ -231,7 +233,7 @@ function getRowItems(row: TableRow<TournamentData>) {
       label: 'Elimina torneo',
       icon: 'i-lucide-trash',
       color: 'error',
-      disabled: row.getIsSelected() && row.getIsSelected() === false,
+      disabled: !row.getIsSelected(), // Enable only if the row is selected
       onSelect() {
         toast.add({
           title: 'Elimina torneo',
@@ -253,8 +255,8 @@ const columnVisibility = ref({
   id: false
 })
 
-const visibilityItems = computed(() => 
-  table.value?.tableApi
+const getVisibilityItems = (): DropdownMenuItem[] => {
+  return table.value?.tableApi
     ?.getAllColumns()
     .filter(column => column.getCanHide())
     .map(column => ({
@@ -267,8 +269,8 @@ const visibilityItems = computed(() =>
       onSelect(e: Event) {
         e.preventDefault()
       }
-    }))
-)
+    })) ?? []
+}
 
 const globalFilter = ref('')
 
@@ -306,7 +308,7 @@ const pagination = ref({
         <div class="flex justify-between px-4 py-3.5 border-t border-b border-accented">
           <UInput v-model="globalFilter" class="max-w-sm" placeholder="Filter..." />
           <UDropdownMenu
-            :items="visibilityItems"
+            :items="getVisibilityItems()"
             :content="{ align: 'end' }"
           >
             <UButton
