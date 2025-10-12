@@ -24,6 +24,23 @@ const { data: tournaments } = await useFetch('/api/tournaments')
 // Use the actual type from useFetch
 type TournamentData = NonNullable<typeof tournaments.value>[number]
 
+// TODO utilizzare il mapping per la traduzione delle intestazioni
+const columnHeaders: Record<string, string> = {
+  select: 'Seleziona',
+  id: 'ID',
+  status: 'Stato',
+  start_date: 'Data e Ora',
+  round_count: 'Partite',
+  round_duration: 'Durata Partita',
+  registered_players: 'Giocatori Iscritti',
+  league: 'Lega',
+  format: 'Formato',
+  organizer: 'Organizzatore',
+  location: 'Luogo',
+  entry_fee: 'Quota Iscrizione',
+  companion_code: 'Codice Companion'
+}
+
 const columns: TableColumn<TournamentData>[] = [
   {
     id: 'select',
@@ -47,12 +64,12 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'id',
-    header: 'id',
+    header: columnHeaders.id,
     cell: ({ row }) => `#${row.getValue('id')}`
   },
   {
     accessorKey: 'status',
-    header: 'Stato',
+    header: columnHeaders.status,
     cell: ({ row }) => {
       const status = row.getValue('status') as string
       const statusConfig: Record<string, { color: string, icon: string }> = {
@@ -71,7 +88,7 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'start_date',
-    header: 'Data e Ora',
+    header: columnHeaders.start_date,
     cell: ({ row }) => {
       const value = row.getValue('start_date') as string
       if (!value) return '-'
@@ -88,12 +105,12 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'round_count',
-    header: 'Partite',
+    header: columnHeaders.round_count,
     cell: ({ row }) => row.getValue('round_count')
   },
   {
     accessorKey: 'round_duration',
-    header: 'Durata Partita',
+    header: columnHeaders.round_duration,
     cell: ({ row }) => {
       const duration = row.getValue('round_duration') as number
       return `${duration} min`
@@ -101,12 +118,12 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'registered_players',
-    header: 'Giocatori Iscritti',
+    header: columnHeaders.registered_players,
     cell: ({ row }) => row.getValue('registered_players')
   },
   {
     accessorKey: 'league',
-    header: 'Lega',
+    header: columnHeaders.league,
     cell: ({ row }) => {
       const leagueValue = row.getValue('league') as string
       const colorMap: Record<string, 'neutral'> = {
@@ -119,7 +136,7 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'format',
-    header: 'Formato',
+    header: columnHeaders.format,
     cell: ({ row }) => {
       const color = {
         'Commander': 'primary' as const,
@@ -134,7 +151,7 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'organizer',
-    header: 'Organizzatore',
+    header: columnHeaders.organizer,
     cell: ({ row }) => {
       const organizerValue = row.getValue('organizer') as string
       const colorMap: Record<string, 'neutral'> = {
@@ -147,7 +164,7 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'location',
-    header: 'Luogo',
+    header: columnHeaders.location,
     cell: ({ row }) => {
       const locationValue = row.getValue('location') as string
       const colorMap: Record<string, 'neutral'> = {
@@ -160,7 +177,7 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'entry_fee',
-    header: 'Quota Iscrizione',
+    header: columnHeaders.entry_fee,
     cell: ({ row }) => {
       const amount = Number.parseFloat(row.getValue('entry_fee') as string)
 
@@ -174,7 +191,7 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'companion_code',
-    header: 'Codice Companion',
+    header: columnHeaders.companion_code,
     cell: ({ row }) =>
       h('div', { class: 'text-center' }, row.getValue('companion_code') || '-')
   }
@@ -291,7 +308,7 @@ const getVisibilityItems = (): DropdownMenuItem[] => {
     ?.getAllColumns()
     .filter(column => column.getCanHide())
     .map(column => ({
-      label: column.columnDef.header as string,
+      label: columnHeaders[column.id] || column.id,
       type: 'checkbox' as const,
       checked: column.getIsVisible(),
       onUpdateChecked(checked: boolean) {
@@ -337,7 +354,7 @@ const pagination = ref({
     <template #body>
       <div class="flex flex-col flex-1 w-full space-y-4 pb-4">
         <div class="flex justify-between px-4 py-3.5 border-t border-b border-accented">
-          <UInput v-model="globalFilter" class="max-w-sm" placeholder="Filter..." />
+          <UInput v-model="globalFilter" class="max-w-sm" placeholder="Filtra..." />
           <UDropdownMenu
             :items="getVisibilityItems()"
             :content="{ align: 'end' }"
