@@ -4,7 +4,7 @@ const tournaments = Array.from({ length: 30 }, (_, i) => {
   dateObj.setDate(dateObj.getDate() + i * 7) // Weekly increments
 
   const pad = (n: number) => n.toString().padStart(2, '0')
-  // Supabase timestampz format: 'YYYY-MM-DDTHH:mm:ss+02:00' (CEST is UTC+2)
+  dateObj.setHours(20, 0, 0, 0) // Set start time to 20:00 (8 PM)
   const dateStr = `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate())}T${pad(dateObj.getHours())}:${pad(dateObj.getMinutes())}:00+02:00`
 
   const formats = [
@@ -41,8 +41,8 @@ const tournaments = Array.from({ length: 30 }, (_, i) => {
     description: `Evento ${format} numero ${id}.`,
     prizes: i % 2 === 0 ? 'Buoni acquisto' : 'Buoni acquisto e gadget',
     companion_code: i < 5 ? `CODE${id}` : null,
-    created_at: `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate() - 1)}T10:00:00Z`,
-    updated_at: `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate() - 1)}T12:00:00Z`,
+    created_at: dateStr,
+    updated_at: dateStr,
     updated_by: 'admin'
   }
 })
