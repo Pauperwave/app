@@ -24,7 +24,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
 <template>
   <UModal v-model:open="open" title="Muova lega" description="Aggiungi una nuova lega al database">
-    <UButton label="Nuova lega" icon="i-lucide-plus" />
+    <UButton label="Nuova lega" icon="i-lucide-trophy" />
 
     <template #body>
       <UForm
