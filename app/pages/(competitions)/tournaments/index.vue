@@ -3,7 +3,7 @@ import { sub } from 'date-fns'
 import { h, resolveComponent } from 'vue'
 import { getPaginationRowModel } from '@tanstack/vue-table'
 import type { Range } from '~/types'
-import type { Column } from '@tanstack/vue-table'
+import type { Column, ColumnFiltersState } from '@tanstack/vue-table'
 import type { DropdownMenuItem, ContextMenuItem, TableColumn, TableRow } from '@nuxt/ui'
 import { useClipboard } from '@vueuse/core'
 
@@ -195,7 +195,24 @@ const columns: TableColumn<TournamentData>[] = [
         'Commander Precon': 'warning' as const
       }[row.getValue('format') as string]
 
-      return h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () =>
+      return h(UBadge, {
+        class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
+        variant: 'subtle',
+        color,
+        onClick: (e: Event) => {
+          e.stopPropagation() // Prevent row selection
+          const formatValue = row.getValue('format') as string
+
+          // Set column filter
+          table.value?.tableApi?.getColumn('format')?.setFilterValue(formatValue)
+
+          toast.add({
+            title: `Filtrato per formato: ${formatValue}`,
+            color: 'info',
+            icon: 'i-lucide-filter'
+          })
+        }
+      }, () =>
         row.getValue('format')
       )
     }
@@ -254,6 +271,7 @@ const columns: TableColumn<TournamentData>[] = [
 
 const table = useTemplateRef('table')
 
+// sorting
 // Helper to create sortable headers with dropdown menu
 function getHeader(column: Column<TournamentData>, label: string) {
   const isSorted = column.getIsSorted()
@@ -288,6 +306,7 @@ const sorting = ref([
   }
 ])
 
+// row selection
 const rowSelection = ref<Record<string, boolean>>({})
 
 function onSelect(row: TableRow<TournamentData>) {
@@ -299,6 +318,7 @@ function onSelect(row: TableRow<TournamentData>) {
   })
 }
 
+// context menu
 const items = ref<ContextMenuItem[]>([])
 
 function getRowItems(row: TableRow<TournamentData>) {
@@ -386,6 +406,7 @@ function onContextmenu(_e: Event, row: TableRow<TournamentData>) {
   items.value = getRowItems(row)
 }
 
+// column visibility
 const columnVisibility = ref({
   id: false,
   location: false,
@@ -409,8 +430,31 @@ const getVisibilityItems = (): DropdownMenuItem[] => {
     })) ?? []
 }
 
+// global filter
 const globalFilter = ref('')
 
+// active filters
+const columnFilters = ref<ColumnFiltersState>([])
+
+function clearColumnFilter(columnId: string) {
+  table.value?.tableApi?.getColumn(columnId)?.setFilterValue(undefined)
+  toast.add({
+    title: 'Filtri colonna resettati',
+    color: 'info',
+    icon: 'i-lucide-x-circle'
+  })
+}
+
+function clearAllFilters() {
+  table.value?.tableApi?.resetColumnFilters()
+  toast.add({
+    title: 'Tutti i filtri rimossi',
+    color: 'success',
+    icon: 'i-lucide-filter-x'
+  })
+}
+
+// pagination
 const pagination = ref({
   pageIndex: 0,
   pageSize: 15
@@ -444,6 +488,39 @@ const pagination = ref({
       <div class="flex flex-col flex-1 w-full space-y-4 pb-4">
         <div class="flex justify-between px-4 py-3.5 border-t border-b border-accented">
           <UInput v-model="globalFilter" class="max-w-sm" placeholder="Filtra..." />
+
+          <!-- Active filters display -->
+          <div v-if="columnFilters.length" class="flex items-center gap-2">
+            <span class="text-sm text-muted">Filtri attivi:</span>
+            <UBadge
+              v-for="filter in columnFilters"
+              :key="filter.id"
+              color="info"
+              variant="soft"
+              class="capitalize"
+            >
+              {{ getColumnLabel(filter.id) }}: {{ filter.value }}
+              <UButton
+                icon="i-lucide-x"
+                size="xs"
+                color="neutral"
+                variant="ghost"
+                class="cursor-pointer hover:opacity-80 transition-opacity"
+                @click="clearColumnFilter(filter.id)"
+              />
+            </UBadge>
+            <UButton
+              label="Cancella tutti"
+              icon="i-lucide-x-circle"
+              size="xs"
+              color="error"
+              variant="outline"
+              class="cursor-pointer hover:opacity-80 transition-opacity"
+              @click="clearAllFilters"
+            />
+          </div>
+
+          <!-- Column visibility -->
           <UDropdownMenu
             :items="getVisibilityItems()"
             :content="{ align: 'end' }"
@@ -464,15 +541,16 @@ const pagination = ref({
             v-model:global-filter="globalFilter"
             v-model:row-selection="rowSelection"
             v-model:column-visibility="columnVisibility"
+            v-model:column-filters="columnFilters"
             :data="tournaments"
             :columns="columns"
             class="shrink-0"
             :ui="{
-              base: 'table-fixed border-collapse',
+              base: 'table-fixed border-separate border-spacing-0',
               thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
               tbody: '[&>tr]:last:[&>td]:border-b-0',
               th: 'first:rounded-l-lg last:rounded-r-lg border-y border-default first:border-l last:border-r',
-              td: 'border-b border-default py-3 leading-tight'
+              td: 'border-b border-default'
             }"
             :pagination-options="{
               getPaginationRowModel: getPaginationRowModel()
@@ -482,11 +560,13 @@ const pagination = ref({
           />
         </UContextMenu>
 
+        <!-- Selected rows info -->
         <div class="px-4 py-3.5 border-t border-accented text-sm text-muted">
           {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} su
           {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} riga(e) selezionata(e).
         </div>
 
+        <!-- Pagination controls -->
         <div class="flex justify-center border-t border-default pt-4">
           <UPagination
             :default-page="(table?.tableApi?.getState().pagination.pageIndex || 0) + 1"
