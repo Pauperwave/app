@@ -54,16 +54,20 @@ const columns: TableColumn<TournamentData>[] = [
     accessorKey: 'status',
     header: 'Stato',
     cell: ({ row }) => {
-      const color = {
-        'Completed': 'success' as const,
-        'Scheduled': 'warning' as const,
-        'Cancelled': 'error' as const,
-        'Postponed': 'secondary' as const,
-        'In Progress': 'primary' as const
-      }[row.getValue('status') as string]
+      const status = row.getValue('status') as string
+      const statusConfig: Record<string, { color: string, icon: string }> = {
+        'Completed': { color: 'success', icon: 'i-lucide-check-circle' },
+        'Scheduled': { color: 'warning', icon: 'i-lucide-clock' },
+        'Cancelled': { color: 'error', icon: 'i-lucide-x-circle' },
+        'Postponed': { color: 'secondary', icon: 'i-lucide-pause-circle' },
+        'In Progress': { color: 'primary', icon: 'i-lucide-loader' }
+      }
+      const { color, icon } = statusConfig[status] || { color: 'neutral', icon: 'i-lucide-help-circle' }
 
-      return h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () =>
-        row.getValue('status')
+      return h(
+        UBadge,
+        { class: 'capitalize flex items-center gap-1', variant: 'subtle', icon, color },
+        status
       )
     }
   },
