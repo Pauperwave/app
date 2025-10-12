@@ -1,4 +1,12 @@
 <script lang="ts" setup>
+import { sub } from 'date-fns'
+import type { Range } from '~/types'
+
+const range = shallowRef<Range>({
+  start: sub(new Date(), { days: 14 }),
+  end: new Date()
+})
+
 const { breadcrumbItems } = useBreadcrumbs()
 </script>
 
@@ -9,6 +17,10 @@ const { breadcrumbItems } = useBreadcrumbs()
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
+
+        <template #right>
+          <TransactionsListAddModal />
+        </template>
       </UDashboardNavbar>
 
       <UDashboardToolbar>
@@ -17,7 +29,7 @@ const { breadcrumbItems } = useBreadcrumbs()
         </template>
 
         <template #right>
-          <TransactionsListAddModal />
+          <HomeDateRangePicker v-model="range" class="-ms-1" />
         </template>
       </UDashboardToolbar>
     </template>
