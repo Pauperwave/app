@@ -149,8 +149,9 @@ const columns: TableColumn<TournamentData>[] = [
   },
   {
     accessorKey: 'round_duration',
-    header: columnHeaders.round_duration,
-    enableGlobalFilter: true,
+    header: ({ column }) => getHeader(column, columnHeaders.round_duration),
+    enableGlobalFilter: false, // Prevents text search from matching "60"
+    filterFn: 'includesString', // Partial match because of number to string conversion
     cell: ({ row }) => {
       const duration = Number(row.getValue('round_duration'))
       let color: 'success' | 'neutral' | 'warning'
@@ -161,7 +162,12 @@ const columns: TableColumn<TournamentData>[] = [
       } else {
         color = 'success'
       }
-      return h(UBadge, { color, variant: 'subtle', class: 'capitalize' }, () => `${duration} min`)
+      return h(UBadge, {
+        class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
+        variant: 'subtle',
+        color,
+        onclick: (e: Event) => handleColumnFilter(e, 'round_duration', duration.toString(), 'Durata Partita')
+      }, () => `${duration} min`)
     }
   },
   {
@@ -181,13 +187,19 @@ const columns: TableColumn<TournamentData>[] = [
       }
       const color = colorMap[leagueValue] || ('neutral' as const)
 
-      return h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () => leagueValue)
+      return h(UBadge, {
+        class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
+        variant: 'subtle',
+        color,
+        onclick: (e: Event) => handleColumnFilter(e, 'league', leagueValue, 'Lega')
+      }, () => leagueValue)
     }
   },
   {
     accessorKey: 'format',
     header: ({ column }) => getHeader(column, columnHeaders.format),
     enableGlobalFilter: true,
+    filterFn: 'equals', // Exact match or use 'includesString' for partial matches
     cell: ({ row }) => {
       const color = {
         'Commander': 'primary' as const,
@@ -199,19 +211,7 @@ const columns: TableColumn<TournamentData>[] = [
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
         variant: 'subtle',
         color,
-        onClick: (e: Event) => {
-          e.stopPropagation() // Prevent row selection
-          const formatValue = row.getValue('format') as string
-
-          // Set column filter
-          table.value?.tableApi?.getColumn('format')?.setFilterValue(formatValue)
-
-          toast.add({
-            title: `Filtrato per formato: ${formatValue}`,
-            color: 'info',
-            icon: 'i-lucide-filter'
-          })
-        }
+        onclick: (e: Event) => handleColumnFilter(e, 'format', row.getValue('format') as string, 'Formato')
       }, () =>
         row.getValue('format')
       )
@@ -228,7 +228,12 @@ const columns: TableColumn<TournamentData>[] = [
       }
       const color = colorMap[organizerValue] || ('neutral' as const)
 
-      return h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () => organizerValue)
+      return h(UBadge, {
+        class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
+        variant: 'subtle',
+        color,
+        onclick: (e: Event) => handleColumnFilter(e, 'organizer', organizerValue, 'Organizzatore')
+      }, () => organizerValue)
     }
   },
   {
@@ -413,6 +418,8 @@ const columnVisibility = ref({
   companion_code: false
 })
 
+const visibilityItems = computed(() => getVisibilityItems())
+
 const getVisibilityItems = (): DropdownMenuItem[] => {
   return table.value?.tableApi
     ?.getAllColumns()
@@ -435,6 +442,22 @@ const globalFilter = ref('')
 
 // active filters
 const columnFilters = ref<ColumnFiltersState>([])
+
+// Add this helper function in your script setup
+function handleColumnFilter(e: Event, columnId: string, value: string, label?: string) {
+  // Set column filter
+  table.value?.tableApi?.getColumn(columnId)?.setFilterValue(value)
+
+  // Reset to first page
+  pagination.value.pageIndex = 0
+
+  // Show toast
+  toast.add({
+    title: `Filtrato per ${label || columnId}: ${value}`,
+    color: 'info',
+    icon: 'i-lucide-filter'
+  })
+}
 
 function clearColumnFilter(columnId: string) {
   table.value?.tableApi?.getColumn(columnId)?.setFilterValue(undefined)
@@ -459,6 +482,12 @@ const pagination = ref({
   pageIndex: 0,
   pageSize: 15
 })
+
+if (import.meta.dev) {
+  watch(columnFilters, (newFilters) => {
+    console.log('Column filters changed:', newFilters)
+  }, { deep: true })
+}
 </script>
 
 <template>
@@ -522,7 +551,7 @@ const pagination = ref({
 
           <!-- Column visibility -->
           <UDropdownMenu
-            :items="getVisibilityItems()"
+            :items="visibilityItems"
             :content="{ align: 'end' }"
           >
             <UButton
