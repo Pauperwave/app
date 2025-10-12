@@ -56,18 +56,16 @@ const columns: TableColumn<TournamentData>[] = [
     cell: ({ row }) => {
       const status = row.getValue('status') as string
       const statusConfig: Record<string, { color: string, icon: string }> = {
-        'Completed': { color: 'success', icon: 'i-lucide-check-circle' },
-        'Scheduled': { color: 'warning', icon: 'i-lucide-clock' },
+        'Scheduled': { color: 'info', icon: 'i-lucide-clock' },
+        'Postponed': { color: 'neutral', icon: 'i-lucide-pause-circle' },
         'Cancelled': { color: 'error', icon: 'i-lucide-x-circle' },
-        'Postponed': { color: 'secondary', icon: 'i-lucide-pause-circle' },
-        'In Progress': { color: 'primary', icon: 'i-lucide-loader' }
+        'In Progress': { color: 'warning', icon: 'i-lucide-loader' },
+        'Completed': { color: 'success', icon: 'i-lucide-check-circle' }
       }
       const { color, icon } = statusConfig[status] || { color: 'neutral', icon: 'i-lucide-help-circle' }
 
-      return h(
-        UBadge,
-        { class: 'capitalize flex items-center gap-1', variant: 'subtle', icon, color },
-        status
+      return h(UBadge, { class: 'capitalize gap-2', variant: 'subtle', icon, color }, () =>
+        row.getValue('status')
       )
     }
   },
@@ -132,6 +130,19 @@ const columns: TableColumn<TournamentData>[] = [
       return h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () =>
         row.getValue('format')
       )
+    }
+  },
+  {
+    accessorKey: 'organizer',
+    header: () => h('div', { class: 'text-center' }, 'Organizzatore'),
+    cell: ({ row }) => {
+      const organizerValue = row.getValue('organizer') as string
+      const colorMap: Record<string, 'neutral'> = {
+        Magman: 'neutral'
+      }
+      const color = colorMap[organizerValue] || ('neutral' as const)
+
+      return h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () => organizerValue)
     }
   },
   {
@@ -270,7 +281,9 @@ function onContextmenu(_e: Event, row: TableRow<TournamentData>) {
 }
 
 const columnVisibility = ref({
-  id: false
+  id: false,
+  location: false,
+  companion_code: false
 })
 
 const getVisibilityItems = (): DropdownMenuItem[] => {
@@ -348,7 +361,7 @@ const pagination = ref({
             :columns="columns"
             class="shrink-0"
             :ui="{
-              base: 'table-fixed border-separate border-spacing-0',
+              base: 'table-fixed border-collapse',
               thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
               tbody: '[&>tr]:last:[&>td]:border-b-0',
               th: 'first:rounded-l-lg last:rounded-r-lg border-y border-default first:border-l last:border-r',

@@ -17,8 +17,8 @@ const tournaments = Array.from({ length: 30 }, (_, i) => {
 
   const statuses = [
     'Scheduled',
-    'Cancelled',
     'Postponed',
+    'Cancelled',
     'In Progress',
     'Completed'
   ]
