@@ -152,7 +152,7 @@ const columns: TableColumn<TournamentData>[] = [
         variant: 'subtle',
         icon,
         color,
-        onclick: (e: Event) => handleColumnFilter(e, 'status', status, 'Stato')
+        onClick: (e: Event) => handleColumnFilter(e, 'status', status, 'Stato')
       }, () =>
         row.getValue('status')
       )
@@ -215,7 +215,7 @@ const columns: TableColumn<TournamentData>[] = [
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
         variant: 'subtle',
         color,
-        onclick: (e: Event) => handleColumnFilter(e, 'round_duration', duration.toString(), 'Durata Partita')
+        onClick: (e: Event) => handleColumnFilter(e, 'round_duration', duration.toString(), 'Durata Partita')
       }, () => `${duration} minuti`)
     }
   },
@@ -240,7 +240,7 @@ const columns: TableColumn<TournamentData>[] = [
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
         variant: 'subtle',
         color,
-        onclick: (e: Event) => handleColumnFilter(e, 'league', leagueValue, 'Lega')
+        onClick: (e: Event) => handleColumnFilter(e, 'league', leagueValue, 'Lega')
       }, () => leagueValue)
     }
   },
@@ -260,7 +260,7 @@ const columns: TableColumn<TournamentData>[] = [
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
         variant: 'subtle',
         color,
-        onclick: (e: Event) => handleColumnFilter(e, 'format', row.getValue('format') as string, 'Formato')
+        onClick: (e: Event) => handleColumnFilter(e, 'format', row.getValue('format') as string, 'Formato')
       }, () =>
         row.getValue('format')
       )
@@ -281,7 +281,7 @@ const columns: TableColumn<TournamentData>[] = [
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
         variant: 'subtle',
         color,
-        onclick: (e: Event) => handleColumnFilter(e, 'organizer', organizerValue, 'Organizzatore')
+        onClick: (e: Event) => handleColumnFilter(e, 'organizer', organizerValue, 'Organizzatore')
       }, () => organizerValue)
     }
   },
@@ -340,7 +340,7 @@ function getHeader(column: Column<TournamentData>, label: string) {
         : 'i-lucide-arrow-down-wide-narrow'
       : 'i-lucide-arrow-up-down',
     class: '-mx-2.5',
-    onclick: () => {
+    onClick: () => {
       // Cycle: unsorted -> asc -> desc -> unsorted
       if (!isSorted) {
         column.toggleSorting(false) // asc
