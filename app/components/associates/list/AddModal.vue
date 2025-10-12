@@ -117,7 +117,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           <h3 class="text-lg font-semibold text-primary">Tipologia di associato</h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
             <UFormField label="Tipo di associato" name="associate_type">
-              <USelect v-model="state.associate_type" :options="['Ordinario', 'Sostenitore']" class="w-full" />
+              <USelect v-model="state.associate_type" :items="['Ordinario', 'Sostenitore']" class="w-full" />
             </UFormField>
           </div>
         </div>

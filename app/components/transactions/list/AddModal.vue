@@ -18,11 +18,11 @@ const schema = z.object({
   payment_amount: z.number().nonnegative({
     message: 'L\'importo non può essere negativo'
   }),
-  payment_method: z.enum(['Cash', 'Card', 'Bank Transfer', 'Other'], {
+  payment_method: z.enum(['Cash', 'PayPal', 'POS', 'Bank Transfer'], {
     message: 'Metodo di pagamento non valido'
   }),
   received_by: z.string().trim().optional(),
-  payment_type: z.enum(['Donation', 'Membership', 'Purchase', 'Other'], {
+  payment_type: z.enum(['Donation', 'Membership', 'Event Fee'], {
     message: 'Tipo di pagamento non valido'
   }),
   event_name: z.string().optional(),
@@ -299,7 +299,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           <UFormField label="Payment Type" name="payment_type">
             <USelect
               v-model="state.payment_type"
-              :options="['Donation', 'Association Fee', 'Event Fee']"
+              :items="['Donation', 'Membership', 'Event Fee']"
               class="w-full"
             />
           </UFormField>
@@ -310,7 +310,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           <UFormField label="Metodo di Pagamento" name="payment_method">
             <USelect
               v-model="state.payment_method"
-              :options="['Cash', 'PayPal', 'POS', 'Bank Transfer']"
+              :items="['Cash', 'PayPal', 'POS', 'Bank Transfer']"
               class="w-full"
             />
           </UFormField>
