@@ -49,6 +49,7 @@ const schema = z.object({
 type Schema = z.output<typeof schema>
 
 const state = reactive<Partial<Schema>>({
+  payment_amount: 5,
   payer_is_associate: true,
   payment_date: new Date().toISOString()
 })
@@ -297,7 +298,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           <UFormField label="Data pagamento" name="payment_date">
             <UInput v-model="state.payment_date" type="datetime-local" class="w-full" />
           </UFormField>
-          <UFormField label="Payment Type" name="payment_type">
+          <UFormField label="Tipologia di pagamento" name="payment_type">
             <USelect
               v-model="state.payment_type"
               :items="['Donation', 'Membership', 'Event Fee']"
@@ -305,8 +306,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             />
           </UFormField>
           <UFormField label="Importo" name="payment_amount">
-            <!-- eslint-disable-next-line -->
-            <UInput v-model="state.payment_amount" type="number" step="5.00" class="w-full" />
+            <UInputNumber
+              v-model="state.payment_amount"
+              class="w-full"
+              :min="0"
+              :step="5"
+              icon="i-lucide-euro"
+            />
           </UFormField>
           <UFormField label="Metodo di Pagamento" name="payment_method">
             <USelect
