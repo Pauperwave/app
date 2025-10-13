@@ -160,7 +160,7 @@ const columns: TableColumn<TournamentData>[] = [
         'Scheduled': { color: 'info', icon: 'i-lucide-clock' },
         'Postponed': { color: 'neutral', icon: 'i-lucide-pause-circle' },
         'Cancelled': { color: 'error', icon: 'i-lucide-x-circle' },
-        'In Progress': { color: 'warning', icon: 'i-lucide-loader' },
+        'In Progress': { color: 'warning', icon: 'i-lucide-circle-dot-dashed' },
         'Completed': { color: 'success', icon: 'i-lucide-check-circle' }
       }
       const { color, icon } = statusConfig[status] || { color: 'neutral', icon: 'i-lucide-help-circle' }
