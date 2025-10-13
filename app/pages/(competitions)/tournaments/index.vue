@@ -487,21 +487,29 @@ const columnVisibility = ref({
 
 const visibilityItems = computed(() => getVisibilityItems())
 
+// Generate visibility items based on columns that can be hidden
 const getVisibilityItems = (): DropdownMenuItem[] => {
-  return table.value?.tableApi
-    ?.getAllColumns()
-    .filter(column => column.getCanHide())
-    .map(column => ({
-      label: getColumnLabel(column.id),
-      type: 'checkbox' as const,
-      checked: column.getIsVisible(),
-      onUpdateChecked(checked: boolean) {
-        table.value?.tableApi?.getColumn(column.id)?.toggleVisibility(!!checked)
-      },
-      onSelect(e: Event) {
-        e.preventDefault()
-      }
-    })) ?? []
+  const allColumns = table.value?.tableApi?.getAllColumns()
+  if (!allColumns) return []
+
+  return allColumns
+    .filter((column: Column<TournamentData>) => column.getCanHide())
+    .map(createVisibilityItem)
+}
+
+// Helper to create visibility toggle items
+function createVisibilityItem(column: Column<TournamentData>): DropdownMenuItem {
+  return {
+    label: getColumnLabel(column.id),
+    type: 'checkbox' as const,
+    checked: column.getIsVisible(),
+    onUpdateChecked(checked: boolean) {
+      table.value?.tableApi?.getColumn(column.id)?.toggleVisibility(!!checked)
+    },
+    onSelect(e: Event) {
+      e.preventDefault()
+    }
+  }
 }
 
 // global filter
@@ -560,12 +568,12 @@ const pagination = ref({
   pageSize: 15
 })
 
+// Debug: log changes to column filters
 if (import.meta.dev) {
   watch(columnFilters, (newFilters) => {
     console.log('Column filters changed:', JSON.stringify(newFilters, null, 2))
   }, { deep: true })
 
-  // Aggiungi anche questo per debug
   watch(globalFilter, (newValue) => {
     console.log('Global filter changed:', newValue)
   })
