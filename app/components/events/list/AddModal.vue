@@ -2,11 +2,14 @@
 import * as z from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'
 
+// Define the model to accept open state from parent
+const open = defineModel<boolean>({ default: false })
+const toast = useToast()
+
 const schema = z.object({
   name: z.string().min(2, 'Too short'),
   email: z.string().email('Invalid email')
 })
-const open = ref(false)
 
 type Schema = z.output<typeof schema>
 
@@ -15,7 +18,6 @@ const state = reactive<Partial<Schema>>({
   email: undefined
 })
 
-const toast = useToast()
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   toast.add({ title: 'Successo', description: `Nuovo evento "${event.data.name}" aggiunto`, color: 'success' })
   open.value = false
@@ -24,7 +26,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
 <template>
   <UModal v-model:open="open" title="Nuovo evento" description="Aggiungi un nuovo evento al database">
-    <UButton label="Nuovo evento" icon="i-lucide-calendar-plus" />
+    <UButton label="Nuovo evento" icon="i-lucide-calendar-plus" @click="open = true" />
 
     <template #body>
       <UForm

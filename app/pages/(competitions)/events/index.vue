@@ -1,40 +1,24 @@
 <script lang="ts" setup>
 import { sub } from 'date-fns'
 import type { Range } from '~/types'
-// import { h, resolveComponent } from 'vue'
-// import type { TableColumn } from '@nuxt/ui'
 
 const { breadcrumbItems } = useBreadcrumbs()
-// const UBadge = resolveComponent('UBadge')
+
+const route = useRoute()
+const router = useRouter()
+const isModalOpen = ref(false)
+
+onMounted(() => {
+  if (route.query.action === 'create') {
+    isModalOpen.value = true
+    router.replace({ query: {} })
+  }
+})
 
 const range = shallowRef<Range>({
   start: sub(new Date(), { days: 14 }),
   end: new Date()
 })
-
-// type Event = {
-//   id: number
-//   uuid: string
-//   league_uuid: string
-//   league: 'Magman Autunno 2025'
-//   organizer_uuid: string
-//   status: 'Completed' | 'Scheduled' | 'Cancelled' | 'Postponed' | 'In Progress'
-//   name: string
-//   location: 'Magman'
-//   date: string
-//   starts_at: string
-//   ends_at: string
-//   entry_fee: number
-//   description: string
-//   prizes: string
-//   notes: string
-//   companion_app_code: string
-//   created_at: string
-//   updated_at: string
-//   updated_by: string
-// }
-
-// const { data: events } = await useFetch('/api/events')
 </script>
 
 <template>
@@ -46,7 +30,7 @@ const range = shallowRef<Range>({
         </template>
 
         <template #right>
-          <EventsListAddModal />
+          <EventsListAddModal v-model="isModalOpen" />
         </template>
       </UDashboardNavbar>
 
