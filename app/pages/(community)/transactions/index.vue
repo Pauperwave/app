@@ -7,6 +7,17 @@ const range = shallowRef<Range>({
   end: new Date()
 })
 
+const route = useRoute()
+const router = useRouter()
+const isModalOpen = ref(false)
+
+onMounted(() => {
+  if (route.query.action === 'create') {
+    isModalOpen.value = true
+    router.replace({ query: {} })
+  }
+})
+
 const { breadcrumbItems } = useBreadcrumbs()
 </script>
 
@@ -19,7 +30,7 @@ const { breadcrumbItems } = useBreadcrumbs()
         </template>
 
         <template #right>
-          <TransactionsListAddModal />
+          <TransactionsListAddModal v-model="isModalOpen" />
         </template>
       </UDashboardNavbar>
 
