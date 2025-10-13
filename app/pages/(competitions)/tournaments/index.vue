@@ -23,6 +23,14 @@ const range = ref<Range>({
   end: add(new Date(), { months: 1 }) // 1 mese nel futuro
 })
 
+// Resetting the row selection and pagination when the date range changes
+// This ensures that the user sees the first page of results and no rows are selected
+// Also the number of filtered rows is updated
+watch(range, () => {
+  rowSelection.value = {}
+  pagination.value.pageIndex = 0
+})
+
 const { data: tournaments } = await useFetch('/api/tournaments')
 
 // Use the actual type from useFetch
