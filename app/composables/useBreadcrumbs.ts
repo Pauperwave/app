@@ -22,8 +22,7 @@ export const useBreadcrumbs = () => {
       type: {
         'association-fee': 'Quote associative',
         'event-fee': 'Quote eventi',
-        'donations': 'Donazioni',
-        'refunds': 'Rimborsi'
+        'donations': 'Donazioni'
       }
     },
     associates: {

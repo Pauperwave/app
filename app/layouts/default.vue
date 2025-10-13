@@ -43,10 +43,6 @@ const links = computed(() => [[{
     label: 'Donazioni',
     to: '/transactions?type=donations',
     active: route.query.type === 'donations' // Direct boolean
-  }, {
-    label: 'Rimborsi',
-    to: '/transactions?type=refunds',
-    active: route.query.type === 'refunds' // Direct boolean
   }] satisfies NavigationMenuItem[]
 }, {
   label: 'Associati',
