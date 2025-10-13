@@ -3,6 +3,10 @@ import * as z from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import { CalendarDate, getLocalTimeZone } from '@internationalized/date'
 
+// Define the model to accept open state from parent
+const open = defineModel<boolean>({ default: false })
+const toast = useToast()
+
 function formatDate(date: Date): string {
   const day = String(date.getDate()).padStart(2, '0')
   const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -62,9 +66,6 @@ const state = reactive<Schema>({
   consent_social: false
 })
 
-const open = ref(false)
-const toast = useToast()
-
 // calendar sync
 const calendarDate = computed<CalendarDate | null>({
   get: () => state.born_date
@@ -102,7 +103,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     title="Nuovo associato"
     description="Aggiungi un nuovo associato al database"
   >
-    <UButton label="Nuovo associato" icon="i-lucide-user-plus" />
+    <UButton label="Nuovo associato" icon="i-lucide-user-plus" @click="open = true" />
 
     <template #body>
       <UForm
