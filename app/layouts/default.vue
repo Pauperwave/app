@@ -82,16 +82,16 @@ const links = computed(() => [[{
   icon: 'i-lucide-swords',
   to: '/tournaments'
 }, {
-  label: 'Leghe',
-  icon: 'i-lucide-trophy',
-  to: '/leagues',
+  label: 'Eventi',
+  icon: 'i-lucide-calendar',
+  to: '/events',
   onSelect: () => {
     open.value = false
   }
 }, {
-  label: 'Eventi',
-  icon: 'i-lucide-calendar',
-  to: '/events',
+  label: 'Leghe',
+  icon: 'i-lucide-trophy',
+  to: '/leagues',
   onSelect: () => {
     open.value = false
   }

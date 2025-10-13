@@ -7,12 +7,22 @@ import type { Column, ColumnFiltersState } from '@tanstack/vue-table'
 import type { DropdownMenuItem, ContextMenuItem, TableColumn, TableRow } from '@nuxt/ui'
 import { useClipboard } from '@vueuse/core'
 
-const { breadcrumbItems } = useBreadcrumbs()
-
 const UCheckbox = resolveComponent('UCheckbox')
 const UBadge = resolveComponent('UBadge')
 const UButton = resolveComponent('UButton')
 
+const route = useRoute()
+const router = useRouter()
+const isModalOpen = ref(false)
+
+onMounted(() => {
+  if (route.query.action === 'create') {
+    isModalOpen.value = true
+    router.replace({ query: {} })
+  }
+})
+
+const { breadcrumbItems } = useBreadcrumbs()
 const toast = useToast()
 const { copy } = useClipboard()
 
@@ -571,7 +581,7 @@ if (import.meta.dev) {
         </template>
 
         <template #right>
-          <TournamentsListAddModal />
+          <TournamentsListAddModal v-model="isModalOpen" />
         </template>
       </UDashboardNavbar>
 

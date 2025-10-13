@@ -14,17 +14,17 @@ const items = [[{
   icon: 'i-lucide-user-plus',
   to: '/associates?action=create'
 }, {
+  label: 'Nuovo torneo',
+  icon: 'i-lucide-swords',
+  to: '/tournaments?action=create'
+}, {
   label: 'Nuovo evento',
   icon: 'i-lucide-calendar-plus',
-  to: '/events'
+  to: '/events?action=create'
 }, {
   label: 'Nuova lega',
   icon: 'i-lucide-trophy',
-  to: '/leagues'
-}, {
-  label: 'Nuovo torneo',
-  icon: 'i-lucide-swords',
-  to: '/tournaments'
+  to: '/leagues?action=create'
 }]] satisfies DropdownMenuItem[][]
 
 const range = shallowRef<Range>({

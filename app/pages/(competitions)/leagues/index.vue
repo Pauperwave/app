@@ -4,6 +4,17 @@ import type { Range } from '~/types'
 
 const { breadcrumbItems } = useBreadcrumbs()
 
+const route = useRoute()
+const router = useRouter()
+const isModalOpen = ref(false)
+
+onMounted(() => {
+  if (route.query.action === 'create') {
+    isModalOpen.value = true
+    router.replace({ query: {} })
+  }
+})
+
 const range = shallowRef<Range>({
   start: sub(new Date(), { days: 14 }),
   end: new Date()
@@ -19,7 +30,7 @@ const range = shallowRef<Range>({
         </template>
 
         <template #right>
-          <LeaguesAddModal />
+          <LeaguesListAddModal v-model="isModalOpen" />
         </template>
       </UDashboardNavbar>
 
