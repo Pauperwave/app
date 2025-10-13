@@ -13,6 +13,17 @@ const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
 const UCheckbox = resolveComponent('UCheckbox')
 
+const route = useRoute()
+const router = useRouter()
+const isModalOpen = ref(false)
+
+onMounted(() => {
+  if (route.query.action === 'create') {
+    isModalOpen.value = true
+    router.replace({ query: {} })
+  }
+})
+
 const toast = useToast()
 const table = useTemplateRef('table')
 
@@ -213,7 +224,7 @@ const pagination = ref({
         </template>
 
         <template #right>
-          <AssociatesListAddModal />
+          <AssociatesListAddModal v-model="isModalOpen" />
         </template>
       </UDashboardNavbar>
 

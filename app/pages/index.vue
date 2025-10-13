@@ -12,7 +12,7 @@ const items = [[{
 }, {
   label: 'Nuovo associato',
   icon: 'i-lucide-user-plus',
-  to: '/associates'
+  to: '/associates?action=create'
 }, {
   label: 'Nuovo evento',
   icon: 'i-lucide-calendar-plus',
