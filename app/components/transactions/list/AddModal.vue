@@ -2,6 +2,10 @@
 import * as z from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'
 
+// Define the model to accept open state from parent
+const open = defineModel<boolean>({ default: false })
+const toast = useToast()
+
 const schema = z.object({
   associate_id: z.string().optional(),
   payer_is_associate: z.boolean().default(true),
@@ -63,9 +67,6 @@ const items = [
     slot: 'external'
   }
 ]
-
-const open = ref(false)
-const toast = useToast()
 
 // Track which tab is active
 const activeTab = ref(0)
@@ -146,7 +147,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     description="Aggiungi una nuova transazione al database"
   >
     <!-- Trigger button goes in the default slot -->
-    <UButton label="Nuova transazione" icon="i-lucide-coins" />
+    <UButton label="Nuova transazione" icon="i-lucide-coins" @click="open = true" />
 
     <template #body>
       <UForm
