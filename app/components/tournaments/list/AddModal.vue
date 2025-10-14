@@ -14,7 +14,6 @@ const visibilityOptions = [
 
 const statusOptions = [
   { value: 'scheduled', label: 'Pianificato', icon: 'i-lucide-clock', color: 'info' },
-  { value: 'postponed', label: 'Posticipato', icon: 'i-lucide-circle-pause', color: 'neutral' },
   { value: 'cancelled', label: 'Annullato', icon: 'i-lucide-circle-x', color: 'error' },
   { value: 'ongoing', label: 'In corso', icon: 'i-lucide-circle-dot-dashed', color: 'warning' },
   { value: 'completed', label: 'Completato', icon: 'i-lucide-circle-check-big', color: 'success' }
@@ -44,9 +43,9 @@ const placeOptions = [
 ]
 
 const rulesetOptions = [
-  'REL Competitive',
   'REL Regular',
-  'REL Casual'
+  'REL Competitive',
+  'REL Professional'
 ]
 
 const leagueOptions = [
@@ -63,7 +62,7 @@ const eventOptions = [
 
 // Get today's date
 const today = new Date()
-const todayString = today.toISOString().split('T')[0]
+const todayString = today.toISOString().substring(0, 10) // Format as YYYY-MM-DD
 
 const schema = z.object({
   status: z.string(),
@@ -71,7 +70,7 @@ const schema = z.object({
   companion_code: z.string().optional().nullable(),
   name: z.string({
     error: 'Il nome del torneo è obbligatorio'
-  }),
+  }).optional(),
   description: z.string().optional().nullable(),
   entry_fee: z.number().nonnegative(),
   format: z.string(),
@@ -82,13 +81,13 @@ const schema = z.object({
   round_duration: z.number().int().positive(),
   organizer: z.string(),
   location: z.string(),
-  league: z.string().optional().nullable().default(null),
-  event: z.string().optional().nullable().default(null)
+  league: z.string().optional(),
+  event: z.string().optional()
 })
 
 type Schema = z.output<typeof schema>
 
-const state = reactive<Partial<Schema>>({
+const state = reactive<Schema>({
   name: undefined,
   ruleset: 'REL Regular',
   status: 'scheduled',
@@ -97,14 +96,14 @@ const state = reactive<Partial<Schema>>({
   start_time: '20:00',
   round_count: 2,
   round_duration: 60,
-  league: null,
-  event: null,
+  league: undefined,
+  event: undefined,
   format: 'Commander',
-  description: null,
+  description: undefined,
   organizer: 'Pauperwave',
   location: 'Magazzino Fantasia',
   entry_fee: 5,
-  companion_code: null
+  companion_code: undefined
 })
 
 // Initialize CalendarDate from today - use shallowRef with proper type
@@ -180,35 +179,31 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             Dati relativi al torneo
           </p>
 
-          <div class="flex justify-between">
-            <UFormField label="Stato" name="status">
-              <USelectMenu
+          <div class="flex justify-between gap-2">
+            <UFormField label="Stato" class="flex-1" name="status">
+              <USelect
                 v-model="state.status"
                 :items="statusOptions"
                 value-key="value"
-                :search-input="false"
-                class="w-42"
-                placeholder="Seleziona stato"
+                class="w-full"
               >
                 <template #leading>
                   <UIcon v-if="selectedStatus" :name="selectedStatus.icon" class="size-5 shrink-0" />
                 </template>
-              </USelectMenu>
+              </USelect>
             </UFormField>
 
-            <UFormField label="Visibilità" name="visibility">
-              <USelectMenu
+            <UFormField label="Visibilità" class="flex-1" name="visibility">
+              <USelect
                 v-model="state.visibility"
                 :items="visibilityOptions"
                 value-key="value"
-                :search-input="false"
-                class="w-42"
-                maxlength="7"
+                class="w-full"
               >
                 <template #leading>
                   <UIcon v-if="selectedVisibility" :name="selectedVisibility.icon" class="size-5 shrink-0" />
                 </template>
-              </USelectMenu>
+              </USelect>
             </UFormField>
 
             <UFormField label="Codice Companion" name="companion_code">
@@ -217,8 +212,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 placeholder="Codice (opzionale)"
                 icon="i-lucide-smartphone"
                 class="w-42"
-                maxlength="7"
-                pattern="[A-Z0-9]{0,7}"
               />
             </UFormField>
           </div>
@@ -266,11 +259,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             </UFormField>
 
             <UFormField label="Regolamento" name="ruleset">
-              <USelectMenu
+              <USelect
                 v-model="state.ruleset"
                 class="w-full"
                 :items="rulesetOptions"
-                :search-input="false"
                 placeholder="Seleziona regolamento"
                 icon="i-lucide-book-open"
               />
@@ -282,12 +274,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           </p>
 
           <div class="grid grid-cols-2 gap-4">
-            <div class="flex gap-4">
-              <UFormField label="Data di inizio" name="start_date">
+            <div class="flex justify-between gap-2">
+              <UFormField label="Data di inizio" class="flex-1" name="start_date">
                 <UPopover>
                   <UInput
                     :model-value="formattedStartDate"
                     readonly
+                    class="w-full"
                     icon="i-lucide-calendar"
                   />
 
@@ -306,7 +299,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               </UFormField>
             </div>
 
-            <div class="flex gap-4">
+            <div class="flex gap-2">
               <UFormField label="Numero di round" name="round_count">
                 <UInputNumber
                   v-model="state.round_count"
@@ -332,22 +325,20 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
           <div class="grid grid-cols-2 gap-4">
             <UFormField label="Organizzatore" name="organizer">
-              <USelectMenu
+              <USelect
                 v-model="state.organizer"
                 class="w-full"
                 :items="organizerOptions"
-                :search-input="false"
                 placeholder="Seleziona organizzatore"
                 icon="i-lucide-user"
               />
             </UFormField>
 
             <UFormField label="Luogo" name="location">
-              <USelectMenu
+              <USelect
                 v-model="state.location"
                 class="w-full"
                 :items="placeOptions"
-                :search-input="false"
                 placeholder="Seleziona luogo"
                 icon="i-lucide-map-pin"
               />
@@ -365,9 +356,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                   <UButton
                     v-if="state.league"
                     class="cursor-pointer"
-                    icon="i-lucide-circle-x"
-                    size="xs"
+                    color="neutral"
                     variant="ghost"
+                    size="xs"
+                    icon="i-lucide-circle-x"
                     @click.stop="state.league = null"
                   />
                 </template>
@@ -386,9 +378,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                   <UButton
                     v-if="state.event"
                     class="cursor-pointer"
-                    icon="i-lucide-circle-x"
-                    size="xs"
+                    color="neutral"
                     variant="ghost"
+                    size="xs"
+                    icon="i-lucide-circle-x"
                     @click.stop="state.event = null"
                   />
                 </template>
