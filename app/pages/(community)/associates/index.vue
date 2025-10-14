@@ -45,13 +45,13 @@ function getRowItems(row: Row<User>) {
       label: 'Actions'
     },
     {
-      label: 'Copy customer ID',
+      label: 'Copia ID associato',
       icon: 'i-lucide-copy',
       onSelect() {
         navigator.clipboard.writeText(row.original.id.toString())
         toast.add({
-          title: 'Copied to clipboard',
-          description: 'Customer ID copied to clipboard'
+          title: 'Copia in corso',
+          description: 'ID associato copiato negli appunti'
         })
       }
     },
@@ -59,26 +59,15 @@ function getRowItems(row: Row<User>) {
       type: 'separator'
     },
     {
-      label: 'View customer details',
+      label: 'Vedi dettagli associato',
       icon: 'i-lucide-list'
     },
     {
-      label: 'View member payments',
+      label: 'Vedi pagamenti associato',
       icon: 'i-lucide-wallet'
     },
     {
       type: 'separator'
-    },
-    {
-      label: 'Delete member',
-      icon: 'i-lucide-trash',
-      color: 'error',
-      onSelect() {
-        toast.add({
-          title: 'Member deleted',
-          description: 'The member has been deleted.'
-        })
-      }
     }
   ]
 }
@@ -141,32 +130,11 @@ const columns: TableColumn<User>[] = [
       })
     }
   },
-  // {
-  //   accessorKey: 'location',
-  //   header: 'Location',
-  //   cell: ({ row }) => row.original.location
-  // },
   {
     accessorKey: 'born_location',
     header: 'Born Location',
     cell: ({ row }) => row.original.born_location
   },
-  // {
-  //   accessorKey: 'status',
-  //   header: 'Status',
-  //   filterFn: 'equals',
-  //   cell: ({ row }) => {
-  //     const color = {
-  //       subscribed: 'success' as const,
-  //       unsubscribed: 'error' as const,
-  //       bounced: 'warning' as const
-  //     }[row.original.status]
-
-  //     return h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () =>
-  //       row.original.status
-  //     )
-  //   }
-  // },
   {
     id: 'actions',
     cell: ({ row }) => {
@@ -262,7 +230,7 @@ const pagination = ref({
             </UButton>
           </AssociatesListDeleteModal>
 
-          <!-- <USelect
+          <USelect
             v-model="statusFilter"
             :items="[
               { label: 'All', value: 'all' },
@@ -273,7 +241,7 @@ const pagination = ref({
             :ui="{ trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200' }"
             placeholder="Filter status"
             class="min-w-28"
-          /> -->
+          />
           <UDropdownMenu
             :items="
               table?.tableApi
@@ -317,11 +285,11 @@ const pagination = ref({
         :columns="columns"
         :loading="status === 'pending'"
         :ui="{
-          base: 'table-fixed border-separate border-spacing-0',
+          base: 'table-fixed border-separate border-spacing-0 text-sm',
           thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
           tbody: '[&>tr]:last:[&>td]:border-b-0',
-          th: 'py-2 first:rounded-l-lg last:rounded-r-lg border-y border-default first:border-l last:border-r',
-          td: 'border-b border-default'
+          th: 'py-1 px-2 first:rounded-l-lg last:rounded-r-lg border-y border-default first:border-l last:border-r',
+          td: 'border-b border-default py-1 px-2'
         }"
       />
 
