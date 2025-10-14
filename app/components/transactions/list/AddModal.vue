@@ -46,6 +46,19 @@ const schema = z.object({
   }
 })
 
+const { data: users } = await useFetch('https://jsonplaceholder.typicode.com/users', {
+  key: 'typicode-users-email',
+  transform: (data: { id: number, name: string, email: string }[]) => {
+    return data?.map(user => ({
+      label: user.name,
+      email: user.email,
+      value: String(user.id),
+      avatar: { src: `https://i.pravatar.cc/120?img=${user.id}` }
+    }))
+  },
+  lazy: true
+})
+
 type Schema = z.output<typeof schema>
 
 const state = reactive<Partial<Schema>>({
@@ -170,14 +183,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                   <UInput
                     v-model="associateDigits"
                     placeholder="000"
-                    icon="i-lucide-credit-card"
                     type="text"
                     inputmode="numeric"
                     pattern="[0-9]*"
                     maxlength="3"
                     class="w-full"
                     :ui="{
-                      base: 'pl-11.5',
+                      base: 'pl-17',
                       leading: 'pointer-events-none'
                     }"
                     @keypress="onlyNumbers"
@@ -185,11 +197,32 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                     @paste="handlePaste($event)"
                   >
                     <template #leading>
-                      <p class="text-sm text-muted">
-                        PW-0
-                      </p>
+                      <div class="flex items-center gap-1.5">
+                        <UIcon name="i-lucide-credit-card" class="size-4 text-muted" />
+                        <p class="text-sm text-muted">
+                          PW-0
+                        </p>
+                      </div>
                     </template>
                   </UInput>
+                </UFormField>
+
+                <UFormField label="Socio" name="associate_id" required>
+                  <UInputMenu
+                    :items="users"
+                    class="w-full"
+                    icon="i-lucide-user"
+                    placeholder="Seleziona un socio"
+                    :ui="{ content: 'min-w-fit' }"
+                  >
+                    <template #item-label="{ item }">
+                      {{ item.label }}
+
+                      <span class="text-muted">
+                        {{ item.email }}
+                      </span>
+                    </template>
+                  </UInputMenu>
                 </UFormField>
               </div>
             </template>
