@@ -360,7 +360,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                     variant="ghost"
                     size="xs"
                     icon="i-lucide-circle-x"
-                    @click.stop="state.league = null"
+                    @click="state.league = ''"
                   />
                 </template>
               </USelectMenu>
@@ -382,7 +382,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                     variant="ghost"
                     size="xs"
                     icon="i-lucide-circle-x"
-                    @click.stop="state.event = null"
+                    @click="state.event = ''"
                   />
                 </template>
               </USelectMenu>
