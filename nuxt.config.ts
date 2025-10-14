@@ -8,6 +8,19 @@ export default defineNuxtConfig({
     '@nuxt/image'
   ],
 
+  components: [
+    // Auto import components from ~/components/inputs without the 'inputs' prefix
+    {
+      path: '~/components/inputs',
+      pathPrefix: false // This removes the 'inputs' prefix
+    },
+    // Preserve the default behavior for other components
+    {
+      path: '~/components',
+      pathPrefix: true
+    }
+  ],
+
   devtools: {
     enabled: true
   },
