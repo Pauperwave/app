@@ -31,6 +31,10 @@ interface Associate {
 
 const associateTypes: Associate['associate_type'][] = ['ordinario', 'sostenitore']
 
+const italianProvinces = [
+  'AG', 'AL', 'AN', 'AO', 'AR', 'AP', 'AT', 'AV', 'BA', 'BT', 'BL', 'BN', 'BG', 'BI', 'BO', 'BZ', 'BS', 'BR', 'CA', 'CL', 'CB', 'CI', 'CE', 'CT', 'CZ', 'CH', 'CO', 'CS', 'CR', 'KR', 'CN', 'EN', 'FM', 'FE', 'FI', 'FG', 'FC', 'FR', 'GE', 'GO', 'GR', 'IM', 'IS', 'SP', 'AQ', 'LT', 'LE', 'LC', 'LI', 'LO', 'LU', 'MC', 'MN', 'MS', 'MT', 'ME', 'MI', 'MO', 'MB', 'NA', 'NO', 'NU', 'OR', 'PD', 'PA', 'PR', 'PV', 'PG', 'PS', 'PE', 'PC', 'PN', 'PZ', 'PO', 'RG', 'RA', 'RC', 'RE', 'RI', 'RN', 'RM', 'RO', 'SA', 'SS', 'SV', 'SI', 'SR', 'SO', 'TA', 'TE', 'TR', 'TO', 'TP', 'TN', 'TV', 'TS', 'UD', 'VA', 'VE', 'VB', 'VC', 'VR', 'VV', 'VI'
+]
+
 const associates: Associate[] = Array.from({ length: 200 }, (_, i) => ({
   id: i + 1,
   uuid: `00000000-0000-4000-8000-${String(i + 1).padStart(12, '0')}`,
@@ -49,14 +53,14 @@ const associates: Associate[] = Array.from({ length: 200 }, (_, i) => ({
   phone_number: faker.phone.number(),
   born_location: `${faker.location.city()}, ${faker.location.country()}`,
   born_date: faker.date.birthdate({ min: 1970, max: 2007, mode: 'year' }).toISOString().slice(0, 10),
-  born_province: faker.location.stateAbbr(),
-  born_state: faker.location.country(),
+  born_province: faker.helpers.arrayElement(italianProvinces),
+  born_state: 'Italia',
   residency_address: faker.location.streetAddress(),
   residency_city: faker.location.city(),
-  residency_province: faker.location.stateAbbr(),
+  residency_province: faker.helpers.arrayElement(italianProvinces),
   residency_cap: faker.location.zipCode(),
-  mtgo_nickname: faker.internet.userName(),
-  mtga_nickname: faker.internet.userName()
+  mtgo_nickname: faker.internet.username(),
+  mtga_nickname: faker.internet.username()
 }))
 
 export default eventHandler(async (event) => {
