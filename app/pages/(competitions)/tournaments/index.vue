@@ -79,8 +79,8 @@ const columnHeaders = {
   id: 'ID',
   status: 'Stato',
   start_date: 'Data e Ora',
-  round_count: 'Partite',
-  round_duration: 'Durata Partita',
+  round_count: 'Turni',
+  round_duration: 'Durata Turni',
   registered_players: 'Iscritti',
   league: 'Lega',
   format: 'Formato',
@@ -105,11 +105,11 @@ function getColumnLabel(id: string): string {
 // Change as needed
 // Statuses not in this list will be sorted alphabetically after these
 const statusOrder = [
-  'Scheduled',
-  'Postponed',
-  'Cancelled',
   'In Progress',
-  'Completed'
+  'Scheduled',
+  'Completed',
+  'Cancelled',
+  'Postponed'
 ]
 
 // Define table columns
@@ -222,9 +222,9 @@ const columns: TableColumn<TournamentData>[] = [
     cell: ({ row }) => {
       const duration = Number(row.getValue('round_duration'))
       let color: 'success' | 'neutral' | 'warning'
-      if (duration < 60) {
+      if (duration < 50) {
         color = 'warning'
-      } else if (duration === 60) {
+      } else if (duration === 50) {
         color = 'neutral'
       } else {
         color = 'success'
