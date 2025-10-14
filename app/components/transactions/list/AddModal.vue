@@ -18,7 +18,7 @@ const schema = z.object({
   payer_email: z.string().check(z.trim(), z.email(), z.toLowerCase()),
   payer_tax_code: z.string().trim().optional(),
   // le date possono essere sia passate che future
-  payment_date: z.string(),
+  payment_datetime: z.string(),
   payment_amount: z.number().nonnegative({
     message: 'L\'importo non può essere negativo'
   }),
@@ -51,7 +51,7 @@ type Schema = z.output<typeof schema>
 const state = reactive<Partial<Schema>>({
   payment_amount: 5,
   payer_is_associate: true,
-  payment_date: new Date().toISOString()
+  payment_datetime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString().slice(0, 16) // default to now + 2 hours, formatted for datetime-local
 })
 
 const associateDigits = ref('')
@@ -143,7 +143,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   <UModal
     v-model:open="open"
     :dismissible="false"
-    :ui="{ content: 'max-w-2xl' }"
+    :ui="{ content: 'max-w-xl' }"
     title="Nuova transazione"
     description="Aggiungi una nuova transazione al database"
   >
@@ -296,7 +296,12 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
         <div class="grid grid-cols-2 gap-2 mt-2">
           <UFormField label="Data pagamento" name="payment_date">
-            <UInput v-model="state.payment_date" type="datetime-local" class="w-full" />
+            <UInput
+              v-model="state.payment_datetime"
+              type="datetime-local"
+              class="w-full"
+              disabled
+            />
           </UFormField>
           <UFormField label="Tipologia di pagamento" name="payment_type">
             <USelect
