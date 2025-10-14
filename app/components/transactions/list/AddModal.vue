@@ -6,6 +6,49 @@ import type { FormSubmitEvent } from '@nuxt/ui'
 const open = defineModel<boolean>({ default: false })
 const toast = useToast()
 
+// Dati presi da 'nomi_addetti'
+const receiverOptions = [
+  'Baldo Riccardo',
+  'Cazzola Marco',
+  'Castelli Lorenzo',
+  'Cordeschi Nicola',
+  'Debiasi Samuel',
+  'Festi Emanuele',
+  'Marisa Simone',
+  'Nardi Emanuele',
+  'Petrolli Filippo',
+  'Pietropoli Carlo'
+]
+
+const eventOptions = [
+  'Torneo Commander',
+  'Torneo Pauper',
+  'Torneo Multiformato',
+  'Quota associativa 2025',
+  'Draft',
+  'Grande evento',
+  'Chaos Draft di Natale',
+  'Torneo One Piece',
+  'Premodern&Birrino',
+  'Commanderwave Fest'
+]
+
+// Reordere in priority order
+// predefinito 'torneo'
+const paymentTypeOptions = [
+  { value: 'entry-fee', label: 'Torneo', icon: 'i-lucide-trophy' },
+  { value: 'membership', label: 'Quota associativa', icon: 'i-lucide-users' },
+  { value: 'event-fee', label: 'Evento', icon: 'i-lucide-calendar' },
+  { value: 'donation', label: 'Donazione', icon: 'i-lucide-heart-handshake' }
+]
+
+const paymentMethodOptions = [
+  { value: 'cash', label: 'Contanti' },
+  { value: 'paypal', label: 'PayPal' },
+  { value: 'pos', label: 'POS' },
+  { value: 'bank-transfer', label: 'Bonifico' }
+]
+
 const schema = z.object({
   associate_id: z.string().optional(),
   payer_is_associate: z.boolean().default(true),
@@ -26,7 +69,7 @@ const schema = z.object({
     message: 'Metodo di pagamento non valido'
   }),
   received_by: z.string().trim().optional(),
-  payment_type: z.enum(['Donation', 'Membership', 'Event Fee'], {
+  payment_type: z.enum(paymentTypeOptions.map(option => option.value), {
     message: 'Tipo di pagamento non valido'
   }),
   event_name: z.string().optional(),
@@ -63,8 +106,15 @@ type Schema = z.output<typeof schema>
 
 const state = reactive<Partial<Schema>>({
   payment_amount: 5,
+  payment_method: 'POS',
+  payment_type: 'event-fee',
   payer_is_associate: true,
   payment_datetime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString().slice(0, 16) // default to now + 2 hours, formatted for datetime-local
+})
+
+// Compute the selected payment type object
+const selectedPaymentType = computed(() => {
+  return paymentTypeOptions.find(item => item.value === state.payment_type)
 })
 
 const associateDigits = ref('')
@@ -123,6 +173,14 @@ const handlePaste = (event: ClipboardEvent) => {
   associateDigits.value = digits
   state.associate_id = digits.length === 3 ? `PW-0${digits}` : ''
 }
+
+// Computed property to automatically uppercase the tax code
+const payerTaxCodeInput = computed({
+  get: () => state.payer_tax_code,
+  set: (value) => {
+    state.payer_tax_code = value?.toUpperCase() || ''
+  }
+})
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
@@ -237,14 +295,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                     color="neutral"
                   >
                     <template v-if="state.payer_name?.length" #trailing>
-                      <UButton
-                        color="neutral"
-                        variant="link"
-                        size="sm"
-                        icon="i-lucide-circle-x"
-                        aria-label="Clear input"
-                        @click="state.payer_name = ''"
-                      />
+                      <UClearButton v-model="state.payer_name" />
                     </template>
                   </UInput>
                 </UFormField>
@@ -257,14 +308,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                     color="neutral"
                   >
                     <template v-if="state.payer_surname?.length" #trailing>
-                      <UButton
-                        color="neutral"
-                        variant="link"
-                        size="sm"
-                        icon="i-lucide-circle-x"
-                        aria-label="Clear input"
-                        @click="state.payer_surname = ''"
-                      />
+                      <UClearButton v-model="state.payer_surname" />
                     </template>
                   </UInput>
                 </UFormField>
@@ -279,34 +323,21 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                     icon="i-lucide-at-sign"
                   >
                     <template v-if="state.payer_email?.length" #trailing>
-                      <UButton
-                        color="neutral"
-                        variant="link"
-                        size="sm"
-                        icon="i-lucide-circle-x"
-                        aria-label="Clear input"
-                        @click="state.payer_email = ''"
-                      />
+                      <UClearButton v-model="state.payer_email" />
                     </template>
                   </UInput>
                 </UFormField>
 
                 <UFormField label="Codice Fiscale" name="payer_tax_code" required>
                   <UInput
-                    v-model="state.payer_tax_code"
+                    v-model="payerTaxCodeInput"
                     type="text"
                     class="w-full"
                     color="neutral"
+                    maxlength="16"
                   >
                     <template v-if="state.payer_tax_code?.length" #trailing>
-                      <UButton
-                        color="neutral"
-                        variant="link"
-                        size="sm"
-                        icon="i-lucide-circle-x"
-                        aria-label="Clear input"
-                        @click="state.payer_tax_code = ''"
-                      />
+                      <ClearButton v-model="state.payer_tax_code" />
                       <div
                         id="character-count"
                         class="text-xs text-muted tabular-nums"
@@ -336,26 +367,32 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               disabled
             />
           </UFormField>
+
+          <UFormField label="Incassati da" name="received_by">
+            <USelectMenu
+              v-model="state.received_by"
+              :items="receiverOptions"
+              class="w-full"
+            />
+          </UFormField>
+
           <UFormField label="Tipologia di pagamento" name="payment_type">
             <USelect
               v-model="state.payment_type"
-              :items="['Donation', 'Membership', 'Event Fee']"
+              :items="paymentTypeOptions"
+              value-key="value"
               class="w-full"
-            />
+            >
+              <template #leading>
+                <UIcon v-if="selectedPaymentType" :name="selectedPaymentType.icon" class="size-5 shrink-0" />
+              </template>
+            </USelect>
           </UFormField>
-          <UFormField label="Importo" name="payment_amount">
-            <UInputNumber
-              v-model="state.payment_amount"
-              class="w-full"
-              :min="0"
-              :step="5"
-              icon="i-lucide-euro"
-            />
-          </UFormField>
+
           <UFormField label="Metodo di Pagamento" name="payment_method">
             <USelect
               v-model="state.payment_method"
-              :items="['Cash', 'PayPal', 'POS', 'Bank Transfer']"
+              :items="paymentMethodOptions"
               class="w-full"
             />
           </UFormField>
@@ -363,10 +400,15 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
         <div class="grid grid-cols-2 gap-2 mt-2">
           <UFormField label="Incassati da" name="received_by">
-            <UInput v-model="state.received_by" class="w-full" />
+            <USelect v-model="state.received_by" :items="receiverOptions" class="w-full" />
           </UFormField>
+
           <UFormField label="Evento" name="event_name">
-            <UInput v-model="state.event_name" class="w-full" />
+            <USelectMenu
+              v-model="state.event_name"
+              :items="eventOptions"
+              class="w-full"
+            />
           </UFormField>
         </div>
 
