@@ -1,4 +1,3 @@
-import type { User } from '~/types'
 import { faker } from '@faker-js/faker'
 
 // Define the User type with all properties from the comments
