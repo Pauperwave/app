@@ -7,12 +7,17 @@ import type { FormSubmitEvent } from '@nuxt/ui'
 const open = defineModel<boolean>({ default: false })
 const toast = useToast()
 
+const visibilityOptions = [
+  { value: 'public', label: 'Pubblico', icon: 'i-lucide-eye' },
+  { value: 'private', label: 'Privato', icon: 'i-lucide-eye-off' }
+]
+
 const statusOptions = [
-  { value: 'scheduled', label: 'Pianificato', icon: 'i-lucide-clock' },
-  { value: 'postponed', label: 'Posticipato', icon: 'i-lucide-circle-pause' },
-  { value: 'cancelled', label: 'Annullato', icon: 'i-lucide-circle-x' },
-  { value: 'ongoing', label: 'In corso', icon: 'i-lucide-circle-dot-dashed' },
-  { value: 'completed', label: 'Completato', icon: 'i-lucide-circle-check-big' }
+  { value: 'scheduled', label: 'Pianificato', icon: 'i-lucide-clock', color: 'info' },
+  { value: 'postponed', label: 'Posticipato', icon: 'i-lucide-circle-pause', color: 'neutral' },
+  { value: 'cancelled', label: 'Annullato', icon: 'i-lucide-circle-x', color: 'error' },
+  { value: 'ongoing', label: 'In corso', icon: 'i-lucide-circle-dot-dashed', color: 'warning' },
+  { value: 'completed', label: 'Completato', icon: 'i-lucide-circle-check-big', color: 'success' }
 ]
 
 const formatOptions = [
@@ -61,23 +66,24 @@ const today = new Date()
 const todayString = today.toISOString().split('T')[0]
 
 const schema = z.object({
+  status: z.string(),
+  visibility: z.string(),
+  companion_code: z.string().optional().nullable(),
   name: z.string({
     error: 'Il nome del torneo è obbligatorio'
   }),
-  ruleset: z.string().min(2, 'Il regolamento deve essere almeno di 2 caratteri'),
-  status: z.string().optional(),
-  start_date: z.string().optional(),
-  start_time: z.string().optional(),
-  round_count: z.number().int().positive().optional(),
-  round_duration: z.number().int().positive().optional(),
-  registered_players: z.number().int().nonnegative().optional(),
+  description: z.string().optional().nullable(),
+  entry_fee: z.number().nonnegative(),
+  format: z.string(),
+  ruleset: z.string(),
+  start_date: z.string(),
+  start_time: z.string(),
+  round_count: z.number().int().positive(),
+  round_duration: z.number().int().positive(),
+  organizer: z.string(),
+  location: z.string(),
   league: z.string().optional().nullable().default(null),
-  event: z.string().optional().nullable().default(null),
-  format: z.string().optional(),
-  organizer: z.string().optional(),
-  location: z.string().optional(),
-  entry_fee: z.number().nonnegative().optional(),
-  companion_code: z.string().optional().nullable()
+  event: z.string().optional().nullable().default(null)
 })
 
 type Schema = z.output<typeof schema>
@@ -87,16 +93,18 @@ const state = reactive<Partial<Schema>>({
   ruleset: 'REL Regular',
   status: 'scheduled',
   start_date: todayString,
+  visibility: 'private',
   start_time: '20:00',
   round_count: 2,
   round_duration: 60,
   league: null,
   event: null,
   format: 'Commander',
+  description: null,
   organizer: 'Pauperwave',
   location: 'Magazzino Fantasia',
   entry_fee: 5,
-  companion_code: undefined
+  companion_code: null
 })
 
 // Initialize CalendarDate from today - use shallowRef with proper type
@@ -122,17 +130,29 @@ const formattedStartDate = computed(() => {
   })
 })
 
+// Computed property to get the selected visibility object
+const selectedVisibility = computed(() => {
+  return visibilityOptions.find(option => option.value === state.visibility)
+})
+
 // Computed property to get the selected status object
 const selectedStatus = computed(() => {
   return statusOptions.find(option => option.value === state.status)
 })
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
+  // Simulate API call
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  console.log('New tournament data:', event.data)
+
+  // Show success toast
   toast.add({
     title: 'Success',
     description: `Nuovo torneo "${event.data.name}" aggiunto`,
     color: 'success'
   })
+
+  // Close modal
   open.value = false
 }
 </script>
@@ -160,18 +180,52 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             Dati relativi al torneo
           </p>
 
-          <UFormField label="Codice Companion" name="companion_code">
-            <UInput
-              v-model="state.companion_code"
-              placeholder="Codice (opzionale)"
-              icon="i-lucide-smartphone"
-              maxlength="7"
-              pattern="[A-Z0-9]{0,7}"
-            />
-          </UFormField>
+          <div class="flex justify-between">
+            <UFormField label="Stato" name="status">
+              <USelectMenu
+                v-model="state.status"
+                :items="statusOptions"
+                value-key="value"
+                :search-input="false"
+                class="w-42"
+                placeholder="Seleziona stato"
+              >
+                <template #leading>
+                  <UIcon v-if="selectedStatus" :name="selectedStatus.icon" class="size-5 shrink-0" />
+                </template>
+              </USelectMenu>
+            </UFormField>
 
-          <div class="grid grid-cols-2 gap-4">
-            <UFormField label="Nome" name="name" required>
+            <UFormField label="Visibilità" name="visibility">
+              <USelectMenu
+                v-model="state.visibility"
+                :items="visibilityOptions"
+                value-key="value"
+                :search-input="false"
+                class="w-42"
+                maxlength="7"
+              >
+                <template #leading>
+                  <UIcon v-if="selectedVisibility" :name="selectedVisibility.icon" class="size-5 shrink-0" />
+                </template>
+              </USelectMenu>
+            </UFormField>
+
+            <UFormField label="Codice Companion" name="companion_code">
+              <UInput
+                v-model="state.companion_code"
+                placeholder="Codice (opzionale)"
+                icon="i-lucide-smartphone"
+                class="w-42"
+                maxlength="7"
+                pattern="[A-Z0-9]{0,7}"
+              />
+            </UFormField>
+          </div>
+
+          <div class="flex items-end gap-2">
+            <!-- eslint-disable-next-line -->
+            <UFormField label="Nome" name="name" class="flex-1" required>
               <UInput
                 v-model="state.name"
                 class="w-full"
@@ -180,30 +234,27 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               />
             </UFormField>
 
-            <div class="flex gap-4">
-              <UFormField label="Stato" name="status">
-                <USelectMenu
-                  v-model="state.status"
-                  :items="statusOptions"
-                  value-key="value"
-                  placeholder="Seleziona stato"
-                >
-                  <template #leading>
-                    <UIcon v-if="selectedStatus" :name="selectedStatus.icon" class="size-5 shrink-0" />
-                  </template>
-                </USelectMenu>
-              </UFormField>
+            <UFormField label="Quota (€)" name="entry_fee">
+              <UInputNumber
+                v-model="state.entry_fee"
+                :min="0"
+                :step="5"
+                class="w-42"
+                icon="i-lucide-euro"
+              />
+            </UFormField>
+          </div>
 
-              <UFormField label="Quota (€)" name="entry_fee">
-                <UInputNumber
-                  v-model="state.entry_fee"
-                  :min="0"
-                  :step="5"
-                  icon="i-lucide-euro"
-                />
-              </UFormField>
-            </div>
+          <UFormField label="Descrizione" name="description">
+            <UTextarea
+              v-model="state.description"
+              class="w-full"
+              placeholder="Descrizione (opzionale)"
+              icon="i-lucide-align-left"
+            />
+          </UFormField>
 
+          <div class="grid grid-cols-2 gap-4">
             <UFormField label="Formato" name="format">
               <USelectMenu
                 v-model="state.format"
@@ -219,6 +270,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 v-model="state.ruleset"
                 class="w-full"
                 :items="rulesetOptions"
+                :search-input="false"
                 placeholder="Seleziona regolamento"
                 icon="i-lucide-book-open"
               />
@@ -284,6 +336,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 v-model="state.organizer"
                 class="w-full"
                 :items="organizerOptions"
+                :search-input="false"
                 placeholder="Seleziona organizzatore"
                 icon="i-lucide-user"
               />
@@ -294,6 +347,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 v-model="state.location"
                 class="w-full"
                 :items="placeOptions"
+                :search-input="false"
                 placeholder="Seleziona luogo"
                 icon="i-lucide-map-pin"
               />
