@@ -61,19 +61,17 @@ const displayValue = computed(() => props.modelValue || '')
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="text-sm font-medium mb-2 block">Ore</label>
-            <USelectMenu
+            <USelect
               v-model="selectedHour"
               class="w-20"
-              :search-input="false"
               :items="hours"
               placeholder="HH"
             />
           </div>
           <div>
             <label class="text-sm font-medium mb-2 block">Minuti</label>
-            <USelectMenu
+            <USelect
               v-model="selectedMinute"
-              :search-input="false"
               :items="minutes"
               placeholder="MM"
             />
