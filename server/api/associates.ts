@@ -6,18 +6,22 @@ const italianProvinces = [
   'AG', 'AL', 'AN', 'AO', 'AR', 'AP', 'AT', 'AV', 'BA', 'BT', 'BL', 'BN', 'BG', 'BI', 'BO', 'BZ', 'BS', 'BR', 'CA', 'CL', 'CB', 'CI', 'CE', 'CT', 'CZ', 'CH', 'CO', 'CS', 'CR', 'KR', 'CN', 'EN', 'FM', 'FE', 'FI', 'FG', 'FC', 'FR', 'GE', 'GO', 'GR', 'IM', 'IS', 'SP', 'AQ', 'LT', 'LE', 'LC', 'LI', 'LO', 'LU', 'MC', 'MN', 'MS', 'MT', 'ME', 'MI', 'MO', 'MB', 'NA', 'NO', 'NU', 'OR', 'PD', 'PA', 'PR', 'PV', 'PG', 'PS', 'PE', 'PC', 'PN', 'PZ', 'PO', 'RG', 'RA', 'RC', 'RE', 'RI', 'RN', 'RM', 'RO', 'SA', 'SS', 'SV', 'SI', 'SR', 'SO', 'TA', 'TE', 'TR', 'TO', 'TP', 'TN', 'TV', 'TS', 'UD', 'VA', 'VE', 'VB', 'VC', 'VR', 'VV', 'VI'
 ]
 
+const pauperwaveNumbers = Array.from({ length: 35 }, (_, i) =>
+  `PW-${i.toString().padStart(4, '0')}`)
+
 const associates: Associate[] = Array.from({ length: 250 }, (_, i) => ({
   id: i + 1,
   uuid: faker.string.uuid(),
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
   request_date: faker.date.past().toISOString(),
+  status: faker.helpers.arrayElement(['pending', 'approved', 'rejected']),
   association_date: faker.datatype.boolean() ? faker.date.past().toISOString() : null,
-  pauperwave_associate_number: faker.datatype.boolean() ? faker.string.numeric(6) : null,
-  consent_data: faker.datatype.boolean(),
+  pauperwave_associate_number: faker.datatype.boolean() && i < pauperwaveNumbers.length ? pauperwaveNumbers[i] : null,
+  consent_data: 'true',
   consent_social: faker.datatype.boolean(),
-  has_read_statute: faker.datatype.boolean(),
-  has_acknowledged_surveillance_notice: faker.datatype.boolean(),
+  has_read_statute: 'true',
+  has_acknowledged_surveillance_notice: 'true',
   associate_type: faker.helpers.arrayElement(associateTypes),
   first_name: faker.person.firstName(),
   last_name: faker.person.lastName(),
