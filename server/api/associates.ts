@@ -9,6 +9,12 @@ const italianProvinces = [
 const pauperwaveNumbers = Array.from({ length: 35 }, (_, i) =>
   `PW-${i.toString().padStart(4, '0')}`)
 
+const italianPrefixes = [
+  '320', '324', '327', '328', '329',
+  '330', '331', '333', '334', '335', '336', '337', '338', '339',
+  '340', '341', '342', '343', '345', '346', '347', '348', '349'
+]
+
 const associates: Associate[] = Array.from({ length: 250 }, (_, i) => ({
   id: i + 1,
   uuid: faker.string.uuid(),
@@ -17,7 +23,10 @@ const associates: Associate[] = Array.from({ length: 250 }, (_, i) => ({
   request_date: faker.date.past().toISOString(),
   status: faker.helpers.arrayElement(['pending', 'approved', 'rejected']),
   association_date: faker.datatype.boolean() ? faker.date.past().toISOString() : null,
-  pauperwave_associate_number: faker.datatype.boolean() && i < pauperwaveNumbers.length ? pauperwaveNumbers[i] : null,
+  pauperwave_associate_number:
+  faker.datatype.boolean() && i < pauperwaveNumbers.length
+    ? pauperwaveNumbers[i] ?? null
+    : null,
   consent_data: true,
   consent_social: faker.datatype.boolean(),
   has_read_statute: true,
@@ -26,9 +35,11 @@ const associates: Associate[] = Array.from({ length: 250 }, (_, i) => ({
   first_name: faker.person.firstName(),
   last_name: faker.person.lastName(),
   tax_code: faker.datatype.boolean() ? faker.string.alphanumeric(16) : null,
-  phone_number: faker.phone.number(),
+  phone_number: `+39 ${faker.helpers.arrayElement(italianPrefixes)} ${faker.string.numeric(7)}`,
   email_address: faker.internet.email(),
-  born_date: faker.date.birthdate({ min: 1970, max: 2007, mode: 'year' }).toISOString().slice(0, 10),
+  born_date: faker.date
+    .birthdate({ min: 1970, max: 2007, mode: 'year' })
+    .toLocaleDateString('it-IT'),
   born_location: `${faker.location.city()}, ${faker.location.country()}`,
   born_province: faker.helpers.arrayElement(italianProvinces),
   born_state: 'Italia',

@@ -1,17 +1,20 @@
+export type AssociateStatus = 'approved' | 'pending' | 'rejected'
+export type AssociateType = 'ordinario' | 'sostenitore'
+
 export interface Associate {
   id: number
   uuid: string
   created_at: string
   updated_at: string
   request_date: string
-  status: string
+  status: AssociateStatus
   association_date: string | null
   pauperwave_associate_number: string | null
   consent_data: boolean
   consent_social: boolean
   has_read_statute: boolean
   has_acknowledged_surveillance_notice: boolean
-  associate_type: 'ordinario' | 'sostenitore'
+  associate_type: AssociateType
   tax_code: string | null
   first_name: string
   last_name: string
