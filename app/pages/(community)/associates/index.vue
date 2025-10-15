@@ -70,7 +70,7 @@ function getRowItems(row: Row<Associate>) {
   ]
 }
 
-const columns: TableColumn<User>[] = [
+const columns: TableColumn<Associate>[] = [
   {
     id: 'select',
     header: ({ table }) =>
