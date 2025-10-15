@@ -16,12 +16,13 @@ export interface Associate {
   first_name: string
   last_name: string
   email_address: string
-  phone_number: string
-  born_location: string
+  phone_number: string | null
   born_date: string
-  born_province: string
+  born_location: string | null
+  born_province: string | null
   born_state: string
   residency_address: string
+  residency_house_number: string | null
   residency_city: string
   residency_province: string
   residency_cap: string
