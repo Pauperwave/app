@@ -3,11 +3,9 @@ import type { TableColumn } from '@nuxt/ui'
 import { upperFirst } from 'scule'
 import { getPaginationRowModel } from '@tanstack/table-core'
 import type { Row } from '@tanstack/table-core'
-import type { User } from '~/types'
 
 const { breadcrumbItems } = useBreadcrumbs()
 
-const UAvatar = resolveComponent('UAvatar')
 const UButton = resolveComponent('UButton')
 // const UBadge = resolveComponent('UBadge')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
@@ -34,11 +32,11 @@ const columnFilters = ref([{
 const columnVisibility = ref()
 const rowSelection = ref({})
 
-const { data, status } = await useFetch<User[]>('/api/associates', {
+const { data, status } = await useFetch<Associate[]>('/api/associates', {
   lazy: true
 })
 
-function getRowItems(row: Row<User>) {
+function getRowItems(row: Row<Associate>) {
   return [
     {
       type: 'label',
@@ -96,23 +94,17 @@ const columns: TableColumn<User>[] = [
     header: 'ID'
   },
   {
-    accessorKey: 'name',
-    header: 'Name',
-    cell: ({ row }) => {
-      return h('div', { class: 'flex items-center gap-3' }, [
-        h(UAvatar, {
-          ...row.original.avatar,
-          size: 'lg'
-        }),
-        h('div', undefined, [
-          h('p', { class: 'font-medium text-highlighted' }, row.original.name),
-          h('p', { class: '' }, `@${row.original.name}`)
-        ])
-      ])
-    }
+    accessorKey: 'first_name',
+    header: 'Nome',
+    cell: ({ row }) => row.original.first_name
   },
   {
-    accessorKey: 'email',
+    accessorKey: 'last_name',
+    header: 'Cognome',
+    cell: ({ row }) => row.original.last_name
+  },
+  {
+    accessorKey: 'email_address',
     header: ({ column }) => {
       const isSorted = column.getIsSorted()
 
@@ -179,7 +171,7 @@ watch(() => statusFilter.value, (newVal) => {
 
 const pagination = ref({
   pageIndex: 0,
-  pageSize: 10
+  pageSize: 24
 })
 </script>
 
