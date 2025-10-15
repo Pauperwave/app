@@ -26,7 +26,7 @@ const toast = useToast()
 const table = useTemplateRef('table')
 
 const columnFilters = ref([{
-  id: 'email',
+  id: 'email_address',
   value: ''
 }])
 const columnVisibility = ref()
@@ -198,11 +198,11 @@ const pagination = ref({
     <template #body>
       <div class="flex flex-wrap items-center justify-between gap-1.5">
         <UInput
-          :model-value="(table?.tableApi?.getColumn('email')?.getFilterValue() as string)"
+          :model-value="(table?.tableApi?.getColumn('email_address')?.getFilterValue() as string)"
           class="max-w-sm"
           icon="i-lucide-search"
           placeholder="Filter emails..."
-          @update:model-value="table?.tableApi?.getColumn('email')?.setFilterValue($event)"
+          @update:model-value="table?.tableApi?.getColumn('email_address')?.setFilterValue($event)"
         />
 
         <div class="flex flex-wrap items-center gap-1.5">
