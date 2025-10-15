@@ -29,7 +29,19 @@ const columnFilters = ref([{
   id: 'email_address',
   value: ''
 }])
-const columnVisibility = ref()
+
+const columnVisibility = ref({
+  id: false,
+  uuid: false,
+  created_at: false,
+  updated_at: false,
+  request_date: false,
+  association_date: false,
+  companion_code: false,
+  mtga_nickname: false,
+  mtgo_nickname: false
+})
+
 const rowSelection = ref({})
 
 const { data, status } = await useFetch<Associate[]>('/api/associates', {
@@ -91,7 +103,96 @@ const columns: TableColumn<Associate>[] = [
   },
   {
     accessorKey: 'id',
-    header: 'ID'
+    header: 'ID',
+    cell: ({ row }) => row.original.id
+  },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    cell: ({ row }) => {
+      const status = row.getValue('status') as string
+      const statusConfig: Record<string, { color: string, icon: string }> = {
+        approved: { color: 'success', icon: 'i-lucide-check-circle' },
+        pending: { color: 'warning', icon: 'i-lucide-circle-dot-dashed' },
+        rejected: { color: 'error', icon: 'i-lucide-x-circle' }
+      }
+      const { color, icon } = statusConfig[status] || { color: 'neutral', icon: 'i-lucide-help-circle' }
+
+      return h(resolveComponent('UBadge'), {
+        class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity gap-2',
+        variant: 'subtle',
+        icon,
+        color,
+        label: upperFirst(status),
+        onClick: (_: Event) => {
+          // Filter by status when badge is clicked
+          const statusColumn = table?.value?.tableApi?.getColumn('status')
+          if (statusColumn) {
+            statusColumn.setFilterValue(status)
+          }
+        }
+      })
+    }
+  },
+  {
+    accessorKey: 'uuid',
+    header: 'UUID',
+    cell: ({ row }) => row.original.uuid
+  },
+  {
+    accessorKey: 'created_at',
+    header: 'Created At',
+    cell: ({ row }) => row.original.created_at
+  },
+  {
+    accessorKey: 'updated_at',
+    header: 'Updated At',
+    cell: ({ row }) => row.original.updated_at
+  },
+  {
+    accessorKey: 'request_date',
+    header: 'Request Date',
+    cell: ({ row }) => row.original.request_date
+  },
+  {
+    accessorKey: 'association_date',
+    header: 'Association Date',
+    cell: ({ row }) => row.original.association_date
+  },
+  {
+    accessorKey: 'pauperwave_associate_number',
+    header: 'PW Associate Number',
+    cell: ({ row }) => row.original.pauperwave_associate_number
+  },
+  {
+    accessorKey: 'consent_data',
+    header: 'Consent Data',
+    cell: ({ row }) => renderConsentBadge(row.original.consent_data)
+  },
+  {
+    accessorKey: 'consent_social',
+    header: 'Consent Social',
+    cell: ({ row }) => renderConsentBadge(row.original.consent_social)
+  },
+  {
+    accessorKey: 'has_read_statute',
+    header: 'Read Statute',
+    cell: ({ row }) => renderConsentBadge(row.original.has_read_statute)
+  },
+  {
+    accessorKey: 'has_acknowledged_surveillance_notice',
+    header: 'Surveillance Notice',
+    cell: ({ row }) => renderConsentBadge(row.original.has_acknowledged_surveillance_notice)
+  },
+  {
+    accessorKey: 'associate_type',
+    header: 'Associate Type',
+    cell: ({ row }) => row.original.associate_type
+  },
+  {
+    accessorKey: 'tax_code',
+    header: 'Tax Code',
+    cell: ({ row }) => row.original.tax_code
   },
   {
     accessorKey: 'first_name',
@@ -105,27 +206,63 @@ const columns: TableColumn<Associate>[] = [
   },
   {
     accessorKey: 'email_address',
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted()
-
-      return h(UButton, {
-        color: 'neutral',
-        variant: 'ghost',
-        label: 'Email',
-        icon: isSorted
-          ? isSorted === 'asc'
-            ? 'i-lucide-arrow-up-narrow-wide'
-            : 'i-lucide-arrow-down-wide-narrow'
-          : 'i-lucide-arrow-up-down',
-        class: '-mx-2.5',
-        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
-      })
-    }
+    header: 'Email',
+    cell: ({ row }) => row.original.email_address
+  },
+  {
+    accessorKey: 'phone_number',
+    header: 'Phone',
+    cell: ({ row }) => row.original.phone_number
   },
   {
     accessorKey: 'born_location',
     header: 'Born Location',
     cell: ({ row }) => row.original.born_location
+  },
+  {
+    accessorKey: 'born_date',
+    header: 'Born Date',
+    cell: ({ row }) => row.original.born_date
+  },
+  {
+    accessorKey: 'born_province',
+    header: 'Born Province',
+    cell: ({ row }) => row.original.born_province
+  },
+  {
+    accessorKey: 'born_state',
+    header: 'Born State',
+    cell: ({ row }) => row.original.born_state
+  },
+  {
+    accessorKey: 'residency_address',
+    header: 'Residency Address',
+    cell: ({ row }) => row.original.residency_address
+  },
+  {
+    accessorKey: 'residency_city',
+    header: 'Residency City',
+    cell: ({ row }) => row.original.residency_city
+  },
+  {
+    accessorKey: 'residency_province',
+    header: 'Residency Province',
+    cell: ({ row }) => row.original.residency_province
+  },
+  {
+    accessorKey: 'residency_cap',
+    header: 'Residency CAP',
+    cell: ({ row }) => row.original.residency_cap
+  },
+  {
+    accessorKey: 'mtgo_nickname',
+    header: 'MTGO Nickname',
+    cell: ({ row }) => row.original.mtgo_nickname
+  },
+  {
+    accessorKey: 'mtga_nickname',
+    header: 'MTGA Nickname',
+    cell: ({ row }) => row.original.mtga_nickname
   },
   {
     id: 'actions',
@@ -154,6 +291,20 @@ const columns: TableColumn<Associate>[] = [
   }
 ]
 
+function renderConsentBadge(consentvalue: boolean) {
+  const consent = consentvalue
+  const consentConfig: Record<string, { label: string, color: string, icon: string }> = {
+    yes: { label: 'Yes', color: 'success', icon: 'i-lucide-check-circle' },
+    no: { label: 'No', color: 'error', icon: 'i-lucide-circle-x' }
+  }
+
+  return h(resolveComponent('UBadge'), {
+    variant: 'subtle',
+    class: 'w-[60px]',
+    ...consentConfig[consent ? 'yes' : 'no']
+  })
+}
+
 const statusFilter = ref('all')
 
 watch(() => statusFilter.value, (newVal) => {
@@ -171,7 +322,7 @@ watch(() => statusFilter.value, (newVal) => {
 
 const pagination = ref({
   pageIndex: 0,
-  pageSize: 24
+  pageSize: 20
 })
 </script>
 

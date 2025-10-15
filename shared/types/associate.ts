@@ -4,6 +4,7 @@ export interface Associate {
   created_at: string
   updated_at: string
   request_date: string
+  status: string
   association_date: string | null
   pauperwave_associate_number: string | null
   consent_data: boolean
