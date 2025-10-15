@@ -2,6 +2,7 @@
 import * as z from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import { CalendarDate, getLocalTimeZone } from '@internationalized/date'
+import { vMaska } from 'maska/vue'
 
 // Define the model to accept open state from parent
 const open = defineModel<boolean>({ default: false })
@@ -16,13 +17,13 @@ function formatDate(date: Date): string {
 
 const schema = z.object({
   associate_type: z.enum(['Ordinario', 'Sostenitore']),
-  name: z.string().min(2, 'Nome troppo corto'),
-  surname: z.string().min(2, 'Cognome troppo corto'),
+  first_name: z.string().min(2, 'Nome troppo corto'),
+  last_name: z.string().min(2, 'Cognome troppo corto'),
   // https://github.com/colinhacks/zod/issues/4642#issuecomment-2957508997
   // - trim per rimuovere spazi
   // - email per validare il formato
   // - toLowerCase per normalizzare
-  email: z.string().check(z.trim(), z.email(), z.toLowerCase()),
+  email_address: z.string().check(z.trim(), z.email(), z.toLowerCase()),
   phone_number: z.string().regex(/^\d{10,15}$/, 'Numero di telefono non valido'),
   tax_code: z.string().regex(/^[A-Z0-9]{16}$/i, 'Codice fiscale non valido'),
   born_location: z.string().min(2, 'Luogo di nascita richiesto'),
@@ -45,9 +46,9 @@ type Schema = z.infer<typeof schema>
 
 const state = reactive<Schema>({
   associate_type: 'Ordinario',
-  name: '',
-  surname: '',
-  email: '',
+  first_name: '',
+  last_name: '',
+  email_address: '',
   phone_number: '',
   tax_code: '',
   born_location: '',
@@ -81,7 +82,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     console.log('Form submitted:', event.data)
     toast.add({
       title: 'Successo',
-      description: `Nuovo associato "${event.data.name} ${event.data.surname}" aggiunto`,
+      description: `Nuovo associato "${event.data.first_name} ${event.data.last_name}" aggiunto`,
       color: 'success'
     })
     open.value = false
@@ -128,13 +129,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           <h3 class="text-lg font-semibold text-primary">Informazioni personali</h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
             <UFormField label="Nome" name="name" required>
-              <UInput v-model="state.name" name="name" autocomplete="given-name" class="w-full" />
+              <UInput v-model="state.first_name" name="name" autocomplete="given-name" class="w-full" />
             </UFormField>
             <UFormField label="Cognome" name="surname" required>
-              <UInput v-model="state.surname" name="surname" autocomplete="family-name" class="w-full" />
+              <UInput v-model="state.last_name" name="surname" autocomplete="family-name" class="w-full" />
             </UFormField>
             <UFormField label="Email" name="email" required>
-              <UInput v-model="state.email" autocomplete="email" class="w-full" />
+              <UInput v-model="state.email_address" autocomplete="email" class="w-full" />
             </UFormField>
             <UFormField label="Numero di cellulare" name="phone_number" required>
               <UInput v-maska="'(+39) ### #######'" icon="i-lucide-phone" v-model="state.phone_number" autocomplete="tel" class="w-full" />
