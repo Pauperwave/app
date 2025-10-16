@@ -3,6 +3,7 @@ import type { TableColumn } from '@nuxt/ui'
 import { upperFirst } from 'scule'
 import { getPaginationRowModel } from '@tanstack/table-core'
 import type { Row } from '@tanstack/table-core'
+import type { Associate } from '~/types'
 
 const { breadcrumbItems } = useBreadcrumbs()
 
