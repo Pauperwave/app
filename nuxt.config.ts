@@ -28,9 +28,7 @@ export default defineNuxtConfig({
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
       siteName: 'PauperWave',
       siteDescription: 'The Pauper League Manager'
-    },
-    supabaseUrl: process.env.SUPABASE_URL,
-    supabaseKey: process.env.SUPABASE_KEY
+    }
   },
   routeRules: {
     '/api/**': {
@@ -48,8 +46,6 @@ export default defineNuxtConfig({
     }
   },
   supabase: {
-    url: process.env.SUPABASE_URL,
-    key: process.env.SUPABASE_KEY,
     redirect: false, // disattiva redirect automatici di Supabase
     cookieOptions: {
       domain: '', // lascia vuoto per default (usa il dominio corrente)
