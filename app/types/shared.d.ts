@@ -1,3 +1,4 @@
+// types/shared.d.ts
 import type { Associate } from './associate'
 
 export interface Stat {
@@ -8,7 +9,7 @@ export interface Stat {
   formatter?: (value: number) => string
 }
 
-export type SaleStatus = 'paid' | 'pending' | 'failed'
+export type SaleStatus = 'paid' | 'failed' | 'refunded'
 
 export interface Sale {
   id: string
@@ -21,7 +22,7 @@ export interface Sale {
 export interface Notification {
   id: number
   unread?: boolean
-  sender?: Associate
+  sender: Associate
   body: string
   date: string
 }

@@ -26,14 +26,14 @@ const { data: notifications } = await useFetch<Notification[]>('/api/notificatio
         >
           <UAvatar
             v-bind="notification.sender.avatar"
-            :alt="notification.sender.name"
+            :alt="notification.sender.first_name"
             size="md"
           />
         </UChip>
 
         <div class="text-sm flex-1">
           <p class="flex items-center justify-between">
-            <span class="text-highlighted font-medium">{{ notification.sender.name }}</span>
+            <span class="text-highlighted font-medium">{{ notification.sender.first_name }}</span>
 
             <time
               :datetime="notification.date"

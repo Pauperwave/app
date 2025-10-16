@@ -1,3 +1,5 @@
+import type { AvatarProps } from '@nuxt/ui'
+
 export type AssociateStatus = 'approved' | 'pending' | 'rejected'
 export type AssociateType = 'ordinario' | 'sostenitore'
 
@@ -22,12 +24,13 @@ export interface Associate {
 
   associate_type: AssociateType | null
 
-  tax_code?: string | null
+  avatar?: AvatarProps
 
   first_name: string
   last_name: string
   email_address: string
   phone_number?: string | null
+  tax_code?: string | null
 
   born_date: string
   born_location?: string | null
