@@ -1,9 +1,4 @@
-export * from './associate'
-export * from './event'
-export * from './league'
-export * from './member'
-export * from './tournament'
-export * from './transaction'
+import type { Associate } from './associate'
 
 export interface Stat {
   title: string
@@ -12,6 +7,8 @@ export interface Stat {
   variation: number
   formatter?: (value: number) => string
 }
+
+export type SaleStatus = 'paid' | 'pending' | 'failed'
 
 export interface Sale {
   id: string
@@ -24,7 +21,7 @@ export interface Sale {
 export interface Notification {
   id: number
   unread?: boolean
-  sender: User
+  sender?: Associate
   body: string
   date: string
 }
