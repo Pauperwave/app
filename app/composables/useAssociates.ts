@@ -1,4 +1,4 @@
-import type { Associate } from '~/types/associate'
+import type { Associate } from '~/types'
 
 export const useAssociates = () => {
   const supabase = useSupabaseClient()
