@@ -569,7 +569,7 @@ const pagination = ref({
 })
 
 // Debug: log changes to column filters
-if (import.meta.dev) {
+if (import.meta.env.DEV) {
   watch(columnFilters, (newFilters) => {
     console.log('Column filters changed:', JSON.stringify(newFilters, null, 2))
   }, { deep: true })
