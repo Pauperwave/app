@@ -36,8 +36,6 @@ function formatDate(dateString?: string | null): string {
   }
 }
 
-// 2025-01-02
-
 onMounted(() => {
   if (route.query.action === 'create') {
     isModalOpen.value = true
@@ -70,8 +68,6 @@ const columnVisibility = ref({
   mtga_nickname: false
 })
 
-// 2025-10-15T17:49:32.040789+00:00
-
 const rowSelection = ref({})
 
 const columns: TableColumn<Associate>[] = [
@@ -98,52 +94,26 @@ const columns: TableColumn<Associate>[] = [
   {
     accessorKey: 'id',
     header: 'ID',
-    meta: {
-      class: {
-        td: 'font-mono'
-      }
-    },
     cell: ({ row }) => row.original.id
   },
   {
     accessorKey: 'uuid',
     header: 'UUID',
-    cell: ({ row }) =>
-      h(resolveComponent('UBadge'), {
-        variant: 'subtle',
-        color: 'neutral',
-        class: 'font-mono',
-        label: String(row.original.uuid)
-      })
+    cell: ({ row }) => renderNeutralBadge(row.original.uuid)
   },
   {
     accessorKey: 'created_at',
     header: 'Data di creazione',
-    meta: {
-      class: {
-        td: 'font-mono'
-      }
-    },
     cell: ({ row }) => formatDateTime(row.original.created_at)
   },
   {
     accessorKey: 'updated_at',
     header: 'Data di aggiornamento',
-    meta: {
-      class: {
-        td: 'font-mono'
-      }
-    },
     cell: ({ row }) => formatDateTime(row.original.updated_at)
   },
   {
     accessorKey: 'updated_by',
     header: 'Aggiornato da',
-    meta: {
-      class: {
-        td: 'font-mono'
-      }
-    },
     cell: ({ row }) => row.original.updated_by
   },
   {
@@ -164,7 +134,8 @@ const columns: TableColumn<Associate>[] = [
         icon,
         color,
         label: upperFirst(status),
-        onClick: (_: Event) => {
+        onClick: (e: Event) => {
+          e.stopPropagation() // Prevent row click if you add onSelect later
           const statusColumn = table?.value?.tableApi?.getColumn('status')
           if (statusColumn) {
             statusColumn.setFilterValue(status)
@@ -176,51 +147,26 @@ const columns: TableColumn<Associate>[] = [
   {
     accessorKey: 'request_date',
     header: 'Data richiesta',
-    meta: {
-      class: {
-        td: 'font-mono'
-      }
-    },
     cell: ({ row }) => formatDateTime(row.original.request_date)
   },
   {
     accessorKey: 'payment_date',
     header: 'Pagamento',
-    meta: {
-      class: {
-        td: 'font-mono'
-      }
-    },
     cell: ({ row }) => formatDate(row.original.payment_date)
   },
   {
     accessorKey: 'association_date',
     header: 'Data di associazione',
-    meta: {
-      class: {
-        td: 'font-mono'
-      }
-    },
     cell: ({ row }) => formatDate(row.original.association_date)
   },
   {
     accessorKey: 'associate_type',
     header: 'Tipo di associato',
-    meta: {
-      class: {
-        td: 'font-mono'
-      }
-    },
     cell: ({ row }) => row.original.associate_type
   },
   {
     accessorKey: 'pauperwave_associate_number',
     header: 'Numero associato PauperWave',
-    meta: {
-      class: {
-        td: 'font-mono'
-      }
-    },
     cell: ({ row }) => row.original.pauperwave_associate_number || ''
   },
   {
@@ -246,92 +192,46 @@ const columns: TableColumn<Associate>[] = [
   {
     accessorKey: 'first_name',
     header: 'Nome',
-    meta: {
-      class: {
-        td: 'font-mono'
-      }
-    },
     cell: ({ row }) => row.original.first_name
   },
   {
     accessorKey: 'last_name',
     header: 'Cognome',
-    meta: {
-      class: {
-        td: 'w-40 font-mono'
-      }
-    },
     cell: ({ row }) => row.original.last_name
   },
   {
     accessorKey: 'email_address',
     header: 'Email',
-    cell: ({ row }) =>
-      h(resolveComponent('UBadge'), {
-        variant: 'subtle',
-        color: 'neutral',
-        class: 'font-mono',
-        label: String(row.original.email_address)
-      })
+    cell: ({ row }) => renderNeutralBadge(row.original.email_address)
   },
   {
     accessorKey: 'phone_number',
     header: 'Phone',
-    meta: {
-      class: {
-        td: 'font-mono'
-      }
-    },
     cell: ({ row }) => row.original.phone_number
   },
   {
     accessorKey: 'tax_code',
     header: 'Tax Code',
-    meta: {
-      class: {
-        td: 'font-mono'
-      }
-    },
     cell: ({ row }) => row.original.tax_code
   },
   {
     accessorKey: 'born_date',
     header: 'Data di nascita',
-    meta: {
-      class: {
-        td: 'font-mono'
-      }
-    },
     cell: ({ row }) => formatDate(row.original.born_date)
   },
   {
     accessorKey: 'born_location',
     header: 'Luogo di nascita',
-    meta: {
-      class: {
-        td: 'font-mono'
-      }
-    },
     cell: ({ row }) => row.original.born_location || ''
   },
   {
     accessorKey: 'born_province',
     header: 'Provincia di nascita',
-    meta: {
-      class: {
-        td: 'font-mono'
-      }
-    },
     cell: ({ row }) => row.original.born_province || ''
   },
   {
     accessorKey: 'born_state',
     header: 'Nazione di nascita',
-    meta: {
-      class: {
-        td: 'font-mono'
-      }
-    },
     cell: ({ row }) => row.original.born_state || ''
   },
   {
@@ -357,11 +257,6 @@ const columns: TableColumn<Associate>[] = [
   {
     accessorKey: 'residency_cap',
     header: 'CAP',
-    meta: {
-      class: {
-        td: 'font-mono'
-      }
-    },
     cell: ({ row }) => row.original.residency_cap
   },
   {
@@ -375,6 +270,15 @@ const columns: TableColumn<Associate>[] = [
     cell: ({ row }) => row.original.mtga_nickname
   }
 ]
+
+function renderNeutralBadge(value: string) {
+  return h(resolveComponent('UBadge'), {
+    variant: 'subtle',
+    color: 'neutral',
+    class: 'font-mono',
+    label: String(value)
+  })
+}
 
 function renderConsentBadge(consentvalue: boolean) {
   const consent = consentvalue
@@ -395,7 +299,7 @@ const statusFilter = ref('all')
 watch(() => statusFilter.value, (newVal) => {
   if (!table?.value?.tableApi) return
 
-  const statusColumn = table.value.tableApi.getColumn('status')
+  const statusColumn = table.value.tableApi.getColumn('request_status')
   if (!statusColumn) return
 
   if (newVal === 'all') {
