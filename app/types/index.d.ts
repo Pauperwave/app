@@ -3,7 +3,7 @@ import type { AvatarProps } from '@nuxt/ui'
 export type UserStatus = 'subscribed' | 'unsubscribed' | 'bounced'
 export type SaleStatus = 'paid' | 'failed' | 'refunded'
 
-export type AssociateStatus = 'approved' | 'pending' | 'rejected'
+export type RequestStatus = 'accepted' | 'pending' | 'rejected'
 export type AssociateType = 'ordinario' | 'sostenitore'
 
 export type TournamentStatus = 'scheduled' | 'canceled' | 'ongoing' | 'completed'
@@ -14,10 +14,11 @@ export interface Associate {
 
   created_at: string
   updated_at: string
+  updated_by: string
 
+  request_status: RequestStatus
   request_date: string
-  request_time: string
-  request_status: AssociateStatus
+  payment_date: string
   association_date?: string | null
 
   pauperwave_associate_number?: string | null
