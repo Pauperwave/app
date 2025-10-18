@@ -1,0 +1,72 @@
+<script setup lang="ts">
+interface StatusItem {
+  label: string
+  value: string
+  icon: string
+  color?: string
+  disabled?: boolean
+}
+
+interface Props {
+  modelValue?: string
+  name?: string
+  label?: string
+  items: StatusItem[]
+  placeholder?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  name: 'status',
+  placeholder: 'Select status'
+})
+
+const emit = defineEmits<{
+  'update:modelValue': [value: string | undefined]
+}>()
+
+const value = computed({
+  get: () => props.modelValue,
+  set: val => emit('update:modelValue', val)
+})
+
+const selectedItem = computed(() =>
+  props.items.find(item => item.value === value.value)
+)
+</script>
+
+<template>
+  <UFormField :name="name" :label="label">
+    <USelect
+      v-model="value"
+      :items="items"
+      :placeholder="placeholder"
+      value-key="value"
+      class="w-34"
+      :ui="{
+        trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200'
+      }"
+    >
+      <template #leading>
+        <UIcon
+          v-if="selectedItem"
+          :name="selectedItem.icon"
+          :class="[
+            'size-5 shrink-0',
+            selectedItem.color && `text-${selectedItem.color}`
+          ]"
+        />
+      </template>
+
+      <template #item="{ item }">
+        <UIcon
+          :name="item.icon"
+          :class="[
+            'size-5 shrink-0',
+            item.color && `text-${item.color}`
+          ]"
+        />
+        <span>{{ item.label }}</span>
+      </template>
+    </USelect>
+  </UFormField>
+</template>
