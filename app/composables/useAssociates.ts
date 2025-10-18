@@ -1,23 +1,31 @@
-import type { Associate } from '~/types'
-
 export const useAssociates = () => {
   const supabase = useSupabaseClient()
-  const associates = ref<Associate[]>([])
-  const loading = ref(false)
-  const error = ref<string | null>(null)
 
-  const fetchAssociates = async () => {
-    loading.value = true
-    const { data, error: supabaseError } = await supabase
-      .from('pauperwave_associates')
-      .select('*')
-      .order('created_at', { ascending: false })
+  const { data: associates, pending: loading, error, refresh } = useAsyncData(
+    'associates',
+    async () => {
+      const { data, error: supabaseError } = await supabase
+        .from('pauperwave_associates')
+        .select('*')
+        .order('id', { ascending: true })
 
-    if (supabaseError) error.value = supabaseError.message
-    else associates.value = data ?? []
+      if (supabaseError) {
+        throw createError({
+          statusCode: 500,
+          message: supabaseError.message
+        })
+      }
 
-    loading.value = false
-  }
+      if (import.meta.env.DEV) {
+        console.log('Fetched associates:', data)
+      }
+      return data ?? []
+    },
+    {
+      default: () => [],
+      lazy: true
+    }
+  )
 
-  return { associates, fetchAssociates, loading, error }
+  return { associates, loading, error, refresh }
 }
