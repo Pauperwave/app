@@ -19,24 +19,23 @@ export interface Associate {
   request_status: RequestStatus
   request_date: string
   payment_date: string
-  association_date?: string | null
 
-  pauperwave_associate_number?: string | null
+  association_date: string | null
+  associate_type: AssociateType | null
+  pauperwave_associate_number: string | null
 
   consent_data: boolean
   consent_social: boolean
   has_read_statute: boolean
   has_acknowledged_surveillance_notice: boolean
 
-  associate_type: AssociateType | null
-
   avatar?: AvatarProps
 
   first_name: string
   last_name: string
   email_address: string
-  phone_number?: string | null
-  tax_code?: string | null
+  phone_number: string | null
+  tax_code: string | null
 
   born_date: string
   born_location?: string | null

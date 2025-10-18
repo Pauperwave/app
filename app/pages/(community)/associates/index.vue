@@ -26,7 +26,7 @@ function formatDateTime(isoString?: string): string {
   }
 }
 
-function formatDate(dateString?: string): string {
+function formatDate(dateString?: string | null): string {
   if (!dateString) return ''
   try {
     const date = parseISO(dateString)
@@ -52,23 +52,22 @@ const columnFilters = ref([])
 const columnVisibility = ref({
   uuid: false,
   created_at: false,
-  updated_at: false
-  // updated_by: false,
-  // association_date: false,
-  // pauperwave_associate_number: false,
-  // associate_type: false,
-  // tax_code: false,
-  // born_location: false,
-  // born_date: false,
-  // born_province: false,
-  // born_state: false,
-  // residency_address: false,
-  // residency_city: false,
-  // residency_province: false,
-  // residency_cap: false,
-  // mtgo_nickname: false,
-  // mtga_nickname: false,
-  // actions: false
+  updated_at: false,
+  updated_by: false,
+  associate_type: false,
+  consent_data: false,
+  has_read_statute: false,
+  has_acknowledged_surveillance_notice: false,
+  born_location: false,
+  born_province: false,
+  born_state: false,
+  residency_address: false,
+  residency_house_number: false,
+  residency_city: false,
+  residency_province: false,
+  residency_cap: false,
+  mtgo_nickname: false,
+  mtga_nickname: false
 })
 
 // 2025-10-15T17:49:32.040789+00:00
@@ -145,7 +144,7 @@ const columns: TableColumn<Associate>[] = [
         td: 'font-mono'
       }
     },
-    cell: ({ row }) => formatDateTime(row.original.updated_by)
+    cell: ({ row }) => row.original.updated_by
   },
   {
     accessorKey: 'request_status',
@@ -205,6 +204,46 @@ const columns: TableColumn<Associate>[] = [
     cell: ({ row }) => formatDate(row.original.association_date)
   },
   {
+    accessorKey: 'associate_type',
+    header: 'Tipo di associato',
+    meta: {
+      class: {
+        td: 'font-mono'
+      }
+    },
+    cell: ({ row }) => row.original.associate_type
+  },
+  {
+    accessorKey: 'pauperwave_associate_number',
+    header: 'Numero associato PauperWave',
+    meta: {
+      class: {
+        td: 'font-mono'
+      }
+    },
+    cell: ({ row }) => row.original.pauperwave_associate_number || ''
+  },
+  {
+    accessorKey: 'consent_data',
+    header: 'Consenso dati',
+    cell: ({ row }) => renderConsentBadge(row.original.consent_data)
+  },
+  {
+    accessorKey: 'consent_social',
+    header: 'Consenso social',
+    cell: ({ row }) => renderConsentBadge(row.original.consent_social)
+  },
+  {
+    accessorKey: 'has_read_statute',
+    header: 'Ha letto lo statuto',
+    cell: ({ row }) => renderConsentBadge(row.original.has_read_statute)
+  },
+  {
+    accessorKey: 'has_acknowledged_surveillance_notice',
+    header: 'Visione Privacy',
+    cell: ({ row }) => renderConsentBadge(row.original.has_acknowledged_surveillance_notice)
+  },
+  {
     accessorKey: 'first_name',
     header: 'Nome',
     meta: {
@@ -244,24 +283,114 @@ const columns: TableColumn<Associate>[] = [
       }
     },
     cell: ({ row }) => row.original.phone_number
+  },
+  {
+    accessorKey: 'tax_code',
+    header: 'Tax Code',
+    meta: {
+      class: {
+        td: 'font-mono'
+      }
+    },
+    cell: ({ row }) => row.original.tax_code
+  },
+  {
+    accessorKey: 'born_date',
+    header: 'Data di nascita',
+    meta: {
+      class: {
+        td: 'font-mono'
+      }
+    },
+    cell: ({ row }) => formatDate(row.original.born_date)
+  },
+  {
+    accessorKey: 'born_location',
+    header: 'Luogo di nascita',
+    meta: {
+      class: {
+        td: 'font-mono'
+      }
+    },
+    cell: ({ row }) => row.original.born_location || ''
+  },
+  {
+    accessorKey: 'born_province',
+    header: 'Provincia di nascita',
+    meta: {
+      class: {
+        td: 'font-mono'
+      }
+    },
+    cell: ({ row }) => row.original.born_province || ''
+  },
+  {
+    accessorKey: 'born_state',
+    header: 'Nazione di nascita',
+    meta: {
+      class: {
+        td: 'font-mono'
+      }
+    },
+    cell: ({ row }) => row.original.born_state || ''
+  },
+  {
+    accessorKey: 'residency_address',
+    header: 'Indirizzo',
+    cell: ({ row }) => row.original.residency_address
+  },
+  {
+    accessorKey: 'residency_house_number',
+    header: 'Numero civico',
+    cell: ({ row }) => row.original.residency_house_number || ''
+  },
+  {
+    accessorKey: 'residency_city',
+    header: 'Città',
+    cell: ({ row }) => row.original.residency_city
+  },
+  {
+    accessorKey: 'residency_province',
+    header: 'Provincia',
+    cell: ({ row }) => row.original.residency_province
+  },
+  {
+    accessorKey: 'residency_cap',
+    header: 'CAP',
+    meta: {
+      class: {
+        td: 'font-mono'
+      }
+    },
+    cell: ({ row }) => row.original.residency_cap
+  },
+  {
+    accessorKey: 'mtgo_nickname',
+    header: 'MTGO Nickname',
+    cell: ({ row }) => row.original.mtgo_nickname
+  },
+  {
+    accessorKey: 'mtga_nickname',
+    header: 'MTGA Nickname',
+    cell: ({ row }) => row.original.mtga_nickname
   }
 ]
 
-// function renderConsentBadge(consentvalue: boolean) {
-//   const consent = consentvalue
-//   const consentConfig: Record<string, { label: string, color: string, icon: string }> = {
-//     yes: { label: 'Yes', color: 'success', icon: 'i-lucide-check-circle' },
-//     no: { label: 'No', color: 'error', icon: 'i-lucide-circle-x' }
-//   }
+function renderConsentBadge(consentvalue: boolean) {
+  const consent = consentvalue
+  const consentConfig: Record<string, { label: string, color: string, icon: string }> = {
+    yes: { label: 'Yes', color: 'success', icon: 'i-lucide-check-circle' },
+    no: { label: 'No', color: 'error', icon: 'i-lucide-circle-x' }
+  }
 
-//   return h(resolveComponent('UBadge'), {
-//     variant: 'subtle',
-//     class: 'w-[60px]',
-//     ...consentConfig[consent ? 'yes' : 'no']
-//   })
-// }
+  return h(resolveComponent('UBadge'), {
+    variant: 'subtle',
+    class: 'w-[60px]',
+    ...consentConfig[consent ? 'yes' : 'no']
+  })
+}
 
-const statusFilter = ref('accepted')
+const statusFilter = ref('all')
 
 watch(() => statusFilter.value, (newVal) => {
   if (!table?.value?.tableApi) return
@@ -357,7 +486,7 @@ watch(() => statusFilter.value, (newVal) => {
             :content="{ align: 'end' }"
           >
             <UButton
-              label="Display"
+              label="Mostra colonne"
               color="neutral"
               variant="outline"
               trailing-icon="i-lucide-settings-2"
