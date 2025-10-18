@@ -47,6 +47,53 @@ const table = useTemplateRef('table')
 
 const columnFilters = ref([])
 
+// TODO utilizzare il mapping per la traduzione delle intestazioni
+const columnHeaders = {
+  select: 'Seleziona',
+  id: 'ID',
+  uuid: 'UUID',
+  created_at: 'Data di creazione',
+  updated_at: 'Data di aggiornamento',
+  updated_by: 'Aggiornato da',
+  request_status: 'Stato richiesta',
+  request_date: 'Data richiesta',
+  payment_date: 'Data pagamento',
+  association_date: 'Data di associazione',
+  associate_type: 'Tipo di associato',
+  pauperwave_associate_number: '# PW',
+  consent_data: 'Consenso dati',
+  consent_social: 'Consenso social',
+  has_read_statute: 'Ha letto lo statuto',
+  has_acknowledged_surveillance_notice: 'Visione Privacy',
+  first_name: 'Nome',
+  last_name: 'Cognome',
+  email_address: 'Email',
+  phone_number: 'Cellulare',
+  tax_code: 'Codice fiscale',
+  born_date: 'Data di nascita',
+  born_location: 'Luogo di nascita',
+  born_province: 'Provincia di nascita',
+  born_state: 'Nazione di nascita',
+  residency_address: 'Indirizzo',
+  residency_house_number: 'Numero civico',
+  residency_city: 'Città',
+  residency_province: 'Provincia',
+  residency_cap: 'CAP',
+  mtgo_nickname: 'Nickname MTGO',
+  mtga_nickname: 'Nickname MTGA'
+} as const
+
+// Define a type for the keys of columnHeaders
+type ColumnHeaderKey = keyof typeof columnHeaders
+
+// Helper to get column label with fallback
+function getColumnLabel(id: string): string {
+  if (id in columnHeaders) {
+    return columnHeaders[id as ColumnHeaderKey]
+  }
+  return id
+}
+
 const columnVisibility = ref({
   uuid: false,
   created_at: false,
@@ -93,32 +140,32 @@ const columns: TableColumn<Associate>[] = [
   },
   {
     accessorKey: 'id',
-    header: 'ID',
+    header: columnHeaders.id,
     cell: ({ row }) => row.original.id
   },
   {
     accessorKey: 'uuid',
-    header: 'UUID',
+    header: columnHeaders.uuid,
     cell: ({ row }) => renderNeutralBadge(row.original.uuid)
   },
   {
     accessorKey: 'created_at',
-    header: 'Data di creazione',
+    header: columnHeaders.created_at,
     cell: ({ row }) => formatDateTime(row.original.created_at)
   },
   {
     accessorKey: 'updated_at',
-    header: 'Data di aggiornamento',
+    header: columnHeaders.updated_at,
     cell: ({ row }) => formatDateTime(row.original.updated_at)
   },
   {
     accessorKey: 'updated_by',
-    header: 'Aggiornato da',
+    header: columnHeaders.updated_by,
     cell: ({ row }) => row.original.updated_by
   },
   {
     accessorKey: 'request_status',
-    header: 'Request Status',
+    header: columnHeaders.request_status,
     cell: ({ row }) => {
       const status = row.getValue('request_status') as string
       const statusConfig: Record<string, { color: string, icon: string }> = {
@@ -146,127 +193,127 @@ const columns: TableColumn<Associate>[] = [
   },
   {
     accessorKey: 'request_date',
-    header: 'Data richiesta',
+    header: columnHeaders.request_date,
     cell: ({ row }) => formatDateTime(row.original.request_date)
   },
   {
     accessorKey: 'payment_date',
-    header: 'Pagamento',
+    header: columnHeaders.payment_date,
     cell: ({ row }) => formatDate(row.original.payment_date)
   },
   {
     accessorKey: 'association_date',
-    header: 'Data di associazione',
+    header: columnHeaders.association_date,
     cell: ({ row }) => formatDate(row.original.association_date)
   },
   {
     accessorKey: 'associate_type',
-    header: 'Tipo di associato',
+    header: columnHeaders.associate_type,
     cell: ({ row }) => row.original.associate_type
   },
   {
     accessorKey: 'pauperwave_associate_number',
-    header: 'Numero associato PauperWave',
+    header: columnHeaders.pauperwave_associate_number,
     cell: ({ row }) => row.original.pauperwave_associate_number || ''
   },
   {
     accessorKey: 'consent_data',
-    header: 'Consenso dati',
+    header: columnHeaders.consent_data,
     cell: ({ row }) => renderConsentBadge(row.original.consent_data)
   },
   {
     accessorKey: 'consent_social',
-    header: 'Consenso social',
+    header: columnHeaders.consent_social,
     cell: ({ row }) => renderConsentBadge(row.original.consent_social)
   },
   {
     accessorKey: 'has_read_statute',
-    header: 'Ha letto lo statuto',
+    header: columnHeaders.has_read_statute,
     cell: ({ row }) => renderConsentBadge(row.original.has_read_statute)
   },
   {
     accessorKey: 'has_acknowledged_surveillance_notice',
-    header: 'Visione Privacy',
+    header: columnHeaders.has_acknowledged_surveillance_notice,
     cell: ({ row }) => renderConsentBadge(row.original.has_acknowledged_surveillance_notice)
   },
   {
     accessorKey: 'first_name',
-    header: 'Nome',
+    header: columnHeaders.first_name,
     cell: ({ row }) => row.original.first_name
   },
   {
     accessorKey: 'last_name',
-    header: 'Cognome',
+    header: columnHeaders.last_name,
     cell: ({ row }) => row.original.last_name
   },
   {
     accessorKey: 'email_address',
-    header: 'Email',
+    header: columnHeaders.email_address,
     cell: ({ row }) => renderNeutralBadge(row.original.email_address)
   },
   {
     accessorKey: 'phone_number',
-    header: 'Phone',
+    header: columnHeaders.phone_number,
     cell: ({ row }) => row.original.phone_number
   },
   {
     accessorKey: 'tax_code',
-    header: 'Tax Code',
+    header: columnHeaders.tax_code,
     cell: ({ row }) => row.original.tax_code
   },
   {
     accessorKey: 'born_date',
-    header: 'Data di nascita',
+    header: columnHeaders.born_date,
     cell: ({ row }) => formatDate(row.original.born_date)
   },
   {
     accessorKey: 'born_location',
-    header: 'Luogo di nascita',
+    header: columnHeaders.born_location,
     cell: ({ row }) => row.original.born_location || ''
   },
   {
     accessorKey: 'born_province',
-    header: 'Provincia di nascita',
+    header: columnHeaders.born_province,
     cell: ({ row }) => row.original.born_province || ''
   },
   {
     accessorKey: 'born_state',
-    header: 'Nazione di nascita',
+    header: columnHeaders.born_state,
     cell: ({ row }) => row.original.born_state || ''
   },
   {
     accessorKey: 'residency_address',
-    header: 'Indirizzo',
+    header: columnHeaders.residency_address,
     cell: ({ row }) => row.original.residency_address
   },
   {
     accessorKey: 'residency_house_number',
-    header: 'Numero civico',
+    header: columnHeaders.residency_house_number,
     cell: ({ row }) => row.original.residency_house_number || ''
   },
   {
     accessorKey: 'residency_city',
-    header: 'Città',
+    header: columnHeaders.residency_city,
     cell: ({ row }) => row.original.residency_city
   },
   {
     accessorKey: 'residency_province',
-    header: 'Provincia',
+    header: columnHeaders.residency_province,
     cell: ({ row }) => row.original.residency_province
   },
   {
     accessorKey: 'residency_cap',
-    header: 'CAP',
+    header: columnHeaders.residency_cap,
     cell: ({ row }) => row.original.residency_cap
   },
   {
     accessorKey: 'mtgo_nickname',
-    header: 'MTGO Nickname',
+    header: columnHeaders.mtgo_nickname,
     cell: ({ row }) => row.original.mtgo_nickname
   },
   {
     accessorKey: 'mtga_nickname',
-    header: 'MTGA Nickname',
+    header: columnHeaders.mtga_nickname,
     cell: ({ row }) => row.original.mtga_nickname
   }
 ]
@@ -294,7 +341,7 @@ function renderConsentBadge(consentvalue: boolean) {
   })
 }
 
-const statusFilter = ref('all')
+const statusFilter = ref('accepted')
 
 watch(() => statusFilter.value, (newVal) => {
   if (!table?.value?.tableApi) return
@@ -397,7 +444,6 @@ watch(() => statusFilter.value, (newVal) => {
             />
           </UDropdownMenu>
 
-          <!-- ✅ Add refresh button -->
           <UButton
             icon="i-lucide-refresh-cw"
             color="neutral"
@@ -408,7 +454,6 @@ watch(() => statusFilter.value, (newVal) => {
         </div>
       </div>
 
-      <!-- ✅ Fixed table props -->
       <UTable
         ref="table"
         v-model:column-filters="columnFilters"
@@ -424,7 +469,7 @@ watch(() => statusFilter.value, (newVal) => {
           thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
           tbody: '[&>tr]:last:[&>td]:border-b-0',
           th: 'py-1 px-1.5 border-y border-x border-default first:rounded-l-lg last:rounded-r-lg',
-          td: 'border-b border-x border-default py-1 px-2'
+          td: 'border-b border-x border-default py-1 px-2 font-mono'
         }"
       />
 
