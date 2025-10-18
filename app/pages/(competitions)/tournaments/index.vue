@@ -78,6 +78,7 @@ const columnHeaders = {
   select: 'Seleziona',
   id: 'ID',
   status: 'Stato',
+  name: 'Nome',
   start_date: 'Data e Ora',
   round_count: 'Turni',
   round_duration: 'Durata Turni',
@@ -176,6 +177,12 @@ const columns: TableColumn<TournamentData>[] = [
         row.getValue('status')
       )
     }
+  },
+  {
+    accessorKey: 'name',
+    header: columnHeaders.name,
+    enableGlobalFilter: true,
+    cell: ({ row }) => row.getValue('name')
   },
   {
     accessorKey: 'start_date',
@@ -398,16 +405,11 @@ function onSelect(row: TableRow<TournamentData>, e: Event) {
   //   return
   // }
 
-  console.info('Selected row:', row.original.id)
+  const slug = row.original.name.toLowerCase().replace(/\s+/g, '-')
 
   // Navigate to tournament details page
-  navigateTo(`/tournaments/${row.original.id}`)
-
-  toast.add({
-    title: `Apri torneo del ${row.original.start_date}`,
-    color: 'info',
-    icon: 'i-lucide-info'
-  })
+  navigateTo(`/tournaments/${slug}`)
+  console.info('Navigating to tournament:', `${slug}`)
 }
 
 // row context menu handler
@@ -609,7 +611,7 @@ if (import.meta.env.DEV) {
 </script>
 
 <template>
-  <UDashboardPanel id="events">
+  <UDashboardPanel id="tournaments">
     <template #header>
       <UDashboardNavbar title="Eventi">
         <template #leading>
