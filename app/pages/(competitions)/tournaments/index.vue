@@ -383,14 +383,40 @@ const sorting = ref([
 // row selection
 const rowSelection = ref<Record<string, boolean>>({})
 
-function onSelect(row: TableRow<TournamentData>) {
+// row select handler
+function onSelect(row: TableRow<TournamentData>, e: Event) {
+  // // Don't navigate on right-click (context menu)
+  // if (e instanceof MouseEvent && e.button === 2) {
+  //   return
+  // }
+
+  // Don't navigate if clicking on interactive elements
+  // const target = e?.target as HTMLElement | undefined
+  // if (target?.closest('input[type="checkbox"]')
+  //   || target?.closest('button')
+  //   || target?.closest('[data-no-select]')) {
+  //   return
+  // }
+
   console.info('Selected row:', row.original.id)
+
+  // Navigate to tournament details page
   navigateTo(`/tournaments/${row.original.id}`)
+
   toast.add({
     title: `Apri torneo del ${row.original.start_date}`,
     color: 'info',
     icon: 'i-lucide-info'
   })
+}
+
+// row context menu handler
+function onContextmenu(e: Event, row: TableRow<TournamentData>) {
+  // Prevent the default browser context menu
+  // e.preventDefault()
+
+  // Update context menu items for this row
+  items.value = getRowItems(row)
 }
 
 // context menu
@@ -477,10 +503,6 @@ function getRowItems(row: TableRow<TournamentData>) {
   return items
 }
 
-function onContextmenu(_e: Event, row: TableRow<TournamentData>) {
-  items.value = getRowItems(row)
-}
-
 // column visibility
 const columnVisibility = ref({
   id: false,
@@ -523,6 +545,9 @@ const columnFilters = ref<ColumnFiltersState>([])
 
 // Add this helper function in your script setup
 function handleColumnFilter(e: Event, columnId: string, value: string, label?: string) {
+  // Stop event from bubbling to row selection
+  e.stopPropagation()
+
   // Set column filter
   table.value?.tableApi?.getColumn(columnId)?.setFilterValue(value)
 
