@@ -18,11 +18,15 @@ const router = useRouter()
 const isModalOpen = ref(false)
 
 const requestStatusOptions = [
-  { label: 'Tutti', value: 'all', icon: 'i-lucide-list' },
-  { label: 'Accettati', value: 'accepted', icon: 'i-lucide-check-circle' },
-  { label: 'In attesa', value: 'pending', icon: 'i-lucide-clock' },
-  { label: 'Rifiutati', value: 'rejected', icon: 'i-lucide-x-circle' }
+  { label: 'Tutti', value: 'all', icon: 'i-lucide-list', color: 'neutral' },
+  { label: 'Accettati', value: 'accepted', icon: 'i-lucide-check-circle', color: 'success' },
+  { label: 'In attesa', value: 'pending', icon: 'i-lucide-clock', color: 'warning' },
+  { label: 'Rifiutati', value: 'rejected', icon: 'i-lucide-x-circle', color: 'error' }
 ]
+
+const selectedRequestStatus = computed(() => {
+  return requestStatusOptions.find(option => option.value === requestStatusFilter.value)
+})
 
 function formatDateTime(isoString?: string): string {
   if (!isoString) return ''
@@ -390,10 +394,6 @@ watch(() => requestStatusFilter.value, (newVal) => {
     statusColumn.setFilterValue(newVal)
   }
 })
-
-const selectedRequestStatus = computed(() => {
-  return requestStatusOptions.find(option => option.value === requestStatusFilter.value)
-})
 </script>
 
 <template>
@@ -452,7 +452,25 @@ const selectedRequestStatus = computed(() => {
               :ui="{ trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200' }"
             >
               <template #leading>
-                <UIcon v-if="selectedRequestStatus" :name="selectedRequestStatus.icon" class="size-5 shrink-0" />
+                <UIcon
+                  v-if="selectedRequestStatus"
+                  :name="selectedRequestStatus.icon"
+                  :class="[
+                    'size-5 shrink-0',
+                    selectedRequestStatus.color && `text-${selectedRequestStatus.color}`
+                  ]"
+                />
+              </template>
+
+              <template #item="{ item }">
+                <UIcon
+                  :name="item.icon"
+                  :class="[
+                    'size-5 shrink-0',
+                    item.color && `text-${item.color}`
+                  ]"
+                />
+                <span>{{ item.label }}</span>
               </template>
             </USelect>
           </UFormField>
