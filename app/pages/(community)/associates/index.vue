@@ -1,20 +1,42 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import { upperFirst } from 'scule'
-import { getPaginationRowModel } from '@tanstack/table-core'
-import type { Row } from '@tanstack/table-core'
 import type { Associate } from '~/types'
+import { format, parseISO } from 'date-fns'
+
+const { associates, loading, refresh } = useAssociates()
 
 const { breadcrumbItems } = useBreadcrumbs()
 
 const UButton = resolveComponent('UButton')
-// const UBadge = resolveComponent('UBadge')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
 const UCheckbox = resolveComponent('UCheckbox')
 
 const route = useRoute()
 const router = useRouter()
 const isModalOpen = ref(false)
+
+function formatDateTime(isoString?: string): string {
+  if (!isoString) return ''
+  try {
+    const date = parseISO(isoString)
+    return format(date, 'dd/MM/yyyy HH:mm')
+  } catch {
+    return ''
+  }
+}
+
+function formatDate(dateString?: string): string {
+  if (!dateString) return ''
+  try {
+    const date = parseISO(dateString)
+    return format(date, 'dd/MM/yyyy')
+  } catch {
+    return ''
+  }
+}
+
+// 2025-01-02
 
 onMounted(() => {
   if (route.query.action === 'create') {
@@ -23,69 +45,41 @@ onMounted(() => {
   }
 })
 
-const toast = useToast()
 const table = useTemplateRef('table')
 
-const columnFilters = ref([{
-  id: 'email_address',
-  value: ''
-}])
+const columnFilters = ref([])
 
 const columnVisibility = ref({
-  id: false,
   uuid: false,
   created_at: false,
-  updated_at: false,
-  request_date: false,
-  association_date: false,
-  companion_code: false,
-  mtga_nickname: false,
-  mtgo_nickname: false
+  updated_at: false
+  // updated_by: false,
+  // association_date: false,
+  // pauperwave_associate_number: false,
+  // associate_type: false,
+  // tax_code: false,
+  // born_location: false,
+  // born_date: false,
+  // born_province: false,
+  // born_state: false,
+  // residency_address: false,
+  // residency_city: false,
+  // residency_province: false,
+  // residency_cap: false,
+  // mtgo_nickname: false,
+  // mtga_nickname: false,
+  // actions: false
 })
+
+// 2025-10-15T17:49:32.040789+00:00
 
 const rowSelection = ref({})
-
-const { data, status } = await useFetch<Associate[]>('/api/associates', {
-  lazy: true
-})
-
-function getRowItems(row: Row<Associate>) {
-  return [
-    {
-      type: 'label',
-      label: 'Actions'
-    },
-    {
-      label: 'Copia ID associato',
-      icon: 'i-lucide-copy',
-      onSelect() {
-        navigator.clipboard.writeText(row.original.id.toString())
-        toast.add({
-          title: 'Copia in corso',
-          description: 'ID associato copiato negli appunti'
-        })
-      }
-    },
-    {
-      type: 'separator'
-    },
-    {
-      label: 'Vedi dettagli associato',
-      icon: 'i-lucide-list'
-    },
-    {
-      label: 'Vedi pagamenti associato',
-      icon: 'i-lucide-wallet'
-    },
-    {
-      type: 'separator'
-    }
-  ]
-}
 
 const columns: TableColumn<Associate>[] = [
   {
     id: 'select',
+    enableSorting: false,
+    enableHiding: false,
     header: ({ table }) =>
       h(UCheckbox, {
         'modelValue': table.getIsSomePageRowsSelected()
@@ -93,27 +87,73 @@ const columns: TableColumn<Associate>[] = [
           : table.getIsAllPageRowsSelected(),
         'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
           table.toggleAllPageRowsSelected(!!value),
-        'ariaLabel': 'Select all'
+        'aria-label': 'Select all'
       }),
     cell: ({ row }) =>
       h(UCheckbox, {
         'modelValue': row.getIsSelected(),
         'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
-        'ariaLabel': 'Select row'
+        'aria-label': 'Select row'
       })
   },
   {
     accessorKey: 'id',
     header: 'ID',
+    meta: {
+      class: {
+        td: 'font-mono'
+      }
+    },
     cell: ({ row }) => row.original.id
   },
   {
-    accessorKey: 'status',
-    header: 'Status',
+    accessorKey: 'uuid',
+    header: 'UUID',
+    cell: ({ row }) =>
+      h(resolveComponent('UBadge'), {
+        variant: 'subtle',
+        color: 'neutral',
+        class: 'font-mono',
+        label: String(row.original.uuid)
+      })
+  },
+  {
+    accessorKey: 'created_at',
+    header: 'Data di creazione',
+    meta: {
+      class: {
+        td: 'font-mono'
+      }
+    },
+    cell: ({ row }) => formatDateTime(row.original.created_at)
+  },
+  {
+    accessorKey: 'updated_at',
+    header: 'Data di aggiornamento',
+    meta: {
+      class: {
+        td: 'font-mono'
+      }
+    },
+    cell: ({ row }) => formatDateTime(row.original.updated_at)
+  },
+  {
+    accessorKey: 'updated_by',
+    header: 'Aggiornato da',
+    meta: {
+      class: {
+        td: 'font-mono'
+      }
+    },
+    cell: ({ row }) => formatDateTime(row.original.updated_by)
+  },
+  {
+    accessorKey: 'request_status',
+    header: 'Request Status',
     cell: ({ row }) => {
-      const status = row.getValue('status') as string
+      const status = row.getValue('request_status') as string
       const statusConfig: Record<string, { color: string, icon: string }> = {
-        approved: { color: 'success', icon: 'i-lucide-check-circle' },
+        accepted: { color: 'success', icon: 'i-lucide-check-circle' },
         pending: { color: 'warning', icon: 'i-lucide-circle-dot-dashed' },
         rejected: { color: 'error', icon: 'i-lucide-x-circle' }
       }
@@ -126,7 +166,6 @@ const columns: TableColumn<Associate>[] = [
         color,
         label: upperFirst(status),
         onClick: (_: Event) => {
-          // Filter by status when badge is clicked
           const statusColumn = table?.value?.tableApi?.getColumn('status')
           if (statusColumn) {
             statusColumn.setFilterValue(status)
@@ -136,177 +175,93 @@ const columns: TableColumn<Associate>[] = [
     }
   },
   {
-    accessorKey: 'uuid',
-    header: 'UUID',
-    cell: ({ row }) => row.original.uuid
-  },
-  {
-    accessorKey: 'created_at',
-    header: 'Created At',
-    cell: ({ row }) => row.original.created_at
-  },
-  {
-    accessorKey: 'updated_at',
-    header: 'Updated At',
-    cell: ({ row }) => row.original.updated_at
-  },
-  {
     accessorKey: 'request_date',
-    header: 'Request Date',
-    cell: ({ row }) => row.original.request_date
+    header: 'Data richiesta',
+    meta: {
+      class: {
+        td: 'font-mono'
+      }
+    },
+    cell: ({ row }) => formatDateTime(row.original.request_date)
+  },
+  {
+    accessorKey: 'payment_date',
+    header: 'Pagamento',
+    meta: {
+      class: {
+        td: 'font-mono'
+      }
+    },
+    cell: ({ row }) => formatDate(row.original.payment_date)
   },
   {
     accessorKey: 'association_date',
-    header: 'Association Date',
-    cell: ({ row }) => row.original.association_date
-  },
-  {
-    accessorKey: 'pauperwave_associate_number',
-    header: 'PW Associate Number',
-    cell: ({ row }) => row.original.pauperwave_associate_number
-  },
-  {
-    accessorKey: 'consent_data',
-    header: 'Consent Data',
-    cell: ({ row }) => renderConsentBadge(row.original.consent_data)
-  },
-  {
-    accessorKey: 'consent_social',
-    header: 'Consent Social',
-    cell: ({ row }) => renderConsentBadge(row.original.consent_social)
-  },
-  {
-    accessorKey: 'has_read_statute',
-    header: 'Read Statute',
-    cell: ({ row }) => renderConsentBadge(row.original.has_read_statute)
-  },
-  {
-    accessorKey: 'has_acknowledged_surveillance_notice',
-    header: 'Surveillance Notice',
-    cell: ({ row }) => renderConsentBadge(row.original.has_acknowledged_surveillance_notice)
-  },
-  {
-    accessorKey: 'associate_type',
-    header: 'Associate Type',
-    cell: ({ row }) => row.original.associate_type
-  },
-  {
-    accessorKey: 'tax_code',
-    header: 'Tax Code',
-    cell: ({ row }) => row.original.tax_code
+    header: 'Data di associazione',
+    meta: {
+      class: {
+        td: 'font-mono'
+      }
+    },
+    cell: ({ row }) => formatDate(row.original.association_date)
   },
   {
     accessorKey: 'first_name',
     header: 'Nome',
+    meta: {
+      class: {
+        td: 'font-mono'
+      }
+    },
     cell: ({ row }) => row.original.first_name
   },
   {
     accessorKey: 'last_name',
     header: 'Cognome',
+    meta: {
+      class: {
+        td: 'w-40 font-mono'
+      }
+    },
     cell: ({ row }) => row.original.last_name
   },
   {
     accessorKey: 'email_address',
     header: 'Email',
-    cell: ({ row }) => row.original.email_address
+    cell: ({ row }) =>
+      h(resolveComponent('UBadge'), {
+        variant: 'subtle',
+        color: 'neutral',
+        class: 'font-mono',
+        label: String(row.original.email_address)
+      })
   },
   {
     accessorKey: 'phone_number',
     header: 'Phone',
+    meta: {
+      class: {
+        td: 'font-mono'
+      }
+    },
     cell: ({ row }) => row.original.phone_number
-  },
-  {
-    accessorKey: 'born_location',
-    header: 'Born Location',
-    cell: ({ row }) => row.original.born_location
-  },
-  {
-    accessorKey: 'born_date',
-    header: 'Born Date',
-    cell: ({ row }) => row.original.born_date
-  },
-  {
-    accessorKey: 'born_province',
-    header: 'Born Province',
-    cell: ({ row }) => row.original.born_province
-  },
-  {
-    accessorKey: 'born_state',
-    header: 'Born State',
-    cell: ({ row }) => row.original.born_state
-  },
-  {
-    accessorKey: 'residency_address',
-    header: 'Residency Address',
-    cell: ({ row }) => row.original.residency_address
-  },
-  {
-    accessorKey: 'residency_city',
-    header: 'Residency City',
-    cell: ({ row }) => row.original.residency_city
-  },
-  {
-    accessorKey: 'residency_province',
-    header: 'Residency Province',
-    cell: ({ row }) => row.original.residency_province
-  },
-  {
-    accessorKey: 'residency_cap',
-    header: 'Residency CAP',
-    cell: ({ row }) => row.original.residency_cap
-  },
-  {
-    accessorKey: 'mtgo_nickname',
-    header: 'MTGO Nickname',
-    cell: ({ row }) => row.original.mtgo_nickname
-  },
-  {
-    accessorKey: 'mtga_nickname',
-    header: 'MTGA Nickname',
-    cell: ({ row }) => row.original.mtga_nickname
-  },
-  {
-    id: 'actions',
-    cell: ({ row }) => {
-      return h(
-        'div',
-        { class: 'text-right' },
-        h(
-          UDropdownMenu,
-          {
-            content: {
-              align: 'end'
-            },
-            items: getRowItems(row)
-          },
-          () =>
-            h(UButton, {
-              icon: 'i-lucide-ellipsis-vertical',
-              color: 'neutral',
-              variant: 'ghost',
-              class: 'ml-auto'
-            })
-        )
-      )
-    }
   }
 ]
 
-function renderConsentBadge(consentvalue: boolean) {
-  const consent = consentvalue
-  const consentConfig: Record<string, { label: string, color: string, icon: string }> = {
-    yes: { label: 'Yes', color: 'success', icon: 'i-lucide-check-circle' },
-    no: { label: 'No', color: 'error', icon: 'i-lucide-circle-x' }
-  }
+// function renderConsentBadge(consentvalue: boolean) {
+//   const consent = consentvalue
+//   const consentConfig: Record<string, { label: string, color: string, icon: string }> = {
+//     yes: { label: 'Yes', color: 'success', icon: 'i-lucide-check-circle' },
+//     no: { label: 'No', color: 'error', icon: 'i-lucide-circle-x' }
+//   }
 
-  return h(resolveComponent('UBadge'), {
-    variant: 'subtle',
-    class: 'w-[60px]',
-    ...consentConfig[consent ? 'yes' : 'no']
-  })
-}
+//   return h(resolveComponent('UBadge'), {
+//     variant: 'subtle',
+//     class: 'w-[60px]',
+//     ...consentConfig[consent ? 'yes' : 'no']
+//   })
+// }
 
-const statusFilter = ref('all')
+const statusFilter = ref('accepted')
 
 watch(() => statusFilter.value, (newVal) => {
   if (!table?.value?.tableApi) return
@@ -319,11 +274,6 @@ watch(() => statusFilter.value, (newVal) => {
   } else {
     statusColumn.setFilterValue(newVal)
   }
-})
-
-const pagination = ref({
-  pageIndex: 0,
-  pageSize: 20
 })
 </script>
 
@@ -377,15 +327,16 @@ const pagination = ref({
           <USelect
             v-model="statusFilter"
             :items="[
-              { label: 'All', value: 'all' },
-              { label: 'Subscribed', value: 'subscribed' },
-              { label: 'Unsubscribed', value: 'unsubscribed' },
-              { label: 'Bounced', value: 'bounced' }
+              { label: 'Tutti', value: 'all' },
+              { label: 'Accettati', value: 'accepted' },
+              { label: 'In attesa', value: 'pending' },
+              { label: 'Rifiutati', value: 'rejected' }
             ]"
             :ui="{ trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200' }"
             placeholder="Filter status"
             class="min-w-28"
           />
+
           <UDropdownMenu
             :items="
               table?.tableApi
@@ -412,44 +363,42 @@ const pagination = ref({
               trailing-icon="i-lucide-settings-2"
             />
           </UDropdownMenu>
+
+          <!-- ✅ Add refresh button -->
+          <UButton
+            icon="i-lucide-refresh-cw"
+            color="neutral"
+            variant="outline"
+            :loading="loading"
+            @click="refresh"
+          />
         </div>
       </div>
 
+      <!-- ✅ Fixed table props -->
       <UTable
         ref="table"
         v-model:column-filters="columnFilters"
         v-model:column-visibility="columnVisibility"
         v-model:row-selection="rowSelection"
-        v-model:pagination="pagination"
-        :pagination-options="{
-          getPaginationRowModel: getPaginationRowModel()
-        }"
-        class="shrink-0"
-        :data="data"
+        virtualize
+        :data="associates"
         :columns="columns"
-        :loading="status === 'pending'"
+        class="flex-1 h-80 shrink-0"
+        :loading="loading"
         :ui="{
-          base: 'table-fixed border-separate border-spacing-0 text-sm',
+          base: 'border-separate border-spacing-0',
           thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
           tbody: '[&>tr]:last:[&>td]:border-b-0',
-          th: 'py-1 px-2 first:rounded-l-lg last:rounded-r-lg border-y border-default first:border-l last:border-r',
-          td: 'border-b border-default py-1 px-2'
+          th: 'py-1 px-1.5 border-y border-x border-default first:rounded-l-lg last:rounded-r-lg',
+          td: 'border-b border-x border-default py-1 px-2'
         }"
       />
 
       <div class="flex items-center justify-between gap-3 border-t border-default pt-4 mt-auto">
         <div class="text-sm text-muted">
-          {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
-          {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s) selected.
-        </div>
-
-        <div class="flex items-center gap-1.5">
-          <UPagination
-            :default-page="(table?.tableApi?.getState().pagination.pageIndex || 0) + 1"
-            :items-per-page="table?.tableApi?.getState().pagination.pageSize"
-            :total="table?.tableApi?.getFilteredRowModel().rows.length"
-            @update:page="(p: number) => table?.tableApi?.setPageIndex(p - 1)"
-          />
+          {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} di
+          {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} righe selezionate.
         </div>
       </div>
     </template>
