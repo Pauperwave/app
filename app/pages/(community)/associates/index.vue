@@ -222,7 +222,7 @@ const columns: TableColumn<Associate>[] = [
         label: upperFirst(status),
         onClick: (e: Event) => {
           e.stopPropagation() // Prevent row click if you add onSelect later
-          const statusColumn = table?.value?.tableApi?.getColumn('status')
+          const statusColumn = table?.value?.tableApi?.getColumn('request_status')
           if (statusColumn) {
             statusColumn.setFilterValue(status)
           }
