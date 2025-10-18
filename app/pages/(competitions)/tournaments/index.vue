@@ -144,6 +144,7 @@ const columns: TableColumn<TournamentData>[] = [
   {
     accessorKey: 'status',
     header: ({ column }) => getHeader(column, columnHeaders.status),
+    filterFn: 'equals', // exact matching
     sortingFn: (rowA, rowB, columnId) => {
       const statusA = rowA.getValue(columnId) as string
       const statusB = rowB.getValue(columnId) as string
@@ -288,6 +289,7 @@ const columns: TableColumn<TournamentData>[] = [
     accessorKey: 'organizer',
     header: ({ column }) => getHeader(column, columnHeaders.organizer),
     enableGlobalFilter: true,
+    filterFn: 'equals', // exact matching
     cell: ({ row }) => {
       const organizerValue = row.getValue('organizer') as string
       const colorMap: Record<string, 'neutral'> = {
@@ -383,6 +385,7 @@ const rowSelection = ref<Record<string, boolean>>({})
 
 function onSelect(row: TableRow<TournamentData>) {
   console.info('Selected row:', row.original.id)
+  navigateTo(`/tournaments/${row.original.id}`)
   toast.add({
     title: `Apri torneo del ${row.original.start_date}`,
     color: 'info',
