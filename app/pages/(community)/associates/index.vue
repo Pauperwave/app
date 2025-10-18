@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
+import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
+import type { Column } from '@tanstack/vue-table'
 import { upperFirst } from 'scule'
 import type { Associate } from '~/types'
 import { format, parseISO } from 'date-fns'
@@ -15,6 +16,13 @@ const UCheckbox = resolveComponent('UCheckbox')
 const route = useRoute()
 const router = useRouter()
 const isModalOpen = ref(false)
+
+const requestStatusOptions = [
+  { label: 'Tutti', value: 'all', icon: 'i-lucide-list' },
+  { label: 'Accettati', value: 'accepted', icon: 'i-lucide-check-circle' },
+  { label: 'In attesa', value: 'pending', icon: 'i-lucide-clock' },
+  { label: 'Rifiutati', value: 'rejected', icon: 'i-lucide-x-circle' }
+]
 
 function formatDateTime(isoString?: string): string {
   if (!isoString) return ''
@@ -92,6 +100,33 @@ function getColumnLabel(id: string): string {
     return columnHeaders[id as ColumnHeaderKey]
   }
   return id
+}
+
+const visibilityItems = computed(() => getVisibilityItems())
+
+// Generate visibility items based on columns that can be hidden
+const getVisibilityItems = (): DropdownMenuItem[] => {
+  const allColumns = table.value?.tableApi?.getAllColumns()
+  if (!allColumns) return []
+
+  return allColumns
+    .filter((column: Column<Associate>) => column.getCanHide())
+    .map(createVisibilityItem)
+}
+
+// Helper to create visibility toggle items
+function createVisibilityItem(column: Column<Associate>): DropdownMenuItem {
+  return {
+    label: getColumnLabel(column.id),
+    type: 'checkbox' as const,
+    checked: column.getIsVisible(),
+    onUpdateChecked(checked: boolean) {
+      table.value?.tableApi?.getColumn(column.id)?.toggleVisibility(!!checked)
+    },
+    onSelect(e: Event) {
+      e.preventDefault()
+    }
+  }
 }
 
 const columnVisibility = ref({
@@ -341,9 +376,9 @@ function renderConsentBadge(consentvalue: boolean) {
   })
 }
 
-const statusFilter = ref('accepted')
+const requestStatusFilter = ref('accepted')
 
-watch(() => statusFilter.value, (newVal) => {
+watch(() => requestStatusFilter.value, (newVal) => {
   if (!table?.value?.tableApi) return
 
   const statusColumn = table.value.tableApi.getColumn('request_status')
@@ -354,6 +389,10 @@ watch(() => statusFilter.value, (newVal) => {
   } else {
     statusColumn.setFilterValue(newVal)
   }
+})
+
+const selectedRequestStatus = computed(() => {
+  return requestStatusOptions.find(option => option.value === requestStatusFilter.value)
 })
 </script>
 
@@ -404,36 +443,22 @@ watch(() => statusFilter.value, (newVal) => {
             </UButton>
           </AssociatesListDeleteModal>
 
-          <USelect
-            v-model="statusFilter"
-            :items="[
-              { label: 'Tutti', value: 'all' },
-              { label: 'Accettati', value: 'accepted' },
-              { label: 'In attesa', value: 'pending' },
-              { label: 'Rifiutati', value: 'rejected' }
-            ]"
-            :ui="{ trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200' }"
-            placeholder="Filter status"
-            class="min-w-28"
-          />
+          <UFormField class="flex-1" name="requestStatusFilter">
+            <USelect
+              v-model="requestStatusFilter"
+              :items="requestStatusOptions"
+              value-key="value"
+              class="w-34"
+              :ui="{ trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200' }"
+            >
+              <template #leading>
+                <UIcon v-if="selectedRequestStatus" :name="selectedRequestStatus.icon" class="size-5 shrink-0" />
+              </template>
+            </USelect>
+          </UFormField>
 
           <UDropdownMenu
-            :items="
-              table?.tableApi
-                ?.getAllColumns()
-                .filter((column: any) => column.getCanHide())
-                .map((column: any) => ({
-                  label: upperFirst(column.id),
-                  type: 'checkbox' as const,
-                  checked: column.getIsVisible(),
-                  onUpdateChecked(checked: boolean) {
-                    table?.tableApi?.getColumn(column.id)?.toggleVisibility(!!checked)
-                  },
-                  onSelect(e?: Event) {
-                    e?.preventDefault()
-                  }
-                }))
-            "
+            :items="visibilityItems"
             :content="{ align: 'end' }"
           >
             <UButton
@@ -443,7 +468,6 @@ watch(() => statusFilter.value, (newVal) => {
               trailing-icon="i-lucide-settings-2"
             />
           </UDropdownMenu>
-
           <UButton
             icon="i-lucide-refresh-cw"
             color="neutral"
