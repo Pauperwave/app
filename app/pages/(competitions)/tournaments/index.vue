@@ -645,10 +645,10 @@ if (import.meta.env.DEV) {
             :content="{ align: 'end' }"
           >
             <UButton
-              label="Colonne"
+              label="Mostra colonne"
               color="neutral"
               variant="outline"
-              trailing-icon="i-lucide-chevron-down"
+              trailing-icon="i-lucide-settings-2"
             />
           </UDropdownMenu>
         </div>
