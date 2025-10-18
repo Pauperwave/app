@@ -17,17 +17,6 @@ const route = useRoute()
 const router = useRouter()
 const isModalOpen = ref(false)
 
-const requestStatusOptions = [
-  { label: 'Tutti', value: 'all', icon: 'i-lucide-list', color: 'neutral' },
-  { label: 'Accettati', value: 'accepted', icon: 'i-lucide-check-circle', color: 'success' },
-  { label: 'In attesa', value: 'pending', icon: 'i-lucide-clock', color: 'warning' },
-  { label: 'Rifiutati', value: 'rejected', icon: 'i-lucide-x-circle', color: 'error' }
-]
-
-const selectedRequestStatus = computed(() => {
-  return requestStatusOptions.find(option => option.value === requestStatusFilter.value)
-})
-
 function formatDateTime(isoString?: string): string {
   if (!isoString) return ''
   try {
@@ -72,7 +61,7 @@ const columnHeaders = {
   payment_date: 'Data pagamento',
   association_date: 'Data di associazione',
   associate_type: 'Tipo di associato',
-  pauperwave_associate_number: '# PW',
+  pauperwave_associate_number: 'no. tessera PauperWave',
   consent_data: 'Consenso dati',
   consent_social: 'Consenso social',
   has_read_statute: 'Ha letto lo statuto',
@@ -380,7 +369,24 @@ function renderConsentBadge(consentvalue: boolean) {
   })
 }
 
+const requestStatusOptions = [
+  { label: 'Tutti', value: 'all', icon: 'i-lucide-list', color: 'neutral' },
+  { label: 'Accettati', value: 'accepted', icon: 'i-lucide-check-circle', color: 'success' },
+  { label: 'In attesa', value: 'pending', icon: 'i-lucide-clock', color: 'warning' },
+  { label: 'Rifiutati', value: 'rejected', icon: 'i-lucide-x-circle', color: 'error' }
+]
+
+const consentSocialOptions = [
+  { label: 'Tutti', value: 'all', icon: 'i-lucide-list', color: 'neutral' },
+  { label: 'Concesso', value: 'yes', icon: 'i-lucide-check-circle', color: 'success' },
+  { label: 'Negato', value: 'no', icon: 'i-lucide-circle-x', color: 'error' }
+]
+
 const requestStatusFilter = ref('accepted')
+const consentSocialFilter = ref('all')
+
+// Oggetto per tracciare quale filtro è attivo
+const activeFilter = ref<'request_status' | 'consent_social' | null>(null)
 
 watch(() => requestStatusFilter.value, (newVal) => {
   if (!table?.value?.tableApi) return
@@ -390,8 +396,43 @@ watch(() => requestStatusFilter.value, (newVal) => {
 
   if (newVal === 'all') {
     statusColumn.setFilterValue(undefined)
+    if (activeFilter.value === 'request_status') {
+      activeFilter.value = null
+    }
   } else {
+    // Resetta l'altro filtro se attivo
+    if (activeFilter.value === 'consent_social') {
+      consentSocialFilter.value = 'all'
+      const consentColumn = table.value.tableApi.getColumn('consent_social')
+      if (consentColumn) consentColumn.setFilterValue(undefined)
+    }
+
+    activeFilter.value = 'request_status'
     statusColumn.setFilterValue(newVal)
+  }
+})
+
+watch(() => consentSocialFilter.value, (newVal) => {
+  if (!table?.value?.tableApi) return
+
+  const consentColumn = table.value.tableApi.getColumn('consent_social')
+  if (!consentColumn) return
+
+  if (newVal === 'all') {
+    consentColumn.setFilterValue(undefined)
+    if (activeFilter.value === 'consent_social') {
+      activeFilter.value = null
+    }
+  } else {
+    // Resetta l'altro filtro se attivo
+    if (activeFilter.value === 'request_status') {
+      requestStatusFilter.value = 'all'
+      const statusColumn = table.value.tableApi.getColumn('request_status')
+      if (statusColumn) statusColumn.setFilterValue(undefined)
+    }
+
+    activeFilter.value = 'consent_social'
+    consentColumn.setFilterValue(newVal === 'yes')
   }
 })
 </script>
@@ -418,15 +459,31 @@ watch(() => requestStatusFilter.value, (newVal) => {
 
     <template #body>
       <div class="flex flex-wrap items-center justify-between gap-1.5">
-        <UInput
-          :model-value="(table?.tableApi?.getColumn('email_address')?.getFilterValue() as string)"
-          class="max-w-sm"
-          icon="i-lucide-search"
-          placeholder="Filter emails..."
-          @update:model-value="table?.tableApi?.getColumn('email_address')?.setFilterValue($event)"
-        />
+        <div class="flex flex-wrap items-end gap-1.5">
+          <UInput
+            :model-value="(table?.tableApi?.getColumn('email_address')?.getFilterValue() as string)"
+            class="max-w-sm"
+            icon="i-lucide-search"
+            placeholder="Filter emails..."
+            @update:model-value="table?.tableApi?.getColumn('email_address')?.setFilterValue($event)"
+          />
 
-        <div class="flex flex-wrap items-center gap-1.5">
+          <UStatusSelect
+            v-model="requestStatusFilter"
+            :items="requestStatusOptions"
+            label="Stato richiesta"
+            name="requestStatusFilter"
+          />
+
+          <UStatusSelect
+            v-model="consentSocialFilter"
+            :items="consentSocialOptions"
+            label="Consenso Social"
+            name="consentSocialFilter"
+          />
+        </div>
+
+        <div class="flex flex-wrap items-end gap-1.5">
           <AssociatesListDeleteModal :count="table?.tableApi?.getFilteredSelectedRowModel().rows.length">
             <UButton
               v-if="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
@@ -442,38 +499,6 @@ watch(() => requestStatusFilter.value, (newVal) => {
               </template>
             </UButton>
           </AssociatesListDeleteModal>
-
-          <UFormField class="flex-1" name="requestStatusFilter">
-            <USelect
-              v-model="requestStatusFilter"
-              :items="requestStatusOptions"
-              value-key="value"
-              class="w-34"
-              :ui="{ trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200' }"
-            >
-              <template #leading>
-                <UIcon
-                  v-if="selectedRequestStatus"
-                  :name="selectedRequestStatus.icon"
-                  :class="[
-                    'size-5 shrink-0',
-                    selectedRequestStatus.color && `text-${selectedRequestStatus.color}`
-                  ]"
-                />
-              </template>
-
-              <template #item="{ item }">
-                <UIcon
-                  :name="item.icon"
-                  :class="[
-                    'size-5 shrink-0',
-                    item.color && `text-${item.color}`
-                  ]"
-                />
-                <span>{{ item.label }}</span>
-              </template>
-            </USelect>
-          </UFormField>
 
           <UDropdownMenu
             :items="visibilityItems"
