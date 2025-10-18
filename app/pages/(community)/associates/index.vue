@@ -526,7 +526,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
         v-model:column-filters="columnFilters"
         v-model:column-visibility="columnVisibility"
         v-model:row-selection="rowSelection"
-        virtualize
+        :virtualize="{ estimateSize: 250, overscan: 15 }"
         :data="associates"
         :columns="columns"
         class="flex-1 h-80 shrink-0"
