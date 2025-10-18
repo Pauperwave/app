@@ -337,7 +337,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                     maxlength="16"
                   >
                     <template v-if="state.payer_tax_code?.length" #trailing>
-                      <ClearButton v-model="state.payer_tax_code" />
+                      <UClearButton v-model="state.payer_tax_code" />
                       <div
                         id="character-count"
                         class="text-xs text-muted tabular-nums"
