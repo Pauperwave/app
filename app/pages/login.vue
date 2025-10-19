@@ -13,7 +13,6 @@ useSeoMeta({
 
 const supabase = useSupabaseClient()
 const toast = useToast()
-const router = useRouter()
 
 const fields = [{
   name: 'email',
@@ -33,6 +32,14 @@ const schema = z.object({
 })
 
 type Schema = z.output<typeof schema>
+
+// const user = useSupabaseUser()
+
+// watchEffect(() => {
+//   if (user.value) {
+//     navigateTo('/')
+//   }
+// })
 
 const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
   const { email } = payload.data
