@@ -36,6 +36,7 @@ type Schema = z.output<typeof schema>
 
 const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
   const { email } = payload.data
+  console.log('Sending magic link to:', email)
 
   const { error } = await supabase.auth.signInWithOtp({
     email,
@@ -57,12 +58,18 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
       description: 'Controlla la tua casella email per accedere.',
       color: 'primary'
     })
-    await router.push(`/`)
   }
 }
 </script>
 
 <template>
+  <!-- <div v-if="isProcessing" class="flex items-center justify-center min-h-screen">
+    <div class="text-center">
+      <UIcon name="i-lucide-loader-circle" class="animate-spin size-8 mb-4 mx-auto" />
+      <p>Verifica in corso...</p>
+    </div>
+  </div> -->
+
   <UAuthForm
     :fields="fields"
     :schema="schema"
@@ -73,13 +80,6 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
     <template #description>
       Utilizza l'email associata al tuo account PauperWave.
     </template>
-
-    <!-- <template #footer>
-      Accedendo, accetti i nostri
-      <ULink to="/terms-of-service" class="text-primary font-medium">
-        Termini di servizio
-      </ULink>.
-    </template> -->
 
     <template #submit>
       <UButton
