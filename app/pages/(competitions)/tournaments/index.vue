@@ -391,20 +391,8 @@ const sorting = ref([
 const rowSelection = ref<Record<string, boolean>>({})
 
 // row select handler
-function onSelect(row: TableRow<TournamentData>, e: Event) {
-  // // Don't navigate on right-click (context menu)
-  // if (e instanceof MouseEvent && e.button === 2) {
-  //   return
-  // }
-
-  // Don't navigate if clicking on interactive elements
-  // const target = e?.target as HTMLElement | undefined
-  // if (target?.closest('input[type="checkbox"]')
-  //   || target?.closest('button')
-  //   || target?.closest('[data-no-select]')) {
-  //   return
-  // }
-
+// TODO utilizzare l'intera firma della funzione se necessario "row: TableRow<TournamentData>, e: Event"
+function onSelect(row: TableRow<TournamentData>) {
   const slug = row.original.name.toLowerCase().replace(/\s+/g, '-')
 
   // Navigate to tournament details page
