@@ -40,7 +40,7 @@ const tournaments = Array.from({ length: 30 }, (_, i) => {
 
   return {
     id,
-    uuid: `${String.fromCharCode(97 + (i % 26))}${id}b${id + 1}c${id + 2}d${id + 3}-e${id + 4}f${id + 5}-g${id + 6}h${id + 7}-i${id + 8}j${id + 9}-k${id + 10}l${id + 11}m${id + 12}n${id + 13}o${id + 14}p${id + 15}`,
+    uuid: crypto.randomUUID(),
     event: null,
     league: `${place} ${season} 2025`,
     name: `Tournament ${id}`,
