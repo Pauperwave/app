@@ -9,7 +9,7 @@ const toast = useToast()
 
 onMounted(async () => {
   const { error } = await supabase.auth.exchangeCodeForSession(
-    window.location.href
+    window.location.hash
   )
 
   if (error) {
