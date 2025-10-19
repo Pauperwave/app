@@ -33,18 +33,40 @@ const schema = z.object({
 
 type Schema = z.output<typeof schema>
 
-// const user = useSupabaseUser()
-
-// watchEffect(() => {
-//   if (user.value) {
-//     navigateTo('/')
-//   }
-// })
-
 const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
   const { email } = payload.data
   console.log('Sending magic link to:', email)
 
+  // 1. Controlla se esiste nella tabella "pauperwave_associates"
+  let check, checkError
+  try {
+    check = await $fetch<{ exists: boolean }>('/api/check-associate', {
+      method: 'POST',
+      body: { email }
+    })
+  } catch (err) {
+    checkError = err
+  }
+
+  if (checkError) {
+    toast.add({
+      title: 'Errore di connessione',
+      description: 'Impossibile verificare email. Riprova più tardi.',
+      color: 'error'
+    })
+    return
+  }
+
+  if (!check?.exists) {
+    toast.add({
+      title: 'Email non trovata',
+      description: 'L\'indirizzo email non risulta associato a un account PauperWave.',
+      color: 'error'
+    })
+    return
+  }
+
+  // 2. Se esiste, invia il magic link
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
@@ -70,13 +92,6 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
 </script>
 
 <template>
-  <!-- <div v-if="isProcessing" class="flex items-center justify-center min-h-screen">
-    <div class="text-center">
-      <UIcon name="i-lucide-loader-circle" class="animate-spin size-8 mb-4 mx-auto" />
-      <p>Verifica in corso...</p>
-    </div>
-  </div> -->
-
   <UAuthForm
     :fields="fields"
     :schema="schema"
