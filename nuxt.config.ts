@@ -49,8 +49,7 @@ export default defineNuxtConfig({
     // redirect: false, // disattiva redirect automatici di Supabase
     redirectOptions: {
       login: '/login',
-      callback: '/auth/callback',
-      exclude: ['/public', '/about']
+      callback: '/auth/callback'
     },
     cookieOptions: {
       domain: '', // lascia vuoto per default (usa il dominio corrente)

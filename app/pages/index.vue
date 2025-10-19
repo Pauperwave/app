@@ -5,6 +5,14 @@ import type { Period, Range } from '~/types'
 
 // const { isNotificationsSlideoverOpen } = useDashboard()
 
+definePageMeta({
+  middleware: ['auth']
+})
+
+onMounted(() => {
+  console.log('Index page mounted')
+})
+
 const items = [[{
   label: 'Registra transazione',
   icon: 'i-lucide-coins',
