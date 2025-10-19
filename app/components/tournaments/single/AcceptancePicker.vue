@@ -119,7 +119,7 @@ defineShortcuts({
         <div
           v-for="user in source"
           :key="user.id"
-          class="flex items-center gap-3 p-3 rounded-lg border border-default hover:bg-muted cursor-pointer transition-colors"
+          class="flex items-center gap-2 p-2 rounded-lg border border-default hover:bg-muted cursor-pointer transition-colors"
           :class="{ 'bg-primary/10 border-primary': isSelected(user.id, 'source') }"
           @click="toggleSelection(user.id, 'source')"
         >
