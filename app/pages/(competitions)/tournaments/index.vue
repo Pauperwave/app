@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { sub, add } from 'date-fns'
+import { sub, add, format, parseISO } from 'date-fns'
 import { h, resolveComponent } from 'vue'
 import { getPaginationRowModel } from '@tanstack/vue-table'
 import type { Range } from '~/types'
@@ -77,6 +77,7 @@ const filteredTournaments = computed(() => {
 const columnHeaders = {
   select: 'Seleziona',
   id: 'ID',
+  uuid: 'UUID',
   status: 'Stato',
   name: 'Nome',
   start_date: 'Data e Ora',
@@ -113,6 +114,16 @@ const statusOrder = [
   'Postponed'
 ]
 
+function formatDateTime(isoString?: string): string {
+  if (!isoString) return ''
+  try {
+    const date = parseISO(isoString)
+    return format(date, 'dd/MM/yyyy HH:mm')
+  } catch {
+    return ''
+  }
+}
+
 // Define table columns
 const columns: TableColumn<TournamentData>[] = [
   {
@@ -141,6 +152,17 @@ const columns: TableColumn<TournamentData>[] = [
     header: columnHeaders.id,
     enableGlobalFilter: false,
     cell: ({ row }) => `#${row.getValue('id')}`
+  },
+  {
+    accessorKey: 'uuid',
+    header: columnHeaders.uuid,
+    enableGlobalFilter: false,
+    cell: ({ row }) => h(resolveComponent('UBadge'), {
+      variant: 'subtle',
+      color: 'neutral',
+      class: 'font-mono',
+      label: String(row.getValue('uuid'))
+    })
   },
   {
     accessorKey: 'status',
@@ -189,19 +211,6 @@ const columns: TableColumn<TournamentData>[] = [
     // Custom accessor function for date formatting
     // It is necessary to keep sorting working correctly
     id: 'start_date',
-    accessorFn: (row) => {
-      const value = row.start_date as string
-      if (!value) return '-'
-
-      const date = new Date(value)
-      return date.toLocaleString('it-IT', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    },
     header: ({ column }) => getHeader(column, columnHeaders.start_date),
     enableGlobalFilter: true,
     // Custom sorting function, parse the original date strings instead of the formatted ones
@@ -210,7 +219,11 @@ const columns: TableColumn<TournamentData>[] = [
       const dateB = new Date(rowB.original.start_date).getTime()
       return dateA - dateB
     },
-    cell: ({ row }) => row.getValue('start_date')
+    cell: ({ row }) =>
+      h('span', {
+        class: 'font-mono'
+      }, formatDateTime(row.getValue('start_date'))
+      )
   },
   {
     accessorKey: 'round_count',
