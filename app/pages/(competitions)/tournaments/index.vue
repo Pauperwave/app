@@ -636,7 +636,7 @@ if (import.meta.env.DEV) {
 
     <template #body>
       <div class="flex flex-col flex-1 w-full space-y-4 pb-4">
-        <div class="flex justify-between px-4 py-3.5 border-t border-b border-accented">
+        <div class="flex justify-between px-4 py-2">
           <UInput v-model="globalFilter" class="max-w-sm" placeholder="Filtra..." />
 
           <!-- Active filters display -->
