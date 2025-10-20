@@ -3,7 +3,7 @@ export default defineNuxtRouteMiddleware((to) => {
   const user = useSupabaseUser()
 
   // Allow access to login and auth callback pages
-  const publicPages = ['/login', '/auth/callback']
+  const publicPages = ['/login', '/auth/callback', '/logout']
 
   // prevents logged-in users from seeing the login page again
   if (user.value && to.path === '/login') {

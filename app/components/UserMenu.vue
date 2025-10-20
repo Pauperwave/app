@@ -5,6 +5,9 @@ defineProps<{
   collapsed?: boolean
 }>()
 
+const supabase = useSupabaseClient()
+const toast = useToast()
+
 const colorMode = useColorMode()
 const appConfig = useAppConfig()
 
@@ -18,6 +21,34 @@ const user = ref({
     alt: 'Emanuele Nardi'
   }
 })
+
+const handleLogout = async () => {
+  try {
+    const { error } = await supabase.auth.signOut()
+
+    if (error) {
+      toast.add({
+        title: 'Errore',
+        description: 'Impossibile disconnettersi. Riprova.',
+        color: 'error'
+      })
+    } else {
+      toast.add({
+        title: 'Disconnesso',
+        description: 'Arrivederci!',
+        color: 'success'
+      })
+      navigateTo('/login')
+    }
+  } catch (err) {
+    console.error('Logout error:', err)
+    toast.add({
+      title: 'Errore',
+      description: 'Si è verificato un errore. Riprova.',
+      color: 'error'
+    })
+  }
+}
 
 const items = computed<DropdownMenuItem[][]>(() => ([[{
   type: 'label',
@@ -108,7 +139,8 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
   target: '_blank'
 }, {
   label: 'Log out',
-  icon: 'i-lucide-log-out'
+  icon: 'i-lucide-log-out',
+  onSelect: handleLogout
 }]]))
 </script>
 
