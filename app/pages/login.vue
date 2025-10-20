@@ -60,7 +60,7 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
   if (!check?.exists) {
     toast.add({
       title: 'Email non trovata',
-      description: 'L\'indirizzo email non risulta associato a un account PauperWave.',
+      description: 'L\'indirizzo email non risulta associato ad un account PauperWave.',
       color: 'error'
     })
     return
