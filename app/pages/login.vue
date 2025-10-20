@@ -1,3 +1,4 @@
+// app/pages/login.vue
 <script setup lang="ts">
 import * as z from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'
@@ -44,7 +45,9 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
       method: 'POST',
       body: { email }
     })
+    console.log('API Response:', check) // Add this line
   } catch (err) {
+    console.error('Error checking associate:', err)
     checkError = err
   }
 
@@ -56,6 +59,8 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
     })
     return
   }
+
+  console.log('check?.exists:', check?.exists) // Add this line
 
   if (!check?.exists) {
     toast.add({
