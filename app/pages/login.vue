@@ -45,7 +45,7 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
       method: 'POST',
       body: { email }
     })
-    console.log('API Response:', check) // Add this line
+    console.log('API Response:', check)
   } catch (err) {
     console.error('Error checking associate:', err)
     checkError = err
@@ -60,7 +60,7 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
     return
   }
 
-  console.log('check?.exists:', check?.exists) // Add this line
+  console.log('check?.exists:', check?.exists)
 
   if (!check?.exists) {
     toast.add({

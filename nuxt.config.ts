@@ -36,6 +36,12 @@ export default defineNuxtConfig({
     }
   },
   compatibilityDate: '2024-07-11',
+  // forza il pre-bundling di zod, migliorando l’avvio in dev server
+  vite: {
+    optimizeDeps: {
+      include: ['zod']
+    }
+  },
   // debug: true,
   eslint: {
     config: {
