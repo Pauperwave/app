@@ -5,10 +5,6 @@ import type { Period, Range } from '~/types'
 
 // const { isNotificationsSlideoverOpen } = useDashboard()
 
-definePageMeta({
-  middleware: ['auth']
-})
-
 onMounted(() => {
   console.log('Index page mounted')
 })
