@@ -1,11 +1,12 @@
 <script setup lang="ts">
 const user = useSupabaseUser()
 
+// Wait for the module to handle the callback automatically
 watch(user, () => {
   console.log('User state changed:', user.value)
   if (user.value) {
-    // Redirect to protected page
-    return navigateTo('/')
+    // User is authenticated, redirect to home
+    navigateTo('/', { replace: true })
   }
 }, { immediate: true })
 </script>
