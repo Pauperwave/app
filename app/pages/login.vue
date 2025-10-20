@@ -108,8 +108,9 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
       Utilizza l'email associata al tuo account PauperWave.
     </template>
 
-    <template #submit>
+    <template #submit="{ loading }">
       <UButton
+        :loading="loading"
         type="submit"
         color="primary"
         icon="i-lucide-mail"

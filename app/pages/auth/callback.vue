@@ -1,3 +1,4 @@
+// app/pages/auth/callback.vue
 <script setup lang="ts">
 const user = useSupabaseUser()
 
@@ -12,5 +13,10 @@ watch(user, () => {
 </script>
 
 <template>
-  <div>Waiting for login...</div>
+  <div class="flex items-center justify-center min-h-screen">
+    <div class="text-center">
+      <UIcon name="i-lucide-loader-2" class="animate-spin text-4xl mb-4" />
+      <p>Verifica in corso...</p>
+    </div>
+  </div>
 </template>
