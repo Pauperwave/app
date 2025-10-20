@@ -36,7 +36,7 @@ type Schema = z.output<typeof schema>
 
 const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
   const { email } = payload.data
-  console.log('Sending magic link to:', email)
+  console.log('Checking email:', email)
 
   // 1. Controlla se esiste nella tabella "pauperwave_associates"
   let check, checkError
@@ -54,7 +54,7 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
   if (checkError) {
     toast.add({
       title: 'Errore di connessione',
-      description: 'Impossibile verificare email. Riprova più tardi.',
+      description: 'Impossibile verificare l\'email. Riprova più tardi.',
       color: 'error'
     })
     return
@@ -65,7 +65,7 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
   if (!check?.exists) {
     toast.add({
       title: 'Email non trovata',
-      description: 'L\'indirizzo email non risulta associato ad un account PauperWave.',
+      description: 'L\'indirizzo email non risulta associato a un account PauperWave.',
       color: 'error'
     })
     return
