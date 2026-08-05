@@ -6,6 +6,18 @@ const route = useRoute()
 
 const open = ref(false)
 
+const { associates } = useAssociates()
+
+const associatesStatusCounts = computed(() => {
+  const counts = { pending: 0, active: 0, to_renew: 0 }
+  for (const associate of associates.value) {
+    if (associate.membership_status in counts) {
+      counts[associate.membership_status as keyof typeof counts]++
+    }
+  }
+  return counts
+})
+
 // Make the entire links array computed so active states are reactive
 const links = computed(() => [[{
   label: 'Pannello di controllo',
@@ -59,19 +71,19 @@ const links = computed(() => [[{
     }
   }, {
     label: 'In attesa di approvazione',
-    to: '/associates?status=waiting',
-    badge: '5',
-    active: route.query.status === 'waiting' // Direct boolean
+    to: '/associates?status=pending',
+    badge: String(associatesStatusCounts.value.pending),
+    active: route.query.status === 'pending' // Direct boolean
   }, {
     label: 'Attivi',
     to: '/associates?status=active',
-    badge: '200',
+    badge: String(associatesStatusCounts.value.active),
     active: route.query.status === 'active' // Direct boolean
   }, {
     label: 'Da rinnovare',
-    to: '/associates?status=expired',
-    badge: '10',
-    active: route.query.status === 'expired' // Direct boolean
+    to: '/associates?status=to_renew',
+    badge: String(associatesStatusCounts.value.to_renew),
+    active: route.query.status === 'to_renew' // Direct boolean
   }] satisfies NavigationMenuItem[]
 }, {
   label: 'Tornei',

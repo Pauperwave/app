@@ -1,3 +1,5 @@
+import type { Associate } from '~/types'
+
 export const useAssociates = () => {
   const supabase = useSupabaseClient()
 
@@ -5,7 +7,7 @@ export const useAssociates = () => {
     'associates',
     async () => {
       const { data, error: supabaseError } = await supabase
-        .from('pauperwave_associates')
+        .from('pauperwave_associates_with_status')
         .select('*')
         .order('id', { ascending: true })
 
@@ -19,7 +21,9 @@ export const useAssociates = () => {
       if (import.meta.env.DEV) {
         console.log('Fetched associates:', data)
       }
-      return data ?? []
+      // membership_request_status/membership_status sono testo libero a DB
+      // (non enum Postgres), ma l'app tratta solo i valori noti definiti nei tipi
+      return (data ?? []) as Associate[]
     },
     {
       default: () => [],
