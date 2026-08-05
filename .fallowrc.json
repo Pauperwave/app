@@ -1,0 +1,10 @@
+{
+  "ignorePatterns": [
+    "app/types/database.types.ts"
+  ],
+  "duplicates": {
+    "ignore": [
+      "app/types/database.types.ts"
+    ]
+  }
+}
