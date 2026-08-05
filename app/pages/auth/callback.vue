@@ -1,22 +1,50 @@
 // app/pages/auth/callback.vue
 <script setup lang="ts">
-const user = useSupabaseUser()
+// `useSupabaseSession` reflects the auth state synchronously from
+// `onAuthStateChange` and doesn't depend on the module's `getClaims()` call,
+// which can silently reject (no .catch()) and leave `useSupabaseUser()` stuck
+// at null even after a successful login.
+const session = useSupabaseSession()
 
-// Wait for the module to handle the callback automatically
-watch(user, () => {
-  console.log('User state changed:', user.value)
-  if (user.value) {
-    // User is authenticated, redirect to home
-    navigateTo('/', { replace: true })
+const failed = ref(false)
+
+if (session.value) {
+  navigateTo('/', { replace: true })
+} else {
+  const stopWatching = watch(session, () => {
+    if (session.value) {
+      stopWatching()
+      navigateTo('/', { replace: true })
+    }
+  })
+}
+
+// If the callback hasn't produced a session after a few seconds, the magic
+// link is likely invalid/expired: stop showing an infinite spinner.
+const timeoutId = setTimeout(() => {
+  if (!session.value) {
+    failed.value = true
   }
-}, { immediate: true })
+}, 3000)
+
+onUnmounted(() => clearTimeout(timeoutId))
 </script>
 
 <template>
   <div class="flex items-center justify-center min-h-screen">
     <div class="text-center">
-      <UIcon name="i-lucide-loader-2" class="animate-spin text-4xl mb-4" />
-      <p>Verifica in corso...</p>
+      <template v-if="failed">
+        <p class="mb-4">
+          Link non valido o scaduto. Richiedi un nuovo link di accesso.
+        </p>
+        <UButton to="/login">
+          Torna al login
+        </UButton>
+      </template>
+      <template v-else>
+        <UIcon name="i-lucide-loader-2" class="animate-spin text-4xl mb-4" />
+        <p>Verifica in corso...</p>
+      </template>
     </div>
   </div>
 </template>
