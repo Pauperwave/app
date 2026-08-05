@@ -1,55 +1,30 @@
 import type { AvatarProps } from '@nuxt/ui'
+import type { Database } from './database.types'
 
 export type UserStatus = 'subscribed' | 'unsubscribed' | 'bounced'
 export type SaleStatus = 'paid' | 'failed' | 'refunded'
 
-export type RequestStatus = 'accepted' | 'pending' | 'rejected'
+export type RequestStatus = 'approved' | 'pending' | 'rejected'
 export type AssociateType = 'ordinario' | 'sostenitore'
+
+// Stato di tesseramento calcolato dalla view pauperwave_associates_with_status
+// (mai salvato a DB): 'active'/'to_renew'/'expired' derivano dall'ultimo anno di
+// rinnovo in pauperwave_associate_renewals; per le richieste non ancora approvate
+// coincide con membership_request_status ('pending'/'rejected').
+export type MembershipStatus = RequestStatus | 'active' | 'to_renew' | 'expired'
 
 export type TournamentStatus = 'scheduled' | 'canceled' | 'ongoing' | 'completed'
 
-export interface Associate {
-  id: number
-  uuid: string
+type AssociateRow = Database['public']['Tables']['pauperwave_associates']['Row']
 
-  created_at: string
-  updated_at: string
-  updated_by: string
-
-  request_status: RequestStatus
-  request_date: string
-  payment_date: string
-
-  association_date: string | null
+// Deriva da database.types.ts (generato da Supabase) così un rename/rimozione di
+// colonna produce un errore di compilazione invece di un bug silenzioso a runtime.
+export interface Associate extends Omit<AssociateRow, 'membership_request_status' | 'associate_type'> {
+  membership_request_status: RequestStatus
   associate_type: AssociateType | null
-  pauperwave_associate_number: string | null
-
-  consent_data: boolean
-  consent_social: boolean
-  has_read_statute: boolean
-  has_acknowledged_surveillance_notice: boolean
-
+  membership_status: MembershipStatus
+  latest_renewal_year: number | null
   avatar?: AvatarProps
-
-  first_name: string
-  last_name: string
-  email_address: string
-  phone_number: string | null
-  tax_code: string | null
-
-  born_date: string
-  born_location?: string | null
-  born_province?: string | null
-  born_state: string
-
-  residency_address: string
-  residency_house_number?: string | null
-  residency_city: string
-  residency_province: string
-  residency_cap: string
-
-  mtgo_nickname: string
-  mtga_nickname: string
 }
 
 export type TransactionStatus = 'paid' | 'failed' | 'refunded'

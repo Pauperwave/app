@@ -46,6 +46,18 @@ onMounted(() => {
 
 const table = useTemplateRef('table')
 
+// Collega i link della sidebar (/associates?status=pending|active|to_renew) al
+// filtro della colonna membership_status, applicabile solo dopo il mount di UTable.
+function applyMembershipStatusFilterFromQuery() {
+  const statusColumn = table.value?.tableApi?.getColumn('membership_status')
+  if (!statusColumn) return
+  const status = route.query.status
+  statusColumn.setFilterValue(typeof status === 'string' ? status : undefined)
+}
+
+onMounted(() => nextTick(applyMembershipStatusFilterFromQuery))
+watch(() => route.query.status, applyMembershipStatusFilterFromQuery)
+
 const columnFilters = ref([])
 
 // TODO utilizzare il mapping per la traduzione delle intestazioni
@@ -56,7 +68,8 @@ const columnHeaders = {
   created_at: 'Data di creazione',
   updated_at: 'Data di aggiornamento',
   updated_by: 'Aggiornato da',
-  request_status: 'Stato richiesta',
+  membership_request_status: 'Stato richiesta',
+  membership_status: 'Stato tesseramento',
   request_date: 'Data richiesta',
   payment_date: 'Data pagamento',
   association_date: 'Data di associazione',
@@ -127,6 +140,7 @@ const columnVisibility = ref({
   created_at: false,
   updated_at: false,
   updated_by: false,
+  association_date: false,
   associate_type: false,
   consent_data: false,
   has_read_statute: false,
@@ -192,12 +206,12 @@ const columns: TableColumn<Associate>[] = [
     cell: ({ row }) => row.original.updated_by
   },
   {
-    accessorKey: 'request_status',
-    header: columnHeaders.request_status,
+    accessorKey: 'membership_request_status',
+    header: columnHeaders.membership_request_status,
     cell: ({ row }) => {
-      const status = row.getValue('request_status') as string
+      const status = row.getValue('membership_request_status') as string
       const statusConfig: Record<string, { color: string, icon: string }> = {
-        accepted: { color: 'success', icon: 'i-lucide-check-circle' },
+        approved: { color: 'success', icon: 'i-lucide-check-circle' },
         pending: { color: 'warning', icon: 'i-lucide-circle-dot-dashed' },
         rejected: { color: 'error', icon: 'i-lucide-x-circle' }
       }
@@ -211,11 +225,34 @@ const columns: TableColumn<Associate>[] = [
         label: upperFirst(status),
         onClick: (e: Event) => {
           e.stopPropagation() // Prevent row click if you add onSelect later
-          const statusColumn = table?.value?.tableApi?.getColumn('request_status')
+          const statusColumn = table?.value?.tableApi?.getColumn('membership_request_status')
           if (statusColumn) {
             statusColumn.setFilterValue(status)
           }
         }
+      })
+    }
+  },
+  {
+    accessorKey: 'membership_status',
+    header: columnHeaders.membership_status,
+    cell: ({ row }) => {
+      const status = row.getValue('membership_status') as string
+      const statusConfig: Record<string, { color: string, icon: string }> = {
+        active: { color: 'success', icon: 'i-lucide-check-circle' },
+        to_renew: { color: 'warning', icon: 'i-lucide-refresh-cw' },
+        expired: { color: 'error', icon: 'i-lucide-ban' },
+        pending: { color: 'warning', icon: 'i-lucide-circle-dot-dashed' },
+        rejected: { color: 'error', icon: 'i-lucide-x-circle' }
+      }
+      const { color, icon } = statusConfig[status] || { color: 'neutral', icon: 'i-lucide-help-circle' }
+
+      return h(resolveComponent('UBadge'), {
+        class: 'capitalize gap-2',
+        variant: 'subtle',
+        icon,
+        color,
+        label: upperFirst(status.replace('_', ' '))
       })
     }
   },
@@ -369,48 +406,13 @@ function renderConsentBadge(consentvalue: boolean) {
   })
 }
 
-const requestStatusOptions = [
-  { label: 'Tutti', value: 'all', icon: 'i-lucide-list', color: 'neutral' },
-  { label: 'Accettati', value: 'accepted', icon: 'i-lucide-check-circle', color: 'success' },
-  { label: 'In attesa', value: 'pending', icon: 'i-lucide-clock', color: 'warning' },
-  { label: 'Rifiutati', value: 'rejected', icon: 'i-lucide-x-circle', color: 'error' }
-]
-
 const consentSocialOptions = [
   { label: 'Tutti', value: 'all', icon: 'i-lucide-list', color: 'neutral' },
   { label: 'Concesso', value: 'yes', icon: 'i-lucide-check-circle', color: 'success' },
   { label: 'Negato', value: 'no', icon: 'i-lucide-circle-x', color: 'error' }
 ]
 
-const requestStatusFilter = ref('accepted')
 const consentSocialFilter = ref('all')
-
-// Oggetto per tracciare quale filtro è attivo
-const activeFilter = ref<'request_status' | 'consent_social' | null>(null)
-
-watch(() => requestStatusFilter.value, (newVal) => {
-  if (!table?.value?.tableApi) return
-
-  const statusColumn = table.value.tableApi.getColumn('request_status')
-  if (!statusColumn) return
-
-  if (newVal === 'all') {
-    statusColumn.setFilterValue(undefined)
-    if (activeFilter.value === 'request_status') {
-      activeFilter.value = null
-    }
-  } else {
-    // Resetta l'altro filtro se attivo
-    if (activeFilter.value === 'consent_social') {
-      consentSocialFilter.value = 'all'
-      const consentColumn = table.value.tableApi.getColumn('consent_social')
-      if (consentColumn) consentColumn.setFilterValue(undefined)
-    }
-
-    activeFilter.value = 'request_status'
-    statusColumn.setFilterValue(newVal)
-  }
-})
 
 watch(() => consentSocialFilter.value, (newVal) => {
   if (!table?.value?.tableApi) return
@@ -418,22 +420,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
   const consentColumn = table.value.tableApi.getColumn('consent_social')
   if (!consentColumn) return
 
-  if (newVal === 'all') {
-    consentColumn.setFilterValue(undefined)
-    if (activeFilter.value === 'consent_social') {
-      activeFilter.value = null
-    }
-  } else {
-    // Resetta l'altro filtro se attivo
-    if (activeFilter.value === 'request_status') {
-      requestStatusFilter.value = 'all'
-      const statusColumn = table.value.tableApi.getColumn('request_status')
-      if (statusColumn) statusColumn.setFilterValue(undefined)
-    }
-
-    activeFilter.value = 'consent_social'
-    consentColumn.setFilterValue(newVal === 'yes')
-  }
+  consentColumn.setFilterValue(newVal === 'all' ? undefined : newVal === 'yes')
 })
 </script>
 
@@ -458,7 +445,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
     </template>
 
     <template #body>
-      <div class="flex flex-wrap items-center justify-between gap-1.5">
+      <div class="flex flex-wrap items-end justify-between gap-1.5">
         <div class="flex flex-wrap items-end gap-1.5">
           <UInput
             :model-value="(table?.tableApi?.getColumn('email_address')?.getFilterValue() as string)"
@@ -466,13 +453,6 @@ watch(() => consentSocialFilter.value, (newVal) => {
             icon="i-lucide-search"
             placeholder="Filter emails..."
             @update:model-value="table?.tableApi?.getColumn('email_address')?.setFilterValue($event)"
-          />
-
-          <UStatusSelect
-            v-model="requestStatusFilter"
-            :items="requestStatusOptions"
-            label="Stato richiesta"
-            name="requestStatusFilter"
           />
 
           <UStatusSelect
@@ -526,7 +506,10 @@ watch(() => consentSocialFilter.value, (newVal) => {
         v-model:column-filters="columnFilters"
         v-model:column-visibility="columnVisibility"
         v-model:row-selection="rowSelection"
-        :virtualize="{ estimateSize: 250, overscan: 15 }"
+        :virtualize="{
+          estimateSize: 35,
+          overscan: 12
+        }"
         :data="associates"
         :columns="columns"
         class="flex-1 h-80 shrink-0"
@@ -535,8 +518,8 @@ watch(() => consentSocialFilter.value, (newVal) => {
           base: 'border-separate border-spacing-0',
           thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
           tbody: '[&>tr]:last:[&>td]:border-b-0',
-          th: 'py-1 px-1.5 border-y border-x border-default first:rounded-l-lg last:rounded-r-lg',
-          td: 'border-b border-x border-default py-1 px-2 font-mono'
+          th: 'py-1 px-1.5 border-y border-default first:rounded-l-lg last:rounded-r-lg',
+          td: 'border-b border-default py-1 px-2 font-mono'
         }"
       />
 
