@@ -225,10 +225,18 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           <h3 class="text-lg font-semibold text-primary">Nickname MTG</h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
             <UFormField label="MTGO" name="mtgo_nickname">
-              <UInput v-model="state.mtgo_nickname" class="w-full" />
+              <UInput
+                :model-value="state.mtgo_nickname ?? ''"
+                class="w-full"
+                @update:model-value="state.mtgo_nickname = ($event as string) || null"
+              />
             </UFormField>
             <UFormField label="Arena" name="mtga_nickname">
-              <UInput v-model="state.mtga_nickname" class="w-full" />
+              <UInput
+                :model-value="state.mtga_nickname ?? ''"
+                class="w-full"
+                @update:model-value="state.mtga_nickname = ($event as string) || null"
+              />
             </UFormField>
           </div>
         </div>

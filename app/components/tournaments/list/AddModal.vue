@@ -208,10 +208,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
             <UFormField label="Codice Companion" name="companion_code">
               <UInput
-                v-model="state.companion_code"
+                :model-value="state.companion_code ?? ''"
                 placeholder="Codice (opzionale)"
                 icon="i-lucide-smartphone"
                 class="w-42"
+                @update:model-value="state.companion_code = ($event as string) || undefined"
               />
             </UFormField>
           </div>
@@ -240,10 +241,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
           <UFormField label="Descrizione" name="description">
             <UTextarea
-              v-model="state.description"
+              :model-value="state.description ?? ''"
               class="w-full"
               placeholder="Descrizione (opzionale)"
               icon="i-lucide-align-left"
+              @update:model-value="state.description = ($event as string) || undefined"
             />
           </UFormField>
 
