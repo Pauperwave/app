@@ -404,8 +404,7 @@ const sorting = ref([
 const rowSelection = ref<Record<string, boolean>>({})
 
 // row select handler
-// TODO utilizzare l'intera firma della funzione se necessario "row: TableRow<TournamentData>, e: Event"
-function onSelect(row: TableRow<TournamentData>) {
+function onSelect(e: Event, row: TableRow<TournamentData>) {
   const slug = row.original.name.toLowerCase().replace(/\s+/g, '-')
 
   // Navigate to tournament details page
