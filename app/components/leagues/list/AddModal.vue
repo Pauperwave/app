@@ -25,8 +25,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 </script>
 
 <template>
-  <UModal v-model:open="open" title="Muova lega" description="Aggiungi una nuova lega al database">
-    <UButton label="Nuova lega" icon="i-lucide-trophy" @click="open = true" />
+  <UModal v-model:open="open" title="Nuova lega" description="Aggiungi una nuova lega al database">
+    <UButton label="Nuova lega" icon="i-lucide-trophy" @click="() => { open = true }" />
 
     <template #body>
       <UForm
@@ -46,7 +46,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             label="Cancel"
             color="neutral"
             variant="subtle"
-            @click="open = false"
+            @click="() => { open = false }"
           />
           <UButton
             label="Create"

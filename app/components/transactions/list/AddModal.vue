@@ -219,7 +219,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     description="Aggiungi una nuova transazione al database"
   >
     <!-- Trigger button goes in the default slot -->
-    <UButton label="Nuova transazione" icon="i-lucide-coins" @click="open = true" />
+    <UButton label="Nuova transazione" icon="i-lucide-coins" @click="() => { open = true }" />
 
     <template #body>
       <UForm
@@ -421,7 +421,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             label="Cancel"
             color="neutral"
             variant="subtle"
-            @click="open = false"
+            @click="() => { open = false }"
           />
           <UButton
             label="Create"
