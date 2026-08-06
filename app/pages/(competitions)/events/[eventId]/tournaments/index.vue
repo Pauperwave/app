@@ -3,6 +3,7 @@ import { sub } from 'date-fns'
 import type { Range } from '~/types'
 
 const { breadcrumbItems } = useBreadcrumbs()
+const route = useRoute()
 
 const range = shallowRef<Range>({
   start: sub(new Date(), { days: 14 }),
@@ -26,6 +27,15 @@ const range = shallowRef<Range>({
       <UDashboardToolbar>
         <template #left>
           <UBreadcrumb :items="breadcrumbItems" class="ms-2" />
+          <UButton
+            :to="`/events/${route.params.eventId}`"
+            icon="i-lucide-chevron-left"
+            color="neutral"
+            variant="ghost"
+            size="xs"
+          >
+            {{ $t('common.back') }}
+          </UButton>
         </template>
         <template #right>
           <!-- NOTE: The `-ms-1` class is used to align with the `DashboardSidebarCollapse` button here. -->
@@ -58,6 +68,17 @@ const range = shallowRef<Range>({
         <li>{{ $t('event.tournamentsList.body.winner') }}</li>
         <li>{{ $t('event.tournamentsList.body.detailsLink') }}</li>
       </ul>
+
+      <!-- TODO: temporaneo, da rimuovere quando la tabella con dati reali sostituirà questo placeholder -->
+      <UButton
+        :to="`/events/${route.params.eventId}/tournaments/1`"
+        variant="outline"
+        color="neutral"
+        class="mt-4"
+        icon="i-lucide-chevron-right"
+      >
+        {{ $t('common.dummyLinkLabel') }}
+      </UButton>
     </template>
   </UDashboardPanel>
 </template>

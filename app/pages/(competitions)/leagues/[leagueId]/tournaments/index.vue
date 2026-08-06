@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 const { breadcrumbItems } = useBreadcrumbs()
+const route = useRoute()
 </script>
 
 <template>
@@ -14,12 +15,32 @@ const { breadcrumbItems } = useBreadcrumbs()
       <UDashboardToolbar>
         <template #left>
           <UBreadcrumb :items="breadcrumbItems" class="ms-2" />
+          <UButton
+            :to="`/leagues/${route.params.leagueId}`"
+            icon="i-lucide-chevron-left"
+            color="neutral"
+            variant="ghost"
+            size="xs"
+          >
+            {{ $t('common.back') }}
+          </UButton>
         </template>
       </UDashboardToolbar>
     </template>
 
     <template #body>
       {{ $t('league.tournamentsList.body') }}
+
+      <!-- TODO: temporaneo, da rimuovere quando la tabella con dati reali sostituirà questo placeholder -->
+      <UButton
+        :to="`/leagues/${route.params.leagueId}/tournaments/1`"
+        variant="outline"
+        color="neutral"
+        class="mt-4"
+        icon="i-lucide-chevron-right"
+      >
+        {{ $t('common.dummyLinkLabel') }}
+      </UButton>
     </template>
   </UDashboardPanel>
 </template>
