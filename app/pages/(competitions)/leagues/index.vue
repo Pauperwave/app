@@ -43,6 +43,17 @@ const range = shallowRef<Range>({
     <template #body>
       <!-- <LeaguesTable :period="period" :range="range" /> -->
       {{ $t('league.placeholder') }}
+
+      <!-- TODO: temporaneo, da rimuovere quando la tabella con dati reali sostituirà questo placeholder -->
+      <UButton
+        to="/leagues/1"
+        variant="outline"
+        color="neutral"
+        class="mt-4"
+        icon="i-lucide-chevron-right"
+      >
+        {{ $t('common.dummyLinkLabel') }}
+      </UButton>
     </template>
   </UDashboardPanel>
 </template>
