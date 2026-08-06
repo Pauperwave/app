@@ -8,8 +8,8 @@ const toast = useToast()
 const { t } = useI18n()
 
 const schema = z.object({
-  name: z.string().min(2, t('leaguesAddModal.validation.nameTooShort')),
-  email: z.string().email(t('leaguesAddModal.validation.invalidEmail'))
+  name: z.string().min(2, t('league.addModal.validation.nameTooShort')),
+  email: z.string().email(t('league.addModal.validation.invalidEmail'))
 })
 
 type Schema = z.output<typeof schema>
@@ -20,14 +20,14 @@ const state = reactive<Partial<Schema>>({
 })
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  toast.add({ title: t('leaguesAddModal.successToastTitle'), description: t('leaguesAddModal.successToastDescription', { name: event.data.name }), color: 'success' })
+  toast.add({ title: t('league.addModal.successToastTitle'), description: t('league.addModal.successToastDescription', { name: event.data.name }), color: 'success' })
   open.value = false
 }
 </script>
 
 <template>
-  <UModal v-model:open="open" :title="$t('leaguesAddModal.title')" :description="$t('leaguesAddModal.description')">
-    <UButton :label="$t('leaguesAddModal.openButton')" icon="i-lucide-trophy" @click="() => { open = true }" />
+  <UModal v-model:open="open" :title="$t('league.addModal.title')" :description="$t('league.addModal.description')">
+    <UButton :label="$t('league.addModal.openButton')" icon="i-lucide-trophy" @click="() => { open = true }" />
 
     <template #body>
       <UForm
@@ -36,21 +36,21 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         class="space-y-4"
         @submit="onSubmit"
       >
-        <UFormField :label="$t('leaguesAddModal.fields.name')" placeholder="John Doe" name="name">
+        <UFormField :label="$t('league.addModal.fields.name')" placeholder="John Doe" name="name">
           <UInput v-model="state.name" class="w-full" />
         </UFormField>
-        <UFormField :label="$t('leaguesAddModal.fields.email')" placeholder="john.doe@example.com" name="email">
+        <UFormField :label="$t('league.addModal.fields.email')" placeholder="john.doe@example.com" name="email">
           <UInput v-model="state.email" class="w-full" />
         </UFormField>
         <div class="flex justify-end gap-2">
           <UButton
-            :label="$t('leaguesAddModal.cancel')"
+            :label="$t('league.addModal.cancel')"
             color="neutral"
             variant="subtle"
             @click="() => { open = false }"
           />
           <UButton
-            :label="$t('leaguesAddModal.create')"
+            :label="$t('league.addModal.create')"
             color="primary"
             variant="solid"
             type="submit"

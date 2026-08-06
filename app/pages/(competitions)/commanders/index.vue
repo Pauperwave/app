@@ -1,7 +1,7 @@
 <template>
   <UDashboardPanel id="commanders">
     <template #header>
-      <UDashboardNavbar :title="$t('nav.commanders')">
+      <UDashboardNavbar :title="$t('commander.breadcrumb')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>

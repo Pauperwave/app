@@ -14,10 +14,10 @@ const isModalOpen = ref(false)
 const { t } = useI18n()
 
 const typeTabs: TabsItem[] = [
-  { label: t('transactions.tabs.all'), value: 'all' },
-  { label: t('transactions.tabs.associationFee'), value: 'association-fee' },
-  { label: t('transactions.tabs.eventFee'), value: 'event-fee' },
-  { label: t('transactions.tabs.donations'), value: 'donations' }
+  { label: t('transaction.tabs.all'), value: 'all' },
+  { label: t('transaction.tabs.associationFee'), value: 'association-fee' },
+  { label: t('transaction.tabs.eventFee'), value: 'event-fee' },
+  { label: t('transaction.tabs.donations'), value: 'donations' }
 ]
 
 const activeTypeTab = computed({
@@ -38,7 +38,7 @@ onMounted(() => {
 <template>
   <UDashboardPanel id="payments">
     <template #header>
-      <UDashboardNavbar :title="$t('nav.transactions')">
+      <UDashboardNavbar :title="$t('transaction.breadcrumb')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>

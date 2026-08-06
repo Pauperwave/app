@@ -70,10 +70,10 @@ const associatesStatusCounts = computed(() => {
 })
 
 const statusTabs = computed<TabsItem[]>(() => [
-  { label: t('associates.tabs.all'), value: 'all' },
-  { label: t('associates.tabs.pending'), value: 'pending', badge: associatesStatusCounts.value.pending },
-  { label: t('associates.tabs.active'), value: 'active', badge: associatesStatusCounts.value.active },
-  { label: t('associates.tabs.toRenew'), value: 'to_renew', badge: associatesStatusCounts.value.to_renew }
+  { label: t('associate.tabs.all'), value: 'all' },
+  { label: t('associate.tabs.pending'), value: 'pending', badge: associatesStatusCounts.value.pending },
+  { label: t('associate.tabs.active'), value: 'active', badge: associatesStatusCounts.value.active },
+  { label: t('associate.tabs.toRenew'), value: 'to_renew', badge: associatesStatusCounts.value.to_renew }
 ])
 
 const activeStatusTab = computed({
@@ -87,39 +87,39 @@ const columnFilters = ref([])
 
 // TODO utilizzare il mapping per la traduzione delle intestazioni
 const columnHeaders = {
-  select: t('associates.columns.select'),
-  id: t('associates.columns.id'),
-  uuid: t('associates.columns.uuid'),
-  created_at: t('associates.columns.createdAt'),
-  updated_at: t('associates.columns.updatedAt'),
-  updated_by: t('associates.columns.updatedBy'),
-  membership_request_status: t('associates.columns.membershipRequestStatus'),
-  membership_status: t('associates.columns.membershipStatus'),
-  request_date: t('associates.columns.requestDate'),
-  payment_date: t('associates.columns.paymentDate'),
-  association_date: t('associates.columns.associationDate'),
-  associate_type: t('associates.columns.associateType'),
-  pauperwave_associate_number: t('associates.columns.pauperwaveAssociateNumber'),
-  consent_data: t('associates.columns.consentData'),
-  consent_social: t('associates.columns.consentSocial'),
-  has_read_statute: t('associates.columns.hasReadStatute'),
-  has_acknowledged_surveillance_notice: t('associates.columns.hasAcknowledgedSurveillanceNotice'),
-  first_name: t('associates.columns.firstName'),
-  last_name: t('associates.columns.lastName'),
-  email_address: t('associates.columns.emailAddress'),
-  phone_number: t('associates.columns.phoneNumber'),
-  tax_code: t('associates.columns.taxCode'),
-  born_date: t('associates.columns.bornDate'),
-  born_location: t('associates.columns.bornLocation'),
-  born_province: t('associates.columns.bornProvince'),
-  born_state: t('associates.columns.bornState'),
-  residency_address: t('associates.columns.residencyAddress'),
-  residency_house_number: t('associates.columns.residencyHouseNumber'),
-  residency_city: t('associates.columns.residencyCity'),
-  residency_province: t('associates.columns.residencyProvince'),
-  residency_cap: t('associates.columns.residencyCap'),
-  mtgo_nickname: t('associates.columns.mtgoNickname'),
-  mtga_nickname: t('associates.columns.mtgaNickname')
+  select: t('associate.columns.select'),
+  id: t('associate.columns.id'),
+  uuid: t('associate.columns.uuid'),
+  created_at: t('associate.columns.createdAt'),
+  updated_at: t('associate.columns.updatedAt'),
+  updated_by: t('associate.columns.updatedBy'),
+  membership_request_status: t('associate.columns.membershipRequestStatus'),
+  membership_status: t('associate.columns.membershipStatus'),
+  request_date: t('associate.columns.requestDate'),
+  payment_date: t('associate.columns.paymentDate'),
+  association_date: t('associate.columns.associationDate'),
+  associate_type: t('associate.columns.associateType'),
+  pauperwave_associate_number: t('associate.columns.pauperwaveAssociateNumber'),
+  consent_data: t('associate.columns.consentData'),
+  consent_social: t('associate.columns.consentSocial'),
+  has_read_statute: t('associate.columns.hasReadStatute'),
+  has_acknowledged_surveillance_notice: t('associate.columns.hasAcknowledgedSurveillanceNotice'),
+  first_name: t('associate.columns.firstName'),
+  last_name: t('associate.columns.lastName'),
+  email_address: t('associate.columns.emailAddress'),
+  phone_number: t('associate.columns.phoneNumber'),
+  tax_code: t('associate.columns.taxCode'),
+  born_date: t('associate.columns.bornDate'),
+  born_location: t('associate.columns.bornLocation'),
+  born_province: t('associate.columns.bornProvince'),
+  born_state: t('associate.columns.bornState'),
+  residency_address: t('associate.columns.residencyAddress'),
+  residency_house_number: t('associate.columns.residencyHouseNumber'),
+  residency_city: t('associate.columns.residencyCity'),
+  residency_province: t('associate.columns.residencyProvince'),
+  residency_cap: t('associate.columns.residencyCap'),
+  mtgo_nickname: t('associate.columns.mtgoNickname'),
+  mtga_nickname: t('associate.columns.mtgaNickname')
 } as const
 
 // Define a type for the keys of columnHeaders
@@ -432,9 +432,9 @@ function renderConsentBadge(consentvalue: boolean) {
 }
 
 const consentSocialOptions = [
-  { label: t('associates.consentSocialOptions.all'), value: 'all', icon: 'i-lucide-list', color: 'neutral' },
-  { label: t('associates.consentSocialOptions.yes'), value: 'yes', icon: 'i-lucide-check-circle', color: 'success' },
-  { label: t('associates.consentSocialOptions.no'), value: 'no', icon: 'i-lucide-circle-x', color: 'error' }
+  { label: t('associate.consentSocialOptions.all'), value: 'all', icon: 'i-lucide-list', color: 'neutral' },
+  { label: t('associate.consentSocialOptions.yes'), value: 'yes', icon: 'i-lucide-check-circle', color: 'success' },
+  { label: t('associate.consentSocialOptions.no'), value: 'no', icon: 'i-lucide-circle-x', color: 'error' }
 ]
 
 const consentSocialFilter = ref('all')
@@ -452,7 +452,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
 <template>
   <UDashboardPanel id="associates">
     <template #header>
-      <UDashboardNavbar :title="$t('nav.associates')">
+      <UDashboardNavbar :title="$t('associate.breadcrumb')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -484,7 +484,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
           <UStatusSelect
             v-model="consentSocialFilter"
             :items="consentSocialOptions"
-            :label="$t('associates.consentSocialLabel')"
+            :label="$t('associate.consentSocialLabel')"
             name="consentSocialFilter"
           />
         </div>
@@ -551,7 +551,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
 
       <div class="flex items-center justify-between gap-3 border-t border-default pt-4 mt-auto">
         <div class="text-sm text-muted">
-          {{ $t('associates.selectedRows', {
+          {{ $t('associate.selectedRows', {
             selected: table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0,
             total: table?.tableApi?.getFilteredRowModel().rows.length || 0
           }) }}

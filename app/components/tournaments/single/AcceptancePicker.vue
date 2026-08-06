@@ -107,11 +107,11 @@ defineShortcuts({
               @update:model-value="toggleSelectAll('source')"
             />
             <h3 class="font-semibold">
-              {{ t('tournamentsSingle.acceptancePicker.preRegistered') }}
+              {{ t('tournament.single.acceptancePicker.preRegistered') }}
             </h3>
           </div>
           <UBadge
-            :label="`${source.length}${selectedSource.length > 0 ? t('tournamentsSingle.acceptancePicker.selectedSuffix', { count: selectedSource.length }) : ''}`"
+            :label="`${source.length}${selectedSource.length > 0 ? t('tournament.single.acceptancePicker.selectedSuffix', { count: selectedSource.length }) : ''}`"
             variant="subtle"
           />
         </div>
@@ -142,7 +142,7 @@ defineShortcuts({
         <div v-if="source.length === 0" class="flex flex-col items-center justify-center py-12 text-muted">
           <UIcon name="i-lucide-users-round" class="w-12 h-12 mb-3 opacity-50" />
           <p class="text-sm">
-            {{ t('tournamentsSingle.acceptancePicker.noPreRegistered') }}
+            {{ t('tournament.single.acceptancePicker.noPreRegistered') }}
           </p>
         </div>
       </div>
@@ -199,11 +199,11 @@ defineShortcuts({
               @update:model-value="toggleSelectAll('target')"
             />
             <h3 class="font-semibold">
-              {{ t('tournamentsSingle.acceptancePicker.registeredPaid') }}
+              {{ t('tournament.single.acceptancePicker.registeredPaid') }}
             </h3>
           </div>
           <UBadge
-            :label="`${target.length}${selectedTarget.length > 0 ? t('tournamentsSingle.acceptancePicker.selectedSuffixShort', { count: selectedTarget.length }) : ''}`"
+            :label="`${target.length}${selectedTarget.length > 0 ? t('tournament.single.acceptancePicker.selectedSuffixShort', { count: selectedTarget.length }) : ''}`"
             color="primary"
             variant="subtle"
           />
@@ -235,7 +235,7 @@ defineShortcuts({
         <div v-if="target.length === 0" class="flex flex-col items-center justify-center py-12 text-muted">
           <UIcon name="i-lucide-users-round" class="w-12 h-12 mb-3 opacity-50" />
           <p class="text-sm">
-            {{ t('tournamentsSingle.acceptancePicker.noRegistered') }}
+            {{ t('tournament.single.acceptancePicker.noRegistered') }}
           </p>
         </div>
       </div>

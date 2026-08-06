@@ -12,23 +12,23 @@ onMounted(() => {
 })
 
 const items = computed<DropdownMenuItem[][]>(() => [[{
-  label: t('homePage.quickCreate.newAssociate'),
+  label: t('home.quickCreate.newAssociate'),
   icon: 'i-lucide-user-plus',
   to: '/associates?action=create'
 }, {
-  label: t('homePage.quickCreate.newTransaction'),
+  label: t('home.quickCreate.newTransaction'),
   icon: 'i-lucide-coins',
   to: '/transactions?action=create'
 }, {
-  label: t('homePage.quickCreate.newLeague'),
+  label: t('home.quickCreate.newLeague'),
   icon: 'i-lucide-trophy',
   to: '/leagues?action=create'
 }, {
-  label: t('homePage.quickCreate.newEvent'),
+  label: t('home.quickCreate.newEvent'),
   icon: 'i-lucide-calendar-plus',
   to: '/events?action=create'
 }, {
-  label: t('homePage.quickCreate.newTournament'),
+  label: t('home.quickCreate.newTournament'),
   icon: 'i-lucide-swords',
   to: '/tournaments?action=create'
 }]])

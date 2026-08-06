@@ -9,17 +9,17 @@ const currentStep = ref(0)
 const items = computed(() => [
   {
     slot: 'acceptance',
-    title: t('tournaments.detail.acceptance'),
+    title: t('tournament.stepper.acceptance'),
     icon: 'i-lucide-users'
   },
   ...Array.from({ length: numberOfRounds }, (_, i) => ({
     slot: `round-${i + 1}`,
-    title: t('tournaments.detail.round', { n: i + 1 }),
+    title: t('tournament.stepper.round', { n: i + 1 }),
     icon: 'i-lucide-swords'
   })),
   {
     slot: 'awards',
-    title: t('tournaments.detail.awards'),
+    title: t('tournament.stepper.awards'),
     icon: 'i-lucide-trophy'
   }
 ])
@@ -28,7 +28,7 @@ const items = computed(() => [
 <template>
   <UDashboardPanel id="tournaments">
     <template #header>
-      <UDashboardNavbar :title="$t('nav.tournaments')">
+      <UDashboardNavbar :title="$t('tournament.breadcrumb')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>

@@ -17,21 +17,21 @@ async function onSubmit() {
 <template>
   <UModal
     v-model:open="open"
-    :title="t('associatesDeleteModal.title', count)"
-    :description="t('associatesDeleteModal.description')"
+    :title="t('associate.deleteModal.title', count)"
+    :description="t('associate.deleteModal.description')"
   >
     <slot />
 
     <template #body>
       <div class="flex justify-end gap-2">
         <UButton
-          :label="t('associatesDeleteModal.cancel')"
+          :label="t('associate.deleteModal.cancel')"
           color="neutral"
           variant="subtle"
           @click="open = false"
         />
         <UButton
-          :label="t('associatesDeleteModal.delete')"
+          :label="t('associate.deleteModal.delete')"
           color="error"
           variant="solid"
           loading-auto

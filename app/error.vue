@@ -8,8 +8,8 @@ defineProps<{
 const { t } = useI18n()
 
 useSeoMeta({
-  title: t('errorPage.seoTitle'),
-  description: t('errorPage.seoDescription')
+  title: t('error.seoTitle'),
+  description: t('error.seoDescription')
 })
 
 useHead({

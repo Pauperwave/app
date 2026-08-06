@@ -5,8 +5,8 @@ import type { FormError } from '@nuxt/ui'
 const { t } = useI18n()
 
 const passwordSchema = z.object({
-  current: z.string().min(8, t('settingsSecurity.validation.minLength')),
-  new: z.string().min(8, t('settingsSecurity.validation.minLength'))
+  current: z.string().min(8, t('settings.security.validation.minLength')),
+  new: z.string().min(8, t('settings.security.validation.minLength'))
 })
 
 type PasswordSchema = z.output<typeof passwordSchema>
@@ -19,7 +19,7 @@ const password = reactive<Partial<PasswordSchema>>({
 const validate = (state: Partial<PasswordSchema>): FormError[] => {
   const errors: FormError[] = []
   if (state.current && state.new && state.current === state.new) {
-    errors.push({ name: 'new', message: t('settingsSecurity.validation.passwordsMustDiffer') })
+    errors.push({ name: 'new', message: t('settings.security.validation.passwordsMustDiffer') })
   }
   return errors
 }
@@ -27,8 +27,8 @@ const validate = (state: Partial<PasswordSchema>): FormError[] => {
 
 <template>
   <UPageCard
-    :title="$t('settingsSecurity.password.title')"
-    :description="$t('settingsSecurity.password.description')"
+    :title="$t('settings.security.password.title')"
+    :description="$t('settings.security.password.description')"
     variant="subtle"
   >
     <UForm
@@ -41,7 +41,7 @@ const validate = (state: Partial<PasswordSchema>): FormError[] => {
         <UInput
           v-model="password.current"
           type="password"
-          :placeholder="$t('settingsSecurity.password.currentPlaceholder')"
+          :placeholder="$t('settings.security.password.currentPlaceholder')"
           class="w-full"
         />
       </UFormField>
@@ -50,22 +50,22 @@ const validate = (state: Partial<PasswordSchema>): FormError[] => {
         <UInput
           v-model="password.new"
           type="password"
-          :placeholder="$t('settingsSecurity.password.newPlaceholder')"
+          :placeholder="$t('settings.security.password.newPlaceholder')"
           class="w-full"
         />
       </UFormField>
 
-      <UButton :label="$t('settingsSecurity.password.update')" class="w-fit" type="submit" />
+      <UButton :label="$t('settings.security.password.update')" class="w-fit" type="submit" />
     </UForm>
   </UPageCard>
 
   <UPageCard
-    :title="$t('settingsSecurity.account.title')"
-    :description="$t('settingsSecurity.account.description')"
+    :title="$t('settings.security.account.title')"
+    :description="$t('settings.security.account.description')"
     class="bg-gradient-to-tl from-error/10 from-5% to-default"
   >
     <template #footer>
-      <UButton :label="$t('settingsSecurity.account.delete')" color="error" />
+      <UButton :label="$t('settings.security.account.delete')" color="error" />
     </template>
   </UPageCard>
 </template>

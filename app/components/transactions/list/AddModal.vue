@@ -37,24 +37,24 @@ const eventOptions = [
 // Reordere in priority order
 // predefinito 'torneo'
 const paymentTypeOptions = computed(() => [
-  { value: 'entry-fee', label: t('transactionsAddModal.paymentTypeOptions.entryFee'), icon: 'i-lucide-trophy' },
-  { value: 'membership', label: t('transactionsAddModal.paymentTypeOptions.membership'), icon: 'i-lucide-users' },
-  { value: 'event-fee', label: t('transactionsAddModal.paymentTypeOptions.eventFee'), icon: 'i-lucide-calendar' },
-  { value: 'donation', label: t('transactionsAddModal.paymentTypeOptions.donation'), icon: 'i-lucide-heart-handshake' }
+  { value: 'entry-fee', label: t('transaction.addModal.paymentTypeOptions.entryFee'), icon: 'i-lucide-trophy' },
+  { value: 'membership', label: t('transaction.addModal.paymentTypeOptions.membership'), icon: 'i-lucide-users' },
+  { value: 'event-fee', label: t('transaction.addModal.paymentTypeOptions.eventFee'), icon: 'i-lucide-calendar' },
+  { value: 'donation', label: t('transaction.addModal.paymentTypeOptions.donation'), icon: 'i-lucide-heart-handshake' }
 ])
 
 const paymentMethodOptions = computed(() => [
-  { value: 'cash', label: t('transactionsAddModal.paymentMethodOptions.cash') },
+  { value: 'cash', label: t('transaction.addModal.paymentMethodOptions.cash') },
   { value: 'paypal', label: 'PayPal' },
   { value: 'pos', label: 'POS' },
-  { value: 'bank-transfer', label: t('transactionsAddModal.paymentMethodOptions.bankTransfer') }
+  { value: 'bank-transfer', label: t('transaction.addModal.paymentMethodOptions.bankTransfer') }
 ])
 
 const schema = z.object({
   associate_id: z.string().optional(),
   payer_is_associate: z.boolean().default(true),
-  payer_name: z.string().min(2, { message: t('transactionsAddModal.validation.payerFirstNameTooShort') }).optional(),
-  payer_surname: z.string().min(2, { message: t('transactionsAddModal.validation.payerLastNameTooShort') }).optional(),
+  payer_name: z.string().min(2, { message: t('transaction.addModal.validation.payerFirstNameTooShort') }).optional(),
+  payer_surname: z.string().min(2, { message: t('transaction.addModal.validation.payerLastNameTooShort') }).optional(),
   // https://github.com/colinhacks/zod/issues/4642#issuecomment-2957508997
   // - trim per rimuovere spazi
   // - email per validare il formato
@@ -64,28 +64,28 @@ const schema = z.object({
   // le date possono essere sia passate che future
   payment_datetime: z.string(),
   payment_amount: z.number().nonnegative({
-    message: t('transactionsAddModal.validation.amountNotNegative')
+    message: t('transaction.addModal.validation.amountNotNegative')
   }),
   payment_method: z.enum(['Cash', 'PayPal', 'POS', 'Bank Transfer'], {
-    message: t('transactionsAddModal.validation.invalidPaymentMethod')
+    message: t('transaction.addModal.validation.invalidPaymentMethod')
   }),
   received_by: z.string().trim().optional(),
   payment_type: z.enum(paymentTypeOptions.value.map(option => option.value), {
-    message: t('transactionsAddModal.validation.invalidPaymentType')
+    message: t('transaction.addModal.validation.invalidPaymentType')
   }),
   event_name: z.string().optional(),
   notes: z.string().optional()
 }).superRefine((data, ctx) => {
   if (!data.payer_is_associate) {
-    if (!data.payer_name) ctx.addIssue({ code: 'custom', path: ['payer_name'], message: t('transactionsAddModal.validation.payerFirstNameRequired') })
-    if (!data.payer_surname) ctx.addIssue({ code: 'custom', path: ['payer_surname'], message: t('transactionsAddModal.validation.payerLastNameRequired') })
-    if (!data.payer_email) ctx.addIssue({ code: 'custom', path: ['payer_email'], message: t('transactionsAddModal.validation.payerEmailRequired') })
-    if (!data.payer_tax_code) ctx.addIssue({ code: 'custom', path: ['payer_tax_code'], message: t('transactionsAddModal.validation.payerTaxCodeRequired') })
+    if (!data.payer_name) ctx.addIssue({ code: 'custom', path: ['payer_name'], message: t('transaction.addModal.validation.payerFirstNameRequired') })
+    if (!data.payer_surname) ctx.addIssue({ code: 'custom', path: ['payer_surname'], message: t('transaction.addModal.validation.payerLastNameRequired') })
+    if (!data.payer_email) ctx.addIssue({ code: 'custom', path: ['payer_email'], message: t('transaction.addModal.validation.payerEmailRequired') })
+    if (!data.payer_tax_code) ctx.addIssue({ code: 'custom', path: ['payer_tax_code'], message: t('transaction.addModal.validation.payerTaxCodeRequired') })
   } else if (!data.associate_id) {
     ctx.addIssue({
       code: 'custom',
       path: ['associate_id'],
-      message: t('transactionsAddModal.validation.associateIdRequired')
+      message: t('transaction.addModal.validation.associateIdRequired')
     })
   }
 })
@@ -122,12 +122,12 @@ const associateDigits = ref('')
 
 const items = computed(() => [
   {
-    label: t('transactionsAddModal.tabs.associate'),
+    label: t('transaction.addModal.tabs.associate'),
     icon: 'i-lucide-user-check',
     slot: 'associate'
   },
   {
-    label: t('transactionsAddModal.tabs.external'),
+    label: t('transaction.addModal.tabs.external'),
     icon: 'i-lucide-pencil-line',
     slot: 'external'
   }
@@ -189,20 +189,20 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     // await createTransaction(event.data)
 
     toast.add({
-      title: t('transactionsAddModal.successToastTitle'),
+      title: t('transaction.addModal.successToastTitle'),
       description: state.associate_id
-        ? t('transactionsAddModal.successToastDescriptionAssociate', { amount: event.data.payment_amount ?? 0, associateId: state.associate_id })
-        : t('transactionsAddModal.successToastDescriptionExternal', { amount: event.data.payment_amount ?? 0, name: `${event.data.payer_name ?? ''} ${event.data.payer_surname ?? ''}` }),
+        ? t('transaction.addModal.successToastDescriptionAssociate', { amount: event.data.payment_amount ?? 0, associateId: state.associate_id })
+        : t('transaction.addModal.successToastDescriptionExternal', { amount: event.data.payment_amount ?? 0, name: `${event.data.payer_name ?? ''} ${event.data.payer_surname ?? ''}` }),
       color: 'success'
     })
     open.value = false
   } catch (error: unknown) {
-    let message = t('transactionsAddModal.errorToastGenericMessage')
+    let message = t('transaction.addModal.errorToastGenericMessage')
     if (error instanceof Error) {
       message = error.message
     }
     toast.add({
-      title: t('transactionsAddModal.errorToastTitle'),
+      title: t('transaction.addModal.errorToastTitle'),
       description: message,
       color: 'error'
     })
@@ -216,11 +216,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     v-model:open="open"
     :dismissible="false"
     :ui="{ content: 'max-w-xl' }"
-    :title="$t('transactionsAddModal.title')"
-    :description="$t('transactionsAddModal.description')"
+    :title="$t('transaction.addModal.title')"
+    :description="$t('transaction.addModal.description')"
   >
     <!-- Trigger button goes in the default slot -->
-    <UButton :label="$t('transactionsAddModal.openButton')" icon="i-lucide-coins" @click="() => { open = true }" />
+    <UButton :label="$t('transaction.addModal.openButton')" icon="i-lucide-coins" @click="() => { open = true }" />
 
     <template #body>
       <UForm
@@ -231,14 +231,14 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       >
         <div class="space-y-1">
           <p class="text-lg font-semibold text-primary">
-            {{ $t('transactionsAddModal.personalInfo') }}
+            {{ $t('transaction.addModal.personalInfo') }}
           </p>
 
           <!-- Use v-model to track active tab -->
           <UTabs v-model="activeTab" :items="items">
             <template #associate>
               <div class="grid grid-cols-2 gap-2 mt-2">
-                <UFormField :label="$t('transactionsAddModal.fields.associateId')" name="associate_id" required>
+                <UFormField :label="$t('transaction.addModal.fields.associateId')" name="associate_id" required>
                   <UInput
                     v-model="associateDigits"
                     placeholder="000"
@@ -266,12 +266,12 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                   </UInput>
                 </UFormField>
 
-                <UFormField :label="$t('transactionsAddModal.fields.member')" name="associate_id" required>
+                <UFormField :label="$t('transaction.addModal.fields.member')" name="associate_id" required>
                   <UInputMenu
                     :items="users"
                     class="w-full"
                     icon="i-lucide-user"
-                    :placeholder="$t('transactionsAddModal.fields.selectMember')"
+                    :placeholder="$t('transaction.addModal.fields.selectMember')"
                     :ui="{ content: 'min-w-fit' }"
                   >
                     <template #item-label="{ item }">
@@ -288,7 +288,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
             <template #external>
               <div class="grid grid-cols-2 gap-2 mt-2">
-                <UFormField :label="$t('transactionsAddModal.fields.firstName')" name="payer_name" required>
+                <UFormField :label="$t('transaction.addModal.fields.firstName')" name="payer_name" required>
                   <UInput
                     v-model="state.payer_name"
                     type="text"
@@ -301,7 +301,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                   </UInput>
                 </UFormField>
 
-                <UFormField :label="$t('transactionsAddModal.fields.lastName')" name="payer_surname" required>
+                <UFormField :label="$t('transaction.addModal.fields.lastName')" name="payer_surname" required>
                   <UInput
                     v-model="state.payer_surname"
                     type="text"
@@ -314,13 +314,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                   </UInput>
                 </UFormField>
 
-                <UFormField :label="$t('transactionsAddModal.fields.email')" name="payer_email" required>
+                <UFormField :label="$t('transaction.addModal.fields.email')" name="payer_email" required>
                   <UInput
                     v-model="state.payer_email"
                     type="email"
                     class="w-full"
                     color="neutral"
-                    :placeholder="$t('transactionsAddModal.fields.emailPlaceholder')"
+                    :placeholder="$t('transaction.addModal.fields.emailPlaceholder')"
                     icon="i-lucide-at-sign"
                   >
                     <template v-if="state.payer_email?.length" #trailing>
@@ -329,7 +329,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                   </UInput>
                 </UFormField>
 
-                <UFormField :label="$t('transactionsAddModal.fields.taxCode')" name="payer_tax_code" required>
+                <UFormField :label="$t('transaction.addModal.fields.taxCode')" name="payer_tax_code" required>
                   <UInput
                     v-model="payerTaxCodeInput"
                     type="text"
@@ -356,11 +356,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         </div>
 
         <p class="text-lg font-semibold text-primary">
-          {{ $t('transactionsAddModal.paymentInfo') }}
+          {{ $t('transaction.addModal.paymentInfo') }}
         </p>
 
         <div class="grid grid-cols-2 gap-2 mt-2">
-          <UFormField :label="$t('transactionsAddModal.fields.paymentDate')" name="payment_date">
+          <UFormField :label="$t('transaction.addModal.fields.paymentDate')" name="payment_date">
             <UInput
               v-model="state.payment_datetime"
               type="datetime-local"
@@ -369,7 +369,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             />
           </UFormField>
 
-          <UFormField :label="$t('transactionsAddModal.fields.receivedBy')" name="received_by">
+          <UFormField :label="$t('transaction.addModal.fields.receivedBy')" name="received_by">
             <USelectMenu
               v-model="state.received_by"
               :items="receiverOptions"
@@ -377,7 +377,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             />
           </UFormField>
 
-          <UFormField :label="$t('transactionsAddModal.fields.paymentType')" name="payment_type">
+          <UFormField :label="$t('transaction.addModal.fields.paymentType')" name="payment_type">
             <USelect
               v-model="state.payment_type"
               :items="paymentTypeOptions"
@@ -390,7 +390,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             </USelect>
           </UFormField>
 
-          <UFormField :label="$t('transactionsAddModal.fields.paymentMethod')" name="payment_method">
+          <UFormField :label="$t('transaction.addModal.fields.paymentMethod')" name="payment_method">
             <USelect
               v-model="state.payment_method"
               :items="paymentMethodOptions"
@@ -400,11 +400,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         </div>
 
         <div class="grid grid-cols-2 gap-2 mt-2">
-          <UFormField :label="$t('transactionsAddModal.fields.receivedBy')" name="received_by">
+          <UFormField :label="$t('transaction.addModal.fields.receivedBy')" name="received_by">
             <USelect v-model="state.received_by" :items="receiverOptions" class="w-full" />
           </UFormField>
 
-          <UFormField :label="$t('transactionsAddModal.fields.event')" name="event_name">
+          <UFormField :label="$t('transaction.addModal.fields.event')" name="event_name">
             <USelectMenu
               v-model="state.event_name"
               :items="eventOptions"
@@ -413,19 +413,19 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           </UFormField>
         </div>
 
-        <UFormField :label="$t('transactionsAddModal.fields.notes')" name="notes">
+        <UFormField :label="$t('transaction.addModal.fields.notes')" name="notes">
           <UTextarea v-model="state.notes" class="w-full" />
         </UFormField>
 
         <div class="flex justify-end gap-2">
           <UButton
-            :label="$t('transactionsAddModal.cancel')"
+            :label="$t('transaction.addModal.cancel')"
             color="neutral"
             variant="subtle"
             @click="() => { open = false }"
           />
           <UButton
-            :label="$t('transactionsAddModal.create')"
+            :label="$t('transaction.addModal.create')"
             color="primary"
             variant="solid"
             type="submit"

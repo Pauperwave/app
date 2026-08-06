@@ -2,19 +2,9 @@
   "nav": {
     "dashboard": "Pannello di controllo",
     "community": "Community",
-    "associates": "Associati",
-    "players": "Giocatori",
-    "transactions": "Transazioni",
     "competitions": "Competizioni",
-    "leagues": "Leghe",
-    "events": "Eventi",
-    "tournaments": "Tornei",
-    "commander": "Commander",
-    "commanders": "Comandanti",
-    "decks": "Mazzi",
-    "rulesets": "Regolamenti",
-    "statistics": "Statistiche",
-    "overview": "Panoramica",
+    "commanderSection": "Commander",
+    "statisticsSection": "Statistiche",
     "feedback": "Feedback",
     "helpSupport": "Help & Support",
     "search": {
@@ -22,6 +12,15 @@
       "code": "Code",
       "viewSource": "View page source"
     }
+  },
+  "common": {
+    "selectAll": "Select all",
+    "selectRow": "Select row",
+    "delete": "Delete",
+    "showColumns": "Mostra colonne",
+    "yes": "Yes",
+    "no": "No",
+    "filterEmailsPlaceholder": "Filter emails..."
   },
   "inputs": {
     "clearButton": {
@@ -36,18 +35,45 @@
       "placeholder": "HH:MM"
     }
   },
-  "common": {
-    "selectAll": "Select all",
-    "selectRow": "Select row",
-    "delete": "Delete",
-    "showColumns": "Mostra colonne",
-    "refresh": "Aggiorna",
-    "yes": "Yes",
-    "no": "No",
-    "all": "Tutti",
-    "filterEmailsPlaceholder": "Filter emails..."
+  "home": {
+    "revenue": "Revenue",
+    "pickDate": "Seleziona data",
+    "quickCreate": {
+      "newAssociate": "Nuovo associato",
+      "newTransaction": "Registra transazione",
+      "newLeague": "Nuova lega",
+      "newEvent": "Nuovo evento",
+      "newTournament": "Nuovo torneo"
+    },
+    "dateRanges": {
+      "lastYear": "Ultimo anno",
+      "last6Months": "Ultimi 6 mesi",
+      "last3Months": "Ultimi 3 mesi",
+      "lastMonth": "Ultimo mese",
+      "nextMonth": "Prossimo mese",
+      "next3Months": "Prossimi 3 mesi",
+      "next6Months": "Prossimi 6 mesi",
+      "nextYear": "Prossimo anno",
+      "all": "Tutto"
+    },
+    "sales": {
+      "columns": {
+        "id": "ID",
+        "date": "Data",
+        "status": "Stato",
+        "email": "Email",
+        "amount": "Importo"
+      }
+    },
+    "stats": {
+      "associates": "Associati",
+      "conversions": "Conversioni",
+      "revenue": "Revenue",
+      "orders": "Ordini"
+    }
   },
-  "associates": {
+  "associate": {
+    "breadcrumb": "Associati",
     "tabs": {
       "all": "Tutti",
       "pending": "In attesa di approvazione",
@@ -95,508 +121,244 @@
       "yes": "Concesso",
       "no": "Negato"
     },
-    "selectedRows": "{selected} di {total} righe selezionate."
+    "selectedRows": "{selected} di {total} righe selezionate.",
+    "addModal": {
+      "title": "Nuovo associato",
+      "description": "Aggiungi un nuovo associato al database",
+      "openButton": "Nuovo associato",
+      "validation": {
+        "firstNameTooShort": "Nome troppo corto",
+        "lastNameTooShort": "Cognome troppo corto",
+        "invalidPhoneNumber": "Numero di telefono non valido",
+        "invalidTaxCode": "Codice fiscale non valido",
+        "birthLocationRequired": "Luogo di nascita richiesto",
+        "birthDateNotFuture": "La data di nascita non può essere futura",
+        "birthProvinceRequired": "Provincia richiesta",
+        "birthStateRequired": "Stato richiesto",
+        "residencyAddressRequired": "Indirizzo richiesto",
+        "residencyCityRequired": "Città richiesta",
+        "residencyProvinceInvalid": "Sigla provincia non valida",
+        "residencyCapInvalid": "CAP non valido",
+        "consentDataRequired": "Consenso obbligatorio",
+        "statuteReadRequired": "Lettura statuto obbligatoria",
+        "surveillanceAckRequired": "Presa visione obbligatoria"
+      },
+      "successToastTitle": "Successo",
+      "successToastDescription": "Nuovo associato \"{name}\" aggiunto",
+      "errorToastTitle": "Errore",
+      "errorToastDescription": "Qualcosa è andato storto: {message}",
+      "sections": {
+        "associateType": "Tipologia di associato",
+        "personalInfo": "Informazioni personali",
+        "birthInfo": "Informazioni di nascita",
+        "fiscalInfo": "Informazioni fiscali",
+        "residencyInfo": "Informazioni sulla residenza",
+        "mtgNicknames": "Nickname MTG",
+        "consents": "Consensi e riconoscimenti"
+      },
+      "fields": {
+        "associateType": "Tipo di associato",
+        "firstName": "Nome",
+        "lastName": "Cognome",
+        "email": "Email",
+        "phoneNumber": "Numero di cellulare",
+        "birthLocation": "Luogo di nascita",
+        "birthDate": "Data di nascita",
+        "selectBirthDate": "Seleziona data di nascita",
+        "birthProvince": "Provincia",
+        "birthState": "Stato",
+        "taxCode": "Codice Fiscale",
+        "residencyAddress": "Indirizzo",
+        "residencyCity": "Città",
+        "residencyProvince": "Provincia",
+        "residencyCap": "CAP",
+        "mtgoNickname": "MTGO",
+        "mtgaNickname": "Arena"
+      },
+      "consents": {
+        "statuteLabel": "Ho letto lo statuto dell'associazione",
+        "statuteDescription": "Dichiaro di aver letto lo statuto dell'associazione.",
+        "surveillanceLabel": "Informativa sulla sorveglianza",
+        "surveillanceDescription": "Dichiaro di aver preso visione dell'informativa sulla sorveglianza.",
+        "dataLabel": "Consenso al trattamento dei dati",
+        "dataDescription": "Dichiaro di aver preso visione dell'informativa sul trattamento dei dati.",
+        "socialLabel": "Consenso Social",
+        "socialDescription": "Dichiaro di aver preso visione dell'informativa sulla privacy."
+      },
+      "cancel": "Annulla",
+      "create": "Crea"
+    },
+    "deleteModal": {
+      "title": "Elimina {count} associato | Elimina {count} associati",
+      "description": "Sei sicuro? Questa azione non può essere annullata.",
+      "cancel": "Annulla",
+      "delete": "Elimina"
+    }
   },
-  "transactions": {
+  "transaction": {
+    "breadcrumb": "Transazioni",
     "tabs": {
       "all": "Tutte le transazioni",
       "associationFee": "Quote associative",
       "eventFee": "Quote eventi",
       "donations": "Donazioni"
-    }
-  },
-  "leagues": {
-    "placeholder": "Pagina leghe",
-    "singleLeaderboard": "Classifica singola lega"
-  },
-  "events": {
-    "placeholder": "Pagina eventi"
-  },
-  "associatesAddModal": {
-    "title": "Nuovo associato",
-    "description": "Aggiungi un nuovo associato al database",
-    "openButton": "Nuovo associato",
-    "validation": {
-      "firstNameTooShort": "Nome troppo corto",
-      "lastNameTooShort": "Cognome troppo corto",
-      "invalidPhoneNumber": "Numero di telefono non valido",
-      "invalidTaxCode": "Codice fiscale non valido",
-      "birthLocationRequired": "Luogo di nascita richiesto",
-      "birthDateNotFuture": "La data di nascita non può essere futura",
-      "birthProvinceRequired": "Provincia richiesta",
-      "birthStateRequired": "Stato richiesto",
-      "residencyAddressRequired": "Indirizzo richiesto",
-      "residencyCityRequired": "Città richiesta",
-      "residencyProvinceInvalid": "Sigla provincia non valida",
-      "residencyCapInvalid": "CAP non valido",
-      "consentDataRequired": "Consenso obbligatorio",
-      "statuteReadRequired": "Lettura statuto obbligatoria",
-      "surveillanceAckRequired": "Presa visione obbligatoria"
     },
-    "successToastTitle": "Successo",
-    "successToastDescription": "Nuovo associato \"{name}\" aggiunto",
-    "errorToastTitle": "Errore",
-    "errorToastDescription": "Qualcosa è andato storto: {message}",
-    "sections": {
-      "associateType": "Tipologia di associato",
+    "addModal": {
+      "title": "Nuova transazione",
+      "description": "Aggiungi una nuova transazione al database",
+      "openButton": "Nuova transazione",
       "personalInfo": "Informazioni personali",
-      "birthInfo": "Informazioni di nascita",
-      "fiscalInfo": "Informazioni fiscali",
-      "residencyInfo": "Informazioni sulla residenza",
-      "mtgNicknames": "Nickname MTG",
-      "consents": "Consensi e riconoscimenti"
-    },
-    "fields": {
-      "associateType": "Tipo di associato",
-      "firstName": "Nome",
-      "lastName": "Cognome",
-      "email": "Email",
-      "phoneNumber": "Numero di cellulare",
-      "birthLocation": "Luogo di nascita",
-      "birthDate": "Data di nascita",
-      "selectBirthDate": "Seleziona data di nascita",
-      "birthProvince": "Provincia",
-      "birthState": "Stato",
-      "taxCode": "Codice Fiscale",
-      "residencyAddress": "Indirizzo",
-      "residencyCity": "Città",
-      "residencyProvince": "Provincia",
-      "residencyCap": "CAP",
-      "mtgoNickname": "MTGO",
-      "mtgaNickname": "Arena"
-    },
-    "consents": {
-      "statuteLabel": "Ho letto lo statuto dell'associazione",
-      "statuteDescription": "Dichiaro di aver letto lo statuto dell'associazione.",
-      "surveillanceLabel": "Informativa sulla sorveglianza",
-      "surveillanceDescription": "Dichiaro di aver preso visione dell'informativa sulla sorveglianza.",
-      "dataLabel": "Consenso al trattamento dei dati",
-      "dataDescription": "Dichiaro di aver preso visione dell'informativa sul trattamento dei dati.",
-      "socialLabel": "Consenso Social",
-      "socialDescription": "Dichiaro di aver preso visione dell'informativa sulla privacy."
-    },
-    "cancel": "Annulla",
-    "create": "Crea"
-  },
-  "associatesDeleteModal": {
-    "title": "Elimina {count} associato | Elimina {count} associati",
-    "description": "Sei sicuro? Questa azione non può essere annullata.",
-    "cancel": "Annulla",
-    "delete": "Elimina"
-  },
-  "eventsAddModal": {
-    "title": "Nuovo evento",
-    "description": "Aggiungi un nuovo evento al database",
-    "openButton": "Nuovo evento",
-    "validation": {
-      "nameTooShort": "Too short",
-      "invalidEmail": "Invalid email"
-    },
-    "fields": {
-      "name": "Name",
-      "email": "Email"
-    },
-    "successToastTitle": "Successo",
-    "successToastDescription": "Nuovo evento \"{name}\" aggiunto",
-    "cancel": "Cancel",
-    "create": "Create"
-  },
-  "leaguesAddModal": {
-    "title": "Nuova lega",
-    "description": "Aggiungi una nuova lega al database",
-    "openButton": "Nuova lega",
-    "validation": {
-      "nameTooShort": "Too short",
-      "invalidEmail": "Invalid email"
-    },
-    "fields": {
-      "name": "Name",
-      "email": "Email"
-    },
-    "successToastTitle": "Success",
-    "successToastDescription": "Nuova lega {name} aggiunta",
-    "cancel": "Cancel",
-    "create": "Create"
-  },
-  "transactionsAddModal": {
-    "title": "Nuova transazione",
-    "description": "Aggiungi una nuova transazione al database",
-    "openButton": "Nuova transazione",
-    "personalInfo": "Informazioni personali",
-    "paymentInfo": "Informazioni sul pagamento",
-    "tabs": {
-      "associate": "Associato",
-      "external": "Persona esterna"
-    },
-    "fields": {
-      "associateId": "ID Associato",
-      "member": "Socio",
-      "selectMember": "Seleziona un socio",
-      "firstName": "Nome",
-      "lastName": "Cognome",
-      "email": "Email",
-      "emailPlaceholder": "Inserisci la tua email",
-      "taxCode": "Codice Fiscale",
-      "paymentDate": "Data pagamento",
-      "receivedBy": "Incassati da",
-      "paymentType": "Tipologia di pagamento",
-      "paymentMethod": "Metodo di Pagamento",
-      "event": "Evento",
-      "notes": "Note"
-    },
-    "paymentTypeOptions": {
-      "entryFee": "Torneo",
-      "membership": "Quota associativa",
-      "eventFee": "Evento",
-      "donation": "Donazione"
-    },
-    "paymentMethodOptions": {
-      "cash": "Contanti",
-      "paypal": "PayPal",
-      "pos": "POS",
-      "bankTransfer": "Bonifico"
-    },
-    "validation": {
-      "payerFirstNameTooShort": "Nome troppo corto",
-      "payerLastNameTooShort": "Cognome troppo corto",
-      "amountNotNegative": "L'importo non può essere negativo",
-      "invalidPaymentMethod": "Metodo di pagamento non valido",
-      "invalidPaymentType": "Tipo di pagamento non valido",
-      "payerFirstNameRequired": "Nome richiesto",
-      "payerLastNameRequired": "Cognome richiesto",
-      "payerEmailRequired": "Email richiesta",
-      "payerTaxCodeRequired": "Codice Fiscale richiesto",
-      "associateIdRequired": "ID associato richiesto"
-    },
-    "successToastTitle": "Successo",
-    "successToastDescriptionAssociate": "Nuova transazione di {amount}€ dall'associato #{associateId} aggiunta",
-    "successToastDescriptionExternal": "Nuova transazione di {amount}€ da {name} aggiunta",
-    "errorToastTitle": "Errore",
-    "errorToastGenericMessage": "Impossibile aggiungere la transazione",
-    "cancel": "Cancel",
-    "create": "Create"
-  },
-  "tournamentsAddModal": {
-    "title": "Nuovo torneo",
-    "description": "Aggiungi un nuovo torneo al database",
-    "openButton": "Nuovo torneo",
-    "tournamentData": "Dati relativi al torneo",
-    "scheduling": "Pianificazione del torneo",
-    "organizerData": "Dati relativi all'organizzatore",
-    "visibilityOptions": {
-      "public": "Pubblico",
-      "private": "Privato"
-    },
-    "statusOptions": {
-      "scheduled": "Pianificato",
-      "cancelled": "Annullato",
-      "ongoing": "In corso",
-      "completed": "Completato"
-    },
-    "fields": {
-      "status": "Stato",
-      "visibility": "Visibilità",
-      "companionCode": "Codice Companion",
-      "companionCodePlaceholder": "Codice (opzionale)",
-      "name": "Nome",
-      "namePlaceholder": "Nome del torneo",
-      "entryFee": "Quota (€)",
-      "description": "Descrizione",
-      "descriptionPlaceholder": "Descrizione (opzionale)",
-      "format": "Formato",
-      "selectFormat": "Seleziona formato",
-      "ruleset": "Regolamento",
-      "selectRuleset": "Seleziona regolamento",
-      "startDate": "Data di inizio",
-      "startTime": "Ora di inizio",
-      "selectTime": "Seleziona orario",
-      "roundCount": "Numero di round",
-      "roundDuration": "Durata round",
-      "organizer": "Organizzatore",
-      "selectOrganizer": "Seleziona organizzatore",
-      "location": "Luogo",
-      "selectLocation": "Seleziona luogo",
-      "league": "Lega",
-      "linkLeague": "Associa lega (opzionale)",
-      "event": "Evento",
-      "linkEvent": "Associa evento (opzionale)"
-    },
-    "validation": {
-      "nameRequired": "Il nome del torneo è obbligatorio"
-    },
-    "successToastTitle": "Success",
-    "successToastDescription": "Nuovo torneo \"{name}\" aggiunto",
-    "cancel": "Annulla",
-    "create": "Crea torneo"
-  },
-  "errorPage": {
-    "seoTitle": "Pagina non trovata",
-    "seoDescription": "Siamo spiacenti, questa pagina non è stata trovata."
-  },
-  "homePage": {
-    "quickCreate": {
-      "newAssociate": "Nuovo associato",
-      "newTransaction": "Registra transazione",
-      "newLeague": "Nuova lega",
-      "newEvent": "Nuovo evento",
-      "newTournament": "Nuovo torneo"
-    }
-  },
-  "settingsLayout": {
-    "navbarTitle": "Impostazioni",
-    "links": {
-      "general": "Generali",
-      "members": "Membri",
-      "notifications": "Notifiche",
-      "security": "Sicurezza",
-      "documentation": "Documentazione"
-    }
-  },
-  "settingsGeneral": {
-    "validation": {
-      "nameTooShort": "Too short",
-      "invalidEmail": "Invalid email",
-      "usernameTooShort": "Too short"
-    },
-    "successToastTitle": "Success",
-    "successToastDescription": "Your settings have been updated.",
-    "profile": {
-      "title": "Profile",
-      "description": "These informations will be displayed publicly.",
-      "saveChanges": "Save changes"
-    },
-    "fields": {
-      "name": "Name",
-      "nameDescription": "Will appear on receipts, invoices, and other communication.",
-      "email": "Email",
-      "emailDescription": "Used to sign in, for email receipts and product updates.",
-      "username": "Username",
-      "usernameDescription": "Your unique username for logging in and your profile URL.",
-      "avatar": "Avatar",
-      "avatarDescription": "JPG, GIF or PNG. 1MB Max.",
-      "choose": "Choose",
-      "bio": "Bio",
-      "bioDescription": "Brief description for your profile. URLs are hyperlinked."
-    }
-  },
-  "settingsMembers": {
-    "title": "Members",
-    "description": "Invite new members by email address.",
-    "invitePeople": "Invite people",
-    "searchPlaceholder": "Search organizers"
-  },
-  "settingsNotifications": {
-    "sections": {
-      "channels": {
-        "title": "Notification channels",
-        "description": "Where can we notify you?"
+      "paymentInfo": "Informazioni sul pagamento",
+      "tabs": {
+        "associate": "Associato",
+        "external": "Persona esterna"
       },
-      "accountUpdates": {
-        "title": "Account updates",
-        "description": "Receive updates about Nuxt UI."
-      }
-    },
-    "fields": {
-      "email": {
-        "label": "Email",
-        "description": "Receive a daily email digest."
-      },
-      "desktop": {
-        "label": "Desktop",
-        "description": "Receive desktop notifications."
-      },
-      "weeklyDigest": {
-        "label": "Weekly digest",
-        "description": "Receive a weekly digest of news."
-      },
-      "productUpdates": {
-        "label": "Product updates",
-        "description": "Receive a monthly email with all new features and updates."
-      },
-      "importantUpdates": {
-        "label": "Important updates",
-        "description": "Receive emails about important updates like security fixes, maintenance, etc."
-      }
-    }
-  },
-  "settingsSecurity": {
-    "validation": {
-      "minLength": "Must be at least 8 characters",
-      "passwordsMustDiffer": "Passwords must be different"
-    },
-    "password": {
-      "title": "Password",
-      "description": "Confirm your current password before setting a new one.",
-      "currentPlaceholder": "Current password",
-      "newPlaceholder": "New password",
-      "update": "Update"
-    },
-    "account": {
-      "title": "Account",
-      "description": "No longer want to use our service? You can delete your account here. This action is not reversible. All information related to this account will be deleted permanently.",
-      "delete": "Delete account"
-    }
-  },
-  "leagueDetail": {
-    "navbarTitle": "Lega",
-    "body": {
-      "leaderboard": "Classifica lega specifica",
-      "participants": "Partecipanti alla lega specifica"
-    }
-  },
-  "leagueTournamentsList": {
-    "body": "Panoramica torneo specifico"
-  },
-  "leagueTournamentDetail": {
-    "navbarTitle": "Torneo",
-    "body": "Partecipanti all'evento"
-  },
-  "eventParticipants": {
-    "placeholder": "Partecipanti all'evento"
-  },
-  "eventResults": {
-    "placeholder": "Risultati del singolo evento"
-  },
-  "eventDetail": {
-    "navbarTitle": "Evento",
-    "body": {
-      "specificEvent": "Evento specifico",
-      "eventDetails": "Contiene i dettagli dell'evento selezionato",
-      "participantsList": "Lista dei partecipanti all'evento",
-      "linkedTournaments": "Elenco dei tornei associati all'evento"
-    }
-  },
-  "eventTournamentsList": {
-    "navbarTitle": "Tornei",
-    "body": {
-      "allTournaments": "Elenco di tutti i tornei",
-      "dateRangeFilter": "Range di date come filtro",
-      "filters": "Filtri:",
-      "organizerFilter": "Organizzatori del torneo (aggiungere voce al db)",
-      "formatFilter": "Formato del torneo",
-      "locationFilter": "Luogo di svolgimento del torneo",
-      "tableDescription": "La vista dovrebbe essere una tabella con filtri e paginazione. Ogni riga della tabella dovrebbe mostrare:",
-      "date": "Data del torneo",
-      "status": "Stato del torneo (programmato, in corso, completato, annullato)",
-      "organizer": "Organizzatore del torneo",
-      "name": "Nome del torneo",
-      "links": "Eventuali collegamenti all'evento associato e alla lega associata",
-      "format": "Formato del torneo",
-      "participantCount": "Numero di partecipanti",
-      "winner": "Vincitore del torneo (se disponibile)",
-      "detailsLink": "Link ai dettagli del torneo"
-    }
-  },
-  "eventTournamentDetail": {
-    "navbarTitle": "Torneo",
-    "body": "Partecipanti all'evento"
-  },
-  "loginPage": {
-    "seoTitle": "Login",
-    "seoDescription": "Accedi al tuo account per continuare",
-    "emailLabel": "Email",
-    "emailPlaceholder": "Inserisci la tua email",
-    "invalidEmail": "Inserisci un indirizzo email valido.",
-    "connectionErrorTitle": "Errore di connessione",
-    "connectionErrorDescription": "Impossibile verificare l'email. Riprova più tardi.",
-    "emailNotFoundTitle": "Email non trovata",
-    "emailNotFoundDescription": "L'indirizzo email non risulta associato a un account PauperWave.",
-    "errorTitle": "Errore",
-    "linkSentTitle": "Link inviato",
-    "linkSentDescription": "Controlla la tua casella email per accedere.",
-    "welcomeBack": "Bentornato",
-    "description": "Utilizza l'email associata al tuo account PauperWave.",
-    "submitButton": "Invia link per accedere"
-  },
-  "authCallback": {
-    "invalidLink": "Link non valido o scaduto. Richiedi un nuovo link di accesso.",
-    "backToLogin": "Torna al login",
-    "verifying": "Verifica in corso..."
-  },
-  "tournamentsListOverview": {
-    "placeholder": "Panoramica torneo specifico"
-  },
-  "tournamentsSingle": {
-    "acceptancePicker": {
-      "preRegistered": "Pre-registrati",
-      "selectedSuffix": " ({count} selezionati)",
-      "noPreRegistered": "Nessun pre-registrato",
-      "registeredPaid": "Iscritti (Pagato)",
-      "selectedSuffixShort": " ({count} sel.)",
-      "noRegistered": "Nessun iscritto"
-    },
-    "awardsPlaceholder": "Componente premi che mostrerà la classifica finale",
-    "leaderboardTitle": "Classifica torneo specifico",
-    "overviewPlaceholder": "Panoramica di tutti i tornei",
-    "participantsPlaceholder": "Partecipanti all'evento",
-    "roundManager": {
-      "title": "Gestione Round {round}",
-      "content": "Contenuto di gestione per il Round {round}."
-    },
-    "roundResultsPlaceholder": "Risultati del singolo evento"
-  },
-  "roundResultAddModal": {
-    "placeholder": "Aggiunta del risultato del round"
-  },
-  "settingsMembersList": {
-    "editMember": "Modifica membro",
-    "removeMember": "Rimuovi membro"
-  },
-  "notificationsSlideover": {
-    "title": "Notifiche"
-  },
-  "teamsMenu": {
-    "createTeam": "Crea team",
-    "manageTeams": "Gestisci team"
-  },
-  "userMenu": {
-    "profile": "Profilo",
-    "settings": "Impostazioni",
-    "theme": "Tema",
-    "primary": "Primario",
-    "neutral": "Neutro",
-    "appearance": "Aspetto",
-    "light": "Chiaro",
-    "dark": "Scuro",
-    "githubRepository": "Repository GitHub",
-    "logout": "Disconnetti",
-    "logoutErrorTitle": "Errore",
-    "logoutErrorDescription": "Impossibile disconnettersi. Riprova.",
-    "logoutSuccessTitle": "Disconnesso",
-    "logoutSuccessDescription": "Arrivederci!",
-    "genericErrorDescription": "Si è verificato un errore. Riprova."
-  },
-  "home": {
-    "revenue": "Revenue",
-    "pickDate": "Seleziona data",
-    "dateRanges": {
-      "lastYear": "Ultimo anno",
-      "last6Months": "Ultimi 6 mesi",
-      "last3Months": "Ultimi 3 mesi",
-      "lastMonth": "Ultimo mese",
-      "nextMonth": "Prossimo mese",
-      "next3Months": "Prossimi 3 mesi",
-      "next6Months": "Prossimi 6 mesi",
-      "nextYear": "Prossimo anno",
-      "all": "Tutto"
-    },
-    "sales": {
-      "columns": {
-        "id": "ID",
-        "date": "Data",
-        "status": "Stato",
+      "fields": {
+        "associateId": "ID Associato",
+        "member": "Socio",
+        "selectMember": "Seleziona un socio",
+        "firstName": "Nome",
+        "lastName": "Cognome",
         "email": "Email",
-        "amount": "Importo"
-      }
-    },
-    "stats": {
-      "associates": "Associati",
-      "conversions": "Conversioni",
-      "revenue": "Revenue",
-      "orders": "Ordini"
+        "emailPlaceholder": "Inserisci la tua email",
+        "taxCode": "Codice Fiscale",
+        "paymentDate": "Data pagamento",
+        "receivedBy": "Incassati da",
+        "paymentType": "Tipologia di pagamento",
+        "paymentMethod": "Metodo di Pagamento",
+        "event": "Evento",
+        "notes": "Note"
+      },
+      "paymentTypeOptions": {
+        "entryFee": "Torneo",
+        "membership": "Quota associativa",
+        "eventFee": "Evento",
+        "donation": "Donazione"
+      },
+      "paymentMethodOptions": {
+        "cash": "Contanti",
+        "bankTransfer": "Bonifico"
+      },
+      "validation": {
+        "payerFirstNameTooShort": "Nome troppo corto",
+        "payerLastNameTooShort": "Cognome troppo corto",
+        "amountNotNegative": "L'importo non può essere negativo",
+        "invalidPaymentMethod": "Metodo di pagamento non valido",
+        "invalidPaymentType": "Tipo di pagamento non valido",
+        "payerFirstNameRequired": "Nome richiesto",
+        "payerLastNameRequired": "Cognome richiesto",
+        "payerEmailRequired": "Email richiesta",
+        "payerTaxCodeRequired": "Codice Fiscale richiesto",
+        "associateIdRequired": "ID associato richiesto"
+      },
+      "successToastTitle": "Successo",
+      "successToastDescriptionAssociate": "Nuova transazione di {amount}€ dall'associato #{associateId} aggiunta",
+      "successToastDescriptionExternal": "Nuova transazione di {amount}€ da {name} aggiunta",
+      "errorToastTitle": "Errore",
+      "errorToastGenericMessage": "Impossibile aggiungere la transazione",
+      "cancel": "Cancel",
+      "create": "Create"
     }
   },
-  "tournaments": {
+  "league": {
+    "breadcrumb": "Leghe",
+    "placeholder": "Pagina leghe",
+    "singleLeaderboard": "Classifica singola lega",
+    "addModal": {
+      "title": "Nuova lega",
+      "description": "Aggiungi una nuova lega al database",
+      "openButton": "Nuova lega",
+      "validation": {
+        "nameTooShort": "Too short",
+        "invalidEmail": "Invalid email"
+      },
+      "fields": {
+        "name": "Name",
+        "email": "Email"
+      },
+      "successToastTitle": "Success",
+      "successToastDescription": "Nuova lega {name} aggiunta",
+      "cancel": "Cancel",
+      "create": "Create"
+    },
+    "detail": {
+      "navbarTitle": "Lega",
+      "body": {
+        "leaderboard": "Classifica lega specifica",
+        "participants": "Partecipanti alla lega specifica"
+      }
+    },
+    "tournamentsList": {
+      "body": "Panoramica torneo specifico"
+    },
+    "tournamentDetail": {
+      "navbarTitle": "Torneo",
+      "body": "Partecipanti all'evento"
+    }
+  },
+  "event": {
+    "breadcrumb": "Eventi",
+    "placeholder": "Pagina eventi",
+    "addModal": {
+      "title": "Nuovo evento",
+      "description": "Aggiungi un nuovo evento al database",
+      "openButton": "Nuovo evento",
+      "validation": {
+        "nameTooShort": "Too short",
+        "invalidEmail": "Invalid email"
+      },
+      "fields": {
+        "name": "Name",
+        "email": "Email"
+      },
+      "successToastTitle": "Successo",
+      "successToastDescription": "Nuovo evento \"{name}\" aggiunto",
+      "cancel": "Cancel",
+      "create": "Create"
+    },
+    "detail": {
+      "navbarTitle": "Evento",
+      "body": {
+        "specificEvent": "Evento specifico",
+        "eventDetails": "Contiene i dettagli dell'evento selezionato",
+        "participantsList": "Lista dei partecipanti all'evento",
+        "linkedTournaments": "Elenco dei tornei associati all'evento"
+      }
+    },
+    "participants": {
+      "placeholder": "Partecipanti all'evento"
+    },
+    "results": {
+      "placeholder": "Risultati del singolo evento"
+    },
+    "tournamentsList": {
+      "navbarTitle": "Tornei",
+      "body": {
+        "allTournaments": "Elenco di tutti i tornei",
+        "dateRangeFilter": "Range di date come filtro",
+        "filters": "Filtri:",
+        "organizerFilter": "Organizzatori del torneo (aggiungere voce al db)",
+        "formatFilter": "Formato del torneo",
+        "locationFilter": "Luogo di svolgimento del torneo",
+        "tableDescription": "La vista dovrebbe essere una tabella con filtri e paginazione. Ogni riga della tabella dovrebbe mostrare:",
+        "date": "Data del torneo",
+        "status": "Stato del torneo (programmato, in corso, completato, annullato)",
+        "organizer": "Organizzatore del torneo",
+        "name": "Nome del torneo",
+        "links": "Eventuali collegamenti all'evento associato e alla lega associata",
+        "format": "Formato del torneo",
+        "participantCount": "Numero di partecipanti",
+        "winner": "Vincitore del torneo (se disponibile)",
+        "detailsLink": "Link ai dettagli del torneo"
+      }
+    },
+    "tournamentDetail": {
+      "navbarTitle": "Torneo",
+      "body": "Partecipanti all'evento"
+    }
+  },
+  "tournament": {
+    "breadcrumb": "Tornei",
     "columns": {
       "select": "Seleziona",
       "id": "ID",
@@ -631,10 +393,259 @@
     "viewEventDetails": "Vedi dettagli evento",
     "deleteTournament": "Elimina torneo",
     "selectedRows": "{selected} su {total} riga(e) selezionata(e).",
-    "detail": {
+    "queryStatus": {
+      "upcoming": "In programma",
+      "completed": "Completati"
+    },
+    "stepper": {
       "acceptance": "Accettazione",
       "round": "Round {n}",
       "awards": "Premi"
+    },
+    "addModal": {
+      "title": "Nuovo torneo",
+      "description": "Aggiungi un nuovo torneo al database",
+      "openButton": "Nuovo torneo",
+      "tournamentData": "Dati relativi al torneo",
+      "scheduling": "Pianificazione del torneo",
+      "organizerData": "Dati relativi all'organizzatore",
+      "visibilityOptions": {
+        "public": "Pubblico",
+        "private": "Privato"
+      },
+      "statusOptions": {
+        "scheduled": "Pianificato",
+        "cancelled": "Annullato",
+        "ongoing": "In corso",
+        "completed": "Completato"
+      },
+      "fields": {
+        "status": "Stato",
+        "visibility": "Visibilità",
+        "companionCode": "Codice Companion",
+        "companionCodePlaceholder": "Codice (opzionale)",
+        "name": "Nome",
+        "namePlaceholder": "Nome del torneo",
+        "entryFee": "Quota (€)",
+        "description": "Descrizione",
+        "descriptionPlaceholder": "Descrizione (opzionale)",
+        "format": "Formato",
+        "selectFormat": "Seleziona formato",
+        "ruleset": "Regolamento",
+        "selectRuleset": "Seleziona regolamento",
+        "startDate": "Data di inizio",
+        "startTime": "Ora di inizio",
+        "selectTime": "Seleziona orario",
+        "roundCount": "Numero di round",
+        "roundDuration": "Durata round",
+        "organizer": "Organizzatore",
+        "selectOrganizer": "Seleziona organizzatore",
+        "location": "Luogo",
+        "selectLocation": "Seleziona luogo",
+        "league": "Lega",
+        "linkLeague": "Associa lega (opzionale)",
+        "event": "Evento",
+        "linkEvent": "Associa evento (opzionale)"
+      },
+      "validation": {
+        "nameRequired": "Il nome del torneo è obbligatorio"
+      },
+      "successToastTitle": "Success",
+      "successToastDescription": "Nuovo torneo \"{name}\" aggiunto",
+      "cancel": "Annulla",
+      "create": "Crea torneo"
+    },
+    "list": {
+      "overview": {
+        "placeholder": "Panoramica torneo specifico"
+      }
+    },
+    "single": {
+      "acceptancePicker": {
+        "preRegistered": "Pre-registrati",
+        "selectedSuffix": " ({count} selezionati)",
+        "noPreRegistered": "Nessun pre-registrato",
+        "registeredPaid": "Iscritti (Pagato)",
+        "selectedSuffixShort": " ({count} sel.)",
+        "noRegistered": "Nessun iscritto"
+      },
+      "awardsPlaceholder": "Componente premi che mostrerà la classifica finale",
+      "leaderboardTitle": "Classifica torneo specifico",
+      "overviewPlaceholder": "Panoramica di tutti i tornei",
+      "participantsPlaceholder": "Partecipanti all'evento",
+      "roundManager": {
+        "title": "Gestione Round {round}",
+        "content": "Contenuto di gestione per il Round {round}."
+      },
+      "roundResultsPlaceholder": "Risultati del singolo evento",
+      "roundResultAddModal": {
+        "placeholder": "Aggiunta del risultato del round"
+      }
     }
+  },
+  "player": {
+    "breadcrumb": "Giocatori"
+  },
+  "commander": {
+    "breadcrumb": "Comandanti"
+  },
+  "ruleset": {
+    "breadcrumb": "Regolamenti"
+  },
+  "statistic": {
+    "breadcrumb": "Statistiche",
+    "overviewBreadcrumb": "Panoramica",
+    "decksBreadcrumb": "Mazzi"
+  },
+  "settings": {
+    "layout": {
+      "navbarTitle": "Impostazioni",
+      "links": {
+        "general": "Generali",
+        "members": "Membri",
+        "notifications": "Notifiche",
+        "security": "Sicurezza",
+        "documentation": "Documentazione"
+      }
+    },
+    "general": {
+      "validation": {
+        "nameTooShort": "Too short",
+        "invalidEmail": "Invalid email",
+        "usernameTooShort": "Too short"
+      },
+      "successToastTitle": "Success",
+      "successToastDescription": "Your settings have been updated.",
+      "profile": {
+        "title": "Profile",
+        "description": "These informations will be displayed publicly.",
+        "saveChanges": "Save changes"
+      },
+      "fields": {
+        "name": "Name",
+        "nameDescription": "Will appear on receipts, invoices, and other communication.",
+        "email": "Email",
+        "emailDescription": "Used to sign in, for email receipts and product updates.",
+        "username": "Username",
+        "usernameDescription": "Your unique username for logging in and your profile URL.",
+        "avatar": "Avatar",
+        "avatarDescription": "JPG, GIF or PNG. 1MB Max.",
+        "choose": "Choose",
+        "bio": "Bio",
+        "bioDescription": "Brief description for your profile. URLs are hyperlinked."
+      }
+    },
+    "members": {
+      "title": "Members",
+      "description": "Invite new members by email address.",
+      "invitePeople": "Invite people",
+      "searchPlaceholder": "Search organizers",
+      "list": {
+        "editMember": "Modifica membro",
+        "removeMember": "Rimuovi membro"
+      }
+    },
+    "notifications": {
+      "sections": {
+        "channels": {
+          "title": "Notification channels",
+          "description": "Where can we notify you?"
+        },
+        "accountUpdates": {
+          "title": "Account updates",
+          "description": "Receive updates about Nuxt UI."
+        }
+      },
+      "fields": {
+        "email": {
+          "label": "Email",
+          "description": "Receive a daily email digest."
+        },
+        "desktop": {
+          "label": "Desktop",
+          "description": "Receive desktop notifications."
+        },
+        "weeklyDigest": {
+          "label": "Weekly digest",
+          "description": "Receive a weekly digest of news."
+        },
+        "productUpdates": {
+          "label": "Product updates",
+          "description": "Receive a monthly email with all new features and updates."
+        },
+        "importantUpdates": {
+          "label": "Important updates",
+          "description": "Receive emails about important updates like security fixes, maintenance, etc."
+        }
+      }
+    },
+    "security": {
+      "validation": {
+        "minLength": "Must be at least 8 characters",
+        "passwordsMustDiffer": "Passwords must be different"
+      },
+      "password": {
+        "title": "Password",
+        "description": "Confirm your current password before setting a new one.",
+        "currentPlaceholder": "Current password",
+        "newPlaceholder": "New password",
+        "update": "Update"
+      },
+      "account": {
+        "title": "Account",
+        "description": "No longer want to use our service? You can delete your account here. This action is not reversible. All information related to this account will be deleted permanently.",
+        "delete": "Delete account"
+      }
+    }
+  },
+  "login": {
+    "seoTitle": "Login",
+    "seoDescription": "Accedi al tuo account per continuare",
+    "emailLabel": "Email",
+    "emailPlaceholder": "Inserisci la tua email",
+    "invalidEmail": "Inserisci un indirizzo email valido.",
+    "connectionErrorTitle": "Errore di connessione",
+    "connectionErrorDescription": "Impossibile verificare l'email. Riprova più tardi.",
+    "emailNotFoundTitle": "Email non trovata",
+    "emailNotFoundDescription": "L'indirizzo email non risulta associato a un account PauperWave.",
+    "errorTitle": "Errore",
+    "linkSentTitle": "Link inviato",
+    "linkSentDescription": "Controlla la tua casella email per accedere.",
+    "welcomeBack": "Bentornato",
+    "description": "Utilizza l'email associata al tuo account PauperWave.",
+    "submitButton": "Invia link per accedere",
+    "callback": {
+      "invalidLink": "Link non valido o scaduto. Richiedi un nuovo link di accesso.",
+      "backToLogin": "Torna al login",
+      "verifying": "Verifica in corso..."
+    }
+  },
+  "error": {
+    "seoTitle": "Pagina non trovata",
+    "seoDescription": "Siamo spiacenti, questa pagina non è stata trovata."
+  },
+  "notificationsSlideover": {
+    "title": "Notifiche"
+  },
+  "teamsMenu": {
+    "createTeam": "Crea team",
+    "manageTeams": "Gestisci team"
+  },
+  "userMenu": {
+    "profile": "Profilo",
+    "settings": "Impostazioni",
+    "theme": "Tema",
+    "primary": "Primario",
+    "neutral": "Neutro",
+    "appearance": "Aspetto",
+    "light": "Chiaro",
+    "dark": "Scuro",
+    "githubRepository": "Repository GitHub",
+    "logout": "Disconnetti",
+    "logoutErrorTitle": "Errore",
+    "logoutErrorDescription": "Impossibile disconnettersi. Riprova.",
+    "logoutSuccessTitle": "Disconnesso",
+    "logoutSuccessDescription": "Arrivederci!",
+    "genericErrorDescription": "Si è verificato un errore. Riprova."
   }
 }

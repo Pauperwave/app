@@ -9,10 +9,10 @@ defineProps<{
 const { t } = useI18n()
 
 const items = computed<DropdownMenuItem[]>(() => [{
-  label: t('settingsMembersList.editMember'),
+  label: t('settings.members.list.editMember'),
   onSelect: () => console.log('Edit member')
 }, {
-  label: t('settingsMembersList.removeMember'),
+  label: t('settings.members.list.removeMember'),
   color: 'error' as const,
   onSelect: () => console.log('Remove member')
 }])

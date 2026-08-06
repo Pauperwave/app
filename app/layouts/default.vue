@@ -27,21 +27,21 @@ const mainNavGroups = [[{
   label: t('nav.community'),
   type: 'label'
 }, {
-  label: t('nav.associates'),
+  label: t('associate.breadcrumb'),
   icon: ICONS.players,
   to: '/associates',
   onSelect: () => {
     open.value = false
   }
 }, {
-  label: t('nav.players'),
+  label: t('player.breadcrumb'),
   icon: ICONS.gameplay,
   to: '/players',
   onSelect: () => {
     open.value = false
   }
 }, {
-  label: t('nav.transactions'),
+  label: t('transaction.breadcrumb'),
   icon: ICONS.wallet,
   to: '/transactions',
   onSelect: () => {
@@ -51,52 +51,52 @@ const mainNavGroups = [[{
   label: t('nav.competitions'),
   type: 'label'
 }, {
-  label: t('nav.leagues'),
+  label: t('league.breadcrumb'),
   icon: ICONS.standings,
   to: '/leagues',
   onSelect: () => {
     open.value = false
   }
 }, {
-  label: t('nav.events'),
+  label: t('event.breadcrumb'),
   icon: ICONS.calendar,
   to: '/events',
   onSelect: () => {
     open.value = false
   }
 }, {
-  label: t('nav.tournaments'),
+  label: t('tournament.breadcrumb'),
   icon: ICONS.battle,
   to: '/tournaments'
 }], [{
-  label: t('nav.commander'),
+  label: t('nav.commanderSection'),
   type: 'label'
 }, {
-  label: t('nav.commanders'),
+  label: t('commander.breadcrumb'),
   icon: ICONS.crown,
   to: '/commanders',
   onSelect: () => {
     open.value = false
   }
 }, {
-  label: t('nav.decks'),
+  label: t('statistic.decksBreadcrumb'),
   icon: ICONS.layers,
   to: '/statistics/decks',
   onSelect: () => {
     open.value = false
   }
 }, {
-  label: t('nav.rulesets'),
+  label: t('ruleset.breadcrumb'),
   icon: ICONS.rules,
   to: '/rulesets',
   onSelect: () => {
     open.value = false
   }
 }], [{
-  label: t('nav.statistics'),
+  label: t('nav.statisticsSection'),
   type: 'label'
 }, {
-  label: t('nav.overview'),
+  label: t('statistic.overviewBreadcrumb'),
   icon: ICONS.chartPie,
   to: '/statistics',
   onSelect: () => {

@@ -35,15 +35,15 @@ onUnmounted(() => clearTimeout(timeoutId))
     <div class="text-center">
       <template v-if="failed">
         <p class="mb-4">
-          {{ $t('authCallback.invalidLink') }}
+          {{ $t('login.callback.invalidLink') }}
         </p>
         <UButton to="/login">
-          {{ $t('authCallback.backToLogin') }}
+          {{ $t('login.callback.backToLogin') }}
         </UButton>
       </template>
       <template v-else>
         <UIcon name="i-lucide-loader-2" class="animate-spin text-4xl mb-4" />
-        <p>{{ $t('authCallback.verifying') }}</p>
+        <p>{{ $t('login.callback.verifying') }}</p>
       </template>
     </div>
   </div>
