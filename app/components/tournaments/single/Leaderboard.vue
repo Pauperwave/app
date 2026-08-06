@@ -1,5 +1,5 @@
 <template>
   <div>
-    <h1>Classifica torneo specifico</h1>
+    <h1>{{ $t('tournamentsSingle.leaderboardTitle') }}</h1>
   </div>
 </template>

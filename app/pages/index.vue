@@ -5,31 +5,33 @@ import type { Period, Range } from '~/types'
 
 // const { isNotificationsSlideoverOpen } = useDashboard()
 
+const { t } = useI18n()
+
 onMounted(() => {
   console.log('Index page mounted')
 })
 
-const items = [[{
-  label: 'Nuovo associato',
+const items = computed<DropdownMenuItem[][]>(() => [[{
+  label: t('homePage.quickCreate.newAssociate'),
   icon: 'i-lucide-user-plus',
   to: '/associates?action=create'
 }, {
-  label: 'Registra transazione',
+  label: t('homePage.quickCreate.newTransaction'),
   icon: 'i-lucide-coins',
   to: '/transactions?action=create'
 }, {
-  label: 'Nuova lega',
+  label: t('homePage.quickCreate.newLeague'),
   icon: 'i-lucide-trophy',
   to: '/leagues?action=create'
 }, {
-  label: 'Nuovo evento',
+  label: t('homePage.quickCreate.newEvent'),
   icon: 'i-lucide-calendar-plus',
   to: '/events?action=create'
 }, {
-  label: 'Nuovo torneo',
+  label: t('homePage.quickCreate.newTournament'),
   icon: 'i-lucide-swords',
   to: '/tournaments?action=create'
-}]] satisfies DropdownMenuItem[][]
+}]])
 
 const range = shallowRef<Range>({
   start: sub(new Date(), { days: 14 }),
@@ -41,7 +43,7 @@ const period = ref<Period>('daily')
 <template>
   <UDashboardPanel id="home">
     <template #header>
-      <UDashboardNavbar title="Pannello di controllo" :ui="{ right: 'gap-3' }">
+      <UDashboardNavbar :title="$t('nav.dashboard')" :ui="{ right: 'gap-3' }">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>

@@ -24,6 +24,7 @@ onMounted(() => {
 
 const toast = useToast()
 const { copy } = useClipboard()
+const { t } = useI18n()
 
 // date range filter
 // Mostra tornei dal mese scorso al mese prossimo
@@ -74,21 +75,21 @@ const filteredTournaments = computed(() => {
 
 // TODO utilizzare il mapping per la traduzione delle intestazioni
 const columnHeaders = {
-  select: 'Seleziona',
-  id: 'ID',
-  uuid: 'UUID',
-  status: 'Stato',
-  name: 'Nome',
-  start_date: 'Data e Ora',
-  round_count: 'Turni',
-  round_duration: 'Durata Turni',
-  registered_players: 'Iscritti',
-  league: 'Lega',
-  format: 'Formato',
-  organizer: 'Organizzatore',
-  location: 'Luogo',
-  entry_fee: 'Quota Iscrizione',
-  companion_code: 'Codice Companion'
+  select: t('tournaments.columns.select'),
+  id: t('tournaments.columns.id'),
+  uuid: t('tournaments.columns.uuid'),
+  status: t('tournaments.columns.status'),
+  name: t('tournaments.columns.name'),
+  start_date: t('tournaments.columns.startDate'),
+  round_count: t('tournaments.columns.roundCount'),
+  round_duration: t('tournaments.columns.roundDuration'),
+  registered_players: t('tournaments.columns.registeredPlayers'),
+  league: t('tournaments.columns.league'),
+  format: t('tournaments.columns.format'),
+  organizer: t('tournaments.columns.organizer'),
+  location: t('tournaments.columns.location'),
+  entry_fee: t('tournaments.columns.entryFee'),
+  companion_code: t('tournaments.columns.companionCode')
 } as const
 
 // Define a type for the keys of columnHeaders
@@ -137,13 +138,13 @@ const columns: TableColumn<TournamentData>[] = [
           : table.getIsAllPageRowsSelected(),
         'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
           table.toggleAllPageRowsSelected(!!value),
-        'aria-label': 'Select all'
+        'aria-label': t('common.selectAll')
       }),
     cell: ({ row }) =>
       h(UCheckbox, {
         'modelValue': row.getIsSelected(),
         'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
-        'aria-label': 'Select row'
+        'aria-label': t('common.selectRow')
       })
   },
   {
@@ -193,7 +194,7 @@ const columns: TableColumn<TournamentData>[] = [
         variant: 'subtle',
         icon,
         color,
-        onClick: (e: Event) => handleColumnFilter(e, 'status', status, 'Stato')
+        onClick: (e: Event) => handleColumnFilter(e, 'status', status, t('tournaments.columns.status'))
       }, () =>
         row.getValue('status')
       )
@@ -253,8 +254,8 @@ const columns: TableColumn<TournamentData>[] = [
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
         variant: 'subtle',
         color,
-        onClick: (e: Event) => handleColumnFilter(e, 'round_duration', duration.toString(), 'Durata Partita')
-      }, () => `${duration} minuti`)
+        onClick: (e: Event) => handleColumnFilter(e, 'round_duration', duration.toString(), t('tournaments.filterLabels.roundDuration'))
+      }, () => t('tournaments.minutes', { value: duration }))
     }
   },
   {
@@ -278,7 +279,7 @@ const columns: TableColumn<TournamentData>[] = [
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
         variant: 'subtle',
         color,
-        onClick: (e: Event) => handleColumnFilter(e, 'league', leagueValue, 'Lega')
+        onClick: (e: Event) => handleColumnFilter(e, 'league', leagueValue, t('tournaments.columns.league'))
       }, () => leagueValue)
     }
   },
@@ -298,7 +299,7 @@ const columns: TableColumn<TournamentData>[] = [
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
         variant: 'subtle',
         color,
-        onClick: (e: Event) => handleColumnFilter(e, 'format', row.getValue('format') as string, 'Formato')
+        onClick: (e: Event) => handleColumnFilter(e, 'format', row.getValue('format') as string, t('tournaments.columns.format'))
       }, () =>
         row.getValue('format')
       )
@@ -320,7 +321,7 @@ const columns: TableColumn<TournamentData>[] = [
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
         variant: 'subtle',
         color,
-        onClick: (e: Event) => handleColumnFilter(e, 'organizer', organizerValue, 'Organizzatore')
+        onClick: (e: Event) => handleColumnFilter(e, 'organizer', organizerValue, t('tournaments.columns.organizer'))
       }, () => organizerValue)
     }
   },
@@ -429,13 +430,13 @@ function getRowItems(row: TableRow<TournamentData>) {
   // Only add the copy option if companion_code exists
   if (row.original.companion_code) {
     items.push({
-      label: 'Copia codice Companion',
+      label: t('tournaments.copyCompanionCode'),
       icon: 'i-lucide-copy',
       onSelect() {
         copy(row.original.companion_code!)
 
         toast.add({
-          title: 'Codice Companion copiato negli appunti!',
+          title: t('tournaments.companionCodeCopiedToast'),
           color: 'success',
           icon: 'i-lucide-circle-check'
         })
@@ -445,11 +446,11 @@ function getRowItems(row: TableRow<TournamentData>) {
 
   items.push(
     {
-      label: 'Vedi dettagli torneo',
+      label: t('tournaments.viewTournamentDetails'),
       icon: 'i-lucide-swords',
       onSelect() {
         toast.add({
-          title: 'Vedi dettagli torneo',
+          title: t('tournaments.viewTournamentDetails'),
           color: 'success',
           icon: 'i-lucide-circle-check'
         })
@@ -459,11 +460,11 @@ function getRowItems(row: TableRow<TournamentData>) {
 
   if (row.original.league) {
     items.push({
-      label: 'Vedi dettagli lega',
+      label: t('tournaments.viewLeagueDetails'),
       icon: 'i-lucide-trophy',
       onSelect() {
         toast.add({
-          title: 'Vedi dettagli lega',
+          title: t('tournaments.viewLeagueDetails'),
           color: 'success',
           icon: 'i-lucide-circle-check'
         })
@@ -473,11 +474,11 @@ function getRowItems(row: TableRow<TournamentData>) {
 
   if (row.original.event) {
     items.push({
-      label: 'Vedi dettagli evento',
+      label: t('tournaments.viewEventDetails'),
       icon: 'i-lucide-calendar',
       onSelect() {
         toast.add({
-          title: 'Vedi dettagli evento',
+          title: t('tournaments.viewEventDetails'),
           color: 'success',
           icon: 'i-lucide-circle-check'
         })
@@ -487,13 +488,13 @@ function getRowItems(row: TableRow<TournamentData>) {
 
   items.push(
     {
-      label: 'Elimina torneo',
+      label: t('tournaments.deleteTournament'),
       icon: 'i-lucide-trash',
       color: 'error',
       disabled: !row.getIsSelected(), // Enable only if the row is selected
       onSelect() {
         toast.add({
-          title: 'Elimina torneo',
+          title: t('tournaments.deleteTournament'),
           color: 'success',
           icon: 'i-lucide-circle-check'
         })
@@ -557,7 +558,7 @@ function handleColumnFilter(e: Event, columnId: string, value: string, label?: s
 
   // Show toast
   toast.add({
-    title: `Filtrato per ${label || columnId}: ${value}`,
+    title: t('tournaments.filteredByToast', { label: label || columnId, value }),
     color: 'info',
     icon: 'i-lucide-filter'
   })
@@ -566,7 +567,7 @@ function handleColumnFilter(e: Event, columnId: string, value: string, label?: s
 function clearColumnFilter(columnId: string) {
   table.value?.tableApi?.getColumn(columnId)?.setFilterValue(undefined)
   toast.add({
-    title: 'Filtri colonna resettati',
+    title: t('tournaments.columnFiltersResetToast'),
     color: 'info',
     icon: 'i-lucide-x-circle'
   })
@@ -575,7 +576,7 @@ function clearColumnFilter(columnId: string) {
 function clearAllFilters() {
   table.value?.tableApi?.resetColumnFilters()
   toast.add({
-    title: 'Tutti i filtri rimossi',
+    title: t('tournaments.allFiltersRemovedToast'),
     color: 'success',
     icon: 'i-lucide-filter-x'
   })
@@ -585,7 +586,7 @@ function clearAllFilters() {
 function formatFilterValue(filterId: string, value: string): string {
   // Formatta numeri
   if (filterId === 'round_duration') {
-    return `${value} minuti`
+    return t('tournaments.minutes', { value })
   }
 
   return String(value)
@@ -612,7 +613,7 @@ if (import.meta.env.DEV) {
 <template>
   <UDashboardPanel id="tournaments">
     <template #header>
-      <UDashboardNavbar title="Eventi">
+      <UDashboardNavbar :title="$t('nav.tournaments')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -633,11 +634,11 @@ if (import.meta.env.DEV) {
     <template #body>
       <div class="flex flex-col flex-1 w-full space-y-4 pb-4">
         <div class="flex justify-between px-4 py-2">
-          <UInput v-model="globalFilter" class="max-w-sm" placeholder="Filtra..." />
+          <UInput v-model="globalFilter" class="max-w-sm" :placeholder="$t('tournaments.filterPlaceholder')" />
 
           <!-- Active filters display -->
           <div v-if="columnFilters.length" class="flex items-center gap-2">
-            <span class="text-sm text-muted">Filtri attivi:</span>
+            <span class="text-sm text-muted">{{ $t('tournaments.activeFilters') }}</span>
             <UBadge
               v-for="filter in columnFilters"
               :key="filter.id"
@@ -656,7 +657,7 @@ if (import.meta.env.DEV) {
               />
             </UBadge>
             <UButton
-              label="Cancella tutti"
+              :label="$t('tournaments.clearAll')"
               icon="i-lucide-x-circle"
               size="xs"
               color="error"
@@ -672,7 +673,7 @@ if (import.meta.env.DEV) {
             :content="{ align: 'end' }"
           >
             <UButton
-              label="Mostra colonne"
+              :label="$t('common.showColumns')"
               color="neutral"
               variant="outline"
               trailing-icon="i-lucide-settings-2"
@@ -708,8 +709,10 @@ if (import.meta.env.DEV) {
 
         <!-- Selected rows info -->
         <div class="px-4 py-3.5 border-t border-accented text-sm text-muted">
-          {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} su
-          {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} riga(e) selezionata(e).
+          {{ $t('tournaments.selectedRows', {
+            selected: table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0,
+            total: table?.tableApi?.getFilteredRowModel().rows.length || 0
+          }) }}
         </div>
 
         <!-- Pagination controls -->

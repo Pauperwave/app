@@ -6,14 +6,16 @@ defineProps<{
   members: Member[]
 }>()
 
-const items = [{
-  label: 'Edit member',
+const { t } = useI18n()
+
+const items = computed<DropdownMenuItem[]>(() => [{
+  label: t('settingsMembersList.editMember'),
   onSelect: () => console.log('Edit member')
 }, {
-  label: 'Remove member',
+  label: t('settingsMembersList.removeMember'),
   color: 'error' as const,
   onSelect: () => console.log('Remove member')
-}] satisfies DropdownMenuItem[]
+}])
 </script>
 
 <template>

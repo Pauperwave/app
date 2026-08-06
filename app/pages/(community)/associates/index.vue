@@ -6,6 +6,7 @@ import type { Associate } from '~/types'
 import { format, parseISO } from 'date-fns'
 
 const { associates, loading, refresh } = useAssociates()
+const { t } = useI18n()
 
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
@@ -69,10 +70,10 @@ const associatesStatusCounts = computed(() => {
 })
 
 const statusTabs = computed<TabsItem[]>(() => [
-  { label: 'Tutti', value: 'all' },
-  { label: 'In attesa di approvazione', value: 'pending', badge: associatesStatusCounts.value.pending },
-  { label: 'Attivi', value: 'active', badge: associatesStatusCounts.value.active },
-  { label: 'Da rinnovare', value: 'to_renew', badge: associatesStatusCounts.value.to_renew }
+  { label: t('associates.tabs.all'), value: 'all' },
+  { label: t('associates.tabs.pending'), value: 'pending', badge: associatesStatusCounts.value.pending },
+  { label: t('associates.tabs.active'), value: 'active', badge: associatesStatusCounts.value.active },
+  { label: t('associates.tabs.toRenew'), value: 'to_renew', badge: associatesStatusCounts.value.to_renew }
 ])
 
 const activeStatusTab = computed({
@@ -86,39 +87,39 @@ const columnFilters = ref([])
 
 // TODO utilizzare il mapping per la traduzione delle intestazioni
 const columnHeaders = {
-  select: 'Seleziona',
-  id: 'ID',
-  uuid: 'UUID',
-  created_at: 'Data di creazione',
-  updated_at: 'Data di aggiornamento',
-  updated_by: 'Aggiornato da',
-  membership_request_status: 'Stato richiesta',
-  membership_status: 'Stato tesseramento',
-  request_date: 'Data richiesta',
-  payment_date: 'Data pagamento',
-  association_date: 'Data di associazione',
-  associate_type: 'Tipo di associato',
-  pauperwave_associate_number: 'no. tessera PauperWave',
-  consent_data: 'Consenso dati',
-  consent_social: 'Consenso social',
-  has_read_statute: 'Ha letto lo statuto',
-  has_acknowledged_surveillance_notice: 'Visione Privacy',
-  first_name: 'Nome',
-  last_name: 'Cognome',
-  email_address: 'Email',
-  phone_number: 'Cellulare',
-  tax_code: 'Codice fiscale',
-  born_date: 'Data di nascita',
-  born_location: 'Luogo di nascita',
-  born_province: 'Provincia di nascita',
-  born_state: 'Nazione di nascita',
-  residency_address: 'Indirizzo',
-  residency_house_number: 'Numero civico',
-  residency_city: 'Città',
-  residency_province: 'Provincia',
-  residency_cap: 'CAP',
-  mtgo_nickname: 'Nickname MTGO',
-  mtga_nickname: 'Nickname MTGA'
+  select: t('associates.columns.select'),
+  id: t('associates.columns.id'),
+  uuid: t('associates.columns.uuid'),
+  created_at: t('associates.columns.createdAt'),
+  updated_at: t('associates.columns.updatedAt'),
+  updated_by: t('associates.columns.updatedBy'),
+  membership_request_status: t('associates.columns.membershipRequestStatus'),
+  membership_status: t('associates.columns.membershipStatus'),
+  request_date: t('associates.columns.requestDate'),
+  payment_date: t('associates.columns.paymentDate'),
+  association_date: t('associates.columns.associationDate'),
+  associate_type: t('associates.columns.associateType'),
+  pauperwave_associate_number: t('associates.columns.pauperwaveAssociateNumber'),
+  consent_data: t('associates.columns.consentData'),
+  consent_social: t('associates.columns.consentSocial'),
+  has_read_statute: t('associates.columns.hasReadStatute'),
+  has_acknowledged_surveillance_notice: t('associates.columns.hasAcknowledgedSurveillanceNotice'),
+  first_name: t('associates.columns.firstName'),
+  last_name: t('associates.columns.lastName'),
+  email_address: t('associates.columns.emailAddress'),
+  phone_number: t('associates.columns.phoneNumber'),
+  tax_code: t('associates.columns.taxCode'),
+  born_date: t('associates.columns.bornDate'),
+  born_location: t('associates.columns.bornLocation'),
+  born_province: t('associates.columns.bornProvince'),
+  born_state: t('associates.columns.bornState'),
+  residency_address: t('associates.columns.residencyAddress'),
+  residency_house_number: t('associates.columns.residencyHouseNumber'),
+  residency_city: t('associates.columns.residencyCity'),
+  residency_province: t('associates.columns.residencyProvince'),
+  residency_cap: t('associates.columns.residencyCap'),
+  mtgo_nickname: t('associates.columns.mtgoNickname'),
+  mtga_nickname: t('associates.columns.mtgaNickname')
 } as const
 
 // Define a type for the keys of columnHeaders
@@ -195,13 +196,13 @@ const columns: TableColumn<Associate>[] = [
           : table.getIsAllPageRowsSelected(),
         'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
           table.toggleAllPageRowsSelected(!!value),
-        'aria-label': 'Select all'
+        'aria-label': t('common.selectAll')
       }),
     cell: ({ row }) =>
       h(UCheckbox, {
         'modelValue': row.getIsSelected(),
         'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
-        'aria-label': 'Select row'
+        'aria-label': t('common.selectRow')
       })
   },
   {
@@ -419,8 +420,8 @@ function renderNeutralBadge(value: string) {
 function renderConsentBadge(consentvalue: boolean) {
   const consent = consentvalue
   const consentConfig: Record<string, { label: string, color: string, icon: string }> = {
-    yes: { label: 'Yes', color: 'success', icon: 'i-lucide-check-circle' },
-    no: { label: 'No', color: 'error', icon: 'i-lucide-circle-x' }
+    yes: { label: t('common.yes'), color: 'success', icon: 'i-lucide-check-circle' },
+    no: { label: t('common.no'), color: 'error', icon: 'i-lucide-circle-x' }
   }
 
   return h(resolveComponent('UBadge'), {
@@ -431,9 +432,9 @@ function renderConsentBadge(consentvalue: boolean) {
 }
 
 const consentSocialOptions = [
-  { label: 'Tutti', value: 'all', icon: 'i-lucide-list', color: 'neutral' },
-  { label: 'Concesso', value: 'yes', icon: 'i-lucide-check-circle', color: 'success' },
-  { label: 'Negato', value: 'no', icon: 'i-lucide-circle-x', color: 'error' }
+  { label: t('associates.consentSocialOptions.all'), value: 'all', icon: 'i-lucide-list', color: 'neutral' },
+  { label: t('associates.consentSocialOptions.yes'), value: 'yes', icon: 'i-lucide-check-circle', color: 'success' },
+  { label: t('associates.consentSocialOptions.no'), value: 'no', icon: 'i-lucide-circle-x', color: 'error' }
 ]
 
 const consentSocialFilter = ref('all')
@@ -451,7 +452,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
 <template>
   <UDashboardPanel id="associates">
     <template #header>
-      <UDashboardNavbar title="Associati">
+      <UDashboardNavbar :title="$t('nav.associates')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -476,14 +477,14 @@ watch(() => consentSocialFilter.value, (newVal) => {
             :model-value="(table?.tableApi?.getColumn('email_address')?.getFilterValue() as string)"
             class="max-w-sm"
             icon="i-lucide-search"
-            placeholder="Filter emails..."
+            :placeholder="$t('common.filterEmailsPlaceholder')"
             @update:model-value="table?.tableApi?.getColumn('email_address')?.setFilterValue($event)"
           />
 
           <UStatusSelect
             v-model="consentSocialFilter"
             :items="consentSocialOptions"
-            label="Consenso Social"
+            :label="$t('associates.consentSocialLabel')"
             name="consentSocialFilter"
           />
         </div>
@@ -492,7 +493,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
           <AssociatesListDeleteModal :count="table?.tableApi?.getFilteredSelectedRowModel().rows.length">
             <UButton
               v-if="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
-              label="Delete"
+              :label="$t('common.delete')"
               color="error"
               variant="subtle"
               icon="i-lucide-trash"
@@ -510,7 +511,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
             :content="{ align: 'end' }"
           >
             <UButton
-              label="Mostra colonne"
+              :label="$t('common.showColumns')"
               color="neutral"
               variant="outline"
               trailing-icon="i-lucide-settings-2"
@@ -550,8 +551,10 @@ watch(() => consentSocialFilter.value, (newVal) => {
 
       <div class="flex items-center justify-between gap-3 border-t border-default pt-4 mt-auto">
         <div class="text-sm text-muted">
-          {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} di
-          {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} righe selezionate.
+          {{ $t('associates.selectedRows', {
+            selected: table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0,
+            total: table?.tableApi?.getFilteredRowModel().rows.length || 0
+          }) }}
         </div>
       </div>
     </template>

@@ -22,7 +22,7 @@ const range = shallowRef<Range>({
 <template>
   <UDashboardPanel id="leagues">
     <template #header>
-      <UDashboardNavbar title="Leghe">
+      <UDashboardNavbar :title="$t('nav.leagues')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -42,7 +42,7 @@ const range = shallowRef<Range>({
 
     <template #body>
       <!-- <LeaguesTable :period="period" :range="range" /> -->
-      Pagina leghe
+      {{ $t('leagues.placeholder') }}
     </template>
   </UDashboardPanel>
 </template>

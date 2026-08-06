@@ -1,35 +1,37 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
 
-const links = [[{
-  label: 'Generali',
+const { t } = useI18n()
+
+const links = computed<NavigationMenuItem[][]>(() => [[{
+  label: t('settingsLayout.links.general'),
   icon: 'i-lucide-user',
   to: '/settings',
   exact: true
 }, {
-  label: 'Membri',
+  label: t('settingsLayout.links.members'),
   icon: 'i-lucide-users',
   to: '/settings/members'
 }, {
-  label: 'Notifiche',
+  label: t('settingsLayout.links.notifications'),
   icon: 'i-lucide-bell',
   to: '/settings/notifications'
 }, {
-  label: 'Sicurezza',
+  label: t('settingsLayout.links.security'),
   icon: 'i-lucide-shield',
   to: '/settings/security'
 }], [{
-  label: 'Documentazione',
+  label: t('settingsLayout.links.documentation'),
   icon: 'i-lucide-book-open',
   to: 'https://ui.nuxt.com/docs/getting-started/installation/nuxt',
   target: '_blank'
-}]] satisfies NavigationMenuItem[][]
+}]])
 </script>
 
 <template>
   <UDashboardPanel id="settings" :ui="{ body: 'lg:py-12' }">
     <template #header>
-      <UDashboardNavbar title="Impostazioni">
+      <UDashboardNavbar :title="$t('settingsLayout.navbarTitle')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>

@@ -7,6 +7,7 @@ defineProps<{
 
 const supabase = useSupabaseClient()
 const toast = useToast()
+const { t } = useI18n()
 
 const colorMode = useColorMode()
 const appConfig = useAppConfig()
@@ -28,14 +29,14 @@ const handleLogout = async () => {
 
     if (error) {
       toast.add({
-        title: 'Errore',
-        description: 'Impossibile disconnettersi. Riprova.',
+        title: t('userMenu.logoutErrorTitle'),
+        description: t('userMenu.logoutErrorDescription'),
         color: 'error'
       })
     } else {
       toast.add({
-        title: 'Disconnesso',
-        description: 'Arrivederci!',
+        title: t('userMenu.logoutSuccessTitle'),
+        description: t('userMenu.logoutSuccessDescription'),
         color: 'success'
       })
       navigateTo('/login')
@@ -43,8 +44,8 @@ const handleLogout = async () => {
   } catch (err) {
     console.error('Logout error:', err)
     toast.add({
-      title: 'Errore',
-      description: 'Si è verificato un errore. Riprova.',
+      title: t('userMenu.logoutErrorTitle'),
+      description: t('userMenu.genericErrorDescription'),
       color: 'error'
     })
   }
@@ -55,17 +56,17 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
   label: user.value.name,
   avatar: user.value.avatar
 }], [{
-  label: 'Profile',
+  label: t('userMenu.profile'),
   icon: 'i-lucide-user'
 }, {
-  label: 'Settings',
+  label: t('userMenu.settings'),
   icon: 'i-lucide-settings',
   to: '/settings'
 }], [{
-  label: 'Theme',
+  label: t('userMenu.theme'),
   icon: 'i-lucide-palette',
   children: [{
-    label: 'Primary',
+    label: t('userMenu.primary'),
     slot: 'chip',
     chip: appConfig.ui.colors.primary,
     content: {
@@ -85,7 +86,7 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
       }
     }))
   }, {
-    label: 'Neutral',
+    label: t('userMenu.neutral'),
     slot: 'chip',
     chip: appConfig.ui.colors.neutral === 'neutral' ? 'old-neutral' : appConfig.ui.colors.neutral,
     content: {
@@ -106,10 +107,10 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
     }))
   }]
 }, {
-  label: 'Appearance',
+  label: t('userMenu.appearance'),
   icon: 'i-lucide-sun-moon',
   children: [{
-    label: 'Light',
+    label: t('userMenu.light'),
     icon: 'i-lucide-sun',
     type: 'checkbox',
     checked: colorMode.value === 'light',
@@ -119,7 +120,7 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
       colorMode.preference = 'light'
     }
   }, {
-    label: 'Dark',
+    label: t('userMenu.dark'),
     icon: 'i-lucide-moon',
     type: 'checkbox',
     checked: colorMode.value === 'dark',
@@ -133,12 +134,12 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
     }
   }]
 }], [{
-  label: 'GitHub repository',
+  label: t('userMenu.githubRepository'),
   icon: 'i-simple-icons-github',
   to: 'https://github.com/Pauperwave/app',
   target: '_blank'
 }, {
-  label: 'Log out',
+  label: t('userMenu.logout'),
   icon: 'i-lucide-log-out',
   onSelect: handleLogout
 }]]))

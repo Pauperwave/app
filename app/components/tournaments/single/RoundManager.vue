@@ -7,9 +7,9 @@ defineProps<{
 <template>
   <div>
     <h2 class="text-2xl font-semibold mb-4">
-      Gestione Round {{ round }}
+      {{ $t('tournamentsSingle.roundManager.title', { round }) }}
     </h2>
     <!-- Round management content goes here -->
-    <p>Contenuto di gestione per il Round {{ round }}.</p>
+    <p>{{ $t('tournamentsSingle.roundManager.content', { round }) }}</p>
   </div>
 </template>

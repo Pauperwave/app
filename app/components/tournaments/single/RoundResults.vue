@@ -1,5 +1,5 @@
 <template>
   <div>
-    Risultati del singolo evento
+    {{ $t('tournamentsSingle.roundResultsPlaceholder') }}
   </div>
 </template>

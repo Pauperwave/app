@@ -10,11 +10,9 @@ interface Props {
   ariaLabel?: string
 }
 
-withDefaults(defineProps<Props>(), {
-  icon: 'i-lucide-circle-x',
-  size: 'xs',
-  ariaLabel: 'Clear input'
-})
+const { t } = useI18n()
+
+const { icon = 'i-lucide-circle-x', size = 'xs', ariaLabel = t('inputs.clearButton.ariaLabel') } = defineProps<Props>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: '']

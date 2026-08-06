@@ -7,6 +7,7 @@ import { vMaska } from 'maska/vue'
 // Define the model to accept open state from parent
 const open = defineModel<boolean>({ default: false })
 const toast = useToast()
+const { t } = useI18n()
 
 function formatDate(date: Date): string {
   const day = String(date.getDate()).padStart(2, '0')
@@ -17,29 +18,29 @@ function formatDate(date: Date): string {
 
 const schema = z.object({
   associate_type: z.enum(['Ordinario', 'Sostenitore']),
-  first_name: z.string().min(2, 'Nome troppo corto'),
-  last_name: z.string().min(2, 'Cognome troppo corto'),
+  first_name: z.string().min(2, t('associatesAddModal.validation.firstNameTooShort')),
+  last_name: z.string().min(2, t('associatesAddModal.validation.lastNameTooShort')),
   // https://github.com/colinhacks/zod/issues/4642#issuecomment-2957508997
   // - trim per rimuovere spazi
   // - email per validare il formato
   // - toLowerCase per normalizzare
   email_address: z.string().check(z.trim(), z.email(), z.toLowerCase()),
-  phone_number: z.string().regex(/^\d{10,15}$/, 'Numero di telefono non valido'),
-  tax_code: z.string().regex(/^[A-Z0-9]{16}$/i, 'Codice fiscale non valido'),
-  born_location: z.string().min(2, 'Luogo di nascita richiesto'),
-  born_date: z.date().max(new Date(), { message: 'La data di nascita non può essere futura' }),
-  born_province: z.string().length(2, 'Provincia richiesta'),
-  born_state: z.string().min(2, 'Stato richiesto'),
-  residency_address: z.string().min(5, 'Indirizzo richiesto'),
-  residency_city: z.string().min(2, 'Città richiesta'),
-  residency_province: z.string().length(2, 'Sigla provincia non valida'),
-  residency_cap: z.string().regex(/^\d{5}$/, 'CAP non valido'),
+  phone_number: z.string().regex(/^\d{10,15}$/, t('associatesAddModal.validation.invalidPhoneNumber')),
+  tax_code: z.string().regex(/^[A-Z0-9]{16}$/i, t('associatesAddModal.validation.invalidTaxCode')),
+  born_location: z.string().min(2, t('associatesAddModal.validation.birthLocationRequired')),
+  born_date: z.date().max(new Date(), { message: t('associatesAddModal.validation.birthDateNotFuture') }),
+  born_province: z.string().length(2, t('associatesAddModal.validation.birthProvinceRequired')),
+  born_state: z.string().min(2, t('associatesAddModal.validation.birthStateRequired')),
+  residency_address: z.string().min(5, t('associatesAddModal.validation.residencyAddressRequired')),
+  residency_city: z.string().min(2, t('associatesAddModal.validation.residencyCityRequired')),
+  residency_province: z.string().length(2, t('associatesAddModal.validation.residencyProvinceInvalid')),
+  residency_cap: z.string().regex(/^\d{5}$/, t('associatesAddModal.validation.residencyCapInvalid')),
   mtgo_nickname: z.string().nullable().default(null),
   mtga_nickname: z.string().nullable().default(null),
-  consent_data: z.boolean().refine(val => val === true, 'Consenso obbligatorio'),
+  consent_data: z.boolean().refine(val => val === true, t('associatesAddModal.validation.consentDataRequired')),
   consent_social: z.boolean().optional(),
-  has_read_statute: z.boolean().refine(val => val === true, 'Lettura statuto obbligatoria'),
-  has_acknowledged_surveillance_notice: z.boolean().refine(val => val === true, 'Presa visione obbligatoria')
+  has_read_statute: z.boolean().refine(val => val === true, t('associatesAddModal.validation.statuteReadRequired')),
+  has_acknowledged_surveillance_notice: z.boolean().refine(val => val === true, t('associatesAddModal.validation.surveillanceAckRequired'))
 })
 
 type Schema = z.infer<typeof schema>
@@ -81,15 +82,15 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
     console.log('Form submitted:', event.data)
     toast.add({
-      title: 'Successo',
-      description: `Nuovo associato "${event.data.first_name} ${event.data.last_name}" aggiunto`,
+      title: t('associatesAddModal.successToastTitle'),
+      description: t('associatesAddModal.successToastDescription', { name: `${event.data.first_name} ${event.data.last_name}` }),
       color: 'success'
     })
     open.value = false
   } catch (err) {
     toast.add({
-      title: 'Errore',
-      description: `Qualcosa è andato storto: ${err instanceof Error ? err.message : String(err)}`,
+      title: t('associatesAddModal.errorToastTitle'),
+      description: t('associatesAddModal.errorToastDescription', { message: err instanceof Error ? err.message : String(err) }),
       color: 'error'
     })
   }
@@ -101,10 +102,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     v-model:open="open"
     :dismissible="false"
     :ui="{ content: 'max-w-2xl' }"
-    title="Nuovo associato"
-    description="Aggiungi un nuovo associato al database"
+    :title="$t('associatesAddModal.title')"
+    :description="$t('associatesAddModal.description')"
   >
-    <UButton label="Nuovo associato" icon="i-lucide-user-plus" @click="open = true" />
+    <UButton :label="$t('associatesAddModal.openButton')" icon="i-lucide-user-plus" @click="open = true" />
 
     <template #body>
       <UForm
@@ -116,9 +117,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         <!-- eslint-disable -->
         <!-- Tipologia associato -->
         <div>
-          <h3 class="text-lg font-semibold text-primary">Tipologia di associato</h3>
+          <h3 class="text-lg font-semibold text-primary">{{ $t('associatesAddModal.sections.associateType') }}</h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
-            <UFormField label="Tipo di associato" name="associate_type">
+            <UFormField :label="$t('associatesAddModal.fields.associateType')" name="associate_type">
               <USelect v-model="state.associate_type" :items="['Ordinario', 'Sostenitore']" class="w-full" />
             </UFormField>
           </div>
@@ -126,18 +127,18 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
         <!-- Informazioni personali -->
         <div id="personal-info-section">
-          <h3 class="text-lg font-semibold text-primary">Informazioni personali</h3>
+          <h3 class="text-lg font-semibold text-primary">{{ $t('associatesAddModal.sections.personalInfo') }}</h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
-            <UFormField label="Nome" name="name" required>
+            <UFormField :label="$t('associatesAddModal.fields.firstName')" name="name" required>
               <UInput v-model="state.first_name" name="name" autocomplete="given-name" class="w-full" />
             </UFormField>
-            <UFormField label="Cognome" name="surname" required>
+            <UFormField :label="$t('associatesAddModal.fields.lastName')" name="surname" required>
               <UInput v-model="state.last_name" name="surname" autocomplete="family-name" class="w-full" />
             </UFormField>
-            <UFormField label="Email" name="email" required>
+            <UFormField :label="$t('associatesAddModal.fields.email')" name="email" required>
               <UInput v-model="state.email_address" autocomplete="email" class="w-full" />
             </UFormField>
-            <UFormField label="Numero di cellulare" name="phone_number" required>
+            <UFormField :label="$t('associatesAddModal.fields.phoneNumber')" name="phone_number" required>
               <UInput v-maska="'(+39) ### #######'" icon="i-lucide-phone" v-model="state.phone_number" autocomplete="tel" class="w-full" />
             </UFormField>
           </div>
@@ -145,13 +146,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
         <!-- Informazioni di nascita -->
         <div id="birth-section">
-          <h3 class="text-lg font-semibold text-primary">Informazioni di nascita</h3>
+          <h3 class="text-lg font-semibold text-primary">{{ $t('associatesAddModal.sections.birthInfo') }}</h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
-            <UFormField label="Luogo di nascita" name="born_location" required>
+            <UFormField :label="$t('associatesAddModal.fields.birthLocation')" name="born_location" required>
               <UInput v-model="state.born_location" class="w-full" />
             </UFormField>
 
-            <UFormField label="Data di nascita" name="born_date" required>
+            <UFormField :label="$t('associatesAddModal.fields.birthDate')" name="born_date" required>
               <!-- Input nascosto per autofill e validazione Zod -->
               <input
                 type="date"
@@ -169,7 +170,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                   class="w-full justify-start"
                   icon="i-lucide-calendar"
                 >
-                  {{ state.born_date ? formatDate(state.born_date) : 'Seleziona data di nascita' }}
+                  {{ state.born_date ? formatDate(state.born_date) : $t('associatesAddModal.fields.selectBirthDate') }}
                 </UButton>
 
                 <template #content>
@@ -182,10 +183,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               </UPopover>
             </UFormField>
 
-            <UFormField label="Provincia" name="born_province" required>
+            <UFormField :label="$t('associatesAddModal.fields.birthProvince')" name="born_province" required>
               <UInput v-model="state.born_province" class="w-full" />
             </UFormField>
-            <UFormField label="Stato" name="born_state" required>
+            <UFormField :label="$t('associatesAddModal.fields.birthState')" name="born_state" required>
               <UInput v-model="state.born_state" class="w-full" />
             </UFormField>
           </div>
@@ -193,9 +194,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
         <!-- Informazioni fiscali -->
         <div id="fiscal-section">
-          <h3 class="text-lg font-semibold text-primary">Informazioni fiscali</h3>
+          <h3 class="text-lg font-semibold text-primary">{{ $t('associatesAddModal.sections.fiscalInfo') }}</h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
-            <UFormField label="Codice Fiscale" name="tax_code" required>
+            <UFormField :label="$t('associatesAddModal.fields.taxCode')" name="tax_code" required>
               <UInput v-model="state.tax_code" class="w-full" />
             </UFormField>
           </div>
@@ -203,18 +204,18 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
         <!-- Residenza -->
         <div id="residency-section">
-          <h3 class="text-lg font-semibold text-primary">Informazioni sulla residenza</h3>
+          <h3 class="text-lg font-semibold text-primary">{{ $t('associatesAddModal.sections.residencyInfo') }}</h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
-            <UFormField label="Indirizzo" name="residency_address" required>
+            <UFormField :label="$t('associatesAddModal.fields.residencyAddress')" name="residency_address" required>
               <UInput v-model="state.residency_address" autocomplete="address-line1" class="w-full" />
             </UFormField>
-            <UFormField label="Città" name="residency_city" required>
+            <UFormField :label="$t('associatesAddModal.fields.residencyCity')" name="residency_city" required>
               <UInput v-model="state.residency_city" autocomplete="address-line2" class="w-full" />
             </UFormField>
-            <UFormField label="Provincia" name="residency_province" required>
+            <UFormField :label="$t('associatesAddModal.fields.residencyProvince')" name="residency_province" required>
               <UInput v-model="state.residency_province" autocomplete="state" class="w-full" />
             </UFormField>
-            <UFormField label="CAP" name="residency_cap" required>
+            <UFormField :label="$t('associatesAddModal.fields.residencyCap')" name="residency_cap" required>
               <UInput v-model="state.residency_cap" autocomplete="postal-code" class="w-full" />
             </UFormField>
           </div>
@@ -222,16 +223,16 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
         <!-- Nickname MTG -->
         <div id="mtg-nicknames-section">
-          <h3 class="text-lg font-semibold text-primary">Nickname MTG</h3>
+          <h3 class="text-lg font-semibold text-primary">{{ $t('associatesAddModal.sections.mtgNicknames') }}</h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
-            <UFormField label="MTGO" name="mtgo_nickname">
+            <UFormField :label="$t('associatesAddModal.fields.mtgoNickname')" name="mtgo_nickname">
               <UInput
                 :model-value="state.mtgo_nickname ?? ''"
                 class="w-full"
                 @update:model-value="state.mtgo_nickname = ($event as string) || null"
               />
             </UFormField>
-            <UFormField label="Arena" name="mtga_nickname">
+            <UFormField :label="$t('associatesAddModal.fields.mtgaNickname')" name="mtga_nickname">
               <UInput
                 :model-value="state.mtga_nickname ?? ''"
                 class="w-full"
@@ -243,17 +244,17 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
         <!-- Consensi -->
         <div id="consents-section">
-          <h3 class="text-lg font-semibold text-primary">Consensi e riconoscimenti</h3>
+          <h3 class="text-lg font-semibold text-primary">{{ $t('associatesAddModal.sections.consents') }}</h3>
           <div class="mt-2 space-y-2">
             <UFormField name="has_read_statute">
               <UCheckbox
                 v-model="state.has_read_statute"
                 required
-                label="Ho letto lo statuto dell'associazione"
+                :label="$t('associatesAddModal.consents.statuteLabel')"
                 size="lg"
               >
                 <template #description>
-                  Dichiaro di aver letto lo statuto dell'associazione.
+                  {{ $t('associatesAddModal.consents.statuteDescription') }}
                 </template>
               </UCheckbox>
             </UFormField>
@@ -261,11 +262,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               <UCheckbox
                 v-model="state.has_acknowledged_surveillance_notice"
                 required
-                label="Informativa sulla sorveglianza"
+                :label="$t('associatesAddModal.consents.surveillanceLabel')"
                 size="lg"
               >
                 <template #description>
-                  Dichiaro di aver preso visione dell'informativa sulla sorveglianza.
+                  {{ $t('associatesAddModal.consents.surveillanceDescription') }}
                 </template>
               </UCheckbox>
             </UFormField>
@@ -273,22 +274,22 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               <UCheckbox
                 v-model="state.consent_data"
                 required
-                label="Consenso al trattamento dei dati"
+                :label="$t('associatesAddModal.consents.dataLabel')"
                 size="lg"
               >
                 <template #description>
-                  Dichiaro di aver preso visione dell'informativa sul trattamento dei dati.
+                  {{ $t('associatesAddModal.consents.dataDescription') }}
                 </template>
               </UCheckbox>
             </UFormField>
             <UFormField name="consent_social">
               <UCheckbox
                 v-model="state.consent_social"
-                label="Consenso Social"
+                :label="$t('associatesAddModal.consents.socialLabel')"
                 size="lg"
               >
                 <template #description>
-                  Dichiaro di aver preso visione dell'informativa sulla privacy.
+                  {{ $t('associatesAddModal.consents.socialDescription') }}
                 </template>
               </UCheckbox>
             </UFormField>
@@ -298,13 +299,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         <!-- Azioni -->
         <div class="flex justify-end gap-2">
           <UButton
-            label="Annulla"
+            :label="$t('associatesAddModal.cancel')"
             color="neutral"
             variant="subtle"
             @click="open = false"
           />
           <UButton
-            label="Crea"
+            :label="$t('associatesAddModal.create')"
             color="primary"
             variant="solid"
             type="submit"

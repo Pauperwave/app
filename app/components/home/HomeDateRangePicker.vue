@@ -7,20 +7,21 @@ const df = new DateFormatter('it-IT', {
 })
 
 const selected = defineModel<Range>({ required: true })
+const { t } = useI18n()
 
-const ranges = [
-  { label: 'Ultimo anno', years: 1, direction: 'past' as const },
-  { label: 'Ultimi 6 mesi', months: 6, direction: 'past' as const },
-  { label: 'Ultimi 3 mesi', months: 3, direction: 'past' as const },
-  { label: 'Ultimo mese', months: 1, direction: 'past' as const },
+const ranges = computed(() => [
+  { label: t('home.dateRanges.lastYear'), years: 1, direction: 'past' as const },
+  { label: t('home.dateRanges.last6Months'), months: 6, direction: 'past' as const },
+  { label: t('home.dateRanges.last3Months'), months: 3, direction: 'past' as const },
+  { label: t('home.dateRanges.lastMonth'), months: 1, direction: 'past' as const },
   { type: 'divider' as const },
-  { label: 'Prossimo mese', months: 1, direction: 'future' as const },
-  { label: 'Prossimi 3 mesi', months: 3, direction: 'future' as const },
-  { label: 'Prossimi 6 mesi', months: 6, direction: 'future' as const },
-  { label: 'Prossimo anno', years: 1, direction: 'future' as const },
+  { label: t('home.dateRanges.nextMonth'), months: 1, direction: 'future' as const },
+  { label: t('home.dateRanges.next3Months'), months: 3, direction: 'future' as const },
+  { label: t('home.dateRanges.next6Months'), months: 6, direction: 'future' as const },
+  { label: t('home.dateRanges.nextYear'), years: 1, direction: 'future' as const },
   { type: 'divider' as const },
-  { label: 'Tutto', type: 'all' as const }
-]
+  { label: t('home.dateRanges.all'), type: 'all' as const }
+])
 
 const toCalendarDate = (date: Date) => {
   return new CalendarDate(
@@ -145,7 +146,7 @@ const selectRange = (range: { days?: number, months?: number, years?: number, di
           </template>
         </template>
         <template v-else>
-          Pick a date
+          {{ t('home.pickDate') }}
         </template>
       </span>
 
