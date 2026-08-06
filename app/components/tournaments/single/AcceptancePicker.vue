@@ -1,3 +1,4 @@
+<!-- app\components\tournaments\single\AcceptancePicker.vue -->
 <script lang="ts" setup>
 const { t } = useI18n()
 

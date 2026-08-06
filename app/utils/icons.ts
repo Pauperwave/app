@@ -1,4 +1,4 @@
-// app/utils/icons.ts
+// app\utils\icons.ts
 
 /**
  * Single source of truth for every icon used in the app. Check here before

@@ -1,3 +1,4 @@
+<!-- app\components\leagues\single\Leaderboard.vue -->
 <script lang="ts" setup>
 </script>
 

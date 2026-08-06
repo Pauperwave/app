@@ -1,3 +1,4 @@
+<!-- app\components\associates\list\DeleteModal.vue -->
 <script setup lang="ts">
 interface Props {
   count?: number

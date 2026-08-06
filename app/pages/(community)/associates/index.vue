@@ -1,3 +1,4 @@
+<!-- app\pages\(community)\associates\index.vue -->
 <script setup lang="ts">
 import type { DropdownMenuItem, TableColumn, TabsItem } from '@nuxt/ui'
 import type { Column } from '@tanstack/vue-table'

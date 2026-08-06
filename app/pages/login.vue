@@ -1,3 +1,4 @@
+<!-- app\pages\login.vue -->
 // app/pages/login.vue
 <script setup lang="ts">
 import * as z from 'zod'

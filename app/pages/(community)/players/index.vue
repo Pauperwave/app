@@ -1,3 +1,4 @@
+<!-- app\pages\(community)\players\index.vue -->
 <template>
   <UDashboardPanel id="players">
     <template #header>

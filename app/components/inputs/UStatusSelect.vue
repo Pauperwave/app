@@ -1,3 +1,4 @@
+<!-- app\components\inputs\UStatusSelect.vue -->
 <script setup lang="ts">
 interface StatusItem {
   label: string

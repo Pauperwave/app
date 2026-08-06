@@ -1,3 +1,4 @@
+<!-- app\pages\(competitions)\leagues\[leagueId]\tournaments\index.vue -->
 <script lang="ts" setup>
 const { breadcrumbItems } = useBreadcrumbs()
 const route = useRoute()

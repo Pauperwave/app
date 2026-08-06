@@ -1,3 +1,4 @@
+<!-- app\pages\(settings)\settings\members.vue -->
 <script setup lang="ts">
 import type { Member } from '~/types'
 

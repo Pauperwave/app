@@ -1,3 +1,4 @@
+<!-- app\pages\(settings)\settings\notifications.vue -->
 <script setup lang="ts">
 const { t } = useI18n()
 

@@ -1,3 +1,4 @@
+<!-- app\components\tournaments\single\RoundManager.vue -->
 <script lang="ts" setup>
 defineProps<{
   round: number

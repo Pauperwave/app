@@ -1,3 +1,4 @@
+// server\api\leagues.ts
 const leagues = Array.from({ length: 30 }, (_, i) => {
   const id = i + 1
   const dateObj = new Date(2025, 8, 2) // Start from 2025-09-02

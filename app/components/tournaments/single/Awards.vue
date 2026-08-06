@@ -1,3 +1,4 @@
+<!-- app\components\tournaments\single\Awards.vue -->
 <script lang="ts" setup>
 </script>
 

@@ -1,3 +1,4 @@
+<!-- app\pages\(competitions)\leagues\index.vue -->
 <script lang="ts" setup>
 import { sub } from 'date-fns'
 import type { Range } from '~/types'

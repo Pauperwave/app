@@ -1,3 +1,4 @@
+// app\plugins\suppressSuspenseWarning.ts
 // https://github.com/nuxt/nuxt/discussions/25973#discussioncomment-12203169
 export default defineNuxtPlugin(() => {
   if (import.meta.env.DEV) {

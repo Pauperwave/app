@@ -1,3 +1,4 @@
+<!-- app\components\NotificationsSlideover.vue -->
 <script setup lang="ts">
 import { formatTimeAgo } from '@vueuse/core'
 import type { Notification } from '~/types'

@@ -1,3 +1,4 @@
+// app\composables\useBreadcrumbs.ts
 import type { BreadcrumbItem } from '#ui/types'
 
 export const useBreadcrumbs = () => {

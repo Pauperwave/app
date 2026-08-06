@@ -1,3 +1,4 @@
+<!-- app\components\inputs\UClearButton.vue -->
 <script setup lang="ts">
 interface Props {
   /** The model value to clear */

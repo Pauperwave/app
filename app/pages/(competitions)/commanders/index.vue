@@ -1,3 +1,4 @@
+<!-- app\pages\(competitions)\commanders\index.vue -->
 <template>
   <UDashboardPanel id="commanders">
     <template #header>

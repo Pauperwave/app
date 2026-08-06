@@ -1,3 +1,4 @@
+<!-- app\pages\(competitions)\rulesets\index.vue -->
 <template>
   <UDashboardPanel id="rulesets">
     <template #header>

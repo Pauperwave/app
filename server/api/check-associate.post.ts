@@ -1,4 +1,4 @@
-// server/api/check-associate.post.ts
+// server\api\check-associate.post.ts
 import { createClient } from '@supabase/supabase-js'
 
 export default defineEventHandler(async (event) => {

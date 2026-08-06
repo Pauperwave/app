@@ -1,3 +1,4 @@
+<!-- app\components\tournaments\list\AddModal.vue -->
 <script setup lang="ts">
 import { CalendarDate } from '@internationalized/date'
 import type { DateValue } from '@internationalized/date'

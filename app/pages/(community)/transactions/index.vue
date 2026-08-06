@@ -1,3 +1,4 @@
+<!-- app\pages\(community)\transactions\index.vue -->
 <script lang="ts" setup>
 import { sub } from 'date-fns'
 import type { TabsItem } from '@nuxt/ui'
