@@ -31,6 +31,7 @@ export const ICONS = {
   settingsGear: 'i-lucide-cog',
   logout: 'i-lucide-log-out',
   lock: 'i-lucide-lock',
+  security: 'i-lucide-shield',
 
   // Status / feedback
   success: 'i-lucide-check-circle',
@@ -73,6 +74,7 @@ export const ICONS = {
   calendar: 'i-lucide-calendar',
   calendarAdd: 'i-lucide-calendar-plus',
   calendarRenew: 'i-lucide-calendar-arrow-up',
+  calendarView: 'i-lucide-calendar-days',
   clock: 'i-lucide-clock',
   timer: 'i-lucide-timer',
   pauseCircle: 'i-lucide-pause-circle',

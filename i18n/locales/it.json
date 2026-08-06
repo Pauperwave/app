@@ -1,10 +1,14 @@
 {
   "nav": {
-    "dashboard": "Pannello di controllo",
+    "dashboardsSection": "Dashboards",
+    "dashboard": "Panoramica",
+    "calendar": "Calendario",
+    "finance": "Finanze",
     "community": "Community",
     "competitions": "Competizioni",
     "commanderSection": "Commander",
     "statisticsSection": "Statistiche",
+    "settingsSection": "Impostazioni",
     "feedback": "Feedback",
     "helpSupport": "Help & Support",
     "search": {

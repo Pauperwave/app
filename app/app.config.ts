@@ -18,7 +18,10 @@ export default defineAppConfig({
       slots: {
         root: 'gap-4',
         label: 'w-full flex items-center gap-1.5 uppercase text-dimmed/80 text-xs font-bold tracking-tight px-2.5 pt-4 pb-1',
-        separator: 'hidden'
+        separator: 'hidden',
+        // Matches the reference demo's icon-to-label spacing (mr-2 on the
+        // icon + the link's own gap-1.5 = 14px total), not Nuxt UI's default.
+        linkLeadingIcon: 'mr-2'
       }
     }
   }
