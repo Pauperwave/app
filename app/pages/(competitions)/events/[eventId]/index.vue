@@ -1,11 +1,31 @@
+<script lang="ts" setup>
+const { breadcrumbItems } = useBreadcrumbs()
+</script>
+
 <template>
-  <div>
-    Evento specifico
+  <UDashboardPanel id="event">
+    <template #header>
+      <UDashboardNavbar title="Evento">
+        <template #leading>
+          <UDashboardSidebarCollapse />
+        </template>
+      </UDashboardNavbar>
 
-    Contiene i dettagli dell'evento selezionato
+      <UDashboardToolbar>
+        <template #left>
+          <UBreadcrumb :items="breadcrumbItems" class="ms-2" />
+        </template>
+      </UDashboardToolbar>
+    </template>
 
-    Lista dei partecipanti all'evento
+    <template #body>
+      Evento specifico
 
-    Elenco dei tornei associati all'evento
-  </div>
+      Contiene i dettagli dell'evento selezionato
+
+      Lista dei partecipanti all'evento
+
+      Elenco dei tornei associati all'evento
+    </template>
+  </UDashboardPanel>
 </template>

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { sub } from 'date-fns'
+import type { TabsItem } from '@nuxt/ui'
 import type { Range } from '~/types'
 
 const range = shallowRef<Range>({
@@ -11,14 +12,26 @@ const route = useRoute()
 const router = useRouter()
 const isModalOpen = ref(false)
 
+const typeTabs: TabsItem[] = [
+  { label: 'Tutte le transazioni', value: 'all' },
+  { label: 'Quote associative', value: 'association-fee' },
+  { label: 'Quote eventi', value: 'event-fee' },
+  { label: 'Donazioni', value: 'donations' }
+]
+
+const activeTypeTab = computed({
+  get: () => (typeof route.query.type === 'string' ? route.query.type : 'all'),
+  set: (value: string | number) => {
+    router.replace({ query: { ...route.query, type: value === 'all' ? undefined : value } })
+  }
+})
+
 onMounted(() => {
   if (route.query.action === 'create') {
     isModalOpen.value = true
     router.replace({ query: {} })
   }
 })
-
-const { breadcrumbItems } = useBreadcrumbs()
 </script>
 
 <template>
@@ -36,13 +49,19 @@ const { breadcrumbItems } = useBreadcrumbs()
 
       <UDashboardToolbar>
         <template #left>
-          <UBreadcrumb :items="breadcrumbItems" class="ms-2" />
-        </template>
-
-        <template #right>
+          <!-- NOTE: The `-ms-1` class is used to align with the `DashboardSidebarCollapse` button here. -->
           <HomeDateRangePicker v-model="range" class="-ms-1" />
         </template>
       </UDashboardToolbar>
+    </template>
+
+    <template #body>
+      <UTabs
+        v-model="activeTypeTab"
+        :items="typeTabs"
+        variant="link"
+        class="w-full"
+      />
     </template>
   </UDashboardPanel>
 </template>

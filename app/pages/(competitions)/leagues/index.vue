@@ -2,8 +2,6 @@
 import { sub } from 'date-fns'
 import type { Range } from '~/types'
 
-const { breadcrumbItems } = useBreadcrumbs()
-
 const route = useRoute()
 const router = useRouter()
 const isModalOpen = ref(false)
@@ -36,9 +34,6 @@ const range = shallowRef<Range>({
 
       <UDashboardToolbar>
         <template #left>
-          <UBreadcrumb :items="breadcrumbItems" class="ms-2" />
-        </template>
-        <template #right>
           <!-- NOTE: The `-ms-1` class is used to align with the `DashboardSidebarCollapse` button here. -->
           <HomeDateRangePicker v-model="range" class="-ms-1" />
         </template>
