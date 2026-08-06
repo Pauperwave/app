@@ -12,11 +12,15 @@ PauperWave — a Magic: The Gathering Pauper League Manager dashboard. Nuxt 4 + 
 pnpm dev         # dev server at http://localhost:3000
 pnpm build       # production build
 pnpm preview     # preview production build
-pnpm lint        # eslint .
-pnpm typecheck   # nuxt typecheck (vue-tsc)
+pnpm lint             # eslint .
+pnpm typecheck        # nuxt typecheck (vue-tsc)
+pnpm check:paths      # verify every app/server/shared source file has a correct path header
+pnpm check:paths:fix  # insert/correct those headers in place
 ```
 
 There is no test runner configured in this repo. Always run `pnpm lint` and `pnpm typecheck` after changes; both must be clean (see the zero-warning policy in global CLAUDE.md).
+
+Add a path comment as the first line of every source file under `app/`, `server/`, `shared/`, `test/`, `scripts/`: `<!-- app\components\X.vue -->` or `// app\stores\x.ts` (backslash-separated, matching the checker in `scripts/check-file-paths.mjs`, copied unmodified from `MagicTheGathering/league`). Skips `shared/utils/types/database.ts` (generated via `pnpm supabase:types`, never hand-edited).
 
 ## Architecture
 
