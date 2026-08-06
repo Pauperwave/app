@@ -135,7 +135,7 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
 }], [{
   label: 'GitHub repository',
   icon: 'i-simple-icons-github',
-  to: 'https://github.com/PauperWave/dashboard',
+  to: 'https://github.com/Pauperwave/app',
   target: '_blank'
 }, {
   label: 'Log out',
