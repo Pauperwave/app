@@ -22,7 +22,6 @@ onMounted(() => {
   }
 })
 
-const { breadcrumbItems } = useBreadcrumbs()
 const toast = useToast()
 const { copy } = useClipboard()
 
@@ -625,9 +624,7 @@ if (import.meta.env.DEV) {
 
       <UDashboardToolbar>
         <template #left>
-          <UBreadcrumb :items="breadcrumbItems" class="ms-2" />
-        </template>
-        <template #right>
+          <!-- NOTE: The `-ms-1` class is used to align with the `DashboardSidebarCollapse` button here. -->
           <HomeDateRangePicker v-model="range" class="-ms-1" />
         </template>
       </UDashboardToolbar>

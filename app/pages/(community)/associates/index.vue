@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
+import type { DropdownMenuItem, TableColumn, TabsItem } from '@nuxt/ui'
 import type { Column } from '@tanstack/vue-table'
 import { upperFirst } from 'scule'
 import type { Associate } from '~/types'
 import { format, parseISO } from 'date-fns'
 
 const { associates, loading, refresh } = useAssociates()
-
-const { breadcrumbItems } = useBreadcrumbs()
 
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
@@ -57,6 +55,32 @@ function applyMembershipStatusFilterFromQuery() {
 
 onMounted(() => nextTick(applyMembershipStatusFilterFromQuery))
 watch(() => route.query.status, applyMembershipStatusFilterFromQuery)
+
+// Conteggi reali per stato di tesseramento, per le tab sopra la tabella
+// (sostituiscono i vecchi link statici in sidebar).
+const associatesStatusCounts = computed(() => {
+  const counts = { pending: 0, active: 0, to_renew: 0 }
+  for (const associate of associates.value) {
+    if (associate.membership_status in counts) {
+      counts[associate.membership_status as keyof typeof counts]++
+    }
+  }
+  return counts
+})
+
+const statusTabs = computed<TabsItem[]>(() => [
+  { label: 'Tutti', value: 'all' },
+  { label: 'In attesa di approvazione', value: 'pending', badge: associatesStatusCounts.value.pending },
+  { label: 'Attivi', value: 'active', badge: associatesStatusCounts.value.active },
+  { label: 'Da rinnovare', value: 'to_renew', badge: associatesStatusCounts.value.to_renew }
+])
+
+const activeStatusTab = computed({
+  get: () => (typeof route.query.status === 'string' ? route.query.status : 'all'),
+  set: (value: string | number) => {
+    router.replace({ query: { ...route.query, status: value === 'all' ? undefined : value } })
+  }
+})
 
 const columnFilters = ref([])
 
@@ -436,15 +460,16 @@ watch(() => consentSocialFilter.value, (newVal) => {
           <AssociatesListAddModal v-model="isModalOpen" />
         </template>
       </UDashboardNavbar>
-
-      <UDashboardToolbar>
-        <template #left>
-          <UBreadcrumb :items="breadcrumbItems" class="ms-2" />
-        </template>
-      </UDashboardToolbar>
     </template>
 
     <template #body>
+      <UTabs
+        v-model="activeStatusTab"
+        :items="statusTabs"
+        variant="link"
+        class="w-full"
+      />
+
       <div class="flex flex-wrap items-end justify-between gap-1.5">
         <div class="flex flex-wrap items-end gap-1.5">
           <UInput
