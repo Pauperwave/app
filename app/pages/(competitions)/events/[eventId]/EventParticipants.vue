@@ -1,5 +1,5 @@
 <template>
   <div>
-    {{ $t('eventParticipants.placeholder') }}
+    {{ $t('event.participants.placeholder') }}
   </div>
 </template>

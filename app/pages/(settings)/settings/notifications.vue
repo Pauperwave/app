@@ -10,32 +10,32 @@ const state = reactive<{ [key: string]: boolean }>({
 })
 
 const sections = computed(() => [{
-  title: t('settingsNotifications.sections.channels.title'),
-  description: t('settingsNotifications.sections.channels.description'),
+  title: t('settings.notifications.sections.channels.title'),
+  description: t('settings.notifications.sections.channels.description'),
   fields: [{
     name: 'email',
-    label: t('settingsNotifications.fields.email.label'),
-    description: t('settingsNotifications.fields.email.description')
+    label: t('settings.notifications.fields.email.label'),
+    description: t('settings.notifications.fields.email.description')
   }, {
     name: 'desktop',
-    label: t('settingsNotifications.fields.desktop.label'),
-    description: t('settingsNotifications.fields.desktop.description')
+    label: t('settings.notifications.fields.desktop.label'),
+    description: t('settings.notifications.fields.desktop.description')
   }]
 }, {
-  title: t('settingsNotifications.sections.accountUpdates.title'),
-  description: t('settingsNotifications.sections.accountUpdates.description'),
+  title: t('settings.notifications.sections.accountUpdates.title'),
+  description: t('settings.notifications.sections.accountUpdates.description'),
   fields: [{
     name: 'weekly_digest',
-    label: t('settingsNotifications.fields.weeklyDigest.label'),
-    description: t('settingsNotifications.fields.weeklyDigest.description')
+    label: t('settings.notifications.fields.weeklyDigest.label'),
+    description: t('settings.notifications.fields.weeklyDigest.description')
   }, {
     name: 'product_updates',
-    label: t('settingsNotifications.fields.productUpdates.label'),
-    description: t('settingsNotifications.fields.productUpdates.description')
+    label: t('settings.notifications.fields.productUpdates.label'),
+    description: t('settings.notifications.fields.productUpdates.description')
   }, {
     name: 'important_updates',
-    label: t('settingsNotifications.fields.importantUpdates.label'),
-    description: t('settingsNotifications.fields.importantUpdates.description')
+    label: t('settings.notifications.fields.importantUpdates.label'),
+    description: t('settings.notifications.fields.importantUpdates.description')
   }]
 }])
 

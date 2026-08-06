@@ -3,6 +3,6 @@
 
 <template>
   <div>
-    <h1>{{ $t('leagues.singleLeaderboard') }}</h1>
+    <h1>{{ $t('league.singleLeaderboard') }}</h1>
   </div>
 </template>

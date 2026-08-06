@@ -10,8 +10,8 @@ definePageMeta({
 const { t } = useI18n()
 
 useSeoMeta({
-  title: t('loginPage.seoTitle'),
-  description: t('loginPage.seoDescription')
+  title: t('login.seoTitle'),
+  description: t('login.seoDescription')
 })
 
 const supabase = useSupabaseClient()
@@ -20,16 +20,16 @@ const toast = useToast()
 const fields = computed(() => [{
   name: 'email',
   type: 'email' as const,
-  label: t('loginPage.emailLabel'),
+  label: t('login.emailLabel'),
   icon: 'i-lucide-at-sign',
-  placeholder: t('loginPage.emailPlaceholder'),
+  placeholder: t('login.emailPlaceholder'),
   required: true
 }])
 
 const schema = z.object({
   email: z.string().check(
     z.trim(),
-    z.email({ message: t('loginPage.invalidEmail') }),
+    z.email({ message: t('login.invalidEmail') }),
     z.toLowerCase()
   )
 })
@@ -55,8 +55,8 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
 
   if (checkError) {
     toast.add({
-      title: t('loginPage.connectionErrorTitle'),
-      description: t('loginPage.connectionErrorDescription'),
+      title: t('login.connectionErrorTitle'),
+      description: t('login.connectionErrorDescription'),
       color: 'error'
     })
     return
@@ -66,8 +66,8 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
 
   if (!check?.exists) {
     toast.add({
-      title: t('loginPage.emailNotFoundTitle'),
-      description: t('loginPage.emailNotFoundDescription'),
+      title: t('login.emailNotFoundTitle'),
+      description: t('login.emailNotFoundDescription'),
       color: 'error'
     })
     return
@@ -84,14 +84,14 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
 
   if (error) {
     toast.add({
-      title: t('loginPage.errorTitle'),
+      title: t('login.errorTitle'),
       description: error.message,
       color: 'error'
     })
   } else {
     toast.add({
-      title: t('loginPage.linkSentTitle'),
-      description: t('loginPage.linkSentDescription'),
+      title: t('login.linkSentTitle'),
+      description: t('login.linkSentDescription'),
       color: 'primary'
     })
   }
@@ -102,12 +102,12 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
   <UAuthForm
     :fields="fields"
     :schema="schema"
-    :title="$t('loginPage.welcomeBack')"
+    :title="$t('login.welcomeBack')"
     icon="i-lucide-lock"
     @submit="sendMagicLink"
   >
     <template #description>
-      {{ $t('loginPage.description') }}
+      {{ $t('login.description') }}
     </template>
 
     <template #submit="{ loading }">
@@ -119,7 +119,7 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
         size="lg"
         block
       >
-        {{ $t('loginPage.submitButton') }}
+        {{ $t('login.submitButton') }}
       </UButton>
     </template>
   </UAuthForm>

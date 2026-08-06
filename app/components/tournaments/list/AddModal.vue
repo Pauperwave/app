@@ -9,15 +9,15 @@ const toast = useToast()
 const { t } = useI18n()
 
 const visibilityOptions = computed(() => [
-  { value: 'public', label: t('tournamentsAddModal.visibilityOptions.public'), icon: 'i-lucide-eye' },
-  { value: 'private', label: t('tournamentsAddModal.visibilityOptions.private'), icon: 'i-lucide-eye-off' }
+  { value: 'public', label: t('tournament.addModal.visibilityOptions.public'), icon: 'i-lucide-eye' },
+  { value: 'private', label: t('tournament.addModal.visibilityOptions.private'), icon: 'i-lucide-eye-off' }
 ])
 
 const statusOptions = computed(() => [
-  { value: 'scheduled', label: t('tournamentsAddModal.statusOptions.scheduled'), icon: 'i-lucide-clock', color: 'info' },
-  { value: 'cancelled', label: t('tournamentsAddModal.statusOptions.cancelled'), icon: 'i-lucide-circle-x', color: 'error' },
-  { value: 'ongoing', label: t('tournamentsAddModal.statusOptions.ongoing'), icon: 'i-lucide-circle-dot-dashed', color: 'warning' },
-  { value: 'completed', label: t('tournamentsAddModal.statusOptions.completed'), icon: 'i-lucide-circle-check-big', color: 'success' }
+  { value: 'scheduled', label: t('tournament.addModal.statusOptions.scheduled'), icon: 'i-lucide-clock', color: 'info' },
+  { value: 'cancelled', label: t('tournament.addModal.statusOptions.cancelled'), icon: 'i-lucide-circle-x', color: 'error' },
+  { value: 'ongoing', label: t('tournament.addModal.statusOptions.ongoing'), icon: 'i-lucide-circle-dot-dashed', color: 'warning' },
+  { value: 'completed', label: t('tournament.addModal.statusOptions.completed'), icon: 'i-lucide-circle-check-big', color: 'success' }
 ])
 
 const formatOptions = [
@@ -70,7 +70,7 @@ const schema = z.object({
   visibility: z.string(),
   companion_code: z.string().optional().nullable(),
   name: z.string({
-    error: t('tournamentsAddModal.validation.nameRequired')
+    error: t('tournament.addModal.validation.nameRequired')
   }).optional(),
   description: z.string().optional().nullable(),
   entry_fee: z.number().nonnegative(),
@@ -147,8 +147,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
   // Show success toast
   toast.add({
-    title: t('tournamentsAddModal.successToastTitle'),
-    description: t('tournamentsAddModal.successToastDescription', { name: event.data.name }),
+    title: t('tournament.addModal.successToastTitle'),
+    description: t('tournament.addModal.successToastDescription', { name: event.data.name }),
     color: 'success'
   })
 
@@ -162,10 +162,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     v-model:open="open"
     :dismissible="false"
     :ui="{ content: 'max-w-xl' }"
-    :title="$t('tournamentsAddModal.title')"
-    :description="$t('tournamentsAddModal.description')"
+    :title="$t('tournament.addModal.title')"
+    :description="$t('tournament.addModal.description')"
   >
-    <UButton :label="$t('tournamentsAddModal.openButton')" icon="i-lucide-swords" @click="open = true" />
+    <UButton :label="$t('tournament.addModal.openButton')" icon="i-lucide-swords" @click="open = true" />
 
     <template #body>
       <UForm
@@ -177,11 +177,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         <!-- Dati relativi all'evento -->
         <div class="space-y-4">
           <p class="text-lg font-semibold text-primary">
-            {{ $t('tournamentsAddModal.tournamentData') }}
+            {{ $t('tournament.addModal.tournamentData') }}
           </p>
 
           <div class="flex justify-between gap-2">
-            <UFormField :label="$t('tournamentsAddModal.fields.status')" class="flex-1" name="status">
+            <UFormField :label="$t('tournament.addModal.fields.status')" class="flex-1" name="status">
               <USelect
                 v-model="state.status"
                 :items="statusOptions"
@@ -194,7 +194,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               </USelect>
             </UFormField>
 
-            <UFormField :label="$t('tournamentsAddModal.fields.visibility')" class="flex-1" name="visibility">
+            <UFormField :label="$t('tournament.addModal.fields.visibility')" class="flex-1" name="visibility">
               <USelect
                 v-model="state.visibility"
                 :items="visibilityOptions"
@@ -207,10 +207,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               </USelect>
             </UFormField>
 
-            <UFormField :label="$t('tournamentsAddModal.fields.companionCode')" name="companion_code">
+            <UFormField :label="$t('tournament.addModal.fields.companionCode')" name="companion_code">
               <UInput
                 :model-value="state.companion_code ?? ''"
-                :placeholder="$t('tournamentsAddModal.fields.companionCodePlaceholder')"
+                :placeholder="$t('tournament.addModal.fields.companionCodePlaceholder')"
                 icon="i-lucide-smartphone"
                 class="w-42"
                 @update:model-value="state.companion_code = ($event as string) || undefined"
@@ -220,16 +220,16 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
           <div class="flex items-end gap-2">
             <!-- eslint-disable-next-line -->
-            <UFormField :label="$t('tournamentsAddModal.fields.name')" name="name" class="flex-1" required>
+            <UFormField :label="$t('tournament.addModal.fields.name')" name="name" class="flex-1" required>
               <UInput
                 v-model="state.name"
                 class="w-full"
-                :placeholder="$t('tournamentsAddModal.fields.namePlaceholder')"
+                :placeholder="$t('tournament.addModal.fields.namePlaceholder')"
                 icon="i-lucide-trophy"
               />
             </UFormField>
 
-            <UFormField :label="$t('tournamentsAddModal.fields.entryFee')" name="entry_fee">
+            <UFormField :label="$t('tournament.addModal.fields.entryFee')" name="entry_fee">
               <UInputNumber
                 v-model="state.entry_fee"
                 :min="0"
@@ -240,45 +240,45 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             </UFormField>
           </div>
 
-          <UFormField :label="$t('tournamentsAddModal.fields.description')" name="description">
+          <UFormField :label="$t('tournament.addModal.fields.description')" name="description">
             <UTextarea
               :model-value="state.description ?? ''"
               class="w-full"
-              :placeholder="$t('tournamentsAddModal.fields.descriptionPlaceholder')"
+              :placeholder="$t('tournament.addModal.fields.descriptionPlaceholder')"
               icon="i-lucide-align-left"
               @update:model-value="state.description = ($event as string) || undefined"
             />
           </UFormField>
 
           <div class="grid grid-cols-2 gap-4">
-            <UFormField :label="$t('tournamentsAddModal.fields.format')" name="format">
+            <UFormField :label="$t('tournament.addModal.fields.format')" name="format">
               <USelectMenu
                 v-model="state.format"
                 class="w-full"
                 :items="formatOptions"
-                :placeholder="$t('tournamentsAddModal.fields.selectFormat')"
+                :placeholder="$t('tournament.addModal.fields.selectFormat')"
                 icon="i-lucide-layers"
               />
             </UFormField>
 
-            <UFormField :label="$t('tournamentsAddModal.fields.ruleset')" name="ruleset">
+            <UFormField :label="$t('tournament.addModal.fields.ruleset')" name="ruleset">
               <USelect
                 v-model="state.ruleset"
                 class="w-full"
                 :items="rulesetOptions"
-                :placeholder="$t('tournamentsAddModal.fields.selectRuleset')"
+                :placeholder="$t('tournament.addModal.fields.selectRuleset')"
                 icon="i-lucide-book-open"
               />
             </UFormField>
           </div>
 
           <p class="text-lg font-semibold text-primary">
-            {{ $t('tournamentsAddModal.scheduling') }}
+            {{ $t('tournament.addModal.scheduling') }}
           </p>
 
           <div class="grid grid-cols-2 gap-4">
             <div class="flex justify-between gap-2">
-              <UFormField :label="$t('tournamentsAddModal.fields.startDate')" class="flex-1" name="start_date">
+              <UFormField :label="$t('tournament.addModal.fields.startDate')" class="flex-1" name="start_date">
                 <UPopover>
                   <UInput
                     :model-value="formattedStartDate"
@@ -293,17 +293,17 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 </UPopover>
               </UFormField>
 
-              <UFormField :label="$t('tournamentsAddModal.fields.startTime')" name="start_time">
+              <UFormField :label="$t('tournament.addModal.fields.startTime')" name="start_time">
                 <UTimePicker
                   v-model="state.start_time"
-                  :placeholder="$t('tournamentsAddModal.fields.selectTime')"
+                  :placeholder="$t('tournament.addModal.fields.selectTime')"
                   :minute-step="15"
                 />
               </UFormField>
             </div>
 
             <div class="flex gap-2">
-              <UFormField :label="$t('tournamentsAddModal.fields.roundCount')" name="round_count">
+              <UFormField :label="$t('tournament.addModal.fields.roundCount')" name="round_count">
                 <UInputNumber
                   v-model="state.round_count"
                   :min="1"
@@ -311,7 +311,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 />
               </UFormField>
 
-              <UFormField :label="$t('tournamentsAddModal.fields.roundDuration')" name="round_duration">
+              <UFormField :label="$t('tournament.addModal.fields.roundDuration')" name="round_duration">
                 <UInputNumber
                   v-model="state.round_duration"
                   :step="5"
@@ -323,36 +323,36 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
           <!-- Dati dell'organizzatore -->
           <p class="text-lg font-semibold text-primary">
-            {{ $t('tournamentsAddModal.organizerData') }}
+            {{ $t('tournament.addModal.organizerData') }}
           </p>
 
           <div class="grid grid-cols-2 gap-4">
-            <UFormField :label="$t('tournamentsAddModal.fields.organizer')" name="organizer">
+            <UFormField :label="$t('tournament.addModal.fields.organizer')" name="organizer">
               <USelect
                 v-model="state.organizer"
                 class="w-full"
                 :items="organizerOptions"
-                :placeholder="$t('tournamentsAddModal.fields.selectOrganizer')"
+                :placeholder="$t('tournament.addModal.fields.selectOrganizer')"
                 icon="i-lucide-user"
               />
             </UFormField>
 
-            <UFormField :label="$t('tournamentsAddModal.fields.location')" name="location">
+            <UFormField :label="$t('tournament.addModal.fields.location')" name="location">
               <USelect
                 v-model="state.location"
                 class="w-full"
                 :items="placeOptions"
-                :placeholder="$t('tournamentsAddModal.fields.selectLocation')"
+                :placeholder="$t('tournament.addModal.fields.selectLocation')"
                 icon="i-lucide-map-pin"
               />
             </UFormField>
 
-            <UFormField :label="$t('tournamentsAddModal.fields.league')" name="league">
+            <UFormField :label="$t('tournament.addModal.fields.league')" name="league">
               <USelectMenu
                 v-model="state.league"
                 class="w-full"
                 :items="leagueOptions"
-                :placeholder="$t('tournamentsAddModal.fields.linkLeague')"
+                :placeholder="$t('tournament.addModal.fields.linkLeague')"
                 icon="i-lucide-trophy"
               >
                 <template #trailing>
@@ -369,12 +369,12 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               </USelectMenu>
             </UFormField>
 
-            <UFormField :label="$t('tournamentsAddModal.fields.event')" name="event">
+            <UFormField :label="$t('tournament.addModal.fields.event')" name="event">
               <USelectMenu
                 v-model="state.event"
                 class="w-full"
                 :items="eventOptions"
-                :placeholder="$t('tournamentsAddModal.fields.linkEvent')"
+                :placeholder="$t('tournament.addModal.fields.linkEvent')"
                 icon="i-lucide-calendar-arrow-up"
               >
                 <template #trailing>
@@ -396,13 +396,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         <!-- Action buttons -->
         <div class="flex justify-end gap-2 pt-4">
           <UButton
-            :label="$t('tournamentsAddModal.cancel')"
+            :label="$t('tournament.addModal.cancel')"
             color="neutral"
             variant="ghost"
             @click="open = false"
           />
           <UButton
-            :label="$t('tournamentsAddModal.create')"
+            :label="$t('tournament.addModal.create')"
             icon="i-lucide-check"
             type="submit"
           />

@@ -75,21 +75,21 @@ const filteredTournaments = computed(() => {
 
 // TODO utilizzare il mapping per la traduzione delle intestazioni
 const columnHeaders = {
-  select: t('tournaments.columns.select'),
-  id: t('tournaments.columns.id'),
-  uuid: t('tournaments.columns.uuid'),
-  status: t('tournaments.columns.status'),
-  name: t('tournaments.columns.name'),
-  start_date: t('tournaments.columns.startDate'),
-  round_count: t('tournaments.columns.roundCount'),
-  round_duration: t('tournaments.columns.roundDuration'),
-  registered_players: t('tournaments.columns.registeredPlayers'),
-  league: t('tournaments.columns.league'),
-  format: t('tournaments.columns.format'),
-  organizer: t('tournaments.columns.organizer'),
-  location: t('tournaments.columns.location'),
-  entry_fee: t('tournaments.columns.entryFee'),
-  companion_code: t('tournaments.columns.companionCode')
+  select: t('tournament.columns.select'),
+  id: t('tournament.columns.id'),
+  uuid: t('tournament.columns.uuid'),
+  status: t('tournament.columns.status'),
+  name: t('tournament.columns.name'),
+  start_date: t('tournament.columns.startDate'),
+  round_count: t('tournament.columns.roundCount'),
+  round_duration: t('tournament.columns.roundDuration'),
+  registered_players: t('tournament.columns.registeredPlayers'),
+  league: t('tournament.columns.league'),
+  format: t('tournament.columns.format'),
+  organizer: t('tournament.columns.organizer'),
+  location: t('tournament.columns.location'),
+  entry_fee: t('tournament.columns.entryFee'),
+  companion_code: t('tournament.columns.companionCode')
 } as const
 
 // Define a type for the keys of columnHeaders
@@ -194,7 +194,7 @@ const columns: TableColumn<TournamentData>[] = [
         variant: 'subtle',
         icon,
         color,
-        onClick: (e: Event) => handleColumnFilter(e, 'status', status, t('tournaments.columns.status'))
+        onClick: (e: Event) => handleColumnFilter(e, 'status', status, t('tournament.columns.status'))
       }, () =>
         row.getValue('status')
       )
@@ -254,8 +254,8 @@ const columns: TableColumn<TournamentData>[] = [
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
         variant: 'subtle',
         color,
-        onClick: (e: Event) => handleColumnFilter(e, 'round_duration', duration.toString(), t('tournaments.filterLabels.roundDuration'))
-      }, () => t('tournaments.minutes', { value: duration }))
+        onClick: (e: Event) => handleColumnFilter(e, 'round_duration', duration.toString(), t('tournament.filterLabels.roundDuration'))
+      }, () => t('tournament.minutes', { value: duration }))
     }
   },
   {
@@ -279,7 +279,7 @@ const columns: TableColumn<TournamentData>[] = [
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
         variant: 'subtle',
         color,
-        onClick: (e: Event) => handleColumnFilter(e, 'league', leagueValue, t('tournaments.columns.league'))
+        onClick: (e: Event) => handleColumnFilter(e, 'league', leagueValue, t('tournament.columns.league'))
       }, () => leagueValue)
     }
   },
@@ -299,7 +299,7 @@ const columns: TableColumn<TournamentData>[] = [
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
         variant: 'subtle',
         color,
-        onClick: (e: Event) => handleColumnFilter(e, 'format', row.getValue('format') as string, t('tournaments.columns.format'))
+        onClick: (e: Event) => handleColumnFilter(e, 'format', row.getValue('format') as string, t('tournament.columns.format'))
       }, () =>
         row.getValue('format')
       )
@@ -321,7 +321,7 @@ const columns: TableColumn<TournamentData>[] = [
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity',
         variant: 'subtle',
         color,
-        onClick: (e: Event) => handleColumnFilter(e, 'organizer', organizerValue, t('tournaments.columns.organizer'))
+        onClick: (e: Event) => handleColumnFilter(e, 'organizer', organizerValue, t('tournament.columns.organizer'))
       }, () => organizerValue)
     }
   },
@@ -430,13 +430,13 @@ function getRowItems(row: TableRow<TournamentData>) {
   // Only add the copy option if companion_code exists
   if (row.original.companion_code) {
     items.push({
-      label: t('tournaments.copyCompanionCode'),
+      label: t('tournament.copyCompanionCode'),
       icon: 'i-lucide-copy',
       onSelect() {
         copy(row.original.companion_code!)
 
         toast.add({
-          title: t('tournaments.companionCodeCopiedToast'),
+          title: t('tournament.companionCodeCopiedToast'),
           color: 'success',
           icon: 'i-lucide-circle-check'
         })
@@ -446,11 +446,11 @@ function getRowItems(row: TableRow<TournamentData>) {
 
   items.push(
     {
-      label: t('tournaments.viewTournamentDetails'),
+      label: t('tournament.viewTournamentDetails'),
       icon: 'i-lucide-swords',
       onSelect() {
         toast.add({
-          title: t('tournaments.viewTournamentDetails'),
+          title: t('tournament.viewTournamentDetails'),
           color: 'success',
           icon: 'i-lucide-circle-check'
         })
@@ -460,11 +460,11 @@ function getRowItems(row: TableRow<TournamentData>) {
 
   if (row.original.league) {
     items.push({
-      label: t('tournaments.viewLeagueDetails'),
+      label: t('tournament.viewLeagueDetails'),
       icon: 'i-lucide-trophy',
       onSelect() {
         toast.add({
-          title: t('tournaments.viewLeagueDetails'),
+          title: t('tournament.viewLeagueDetails'),
           color: 'success',
           icon: 'i-lucide-circle-check'
         })
@@ -474,11 +474,11 @@ function getRowItems(row: TableRow<TournamentData>) {
 
   if (row.original.event) {
     items.push({
-      label: t('tournaments.viewEventDetails'),
+      label: t('tournament.viewEventDetails'),
       icon: 'i-lucide-calendar',
       onSelect() {
         toast.add({
-          title: t('tournaments.viewEventDetails'),
+          title: t('tournament.viewEventDetails'),
           color: 'success',
           icon: 'i-lucide-circle-check'
         })
@@ -488,13 +488,13 @@ function getRowItems(row: TableRow<TournamentData>) {
 
   items.push(
     {
-      label: t('tournaments.deleteTournament'),
+      label: t('tournament.deleteTournament'),
       icon: 'i-lucide-trash',
       color: 'error',
       disabled: !row.getIsSelected(), // Enable only if the row is selected
       onSelect() {
         toast.add({
-          title: t('tournaments.deleteTournament'),
+          title: t('tournament.deleteTournament'),
           color: 'success',
           icon: 'i-lucide-circle-check'
         })
@@ -558,7 +558,7 @@ function handleColumnFilter(e: Event, columnId: string, value: string, label?: s
 
   // Show toast
   toast.add({
-    title: t('tournaments.filteredByToast', { label: label || columnId, value }),
+    title: t('tournament.filteredByToast', { label: label || columnId, value }),
     color: 'info',
     icon: 'i-lucide-filter'
   })
@@ -567,7 +567,7 @@ function handleColumnFilter(e: Event, columnId: string, value: string, label?: s
 function clearColumnFilter(columnId: string) {
   table.value?.tableApi?.getColumn(columnId)?.setFilterValue(undefined)
   toast.add({
-    title: t('tournaments.columnFiltersResetToast'),
+    title: t('tournament.columnFiltersResetToast'),
     color: 'info',
     icon: 'i-lucide-x-circle'
   })
@@ -576,7 +576,7 @@ function clearColumnFilter(columnId: string) {
 function clearAllFilters() {
   table.value?.tableApi?.resetColumnFilters()
   toast.add({
-    title: t('tournaments.allFiltersRemovedToast'),
+    title: t('tournament.allFiltersRemovedToast'),
     color: 'success',
     icon: 'i-lucide-filter-x'
   })
@@ -586,7 +586,7 @@ function clearAllFilters() {
 function formatFilterValue(filterId: string, value: string): string {
   // Formatta numeri
   if (filterId === 'round_duration') {
-    return t('tournaments.minutes', { value })
+    return t('tournament.minutes', { value })
   }
 
   return String(value)
@@ -613,7 +613,7 @@ if (import.meta.env.DEV) {
 <template>
   <UDashboardPanel id="tournaments">
     <template #header>
-      <UDashboardNavbar :title="$t('nav.tournaments')">
+      <UDashboardNavbar :title="$t('tournament.breadcrumb')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -634,11 +634,11 @@ if (import.meta.env.DEV) {
     <template #body>
       <div class="flex flex-col flex-1 w-full space-y-4 pb-4">
         <div class="flex justify-between px-4 py-2">
-          <UInput v-model="globalFilter" class="max-w-sm" :placeholder="$t('tournaments.filterPlaceholder')" />
+          <UInput v-model="globalFilter" class="max-w-sm" :placeholder="$t('tournament.filterPlaceholder')" />
 
           <!-- Active filters display -->
           <div v-if="columnFilters.length" class="flex items-center gap-2">
-            <span class="text-sm text-muted">{{ $t('tournaments.activeFilters') }}</span>
+            <span class="text-sm text-muted">{{ $t('tournament.activeFilters') }}</span>
             <UBadge
               v-for="filter in columnFilters"
               :key="filter.id"
@@ -657,7 +657,7 @@ if (import.meta.env.DEV) {
               />
             </UBadge>
             <UButton
-              :label="$t('tournaments.clearAll')"
+              :label="$t('tournament.clearAll')"
               icon="i-lucide-x-circle"
               size="xs"
               color="error"
@@ -709,7 +709,7 @@ if (import.meta.env.DEV) {
 
         <!-- Selected rows info -->
         <div class="px-4 py-3.5 border-t border-accented text-sm text-muted">
-          {{ $t('tournaments.selectedRows', {
+          {{ $t('tournament.selectedRows', {
             selected: table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0,
             total: table?.tableApi?.getFilteredRowModel().rows.length || 0
           }) }}

@@ -2,50 +2,51 @@ import type { BreadcrumbItem } from '#ui/types'
 
 export const useBreadcrumbs = () => {
   const route = useRoute()
+  const { t } = useI18n()
 
   // Solo i nomi che vuoi personalizzare (opzionale)
   // Primo livello della route -> etichetta personalizzata
   // Se non è presente, verrà formattato automaticamente
   // (es: 'user-profile' -> 'User Profile')
-  const customLabels: Record<string, string> = {
-    transactions: 'Transazioni',
-    associates: 'Associati',
-    players: 'Giocatori',
-    leagues: 'Leghe',
-    tournaments: 'Tornei',
-    events: 'Eventi',
-    statistics: 'Statistiche',
-    commanders: 'Comandanti',
-    rulesets: 'Regolamenti'
-  }
+  const customLabels = computed<Record<string, string>>(() => ({
+    transactions: t('transaction.breadcrumb'),
+    associates: t('associate.breadcrumb'),
+    players: t('player.breadcrumb'),
+    leagues: t('league.breadcrumb'),
+    tournaments: t('tournament.breadcrumb'),
+    events: t('event.breadcrumb'),
+    statistics: t('statistic.breadcrumb'),
+    commanders: t('commander.breadcrumb'),
+    rulesets: t('ruleset.breadcrumb')
+  }))
 
   // Labels per i query params organizzati per route
-  const queryLabels: Record<string, Record<string, Record<string, string>>> = {
+  const queryLabels = computed<Record<string, Record<string, Record<string, string>>>>(() => ({
     transactions: {
       type: {
-        'association-fee': 'Quote associative',
-        'event-fee': 'Quote eventi',
-        'donations': 'Donazioni'
+        'association-fee': t('transaction.tabs.associationFee'),
+        'event-fee': t('transaction.tabs.eventFee'),
+        'donations': t('transaction.tabs.donations')
       }
     },
     associates: {
       status: {
-        waiting: 'In attesa di approvazione',
-        active: 'Attivi',
-        expired: 'Da rinnovare'
+        waiting: t('associate.tabs.pending'),
+        active: t('associate.tabs.active'),
+        expired: t('associate.tabs.toRenew')
       }
     },
     tournaments: {
       status: {
-        upcoming: 'In programma',
-        completed: 'Completati'
+        upcoming: t('tournament.queryStatus.upcoming'),
+        completed: t('tournament.queryStatus.completed')
       }
     }
-  }
+  }))
 
   // Funzione helper per formattare nomi
   const formatSegment = (segment: string): string => {
-    return customLabels[segment] || segment.split('-')
+    return customLabels.value[segment] || segment.split('-')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ')
   }
@@ -60,13 +61,13 @@ export const useBreadcrumbs = () => {
         to: path
       })
       return acc
-    }, [{ label: 'Pannello di controllo', to: '/' }])
+    }, [{ label: t('nav.dashboard'), to: '/' }])
 
     // Gestione query params
     const firstSegment = segments[0] // es: 'transactions' o 'associates'
 
-    if (firstSegment && queryLabels[firstSegment]) {
-      const routeQueryLabels = queryLabels[firstSegment]
+    if (firstSegment && queryLabels.value[firstSegment]) {
+      const routeQueryLabels = queryLabels.value[firstSegment]
 
       // Cerca in tutti i possibili query params configurati
       for (const [queryParam, labels] of Object.entries(routeQueryLabels)) {

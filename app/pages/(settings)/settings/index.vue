@@ -6,9 +6,9 @@ const fileRef = ref<HTMLInputElement>()
 const { t } = useI18n()
 
 const profileSchema = z.object({
-  name: z.string().min(2, t('settingsGeneral.validation.nameTooShort')),
-  email: z.string().email(t('settingsGeneral.validation.invalidEmail')),
-  username: z.string().min(2, t('settingsGeneral.validation.usernameTooShort')),
+  name: z.string().min(2, t('settings.general.validation.nameTooShort')),
+  email: z.string().email(t('settings.general.validation.invalidEmail')),
+  username: z.string().min(2, t('settings.general.validation.usernameTooShort')),
   avatar: z.string().optional(),
   bio: z.string().optional()
 })
@@ -25,8 +25,8 @@ const profile = reactive<Partial<ProfileSchema>>({
 const toast = useToast()
 async function onSubmit(event: FormSubmitEvent<ProfileSchema>) {
   toast.add({
-    title: t('settingsGeneral.successToastTitle'),
-    description: t('settingsGeneral.successToastDescription'),
+    title: t('settings.general.successToastTitle'),
+    description: t('settings.general.successToastDescription'),
     icon: 'i-lucide-check',
     color: 'success'
   })
@@ -56,15 +56,15 @@ function onFileClick() {
     @submit="onSubmit"
   >
     <UPageCard
-      :title="$t('settingsGeneral.profile.title')"
-      :description="$t('settingsGeneral.profile.description')"
+      :title="$t('settings.general.profile.title')"
+      :description="$t('settings.general.profile.description')"
       variant="naked"
       orientation="horizontal"
       class="mb-4"
     >
       <UButton
         form="settings"
-        :label="$t('settingsGeneral.profile.saveChanges')"
+        :label="$t('settings.general.profile.saveChanges')"
         color="neutral"
         type="submit"
         class="w-fit lg:ms-auto"
@@ -74,8 +74,8 @@ function onFileClick() {
     <UPageCard variant="subtle">
       <UFormField
         name="name"
-        :label="$t('settingsGeneral.fields.name')"
-        :description="$t('settingsGeneral.fields.nameDescription')"
+        :label="$t('settings.general.fields.name')"
+        :description="$t('settings.general.fields.nameDescription')"
         required
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
@@ -87,8 +87,8 @@ function onFileClick() {
       <USeparator />
       <UFormField
         name="email"
-        :label="$t('settingsGeneral.fields.email')"
-        :description="$t('settingsGeneral.fields.emailDescription')"
+        :label="$t('settings.general.fields.email')"
+        :description="$t('settings.general.fields.emailDescription')"
         required
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
@@ -101,8 +101,8 @@ function onFileClick() {
       <USeparator />
       <UFormField
         name="username"
-        :label="$t('settingsGeneral.fields.username')"
-        :description="$t('settingsGeneral.fields.usernameDescription')"
+        :label="$t('settings.general.fields.username')"
+        :description="$t('settings.general.fields.usernameDescription')"
         required
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
@@ -115,8 +115,8 @@ function onFileClick() {
       <USeparator />
       <UFormField
         name="avatar"
-        :label="$t('settingsGeneral.fields.avatar')"
-        :description="$t('settingsGeneral.fields.avatarDescription')"
+        :label="$t('settings.general.fields.avatar')"
+        :description="$t('settings.general.fields.avatarDescription')"
         class="flex max-sm:flex-col justify-between sm:items-center gap-4"
       >
         <div class="flex flex-wrap items-center gap-3">
@@ -126,7 +126,7 @@ function onFileClick() {
             size="lg"
           />
           <UButton
-            :label="$t('settingsGeneral.fields.choose')"
+            :label="$t('settings.general.fields.choose')"
             color="neutral"
             @click="onFileClick"
           />
@@ -142,8 +142,8 @@ function onFileClick() {
       <USeparator />
       <UFormField
         name="bio"
-        :label="$t('settingsGeneral.fields.bio')"
-        :description="$t('settingsGeneral.fields.bioDescription')"
+        :label="$t('settings.general.fields.bio')"
+        :description="$t('settings.general.fields.bioDescription')"
         class="flex max-sm:flex-col justify-between items-start gap-4"
         :ui="{ container: 'w-full' }"
       >

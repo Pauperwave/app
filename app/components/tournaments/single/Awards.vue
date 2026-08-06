@@ -3,6 +3,6 @@
 
 <template>
   <div>
-    {{ $t('tournamentsSingle.awardsPlaceholder') }}
+    {{ $t('tournament.single.awardsPlaceholder') }}
   </div>
 </template>

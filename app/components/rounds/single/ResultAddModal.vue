@@ -1,5 +1,5 @@
 <template>
   <div>
-    {{ $t('roundResultAddModal.placeholder') }}
+    {{ $t('tournament.single.roundResultAddModal.placeholder') }}
   </div>
 </template>

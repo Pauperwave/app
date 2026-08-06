@@ -5,7 +5,7 @@ const { breadcrumbItems } = useBreadcrumbs()
 <template>
   <UDashboardPanel id="event">
     <template #header>
-      <UDashboardNavbar :title="$t('eventDetail.navbarTitle')">
+      <UDashboardNavbar :title="$t('event.detail.navbarTitle')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -19,13 +19,13 @@ const { breadcrumbItems } = useBreadcrumbs()
     </template>
 
     <template #body>
-      {{ $t('eventDetail.body.specificEvent') }}
+      {{ $t('event.detail.body.specificEvent') }}
 
-      {{ $t('eventDetail.body.eventDetails') }}
+      {{ $t('event.detail.body.eventDetails') }}
 
-      {{ $t('eventDetail.body.participantsList') }}
+      {{ $t('event.detail.body.participantsList') }}
 
-      {{ $t('eventDetail.body.linkedTournaments') }}
+      {{ $t('event.detail.body.linkedTournaments') }}
     </template>
   </UDashboardPanel>
 </template>

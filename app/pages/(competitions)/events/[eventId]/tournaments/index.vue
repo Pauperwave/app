@@ -13,7 +13,7 @@ const range = shallowRef<Range>({
 <template>
   <UDashboardPanel id="tournaments">
     <template #header>
-      <UDashboardNavbar :title="$t('eventTournamentsList.navbarTitle')">
+      <UDashboardNavbar :title="$t('event.tournamentsList.navbarTitle')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -37,26 +37,26 @@ const range = shallowRef<Range>({
     <template #body>
       <!-- <TournamentsTable :period="period" :range="range" /> -->
       <ul class="list-disc ms-4">
-        <li>{{ $t('eventTournamentsList.body.allTournaments') }}</li>
-        <li>{{ $t('eventTournamentsList.body.dateRangeFilter') }}</li>
+        <li>{{ $t('event.tournamentsList.body.allTournaments') }}</li>
+        <li>{{ $t('event.tournamentsList.body.dateRangeFilter') }}</li>
       </ul>
-      {{ $t('eventTournamentsList.body.filters') }}
+      {{ $t('event.tournamentsList.body.filters') }}
       <ul class="list-disc ms-4">
-        <li>{{ $t('eventTournamentsList.body.organizerFilter') }}</li>
-        <li>{{ $t('eventTournamentsList.body.formatFilter') }}</li>
-        <li>{{ $t('eventTournamentsList.body.locationFilter') }}</li>
+        <li>{{ $t('event.tournamentsList.body.organizerFilter') }}</li>
+        <li>{{ $t('event.tournamentsList.body.formatFilter') }}</li>
+        <li>{{ $t('event.tournamentsList.body.locationFilter') }}</li>
       </ul>
-      {{ $t('eventTournamentsList.body.tableDescription') }}
+      {{ $t('event.tournamentsList.body.tableDescription') }}
       <ul class="list-disc ms-4">
-        <li>{{ $t('eventTournamentsList.body.date') }}</li>
-        <li>{{ $t('eventTournamentsList.body.status') }}</li>
-        <li>{{ $t('eventTournamentsList.body.organizer') }}</li>
-        <li>{{ $t('eventTournamentsList.body.name') }}</li>
-        <li>{{ $t('eventTournamentsList.body.links') }}</li>
-        <li>{{ $t('eventTournamentsList.body.format') }}</li>
-        <li>{{ $t('eventTournamentsList.body.participantCount') }}</li>
-        <li>{{ $t('eventTournamentsList.body.winner') }}</li>
-        <li>{{ $t('eventTournamentsList.body.detailsLink') }}</li>
+        <li>{{ $t('event.tournamentsList.body.date') }}</li>
+        <li>{{ $t('event.tournamentsList.body.status') }}</li>
+        <li>{{ $t('event.tournamentsList.body.organizer') }}</li>
+        <li>{{ $t('event.tournamentsList.body.name') }}</li>
+        <li>{{ $t('event.tournamentsList.body.links') }}</li>
+        <li>{{ $t('event.tournamentsList.body.format') }}</li>
+        <li>{{ $t('event.tournamentsList.body.participantCount') }}</li>
+        <li>{{ $t('event.tournamentsList.body.winner') }}</li>
+        <li>{{ $t('event.tournamentsList.body.detailsLink') }}</li>
       </ul>
     </template>
   </UDashboardPanel>

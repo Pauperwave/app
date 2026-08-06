@@ -4,24 +4,24 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 const { t } = useI18n()
 
 const links = computed<NavigationMenuItem[][]>(() => [[{
-  label: t('settingsLayout.links.general'),
+  label: t('settings.layout.links.general'),
   icon: 'i-lucide-user',
   to: '/settings',
   exact: true
 }, {
-  label: t('settingsLayout.links.members'),
+  label: t('settings.layout.links.members'),
   icon: 'i-lucide-users',
   to: '/settings/members'
 }, {
-  label: t('settingsLayout.links.notifications'),
+  label: t('settings.layout.links.notifications'),
   icon: 'i-lucide-bell',
   to: '/settings/notifications'
 }, {
-  label: t('settingsLayout.links.security'),
+  label: t('settings.layout.links.security'),
   icon: 'i-lucide-shield',
   to: '/settings/security'
 }], [{
-  label: t('settingsLayout.links.documentation'),
+  label: t('settings.layout.links.documentation'),
   icon: 'i-lucide-book-open',
   to: 'https://ui.nuxt.com/docs/getting-started/installation/nuxt',
   target: '_blank'
@@ -31,7 +31,7 @@ const links = computed<NavigationMenuItem[][]>(() => [[{
 <template>
   <UDashboardPanel id="settings" :ui="{ body: 'lg:py-12' }">
     <template #header>
-      <UDashboardNavbar :title="$t('settingsLayout.navbarTitle')">
+      <UDashboardNavbar :title="$t('settings.layout.navbarTitle')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
