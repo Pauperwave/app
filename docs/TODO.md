@@ -15,3 +15,7 @@ Loose observations and open questions, not yet committed to the backlog. Promote
   - Found: 2026-08-06, while reasoning about how the sidebar should represent multiple formats going forward.
   - Why not generalized now: `mtg_formats` has 0 rows — no format, including Commander itself, is actually recorded as data yet. Building a dynamic per-format sidebar (e.g. reading `mtg_formats` to render a section per format) now would be speculative architecture for formats that don't exist in the DB yet — the same class of premature work already deferred elsewhere (ADR-003).
   - Next step: revisit when a second real format (Premodern/Draft/Pauper) gets actual DB rows and its own UI — that's the point to design format-aware navigation instead of a static "Commander" label.
+
+- **Add "numero di iscritti", "formato" and "quota di iscrizione" columns to the tournaments table.** The `tournaments` list already has i18n keys for these (`tournament.columns.registeredPlayers`, `.format`, `.entryFee`) but the actual `/tournaments` page was reset to a placeholder (see below) before the real table was rebuilt against Supabase data.
+  - Found: 2026-08-06, when clearing out `/tournaments`'s old mock-data table implementation.
+  - Next step: rebuild the tournaments table against real `tournaments`/`tournament_registrations` data (not `/api/tournaments` mock), including these three columns from the start.
