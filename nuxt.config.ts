@@ -65,6 +65,7 @@ export default defineNuxtConfig({
     vueI18n: './i18n.config.ts'
   },
   supabase: {
+    types: '#shared/utils/types/database.ts',
     // redirect: false, // disattiva redirect automatici di Supabase
     redirectOptions: {
       login: '/login',
