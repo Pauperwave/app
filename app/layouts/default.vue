@@ -1,178 +1,127 @@
 <script setup lang="ts">
 import type { CommandPaletteItem, NavigationMenuItem } from '@nuxt/ui'
+import { ICONS } from '~/utils/icons'
 
 const route = useRoute()
 // const toast = useToast()
 
 const open = ref(false)
 
-const { associates } = useAssociates()
-
-const associatesStatusCounts = computed(() => {
-  const counts = { pending: 0, active: 0, to_renew: 0 }
-  for (const associate of associates.value) {
-    if (associate.membership_status in counts) {
-      counts[associate.membership_status as keyof typeof counts]++
-    }
-  }
-  return counts
-})
-
-// Make the entire links array computed so active states are reactive
-const links = computed(() => [[{
+// Ogni sezione è un sotto-array separato (non un unico array piatto con
+// label inline): la spaziatura tra gruppi (gap-1.5 su UNavigationMenu
+// root) resta visibile anche a sidebar collassata, perché è strutturale
+// tra gruppi — a differenza degli item type:'label', che Nuxt UI rimuove
+// completamente dal DOM quando collapsed è true (v-if, non solo nascosti).
+// Array statico (non computed): UNavigationMenu evidenzia da sé la voce
+// attiva confrontando `to` con la route corrente, nessun item qui dipende
+// più da `route` per il proprio stato.
+const mainNavGroups = [[{
   label: 'Pannello di controllo',
-  icon: 'i-lucide-house',
+  icon: ICONS.home,
   to: '/',
+  onSelect: () => {
+    open.value = false
+  }
+}], [{
+  label: 'Community',
+  type: 'label'
+}, {
+  label: 'Associati',
+  icon: ICONS.players,
+  to: '/associates',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
+  label: 'Giocatori',
+  icon: ICONS.gameplay,
+  to: '/players',
   onSelect: () => {
     open.value = false
   }
 }, {
   label: 'Transazioni',
-  icon: 'i-lucide-wallet',
-  type: 'link',
+  icon: ICONS.wallet,
   to: '/transactions',
-  defaultOpen: true,
-  onSelect: () => {
-    open.value = false
-  },
-  children: [{
-    label: 'Tutte le transazioni',
-    to: '/transactions',
-    exact: true,
-    active: route.path === '/transactions' && !route.query.type,
-    onSelect: () => {
-      open.value = false
-    }
-  }, {
-    label: 'Quote associative',
-    to: '/transactions?type=association-fee',
-    active: route.query.type === 'association-fee' // Direct boolean
-  }, {
-    label: 'Quote eventi',
-    to: '/transactions?type=event-fee',
-    active: route.query.type === 'event-fee' // Direct boolean
-  }, {
-    label: 'Donazioni',
-    to: '/transactions?type=donations',
-    active: route.query.type === 'donations' // Direct boolean
-  }] satisfies NavigationMenuItem[]
-}, {
-  label: 'Associati',
-  icon: 'i-lucide-users',
-  type: 'link',
-  to: '/associates',
-  defaultOpen: true,
-  children: [{
-    label: 'Tutti gli associati',
-    to: '/associates',
-    active: route.path === '/associates' && !route.query.status, // attivo quando non c'è query
-    onSelect: () => {
-      open.value = false
-    }
-  }, {
-    label: 'In attesa di approvazione',
-    to: '/associates?status=pending',
-    badge: String(associatesStatusCounts.value.pending),
-    active: route.query.status === 'pending' // Direct boolean
-  }, {
-    label: 'Attivi',
-    to: '/associates?status=active',
-    badge: String(associatesStatusCounts.value.active),
-    active: route.query.status === 'active' // Direct boolean
-  }, {
-    label: 'Da rinnovare',
-    to: '/associates?status=to_renew',
-    badge: String(associatesStatusCounts.value.to_renew),
-    active: route.query.status === 'to_renew' // Direct boolean
-  }] satisfies NavigationMenuItem[]
-}, {
-  label: 'Tornei',
-  icon: 'i-lucide-swords',
-  to: '/tournaments'
-}, {
-  label: 'Eventi',
-  icon: 'i-lucide-calendar',
-  to: '/events',
   onSelect: () => {
     open.value = false
   }
+}], [{
+  label: 'Competizioni',
+  type: 'label'
 }, {
   label: 'Leghe',
-  icon: 'i-lucide-trophy',
+  icon: ICONS.standings,
   to: '/leagues',
   onSelect: () => {
     open.value = false
   }
 }, {
-  label: 'Statistiche',
-  icon: 'i-lucide-chart-pie',
-  type: 'link',
-  to: '/statistics',
-  defaultOpen: true,
-  children: [{
-    label: 'Panoramica',
-    to: '/statistics',
-    active: route.path === '/statistics' && !route.query.type,
-    onSelect: () => {
-      open.value = false
-    }
-  }, {
-    label: 'Mazzi',
-    to: '/statistics/decks',
-    active: route.path === '/statistics/decks',
-    onSelect: () => {
-      open.value = false
-    }
-  }] satisfies NavigationMenuItem[]
+  label: 'Eventi',
+  icon: ICONS.calendar,
+  to: '/events',
+  onSelect: () => {
+    open.value = false
+  }
 }, {
-  label: 'Impostazioni',
-  type: 'link',
-  to: '/settings',
-  icon: 'i-lucide-settings',
-  defaultOpen: true,
-  children: [{
-    label: 'Generali',
-    to: '/settings',
-    exact: true,
-    onSelect: () => {
-      open.value = false
-    }
-  }, {
-    label: 'Membri',
-    to: '/settings/members',
-    onSelect: () => {
-      open.value = false
-    }
-  }, {
-    label: 'Notifiche',
-    to: '/settings/notifications',
-    onSelect: () => {
-      open.value = false
-    }
-  }, {
-    label: 'Sicurezza',
-    to: '/settings/security',
-    onSelect: () => {
-      open.value = false
-    }
-  }] satisfies NavigationMenuItem[]
+  label: 'Tornei',
+  icon: ICONS.battle,
+  to: '/tournaments'
 }], [{
+  label: 'Commander',
+  type: 'label'
+}, {
+  label: 'Comandanti',
+  icon: ICONS.crown,
+  to: '/commanders',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
+  label: 'Mazzi',
+  icon: ICONS.layers,
+  to: '/statistics/decks',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
+  label: 'Regolamenti',
+  icon: ICONS.rules,
+  to: '/rulesets',
+  onSelect: () => {
+    open.value = false
+  }
+}], [{
+  label: 'Statistiche',
+  type: 'label'
+}, {
+  label: 'Panoramica',
+  icon: ICONS.chartPie,
+  to: '/statistics',
+  onSelect: () => {
+    open.value = false
+  }
+}]] satisfies NavigationMenuItem[][]
+// "Impostazioni" temporaneamente rimossa dalla sidebar: la pagina è ancora
+// lo scaffold di default del template, non personalizzata per PauperWave.
+
+const footerNavItems = [{
   label: 'Feedback',
-  icon: 'i-lucide-message-circle',
+  icon: ICONS.messageCircle,
   to: 'https://t.me/emanuelenardi',
   target: '_blank'
 }, {
   label: 'Help & Support',
-  icon: 'i-lucide-info',
+  icon: ICONS.info,
   to: 'https://t.me/emanuelenardi',
   target: '_blank'
-}]] satisfies NavigationMenuItem[][])
+}] satisfies NavigationMenuItem[]
 
 // The CommandPalette/DashboardSearch doesn't support nested children arrays,it only shows flat lists.
 // Each item in the items array should be a selectable command, not a group with children.
 // Helper function to flatten nested navigation items for search
 const flattenForSearch = (items: NavigationMenuItem[][]): CommandPaletteItem[] => {
-  return items.flat().flatMap((item) => {
+  return items.flat().filter(item => item.type !== 'label').flatMap((item) => {
     // Parent item
     const parent: CommandPaletteItem = {
       label: item.label,
@@ -197,45 +146,18 @@ const flattenForSearch = (items: NavigationMenuItem[][]): CommandPaletteItem[] =
 const groups = computed(() => [{
   id: 'links',
   label: 'Go to',
-  items: flattenForSearch(links.value)
+  items: flattenForSearch([...mainNavGroups, footerNavItems])
 }, {
   id: 'code',
   label: 'Code',
   items: [{
     id: 'source',
     label: 'View page source',
-    icon: 'i-simple-icons-github',
+    icon: ICONS.github,
     to: `https://github.com/nuxt-ui-templates/dashboard/blob/main/app/pages${route.path === '/' ? '/index' : route.path}.vue`,
     target: '_blank'
   }]
 }])
-
-// Show cookie consent toast
-// Removed for development purposes
-// onMounted(async () => {
-//   const cookie = useCookie('cookie-consent')
-//   if (cookie.value === 'accepted') {
-//     return
-//   }
-
-//   toast.add({
-//     title: 'We use first-party cookies to enhance your experience on our website.',
-//     duration: 0,
-//     close: false,
-//     actions: [{
-//       label: 'Accept',
-//       color: 'neutral',
-//       variant: 'outline',
-//       onClick: () => {
-//         cookie.value = 'accepted'
-//       }
-//     }, {
-//       label: 'Opt out',
-//       color: 'neutral',
-//       variant: 'ghost'
-//     }]
-//   })
-// })
 </script>
 
 <template>
@@ -245,8 +167,11 @@ const groups = computed(() => [{
       v-model:open="open"
       collapsible
       resizable
-      class="bg-elevated/25"
-      :ui="{ footer: 'lg:border-t lg:border-default' }"
+      class="bg-default"
+      :ui="{
+        root: 'lg:border-e-0',
+        footer: 'lg:border-t lg:border-default'
+      }"
     >
       <template #header="{ collapsed }">
         <TeamsMenu :collapsed="collapsed" />
@@ -257,7 +182,7 @@ const groups = computed(() => [{
 
         <UNavigationMenu
           :collapsed="collapsed"
-          :items="links[0]"
+          :items="mainNavGroups"
           orientation="vertical"
           tooltip
           popover
@@ -265,7 +190,7 @@ const groups = computed(() => [{
 
         <UNavigationMenu
           :collapsed="collapsed"
-          :items="links[1]"
+          :items="footerNavItems"
           orientation="vertical"
           tooltip
           class="mt-auto"

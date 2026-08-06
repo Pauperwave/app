@@ -10,25 +10,25 @@ onMounted(() => {
 })
 
 const items = [[{
-  label: 'Registra transazione',
-  icon: 'i-lucide-coins',
-  to: '/transactions?action=create'
-}, {
   label: 'Nuovo associato',
   icon: 'i-lucide-user-plus',
   to: '/associates?action=create'
 }, {
-  label: 'Nuovo torneo',
-  icon: 'i-lucide-swords',
-  to: '/tournaments?action=create'
+  label: 'Registra transazione',
+  icon: 'i-lucide-coins',
+  to: '/transactions?action=create'
+}, {
+  label: 'Nuova lega',
+  icon: 'i-lucide-trophy',
+  to: '/leagues?action=create'
 }, {
   label: 'Nuovo evento',
   icon: 'i-lucide-calendar-plus',
   to: '/events?action=create'
 }, {
-  label: 'Nuova lega',
-  icon: 'i-lucide-trophy',
-  to: '/leagues?action=create'
+  label: 'Nuovo torneo',
+  icon: 'i-lucide-swords',
+  to: '/tournaments?action=create'
 }]] satisfies DropdownMenuItem[][]
 
 const range = shallowRef<Range>({
