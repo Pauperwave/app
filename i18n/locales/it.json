@@ -463,6 +463,7 @@
       "create": "Crea torneo"
     },
     "list": {
+      "pageBody": "Tabella di tutti i tornei, filtrabile per formato.",
       "overview": {
         "placeholder": "Panoramica torneo specifico"
       }
