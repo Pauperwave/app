@@ -17,12 +17,23 @@ const open = ref(false)
 // attiva confrontando `to` con la route corrente, nessun item qui dipende
 // più da `route` per il proprio stato.
 const mainNavGroups = [[{
+  label: t('nav.dashboardsSection'),
+  type: 'label'
+}, {
   label: t('nav.dashboard'),
   icon: ICONS.home,
   to: '/',
   onSelect: () => {
     open.value = false
   }
+}, {
+  label: t('nav.calendar'),
+  icon: ICONS.calendarView,
+  disabled: true
+}, {
+  label: t('nav.finance'),
+  icon: ICONS.badgeEuro,
+  disabled: true
 }], [{
   label: t('nav.community'),
   type: 'label'
@@ -102,8 +113,31 @@ const mainNavGroups = [[{
   onSelect: () => {
     open.value = false
   }
+}], [{
+  label: t('nav.settingsSection'),
+  type: 'label'
+}, {
+  label: t('settings.layout.links.general'),
+  icon: ICONS.player,
+  to: '/settings',
+  disabled: true
+}, {
+  label: t('settings.layout.links.members'),
+  icon: ICONS.players,
+  to: '/settings/members',
+  disabled: true
+}, {
+  label: t('settings.layout.links.notifications'),
+  icon: ICONS.bell,
+  to: '/settings/notifications',
+  disabled: true
+}, {
+  label: t('settings.layout.links.security'),
+  icon: ICONS.security,
+  to: '/settings/security',
+  disabled: true
 }]] satisfies NavigationMenuItem[][]
-// "Impostazioni" temporaneamente rimossa dalla sidebar: la pagina è ancora
+// "Impostazioni" è presente in sidebar ma disattivata: la pagina è ancora
 // lo scaffold di default del template, non personalizzata per PauperWave.
 
 const footerNavItems = [{
@@ -122,7 +156,7 @@ const footerNavItems = [{
 // Each item in the items array should be a selectable command, not a group with children.
 // Helper function to flatten nested navigation items for search
 const flattenForSearch = (items: NavigationMenuItem[][]): CommandPaletteItem[] => {
-  return items.flat().filter(item => item.type !== 'label').flatMap((item) => {
+  return items.flat().filter(item => item.type !== 'label' && !item.disabled).flatMap((item) => {
     // Parent item
     const parent: CommandPaletteItem = {
       label: item.label,
