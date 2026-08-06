@@ -10,10 +10,13 @@ export const useBreadcrumbs = () => {
   const customLabels: Record<string, string> = {
     transactions: 'Transazioni',
     associates: 'Associati',
+    players: 'Giocatori',
     leagues: 'Leghe',
     tournaments: 'Tornei',
     events: 'Eventi',
-    statistics: 'Statistiche'
+    statistics: 'Statistiche',
+    commanders: 'Comandanti',
+    rulesets: 'Regolamenti'
   }
 
   // Labels per i query params organizzati per route
