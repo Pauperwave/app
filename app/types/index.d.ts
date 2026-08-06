@@ -1,5 +1,6 @@
+// app\types\index.d.ts
 import type { AvatarProps } from '@nuxt/ui'
-import type { Database } from './database.types'
+import type { Database } from '#shared/utils/types/database'
 
 export type UserStatus = 'subscribed' | 'unsubscribed' | 'bounced'
 export type SaleStatus = 'paid' | 'failed' | 'refunded'
@@ -17,7 +18,7 @@ export type TournamentStatus = 'scheduled' | 'canceled' | 'ongoing' | 'completed
 
 type AssociateRow = Database['public']['Tables']['pauperwave_associates']['Row']
 
-// Deriva da database.types.ts (generato da Supabase) così un rename/rimozione di
+// Deriva da shared/utils/types/database.ts (generato da Supabase) così un rename/rimozione di
 // colonna produce un errore di compilazione invece di un bug silenzioso a runtime.
 export interface Associate extends Omit<AssociateRow, 'membership_request_status' | 'associate_type'> {
   membership_request_status: RequestStatus
