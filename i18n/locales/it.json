@@ -406,8 +406,13 @@
     },
     "stepper": {
       "acceptance": "Accettazione",
+      "acceptanceDescription": "Iscrizioni aperte",
       "round": "Round {n}",
-      "awards": "Premi"
+      "roundPending": "In attesa",
+      "awards": "Premi",
+      "awardsDescription": "In attesa",
+      "leaderboard": "Classifica",
+      "leaderboardDescription": "Disponibile a fine torneo"
     },
     "addModal": {
       "title": "Nuovo torneo",
@@ -471,11 +476,7 @@
     "single": {
       "acceptancePicker": {
         "preRegistered": "Pre-registrati",
-        "selectedSuffix": " ({count} selezionati)",
-        "noPreRegistered": "Nessun pre-registrato",
-        "registeredPaid": "Iscritti (Pagato)",
-        "selectedSuffixShort": " ({count} sel.)",
-        "noRegistered": "Nessun iscritto"
+        "registeredPaid": "Iscritti (Pagato)"
       },
       "awardsPlaceholder": "Componente premi che mostrerà la classifica finale",
       "leaderboardTitle": "Classifica torneo specifico",
