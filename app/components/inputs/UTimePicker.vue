@@ -1,4 +1,4 @@
-<!-- components/UTimePicker.vue -->
+<!-- app\components\inputs\UTimePicker.vue -->
 <script setup lang="ts">
 interface Props {
   modelValue?: string

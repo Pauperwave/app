@@ -1,3 +1,4 @@
+<!-- app\pages\auth\callback.vue -->
 // app/pages/auth/callback.vue
 <script setup lang="ts">
 // `useSupabaseSession` reflects the auth state synchronously from

@@ -1,3 +1,4 @@
+<!-- app\layouts\default.vue -->
 <script setup lang="ts">
 import type { CommandPaletteItem, NavigationMenuItem } from '@nuxt/ui'
 import { ICONS } from '~/utils/icons'

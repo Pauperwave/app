@@ -1,3 +1,4 @@
+<!-- app\components\UserMenu.vue -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 

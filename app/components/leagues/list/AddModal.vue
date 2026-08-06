@@ -1,3 +1,4 @@
+<!-- app\components\leagues\list\AddModal.vue -->
 <script setup lang="ts">
 import * as z from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'

@@ -1,3 +1,4 @@
+// server\api\notifications.ts
 import { sub } from 'date-fns'
 
 const notifications = [{

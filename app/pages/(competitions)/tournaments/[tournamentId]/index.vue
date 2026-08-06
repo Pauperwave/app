@@ -1,3 +1,4 @@
+<!-- app\pages\(competitions)\tournaments\[tournamentId]\index.vue -->
 <script lang="ts" setup>
 const { breadcrumbItems } = useBreadcrumbs()
 const { t } = useI18n()

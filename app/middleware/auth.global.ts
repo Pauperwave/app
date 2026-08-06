@@ -1,4 +1,4 @@
-// app/middleware/auth.global.ts
+// app\middleware\auth.global.ts
 export default defineNuxtRouteMiddleware((to) => {
   // `useSupabaseSession` is set synchronously from the Supabase
   // `onAuthStateChange` event. `useSupabaseUser` additionally depends on an

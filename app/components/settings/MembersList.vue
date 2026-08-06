@@ -1,3 +1,4 @@
+<!-- app\components\settings\MembersList.vue -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Member } from '~/types'

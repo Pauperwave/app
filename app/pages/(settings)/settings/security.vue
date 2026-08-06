@@ -1,3 +1,4 @@
+<!-- app\pages\(settings)\settings\security.vue -->
 <script setup lang="ts">
 import * as z from 'zod'
 import type { FormError } from '@nuxt/ui'

@@ -1,3 +1,4 @@
+<!-- app\pages\(settings)\settings.vue -->
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
 

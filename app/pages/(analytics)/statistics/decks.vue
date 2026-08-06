@@ -1,3 +1,4 @@
+<!-- app\pages\(analytics)\statistics\decks.vue -->
 <template>
   <UDashboardPanel id="statistics">
     <template #header>

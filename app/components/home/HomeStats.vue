@@ -1,3 +1,4 @@
+<!-- app\components\home\HomeStats.vue -->
 <script setup lang="ts">
 import type { Period, Range, Stat } from '~/types'
 

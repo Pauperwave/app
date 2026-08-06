@@ -1,3 +1,4 @@
+<!-- app\components\home\HomeChart.server.vue -->
 <template>
   <UCard class="shrink-0" :ui="{ body: '!px-0 !pt-0 !pb-3' }">
     <template #header>
