@@ -10,9 +10,10 @@ interface Props {
   ariaLabel?: string
 }
 
+const { icon = 'i-lucide-circle-x', size = 'xs', ariaLabel } = defineProps<Props>()
 const { t } = useI18n()
 
-const { icon = 'i-lucide-circle-x', size = 'xs', ariaLabel = t('inputs.clearButton.ariaLabel') } = defineProps<Props>()
+const resolvedAriaLabel = computed(() => ariaLabel ?? t('inputs.clearButton.ariaLabel'))
 
 const emit = defineEmits<{
   'update:modelValue': [value: '']
@@ -31,7 +32,7 @@ function handleClear() {
     variant="ghost"
     :size="size"
     :icon="icon"
-    :aria-label="ariaLabel"
+    :aria-label="resolvedAriaLabel"
     class="cursor-pointer"
     @click="handleClear"
   />

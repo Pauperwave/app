@@ -15,9 +15,10 @@ interface Props {
   placeholder?: string
 }
 
+const { modelValue, name = 'status', label, items, placeholder } = defineProps<Props>()
 const { t } = useI18n()
 
-const { modelValue, name = 'status', label, items, placeholder = t('inputs.statusSelect.placeholder') } = defineProps<Props>()
+const resolvedPlaceholder = computed(() => placeholder ?? t('inputs.statusSelect.placeholder'))
 
 const emit = defineEmits<{
   'update:modelValue': [value: string | undefined]
@@ -38,7 +39,7 @@ const selectedItem = computed(() =>
     <USelect
       v-model="value"
       :items="items"
-      :placeholder="placeholder"
+      :placeholder="resolvedPlaceholder"
       value-key="value"
       class="w-34"
       :ui="{
