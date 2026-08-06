@@ -1,5 +1,5 @@
 <template>
   <div>
-    Panoramica torneo specifico
+    {{ $t('tournamentsListOverview.placeholder') }}
   </div>
 </template>

@@ -7,27 +7,29 @@ definePageMeta({
   layout: 'auth'
 })
 
+const { t } = useI18n()
+
 useSeoMeta({
-  title: 'Login',
-  description: 'Login to your account to continue'
+  title: t('loginPage.seoTitle'),
+  description: t('loginPage.seoDescription')
 })
 
 const supabase = useSupabaseClient()
 const toast = useToast()
 
-const fields = [{
+const fields = computed(() => [{
   name: 'email',
   type: 'email' as const,
-  label: 'Email',
+  label: t('loginPage.emailLabel'),
   icon: 'i-lucide-at-sign',
-  placeholder: 'Inserisci la tua email',
+  placeholder: t('loginPage.emailPlaceholder'),
   required: true
-}]
+}])
 
 const schema = z.object({
   email: z.string().check(
     z.trim(),
-    z.email({ message: 'Please enter a valid email address.' }),
+    z.email({ message: t('loginPage.invalidEmail') }),
     z.toLowerCase()
   )
 })
@@ -53,8 +55,8 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
 
   if (checkError) {
     toast.add({
-      title: 'Errore di connessione',
-      description: 'Impossibile verificare l\'email. Riprova più tardi.',
+      title: t('loginPage.connectionErrorTitle'),
+      description: t('loginPage.connectionErrorDescription'),
       color: 'error'
     })
     return
@@ -64,8 +66,8 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
 
   if (!check?.exists) {
     toast.add({
-      title: 'Email non trovata',
-      description: 'L\'indirizzo email non risulta associato a un account PauperWave.',
+      title: t('loginPage.emailNotFoundTitle'),
+      description: t('loginPage.emailNotFoundDescription'),
       color: 'error'
     })
     return
@@ -82,14 +84,14 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
 
   if (error) {
     toast.add({
-      title: 'Errore',
+      title: t('loginPage.errorTitle'),
       description: error.message,
       color: 'error'
     })
   } else {
     toast.add({
-      title: 'Link inviato',
-      description: 'Controlla la tua casella email per accedere.',
+      title: t('loginPage.linkSentTitle'),
+      description: t('loginPage.linkSentDescription'),
       color: 'primary'
     })
   }
@@ -100,12 +102,12 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
   <UAuthForm
     :fields="fields"
     :schema="schema"
-    title="Bentornato"
+    :title="$t('loginPage.welcomeBack')"
     icon="i-lucide-lock"
     @submit="sendMagicLink"
   >
     <template #description>
-      Utilizza l'email associata al tuo account PauperWave.
+      {{ $t('loginPage.description') }}
     </template>
 
     <template #submit="{ loading }">
@@ -117,7 +119,7 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
         size="lg"
         block
       >
-        Invia link per accedere
+        {{ $t('loginPage.submitButton') }}
       </UButton>
     </template>
   </UAuthForm>

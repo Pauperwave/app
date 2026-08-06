@@ -5,6 +5,8 @@ defineProps<{
   collapsed?: boolean
 }>()
 
+const { t } = useI18n()
+
 const teams = ref([{
   label: 'PauperWave',
   avatar: {
@@ -21,10 +23,10 @@ const items = computed<DropdownMenuItem[][]>(() => {
       selectedTeam.value = team
     }
   })), [{
-    label: 'Create team',
+    label: t('teamsMenu.createTeam'),
     icon: 'i-lucide-circle-plus'
   }, {
-    label: 'Manage teams',
+    label: t('teamsMenu.manageTeams'),
     icon: 'i-lucide-cog'
   }]
   ]

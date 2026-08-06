@@ -1,11 +1,14 @@
 <!-- components/UTimePicker.vue -->
 <script setup lang="ts">
-const props = defineProps<{
+interface Props {
   modelValue?: string
   placeholder?: string
   icon?: string
   minuteStep?: number
-}>()
+}
+
+const { modelValue, placeholder, icon, minuteStep = 15 } = defineProps<Props>()
+const { t } = useI18n()
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
@@ -18,15 +21,14 @@ const hours = Array.from({ length: 24 }, (_, i) =>
 
 // Generate minutes based on step
 const minutes = computed(() => {
-  const step = props.minuteStep || 15
-  const count = 60 / step
+  const count = 60 / minuteStep
   return Array.from({ length: count }, (_, i) =>
-    String(i * step).padStart(2, '0')
+    String(i * minuteStep).padStart(2, '0')
   )
 })
 
 // Parse initial time
-const [initialHour, initialMinute] = (props.modelValue || '00:00').split(':')
+const [initialHour, initialMinute] = (modelValue || '00:00').split(':')
 const selectedHour = ref(initialHour)
 const selectedMinute = ref(initialMinute)
 
@@ -36,7 +38,7 @@ watch([selectedHour, selectedMinute], ([hour, minute]) => {
 })
 
 // Watch for external changes
-watch(() => props.modelValue, (newValue) => {
+watch(() => modelValue, (newValue) => {
   if (newValue) {
     const [hour, minute] = newValue.split(':')
     selectedHour.value = hour
@@ -44,7 +46,7 @@ watch(() => props.modelValue, (newValue) => {
   }
 })
 
-const displayValue = computed(() => props.modelValue || '')
+const displayValue = computed(() => modelValue || '')
 </script>
 
 <template>
@@ -53,14 +55,14 @@ const displayValue = computed(() => props.modelValue || '')
       :model-value="displayValue"
       readonly
       :icon="icon || 'i-lucide-clock'"
-      :placeholder="placeholder || 'HH:MM'"
+      :placeholder="placeholder || t('inputs.timePicker.placeholder')"
     />
 
     <template #content>
       <div class="p-2 space-y-2">
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="text-sm font-medium mb-2 block">Ore</label>
+            <label class="text-sm font-medium mb-2 block">{{ t('inputs.timePicker.hoursLabel') }}</label>
             <USelect
               v-model="selectedHour"
               class="w-20"
@@ -69,7 +71,7 @@ const displayValue = computed(() => props.modelValue || '')
             />
           </div>
           <div>
-            <label class="text-sm font-medium mb-2 block">Minuti</label>
+            <label class="text-sm font-medium mb-2 block">{{ t('inputs.timePicker.minutesLabel') }}</label>
             <USelect
               v-model="selectedMinute"
               :items="minutes"

@@ -3,6 +3,6 @@
 
 <template>
   <div>
-    componente premi che mostrerà la classifica finale
+    {{ $t('tournamentsSingle.awardsPlaceholder') }}
   </div>
 </template>

@@ -1,7 +1,7 @@
 <template>
   <UDashboardPanel id="rulesets">
     <template #header>
-      <UDashboardNavbar title="Regolamenti">
+      <UDashboardNavbar :title="$t('nav.rulesets')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>

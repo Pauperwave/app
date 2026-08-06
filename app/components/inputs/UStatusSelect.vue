@@ -15,22 +15,21 @@ interface Props {
   placeholder?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  name: 'status',
-  placeholder: 'Select status'
-})
+const { t } = useI18n()
+
+const { modelValue, name = 'status', label, items, placeholder = t('inputs.statusSelect.placeholder') } = defineProps<Props>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: string | undefined]
 }>()
 
 const value = computed({
-  get: () => props.modelValue,
+  get: () => modelValue,
   set: val => emit('update:modelValue', val)
 })
 
 const selectedItem = computed(() =>
-  props.items.find(item => item.value === value.value)
+  items.find(item => item.value === value.value)
 )
 </script>
 

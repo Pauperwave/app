@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 const { breadcrumbItems } = useBreadcrumbs()
+const { t } = useI18n()
 
 // This could be dynamic based on tournament settings
 const numberOfRounds = 5
@@ -8,17 +9,17 @@ const currentStep = ref(0)
 const items = computed(() => [
   {
     slot: 'acceptance',
-    title: 'Accettazione',
+    title: t('tournaments.detail.acceptance'),
     icon: 'i-lucide-users'
   },
   ...Array.from({ length: numberOfRounds }, (_, i) => ({
     slot: `round-${i + 1}`,
-    title: `Round ${i + 1}`,
+    title: t('tournaments.detail.round', { n: i + 1 }),
     icon: 'i-lucide-swords'
   })),
   {
     slot: 'awards',
-    title: 'Premi',
+    title: t('tournaments.detail.awards'),
     icon: 'i-lucide-trophy'
   }
 ])
@@ -27,7 +28,7 @@ const items = computed(() => [
 <template>
   <UDashboardPanel id="tournaments">
     <template #header>
-      <UDashboardNavbar title="Eventi">
+      <UDashboardNavbar :title="$t('nav.tournaments')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>

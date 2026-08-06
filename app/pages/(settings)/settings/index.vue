@@ -3,11 +3,12 @@ import * as z from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'
 
 const fileRef = ref<HTMLInputElement>()
+const { t } = useI18n()
 
 const profileSchema = z.object({
-  name: z.string().min(2, 'Too short'),
-  email: z.string().email('Invalid email'),
-  username: z.string().min(2, 'Too short'),
+  name: z.string().min(2, t('settingsGeneral.validation.nameTooShort')),
+  email: z.string().email(t('settingsGeneral.validation.invalidEmail')),
+  username: z.string().min(2, t('settingsGeneral.validation.usernameTooShort')),
   avatar: z.string().optional(),
   bio: z.string().optional()
 })
@@ -24,8 +25,8 @@ const profile = reactive<Partial<ProfileSchema>>({
 const toast = useToast()
 async function onSubmit(event: FormSubmitEvent<ProfileSchema>) {
   toast.add({
-    title: 'Success',
-    description: 'Your settings have been updated.',
+    title: t('settingsGeneral.successToastTitle'),
+    description: t('settingsGeneral.successToastDescription'),
     icon: 'i-lucide-check',
     color: 'success'
   })
@@ -55,15 +56,15 @@ function onFileClick() {
     @submit="onSubmit"
   >
     <UPageCard
-      title="Profile"
-      description="These informations will be displayed publicly."
+      :title="$t('settingsGeneral.profile.title')"
+      :description="$t('settingsGeneral.profile.description')"
       variant="naked"
       orientation="horizontal"
       class="mb-4"
     >
       <UButton
         form="settings"
-        label="Save changes"
+        :label="$t('settingsGeneral.profile.saveChanges')"
         color="neutral"
         type="submit"
         class="w-fit lg:ms-auto"
@@ -73,8 +74,8 @@ function onFileClick() {
     <UPageCard variant="subtle">
       <UFormField
         name="name"
-        label="Name"
-        description="Will appear on receipts, invoices, and other communication."
+        :label="$t('settingsGeneral.fields.name')"
+        :description="$t('settingsGeneral.fields.nameDescription')"
         required
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
@@ -86,8 +87,8 @@ function onFileClick() {
       <USeparator />
       <UFormField
         name="email"
-        label="Email"
-        description="Used to sign in, for email receipts and product updates."
+        :label="$t('settingsGeneral.fields.email')"
+        :description="$t('settingsGeneral.fields.emailDescription')"
         required
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
@@ -100,8 +101,8 @@ function onFileClick() {
       <USeparator />
       <UFormField
         name="username"
-        label="Username"
-        description="Your unique username for logging in and your profile URL."
+        :label="$t('settingsGeneral.fields.username')"
+        :description="$t('settingsGeneral.fields.usernameDescription')"
         required
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
@@ -114,8 +115,8 @@ function onFileClick() {
       <USeparator />
       <UFormField
         name="avatar"
-        label="Avatar"
-        description="JPG, GIF or PNG. 1MB Max."
+        :label="$t('settingsGeneral.fields.avatar')"
+        :description="$t('settingsGeneral.fields.avatarDescription')"
         class="flex max-sm:flex-col justify-between sm:items-center gap-4"
       >
         <div class="flex flex-wrap items-center gap-3">
@@ -125,7 +126,7 @@ function onFileClick() {
             size="lg"
           />
           <UButton
-            label="Choose"
+            :label="$t('settingsGeneral.fields.choose')"
             color="neutral"
             @click="onFileClick"
           />
@@ -141,8 +142,8 @@ function onFileClick() {
       <USeparator />
       <UFormField
         name="bio"
-        label="Bio"
-        description="Brief description for your profile. URLs are hyperlinked."
+        :label="$t('settingsGeneral.fields.bio')"
+        :description="$t('settingsGeneral.fields.bioDescription')"
         class="flex max-sm:flex-col justify-between items-start gap-4"
         :ui="{ container: 'w-full' }"
       >

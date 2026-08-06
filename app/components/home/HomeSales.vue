@@ -8,6 +8,8 @@ const props = defineProps<{
   range: Range
 }>()
 
+const { t } = useI18n()
+
 const UBadge = resolveComponent('UBadge')
 
 const sampleEmails = [
@@ -44,12 +46,12 @@ const { data } = await useAsyncData('sales', async () => {
 const columns: TableColumn<Sale>[] = [
   {
     accessorKey: 'id',
-    header: 'ID',
+    header: t('home.sales.columns.id'),
     cell: ({ row }) => `#${row.getValue('id')}`
   },
   {
     accessorKey: 'date',
-    header: 'Date',
+    header: t('home.sales.columns.date'),
     cell: ({ row }) => {
       return new Date(row.getValue('date')).toLocaleString('it-IT', {
         day: 'numeric',
@@ -62,7 +64,7 @@ const columns: TableColumn<Sale>[] = [
   },
   {
     accessorKey: 'status',
-    header: 'Status',
+    header: t('home.sales.columns.status'),
     cell: ({ row }) => {
       const color = {
         paid: 'success' as const,
@@ -77,11 +79,11 @@ const columns: TableColumn<Sale>[] = [
   },
   {
     accessorKey: 'email',
-    header: 'Email'
+    header: t('home.sales.columns.email')
   },
   {
     accessorKey: 'amount',
-    header: () => h('div', { class: 'text-right' }, 'Amount'),
+    header: () => h('div', { class: 'text-right' }, t('home.sales.columns.amount')),
     cell: ({ row }) => {
       const amount = Number.parseFloat(row.getValue('amount'))
 

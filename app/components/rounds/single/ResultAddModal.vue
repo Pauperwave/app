@@ -1,5 +1,5 @@
 <template>
   <div>
-    Aggiunta del risultato del round
+    {{ $t('roundResultAddModal.placeholder') }}
   </div>
 </template>

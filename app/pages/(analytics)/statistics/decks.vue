@@ -1,7 +1,7 @@
 <template>
   <UDashboardPanel id="statistics">
     <template #header>
-      <UDashboardNavbar title="Statistics">
+      <UDashboardNavbar :title="$t('nav.decks')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>

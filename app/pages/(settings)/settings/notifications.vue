@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { t } = useI18n()
+
 const state = reactive<{ [key: string]: boolean }>({
   email: true,
   desktop: false,
@@ -7,35 +9,35 @@ const state = reactive<{ [key: string]: boolean }>({
   important_updates: true
 })
 
-const sections = [{
-  title: 'Notification channels',
-  description: 'Where can we notify you?',
+const sections = computed(() => [{
+  title: t('settingsNotifications.sections.channels.title'),
+  description: t('settingsNotifications.sections.channels.description'),
   fields: [{
     name: 'email',
-    label: 'Email',
-    description: 'Receive a daily email digest.'
+    label: t('settingsNotifications.fields.email.label'),
+    description: t('settingsNotifications.fields.email.description')
   }, {
     name: 'desktop',
-    label: 'Desktop',
-    description: 'Receive desktop notifications.'
+    label: t('settingsNotifications.fields.desktop.label'),
+    description: t('settingsNotifications.fields.desktop.description')
   }]
 }, {
-  title: 'Account updates',
-  description: 'Receive updates about Nuxt UI.',
+  title: t('settingsNotifications.sections.accountUpdates.title'),
+  description: t('settingsNotifications.sections.accountUpdates.description'),
   fields: [{
     name: 'weekly_digest',
-    label: 'Weekly digest',
-    description: 'Receive a weekly digest of news.'
+    label: t('settingsNotifications.fields.weeklyDigest.label'),
+    description: t('settingsNotifications.fields.weeklyDigest.description')
   }, {
     name: 'product_updates',
-    label: 'Product updates',
-    description: 'Receive a monthly email with all new features and updates.'
+    label: t('settingsNotifications.fields.productUpdates.label'),
+    description: t('settingsNotifications.fields.productUpdates.description')
   }, {
     name: 'important_updates',
-    label: 'Important updates',
-    description: 'Receive emails about important updates like security fixes, maintenance, etc.'
+    label: t('settingsNotifications.fields.importantUpdates.label'),
+    description: t('settingsNotifications.fields.importantUpdates.description')
   }]
-}]
+}])
 
 async function onChange() {
   // Do something with data

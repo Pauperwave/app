@@ -11,7 +11,7 @@ const range = shallowRef<Range>({
 <template>
   <UDashboardPanel id="statistics">
     <template #header>
-      <UDashboardNavbar title="Statistics">
+      <UDashboardNavbar :title="$t('nav.statistics')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>

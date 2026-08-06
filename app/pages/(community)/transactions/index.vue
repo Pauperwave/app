@@ -11,12 +11,13 @@ const range = shallowRef<Range>({
 const route = useRoute()
 const router = useRouter()
 const isModalOpen = ref(false)
+const { t } = useI18n()
 
 const typeTabs: TabsItem[] = [
-  { label: 'Tutte le transazioni', value: 'all' },
-  { label: 'Quote associative', value: 'association-fee' },
-  { label: 'Quote eventi', value: 'event-fee' },
-  { label: 'Donazioni', value: 'donations' }
+  { label: t('transactions.tabs.all'), value: 'all' },
+  { label: t('transactions.tabs.associationFee'), value: 'association-fee' },
+  { label: t('transactions.tabs.eventFee'), value: 'event-fee' },
+  { label: t('transactions.tabs.donations'), value: 'donations' }
 ]
 
 const activeTypeTab = computed({
@@ -37,7 +38,7 @@ onMounted(() => {
 <template>
   <UDashboardPanel id="payments">
     <template #header>
-      <UDashboardNavbar title="Transazioni">
+      <UDashboardNavbar :title="$t('nav.transactions')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>

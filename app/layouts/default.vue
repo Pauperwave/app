@@ -3,6 +3,7 @@ import type { CommandPaletteItem, NavigationMenuItem } from '@nuxt/ui'
 import { ICONS } from '~/utils/icons'
 
 const route = useRoute()
+const { t } = useI18n()
 // const toast = useToast()
 
 const open = ref(false)
@@ -16,86 +17,86 @@ const open = ref(false)
 // attiva confrontando `to` con la route corrente, nessun item qui dipende
 // più da `route` per il proprio stato.
 const mainNavGroups = [[{
-  label: 'Pannello di controllo',
+  label: t('nav.dashboard'),
   icon: ICONS.home,
   to: '/',
   onSelect: () => {
     open.value = false
   }
 }], [{
-  label: 'Community',
+  label: t('nav.community'),
   type: 'label'
 }, {
-  label: 'Associati',
+  label: t('nav.associates'),
   icon: ICONS.players,
   to: '/associates',
   onSelect: () => {
     open.value = false
   }
 }, {
-  label: 'Giocatori',
+  label: t('nav.players'),
   icon: ICONS.gameplay,
   to: '/players',
   onSelect: () => {
     open.value = false
   }
 }, {
-  label: 'Transazioni',
+  label: t('nav.transactions'),
   icon: ICONS.wallet,
   to: '/transactions',
   onSelect: () => {
     open.value = false
   }
 }], [{
-  label: 'Competizioni',
+  label: t('nav.competitions'),
   type: 'label'
 }, {
-  label: 'Leghe',
+  label: t('nav.leagues'),
   icon: ICONS.standings,
   to: '/leagues',
   onSelect: () => {
     open.value = false
   }
 }, {
-  label: 'Eventi',
+  label: t('nav.events'),
   icon: ICONS.calendar,
   to: '/events',
   onSelect: () => {
     open.value = false
   }
 }, {
-  label: 'Tornei',
+  label: t('nav.tournaments'),
   icon: ICONS.battle,
   to: '/tournaments'
 }], [{
-  label: 'Commander',
+  label: t('nav.commander'),
   type: 'label'
 }, {
-  label: 'Comandanti',
+  label: t('nav.commanders'),
   icon: ICONS.crown,
   to: '/commanders',
   onSelect: () => {
     open.value = false
   }
 }, {
-  label: 'Mazzi',
+  label: t('nav.decks'),
   icon: ICONS.layers,
   to: '/statistics/decks',
   onSelect: () => {
     open.value = false
   }
 }, {
-  label: 'Regolamenti',
+  label: t('nav.rulesets'),
   icon: ICONS.rules,
   to: '/rulesets',
   onSelect: () => {
     open.value = false
   }
 }], [{
-  label: 'Statistiche',
+  label: t('nav.statistics'),
   type: 'label'
 }, {
-  label: 'Panoramica',
+  label: t('nav.overview'),
   icon: ICONS.chartPie,
   to: '/statistics',
   onSelect: () => {
@@ -106,12 +107,12 @@ const mainNavGroups = [[{
 // lo scaffold di default del template, non personalizzata per PauperWave.
 
 const footerNavItems = [{
-  label: 'Feedback',
+  label: t('nav.feedback'),
   icon: ICONS.messageCircle,
   to: 'https://t.me/emanuelenardi',
   target: '_blank'
 }, {
-  label: 'Help & Support',
+  label: t('nav.helpSupport'),
   icon: ICONS.info,
   to: 'https://t.me/emanuelenardi',
   target: '_blank'
@@ -145,14 +146,14 @@ const flattenForSearch = (items: NavigationMenuItem[][]): CommandPaletteItem[] =
 
 const groups = computed(() => [{
   id: 'links',
-  label: 'Go to',
+  label: t('nav.search.goTo'),
   items: flattenForSearch([...mainNavGroups, footerNavItems])
 }, {
   id: 'code',
-  label: 'Code',
+  label: t('nav.search.code'),
   items: [{
     id: 'source',
-    label: 'View page source',
+    label: t('nav.search.viewSource'),
     icon: ICONS.github,
     to: `https://github.com/nuxt-ui-templates/dashboard/blob/main/app/pages${route.path === '/' ? '/index' : route.path}.vue`,
     target: '_blank'

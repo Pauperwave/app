@@ -4,6 +4,7 @@ import { VisXYContainer, VisLine, VisAxis, VisArea, VisCrosshair, VisTooltip } f
 import type { Period, Range } from '~/types'
 
 const cardRef = useTemplateRef<HTMLElement | null>('cardRef')
+const { t } = useI18n()
 
 const props = defineProps<{
   period: Period
@@ -63,7 +64,7 @@ const template = (d: DataRecord) => `${formatDate(d.date)}: ${formatNumber(d.amo
     <template #header>
       <div>
         <p class="text-xs text-muted uppercase mb-1.5">
-          Revenue
+          {{ t('home.revenue') }}
         </p>
         <p class="text-3xl text-highlighted font-semibold">
           {{ formatNumber(total) }}
