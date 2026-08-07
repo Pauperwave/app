@@ -12,6 +12,7 @@ export const useBreadcrumbs = () => {
   const customLabels = computed<Record<string, string>>(() => ({
     transactions: t('transaction.breadcrumb'),
     associates: t('associate.breadcrumb'),
+    associate: t('associate.breadcrumb'),
     players: t('player.breadcrumb'),
     leagues: t('league.breadcrumb'),
     tournaments: t('tournament.breadcrumb'),
@@ -52,11 +53,17 @@ export const useBreadcrumbs = () => {
       .join(' ')
   }
 
+  // Segmenti la cui pagina di listato vive sotto un altro nome
+  // (es. il dettaglio è su /associate/[slug] ma il listato è su /associates)
+  const pathOverrides: Record<string, string> = {
+    associate: '/associates'
+  }
+
   const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
     const segments = route.path.split('/').filter(Boolean)
 
     const items = segments.reduce<BreadcrumbItem[]>((acc, segment, i) => {
-      const path = '/' + segments.slice(0, i + 1).join('/')
+      const path = pathOverrides[segment] ?? ('/' + segments.slice(0, i + 1).join('/'))
       acc.push({
         label: formatSegment(segment),
         to: path

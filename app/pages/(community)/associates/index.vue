@@ -7,7 +7,14 @@ import type { Associate } from '~/types'
 import { format, parseISO } from 'date-fns'
 
 const { associates, loading, refresh } = useAssociates()
+const { geocodes, loading: geocodesLoading } = useAssociateGeocodes()
 const { t } = useI18n()
+
+const viewMode = ref<'table' | 'map'>('table')
+const viewModeItems = computed<TabsItem[]>(() => [
+  { label: t('associate.views.table'), value: 'table', icon: 'i-lucide-table' },
+  { label: t('associate.views.map'), value: 'map', icon: 'i-lucide-map' }
+])
 
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
@@ -453,111 +460,128 @@ watch(() => consentSocialFilter.value, (newVal) => {
 <template>
   <UDashboardPanel id="associates">
     <template #header>
-      <UDashboardNavbar :title="$t('associate.breadcrumb')">
+      <UDashboardNavbar :title="$t('associate.breadcrumb')" :ui="{ right: 'gap-4' }">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
 
         <template #right>
+          <UTabs
+            v-model="viewMode"
+            :items="viewModeItems"
+            variant="pill"
+            size="xs"
+            :content="false"
+            :ui="{ list: 'w-fit' }"
+          />
           <AssociatesListAddModal v-model="isModalOpen" />
         </template>
       </UDashboardNavbar>
     </template>
 
     <template #body>
-      <UTabs
-        v-model="activeStatusTab"
-        :items="statusTabs"
-        variant="link"
-        class="w-full"
-      />
+      <template v-if="viewMode === 'table'">
+        <UTabs
+          v-model="activeStatusTab"
+          :items="statusTabs"
+          variant="link"
+          class="w-full"
+        />
 
-      <div class="flex flex-wrap items-end justify-between gap-1.5">
-        <div class="flex flex-wrap items-end gap-1.5">
-          <UInput
-            :model-value="(table?.tableApi?.getColumn('email_address')?.getFilterValue() as string)"
-            class="max-w-sm"
-            icon="i-lucide-search"
-            :placeholder="$t('common.filterEmailsPlaceholder')"
-            @update:model-value="table?.tableApi?.getColumn('email_address')?.setFilterValue($event)"
-          />
+        <div class="flex flex-wrap items-end justify-between gap-1.5">
+          <div class="flex flex-wrap items-end gap-1.5">
+            <UInput
+              :model-value="(table?.tableApi?.getColumn('email_address')?.getFilterValue() as string)"
+              class="max-w-sm"
+              icon="i-lucide-search"
+              :placeholder="$t('common.filterEmailsPlaceholder')"
+              @update:model-value="table?.tableApi?.getColumn('email_address')?.setFilterValue($event)"
+            />
 
-          <UStatusSelect
-            v-model="consentSocialFilter"
-            :items="consentSocialOptions"
-            :label="$t('associate.consentSocialLabel')"
-            name="consentSocialFilter"
-          />
-        </div>
+            <UStatusSelect
+              v-model="consentSocialFilter"
+              :items="consentSocialOptions"
+              :label="$t('associate.consentSocialLabel')"
+              name="consentSocialFilter"
+            />
+          </div>
 
-        <div class="flex flex-wrap items-end gap-1.5">
-          <AssociatesListDeleteModal :count="table?.tableApi?.getFilteredSelectedRowModel().rows.length">
-            <UButton
-              v-if="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
-              :label="$t('common.delete')"
-              color="error"
-              variant="subtle"
-              icon="i-lucide-trash"
+          <div class="flex flex-wrap items-end gap-1.5">
+            <AssociatesListDeleteModal :count="table?.tableApi?.getFilteredSelectedRowModel().rows.length">
+              <UButton
+                v-if="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
+                :label="$t('common.delete')"
+                color="error"
+                variant="subtle"
+                icon="i-lucide-trash"
+              >
+                <template #trailing>
+                  <UKbd>
+                    {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length }}
+                  </UKbd>
+                </template>
+              </UButton>
+            </AssociatesListDeleteModal>
+
+            <UDropdownMenu
+              :items="visibilityItems"
+              :content="{ align: 'end' }"
             >
-              <template #trailing>
-                <UKbd>
-                  {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length }}
-                </UKbd>
-              </template>
-            </UButton>
-          </AssociatesListDeleteModal>
-
-          <UDropdownMenu
-            :items="visibilityItems"
-            :content="{ align: 'end' }"
-          >
+              <UButton
+                :label="$t('common.showColumns')"
+                color="neutral"
+                variant="outline"
+                trailing-icon="i-lucide-settings-2"
+              />
+            </UDropdownMenu>
             <UButton
-              :label="$t('common.showColumns')"
+              icon="i-lucide-refresh-cw"
               color="neutral"
               variant="outline"
-              trailing-icon="i-lucide-settings-2"
+              :loading="loading"
+              @click="refresh"
             />
-          </UDropdownMenu>
-          <UButton
-            icon="i-lucide-refresh-cw"
-            color="neutral"
-            variant="outline"
-            :loading="loading"
-            @click="refresh"
-          />
+          </div>
         </div>
-      </div>
 
-      <UTable
-        ref="table"
-        v-model:column-filters="columnFilters"
-        v-model:column-visibility="columnVisibility"
-        v-model:row-selection="rowSelection"
-        :virtualize="{
-          estimateSize: 35,
-          overscan: 12
-        }"
-        :data="associates"
-        :columns="columns"
-        class="flex-1 h-80 shrink-0"
-        :loading="loading"
-        :ui="{
-          base: 'border-separate border-spacing-0',
-          thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
-          tbody: '[&>tr]:last:[&>td]:border-b-0',
-          th: 'py-1 px-1.5 border-y border-default first:rounded-l-lg last:rounded-r-lg',
-          td: 'border-b border-default py-1 px-2 font-mono'
-        }"
+        <UTable
+          ref="table"
+          v-model:column-filters="columnFilters"
+          v-model:column-visibility="columnVisibility"
+          v-model:row-selection="rowSelection"
+          :virtualize="{
+            estimateSize: 35,
+            overscan: 12
+          }"
+          :data="associates"
+          :columns="columns"
+          class="flex-1 h-80 shrink-0"
+          :loading="loading"
+          :ui="{
+            base: 'border-separate border-spacing-0',
+            thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
+            tbody: '[&>tr]:last:[&>td]:border-b-0',
+            th: 'py-1 px-1.5 border-y border-default first:rounded-l-lg last:rounded-r-lg',
+            td: 'border-b border-default py-1 px-2 font-mono'
+          }"
+        />
+
+        <div class="flex items-center justify-between gap-3 border-t border-default pt-4 mt-auto">
+          <div class="text-sm text-muted">
+            {{ $t('associate.selectedRows', {
+              selected: table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0,
+              total: table?.tableApi?.getFilteredRowModel().rows.length || 0
+            }) }}
+          </div>
+        </div>
+      </template>
+
+      <AssociatesListMapView
+        v-else
+        :associates="associates"
+        :geocodes="geocodes"
+        :loading="loading || geocodesLoading"
       />
-
-      <div class="flex items-center justify-between gap-3 border-t border-default pt-4 mt-auto">
-        <div class="text-sm text-muted">
-          {{ $t('associate.selectedRows', {
-            selected: table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0,
-            total: table?.tableApi?.getFilteredRowModel().rows.length || 0
-          }) }}
-        </div>
-      </div>
     </template>
   </UDashboardPanel>
 </template>

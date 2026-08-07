@@ -13,6 +13,7 @@
     "helpSupport": "Help & Support",
     "search": {
       "goTo": "Go to",
+      "associates": "Associati",
       "code": "Code",
       "viewSource": "View page source"
     }
@@ -129,6 +130,23 @@
       "no": "Negato"
     },
     "selectedRows": "{selected} di {total} righe selezionate.",
+    "views": {
+      "table": "Tabella",
+      "map": "Mappa"
+    },
+    "map": {
+      "missingCoordinates": "1 associato non ancora geolocalizzato | {count} associati non ancora geolocalizzati"
+    },
+    "detail": {
+      "notFound": "Associato non trovato",
+      "sections": {
+        "anagrafica": "Anagrafica",
+        "contatti": "Contatti",
+        "tesseramento": "Tesseramento",
+        "consensi": "Consensi",
+        "mtg": "Magic Online"
+      }
+    },
     "addModal": {
       "title": "Nuovo associato",
       "description": "Aggiungi un nuovo associato al database",

@@ -7,7 +7,8 @@ export default defineNuxtConfig({
     '@nuxtjs/supabase',
     '@nuxt/image',
     '@nuxtjs/i18n',
-    '@nuxtjs/device'
+    '@nuxtjs/device',
+    '@nuxtjs/leaflet'
   ],
   components: [
     // Auto import components from ~/components/inputs without the 'inputs' prefix

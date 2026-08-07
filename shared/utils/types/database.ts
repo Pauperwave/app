@@ -430,6 +430,42 @@ export type Database = {
         }
         Relationships: []
       }
+      pauperwave_associate_geocodes: {
+        Row: {
+          associate_uuid: string
+          geocoded_at: string
+          latitude: number
+          longitude: number
+        }
+        Insert: {
+          associate_uuid: string
+          geocoded_at?: string
+          latitude: number
+          longitude: number
+        }
+        Update: {
+          associate_uuid?: string
+          geocoded_at?: string
+          latitude?: number
+          longitude?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pauperwave_associate_geocodes_associate_uuid_fkey"
+            columns: ["associate_uuid"]
+            isOneToOne: true
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "pauperwave_associate_geocodes_associate_uuid_fkey"
+            columns: ["associate_uuid"]
+            isOneToOne: true
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
+        ]
+      }
       pauperwave_associate_renewals: {
         Row: {
           associate_uuid: string
