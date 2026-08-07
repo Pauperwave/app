@@ -1,7 +1,6 @@
 <!-- app\pages\(competitions)\events\[eventId]\tournaments\[tournamentId]\index.vue -->
 <script lang="ts" setup>
 const { breadcrumbItems } = useBreadcrumbs()
-const route = useRoute()
 </script>
 
 <template>
@@ -16,15 +15,6 @@ const route = useRoute()
       <UDashboardToolbar>
         <template #left>
           <UBreadcrumb :items="breadcrumbItems" class="ms-2" />
-          <UButton
-            :to="`/events/${route.params.eventId}/tournaments`"
-            icon="i-lucide-chevron-left"
-            color="neutral"
-            variant="ghost"
-            size="xs"
-          >
-            {{ $t('common.back') }}
-          </UButton>
         </template>
       </UDashboardToolbar>
     </template>

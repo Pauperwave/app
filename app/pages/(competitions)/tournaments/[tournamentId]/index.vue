@@ -51,15 +51,6 @@ const items = computed(() => [
       <UDashboardToolbar>
         <template #left>
           <UBreadcrumb :items="breadcrumbItems" class="ms-2" />
-          <UButton
-            to="/tournaments"
-            icon="i-lucide-chevron-left"
-            color="neutral"
-            variant="ghost"
-            size="xs"
-          >
-            {{ $t('common.back') }}
-          </UButton>
         </template>
       </UDashboardToolbar>
     </template>

@@ -28,15 +28,6 @@ const range = shallowRef<Range>({
       <UDashboardToolbar>
         <template #left>
           <UBreadcrumb :items="breadcrumbItems" class="ms-2" />
-          <UButton
-            :to="`/events/${route.params.eventId}`"
-            icon="i-lucide-chevron-left"
-            color="neutral"
-            variant="ghost"
-            size="xs"
-          >
-            {{ $t('common.back') }}
-          </UButton>
         </template>
         <template #right>
           <!-- NOTE: The `-ms-1` class is used to align with the `DashboardSidebarCollapse` button here. -->

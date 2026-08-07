@@ -16,15 +16,6 @@ const route = useRoute()
       <UDashboardToolbar>
         <template #left>
           <UBreadcrumb :items="breadcrumbItems" class="ms-2" />
-          <UButton
-            to="/events"
-            icon="i-lucide-chevron-left"
-            color="neutral"
-            variant="ghost"
-            size="xs"
-          >
-            {{ $t('common.back') }}
-          </UButton>
         </template>
 
         <template #right>
