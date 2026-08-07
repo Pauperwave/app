@@ -23,3 +23,15 @@ Loose observations and open questions, not yet committed to the backlog. Promote
 - **Tournament detail stepper needs dynamic per-step status once real round-tracking data exists.** `MagicTheGathering/league`'s `TournamentStepper.vue` gives each step a `description` computed from actual tournament state (registration open/viewing, round completed/in-progress/pending/viewing/correcting, tournament ended) and lets you click a past step to preview it (with snap-back for non-navigable ones). PauperWave's `tournaments/[tournamentId]/index.vue` adopted only the visual title+description shape, with static placeholder descriptions ("In attesa", "Iscrizioni aperte") — there's no `currentRound`/`tournamentStatus` concept backing it yet.
   - Found: 2026-08-06, comparing our tournament stepper against league's while deciding which pattern to adopt.
   - Next step: once tournaments have real round-tracking data (current round, per-round completion), mirror league's `roundStepDescription()` logic and add click-to-preview navigation for past rounds.
+
+- **Unify `/associates` table styling with `/wanted-cards` — wanted-cards prevails.** The two `UTable` instances currently look/behave differently (row density, header treatment, filter toolbar layout); `/wanted-cards` is the newer implementation and should be the reference.
+  - Found: 2026-08-07, user request after aligning the two pages' "Mostra colonne"/"Visualizza" buttons.
+  - Next step: diff the two tables' `:ui` overrides and toolbar layout, port `/wanted-cards`'s styling onto `/associates`.
+
+- **Simplify `/associates` table column headers.** Current headers are raw/verbose (e.g. full field labels for every one of the ~35 columns); needs a pass to shorten/clarify.
+  - Found: 2026-08-07, user request.
+  - Next step: scoping — decide which headers to shorten and to what, likely alongside the styling unification above since both touch the same table.
+
+- **Add a contextual (right-click) row menu to both `/associates` and `/wanted-cards` tables**, with entries specific to each table's rows (not a generic shared menu).
+  - Found: 2026-08-07, user request.
+  - Next step: scope what actions belong per table (e.g. associates: view detail/edit/delete; wanted-cards: mark found/edit/delete) before implementing.
