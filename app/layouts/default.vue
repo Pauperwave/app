@@ -229,8 +229,7 @@ const groups = computed(() => [{
       resizable
       class="bg-default"
       :ui="{
-        root: 'lg:border-e-0',
-        footer: 'lg:border-t lg:border-default'
+        root: 'lg:border-e-0'
       }"
     >
       <template #header="{ collapsed }">
@@ -238,7 +237,7 @@ const groups = computed(() => [{
       </template>
 
       <template #default="{ collapsed }">
-        <UDashboardSearchButton :collapsed="collapsed" class="bg-transparent ring-default" />
+        <UDashboardSearchButton :collapsed="collapsed" class="bg-transparent ring-0" />
 
         <UNavigationMenu
           :collapsed="collapsed"
