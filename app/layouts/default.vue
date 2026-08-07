@@ -63,6 +63,13 @@ const mainNavGroups = [[{
   onSelect: () => {
     open.value = false
   }
+}, {
+  label: t('wantedCard.breadcrumb'),
+  icon: ICONS.cardSearch,
+  to: '/wanted-cards',
+  onSelect: () => {
+    open.value = false
+  }
 }], [{
   label: t('nav.competitions'),
   type: 'label'

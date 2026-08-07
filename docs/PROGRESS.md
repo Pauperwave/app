@@ -57,10 +57,13 @@ Il database Supabase di questo progetto è inoltre destinato a diventare la base
 
 **Conseguenze:** non riproporre questa sostituzione in futuro a meno che l'utente non la sollevi di nuovo.
 
-## Problemi noti risolti
+### ADR-005 — Ordine colonne tabella "Carte Cercate" (2026-08-07)
 
-- **Bug "Stato richiesta" vuoto** (2026-08-05): il campo `request_status` non esisteva mai nel DB reale (`membership_request_status`), e i valori erano `approved`/`pending` non `accepted`/`pending`/`rejected`. Vedi `docs/architecture/database.md`.
-- **Virtualizzazione tabella rotta** (2026-08-05): `estimateSize: 250` contro un'altezza reale riga di ~35px causava enormi spazi vuoti nella tabella associati.
+**Contesto:** la tabella `wanted-cards` (Giocatore, Data, Stato, Carta, Copie, Lingua, Trattamento, Note) aveva un ordine colonne non deliberato, emerso incrementalmente durante lo sviluppo della feature.
+
+**Decisione:** ordine finale **Giocatore → Carta → Copie → Lingua → Trattamento → Data → Stato → Note**. Logica: leggere le colonne da sinistra a destra come una frase — "[Giocatore] wants [Carta] ×[Copie] in [Lingua], [Trattamento]" — raggruppando gli attributi specifici della richiesta (cosa si cerca) subito dopo il soggetto, prima di passare ai metadati di tracciamento (Data/Stato, che riguardano il ciclo di vita della richiesta, non cosa viene cercato), con Note per ultima in quanto testo libero.
+
+**Conseguenze:** Stato finisce penultima colonna nonostante sia informazione ad alta priorità per la scansione visiva — accettabile perché è già resa come badge colorato, quindi resta scansionabile indipendentemente dalla posizione.
 
 ## Vedi anche
 

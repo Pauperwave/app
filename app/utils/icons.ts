@@ -92,6 +92,7 @@ export const ICONS = {
   battle: 'i-lucide-swords',
   layers: 'i-lucide-layers',
   gameplay: 'i-lucide-gamepad-2',
+  cardSearch: 'i-lucide-scan-search',
 
   // League / event / scoring
   standings: 'i-lucide-trophy',
