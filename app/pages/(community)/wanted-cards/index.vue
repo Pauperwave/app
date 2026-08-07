@@ -441,10 +441,10 @@ const columns: TableColumn<WantedCard>[] = [
         <template #right>
           <UDropdownMenu :items="viewItems" :content="{ align: 'end' }">
             <UButton
-              :label="$t('wantedCard.filters.view')"
+              :label="$t('common.showColumns')"
               color="neutral"
               variant="outline"
-              trailing-icon="i-lucide-chevron-down"
+              trailing-icon="i-lucide-settings-2"
             />
           </UDropdownMenu>
         </template>

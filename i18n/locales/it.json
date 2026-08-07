@@ -534,8 +534,7 @@
       "cardNamePlaceholder": "Cerca per nome carta...",
       "statusAll": "Tutte",
       "languagePlaceholder": "Lingua",
-      "groupByPlayer": "Raggruppa per giocatore",
-      "view": "Visualizza"
+      "groupByPlayer": "Raggruppa per giocatore"
     },
     "languages": {
       "any": "Indifferente",
