@@ -513,6 +513,71 @@
   "player": {
     "breadcrumb": "Giocatori"
   },
+  "wantedCard": {
+    "breadcrumb": "Carte Cercate",
+    "columns": {
+      "date": "Data",
+      "found": "Stato",
+      "manaCost": "Mana",
+      "name": "Carta",
+      "price": "Prezzo",
+      "copies": "Copie",
+      "language": "Lingua",
+      "treatment": "Trattamento",
+      "notes": "Note",
+      "player": "Giocatore"
+    },
+    "foundYes": "Trovata",
+    "foundNo": "In cerca",
+    "openButton": "Nuova richiesta",
+    "filters": {
+      "cardNamePlaceholder": "Cerca per nome carta...",
+      "statusAll": "Tutte",
+      "languagePlaceholder": "Lingua",
+      "groupByPlayer": "Raggruppa per giocatore",
+      "view": "Visualizza"
+    },
+    "languages": {
+      "any": "Indifferente",
+      "en": "Inglese",
+      "it": "Italiano",
+      "es": "Spagnolo",
+      "fr": "Francese",
+      "de": "Tedesco",
+      "ja": "Giapponese"
+    },
+    "treatments": {
+      "foil": "Foil",
+      "fullArt": "Full Art",
+      "alternateArt": "Alternate Art",
+      "extendedArt": "Extended Art",
+      "borderless": "Borderless",
+      "showcase": "Showcase",
+      "retroFrame": "Retro Frame"
+    },
+    "addModal": {
+      "title": "Nuova richiesta",
+      "description": "Aggiungi una carta che stai cercando",
+      "validation": {
+        "nameTooShort": "Nome carta troppo corto"
+      },
+      "fields": {
+        "name": "Nome carta",
+        "namePlaceholder": "Cerca su Scryfall...",
+        "copies": "Copie",
+        "language": "Lingua preferita",
+        "treatment": "Trattamento",
+        "notes": "Note",
+        "notesPlaceholder": "Es. preferibilmente in inglese...",
+        "player": "Giocatore",
+        "selectPlayer": "Seleziona giocatore"
+      },
+      "successToastTitle": "Richiesta aggiunta",
+      "successToastDescription": "\"{name}\" aggiunta alle carte cercate",
+      "cancel": "Annulla",
+      "create": "Aggiungi"
+    }
+  },
   "commander": {
     "breadcrumb": "Comandanti"
   },
