@@ -9,6 +9,10 @@ const { t } = useI18n()
 
 const open = ref(false)
 
+// Same 'associates' useAsyncData key as associates/index.vue — reuses that
+// page's cached fetch instead of re-querying Supabase from the layout.
+const { associates } = useAssociates()
+
 // Ogni sezione è un sotto-array separato (non un unico array piatto con
 // label inline): la spaziatura tra gruppi (gap-1.5 su UNavigationMenu
 // root) resta visibile anche a sidebar collassata, perché è strutturale
@@ -183,6 +187,19 @@ const groups = computed(() => [{
   id: 'links',
   label: t('nav.search.goTo'),
   items: flattenForSearch([...mainNavGroups, footerNavItems])
+}, {
+  id: 'associates',
+  label: t('nav.search.associates'),
+  items: associates.value.map(associate => ({
+    id: `associate-${associate.id}`,
+    label: `${associate.first_name} ${associate.last_name}`,
+    suffix: associate.email_address,
+    icon: ICONS.players,
+    to: `/associate/${slugify(`${associate.first_name} ${associate.last_name}`)}`,
+    onSelect: () => {
+      open.value = false
+    }
+  }))
 }, {
   id: 'code',
   label: t('nav.search.code'),
