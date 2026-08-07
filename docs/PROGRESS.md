@@ -65,6 +65,14 @@ Il database Supabase di questo progetto è inoltre destinato a diventare la base
 
 **Conseguenze:** Stato finisce penultima colonna nonostante sia informazione ad alta priorità per la scansione visiva — accettabile perché è già resa come badge colorato, quindi resta scansionabile indipendentemente dalla posizione.
 
+### ADR-006 — `scrollbar-gutter: stable` globale su tutte le `UTable` (2026-08-07)
+
+**Contesto:** nella tabella `wanted-cards`, il bordo destro della tabella si spostava di ~16px (larghezza di una scrollbar classica) a seconda che le righe correnti superassero o meno l'altezza visibile — misurato con `getBoundingClientRect()`: bordo destro a 1676px con 5 righe (nessuna scrollbar), a 1661px con 40+ righe (scrollbar verticale presente). Il margine appariva quindi "incoerente" rispetto alla toolbar filtri sopra, che non si sposta mai. Non è un problema del sidebar (verificato aperto/chiuso: stesso offset in entrambi i casi).
+
+**Decisione:** aggiunta la proprietà CSS `scrollbar-gutter: stable` (via classe arbitraria Tailwind `[scrollbar-gutter:stable]`) allo slot `root` del componente `table` in `app/app.config.ts` (`ui.table.slots.root`), non solo alla singola pagina — così lo spazio della scrollbar è sempre riservato, con o senza overflow verticale, per **ogni** `UTable` dell'app, non solo `wanted-cards`.
+
+**Conseguenze:** tutte le tabelle esistenti e future erediteranno questo comportamento senza bisogno di ripetere l'override per-istanza. Non documentato ufficialmente da Nuxt UI (verificato: nessuna menzione di `scrollbar-gutter` nella doc di `UTable`), ma è una proprietà CSS standard e non in conflitto con nessun pattern ufficiale (sticky header, virtualizzazione, altezza fissa) menzionato nella doc.
+
 ## Vedi anche
 
 - `docs/architecture/database.md` — schema, RLS, migrazioni
