@@ -6,7 +6,8 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@nuxtjs/supabase',
     '@nuxt/image',
-    '@nuxtjs/i18n'
+    '@nuxtjs/i18n',
+    '@nuxtjs/device'
   ],
   components: [
     // Auto import components from ~/components/inputs without the 'inputs' prefix
@@ -63,6 +64,16 @@ export default defineNuxtConfig({
     strategy: 'no_prefix',
     langDir: 'locales/',
     vueI18n: './i18n.config.ts'
+  },
+  // @nuxt/icon's client bundle scan is off by default, so most icons only
+  // resolve via a runtime fetch (source of the "[Icon] failed to load icon"
+  // warnings) — scanning statically bundles every icon actually referenced
+  // in the codebase (including app/utils/icons.ts) instead of the whole
+  // lucide/simple-icons/circle-flags collections.
+  icon: {
+    clientBundle: {
+      scan: true
+    }
   },
   supabase: {
     types: '#shared/utils/types/database.ts',

@@ -18,11 +18,15 @@
     "fallow:health": "fallow health --score --hotspots --targets"
   },
   "dependencies": {
+    "@dicebear/core": "10.3.0",
+    "@dicebear/styles": "10.2.0",
+    "@iconify-json/circle-flags": "1.2.10",
     "@iconify-json/lucide": "^1.2.121",
     "@iconify-json/simple-icons": "^1.2.93",
     "@internationalized/date": "^3.12.3",
     "@nuxt/image": "2.1.0",
     "@nuxt/ui": "^4.10.0",
+    "@nuxtjs/device": "4.0.0",
     "@nuxtjs/i18n": "^10.6.0",
     "@nuxtjs/supabase": "2.0.9",
     "@supabase/supabase-js": "^2.112.0",
@@ -32,6 +36,7 @@
     "@vueuse/core": "^14.4.0",
     "@vueuse/nuxt": "^14.4.0",
     "date-fns": "^4.4.0",
+    "mana-font": "1.18.0",
     "maska": "^3.2.0",
     "nuxt": "^4.5.1",
     "tailwindcss": "^4.3.3",
