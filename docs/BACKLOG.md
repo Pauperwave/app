@@ -13,6 +13,9 @@ Committed, ranked work items. P1 = urgent/blocking, P2 = important, P3 = nice to
   - Found: 2026-08-05, via manual RLS policy review.
   - Follow-up: audit other tables (`players`, transactions, tournaments, etc.) for the same catch-all-policy pattern before considering this closed.
 
+- **Populate `created_by`/`updated_by` on the other 5 tables that have them** (`pauperwave_associates`, `pauperwave_associate_geocodes`, `pauperwave_associate_renewals`, `pauperwave_payments`, `user_roles`) — all currently unpopulated (no trigger, no code ever wrote them), same as `pauperwave_wanted_cards` was before 2026-08-08. The reusable pieces already exist: `server/utils/auditColumns.ts` (`auditColumnsForInsert`/`auditColumnsForUpdate`, generic — spread into any insert/update payload) and `public.set_updated_at()` (generic trigger function, just needs `create trigger ... before update ... execute function public.set_updated_at()` per table). Per-table FK target still needs a decision (`auth.users(id)` vs `pauperwave_associates(uuid)` — `wanted_cards` uses the latter since it's displayed in UI; `user_roles` is more of a system table and may legitimately want the former) — not a blanket schema change.
+  - Found: 2026-08-08, while implementing the pattern for `wanted_cards` — see ADR in `docs/PROGRESS.md`.
+
 ## P2
 
 - **Migrate magic-link auth from implicit flow to PKCE.** Current flow (`app/pages/auth/callback.vue`, `app/pages/login.vue`) relies on the implicit flow — the session token can briefly appear in the URL fragment/browser history. Given the app handles real associate PII, PKCE (customize email template with `{{ .TokenHash }}`, exchange via `verifyOtp({ token_hash, type: 'email' })` in the callback) is a worthwhile hardening step, though it requires callback-page and Supabase email-template changes.
