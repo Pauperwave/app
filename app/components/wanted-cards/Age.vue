@@ -1,4 +1,4 @@
-<!-- app\components\wanted-cards\WantedCardAge.vue -->
+<!-- app\components\wanted-cards\Age.vue -->
 <script setup lang="ts">
 import type { WantedCardAgeColor } from '~/utils/wantedCardAge'
 

@@ -4,9 +4,9 @@ import { UBadge, UButton, UIcon } from '#components'
 import type { Column } from '@tanstack/vue-table'
 import type { TableColumn } from '@nuxt/ui'
 import type { WantedCard } from '~/types'
-import ManaCost from '~/components/wanted-cards/ManaCost.vue'
-import CardPreviewTooltip from '~/components/wanted-cards/CardPreviewTooltip.vue'
-import PlayerTag from '~/components/wanted-cards/PlayerTag.vue'
+import ManaCost from '~/components/magic/ManaCost.vue'
+import CardPreviewTooltip from '~/components/magic/CardPreviewTooltip.vue'
+import PlayerTag from '~/components/PlayerTag.vue'
 
 // Config pura (dipende solo da t()) — estratta dalla pagina per isolare le
 // ~110 righe di definizione colonne dal resto della logica della vista.
@@ -39,7 +39,8 @@ export function useWantedCardsTableColumns() {
     player: t('wantedCard.columns.player'),
     cmc: t('wantedCard.columns.manaCost'),
     cardName: t('wantedCard.columns.name'),
-    price: t('wantedCard.columns.price'),
+    cardmarketPrice: t('wantedCard.columns.cardmarketPrice'),
+    cardtraderPrice: t('wantedCard.columns.cardtraderPrice'),
     copies: t('wantedCard.columns.copies'),
     language: t('wantedCard.columns.language'),
     treatment: t('wantedCard.columns.treatment'),
@@ -95,11 +96,19 @@ export function useWantedCardsTableColumns() {
         : h(CardPreviewTooltip, { name: row.original.cardName, imageUrl: row.original.imageUrl })
     },
     {
-      accessorKey: 'price',
-      header: ({ column }) => sortableHeader(t('wantedCard.columns.price'), column),
+      accessorKey: 'cardmarketPrice',
+      header: ({ column }) => sortableHeader(t('wantedCard.columns.cardmarketPrice'), column),
       cell: ({ row }) => {
-        if (row.getIsGrouped() || row.original.price === null) return null
-        return `${row.original.price.toFixed(2)} €`
+        if (row.getIsGrouped() || row.original.cardmarketPrice === null) return null
+        return `${row.original.cardmarketPrice.toFixed(2)} €`
+      }
+    },
+    {
+      accessorKey: 'cardtraderPrice',
+      header: ({ column }) => sortableHeader(t('wantedCard.columns.cardtraderPrice'), column),
+      cell: ({ row }) => {
+        if (row.getIsGrouped() || row.original.cardtraderPrice === null) return null
+        return `${row.original.cardtraderPrice.toFixed(2)} €`
       }
     },
     {

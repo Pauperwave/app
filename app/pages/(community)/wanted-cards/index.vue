@@ -107,11 +107,11 @@ function toggleGrouping() {
 
 // La tabella ha l'ordinamento per colonna cliccabile (sortableHeader); la
 // griglia non ha colonne, quindi usa un selettore dedicato invece.
-const gridSortField = ref<'player' | 'price' | 'date' | 'cardName'>('player')
+const gridSortField = ref<'player' | 'cardmarketPrice' | 'date' | 'cardName'>('player')
 const gridSortDesc = ref(true)
 const gridSortItems = computed(() => [
   { label: t('wantedCard.columns.player'), value: 'player' as const },
-  { label: t('wantedCard.columns.price'), value: 'price' as const },
+  { label: t('wantedCard.columns.cardmarketPrice'), value: 'cardmarketPrice' as const },
   { label: t('wantedCard.columns.date'), value: 'date' as const },
   { label: t('wantedCard.columns.name'), value: 'cardName' as const }
 ])
@@ -123,7 +123,7 @@ const sortedCards = computed(() => {
     let diff = 0
     if (field === 'player') diff = a.player.localeCompare(b.player)
     else if (field === 'cardName') diff = a.cardName.localeCompare(b.cardName)
-    else if (field === 'price') diff = (a.price ?? 0) - (b.price ?? 0)
+    else if (field === 'cardmarketPrice') diff = (a.cardmarketPrice ?? 0) - (b.cardmarketPrice ?? 0)
     else if (field === 'date') diff = (a.date || '').localeCompare(b.date || '')
     return diff * direction
   })
@@ -363,5 +363,5 @@ const gridSections = computed<GridSection[]>(() => {
     </template>
   </UModal>
 
-  <WantedCardsTourGuide :tour="tour" />
+  <TourGuide :tour="tour" />
 </template>

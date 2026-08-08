@@ -2,8 +2,6 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { WantedCard } from '~/types'
-import PlayerTag from '~/components/wanted-cards/PlayerTag.vue'
-import WantedCardAge from '~/components/wanted-cards/WantedCardAge.vue'
 
 interface GridSection {
   /** null = nessun raggruppamento attivo, nessuna intestazione di sezione. */
@@ -102,22 +100,21 @@ const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]
                   {{ t(`wantedCard.treatments.${treatment}`) }}
                 </UBadge>
 
-                <WantedCardAge :date="card.date" />
+                <WantedCardsAge :date="card.date" />
 
                 <div class="flex items-center gap-1.5 ms-auto shrink-0">
-                  <UBadge
-                    v-if="showStatus"
-                    :color="wantedCardStatusColor(card.status)"
-                    variant="subtle"
-                  >
-                    {{ t(`wantedCard.status.${card.status}`) }}
-                  </UBadge>
-                  <template v-if="card.price !== null">
-                    <span class="text-sm text-muted">{{ card.price.toFixed(2) }} €</span>
-                    <UTooltip :text="$t('wantedCard.grid.priceHint')">
-                      <UIcon name="i-lucide-info" class="size-3.5 text-muted" />
-                    </UTooltip>
-                  </template>
+                  <UTooltip v-if="showStatus" :text="t(`wantedCard.status.${card.status}`)">
+                    <UBadge
+                      :color="wantedCardStatusColor(card.status)"
+                      variant="subtle"
+                      :icon="WANTED_CARD_STATUS_ICONS[card.status]"
+                      :aria-label="t(`wantedCard.status.${card.status}`)"
+                    />
+                  </UTooltip>
+                  <WantedCardsPrices
+                    :cardmarket-price="card.cardmarketPrice"
+                    :cardtrader-price="card.cardtraderPrice"
+                  />
                 </div>
               </div>
 
@@ -131,12 +128,10 @@ const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]
                       <UIcon name="i-lucide-message-circle" class="size-4 text-muted shrink-0" />
                     </UTooltip>
                   </div>
-                  <div v-if="card.price !== null" class="flex items-center gap-1 shrink-0">
-                    <span class="text-sm text-muted">{{ card.price.toFixed(2) }} €</span>
-                    <UTooltip :text="$t('wantedCard.grid.priceHint')">
-                      <UIcon name="i-lucide-info" class="size-3.5 text-muted" />
-                    </UTooltip>
-                  </div>
+                  <WantedCardsPrices
+                    :cardmarket-price="card.cardmarketPrice"
+                    :cardtrader-price="card.cardtraderPrice"
+                  />
                 </div>
 
                 <div class="flex flex-wrap items-center gap-1.5">
@@ -159,15 +154,24 @@ const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]
                   >
                     {{ t(`wantedCard.treatments.${treatment}`) }}
                   </UBadge>
-                  <WantedCardAge :date="card.date" class="ms-auto" />
-                  <UBadge
-                    v-if="showStatus"
-                    :color="wantedCardStatusColor(card.status)"
-                    variant="subtle"
-                    :class="{ 'ms-auto': !card.date }"
-                  >
-                    {{ t(`wantedCard.status.${card.status}`) }}
-                  </UBadge>
+                  <!-- Cluster destro come singolo figlio flex, non due
+                       fratelli con `ms-auto` sul primo: con flex-wrap quel
+                       margine allinea a destra solo finché la riga non va a
+                       capo — dopo, il badge di stato apriva la riga nuova e
+                       finiva a sinistra (evidente con l'etichetta più lunga,
+                       "Abbandonata"). Da solo sulla riga a capo, invece,
+                       `ms-auto` continua a spingere il gruppo a destra. -->
+                  <div class="flex items-center gap-1.5 ms-auto shrink-0">
+                    <WantedCardsAge :date="card.date" />
+                    <UTooltip v-if="showStatus" :text="t(`wantedCard.status.${card.status}`)">
+                      <UBadge
+                        :color="wantedCardStatusColor(card.status)"
+                        variant="subtle"
+                        :icon="WANTED_CARD_STATUS_ICONS[card.status]"
+                        :aria-label="t(`wantedCard.status.${card.status}`)"
+                      />
+                    </UTooltip>
+                  </div>
                 </div>
               </div>
             </template>

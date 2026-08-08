@@ -1,4 +1,4 @@
-<!-- app\components\wanted-cards\ManaCost.vue -->
+<!-- app\components\magic\ManaCost.vue -->
 
 <!--
   Componente per visualizzare i simboli di mana di Magic: The Gathering.
