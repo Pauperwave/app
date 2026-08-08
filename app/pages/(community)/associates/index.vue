@@ -440,7 +440,7 @@ function renderConsentBadge(consentvalue: boolean) {
 }
 
 const consentSocialOptions = [
-  { label: t('associate.consentSocialOptions.all'), value: 'all', icon: 'i-lucide-list', color: 'neutral' },
+  { label: t('associate.consentSocialOptions.all'), value: 'all', icon: 'i-lucide-megaphone', color: 'neutral' },
   { label: t('associate.consentSocialOptions.yes'), value: 'yes', icon: 'i-lucide-check-circle', color: 'success' },
   { label: t('associate.consentSocialOptions.no'), value: 'no', icon: 'i-lucide-circle-x', color: 'error' }
 ]
@@ -484,23 +484,30 @@ watch(() => consentSocialFilter.value, (newVal) => {
         <div class="flex flex-wrap items-end justify-between gap-1.5">
           <div class="flex flex-wrap items-end gap-1.5">
             <UInput
-              :model-value="(table?.tableApi?.getColumn('email_address')?.getFilterValue() as string)"
+              :model-value="(
+                table?.tableApi?.getColumn('email_address')?.getFilterValue() as string
+              )"
               class="max-w-sm"
               icon="i-lucide-search"
               :placeholder="$t('common.filterEmailsPlaceholder')"
-              @update:model-value="table?.tableApi?.getColumn('email_address')?.setFilterValue($event)"
+              @update:model-value="
+                table?.tableApi?.getColumn('email_address')?.setFilterValue($event)
+              "
             />
 
-            <UStatusSelect
-              v-model="consentSocialFilter"
-              :items="consentSocialOptions"
-              :label="$t('associate.consentSocialLabel')"
-              name="consentSocialFilter"
-            />
+            <UTooltip :text="$t('associate.consentSocialLabel')">
+              <UStatusSelect
+                v-model="consentSocialFilter"
+                :items="consentSocialOptions"
+                name="consentSocialFilter"
+              />
+            </UTooltip>
           </div>
 
           <div class="flex flex-wrap items-end gap-1.5">
-            <AssociatesListDeleteModal :count="table?.tableApi?.getFilteredSelectedRowModel().rows.length">
+            <AssociatesListDeleteModal
+              :count="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
+            >
               <UButton
                 v-if="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
                 :label="$t('common.delete')"
