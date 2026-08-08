@@ -1,20 +1,29 @@
 <!-- app\pages\(settings)\settings\index.vue -->
 <script setup lang="ts">
-import * as z from 'zod'
+import * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 
 const fileRef = ref<HTMLInputElement>()
 const { t } = useI18n()
 
-const profileSchema = z.object({
-  name: z.string().min(2, t('settings.general.validation.nameTooShort')),
-  email: z.string().email(t('settings.general.validation.invalidEmail')),
-  username: z.string().min(2, t('settings.general.validation.usernameTooShort')),
-  avatar: z.string().optional(),
-  bio: z.string().optional()
+const profileSchema = v.object({
+  name: v.pipe(
+    v.string(t('settings.general.validation.nameRequired')),
+    v.minLength(2, t('settings.general.validation.nameTooShort'))
+  ),
+  email: v.pipe(
+    v.string(t('settings.general.validation.emailRequired')),
+    v.email(t('settings.general.validation.invalidEmail'))
+  ),
+  username: v.pipe(
+    v.string(t('settings.general.validation.usernameRequired')),
+    v.minLength(2, t('settings.general.validation.usernameTooShort'))
+  ),
+  avatar: v.optional(v.string()),
+  bio: v.optional(v.string())
 })
 
-type ProfileSchema = z.output<typeof profileSchema>
+type ProfileSchema = v.InferOutput<typeof profileSchema>
 
 const profile = reactive<Partial<ProfileSchema>>({
   name: 'Emanuele Nardi',

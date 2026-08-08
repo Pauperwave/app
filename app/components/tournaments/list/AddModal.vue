@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { CalendarDate } from '@internationalized/date'
 import type { DateValue } from '@internationalized/date'
-import * as z from 'zod'
+import * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 
 const open = defineModel<boolean>({ default: false })
@@ -66,28 +66,41 @@ const eventOptions = [
 const today = new Date()
 const todayString = today.toISOString().substring(0, 10) // Format as YYYY-MM-DD
 
-const schema = z.object({
-  status: z.string(),
-  visibility: z.string(),
-  companion_code: z.string().optional().nullable(),
-  name: z.string({
-    error: t('tournament.addModal.validation.nameRequired')
-  }).optional(),
-  description: z.string().optional().nullable(),
-  entry_fee: z.number().nonnegative(),
-  format: z.string(),
-  ruleset: z.string(),
-  start_date: z.string(),
-  start_time: z.string(),
-  round_count: z.number().int().positive(),
-  round_duration: z.number().int().positive(),
-  organizer: z.string(),
-  location: z.string(),
-  league: z.string().optional(),
-  event: z.string().optional()
+// Messaggi custom solo sui campi liberi/numerici (name, entry_fee,
+// round_count, round_duration) — gli altri sono select vincolati con un
+// default già valido, non c'è uno stato utente che li renda mai invalidi.
+const schema = v.object({
+  status: v.string(),
+  visibility: v.string(),
+  companion_code: v.optional(v.nullable(v.string())),
+  // .optional() qui riflette lo schema Zod originale: "name" appare come
+  // "required" nella UI (vedi UFormField required) ma lo schema di validazione
+  // non lo impone — inconsistenza preesistente, non introdotta da questa
+  // migrazione, lasciata invariata per non cambiare comportamento.
+  name: v.optional(v.string(t('tournament.addModal.validation.nameRequired'))),
+  description: v.optional(v.nullable(v.string())),
+  entry_fee: v.pipe(v.number(), v.minValue(0, t('tournament.addModal.validation.entryFeeNegative'))),
+  format: v.string(),
+  ruleset: v.string(),
+  start_date: v.string(),
+  start_time: v.string(),
+  round_count: v.pipe(
+    v.number(),
+    v.integer(),
+    v.minValue(1, t('tournament.addModal.validation.roundCountPositive'))
+  ),
+  round_duration: v.pipe(
+    v.number(),
+    v.integer(),
+    v.minValue(1, t('tournament.addModal.validation.roundDurationPositive'))
+  ),
+  organizer: v.string(),
+  location: v.string(),
+  league: v.optional(v.string()),
+  event: v.optional(v.string())
 })
 
-type Schema = z.output<typeof schema>
+type Schema = v.InferOutput<typeof schema>
 
 const state = reactive<Schema>({
   name: undefined,

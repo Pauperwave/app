@@ -74,7 +74,6 @@ export default defineNuxtConfig({
     // forza il pre-bundling di queste dipendenze, migliorando l'avvio in dev server
     optimizeDeps: {
       include: [
-        'zod',
         'fast-levenshtein', // CJS
         '@vue-flow/core',
         '@vue-flow/background',
