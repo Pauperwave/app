@@ -73,6 +73,27 @@ Diverse tabelle nello schema attuale (`mtg_commanders`, `commander_decks`, `tour
 
 **Conseguenze:** tutte le tabelle esistenti e future erediteranno questo comportamento senza bisogno di ripetere l'override per-istanza. Non documentato ufficialmente da Nuxt UI (verificato: nessuna menzione di `scrollbar-gutter` nella doc di `UTable`), ma è una proprietà CSS standard e non in conflitto con nessun pattern ufficiale (sticky header, virtualizzazione, altezza fissa) menzionato nella doc.
 
+### ADR-007 — Allineamento ai meccanismi di `league` (2026-08-08, corretto 2026-08-08)
+
+**Contesto:** l'integrazione con `MagicTheGathering/league` è imminente (scadenza 30/08/2026, vedi ADR-003 corretto), non un obiettivo lontano. League ha un'architettura più matura per la gestione dello stato: store Pinia con la regola esplicita "mutazione ottimistica in memoria dopo una scrittura riuscita, mai un refetch completo" (`app/stores/CLAUDE.md` in league), e per i domini CRUD più recenti è migrata a Pinia Colada (query/mutation composables con invalidazione automatica) più un layer BFF (ADR-015 di league). Qui invece si usano composables "nudi" (`useAsyncData` + `useSupabaseClient`), senza state library — vedi il bug di `wanted-cards`: `setStatus` chiamava `refresh()` su un `useAsyncData`, il che faceva ripartire `pending` e smontava/rimontava l'intera tabella/griglia (`v-if="loading"`) per un semplice cambio di stato.
+
+**Correzione 2026-08-08:** la prima stesura di questo ADR concludeva "non introdurre Pinia/Pinia Colada/BFF preventivamente, è YAGNI per un merge senza data" — conclusione basata su un'assunzione sbagliata sui tempi. Con l'integrazione a 23 giorni e un evento reale (draft "Lo Hobbit") potenzialmente gestito da questa app, l'indicazione esplicita dell'utente è opposta: non costruire soluzioni provvisorie da riscrivere al momento dell'adozione — le nuove feature vanno scritte fin da subito pensando all'architettura di destinazione.
+
+**Decisione (confermata dall'utente 2026-08-08):** introdurre Pinia/Pinia Colada **e il layer BFF** in `app` da subito (non solo le letture), replicando esattamente il pattern di `league`: composable `use<Dominio>Query.ts` (`useQuery`, legge Supabase direttamente col client anon) + `use<Dominio>Mutations.ts` (`useMutation`, chiama un endpoint `server/api/<dominio>/*.post.ts` via `$fetch`, mai Supabase diretto dal client) + endpoint BFF con `serverSupabaseServiceRole` come unico boundary di autorizzazione, `onSettled: invalidateQueries` per invalidare la cache dopo ogni scrittura.
+
+**Fatto (2026-08-08):** dominio `wanted-cards` migrato per intero come primo caso pilota:
+- Dipendenze aggiunte: `pinia@4.0.2`, `@pinia/nuxt@1.0.1`, `@pinia/colada@1.4.2`, `@pinia/colada-nuxt@1.0.2`, `@pinia/colada-plugin-cache-persister@1.1.0`; moduli registrati in `nuxt.config.ts` (`@pinia/nuxt` prima di `@nuxtjs/supabase`, `@pinia/colada-nuxt` per ultimo); `colada.options.ts` in root con il cache persister (chiave `pauperwave-colada-cache`).
+- `app/composables/useWantedCardsQuery.ts` (query) + `app/composables/useWantedCardsMutations.ts` (mutation) sostituiscono il vecchio `useWantedCards.ts` (rimosso).
+- Nuovi endpoint `server/api/wanted-cards/{create,[id]/update,[id]/status,[id]/delete}.post.ts`, tutti con `serverSupabaseServiceRole`; `create` richiede solo utente autenticato (`requireUser`), gli altri tre richiedono permessi di gestione (`requireManagementPermission`) — replica la stessa distinzione che prima viveva nelle policy RLS, ora enforced nell'endpoint.
+- Nuovo `server/utils/serverAuth.ts` (`requireUser`, `requireManagementPermission` via RPC `has_management_permissions`) e `app/utils/error.ts` (`toErrorMessage`, `isConflictError`, copiati da league).
+- **Insidia trovata e risolta:** `serverSupabaseUser(event)` di `@nuxtjs/supabase` 2.0.9 restituisce il `JwtPayload` decodificato, non lo user Supabase completo — l'id utente è nel claim standard JWT `sub`, non in `.id` (che è `undefined`). Passare `{ p_user_id: undefined }` a `supabase.rpc()` fa sì che supabase-js scarti la chiave, risultando in una chiamata RPC senza argomenti e nell'errore fuorviante "could not find function ... without parameters". Sintomo osservato in test manuale nel browser (toast d'errore su un cambio di stato), non dal typecheck (l'errore è runtime, non di tipo).
+- Il bug originale di `setStatus` (refresh completo → smontaggio tabella/griglia) è risolto "gratuitamente" dal nuovo meccanismo: Colada distingue `isLoading` (solo primo caricamento) da un refetch in background dopo `invalidateQueries` — la UI non si smonta più durante gli aggiornamenti, senza bisogno della patch ottimistica manuale scritta in precedenza.
+- Verificato end-to-end nel browser (cambio stato "In cerca" → "Trovata" → "In cerca" tramite endpoint reale, nessun errore in console, nessun flash della griglia); lint e typecheck puliti.
+
+**Da fare (non ancora nello scope completato):** migrare gli altri composables (`useAssociates`, `useAssociateGeocodes`) allo stesso pattern — vedi `docs/BACKLOG.md`.
+
+**Conseguenze:** ogni composable di dominio esistente va riscritto sotto questo pattern invece che `useAsyncData` nudo, replicando lo schema di `wanted-cards` come riferimento concreto.
+
 ## Vedi anche
 
 - `docs/architecture/database.md` — schema, RLS, migrazioni

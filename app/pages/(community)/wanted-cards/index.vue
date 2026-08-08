@@ -3,12 +3,24 @@
 import { h, resolveComponent } from 'vue'
 import { getFacetedRowModel, getFacetedUniqueValues, getGroupedRowModel } from '@tanstack/vue-table'
 import type { Column } from '@tanstack/vue-table'
-import type { TableColumn } from '@nuxt/ui'
+import type { DropdownMenuItem, TableColumn, TabsItem } from '@nuxt/ui'
+import type { WantedCard, WantedCardStatus } from '~/types'
 import ManaCost from '~/components/wanted-cards/ManaCost.vue'
 import CardPreviewTooltip from '~/components/wanted-cards/CardPreviewTooltip.vue'
 import PlayerTag from '~/components/wanted-cards/PlayerTag.vue'
 
 const { t } = useI18n()
+const toast = useToast()
+
+const { data: wantedCardsData, isLoading: loading } = useWantedCardsQuery()
+const data = computed(() => wantedCardsData.value ?? [])
+const { setStatus, deleteWantedCard } = useWantedCardsMutations()
+
+const viewMode = ref<'table' | 'grid'>('grid')
+const viewModeItems = computed<TabsItem[]>(() => [
+  { label: t('wantedCard.views.grid'), value: 'grid', icon: 'i-lucide-layout-grid' },
+  { label: t('wantedCard.views.table'), value: 'table', icon: 'i-lucide-table' }
+])
 
 const UBadge = resolveComponent('UBadge')
 const UIcon = resolveComponent('UIcon')
@@ -54,7 +66,8 @@ interface TableRef {
 }
 
 const table = useTemplateRef<TableRef>('table')
-const columnVisibility = ref({})
+// "Stato" nascosta di default: è già implicita nella tab Trovate/In cerca attiva.
+const columnVisibility = ref({ status: false })
 
 // Etichette leggibili per il menu "Colonne" — stessa mappa i18n usata per
 // gli header effettivi delle colonne (pattern da associates/index.vue).
@@ -67,7 +80,7 @@ const columnHeaders: Record<string, string> = {
   language: t('wantedCard.columns.language'),
   treatment: t('wantedCard.columns.treatment'),
   date: t('wantedCard.columns.date'),
-  found: t('wantedCard.columns.found'),
+  status: t('wantedCard.columns.status'),
   notes: t('wantedCard.columns.notes')
 }
 
@@ -91,29 +104,19 @@ const columnVisibilityItems = computed(() => {
     }))
 })
 
-// Menu "Visualizza" unico: raggruppamento + colonne visibili sono entrambe
-// preferenze di rendering della tabella, non filtri sui dati — consolidati
-// in un solo dropdown invece di due controlli separati in riga 2.
-const viewItems = computed(() => [
-  {
-    label: t('wantedCard.filters.groupByPlayer'),
-    type: 'checkbox' as const,
-    checked: grouping.value.length > 0,
-    onUpdateChecked(checked: boolean) {
-      grouping.value = checked ? ['player'] : []
-    },
-    onSelect(e: Event) {
-      e.preventDefault()
-    }
-  },
-  { type: 'separator' as const },
-  ...columnVisibilityItems.value
-])
+const viewItems = computed(() => columnVisibilityItems.value)
+
+// Bottone a sé stante (non nel menu "Mostra colonne"): condiviso tra tabella
+// e griglia tramite lo stesso stato `grouping`.
+const isGrouped = computed(() => grouping.value.length > 0)
+function toggleGrouping() {
+  grouping.value = isGrouped.value ? [] : ['player']
+}
 
 const cardNameFilter = ref('')
-// "In cerca" di default — le carte già trovate restano nascoste finché non
-// si sceglie esplicitamente la tab "Trovate" o "Tutte".
-const statusFilter = ref<'all' | 'found' | 'searching'>('searching')
+// "In cerca" di default — le carte già trovate/abbandonate restano nascoste
+// finché non si sceglie esplicitamente un'altra tab.
+const statusFilter = ref<'all' | WantedCardStatus>('searching')
 // Singola selezione (non più multipla): permette di mostrare l'icona della
 // lingua scelta nel trigger tramite la prop `:icon`, cosa che con
 // USelectMenu/UInputMenu `multiple` non ha un pattern ufficiale pulito.
@@ -128,7 +131,7 @@ const treatmentFilter = ref<string[]>([])
 const columnFilters = computed<{ id: string, value: unknown }[]>(() => {
   const filters: { id: string, value: unknown }[] = []
   if (cardNameFilter.value) filters.push({ id: 'cardName', value: cardNameFilter.value })
-  if (statusFilter.value !== 'all') filters.push({ id: 'found', value: statusFilter.value === 'found' })
+  if (statusFilter.value !== 'all') filters.push({ id: 'status', value: statusFilter.value })
   if (languageFilter.value !== undefined) {
     filters.push({ id: 'language', value: languageFilter.value === 'any' ? '' : languageFilter.value })
   }
@@ -136,19 +139,86 @@ const columnFilters = computed<{ id: string, value: unknown }[]>(() => {
   return filters
 })
 
-const statusTabs = computed<{ label: string, value: 'all' | 'found' | 'searching' }[]>(() => [
-  { label: t('wantedCard.filters.statusAll'), value: 'all' },
-  { label: t('wantedCard.foundYes'), value: 'found' },
-  { label: t('wantedCard.foundNo'), value: 'searching' }
+// Stessa logica di columnFilters, applicata direttamente a `data` invece che
+// tramite l'istanza tanstack di UTable — serve alla vista a griglia, che non
+// monta UTable e quindi non ha un tableApi da cui leggere le righe filtrate.
+const filteredCards = computed(() => data.value.filter((card) => {
+  if (cardNameFilter.value && !card.cardName.toLowerCase().includes(cardNameFilter.value.toLowerCase())) return false
+  if (statusFilter.value !== 'all' && card.status !== statusFilter.value) return false
+  if (languageFilter.value !== undefined) {
+    const wantedLanguage = languageFilter.value === 'any' ? '' : languageFilter.value
+    if (card.language !== wantedLanguage) return false
+  }
+  if (treatmentFilter.value.length && !treatmentFilter.value.some(treatment => card.treatment.includes(treatment))) return false
+  return true
+}))
+
+// La tabella ha l'ordinamento per colonna cliccabile (sortableHeader); la
+// griglia non ha colonne, quindi usa un selettore dedicato invece.
+const gridSortField = ref<'player' | 'price' | 'date' | 'cardName'>('player')
+const gridSortDesc = ref(true)
+const gridSortItems = computed(() => [
+  { label: t('wantedCard.columns.player'), value: 'player' as const },
+  { label: t('wantedCard.columns.price'), value: 'price' as const },
+  { label: t('wantedCard.columns.date'), value: 'date' as const },
+  { label: t('wantedCard.columns.name'), value: 'cardName' as const }
 ])
 
-// Codici distinti presenti in una colonna faceted, ordinati — base comune
-// per costruire gli item dei filtri Lingua/Trattamento a partire dai dati
-// effettivamente visibili con la combinazione di filtri corrente.
-function getFacetedCodes(columnId: string): string[] {
-  void columnFilters.value
-  const counts = table.value?.tableApi?.getColumn(columnId)?.getFacetedUniqueValues() as Map<string, number> | undefined
-  return counts ? Array.from(counts.keys()).sort() : []
+const sortedCards = computed(() => {
+  const field = gridSortField.value
+  const direction = gridSortDesc.value ? -1 : 1
+  return [...filteredCards.value].sort((a, b) => {
+    let diff = 0
+    if (field === 'player') diff = a.player.localeCompare(b.player)
+    else if (field === 'cardName') diff = a.cardName.localeCompare(b.cardName)
+    else if (field === 'price') diff = (a.price ?? 0) - (b.price ?? 0)
+    else if (field === 'date') diff = (a.date || '').localeCompare(b.date || '')
+    return diff * direction
+  })
+})
+
+interface GridSection {
+  player: string | null
+  cards: WantedCard[]
+}
+
+// Stesso stato `grouping` della tabella (toggle "Raggruppa per giocatore" nel
+// menu "Mostra colonne"), tradotto in sezioni sempre aperte con intestazione
+// invece che righe espandibili — non c'è un equivalente naturale di riga
+// collassabile in una griglia di card visuali.
+const gridSections = computed<GridSection[]>(() => {
+  if (!grouping.value.length) return [{ player: null, cards: sortedCards.value }]
+
+  const groups = new Map<string, WantedCard[]>()
+  for (const card of sortedCards.value) {
+    const list = groups.get(card.player) ?? []
+    list.push(card)
+    groups.set(card.player, list)
+  }
+  return [...groups.entries()]
+    .sort(([playerA], [playerB]) => playerA.localeCompare(playerB))
+    .map(([player, cards]) => ({ player, cards }))
+})
+
+const statusTabs = computed<{ label: string, value: 'all' | WantedCardStatus }[]>(() => [
+  { label: t('wantedCard.filters.statusAll'), value: 'all' },
+  { label: t('wantedCard.status.searching'), value: 'searching' },
+  { label: t('wantedCard.status.found'), value: 'found' },
+  { label: t('wantedCard.status.abandoned'), value: 'abandoned' }
+])
+
+// Codici distinti presenti in una colonna, ordinati — base comune per
+// costruire gli item dei filtri Lingua/Trattamento. Calcolato direttamente
+// da `data` (non da table.value?.tableApi?.getFacetedUniqueValues()) perché
+// UTable non è montata in vista griglia — tableApi sarebbe null e i filtri
+// risulterebbero vuoti lì, come successo con "Trattamento" in Cards.
+function getFacetedCodes(columnId: 'language' | 'treatment'): string[] {
+  const codes = new Set<string>()
+  for (const card of data.value) {
+    if (columnId === 'language') codes.add(card.language)
+    else card.treatment.forEach(treatment => codes.add(treatment))
+  }
+  return Array.from(codes).sort()
 }
 
 const languageFacetItems = computed<{ label: string, value: string, icon: string }[]>(() => {
@@ -170,87 +240,97 @@ const treatmentFacetItems = computed<{ label: string, value: string }[]>(() => {
   return getFacetedCodes('treatment').map((code: string) => ({ label: t(`wantedCard.treatments.${code}`), value: code }))
 })
 
-interface WantedCard {
-  id: number
-  date: string
-  found: boolean
-  cardName: string
-  scryfallUrl: string
-  copies: number
-  language: string
-  treatment: string[]
-  // Dati Scryfall inseriti a mano per ora (vedi ADR nel PROGRESS.md) — quando
-  // le carte saranno in un database reale, questi campi saranno lazy loaded
-  // invece di far parte del record statico.
-  manaCost: string
-  colorIdentity: string[]
-  cmc: number
-  imageUrl: string
-  // Prezzo scaricato una tantum da Scryfall (EUR, fallback USD) — nessun
-  // refresh automatico per ora; un futuro tasto "Aggiorna prezzi" potrà
-  // rilanciare il fetch quando le carte saranno in un database reale.
-  price: number | null
-  notes: string
-  player: string
+// Scrittura riservata alla gestione via RLS lato server (has_management_
+// permissions) — un utente non-admin vede l'errore in un toast invece di un
+// aggiornamento silenziosamente ignorato.
+async function changeStatus(id: number, status: WantedCardStatus) {
+  try {
+    await setStatus.mutateAsync({ id, status })
+  } catch (err) {
+    toast.add({
+      title: t('wantedCard.contextMenu.updateErrorTitle'),
+      description: toErrorMessage(err),
+      color: 'error'
+    })
+  }
 }
 
-// Dati reali dal foglio condiviso, senza le immagini (colonna sempre vuota
-// nel foglio stesso) e senza il contatto del giocatore (già presente nella
-// tabella associati — niente da duplicare qui). In futuro il nome carta
-// risolverà automaticamente immagine e URL Scryfall tramite ricerca live
-// (vedi AddModal), invece di essere inserito a mano.
-const data = ref<WantedCard[]>([
-  { id: 1, date: '', found: false, cardName: 'Appa, Steadfast Guardian', scryfallUrl: 'https://scryfall.com/card/tla/10/appa-steadfast-guardian', copies: 1, language: 'en', treatment: [], manaCost: '{2}{W}{W}', colorIdentity: ['W'], cmc: 4, imageUrl: 'https://cards.scryfall.io/large/front/8/2/829d91e9-4878-4e55-a262-ac0d55b65d4e.jpg?1783905005', price: 7.86, notes: 'Non foil preferibilmente in inglese', player: 'Emanuele Nardi' },
-  { id: 2, date: '', found: false, cardName: 'Mistrise Village', scryfallUrl: 'https://scryfall.com/card/tdm/261/mistrise-village', copies: 1, language: '', treatment: [], manaCost: '', colorIdentity: ['U'], cmc: 0, imageUrl: 'https://cards.scryfall.io/large/front/d/4/d44bccbf-6fab-46e4-8ddb-6577e27ec6e8.jpg?1783907277', price: 7.36, notes: '', player: 'Roberto Gelmini' },
-  { id: 3, date: '2026-07-26', found: false, cardName: 'Swamp', scryfallUrl: 'https://scryfall.com/card/neo/297/ja/swamp', copies: 28, language: '', treatment: ['fullArt'], manaCost: '', colorIdentity: ['B'], cmc: 0, imageUrl: 'https://cards.scryfall.io/large/front/c/5/c50b3d79-2361-4858-98b0-64d83c4f7f70.jpg?1783923807', price: 3.48, notes: 'Considero anche l\'altra full art di NEO', player: 'Francesco Guzzonato' },
-  { id: 4, date: '2026-04-27', found: true, cardName: 'Voice of Victory', scryfallUrl: 'https://scryfall.com/card/tdm/33/voice-of-victory', copies: 1, language: '', treatment: [], manaCost: '{1}{W}', colorIdentity: ['W'], cmc: 2, imageUrl: 'https://cards.scryfall.io/large/front/e/c/ec3de5f4-bb55-4ab9-995f-f3e0dc22c1bb.jpg?1783907401', price: 20.67, notes: '', player: 'Gabriele A. Scagliarini' },
-  { id: 5, date: '2026-04-27', found: true, cardName: 'Valgavoth\'s Lair', scryfallUrl: 'https://scryfall.com/card/dsk/271/valgavoths-lair', copies: 1, language: '', treatment: [], manaCost: '', colorIdentity: [], cmc: 0, imageUrl: 'https://cards.scryfall.io/large/front/6/5/65ff914e-3f3e-4b7a-b69d-73575b68fb8e.jpg?1783909425', price: 0.69, notes: '', player: 'Francesco Guzzonato' },
-  { id: 6, date: '2026-04-27', found: true, cardName: 'Haywire Mite', scryfallUrl: 'https://scryfall.com/card/dsc/247/haywire-mite', copies: 1, language: '', treatment: [], manaCost: '{1}', colorIdentity: ['G'], cmc: 1, imageUrl: 'https://cards.scryfall.io/large/front/2/8/286f4d3a-6b38-404f-aaea-a1d3694f4fe6.jpg?1783909585', price: 0.96, notes: '', player: 'Francesco Guzzonato' },
-  { id: 7, date: '2026-04-27', found: true, cardName: 'Gloomshrieker', scryfallUrl: 'https://scryfall.com/card/neo/219/gloomshrieker', copies: 1, language: '', treatment: [], manaCost: '{1}{B}{G}', colorIdentity: ['B', 'G'], cmc: 3, imageUrl: 'https://cards.scryfall.io/large/front/a/2/a2b50751-7f65-4321-86da-eef735bf8b67.jpg?1783923836', price: 0.13, notes: '', player: 'Francesco Guzzonato' },
-  { id: 8, date: '2026-04-27', found: true, cardName: 'Birds of Paradise', scryfallUrl: 'https://scryfall.com/card/rvr/133/birds-of-paradise', copies: 1, language: '', treatment: [], manaCost: '{G}', colorIdentity: ['G'], cmc: 1, imageUrl: 'https://cards.scryfall.io/large/front/3/d/3d69a3e0-6a2e-475a-964e-0affed1c017d.jpg?1783913307', price: 13.63, notes: '', player: 'Francesco Guzzonato' },
-  { id: 9, date: '2025-10-25', found: false, cardName: 'Culla di Gea', scryfallUrl: 'https://scryfall.com/card/usg/321/it/culla-di-gea-(gaeas-cradle)', copies: 1, language: 'it', treatment: [], manaCost: '', colorIdentity: ['G'], cmc: 0, imageUrl: 'https://cards.scryfall.io/large/front/2/5/25b0b816-0583-44aa-9dc5-f3ff48993a51.jpg?1783946299', price: 1254.22, notes: '', player: 'Omar A. Zanoni' },
-  { id: 10, date: '2025-10-25', found: false, cardName: 'Lotus Petal', scryfallUrl: 'https://scryfall.com/card/tmp/294/lotus-petal', copies: 1, language: '', treatment: [], manaCost: '{0}', colorIdentity: [], cmc: 0, imageUrl: 'https://cards.scryfall.io/large/front/6/c/6c877da3-68fa-41d0-8a24-8c79fcd8ecc1.jpg?1783946602', price: 25.80, notes: '', player: 'Francesco Guzzonato' },
-  { id: 11, date: '2025-10-25', found: false, cardName: 'The Wandering Minstrel', scryfallUrl: 'https://scryfall.com/card/fin/249/the-wandering-minstrel', copies: 1, language: '', treatment: ['foil', 'alternateArt', 'fullArt'], manaCost: '{G}{U}', colorIdentity: ['B', 'G', 'R', 'U', 'W'], cmc: 2, imageUrl: 'https://cards.scryfall.io/large/front/7/7/77bc419d-ff69-4e7c-afe6-faca383a5ed7.jpg?1783906560', price: 0.28, notes: 'Meglio se una versione bling (foil/alt art/full art)', player: 'Francesco Guzzonato' },
-  { id: 12, date: '2025-10-25', found: false, cardName: 'Roiling Regrowth', scryfallUrl: 'https://scryfall.com/card/eoc/105/roiling-regrowth', copies: 1, language: 'fr', treatment: [], manaCost: '{2}{G}', colorIdentity: ['G'], cmc: 3, imageUrl: 'https://cards.scryfall.io/large/front/2/c/2c446dbb-b883-47e9-aab3-ac921ff218f8.jpg?1783906032', price: 0.31, notes: '', player: 'Lorenzo Castelli' },
-  { id: 13, date: '2025-10-19', found: false, cardName: 'The One Ring', scryfallUrl: 'https://scryfall.com/card/ltr/246/the-one-ring', copies: 1, language: 'de', treatment: [], manaCost: '{4}', colorIdentity: [], cmc: 4, imageUrl: 'https://cards.scryfall.io/large/front/d/5/d5806e68-1054-458e-866d-1f2470f682b2.jpg?1783916239', price: 81.9, notes: '', player: 'Luca Botta' },
-  { id: 14, date: '2025-10-09', found: false, cardName: 'Pramikon, Sky Rampart', scryfallUrl: 'https://scryfall.com/card/c19/47/pramikon-sky-rampart', copies: 1, language: '', treatment: [], manaCost: '{U}{R}{W}', colorIdentity: ['R', 'U', 'W'], cmc: 3, imageUrl: 'https://cards.scryfall.io/large/front/8/5/8569ad47-a243-402d-899f-4e6b17ea4e1e.jpg?1783932798', price: 2.89, notes: '', player: 'Francesco Guzzonato' },
-  { id: 15, date: '2025-09-25', found: false, cardName: 'Birgi, God of Storytelling', scryfallUrl: 'https://scryfall.com/card/khm/123/birgi-god-of-storytelling-harnfel-horn-of-bounty', copies: 1, language: '', treatment: [], manaCost: '{2}{R}', colorIdentity: ['R'], cmc: 3, imageUrl: 'https://cards.scryfall.io/large/front/4/4/44657ab1-0a6a-4a5f-9688-86f239083821.jpg?1783928241', price: 23.8, notes: '', player: 'Antonella Giancotti' },
-  { id: 16, date: '2025-09-23', found: false, cardName: 'Pawpatch Recruit', scryfallUrl: 'https://scryfall.com/card/blb/187/pawpatch-recruit', copies: 4, language: '', treatment: [], manaCost: '{G}', colorIdentity: ['G'], cmc: 1, imageUrl: 'https://cards.scryfall.io/large/front/7/d/7d4d88ba-0ee4-4f66-995b-2e50614f50ee.jpg?1783910805', price: 0.85, notes: '', player: 'Federico Toldo' },
-  { id: 17, date: '2025-09-14', found: false, cardName: 'Dictate of Erebos', scryfallUrl: 'https://scryfall.com/card/jou/65/dictate-of-erebos', copies: 1, language: '', treatment: [], manaCost: '{3}{B}{B}', colorIdentity: ['B'], cmc: 5, imageUrl: 'https://cards.scryfall.io/large/front/9/f/9f06db70-95f9-41eb-8e5f-8bc56fd34c09.jpg?1783939437', price: 14.55, notes: '', player: 'Francesco Guzzonato' },
-  { id: 18, date: '2025-08-26', found: false, cardName: 'Fear of Missing Out', scryfallUrl: 'https://scryfall.com/card/dsk/136/fear-of-missing-out', copies: 1, language: 'es', treatment: [], manaCost: '{1}{R}', colorIdentity: ['R'], cmc: 2, imageUrl: 'https://cards.scryfall.io/large/front/9/d/9d48aaff-46ab-411b-9456-171d4709f951.jpg?1783909470', price: 3.38, notes: '', player: 'Marco Cazzola' },
-  { id: 19, date: '2025-08-26', found: false, cardName: 'Yoshimaru, Ever Faithful', scryfallUrl: 'https://scryfall.com/card/nec/32/yoshimaru-ever-faithful', copies: 1, language: '', treatment: [], manaCost: '{W}', colorIdentity: ['W'], cmc: 1, imageUrl: 'https://cards.scryfall.io/large/front/a/a/aa409269-3698-42a2-8c51-75557b27a6f6.jpg?1783923987', price: 8.2, notes: '', player: 'Carlo Milanaccio' },
-  { id: 20, date: '2025-08-26', found: false, cardName: 'Invasion of Ikoria', scryfallUrl: 'https://scryfall.com/card/mom/190/invasion-of-ikoria-zilortha-apex-of-ikoria', copies: 2, language: '', treatment: [], manaCost: '{X}{G}{G}', colorIdentity: ['G'], cmc: 2, imageUrl: 'https://cards.scryfall.io/large/front/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.jpg?1783916974', price: 6.97, notes: '', player: 'Carlo Milanaccio' },
-  { id: 21, date: '2025-08-26', found: false, cardName: 'Earthcraft', scryfallUrl: 'https://scryfall.com/card/tmp/222/earthcraft', copies: 1, language: '', treatment: [], manaCost: '{1}{G}', colorIdentity: ['G'], cmc: 2, imageUrl: 'https://cards.scryfall.io/large/front/9/d/9dda7531-82a1-4f49-8858-601ddbc6e2bc.jpg?1783946620', price: 128.39, notes: '', player: 'Carlo Milanaccio' },
-  { id: 22, date: '2025-08-26', found: false, cardName: 'Swift Reconfiguration', scryfallUrl: 'https://scryfall.com/card/nec/10/swift-reconfiguration', copies: 1, language: '', treatment: [], manaCost: '{W}', colorIdentity: ['W'], cmc: 1, imageUrl: 'https://cards.scryfall.io/large/front/9/7/975dcfab-0281-4fee-92aa-021ea6c524c7.jpg?1783923997', price: 6.68, notes: '', player: 'Carlo Milanaccio' },
-  { id: 23, date: '2025-08-26', found: false, cardName: 'Enduring Vitality', scryfallUrl: 'https://scryfall.com/card/dsk/394/enduring-vitality', copies: 1, language: '', treatment: [], manaCost: '{1}{G}{G}', colorIdentity: ['G'], cmc: 3, imageUrl: 'https://cards.scryfall.io/large/front/2/9/2999c030-66c1-41f3-b59a-8ba1ef5a756c.jpg?1783909386', price: 24.58, notes: 'versione esatta', player: 'Carlo Milanaccio' },
-  { id: 24, date: '2025-08-26', found: false, cardName: 'Gemstone Caverns', scryfallUrl: 'https://scryfall.com/card/tsr/280/gemstone-caverns', copies: 1, language: '', treatment: [], manaCost: '', colorIdentity: [], cmc: 0, imageUrl: 'https://cards.scryfall.io/large/front/7/f/7f273641-c5f3-48bc-b89e-3cff52d26a0b.jpg?1783927750', price: 36.77, notes: '', player: 'Carlo Milanaccio' },
-  { id: 25, date: '2025-08-26', found: false, cardName: 'Will of the Sultai', scryfallUrl: 'https://scryfall.com/card/tdc/49/will-of-the-sultai', copies: 1, language: '', treatment: [], manaCost: '{4}{G}', colorIdentity: ['G'], cmc: 5, imageUrl: 'https://cards.scryfall.io/large/front/3/7/37155f69-1d72-4fcb-80b3-548b7d78f9ec.jpg?1783907165', price: 2.23, notes: '', player: 'Carlo Milanaccio' },
-  { id: 26, date: '2025-08-26', found: false, cardName: 'Mistveil Plains', scryfallUrl: 'https://scryfall.com/card/shm/275/mistveil-plains', copies: 1, language: '', treatment: [], manaCost: '', colorIdentity: ['W'], cmc: 0, imageUrl: 'https://cards.scryfall.io/large/front/a/f/af06f923-0c89-42ae-a4a8-618be7f39cce.jpg?1783942706', price: 0.66, notes: '', player: 'Francesco Guzzonato' },
-  { id: 27, date: '2025-08-25', found: false, cardName: 'Myr Convert', scryfallUrl: 'https://scryfall.com/card/one/234/myr-convert', copies: 1, language: 'en', treatment: [], manaCost: '{2}', colorIdentity: [], cmc: 2, imageUrl: 'https://cards.scryfall.io/large/front/9/d/9df0adcf-7ad0-4d70-8dcd-28f69471495b.jpg?1783917989', price: 0.16, notes: 'Non foil preferibilmente in inglese', player: 'Emanuele Nardi' },
-  { id: 28, date: '2025-08-25', found: false, cardName: 'Gold Myr', scryfallUrl: 'https://scryfall.com/card/nec/153/gold-myr', copies: 1, language: 'en', treatment: [], manaCost: '{2}', colorIdentity: ['W'], cmc: 2, imageUrl: 'https://cards.scryfall.io/large/front/1/2/12331b1d-a561-4a8c-8e85-ed3a607ce508.jpg?1783923939', price: 0.47, notes: 'Non foil preferibilmente in inglese', player: 'Emanuele Nardi' },
-  { id: 29, date: '2025-08-22', found: false, cardName: 'Dark Privilege', scryfallUrl: 'https://scryfall.com/card/vis/56/dark-privilege', copies: 1, language: '', treatment: [], manaCost: '{1}{B}', colorIdentity: ['B'], cmc: 2, imageUrl: 'https://cards.scryfall.io/large/front/1/0/10d2cf44-cc20-4a37-81ae-930f8c6d0896.jpg?1783946994', price: 0.46, notes: '', player: 'Francesco Guzzonato' },
-  { id: 30, date: '2025-08-22', found: false, cardName: 'Doc Aurlock, Grizzled Genius', scryfallUrl: 'https://scryfall.com/card/otj/201/doc-aurlock-grizzled-genius', copies: 1, language: '', treatment: [], manaCost: '{G}{U}', colorIdentity: ['G', 'U'], cmc: 2, imageUrl: 'https://cards.scryfall.io/large/front/6/f/6fc27b30-8c8e-434c-a72c-e1d409efc1ae.jpg?1783911796', price: 0.27, notes: '', player: 'Francesco Guzzonato' },
-  { id: 31, date: '2025-08-22', found: false, cardName: 'Grim Monolith', scryfallUrl: 'https://scryfall.com/card/ulg/126/grim-monolith', copies: 1, language: '', treatment: [], manaCost: '{2}', colorIdentity: [], cmc: 2, imageUrl: 'https://cards.scryfall.io/large/front/9/d/9ddc9fe1-17c8-4e1d-aeb8-c4214e881280.jpg?1783946223', price: 324.81, notes: '', player: 'Alessio Perini' },
-  { id: 32, date: '2025-08-22', found: false, cardName: 'Hour of Victory', scryfallUrl: 'https://scryfall.com/card/dft/91/hour-of-victory', copies: 1, language: '', treatment: [], manaCost: '{2}{B}', colorIdentity: ['B'], cmc: 3, imageUrl: 'https://cards.scryfall.io/large/front/9/1/9192abc8-05a3-4e72-a634-fc5acbe97b26.jpg?1783907894', price: 0.14, notes: '', player: 'Marco Cazzola' },
-  { id: 33, date: '2025-08-22', found: false, cardName: 'Isola Tropicale', scryfallUrl: 'https://scryfall.com/card/3ed/288/it/isola-tropicale-(tropical-island)', copies: 1, language: 'it', treatment: [], manaCost: '', colorIdentity: ['G', 'U'], cmc: 0, imageUrl: 'https://cards.scryfall.io/large/front/a/0/a0f5c6bc-65dc-42a1-a62d-a0b101310a1f.jpg?1783948276', price: 396.06, notes: '', player: 'Omar A. Zanoni' },
-  { id: 34, date: '2025-08-22', found: false, cardName: 'Isola Vulcanica', scryfallUrl: 'https://scryfall.com/card/3ed/291/it/isola-vulcanica-(volcanic-island)', copies: 1, language: 'ja', treatment: [], manaCost: '', colorIdentity: ['R', 'U'], cmc: 0, imageUrl: 'https://cards.scryfall.io/large/front/b/1/b12e5430-0e80-47dd-80ac-85728b656a24.jpg?1783948277', price: 556.42, notes: '', player: 'Omar A. Zanoni' },
-  { id: 35, date: '2025-08-22', found: false, cardName: 'Malleable Impostor', scryfallUrl: 'https://scryfall.com/card/woc/10/malleable-impostor', copies: 1, language: '', treatment: [], manaCost: '{3}{U}', colorIdentity: ['U'], cmc: 4, imageUrl: 'https://cards.scryfall.io/large/front/a/d/ad0fc934-f49d-4607-a52b-aea5c1d5d342.jpg?1783914989', price: 7.69, notes: '', player: 'Alessandro Pernici' },
-  { id: 36, date: '2025-08-22', found: false, cardName: 'Mox Amber', scryfallUrl: 'https://scryfall.com/card/dom/224/mox-amber', copies: 1, language: '', treatment: [], manaCost: '{0}', colorIdentity: [], cmc: 0, imageUrl: 'https://cards.scryfall.io/large/front/6/6/66024e69-ad60-4c9a-a0ca-da138d33ad80.jpg?1783934955', price: 54.33, notes: '', player: 'Lorenzo Asinari' },
-  { id: 37, date: '2025-08-22', found: false, cardName: 'Mox Diamond', scryfallUrl: 'https://scryfall.com/card/sth/138/mox-diamond', copies: 1, language: '', treatment: [], manaCost: '{0}', colorIdentity: [], cmc: 0, imageUrl: 'https://cards.scryfall.io/large/front/2/8/28028830-83ed-45e2-b495-3b9ad9d3e988.jpg?1783946538', price: 740.18, notes: '', player: 'Omar A. Zanoni' },
-  { id: 38, date: '2025-08-22', found: false, cardName: 'Mox Diamond', scryfallUrl: 'https://scryfall.com/card/sth/138/mox-diamond', copies: 1, language: '', treatment: [], manaCost: '{0}', colorIdentity: [], cmc: 0, imageUrl: 'https://cards.scryfall.io/large/front/2/8/28028830-83ed-45e2-b495-3b9ad9d3e988.jpg?1783946538', price: 740.18, notes: '', player: 'Alessio Perini' },
-  { id: 39, date: '2025-08-22', found: false, cardName: 'Phyrexian Altar', scryfallUrl: 'https://scryfall.com/card/2x2/311/phyrexian-altar', copies: 1, language: '', treatment: [], manaCost: '{3}', colorIdentity: [], cmc: 3, imageUrl: 'https://cards.scryfall.io/large/front/9/5/95d9f93c-50a8-41a9-be98-d1900bf1c12f.jpg?1783921789', price: 41.4, notes: '', player: 'Francesco Guzzonato' },
-  { id: 40, date: '2025-08-22', found: false, cardName: 'Sensei\'s Divining Top', scryfallUrl: 'https://scryfall.com/card/ema/232/senseis-divining-top', copies: 1, language: '', treatment: [], manaCost: '{1}', colorIdentity: [], cmc: 1, imageUrl: 'https://cards.scryfall.io/large/front/8/3/83c01c91-ea01-46c7-b94c-97777b968459.jpg?1783937541', price: 23.84, notes: '', player: 'Francesco Guzzonato' },
-  { id: 41, date: '2025-08-22', found: false, cardName: 'Tinybones Joins Up', scryfallUrl: 'https://scryfall.com/card/otj/108/tinybones-joins-up', copies: 1, language: '', treatment: [], manaCost: '{B}', colorIdentity: ['B'], cmc: 1, imageUrl: 'https://cards.scryfall.io/large/front/5/7/5724a15f-0ba0-421a-9cd4-a2b701e6141f.jpg?1783911826', price: 0.52, notes: '', player: 'Alessio Perini' },
-  { id: 42, date: '2025-08-22', found: false, cardName: 'Transit Mage', scryfallUrl: 'https://scryfall.com/card/dft/70/transit-mage', copies: 1, language: '', treatment: [], manaCost: '{2}{U}', colorIdentity: ['U'], cmc: 3, imageUrl: 'https://cards.scryfall.io/large/front/6/7/6727169f-c33a-4ca5-889d-a63bcfc5a3f0.jpg?1783907900', price: 0.22, notes: '', player: 'Francesco Guzzonato' },
-  { id: 43, date: '2025-08-22', found: false, cardName: 'Warden of the Grove', scryfallUrl: 'https://scryfall.com/card/tdm/166/warden-of-the-grove', copies: 1, language: '', treatment: [], manaCost: '{2}{G}', colorIdentity: ['G'], cmc: 3, imageUrl: 'https://cards.scryfall.io/large/front/2/4/2414db96-0e2b-4f7c-9b97-41f8e310b752.jpg?1783907330', price: 1.6, notes: '', player: 'Roberto Gelmini' },
-  { id: 44, date: '2025-08-22', found: false, cardName: 'Warren Soultrader', scryfallUrl: 'https://scryfall.com/card/mh3/110/warren-soultrader', copies: 1, language: '', treatment: [], manaCost: '{2}{B}', colorIdentity: ['B'], cmc: 3, imageUrl: 'https://cards.scryfall.io/large/front/b/3/b334e4c6-d316-4141-8889-f95afcc04701.jpg?1784634565', price: 13.96, notes: '', player: 'Francesco Guzzonato' },
-  { id: 45, date: '2025-08-22', found: false, cardName: 'Wastewood Verge', scryfallUrl: 'https://scryfall.com/card/dft/268/wastewood-verge', copies: 1, language: '', treatment: [], manaCost: '', colorIdentity: ['B', 'G'], cmc: 0, imageUrl: 'https://cards.scryfall.io/large/front/5/c/5ceacc7d-d407-4f82-af58-9bdf8426924e.jpg?1783907837', price: 8.19, notes: '', player: 'Marco Cazzola' }
-])
-
-function toggleFound(id: number) {
-  const row = data.value.find(item => item.id === id)
-  if (row) row.found = !row.found
+const editingCard = ref<WantedCard | null>(null)
+const editModalOpen = ref(false)
+function openEditModal(card: WantedCard) {
+  editingCard.value = card
+  editModalOpen.value = true
 }
+
+const deletingCard = ref<WantedCard | null>(null)
+const deleteConfirmOpen = ref(false)
+function openDeleteConfirm(card: WantedCard) {
+  deletingCard.value = card
+  deleteConfirmOpen.value = true
+}
+
+const deleting = ref(false)
+async function confirmDelete() {
+  if (!deletingCard.value) return
+  deleting.value = true
+  try {
+    await deleteWantedCard.mutateAsync(deletingCard.value.id)
+    deleteConfirmOpen.value = false
+  } catch (err) {
+    toast.add({
+      title: t('wantedCard.contextMenu.updateErrorTitle'),
+      description: toErrorMessage(err),
+      color: 'error'
+    })
+  } finally {
+    deleting.value = false
+  }
+}
+
+// Condiviso tra menu contestuale della tabella e delle card in griglia.
+// "Elimina" (come update) è riservato alla gestione via RLS — un utente
+// non-admin vede l'errore in un toast, come per gli altri item — vedi
+// migrazione 20260807190720 e il TODO in docs/TODO.md.
+const STATUS_MENU_ICONS: Record<WantedCardStatus, string> = {
+  searching: 'i-lucide-rotate-ccw',
+  found: 'i-lucide-check',
+  abandoned: 'i-lucide-circle-x'
+}
+
+function rowContextMenuItems(card: WantedCard): DropdownMenuItem[] {
+  const statusItems = WANTED_CARD_STATUSES
+    .filter(status => status !== card.status)
+    .map(status => ({
+      label: t(`wantedCard.contextMenu.markAs.${status}`),
+      icon: STATUS_MENU_ICONS[status],
+      onSelect: () => changeStatus(card.id, status)
+    }))
+
+  return [
+    ...statusItems,
+    {
+      label: t('wantedCard.contextMenu.edit'),
+      icon: 'i-lucide-pencil',
+      onSelect: () => openEditModal(card)
+    },
+    { type: 'separator' },
+    {
+      label: t('wantedCard.contextMenu.delete'),
+      icon: 'i-lucide-trash',
+      color: 'error',
+      onSelect: () => openDeleteConfirm(card)
+    }
+  ]
+}
+
+// Popolato dal `:on-contextmenu` di UTable al tasto destro su una riga — la
+// UContextMenu che avvolge la tabella non conosce da sé la riga cliccata,
+// quindi la aggiorniamo qui e i suoi `:items` sono ricalcolati di conseguenza.
+const contextMenuRow = ref<WantedCard | null>(null)
+function onRowContextmenu(_e: Event, row: { original: WantedCard }) {
+  contextMenuRow.value = row.original
+}
+const tableContextMenuItems = computed(() => contextMenuRow.value ? rowContextMenuItems(contextMenuRow.value) : [])
 
 function toggleTreatmentFilter(value: string) {
   const index = treatmentFilter.value.indexOf(value)
@@ -356,17 +436,15 @@ const columns: TableColumn<WantedCard>[] = [
     cell: ({ row }) => row.getIsGrouped() ? null : row.original.date
   },
   {
-    accessorKey: 'found',
-    header: ({ column }) => sortableHeader(t('wantedCard.columns.found'), column),
+    accessorKey: 'status',
+    header: ({ column }) => sortableHeader(t('wantedCard.columns.status'), column),
     filterFn: 'equals',
     cell: ({ row }) => {
       if (row.getIsGrouped()) return null
       return h(UBadge, {
-        color: row.original.found ? 'success' : 'warning',
-        variant: 'subtle',
-        class: 'cursor-pointer',
-        onClick: () => toggleFound(row.original.id)
-      }, () => row.original.found ? t('wantedCard.foundYes') : t('wantedCard.foundNo'))
+        color: wantedCardStatusColor(row.original.status),
+        variant: 'subtle'
+      }, () => t(`wantedCard.status.${row.original.status}`))
     }
   },
   {
@@ -381,12 +459,13 @@ const columns: TableColumn<WantedCard>[] = [
 <template>
   <UDashboardPanel id="wanted-cards">
     <template #header>
-      <UDashboardNavbar :title="$t('wantedCard.breadcrumb')">
+      <UDashboardNavbar :title="$t('wantedCard.breadcrumb')" :ui="{ right: 'gap-4' }">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
 
         <template #right>
+          <ViewModeTabs v-model="viewMode" :items="viewModeItems" />
           <WantedCardsListAddModal />
         </template>
       </UDashboardNavbar>
@@ -396,7 +475,16 @@ const columns: TableColumn<WantedCard>[] = [
            filtri/vista (flex justify-between). Stato e Trattamento
            condividono lo stesso linguaggio visivo (UFieldGroup di bottoni
            toggle) invece di mischiare UTabs (pillole) con bottoni piatti. -->
-      <UDashboardToolbar :ui="{ left: 'gap-4' }">
+      <!-- flex-wrap sovrascrive l'overflow-x-auto di default di Nuxt UI:
+           su mobile i filtri vanno a capo su più righe invece di finire in
+           uno scroll orizzontale nascosto. -->
+      <UDashboardToolbar
+        :ui="{
+          root: 'flex-wrap h-auto py-2 gap-4',
+          left: 'gap-4 flex-wrap',
+          right: 'gap-4 flex-wrap'
+        }"
+      >
         <template #left>
           <!-- No `-ms-1` here on purpose: it's for icon-only buttons (see transactions/index.vue), not a bordered UFieldGroup — measured, it already aligns with the table (105px vs 106px) without it. -->
           <UFieldGroup>
@@ -410,11 +498,9 @@ const columns: TableColumn<WantedCard>[] = [
             />
           </UFieldGroup>
 
-          <UInput
-            v-model="cardNameFilter"
-            icon="i-lucide-search"
-            :placeholder="$t('wantedCard.filters.cardNamePlaceholder')"
-          />
+          <!-- Ricerca per nome carta nascosta per ora: questa vista serve a
+               chi cerca carte, non a chi le vende (che è il vero caso d'uso
+               della ricerca per nome) — vedi TODO in docs/TODO.md. -->
 
           <USelectMenu
             v-model="languageFilter"
@@ -439,7 +525,31 @@ const columns: TableColumn<WantedCard>[] = [
         </template>
 
         <template #right>
-          <UDropdownMenu :items="viewItems" :content="{ align: 'end' }">
+          <div v-if="viewMode === 'grid'" class="flex items-center gap-2">
+            <USelectMenu
+              v-model="gridSortField"
+              :items="gridSortItems"
+              value-key="value"
+              :placeholder="$t('wantedCard.grid.sortBy')"
+              class="w-40"
+            />
+            <UButton
+              :icon="gridSortDesc ? 'i-lucide-arrow-down-wide-narrow' : 'i-lucide-arrow-up-narrow-wide'"
+              color="neutral"
+              variant="outline"
+              @click="gridSortDesc = !gridSortDesc"
+            />
+          </div>
+
+          <UButton
+            :label="$t('wantedCard.filters.groupByPlayer')"
+            icon="i-lucide-users"
+            color="neutral"
+            :variant="isGrouped ? 'solid' : 'outline'"
+            @click="toggleGrouping"
+          />
+
+          <UDropdownMenu v-if="viewMode === 'table'" :items="viewItems" :content="{ align: 'end' }">
             <UButton
               :label="$t('common.showColumns')"
               color="neutral"
@@ -452,24 +562,67 @@ const columns: TableColumn<WantedCard>[] = [
     </template>
 
     <template #body>
-      <UTable
-        ref="table"
-        v-model:sorting="sorting"
-        v-model:column-visibility="columnVisibility"
-        :column-filters="columnFilters"
-        :data="data"
-        :columns="columns"
-        :grouping="grouping"
-        :grouping-options="{
-          getGroupedRowModel: getGroupedRowModel()
-        }"
-        :faceted-options="{
-          getFacetedRowModel: getFacetedRowModel(),
-          getFacetedUniqueValues: getFacetedUniqueValues()
-        }"
-        :ui="{ td: 'empty:p-0' }"
-        class="w-full"
-      />
+      <div v-if="loading" class="flex items-center justify-center py-12">
+        <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
+      </div>
+
+      <template v-else>
+        <UContextMenu v-if="viewMode === 'table'" :items="tableContextMenuItems">
+          <UTable
+            ref="table"
+            v-model:sorting="sorting"
+            v-model:column-visibility="columnVisibility"
+            :column-filters="columnFilters"
+            :data="data"
+            :columns="columns"
+            :grouping="grouping"
+            :grouping-options="{
+              getGroupedRowModel: getGroupedRowModel()
+            }"
+            :faceted-options="{
+              getFacetedRowModel: getFacetedRowModel(),
+              getFacetedUniqueValues: getFacetedUniqueValues()
+            }"
+            :on-contextmenu="onRowContextmenu"
+            :ui="{ td: 'empty:p-0' }"
+            class="w-full"
+          />
+        </UContextMenu>
+
+        <WantedCardsListGridView
+          v-else
+          :sections="gridSections"
+          :context-menu-items="rowContextMenuItems"
+          :show-status="statusFilter === 'all'"
+        />
+      </template>
     </template>
   </UDashboardPanel>
+
+  <WantedCardsListEditModal v-model="editModalOpen" :card="editingCard" />
+
+  <UModal
+    v-model:open="deleteConfirmOpen"
+    :title="$t('wantedCard.contextMenu.deleteConfirmTitle')"
+    :description="deletingCard ? deletingCard.cardName : ''"
+  >
+    <template #footer>
+      <div class="flex justify-end gap-2 w-full">
+        <UButton
+          :label="$t('wantedCard.addModal.cancel')"
+          color="neutral"
+          variant="subtle"
+          :disabled="deleting"
+          @click="deleteConfirmOpen = false"
+        />
+        <UButton
+          :label="$t('wantedCard.contextMenu.delete')"
+          color="error"
+          variant="solid"
+          :loading="deleting"
+          @click="confirmDelete"
+        />
+      </div>
+    </template>
+  </UModal>
 </template>
