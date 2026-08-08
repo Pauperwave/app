@@ -32,6 +32,14 @@ Loose observations and open questions, not yet committed to the backlog. Promote
   - Found: 2026-08-07, user request.
   - Next step: scoping — decide which headers to shorten and to what, likely alongside the styling unification above since both touch the same table.
 
-- **Add a contextual (right-click) row menu to both `/associates` and `/wanted-cards` tables**, with entries specific to each table's rows (not a generic shared menu).
+- **Add a contextual (right-click) row menu to `/associates`' table.** Done for `/wanted-cards` (table rows + grid cards, 2026-08-07) via `UContextMenu` + `UTable`'s `on-contextmenu` prop, currently only "Segna come trovata/in cerca" — no "Elimina" (see admin-gating TODO below). `/associates` still has no context menu at all.
   - Found: 2026-08-07, user request.
-  - Next step: scope what actions belong per table (e.g. associates: view detail/edit/delete; wanted-cards: mark found/edit/delete) before implementing.
+  - Next step: scope associate-specific actions (view detail/edit/delete) before implementing.
+
+- **"Elimina" on a wanted-card request is back in the UI without a frontend admin check.** Initially removed entirely (2026-08-07) since there's no role/permission check wired into the frontend anywhere yet (checked: no `useSupabaseUser`-based role check, no admin flag on `Associate`, `settings/MembersList.vue`'s role dropdown isn't tied to auth) — reinstated same day at user request (with a confirmation modal) relying solely on the DB-level RLS policy (`has_management_permissions(auth.uid())`, same as update) to reject non-admins; a non-admin sees an error toast instead of a silently-ignored click.
+  - Found: 2026-08-07, user request (initial removal), reversed same day (user request).
+  - Next step: once there's a real way to know "is the current logged-in user an admin" client-side, hide/disable "Elimina" for non-admins instead of letting the request round-trip and fail.
+
+- **`/wanted-cards` is really the seller's view, not a generic search — rethink the UI around that.** User insight (2026-08-07): almost nobody browsing the *wanted* list would search by card name — that's what a *seller* does ("does anyone want this card I have?"). The card-name search input has been hidden from the toolbar for now (still wired in state/filtering, just no UI control) since its current placement/framing doesn't match that use case.
+  - Found: 2026-08-07, user observation during a mobile-toolbar UX discussion.
+  - Next step: design a dedicated, prominent search entry point for sellers (separate from the list-browsing filters), and a second view scoped to only the logged-in player's own wanted-card requests ("carte che sto cercando io") — needs the wanted-cards data to actually be tied to an authenticated associate identity first, which it isn't yet (data is a static in-file array, see the ADR in `docs/PROGRESS.md`).

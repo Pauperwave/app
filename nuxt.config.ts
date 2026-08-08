@@ -4,11 +4,13 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxt/ui',
     '@vueuse/nuxt',
+    '@pinia/nuxt',
     '@nuxtjs/supabase',
     '@nuxt/image',
     '@nuxtjs/i18n',
     '@nuxtjs/device',
-    '@nuxtjs/leaflet'
+    '@nuxtjs/leaflet',
+    '@pinia/colada-nuxt'
   ],
   components: [
     // Auto import components from ~/components/inputs without the 'inputs' prefix

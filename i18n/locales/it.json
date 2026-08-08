@@ -515,9 +515,29 @@
   },
   "wantedCard": {
     "breadcrumb": "Carte Cercate",
+    "views": {
+      "table": "Tabella",
+      "grid": "Griglia"
+    },
+    "grid": {
+      "empty": "Nessuna carta trovata con questi filtri",
+      "priceHint": "Prezzo indicativo del valore della carta",
+      "sortBy": "Ordina per"
+    },
+    "contextMenu": {
+      "markAs": {
+        "searching": "Segna come in cerca",
+        "found": "Segna come trovata",
+        "abandoned": "Segna come abbandonata"
+      },
+      "updateErrorTitle": "Impossibile aggiornare la richiesta",
+      "edit": "Modifica",
+      "delete": "Elimina",
+      "deleteConfirmTitle": "Eliminare questa richiesta?"
+    },
     "columns": {
       "date": "Data",
-      "found": "Stato",
+      "status": "Stato",
       "manaCost": "Mana",
       "name": "Carta",
       "price": "Prezzo",
@@ -527,8 +547,11 @@
       "notes": "Note",
       "player": "Giocatore"
     },
-    "foundYes": "Trovata",
-    "foundNo": "In cerca",
+    "status": {
+      "searching": "In cerca",
+      "found": "Trovata",
+      "abandoned": "Abbandonata"
+    },
     "openButton": "Nuova richiesta",
     "filters": {
       "cardNamePlaceholder": "Cerca per nome carta...",
@@ -546,35 +569,42 @@
       "ja": "Giapponese"
     },
     "treatments": {
-      "foil": "Foil",
-      "fullArt": "Full Art",
-      "alternateArt": "Alternate Art",
-      "extendedArt": "Extended Art",
-      "borderless": "Borderless",
-      "showcase": "Showcase",
-      "retroFrame": "Retro Frame"
+      "foil": "Foil"
     },
     "addModal": {
       "title": "Nuova richiesta",
       "description": "Aggiungi una carta che stai cercando",
       "validation": {
-        "nameTooShort": "Nome carta troppo corto"
+        "nameTooShort": "Nome carta troppo corto",
+        "printingRequired": "Seleziona un'edizione",
+        "playerRequired": "Seleziona un giocatore"
       },
       "fields": {
         "name": "Nome carta",
         "namePlaceholder": "Cerca su Scryfall...",
+        "printing": "Edizione",
+        "printingPlaceholder": "Seleziona un'edizione",
         "copies": "Copie",
         "language": "Lingua preferita",
-        "treatment": "Trattamento",
         "notes": "Note",
         "notesPlaceholder": "Es. preferibilmente in inglese...",
         "player": "Giocatore",
         "selectPlayer": "Seleziona giocatore"
       },
+      "foilUnavailable": "Questa edizione non ha una versione foil",
       "successToastTitle": "Richiesta aggiunta",
       "successToastDescription": "\"{name}\" aggiunta alle carte cercate",
+      "errorToastTitle": "Impossibile aggiungere la richiesta",
       "cancel": "Annulla",
       "create": "Aggiungi"
+    },
+    "editModal": {
+      "title": "Modifica richiesta",
+      "cardReadOnlyHint": "Carta ed edizione non modificabili: elimina e ricrea la richiesta per cambiarle",
+      "successToastTitle": "Richiesta aggiornata",
+      "successToastDescription": "\"{name}\" aggiornata",
+      "errorToastTitle": "Impossibile aggiornare la richiesta",
+      "save": "Salva"
     }
   },
   "commander": {
