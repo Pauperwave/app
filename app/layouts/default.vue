@@ -152,15 +152,19 @@ const mainNavGroups = [[{
 // "Impostazioni" è presente in sidebar ma disattivata: la pagina è ancora
 // lo scaffold di default del template, non personalizzata per PauperWave.
 
+// Opens Gmail's compose view directly instead of mailto:, which silently
+// no-ops when the OS has no default mail client configured.
+const gmailComposeLink = (subject: string) => `https://mail.google.com/mail/?view=cm&fs=1&to=emanuelenardi.dev@gmail.com&su=${encodeURIComponent(subject)}`
+
 const footerNavItems = [{
   label: t('nav.feedback'),
   icon: ICONS.messageCircle,
-  to: 'https://t.me/emanuelenardi',
+  to: gmailComposeLink(t('nav.feedbackSubject')),
   target: '_blank'
 }, {
   label: t('nav.helpSupport'),
   icon: ICONS.info,
-  to: 'https://t.me/emanuelenardi',
+  to: gmailComposeLink(t('nav.helpSupportSubject')),
   target: '_blank'
 }] satisfies NavigationMenuItem[]
 
@@ -247,17 +251,23 @@ const groups = computed(() => [{
           popover
         />
 
+        <div class="mt-auto flex" :class="collapsed ? 'justify-center' : 'justify-start px-2.5'">
+          <LayoutVersionBadge :collapsed="collapsed" />
+        </div>
+
         <UNavigationMenu
           :collapsed="collapsed"
           :items="footerNavItems"
           orientation="vertical"
           tooltip
-          class="mt-auto"
         />
       </template>
 
       <template #footer="{ collapsed }">
-        <UserMenu :collapsed="collapsed" />
+        <div class="flex items-center gap-2 w-full" :class="collapsed ? 'flex-col' : ''">
+          <UserMenu :collapsed="collapsed" class="flex-1" />
+          <LayoutColorModeSwitch />
+        </div>
       </template>
     </UDashboardSidebar>
 
