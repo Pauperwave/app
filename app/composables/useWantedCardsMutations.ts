@@ -5,10 +5,13 @@ export interface NewWantedCard {
   playerAssociateUuid: string
   cardName: string
   scryfallUrl: string
+  scryfallId: string
+  setCode: string
   manaCost: string
   colorIdentity: string[]
   cmc: number
   imageUrl: string | null
+  cardmarketPrice: number | null
   copies: number
   language: string | null
   treatment: string[]
@@ -17,16 +20,20 @@ export interface NewWantedCard {
 
 // Il nome carta resta fisso (cambiarlo equivale a creare una richiesta
 // diversa), ma l'edizione/stampa esatta è modificabile — scryfallUrl e i
-// dati Scryfall che ne derivano (manaCost/colorIdentity/cmc/imageUrl/price)
-// cambiano insieme quando si sceglie un'altra stampa nel picker.
+// dati Scryfall che ne derivano (manaCost/colorIdentity/cmc/imageUrl/
+// cardmarketPrice) cambiano insieme quando si sceglie un'altra stampa nel
+// picker. cardtraderPrice non è qui: si aggiorna solo via refresh (endpoint
+// dedicato), mai dal form di modifica.
 export interface WantedCardEdits {
   playerAssociateUuid: string
   scryfallUrl: string
+  scryfallId: string
+  setCode: string
   manaCost: string
   colorIdentity: string[]
   cmc: number
   imageUrl: string | null
-  price: number | null
+  cardmarketPrice: number | null
   copies: number
   language: string | null
   treatment: string[]
@@ -64,5 +71,11 @@ export function useWantedCardsMutations() {
     onSettled: invalidate
   })
 
-  return { createWantedCard, updateWantedCard, setStatus, deleteWantedCard }
+  const refreshPrices = useMutation({
+    mutation: (id: number) =>
+      $fetch(`/api/wanted-cards/${id}/refresh-prices`, { method: 'POST' }),
+    onSettled: invalidate
+  })
+
+  return { createWantedCard, updateWantedCard, setStatus, deleteWantedCard, refreshPrices }
 }

@@ -105,6 +105,11 @@ export interface WantedCard {
   foundAt: string | null
   cardName: string
   scryfallUrl: string
+  // Null per le richieste create prima della migrazione 20260808120000 —
+  // servono per risolvere il link diretto CardTrader (server/utils/
+  // cardTrader.ts), non hanno un default retroattivo affidabile.
+  scryfallId: string | null
+  setCode: string | null
   copies: number
   language: string
   treatment: string[]
@@ -112,7 +117,14 @@ export interface WantedCard {
   colorIdentity: string[]
   cmc: number
   imageUrl: string
-  price: number | null
+  // Due fonti di prezzo distinte, non ricalcolate a ogni lettura — snapshot
+  // aggiornati da un refresh manuale o dal job settimanale (vedi
+  // server/utils/priceRefresh.ts, scripts/refresh-wanted-cards-prices.mjs).
+  // *SyncedAt è null finché non è mai stato eseguito un refresh sulla riga.
+  cardmarketPrice: number | null
+  cardmarketPriceSyncedAt: string | null
+  cardtraderPrice: number | null
+  cardtraderPriceSyncedAt: string | null
   notes: string
   player: string
   playerAssociateUuid: string

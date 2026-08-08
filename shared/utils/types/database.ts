@@ -610,6 +610,62 @@ export type Database = {
         }
         Relationships: []
       }
+      pauperwave_cardtrader_blueprints: {
+        Row: {
+          expansion_id: number
+          id: number
+          name: string
+          scryfall_id: string
+          synced_at: string
+        }
+        Insert: {
+          expansion_id: number
+          id: number
+          name: string
+          scryfall_id: string
+          synced_at?: string
+        }
+        Update: {
+          expansion_id?: number
+          id?: number
+          name?: string
+          scryfall_id?: string
+          synced_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pauperwave_cardtrader_blueprints_expansion_id_fkey"
+            columns: ["expansion_id"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_cardtrader_expansions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pauperwave_cardtrader_expansions: {
+        Row: {
+          code: string
+          game_id: number
+          id: number
+          name: string
+          synced_at: string
+        }
+        Insert: {
+          code: string
+          game_id: number
+          id: number
+          name: string
+          synced_at?: string
+        }
+        Update: {
+          code?: string
+          game_id?: number
+          id?: number
+          name?: string
+          synced_at?: string
+        }
+        Relationships: []
+      }
       pauperwave_payments: {
         Row: {
           associate_uuid: string | null
@@ -696,6 +752,10 @@ export type Database = {
       pauperwave_wanted_cards: {
         Row: {
           card_name: string
+          cardmarket_price: number | null
+          cardmarket_price_synced_at: string | null
+          cardtrader_price: number | null
+          cardtrader_price_synced_at: string | null
           cmc: number | null
           color_identity: string[]
           copies: number
@@ -708,9 +768,10 @@ export type Database = {
           mana_cost: string | null
           notes: string | null
           player_associate_uuid: string
-          price: number | null
           requested_at: string | null
+          scryfall_id: string | null
           scryfall_url: string | null
+          set_code: string | null
           status: string
           treatment: string[]
           updated_at: string
@@ -719,6 +780,10 @@ export type Database = {
         }
         Insert: {
           card_name: string
+          cardmarket_price?: number | null
+          cardmarket_price_synced_at?: string | null
+          cardtrader_price?: number | null
+          cardtrader_price_synced_at?: string | null
           cmc?: number | null
           color_identity?: string[]
           copies?: number
@@ -731,9 +796,10 @@ export type Database = {
           mana_cost?: string | null
           notes?: string | null
           player_associate_uuid: string
-          price?: number | null
           requested_at?: string | null
+          scryfall_id?: string | null
           scryfall_url?: string | null
+          set_code?: string | null
           status?: string
           treatment?: string[]
           updated_at?: string
@@ -742,6 +808,10 @@ export type Database = {
         }
         Update: {
           card_name?: string
+          cardmarket_price?: number | null
+          cardmarket_price_synced_at?: string | null
+          cardtrader_price?: number | null
+          cardtrader_price_synced_at?: string | null
           cmc?: number | null
           color_identity?: string[]
           copies?: number
@@ -754,9 +824,10 @@ export type Database = {
           mana_cost?: string | null
           notes?: string | null
           player_associate_uuid?: string
-          price?: number | null
           requested_at?: string | null
+          scryfall_id?: string | null
           scryfall_url?: string | null
+          set_code?: string | null
           status?: string
           treatment?: string[]
           updated_at?: string
