@@ -1,4 +1,4 @@
-<!-- app\components\wanted-cards\WantedCardsTourGuide.vue -->
+<!-- app\components\TourGuide.vue -->
 <script setup lang="ts">
 import type { UseTourReturn } from '@nuxt/ui/composables'
 
@@ -36,14 +36,14 @@ const { tour } = defineProps<{ tour: UseTourReturn }>()
         </p>
         <div class="flex items-center justify-between pt-1">
           <span class="text-xs text-muted">
-            {{ $t('wantedCard.tour.stepIndicator', {
+            {{ $t('tour.stepIndicator', {
               current: tour.index.value + 1,
               total: tour.total.value
             }) }}
           </span>
           <div class="flex gap-2">
             <UButton
-              :label="$t('wantedCard.tour.back')"
+              :label="$t('tour.back')"
               color="neutral"
               variant="subtle"
               size="sm"
@@ -52,8 +52,8 @@ const { tour } = defineProps<{ tour: UseTourReturn }>()
             />
             <UButton
               :label="tour.hasNext.value
-                ? $t('wantedCard.tour.next')
-                : $t('wantedCard.tour.finish')"
+                ? $t('tour.next')
+                : $t('tour.finish')"
               color="primary"
               size="sm"
               @click="tour.hasNext.value ? tour.next() : tour.finish()"

@@ -1,4 +1,4 @@
-<!-- app\components\wanted-cards\CardPreview.vue -->
+<!-- app\components\magic\CardPreview.vue -->
 
 <!--
   Stesso meccanismo di CardPreview.vue in MagicTheGathering/league (sezione

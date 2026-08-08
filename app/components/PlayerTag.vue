@@ -1,4 +1,4 @@
-<!-- app\components\wanted-cards\PlayerTag.vue -->
+<!-- app\components\PlayerTag.vue -->
 
 <!--
   Nome giocatore con avatar, tramite UUser. L'avatar è generato
