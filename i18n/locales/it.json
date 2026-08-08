@@ -34,6 +34,12 @@
     "switchToLightMode": "Passa al tema chiaro",
     "switchToDarkMode": "Passa al tema scuro"
   },
+  "tour": {
+    "back": "Indietro",
+    "next": "Avanti",
+    "finish": "Fine",
+    "stepIndicator": "{current} di {total}"
+  },
   "inputs": {
     "clearButton": {
       "ariaLabel": "Cancella campo"
@@ -158,6 +164,7 @@
       "validation": {
         "firstNameTooShort": "Nome troppo corto",
         "lastNameTooShort": "Cognome troppo corto",
+        "invalidEmail": "Email non valida",
         "invalidPhoneNumber": "Numero di telefono non valido",
         "invalidTaxCode": "Codice fiscale non valido",
         "birthLocationRequired": "Luogo di nascita richiesto",
@@ -298,8 +305,10 @@
       "description": "Aggiungi una nuova lega al database",
       "openButton": "Nuova lega",
       "validation": {
-        "nameTooShort": "Too short",
-        "invalidEmail": "Invalid email"
+        "nameRequired": "Il nome è obbligatorio",
+        "nameTooShort": "Nome troppo corto",
+        "emailRequired": "L'email è obbligatoria",
+        "invalidEmail": "Email non valida"
       },
       "fields": {
         "name": "Name",
@@ -333,8 +342,10 @@
       "description": "Aggiungi un nuovo evento al database",
       "openButton": "Nuovo evento",
       "validation": {
-        "nameTooShort": "Too short",
-        "invalidEmail": "Invalid email"
+        "nameRequired": "Il nome è obbligatorio",
+        "nameTooShort": "Nome troppo corto",
+        "emailRequired": "L'email è obbligatoria",
+        "invalidEmail": "Email non valida"
       },
       "fields": {
         "name": "Name",
@@ -482,7 +493,10 @@
         "linkEvent": "Associa evento (opzionale)"
       },
       "validation": {
-        "nameRequired": "Il nome del torneo è obbligatorio"
+        "nameRequired": "Il nome del torneo è obbligatorio",
+        "entryFeeNegative": "Non può essere negativo",
+        "roundCountPositive": "Deve essere almeno 1",
+        "roundDurationPositive": "Deve essere maggiore di zero"
       },
       "successToastTitle": "Success",
       "successToastDescription": "Nuovo torneo \"{name}\" aggiunto",
@@ -529,7 +543,10 @@
     },
     "grid": {
       "empty": "Nessuna carta trovata con questi filtri",
-      "priceHint": "Prezzo indicativo del valore della carta",
+      "cardmarketPriceHint": "Prezzo CardMarket (via Scryfall)",
+      "cardtraderPriceHint": "Prezzo minimo CardTrader (Near Mint, lingua della richiesta)",
+      "cardmarketShort": "CM",
+      "cardtraderShort": "CT",
       "sortBy": "Ordina per"
     },
     "tour": {
@@ -559,11 +576,7 @@
           "title": "Pronto!",
           "description": "Ora sai come funziona questa pagina. Buona ricerca!"
         }
-      },
-      "back": "Indietro",
-      "next": "Avanti",
-      "finish": "Fine",
-      "stepIndicator": "{current} di {total}"
+      }
     },
     "contextMenu": {
       "markAs": {
@@ -577,6 +590,8 @@
       "viewOnScryfall": "Vedi su Scryfall",
       "searchOnCardMarket": "Cerca su CardMarket",
       "searchOnCardTrader": "Cerca su CardTrader",
+      "refreshPrices": "Aggiorna prezzi",
+      "pricesRefreshed": "Prezzi aggiornati",
       "edit": "Modifica",
       "delete": "Elimina",
       "deleteConfirmTitle": "Eliminare questa richiesta?"
@@ -586,7 +601,8 @@
       "status": "Stato",
       "manaCost": "Mana",
       "name": "Carta",
-      "price": "Prezzo",
+      "cardmarketPrice": "Prezzo CardMarket",
+      "cardtraderPrice": "Prezzo CardTrader",
       "copies": "Copie",
       "language": "Lingua",
       "treatment": "Trattamento",
@@ -623,8 +639,12 @@
       "title": "Nuova richiesta",
       "description": "Aggiungi una carta che stai cercando",
       "validation": {
+        "nameRequired": "Seleziona una carta",
         "nameTooShort": "Nome carta troppo corto",
         "printingRequired": "Seleziona un'edizione",
+        "copiesRequired": "Inserisci il numero di copie",
+        "copiesInteger": "Deve essere un numero intero",
+        "copiesPositive": "Deve essere almeno 1",
         "playerRequired": "Seleziona un giocatore"
       },
       "fields": {
@@ -679,9 +699,12 @@
     },
     "general": {
       "validation": {
-        "nameTooShort": "Too short",
-        "invalidEmail": "Invalid email",
-        "usernameTooShort": "Too short"
+        "nameRequired": "Il nome è obbligatorio",
+        "nameTooShort": "Nome troppo corto",
+        "emailRequired": "L'email è obbligatoria",
+        "invalidEmail": "Email non valida",
+        "usernameRequired": "Il nome utente è obbligatorio",
+        "usernameTooShort": "Nome utente troppo corto"
       },
       "successToastTitle": "Success",
       "successToastDescription": "Your settings have been updated.",
@@ -772,6 +795,7 @@
     "seoDescription": "Accedi al tuo account per continuare",
     "emailLabel": "Email",
     "emailPlaceholder": "Inserisci la tua email",
+    "emailRequired": "Inserisci la tua email.",
     "invalidEmail": "Inserisci un indirizzo email valido.",
     "connectionErrorTitle": "Errore di connessione",
     "connectionErrorDescription": "Impossibile verificare l'email. Riprova più tardi.",
