@@ -5,14 +5,7 @@ import type { WantedCard, WantedCardStatus } from '~/types'
 export function useWantedCardsFilters(data: Ref<WantedCard[]>) {
   const { t } = useI18n()
 
-  // Risolve l'Associato corrispondente all'utente loggato via email — non
-  // esiste un link diretto auth-user -> associato (a differenza dei
-  // Giocatori, che hanno players.user_id), stesso confronto usato in
-  // server/api/check-associate.post.ts per il login stesso.
-  const authUser = useSupabaseUser()
-  const { associates } = useAssociates()
-  const currentAssociate = computed(() =>
-    associates.value.find(a => a.email_address === authUser.value?.email) ?? null)
+  const currentAssociate = useCurrentAssociate()
 
   const cardNameFilter = ref('')
   // "In cerca" di default — le carte già trovate/abbandonate restano
