@@ -1,6 +1,7 @@
 <!-- app\components\UserMenu.vue -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
+import { ICONS } from '~/utils/icons'
 
 defineProps<{
   collapsed?: boolean
@@ -109,12 +110,12 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
   }]
 }, {
   label: t('userMenu.appearance'),
-  icon: 'i-lucide-sun-moon',
+  icon: ICONS.themeAuto,
   children: [{
     label: t('userMenu.light'),
-    icon: 'i-lucide-sun',
+    icon: ICONS.lightMode,
     type: 'checkbox',
-    checked: colorMode.value === 'light',
+    checked: colorMode.preference === 'light',
     onSelect(e: Event) {
       e.preventDefault()
 
@@ -122,16 +123,23 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
     }
   }, {
     label: t('userMenu.dark'),
-    icon: 'i-lucide-moon',
+    icon: ICONS.darkMode,
     type: 'checkbox',
-    checked: colorMode.value === 'dark',
-    onUpdateChecked(checked: boolean) {
-      if (checked) {
-        colorMode.preference = 'dark'
-      }
-    },
+    checked: colorMode.preference === 'dark',
     onSelect(e: Event) {
       e.preventDefault()
+
+      colorMode.preference = 'dark'
+    }
+  }, {
+    label: t('userMenu.automatic'),
+    icon: ICONS.themeAuto,
+    type: 'checkbox',
+    checked: colorMode.preference === 'system',
+    onSelect(e: Event) {
+      e.preventDefault()
+
+      colorMode.preference = 'system'
     }
   }]
 }], [{
