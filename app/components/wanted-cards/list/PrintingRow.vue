@@ -11,10 +11,9 @@ interface Props {
   collectorNumber: string
   imageUrl?: string | null
   cardmarketPrice?: number | null
-  // undefined = ancora in caricamento (vedi loadCardtraderPrices in
-  // AddModal.vue) — distinto da null (nessuna inserzione trovata), ma
-  // WantedCardsPrices mostra "—" per entrambi: non vale la pena una UI di
-  // loading dedicata per un'anteprima best-effort.
+  // undefined = still loading (see loadCardtraderPrices in AddModal.vue) —
+  // distinct from null (no listing found), but WantedCardsPrices shows "—" for
+  // both: a dedicated loading UI is not worth it for a best-effort preview.
   cardtraderPrice?: number | null
 }
 

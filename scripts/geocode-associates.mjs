@@ -71,7 +71,7 @@ async function geocodeViaPhoton(query) {
   return match ? { latitude: match.geometry.coordinates[1], longitude: match.geometry.coordinates[0] } : null
 }
 
-// Ogni attempt è {provider, query}; provate in ordine finché una non trova un match.
+// Each attempt is {provider, query}; tried in order until one finds a match.
 function buildAttempts(associate) {
   const { residency_address, residency_house_number, residency_cap, residency_city, residency_province } = associate
 

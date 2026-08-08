@@ -74,13 +74,13 @@ export function useTourSpotlight(tour: UseTourReturn, options: UseTourSpotlightO
   useEventListener(window, 'resize', update)
   useEventListener(window, 'scroll', throttledUpdate, true)
 
-  // Step senza target (centrato, es. lo step finale): nessun rettangolo da
-  // bucare — invece di passare a un box pieno-schermo con backgroundColor
-  // (proprietà diversa da boxShadow, la transizione CSS non può interpolare
-  // tra le due e "salta" in modo brusco), si usa un box largo 0 al centro
-  // del viewport con lo stesso box-shadow: lo spread di 9999px copre
-  // comunque tutto lo schermo, ma top/left/width/height restano le uniche
-  // proprietà che cambiano, quindi la transizione resta fluida.
+  // Step with no target (centered, e.g. the final one): no rectangle to punch out —
+  // instead of switching to a full-screen box with backgroundColor (a different
+  // property from boxShadow, so the CSS transition cannot interpolate between them
+  // and jumps abruptly), a zero-width box at the center of the viewport keeps the
+  // same box-shadow: the 9999px spread still covers the whole screen, while
+  // top/left/width/height stay the only properties that change, so the transition
+  // remains smooth.
   const spotlightStyle = computed(() => {
     const rect = highlightRect.value
     const box = rect

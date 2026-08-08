@@ -18,12 +18,11 @@ export interface NewWantedCard {
   notes: string | null
 }
 
-// Il nome carta resta fisso (cambiarlo equivale a creare una richiesta
-// diversa), ma l'edizione/stampa esatta è modificabile — scryfallUrl e i
-// dati Scryfall che ne derivano (manaCost/colorIdentity/cmc/imageUrl/
-// cardmarketPrice) cambiano insieme quando si sceglie un'altra stampa nel
-// picker. cardtraderPrice non è qui: si aggiorna solo via refresh (endpoint
-// dedicato), mai dal form di modifica.
+// The card name is fixed (changing it amounts to creating a different request), but
+// the exact edition/printing can be edited — scryfallUrl and the Scryfall data
+// derived from it (manaCost/colorIdentity/cmc/imageUrl/cardmarketPrice) change
+// together when another printing is picked. cardtraderPrice is not here: it is only
+// updated through a refresh (its own endpoint), never from the edit form.
 export interface WantedCardEdits {
   playerAssociateUuid: string
   scryfallUrl: string
@@ -44,9 +43,9 @@ export function useWantedCardsMutations() {
   const queryCache = useQueryCache()
   const invalidate = () => queryCache.invalidateQueries({ key: WANTED_CARDS_KEY })
 
-  // Ogni scrittura passa da un endpoint server/api con service-role key —
-  // quell'endpoint è il boundary di autorizzazione (vedi
-  // server/utils/serverAuth.ts), non più le policy RLS lette dal client.
+  // Every write goes through a server/api endpoint holding the service-role key —
+  // that endpoint is the authorization boundary (see server/utils/serverAuth.ts),
+  // no longer the RLS policies evaluated from the client.
   const createWantedCard = useMutation({
     mutation: (card: NewWantedCard) =>
       $fetch('/api/wanted-cards/create', { method: 'POST', body: card }),

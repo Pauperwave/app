@@ -55,10 +55,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, statusMessage: error?.message ?? 'Wanted card insert failed' })
   }
 
-  // Prefetch in background: scalda la cache CardTrader (server/utils/
-  // cardTrader.ts) così il bottone "Cerca su CardTrader" trova già la riga
-  // pronta invece di aspettare il resolve al click. Non blocca la risposta
-  // — il fallimento è silenzioso, il resolve on-demand riproverà comunque.
+  // Background prefetch: warms the CardTrader cache (server/utils/cardTrader.ts) so
+  // the "Search on CardTrader" button finds the row ready instead of waiting for
+  // the resolve on click. It does not block the response — failure is silent, and
+  // the on-demand resolve will retry anyway.
   const token = useRuntimeConfig(event).cardTraderApiToken
   if (token) {
     resolveCardTraderBlueprint(supabase, token, body.scryfallId, body.setCode).catch(() => {})

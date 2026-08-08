@@ -6,10 +6,10 @@ import type { WantedCard } from '~/types'
 
 const { t } = useI18n()
 
-// isPending (non isLoading): isLoading è vero per qualsiasi fetch in corso,
-// inclusi i refetch in background dopo invalidateQueries (es. cambio stato
-// di una carta) — smonterebbe tabella/griglia ad ogni mutazione. isPending
-// è vero solo finché non c'è ancora nessun dato in cache.
+// isPending (not isLoading): isLoading is true for any fetch in flight, including
+// background refetches after invalidateQueries (e.g. changing a card's status) —
+// that would unmount the table/grid on every mutation. isPending is only true while
+// there is still no data in the cache.
 const { data: wantedCardsData, isPending: loading } = useWantedCardsQuery()
 const data = computed(() => wantedCardsData.value ?? [])
 
@@ -49,10 +49,9 @@ const {
   confirmDelete
 } = useWantedCardsRowActions()
 
-// Raggruppamento per giocatore on demand (non attivo di default) — un
-// giocatore come "Francesco Guzzonato" con 15 richieste può diventare una
-// sola riga espandibile invece di 15 righe ripetute con lo stesso nome,
-// ma solo se l'utente lo richiede esplicitamente tramite il toggle.
+// Grouping by player on demand (off by default) — a player with 15 requests can
+// collapse into a single expandable row instead of 15 repeated rows with the same
+// name, but only when the user asks for it explicitly through the toggle.
 const grouping = ref<string[]>([])
 const sorting = ref([{ id: 'player', desc: true }])
 
@@ -73,12 +72,12 @@ interface TableRef {
 }
 
 const table = useTemplateRef<TableRef>('table')
-// "Stato" nascosta di default: è già implicita nella tab Trovate/In cerca attiva.
+// "Status" hidden by default: it is already implied by the active Found/Searching tab.
 const columnVisibility = ref({ status: false })
 
-// Rigenerato ogni volta che si apre il menu (via :items) — pattern ufficiale
-// Nuxt UI (doc UTable, sezione "Column visibility"): getAllColumns() +
-// getCanHide() + toggleVisibility(), non v-model diretto sui singoli item.
+// Rebuilt every time the menu opens (via :items) — the official Nuxt UI pattern
+// (UTable docs, "Column visibility" section): getAllColumns() + getCanHide() +
+// toggleVisibility(), not a direct v-model on the individual items.
 const columnVisibilityItems = computed(() => {
   void columnVisibility.value
   return (table.value?.tableApi?.getAllColumns() ?? [])
@@ -98,15 +97,15 @@ const columnVisibilityItems = computed(() => {
 
 const viewItems = computed(() => columnVisibilityItems.value)
 
-// Bottone a sé stante (non nel menu "Mostra colonne"): condiviso tra tabella
-// e griglia tramite lo stesso stato `grouping`.
+// A button of its own (not inside the "Show columns" menu): shared between table
+// and grid through the same `grouping` state.
 const isGrouped = computed(() => grouping.value.length > 0)
 function toggleGrouping() {
   grouping.value = isGrouped.value ? [] : ['player']
 }
 
-// La tabella ha l'ordinamento per colonna cliccabile (sortableHeader); la
-// griglia non ha colonne, quindi usa un selettore dedicato invece.
+// The table sorts through clickable column headers (sortableHeader); the grid has
+// no columns, so it uses a dedicated selector instead.
 const gridSortField = ref<'player' | 'cardmarketPrice' | 'date' | 'cardName'>('player')
 const gridSortDesc = ref(true)
 const gridSortItems = computed(() => [
@@ -134,10 +133,10 @@ interface GridSection {
   cards: WantedCard[]
 }
 
-// Stesso stato `grouping` della tabella (toggle "Raggruppa per giocatore" nel
-// menu "Mostra colonne"), tradotto in sezioni sempre aperte con intestazione
-// invece che righe espandibili — non c'è un equivalente naturale di riga
-// collassabile in una griglia di card visuali.
+// Same `grouping` state as the table (the "Group by player" toggle in the "Show
+// columns" menu), translated into always-open sections with a heading rather than
+// expandable rows — there is no natural equivalent of a collapsible row in a grid
+// of visual cards.
 const gridSections = computed<GridSection[]>(() => {
   if (!grouping.value.length) return [{ player: null, cards: sortedCards.value }]
 
@@ -178,14 +177,14 @@ const gridSections = computed<GridSection[]>(() => {
         </template>
       </UDashboardNavbar>
 
-      <!-- UDashboardToolbar nel #header, come HomeDateRangePicker in
-           transactions/index.vue — #left/#right sono lo split ufficiale
-           filtri/vista (flex justify-between). Stato e Trattamento
-           condividono lo stesso linguaggio visivo (UFieldGroup di bottoni
-           toggle) invece di mischiare UTabs (pillole) con bottoni piatti. -->
-      <!-- flex-wrap sovrascrive l'overflow-x-auto di default di Nuxt UI:
-           su mobile i filtri vanno a capo su più righe invece di finire in
-           uno scroll orizzontale nascosto. -->
+      <!-- UDashboardToolbar in #header, like HomeDateRangePicker in
+           transactions/index.vue — #left/#right are the official filters/view
+           split (flex justify-between). Status and Treatment share the same
+           visual language (a UFieldGroup of toggle buttons) instead of mixing
+           UTabs (pills) with flat buttons. -->
+      <!-- flex-wrap overrides Nuxt UI's default overflow-x-auto: on mobile the
+           filters wrap onto several rows instead of ending up in a hidden
+           horizontal scroll. -->
       <UDashboardToolbar
         :ui="{
           root: 'flex-wrap h-auto py-2 gap-4',
@@ -194,10 +193,10 @@ const gridSections = computed<GridSection[]>(() => {
         }"
       >
         <template #left>
-          <!-- Wrapper con id dedicato solo per ancorare il tour guidato
-               all'intera area filtri (vedi useWantedCardsTour) — la classe
-               replica ui.left del UDashboardToolbar (gap-4 flex-wrap) così
-               il layout resta identico, solo annidato in un livello in più. -->
+          <!-- Wrapper with a dedicated id purely to anchor the guided tour to
+               the whole filters area (see useWantedCardsTour) — the class
+               mirrors UDashboardToolbar's ui.left (gap-4 flex-wrap) so the
+               layout stays identical, just nested one level deeper. -->
           <div id="tour-wanted-cards-filters" class="flex items-center gap-4 flex-wrap">
             <!--
               No `-ms-1` here on purpose: it's for icon-only buttons (see
@@ -215,9 +214,9 @@ const gridSections = computed<GridSection[]>(() => {
               />
             </UFieldGroup>
 
-            <!-- Ricerca per nome carta nascosta per ora: questa vista serve a
-                 chi cerca carte, non a chi le vende (che è il vero caso
-                 d'uso della ricerca per nome) — vedi TODO in docs/TODO.md. -->
+            <!-- Search by card name hidden for now: this view serves people
+                 looking for cards, not people selling them (which is the real
+                 use case for search by name) — see the TODO in docs/TODO.md. -->
 
             <USelectMenu
               v-model="languageFilter"
@@ -256,8 +255,8 @@ const gridSections = computed<GridSection[]>(() => {
         </template>
 
         <template #right>
-          <!-- Stesso motivo del wrapper #left: id dedicato per ancorare il
-               tour all'intera area vista, classi che replicano ui.right
+          <!-- Same reason as the #left wrapper: a dedicated id to anchor the
+               tour to the whole view area, with classes mirroring ui.right
                (gap-4 flex-wrap). -->
           <div id="tour-wanted-cards-view-controls" class="flex items-center gap-4 flex-wrap">
             <div v-if="viewMode === 'grid'" class="flex items-center gap-2">

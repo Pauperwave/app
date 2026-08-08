@@ -44,8 +44,8 @@ const range = shallowRef<Range>({
     <template #body>
       {{ $t('event.placeholder') }}
 
-      <!-- TODO: temporaneo, da rimuovere quando la tabella con dati reali
-           sostituirà questo placeholder -->
+      <!-- TODO: temporary, remove once the table with real data
+           replaces this placeholder -->
       <UButton
         to="/events/1"
         variant="outline"

@@ -4,7 +4,7 @@ import adventurer from '@dicebear/styles/adventurer.json'
 
 // One Style instance reused across every avatar (per DiceBear's own
 // guidance) — parsing/validating the style definition is the expensive part,
-// not rendering an individual avatar from it. Copiato verbatim da
+// not rendering an individual avatar from it. Copied verbatim from
 // MagicTheGathering/league (app/utils/playerAvatar.ts).
 const style = new Style(adventurer)
 

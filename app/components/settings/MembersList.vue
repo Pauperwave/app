@@ -9,13 +9,12 @@ defineProps<{
 
 const { t } = useI18n()
 
+// Placeholder actions: this settings screen is still the default template scaffold
 const items = computed<DropdownMenuItem[]>(() => [{
-  label: t('settings.members.list.editMember'),
-  onSelect: () => console.log('Edit member')
+  label: t('settings.members.list.editMember')
 }, {
   label: t('settings.members.list.removeMember'),
-  color: 'error' as const,
-  onSelect: () => console.log('Remove member')
+  color: 'error' as const
 }])
 </script>
 

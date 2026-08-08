@@ -12,9 +12,9 @@ export interface WantedCardAgeInfo {
 const WARNING_THRESHOLD_DAYS = 30
 const ERROR_THRESHOLD_DAYS = 90
 
-// Fasce su "da quanto è aperta la richiesta" invece della data grezza: sotto
-// i 30gg nessuna urgenza, 30-90gg vale un controllo, oltre i 90gg è
-// candidata a un follow-up (o a "Segna come abbandonata").
+// Bands on "how long the request has been open" instead of the raw date: under 30
+// days no urgency, 30-90 days worth a check, past 90 days it is a candidate for a
+// follow-up (or for "Mark as abandoned").
 export function wantedCardAgeInfo(dateString: string): WantedCardAgeInfo | null {
   if (!dateString) return null
 

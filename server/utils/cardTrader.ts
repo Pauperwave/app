@@ -2,8 +2,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '#shared/utils/types/database'
 
-// Solo Magic: the Gathering per ora — vedi docs/PROGRESS.md, feasibility
-// study CardTrader 2026-08-08.
+// Magic: the Gathering only for now — see docs/PROGRESS.md, CardTrader feasibility
+// study 2026-08-08.
 const MTG_GAME_ID = 1
 const CARDTRADER_API_BASE = 'https://api.cardtrader.com/api/v2'
 
@@ -26,31 +26,31 @@ export interface CardTraderResolution {
   url: string | null
 }
 
-// Il codice esatto è il caso comune (stampa della serie base): provandolo per
-// primo si evita di scaricare gli export delle espansioni sorelle.
+// The exact code is the common case (a base-set printing): trying it first avoids
+// downloading the sibling expansions' exports.
 function orderExactFirst(expansions: { id: number, code: string }[], setCode: string): number[] {
   return [...expansions]
     .sort((a, b) => Number(b.code === setCode) - Number(a.code === setCode))
     .map(expansion => expansion.id)
 }
 
-// CardTrader non offre una ricerca per nome: bisogna prima risolvere
-// l'expansion_id dal set_code, poi scaricare l'intero set di blueprint e
-// filtrare per scryfall_id. La lista delle espansioni si cacheia per intero
-// (compatta, riusata a ogni lookup) — vedi migrazione 20260808110000.
+// CardTrader offers no search by name: the expansion_id has to be resolved from the
+// set_code first, then the whole blueprint set downloaded and filtered by
+// scryfall_id. The expansion list is cached in full (compact, reused on every
+// lookup) — see migration 20260808110000.
 //
-// Un set Scryfall però non mappa 1:1 su un'espansione CardTrader: loro lo
-// spezzano prefissando il codice — dsk (base), cdsk (Collectors), adsk (Art
-// Series), pdsk (Promos), predsk (Prerelease). Le stampe boosterfun/showcase,
-// che Scryfall tiene sotto lo stesso `dsk` con collector number alto, stanno
-// quindi in `cdsk`: cercare solo nel codice esatto le mancava sempre, in
-// silenzio. Da qui la lista di candidate invece di un singolo id.
+// A Scryfall set does not map 1:1 onto a CardTrader expansion though: they split it
+// by prefixing the code — dsk (base), cdsk (Collectors), adsk (Art Series), pdsk
+// (Promos), predsk (Prerelease). Boosterfun/showcase printings, which Scryfall keeps
+// under the same `dsk` with a high collector number, therefore live in `cdsk`:
+// searching the exact code only missed them every time, silently. Hence the list of
+// candidates instead of a single id.
 async function resolveExpansionIds(
   supabase: SupabaseClient<Database>,
   token: string,
   setCode: string
 ): Promise<number[]> {
-  // `%dsk` copre sia il codice esatto sia le sorelle prefissate.
+  // `%dsk` covers both the exact code and the prefixed siblings.
   const { data: cached } = await supabase
     .from('pauperwave_cardtrader_expansions')
     .select('id, code')
@@ -81,11 +81,11 @@ async function resolveExpansionIds(
   )
 }
 
-// Risolve scryfallId + setCode nell'id di scheda carta CardTrader, cacheando
-// solo la riga trovata (non l'intero export del set, vedi migrazione
-// 20260808110000 e commento in resolve.get.ts) — usata sia dal lookup
-// on-demand (click su "Cerca su CardTrader") sia dal prefetch in background
-// alla creazione/modifica di una wanted-card.
+// Resolves scryfallId + setCode into the CardTrader card page id, caching only the
+// row that was found (not the set's whole export, see migration 20260808110000 and
+// the comment in resolve.get.ts) — used both by the on-demand lookup (clicking
+// "Search on CardTrader") and by the background prefetch when a wanted card is
+// created or edited.
 export async function resolveCardTraderBlueprint(
   supabase: SupabaseClient<Database>,
   token: string,

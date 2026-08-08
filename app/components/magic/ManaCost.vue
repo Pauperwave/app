@@ -1,18 +1,18 @@
 <!-- app\components\magic\ManaCost.vue -->
 
 <!--
-  Componente per visualizzare i simboli di mana di Magic: The Gathering.
+  Component that renders Magic: The Gathering mana symbols.
 
-  Utilizza mana-font (https://mana.andrewgioia.com/) per renderizzare
-  i simboli iconografici del mana. Copiato verbatim da
-  MagicTheGathering/league (app/components/commander/ManaCost.vue).
+  Uses mana-font (https://mana.andrewgioia.com/) to draw the iconographic mana
+  symbols. Copied verbatim from MagicTheGathering/league
+  (app/components/commander/ManaCost.vue).
 
-  IMPORTANTE: mana-font è importato con `scoped` (vedi <style> sotto) per
-  evitare conflitti CSS con Tailwind. Entrambi usano classi `ms-N` (mana-font
-  per i simboli di mana generici, Tailwind per `margin-inline-start`),
-  causando un clash se importato globalmente.
+  IMPORTANT: mana-font is imported `scoped` (see <style> below) to avoid CSS
+  conflicts with Tailwind. Both use `ms-N` classes (mana-font for generic mana
+  symbols, Tailwind for `margin-inline-start`), which clash if imported
+  globally.
 
-  Uso:
+  Usage:
     <ManaCost mana-cost="{2}{W}{U}" />
     <ManaCost mana-cost="{R/G}" size="lg" />
 -->

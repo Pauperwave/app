@@ -17,12 +17,12 @@ export function colorGroupRank(colorIdentity: string[]): number {
   return WUBRG_ORDER.length
 }
 
-// Stessi colori usati da MagicTheGathering/league's resolveCardColors +
-// buildGradientClass (app/utils/cardColors.ts lì), ma qui come valori CSS
-// diretti invece di classi Tailwind `from-${color}` costruite a runtime:
-// Tailwind non genera classi che non compaiono letteralmente nel sorgente,
-// quindi quelle stringhe dinamiche non verrebbero scansionate/incluse nel
-// CSS finale. Uno style inline con un gradiente CSS evita il problema.
+// Same colors used by MagicTheGathering/league's resolveCardColors +
+// buildGradientClass (app/utils/cardColors.ts there), but as direct CSS values
+// instead of `from-${color}` Tailwind classes built at runtime: Tailwind does not
+// generate classes that never appear literally in the source, so those dynamic
+// strings would not be scanned into the final CSS. An inline style with a CSS
+// gradient sidesteps the problem.
 const COLOR_HEX: Record<string, string> = {
   W: '#fef3c7', // amber-100
   U: '#2563eb', // blue-600
@@ -32,7 +32,7 @@ const COLOR_HEX: Record<string, string> = {
   C: '#d1d5db' // gray-300
 }
 
-/** Estrae le lettere WUBRG da un costo di mana come "{2}{W}{U}". */
+/** Extracts the WUBRG letters from a mana cost such as "{2}{W}{U}". */
 export function extractColorsFromManaCost(costString: string): Set<string> {
   const colors = new Set<string>()
   const matches = costString.match(/\{([^}]*)\}/g) || []
@@ -54,8 +54,8 @@ interface CardColorInput {
   colorIdentity?: string[]
 }
 
-/** Risolve i colori da mostrare per una carta: dal costo di mana (fronte +
- * retro se a due facce), poi color identity, poi incolore come fallback. */
+/** Resolves the colors to show for a card: from the mana cost (front + back when
+ * double-faced), then color identity, then colorless as a fallback. */
 export function resolveCardColors(card: CardColorInput): string[] {
   const colors = new Set<string>()
 
@@ -71,9 +71,9 @@ export function resolveCardColors(card: CardColorInput): string[] {
   return Array.from(colors)
 }
 
-/** Costruisce un gradiente CSS (per :style, non una classe Tailwind) dai
- * colori risolti di una carta — stessa logica a gradini di buildGradientClass
- * in league, tradotta in linear-gradient inline. */
+/** Builds a CSS gradient (for :style, not a Tailwind class) from a card's resolved
+ * colors — same stepped logic as buildGradientClass in league, translated into an
+ * inline linear-gradient. */
 export function buildGradientStyle(colors: string[]): string {
   const hex = (c: string) => COLOR_HEX[c] ?? COLOR_HEX.C!
 

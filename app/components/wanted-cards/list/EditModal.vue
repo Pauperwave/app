@@ -21,13 +21,13 @@ const { t } = useI18n()
 const { associates } = useAssociates()
 const { updateWantedCard } = useWantedCardsMutations()
 
-// Stesso pattern di ricerca stampe di AddModal.vue, ma il nome è fisso (non
-// cercabile) — fetchPrintings parte direttamente sul nome della carta
-// esistente appena la modale si apre.
+// Same printing-search pattern as AddModal.vue, but the name is fixed (not
+// searchable) — fetchPrintings runs straight on the existing card's name as soon as
+// the modal opens.
 const { printings, isLoadingPrintings, fetchPrintings } = useScryfallCardSearch()
 
-// Stessa esclusione di AddModal.vue: "APS Pauperwave" è il record
-// dell'associazione stessa, non un giocatore reale.
+// Same exclusion as AddModal.vue: "APS Pauperwave" is the association's own record,
+// not a real player.
 const APS_PAUPERWAVE_UUID = '8578797c-62b0-4e48-a237-3b65683a2623'
 
 const playerOptions = computed(() => associates.value
@@ -47,9 +47,9 @@ const languageOptions = computed(() => [
   { label: t('wantedCard.languages.ja'), value: 'ja', icon: 'i-circle-flags-jp' }
 ])
 
-// Stessi messaggi custom di AddModal.vue (vedi commento lì sul perché
-// v.pipe(v.string(msg), v.minLength(...)) copre sia il campo mai valorizzato
-// sia la stringa vuota).
+// Same custom messages as AddModal.vue (see the comment there on why
+// v.pipe(v.string(msg), v.minLength(...)) covers both the never-filled field and
+// the empty string).
 const schema = v.object({
   printingId: v.pipe(
     v.string(t('wantedCard.addModal.validation.printingRequired')),
@@ -73,11 +73,10 @@ type Schema = v.InferOutput<typeof schema>
 
 const state = reactive<Partial<Schema>>({})
 
-// Rialimenta lo stato del form ogni volta che si apre la modale su una carta
-// diversa — a differenza di AddModal.vue non c'è un submit riuscito che la
-// svuota (qui si riapre sempre su un record esistente). Le stampe si
-// ricaricano sul nome fisso della carta, poi si preseleziona quella già
-// salvata confrontando lo scryfallUrl.
+// Refills the form state every time the modal opens on a different card — unlike
+// AddModal.vue there is no successful submit that clears it (this one always
+// reopens on an existing record). Printings reload on the card's fixed name, then
+// the already saved one is preselected by comparing scryfallUrl.
 watch([open, () => card], async ([isOpen, currentCard]) => {
   if (!isOpen || !currentCard) return
   state.copies = currentCard.copies
@@ -87,19 +86,19 @@ watch([open, () => card], async ([isOpen, currentCard]) => {
   state.player = currentCard.playerAssociateUuid
 
   await fetchPrintings(currentCard.cardName)
-  // Confronto solo sulla parte base dell'URL (senza query string): l'API
-  // Scryfall aggiunge sempre parametri di tracking (?utm_source=...) allo
-  // scryfall_uri restituito ora, mentre alcune richieste più vecchie (dati
-  // migrati dal mock iniziale) hanno un scryfallUrl "pulito" salvato senza —
-  // un confronto esatto tra le due stringhe non troverebbe mai match.
+  // Compare only the base part of the URL (without the query string): the Scryfall
+  // API now always appends tracking params (?utm_source=...) to the scryfall_uri it
+  // returns, while some older requests (data migrated from the initial mock) have a
+  // "clean" scryfallUrl saved without them — an exact string comparison would never
+  // match.
   const currentBaseUrl = currentCard.scryfallUrl.split('?')[0]
   state.printingId = printings.value.find(p => p.scryfallUrl.split('?')[0] === currentBaseUrl)?.id
 }, { immediate: true })
 
 const currentLanguage = computed(() => languageOptions.value.find(l => l.value === state.language))
 
-// Stesso motivo di AddModal.vue: "Foil" è una finitura indipendente dalla
-// stampa, disponibile solo se la stampa scelta la supporta.
+// Same reason as AddModal.vue: "Foil" is a finish independent of the printing,
+// available only if the chosen printing supports it.
 watch(() => state.printingId, (printingId) => {
   const printing = printings.value.find(p => p.id === printingId)
   if (!printing?.finishes.includes('foil')) state.foil = false

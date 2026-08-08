@@ -53,8 +53,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, statusMessage: error?.message ?? 'Wanted card update failed' })
   }
 
-  // Stesso prefetch in background di create.post.ts — cambiare
-  // edizione/stampa può puntare a una carta mai risolta prima.
+  // Same background prefetch as create.post.ts — changing edition/printing can
+  // point at a card that was never resolved before.
   const token = useRuntimeConfig(event).cardTraderApiToken
   if (token) {
     resolveCardTraderBlueprint(supabase, token, body.scryfallId, body.setCode).catch(() => {})

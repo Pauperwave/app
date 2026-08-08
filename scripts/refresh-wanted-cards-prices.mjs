@@ -1,15 +1,15 @@
 // scripts\refresh-wanted-cards-prices.mjs
 // One-off/scheduled batch job (weekly via .github/workflows/
-// refresh-wanted-cards-prices.yml): aggiorna cardmarket_price e
-// cardtrader_price per ogni wanted-card ancora "searching" (vedi discussione
-// 2026-08-08, docs/PROGRESS.md — sono snapshot, non prezzi live, per questo
-// serve un refresh periodico invece di ricalcolarli a ogni lettura).
+// refresh-wanted-cards-prices.yml): refreshes cardmarket_price and
+// cardtrader_price for every wanted card still "searching" (see the 2026-08-08
+// discussion in docs/PROGRESS.md — they are snapshots, not live prices, which is
+// why a periodic refresh is needed instead of recomputing on every read).
 //
-// Duplica la logica di server/utils/cardTrader.ts e
-// server/utils/priceRefresh.ts invece di importarla: quei moduli sono
-// auto-importati da Nitro dentro il runtime Nuxt, non risolvibili da uno
-// script node standalone (stesso motivo per cui geocode-associates.mjs non
-// riusa codice lato server).
+// It duplicates the logic of server/utils/cardTrader.ts and
+// server/utils/priceRefresh.ts rather than importing it: those modules are
+// auto-imported by Nitro inside the Nuxt runtime and cannot be resolved from a
+// standalone node script (the same reason geocode-associates.mjs does not reuse
+// server-side code).
 //
 // Usage:
 //   node --env-file=.env scripts/refresh-wanted-cards-prices.mjs
@@ -35,22 +35,22 @@ const MTG_GAME_ID = 1
 const CARDTRADER_API_BASE = 'https://api.cardtrader.com/api/v2'
 const SCRYFALL_USER_AGENT = 'PauperWave-app/1.0 (wanted-cards weekly price refresh; contact: emanuelenardi.dev@gmail.com)'
 
-// Scryfall chiede max 10 richieste/sec e un delay "gentile" tra le chiamate:
-// https://scryfall.com/docs/api#rate-limits-and-good-citizenship. CardTrader
-// ha un limite di 10 req/sec sull'endpoint marketplace/products — stesso
-// delay va bene per entrambe le chiamate fatte per riga.
+// Scryfall asks for at most 10 requests/sec and a "polite" delay between calls:
+// https://scryfall.com/docs/api#rate-limits-and-good-citizenship. CardTrader has a
+// 10 req/sec limit on the marketplace/products endpoint — the same delay works for
+// both calls made per row.
 const REQUEST_DELAY_MS = 150
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-// Il finish va dedotto dalla stampa, non solo dal treatment della richiesta:
-// esistono stampe solo-foil (Pramikon, Sky Rampart in c19; le showcase
-// giapponesi di Duskmourn) dove prices.eur è null per costruzione e il prezzo
-// vive in prices.eur_foil. Leggendo solo .eur si otteneva null su quelle
-// carte — e lo stesso effectiveFoil serve a CardTrader, che altrimenti filtra
-// mtg_foil=false su una carta che in non-foil non è mai esistita.
+// The finish has to be inferred from the printing, not just from the request's
+// treatment: foil-only printings exist (Pramikon, Sky Rampart in c19; Duskmourn's
+// Japanese showcases) where prices.eur is null by construction and the price lives
+// in prices.eur_foil. Reading only .eur returned null on those cards — and the same
+// effectiveFoil is needed by CardTrader, which would otherwise filter on
+// mtg_foil=false for a card that never existed in non-foil.
 async function fetchCardmarketPrice(scryfallId, wantsFoil) {
   const response = await fetch(`https://api.scryfall.com/cards/${scryfallId}`, {
     headers: { 'User-Agent': SCRYFALL_USER_AGENT, 'Accept': 'application/json' }
@@ -66,21 +66,21 @@ async function fetchCardmarketPrice(scryfallId, wantsFoil) {
   return { price: Number.isFinite(parsed) ? parsed : null, effectiveFoil }
 }
 
-// Il codice esatto è il caso comune (stampa della serie base): provandolo per
-// primo si evita di scaricare gli export delle espansioni sorelle.
+// The exact code is the common case (a base-set printing): trying it first avoids
+// downloading the sibling expansions' exports.
 function orderExactFirst(expansions, setCode) {
   return [...expansions]
     .sort((a, b) => Number(b.code === setCode) - Number(a.code === setCode))
     .map(expansion => expansion.id)
 }
 
-// Un set Scryfall non mappa 1:1 su un'espansione CardTrader: loro lo spezzano
-// prefissando il codice — dsk (base), cdsk (Collectors), adsk (Art Series),
-// pdsk (Promos), predsk (Prerelease). Le stampe boosterfun/showcase, che
-// Scryfall tiene sotto lo stesso `dsk` con collector number alto, stanno
-// quindi in `cdsk`: cercare solo nel codice esatto le mancava sempre.
+// A Scryfall set does not map 1:1 onto a CardTrader expansion: they split it by
+// prefixing the code — dsk (base), cdsk (Collectors), adsk (Art Series), pdsk
+// (Promos), predsk (Prerelease). Boosterfun/showcase printings, which Scryfall keeps
+// under the same `dsk` with a high collector number, therefore live in `cdsk`:
+// searching the exact code only missed them every time.
 async function resolveExpansionIds(setCode) {
-  // `%dsk` copre sia il codice esatto sia le sorelle prefissate.
+  // `%dsk` covers both the exact code and the prefixed siblings.
   const { data: cached } = await supabase
     .from('pauperwave_cardtrader_expansions')
     .select('id, code')
@@ -142,12 +142,12 @@ async function resolveBlueprintId(scryfallId, setCode) {
   return null
 }
 
-// La lingua si filtra qui e non più via query param (`language=en` hardcoded):
-// quel default rendeva i due prezzi non confrontabili, perché Scryfall/
-// CardMarket quota il prodotto in qualsiasi lingua mentre noi chiedevamo solo
-// le copie inglesi. Su una stampa japanshowcase (es. Enduring Vitality
-// dsk/394) la differenza era 4× — inglese scarso, non un errore di lookup.
-// `language` null = "Indifferente": nessun filtro, minimo globale.
+// Language is filtered here and no longer via query param (hardcoded
+// `language=en`): that default made the two prices incomparable, because
+// Scryfall/CardMarket quote the product in any language while we asked for English
+// copies only. On a japanshowcase printing (e.g. Enduring Vitality dsk/394) the
+// difference was 4× — scarce in English, not a lookup error. `language` null =
+// "Any": no filter, global minimum.
 async function fetchCardtraderPrice(blueprintId, foil, language) {
   const response = await fetch(
     `${CARDTRADER_API_BASE}/marketplace/products?blueprint_id=${blueprintId}`,
@@ -167,9 +167,9 @@ async function fetchCardtraderPrice(blueprintId, foil, language) {
 }
 
 async function main() {
-  // --all: include anche found/abandoned — per un run occasionale una tantum
-  // (es. dopo il backfill di scryfall_id/set_code su richieste vecchie), non
-  // per il cron settimanale, che resta mirato solo alle ricerche attive.
+  // --all: include found/abandoned too — for an occasional one-off run (e.g. after
+  // backfilling scryfall_id/set_code on old requests), not for the weekly cron,
+  // which stays targeted at active searches only.
   const includeAllStatuses = process.argv.includes('--all')
 
   let query = supabase
@@ -193,8 +193,8 @@ async function main() {
     const wantsFoil = row.treatment.includes('foil')
     let cardmarketPrice = null
     let cardtraderPrice = null
-    // Fallback al treatment se Scryfall non risponde: meglio del nulla, ed è
-    // il comportamento che il job aveva prima di conoscere i finish.
+    // Fall back to the treatment when Scryfall does not answer: better than
+    // nothing, and it is how the job behaved before it knew about finishes.
     let effectiveFoil = wantsFoil
 
     try {

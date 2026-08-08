@@ -8,8 +8,8 @@ interface Props {
 const { cardmarketPrice, cardtraderPrice } = defineProps<Props>()
 const { t } = useI18n()
 
-// Evidenzia la fonte più conveniente solo quando ci sono entrambi i prezzi:
-// con una sola fonte (o due identiche) non c'è nessun confronto da mostrare.
+// Highlight the cheaper source only when both prices are present: with a single
+// source (or two identical ones) there is no comparison to show.
 const cheapest = computed(() => {
   if (cardmarketPrice === null || cardtraderPrice === null) return null
   if (cardmarketPrice === cardtraderPrice) return null

@@ -5,10 +5,9 @@ export const useBreadcrumbs = () => {
   const route = useRoute()
   const { t } = useI18n()
 
-  // Solo i nomi che vuoi personalizzare (opzionale)
-  // Primo livello della route -> etichetta personalizzata
-  // Se non è presente, verrà formattato automaticamente
-  // (es: 'user-profile' -> 'User Profile')
+  // Only the names worth customising (optional): first route level -> custom label.
+  // Anything missing is formatted automatically (e.g. 'user-profile' -> 'User
+  // Profile').
   const customLabels = computed<Record<string, string>>(() => ({
     transactions: t('transaction.breadcrumb'),
     associates: t('associate.breadcrumb'),
@@ -22,7 +21,7 @@ export const useBreadcrumbs = () => {
     rulesets: t('ruleset.breadcrumb')
   }))
 
-  // Labels per i query params organizzati per route
+  // Query param labels, organised by route
   const queryLabels = computed<Record<string, Record<string, Record<string, string>>>>(() => ({
     transactions: {
       type: {
@@ -46,15 +45,15 @@ export const useBreadcrumbs = () => {
     }
   }))
 
-  // Funzione helper per formattare nomi
+  // Helper to format segment names
   const formatSegment = (segment: string): string => {
     return customLabels.value[segment] || segment.split('-')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ')
   }
 
-  // Segmenti la cui pagina di listato vive sotto un altro nome
-  // (es. il dettaglio è su /associate/[slug] ma il listato è su /associates)
+  // Segments whose list page lives under a different name (e.g. the detail sits at
+  // /associate/[slug] while the list is at /associates)
   const pathOverrides: Record<string, string> = {
     associate: '/associates'
   }
@@ -71,13 +70,13 @@ export const useBreadcrumbs = () => {
       return acc
     }, [{ label: t('nav.dashboard'), to: '/' }])
 
-    // Gestione query params
-    const firstSegment = segments[0] // es: 'transactions' o 'associates'
+    // Query param handling
+    const firstSegment = segments[0] // e.g. 'transactions' or 'associates'
 
     if (firstSegment && queryLabels.value[firstSegment]) {
       const routeQueryLabels = queryLabels.value[firstSegment]
 
-      // Cerca in tutti i possibili query params configurati
+      // Look through every configured query param
       for (const [queryParam, labels] of Object.entries(routeQueryLabels)) {
         const value = route.query[queryParam] as string
 
@@ -86,7 +85,7 @@ export const useBreadcrumbs = () => {
             label: labels[value],
             to: { path: route.path, query: { [queryParam]: value } }
           })
-          break // Mostra solo il primo query param trovato
+          break // Only show the first query param found
         }
       }
     }

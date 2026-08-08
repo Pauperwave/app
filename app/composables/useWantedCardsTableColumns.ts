@@ -8,17 +8,17 @@ import ManaCost from '~/components/magic/ManaCost.vue'
 import CardPreviewTooltip from '~/components/magic/CardPreviewTooltip.vue'
 import PlayerTag from '~/components/PlayerTag.vue'
 
-// Config pura (dipende solo da t()) — estratta dalla pagina per isolare le
-// ~110 righe di definizione colonne dal resto della logica della vista.
-// Import diretto da #components invece di resolveComponent(): quest'ultimo
-// funziona in modo affidabile solo dentro un blocco <script setup> di un
-// .vue (dove il compilatore lo riscrive), non da un file .ts puro — usato
-// qui causava "Failed to resolve component" a runtime.
+// Pure config (depends only on t()) — extracted from the page to isolate the ~110
+// lines of column definitions from the rest of the view's logic.
+// Direct import from #components instead of resolveComponent(): the latter only
+// works reliably inside a .vue file's <script setup> block (where the compiler
+// rewrites it), not from a plain .ts file — used here it caused "Failed to resolve
+// component" at runtime.
 export function useWantedCardsTableColumns() {
   const { t } = useI18n()
 
-  // Header ordinabile — pattern verbatim dalla doc Nuxt UI per UTable (icona
-  // che riflette lo stato corrente, toggle asc/desc al click).
+  // Sortable header — pattern taken verbatim from the Nuxt UI docs for UTable (icon
+  // reflecting the current state, asc/desc toggle on click).
   function sortableHeader(label: string, column: Column<WantedCard, unknown>) {
     const isSorted = column.getIsSorted()
     return h(UButton, {
@@ -33,8 +33,8 @@ export function useWantedCardsTableColumns() {
     })
   }
 
-  // Etichette leggibili per il menu "Colonne" — stessa mappa i18n usata per
-  // gli header effettivi delle colonne (pattern da associates/index.vue).
+  // Readable labels for the "Columns" menu — same i18n map used for the actual
+  // column headers (pattern from associates/index.vue).
   const columnHeaders: Record<string, string> = {
     player: t('wantedCard.columns.player'),
     cmc: t('wantedCard.columns.manaCost'),
@@ -53,8 +53,8 @@ export function useWantedCardsTableColumns() {
     {
       accessorKey: 'player',
       header: ({ column }) => sortableHeader(t('wantedCard.columns.player'), column),
-      // Ordina i gruppi per numero di richieste (subRows), non alfabeticamente
-      // per nome — è quello che serve davvero quando la tabella è raggruppata.
+      // Sorts groups by number of requests (subRows), not alphabetically by name —
+      // that is what is actually useful when the table is grouped.
       sortingFn: (rowA, rowB) => (rowA.subRows?.length ?? 0) - (rowB.subRows?.length ?? 0),
       cell: ({ row, getValue }) => {
         if (!row.getIsGrouped()) return h(PlayerTag, { name: getValue<string>() })
@@ -75,9 +75,9 @@ export function useWantedCardsTableColumns() {
     {
       accessorKey: 'cmc',
       header: ({ column }) => sortableHeader(t('wantedCard.columns.manaCost'), column),
-      // Ordinamento da collezione convenzionale MTG: prima il gruppo colore
-      // (W, U, B, R, G, multicolore, incolore), poi il costo di mana crescente
-      // — stesso algoritmo di MagicTheGathering/league (colorGroupRank).
+      // Conventional MTG collection ordering: colour group first (W, U, B, R, G,
+      // multicolour, colourless), then ascending mana cost — same algorithm as
+      // MagicTheGathering/league (colorGroupRank).
       sortingFn: (rowA, rowB) => {
         const colorDiff = colorGroupRank(rowA.original.colorIdentity)
           - colorGroupRank(rowB.original.colorIdentity)
@@ -88,9 +88,9 @@ export function useWantedCardsTableColumns() {
     {
       accessorKey: 'cardName',
       header: ({ column }) => sortableHeader(t('wantedCard.columns.name'), column),
-      // Niente più link a Scryfall al click: su mobile l'hover non esiste, e
-      // CardPreviewTooltip gestisce già il tap con una modale a schermo intero
-      // — stesso comportamento di magic/card/Tooltip.vue in MagicTheGathering/blog.
+      // No more Scryfall link on click: hover does not exist on mobile, and
+      // CardPreviewTooltip already handles the tap with a full-screen modal — same
+      // behaviour as magic/card/Tooltip.vue in MagicTheGathering/blog.
       cell: ({ row }) => row.getIsGrouped()
         ? null
         : h(CardPreviewTooltip, { name: row.original.cardName, imageUrl: row.original.imageUrl })

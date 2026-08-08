@@ -8,10 +8,6 @@ import type { Period, Range } from '~/types'
 
 const { t } = useI18n()
 
-onMounted(() => {
-  console.log('Index page mounted')
-})
-
 const items = computed<DropdownMenuItem[][]>(() => [[{
   label: t('home.quickCreate.newAssociate'),
   icon: 'i-lucide-user-plus',

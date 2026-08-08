@@ -1,5 +1,4 @@
 <!-- app\pages\login.vue -->
-// app/pages/login.vue
 <script setup lang="ts">
 import * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
@@ -41,7 +40,7 @@ type Schema = v.InferOutput<typeof schema>
 const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
   const { email } = payload.data
 
-  // 1. Controlla se esiste nella tabella "pauperwave_associates"
+  // 1. Check whether it exists in the "pauperwave_associates" table
   let check, checkError
   try {
     check = await $fetch<{ exists: boolean }>('/api/check-associate', {
@@ -71,7 +70,7 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
     return
   }
 
-  // 2. Se esiste, invia il magic link
+  // 2. If it exists, send the magic link
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {

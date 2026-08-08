@@ -61,8 +61,8 @@ const range = shallowRef<Range>({
         <li>{{ $t('event.tournamentsList.body.detailsLink') }}</li>
       </ul>
 
-      <!-- TODO: temporaneo, da rimuovere quando la tabella con dati reali
-           sostituirà questo placeholder -->
+      <!-- TODO: temporary, remove once the table with real data
+           replaces this placeholder -->
       <UButton
         :to="`/events/${route.params.eventId}/tournaments/1`"
         variant="outline"

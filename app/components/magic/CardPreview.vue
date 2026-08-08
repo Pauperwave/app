@@ -20,10 +20,10 @@ const gradientStyle = computed(() => {
 </script>
 
 <template>
-  <!-- Sempre montato (opacità a scomparsa, non v-if): riserva sempre il suo
-       spazio — un'immagine w-64 in rapporto 5:7 reale (358px di altezza) —
-       indipendentemente da un'edizione selezionata o meno, così la modale
-       non salta di altezza nel momento in cui viene scelta. -->
+  <!-- Always mounted (fading opacity, not v-if): it always reserves its space —
+       a w-64 image at a true 5:7 ratio (358px tall) — whether or not an edition
+       is selected, so the modal does not jump in height the moment one is
+       chosen. -->
   <div
     class="mt-4 p-4 rounded-lg shadow-lg flex gap-4 justify-center transition-opacity"
     :class="printing ? 'opacity-100' : 'opacity-0 pointer-events-none'"

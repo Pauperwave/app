@@ -2,12 +2,12 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
-// Lookup live per una stampa candidata, non ancora una wanted-card salvata —
-// usato dal picker "Edizione" di AddModal.vue per mostrare il doppio prezzo
-// prima ancora di aggiungere la richiesta. Nessun filtro lingua (il picker
-// non conosce la lingua della stampa mostrata) né foil (il toggle "Foil" è
-// un controllo separato nel form, non ancora noto qui) — anteprima
-// indicativa, il prezzo preciso arriva con refresh-prices dopo il salvataggio.
+// Live lookup for a candidate printing, not yet a saved wanted card — used by
+// AddModal.vue's "Edition" picker to show both prices before the request is even
+// added. No language filter (the picker does not know the displayed printing's
+// language) and no foil filter (the "Foil" toggle is a separate control in the
+// form, not known here yet) — an indicative preview; the precise price arrives via
+// refresh-prices after saving.
 export default defineEventHandler(async (event) => {
   await requireUser(event)
 

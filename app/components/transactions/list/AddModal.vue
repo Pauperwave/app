@@ -35,8 +35,7 @@ const eventOptions = [
   'Commanderwave Fest'
 ]
 
-// Reordere in priority order
-// predefinito 'torneo'
+// Reordered by priority; defaults to 'entry-fee' (tournament)
 const paymentTypeOptions = computed(() => [
   { value: 'entry-fee', label: t('transaction.addModal.paymentTypeOptions.entryFee'), icon: 'i-lucide-trophy' },
   { value: 'membership', label: t('transaction.addModal.paymentTypeOptions.membership'), icon: 'i-lucide-users' },
@@ -51,12 +50,12 @@ const paymentMethodOptions = computed(() => [
   { value: 'bank-transfer', label: t('transaction.addModal.paymentMethodOptions.bankTransfer') }
 ])
 
-// v.forward(v.partialCheck([...paths], requirement, msg), [path]) è
-// l'equivalente Valibot di un .superRefine() con ctx.addIssue su un path
-// specifico: partialCheck legge più campi (qui payer_is_associate + il
-// campo target) per decidere se sollevare l'errore, forward lo attacca al
-// campo giusto invece che alla radice dell'oggetto — un check per ciascuno
-// dei 5 campi condizionali dell'originale, stessa logica 1:1.
+// v.forward(v.partialCheck([...paths], requirement, msg), [path]) is Valibot's
+// equivalent of a .superRefine() with ctx.addIssue on a specific path:
+// partialCheck reads several fields (here payer_is_associate + the target field)
+// to decide whether to raise the error, and forward attaches it to the right field
+// instead of the object root — one check for each of the original's 5 conditional
+// fields, same logic 1:1.
 const schema = v.pipe(
   v.object({
     associate_id: v.optional(v.string()),
@@ -67,11 +66,11 @@ const schema = v.pipe(
     payer_surname: v.optional(v.pipe(
       v.string(), v.minLength(2, t('transaction.addModal.validation.payerLastNameTooShort'))
     )),
-    // trim/toLowerCase sono trasformazioni, v.email() valida il formato —
-    // stesso ordine della pipeline Zod precedente.
+    // trim/toLowerCase are transformations, v.email() validates the format —
+    // same order as the previous Zod pipeline.
     payer_email: v.pipe(v.string(), v.trim(), v.email(), v.toLowerCase()),
     payer_tax_code: v.optional(v.pipe(v.string(), v.trim())),
-    // le date possono essere sia passate che future
+    // dates can be either past or future
     payment_datetime: v.string(),
     payment_amount: v.pipe(
       v.number(), v.minValue(0, t('transaction.addModal.validation.amountNotNegative'))
@@ -198,8 +197,6 @@ const onlyNumbers = (event: KeyboardEvent) => {
     return
   }
 
-  console.log('key pressed: ', key)
-
   // Prevent if not a number
   if (!/^\d$/.test(key)) {
     event.preventDefault()
@@ -251,7 +248,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 </script>
 
 <template>
-  <!-- TODO rendere tutte le modali dismissible="false" e content: 'max-w-2xl' -->
+  <!-- TODO make every modal dismissible="false" and content: 'max-w-2xl' -->
   <UModal
     v-model:open="open"
     :dismissible="false"
