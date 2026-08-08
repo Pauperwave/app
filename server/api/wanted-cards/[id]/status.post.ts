@@ -7,7 +7,7 @@ interface SetWantedCardStatusBody {
 }
 
 export default defineEventHandler(async (event) => {
-  await requireManagementPermission(event)
+  const user = await requireManagementPermission(event)
 
   const id = Number(getRouterParam(event, 'id'))
   const { status } = await readBody<SetWantedCardStatusBody>(event)
@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
 
   const { data, error } = await supabase
     .from('pauperwave_wanted_cards')
-    .update({ status })
+    .update({ status, ...await auditColumnsForUpdate(event, user) })
     .eq('id', id)
     .select()
     .single()

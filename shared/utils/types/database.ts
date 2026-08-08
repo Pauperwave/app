@@ -765,6 +765,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "pauperwave_wanted_cards_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "pauperwave_wanted_cards_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
+          {
             foreignKeyName: "pauperwave_wanted_cards_player_associate_uuid_fkey"
             columns: ["player_associate_uuid"]
             isOneToOne: false
@@ -774,6 +788,20 @@ export type Database = {
           {
             foreignKeyName: "pauperwave_wanted_cards_player_associate_uuid_fkey"
             columns: ["player_associate_uuid"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "pauperwave_wanted_cards_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "pauperwave_wanted_cards_updated_by_fkey"
+            columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "pauperwave_associates_with_status"
             referencedColumns: ["uuid"]

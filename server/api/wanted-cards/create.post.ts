@@ -20,7 +20,7 @@ interface CreateWantedCardBody {
 // requests (see former migration 20260807200045, now enforced here instead
 // of via RLS since the service-role client bypasses it).
 export default defineEventHandler(async (event) => {
-  await requireUser(event)
+  const user = await requireUser(event)
   const body = await readBody<CreateWantedCardBody>(event)
 
   const supabase = serverSupabaseServiceRole<Database>(event)
@@ -38,7 +38,8 @@ export default defineEventHandler(async (event) => {
       copies: body.copies,
       language: body.language,
       treatment: body.treatment,
-      notes: body.notes
+      notes: body.notes,
+      ...await auditColumnsForInsert(event, user)
     })
     .select()
     .single()
