@@ -10,7 +10,9 @@
     "statisticsSection": "Statistiche",
     "settingsSection": "Impostazioni",
     "feedback": "Feedback",
+    "feedbackSubject": "PauperWave - Feedback",
     "helpSupport": "Help & Support",
+    "helpSupportSubject": "PauperWave - Richiesta di supporto",
     "search": {
       "goTo": "Go to",
       "associates": "Associati",
@@ -28,7 +30,9 @@
     "showColumns": "Mostra colonne",
     "yes": "Yes",
     "no": "No",
-    "filterEmailsPlaceholder": "Filter emails..."
+    "filterEmailsPlaceholder": "Filter emails...",
+    "switchToLightMode": "Passa al tema chiaro",
+    "switchToDarkMode": "Passa al tema scuro"
   },
   "inputs": {
     "clearButton": {
@@ -511,7 +515,11 @@
     }
   },
   "player": {
-    "breadcrumb": "Giocatori"
+    "breadcrumb": "Giocatori",
+    "tabs": {
+      "active": "Attivi",
+      "inactive": "Non attivi"
+    }
   },
   "wantedCard": {
     "breadcrumb": "Carte Cercate",
@@ -524,13 +532,51 @@
       "priceHint": "Prezzo indicativo del valore della carta",
       "sortBy": "Ordina per"
     },
+    "tour": {
+      "startButton": "Tour guidato",
+      "steps": {
+        "viewMode": {
+          "title": "Griglia o Tabella",
+          "description": "Passa dalla vista a griglia (schede carte) alla vista tabella in qualsiasi momento."
+        },
+        "cardAnatomy": {
+          "title": "Anatomia di una carta",
+          "description": "Copie, lingua e trattamento in alto; il pallino colorato mostra da quanto tempo è aperta la richiesta (verde = recente, giallo = da un po', rosso = da tempo); prezzo indicativo e note (icona a fumetto) quando presenti."
+        },
+        "add": {
+          "title": "Nuova richiesta",
+          "description": "Cerca una carta su Scryfall, scegli l'edizione esatta e il giocatore per aggiungerla alle carte cercate."
+        },
+        "filters": {
+          "title": "Filtri",
+          "description": "A sinistra trovi sempre i filtri: stato, lingua, trattamento e \"Le mie richieste\" restringono quali carte vedi, senza cambiarne l'ordine o la disposizione."
+        },
+        "viewControls": {
+          "title": "Vista",
+          "description": "A destra i controlli di visualizzazione: ordinamento, raggruppamento e colonne visibili cambiano solo come sono mostrate le carte già filtrate, non quali carte vedi."
+        },
+        "done": {
+          "title": "Pronto!",
+          "description": "Ora sai come funziona questa pagina. Buona ricerca!"
+        }
+      },
+      "back": "Indietro",
+      "next": "Avanti",
+      "finish": "Fine",
+      "stepIndicator": "{current} di {total}"
+    },
     "contextMenu": {
       "markAs": {
         "searching": "Segna come in cerca",
         "found": "Segna come trovata",
-        "abandoned": "Segna come abbandonata"
+        "abandoned": "Abbandona la ricerca"
       },
       "updateErrorTitle": "Impossibile aggiornare la richiesta",
+      "copyName": "Copia nome carta",
+      "nameCopied": "Nome carta copiato",
+      "viewOnScryfall": "Vedi su Scryfall",
+      "searchOnCardMarket": "Cerca su CardMarket",
+      "searchOnCardTrader": "Cerca su CardTrader",
       "edit": "Modifica",
       "delete": "Elimina",
       "deleteConfirmTitle": "Eliminare questa richiesta?"
@@ -557,7 +603,9 @@
       "cardNamePlaceholder": "Cerca per nome carta...",
       "statusAll": "Tutte",
       "languagePlaceholder": "Lingua",
-      "groupByPlayer": "Raggruppa per giocatore"
+      "groupByPlayer": "Raggruppa per giocatore",
+      "onlyMine": "Le mie richieste",
+      "onlyMineUnavailable": "Nessun profilo associato trovato per la tua email"
     },
     "languages": {
       "any": "Indifferente",
@@ -600,7 +648,7 @@
     },
     "editModal": {
       "title": "Modifica richiesta",
-      "cardReadOnlyHint": "Carta ed edizione non modificabili: elimina e ricrea la richiesta per cambiarle",
+      "cardReadOnlyHint": "Il nome della carta non è modificabile: elimina e ricrea la richiesta per cambiarlo",
       "successToastTitle": "Richiesta aggiornata",
       "successToastDescription": "\"{name}\" aggiornata",
       "errorToastTitle": "Impossibile aggiornare la richiesta",
@@ -761,6 +809,7 @@
     "appearance": "Aspetto",
     "light": "Chiaro",
     "dark": "Scuro",
+    "automatic": "Automatico",
     "githubRepository": "Repository GitHub",
     "logout": "Disconnetti",
     "logoutErrorTitle": "Errore",
