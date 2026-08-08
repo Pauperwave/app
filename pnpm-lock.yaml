@@ -152,9 +152,6 @@ importers:
       vue-i18n:
         specifier: ^11.4.8
         version: 11.4.8(vue@3.5.40(typescript@6.0.3))
-      zod:
-        specifier: ^4.4.3
-        version: 4.4.3
     devDependencies:
       '@nuxt/eslint':
         specifier: ^1.16.0
@@ -15631,7 +15628,8 @@ snapshots:
       compress-commons: 6.0.2
       readable-stream: 4.7.0
 
-  zod@4.4.3: {}
+  zod@4.4.3:
+    optional: true
 
   zrender@6.1.0:
     dependencies:
