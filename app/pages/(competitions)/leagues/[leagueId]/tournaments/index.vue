@@ -23,7 +23,8 @@ const route = useRoute()
     <template #body>
       {{ $t('league.tournamentsList.body') }}
 
-      <!-- TODO: temporaneo, da rimuovere quando la tabella con dati reali sostituirà questo placeholder -->
+      <!-- TODO: temporaneo, da rimuovere quando la tabella con dati reali
+           sostituirà questo placeholder -->
       <UButton
         :to="`/leagues/${route.params.leagueId}/tournaments/1`"
         variant="outline"

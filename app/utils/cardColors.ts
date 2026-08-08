@@ -47,14 +47,25 @@ export function extractColorsFromManaCost(costString: string): Set<string> {
   return colors
 }
 
+interface CardColorInput {
+  manaCost?: string | null
+  isDoubleFaced?: boolean
+  backManaCost?: string | null
+  colorIdentity?: string[]
+}
+
 /** Risolve i colori da mostrare per una carta: dal costo di mana (fronte +
  * retro se a due facce), poi color identity, poi incolore come fallback. */
-export function resolveCardColors(card: { manaCost?: string | null, isDoubleFaced?: boolean, backManaCost?: string | null, colorIdentity?: string[] }): string[] {
+export function resolveCardColors(card: CardColorInput): string[] {
   const colors = new Set<string>()
 
   if (card.manaCost) extractColorsFromManaCost(card.manaCost).forEach(c => colors.add(c))
-  if (card.isDoubleFaced && card.backManaCost) extractColorsFromManaCost(card.backManaCost).forEach(c => colors.add(c))
-  if (colors.size === 0 && card.colorIdentity?.length) card.colorIdentity.forEach(c => colors.add(c))
+  if (card.isDoubleFaced && card.backManaCost) {
+    extractColorsFromManaCost(card.backManaCost).forEach(c => colors.add(c))
+  }
+  if (colors.size === 0 && card.colorIdentity?.length) {
+    card.colorIdentity.forEach(c => colors.add(c))
+  }
   if (colors.size === 0) return ['C']
 
   return Array.from(colors)

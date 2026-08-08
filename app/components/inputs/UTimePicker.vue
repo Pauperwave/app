@@ -7,7 +7,9 @@ interface Props {
   minuteStep?: number
 }
 
-const { modelValue, placeholder, icon, minuteStep = 15 } = defineProps<Props>()
+const {
+  modelValue, placeholder, icon, minuteStep = 15
+} = defineProps<Props>()
 const { t } = useI18n()
 
 const emit = defineEmits<{

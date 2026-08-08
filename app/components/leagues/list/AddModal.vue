@@ -27,8 +27,16 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 </script>
 
 <template>
-  <UModal v-model:open="open" :title="$t('league.addModal.title')" :description="$t('league.addModal.description')">
-    <UButton :label="$t('league.addModal.openButton')" icon="i-lucide-trophy" @click="() => { open = true }" />
+  <UModal
+    v-model:open="open"
+    :title="$t('league.addModal.title')"
+    :description="$t('league.addModal.description')"
+  >
+    <UButton
+      :label="$t('league.addModal.openButton')"
+      icon="i-lucide-trophy"
+      @click="() => { open = true }"
+    />
 
     <template #body>
       <UForm
@@ -40,7 +48,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         <UFormField :label="$t('league.addModal.fields.name')" placeholder="John Doe" name="name">
           <UInput v-model="state.name" class="w-full" />
         </UFormField>
-        <UFormField :label="$t('league.addModal.fields.email')" placeholder="john.doe@example.com" name="email">
+        <UFormField
+          :label="$t('league.addModal.fields.email')"
+          placeholder="john.doe@example.com"
+          name="email"
+        >
           <UInput v-model="state.email" class="w-full" />
         </UFormField>
         <div class="flex justify-end gap-2">

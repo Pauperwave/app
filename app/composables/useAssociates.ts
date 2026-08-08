@@ -4,7 +4,9 @@ import type { Associate } from '~/types'
 export const useAssociates = () => {
   const supabase = useSupabaseClient()
 
-  const { data: associates, pending: loading, error, refresh } = useAsyncData(
+  const {
+    data: associates, pending: loading, error, refresh
+  } = useAsyncData(
     'associates',
     async () => {
       const { data, error: supabaseError } = await supabase

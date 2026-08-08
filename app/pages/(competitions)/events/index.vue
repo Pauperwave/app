@@ -35,7 +35,7 @@ const range = shallowRef<Range>({
 
       <UDashboardToolbar>
         <template #left>
-          <!-- NOTE: The `-ms-1` class is used to align with the `DashboardSidebarCollapse` button here. -->
+          <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->
           <HomeDateRangePicker v-model="range" class="-ms-1" />
         </template>
       </UDashboardToolbar>
@@ -44,7 +44,8 @@ const range = shallowRef<Range>({
     <template #body>
       {{ $t('event.placeholder') }}
 
-      <!-- TODO: temporaneo, da rimuovere quando la tabella con dati reali sostituirà questo placeholder -->
+      <!-- TODO: temporaneo, da rimuovere quando la tabella con dati reali
+           sostituirà questo placeholder -->
       <UButton
         to="/events/1"
         variant="outline"

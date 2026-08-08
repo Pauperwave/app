@@ -221,7 +221,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     :description="$t('transaction.addModal.description')"
   >
     <!-- Trigger button goes in the default slot -->
-    <UButton :label="$t('transaction.addModal.openButton')" icon="i-lucide-coins" @click="() => { open = true }" />
+    <UButton
+      :label="$t('transaction.addModal.openButton')"
+      icon="i-lucide-coins"
+      @click="() => { open = true }"
+    />
 
     <template #body>
       <UForm
@@ -239,7 +243,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           <UTabs v-model="activeTab" :items="items">
             <template #associate>
               <div class="grid grid-cols-2 gap-2 mt-2">
-                <UFormField :label="$t('transaction.addModal.fields.associateId')" name="associate_id" required>
+                <UFormField
+                  :label="$t('transaction.addModal.fields.associateId')"
+                  name="associate_id"
+                  required
+                >
                   <UInput
                     v-model="associateDigits"
                     placeholder="000"
@@ -267,7 +275,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                   </UInput>
                 </UFormField>
 
-                <UFormField :label="$t('transaction.addModal.fields.member')" name="associate_id" required>
+                <UFormField
+                  :label="$t('transaction.addModal.fields.member')"
+                  name="associate_id"
+                  required
+                >
                   <UInputMenu
                     :items="users"
                     class="w-full"
@@ -289,7 +301,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
             <template #external>
               <div class="grid grid-cols-2 gap-2 mt-2">
-                <UFormField :label="$t('transaction.addModal.fields.firstName')" name="payer_name" required>
+                <UFormField
+                  :label="$t('transaction.addModal.fields.firstName')"
+                  name="payer_name"
+                  required
+                >
                   <UInput
                     v-model="state.payer_name"
                     type="text"
@@ -302,7 +318,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                   </UInput>
                 </UFormField>
 
-                <UFormField :label="$t('transaction.addModal.fields.lastName')" name="payer_surname" required>
+                <UFormField
+                  :label="$t('transaction.addModal.fields.lastName')"
+                  name="payer_surname"
+                  required
+                >
                   <UInput
                     v-model="state.payer_surname"
                     type="text"
@@ -315,7 +335,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                   </UInput>
                 </UFormField>
 
-                <UFormField :label="$t('transaction.addModal.fields.email')" name="payer_email" required>
+                <UFormField
+                  :label="$t('transaction.addModal.fields.email')"
+                  name="payer_email"
+                  required
+                >
                   <UInput
                     v-model="state.payer_email"
                     type="email"
@@ -330,7 +354,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                   </UInput>
                 </UFormField>
 
-                <UFormField :label="$t('transaction.addModal.fields.taxCode')" name="payer_tax_code" required>
+                <UFormField
+                  :label="$t('transaction.addModal.fields.taxCode')"
+                  name="payer_tax_code"
+                  required
+                >
                   <UInput
                     v-model="payerTaxCodeInput"
                     type="text"
@@ -391,7 +419,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             </USelect>
           </UFormField>
 
-          <UFormField :label="$t('transaction.addModal.fields.paymentMethod')" name="payment_method">
+          <UFormField
+            :label="$t('transaction.addModal.fields.paymentMethod')"
+            name="payment_method"
+          >
             <USelect
               v-model="state.payment_method"
               :items="paymentMethodOptions"

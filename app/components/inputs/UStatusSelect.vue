@@ -16,7 +16,9 @@ interface Props {
   placeholder?: string
 }
 
-const { modelValue, name = 'status', label, items, placeholder } = defineProps<Props>()
+const {
+  modelValue, name = 'status', label, items, placeholder
+} = defineProps<Props>()
 const { t } = useI18n()
 
 const resolvedPlaceholder = computed(() => placeholder ?? t('inputs.statusSelect.placeholder'))

@@ -30,7 +30,7 @@ const range = shallowRef<Range>({
           <UBreadcrumb :items="breadcrumbItems" class="ms-2" />
         </template>
         <template #right>
-          <!-- NOTE: The `-ms-1` class is used to align with the `DashboardSidebarCollapse` button here. -->
+          <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->
           <HomeDateRangePicker v-model="range" class="-ms-1" />
         </template>
       </UDashboardToolbar>
@@ -61,7 +61,8 @@ const range = shallowRef<Range>({
         <li>{{ $t('event.tournamentsList.body.detailsLink') }}</li>
       </ul>
 
-      <!-- TODO: temporaneo, da rimuovere quando la tabella con dati reali sostituirà questo placeholder -->
+      <!-- TODO: temporaneo, da rimuovere quando la tabella con dati reali
+           sostituirà questo placeholder -->
       <UButton
         :to="`/events/${route.params.eventId}/tournaments/1`"
         variant="outline"

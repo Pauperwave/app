@@ -166,7 +166,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     :title="$t('tournament.addModal.title')"
     :description="$t('tournament.addModal.description')"
   >
-    <UButton :label="$t('tournament.addModal.openButton')" icon="i-lucide-swords" @click="open = true" />
+    <UButton
+      :label="$t('tournament.addModal.openButton')"
+      icon="i-lucide-swords"
+      @click="open = true"
+    />
 
     <template #body>
       <UForm
@@ -208,7 +212,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               </USelect>
             </UFormField>
 
-            <UFormField :label="$t('tournament.addModal.fields.companionCode')" name="companion_code">
+            <UFormField
+              :label="$t('tournament.addModal.fields.companionCode')"
+              name="companion_code"
+            >
               <UInput
                 :model-value="state.companion_code ?? ''"
                 :placeholder="$t('tournament.addModal.fields.companionCodePlaceholder')"
@@ -312,7 +319,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 />
               </UFormField>
 
-              <UFormField :label="$t('tournament.addModal.fields.roundDuration')" name="round_duration">
+              <UFormField
+                :label="$t('tournament.addModal.fields.roundDuration')"
+                name="round_duration"
+              >
                 <UInputNumber
                   v-model="state.round_duration"
                   :step="5"
