@@ -2,8 +2,8 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { WantedCard } from '~/types'
-import { format, parseISO } from 'date-fns'
 import PlayerTag from '~/components/wanted-cards/PlayerTag.vue'
+import WantedCardAge from '~/components/wanted-cards/WantedCardAge.vue'
 
 interface GridSection {
   /** null = nessun raggruppamento attivo, nessuna intestazione di sezione. */
@@ -22,23 +22,10 @@ const { t } = useI18n()
 
 const hasCards = computed(() => sections.some(section => section.cards.length))
 
-const languageFlags: Record<string, string> = {
-  en: 'i-circle-flags-gb',
-  it: 'i-circle-flags-it',
-  es: 'i-circle-flags-es',
-  fr: 'i-circle-flags-fr',
-  de: 'i-circle-flags-de',
-  ja: 'i-circle-flags-jp'
-}
-
-function formatDate(dateString: string): string {
-  if (!dateString) return ''
-  try {
-    return format(parseISO(dateString), 'dd/MM/yyyy')
-  } catch {
-    return ''
-  }
-}
+// Ancora lo step "anatomia di una carta" del tour guidato (vedi useTour in
+// wanted-cards/index.vue) sulla prima card renderizzata, qualunque sia la
+// sezione/il raggruppamento attivo.
+const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]?.id)
 </script>
 
 <template>
@@ -71,6 +58,7 @@ function formatDate(dateString: string): string {
           :items="contextMenuItems(card)"
         >
           <UCard
+            :id="card.id === firstCardId ? 'tour-wanted-cards-first-card' : undefined"
             :ui="{ body: 'p-0 sm:p-0', footer: 'p-3 sm:p-3' }"
             class="overflow-hidden"
           >
@@ -100,7 +88,7 @@ function formatDate(dateString: string): string {
                 <UBadge
                   color="neutral"
                   variant="subtle"
-                  :icon="languageFlags[card.language] ?? 'i-lucide-languages'"
+                  :icon="WANTED_CARD_LANGUAGE_ICONS[card.language] ?? 'i-lucide-languages'"
                   class="gap-2"
                 >
                   {{ t(`wantedCard.languages.${card.language || 'any'}`) }}
@@ -114,13 +102,14 @@ function formatDate(dateString: string): string {
                   {{ t(`wantedCard.treatments.${treatment}`) }}
                 </UBadge>
 
-                <span v-if="card.date" class="flex items-center gap-1 text-xs text-muted shrink-0">
-                  <UIcon name="i-lucide-calendar" class="size-3.5" />
-                  {{ formatDate(card.date) }}
-                </span>
+                <WantedCardAge :date="card.date" />
 
                 <div class="flex items-center gap-1.5 ms-auto shrink-0">
-                  <UBadge v-if="showStatus" :color="wantedCardStatusColor(card.status)" variant="subtle">
+                  <UBadge
+                    v-if="showStatus"
+                    :color="wantedCardStatusColor(card.status)"
+                    variant="subtle"
+                  >
                     {{ t(`wantedCard.status.${card.status}`) }}
                   </UBadge>
                   <template v-if="card.price !== null">
@@ -135,7 +124,8 @@ function formatDate(dateString: string): string {
               <div v-else class="flex flex-col gap-2">
                 <div class="flex items-center justify-between gap-4">
                   <div class="flex items-center gap-1.5 min-w-0">
-                    <!-- Nome giocatore già nell'intestazione di sezione quando raggruppato: qui sarebbe ridondante. -->
+                    <!-- Nome giocatore già nell'intestazione di sezione
+                         quando raggruppato: qui sarebbe ridondante. -->
                     <PlayerTag v-if="!section.player" :name="card.player" />
                     <UTooltip v-if="card.notes" :text="card.notes">
                       <UIcon name="i-lucide-message-circle" class="size-4 text-muted shrink-0" />
@@ -156,7 +146,7 @@ function formatDate(dateString: string): string {
                   <UBadge
                     color="neutral"
                     variant="subtle"
-                    :icon="languageFlags[card.language] ?? 'i-lucide-languages'"
+                    :icon="WANTED_CARD_LANGUAGE_ICONS[card.language] ?? 'i-lucide-languages'"
                     class="gap-2"
                   >
                     {{ t(`wantedCard.languages.${card.language || 'any'}`) }}
@@ -169,10 +159,7 @@ function formatDate(dateString: string): string {
                   >
                     {{ t(`wantedCard.treatments.${treatment}`) }}
                   </UBadge>
-                  <span v-if="card.date" class="flex items-center gap-1 text-xs text-muted shrink-0 ms-auto">
-                    <UIcon name="i-lucide-calendar" class="size-3.5" />
-                    {{ formatDate(card.date) }}
-                  </span>
+                  <WantedCardAge :date="card.date" class="ms-auto" />
                   <UBadge
                     v-if="showStatus"
                     :color="wantedCardStatusColor(card.status)"
