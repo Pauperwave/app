@@ -71,3 +71,5 @@ Loose observations and open questions, not yet committed to the backlog. Promote
 - **`HomeDateRangePicker` is not a home component.** Used by 7 pages, only one of which is `pages/index.vue`; the rest are statistics, transactions, events, leagues and tournaments. Same shape as `ViewModeTabs` before it was moved to `app/components/` root.
   - Found: 2026-08-08, auditing component folders after moving `PlayerTag`/`ManaCost`/`CardPreview*` out of `wanted-cards/`.
   - Next step: move to `app/components/DateRangePicker.vue` (`<DateRangePicker>`), updating the 7 call sites. Cheap, but touches pages unrelated to whatever else is in flight — worth doing on its own.
+
+- *(Promoted 2026-08-09 to `docs/BACKLOG.md` P1: the "Campionato Cittadino" cross-tournament ranking. The open question that kept it here — league vs. orthogonal axis — was settled by the user in favour of orthogonal, and the official regulation supplied the scoring rules.)*
