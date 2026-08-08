@@ -5,6 +5,43 @@ One entry per **notable** commit, newest first, grouped by date. Each entry: the
 
 ## 2026-08-08
 
+### `refactor(associates): ♻️ extract useCurrentAssociate from the wanted-cards filters`
+
+- The logged-in-user → Associate resolution (by email) was needed by `AddModal.vue` too, to prefill "Giocatore" — not just the "Le mie richieste" filter anymore.
+
+### `feat(wanted-cards): 🗃️ add CardTrader as a second price source`
+
+- Two prices per request instead of one: CardMarket via Scryfall and the CardTrader minimum. Both are snapshots (manual refresh from the context menu, or a weekly job), hence the `*_synced_at` columns.
+- CardTrader has no name search, so its blueprint has to be resolved from the set: `scryfall_id`/`set_code` added to requests (backfilled from `scryfall_url` for old rows) plus two cache tables. Two gotchas found along the way: a printing can exist foil-only (Pramikon in C19, Duskmourn's Japanese showcases), so finish has to be derived from the printing, not the requested treatment; and a Scryfall set doesn't map 1:1 to a CardTrader expansion — they split by prefixed code (`dsk`, `cdsk` Collectors, `adsk` Art Series, etc.), so lookup tries the exact code then its siblings.
+- Language is filtered on the listings themselves rather than a query param — the hardcoded `language=en` made the two prices incomparable, with gaps up to 4× on Japanese-frame cards.
+
+### `feat(wanted-cards): ✨ show mana cost and card preview while searching`
+
+- Name search moves from `/cards/autocomplete` to `/cards/search` — the former returns bare strings, so mana cost was never in the data. Full card objects let the row render like league's `CommanderSuggestionRow.vue` (mana symbols on a dark chip, hover preview via `MagicCardHoverPreview`).
+- The client-side "A-" (Alchemy) prefix filter goes away too — `/cards/search` supports full syntax, so `game:paper` excludes Alchemy cards properly.
+
+### `refactor(components): 🚚 move generic MTG and player components out of wanted-cards`
+
+- `PlayerTag`/`TourGuide` move to root, `ManaCost`/`CardPreview`/`CardPreviewTooltip` to `magic/` (needed by the upcoming Commander area). `Age.vue`/`Prices.vue` lose their `WantedCard` filename prefix — with `pathPrefix: true` Nuxt doesn't dedupe `WantedCardAge` under `wanted-cards/` (the trailing `s` doesn't match), so the auto-imported name became `WantedCardsWantedCardAge` and silently failed to resolve at runtime.
+- Extracts `magic/CardHoverPreview.vue`: the cursor-following tooltip was duplicated between `CardPreviewTooltip` and `PrintingRow.vue` (anchor, virtual `:reference`, the three pointer handlers, the same transparent `UTooltip`) and was about to triple with the search row. The two callers shrink from 114/89 lines to 27/40.
+
+### `refactor(validation): 🔥 replace zod with valibot in every form schema`
+
+- Ten schemas converted from `z.*` to `v.pipe()`/`v.object()`; zod drops out of `package.json` and the Vite `optimizeDeps` pre-bundling. valibot requires a message on the base type too, not just the constraint, hence the new `*Required` i18n keys.
+- `login.vue` also loses three leftover `console.log`s from the magic-link debugging.
+
+### `feat(i18n): 🌐 add price, search and validation strings, generalize tour keys`
+
+- Tour navigation labels (back/next/finish/stepIndicator) move from `wantedCard.tour` to a top-level `tour` block, so `TourGuide.vue` no longer depends on a domain namespace now that it's generic; `startButton` and `steps` stay under `wantedCard` since they're page content.
+
+### `fix(tooling): 🩹 mark commit-msg hook executable`
+
+- Git only runs a hook if it has the executable bit, and skips it silently otherwise. Unnoticeable on Windows (`core.filemode` is `false`), but the `100644` mode was committed to the index and travels with the repo — on macOS/Linux, commit-message validation would have vanished silently.
+
+### `docs: 📝 log component-folder debt found while reorganizing`
+
+- Three observations from moving generic components out of `wanted-cards`: the `magic/` → `ScryfallPrinting` dependency (accepted knowingly), six components with zero references (including the sole occupant of `rounds/`), and `HomeDateRangePicker` — used by 7 pages despite the name.
+
 ### `refactor(wanted-cards): ♻️ unify filters and extract page composables`
 
 - `wanted-cards/index.vue` 805 → 363 lines, split into `useWantedCardsFilters.ts`, `useWantedCardsTableColumns.ts` and `useWantedCardsRowActions.ts`.
