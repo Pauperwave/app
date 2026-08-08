@@ -4,7 +4,7 @@
 
 Documento vivo per tracciare avanzamento, architettura e decisioni. Aggiornare quando cambiano scope, stack o convenzioni rilevanti.
 
-**Ultimo aggiornamento:** 2026-08-05
+**Ultimo aggiornamento:** 2026-08-08
 
 ---
 
@@ -14,7 +14,7 @@ Gestionale per l'associazione **PauperWave**: organizzazione di tornei multi-for
 
 Diverse tabelle nello schema attuale (`mtg_commanders`, `commander_decks`, `tournament_kills`, `tournament_pairings` a 4 posti fissi, `tournament_votes`, la famiglia `rulesets`) incorporano assunzioni specifiche di Commander a livello di schema, non solo di dati — vedi `docs/architecture/database.md` per l'inventario completo tabella-per-tabella. Prima di costruire i flussi Premodern/Draft/Pauper serve una decisione di design su queste tabelle: renderle format-aware, oppure tenerle esplicitamente Commander-only con un percorso parallelo/generico per gli altri formati.
 
-Il database Supabase di questo progetto è inoltre destinato a diventare la base per il futuro rebuild di `MagicTheGathering/league` — la correttezza/stabilità dello schema ha quindi priorità su refactor o feature non essenziali finché questo obiettivo non è raggiunto.
+**Integrazione con `MagicTheGathering/league` — imminente, non un obiettivo lontano.** `app` diventerà il progetto unico: il suo backend Supabase (già in costruzione con schema agnostico dal formato, non specifico Commander) e il suo frontend (già più strutturato di quello di league) sono la destinazione finale. `league` verrà assorbito qui, non il contrario — le sue tabelle/meccanismi specifici di Commander (kills, votes, pairing a 4 posti, ruleset) andranno reimplementati in forma agnostica dentro lo schema di `app`. **Scadenza: domenica 30 agosto 2026** — il draft "Lo Hobbit" verrà potenzialmente gestito con questa applicazione, quindi tutto ciò che si costruisce da qui in avanti va fatto pensando all'architettura di destinazione (mutazioni, caching, struttura backend), non con soluzioni provvisorie da rifare al momento dell'integrazione.
 
 ## Stack tecnologico
 
@@ -41,13 +41,13 @@ Il database Supabase di questo progetto è inoltre destinato a diventare la base
 
 **Decisione:** `Associate` ora estende `Database['public']['Tables']['pauperwave_associates']['Row']` (generato da `supabase gen types`), con override espliciti solo dove serve una union più stretta (`RequestStatus`, `AssociateType`). Un futuro rename/rimozione di colonna produce un errore di compilazione invece di un bug silenzioso a runtime.
 
-### ADR-003 — Questo DB come base per `MagicTheGathering/league` (2026-08-05)
+### ADR-003 — Questo DB come base per `MagicTheGathering/league` (2026-08-05, corretto 2026-08-08)
 
-**Contesto:** il DB Supabase di `app` è destinato a diventare la fondazione del futuro rebuild di `league`, un progetto sorella già più maturo.
+**Contesto:** il DB Supabase di `app` è destinato a diventare la fondazione dell'integrazione con `league`. **Correzione 2026-08-08:** inizialmente descritto come "rebuild futuro di league, progetto sorella già più maturo" — non è così: `league` verrà **assorbito dentro `app`**, non il contrario. `app` ha già lo schema più adatto (agnostico dal formato) e il frontend più strutturato; le tabelle/meccanismi specifici di Commander di league (kills, votes, pairing a 4 posti, ruleset) andranno reimplementati qui in forma generica. Non è un obiettivo lontano: scadenza **domenica 30 agosto 2026** (draft "Lo Hobbit", potenzialmente gestito con questa app — vedi Obiettivo del progetto in cima al documento).
 
-**Decisione:** finché questo obiettivo non è raggiunto, la priorità va alla correttezza/stabilità dello schema (colonne morte, drift nome-campo tra DB e codice, nullability, policy RLS sovrapposte — vedi `docs/architecture/database.md` e `docs/TODO.md`) rispetto a refactor o feature non essenziali nel codice applicativo.
+**Decisione:** la correttezza/stabilità dello schema (colonne morte, drift nome-campo tra DB e codice, nullability, policy RLS sovrapposte — vedi `docs/architecture/database.md` e `docs/TODO.md`) ha priorità sui refactor o feature non essenziali, ed entro il 30/08 va valutato esplicitamente cosa di `league` (dati, tabelle, meccanismi Commander-specifici) deve confluire in `app` prima dell'evento.
 
-**Conseguenze:** richieste di refactor "carino ma non necessario" (es. estrarre configurazioni/badge condivisi tra domini non correlati) vengono deliberatamente rimandate — vedi `docs/audits/2026-08-05-fallow-dupes-review.md`.
+**Conseguenze:** richieste di refactor "carino ma non necessario" (es. estrarre configurazioni/badge condivisi tra domini non correlati) vengono deliberatamente rimandate — vedi `docs/audits/2026-08-05-fallow-dupes-review.md`. Ogni nuova feature/mutazione va scritta pensando all'architettura di destinazione post-integrazione (vedi ADR-007), non con soluzioni provvisorie.
 
 ### ADR-004 — `UTimePicker` custom mantenuto invece di `UInputTime` nativo (2026-08-05)
 
