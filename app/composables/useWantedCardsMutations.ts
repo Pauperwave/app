@@ -15,11 +15,18 @@ export interface NewWantedCard {
   notes: string | null
 }
 
-// Solo i campi che ha senso modificare su una richiesta esistente — non il
-// nome carta/edizione (quello equivale a creare una richiesta diversa, non a
-// modificarla).
+// Il nome carta resta fisso (cambiarlo equivale a creare una richiesta
+// diversa), ma l'edizione/stampa esatta è modificabile — scryfallUrl e i
+// dati Scryfall che ne derivano (manaCost/colorIdentity/cmc/imageUrl/price)
+// cambiano insieme quando si sceglie un'altra stampa nel picker.
 export interface WantedCardEdits {
   playerAssociateUuid: string
+  scryfallUrl: string
+  manaCost: string
+  colorIdentity: string[]
+  cmc: number
+  imageUrl: string | null
+  price: number | null
   copies: number
   language: string | null
   treatment: string[]
