@@ -11,7 +11,10 @@ export function useWantedCardsQuery() {
     query: async (): Promise<WantedCard[]> => {
       const { data, error } = await supabase
         .from('pauperwave_wanted_cards')
-        .select('*, associate:pauperwave_associates(first_name, last_name)')
+        // Hint esplicito sulla colonna FK: da quando created_by/updated_by
+        // referenziano anche loro pauperwave_associates, PostgREST non può
+        // più dedurre da solo quale delle tre relazioni usare per "associate".
+        .select('*, associate:pauperwave_associates!player_associate_uuid(first_name, last_name)')
         .order('requested_at', { ascending: false })
 
       if (error) throw error
