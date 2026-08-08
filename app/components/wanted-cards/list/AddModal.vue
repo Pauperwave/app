@@ -1,6 +1,6 @@
 <!-- app\components\wanted-cards\list\AddModal.vue -->
 <script setup lang="ts">
-import * as z from 'zod'
+import * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 
 const open = defineModel<boolean>({ default: false })
@@ -14,6 +14,7 @@ const { t } = useI18n()
 // associato, questo picker andrà ripensato.
 const { associates } = useAssociates()
 const { createWantedCard } = useWantedCardsMutations()
+const currentAssociate = useCurrentAssociate()
 
 // "APS Pauperwave" (PW-0000) è il record anagrafico dell'associazione stessa,
 // non un giocatore reale — non ha senso comparire come richiedente.
@@ -40,17 +41,38 @@ const languageOptions = computed(() => [
   { label: t('wantedCard.languages.ja'), value: 'ja', icon: 'i-circle-flags-jp' }
 ])
 
-const schema = z.object({
-  name: z.string().min(2, t('wantedCard.addModal.validation.nameTooShort')),
-  printingId: z.string().min(1, t('wantedCard.addModal.validation.printingRequired')),
-  copies: z.number().int().positive(),
-  language: z.string(),
-  foil: z.boolean().optional(),
-  notes: z.string().optional(),
-  player: z.string().min(1, t('wantedCard.addModal.validation.playerRequired'))
+// v.string(msg)/v.number(msg) personalizzano anche l'errore di TIPO (non solo
+// i vincoli come minLength/minValue) — prima, con Zod, un campo mai
+// selezionato (undefined) falliva il controllo di tipo prima ancora di
+// arrivare a .min(), mostrando il messaggio generico di libreria ("Invalid
+// input: expected string, received undefined") invece del nostro
+// (osservato su "Edizione" in produzione, 2026-08-08). Ogni v.pipe() qui
+// copre entrambi i casi con lo stesso messaggio, dove il campo è
+// obbligatorio.
+const schema = v.object({
+  name: v.pipe(
+    v.string(t('wantedCard.addModal.validation.nameRequired')),
+    v.minLength(2, t('wantedCard.addModal.validation.nameTooShort'))
+  ),
+  printingId: v.pipe(
+    v.string(t('wantedCard.addModal.validation.printingRequired')),
+    v.minLength(1, t('wantedCard.addModal.validation.printingRequired'))
+  ),
+  copies: v.pipe(
+    v.number(t('wantedCard.addModal.validation.copiesRequired')),
+    v.integer(t('wantedCard.addModal.validation.copiesInteger')),
+    v.minValue(1, t('wantedCard.addModal.validation.copiesPositive'))
+  ),
+  language: v.string(),
+  foil: v.optional(v.boolean()),
+  notes: v.optional(v.string()),
+  player: v.pipe(
+    v.string(t('wantedCard.addModal.validation.playerRequired')),
+    v.minLength(1, t('wantedCard.addModal.validation.playerRequired'))
+  )
 })
 
-type Schema = z.output<typeof schema>
+type Schema = v.InferOutput<typeof schema>
 
 const state = reactive<Partial<Schema>>({
   name: undefined,
@@ -64,11 +86,30 @@ const state = reactive<Partial<Schema>>({
 
 const currentLanguage = computed(() => languageOptions.value.find(l => l.value === state.language))
 
+// Precompila "Giocatore" con l'utente loggato appena la modale si apre — non
+// al setup del componente, perché associates/authUser potrebbero non essere
+// ancora risolti in quel momento. Non sovrascrive una scelta già fatta a
+// mano (!state.player), quindi riaprire la modale dopo averla cambiata non
+// la resetta all'utente loggato.
+watch([open, currentAssociate], ([isOpen, associate]) => {
+  if (isOpen && associate && !state.player) state.player = associate.uuid
+})
+
 // Ricerca live su Scryfall — vedi commento in useScryfallCardSearch.ts sul
 // perché non un catalogo locale come i comandanti in league.
 const {
   query, nameSuggestions, isSuggesting, printings, isLoadingPrintings, fetchPrintings
 } = useScryfallCardSearch()
+
+// value-key sul nome: così state.name resta una stringa anche se gli item
+// portano con sé il costo di mana da mostrare nella riga (stesso schema di
+// printingItems qui sotto).
+const nameItems = computed(() => nameSuggestions.value.map(suggestion => ({
+  label: suggestion.name,
+  manaCost: suggestion.manaCost,
+  imageUrl: suggestion.imageUrl,
+  value: suggestion.name
+})))
 
 // Una carta scelta dall'autocomplete ha (quasi) sempre più stampe: appena il
 // nome è confermato si sceglie anche l'edizione/artwork esatta, azzerando la
@@ -88,11 +129,32 @@ watch(() => state.printingId, (printingId) => {
   if (!printing?.finishes.includes('foil')) state.foil = false
 })
 
+// Prezzo CardTrader per ogni stampa candidata nel picker "Edizione" — a
+// differenza di cardmarketPrice (già nella risposta di Scryfall), va
+// richiesto separatamente per ognuna: anteprima best-effort (nessun filtro
+// lingua/foil, vedi commento in server/api/cardtrader/price.get.ts), il
+// prezzo preciso arriva dopo il salvataggio via refresh-prices. undefined =
+// non ancora richiesto, null = richiesto ma nessuna inserzione trovata —
+// cache locale per stampa, non svuotata tra una ricerca e l'altra: riaprire
+// lo stesso nome in questa sessione della modale non ripete le chiamate.
+const cardtraderPrices = ref<Record<string, number | null>>({})
+watch(printings, (list) => {
+  for (const printing of list) {
+    if (printing.id in cardtraderPrices.value) continue
+    $fetch<{ price: number | null }>('/api/cardtrader/price', {
+      query: { scryfallId: printing.id, setCode: printing.set }
+    })
+      .then(({ price }) => { cardtraderPrices.value[printing.id] = price })
+      .catch(() => { cardtraderPrices.value[printing.id] = null })
+  }
+})
+
 const printingItems = computed(() => printings.value.map(printing => ({
   label: printing.setName,
   collectorNumber: printing.collectorNumber,
   imageUrl: printing.imageUrl,
-  price: printing.price,
+  cardmarketPrice: printing.price,
+  cardtraderPrice: cardtraderPrices.value[printing.id] ?? null,
   value: printing.id
 })))
 
@@ -131,10 +193,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       playerAssociateUuid: event.data.player,
       cardName: printing.name,
       scryfallUrl: printing.scryfallUrl,
+      scryfallId: printing.id,
+      setCode: printing.set,
       manaCost: printing.manaCost,
       colorIdentity: printing.colorIdentity,
       cmc: printing.cmc,
       imageUrl: printing.imageUrl,
+      cardmarketPrice: printing.price,
       copies: event.data.copies,
       language: event.data.language === 'any' ? null : event.data.language,
       treatment: event.data.foil ? ['foil'] : [],
@@ -185,13 +250,29 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           <USelectMenu
             v-model="state.name"
             v-model:search-term="query"
-            :items="nameSuggestions"
+            :items="nameItems"
+            value-key="value"
             :loading="isSuggesting"
             ignore-filter
             :placeholder="$t('wantedCard.addModal.fields.namePlaceholder')"
             icon="i-lucide-scan-search"
             class="w-full"
-          />
+          >
+            <template #item-label="{ item }">
+              <MagicCardHoverPreview
+                :image-url="item.imageUrl"
+                :alt="item.label"
+                class="flex items-center gap-2 min-w-0"
+              >
+                <!-- Sfondo scuro dietro i simboli, come in league: quelli
+                     bianchi/incolori sparirebbero sul tema chiaro. -->
+                <span v-if="item.manaCost" class="shrink-0 bg-gray-950 p-1 rounded">
+                  <MagicManaCost :mana-cost="item.manaCost" size="sm" />
+                </span>
+                <span class="truncate">{{ item.label }}</span>
+              </MagicCardHoverPreview>
+            </template>
+          </USelectMenu>
         </UFormField>
 
         <UFormField :label="$t('wantedCard.addModal.fields.printing')" name="printingId" required>
@@ -199,6 +280,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             v-model="state.printingId"
             :items="printingItems"
             value-key="value"
+            :filter-fields="['label', 'collectorNumber']"
             :disabled="!state.name"
             :loading="isLoadingPrintings"
             :placeholder="$t('wantedCard.addModal.fields.printingPlaceholder')"
@@ -209,13 +291,14 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 :label="item.label"
                 :collector-number="item.collectorNumber"
                 :image-url="item.imageUrl"
-                :price="item.price"
+                :cardmarket-price="item.cardmarketPrice"
+                :cardtrader-price="item.cardtraderPrice"
               />
             </template>
           </USelectMenu>
         </UFormField>
 
-        <WantedCardsCardPreview :printing="selectedPrinting ?? null" />
+        <MagicCardPreview :printing="selectedPrinting ?? null" />
 
         <div class="grid grid-cols-3 gap-2">
           <UFormField :label="$t('wantedCard.addModal.fields.copies')" name="copies">
