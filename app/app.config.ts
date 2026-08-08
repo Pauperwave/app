@@ -30,6 +30,14 @@ export default defineAppConfig({
         root: '[scrollbar-gutter:stable]'
       }
     },
+    button: {
+      slots: {
+        // Nuxt UI's <button> doesn't get cursor:pointer by default (that's
+        // the browser default too — only <a> gets it natively). Applies to
+        // every UButton app-wide, not just one instance.
+        base: 'cursor-pointer'
+      }
+    },
     navigationMenu: {
       slots: {
         root: 'gap-4',
