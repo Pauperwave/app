@@ -72,7 +72,11 @@ const state = reactive<Schema>({
 // calendar sync
 const calendarDate = computed<CalendarDate | null>({
   get: () => state.born_date
-    ? new CalendarDate(state.born_date.getFullYear(), state.born_date.getMonth() + 1, state.born_date.getDate())
+    ? new CalendarDate(
+      state.born_date.getFullYear(),
+      state.born_date.getMonth() + 1,
+      state.born_date.getDate()
+    )
     : null,
   set: (newDate) => {
     state.born_date = newDate ? newDate.toDate(getLocalTimeZone()) : new Date('1990-01-01')
@@ -84,14 +88,18 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     console.log('Form submitted:', event.data)
     toast.add({
       title: t('associate.addModal.successToastTitle'),
-      description: t('associate.addModal.successToastDescription', { name: `${event.data.first_name} ${event.data.last_name}` }),
+      description: t('associate.addModal.successToastDescription', {
+        name: `${event.data.first_name} ${event.data.last_name}`
+      }),
       color: 'success'
     })
     open.value = false
   } catch (err) {
     toast.add({
       title: t('associate.addModal.errorToastTitle'),
-      description: t('associate.addModal.errorToastDescription', { message: err instanceof Error ? err.message : String(err) }),
+      description: t('associate.addModal.errorToastDescription', {
+        message: err instanceof Error ? err.message : String(err)
+      }),
       color: 'error'
     })
   }
@@ -106,7 +114,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     :title="$t('associate.addModal.title')"
     :description="$t('associate.addModal.description')"
   >
-    <UButton :label="$t('associate.addModal.openButton')" icon="i-lucide-user-plus" @click="open = true" />
+    <UButton
+      :label="$t('associate.addModal.openButton')"
+      icon="i-lucide-user-plus"
+      @click="open = true"
+    />
 
     <template #body>
       <UForm

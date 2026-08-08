@@ -8,7 +8,9 @@ export interface AssociateGeocode {
 export const useAssociateGeocodes = () => {
   const supabase = useSupabaseClient()
 
-  const { data: geocodes, pending: loading, error, refresh } = useAsyncData(
+  const {
+    data: geocodes, pending: loading, error, refresh
+  } = useAsyncData(
     'associate-geocodes',
     async () => {
       const { data, error: supabaseError } = await supabase

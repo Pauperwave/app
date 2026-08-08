@@ -32,7 +32,8 @@ const targetItems = ref<Item[]>([])
 const sourceSelection = ref<Item[]>([])
 const targetSelection = ref<Item[]>([])
 
-const sourceItems = computed(() => items.filter(item => !targetItems.value.some(t => t.value === item.value)))
+const sourceItems = computed(() =>
+  items.filter(item => !targetItems.value.some(t => t.value === item.value)))
 
 function transferSelected() {
   targetItems.value = [...targetItems.value, ...sourceSelection.value]
@@ -40,7 +41,8 @@ function transferSelected() {
 }
 
 function removeSelected() {
-  targetItems.value = targetItems.value.filter(item => !targetSelection.value.some(t => t.value === item.value))
+  targetItems.value = targetItems.value.filter(item =>
+    !targetSelection.value.some(t => t.value === item.value))
   targetSelection.value = []
 }
 </script>

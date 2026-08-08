@@ -51,7 +51,7 @@ onMounted(() => {
 
       <UDashboardToolbar>
         <template #left>
-          <!-- NOTE: The `-ms-1` class is used to align with the `DashboardSidebarCollapse` button here. -->
+          <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->
           <HomeDateRangePicker v-model="range" class="-ms-1" />
         </template>
       </UDashboardToolbar>

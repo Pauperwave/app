@@ -21,7 +21,8 @@ const markers = computed(() => {
       const geocode = geocodeByUuid.get(associate.uuid)
       return geocode ? { associate, geocode } : null
     })
-    .filter((marker): marker is { associate: Associate, geocode: AssociateGeocode } => marker !== null)
+    .filter((marker): marker is { associate: Associate, geocode: AssociateGeocode } =>
+      marker !== null)
 })
 
 const missingCount = computed(() => associates.length - markers.value.length)
@@ -58,10 +59,16 @@ const missingCount = computed(() => associates.length - markers.value.length)
         >
           <LPopup>
             <div class="flex items-center gap-4 min-w-48">
-              <UAvatar :src="generatePlayerAvatar(marker.associate.id)" :alt="`${marker.associate.first_name} ${marker.associate.last_name}`" size="lg" />
+              <UAvatar
+                :src="generatePlayerAvatar(marker.associate.id)"
+                :alt="`${marker.associate.first_name} ${marker.associate.last_name}`"
+                size="lg"
+              />
               <div class="flex flex-col gap-1">
                 <NuxtLink
-                  :to="`/associate/${slugify(`${marker.associate.first_name} ${marker.associate.last_name}`)}`"
+                  :to="`/associate/${
+                    slugify(`${marker.associate.first_name} ${marker.associate.last_name}`)
+                  }`"
                   class="font-semibold hover:underline"
                 >
                   {{ marker.associate.first_name }} {{ marker.associate.last_name }}

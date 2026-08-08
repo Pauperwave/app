@@ -16,7 +16,9 @@ interface Props {
   price?: number | null
 }
 
-const { label, collectorNumber, imageUrl, price = null } = defineProps<Props>()
+const {
+  label, collectorNumber, imageUrl, price = null
+} = defineProps<Props>()
 
 const tooltipOpen = ref(false)
 const anchor = ref({ x: 0, y: 0 })

@@ -3,7 +3,10 @@ import type { MembershipStatus } from '~/types'
 
 export type MembershipStatusBadgeColor = 'success' | 'warning' | 'error' | 'neutral'
 
-export const membershipStatusConfig: Record<MembershipStatus, { color: MembershipStatusBadgeColor, icon: string }> = {
+export const membershipStatusConfig: Record<
+  MembershipStatus,
+  { color: MembershipStatusBadgeColor, icon: string }
+> = {
   active: { color: 'success', icon: 'i-lucide-check-circle' },
   to_renew: { color: 'warning', icon: 'i-lucide-refresh-cw' },
   expired: { color: 'error', icon: 'i-lucide-ban' },
