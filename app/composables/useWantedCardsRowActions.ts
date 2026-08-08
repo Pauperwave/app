@@ -8,7 +8,7 @@ import type { WantedCard, WantedCardStatus } from '~/types'
 export function useWantedCardsRowActions() {
   const { t } = useI18n()
   const toast = useToast()
-  const { setStatus, deleteWantedCard } = useWantedCardsMutations()
+  const { setStatus, deleteWantedCard, refreshPrices } = useWantedCardsMutations()
 
   // Scrittura riservata alla gestione via RLS lato server (has_management_
   // permissions) — un utente non-admin vede l'errore in un toast invece di
@@ -81,13 +81,58 @@ export function useWantedCardsRowActions() {
     }
   }
 
-  // URL di ricerca esterne — nessuna API, solo la stessa query che un
+  // URL di ricerca CardMarket — nessuna API, solo la stessa query che un
   // utente digiterebbe a mano nella barra di ricerca del sito.
   function cardMarketSearchUrl(name: string) {
     return `https://www.cardmarket.com/en/Magic/Products/Search?searchString=${encodeURIComponent(name)}`
   }
-  function cardTraderSearchUrl(name: string) {
-    return `https://www.cardtrader.com/cards?name=${encodeURIComponent(name)}`
+
+  // CardTrader non offre una ricerca per nome affidabile (vedi feasibility
+  // study 2026-08-08, docs/PROGRESS.md) — si risolve il link diretto alla
+  // scheda carta via server/api/cardtrader/resolve.get.ts, che di norma
+  // legge dalla cache già scaldata in background alla creazione/modifica
+  // della wanted-card (server/utils/cardTrader.ts). Si apre la finestra
+  // PRIMA del fetch (sync, sul click) e se ne imposta la location dopo:
+  // aprirla solo a fetch risolto verrebbe bloccata dal popup blocker, che
+  // richiede un'apertura sincrona nel gesture dell'utente. NIENTE 'noopener'
+  // qui: con quel flag window.open restituisce sempre null (per design, è
+  // quello che rimuove il riferimento window.opener), quindi non potremmo
+  // più reindirizzare la finestra dopo il fetch — la scheda resterebbe
+  // vuota per sempre (bug osservato in test manuale 2026-08-08).
+  async function openCardTraderSearch(card: WantedCard) {
+    const fallbackUrl = `https://www.cardtrader.com/cards?name=${encodeURIComponent(card.cardName)}`
+    const win = window.open('', '_blank')
+
+    if (!card.scryfallId || !card.setCode) {
+      if (win) win.location.href = fallbackUrl
+      return
+    }
+
+    try {
+      const { url } = await $fetch<{ url: string | null }>('/api/cardtrader/resolve', {
+        query: { scryfallId: card.scryfallId, setCode: card.setCode }
+      })
+      if (win) win.location.href = url ?? fallbackUrl
+    } catch {
+      if (win) win.location.href = fallbackUrl
+    }
+  }
+
+  // Stesso permesso di changeStatus/confirmDelete (solo gestione, vedi
+  // refresh-prices.post.ts) — richiede scryfallId/setCode già popolati
+  // (mancano solo sulle richieste create prima della migrazione 20260808120000
+  // e non ancora modificate una volta).
+  async function refreshCardPrices(card: WantedCard) {
+    try {
+      await refreshPrices.mutateAsync(card.id)
+      toast.add({ title: t('wantedCard.contextMenu.pricesRefreshed'), color: 'success' })
+    } catch (err) {
+      toast.add({
+        title: t('wantedCard.contextMenu.updateErrorTitle'),
+        description: toErrorMessage(err),
+        color: 'error'
+      })
+    }
   }
 
   // Condiviso tra menu contestuale della tabella e delle card in griglia.
@@ -126,7 +171,13 @@ export function useWantedCardsRowActions() {
       {
         label: t('wantedCard.contextMenu.searchOnCardTrader'),
         icon: 'i-lucide-search',
-        onSelect: () => window.open(cardTraderSearchUrl(card.cardName), '_blank', 'noopener')
+        onSelect: () => openCardTraderSearch(card)
+      },
+      {
+        label: t('wantedCard.contextMenu.refreshPrices'),
+        icon: 'i-lucide-refresh-cw',
+        disabled: !card.scryfallId || !card.setCode,
+        onSelect: () => refreshCardPrices(card)
       },
       { type: 'separator' },
       {

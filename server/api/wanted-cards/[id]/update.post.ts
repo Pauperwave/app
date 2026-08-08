@@ -5,11 +5,13 @@ import type { Database } from '#shared/utils/types/database'
 interface UpdateWantedCardBody {
   playerAssociateUuid: string
   scryfallUrl: string
+  scryfallId: string
+  setCode: string
   manaCost: string
   colorIdentity: string[]
   cmc: number
   imageUrl: string | null
-  price: number | null
+  cardmarketPrice: number | null
   copies: number
   language: string | null
   treatment: string[]
@@ -29,11 +31,14 @@ export default defineEventHandler(async (event) => {
     .update({
       player_associate_uuid: body.playerAssociateUuid,
       scryfall_url: body.scryfallUrl,
+      scryfall_id: body.scryfallId,
+      set_code: body.setCode,
       mana_cost: body.manaCost || null,
       color_identity: body.colorIdentity,
       cmc: body.cmc,
       image_url: body.imageUrl,
-      price: body.price,
+      cardmarket_price: body.cardmarketPrice,
+      cardmarket_price_synced_at: body.cardmarketPrice !== null ? new Date().toISOString() : null,
       copies: body.copies,
       language: body.language,
       treatment: body.treatment,
@@ -46,6 +51,13 @@ export default defineEventHandler(async (event) => {
 
   if (error || !data) {
     throw createError({ statusCode: 500, statusMessage: error?.message ?? 'Wanted card update failed' })
+  }
+
+  // Stesso prefetch in background di create.post.ts — cambiare
+  // edizione/stampa può puntare a una carta mai risolta prima.
+  const token = useRuntimeConfig(event).cardTraderApiToken
+  if (token) {
+    resolveCardTraderBlueprint(supabase, token, body.scryfallId, body.setCode).catch(() => {})
   }
 
   return { wantedCard: data }
