@@ -66,15 +66,16 @@ const currentLanguage = computed(() => languageOptions.value.find(l => l.value =
 
 // Ricerca live su Scryfall — vedi commento in useScryfallCardSearch.ts sul
 // perché non un catalogo locale come i comandanti in league.
-const { query, nameSuggestions, isSuggesting, printings, isLoadingPrintings, fetchPrintings } = useScryfallCardSearch()
+const {
+  query, nameSuggestions, isSuggesting, printings, isLoadingPrintings, fetchPrintings
+} = useScryfallCardSearch()
 
 // Una carta scelta dall'autocomplete ha (quasi) sempre più stampe: appena il
 // nome è confermato si sceglie anche l'edizione/artwork esatta, azzerando la
 // selezione precedente (un nome diverso invalida la stampa già scelta).
 watch(() => state.name, (name) => {
   state.printingId = undefined
-  if (name) fetchPrintings(name)
-  else printings.value = []
+  fetchPrintings(name)
 })
 
 // "Trattamento" (full art, extended art, borderless, ecc.) è sparito: sono
@@ -95,7 +96,13 @@ const printingItems = computed(() => printings.value.map(printing => ({
   value: printing.id
 })))
 
-const selectedPrinting = computed(() => printings.value.find(printing => printing.id === state.printingId))
+const selectedPrinting = computed(() =>
+  printings.value.find(printing => printing.id === state.printingId))
+
+const foilUnavailableHint = computed(() =>
+  selectedPrinting.value && !selectedPrinting.value.finishes.includes('foil')
+    ? t('wantedCard.addModal.foilUnavailable')
+    : undefined)
 
 const submitting = ref(false)
 
@@ -112,7 +119,6 @@ function resetForm() {
   state.notes = undefined
   state.player = undefined
   query.value = ''
-  printings.value = []
 }
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
@@ -161,7 +167,12 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     :description="$t('wantedCard.addModal.description')"
     :ui="{ content: 'max-w-xl' }"
   >
-    <UButton :label="$t('wantedCard.openButton')" icon="i-lucide-plus" @click="open = true" />
+    <UButton
+      id="tour-wanted-cards-add"
+      :label="$t('wantedCard.openButton')"
+      icon="i-lucide-plus"
+      @click="open = true"
+    />
 
     <template #body>
       <UForm
@@ -225,7 +236,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           <UFormField
             :label="$t('wantedCard.treatments.foil')"
             name="foil"
-            :description="selectedPrinting && !selectedPrinting.finishes.includes('foil') ? $t('wantedCard.addModal.foilUnavailable') : undefined"
+            :description="foilUnavailableHint"
           >
             <USwitch
               v-model="state.foil"

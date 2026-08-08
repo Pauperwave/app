@@ -84,7 +84,9 @@ function toPrinting(card: ScryfallApiCard): ScryfallPrinting {
     cmc: card.cmc ?? 0,
     scryfallUrl: card.scryfall_uri,
     isDoubleFaced,
-    backImageUrl: isDoubleFaced ? (backFace?.image_uris?.normal ?? backFace?.image_uris?.large ?? null) : null,
+    backImageUrl: isDoubleFaced
+      ? (backFace?.image_uris?.normal ?? backFace?.image_uris?.large ?? null)
+      : null,
     backManaCost: isDoubleFaced ? (backFace?.mana_cost ?? null) : null,
     finishes: card.finishes ?? [],
     price: parsePrice(card.prices?.eur)
@@ -95,9 +97,6 @@ export function useScryfallCardSearch() {
   const query = ref('')
   const nameSuggestions = ref<string[]>([])
   const isSuggesting = ref(false)
-
-  const printings = ref<ScryfallPrinting[]>([])
-  const isLoadingPrintings = ref(false)
 
   async function fetchSuggestions(q: string) {
     const trimmed = q.trim()
@@ -126,22 +125,48 @@ export function useScryfallCardSearch() {
   const debouncedFetchSuggestions = useDebounceFn(fetchSuggestions, 200)
   watch(query, q => debouncedFetchSuggestions(q))
 
-  async function fetchPrintings(cardName: string) {
-    isLoadingPrintings.value = true
-    printings.value = []
-    try {
+  // La riga di ogni stampa mostra l'immagine solo al passaggio del mouse
+  // (vedi PrintingRow.vue) — senza precaricarle qui, il primo hover su ogni
+  // stampa parte a vuoto e si vede il ritardo di rete. Il precaricamento gira
+  // in background, non blocca la UI: se fallisce (rete lenta, stampa senza
+  // immagine) l'hover ricadrà comunque sul normale caricamento lazy.
+  function preloadImages(list: ScryfallPrinting[]) {
+    if (import.meta.server) return
+    for (const printing of list) {
+      if (!printing.imageUrl) continue
+      const img = new Image()
+      img.src = printing.imageUrl
+    }
+  }
+
+  // Nome carta il cui set di stampe è mostrato — driver della query sotto,
+  // non passato direttamente da fetchPrintings() come prima: così Pinia
+  // Colada tiene le stampe già viste in cache (ram + localStorage via
+  // PiniaColadaCachePersister in colada.options.ts), niente nuova chiamata a
+  // Scryfall se l'utente torna su un nome già cercato in questa sessione o
+  // in una precedente.
+  const selectedCardName = ref<string>()
+
+  const { data: printingsData, isLoading: isLoadingPrintings } = useQuery({
+    key: () => ['scryfall-printings', selectedCardName.value ?? ''],
+    enabled: () => !!selectedCardName.value,
+    query: async (): Promise<ScryfallPrinting[]> => {
       // game:paper esclude le stampe solo digitali (Arena/MTGO, incluso
       // Alchemy) — qui la sintassi di ricerca completa di Scryfall funziona,
       // a differenza di /cards/autocomplete sopra.
       const response = await $fetch<{ data: ScryfallApiCard[] }>('https://api.scryfall.com/cards/search', {
-        query: { q: `!"${cardName}" game:paper`, unique: 'prints', order: 'released', dir: 'desc' }
+        query: { q: `!"${selectedCardName.value}" game:paper`, unique: 'prints', order: 'released', dir: 'desc' }
       })
-      printings.value = (response.data ?? []).map(toPrinting)
-    } catch {
-      printings.value = []
-    } finally {
-      isLoadingPrintings.value = false
+      const list = (response.data ?? []).map(toPrinting)
+      preloadImages(list)
+      return list
     }
+  })
+
+  const printings = computed(() => selectedCardName.value ? (printingsData.value ?? []) : [])
+
+  function fetchPrintings(cardName: string | undefined) {
+    selectedCardName.value = cardName
   }
 
   return {
