@@ -1,6 +1,6 @@
 <!-- app\components\associates\list\AddModal.vue -->
 <script setup lang="ts">
-import * as z from 'zod'
+import * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import { CalendarDate, getLocalTimeZone } from '@internationalized/date'
 import { vMaska } from 'maska/vue'
@@ -17,34 +17,66 @@ function formatDate(date: Date): string {
   return `${day}/${month}/${year}`
 }
 
-const schema = z.object({
-  associate_type: z.enum(['Ordinario', 'Sostenitore']),
-  first_name: z.string().min(2, t('associate.addModal.validation.firstNameTooShort')),
-  last_name: z.string().min(2, t('associate.addModal.validation.lastNameTooShort')),
-  // https://github.com/colinhacks/zod/issues/4642#issuecomment-2957508997
-  // - trim per rimuovere spazi
-  // - email per validare il formato
-  // - toLowerCase per normalizzare
-  email_address: z.string().check(z.trim(), z.email(), z.toLowerCase()),
-  phone_number: z.string().regex(/^\d{10,15}$/, t('associate.addModal.validation.invalidPhoneNumber')),
-  tax_code: z.string().regex(/^[A-Z0-9]{16}$/i, t('associate.addModal.validation.invalidTaxCode')),
-  born_location: z.string().min(2, t('associate.addModal.validation.birthLocationRequired')),
-  born_date: z.date().max(new Date(), { message: t('associate.addModal.validation.birthDateNotFuture') }),
-  born_province: z.string().length(2, t('associate.addModal.validation.birthProvinceRequired')),
-  born_state: z.string().min(2, t('associate.addModal.validation.birthStateRequired')),
-  residency_address: z.string().min(5, t('associate.addModal.validation.residencyAddressRequired')),
-  residency_city: z.string().min(2, t('associate.addModal.validation.residencyCityRequired')),
-  residency_province: z.string().length(2, t('associate.addModal.validation.residencyProvinceInvalid')),
-  residency_cap: z.string().regex(/^\d{5}$/, t('associate.addModal.validation.residencyCapInvalid')),
-  mtgo_nickname: z.string().nullable().default(null),
-  mtga_nickname: z.string().nullable().default(null),
-  consent_data: z.boolean().refine(val => val === true, t('associate.addModal.validation.consentDataRequired')),
-  consent_social: z.boolean().optional(),
-  has_read_statute: z.boolean().refine(val => val === true, t('associate.addModal.validation.statuteReadRequired')),
-  has_acknowledged_surveillance_notice: z.boolean().refine(val => val === true, t('associate.addModal.validation.surveillanceAckRequired'))
+const schema = v.object({
+  associate_type: v.picklist(['Ordinario', 'Sostenitore']),
+  first_name: v.pipe(v.string(), v.minLength(2, t('associate.addModal.validation.firstNameTooShort'))),
+  last_name: v.pipe(v.string(), v.minLength(2, t('associate.addModal.validation.lastNameTooShort'))),
+  // trim/toLowerCase sono trasformazioni (non falliscono mai da sole),
+  // v.email() valida il formato dopo la normalizzazione — stesso ordine
+  // della pipeline Zod precedente.
+  email_address: v.pipe(
+    v.string(),
+    v.trim(),
+    v.email(t('associate.addModal.validation.invalidEmail')),
+    v.toLowerCase()
+  ),
+  phone_number: v.pipe(
+    v.string(),
+    v.regex(/^\d{10,15}$/, t('associate.addModal.validation.invalidPhoneNumber'))
+  ),
+  tax_code: v.pipe(
+    v.string(),
+    v.regex(/^[A-Z0-9]{16}$/i, t('associate.addModal.validation.invalidTaxCode'))
+  ),
+  born_location: v.pipe(v.string(), v.minLength(2, t('associate.addModal.validation.birthLocationRequired'))),
+  born_date: v.pipe(v.date(), v.maxValue(new Date(), t('associate.addModal.validation.birthDateNotFuture'))),
+  born_province: v.pipe(v.string(), v.length(2, t('associate.addModal.validation.birthProvinceRequired'))),
+  born_state: v.pipe(v.string(), v.minLength(2, t('associate.addModal.validation.birthStateRequired'))),
+  residency_address: v.pipe(
+    v.string(),
+    v.minLength(5, t('associate.addModal.validation.residencyAddressRequired'))
+  ),
+  residency_city: v.pipe(v.string(), v.minLength(2, t('associate.addModal.validation.residencyCityRequired'))),
+  residency_province: v.pipe(
+    v.string(),
+    v.length(2, t('associate.addModal.validation.residencyProvinceInvalid'))
+  ),
+  residency_cap: v.pipe(
+    v.string(),
+    v.regex(/^\d{5}$/, t('associate.addModal.validation.residencyCapInvalid'))
+  ),
+  mtgo_nickname: v.nullable(v.string()),
+  mtga_nickname: v.nullable(v.string()),
+  // v.check invece di v.literal(true, ...): v.literal restringerebbe il TIPO
+  // inferito a `true`, incompatibile con lo stato iniziale `false` (checkbox
+  // non ancora spuntata) — v.check su v.boolean() valida senza restringere
+  // il tipo, stessa semantica del .refine(val => val === true) Zod originale.
+  consent_data: v.pipe(
+    v.boolean(),
+    v.check(val => val === true, t('associate.addModal.validation.consentDataRequired'))
+  ),
+  consent_social: v.optional(v.boolean()),
+  has_read_statute: v.pipe(
+    v.boolean(),
+    v.check(val => val === true, t('associate.addModal.validation.statuteReadRequired'))
+  ),
+  has_acknowledged_surveillance_notice: v.pipe(
+    v.boolean(),
+    v.check(val => val === true, t('associate.addModal.validation.surveillanceAckRequired'))
+  )
 })
 
-type Schema = z.infer<typeof schema>
+type Schema = v.InferOutput<typeof schema>
 
 const state = reactive<Schema>({
   associate_type: 'Ordinario',
@@ -85,7 +117,6 @@ const calendarDate = computed<CalendarDate | null>({
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
-    console.log('Form submitted:', event.data)
     toast.add({
       title: t('associate.addModal.successToastTitle'),
       description: t('associate.addModal.successToastDescription', {

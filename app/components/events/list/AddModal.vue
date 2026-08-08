@@ -1,6 +1,6 @@
 <!-- app\components\events\list\AddModal.vue -->
 <script setup lang="ts">
-import * as z from 'zod'
+import * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 
 // Define the model to accept open state from parent
@@ -8,12 +8,18 @@ const open = defineModel<boolean>({ default: false })
 const toast = useToast()
 const { t } = useI18n()
 
-const schema = z.object({
-  name: z.string().min(2, t('event.addModal.validation.nameTooShort')),
-  email: z.string().email(t('event.addModal.validation.invalidEmail'))
+const schema = v.object({
+  name: v.pipe(
+    v.string(t('event.addModal.validation.nameRequired')),
+    v.minLength(2, t('event.addModal.validation.nameTooShort'))
+  ),
+  email: v.pipe(
+    v.string(t('event.addModal.validation.emailRequired')),
+    v.email(t('event.addModal.validation.invalidEmail'))
+  )
 })
 
-type Schema = z.output<typeof schema>
+type Schema = v.InferOutput<typeof schema>
 
 const state = reactive<Partial<Schema>>({
   name: undefined,

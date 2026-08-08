@@ -1,6 +1,6 @@
 <!-- app\components\transactions\list\AddModal.vue -->
 <script setup lang="ts">
-import * as z from 'zod'
+import * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 
 // Define the model to accept open state from parent
@@ -51,45 +51,84 @@ const paymentMethodOptions = computed(() => [
   { value: 'bank-transfer', label: t('transaction.addModal.paymentMethodOptions.bankTransfer') }
 ])
 
-const schema = z.object({
-  associate_id: z.string().optional(),
-  payer_is_associate: z.boolean().default(true),
-  payer_name: z.string().min(2, { message: t('transaction.addModal.validation.payerFirstNameTooShort') }).optional(),
-  payer_surname: z.string().min(2, { message: t('transaction.addModal.validation.payerLastNameTooShort') }).optional(),
-  // https://github.com/colinhacks/zod/issues/4642#issuecomment-2957508997
-  // - trim per rimuovere spazi
-  // - email per validare il formato
-  // - toLowerCase per normalizzare
-  payer_email: z.string().check(z.trim(), z.email(), z.toLowerCase()),
-  payer_tax_code: z.string().trim().optional(),
-  // le date possono essere sia passate che future
-  payment_datetime: z.string(),
-  payment_amount: z.number().nonnegative({
-    message: t('transaction.addModal.validation.amountNotNegative')
+// v.forward(v.partialCheck([...paths], requirement, msg), [path]) è
+// l'equivalente Valibot di un .superRefine() con ctx.addIssue su un path
+// specifico: partialCheck legge più campi (qui payer_is_associate + il
+// campo target) per decidere se sollevare l'errore, forward lo attacca al
+// campo giusto invece che alla radice dell'oggetto — un check per ciascuno
+// dei 5 campi condizionali dell'originale, stessa logica 1:1.
+const schema = v.pipe(
+  v.object({
+    associate_id: v.optional(v.string()),
+    payer_is_associate: v.optional(v.boolean(), true),
+    payer_name: v.optional(v.pipe(
+      v.string(), v.minLength(2, t('transaction.addModal.validation.payerFirstNameTooShort'))
+    )),
+    payer_surname: v.optional(v.pipe(
+      v.string(), v.minLength(2, t('transaction.addModal.validation.payerLastNameTooShort'))
+    )),
+    // trim/toLowerCase sono trasformazioni, v.email() valida il formato —
+    // stesso ordine della pipeline Zod precedente.
+    payer_email: v.pipe(v.string(), v.trim(), v.email(), v.toLowerCase()),
+    payer_tax_code: v.optional(v.pipe(v.string(), v.trim())),
+    // le date possono essere sia passate che future
+    payment_datetime: v.string(),
+    payment_amount: v.pipe(
+      v.number(), v.minValue(0, t('transaction.addModal.validation.amountNotNegative'))
+    ),
+    payment_method: v.picklist(
+      ['Cash', 'PayPal', 'POS', 'Bank Transfer'],
+      t('transaction.addModal.validation.invalidPaymentMethod')
+    ),
+    received_by: v.optional(v.pipe(v.string(), v.trim())),
+    payment_type: v.picklist(
+      paymentTypeOptions.value.map(option => option.value),
+      t('transaction.addModal.validation.invalidPaymentType')
+    ),
+    event_name: v.optional(v.string()),
+    notes: v.optional(v.string())
   }),
-  payment_method: z.enum(['Cash', 'PayPal', 'POS', 'Bank Transfer'], {
-    message: t('transaction.addModal.validation.invalidPaymentMethod')
-  }),
-  received_by: z.string().trim().optional(),
-  payment_type: z.enum(paymentTypeOptions.value.map(option => option.value), {
-    message: t('transaction.addModal.validation.invalidPaymentType')
-  }),
-  event_name: z.string().optional(),
-  notes: z.string().optional()
-}).superRefine((data, ctx) => {
-  if (!data.payer_is_associate) {
-    if (!data.payer_name) ctx.addIssue({ code: 'custom', path: ['payer_name'], message: t('transaction.addModal.validation.payerFirstNameRequired') })
-    if (!data.payer_surname) ctx.addIssue({ code: 'custom', path: ['payer_surname'], message: t('transaction.addModal.validation.payerLastNameRequired') })
-    if (!data.payer_email) ctx.addIssue({ code: 'custom', path: ['payer_email'], message: t('transaction.addModal.validation.payerEmailRequired') })
-    if (!data.payer_tax_code) ctx.addIssue({ code: 'custom', path: ['payer_tax_code'], message: t('transaction.addModal.validation.payerTaxCodeRequired') })
-  } else if (!data.associate_id) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['associate_id'],
-      message: t('transaction.addModal.validation.associateIdRequired')
-    })
-  }
-})
+  v.forward(
+    v.partialCheck(
+      [['payer_is_associate'], ['payer_name']],
+      input => !!input.payer_is_associate || !!input.payer_name,
+      t('transaction.addModal.validation.payerFirstNameRequired')
+    ),
+    ['payer_name']
+  ),
+  v.forward(
+    v.partialCheck(
+      [['payer_is_associate'], ['payer_surname']],
+      input => !!input.payer_is_associate || !!input.payer_surname,
+      t('transaction.addModal.validation.payerLastNameRequired')
+    ),
+    ['payer_surname']
+  ),
+  v.forward(
+    v.partialCheck(
+      [['payer_is_associate'], ['payer_email']],
+      input => !!input.payer_is_associate || !!input.payer_email,
+      t('transaction.addModal.validation.payerEmailRequired')
+    ),
+    ['payer_email']
+  ),
+  v.forward(
+    v.partialCheck(
+      [['payer_is_associate'], ['payer_tax_code']],
+      input => !!input.payer_is_associate || !!input.payer_tax_code,
+      t('transaction.addModal.validation.payerTaxCodeRequired')
+    ),
+    ['payer_tax_code']
+  ),
+  v.forward(
+    v.partialCheck(
+      [['payer_is_associate'], ['associate_id']],
+      input => !input.payer_is_associate || !!input.associate_id,
+      t('transaction.addModal.validation.associateIdRequired')
+    ),
+    ['associate_id']
+  )
+)
 
 const { data: users } = await useFetch('https://jsonplaceholder.typicode.com/users', {
   key: 'typicode-users-email',
@@ -104,7 +143,7 @@ const { data: users } = await useFetch('https://jsonplaceholder.typicode.com/use
   lazy: true
 })
 
-type Schema = z.output<typeof schema>
+type Schema = v.InferOutput<typeof schema>
 
 const state = reactive<Partial<Schema>>({
   payment_amount: 5,

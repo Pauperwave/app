@@ -1,7 +1,7 @@
 <!-- app\pages\login.vue -->
 // app/pages/login.vue
 <script setup lang="ts">
-import * as z from 'zod'
+import * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 
 definePageMeta({
@@ -27,19 +27,19 @@ const fields = computed(() => [{
   required: true
 }])
 
-const schema = z.object({
-  email: z.string().check(
-    z.trim(),
-    z.email({ message: t('login.invalidEmail') }),
-    z.toLowerCase()
+const schema = v.object({
+  email: v.pipe(
+    v.string(t('login.emailRequired')),
+    v.trim(),
+    v.email(t('login.invalidEmail')),
+    v.toLowerCase()
   )
 })
 
-type Schema = z.output<typeof schema>
+type Schema = v.InferOutput<typeof schema>
 
 const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
   const { email } = payload.data
-  console.log('Checking email:', email)
 
   // 1. Controlla se esiste nella tabella "pauperwave_associates"
   let check, checkError
@@ -48,7 +48,6 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
       method: 'POST',
       body: { email }
     })
-    console.log('API Response:', check)
   } catch (err) {
     console.error('Error checking associate:', err)
     checkError = err
@@ -62,8 +61,6 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
     })
     return
   }
-
-  console.log('check?.exists:', check?.exists)
 
   if (!check?.exists) {
     toast.add({

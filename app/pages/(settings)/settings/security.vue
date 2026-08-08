@@ -1,16 +1,22 @@
 <!-- app\pages\(settings)\settings\security.vue -->
 <script setup lang="ts">
-import * as z from 'zod'
+import * as v from 'valibot'
 import type { FormError } from '@nuxt/ui'
 
 const { t } = useI18n()
 
-const passwordSchema = z.object({
-  current: z.string().min(8, t('settings.security.validation.minLength')),
-  new: z.string().min(8, t('settings.security.validation.minLength'))
+const passwordSchema = v.object({
+  current: v.pipe(
+    v.string(t('settings.security.validation.minLength')),
+    v.minLength(8, t('settings.security.validation.minLength'))
+  ),
+  new: v.pipe(
+    v.string(t('settings.security.validation.minLength')),
+    v.minLength(8, t('settings.security.validation.minLength'))
+  )
 })
 
-type PasswordSchema = z.output<typeof passwordSchema>
+type PasswordSchema = v.InferOutput<typeof passwordSchema>
 
 const password = reactive<Partial<PasswordSchema>>({
   current: undefined,

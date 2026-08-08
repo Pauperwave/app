@@ -17,6 +17,8 @@
     "supabase:types": "supabase gen types typescript --project-id uggrolzdntoamclgnzrt --schema public > shared/utils/types/database.ts",
     "geocode:associates": "node --env-file=.env scripts/geocode-associates.mjs",
     "geocode:missing": "node --env-file=.env scripts/list-missing-geocodes.mjs",
+    "backfill:wanted-cards-scryfall": "node --env-file=.env scripts/backfill-wanted-cards-scryfall.mjs",
+    "refresh:wanted-cards-prices": "node --env-file=.env scripts/refresh-wanted-cards-prices.mjs",
     "fallow:dead-code": "fallow dead-code",
     "fallow:dupes": "fallow dupes",
     "fallow:audit": "fallow audit --format json",
@@ -75,8 +77,7 @@
     "valibot": "^1.4.2",
     "vue-draggable-plus": "^0.6.1",
     "vue-echarts": "^8.1.0",
-    "vue-i18n": "^11.4.8",
-    "zod": "^4.4.3"
+    "vue-i18n": "^11.4.8"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.16.0",
