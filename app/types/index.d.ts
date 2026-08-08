@@ -84,3 +84,36 @@ export interface Range {
   start: Date
   end: Date
 }
+
+// "searching" = in cerca, "found" = trovata, "abandoned" = il giocatore non
+// la cerca più (senza averla trovata) — tre stati distinti, non un booleano:
+// "trovata" e "non cerco più" hanno esiti opposti per le statistiche.
+export type WantedCardStatus = 'searching' | 'found' | 'abandoned'
+
+// Colonne snake_case di pauperwave_wanted_cards mappate su questa interfaccia
+// camelCase in useWantedCards.ts. Condiviso tra wanted-cards/index.vue e i
+// suoi componenti (tabella, griglia, modali) così tutte le viste operano
+// sullo stesso tipo.
+export interface WantedCard {
+  id: number
+  date: string
+  status: WantedCardStatus
+  // Impostato da un trigger DB quando status passa a "found" (null altrimenti)
+  // — vedi migrazioni 20260807230702/20260807231803. Serve a statistiche come
+  // "tempo medio per trovare una carta" (date/foundAt), non ancora mostrato
+  // in UI.
+  foundAt: string | null
+  cardName: string
+  scryfallUrl: string
+  copies: number
+  language: string
+  treatment: string[]
+  manaCost: string
+  colorIdentity: string[]
+  cmc: number
+  imageUrl: string
+  price: number | null
+  notes: string
+  player: string
+  playerAssociateUuid: string
+}

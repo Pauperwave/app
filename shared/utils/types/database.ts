@@ -693,6 +693,93 @@ export type Database = {
           },
         ]
       }
+      pauperwave_wanted_cards: {
+        Row: {
+          card_name: string
+          cmc: number | null
+          color_identity: string[]
+          copies: number
+          created_at: string
+          created_by: string | null
+          found_at: string | null
+          id: number
+          image_url: string | null
+          language: string | null
+          mana_cost: string | null
+          notes: string | null
+          player_associate_uuid: string
+          price: number | null
+          requested_at: string | null
+          scryfall_url: string | null
+          status: string
+          treatment: string[]
+          updated_at: string
+          updated_by: string | null
+          uuid: string
+        }
+        Insert: {
+          card_name: string
+          cmc?: number | null
+          color_identity?: string[]
+          copies?: number
+          created_at?: string
+          created_by?: string | null
+          found_at?: string | null
+          id?: never
+          image_url?: string | null
+          language?: string | null
+          mana_cost?: string | null
+          notes?: string | null
+          player_associate_uuid: string
+          price?: number | null
+          requested_at?: string | null
+          scryfall_url?: string | null
+          status?: string
+          treatment?: string[]
+          updated_at?: string
+          updated_by?: string | null
+          uuid?: string
+        }
+        Update: {
+          card_name?: string
+          cmc?: number | null
+          color_identity?: string[]
+          copies?: number
+          created_at?: string
+          created_by?: string | null
+          found_at?: string | null
+          id?: never
+          image_url?: string | null
+          language?: string | null
+          mana_cost?: string | null
+          notes?: string | null
+          player_associate_uuid?: string
+          price?: number | null
+          requested_at?: string | null
+          scryfall_url?: string | null
+          status?: string
+          treatment?: string[]
+          updated_at?: string
+          updated_by?: string | null
+          uuid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pauperwave_wanted_cards_player_associate_uuid_fkey"
+            columns: ["player_associate_uuid"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "pauperwave_wanted_cards_player_associate_uuid_fkey"
+            columns: ["player_associate_uuid"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
+        ]
+      }
       payment_receipts: {
         Row: {
           created_at: string
