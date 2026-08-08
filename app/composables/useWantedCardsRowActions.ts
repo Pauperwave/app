@@ -2,17 +2,17 @@
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { WantedCard, WantedCardStatus } from '~/types'
 
-// Tutto ciò che riguarda "azioni su una riga" (cambio stato, modifica,
-// eliminazione) — condiviso tra il menu contestuale della tabella e quello
-// della griglia, più lo stato delle due modali che quelle azioni aprono.
+// Everything about "row actions" (status change, edit, delete) — shared between
+// the table's context menu and the grid's, plus the state of the two modals those
+// actions open.
 export function useWantedCardsRowActions() {
   const { t } = useI18n()
   const toast = useToast()
   const { setStatus, deleteWantedCard, refreshPrices } = useWantedCardsMutations()
 
-  // Scrittura riservata alla gestione via RLS lato server (has_management_
-  // permissions) — un utente non-admin vede l'errore in un toast invece di
-  // un aggiornamento silenziosamente ignorato.
+  // Writes are restricted to management by server-side RLS (has_management_
+  // permissions) — a non-admin user sees the error in a toast instead of an
+  // update that is silently ignored.
   async function changeStatus(id: number, status: WantedCardStatus) {
     try {
       await setStatus.mutateAsync({ id, status })
@@ -81,24 +81,23 @@ export function useWantedCardsRowActions() {
     }
   }
 
-  // URL di ricerca CardMarket — nessuna API, solo la stessa query che un
-  // utente digiterebbe a mano nella barra di ricerca del sito.
+  // CardMarket search URL — no API, just the same query a user would type by hand
+  // into the site's search bar.
   function cardMarketSearchUrl(name: string) {
     return `https://www.cardmarket.com/en/Magic/Products/Search?searchString=${encodeURIComponent(name)}`
   }
 
-  // CardTrader non offre una ricerca per nome affidabile (vedi feasibility
-  // study 2026-08-08, docs/PROGRESS.md) — si risolve il link diretto alla
-  // scheda carta via server/api/cardtrader/resolve.get.ts, che di norma
-  // legge dalla cache già scaldata in background alla creazione/modifica
-  // della wanted-card (server/utils/cardTrader.ts). Si apre la finestra
-  // PRIMA del fetch (sync, sul click) e se ne imposta la location dopo:
-  // aprirla solo a fetch risolto verrebbe bloccata dal popup blocker, che
-  // richiede un'apertura sincrona nel gesture dell'utente. NIENTE 'noopener'
-  // qui: con quel flag window.open restituisce sempre null (per design, è
-  // quello che rimuove il riferimento window.opener), quindi non potremmo
-  // più reindirizzare la finestra dopo il fetch — la scheda resterebbe
-  // vuota per sempre (bug osservato in test manuale 2026-08-08).
+  // CardTrader offers no reliable search by name (see the 2026-08-08 feasibility
+  // study, docs/PROGRESS.md) — the direct link to the card page is resolved via
+  // server/api/cardtrader/resolve.get.ts, which normally reads from the cache
+  // already warmed in the background when the wanted card was created or edited
+  // (server/utils/cardTrader.ts). The window is opened BEFORE the fetch
+  // (synchronously, on the click) and its location set afterwards: opening it only
+  // once the fetch resolves would be stopped by the popup blocker, which requires a
+  // synchronous open inside the user gesture. NO 'noopener' here: with that flag
+  // window.open always returns null (by design — it is what drops the window.opener
+  // reference), so the window could no longer be redirected after the fetch and the
+  // tab would stay blank forever (bug observed in manual testing on 2026-08-08).
   async function openCardTraderSearch(card: WantedCard) {
     const fallbackUrl = `https://www.cardtrader.com/cards?name=${encodeURIComponent(card.cardName)}`
     const win = window.open('', '_blank')
@@ -118,10 +117,10 @@ export function useWantedCardsRowActions() {
     }
   }
 
-  // Stesso permesso di changeStatus/confirmDelete (solo gestione, vedi
-  // refresh-prices.post.ts) — richiede scryfallId/setCode già popolati
-  // (mancano solo sulle richieste create prima della migrazione 20260808120000
-  // e non ancora modificate una volta).
+  // Same permission as changeStatus/confirmDelete (management only, see
+  // refresh-prices.post.ts) — requires scryfallId/setCode to be populated (they are
+  // missing only on requests created before migration 20260808120000 and never
+  // edited since).
   async function refreshCardPrices(card: WantedCard) {
     try {
       await refreshPrices.mutateAsync(card.id)
@@ -135,10 +134,10 @@ export function useWantedCardsRowActions() {
     }
   }
 
-  // Condiviso tra menu contestuale della tabella e delle card in griglia.
-  // "Elimina" (come update) è riservato alla gestione via RLS — un utente
-  // non-admin vede l'errore in un toast, come per gli altri item — vedi
-  // migrazione 20260807190720 e il TODO in docs/TODO.md.
+  // Shared between the table's context menu and the grid cards'. "Delete" (like
+  // update) is restricted to management by RLS — a non-admin user sees the error in
+  // a toast, as with the other items — see migration 20260807190720 and the TODO in
+  // docs/TODO.md.
   function rowContextMenuItems(card: WantedCard): DropdownMenuItem[] {
     const statusItems = WANTED_CARD_STATUSES
       .filter(status => status !== card.status)
@@ -195,9 +194,9 @@ export function useWantedCardsRowActions() {
     ]
   }
 
-  // Popolato dal `@contextmenu` di UTable al tasto destro su una riga — la
-  // UContextMenu che avvolge la tabella non conosce da sé la riga cliccata,
-  // quindi la aggiorniamo qui e i suoi `:items` sono ricalcolati di conseguenza.
+  // Populated by UTable's `@contextmenu` on right-click over a row — the
+  // UContextMenu wrapping the table has no way of knowing which row was clicked,
+  // so it is set here and its `:items` recompute accordingly.
   const contextMenuRow = ref<WantedCard | null>(null)
   function onRowContextmenu(_e: Event, row: { original: WantedCard }) {
     contextMenuRow.value = row.original

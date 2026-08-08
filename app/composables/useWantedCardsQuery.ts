@@ -11,19 +11,19 @@ export function useWantedCardsQuery() {
     query: async (): Promise<WantedCard[]> => {
       const { data, error } = await supabase
         .from('pauperwave_wanted_cards')
-        // Hint esplicito sulla colonna FK: da quando created_by/updated_by
-        // referenziano anche loro pauperwave_associates, PostgREST non può
-        // più dedurre da solo quale delle tre relazioni usare per "associate".
+        // Explicit hint on the FK column: since created_by/updated_by also
+        // reference pauperwave_associates, PostgREST can no longer work out on its
+        // own which of the three relations "associate" means.
         .select('*, associate:pauperwave_associates!player_associate_uuid(first_name, last_name)')
         .order('requested_at', { ascending: false })
 
       if (error) throw error
 
-      // Colonne snake_case del DB mappate sull'interfaccia camelCase
-      // WantedCard esistente (nata dai dati mock) — evita di riscrivere
-      // tutta la UI (colonne tabella, griglia, filtri) attorno ai nomi
-      // colonna reali. I null diventano i default già usati dal codice
-      // esistente per i campi opzionali (stringa vuota, 0 per cmc).
+      // The DB's snake_case columns mapped onto the existing camelCase WantedCard
+      // interface (which grew out of the mock data) — avoids rewriting the whole UI
+      // (table columns, grid, filters) around the real column names. Nulls become
+      // the defaults the existing code already uses for optional fields (empty
+      // string, 0 for cmc).
       return (data ?? []).map((row): WantedCard => ({
         id: row.id,
         date: row.requested_at ?? '',

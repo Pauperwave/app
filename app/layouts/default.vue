@@ -13,14 +13,14 @@ const open = ref(false)
 // page's cached fetch instead of re-querying Supabase from the layout.
 const { associates } = useAssociates()
 
-// Ogni sezione è un sotto-array separato (non un unico array piatto con
-// label inline): la spaziatura tra gruppi (gap-1.5 su UNavigationMenu
-// root) resta visibile anche a sidebar collassata, perché è strutturale
-// tra gruppi — a differenza degli item type:'label', che Nuxt UI rimuove
-// completamente dal DOM quando collapsed è true (v-if, non solo nascosti).
-// Array statico (non computed): UNavigationMenu evidenzia da sé la voce
-// attiva confrontando `to` con la route corrente, nessun item qui dipende
-// più da `route` per il proprio stato.
+// Each section is its own sub-array (not one flat array with inline labels): the
+// spacing between groups (gap-1.5 on the UNavigationMenu root) stays visible even
+// with the sidebar collapsed, because it is structural between groups — unlike
+// type:'label' items, which Nuxt UI drops from the DOM entirely when collapsed is
+// true (v-if, not merely hidden).
+// Static array (not computed): UNavigationMenu highlights the active entry itself
+// by comparing `to` with the current route, and no item here depends on `route`
+// for its own state anymore.
 const mainNavGroups = [[{
   label: t('nav.dashboardsSection'),
   type: 'label'
@@ -149,8 +149,8 @@ const mainNavGroups = [[{
   to: '/settings/security',
   disabled: true
 }]] satisfies NavigationMenuItem[][]
-// "Impostazioni" è presente in sidebar ma disattivata: la pagina è ancora
-// lo scaffold di default del template, non personalizzata per PauperWave.
+// "Settings" is present in the sidebar but disabled: the page is still the
+// template's default scaffold, not customised for PauperWave.
 
 // Opens Gmail's compose view directly instead of mailto:, which silently
 // no-ops when the OS has no default mail client configured.

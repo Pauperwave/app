@@ -1,6 +1,6 @@
 // app\utils\wantedCardLanguages.ts
-// Prima duplicata in wanted-cards/index.vue e GridView.vue — unica fonte di
-// verità per le icone lingua sulle carte cercate.
+// Previously duplicated in wanted-cards/index.vue and GridView.vue — single source
+// of truth for the language icons on wanted cards.
 export const WANTED_CARD_LANGUAGE_ICONS: Record<string, string> = {
   en: 'i-circle-flags-gb',
   it: 'i-circle-flags-it',

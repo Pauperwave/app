@@ -19,15 +19,15 @@ export interface PriceRefreshResult {
   cardtraderPrice: number | null
 }
 
-// Scryfall aggiorna i prezzi ~1 volta al giorno (vedi Scryfall API docs) —
-// richiamare di nuovo la carta per id basta per un prezzo CardMarket fresco,
-// nessuna autenticazione richiesta.
-// Il finish va dedotto dalla stampa, non solo dal treatment della richiesta:
-// esistono stampe solo-foil (Pramikon, Sky Rampart in c19; le showcase
-// giapponesi di Duskmourn) dove prices.eur è null per costruzione e il prezzo
-// vive in prices.eur_foil. Leggendo solo .eur si otteneva null su quelle
-// carte — e lo stesso effectiveFoil serve a CardTrader, che altrimenti filtra
-// mtg_foil=false su una carta che in non-foil non è mai esistita.
+// Scryfall refreshes prices ~once a day (see the Scryfall API docs) — fetching the
+// card by id again is enough for a fresh CardMarket price, no authentication
+// required.
+// The finish has to be inferred from the printing, not just from the request's
+// treatment: foil-only printings exist (Pramikon, Sky Rampart in c19; Duskmourn's
+// Japanese showcases) where prices.eur is null by construction and the price lives
+// in prices.eur_foil. Reading only .eur returned null on those cards — and the same
+// effectiveFoil is needed by CardTrader, which would otherwise filter on
+// mtg_foil=false for a card that never existed in non-foil.
 interface ScryfallPriceResult {
   price: number | null
   effectiveFoil: boolean
@@ -52,21 +52,20 @@ async function fetchCardmarketPrice(
   return { price: Number.isFinite(parsed) ? parsed : null, effectiveFoil }
 }
 
-// CardTrader non restituisce un prezzo unico ma l'elenco di tutte le
-// inserzioni per il blueprint — si prende il minimo tra quelle in condizione
-// Near Mint, foil coerente con la stampa e lingua coerente con la richiesta.
+// CardTrader returns no single price but the list of every listing for the
+// blueprint — the minimum is taken among those in Near Mint condition, with a foil
+// flag consistent with the printing and a language consistent with the request.
 //
-// La lingua si filtra qui e non più via query param (`language: 'en'`
-// hardcoded): quel default rendeva i due prezzi non confrontabili, perché
-// Scryfall/CardMarket quota il prodotto in qualsiasi lingua mentre noi
-// chiedevamo solo le copie inglesi. Su una stampa japanshowcase (es.
-// Enduring Vitality dsk/394) la differenza era 4× — inglese scarso, non un
-// errore di lookup. `language` null = "Indifferente": nessun filtro, minimo
-// globale.
+// Language is filtered here and no longer via query param (hardcoded
+// `language: 'en'`): that default made the two prices incomparable, because
+// Scryfall/CardMarket quote the product in any language while we asked for English
+// copies only. On a japanshowcase printing (e.g. Enduring Vitality dsk/394) the
+// difference was 4× — scarce in English, not a lookup error. `language` null =
+// "Any": no filter, global minimum.
 //
-// NB: il confronto assume che i codici lingua di CardTrader coincidano con i
-// nostri (en/it/es/fr/de/ja). Se per una lingua non tornasse mai un match, è
-// lì che va guardato per primo — il fallimento è un null silenzioso.
+// NB: the comparison assumes CardTrader's language codes match ours
+// (en/it/es/fr/de/ja). If some language never returns a match, that is the first
+// place to look — the failure mode is a silent null.
 async function fetchCardtraderPrice(
   token: string,
   blueprintId: number,
@@ -91,10 +90,10 @@ async function fetchCardtraderPrice(
   return Math.min(...eligible.map(product => product.price_cents)) / 100
 }
 
-// Risolve il blueprint CardTrader di una stampa (cacheato, vedi cardTrader.ts)
-// e ne legge il prezzo minimo — unico punto che entrambi refreshWantedCard
-// Prices (righe già salvate) e il picker "Edizione" di AddModal.vue
-// (stampe candidate, non ancora salvate) usano per non duplicare il resolve.
+// Resolves a printing's CardTrader blueprint (cached, see cardTrader.ts) and reads
+// its minimum price — the single place used by both refreshWantedCardPrices (rows
+// already saved) and AddModal.vue's "Edition" picker (candidate printings, not yet
+// saved), so the resolve is not duplicated.
 export async function fetchCardtraderPriceForPrinting(
   supabase: SupabaseClient<Database>,
   cardTraderToken: string,
@@ -111,10 +110,10 @@ export async function fetchCardtraderPriceForPrinting(
   return fetchCardtraderPrice(cardTraderToken, blueprintId, foil, language).catch(() => null)
 }
 
-// Aggiorna entrambe le fonti di prezzo di una wanted-card già salvata — se la
-// carta non è in vendita su CardTrader, cardtraderPrice resta null senza
-// sollevare errore. Ogni fonte fallisce in modo indipendente: un errore
-// Scryfall non deve impedire l'aggiornamento del prezzo CardTrader e viceversa.
+// Refreshes both price sources of an already saved wanted card — if the card is not
+// on sale on CardTrader, cardtraderPrice stays null without raising. Each source
+// fails independently: a Scryfall error must not block the CardTrader price update,
+// and vice versa.
 export async function refreshWantedCardPrices(
   supabase: SupabaseClient<Database>,
   cardTraderToken: string | undefined,
@@ -123,8 +122,8 @@ export async function refreshWantedCardPrices(
   foil: boolean,
   language: string | null
 ): Promise<PriceRefreshResult> {
-  // Fallback al treatment se Scryfall non risponde: meglio del nulla, ed è il
-  // comportamento che questo path aveva prima di conoscere i finish.
+  // Fall back to the treatment when Scryfall does not answer: better than nothing,
+  // and it is how this path behaved before it knew about finishes.
   const { price: cardmarketPrice, effectiveFoil } = await fetchCardmarketPrice(scryfallId, foil)
     .catch(() => ({ price: null, effectiveFoil: foil }))
 

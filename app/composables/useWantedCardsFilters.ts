@@ -8,12 +8,12 @@ export function useWantedCardsFilters(data: Ref<WantedCard[]>) {
   const currentAssociate = useCurrentAssociate()
 
   const cardNameFilter = ref('')
-  // "In cerca" di default — le carte già trovate/abbandonate restano
-  // nascoste finché non si sceglie esplicitamente un'altra tab.
+  // "Searching" by default — cards already found or abandoned stay hidden until
+  // another tab is explicitly chosen.
   const statusFilter = ref<'all' | WantedCardStatus>('searching')
-  // Singola selezione (non multipla): permette di mostrare l'icona della
-  // lingua scelta nel trigger tramite la prop `:icon`, cosa che con
-  // USelectMenu/UInputMenu `multiple` non ha un pattern ufficiale pulito.
+  // Single selection (not multiple): it allows showing the chosen language's icon
+  // in the trigger through the `:icon` prop, which has no clean official pattern
+  // with USelectMenu/UInputMenu `multiple`.
   const languageFilter = ref<string | undefined>(undefined)
   const treatmentFilter = ref<string[]>([])
   const onlyMine = ref(false)
@@ -24,11 +24,11 @@ export function useWantedCardsFilters(data: Ref<WantedCard[]>) {
     else treatmentFilter.value = treatmentFilter.value.filter(item => item !== value)
   }
 
-  // Unica fonte di verità per il filtro, usata sia da UTable :data che da
-  // GridView :sections — prima esistevano due implementazioni separate
-  // (columnFilters via TanStack per la tabella, predicati manuali per la
-  // griglia) che potevano disallinearsi: è già successo con "Trattamento"
-  // in vista Cards, dove i facet risultavano vuoti.
+  // Single source of truth for filtering, used by both UTable :data and GridView
+  // :sections — there used to be two separate implementations (columnFilters via
+  // TanStack for the table, manual predicates for the grid) that could drift apart:
+  // it already happened with "Treatment" in the Cards view, where the facets came
+  // out empty.
   const filteredCards = computed(() => data.value.filter((card) => {
     if (cardNameFilter.value
       && !card.cardName.toLowerCase().includes(cardNameFilter.value.toLowerCase())) return false
@@ -45,10 +45,10 @@ export function useWantedCardsFilters(data: Ref<WantedCard[]>) {
     return true
   }))
 
-  // Codici distinti presenti in una colonna, ordinati — base comune per gli
-  // item dei filtri Lingua/Trattamento. Calcolato da `data` (non filtrato):
-  // altrimenti selezionare una lingua farebbe sparire le altre opzioni dal
-  // menu invece di limitarsi a filtrare le righe mostrate.
+  // Distinct codes present in a column, sorted — the common basis for the
+  // Language/Treatment filter items. Computed from `data` (unfiltered): otherwise
+  // picking a language would make the other options vanish from the menu instead of
+  // just filtering the rows on show.
   function getFacetedCodes(columnId: 'language' | 'treatment'): string[] {
     const codes = new Set<string>()
     for (const card of data.value) {
@@ -60,10 +60,10 @@ export function useWantedCardsFilters(data: Ref<WantedCard[]>) {
 
   const languageFacetItems = computed<{ label: string, value: string, icon: string }[]>(() => {
     return getFacetedCodes('language').map((code: string) => ({
-      // ComboboxItem (Reka UI, sotto USelectMenu/UInputMenu) non accetta
-      // value="" — è riservato per rappresentare "nessuna selezione"/
-      // placeholder. Il codice lingua vuoto ("Indifferente") usa quindi il
-      // sentinel 'any', tradotto di nuovo in '' sopra prima di filtrare.
+      // ComboboxItem (Reka UI, underneath USelectMenu/UInputMenu) does not accept
+      // value="" — it is reserved to mean "no selection"/placeholder. The empty
+      // language code ("Any") therefore uses the 'any' sentinel, translated back to
+      // '' above before filtering.
       label: t(`wantedCard.languages.${code || 'any'}`),
       value: code || 'any',
       icon: WANTED_CARD_LANGUAGE_ICONS[code] ?? 'i-lucide-languages'

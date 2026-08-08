@@ -12,7 +12,7 @@ interface GridSection {
 const { sections, contextMenuItems, showStatus = false } = defineProps<{
   sections: GridSection[]
   contextMenuItems: (card: WantedCard) => DropdownMenuItem[]
-  /** Mostra il badge di stato (Trovata/In cerca) — solo quando la tab attiva è "Tutte", dove altrimenti non sarebbe chiaro dal filtro. */
+  /** Show the status badge (Found/Searching) — only when the active tab is "All", where the filter would otherwise not make it clear. */
   showStatus?: boolean
 }>()
 
@@ -20,9 +20,9 @@ const { t } = useI18n()
 
 const hasCards = computed(() => sections.some(section => section.cards.length))
 
-// Ancora lo step "anatomia di una carta" del tour guidato (vedi useTour in
-// wanted-cards/index.vue) sulla prima card renderizzata, qualunque sia la
-// sezione/il raggruppamento attivo.
+// Anchors the guided tour's "anatomy of a card" step (see useTour in
+// wanted-cards/index.vue) on the first rendered card, whatever the active
+// section/grouping is.
 const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]?.id)
 </script>
 
@@ -40,15 +40,15 @@ const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]
         </UBadge>
       </div>
 
-      <!-- auto-fill invece di breakpoint fissi: le card si dimensionano da
-           sole in base allo spazio disponibile, restando vicine alle
-           proporzioni reali di una carta MTG (63×88mm ≈ rapporto 5:7, vedi
-           aspect-[5/7] sull'immagine). 280px = w-70, stessa larghezza usata
-           per l'anteprima singola in CardPreviewTooltip.vue (copiato da
-           MagicTheGathering/blog's magic/card/Tooltip.vue) — stessa taglia
-           di riferimento per una carta in tutto l'ecosistema. min(280px,45vw)
-           evita che quel minimo forzi l'overflow su schermi stretti (mobile):
-           lì la colonna si restringe in proporzione al viewport invece. -->
+      <!-- auto-fill instead of fixed breakpoints: the cards size themselves
+           from the available space while staying close to a real MTG card's
+           proportions (63×88mm ≈ a 5:7 ratio, see aspect-[5/7] on the image).
+           280px = w-70, the same width used for the single preview in
+           CardPreviewTooltip.vue (copied from MagicTheGathering/blog's
+           magic/card/Tooltip.vue) — the same reference size for a card across
+           the whole ecosystem. min(280px,45vw) stops that minimum from forcing
+           overflow on narrow screens (mobile): there the column shrinks in
+           proportion to the viewport instead. -->
       <div class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(280px,45vw),1fr))]">
         <UContextMenu
           v-for="card in section.cards"
@@ -71,11 +71,10 @@ const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]
             </div>
 
             <template #footer>
-              <!-- Riga unica quando raggruppato per giocatore: senza
-                   PlayerTag (già nell'intestazione di sezione) la prima riga
-                   resterebbe altrimenti con il solo prezzo, sprecando
-                   spazio. Da ungrouped le due righe sono già entrambe
-                   piene, quindi restano separate. -->
+              <!-- Single row when grouped by player: without PlayerTag (already
+                   in the section header) the first row would otherwise hold
+                   just the price, wasting space. Ungrouped, both rows are
+                   already full, so they stay separate. -->
               <div v-if="section.player" class="flex flex-wrap items-center gap-1.5">
                 <UTooltip v-if="card.notes" :text="card.notes">
                   <UIcon name="i-lucide-message-circle" class="size-4 text-muted shrink-0" />
@@ -121,8 +120,8 @@ const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]
               <div v-else class="flex flex-col gap-2">
                 <div class="flex items-center justify-between gap-4">
                   <div class="flex items-center gap-1.5 min-w-0">
-                    <!-- Nome giocatore già nell'intestazione di sezione
-                         quando raggruppato: qui sarebbe ridondante. -->
+                    <!-- The player name is already in the section header when
+                         grouped: it would be redundant here. -->
                     <PlayerTag v-if="!section.player" :name="card.player" />
                     <UTooltip v-if="card.notes" :text="card.notes">
                       <UIcon name="i-lucide-message-circle" class="size-4 text-muted shrink-0" />
@@ -154,13 +153,13 @@ const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]
                   >
                     {{ t(`wantedCard.treatments.${treatment}`) }}
                   </UBadge>
-                  <!-- Cluster destro come singolo figlio flex, non due
-                       fratelli con `ms-auto` sul primo: con flex-wrap quel
-                       margine allinea a destra solo finché la riga non va a
-                       capo — dopo, il badge di stato apriva la riga nuova e
-                       finiva a sinistra (evidente con l'etichetta più lunga,
-                       "Abbandonata"). Da solo sulla riga a capo, invece,
-                       `ms-auto` continua a spingere il gruppo a destra. -->
+                  <!-- Right-hand cluster as a single flex child, not two
+                       siblings with `ms-auto` on the first: with flex-wrap that
+                       margin only aligns right while the row does not wrap —
+                       afterwards the status badge opened the new row and ended
+                       up on the left (obvious with the longest label,
+                       "Abbandonata"). Alone on the wrapped row, `ms-auto` keeps
+                       pushing the group right. -->
                   <div class="flex items-center gap-1.5 ms-auto shrink-0">
                     <WantedCardsAge :date="card.date" />
                     <UTooltip v-if="showStatus" :text="t(`wantedCard.status.${card.status}`)">

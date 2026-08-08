@@ -21,9 +21,9 @@ const schema = v.object({
   associate_type: v.picklist(['Ordinario', 'Sostenitore']),
   first_name: v.pipe(v.string(), v.minLength(2, t('associate.addModal.validation.firstNameTooShort'))),
   last_name: v.pipe(v.string(), v.minLength(2, t('associate.addModal.validation.lastNameTooShort'))),
-  // trim/toLowerCase sono trasformazioni (non falliscono mai da sole),
-  // v.email() valida il formato dopo la normalizzazione — stesso ordine
-  // della pipeline Zod precedente.
+  // trim/toLowerCase are transformations (they never fail on their own), while
+  // v.email() validates the format after normalisation — same order as the
+  // previous Zod pipeline.
   email_address: v.pipe(
     v.string(),
     v.trim(),
@@ -57,10 +57,10 @@ const schema = v.object({
   ),
   mtgo_nickname: v.nullable(v.string()),
   mtga_nickname: v.nullable(v.string()),
-  // v.check invece di v.literal(true, ...): v.literal restringerebbe il TIPO
-  // inferito a `true`, incompatibile con lo stato iniziale `false` (checkbox
-  // non ancora spuntata) — v.check su v.boolean() valida senza restringere
-  // il tipo, stessa semantica del .refine(val => val === true) Zod originale.
+  // v.check rather than v.literal(true, ...): v.literal would narrow the inferred
+  // TYPE to `true`, incompatible with the initial `false` state (checkbox not yet
+  // ticked) — v.check on v.boolean() validates without narrowing the type, same
+  // semantics as the original Zod .refine(val => val === true).
   consent_data: v.pipe(
     v.boolean(),
     v.check(val => val === true, t('associate.addModal.validation.consentDataRequired'))
@@ -159,7 +159,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         @submit="onSubmit"
       >
         <!-- eslint-disable -->
-        <!-- Tipologia associato -->
+        <!-- Associate type -->
         <div>
           <h3 class="text-lg font-semibold text-primary">{{ $t('associate.addModal.sections.associateType') }}</h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
@@ -169,7 +169,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           </div>
         </div>
 
-        <!-- Informazioni personali -->
+        <!-- Personal information -->
         <div id="personal-info-section">
           <h3 class="text-lg font-semibold text-primary">{{ $t('associate.addModal.sections.personalInfo') }}</h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
@@ -188,7 +188,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           </div>
         </div>
 
-        <!-- Informazioni di nascita -->
+        <!-- Birth information -->
         <div id="birth-section">
           <h3 class="text-lg font-semibold text-primary">{{ $t('associate.addModal.sections.birthInfo') }}</h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
@@ -197,7 +197,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             </UFormField>
 
             <UFormField :label="$t('associate.addModal.fields.birthDate')" name="born_date" required>
-              <!-- Input nascosto per autofill e validazione Zod -->
+              <!-- Hidden input for autofill and schema validation -->
               <input
                 type="date"
                 v-model="state.born_date"
@@ -236,7 +236,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           </div>
         </div>
 
-        <!-- Informazioni fiscali -->
+        <!-- Tax information -->
         <div id="fiscal-section">
           <h3 class="text-lg font-semibold text-primary">{{ $t('associate.addModal.sections.fiscalInfo') }}</h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
@@ -246,7 +246,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           </div>
         </div>
 
-        <!-- Residenza -->
+        <!-- Residency -->
         <div id="residency-section">
           <h3 class="text-lg font-semibold text-primary">{{ $t('associate.addModal.sections.residencyInfo') }}</h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
@@ -286,7 +286,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           </div>
         </div>
 
-        <!-- Consensi -->
+        <!-- Consents -->
         <div id="consents-section">
           <h3 class="text-lg font-semibold text-primary">{{ $t('associate.addModal.sections.consents') }}</h3>
           <div class="mt-2 space-y-2">
@@ -340,7 +340,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           </div>
         </div>
 
-        <!-- Azioni -->
+        <!-- Actions -->
         <div class="flex justify-end gap-2">
           <UButton
             :label="$t('associate.addModal.cancel')"

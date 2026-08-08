@@ -2,9 +2,9 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
-// Stessa permission di status.post.ts/update.post.ts: ogni scrittura sulla
-// riga (oltre alla creazione) è riservata alla gestione — vedi migrazione
-// 20260807190720 e il commento in useWantedCardsRowActions.ts.
+// Same permission as status.post.ts/update.post.ts: every write to the row (beyond
+// creation) is restricted to management — see migration 20260807190720 and the
+// comment in useWantedCardsRowActions.ts.
 export default defineEventHandler(async (event) => {
   const user = await requireManagementPermission(event)
 

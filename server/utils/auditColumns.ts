@@ -8,7 +8,7 @@ import type { Database } from '#shared/utils/types/database'
 // table that follows the same convention (currently pauperwave_wanted_cards,
 // eventually pauperwave_associates/associate_renewals/payments — see
 // docs/BACKLOG.md). Resolves the acting user's pauperwave_associates.uuid via
-// email match (same resolution used client-side for "Le mie richieste") so
+// email match (same resolution used client-side for "My requests") so
 // created_by/updated_by can reference associates directly — displaying "who"
 // in the UI is then a plain join, never an admin-API call to resolve an auth
 // user id to a name.

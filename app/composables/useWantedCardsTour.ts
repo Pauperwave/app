@@ -1,11 +1,11 @@
 // app\composables\useWantedCardsTour.ts
 
-// Ordine degli step = ordine di lettura della pagina (alto-sinistra ->
-// basso-destra): navbar (vista, nuova richiesta), poi toolbar (filtri a
-// sinistra, vista a destra), poi il corpo pagina (anatomia di una card),
-// infine lo step di chiusura. I target sono id CSS su elementi reali del
-// template della pagina — evita di dover esporre ref per componenti che non
-// li avrebbero altrimenti (UFieldGroup, UButton dentro AddModal.vue).
+// Step order = the page's reading order (top-left -> bottom-right): navbar (view,
+// new request), then toolbar (filters on the left, view on the right), then the page
+// body (anatomy of a card), and finally the closing step. Targets are CSS ids on
+// real elements of the page template — this avoids having to expose refs for
+// components that would not otherwise have them (UFieldGroup, UButton inside
+// AddModal.vue).
 export function useWantedCardsTour() {
   const { t } = useI18n()
 

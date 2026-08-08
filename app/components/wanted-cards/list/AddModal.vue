@@ -7,17 +7,16 @@ const open = defineModel<boolean>({ default: false })
 const toast = useToast()
 const { t } = useI18n()
 
-// NOTE: stiamo cercando fra gli Associati (pauperwave_associates), non fra i
-// Giocatori (sezione/tabella separata in sidebar) — sono gli unici per cui
-// esiste oggi un uuid da collegare a player_associate_uuid. Se in futuro le
-// richieste dovessero riferirsi a un Giocatore che non è (ancora) un
-// associato, questo picker andrà ripensato.
+// NOTE: we search among Associates (pauperwave_associates), not Players (a separate
+// section/table in the sidebar) — they are the only ones that currently have a uuid
+// to link to player_associate_uuid. If requests ever need to reference a Player who
+// is not (yet) an associate, this picker will need rethinking.
 const { associates } = useAssociates()
 const { createWantedCard } = useWantedCardsMutations()
 const currentAssociate = useCurrentAssociate()
 
-// "APS Pauperwave" (PW-0000) è il record anagrafico dell'associazione stessa,
-// non un giocatore reale — non ha senso comparire come richiedente.
+// "APS Pauperwave" (PW-0000) is the association's own registry record, not a real
+// player — it makes no sense for it to appear as a requester.
 const APS_PAUPERWAVE_UUID = '8578797c-62b0-4e48-a237-3b65683a2623'
 
 const playerOptions = computed(() => associates.value
@@ -27,10 +26,10 @@ const playerOptions = computed(() => associates.value
     value: associate.uuid
   })))
 
-// Lingue di stampa fisica tuttora attive per Magic (dal 2024: solo queste
-// sei, dopo la dismissione di russo/coreano/cinese tradizionale nel 2022 e
-// di portoghese/cinese semplificato nel 2024). Bandiere dal set circle-flags,
-// stesso pattern del selettore lingua di korallo.pizza.
+// Paper printing languages still active for Magic (as of 2024: only these six,
+// after Russian/Korean/Traditional Chinese were dropped in 2022 and
+// Portuguese/Simplified Chinese in 2024). Flags from the circle-flags set, same
+// pattern as korallo.pizza's language selector.
 const languageOptions = computed(() => [
   { label: t('wantedCard.languages.any'), value: 'any', icon: 'i-lucide-languages' },
   { label: t('wantedCard.languages.en'), value: 'en', icon: 'i-circle-flags-gb' },
@@ -41,14 +40,12 @@ const languageOptions = computed(() => [
   { label: t('wantedCard.languages.ja'), value: 'ja', icon: 'i-circle-flags-jp' }
 ])
 
-// v.string(msg)/v.number(msg) personalizzano anche l'errore di TIPO (non solo
-// i vincoli come minLength/minValue) — prima, con Zod, un campo mai
-// selezionato (undefined) falliva il controllo di tipo prima ancora di
-// arrivare a .min(), mostrando il messaggio generico di libreria ("Invalid
-// input: expected string, received undefined") invece del nostro
-// (osservato su "Edizione" in produzione, 2026-08-08). Ogni v.pipe() qui
-// copre entrambi i casi con lo stesso messaggio, dove il campo è
-// obbligatorio.
+// v.string(msg)/v.number(msg) also customise the TYPE error (not just constraints
+// like minLength/minValue) — previously, with Zod, a never-selected field
+// (undefined) failed the type check before even reaching .min(), showing the
+// library's generic message ("Invalid input: expected string, received undefined")
+// instead of ours (observed on "Edition" in production, 2026-08-08). Every v.pipe()
+// here covers both cases with the same message, wherever the field is required.
 const schema = v.object({
   name: v.pipe(
     v.string(t('wantedCard.addModal.validation.nameRequired')),
@@ -86,24 +83,22 @@ const state = reactive<Partial<Schema>>({
 
 const currentLanguage = computed(() => languageOptions.value.find(l => l.value === state.language))
 
-// Precompila "Giocatore" con l'utente loggato appena la modale si apre — non
-// al setup del componente, perché associates/authUser potrebbero non essere
-// ancora risolti in quel momento. Non sovrascrive una scelta già fatta a
-// mano (!state.player), quindi riaprire la modale dopo averla cambiata non
-// la resetta all'utente loggato.
+// Prefills "Player" with the logged-in user as soon as the modal opens — not at
+// component setup, because associates/authUser may not be resolved by then. It does
+// not overwrite a choice already made by hand (!state.player), so reopening the
+// modal after changing it does not reset it to the logged-in user.
 watch([open, currentAssociate], ([isOpen, associate]) => {
   if (isOpen && associate && !state.player) state.player = associate.uuid
 })
 
-// Ricerca live su Scryfall — vedi commento in useScryfallCardSearch.ts sul
-// perché non un catalogo locale come i comandanti in league.
+// Live Scryfall search — see the comment in useScryfallCardSearch.ts on why not a
+// local catalogue like the commanders in league.
 const {
   query, nameSuggestions, isSuggesting, printings, isLoadingPrintings, fetchPrintings
 } = useScryfallCardSearch()
 
-// value-key sul nome: così state.name resta una stringa anche se gli item
-// portano con sé il costo di mana da mostrare nella riga (stesso schema di
-// printingItems qui sotto).
+// value-key on the name: this keeps state.name a string even though the items also
+// carry the mana cost to show in the row (same shape as printingItems below).
 const nameItems = computed(() => nameSuggestions.value.map(suggestion => ({
   label: suggestion.name,
   manaCost: suggestion.manaCost,
@@ -111,32 +106,32 @@ const nameItems = computed(() => nameSuggestions.value.map(suggestion => ({
   value: suggestion.name
 })))
 
-// Una carta scelta dall'autocomplete ha (quasi) sempre più stampe: appena il
-// nome è confermato si sceglie anche l'edizione/artwork esatta, azzerando la
-// selezione precedente (un nome diverso invalida la stampa già scelta).
+// A card picked from the autocomplete (almost) always has several printings: as
+// soon as the name is confirmed the exact edition/artwork is chosen too, clearing
+// the previous selection (a different name invalidates the printing already
+// picked).
 watch(() => state.name, (name) => {
   state.printingId = undefined
   fetchPrintings(name)
 })
 
-// "Trattamento" (full art, extended art, borderless, ecc.) è sparito: sono
-// tutte proprietà della stampa specifica, già scelta col selettore
-// "Edizione" — un menu separato sarebbe ridondante. "Foil" resta, perché è
-// una finitura indipendente dalla stampa (la stessa stampa esiste spesso sia
-// foil che non-foil) — disponibile solo se la stampa scelta la supporta.
+// "Treatment" (full art, extended art, borderless, etc.) is gone: those are all
+// properties of the specific printing, already chosen with the "Edition" selector —
+// a separate menu would be redundant. "Foil" stays, because it is a finish
+// independent of the printing (the same printing often exists both foil and
+// non-foil) — available only if the chosen printing supports it.
 watch(() => state.printingId, (printingId) => {
   const printing = printings.value.find(p => p.id === printingId)
   if (!printing?.finishes.includes('foil')) state.foil = false
 })
 
-// Prezzo CardTrader per ogni stampa candidata nel picker "Edizione" — a
-// differenza di cardmarketPrice (già nella risposta di Scryfall), va
-// richiesto separatamente per ognuna: anteprima best-effort (nessun filtro
-// lingua/foil, vedi commento in server/api/cardtrader/price.get.ts), il
-// prezzo preciso arriva dopo il salvataggio via refresh-prices. undefined =
-// non ancora richiesto, null = richiesto ma nessuna inserzione trovata —
-// cache locale per stampa, non svuotata tra una ricerca e l'altra: riaprire
-// lo stesso nome in questa sessione della modale non ripete le chiamate.
+// CardTrader price for each candidate printing in the "Edition" picker — unlike
+// cardmarketPrice (already in Scryfall's response) it has to be requested separately
+// for each one: a best-effort preview (no language/foil filter, see the comment in
+// server/api/cardtrader/price.get.ts), with the precise price arriving after saving
+// via refresh-prices. undefined = not requested yet, null = requested but no listing
+// found — a local per-printing cache, not cleared between searches: reopening the
+// same name within this modal session does not repeat the calls.
 const cardtraderPrices = ref<Record<string, number | null>>({})
 watch(printings, (list) => {
   for (const printing of list) {
@@ -168,10 +163,10 @@ const foilUnavailableHint = computed(() =>
 
 const submitting = ref(false)
 
-// `state` è un oggetto reactive persistente sull'istanza del componente —
-// UModal si limita a nascondere/mostrare, non smonta/rimonta il form —
-// quindi va svuotato esplicitamente dopo un submit riuscito, altrimenti la
-// prossima apertura riparte dall'ultima richiesta inserita.
+// `state` is a reactive object that persists on the component instance — UModal
+// only hides and shows, it does not unmount and remount the form — so it has to be
+// cleared explicitly after a successful submit, otherwise the next opening starts
+// from the last request entered.
 function resetForm() {
   state.name = undefined
   state.printingId = undefined
@@ -264,8 +259,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 :alt="item.label"
                 class="flex items-center gap-2 min-w-0"
               >
-                <!-- Sfondo scuro dietro i simboli, come in league: quelli
-                     bianchi/incolori sparirebbero sul tema chiaro. -->
+                <!-- Dark background behind the symbols, as in league: the
+                     white/colorless ones would vanish on the light theme. -->
                 <span v-if="item.manaCost" class="shrink-0 bg-gray-950 p-1 rounded">
                   <MagicManaCost :mana-cost="item.manaCost" size="sm" />
                 </span>

@@ -39,11 +39,6 @@ const sections = computed(() => [{
     description: t('settings.notifications.fields.importantUpdates.description')
   }]
 }])
-
-async function onChange() {
-  // Do something with data
-  console.log(state)
-}
 </script>
 
 <template>
@@ -64,10 +59,7 @@ async function onChange() {
         :description="field.description"
         class="flex items-center justify-between not-last:pb-4 gap-2"
       >
-        <USwitch
-          v-model="state[field.name]"
-          @update:model-value="onChange"
-        />
+        <USwitch v-model="state[field.name]" />
       </UFormField>
     </UPageCard>
   </div>

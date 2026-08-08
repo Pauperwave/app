@@ -1,7 +1,6 @@
 <!-- app\pages\(settings)\settings\index.vue -->
 <script setup lang="ts">
 import * as v from 'valibot'
-import type { FormSubmitEvent } from '@nuxt/ui'
 
 const fileRef = ref<HTMLInputElement>()
 const { t } = useI18n()
@@ -33,14 +32,13 @@ const profile = reactive<Partial<ProfileSchema>>({
   bio: undefined
 })
 const toast = useToast()
-async function onSubmit(event: FormSubmitEvent<ProfileSchema>) {
+async function onSubmit() {
   toast.add({
     title: t('settings.general.successToastTitle'),
     description: t('settings.general.successToastDescription'),
     icon: 'i-lucide-check',
     color: 'success'
   })
-  console.log(event.data)
 }
 
 function onFileChange(e: Event) {

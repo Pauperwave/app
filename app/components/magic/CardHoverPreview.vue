@@ -1,27 +1,27 @@
 <!-- app\components\magic\CardHoverPreview.vue -->
 
 <!--
-  Anteprima dell'immagine di una carta che segue il puntatore, attorno a un
-  contenuto qualsiasi passato nello slot.
+  Preview of a card image that follows the pointer, wrapped around whatever
+  content is passed in the slot.
 
-  Il puntatore si traccia a mano con un :reference virtuale invece di usare il
-  trigger hover integrato di UTooltip: dentro il listbox di Reka (sotto
-  USelectMenu) gli eventi pointer vengono intercettati prima di arrivare al
-  TooltipTrigger, che quindi non scatta mai. Stesso workaround di
-  CommanderSuggestionRow.vue in MagicTheGathering/league e di
+  The pointer is tracked by hand with a virtual :reference instead of using
+  UTooltip's built-in hover trigger: inside Reka's listbox (underneath
+  USelectMenu) pointer events are intercepted before reaching the
+  TooltipTrigger, which therefore never fires. Same workaround as
+  CommanderSuggestionRow.vue in MagicTheGathering/league and
   magic/card/Tooltip.vue in MagicTheGathering/blog.
 
-  `mobileModal` per i casi in cui il trigger è un elemento su cui l'utente
-  farebbe tap (un nome carta in tabella): su touch l'hover non esiste, quindi
-  il tap apre l'immagine a schermo intero invece di non fare nulla.
+  `mobileModal` is for cases where the trigger is something the user would tap
+  (a card name in a table): hover does not exist on touch, so the tap opens the
+  image full screen instead of doing nothing.
 
-  Gli attributi passati dal chiamante (class in primis) finiscono sul trigger,
-  non sulla UTooltip — vedi inheritAttrs: false.
+  Attributes passed by the caller (class above all) land on the trigger, not on
+  the UTooltip — see inheritAttrs: false.
 -->
 <script setup lang="ts">
 interface Props {
   imageUrl?: string | null
-  /** Testo alternativo dell'immagine, e titolo della modale su mobile. */
+  /** Alt text for the image, and the modal title on mobile. */
   alt: string
   mobileModal?: boolean
 }

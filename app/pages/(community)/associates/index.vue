@@ -53,8 +53,8 @@ onMounted(() => {
 
 const table = useTemplateRef('table')
 
-// Collega i link della sidebar (/associates?status=pending|active|to_renew) al
-// filtro della colonna membership_status, applicabile solo dopo il mount di UTable.
+// Wires the sidebar links (/associates?status=pending|active|to_renew) to the
+// membership_status column filter, which can only be applied after UTable mounts.
 function applyMembershipStatusFilterFromQuery() {
   const statusColumn = table.value?.tableApi?.getColumn('membership_status')
   if (!statusColumn) return
@@ -65,8 +65,8 @@ function applyMembershipStatusFilterFromQuery() {
 onMounted(() => nextTick(applyMembershipStatusFilterFromQuery))
 watch(() => route.query.status, applyMembershipStatusFilterFromQuery)
 
-// Conteggi reali per stato di tesseramento, per le tab sopra la tabella
-// (sostituiscono i vecchi link statici in sidebar).
+// Real counts per membership status, for the tabs above the table (they replace the
+// old static sidebar links).
 const associatesStatusCounts = computed(() => {
   const counts = { pending: 0, active: 0, to_renew: 0 }
   for (const associate of associates.value) {
@@ -93,7 +93,7 @@ const activeStatusTab = computed({
 
 const columnFilters = ref([])
 
-// TODO utilizzare il mapping per la traduzione delle intestazioni
+// TODO use this mapping to translate the column headers
 const columnHeaders = {
   select: t('associate.columns.select'),
   id: t('associate.columns.id'),

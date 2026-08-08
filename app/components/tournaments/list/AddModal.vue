@@ -66,17 +66,17 @@ const eventOptions = [
 const today = new Date()
 const todayString = today.toISOString().substring(0, 10) // Format as YYYY-MM-DD
 
-// Messaggi custom solo sui campi liberi/numerici (name, entry_fee,
-// round_count, round_duration) — gli altri sono select vincolati con un
-// default già valido, non c'è uno stato utente che li renda mai invalidi.
+// Custom messages only on the free-text/numeric fields (name, entry_fee,
+// round_count, round_duration) — the others are constrained selects with an
+// already valid default, so no user state can ever make them invalid.
 const schema = v.object({
   status: v.string(),
   visibility: v.string(),
   companion_code: v.optional(v.nullable(v.string())),
-  // .optional() qui riflette lo schema Zod originale: "name" appare come
-  // "required" nella UI (vedi UFormField required) ma lo schema di validazione
-  // non lo impone — inconsistenza preesistente, non introdotta da questa
-  // migrazione, lasciata invariata per non cambiare comportamento.
+  // .optional() here mirrors the original Zod schema: "name" shows as "required"
+  // in the UI (see UFormField required) but the validation schema does not enforce
+  // it — a pre-existing inconsistency, not introduced by this migration, left as
+  // is so behaviour does not change.
   name: v.optional(v.string(t('tournament.addModal.validation.nameRequired'))),
   description: v.optional(v.nullable(v.string())),
   entry_fee: v.pipe(v.number(), v.minValue(0, t('tournament.addModal.validation.entryFeeNegative'))),
@@ -157,7 +157,6 @@ const selectedStatus = computed(() => {
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 1000))
-  console.log('New tournament data:', event.data)
 
   // Show success toast
   toast.add({
@@ -345,7 +344,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             </div>
           </div>
 
-          <!-- Dati dell'organizzatore -->
+          <!-- Organizer details -->
           <p class="text-lg font-semibold text-primary">
             {{ $t('tournament.addModal.organizerData') }}
           </p>

@@ -1,13 +1,13 @@
 // scripts\backfill-wanted-cards-scryfall.mjs
-// One-off batch job: le wanted-cards create prima della migrazione
-// 20260808120000 hanno solo scryfall_url, non scryfall_id/set_code (servono
-// al resolver CardTrader, vedi server/utils/cardTrader.ts e la feasibility
-// study 2026-08-08 in docs/PROGRESS.md). scryfall_url è nel formato
-// scryfall.com/card/{set}/{collector_number}[/{lang}]/{slug} — se ne
-// ricavano set+number (+lang quando presente, per le stampe in lingua non
-// inglese migrate dal mock iniziale) e si richiama Scryfall per l'id esatto.
+// One-off batch job: wanted cards created before migration 20260808120000 only have
+// scryfall_url, not scryfall_id/set_code (which the CardTrader resolver needs, see
+// server/utils/cardTrader.ts and the 2026-08-08 feasibility study in
+// docs/PROGRESS.md). scryfall_url has the form
+// scryfall.com/card/{set}/{collector_number}[/{lang}]/{slug} — set+number (+lang
+// when present, for the non-English printings migrated from the initial mock) are
+// extracted from it and Scryfall is called for the exact id.
 //
-// Re-eseguibile: aggiorna solo le righe con scryfall_id ancora null.
+// Re-runnable: it only updates rows whose scryfall_id is still null.
 //
 // Usage:
 //   node --env-file=.env scripts/backfill-wanted-cards-scryfall.mjs
@@ -24,7 +24,7 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
-// Scryfall chiede max 10 richieste/sec e un delay "gentile" tra le chiamate:
+// Scryfall asks for at most 10 requests/sec and a "polite" delay between calls:
 // https://scryfall.com/docs/api#rate-limits-and-good-citizenship
 const REQUEST_DELAY_MS = 100
 
@@ -32,10 +32,10 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-// Segmenti dopo "/card/": [set, collectorNumber, lang?, slug] — lang è
-// presente solo per le stampe non inglesi (es. "usg/321/it/culla-di-gea-...").
-// Va isolato come segmento intero (non i primi 2 caratteri dello slug, che
-// per pura coincidenza possono essere due lettere minuscole, es. "appa-...").
+// Segments after "/card/": [set, collectorNumber, lang?, slug] — lang is only
+// present for non-English printings (e.g. "usg/321/it/culla-di-gea-..."). It has to
+// be isolated as a whole segment (not the first 2 characters of the slug, which by
+// sheer coincidence can be two lowercase letters, e.g. "appa-...").
 function parseScryfallUrl(url) {
   const path = new URL(url).pathname
   const segments = path.split('/').filter(Boolean)
