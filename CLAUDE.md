@@ -16,9 +16,14 @@ pnpm lint             # eslint .
 pnpm typecheck        # nuxt typecheck (vue-tsc)
 pnpm check:paths      # verify every app/server/shared source file has a correct path header
 pnpm check:paths:fix  # insert/correct those headers in place
+pnpm test             # vitest run
+pnpm test:watch       # vitest --watch
+pnpm test:coverage    # vitest run --coverage
+pnpm test:e2e         # playwright test
+pnpm test:e2e:headed  # playwright test, headed + slowed down
 ```
 
-There is no test runner configured in this repo. Always run `pnpm lint` and `pnpm typecheck` after changes; both must be clean (see the zero-warning policy in global CLAUDE.md).
+vitest and Playwright are configured (mirroring `MagicTheGathering/league`), but no tests exist yet — see `test/README.md` and `test/e2e/README.md`. Always run `pnpm lint` and `pnpm typecheck` after changes; both must be clean (see the zero-warning policy in global CLAUDE.md).
 
 Add a path comment as the first line of every source file under `app/`, `server/`, `shared/`, `test/`, `scripts/`: `<!-- app\components\X.vue -->` or `// app\stores\x.ts` (backslash-separated, matching the checker in `scripts/check-file-paths.mjs`, copied unmodified from `MagicTheGathering/league`). Skips `shared/utils/types/database.ts` (generated via `pnpm supabase:types`, never hand-edited).
 
@@ -48,9 +53,14 @@ Supabase magic-link (OTP) auth via `@nuxtjs/supabase`:
 `nuxt.config.ts` also configures `@nuxtjs/supabase`'s own `redirectOptions`/`exclude` — when adding public routes, keep that list and the middleware's `publicPages` array in sync.
 
 ### Data fetching
-No Pinia/state library — shared reactive state lives in composables (`app/composables/`), following the `useAssociates.ts` pattern: `useAsyncData` + `useSupabaseClient()`, `lazy: true`, an explicit `default: () => []`, and Supabase errors rethrown via `createError`. Add new domain data-fetchers the same way rather than introducing a store.
+Two patterns coexist during the migration to Pinia Colada + BFF (ADR-007, `docs/PROGRESS.md`):
+- **New/migrated domains** (e.g. `wanted-cards`): `use<Domain>Query.ts` (`useQuery` from Pinia Colada, reads Supabase directly with the anon client) + `use<Domain>Mutations.ts` (`useMutation`, calls a `server/api/<domain>/*.post.ts` BFF endpoint via `$fetch`, never Supabase directly from the client). Use `app/composables/useWantedCards{Query,Mutations}.ts` as the template for new domains, not `useAssociates.ts`.
+- **Not yet migrated** (e.g. `useAssociates.ts`): `useAsyncData` + `useSupabaseClient()`, `lazy: true`, an explicit `default: () => []`, Supabase errors rethrown via `createError`. Being phased out — see `docs/BACKLOG.md`.
 
 Some `server/api/*` endpoints (`tournaments.ts`, `leagues.ts`, `members.ts`, `notifications.ts`) still return mock/static data rather than querying Supabase — check an endpoint's implementation before assuming it's backed by the database.
+
+### Render functions (`h()`) in composables, not just `.vue` files
+`resolveComponent('UButton')` only resolves reliably inside a `.vue` file's `<script setup>` — the compiler rewrites it there. Called from a plain `.ts` composable (e.g. a `use<Domain>TableColumns.ts` building `TableColumn` defs with `h()`), it silently fails ("Failed to resolve component" warnings) and can hang the page instead of just rendering broken markup. Import the component directly from `#components` instead: `import { UButton } from '#components'`. Confirmed 2026-08-08 while extracting `useWantedCardsTableColumns.ts` out of `wanted-cards/index.vue`.
 
 ### Types
 Shared domain types (`Associate`, `Tournament`, `Transaction`, status unions, etc.) live in `app/types/index.d.ts`. Add new domain interfaces there rather than colocating them in components.

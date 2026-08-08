@@ -5,6 +5,13 @@
 **Project:** PauperWave - Pauper League Manager Dashboard
 **Type:** Nuxt 4 Full-Stack Web Application
 
+> **⚠️ Point-in-time snapshot, not a living doc.** Several claims below are superseded — check `docs/PROGRESS.md` (ADRs, the current architectural source of truth) before trusting anything here as current fact. Known-stale as of 2026-08-08:
+> - §2 "`@tanstack/vue-table` is not a project dependency" — **now used** (`wanted-cards` table view, added 2026-08-07).
+> - §4.1 "Pinia: Not used" — **now used** (Pinia + Pinia Colada, ADR-007, added 2026-08-08) for migrated domains; `useAssociates.ts`-style plain composables still exist for domains not yet migrated.
+> - §4.2 "Current Endpoints" table — `wanted-cards` now has 4 real BFF endpoints (`server/api/wanted-cards/*.post.ts`, ADR-007/008); see `docs/architecture/api.md`.
+> - §8.1 "There is no test runner configured" — `vitest`/`Playwright` **are configured** (mirroring `league`), just no test files written yet; see `docs/architecture/testing.md`.
+> - §11 doesn't mention `MagicTheGathering/league`'s imminent integration (deadline 2026-08-30) — see ADR-003 in `docs/PROGRESS.md`, the single most important piece of current context missing from this document.
+
 ---
 
 ## 1. Executive Summary

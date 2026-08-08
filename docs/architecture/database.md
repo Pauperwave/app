@@ -2,11 +2,11 @@
 
 <!-- docs/architecture/database.md -->
 
-Supabase Postgres project `app` (`uggrolzdntoamclgnzrt`), 27 tables in the `public` schema. This DB is the intended foundation for the future `MagicTheGathering/league` rebuild — see `docs/PROJECT_ANALYSIS.md` and `CLAUDE.md` for the app's own scope.
+Supabase Postgres project `app` (`uggrolzdntoamclgnzrt`), 28 tables in the `public` schema (`pauperwave_wanted_cards` added 2026-08-07). Integration with `MagicTheGathering/league` is imminent (deadline 2026-08-30) — `app`'s schema is the destination, `league` gets absorbed here, not the other way around. See ADR-003 (corrected 2026-08-08) in `docs/PROGRESS.md`.
 
 ## Migrations
 
-Tracked in `supabase/migrations/`, applied via `pnpm exec supabase db push --linked`. Types regenerated into `app/types/database.types.ts` via `pnpm run supabase:types` (excluded from ESLint — see `eslint.config.mjs`).
+Tracked in `supabase/migrations/`, applied via `pnpm exec supabase db push --linked`. Types regenerated into `shared/utils/types/database.ts` via `pnpm supabase:types` (excluded from ESLint — see `eslint.config.mjs`).
 
 The project's migration history was adopted retroactively on 2026-08-05: 21 pre-existing schema changes (made directly via the Supabase SQL editor, never tracked in this repo) were marked `reverted` in the CLI's bookkeeping table via `supabase migration repair` — this does **not** touch the actual schema, it only tells the CLI "stop expecting local files for these, start tracking from here."
 
@@ -14,6 +14,14 @@ The project's migration history was adopted retroactively on 2026-08-05: 21 pre-
 |---|---|
 | `20260805035231_backfill_and_view_associate_membership_status.sql` | Backfills `pauperwave_associate_renewals` from `association_date`/`payment_date` for approved associates; adds view `pauperwave_associates_with_status` computing `membership_status` (`active`/`to_renew`/`expired`, or the raw `membership_request_status` for non-approved rows) |
 | `20260805041528_drop_dead_associate_status_column.sql` | Drops `pauperwave_associates.associate_status` (always `NULL`, superseded by the view above); recreates the view around the narrower table |
+| `20260807065335_create_associate_geocodes_cache_table.sql` | New table `pauperwave_associate_geocodes`, cache for the associates map view (residence geocoding via Nominatim/Photon) |
+| `20260807190720_create_wanted_cards_table.sql` | New table `pauperwave_wanted_cards` (deliberately format-agnostic, no Pauper/Commander-specific columns), FK to `pauperwave_associates`, RLS: read open to all authenticated, writes gated by `has_management_permissions` |
+| `20260807192315_rename_wanted_cards_found_at_to_requested_at.sql` | Fixes a naming bug: `found_at` actually meant "date requested", not "date found" — most unfound mock rows had it populated too |
+| `20260807200045_open_wanted_cards_insert_to_authenticated.sql` | Opens `INSERT` to any authenticated user (players create their own requests), keeps update/delete management-only |
+| `20260807230702_add_wanted_cards_found_at.sql` | Adds a real `found_at timestamptz` + trigger, set automatically when `found` (boolean, at the time) transitions to `true` |
+| `20260807231803_wanted_cards_status_tristate.sql` | Replaces the `found` boolean with `status text` (`searching`/`found`/`abandoned`), rewrites the `found_at` trigger around `status` |
+| `20260808060300_wanted_cards_requested_at_default.sql` | Adds `default current_date` to `requested_at` (never had one — new requests were inserting with `null`) + backfills existing null rows |
+| `20260808063237_wanted_cards_audit_columns.sql` | Retargets `created_by`/`updated_by` FKs from `auth.users(id)` to `pauperwave_associates(uuid)` (avoids needing the Supabase admin API to resolve a display name); adds a generic `set_updated_at()` trigger as a safety net for writes outside the BFF |
 
 ## Membership status model
 
@@ -25,7 +33,7 @@ Three layers, kept intentionally separate rather than collapsed into one status 
 
 The view uses `security_invoker = true`, so its join to `pauperwave_associate_renewals` is filtered by the *querying user's* RLS, not a superuser's — see the open verification item in `docs/TODO.md`.
 
-## RLS policies (as of 2026-08-05)
+## RLS policies (as of 2026-08-05, wanted_cards row added 2026-08-08)
 
 | Table | Policy | Role | Effect |
 |---|---|---|---|
@@ -34,6 +42,10 @@ The view uses `security_invoker = true`, so its join to `pauperwave_associate_re
 | `pauperwave_associates` | `player_own_associate` | `public` | `SELECT` only, own record via `players.user_id` |
 | `pauperwave_associate_renewals` | `management_full_access` | `public` | `has_management_permissions(auth.uid())` |
 | `pauperwave_associate_renewals` | `player_own_renewals` | `public` | `SELECT` only, own record via `players.user_id` — **no blanket `authenticated` policy exists**, unlike the table above |
+| `pauperwave_wanted_cards` | `Authenticated users can read wanted cards` | `authenticated` | `SELECT`, `USING (true)` |
+| `pauperwave_wanted_cards` | `Management can insert/update/delete wanted cards` | `authenticated` | `has_management_permissions(auth.uid())` for update/delete; insert is open to any authenticated user (separate policy) |
+
+**Note:** for `pauperwave_wanted_cards`, these RLS policies are no longer the actual enforcement point for writes — the app talks to this table exclusively through a BFF layer using the service-role key (bypasses RLS entirely), which re-implements the same checks server-side (`server/utils/serverAuth.ts`, see ADR-007/008 in `docs/PROGRESS.md` and `docs/architecture/api.md`). The policies above still gate any *other* client (Supabase dashboard, a future direct client-side write) but are effectively redundant with the BFF for this app's own traffic.
 
 ## Table inventory: format-specific vs. format-agnostic
 
@@ -68,11 +80,18 @@ The view uses `security_invoker = true`, so its join to `pauperwave_associate_re
 | `payment_receipts` | 🟢 Agnostic | payments |
 | `user_roles` | 🟢 Agnostic | |
 | `sync_metadata` | 🟢 Agnostic | infrastructure |
+| `pauperwave_wanted_cards` | 🟢 Agnostic | "Carte Cercate" feature — deliberately built format-agnostic from the start (2026-08-07), no Pauper/Commander-specific columns |
+| `pauperwave_associate_geocodes` | 🟢 Agnostic | cache for the associates map view, unrelated to tournament format |
 
 **Takeaway:** before building out Premodern/Draft/Pauper tournament flows, `tournament_pairings` (4-seat assumption), `tournament_votes`/`tournament_kills` (Commander-pod-only mechanics), and the `rulesets` family need a design decision — either made format-aware, or explicitly scoped as Commander-only with a parallel/generic path for other formats.
+
+## `created_by`/`updated_by` audit columns
+
+Present on 6 tables (`pauperwave_associates`, `pauperwave_wanted_cards`, `pauperwave_associate_geocodes`, `pauperwave_associate_renewals`, `pauperwave_payments`, `user_roles`), but until 2026-08-08 **none of them were ever populated** — no trigger, no application code wrote them (confirmed: 0/47 `pauperwave_wanted_cards` rows had either set). Populated now for `pauperwave_wanted_cards` only, via `server/utils/auditColumns.ts` (generic, reusable) called from its BFF endpoints — see ADR-008 in `docs/PROGRESS.md`. The other 5 tables are backlog (`docs/BACKLOG.md`), each needing its own decision on whether `created_by`/`updated_by` should reference `auth.users(id)` (as they do today) or get retargeted to `pauperwave_associates(uuid)` like `wanted_cards` did, depending on whether/how the value is shown in UI.
 
 ## Known issues / history
 
 - `pauperwave_associates.request_status` never existed — the real column was always `membership_request_status`, and the values were `approved`/`pending`, not `accepted`/`pending`/`rejected`. Caused the "Stato richiesta" column to render an empty badge for every row. Fixed 2026-08-05 (`fix(associates): 🐛 correct membership_request_status mismatch, wire real status`).
 - `associate_status` was always `NULL` for all 242 existing associates — dead column, dropped 2026-08-05 in favor of the computed `membership_status` view.
-- See `docs/TODO.md` for open items (RLS/permissions verification for the renewals view, full 27-table audit).
+- `pauperwave_wanted_cards.requested_at` never had a `default` (inherited from being renamed off `found_at`, which also had none) — new requests inserted via `AddModal.vue` got `requested_at = null`, silently breaking the age indicator in the grid/table. Fixed 2026-08-08 with `default current_date` + backfill.
+- See `docs/TODO.md` for open items (RLS/permissions verification for the renewals view, full 28-table audit).
