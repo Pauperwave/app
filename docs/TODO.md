@@ -59,3 +59,15 @@ Loose observations and open questions, not yet committed to the backlog. Promote
 - **Pagination vs. virtualization/infinite scroll for `/wanted-cards`.** User preference (2026-08-08): no pagination — prefers virtualization + infinite scroll, for both the table and the card grid, once dataset size actually warrants it (currently 47 rows, a non-issue).
   - Found: 2026-08-08, self-assessment of `/wanted-cards` maturity at user request.
   - Next step: revisit once row count grows enough to matter; look at TanStack Virtual (already a `@tanstack/vue-table` sibling package) for both views.
+
+- **`app/components/magic/` depends on a `wanted-cards` type.** `magic/CardPreview.vue` is typed on `ScryfallPrinting`, which lives in `app/composables/useScryfallCardSearch.ts` — so the generic MTG component folder points back at a specific domain's composable. Accepted knowingly when the component was moved out of `wanted-cards/` (2026-08-08) to make it available to the Commander work: the alternative was leaving it behind and duplicating it later.
+  - Found: 2026-08-08, while moving `ManaCost`/`CardPreview`/`CardPreviewTooltip` into `app/components/magic/` so the Commander section can reuse them.
+  - Next step: when Commander actually consumes `MagicCardPreview`, either move `ScryfallPrinting` into `app/types/index.d.ts` (it's shared domain data, which is where the convention in `CLAUDE.md` says it belongs) or narrow the component's prop to the handful of fields it renders. Don't do it speculatively — the second consumer is what tells us which of the two is right.
+
+- **6 components with no references anywhere.** `tournaments/single/{Overview,Participants,RoundResults}.vue`, `tournaments/list/Overview.vue`, `leagues/single/Leaderboard.vue`, `rounds/single/ResultAddModal.vue` — the `rounds/` folder exists solely for the last one. Either leftovers from the Nuxt UI dashboard template or stubs for work that stalled.
+  - Found: 2026-08-08, while auditing component folders for domain leakage (which turned up only `HomeDateRangePicker`, see below).
+  - Next step: confirm with `pnpm fallow:dead-code` rather than grep, then delete or finish them — a stub that neither renders nor errors is the kind of thing that quietly survives a rewrite.
+
+- **`HomeDateRangePicker` is not a home component.** Used by 7 pages, only one of which is `pages/index.vue`; the rest are statistics, transactions, events, leagues and tournaments. Same shape as `ViewModeTabs` before it was moved to `app/components/` root.
+  - Found: 2026-08-08, auditing component folders after moving `PlayerTag`/`ManaCost`/`CardPreview*` out of `wanted-cards/`.
+  - Next step: move to `app/components/DateRangePicker.vue` (`<DateRangePicker>`), updating the 7 call sites. Cheap, but touches pages unrelated to whatever else is in flight — worth doing on its own.
