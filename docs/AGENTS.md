@@ -2,14 +2,19 @@
 
 <!-- docs/AGENTS.md -->
 
-- The end goal right now is **stability** — this app's Supabase DB is meant to become the foundation for the future `MagicTheGathering/league` rebuild, so schema/data correctness takes priority over new features or refactors.
+- Integration with `MagicTheGathering/league` is imminent, not a distant goal — deadline **2026-08-30** (draft "Lo Hobbit", potentially run through this app). `app` absorbs `league`, not the other way around: it already has the more suitable format-agnostic schema and the more structured frontend. See ADR-003/ADR-007 in `docs/PROGRESS.md`. Schema/data correctness still matters, but new work should be built against the target architecture (Pinia Colada + BFF, see ADR-007/008) rather than throwaway solutions to be redone later.
 - See the root `CLAUDE.md` for stack, routing, component organization, auth flow, and data-fetching conventions — this file complements it rather than repeating it.
 
 ## Database modifications
 
 - Schema changes go through `supabase/migrations/*.sql`, applied via `pnpm exec supabase db push --linked` — never ad-hoc DDL against the linked project without a migration file.
-- Regenerate `app/types/database.types.ts` after any schema change (`pnpm run supabase:types`) so `Associate` and friends in `app/types/index.d.ts` stay honest about nullability and column names.
+- Regenerate `shared/utils/types/database.ts` after any schema change (`pnpm supabase:types`) so `Associate` and friends in `app/types/index.d.ts` stay honest about nullability and column names.
 - See `docs/architecture/database.md` for the full schema reference, RLS policies, and the Commander-vs-format-agnostic table inventory.
+
+## Writes go through a BFF, not the client
+
+- New/migrated domains (see `wanted-cards` as the template, ADR-007/008 in `docs/PROGRESS.md`): reads go client-side via `useQuery` (Pinia Colada) straight to Supabase with the anon key; writes go through a `server/api/<domain>/*.post.ts` endpoint using `serverSupabaseServiceRole`, which bypasses RLS — that endpoint is the authorization boundary (`server/utils/serverAuth.ts`'s `requireUser`/`requireManagementPermission`), not a DB policy or trigger relying on `auth.uid()` (always `null` under the service-role key).
+- `created_by`/`updated_by` population (where those columns exist) goes through `server/utils/auditColumns.ts` (`auditColumnsForInsert`/`auditColumnsForUpdate`), generic and reusable — spread into the insert/update payload of any BFF endpoint, not reinvented per table.
 
 ## Code quality requirements
 

@@ -2,27 +2,25 @@
 
 <!-- docs/architecture/testing.md -->
 
-## Current state: no automated tests
+## Current state: runner configured, zero tests written
 
-There is no test runner configured in this repo (no `vitest`, no `@nuxt/test-utils`, no Playwright, no `*.test.*` files anywhere). Confirmed 2026-08-05 — `package.json` has no `test` script, `pnpm-lock.yaml` has none of the usual testing packages.
+`vitest` and `Playwright` are configured (mirroring `MagicTheGathering/league`) — `pnpm test`/`test:watch`/`test:coverage` and `pnpm test:e2e`/`test:e2e:headed` scripts exist, see `test/README.md` and `test/e2e/README.md`. But **no test file exists anywhere in the repo** — the runner being wired up is not the same as having coverage. Every verification of every feature built this session (wanted-cards CRUD, filters, tour, Pinia Colada migration, audit columns) was done manually via browser, not via an automated test.
 
-The only verification available today is:
+The only *automated* verification available today is:
 
 - `pnpm lint` (ESLint) — style/convention correctness, not behavior
 - `pnpm typecheck` (`nuxt typecheck` / `vue-tsc`) — type correctness, not behavior
-- Manual verification in the browser (see root `CLAUDE.md`'s note on testing UI changes manually)
 
-Both must be clean per the zero-warning policy, but **neither catches logic or regression bugs** — e.g. the `membership_request_status`/`request_status` field-name mismatch fixed 2026-08-05 (see `docs/architecture/database.md`) passed typecheck for months because `useAssociates.ts` didn't type its Supabase query result against the generated schema; nothing would have caught the sidebar's hardcoded, disconnected badge counts either.
+Both must be clean per the zero-warning policy, but **neither catches logic or regression bugs** — e.g. the `membership_request_status`/`request_status` field-name mismatch fixed 2026-08-05 (see `docs/architecture/database.md`) passed typecheck for months because `useAssociates.ts` didn't type its Supabase query result against the generated schema; a `resolveComponent()`-in-a-`.ts`-composable bug found 2026-08-08 (see root `CLAUDE.md`) silently hung the `wanted-cards` table view and neither lint nor typecheck caught it — only manual browser testing did.
 
-## What a first testing setup should cover, in priority order
+## What a first test pass should cover, in priority order
 
-1. **Database migrations** — no automated check today that a migration actually produces the expected `pauperwave_associates_with_status` shape/values. Currently verified manually via `supabase db query --linked` after every push (see `docs/architecture/database.md`).
-2. **`server/api/check-associate.post.ts`** — the one real (non-mock) server route; a regression here breaks login.
-3. **Composables querying Supabase** (`useAssociates.ts` and future ones) — easiest to unit-test with a mocked Supabase client, and exactly where the field-name-drift class of bug lives.
-4. **Table/filter logic in page components** (e.g. `associates/index.vue`'s column filters, sidebar `?status=` wiring) — currently only verified manually in the browser.
+1. **`wanted-cards` BFF endpoints** (`server/api/wanted-cards/*.post.ts`) — the most complex real write path in the app (auth checks, audit columns, status transitions); a regression here fails silently behind a toast unless someone's watching.
+2. **`server/api/check-associate.post.ts`** — the one pre-BFF real server route; a regression here breaks login.
+3. **`useWantedCardsFilters.ts`'s `filteredCards`** — the single predicate function both the table and grid views now depend on (unified 2026-08-08 specifically to kill a class of bug where the two views' filtering logic drifted apart); the highest-value target for a first unit test given that history.
+4. **Composables querying Supabase** (`useAssociates.ts` and any not-yet-migrated ones) — easiest to unit-test with a mocked Supabase client, and where the field-name-drift class of bug lives.
 
 ## Not yet decided
 
-- Which test runner (`vitest` is the natural fit for a Nuxt 4 project, matching `MagicTheGathering/league`'s setup)
-- Whether to add E2E coverage (Playwright, per `league`'s convention) given the app's current size doesn't yet justify the setup cost
-- Whether this belongs in `docs/BACKLOG.md` as a scoped item, or stays a `docs/TODO.md` observation until there's a concrete regression that motivates it
+- Whether to add E2E coverage (Playwright, per `league`'s convention) given the app's current size doesn't yet justify the setup cost, even though the harness already exists
+- Whether writing the first tests belongs in `docs/BACKLOG.md` as a scoped item, or stays a `docs/TODO.md` observation until there's a concrete regression that motivates it — see the note in `docs/BACKLOG.md`/`TODO.md` about this being felt acutely on `/wanted-cards` specifically
