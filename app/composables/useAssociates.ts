@@ -21,11 +21,8 @@ export const useAssociates = () => {
         })
       }
 
-      if (import.meta.env.DEV) {
-        console.log('Fetched associates:', data)
-      }
-      // membership_request_status/membership_status sono testo libero a DB
-      // (non enum Postgres), ma l'app tratta solo i valori noti definiti nei tipi
+      // membership_request_status/membership_status are free text in the DB (not
+      // Postgres enums), but the app only handles the known values from the types
       return (data ?? []) as Associate[]
     },
     {
