@@ -1,15 +1,22 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import pkg from './package.json' with { type: 'json' }
+
 export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
     '@nuxt/ui',
+    '@nuxt/a11y',
     '@vueuse/nuxt',
     '@pinia/nuxt',
     '@nuxtjs/supabase',
+    '@nuxtjs/robots',
     '@nuxt/image',
     '@nuxtjs/i18n',
     '@nuxtjs/device',
     '@nuxtjs/leaflet',
+    '@nuxt/hints',
+    'motion-v/nuxt',
+    'nuxt-echarts',
     '@pinia/colada-nuxt'
   ],
   components: [
@@ -24,16 +31,30 @@ export default defineNuxtConfig({
       pathPrefix: true
     }
   ],
+  imports: {
+    // recursively scans all subfolders (e.g. ~/composables/theme)
+    dirs: ['~/composables/**']
+  },
   devtools: {
     enabled: true
   },
   css: ['~/assets/css/main.css'],
+  site: { indexable: false },
   runtimeConfig: {
+    // Server-only — mai esposto al client. Genera il token dal proprio
+    // account CardTrader (docs.cardtrader.com/en/docs/api/full/reference);
+    // è un JWT permanente (scadenza anno 2126), va trattato come segreto.
+    cardTraderApiToken: process.env.CARDTRADER_API_TOKEN,
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
       siteName: 'PauperWave',
-      siteDescription: 'The Pauper League Manager'
+      siteDescription: 'The Pauper League Manager',
+      appVersion: pkg.version,
+      appEnv: process.env.NODE_ENV ?? 'development'
     }
+  },
+  alias: {
+    '#test': '../test'
   },
   routeRules: {
     '/api/**': {
@@ -41,11 +62,35 @@ export default defineNuxtConfig({
     }
   },
   compatibilityDate: '2024-07-11',
-  // forza il pre-bundling di zod, migliorando l’avvio in dev server
   vite: {
+    build: {
+      // Disable sourcemaps in production to avoid warnings
+      sourcemap: false,
+      chunkSizeWarningLimit: 600
+    },
+    css: {
+      devSourcemap: false
+    },
+    // forza il pre-bundling di queste dipendenze, migliorando l'avvio in dev server
     optimizeDeps: {
-      include: ['zod']
+      include: [
+        'zod',
+        'fast-levenshtein', // CJS
+        '@vue-flow/core',
+        '@vue-flow/background',
+        '@vue-flow/controls',
+        'vue-draggable-plus',
+        'valibot'
+      ]
     }
+  },
+  // Chart types/components registered here are the only ones tree-shaken
+  // into the bundle — add to these arrays when a new chart needs a type not
+  // listed yet (see MagicTheGathering/league's nuxt.config.ts).
+  echarts: {
+    renderer: ['svg'],
+    charts: ['BarChart', 'PieChart', 'LineChart'],
+    components: ['TooltipComponent', 'LegendComponent', 'GridComponent', 'TitleComponent']
   },
   // debug: true,
   eslint: {
@@ -74,9 +119,18 @@ export default defineNuxtConfig({
   // in the codebase (including app/utils/icons.ts) instead of the whole
   // lucide/simple-icons/circle-flags collections.
   icon: {
+    // Scans source files at build time and inlines every icon used directly
+    // into the client JS bundle instead of relying on the runtime fetch.
+    // Default globInclude doesn't cover `.ts` — every icon name here lives in
+    // app/utils/icons.ts (ICONS.foo string literals), referenced dynamically
+    // as :icon="ICONS.foo", never as a literal i-lucide-* string inside a
+    // .vue file, so the scanner needs this to actually find them.
     clientBundle: {
-      scan: true
+      scan: { globInclude: ['**/*.{vue,jsx,tsx,md,mdc,mdx,yml,yaml,ts}'] }
     }
+  },
+  robots: {
+    disallow: ['/']
   },
   supabase: {
     types: '#shared/utils/types/database.ts',
