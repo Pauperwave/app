@@ -466,14 +466,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
         </template>
 
         <template #right>
-          <UTabs
-            v-model="viewMode"
-            :items="viewModeItems"
-            variant="pill"
-            size="xs"
-            :content="false"
-            :ui="{ list: 'w-fit' }"
-          />
+          <ViewModeTabs v-model="viewMode" :items="viewModeItems" />
           <AssociatesListAddModal v-model="isModalOpen" />
         </template>
       </UDashboardNavbar>
