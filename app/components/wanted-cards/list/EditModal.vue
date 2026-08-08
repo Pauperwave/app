@@ -6,7 +6,7 @@
   invece modificabile con lo stesso picker Scryfall di AddModal.vue.
 -->
 <script setup lang="ts">
-import * as z from 'zod'
+import * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { WantedCard } from '~/types'
 
@@ -47,16 +47,29 @@ const languageOptions = computed(() => [
   { label: t('wantedCard.languages.ja'), value: 'ja', icon: 'i-circle-flags-jp' }
 ])
 
-const schema = z.object({
-  printingId: z.string().min(1, t('wantedCard.addModal.validation.printingRequired')),
-  copies: z.number().int().positive(),
-  language: z.string(),
-  foil: z.boolean().optional(),
-  notes: z.string().optional(),
-  player: z.string().min(1, t('wantedCard.addModal.validation.playerRequired'))
+// Stessi messaggi custom di AddModal.vue (vedi commento lì sul perché
+// v.pipe(v.string(msg), v.minLength(...)) copre sia il campo mai valorizzato
+// sia la stringa vuota).
+const schema = v.object({
+  printingId: v.pipe(
+    v.string(t('wantedCard.addModal.validation.printingRequired')),
+    v.minLength(1, t('wantedCard.addModal.validation.printingRequired'))
+  ),
+  copies: v.pipe(
+    v.number(t('wantedCard.addModal.validation.copiesRequired')),
+    v.integer(t('wantedCard.addModal.validation.copiesInteger')),
+    v.minValue(1, t('wantedCard.addModal.validation.copiesPositive'))
+  ),
+  language: v.string(),
+  foil: v.optional(v.boolean()),
+  notes: v.optional(v.string()),
+  player: v.pipe(
+    v.string(t('wantedCard.addModal.validation.playerRequired')),
+    v.minLength(1, t('wantedCard.addModal.validation.playerRequired'))
+  )
 })
 
-type Schema = z.output<typeof schema>
+type Schema = v.InferOutput<typeof schema>
 
 const state = reactive<Partial<Schema>>({})
 
@@ -123,11 +136,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       edits: {
         playerAssociateUuid: event.data.player,
         scryfallUrl: printing.scryfallUrl,
+        scryfallId: printing.id,
+        setCode: printing.set,
         manaCost: printing.manaCost,
         colorIdentity: printing.colorIdentity,
         cmc: printing.cmc,
         imageUrl: printing.imageUrl,
-        price: printing.price,
+        cardmarketPrice: printing.price,
         copies: event.data.copies,
         language: event.data.language === 'any' ? null : event.data.language,
         treatment: event.data.foil ? ['foil'] : [],
@@ -182,6 +197,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             v-model="state.printingId"
             :items="printingItems"
             value-key="value"
+            :filter-fields="['label', 'collectorNumber']"
             :loading="isLoadingPrintings"
             :placeholder="$t('wantedCard.addModal.fields.printingPlaceholder')"
             class="w-full"
@@ -197,7 +213,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           </USelectMenu>
         </UFormField>
 
-        <WantedCardsCardPreview :printing="selectedPrinting ?? null" />
+        <MagicCardPreview :printing="selectedPrinting ?? null" />
 
         <div class="grid grid-cols-3 gap-2">
           <UFormField :label="$t('wantedCard.addModal.fields.copies')" name="copies">

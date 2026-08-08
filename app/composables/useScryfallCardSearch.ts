@@ -93,11 +93,28 @@ function toPrinting(card: ScryfallApiCard): ScryfallPrinting {
   }
 }
 
+export interface ScryfallCardSuggestion {
+  name: string
+  manaCost: string
+  imageUrl: string | null
+}
+
+// /cards/search restituisce ~175 risultati per pagina: per un typeahead ne
+// bastano i primi, il resto lo restringe l'utente continuando a scrivere.
+const SUGGESTION_LIMIT = 20
+
 export function useScryfallCardSearch() {
   const query = ref('')
-  const nameSuggestions = ref<string[]>([])
+  const nameSuggestions = ref<ScryfallCardSuggestion[]>([])
   const isSuggesting = ref(false)
 
+  // /cards/search e non /cards/autocomplete: quest'ultimo restituisce solo
+  // stringhe, mentre accanto al nome serve anche il costo di mana (stesso
+  // pattern di CommanderSuggestionRow.vue in league, che però lo legge da un
+  // catalogo locale invece che dall'API). In più qui funziona la sintassi di
+  // ricerca completa, quindi `game:paper` esclude le carte Alchemy — solo
+  // digitali, non giocabili su carta — al posto del filtro lato client sul
+  // prefisso "A-" del loro nome, che serviva con l'autocomplete.
   async function fetchSuggestions(q: string) {
     const trimmed = q.trim()
     if (trimmed.length < 2) {
@@ -107,15 +124,21 @@ export function useScryfallCardSearch() {
 
     isSuggesting.value = true
     try {
-      const response = await $fetch<{ data: string[] }>('https://api.scryfall.com/cards/autocomplete', {
-        query: { q: trimmed }
+      const response = await $fetch<{ data: ScryfallApiCard[] }>('https://api.scryfall.com/cards/search', {
+        query: { q: `${trimmed} game:paper`, unique: 'cards', order: 'name' }
       })
-      // /cards/autocomplete non supporta la sintassi di ricerca di Scryfall
-      // (niente game:paper qui), quindi le carte Alchemy — solo digitali,
-      // non giocabili su carta — si filtrano lato client sul prefisso "A-"
-      // della loro convenzione di nome (es. "A-Lightning Bolt").
-      nameSuggestions.value = (response.data ?? []).filter(name => !name.startsWith('A-'))
+      nameSuggestions.value = (response.data ?? []).slice(0, SUGGESTION_LIMIT).map(card => ({
+        name: card.name,
+        // Le carte a due facce non hanno mana_cost/image_uris in cima
+        // all'oggetto: stanno sulla faccia frontale, come in toPrinting().
+        manaCost: card.mana_cost || card.card_faces?.[0]?.mana_cost || '',
+        imageUrl: card.image_uris?.normal
+          ?? card.card_faces?.[0]?.image_uris?.normal
+          ?? null
+      }))
     } catch {
+      // /cards/search risponde 404 quando nessuna carta corrisponde: per un
+      // typeahead è la normalità mentre si digita, non un errore.
       nameSuggestions.value = []
     } finally {
       isSuggesting.value = false
