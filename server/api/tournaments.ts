@@ -32,10 +32,10 @@ const tournaments = Array.from({ length: 30 }, (_, i) => {
   const entry_fee = entryFees[i % entryFees.length]
 
   const statuses = [
-    'Scheduled',
-    'Cancelled',
-    'In Progress',
-    'Completed'
+    'scheduled',
+    'canceled',
+    'ongoing',
+    'completed'
   ]
   const status = statuses[i % statuses.length]
 

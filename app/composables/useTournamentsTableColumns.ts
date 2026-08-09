@@ -1,0 +1,82 @@
+// app\composables\useTournamentsTableColumns.ts
+import { h } from 'vue'
+import { UBadge, UButton } from '#components'
+import type { Column } from '@tanstack/vue-table'
+import type { TableColumn } from '@nuxt/ui'
+import type { Tournament } from '~/types'
+
+// Pure config (depends only on t()) — same reasoning as useWantedCardsTableColumns.ts.
+export function useTournamentsTableColumns() {
+  const { t } = useI18n()
+
+  function sortableHeader(label: string, column: Column<Tournament, unknown>) {
+    const isSorted = column.getIsSorted()
+    return h(UButton, {
+      label,
+      color: 'neutral',
+      variant: 'ghost',
+      class: '-mx-2.5',
+      icon: isSorted
+        ? (isSorted === 'asc' ? 'i-lucide-arrow-up-narrow-wide' : 'i-lucide-arrow-down-wide-narrow')
+        : 'i-lucide-arrow-up-down',
+      onClick: () => column.toggleSorting(isSorted === 'asc')
+    })
+  }
+
+  const columnHeaders: Record<string, string> = {
+    status: t('tournament.columns.status'),
+    name: t('tournament.columns.name'),
+    startDate: t('tournament.columns.startDate'),
+    format: t('tournament.columns.format'),
+    location: t('tournament.columns.location'),
+    registeredPlayers: t('tournament.columns.registeredPlayers'),
+    entryFee: t('tournament.columns.entryFee')
+  }
+
+  const columns: TableColumn<Tournament>[] = [
+    {
+      accessorKey: 'status',
+      header: ({ column }) => sortableHeader(t('tournament.columns.status'), column),
+      cell: ({ row }) => h(UBadge, {
+        color: tournamentStatusColor(row.original.status),
+        variant: 'subtle',
+        icon: TOURNAMENT_STATUS_ICONS[row.original.status]
+      }, () => t(`tournament.status.${row.original.status}`))
+    },
+    {
+      accessorKey: 'name',
+      header: ({ column }) => sortableHeader(t('tournament.columns.name'), column),
+      cell: ({ row }) => h('span', { class: 'font-medium' }, row.original.name)
+    },
+    {
+      accessorKey: 'startDate',
+      header: ({ column }) => sortableHeader(t('tournament.columns.startDate'), column),
+      cell: ({ row }) => new Date(row.original.startDate).toLocaleString('it-IT', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    },
+    {
+      accessorKey: 'format',
+      header: ({ column }) => sortableHeader(t('tournament.columns.format'), column)
+    },
+    {
+      accessorKey: 'location',
+      header: t('tournament.columns.location')
+    },
+    {
+      accessorKey: 'registeredPlayers',
+      header: ({ column }) => sortableHeader(t('tournament.columns.registeredPlayers'), column)
+    },
+    {
+      accessorKey: 'entryFee',
+      header: ({ column }) => sortableHeader(t('tournament.columns.entryFee'), column),
+      cell: ({ row }) => `${row.original.entryFee.toFixed(2)} €`
+    }
+  ]
+
+  return { columns, columnHeaders }
+}
