@@ -122,6 +122,44 @@ Di conseguenza `docs/CHANGELOG.md` (curato) si alleggerisce: non deve più trasc
 
 **Conseguenze:** due file chiamati "changelog" nello stesso repo ma con nome/posizione diversi (`CHANGELOG.md` root = auto, `docs/CHANGELOG.md` = curato) — chi legge la doc taxonomy in `docs/README.md` va aggiornato per chiarire la distinzione. Il file root generato non va mai editato a mano (si perde al prossimo `--release`); se in futuro serve un dettaglio "perché" per un commit già rilasciato, va scritto in `docs/CHANGELOG.md`, non nel file generato.
 
+### ADR-011 — Sottodomini pubblici serviti dallo stesso progetto Nuxt (2026-08-09)
+
+**Contesto:** `pauperwave.org` è stato acquistato il 2026-08-08. Due esigenze pubbliche distinte sono emerse quasi subito: la classifica del Campionato Cittadino (sola lettura, oggi pubblicata a mano in bacheca ogni mese, vedi `docs/BACKLOG.md` P1) e un modulo di adesione che permetta a chi vuole associarsi di far arrivare i propri dati direttamente nel DB, senza trascrizione manuale. Oggi le uniche rotte non autenticate sono `/login`, `/auth/callback` e `/logout`, e l'app contiene dati personali di associati — codici fiscali, indirizzi di residenza, date di nascita.
+
+**Decisione:** un solo progetto Nuxt, più sottodomini che puntano allo stesso deploy, invece di build separate. La scelta è motivata dal fatto che il modulo di adesione deve comunque **scrivere** sul DB — un deploy separato dovrebbe replicare la validazione e gli endpoint BFF, che già esistono qui.
+
+Mappa decisa il 2026-08-09:
+
+| Sottodominio | Scopo | Auth |
+|---|---|---|
+| `app.pauperwave.org` | il gestionale, cioè questa applicazione | sì |
+| `cittadino.pauperwave.org` | classifica del Campionato Cittadino, sola lettura | no |
+| `tesseramento.pauperwave.org` | modulo di adesione, scrive nel DB | no |
+| `blog.pauperwave.org` | blog dell'associazione | no |
+| `league.pauperwave.org` | benchmark **temporaneo** per le leghe Commander (`MagicTheGathering/league`), da dismettere a migrazione completata | — |
+
+Sul nome del sottodominio di adesione: la prima idea era `associati.`, imperativo ("associati a PauperWave!"). Scartata proprio perché la rotta interna `/associates` ha breadcrumb "Associati" ed è il registro **privato** dei soci già tesserati — stessa parola, significato opposto, con il rischio concreto che qualcuno punti il sottodominio pubblico alla pagina sbagliata. `tesseramento` è invece il termine che l'app già usa per questo concetto (`membershipStatus` → "Stato tesseramento", `pauperwave_associate_number` → "no. tessera") e non collide con nulla. Scartata anche `iscriviti.`, che avrebbe spostato l'ambiguità altrove: nell'app "Iscritti" e "quota di iscrizione" riguardano l'iscrizione **a un torneo**.
+
+Vincolo che rende la scelta accettabile: **i dati pubblici passano solo attraverso viste dedicate, mai attraverso le tabelle**. Nessuna policy `anon` va aggiunta a `pauperwave_associates`, `players` o `tournament_standings`; si crea invece una vista che espone il minimo indispensabile (per la classifica: nome giocatore, posizione, punti, risultati per evento). Senza questo vincolo, "stesso progetto" significherebbe aprire una gestionale con PII al traffico non autenticato.
+
+**Conseguenze:** ogni rotta pubblica aggiunta va tenuta in sync in **due** posti — l'allowlist `publicPages` in `app/middleware/auth.global.ts` e `redirectOptions`/`exclude` di `@nuxtjs/supabase` in `nuxt.config.ts` (vedi `CLAUDE.md`); dimenticarne uno produce o un redirect al login su una pagina che deve essere pubblica, o l'opposto. Rafforza anche la P1 di `docs/BACKLOG.md` sulla policy catch-all troppo permissiva di `pauperwave_associates`: finché quella resta, l'idea di servire traffico anonimo dallo stesso deploy è più rischiosa di quanto la vista dedicata da sola suggerisca — va chiusa **prima** di pubblicare qualsiasi sottodominio.
+
+Direzione registrata, implementazione **non** decisa: le classifiche dei singoli formati vanno generate automaticamente, ed esposte su sottodomini dedicati (`commander.`, `premodern.`, `pauper.`, …). "Automaticamente" qui ha un significato preciso e va scelto quando ci si arriva: un sottodominio per formato non può nascere da solo, servirebbe **DNS wildcard** (`*.pauperwave.org`) più una rotta che risolve il formato dall'hostname, altrimenti ogni nuovo formato richiede un record DNS a mano. L'alternativa è tenerli come percorsi sotto `cittadino.` (`cittadino.pauperwave.org/pauper`), che è automatico davvero e non costa nulla in configurazione. Non va costruito ora: il filtro per formato su `/cittadino` (2026-08-09) già ricalcola la classifica sul sottoinsieme selezionato, quindi il motore c'è — manca solo di decidere se merita una superficie pubblica propria. Vale anche qui la cautela già applicata alla sezione "Commander" della sidebar (`docs/TODO.md`): `mtg_formats` ha 0 righe, nessun formato è ancora un dato.
+
+La mappa è duplicata come promemoria navigabile in `/settings/domains` (pagina "Domini"), che è scritta a mano e non riflette nessuno stato reale di DNS o deploy.
+
+### ADR-012 — Secondo criterio di spareggio del Campionato Cittadino (2026-08-09)
+
+**Contesto:** il regolamento ufficiale definisce lo spareggio a un solo livello: *"a parità di punteggio passa chi ha fatto il punteggio più alto in singolo evento"*. Non dice cosa succede se anche quello coincide. Non è un caso di scuola: già sui dati mock di `/cittadino` (46 giocatori, 24 eventi) il 16° e il 17° posto risultavano entrambi a 71 punti **e** entrambi con 25 come miglior risultato singolo — cioè il pareggio irrisolto cadeva esattamente sulla riga che separa chi accede alla finale da chi resta fuori. Senza un secondo criterio l'ordine è quello che capita dall'algoritmo di sort, cioè arbitrario.
+
+**Decisione:** due criteri, in quest'ordine:
+1. **Miglior punteggio in un singolo evento** — dal regolamento.
+2. **Maggior numero di eventi disputati** — decisione presa dall'utente il 2026-08-09, non presente nel testo scritto.
+
+Implementato in `useCittadinoFilters.ts` come catena di comparatori dopo il totale, e riflesso nella pagina `/rulesets`, che è la sede pubblica del regolamento nell'app.
+
+**Conseguenze:** il secondo criterio è una nostra integrazione, non una regola pubblicata: va ratificata dallo staff e aggiunta al testo ufficiale del regolamento, altrimenti l'app applicherebbe un criterio che i giocatori non hanno mai letto — su una posizione che assegna l'accesso alla finale. Resta teoricamente possibile un pareggio a tre livelli (stessi punti, stesso miglior singolo, stesso numero di eventi); in quel caso l'ordine torna arbitrario e servirà un terzo criterio, ma non vale la pena sceglierlo prima di vederlo accadere su dati veri.
+
 ## Vedi anche
 
 - `docs/architecture/database.md` — schema, RLS, migrazioni

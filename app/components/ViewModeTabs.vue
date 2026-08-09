@@ -7,15 +7,19 @@ const { items } = defineProps<{
 }>()
 
 const modelValue = defineModel<string | number>()
+
+// w-fit on top of the shared boxed style: this switch sits inline in a toolbar and
+// should hug its two labels rather than stretch.
+const ui = { ...BOXED_TABS_UI, list: `${BOXED_TABS_UI.list} w-fit` }
 </script>
 
 <template>
   <UTabs
     v-model="modelValue"
     :items="items"
-    variant="pill"
-    size="sm"
     :content="false"
-    :ui="{ list: 'w-fit' }"
+    color="neutral"
+    size="md"
+    :ui="ui"
   />
 </template>
