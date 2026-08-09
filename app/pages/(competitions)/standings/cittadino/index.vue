@@ -46,12 +46,7 @@ const editionTabs = computed<TabsItem[]>(() =>
   editions.value.map(year => ({ label: year, value: year }))
 )
 
-// Column half of the hover crosshair. The row half is CSS (see the style block);
-// a column has no CSS selector, so the hovered event is tracked here and read back
-// by the column class callbacks.
-const hoveredEventId = ref<string | null>(null)
-
-const { columns } = useCittadinoTableColumns(events, hoveredEventId)
+const { columns } = useCittadinoTableColumns(events)
 
 // A rule under the last qualifying row: the top-N cutoff is what most people read
 // this table for, and a weight difference on the position number is too weak to
@@ -168,7 +163,6 @@ const isInitialLoad = computed(() => loading.value && standings.value.length ===
           :columns="columns"
           :loading="loading"
           :meta="tableMeta"
-          @mouseleave="hoveredEventId = null"
         />
       </template>
     </template>
