@@ -96,7 +96,7 @@ export function useCittadinoTableColumns(events: Ref<CittadinoEvent[]>) {
       id: event.uuid,
       size: EVENT_WIDTH,
       header: () => h('div', {
-        class: 'flex flex-col items-center gap-2 px-1',
+        class: 'flex flex-col items-center gap-2 px-1 pb-1',
         title: `${event.name} · ${formatEventDate(event.date)}`
       }, [
         // In vertical writing mode the inline axis is vertical, so max-height is
@@ -159,5 +159,15 @@ export function useCittadinoTableColumns(events: Ref<CittadinoEvent[]>) {
     }
   ])
 
-  return { columns }
+  // Keyed by event uuid, same id the event columns above are given — read by
+  // StandingsMatrixTable to tint a hovered event column's crosshair toward its
+  // format's colour instead of the default neutral highlight.
+  const columnAccentColors = computed<Record<string, string>>(() =>
+    Object.fromEntries(
+      events.value
+        .map(event => [event.uuid, cittadinoFormatColor(event.format)] as const)
+        .filter((entry): entry is [string, string] => entry[1] !== undefined)
+    ))
+
+  return { columns, columnAccentColors }
 }

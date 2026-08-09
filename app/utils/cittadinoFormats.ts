@@ -39,3 +39,24 @@ const CITTADINO_FORMAT_CLASSES: Record<string, string> = {
 export function cittadinoFormatClass(format: string): string {
   return CITTADINO_FORMAT_CLASSES[format] ?? 'bg-elevated text-muted'
 }
+
+// Same tint as the chip above, as a raw colour rather than a Tailwind class —
+// for the matrix's column hover highlight, which paints a CSS custom property
+// via an injected stylesheet rather than applying a utility class. `--color-*`
+// covers the two formats with no semantic token (Cubo Commander's violet,
+// Oldschool's neutral/zinc); the rest reuse the theme's `--ui-*` tokens so the
+// highlight tracks a colour-mode/theme change the same way the chip does.
+const CITTADINO_FORMAT_COLORS: Record<string, string> = {
+  'Commander': 'var(--ui-primary)',
+  'Cubo Commander': 'var(--color-violet-500)',
+  'Cubo Vintage': 'var(--ui-secondary)',
+  'Draft': 'var(--ui-success)',
+  'Sealed': 'var(--ui-error)',
+  'Premodern': 'var(--ui-warning)',
+  'Oldschool': 'var(--color-neutral-500)',
+  'Pauper': 'var(--ui-info)'
+}
+
+export function cittadinoFormatColor(format: string): string | undefined {
+  return CITTADINO_FORMAT_COLORS[format]
+}

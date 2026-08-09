@@ -16,6 +16,11 @@ interface Props {
   // useCittadinoTableColumns.ts); override if a format's columns differ.
   columnPinningLeft?: string[]
   columnPinningRight?: string[]
+  // Column id -> CSS colour to tint the column's hover crosshair toward, e.g. so
+  // each Cittadino event column highlights in its format's colour instead of the
+  // default neutral. Columns with no entry (or callers that don't pass this at
+  // all) keep the plain bg-elevated highlight.
+  columnAccentColors?: Record<string, string>
 }
 
 const {
@@ -24,7 +29,8 @@ const {
   loading = false,
   meta = {},
   columnPinningLeft = ['position', 'playerName'],
-  columnPinningRight = ['total']
+  columnPinningRight = ['total'],
+  columnAccentColors = {}
 } = defineProps<Props>()
 
 const columnPinning = ref({
@@ -56,15 +62,29 @@ const crosshairCss = computed(() => {
   const index = hoveredColIndex.value
   if (index === null) return ''
 
+  // Same DOM-order assumption nth-child itself relies on: props.columns[index]
+  // is the column definition currently under the pointer, so its `id` is what
+  // columnAccentColors is keyed by (e.g. an event's uuid).
+  const accent = columns[index]?.id ? columnAccentColors[columns[index].id as string] : undefined
+
+  // Blended into bg-elevated rather than used at full saturation: a raw format
+  // colour across a whole column would be too loud next to 45 rows of digits,
+  // and blending keeps the digits' contrast close to the neutral highlight's.
+  const background = accent
+    ? `color-mix(in oklab, ${accent} 25%, var(--ui-bg-elevated))`
+    : 'var(--ui-bg-elevated)'
+
   // UTable sets data-pinned="false" on every unpinned cell rather than omitting
   // the attribute, so :not([data-pinned]) matches nothing — the value has to be
   // excluded explicitly. Pinned columns already force an opaque bg-default
   // (below) to occlude the columns scrolling underneath them, and this rule
   // would otherwise fight that on specificity depending on injection order.
+  //
+  // tbody only — the header row keeps its own identity (name + date chip,
+  // already coloured by format) and doesn't need the crosshair on top of it.
   return `
-    #${matrixId} td:nth-child(${index + 1}):not([data-pinned="left"]):not([data-pinned="right"]),
-    #${matrixId} th:nth-child(${index + 1}):not([data-pinned="left"]):not([data-pinned="right"]) {
-      background-color: var(--ui-bg-elevated);
+    #${matrixId} tbody td:nth-child(${index + 1}):not([data-pinned="left"]):not([data-pinned="right"]) {
+      background-color: ${background};
     }
   `
 })
