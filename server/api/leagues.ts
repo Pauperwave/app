@@ -9,9 +9,9 @@ const leagues = Array.from({ length: 30 }, (_, i) => {
   const dateStr = `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate())}T${pad(dateObj.getHours())}:${pad(dateObj.getMinutes())}:00+02:00`
 
   const statuses = [
-    'Scheduled',
-    'In Progress',
-    'Completed'
+    'scheduled',
+    'ongoing',
+    'completed'
   ]
   const status = statuses[i % statuses.length]
 
@@ -20,10 +20,18 @@ const leagues = Array.from({ length: 30 }, (_, i) => {
   ]
   const season = seasons[i % seasons.length]
 
+  const tournamentCount = 4 + (i % 3)
+  // Consistent with status: none done yet if scheduled, all done if completed, a
+  // partial count in between while ongoing.
+  const completedTournamentCount = status === 'completed'
+    ? tournamentCount
+    : status === 'scheduled' ? 0 : 1 + (i % (tournamentCount - 1))
+
   return {
     id,
     status,
-    tournament_count: 4 + (i % 3),
+    tournament_count: tournamentCount,
+    completed_tournament_count: completedTournamentCount,
     name: `Leghe ${season} 2025 - Settimana ${id}`,
     created_at: dateStr,
     updated_at: dateStr,
