@@ -46,6 +46,10 @@ const items = computed(() => [
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
+
+        <template #right>
+          <NotificationsBellButton />
+        </template>
       </UDashboardNavbar>
 
       <UDashboardToolbar>

@@ -6,6 +6,10 @@
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
+
+        <template #right>
+          <NotificationsBellButton />
+        </template>
       </UDashboardNavbar>
     </template>
   </UDashboardPanel>

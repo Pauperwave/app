@@ -11,6 +11,10 @@ const route = useRoute()
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
+
+        <template #right>
+          <NotificationsBellButton />
+        </template>
       </UDashboardNavbar>
 
       <UDashboardToolbar>

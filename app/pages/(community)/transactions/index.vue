@@ -46,6 +46,10 @@ onMounted(() => {
 
         <template #right>
           <TransactionsListAddModal v-model="isModalOpen" />
+
+          <USeparator orientation="vertical" class="h-4" />
+
+          <NotificationsBellButton />
         </template>
       </UDashboardNavbar>
 

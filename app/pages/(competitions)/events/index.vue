@@ -30,6 +30,10 @@ const range = shallowRef<Range>({
 
         <template #right>
           <EventsListAddModal v-model="isModalOpen" />
+
+          <USeparator orientation="vertical" class="h-4" />
+
+          <NotificationsBellButton />
         </template>
       </UDashboardNavbar>
 

@@ -22,6 +22,10 @@ const range = shallowRef<Range>({
 
         <template #right>
           <TournamentsListAddModal />
+
+          <USeparator orientation="vertical" class="h-4" />
+
+          <NotificationsBellButton />
         </template>
       </UDashboardNavbar>
 

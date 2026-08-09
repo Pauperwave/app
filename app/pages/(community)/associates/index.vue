@@ -460,7 +460,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
 <template>
   <UDashboardPanel id="associates">
     <template #header>
-      <UDashboardNavbar :title="$t('associate.breadcrumb')" :ui="{ right: 'gap-4' }">
+      <UDashboardNavbar :title="$t('associate.breadcrumb')" :ui="{ right: 'gap-2' }">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -468,6 +468,10 @@ watch(() => consentSocialFilter.value, (newVal) => {
         <template #right>
           <ViewModeTabs v-model="viewMode" :items="viewModeItems" />
           <AssociatesListAddModal v-model="isModalOpen" />
+
+          <USeparator orientation="vertical" class="h-4" />
+
+          <NotificationsBellButton />
         </template>
       </UDashboardNavbar>
     </template>
@@ -523,10 +527,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
               </UButton>
             </AssociatesListDeleteModal>
 
-            <UDropdownMenu
-              :items="visibilityItems"
-              :content="{ align: 'end' }"
-            >
+            <UDropdownMenu :items="visibilityItems" :content="{ align: 'end' }">
               <UButton
                 :label="$t('common.showColumns')"
                 color="neutral"
