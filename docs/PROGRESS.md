@@ -160,6 +160,14 @@ Implementato in `useCittadinoFilters.ts` come catena di comparatori dopo il tota
 
 **Conseguenze:** il secondo criterio è una nostra integrazione, non una regola pubblicata: va ratificata dallo staff e aggiunta al testo ufficiale del regolamento, altrimenti l'app applicherebbe un criterio che i giocatori non hanno mai letto — su una posizione che assegna l'accesso alla finale. Resta teoricamente possibile un pareggio a tre livelli (stessi punti, stesso miglior singolo, stesso numero di eventi); in quel caso l'ordine torna arbitrario e servirà un terzo criterio, ma non vale la pena sceglierlo prima di vederlo accadere su dati veri.
 
+### ADR-013 — Evidenziazione riga/colonna di `StandingsMatrixTable` considerata ottimizzata (2026-08-09)
+
+**Contesto:** dopo aver corretto il crosshair di hover (riga via CSS puro, colonna via delegazione DOM + `useStyleTag` che inietta una regola `nth-child` scoped), ci si è chiesti se valesse la pena spingersi oltre — es. mutare la CSSOM direttamente invece di sostituire il `textContent` dello style tag, o passare a un attributo `data-hovered-col` con regole statiche pre-generate invece di CSS iniettato dinamicamente.
+
+**Decisione:** nessuna ulteriore ottimizzazione, per ora. Analisi (non profilata sul progetto, ragionamento su ordini di grandezza): il costo del parsing CSS reinserito ad ogni hover è nell'ordine dei microsecondi (~150 byte, aggiornato al più una volta per colonna attraversata — `mouseover` scatta solo al cambio di cella, non ad ogni pixel di `mousemove`); il costo dominante è lo style recalc successivo, identico indipendentemente dalla tecnica di iniezione. Le soglie oltre cui varrebbe la pena rifarlo (>1000 righe, o eventi a framerate) sono molto sopra la scala reale (46 righe × 29 colonne, ~1300 celle). L'unica ottimizzazione con impatto misurabile — rimuovere `transition-colors` dall'hover di riga — era già stata fatta prima di questa valutazione.
+
+**Conseguenze:** non toccare la logica del crosshair finché il DevTools Performance panel non mostra concretamente "Style Recalculation" > 2ms per frame durante l'hover — cosa improbabile a questa scala. Se in futuro la tabella crescerà di molto (centinaia di righe, o un'interazione guidata da `mousemove` invece che `mouseover`), rivalutare passando a un attributo `data-hovered-col` con regole `nth-child` statiche pre-generate invece dell'iniezione dinamica di testo CSS.
+
 ## Vedi anche
 
 - `docs/architecture/database.md` — schema, RLS, migrazioni
