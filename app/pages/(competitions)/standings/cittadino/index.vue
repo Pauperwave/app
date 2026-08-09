@@ -134,6 +134,14 @@ const isInitialLoad = computed(() => loading.value && standings.value.length ===
 
     <template #body>
       <UAlert
+        color="warning"
+        variant="subtle"
+        icon="i-lucide-triangle-alert"
+        class="shrink-0"
+        :description="$t('common.mockDataNotice')"
+      />
+
+      <UAlert
         v-if="error"
         color="error"
         variant="subtle"

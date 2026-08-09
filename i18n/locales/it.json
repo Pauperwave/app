@@ -34,7 +34,8 @@
     "filterEmailsPlaceholder": "Filter emails...",
     "switchToLightMode": "Passa al tema chiaro",
     "switchToDarkMode": "Passa al tema scuro",
-    "retry": "Riprova"
+    "retry": "Riprova",
+    "mockDataNotice": "Dati di esempio: questa classifica non è ancora collegata al database reale."
   },
   "tour": {
     "back": "Indietro",
