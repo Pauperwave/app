@@ -32,6 +32,7 @@ export const ICONS = {
   logout: 'i-lucide-log-out',
   lock: 'i-lucide-lock',
   security: 'i-lucide-shield',
+  globe: 'i-lucide-globe',
 
   // Status / feedback
   success: 'i-lucide-check-circle',
@@ -78,6 +79,7 @@ export const ICONS = {
   clock: 'i-lucide-clock',
   timer: 'i-lucide-timer',
   pauseCircle: 'i-lucide-pause-circle',
+  history: 'i-lucide-history',
 
   // Theme
   lightMode: 'i-lucide-sun',
@@ -96,6 +98,7 @@ export const ICONS = {
 
   // League / event / scoring
   standings: 'i-lucide-trophy',
+  medal: 'i-lucide-medal',
   chartPie: 'i-lucide-chart-pie',
   hash: 'i-lucide-hash',
 
@@ -120,6 +123,7 @@ export const ICONS = {
   info: 'i-lucide-info',
   messageCircle: 'i-lucide-message-circle',
   alignLeft: 'i-lucide-align-left',
+  externalLink: 'i-lucide-arrow-up-right',
   github: 'i-simple-icons-github'
 } as const
 

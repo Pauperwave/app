@@ -28,16 +28,19 @@ const mainNavGroups = [[{
   label: t('nav.dashboard'),
   icon: ICONS.home,
   to: '/',
+  devStatus: 'success',
   onSelect: () => {
     open.value = false
   }
 }, {
   label: t('nav.calendar'),
   icon: ICONS.calendarView,
+  devStatus: 'error',
   disabled: true
 }, {
   label: t('nav.finance'),
   icon: ICONS.badgeEuro,
+  devStatus: 'error',
   disabled: true
 }], [{
   label: t('nav.community'),
@@ -46,6 +49,7 @@ const mainNavGroups = [[{
   label: t('associate.breadcrumb'),
   icon: ICONS.players,
   to: '/associates',
+  devStatus: 'success',
   onSelect: () => {
     open.value = false
   }
@@ -53,6 +57,8 @@ const mainNavGroups = [[{
   label: t('player.breadcrumb'),
   icon: ICONS.gameplay,
   to: '/players',
+  devStatus: 'error',
+  disabled: true,
   onSelect: () => {
     open.value = false
   }
@@ -60,6 +66,8 @@ const mainNavGroups = [[{
   label: t('transaction.breadcrumb'),
   icon: ICONS.wallet,
   to: '/transactions',
+  devStatus: 'error',
+  disabled: true,
   onSelect: () => {
     open.value = false
   }
@@ -67,6 +75,7 @@ const mainNavGroups = [[{
   label: t('wantedCard.breadcrumb'),
   icon: ICONS.cardSearch,
   to: '/wanted-cards',
+  devStatus: 'success',
   onSelect: () => {
     open.value = false
   }
@@ -74,9 +83,15 @@ const mainNavGroups = [[{
   label: t('nav.competitions'),
   type: 'label'
 }, {
+  label: t('tournament.breadcrumb'),
+  icon: ICONS.battle,
+  to: '/tournaments',
+  devStatus: 'warning'
+}, {
   label: t('league.breadcrumb'),
   icon: ICONS.standings,
   to: '/leagues',
+  devStatus: 'warning',
   onSelect: () => {
     open.value = false
   }
@@ -84,13 +99,45 @@ const mainNavGroups = [[{
   label: t('event.breadcrumb'),
   icon: ICONS.calendar,
   to: '/events',
+  devStatus: 'warning',
+  onSelect: () => {
+    open.value = false
+  }
+}], [{
+  label: t('nav.standingsSection'),
+  type: 'label'
+}, {
+  label: t('cittadino.breadcrumb'),
+  icon: ICONS.medal,
+  to: '/standings/cittadino',
+  devStatus: 'warning',
   onSelect: () => {
     open.value = false
   }
 }, {
-  label: t('tournament.breadcrumb'),
-  icon: ICONS.battle,
-  to: '/tournaments'
+  label: t('standings.commanderBreadcrumb'),
+  icon: ICONS.medal,
+  to: '/standings/commander',
+  devStatus: 'warning',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
+  label: t('standings.premodernBreadcrumb'),
+  icon: ICONS.medal,
+  to: '/standings/premodern',
+  devStatus: 'warning',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
+  label: t('standings.pauperBreadcrumb'),
+  icon: ICONS.medal,
+  to: '/standings/pauper',
+  devStatus: 'warning',
+  onSelect: () => {
+    open.value = false
+  }
 }], [{
   label: t('nav.commanderSection'),
   type: 'label'
@@ -98,6 +145,8 @@ const mainNavGroups = [[{
   label: t('commander.breadcrumb'),
   icon: ICONS.crown,
   to: '/commanders',
+  devStatus: 'error',
+  disabled: true,
   onSelect: () => {
     open.value = false
   }
@@ -105,6 +154,8 @@ const mainNavGroups = [[{
   label: t('statistic.decksBreadcrumb'),
   icon: ICONS.layers,
   to: '/statistics/decks',
+  devStatus: 'error',
+  disabled: true,
   onSelect: () => {
     open.value = false
   }
@@ -112,6 +163,7 @@ const mainNavGroups = [[{
   label: t('ruleset.breadcrumb'),
   icon: ICONS.rules,
   to: '/rulesets',
+  devStatus: 'warning',
   onSelect: () => {
     open.value = false
   }
@@ -122,6 +174,8 @@ const mainNavGroups = [[{
   label: t('statistic.overviewBreadcrumb'),
   icon: ICONS.chartPie,
   to: '/statistics',
+  devStatus: 'error',
+  disabled: true,
   onSelect: () => {
     open.value = false
   }
@@ -132,25 +186,44 @@ const mainNavGroups = [[{
   label: t('settings.layout.links.general'),
   icon: ICONS.player,
   to: '/settings',
+  devStatus: 'error',
   disabled: true
 }, {
   label: t('settings.layout.links.members'),
   icon: ICONS.players,
   to: '/settings/members',
+  devStatus: 'error',
   disabled: true
 }, {
   label: t('settings.layout.links.notifications'),
   icon: ICONS.bell,
   to: '/settings/notifications',
+  devStatus: 'error',
   disabled: true
 }, {
   label: t('settings.layout.links.security'),
   icon: ICONS.security,
   to: '/settings/security',
+  devStatus: 'error',
   disabled: true
+}, {
+  label: t('settings.layout.links.domains'),
+  icon: ICONS.globe,
+  to: '/settings/domains',
+  devStatus: 'warning',
+  onSelect: () => {
+    open.value = false
+  }
 }]] satisfies NavigationMenuItem[][]
+
 // "Settings" is present in the sidebar but disabled: the page is still the
 // template's default scaffold, not customised for PauperWave.
+// `devStatus` reflects each page's build status (success = done, warning =
+// in progress, error = stub or backed by mock data only) — rendered as a
+// UChip after the label via the #item-trailing slot below. Keep in sync as
+// domains migrate off mock endpoints per docs/PROGRESS.md ADR-007.
+type DevStatus = 'success' | 'warning' | 'error'
+const devStatusColor = (status: string) => status as DevStatus
 
 // Opens Gmail's compose view directly instead of mailto:, which silently
 // no-ops when the OS has no default mail client configured.
@@ -233,7 +306,9 @@ const groups = computed(() => [{
       resizable
       class="bg-default"
       :ui="{
-        root: 'lg:border-e-0'
+        root: 'lg:border-e-0',
+        header: 'items-start pt-6',
+        footer: 'pb-6'
       }"
     >
       <template #header="{ collapsed }">
@@ -249,7 +324,17 @@ const groups = computed(() => [{
           orientation="vertical"
           tooltip
           popover
-        />
+        >
+          <template #item-trailing="{ item }">
+            <UChip
+              v-if="item.devStatus"
+              standalone
+              inset
+              :color="devStatusColor(item.devStatus)"
+              class="self-center"
+            />
+          </template>
+        </UNavigationMenu>
 
         <div class="mt-auto flex" :class="collapsed ? 'justify-center' : 'justify-start px-2.5'">
           <LayoutVersionBadge :collapsed="collapsed" />
