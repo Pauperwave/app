@@ -3,6 +3,12 @@
 import type { NavigationMenuItem } from '@nuxt/ui'
 
 const { t } = useI18n()
+const route = useRoute()
+
+// The domains table has 4 columns (host, route, status, purpose) and doesn't fit
+// the 2xl width every other settings page (single-column forms) is comfortable
+// with — widen just that page instead of every subpage under /settings.
+const bodyMaxWidth = computed(() => route.path === '/settings/domains' ? 'lg:max-w-4xl' : 'lg:max-w-2xl')
 
 const links = computed<NavigationMenuItem[][]>(() => [[{
   label: t('settings.layout.links.general'),
@@ -21,6 +27,10 @@ const links = computed<NavigationMenuItem[][]>(() => [[{
   label: t('settings.layout.links.security'),
   icon: 'i-lucide-shield',
   to: '/settings/security'
+}, {
+  label: t('settings.layout.links.domains'),
+  icon: 'i-lucide-globe',
+  to: '/settings/domains'
 }], [{
   label: t('settings.layout.links.documentation'),
   icon: 'i-lucide-book-open',
@@ -36,6 +46,10 @@ const links = computed<NavigationMenuItem[][]>(() => [[{
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
+
+        <template #right>
+          <NotificationsBellButton />
+        </template>
       </UDashboardNavbar>
 
       <UDashboardToolbar>
@@ -45,7 +59,7 @@ const links = computed<NavigationMenuItem[][]>(() => [[{
     </template>
 
     <template #body>
-      <div class="flex flex-col gap-4 sm:gap-6 lg:gap-12 w-full lg:max-w-2xl mx-auto">
+      <div class="flex flex-col gap-4 sm:gap-6 lg:gap-12 w-full mx-auto" :class="bodyMaxWidth">
         <NuxtPage />
       </div>
     </template>
