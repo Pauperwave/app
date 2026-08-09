@@ -23,19 +23,11 @@ function formatEventDate(date: string) {
 // Direct import from #components rather than resolveComponent() — see the note in
 // CLAUDE.md: resolveComponent only works inside a .vue <script setup>.
 //
-// `hoveredEventId` drives the column half of the crosshair: the row half is pure
-// CSS (`tr:hover td` in the page), but a column cannot be selected in CSS, so the
-// hovered event has to be tracked in state and read back here. These class
-// callbacks run inside UTable's render, so reading the ref there is what makes the
-// highlight reactive.
-export function useCittadinoTableColumns(
-  events: Ref<CittadinoEvent[]>,
-  hoveredEventId: Ref<string | null>
-) {
+// The hover crosshair (both row and column) is StandingsMatrixTable's own
+// responsibility now — DOM event delegation there, not per-cell state here. See
+// its source for why: `meta.class.td` looked reactive but wasn't.
+export function useCittadinoTableColumns(events: Ref<CittadinoEvent[]>) {
   const { t } = useI18n()
-
-  const eventCellClass = (uuid: string, base: string) =>
-    `${base} transition-colors${hoveredEventId.value === uuid ? ' bg-elevated' : ''}`
 
   // A pinned column is positioned by TanStack at the sum of the preceding `size`
   // values, but the browser lays the cell out from its own content and padding —
@@ -105,10 +97,7 @@ export function useCittadinoTableColumns(
       size: EVENT_WIDTH,
       header: () => h('div', {
         class: 'flex flex-col items-center gap-2 px-1',
-        title: `${event.name} · ${formatEventDate(event.date)}`,
-        onMouseenter: () => {
-          hoveredEventId.value = event.uuid
-        }
+        title: `${event.name} · ${formatEventDate(event.date)}`
       }, [
         // In vertical writing mode the inline axis is vertical, so max-height is
         // what caps the text run and forces a wrap — the extra line then stacks
@@ -131,15 +120,7 @@ export function useCittadinoTableColumns(
           ]
         }, formatEventDate(event.date))
       ]),
-      // Padding moves off the th/td and onto the inner wrapper so the hover target
-      // covers the whole cell — otherwise the gutter between cells would clear the
-      // highlight as the pointer crosses it.
-      meta: {
-        class: {
-          th: () => eventCellClass(event.uuid, EVENT_CLASS),
-          td: () => eventCellClass(event.uuid, `${EVENT_CLASS} tabular-nums`)
-        }
-      },
+      meta: { class: { th: EVENT_CLASS, td: `${EVENT_CLASS} tabular-nums` } },
       cell: ({ row }) => {
         const result = row.original.resultsByEvent[event.uuid]
 
@@ -161,14 +142,10 @@ export function useCittadinoTableColumns(
             title: t('cittadino.cell.absent', { event: event.name })
           }, '·')
 
-        // h-full/w-full matter: the td has p-0 so this wrapper is the hover target,
-        // and without them it shrinks to the digit and leaves dead zones around it
-        // where the crosshair silently stops responding.
+        // h-full/w-full matter: the td has p-0 so this wrapper fills the cell,
+        // otherwise the content shrinks to the digit and leaves dead space around it.
         return h('div', {
-          class: 'flex h-full w-full items-center justify-center px-1 py-1.5',
-          onMouseenter: () => {
-            hoveredEventId.value = event.uuid
-          }
+          class: 'flex h-full w-full items-center justify-center px-1 py-1.5'
         }, [content])
       }
     })),
