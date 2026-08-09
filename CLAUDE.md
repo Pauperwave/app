@@ -62,6 +62,13 @@ Some `server/api/*` endpoints (`tournaments.ts`, `leagues.ts`, `members.ts`, `no
 ### Render functions (`h()`) in composables, not just `.vue` files
 `resolveComponent('UButton')` only resolves reliably inside a `.vue` file's `<script setup>` — the compiler rewrites it there. Called from a plain `.ts` composable (e.g. a `use<Domain>TableColumns.ts` building `TableColumn` defs with `h()`), it silently fails ("Failed to resolve component" warnings) and can hang the page instead of just rendering broken markup. Import the component directly from `#components` instead: `import { UButton } from '#components'`. Confirmed 2026-08-08 while extracting `useWantedCardsTableColumns.ts` out of `wanted-cards/index.vue`.
 
+### Auto-imports: an export right after an array-literal `export const` gets dropped
+In an `app/utils/*.ts` file, the export declared immediately after an `export const X = [...]` is silently omitted from Nuxt's generated auto-imports (`.nuxt/imports.d.ts`), while every other export in the same file is picked up. It fails quietly — the symbol simply never becomes globally available, surfacing only as `TS2304: Cannot find name` at `pnpm typecheck`, or a runtime `ReferenceError` if typecheck is skipped.
+
+Confirmed 2026-08-09 in `app/utils/cittadinoPoints.ts`: `CITTADINO_MIN_POINTS`, declared right after `CITTADINO_POINTS_BY_RANK = [25, 18, …]`, was the only one of five exports missing. Renaming it changed nothing; moving it *above* the array export fixed it and restored all five. Blank lines between declarations make no difference.
+
+Workaround: declare scalar exports before array-literal ones, or import the symbol explicitly. Worth checking with `grep "export {" .nuxt/imports.d.ts` when adding constants to a utils file that also exports an array — and this is one concrete reason `pnpm typecheck` must actually be run rather than assumed.
+
 ### Types
 Shared domain types (`Associate`, `Tournament`, `Transaction`, status unions, etc.) live in `app/types/index.d.ts`. Add new domain interfaces there rather than colocating them in components.
 

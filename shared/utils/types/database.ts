@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      cittadino_editions: {
+        Row: {
+          created_at: string
+          id: number
+          name: string
+          updated_at: string
+          uuid: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          name: string
+          updated_at?: string
+          uuid?: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          name?: string
+          updated_at?: string
+          uuid?: string
+          year?: number
+        }
+        Relationships: []
+      }
       commander_decks: {
         Row: {
           commander_1_name: string
@@ -1631,6 +1658,7 @@ export type Database = {
       }
       tournaments: {
         Row: {
+          cittadino_edition_uuid: string | null
           created_at: string
           datetime: string | null
           deleted_at: string | null
@@ -1647,6 +1675,7 @@ export type Database = {
           uuid: string
         }
         Insert: {
+          cittadino_edition_uuid?: string | null
           created_at?: string
           datetime?: string | null
           deleted_at?: string | null
@@ -1663,6 +1692,7 @@ export type Database = {
           uuid?: string
         }
         Update: {
+          cittadino_edition_uuid?: string | null
           created_at?: string
           datetime?: string | null
           deleted_at?: string | null
@@ -1698,6 +1728,13 @@ export type Database = {
             columns: ["league_uuid"]
             isOneToOne: false
             referencedRelation: "leagues"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "tournaments_cittadino_edition_uuid_fkey"
+            columns: ["cittadino_edition_uuid"]
+            isOneToOne: false
+            referencedRelation: "cittadino_editions"
             referencedColumns: ["uuid"]
           },
         ]
