@@ -1,34 +1,7 @@
 <!-- app\pages\index.vue -->
 <script setup lang="ts">
 import { sub } from 'date-fns'
-import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Period, Range } from '~/types'
-
-// const { isNotificationsSlideoverOpen } = useDashboard()
-
-const { t } = useI18n()
-
-const items = computed<DropdownMenuItem[][]>(() => [[{
-  label: t('home.quickCreate.newAssociate'),
-  icon: 'i-lucide-user-plus',
-  to: '/associates?action=create'
-}, {
-  label: t('home.quickCreate.newTransaction'),
-  icon: 'i-lucide-coins',
-  to: '/transactions?action=create'
-}, {
-  label: t('home.quickCreate.newLeague'),
-  icon: 'i-lucide-trophy',
-  to: '/leagues?action=create'
-}, {
-  label: t('home.quickCreate.newEvent'),
-  icon: 'i-lucide-calendar-plus',
-  to: '/events?action=create'
-}, {
-  label: t('home.quickCreate.newTournament'),
-  icon: 'i-lucide-swords',
-  to: '/tournaments?action=create'
-}]])
 
 const range = shallowRef<Range>({
   start: sub(new Date(), { days: 14 }),
@@ -40,28 +13,17 @@ const period = ref<Period>('daily')
 <template>
   <UDashboardPanel id="home">
     <template #header>
-      <UDashboardNavbar :title="$t('nav.dashboard')" :ui="{ right: 'gap-3' }">
+      <UDashboardNavbar :title="$t('nav.dashboard')" :ui="{ right: 'gap-2' }">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
 
         <template #right>
-          <!-- <UTooltip text="Notifications" :shortcuts="['N']">
-            <UButton
-              color="neutral"
-              variant="ghost"
-              square
-              @click="isNotificationsSlideoverOpen = true"
-            >
-              <UChip color="error" inset>
-                <UIcon name="i-lucide-bell" class="size-5 shrink-0" />
-              </UChip>
-            </UButton>
-          </UTooltip> -->
+          <HomeQuickCreateMenu />
 
-          <UDropdownMenu :items="items">
-            <UButton icon="i-lucide-plus" size="md" class="rounded-full" />
-          </UDropdownMenu>
+          <USeparator orientation="vertical" class="h-4" />
+
+          <NotificationsBellButton />
         </template>
       </UDashboardNavbar>
 
