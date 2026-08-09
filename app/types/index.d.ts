@@ -15,6 +15,7 @@ export type AssociateType = 'ordinario' | 'sostenitore'
 export type MembershipStatus = RequestStatus | 'active' | 'to_renew' | 'expired'
 
 export type TournamentStatus = 'scheduled' | 'canceled' | 'ongoing' | 'completed'
+export type LeagueStatus = 'scheduled' | 'ongoing' | 'completed'
 
 type AssociateRow = Database['public']['Tables']['pauperwave_associates']['Row']
 
@@ -73,7 +74,10 @@ export interface Sale {
 export interface Notification {
   id: number
   unread?: boolean
-  sender: User
+  sender: {
+    name: string
+    avatar?: AvatarProps
+  }
   body: string
   date: string
 }
@@ -126,4 +130,115 @@ export interface WantedCard {
   notes: string
   player: string
   playerAssociateUuid: string
+}
+
+// Backed by mock data in server/api/tournaments.ts (no Supabase table yet) — mapped
+// from its snake_case rows onto this camelCase interface in useTournamentsQuery.ts,
+// same convention as WantedCard above.
+export interface Tournament {
+  id: number
+  uuid: string
+  event: string | null
+  league: string | null
+  name: string
+  startDate: string
+  roundCount: number
+  roundDuration: number
+  registeredPlayers: number
+  organizer: string
+  format: string
+  status: TournamentStatus
+  location: string
+  entryFee: number
+  description: string
+  prizes: string
+  companionCode: string | null
+}
+
+// Backed by mock data in server/api/leagues.ts (no Supabase table yet) — same
+// mapping convention as Tournament above.
+export interface League {
+  id: number
+  status: LeagueStatus
+  name: string
+  tournamentCount: number
+  completedTournamentCount: number
+}
+
+// --- Campionato Cittadino -----------------------------------------------------
+// Backed by mock data in server/api/cittadino.ts (no Supabase table exists yet —
+// see the P1 entry in docs/BACKLOG.md), same mapping convention as Tournament.
+
+// One event of the championship calendar: a column in the standings matrix.
+export interface CittadinoEvent {
+  uuid: string
+  name: string
+  date: string
+  format: string
+}
+
+// A raw placement as it comes back from the API — one player's finishing position
+// at one event, before any scoring is applied.
+export interface CittadinoPlacement {
+  playerUuid: string
+  playerName: string
+  eventUuid: string
+  rank: number
+}
+
+// A single player's result at a single event: one cell of the matrix.
+export interface CittadinoResult {
+  eventUuid: string
+  rank: number
+  points: number
+  // Whether this result is among the player's best CITTADINO_COUNTED_RESULTS and
+  // therefore contributes to their total.
+  counted: boolean
+}
+
+// One player's row in the standings matrix.
+export interface CittadinoStanding {
+  position: number
+  playerUuid: string
+  playerName: string
+  total: number
+  eventsPlayed: number
+  // Highest single-event score — the regulation's first tie-break.
+  bestSingle: number
+  resultsByEvent: Record<string, CittadinoResult>
+}
+
+// --- Per-format standings (Commander/Premodern/Pauper) mock ---------------------
+// Backed by mock data in server/api/commander-standings.ts, same convention as the
+// Cittadino types above. Best-N truncation like Cittadino, but the N is smaller
+// and per-format: Commander counts the best 4 of its 5 events (confirmed
+// 2026-08-09) — see useCommanderStandingsQuery.ts.
+
+export interface FormatStandingEvent {
+  uuid: string
+  name: string
+  date: string
+}
+
+export interface FormatStandingPlacement {
+  playerUuid: string
+  playerName: string
+  eventUuid: string
+  rank: number
+}
+
+export interface FormatStandingResult {
+  rank: number
+  points: number
+  // Whether this result is among the player's best-N and therefore contributes to
+  // their total — the rest stay on the row marked as dropped.
+  counted: boolean
+}
+
+export interface FormatStandingRow {
+  position: number
+  playerUuid: string
+  playerName: string
+  total: number
+  resultsByEvent: Record<string, FormatStandingResult>
 }

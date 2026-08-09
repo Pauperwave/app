@@ -16,6 +16,10 @@ const range = shallowRef<Range>({
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
+
+        <template #right>
+          <NotificationsBellButton />
+        </template>
       </UDashboardNavbar>
 
       <UDashboardToolbar>

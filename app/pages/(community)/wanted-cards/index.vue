@@ -155,7 +155,7 @@ const gridSections = computed<GridSection[]>(() => {
 <template>
   <UDashboardPanel id="wanted-cards">
     <template #header>
-      <UDashboardNavbar :title="$t('wantedCard.breadcrumb')" :ui="{ right: 'gap-4' }">
+      <UDashboardNavbar :title="$t('wantedCard.breadcrumb')" :ui="{ right: 'gap-2' }">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -174,6 +174,10 @@ const gridSections = computed<GridSection[]>(() => {
             :items="viewModeItems"
           />
           <WantedCardsListAddModal />
+
+          <USeparator orientation="vertical" class="h-4" />
+
+          <NotificationsBellButton />
         </template>
       </UDashboardNavbar>
 
