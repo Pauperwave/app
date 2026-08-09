@@ -7,7 +7,7 @@ import type { TabsItem } from '@nuxt/ui'
 const selectedLeague = ref<string | null>(null)
 
 const {
-  league, leagues, topCutoff, events, standings, loading
+  league, leagues, topCutoff, participationPoints, events, standings, loading
 } = useFormatStandingsQuery('commander', selectedLeague)
 
 const activeLeague = computed({
@@ -80,6 +80,10 @@ const tableMeta = {
             <span class="flex items-center gap-1.5">
               <span class="text-dimmed">·</span>
               {{ $t('standings.legend.absent') }}
+            </span>
+            <span class="flex items-center gap-1.5">
+              <span class="text-dimmed">+{{ participationPoints }}</span>
+              {{ $t('standings.legend.participation') }}
             </span>
           </div>
         </template>

@@ -574,7 +574,8 @@
     "legend": {
       "counted": "conteggiato",
       "dropped": "scartato",
-      "absent": "assente"
+      "absent": "assente",
+      "participation": "punto di partecipazione"
     }
   },
   "cittadino": {
@@ -787,6 +788,7 @@
       "ownRules": "Il numero di eventi, quanti risultati contano per il totale e quanti giocatori entrano nella parte \"in evidenza\" della classifica possono cambiare da una lega all'altra: non è un regolamento fisso, va letto lega per lega.",
       "pointsTitle": "Punti per piazzamento",
       "pointsNote": "La scala punti per piazzamento (dal 1° al 10° posto e oltre) è la stessa in ogni lega di questa pagina: 25, 18, 15, 12, 10, 8, 6, 4, 2, 1.",
+      "participationNote": "In più, ogni evento disputato dà {points} punto di partecipazione, indipendentemente dal piazzamento: viene assegnato anche sui risultati scartati e si somma sempre al totale.",
       "automationTitle": "In futuro, calcolo automatico",
       "automationNote": "Il piano è far calcolare questi punteggi automaticamente non appena esistono tornei registrati per il formato, invece di inserirli a mano.",
       "leaguesTitle": "Leghe",

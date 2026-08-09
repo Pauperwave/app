@@ -39,6 +39,9 @@ interface FormatLeague {
   playerCount: number
   countedResults: number
   topCutoff: number
+  // Flat bonus for showing up, awarded per event played regardless of whether
+  // that placement's score is counted — confirmed for Commander (2026-08-09).
+  participationPoints: number
   events: [date: string, name: string][]
 }
 
@@ -56,6 +59,7 @@ const LEAGUES: Partial<Record<string, FormatLeague[]>> = {
       playerCount: 12,
       countedResults: 3,
       topCutoff: 6,
+      participationPoints: 1,
       events: [
         ['2025-06-12', 'Commander #1'],
         ['2025-07-10', 'Commander #2'],
@@ -70,6 +74,7 @@ const LEAGUES: Partial<Record<string, FormatLeague[]>> = {
       playerCount: 14,
       countedResults: 4,
       topCutoff: 8,
+      participationPoints: 1,
       events: [
         ['2026-01-15', 'Commander #1'],
         ['2026-02-12', 'Commander #2'],
@@ -86,6 +91,7 @@ const LEAGUES: Partial<Record<string, FormatLeague[]>> = {
       playerCount: 16,
       countedResults: 4,
       topCutoff: 8,
+      participationPoints: 1,
       events: [
         ['2026-07-30', 'Commander #1'],
         ['2026-09-30', 'Commander #2'],
@@ -103,6 +109,7 @@ const LEAGUES: Partial<Record<string, FormatLeague[]>> = {
       playerCount: 12,
       countedResults: 3,
       topCutoff: 6,
+      participationPoints: 1,
       events: [
         ['2025-06-19', 'Premodern #1'],
         ['2025-07-17', 'Premodern #2'],
@@ -117,6 +124,7 @@ const LEAGUES: Partial<Record<string, FormatLeague[]>> = {
       playerCount: 14,
       countedResults: 4,
       topCutoff: 8,
+      participationPoints: 1,
       events: [
         ['2026-01-22', 'Premodern #1'],
         ['2026-02-19', 'Premodern #2'],
@@ -133,6 +141,7 @@ const LEAGUES: Partial<Record<string, FormatLeague[]>> = {
       playerCount: 16,
       countedResults: 4,
       topCutoff: 8,
+      participationPoints: 1,
       events: [
         ['2026-07-30', 'Premodern #1'],
         ['2026-09-30', 'Premodern #2'],
@@ -150,6 +159,7 @@ const LEAGUES: Partial<Record<string, FormatLeague[]>> = {
       playerCount: 12,
       countedResults: 3,
       topCutoff: 6,
+      participationPoints: 1,
       events: [
         ['2025-06-26', 'Pauper #1'],
         ['2025-07-24', 'Pauper #2'],
@@ -164,6 +174,7 @@ const LEAGUES: Partial<Record<string, FormatLeague[]>> = {
       playerCount: 14,
       countedResults: 4,
       topCutoff: 8,
+      participationPoints: 1,
       events: [
         ['2026-01-29', 'Pauper #1'],
         ['2026-02-26', 'Pauper #2'],
@@ -180,6 +191,7 @@ const LEAGUES: Partial<Record<string, FormatLeague[]>> = {
       playerCount: 16,
       countedResults: 4,
       topCutoff: 8,
+      participationPoints: 1,
       events: [
         ['2026-07-30', 'Pauper #1'],
         ['2026-09-30', 'Pauper #2'],
@@ -243,6 +255,7 @@ export default defineEventHandler((event) => {
     leagues: leagues.map(({ uuid, name }) => ({ uuid, name })),
     countedResults: league.countedResults,
     topCutoff: league.topCutoff,
+    participationPoints: league.participationPoints,
     ...buildLeagueStandings(format, league)
   }
 })
