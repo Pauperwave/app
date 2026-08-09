@@ -38,7 +38,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     :title="$t('event.addModal.title')"
     :description="$t('event.addModal.description')"
   >
-    <UButton
+    <AddButton
       :label="$t('event.addModal.openButton')"
       icon="i-lucide-calendar-plus"
       @click="open = true"

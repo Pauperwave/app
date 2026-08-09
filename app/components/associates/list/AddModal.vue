@@ -145,7 +145,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     :title="$t('associate.addModal.title')"
     :description="$t('associate.addModal.description')"
   >
-    <UButton
+    <AddButton
       :label="$t('associate.addModal.openButton')"
       icon="i-lucide-user-plus"
       @click="open = true"
