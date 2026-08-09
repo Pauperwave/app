@@ -117,14 +117,13 @@ function onMouseleave() {
       :meta="meta"
       class="w-full"
       :ui="{
-        // The sticky header only works if the table itself is the element
-        // that scrolls. UTable's root is overflow-auto but height-less, so
-        // without a cap it never scrolls, the dashboard panel scrolls
-        // instead, and thead scrolls away with the page. Capping the height
-        // also keeps both axes on the same scroller, which is what the
-        // pinned columns need. The subtraction is the panel chrome above and
-        // below: margins, navbar, toolbar and body padding.
-        root: 'max-h-[calc(100svh-10rem)]',
+        // max-h caps root's default overflow-auto so the table (not the page)
+        // scrolls, keeping the sticky header/pinned columns anchored to one
+        // scroller. rounded-lg alone won't clip sticky/pinned cells once
+        // scrolled — overflow clipping doesn't reliably apply to
+        // position:sticky descendants — hence the added clip-path, which
+        // clips at paint time regardless of positioning.
+        root: 'max-h-[calc(100svh-10rem)] rounded-lg [clip-path:inset(0_round_var(--radius-lg))]',
         td: 'py-1.5 text-sm',
         th: 'py-2 align-bottom'
       }"
