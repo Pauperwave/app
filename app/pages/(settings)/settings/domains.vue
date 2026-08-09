@@ -121,14 +121,6 @@ const columns: TableColumn<DomainRow>[] = [
 
 <template>
   <div class="flex flex-col gap-6">
-    <UPageCard
-      :title="$t('settings.domains.title')"
-      :description="$t('settings.domains.description')"
-      :ui="{ container: 'gap-4' }"
-    >
-      <UTable :data="domains" :columns="columns" class="w-full" />
-    </UPageCard>
-
     <UAlert
       color="warning"
       variant="subtle"
@@ -136,5 +128,13 @@ const columns: TableColumn<DomainRow>[] = [
       :title="$t('settings.domains.warning.title')"
       :description="$t('settings.domains.warning.description')"
     />
+
+    <UPageCard
+      :title="$t('settings.domains.title')"
+      :description="$t('settings.domains.description')"
+      :ui="{ container: 'gap-4' }"
+    >
+      <UTable :data="domains" :columns="columns" class="w-full" />
+    </UPageCard>
   </div>
 </template>
