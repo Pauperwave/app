@@ -21,6 +21,8 @@ const { width } = useElementSize(cardRef)
 
 const data = ref<DataRecord[]>([])
 
+// No revenue backend exists yet — the x-axis reflects the real period/range
+// selection, but amounts stay at 0 until a real endpoint replaces this.
 watch([() => props.period, () => props.range], () => {
   const dates = ({
     daily: eachDayOfInterval,
@@ -28,12 +30,9 @@ watch([() => props.period, () => props.range], () => {
     monthly: eachMonthOfInterval
   } as Record<Period, typeof eachDayOfInterval>)[props.period](props.range)
 
-  const min = 1000
-  const max = 10000
-
   data.value = dates.map(date => ({
     date,
-    amount: Math.floor(Math.random() * (max - min + 1)) + min
+    amount: 0
   }))
 }, { immediate: true })
 
