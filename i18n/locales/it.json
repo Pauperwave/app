@@ -6,6 +6,7 @@
     "finance": "Finanze",
     "community": "Community",
     "competitions": "Competizioni",
+    "standingsSection": "Classifiche",
     "commanderSection": "Commander",
     "statisticsSection": "Statistiche",
     "settingsSection": "Impostazioni",
@@ -32,7 +33,8 @@
     "no": "No",
     "filterEmailsPlaceholder": "Filter emails...",
     "switchToLightMode": "Passa al tema chiaro",
-    "switchToDarkMode": "Passa al tema scuro"
+    "switchToDarkMode": "Passa al tema scuro",
+    "retry": "Riprova"
   },
   "tour": {
     "back": "Indietro",
@@ -298,8 +300,29 @@
   },
   "league": {
     "breadcrumb": "Leghe",
-    "placeholder": "Pagina leghe",
     "singleLeaderboard": "Classifica singola lega",
+    "views": {
+      "table": "Tabella",
+      "grid": "Griglia"
+    },
+    "grid": {
+      "empty": "Nessuna lega trovata con questi filtri"
+    },
+    "status": {
+      "scheduled": "Pianificata",
+      "ongoing": "In corso",
+      "completed": "Completata"
+    },
+    "filters": {
+      "statusAll": "Tutte"
+    },
+    "columns": {
+      "status": "Stato",
+      "name": "Nome",
+      "tournamentCount": "Tornei"
+    },
+    "tournamentsLabel": "Tornei completati",
+    "progress": "{completed}/{total}",
     "addModal": {
       "title": "Nuova lega",
       "description": "Aggiungi una nuova lega al database",
@@ -416,6 +439,22 @@
       "entryFee": "Quota Iscrizione",
       "companionCode": "Codice Companion"
     },
+    "views": {
+      "table": "Tabella",
+      "grid": "Griglia"
+    },
+    "grid": {
+      "empty": "Nessun torneo trovato con questi filtri"
+    },
+    "status": {
+      "scheduled": "Pianificato",
+      "ongoing": "In corso",
+      "completed": "Completato",
+      "canceled": "Annullato"
+    },
+    "filters": {
+      "statusAll": "Tutti"
+    },
     "filterLabels": {
       "roundDuration": "Durata Partita"
     },
@@ -503,12 +542,6 @@
       "cancel": "Annulla",
       "create": "Crea torneo"
     },
-    "list": {
-      "pageBody": "Tabella di tutti i tornei, filtrabile per formato.",
-      "overview": {
-        "placeholder": "Panoramica torneo specifico"
-      }
-    },
     "single": {
       "acceptancePicker": {
         "preRegistered": "Pre-registrati",
@@ -516,7 +549,6 @@
       },
       "awardsPlaceholder": "Componente premi che mostrerà la classifica finale",
       "leaderboardTitle": "Classifica torneo specifico",
-      "overviewPlaceholder": "Panoramica di tutti i tornei",
       "participantsPlaceholder": "Partecipanti all'evento",
       "roundManager": {
         "title": "Gestione Round {round}",
@@ -527,6 +559,56 @@
         "placeholder": "Aggiunta del risultato del round"
       }
     }
+  },
+  "standings": {
+    "commanderBreadcrumb": "Commander",
+    "premodernBreadcrumb": "Premodern",
+    "pauperBreadcrumb": "Pauper",
+    "placeholder": "Classifica non ancora disponibile",
+    "summary": "{players} giocatori · {events} eventi",
+    "columns": {
+      "position": "#",
+      "player": "Giocatore",
+      "total": "Punti"
+    },
+    "legend": {
+      "counted": "conteggiato",
+      "dropped": "scartato",
+      "absent": "assente"
+    }
+  },
+  "cittadino": {
+    "breadcrumb": "Cittadino",
+    "edition": "Edizione {edition}",
+    "summary": "{players} giocatori · {events} eventi in calendario",
+    "columns": {
+      "position": "#",
+      "player": "Giocatore",
+      "eventsPlayed": "Ev.",
+      "eventsPlayedFull": "Eventi giocati",
+      "bestSingle": "Max",
+      "bestSingleFull": "Miglior punteggio in un singolo evento (spareggio)",
+      "total": "Punti"
+    },
+    "cell": {
+      "counted": "{event} — {rank}° posto, {points} punti (conteggiato)",
+      "dropped": "{event} — {rank}° posto, {points} punti (scartato: fuori dagli 11 migliori)",
+      "absent": "{event} — non ha partecipato"
+    },
+    "legend": {
+      "counted": "conteggiato",
+      "dropped": "scartato",
+      "absent": "assente"
+    },
+    "filters": {
+      "formats": "Formati",
+      "recomputed": "· classifica ricalcolata sui soli formati selezionati"
+    },
+    "error": {
+      "title": "Classifica non disponibile",
+      "description": "Non è stato possibile caricare la classifica di questa edizione."
+    },
+    "footnote": "Il totale somma solo i {counted} migliori punteggi di ogni giocatore; i risultati scartati restano visibili tra parentesi. I primi {finalists} accedono alla finale."
   },
   "player": {
     "breadcrumb": "Giocatori",
@@ -614,7 +696,6 @@
       "found": "Trovata",
       "abandoned": "Abbandonata"
     },
-    "openButton": "Nuova richiesta",
     "filters": {
       "cardNamePlaceholder": "Cerca per nome carta...",
       "statusAll": "Tutte",
@@ -636,6 +717,7 @@
       "foil": "Foil"
     },
     "addModal": {
+      "openButton": "Nuova richiesta",
       "title": "Nuova richiesta",
       "description": "Aggiungi una carta che stai cercando",
       "validation": {
@@ -679,7 +761,38 @@
     "breadcrumb": "Comandanti"
   },
   "ruleset": {
-    "breadcrumb": "Regolamenti"
+    "breadcrumb": "Regolamenti",
+    "tabs": {
+      "cittadino": "Cittadino",
+      "commander": "Commander",
+      "premodern": "Premodern",
+      "pauper": "Pauper"
+    },
+    "cittadino": {
+      "title": "Campionato Cittadino",
+      "description": "Come si assegnano i punti e come si legge la classifica.",
+      "pointsTitle": "Punti per piazzamento",
+      "bestResults": "Alla fine dell'anno vengono conteggiati solo i migliori {counted} punteggi di ogni giocatore: il totale non è la somma di tutti i risultati.",
+      "tieBreak": "A parità di punteggio passa chi ha ottenuto il punteggio più alto in un singolo evento; se anche questo coincide, passa chi ha partecipato a più eventi.",
+      "finalists": "I primi {finalists} della classifica disputano la finale in un torneo dedicato.",
+      "eligibility": "Valgono tutti gli eventi a calendario da gennaio a dicembre, esclusi finali e side event. Non è obbligatorio partecipare a tutti.",
+      "publication": "La classifica viene aggiornata e pubblicata ogni mese.",
+      "legend": "Nella tabella della classifica i risultati scartati, cioè quelli fuori dai migliori punteggi conteggiati, restano visibili tra parentesi."
+    },
+    "format": {
+      "description": "Come funzionano le leghe di questo formato e come vengono assegnati i punti.",
+      "structureTitle": "Struttura a leghe",
+      "structure": "Il formato {format} non ha un'unica classifica continua: è organizzato in leghe stagionali (es. \"Lega Estiva\", \"Lega Invernale\"). Ogni lega è indipendente dalle altre, ha il proprio calendario di eventi e la propria classifica — i punteggi non si sommano da una lega all'altra.",
+      "ownRulesTitle": "Ogni lega ha il proprio regolamento",
+      "ownRules": "Il numero di eventi, quanti risultati contano per il totale e quanti giocatori entrano nella parte \"in evidenza\" della classifica possono cambiare da una lega all'altra: non è un regolamento fisso, va letto lega per lega.",
+      "pointsTitle": "Punti per piazzamento",
+      "pointsNote": "La scala punti per piazzamento (dal 1° al 10° posto e oltre) è la stessa in ogni lega di questa pagina: 25, 18, 15, 12, 10, 8, 6, 4, 2, 1.",
+      "automationTitle": "In futuro, calcolo automatico",
+      "automationNote": "Il piano è far calcolare questi punteggi automaticamente non appena esistono tornei registrati per il formato, invece di inserirli a mano.",
+      "leaguesTitle": "Leghe",
+      "leagueSummary": "{events} eventi in calendario · contano i migliori {counted} risultati · i primi {top} sono evidenziati in classifica",
+      "placeholderNotice": "Regolamento non ancora confermato per {format}: i numeri di questa pagina sono presi in prestito da Commander solo per mostrare come sarà la sezione, in attesa dei dati reali."
+    }
   },
   "statistic": {
     "breadcrumb": "Statistiche",
@@ -694,7 +807,40 @@
         "members": "Membri",
         "notifications": "Notifiche",
         "security": "Sicurezza",
+        "domains": "Domini",
         "documentation": "Documentazione"
+      }
+    },
+    "domains": {
+      "title": "Domini pauperwave.org",
+      "description": "Promemoria della mappa dei sottodomini previsti. Tutti serviti da questo stesso progetto Nuxt (vedi ADR-011).",
+      "columns": {
+        "host": "Sottodominio",
+        "purpose": "A cosa serve",
+        "route": "Sotto-route",
+        "status": "Stato"
+      },
+      "routeApp": "app",
+      "status": {
+        "planned": "Previsto",
+        "live": "Attivo",
+        "temporary": "Temporaneo"
+      },
+      "rows": {
+        "root": "Landing page pubblica dell'associazione.",
+        "app": "Il gestionale: questa applicazione, dietro autenticazione.",
+        "cittadino": "Classifica pubblica del Campionato Cittadino, sola lettura.",
+        "commander": "Classifica pubblica del formato Commander: tabella statica, aggiornata quando un evento viene terminato.",
+        "premodern": "Classifica pubblica del formato Premodern: tabella statica, aggiornata quando un evento viene terminato.",
+        "pauper": "Classifica pubblica del formato Pauper: tabella statica, aggiornata quando un evento viene terminato.",
+        "eventi": "Calendario pubblico degli eventi, sola lettura.",
+        "tesseramento": "Modulo pubblico di adesione: i dati arrivano direttamente nel database.",
+        "blog": "Blog dell'associazione.",
+        "league": "Benchmark temporaneo per le leghe Commander, da dismettere una volta completata la migrazione."
+      },
+      "warning": {
+        "title": "Nessuno di questi domini è ancora configurato",
+        "description": "Questa è una tabella scritta a mano, non uno stato reale: non legge DNS né deploy. Prima di pubblicare qualsiasi sottodominio va chiusa la policy RLS troppo permissiva su pauperwave_associates (docs/BACKLOG.md, P1), altrimenti il traffico anonimo raggiungerebbe dati personali."
       }
     },
     "general": {
@@ -818,7 +964,17 @@
     "seoDescription": "Siamo spiacenti, questa pagina non è stata trovata."
   },
   "notificationsSlideover": {
-    "title": "Notifiche"
+    "title": "Notifiche",
+    "tabs": {
+      "today": "Oggi",
+      "thisWeek": "Questa settimana",
+      "earlier": "Precedenti"
+    },
+    "empty": "Nessuna notifica",
+    "markAsRead": "Segna come letta",
+    "dismiss": "Rimuovi",
+    "ignore": "Ignora",
+    "accept": "Accetta"
   },
   "teamsMenu": {
     "createTeam": "Crea team",
