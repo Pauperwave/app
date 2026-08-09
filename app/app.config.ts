@@ -40,8 +40,11 @@ export default defineAppConfig({
     },
     navigationMenu: {
       slots: {
-        root: 'gap-4',
-        label: 'w-full flex items-center gap-1.5 uppercase text-dimmed/80 text-xs font-bold tracking-tight px-2.5 pt-4 pb-1',
+        // Was gap-4/pt-4 — with 6 sidebar sections now (Classifiche added
+        // 2026-08-09) the two stacked 16px gaps between groups made the
+        // sidebar feel sparse. Halved both.
+        root: 'gap-2',
+        label: 'w-full flex items-center gap-1.5 uppercase text-dimmed/80 text-xs font-bold tracking-tight px-2.5 pt-2 pb-1',
         separator: 'hidden',
         // Matches the reference demo's icon-to-label spacing (mr-2 on the
         // icon + the link's own gap-1.5 = 14px total), not Nuxt UI's default.
