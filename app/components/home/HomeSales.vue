@@ -4,7 +4,9 @@ import { h, resolveComponent } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import type { Period, Range, Sale } from '~/types'
 
-const props = defineProps<{
+// period/range are wired up for when a real sales endpoint replaces the
+// empty placeholder below, kept as props so the parent binding stays intact.
+defineProps<{
   period: Period
   range: Range
 }>()
@@ -13,36 +15,8 @@ const { t } = useI18n()
 
 const UBadge = resolveComponent('UBadge')
 
-const sampleEmails = [
-  'james.anderson@example.com',
-  'mia.white@example.com',
-  'william.brown@example.com',
-  'emma.davis@example.com',
-  'ethan.harris@example.com'
-]
-
-const { data } = await useAsyncData('sales', async () => {
-  const sales: Sale[] = []
-  const currentDate = new Date()
-
-  for (let i = 0; i < 5; i++) {
-    const hoursAgo = randomInt(0, 48)
-    const date = new Date(currentDate.getTime() - hoursAgo * 3600000)
-
-    sales.push({
-      id: (4600 - i).toString(),
-      date: date.toISOString(),
-      status: randomFrom(['paid', 'failed', 'refunded']),
-      email: randomFrom(sampleEmails),
-      amount: randomInt(100, 1000)
-    })
-  }
-
-  return sales.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-}, {
-  watch: [() => props.period, () => props.range],
-  default: () => []
-})
+// No sales backend exists yet — the table renders with real columns, no rows.
+const data: Sale[] = []
 
 const columns: TableColumn<Sale>[] = [
   {
