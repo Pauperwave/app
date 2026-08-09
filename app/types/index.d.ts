@@ -233,6 +233,10 @@ export interface FormatStandingResult {
   // Whether this result is among the player's best-N and therefore contributes to
   // their total — the rest stay on the row marked as dropped.
   counted: boolean
+  // Flat bonus for showing up, confirmed for Commander 2026-08-09. Unlike
+  // `points`, it is awarded for every event played regardless of `counted` — a
+  // dropped result still earned its participation point.
+  participationPoints: number
 }
 
 export interface FormatStandingRow {

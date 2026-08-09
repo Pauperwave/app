@@ -23,6 +23,7 @@ interface FormatStandingsPayload {
   leagues: FormatStandingsLeagueSummary[]
   countedResults: number
   topCutoff: number
+  participationPoints: number
   events: FormatStandingEvent[]
   results: FormatStandingsResultRow[]
 }
@@ -63,7 +64,13 @@ export function useFormatStandingsQuery(
     }),
     {
       default: () => ({
-        league: '', leagues: [], countedResults: 0, topCutoff: 0, events: [], results: []
+        league: '',
+        leagues: [],
+        countedResults: 0,
+        topCutoff: 0,
+        participationPoints: 0,
+        events: [],
+        results: []
       }),
       watch: [selectedLeague]
     }
@@ -73,6 +80,7 @@ export function useFormatStandingsQuery(
   const leagues = computed(() => data.value.leagues)
   const countedResults = computed(() => data.value.countedResults)
   const topCutoff = computed(() => data.value.topCutoff)
+  const participationPoints = computed(() => data.value.participationPoints)
   const events = computed<FormatStandingEvent[]>(() => data.value.events)
 
   const placements = computed<FormatStandingPlacement[]>(() => data.value.results.map(row => ({
@@ -92,7 +100,8 @@ export function useFormatStandingsQuery(
         eventUuid: placement.eventUuid,
         rank: placement.rank,
         points: pointsForRank(placement.rank),
-        counted: false
+        counted: false,
+        participationPoints: participationPoints.value
       })
       byPlayer.set(placement.playerUuid, entry)
     }
@@ -106,11 +115,18 @@ export function useFormatStandingsQuery(
         resultsByEvent[result.eventUuid] = { ...result, counted: counted.has(result) }
       }
 
+      // Placement points only count for the player's best-N results, but the
+      // participation point is flat and unconditional — awarded for every event
+      // played, counted or dropped.
+      const placementTotal = [...counted].reduce((sum, result) => sum + result.points, 0)
+      const participationTotal = entry.results
+        .reduce((sum, result) => sum + result.participationPoints, 0)
+
       return {
         position: 0,
         playerUuid,
         playerName: entry.name,
-        total: [...counted].reduce((sum, result) => sum + result.points, 0),
+        total: placementTotal + participationTotal,
         resultsByEvent
       }
     })
@@ -124,6 +140,15 @@ export function useFormatStandingsQuery(
   })
 
   return {
-    league, leagues, countedResults, topCutoff, events, standings, loading, error, refresh
+    league,
+    leagues,
+    countedResults,
+    topCutoff,
+    participationPoints,
+    events,
+    standings,
+    loading,
+    error,
+    refresh
   }
 }

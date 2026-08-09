@@ -16,6 +16,7 @@ interface FormatRules {
   label: string
   confirmed: boolean
   leagues: FormatLeagueSummary[]
+  participationPoints: number
 }
 
 export type StandingsFormat = 'commander' | 'premodern' | 'pauper'
@@ -27,9 +28,15 @@ const SHARED_LEAGUES: FormatLeagueSummary[] = [
 ]
 
 const FORMAT_RULES: Record<StandingsFormat, FormatRules> = {
-  commander: { label: 'Commander', confirmed: true, leagues: SHARED_LEAGUES },
-  premodern: { label: 'Premodern', confirmed: false, leagues: SHARED_LEAGUES },
-  pauper: { label: 'Pauper', confirmed: false, leagues: SHARED_LEAGUES }
+  commander: {
+    label: 'Commander', confirmed: true, leagues: SHARED_LEAGUES, participationPoints: 1
+  },
+  premodern: {
+    label: 'Premodern', confirmed: false, leagues: SHARED_LEAGUES, participationPoints: 1
+  },
+  pauper: {
+    label: 'Pauper', confirmed: false, leagues: SHARED_LEAGUES, participationPoints: 1
+  }
 }
 
 const { format } = defineProps<{ format: StandingsFormat }>()
@@ -97,6 +104,10 @@ const rules = computed(() => FORMAT_RULES[format])
 
       <p class="text-sm text-muted">
         {{ $t('ruleset.format.pointsNote') }}
+      </p>
+
+      <p class="text-sm text-muted">
+        {{ $t('ruleset.format.participationNote', { points: rules.participationPoints }) }}
       </p>
 
       <USeparator />

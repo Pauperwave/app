@@ -65,10 +65,17 @@ export function useFormatStandingsTableColumns(
 
         // Dropped results stay visible in parentheses, same convention as the
         // Cittadino matrix — the point of showing every column is seeing why the
-        // total doesn't add up to a plain sum.
-        return h('span', {
-          class: result.counted ? 'font-medium text-highlighted' : 'text-dimmed'
-        }, result.counted ? String(result.points) : `(${result.points})`)
+        // total doesn't add up to a plain sum. The participation point is shown
+        // regardless of `counted`: it's flat and unconditional, unlike placement
+        // points (see useFormatStandingsQuery.ts).
+        return h('span', { class: 'inline-flex items-baseline gap-0.5' }, [
+          h('span', {
+            class: result.counted ? 'font-medium text-highlighted' : 'text-dimmed'
+          }, result.counted ? String(result.points) : `(${result.points})`),
+          result.participationPoints > 0
+            ? h('span', { class: 'text-[10px] text-dimmed' }, `+${result.participationPoints}`)
+            : null
+        ])
       }
     })),
 
