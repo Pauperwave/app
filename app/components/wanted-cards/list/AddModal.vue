@@ -227,9 +227,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     :description="$t('wantedCard.addModal.description')"
     :ui="{ content: 'max-w-xl' }"
   >
-    <UButton
+    <AddButton
       id="tour-wanted-cards-add"
-      :label="$t('wantedCard.openButton')"
+      :label="$t('wantedCard.addModal.openButton')"
       icon="i-lucide-plus"
       @click="open = true"
     />

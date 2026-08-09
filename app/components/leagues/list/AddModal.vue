@@ -38,10 +38,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     :title="$t('league.addModal.title')"
     :description="$t('league.addModal.description')"
   >
-    <UButton
+    <AddButton
       :label="$t('league.addModal.openButton')"
       icon="i-lucide-trophy"
-      @click="() => { open = true }"
+      @click="open = true"
     />
 
     <template #body>

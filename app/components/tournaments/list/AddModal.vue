@@ -178,7 +178,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     :title="$t('tournament.addModal.title')"
     :description="$t('tournament.addModal.description')"
   >
-    <UButton
+    <AddButton
       :label="$t('tournament.addModal.openButton')"
       icon="i-lucide-swords"
       @click="open = true"

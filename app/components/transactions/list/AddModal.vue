@@ -257,10 +257,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     :description="$t('transaction.addModal.description')"
   >
     <!-- Trigger button goes in the default slot -->
-    <UButton
+    <AddButton
       :label="$t('transaction.addModal.openButton')"
       icon="i-lucide-coins"
-      @click="() => { open = true }"
+      @click="open = true"
     />
 
     <template #body>
