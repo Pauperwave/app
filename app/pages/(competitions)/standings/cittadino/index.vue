@@ -46,7 +46,7 @@ const editionTabs = computed<TabsItem[]>(() =>
   editions.value.map(year => ({ label: year, value: year }))
 )
 
-const { columns } = useCittadinoTableColumns(events)
+const { columns, columnAccentColors } = useCittadinoTableColumns(events)
 
 // A rule under the last qualifying row: the top-N cutoff is what most people read
 // this table for, and a weight difference on the position number is too weak to
@@ -163,6 +163,7 @@ const isInitialLoad = computed(() => loading.value && standings.value.length ===
           :columns="columns"
           :loading="loading"
           :meta="tableMeta"
+          :column-accent-colors="columnAccentColors"
         />
       </template>
     </template>
