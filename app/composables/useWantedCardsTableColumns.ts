@@ -1,7 +1,6 @@
 // app\composables\useWantedCardsTableColumns.ts
 import { h } from 'vue'
-import { UBadge, UButton, UIcon } from '#components'
-import type { Column } from '@tanstack/vue-table'
+import { UBadge, UIcon } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { WantedCard } from '~/types'
 import ManaCost from '~/components/magic/ManaCost.vue'
@@ -16,22 +15,6 @@ import PlayerTag from '~/components/PlayerTag.vue'
 // component" at runtime.
 export function useWantedCardsTableColumns() {
   const { t } = useI18n()
-
-  // Sortable header — pattern taken verbatim from the Nuxt UI docs for UTable (icon
-  // reflecting the current state, asc/desc toggle on click).
-  function sortableHeader(label: string, column: Column<WantedCard, unknown>) {
-    const isSorted = column.getIsSorted()
-    return h(UButton, {
-      label,
-      color: 'neutral',
-      variant: 'ghost',
-      class: '-mx-2.5',
-      icon: isSorted
-        ? (isSorted === 'asc' ? 'i-lucide-arrow-up-narrow-wide' : 'i-lucide-arrow-down-wide-narrow')
-        : 'i-lucide-arrow-up-down',
-      onClick: () => column.toggleSorting(isSorted === 'asc')
-    })
-  }
 
   // Readable labels for the "Columns" menu — same i18n map used for the actual
   // column headers (pattern from associates/index.vue).

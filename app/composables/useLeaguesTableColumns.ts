@@ -1,26 +1,11 @@
 // app\composables\useLeaguesTableColumns.ts
 import { h } from 'vue'
-import { UBadge, UButton } from '#components'
-import type { Column } from '@tanstack/vue-table'
+import { UBadge } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { League } from '~/types'
 
 export function useLeaguesTableColumns() {
   const { t } = useI18n()
-
-  function sortableHeader(label: string, column: Column<League, unknown>) {
-    const isSorted = column.getIsSorted()
-    return h(UButton, {
-      label,
-      color: 'neutral',
-      variant: 'ghost',
-      class: '-mx-2.5',
-      icon: isSorted
-        ? (isSorted === 'asc' ? 'i-lucide-arrow-up-narrow-wide' : 'i-lucide-arrow-down-wide-narrow')
-        : 'i-lucide-arrow-up-down',
-      onClick: () => column.toggleSorting(isSorted === 'asc')
-    })
-  }
 
   const columnHeaders: Record<string, string> = {
     status: t('league.columns.status'),
