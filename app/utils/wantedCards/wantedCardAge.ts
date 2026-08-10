@@ -1,4 +1,4 @@
-// app\utils\wantedCardAge.ts
+// app\utils\wantedCards\wantedCardAge.ts
 import { differenceInCalendarDays, formatDistanceToNow, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'
 

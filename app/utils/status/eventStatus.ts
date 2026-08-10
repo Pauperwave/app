@@ -1,4 +1,4 @@
-// app\utils\eventStatus.ts
+// app\utils\status\eventStatus.ts
 import type { EventStatus } from '~/types'
 
 export const EVENT_STATUSES: EventStatus[] = ['scheduled', 'ongoing', 'completed', 'canceled']

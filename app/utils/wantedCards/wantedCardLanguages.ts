@@ -1,4 +1,4 @@
-// app\utils\wantedCardLanguages.ts
+// app\utils\wantedCards\wantedCardLanguages.ts
 // Previously duplicated in wanted-cards/index.vue and GridView.vue — single source
 // of truth for the language icons on wanted cards.
 export const WANTED_CARD_LANGUAGE_ICONS: Record<string, string> = {

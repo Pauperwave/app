@@ -1,4 +1,4 @@
-// app\utils\wantedCardFormSchema.ts
+// app\utils\wantedCards\wantedCardFormSchema.ts
 import * as v from 'valibot'
 
 // Fields shared between AddModal and EditModal (wanted-cards) — every request

@@ -1,4 +1,4 @@
-// app\utils\associateStatus.ts
+// app\utils\status\associateStatus.ts
 import type { MembershipStatus } from '~/types'
 
 export type MembershipStatusBadgeColor = 'success' | 'warning' | 'error' | 'neutral'

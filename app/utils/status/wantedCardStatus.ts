@@ -1,4 +1,4 @@
-// app\utils\wantedCardStatus.ts
+// app\utils\status\wantedCardStatus.ts
 import type { WantedCardStatus } from '~/types'
 
 export const WANTED_CARD_STATUSES: WantedCardStatus[] = ['searching', 'found', 'abandoned']
