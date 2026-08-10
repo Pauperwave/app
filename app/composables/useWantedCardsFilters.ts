@@ -80,11 +80,22 @@ export function useWantedCardsFilters(data: Ref<WantedCard[]>) {
     }))
   })
 
-  const statusTabs = computed<{ label: string, value: 'all' | WantedCardStatus }[]>(() => [
-    { label: t('wantedCard.filters.statusAll'), value: 'all' },
-    { label: t('wantedCard.status.searching'), value: 'searching' },
-    { label: t('wantedCard.status.found'), value: 'found' },
-    { label: t('wantedCard.status.abandoned'), value: 'abandoned' }
+  // Counts from the full unfiltered `data`, same convention as associates'
+  // statusTabs — a status filter shows how many cards exist in each bucket
+  // overall, not how many survive the other active filters.
+  const statusCounts = computed(() => {
+    const counts: Record<WantedCardStatus, number> = { searching: 0, found: 0, abandoned: 0 }
+    for (const card of data.value) {
+      if (card.status in counts) counts[card.status]++
+    }
+    return counts
+  })
+
+  const statusTabs = computed<{ label: string, value: 'all' | WantedCardStatus, count?: number }[]>(() => [
+    { label: t('wantedCard.filters.statusAll'), value: 'all', count: undefined },
+    { label: t('wantedCard.status.searching'), value: 'searching', count: statusCounts.value.searching },
+    { label: t('wantedCard.status.found'), value: 'found', count: statusCounts.value.found },
+    { label: t('wantedCard.status.abandoned'), value: 'abandoned', count: statusCounts.value.abandoned }
   ])
 
   return {
