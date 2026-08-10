@@ -5,10 +5,16 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 const { t } = useI18n()
 const route = useRoute()
 
-// The domains table has 4 columns (host, route, status, purpose) and doesn't fit
-// the 2xl width every other settings page (single-column forms) is comfortable
-// with — widen just that page instead of every subpage under /settings.
-const bodyMaxWidth = computed(() => route.path === '/settings/domains' ? 'lg:max-w-4xl' : 'lg:max-w-2xl')
+// The domains and permissions tables are wider than the single-column forms
+// every other settings page is comfortable with — widen just those pages
+// instead of every subpage under /settings. Permissions has no cap at all: its
+// feature column stays on one line rather than wrapping (see permissions.vue),
+// so it needs whatever width that takes rather than a fixed breakpoint.
+const wideBodyRoutes: Record<string, string> = {
+  '/settings/domains': 'lg:max-w-4xl',
+  '/settings/permissions': 'w-full'
+}
+const bodyMaxWidth = computed(() => wideBodyRoutes[route.path] ?? 'lg:max-w-2xl')
 
 const links = computed<NavigationMenuItem[][]>(() => [[{
   label: t('settings.layout.links.general'),
@@ -20,9 +26,9 @@ const links = computed<NavigationMenuItem[][]>(() => [[{
   icon: 'i-lucide-users',
   to: '/settings/members'
 }, {
-  label: t('settings.layout.links.notifications'),
-  icon: 'i-lucide-bell',
-  to: '/settings/notifications'
+  label: t('settings.layout.links.permissions'),
+  icon: 'i-lucide-key-round',
+  to: '/settings/permissions'
 }, {
   label: t('settings.layout.links.security'),
   icon: 'i-lucide-shield',
