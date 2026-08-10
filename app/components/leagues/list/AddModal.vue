@@ -40,7 +40,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   >
     <AddButton
       :label="$t('league.addModal.openButton')"
-      icon="i-lucide-trophy"
+      :icon="ICONS.standings"
       @click="open = true"
     />
 

@@ -244,11 +244,11 @@ const columns: TableColumn<Associate>[] = [
     cell: ({ row }) => {
       const status = row.getValue('membership_request_status') as string
       const statusConfig: Record<string, { color: string, icon: string }> = {
-        approved: { color: 'success', icon: 'i-lucide-check-circle' },
-        pending: { color: 'warning', icon: 'i-lucide-circle-dot-dashed' },
-        rejected: { color: 'error', icon: 'i-lucide-x-circle' }
+        approved: { color: 'success', icon: ICONS.success },
+        pending: { color: 'warning', icon: ICONS.pending },
+        rejected: { color: 'error', icon: ICONS.statusRejected }
       }
-      const { color, icon } = statusConfig[status] || { color: 'neutral', icon: 'i-lucide-help-circle' }
+      const { color, icon } = statusConfig[status] || { color: 'neutral', icon: ICONS.help }
 
       return h(resolveComponent('UBadge'), {
         class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity gap-2',
@@ -273,13 +273,13 @@ const columns: TableColumn<Associate>[] = [
     cell: ({ row }) => {
       const status = row.getValue('membership_status') as string
       const statusConfig: Record<string, { color: string, icon: string }> = {
-        active: { color: 'success', icon: 'i-lucide-check-circle' },
-        to_renew: { color: 'warning', icon: 'i-lucide-refresh-cw' },
-        expired: { color: 'error', icon: 'i-lucide-ban' },
-        pending: { color: 'warning', icon: 'i-lucide-circle-dot-dashed' },
-        rejected: { color: 'error', icon: 'i-lucide-x-circle' }
+        active: { color: 'success', icon: ICONS.success },
+        to_renew: { color: 'warning', icon: ICONS.refresh },
+        expired: { color: 'error', icon: ICONS.banned },
+        pending: { color: 'warning', icon: ICONS.pending },
+        rejected: { color: 'error', icon: ICONS.statusRejected }
       }
-      const { color, icon } = statusConfig[status] || { color: 'neutral', icon: 'i-lucide-help-circle' }
+      const { color, icon } = statusConfig[status] || { color: 'neutral', icon: ICONS.help }
 
       return h(resolveComponent('UBadge'), {
         class: 'capitalize gap-2',
@@ -451,7 +451,7 @@ function renderAssociateTypeBadge(type: Associate['associate_type']) {
   if (!type) return null
 
   const typeConfig: Record<NonNullable<Associate['associate_type']>, { color: string, icon: string }> = {
-    ordinario: { color: 'neutral', icon: 'i-lucide-user' },
+    ordinario: { color: 'neutral', icon: ICONS.player },
     sostenitore: { color: 'primary', icon: 'i-lucide-star' }
   }
   const { color, icon } = typeConfig[type]
@@ -468,8 +468,8 @@ function renderAssociateTypeBadge(type: Associate['associate_type']) {
 function renderConsentBadge(consentvalue: boolean) {
   const consent = consentvalue
   const consentConfig: Record<string, { label: string, color: string, icon: string }> = {
-    yes: { label: t('common.yes'), color: 'success', icon: 'i-lucide-check-circle' },
-    no: { label: t('common.no'), color: 'error', icon: 'i-lucide-circle-x' }
+    yes: { label: t('common.yes'), color: 'success', icon: ICONS.success },
+    no: { label: t('common.no'), color: 'error', icon: ICONS.clear }
   }
 
   return h(resolveComponent('UBadge'), {
@@ -481,8 +481,8 @@ function renderConsentBadge(consentvalue: boolean) {
 
 const consentSocialOptions = [
   { label: t('associate.consentSocialOptions.all'), value: 'all', icon: 'i-lucide-megaphone', color: 'neutral' },
-  { label: t('associate.consentSocialOptions.yes'), value: 'yes', icon: 'i-lucide-check-circle', color: 'success' },
-  { label: t('associate.consentSocialOptions.no'), value: 'no', icon: 'i-lucide-circle-x', color: 'error' }
+  { label: t('associate.consentSocialOptions.yes'), value: 'yes', icon: ICONS.success, color: 'success' },
+  { label: t('associate.consentSocialOptions.no'), value: 'no', icon: ICONS.clear, color: 'error' }
 ]
 
 const consentSocialFilter = ref('all')
@@ -531,7 +531,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
               table?.tableApi?.getColumn('email_address')?.getFilterValue() as string
             )"
             class="max-w-sm"
-            icon="i-lucide-search"
+            :icon="ICONS.search"
             :placeholder="$t('common.filterEmailsPlaceholder')"
             @update:model-value="
               table?.tableApi?.getColumn('email_address')?.setFilterValue($event)
@@ -557,7 +557,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
               :label="$t('associate.approveModal.approve')"
               color="success"
               variant="subtle"
-              icon="i-lucide-check"
+              :icon="ICONS.confirm"
             >
               <template #trailing>
                 <UKbd>
@@ -572,12 +572,12 @@ watch(() => consentSocialFilter.value, (newVal) => {
               :label="$t('common.showColumns')"
               color="neutral"
               variant="outline"
-              trailing-icon="i-lucide-settings-2"
+              :trailing-icon="ICONS.settingsColumns"
             />
           </UDropdownMenu>
 
           <UButton
-            icon="i-lucide-refresh-cw"
+            :icon="ICONS.refresh"
             color="neutral"
             variant="outline"
             :loading="loading"

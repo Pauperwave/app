@@ -11,8 +11,8 @@ export function eventStatusColor(status: EventStatus): 'info' | 'warning' | 'suc
 }
 
 export const EVENT_STATUS_ICONS: Record<EventStatus, string> = {
-  scheduled: 'i-lucide-clock',
-  ongoing: 'i-lucide-circle-dot-dashed',
-  completed: 'i-lucide-circle-check-big',
-  canceled: 'i-lucide-circle-x'
+  scheduled: ICONS.clock,
+  ongoing: ICONS.pending,
+  completed: ICONS.successFilledBig,
+  canceled: ICONS.clear
 }

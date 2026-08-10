@@ -51,7 +51,7 @@ const items = computed<DropdownMenuItem[]>(() => [{
 
         <UDropdownMenu :items="items" :content="{ align: 'end' }">
           <UButton
-            icon="i-lucide-ellipsis-vertical"
+            :icon="ICONS.ellipsisVertical"
             color="neutral"
             variant="ghost"
           />

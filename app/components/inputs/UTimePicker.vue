@@ -56,7 +56,7 @@ const displayValue = computed(() => modelValue || '')
     <UInput
       :model-value="displayValue"
       readonly
-      :icon="icon || 'i-lucide-clock'"
+      :icon="icon || ICONS.clock"
       :placeholder="placeholder || t('inputs.timePicker.placeholder')"
     />
 

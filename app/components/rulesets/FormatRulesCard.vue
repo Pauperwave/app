@@ -48,7 +48,7 @@ const rules = computed(() => FORMAT_RULES[format])
   <UPageCard
     :title="rules.label"
     :description="$t('ruleset.format.description')"
-    icon="i-lucide-medal"
+    :icon="ICONS.medal"
   >
     <div class="flex flex-col gap-6">
       <UAlert

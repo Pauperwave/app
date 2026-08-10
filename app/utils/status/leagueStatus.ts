@@ -10,7 +10,7 @@ export function leagueStatusColor(status: LeagueStatus): 'info' | 'warning' | 's
 }
 
 export const LEAGUE_STATUS_ICONS: Record<LeagueStatus, string> = {
-  scheduled: 'i-lucide-clock',
-  ongoing: 'i-lucide-circle-dot-dashed',
-  completed: 'i-lucide-circle-check-big'
+  scheduled: ICONS.clock,
+  ongoing: ICONS.pending,
+  completed: ICONS.successFilledBig
 }

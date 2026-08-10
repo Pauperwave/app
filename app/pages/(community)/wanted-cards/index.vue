@@ -264,8 +264,8 @@ const gridSections = computed<GridSection[]>(() => {
               />
               <UButton
                 :icon="gridSortDesc
-                  ? 'i-lucide-arrow-down-wide-narrow'
-                  : 'i-lucide-arrow-up-narrow-wide'"
+                  ? ICONS.sortDescNumeric
+                  : ICONS.sortAscNumeric"
                 color="neutral"
                 variant="outline"
                 @click="gridSortDesc = !gridSortDesc"
@@ -274,7 +274,7 @@ const gridSections = computed<GridSection[]>(() => {
 
             <UButton
               :label="$t('wantedCard.filters.groupByPlayer')"
-              icon="i-lucide-users"
+              :icon="ICONS.players"
               color="neutral"
               :variant="isGrouped ? 'solid' : 'outline'"
               @click="toggleGrouping"
@@ -289,7 +289,7 @@ const gridSections = computed<GridSection[]>(() => {
                 :label="$t('common.showColumns')"
                 color="neutral"
                 variant="outline"
-                trailing-icon="i-lucide-settings-2"
+                :trailing-icon="ICONS.settingsColumns"
               />
             </UDropdownMenu>
           </div>

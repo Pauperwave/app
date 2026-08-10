@@ -34,7 +34,7 @@ const route = useRoute()
         variant="outline"
         color="neutral"
         class="mt-4"
-        icon="i-lucide-chevron-right"
+        :icon="ICONS.chevronRight"
       >
         {{ $t('common.dummyLinkLabel') }}
       </UButton>

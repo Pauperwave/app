@@ -7,14 +7,14 @@ export const membershipStatusConfig: Record<
   MembershipStatus,
   { color: MembershipStatusBadgeColor, icon: string }
 > = {
-  active: { color: 'success', icon: 'i-lucide-check-circle' },
-  to_renew: { color: 'warning', icon: 'i-lucide-refresh-cw' },
-  expired: { color: 'error', icon: 'i-lucide-ban' },
-  pending: { color: 'warning', icon: 'i-lucide-circle-dot-dashed' },
-  rejected: { color: 'error', icon: 'i-lucide-x-circle' },
-  approved: { color: 'success', icon: 'i-lucide-check-circle' }
+  active: { color: 'success', icon: ICONS.success },
+  to_renew: { color: 'warning', icon: ICONS.refresh },
+  expired: { color: 'error', icon: ICONS.banned },
+  pending: { color: 'warning', icon: ICONS.pending },
+  rejected: { color: 'error', icon: ICONS.statusRejected },
+  approved: { color: 'success', icon: ICONS.success }
 }
 
 export function getMembershipStatusBadge(status: MembershipStatus) {
-  return membershipStatusConfig[status] ?? { color: 'neutral' as const, icon: 'i-lucide-help-circle' }
+  return membershipStatusConfig[status] ?? { color: 'neutral' as const, icon: ICONS.help }
 }

@@ -25,7 +25,7 @@ const route = useRoute()
         <template #right>
           <UButton
             :to="`/leagues/${route.params.leagueId}/tournaments`"
-            trailing-icon="i-lucide-chevron-right"
+            :trailing-icon="ICONS.chevronRight"
             color="neutral"
             variant="ghost"
             size="xs"

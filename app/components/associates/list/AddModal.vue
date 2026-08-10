@@ -147,7 +147,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   >
     <AddButton
       :label="$t('associate.addModal.openButton')"
-      icon="i-lucide-user-plus"
+      :icon="ICONS.addPlayer"
       @click="open = true"
     />
 
@@ -183,7 +183,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               <UInput v-model="state.email_address" autocomplete="email" class="w-full" />
             </UFormField>
             <UFormField :label="$t('associate.addModal.fields.phoneNumber')" name="phone_number" required>
-              <UInput v-maska="'(+39) ### #######'" icon="i-lucide-phone" v-model="state.phone_number" autocomplete="tel" class="w-full" />
+              <UInput v-maska="'(+39) ### #######'" :icon="ICONS.phone" v-model="state.phone_number" autocomplete="tel" class="w-full" />
             </UFormField>
           </div>
         </div>
@@ -212,7 +212,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                   color="neutral"
                   variant="outline"
                   class="w-full justify-start"
-                  icon="i-lucide-calendar"
+                  :icon="ICONS.calendar"
                 >
                   {{ state.born_date ? formatDate(state.born_date) : $t('associate.addModal.fields.selectBirthDate') }}
                 </UButton>

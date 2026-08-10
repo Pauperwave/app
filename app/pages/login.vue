@@ -21,7 +21,7 @@ const fields = computed(() => [{
   name: 'email',
   type: 'email' as const,
   label: t('login.emailLabel'),
-  icon: 'i-lucide-at-sign',
+  icon: ICONS.atSign,
   placeholder: t('login.emailPlaceholder'),
   required: true
 }])
@@ -100,7 +100,7 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
     :fields="fields"
     :schema="schema"
     :title="$t('login.welcomeBack')"
-    icon="i-lucide-lock"
+    :icon="ICONS.lock"
     @submit="sendMagicLink"
   >
     <template #description>
@@ -112,7 +112,7 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
         :loading="loading"
         type="submit"
         color="primary"
-        icon="i-lucide-mail"
+        :icon="ICONS.mail"
         size="lg"
         block
       >

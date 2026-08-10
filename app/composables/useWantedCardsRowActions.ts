@@ -59,8 +59,8 @@ export function useWantedCardsRowActions() {
 
   const STATUS_MENU_ICONS: Record<WantedCardStatus, string> = {
     searching: 'i-lucide-rotate-ccw',
-    found: 'i-lucide-check',
-    abandoned: 'i-lucide-circle-x'
+    found: ICONS.confirm,
+    abandoned: ICONS.clear
   }
 
   const STATUS_MENU_COLORS: Partial<Record<WantedCardStatus, DropdownMenuItem['color']>> = {
@@ -153,7 +153,7 @@ export function useWantedCardsRowActions() {
       { type: 'separator' },
       {
         label: t('wantedCard.contextMenu.copyName'),
-        icon: 'i-lucide-copy',
+        icon: ICONS.copy,
         onSelect: () => copyCardName(card.cardName)
       },
       {
@@ -164,17 +164,17 @@ export function useWantedCardsRowActions() {
       },
       {
         label: t('wantedCard.contextMenu.searchOnCardMarket'),
-        icon: 'i-lucide-search',
+        icon: ICONS.search,
         onSelect: () => window.open(cardMarketSearchUrl(card.cardName), '_blank', 'noopener')
       },
       {
         label: t('wantedCard.contextMenu.searchOnCardTrader'),
-        icon: 'i-lucide-search',
+        icon: ICONS.search,
         onSelect: () => openCardTraderSearch(card)
       },
       {
         label: t('wantedCard.contextMenu.refreshPrices'),
-        icon: 'i-lucide-refresh-cw',
+        icon: ICONS.refresh,
         disabled: !card.scryfallId || !card.setCode,
         onSelect: () => refreshCardPrices(card)
       },
@@ -187,7 +187,7 @@ export function useWantedCardsRowActions() {
       { type: 'separator' },
       {
         label: t('wantedCard.contextMenu.delete'),
-        icon: 'i-lucide-trash',
+        icon: ICONS.delete,
         color: 'error',
         onSelect: () => openDeleteConfirm(card)
       }

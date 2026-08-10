@@ -140,7 +140,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     <AddButton
       id="tour-wanted-cards-add"
       :label="$t('wantedCard.addModal.openButton')"
-      icon="i-lucide-plus"
+      :icon="ICONS.add"
       @click="open = true"
     />
 
@@ -160,7 +160,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             :loading="isSuggesting"
             ignore-filter
             :placeholder="$t('wantedCard.addModal.fields.namePlaceholder')"
-            icon="i-lucide-scan-search"
+            :icon="ICONS.cardSearch"
             class="w-full"
           >
             <template #item-label="{ item }">
