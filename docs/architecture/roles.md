@@ -68,6 +68,7 @@ const PERMISSION_LEVEL = {
   'manage-membership-fees': 'admin',
   'manage-all-commander-decks': 'admin',
   'delete-tournaments': 'super_admin', // permanent deletion only — create/edit stays 'organizer' above
+  'cancel-round': 'super_admin', // ordinary round management stays 'organizer', via 'manage-tournaments'
   'manage-roles': 'super_admin'
   // ... full list tracked in docs/architecture/permissions.md, kept in sync
 } as const satisfies Record<Permission, AppRole>
@@ -80,7 +81,7 @@ function can(role: AppRole | undefined, permission: Permission): boolean {
 
 This is a smaller permissions matrix than the earlier `role → Permission[]` shape: each permission declares the *minimum* role it needs, once, instead of every role above it having to re-list it. `app/utils/permissions.ts` (§2) becomes `ROLE_LEVEL` + `PERMISSION_LEVEL`, not a `Record<AppRole, Permission[]>`.
 
-**`super_admin`'s reason to exist beyond role assignment, confirmed 2026-08-10: permanent/irreversible deletion.** `admin` can create/edit/manage tournaments, leagues, events, associates; actually *deleting* one of those permanently is reserved one level higher, as a guard against an accidental destructive click rather than against a malicious admin — see `docs/architecture/permissions.md`'s note on this. Explicitly **does not extend to associates**: an associate is never hard-deleted today, membership status is derived from `pauperwave_associate_renewals` (`docs/architecture/database.md`), so there is no "delete an associate" action for this rule to gate in the first place.
+**`super_admin`'s reason to exist beyond role assignment, confirmed 2026-08-10: permanent/irreversible actions.** `admin` can create/edit/manage tournaments, leagues, events, associates; actually *deleting* one of those permanently is reserved one level higher, as a guard against an accidental destructive click rather than against a malicious admin — see `docs/architecture/permissions.md`'s note on this. Explicitly **does not extend to associates**: an associate is never hard-deleted today, membership status is derived from `pauperwave_associate_renewals` (`docs/architecture/database.md`), so there is no "delete an associate" action for this rule to gate in the first place. Same category, confirmed the same day: **cancelling an already-started round** — an `organizer` runs a tournament including its rounds day to day, but voiding a round outright is carved out as its own permission, one level above ordinary tournament management.
 
 `app/composables/useUserRole.ts`, mirroring `useWantedCardsQuery.ts`'s shape:
 

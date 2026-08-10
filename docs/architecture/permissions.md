@@ -21,8 +21,9 @@ Human-readable companion to `docs/architecture/roles.md` — that doc has the im
 | Visualizzare classifiche (Cittadino, Commander, Premodern, Pauper) | 🟢 | 🟢 | 🟢 | 🟢 |
 | Visualizzare tornei, leghe, eventi | 🟢 | 🟢 | 🟢 | 🟢 |
 | Iscriversi a un torneo/evento | 🟡 (solo per sé stesso) | 🟢 | 🟢 | 🟢 |
-| Creare, modificare tornei/leghe/eventi | 🔴 | 🟢 | 🟢 | 🟢 |
+| Creare, modificare tornei/leghe/eventi (inclusa la gestione ordinaria dei round) | 🔴 | 🟢 | 🟢 | 🟢 |
 | **Eliminare definitivamente** tornei/leghe/eventi | 🔴 | 🔴 | 🔴 | 🟢 |
+| **Annullare un round** | 🔴 | 🔴 | 🔴 | 🟢 |
 | Gestire pagamenti di eventi/tornei | 🔴 | 🟢 | 🟢 | 🟢 |
 | Visualizzare "Carte Cercate" | 🟢 | 🟢 | 🟢 | 🟢 |
 | Creare una richiesta "Carta Cercata" | 🟡 (solo per sé stesso) | 🟢 | 🟢 | 🟢 |
@@ -39,6 +40,8 @@ Human-readable companion to `docs/architecture/roles.md` — that doc has the im
 ## Note
 
 **"Carte Cercate" oggi *non* rispetta ancora questa matrice — deciso 2026-08-10, da correggere nel codice.** `server/api/wanted-cards/create.post.ts` usa solo `requireUser` (corretto, chiunque loggato crea la propria richiesta); ma `[id]/status.post.ts` usa oggi `requireManagementPermission`, quindi anche segnare una **propria** richiesta come "trovata"/"abbandonata" richiede un ruolo di gestione — comportamento sbagliato, confermato dall'utente. Un giocatore deve avere pieno controllo sullo stato delle proprie richieste; l'unica cosa che deve restare riservata alla gestione è l'**eliminazione** della richiesta (`[id]/delete.post.ts`, invariato). Il fix è in `server/api/wanted-cards/[id]/status.post.ts`: accettare anche il creatore della richiesta (owner-check sul `player_associate_uuid`/creator, come `player_own_registration` nei backup docs), non solo `requireManagementPermission` — vedi `docs/BACKLOG.md` P2. `[id]/update.post.ts` e `[id]/refresh-prices.post.ts` non sono stati toccati da questa decisione, restano `requireManagementPermission`.
+
+**"Annullare un round" è un'eccezione ritagliata dalla gestione ordinaria dei tornei, confermata 2026-08-10.** Un organizer gestisce un torneo dall'inizio alla fine — inclusi i round, normalmente — ma annullare un round già avviato è trattato come l'eliminazione definitiva: un'azione distruttiva/irreversibile che va oltre l'amministrazione ordinaria, riservata a `super_admin` anche se il torneo nel suo complesso resta gestibile da `organizer`.
 
 **"Eliminare definitivamente" non si applica ai soci.** A differenza di tornei/leghe/eventi, un associato oggi non viene mai cancellato per davvero — lo stato di tesseramento è calcolato dal confronto fra l'ultimo `renewal_year` in `pauperwave_associate_renewals` e l'anno corrente (`docs/architecture/database.md`, "Membership status model"): un socio non rinnovato resta visibile con l'ultima data di rinnovo nota, non sparisce. Non serve quindi un permesso "elimina socio" riservato a super_admin — la gestione anagrafica di `admin` è già sufficiente. Soft-delete vero e proprio (per tornei/leghe/eventi, o altrove) è pianificato ma non ancora scoped — quando arriva, va deciso se "eliminazione definitiva" resta super_admin-only anche con un soft-delete di mezzo, o se il soft-delete stesso diventa disponibile ad `admin` e solo la purga fisica resta a `super_admin`.
 
