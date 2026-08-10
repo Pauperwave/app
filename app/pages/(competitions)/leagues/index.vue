@@ -4,16 +4,7 @@ import { add, sub } from 'date-fns'
 import type { TabsItem } from '@nuxt/ui'
 import type { Range } from '~/types'
 
-const route = useRoute()
-const router = useRouter()
-const isModalOpen = ref(false)
-
-onMounted(() => {
-  if (route.query.action === 'create') {
-    isModalOpen.value = true
-    router.replace({ query: {} })
-  }
-})
+const { isModalOpen } = useModalOpenFromQuery()
 
 // Not wired to a filter yet: leagues have no per-item date to filter by (only
 // tournaments do). Kept here for visual/toolbar consistency with the tournaments
@@ -58,16 +49,7 @@ const sorting = ref([{ id: 'name', desc: false }])
 
       <UDashboardToolbar>
         <template #left>
-          <UFieldGroup>
-            <UButton
-              v-for="option in statusTabs"
-              :key="option.value"
-              :label="option.label"
-              color="neutral"
-              :variant="statusFilter === option.value ? 'solid' : 'outline'"
-              @click="statusFilter = option.value"
-            />
-          </UFieldGroup>
+          <StatusFilterGroup v-model="statusFilter" :items="statusTabs" />
         </template>
 
         <template #right>

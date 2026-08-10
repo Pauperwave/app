@@ -16,12 +16,24 @@ export function useTournamentsFilters(data: Ref<Tournament[]>, range: Ref<Range>
     return true
   }))
 
-  const statusTabs = computed<{ label: string, value: 'all' | TournamentStatus }[]>(() => [
-    { label: t('tournament.filters.statusAll'), value: 'all' },
-    { label: t('tournament.status.scheduled'), value: 'scheduled' },
-    { label: t('tournament.status.ongoing'), value: 'ongoing' },
-    { label: t('tournament.status.completed'), value: 'completed' },
-    { label: t('tournament.status.canceled'), value: 'canceled' }
+  // Counts from the full unfiltered `data`, same convention as
+  // useWantedCardsFilters.ts's statusTabs.
+  const statusCounts = computed(() => {
+    const counts: Record<TournamentStatus, number> = {
+      scheduled: 0, ongoing: 0, completed: 0, canceled: 0
+    }
+    for (const tournament of data.value) {
+      if (tournament.status in counts) counts[tournament.status]++
+    }
+    return counts
+  })
+
+  const statusTabs = computed<{ label: string, value: 'all' | TournamentStatus, count?: number }[]>(() => [
+    { label: t('tournament.filters.statusAll'), value: 'all', count: undefined },
+    { label: t('tournament.status.scheduled'), value: 'scheduled', count: statusCounts.value.scheduled },
+    { label: t('tournament.status.ongoing'), value: 'ongoing', count: statusCounts.value.ongoing },
+    { label: t('tournament.status.completed'), value: 'completed', count: statusCounts.value.completed },
+    { label: t('tournament.status.canceled'), value: 'canceled', count: statusCounts.value.canceled }
   ])
 
   return { statusFilter, filteredTournaments, statusTabs }

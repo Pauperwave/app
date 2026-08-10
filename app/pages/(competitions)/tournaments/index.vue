@@ -4,16 +4,7 @@ import { add, sub } from 'date-fns'
 import type { TabsItem } from '@nuxt/ui'
 import type { Range } from '~/types'
 
-const route = useRoute()
-const router = useRouter()
-const isModalOpen = ref(false)
-
-onMounted(() => {
-  if (route.query.action === 'create') {
-    isModalOpen.value = true
-    router.replace({ query: {} })
-  }
-})
+const { isModalOpen } = useModalOpenFromQuery()
 
 // Defaults to "Tutto" (matches HomeDateRangePicker's own "all time" range): the
 // mock tournaments span several months in the past relative to "today", so a
@@ -64,16 +55,7 @@ const sorting = ref([{ id: 'startDate', desc: false }])
         }"
       >
         <template #left>
-          <UFieldGroup>
-            <UButton
-              v-for="option in statusTabs"
-              :key="option.value"
-              :label="option.label"
-              color="neutral"
-              :variant="statusFilter === option.value ? 'solid' : 'outline'"
-              @click="statusFilter = option.value"
-            />
-          </UFieldGroup>
+          <StatusFilterGroup v-model="statusFilter" :items="statusTabs" />
         </template>
 
         <template #right>
