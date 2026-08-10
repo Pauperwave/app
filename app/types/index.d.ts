@@ -16,6 +16,7 @@ export type MembershipStatus = RequestStatus | 'active' | 'to_renew' | 'expired'
 
 export type TournamentStatus = 'scheduled' | 'canceled' | 'ongoing' | 'completed'
 export type LeagueStatus = 'scheduled' | 'ongoing' | 'completed'
+export type EventStatus = 'scheduled' | 'ongoing' | 'completed' | 'canceled'
 
 type AssociateRow = Database['public']['Tables']['pauperwave_associates']['Row']
 
@@ -163,6 +164,16 @@ export interface League {
   name: string
   tournamentCount: number
   completedTournamentCount: number
+}
+
+// Backed by mock data in server/api/events.ts (no Supabase table yet) — same
+// mapping convention as League above.
+export interface Event {
+  id: number
+  status: EventStatus
+  name: string
+  startDate: string
+  tournamentCount: number
 }
 
 // --- Campionato Cittadino -----------------------------------------------------

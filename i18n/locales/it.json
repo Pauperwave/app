@@ -363,7 +363,29 @@
   },
   "event": {
     "breadcrumb": "Eventi",
-    "placeholder": "Pagina eventi",
+    "views": {
+      "table": "Tabella",
+      "grid": "Griglia"
+    },
+    "grid": {
+      "empty": "Nessun evento trovato con questi filtri"
+    },
+    "status": {
+      "scheduled": "Pianificato",
+      "ongoing": "In corso",
+      "completed": "Completato",
+      "canceled": "Annullato"
+    },
+    "filters": {
+      "statusAll": "Tutti"
+    },
+    "columns": {
+      "status": "Stato",
+      "name": "Nome",
+      "startDate": "Data",
+      "tournamentCount": "Tornei"
+    },
+    "tournamentsLabel": "{count} torneo | {count} tornei",
     "addModal": {
       "title": "Nuovo evento",
       "description": "Aggiungi un nuovo evento al database",
