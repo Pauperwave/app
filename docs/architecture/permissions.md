@@ -25,6 +25,7 @@ Human-readable companion to `docs/architecture/roles.md` — that doc has the im
 | **Eliminare definitivamente** tornei/leghe/eventi | 🔴 | 🔴 | 🔴 | 🟢 |
 | **Annullare un round** | 🔴 | 🔴 | 🔴 | 🟢 |
 | Gestire pagamenti di eventi/tornei | 🔴 | 🟢 | 🟢 | 🟢 |
+| Inviare email di ricevuta (quote eventi/tornei, quote associative) | 🔴 | 🔴 | 🟢 | 🟢 |
 | Visualizzare "Carte Cercate" | 🟢 | 🟢 | 🟢 | 🟢 |
 | Creare una richiesta "Carta Cercata" | 🟡 (solo per sé stesso) | 🟢 | 🟢 | 🟢 |
 | Cambiare stato (trovata/abbandonata) della propria richiesta | 🟡 (solo la propria) | 🟢 | 🟢 | 🟢 |
@@ -40,6 +41,8 @@ Human-readable companion to `docs/architecture/roles.md` — that doc has the im
 ## Note
 
 **"Carte Cercate" oggi *non* rispetta ancora questa matrice — deciso 2026-08-10, da correggere nel codice.** `server/api/wanted-cards/create.post.ts` usa solo `requireUser` (corretto, chiunque loggato crea la propria richiesta); ma `[id]/status.post.ts` usa oggi `requireManagementPermission`, quindi anche segnare una **propria** richiesta come "trovata"/"abbandonata" richiede un ruolo di gestione — comportamento sbagliato, confermato dall'utente. Un giocatore deve avere pieno controllo sullo stato delle proprie richieste; l'unica cosa che deve restare riservata alla gestione è l'**eliminazione** della richiesta (`[id]/delete.post.ts`, invariato). Il fix è in `server/api/wanted-cards/[id]/status.post.ts`: accettare anche il creatore della richiesta (owner-check sul `player_associate_uuid`/creator, come `player_own_registration` nei backup docs), non solo `requireManagementPermission` — vedi `docs/BACKLOG.md` P2. `[id]/update.post.ts` e `[id]/refresh-prices.post.ts` non sono stati toccati da questa decisione, restano `requireManagementPermission`.
+
+**Inviare ricevute è separato da "gestire pagamenti," confermato 2026-08-10.** Un organizer registra/gestisce i pagamenti di eventi e tornei (già in matrice), ma l'invio della ricevuta via email — sia per quote eventi/tornei sia per quote associative — sale ad `admin`. Comunicazione ufficiale verso soci/partecipanti trattata più cautamente della semplice registrazione interna del pagamento.
 
 **"Annullare un round" è un'eccezione ritagliata dalla gestione ordinaria dei tornei, confermata 2026-08-10.** Un organizer gestisce un torneo dall'inizio alla fine — inclusi i round, normalmente — ma annullare un round già avviato è trattato come l'eliminazione definitiva: un'azione distruttiva/irreversibile che va oltre l'amministrazione ordinaria, riservata a `super_admin` anche se il torneo nel suo complesso resta gestibile da `organizer`.
 
