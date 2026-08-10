@@ -1,4 +1,4 @@
-// app\composables\useLeaguesQuery.ts
+// app\composables\leagues\useLeaguesQuery.ts
 import type { League, LeagueStatus } from '~/types'
 
 interface LeagueRow {

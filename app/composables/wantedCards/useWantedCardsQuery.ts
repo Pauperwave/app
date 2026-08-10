@@ -1,4 +1,4 @@
-// app\composables\useWantedCardsQuery.ts
+// app\composables\wantedCards\useWantedCardsQuery.ts
 import type { WantedCard, WantedCardStatus } from '~/types'
 
 export const WANTED_CARDS_KEY = ['wanted-cards']

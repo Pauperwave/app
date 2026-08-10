@@ -1,4 +1,4 @@
-// app\composables\useCittadinoTableColumns.ts
+// app\composables\cittadino\useCittadinoTableColumns.ts
 import { h } from 'vue'
 import type { Ref } from 'vue'
 import type { TableColumn } from '@nuxt/ui'

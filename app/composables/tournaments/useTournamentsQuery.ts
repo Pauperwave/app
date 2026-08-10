@@ -1,4 +1,4 @@
-// app\composables\useTournamentsQuery.ts
+// app\composables\tournaments\useTournamentsQuery.ts
 import type { Tournament, TournamentStatus } from '~/types'
 
 interface TournamentRow {

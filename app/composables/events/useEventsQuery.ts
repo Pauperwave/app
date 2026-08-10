@@ -1,4 +1,4 @@
-// app\composables\useEventsQuery.ts
+// app\composables\events\useEventsQuery.ts
 import type { Event, EventStatus } from '~/types'
 
 interface EventRow {
