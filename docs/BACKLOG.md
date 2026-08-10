@@ -37,4 +37,7 @@ Committed, ranked work items. P1 = urgent/blocking, P2 = important, P3 = nice to
 
 ## P2
 
+- **Let a player change the status of their own "Carta Cercata" request.** `server/api/wanted-cards/[id]/status.post.ts` currently requires `requireManagementPermission` for *any* status change, including a player marking their own request "trovata"/"abbandonata" — confirmed wrong 2026-08-10 (`docs/architecture/permissions.md`): a player should have full control over their own request's status, the only action that should stay management-only is deleting it (`[id]/delete.post.ts`, unaffected). Fix: `status.post.ts` should accept either `requireManagementPermission` (any request) or an ownership check against the request's creator (own request only) — not `requireManagementPermission` alone. `[id]/update.post.ts` and `[id]/refresh-prices.post.ts` are out of scope for this item.
+  - Found: 2026-08-10, while building the role/permissions matrix (`docs/architecture/permissions.md`).
+
 - **Migrate magic-link auth from implicit flow to PKCE.** Current flow (`app/pages/auth/callback.vue`, `app/pages/login.vue`) relies on the implicit flow — the session token can briefly appear in the URL fragment/browser history. Given the app handles real associate PII, PKCE (customize email template with `{{ .TokenHash }}`, exchange via `verifyOtp({ token_hash, type: 'email' })` in the callback) is a worthwhile hardening step, though it requires callback-page and Supabase email-template changes.
