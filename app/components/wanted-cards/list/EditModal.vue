@@ -18,7 +18,6 @@ const { card } = defineProps<{
 const toast = useToast()
 const { t } = useI18n()
 
-const { associates } = useAssociates()
 const { updateWantedCard } = useWantedCardsMutations()
 
 // Same printing-search pattern as AddModal.vue, but the name is fixed (not
@@ -26,48 +25,11 @@ const { updateWantedCard } = useWantedCardsMutations()
 // the modal opens.
 const { printings, isLoadingPrintings, fetchPrintings } = useScryfallCardSearch()
 
-// Same exclusion as AddModal.vue: "APS Pauperwave" is the association's own record,
-// not a real player.
-const APS_PAUPERWAVE_UUID = '8578797c-62b0-4e48-a237-3b65683a2623'
-
-const playerOptions = computed(() => associates.value
-  .filter(associate => associate.uuid !== APS_PAUPERWAVE_UUID)
-  .map(associate => ({
-    label: `${associate.first_name} ${associate.last_name}`,
-    value: associate.uuid
-  })))
-
-const languageOptions = computed(() => [
-  { label: t('wantedCard.languages.any'), value: 'any', icon: 'i-lucide-languages' },
-  { label: t('wantedCard.languages.en'), value: 'en', icon: 'i-circle-flags-gb' },
-  { label: t('wantedCard.languages.it'), value: 'it', icon: 'i-circle-flags-it' },
-  { label: t('wantedCard.languages.es'), value: 'es', icon: 'i-circle-flags-es' },
-  { label: t('wantedCard.languages.fr'), value: 'fr', icon: 'i-circle-flags-fr' },
-  { label: t('wantedCard.languages.de'), value: 'de', icon: 'i-circle-flags-de' },
-  { label: t('wantedCard.languages.ja'), value: 'ja', icon: 'i-circle-flags-jp' }
-])
-
 // Same custom messages as AddModal.vue (see the comment there on why
 // v.pipe(v.string(msg), v.minLength(...)) covers both the never-filled field and
-// the empty string).
-const schema = v.object({
-  printingId: v.pipe(
-    v.string(t('wantedCard.addModal.validation.printingRequired')),
-    v.minLength(1, t('wantedCard.addModal.validation.printingRequired'))
-  ),
-  copies: v.pipe(
-    v.number(t('wantedCard.addModal.validation.copiesRequired')),
-    v.integer(t('wantedCard.addModal.validation.copiesInteger')),
-    v.minValue(1, t('wantedCard.addModal.validation.copiesPositive'))
-  ),
-  language: v.string(),
-  foil: v.optional(v.boolean()),
-  notes: v.optional(v.string()),
-  player: v.pipe(
-    v.string(t('wantedCard.addModal.validation.playerRequired')),
-    v.minLength(1, t('wantedCard.addModal.validation.playerRequired'))
-  )
-})
+// the empty string). Shared with AddModal.vue via wantedCardFormFieldsSchema — no
+// `name` field here, the card name is fixed once created.
+const schema = v.object(wantedCardFormFieldsSchema(t))
 
 type Schema = v.InferOutput<typeof schema>
 
@@ -94,31 +56,6 @@ watch([open, () => card], async ([isOpen, currentCard]) => {
   const currentBaseUrl = currentCard.scryfallUrl.split('?')[0]
   state.printingId = printings.value.find(p => p.scryfallUrl.split('?')[0] === currentBaseUrl)?.id
 }, { immediate: true })
-
-const currentLanguage = computed(() => languageOptions.value.find(l => l.value === state.language))
-
-// Same reason as AddModal.vue: "Foil" is a finish independent of the printing,
-// available only if the chosen printing supports it.
-watch(() => state.printingId, (printingId) => {
-  const printing = printings.value.find(p => p.id === printingId)
-  if (!printing?.finishes.includes('foil')) state.foil = false
-})
-
-const printingItems = computed(() => printings.value.map(printing => ({
-  label: printing.setName,
-  collectorNumber: printing.collectorNumber,
-  imageUrl: printing.imageUrl,
-  price: printing.price,
-  value: printing.id
-})))
-
-const selectedPrinting = computed(() =>
-  printings.value.find(printing => printing.id === state.printingId))
-
-const foilUnavailableHint = computed(() =>
-  selectedPrinting.value && !selectedPrinting.value.finishes.includes('foil')
-    ? t('wantedCard.addModal.foilUnavailable')
-    : undefined)
 
 const submitting = ref(false)
 
@@ -191,74 +128,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           </p>
         </div>
 
-        <UFormField :label="$t('wantedCard.addModal.fields.printing')" name="printingId" required>
-          <USelectMenu
-            v-model="state.printingId"
-            :items="printingItems"
-            value-key="value"
-            :filter-fields="['label', 'collectorNumber']"
-            :loading="isLoadingPrintings"
-            :placeholder="$t('wantedCard.addModal.fields.printingPlaceholder')"
-            class="w-full"
-          >
-            <template #item-label="{ item }">
-              <WantedCardsListPrintingRow
-                :label="item.label"
-                :collector-number="item.collectorNumber"
-                :image-url="item.imageUrl"
-                :price="item.price"
-              />
-            </template>
-          </USelectMenu>
-        </UFormField>
-
-        <MagicCardPreview :printing="selectedPrinting ?? null" />
-
-        <div class="grid grid-cols-3 gap-2">
-          <UFormField :label="$t('wantedCard.addModal.fields.copies')" name="copies">
-            <UInputNumber v-model="state.copies" :min="1" class="w-full" />
-          </UFormField>
-
-          <UFormField :label="$t('wantedCard.addModal.fields.language')" name="language">
-            <USelectMenu
-              v-model="state.language"
-              :items="languageOptions"
-              value-key="value"
-              :search-input="false"
-              :icon="currentLanguage?.icon"
-              class="w-full"
-            />
-          </UFormField>
-
-          <UFormField
-            :label="$t('wantedCard.treatments.foil')"
-            name="foil"
-            :description="foilUnavailableHint"
-          >
-            <USwitch
-              v-model="state.foil"
-              :disabled="!selectedPrinting?.finishes.includes('foil')"
-            />
-          </UFormField>
-        </div>
-
-        <UFormField :label="$t('wantedCard.addModal.fields.player')" name="player" required>
-          <USelectMenu
-            v-model="state.player"
-            :items="playerOptions"
-            value-key="value"
-            :placeholder="$t('wantedCard.addModal.fields.selectPlayer')"
-            class="w-full"
-          />
-        </UFormField>
-
-        <UFormField :label="$t('wantedCard.addModal.fields.notes')" name="notes">
-          <UTextarea
-            v-model="state.notes"
-            :placeholder="$t('wantedCard.addModal.fields.notesPlaceholder')"
-            class="w-full"
-          />
-        </UFormField>
+        <WantedCardsFormFields
+          :state="state"
+          :printings="printings"
+          :printings-loading="isLoadingPrintings"
+        />
 
         <div class="flex justify-end gap-2">
           <UButton
