@@ -22,7 +22,7 @@ const UCheckbox = resolveComponent('UCheckbox')
 
 const route = useRoute()
 const router = useRouter()
-const isModalOpen = ref(false)
+const { isModalOpen } = useModalOpenFromQuery()
 
 function formatDateTime(isoString?: string): string {
   if (!isoString) return ''
@@ -43,13 +43,6 @@ function formatDate(dateString?: string | null): string {
     return ''
   }
 }
-
-onMounted(() => {
-  if (route.query.action === 'create') {
-    isModalOpen.value = true
-    router.replace({ query: {} })
-  }
-})
 
 const table = useTemplateRef('table')
 
@@ -77,11 +70,15 @@ const associatesStatusCounts = computed(() => {
   return counts
 })
 
-const statusTabs = computed<TabsItem[]>(() => [
-  { label: t('associate.tabs.all'), value: 'all' },
-  { label: t('associate.tabs.pending'), value: 'pending', badge: associatesStatusCounts.value.pending },
-  { label: t('associate.tabs.active'), value: 'active', badge: associatesStatusCounts.value.active },
-  { label: t('associate.tabs.toRenew'), value: 'to_renew', badge: associatesStatusCounts.value.to_renew }
+// Rendered via the generic StatusFilterGroup (also used by wanted-cards), not
+// UTabs: toggle buttons filter the table below rather than switching between
+// separate views. `count` is optional per item — StatusFilterGroup only shows
+// the nested UBadge when it's set.
+const statusTabs = computed(() => [
+  { label: t('associate.tabs.all'), value: 'all' as const, count: undefined },
+  { label: t('associate.tabs.pending'), value: 'pending' as const, count: associatesStatusCounts.value.pending },
+  { label: t('associate.tabs.active'), value: 'active' as const, count: associatesStatusCounts.value.active },
+  { label: t('associate.tabs.toRenew'), value: 'to_renew' as const, count: associatesStatusCounts.value.to_renew }
 ])
 
 const activeStatusTab = computed({
@@ -93,7 +90,6 @@ const activeStatusTab = computed({
 
 const columnFilters = ref([])
 
-// TODO use this mapping to translate the column headers
 const columnHeaders = {
   select: t('associate.columns.select'),
   id: t('associate.columns.id'),
@@ -215,7 +211,8 @@ const columns: TableColumn<Associate>[] = [
   },
   {
     accessorKey: 'id',
-    header: columnHeaders.id,
+    header: ({ column }) => sortableHeader(columnHeaders.id, column),
+    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
     cell: ({ row }) => row.original.id
   },
   {
@@ -225,12 +222,14 @@ const columns: TableColumn<Associate>[] = [
   },
   {
     accessorKey: 'created_at',
-    header: columnHeaders.created_at,
+    header: ({ column }) => sortableHeader(columnHeaders.created_at, column),
+    meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
     cell: ({ row }) => formatDateTime(row.original.created_at)
   },
   {
     accessorKey: 'updated_at',
-    header: columnHeaders.updated_at,
+    header: ({ column }) => sortableHeader(columnHeaders.updated_at, column),
+    meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
     cell: ({ row }) => formatDateTime(row.original.updated_at)
   },
   {
@@ -240,7 +239,8 @@ const columns: TableColumn<Associate>[] = [
   },
   {
     accessorKey: 'membership_request_status',
-    header: columnHeaders.membership_request_status,
+    header: ({ column }) => sortableHeader(columnHeaders.membership_request_status, column),
+    meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) => {
       const status = row.getValue('membership_request_status') as string
       const statusConfig: Record<string, { color: string, icon: string }> = {
@@ -268,7 +268,8 @@ const columns: TableColumn<Associate>[] = [
   },
   {
     accessorKey: 'membership_status',
-    header: columnHeaders.membership_status,
+    header: ({ column }) => sortableHeader(columnHeaders.membership_status, column),
+    meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) => {
       const status = row.getValue('membership_status') as string
       const statusConfig: Record<string, { color: string, icon: string }> = {
@@ -291,87 +292,101 @@ const columns: TableColumn<Associate>[] = [
   },
   {
     accessorKey: 'request_date',
-    header: columnHeaders.request_date,
+    header: ({ column }) => sortableHeader(columnHeaders.request_date, column),
+    meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
     cell: ({ row }) => formatDateTime(row.original.request_date)
   },
   {
     accessorKey: 'payment_date',
-    header: columnHeaders.payment_date,
+    header: ({ column }) => sortableHeader(columnHeaders.payment_date, column),
+    meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
     cell: ({ row }) => formatDate(row.original.payment_date)
   },
   {
     accessorKey: 'association_date',
-    header: columnHeaders.association_date,
+    header: ({ column }) => sortableHeader(columnHeaders.association_date, column),
+    meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
     cell: ({ row }) => formatDate(row.original.association_date)
   },
   {
     accessorKey: 'associate_type',
-    header: columnHeaders.associate_type,
-    cell: ({ row }) => row.original.associate_type
+    header: ({ column }) => sortableHeader(columnHeaders.associate_type, column),
+    meta: { class: { th: 'text-center', td: 'text-center' } },
+    cell: ({ row }) => renderAssociateTypeBadge(row.original.associate_type)
   },
   {
     accessorKey: 'pauperwave_associate_number',
-    header: columnHeaders.pauperwave_associate_number,
+    header: ({ column }) => sortableHeader(columnHeaders.pauperwave_associate_number, column),
+    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
     cell: ({ row }) => row.original.pauperwave_associate_number || ''
   },
   {
     accessorKey: 'consent_data',
-    header: columnHeaders.consent_data,
+    header: ({ column }) => sortableHeader(columnHeaders.consent_data, column),
+    meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) => renderConsentBadge(row.original.consent_data)
   },
   {
     accessorKey: 'consent_social',
-    header: columnHeaders.consent_social,
+    header: ({ column }) => sortableHeader(columnHeaders.consent_social, column),
+    meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) => renderConsentBadge(row.original.consent_social)
   },
   {
     accessorKey: 'has_read_statute',
-    header: columnHeaders.has_read_statute,
+    header: ({ column }) => sortableHeader(columnHeaders.has_read_statute, column),
+    meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) => renderConsentBadge(row.original.has_read_statute)
   },
   {
     accessorKey: 'has_acknowledged_surveillance_notice',
-    header: columnHeaders.has_acknowledged_surveillance_notice,
+    header: ({ column }) =>
+      sortableHeader(columnHeaders.has_acknowledged_surveillance_notice, column),
+    meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) => renderConsentBadge(row.original.has_acknowledged_surveillance_notice)
   },
   {
     accessorKey: 'first_name',
-    header: columnHeaders.first_name,
+    header: ({ column }) => sortableHeader(columnHeaders.first_name, column),
     cell: ({ row }) => row.original.first_name
   },
   {
     accessorKey: 'last_name',
-    header: columnHeaders.last_name,
+    header: ({ column }) => sortableHeader(columnHeaders.last_name, column),
     cell: ({ row }) => row.original.last_name
   },
   {
     accessorKey: 'email_address',
     header: columnHeaders.email_address,
-    cell: ({ row }) => renderNeutralBadge(row.original.email_address)
+    cell: ({ row }) => row.original.email_address
   },
   {
     accessorKey: 'phone_number',
     header: columnHeaders.phone_number,
+    meta: { class: { td: 'font-mono' } },
     cell: ({ row }) => row.original.phone_number
   },
   {
     accessorKey: 'tax_code',
     header: columnHeaders.tax_code,
+    meta: { class: { td: 'font-mono' } },
     cell: ({ row }) => row.original.tax_code
   },
   {
     accessorKey: 'born_date',
-    header: columnHeaders.born_date,
+    header: ({ column }) => sortableHeader(columnHeaders.born_date, column),
+    meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
     cell: ({ row }) => formatDate(row.original.born_date)
   },
   {
     accessorKey: 'born_location',
-    header: columnHeaders.born_location,
+    header: ({ column }) => sortableHeader(columnHeaders.born_location, column),
     cell: ({ row }) => row.original.born_location || ''
   },
   {
     accessorKey: 'born_province',
     header: columnHeaders.born_province,
+    meta: { class: { td: 'font-mono' } },
     cell: ({ row }) => row.original.born_province || ''
   },
   {
@@ -387,21 +402,24 @@ const columns: TableColumn<Associate>[] = [
   {
     accessorKey: 'residency_house_number',
     header: columnHeaders.residency_house_number,
+    meta: { class: { th: 'text-right', td: 'text-right' } },
     cell: ({ row }) => row.original.residency_house_number || ''
   },
   {
     accessorKey: 'residency_city',
-    header: columnHeaders.residency_city,
+    header: ({ column }) => sortableHeader(columnHeaders.residency_city, column),
     cell: ({ row }) => row.original.residency_city
   },
   {
     accessorKey: 'residency_province',
     header: columnHeaders.residency_province,
+    meta: { class: { td: 'font-mono' } },
     cell: ({ row }) => row.original.residency_province
   },
   {
     accessorKey: 'residency_cap',
     header: columnHeaders.residency_cap,
+    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
     cell: ({ row }) => row.original.residency_cap
   },
   {
@@ -422,6 +440,28 @@ function renderNeutralBadge(value: string) {
     color: 'neutral',
     class: 'font-mono',
     label: String(value)
+  })
+}
+
+function renderAssociateTypeBadge(type: Associate['associate_type']) {
+  // No fallback for null: every associate should have a type in the DB (fixed via
+  // migration 2026-08-10, backfilling the pre-existing nulls to 'ordinario') — a
+  // blank cell here would mean the data went inconsistent again, and should stay
+  // visible as that rather than being masked behind a default.
+  if (!type) return null
+
+  const typeConfig: Record<NonNullable<Associate['associate_type']>, { color: string, icon: string }> = {
+    ordinario: { color: 'neutral', icon: 'i-lucide-user' },
+    sostenitore: { color: 'primary', icon: 'i-lucide-star' }
+  }
+  const { color, icon } = typeConfig[type]
+
+  return h(resolveComponent('UBadge'), {
+    class: 'capitalize gap-2',
+    variant: 'subtle',
+    icon,
+    color,
+    label: upperFirst(type)
   })
 }
 
@@ -474,77 +514,81 @@ watch(() => consentSocialFilter.value, (newVal) => {
           <NotificationsBellButton />
         </template>
       </UDashboardNavbar>
+
+      <!-- Status filter, search/social/columns filters and row-actions all in one
+           toolbar row — same #left/#right split as wanted-cards' UDashboardToolbar.
+           Status is a UFieldGroup of toggle UButtons, not UTabs: this filters the
+           table below rather than switching between separate views. -->
+      <UDashboardToolbar
+        v-if="viewMode === 'table'"
+        :ui="{ root: 'flex-wrap h-auto py-2 gap-1.5', left: 'gap-4 flex-wrap' }"
+      >
+        <template #left>
+          <StatusFilterGroup v-model="activeStatusTab" :items="statusTabs" />
+
+          <UInput
+            :model-value="(
+              table?.tableApi?.getColumn('email_address')?.getFilterValue() as string
+            )"
+            class="max-w-sm"
+            icon="i-lucide-search"
+            :placeholder="$t('common.filterEmailsPlaceholder')"
+            @update:model-value="
+              table?.tableApi?.getColumn('email_address')?.setFilterValue($event)
+            "
+          />
+
+          <UTooltip :text="$t('associate.consentSocialLabel')">
+            <UStatusSelect
+              v-model="consentSocialFilter"
+              :items="consentSocialOptions"
+              name="consentSocialFilter"
+            />
+          </UTooltip>
+        </template>
+
+        <template #right>
+          <AssociatesListApproveModal
+            v-if="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
+            :ids="table.tableApi.getFilteredSelectedRowModel().rows.map(row => row.original.id)"
+            @approved="refresh"
+          >
+            <UButton
+              :label="$t('associate.approveModal.approve')"
+              color="success"
+              variant="subtle"
+              icon="i-lucide-check"
+            >
+              <template #trailing>
+                <UKbd>
+                  {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length }}
+                </UKbd>
+              </template>
+            </UButton>
+          </AssociatesListApproveModal>
+
+          <UDropdownMenu :items="visibilityItems" :content="{ align: 'end' }">
+            <UButton
+              :label="$t('common.showColumns')"
+              color="neutral"
+              variant="outline"
+              trailing-icon="i-lucide-settings-2"
+            />
+          </UDropdownMenu>
+
+          <UButton
+            icon="i-lucide-refresh-cw"
+            color="neutral"
+            variant="outline"
+            :loading="loading"
+            @click="refresh"
+          />
+        </template>
+      </UDashboardToolbar>
     </template>
 
     <template #body>
       <template v-if="viewMode === 'table'">
-        <UTabs
-          v-model="activeStatusTab"
-          :items="statusTabs"
-          variant="link"
-          class="w-full"
-        />
-
-        <div class="flex flex-wrap items-end justify-between gap-1.5">
-          <div class="flex flex-wrap items-end gap-1.5">
-            <UInput
-              :model-value="(
-                table?.tableApi?.getColumn('email_address')?.getFilterValue() as string
-              )"
-              class="max-w-sm"
-              icon="i-lucide-search"
-              :placeholder="$t('common.filterEmailsPlaceholder')"
-              @update:model-value="
-                table?.tableApi?.getColumn('email_address')?.setFilterValue($event)
-              "
-            />
-
-            <UTooltip :text="$t('associate.consentSocialLabel')">
-              <UStatusSelect
-                v-model="consentSocialFilter"
-                :items="consentSocialOptions"
-                name="consentSocialFilter"
-              />
-            </UTooltip>
-          </div>
-
-          <div class="flex flex-wrap items-end gap-1.5">
-            <AssociatesListDeleteModal
-              :count="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
-            >
-              <UButton
-                v-if="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
-                :label="$t('common.delete')"
-                color="error"
-                variant="subtle"
-                icon="i-lucide-trash"
-              >
-                <template #trailing>
-                  <UKbd>
-                    {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length }}
-                  </UKbd>
-                </template>
-              </UButton>
-            </AssociatesListDeleteModal>
-
-            <UDropdownMenu :items="visibilityItems" :content="{ align: 'end' }">
-              <UButton
-                :label="$t('common.showColumns')"
-                color="neutral"
-                variant="outline"
-                trailing-icon="i-lucide-settings-2"
-              />
-            </UDropdownMenu>
-            <UButton
-              icon="i-lucide-refresh-cw"
-              color="neutral"
-              variant="outline"
-              :loading="loading"
-              @click="refresh"
-            />
-          </div>
-        </div>
-
         <UTable
           ref="table"
           v-model:column-filters="columnFilters"
@@ -558,12 +602,12 @@ watch(() => consentSocialFilter.value, (newVal) => {
           :columns="columns"
           class="flex-1 h-80 shrink-0"
           :loading="loading"
+          sticky="header"
           :ui="{
             base: 'border-separate border-spacing-0',
-            thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
             tbody: '[&>tr]:last:[&>td]:border-b-0',
-            th: 'py-1 px-1.5 border-y border-default first:rounded-l-lg last:rounded-r-lg',
-            td: 'border-b border-default py-1 px-2 font-mono'
+            tr: 'hover:bg-elevated/50',
+            td: 'border-b border-default py-1 px-2'
           }"
         />
 
