@@ -46,22 +46,42 @@ This replaces the earlier direction explored for the standings pages specificall
 
 The three-layer shape (resolve role → gate routes → adapt in-page UI) held up under review — no newer pattern replaces it — but each layer has a specific, opinionated implementation now, chosen over the alternatives for stated reasons. Not yet implemented; this is the plan to build against.
 
-### 1. Role state — `useState`, not Pinia
+### 1. Role state — a Pinia Colada query, not hand-rolled `useState`
 
-A role enum is simple, app-wide state with no reason for a store — `useState` is SSR-safe and shared across components for free, no extra dependency. Pinia would only earn its keep if role became part of a larger session/profile/preferences store; for this alone it's overengineering.
+**Revised 2026-08-10.** The earlier "`useState`, not Pinia" framing was answering the wrong question. `@pinia/colada` isn't a hypothetical addition to weigh against `useState` — it's already a live, established pattern in this exact codebase (`useWantedCardsQuery.ts`, ADR-007/009 in `docs/PROGRESS.md`), and it exists specifically to solve "fetch this, cache it, expose loading/error state" — precisely what the `role`/`status`/`fetchRole`/`ensureRole` apparatus below was reinventing by hand.
 
-The composable (`app/composables/useUserRole.ts`) exposes more than a role and a boolean:
+`app/composables/useUserRole.ts`, mirroring `useWantedCardsQuery.ts`'s shape exactly:
 
-- `role` — the raw value, `Ref<AppRole | null>`. **`null` here means "not fetched yet," a client-side state distinct from `get_user_role`'s own DB-level default of `'player'` for a user with no `user_roles` row** (§ above) — that default only kicks in once the RPC actually returns; before that, the composable's `role` is `null`, and treating it as `'player'` early would let ungated content flash before the real role loads.
-- `status` — `'idle' | 'loading' | 'ready' | 'error'`. Not a boolean: `'error'` is a distinct, meaningful state (network failure resolving the role is not the same as "still loading" and must not be treated as either "done" or "safe to treat as player").
-- `fetchRole()` — calls `get_user_role` via `supabase.rpc(...)`, unconditionally.
-- `ensureRole()` — idempotent: returns immediately if `status === 'ready'`, returns the in-flight `Promise` if already `'loading'`, otherwise calls `fetchRole()`. Idempotency needs the `Promise` itself kept somewhere both the plugin and the middleware can see, not just the status — kept as a plain module-level `let _pendingFetch: Promise<void> | null`, a deliberate choice between two imperfect options, not an oversight:
-  - A module-level `let` is a Node-process-wide variable, shared across every concurrent SSR request — not per-request like `useState`. **Quantified, not just asserted**: PauperWave has ~300 members, with a realistic peak of ~30 active in a single evening (confirmed by the user, 2026-08-10). At that rate the collision window (the ~100ms the `Promise` is non-null) overlapping two navigations lands around 1-in-several-million — negligible. Accepted as-is; revisit only if the concurrent-user count changes by orders of magnitude (e.g. this stops being one association's internal tool).
-  - `useState` would fix that, but trades it for a different problem: Nuxt serializes every `useState`'s value into the SSR payload to hydrate the client, and a `Promise` isn't serializable — `JSON.stringify` silently turns it into `undefined`. This only stays harmless if the `Promise` is *guaranteed* resolved (`pendingFetch === null`) by the time Nuxt serializes state, which depends on the plugin/middleware sequencing in §4 always awaiting it before render — a timing dependency, not a structural guarantee.
-  - The actual fix for both problems at once — request-scoped **and** not serialized — is attaching the `Promise` to `useNuxtApp()` instead of either a module `let` or `useState` (its per-request instance isn't serialized the way `useState` is, but the field itself would be an undocumented, uncast property — `(nuxtApp as any)._userRolePendingFetch` — that could silently break on a future Nuxt upgrade). Not worth it at ~30 concurrent users: a solution to a collision that essentially never happens here, at the cost of `as any` and one more layer of indirection.
-- `reset()` — clears `role`/`status`/`_pendingFetch`, called on logout.
-- `can(permission: Permission)` — looks up a role → permissions matrix (see §2). This is the primary way both middleware and components should ask "is this allowed," not comparisons like `role === 'admin'` scattered around.
-- `isAdmin`, `isOrganizer`, `isJudge`, `isStaff` — computed conveniences derived from `role`, for the common case for/against a role rather than a specific permission.
+```ts
+export const USER_ROLE_KEY = ['user-role']
+
+export function useUserRole() {
+  const supabase = useSupabaseClient()
+  return useQuery({
+    key: USER_ROLE_KEY,
+    query: async () => {
+      const user = useSupabaseUser()
+      const { data, error } = await supabase.rpc('get_user_role', { p_user_id: user.value!.id })
+      if (error) throw error
+      return data
+    }
+  })
+}
+```
+
+This retires almost the entire hand-rolled apparatus the first draft specified, because Colada's `useQuery` already provides it (confirmed against the installed package's own types, `node_modules/@pinia/colada/dist/index.d.mts`, not assumed):
+
+- `status: ShallowRef<'pending' | 'success' | 'error'>` — the idle/loading/ready/error state, for free. `'pending'` covers both "not fetched yet" and "fetching" (there's a separate `isLoading`/`asyncStatus` for the latter if that distinction is ever needed); `can()` and the middleware should treat anything other than `status === 'success'` as "not yet decided," same as the old `null`-means-unresolved rule — just expressed through Colada's status instead of a custom one.
+- `refresh(): Promise<DataState<...>>` — "ensures the current data is fresh; if stale, refetch, if not, return as is." This **is** `ensureRole()` — idempotent, awaitable, and its in-flight-request dedup is handled internally by the query cache. The entire multi-round debate earlier in this doc's history about `_pendingFetch` (module-level `let` vs. `useState` vs. `useNuxtApp()`) is moot: it was solving a problem a real query library already solves correctly as its core job. Nothing here needs a custom Promise-tracking variable.
+- `data`/`error` — the resolved role and any fetch error, both reactive.
+
+What's still genuinely custom, on top of the query:
+
+- `can(permission: Permission)` and `isAdmin`/`isOrganizer`/`isJudge`/`isStaff` — computed helpers reading `data.value`, same purpose as before, just sourced from a Colada query's `data` instead of a hand-rolled `role` ref.
+
+**Do not wrap this in a Pinia store (`defineStore`).** Nothing in this codebase does — every Colada-backed domain (`useWantedCardsQuery`/`useWantedCardsMutations`, and every other `use<Domain>Query.ts`) is a plain composable calling `useQuery`/`useMutation` directly, no store layer in between. A `useSessionStore` bundling user+role+profile together would be inconsistent with that convention for no benefit specific to this codebase: the "utente" part is already free via `useSupabaseUser()` (built into `@nuxtjs/supabase`), and "profilo" already has `useCurrentAssociate()` (not yet Colada-migrated, tracked separately in `docs/BACKLOG.md` P1 — a pre-existing, independent piece of work, not something to fold into this one). Three independent composables, combined at the call site where a component needs more than one, is the shape everything else in this app already uses.
+
+**New finding, not covered by any earlier round of this doc: persistence.** ADR-009 (`docs/PROGRESS.md`) — every `useQuery` in this project persists to `localStorage` by default via `PiniaColadaCachePersister`, registered with no `filter` in `colada.options.ts` (confirmed: the file has no `filter` option today, so nothing is currently excluded). A role is exactly the "sensitive, must not persist" case ADR-009 itself names as the reason the `filter` option exists — without an explicit exclusion, a role fetched for one user could sit in `localStorage` and be visible (even briefly, before `refresh()` resolves) to a different person who logs into the same browser/device afterwards. **`useUserRole`'s query must be excluded via `colada.options.ts`'s `filter`** before or when this composable is built, not treated as an afterthought.
 
 **Open question, not resolved yet: `user_roles` allows multiple rows per user.** The unique constraint is on `(user_id, role)`, not on `user_id` alone — a user can hold both `admin` and `organizer` simultaneously. `get_user_role(uuid)` returns a single scalar, so either it already picks one deterministically (e.g. an `ORDER BY` + `LIMIT 1` favoring the highest-privilege role — plausible, but unverified) or a multi-role user's effective permissions today are whatever that function happens to return, which may not be the union of both roles' permissions. `get_user_roles` (plural) is also confirmed live and looks like the actual answer to "give me all of this user's roles" — check what it does before building `can()` on the singular `get_user_role`. Deciding this after `can()` is built risks having to rewrite the permissions matrix from role-keyed to a role-set-keyed shape.
 
@@ -91,27 +111,18 @@ export {}
 
 Nuxt runs global middleware in filename alphabetical order, so `auth.global.ts` always runs before `authorization.global.ts` without extra configuration (`auth.` < `autho` — the `.` sorts before `o`). No manual ordering needed, but don't rely on that alone being obvious in six months — the alphabetical dependency is exactly why the two files are named this way, not `auth.global.ts` + `permissions.global.ts`.
 
-**`authorization.global.ts` must be self-sufficient.** It never assumes the role was already resolved by the plugin below — it calls `await ensureRole()` itself and only then calls `can()`. If `status` comes back `'error'`, it denies access (fail closed) rather than letting the user through or silently redirecting to login. A `null`/unresolved role must never reach `can()` — always `await ensureRole()` first.
+**`authorization.global.ts` must be self-sufficient.** It never assumes the role was already resolved elsewhere — it calls `await useUserRole().refresh()` itself and only then calls `can()`. If `status` comes back `'error'`, it denies access (fail closed) rather than letting the user through or silently redirecting to login. Anything other than `status === 'success'` must never reach `can()` — always `await refresh()` first.
 
-### 4. Initialization — a universal plugin, not `.client.ts`
+### 4. Cache invalidation on auth changes — a plugin, scope reduced by Colada
 
-`app/plugins/user-role.ts` (**no** `.client` suffix). Nuxt runs plugins during `createApp()`, before any middleware, on both server and client. This relies on `@nuxtjs/supabase`'s `useSupabaseClient()` actually being usable inside a universal plugin during SSR (reading the session from cookies server-side) — true on recent versions of the module, but **verify it first**, as the very first sub-step of implementing this plugin, before writing the rest of the composable around it: call `supabase.auth.getSession()` inside the plugin and log the result. Cheap to check, expensive to discover wrong after the composable/middleware are already built on top of it. A `.client.ts` plugin wouldn't exist during SSR, so the very first middleware run (during SSR) would see `role === null` with no way to distinguish "not checked yet" from "no role" — exactly the ambiguity `null`'s meaning above is trying to prevent. With a universal plugin:
+`app/plugins/user-role.ts`. With the query itself doing the fetch/cache/dedup work (§1), this plugin's job shrinks to one thing Colada doesn't know about on its own: **a login/logout doesn't change the query's key, so nothing tells the cache the previously-fetched role is now stale for a different user.** Subscribe to `supabase.auth.onAuthStateChange`:
 
-```
-plugin user-role.ts      → ensureRole() if a session exists
-auth.global.ts           → session check
-authorization.global.ts  → await ensureRole() (already ready, or awaits the in-flight Promise)
-render
-```
-
-the first HTML from the server is already correct for the role — no flash of the wrong UI, no post-hydration redirect. The plugin is a prefetch optimization, not a correctness requirement — layer 3's self-sufficiency is what actually guarantees correctness if the plugin is slow, errors, or (in some edge case) doesn't run.
-
-The plugin also owns cache invalidation, via `supabase.auth.onAuthStateChange`:
-
-- `SIGNED_OUT` → `reset()`
-- `SIGNED_IN` → `fetchRole()` (force a fresh fetch — a different user may have just logged into the same browser)
+- `SIGNED_OUT` → `queryCache.invalidateQueries({ key: USER_ROLE_KEY })` (same `invalidate()` shape `useWantedCardsMutations.ts` already uses after a write)
+- `SIGNED_IN` → same invalidation, forcing a fresh fetch — a different user may have just logged into the same browser
 - `TOKEN_REFRESHED` → no-op, a token refresh doesn't change the role
 - `USER_UPDATED` → not handled for now; only relevant if a flow lets a logged-in user's own role change mid-session, which doesn't exist yet
+
+**Whether this plugin needs to be universal (no `.client` suffix) is worth re-checking, not assumed from the first draft.** The earlier reasoning ("a `.client.ts` plugin doesn't exist during SSR, so the first SSR-time middleware run sees an unresolved role with no way to tell 'not checked' from 'no role'") assumed a hand-rolled fetch that only the plugin triggered. That's no longer true: `authorization.global.ts` calling `useUserRole().refresh()` itself (§3) already triggers Colada's fetch on its own, during SSR, without needing the plugin to have run first — middleware calling a composable is standard Nuxt (`auth.global.ts` already does this via `useSupabaseSession()`). `onAuthStateChange`'s subscription, on the other hand, reacts to a live browser-side event stream — there's no equivalent "state changing mid-request" during a stateless SSR request. If that reasoning holds, this plugin can likely be `.client.ts` after all, simpler than the original universal-plugin requirement; confirm during implementation rather than carrying the older assumption forward unquestioned.
 
 ### 5. In-page UI — `v-if="can(...)"`, unchanged from the first draft
 
@@ -136,12 +147,13 @@ Same route for staff and players, `v-if` inside it:
 
 | Decision | Choice |
 |---|---|
-| Role state | `useState`, with explicit `status` |
-| Pinia for role | No |
-| Initialization point | Universal plugin (no `.client`) |
+| Role state | Pinia Colada `useQuery` (`useUserRole.ts`), mirroring `useWantedCardsQuery.ts` |
+| Hand-rolled `useState`/`fetchRole`/`ensureRole`/pending-promise tracking | No — Colada's `status`/`refresh()` already do this |
+| Wrapping it in a Pinia store (`defineStore`) | No — not a pattern used anywhere else in this codebase |
+| Role query persistence | Must be excluded via `colada.options.ts`'s `filter` (ADR-009) — sensitive, shared-device risk otherwise |
 | Middleware | Two, separate: `auth.global` + `authorization.global` |
-| `null` role | Means "not yet resolved," never `'player'` |
-| Middleware on `null` | `await ensureRole()` — never lets `null` through |
+| Unresolved role (`status !== 'success'`) | Never treated as decided, in `can()` or anywhere else |
+| Middleware on unresolved role | `await refresh()` — never calls `can()` before that resolves |
 | `status === 'error'` | Deny access (fail closed), not a silent redirect |
 | Protected routes | `definePageMeta({ permission })`, no path allowlist |
 | Role-aware UI | `v-if="can(...)"` in components |
@@ -160,10 +172,11 @@ Same route for staff and players, `v-if` inside it:
 2. Confirm whether `public_read` was applied to `tournaments`/`tournament_standings`/`players` (audit §5.5) — changes what's already safe to read as a player vs. what still needs a BFF/RPC.
 3. Create `assign_role(uuid, app_role)` in Supabase (or document the existing mechanism, if promotion already happens some other way) — prerequisite for wiring `MembersList.vue`'s dropdown. Also resolve the multi-role open question above (§1) here, since it's the same function family (`get_user_role`/`get_user_roles`) — check what each actually returns before deciding what `assign_role` should allow (e.g. can one user hold two roles at once through this UI, or does assigning a new one replace the old).
 4. `app/utils/permissions.ts` — the `role → Permission[]` matrix and the `Permission` type. Written first because everything else (the composable's `can()`, `definePageMeta({ permission })`, the middleware) reads from it.
-5. `app/composables/useUserRole.ts` — `useState`-backed, `role`/`status`/`fetchRole`/`ensureRole`/`reset`/`can`/`isAdmin`/`isOrganizer`/`isJudge`/`isStaff`, plus a module-level `let` for the in-flight `Promise` backing `ensureRole()`'s idempotency (accepted trade-off, see §1 above — not `useState`, which isn't safe for unresolved `Promise` values across SSR serialization).
-6. `app/plugins/user-role.ts` (universal, no `.client`) — first verify `useSupabaseClient()`/session resolution actually works during SSR in a universal plugin (see §4 above), then the initial `ensureRole()` call plus the `onAuthStateChange` subscription (`SIGNED_OUT` → `reset`, `SIGNED_IN` → `fetchRole`).
-7. `app/types/nuxt.d.ts` — `PageMeta.permission` augmentation, so `definePageMeta({ permission: ... })` type-checks.
-8. `app/middleware/authorization.global.ts` — reads `to.meta.permission`, `await ensureRole()` then `can()`, redirect to `/403` on denial. `app/middleware/auth.global.ts` stays as-is (session check only); the alphabetical filename ordering (`auth.` before `autho`) is what makes it run first — don't reorder or rename either file without re-checking that.
-9. `/403` page — new, distinct from `/login`.
-10. Wire `can()`/`isStaff` into `app/layouts/default.vue`'s `mainNavGroups` so a player's sidebar never shows sections they can't reach, and into the wanted-cards "Elimina" button (`docs/TODO.md`) as the first concrete `v-if="can(...)"` win, and into `MembersList.vue`'s promotion dropdown (step 3).
-11. Go route by route deciding `permission` requirements and in-page `v-if` adaptation — `/standings/*` (already shared per ADR-011) first since no write path is involved, `/tournaments`/`/leagues`/`/events` after (needs the registration write decision — Postgres function vs. BFF — settled per the worked example above).
+5. `colada.options.ts` — add the `filter` exclusion for the role query key *before or alongside* step 6, not after: easy to forget once the composable works and the persistence gap stops being visible in normal testing.
+6. `app/composables/useUserRole.ts` — `useQuery`-backed (see §1), `can`/`isAdmin`/`isOrganizer`/`isJudge`/`isStaff` on top of it. Resolve the multi-role open question (§1) before finalizing `can()`'s shape.
+7. `app/plugins/user-role.ts` — the `onAuthStateChange` → `queryCache.invalidateQueries` subscription (§4). Decide `.client.ts` vs. universal during this step, per the note in §4, rather than assuming either.
+8. `app/types/nuxt.d.ts` — `PageMeta.permission` augmentation, so `definePageMeta({ permission: ... })` type-checks.
+9. `app/middleware/authorization.global.ts` — reads `to.meta.permission`, `await useUserRole().refresh()` then `can()`, redirect to `/403` on denial. `app/middleware/auth.global.ts` stays as-is (session check only); the alphabetical filename ordering (`auth.` before `autho`) is what makes it run first — don't reorder or rename either file without re-checking that.
+10. `/403` page — new, distinct from `/login`.
+11. Wire `can()`/`isStaff` into `app/layouts/default.vue`'s `mainNavGroups` so a player's sidebar never shows sections they can't reach, and into the wanted-cards "Elimina" button (`docs/TODO.md`) as the first concrete `v-if="can(...)"` win, and into `MembersList.vue`'s promotion dropdown (step 3).
+12. Go route by route deciding `permission` requirements and in-page `v-if` adaptation — `/standings/*` (already shared per ADR-011) first since no write path is involved, `/tournaments`/`/leagues`/`/events` after (needs the registration write decision — Postgres function vs. BFF — settled per the worked example above).
