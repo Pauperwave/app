@@ -33,6 +33,27 @@ Three layers, kept intentionally separate rather than collapsed into one status 
 
 The view uses `security_invoker = true`, so its join to `pauperwave_associate_renewals` is filtered by the *querying user's* RLS, not a superuser's — see the open verification item in `docs/TODO.md`.
 
+## Associate vs. player vs. app role
+
+Three distinct concepts, easy to conflate because two of them share the word "player" (added 2026-08-10, alongside `docs/architecture/permissions.md`):
+
+- **`pauperwave_associates`** — membership record. Personal/administrative data (tax code, address, membership status, consents). Answers "is this person a paying member of the association" — a legal/business relationship, independent of the app. An associate can exist without ever logging in (e.g. registered by an admin by hand).
+- **`players`** — gameplay identity. Nickname, decks, tournament registrations, standings. Answers "who is this person as a competitor." Always linked to exactly one associate (`players.associate_uuid`, `not null`, unique — a real 1:1 FK, confirmed in `shared/utils/types/database.ts`), but only linked to a login *if and when* they authenticate (`players.user_id`, nullable, set on first sign-in — same pattern noted for `pauperwave_associates` in `useCurrentAssociate.ts`'s own comment).
+- **`app_role` (`admin | organizer | player`)** — authorization level. Answers "what can this logged-in person do in the app" (see `docs/architecture/permissions.md`). Lives in `user_roles`, keyed by `auth.users.id` — i.e. by *who is logged in*, not by who plays or who is a member.
+
+These three are independent axes, not a hierarchy of one concept:
+
+```
+auth.users (login)
+  ├── user_roles.user_id  → app_role (admin | organizer | player)   ← AUTHORIZATION
+  └── players.user_id     → players row                              ← GAMEPLAY IDENTITY
+                                └── players.associate_uuid → pauperwave_associates  ← MEMBERSHIP
+```
+
+An `admin` (elevated authorization) is very likely *also* a `players` row (they play in tournaments too) — no contradiction, "what can this person administer" and "how do they compete" are separate questions. Conversely, `app_role = 'player'` (the baseline/lowest authorization tier, the default per `get_user_role`'s `COALESCE`) says nothing by itself about whether that user has a `players` row at all.
+
+**Open question, not verified: does every associate get a `players` row, or only those who actually compete?** No migration in this repo's tracked history creates `players` rows (same pre-existing-schema situation as `user_roles`, adopted retroactively — see "Migrations" above), and no application code in `app/`/`server/` inserts into `players` either — nothing auto-provisions one on associate approval or on first login, as far as this codebase shows. Needs a live-data check (row counts, or associates with no matching `players.associate_uuid`) before assuming either "every associate has one" or "only competitors do."
+
 ## RLS policies (as of 2026-08-05, wanted_cards row added 2026-08-08)
 
 | Table | Policy | Role | Effect |
