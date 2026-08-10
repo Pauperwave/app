@@ -64,12 +64,15 @@ const PERMISSION_LEVEL = {
   'register-tournament': 'player',
   'manage-tournaments': 'organizer',
   'manage-event-payments': 'organizer',
+  'reset-pairing': 'organizer', // fix a mis-entered table's results — routine correction, not the same class as cancel-round
   'send-payment-receipts': 'admin', // event/tournament AND membership-fee receipts — organizer can manage the payment, not email the receipt
   'manage-members': 'admin',
   'manage-membership-fees': 'admin',
   'manage-all-commander-decks': 'admin',
   'delete-tournaments': 'super_admin', // permanent deletion only — create/edit stays 'organizer' above
-  'cancel-round': 'super_admin', // ordinary round management stays 'organizer', via 'manage-tournaments'
+  'cancel-round': 'super_admin', // ordinary round management stays 'organizer', via 'manage-tournaments'; also covers league's "turn back to registration" case
+  'delete-commander-deck': 'super_admin', // deleting someone else's deck — distinct from 'manage-all-commander-decks' (edit/manage, admin)
+  'delete-ruleset': 'super_admin',
   'manage-roles': 'super_admin'
   // ... full list tracked in docs/architecture/permissions.md, kept in sync
 } as const satisfies Record<Permission, AppRole>
