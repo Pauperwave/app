@@ -162,12 +162,19 @@ const columns: TableColumn<PermissionRow>[] = [
         </div>
       </template>
 
-      <UTable
-        :data="rows"
-        :columns="columns"
-        class="permissions-table w-full"
-        :ui="{ td: 'py-1.5 text-sm', th: 'py-2' }"
-      />
+      <!-- Wrapping div carries the scoped class, not UTable directly: a class prop
+           passed straight to a child component still lands on its root element
+           (confirmed), but nesting it like StandingsMatrixTable.vue's proven
+           working pattern removes any doubt about scoped-attribute propagation
+           to a child component's root instead of an ordinary element. -->
+      <div class="permissions-table">
+        <UTable
+          :data="rows"
+          :columns="columns"
+          class="w-full"
+          :ui="{ td: 'py-1.5 px-3 text-sm', th: 'py-1.5 px-3' }"
+        />
+      </div>
     </UPageCard>
   </div>
 </template>
