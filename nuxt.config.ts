@@ -32,8 +32,8 @@ export default defineNuxtConfig({
     }
   ],
   imports: {
-    // recursively scans all subfolders (e.g. ~/composables/theme)
-    dirs: ['~/composables/**']
+    // recursively scans all subfolders (e.g. ~/composables/theme, ~/utils/status)
+    dirs: ['~/composables/**', '~/utils/**']
   },
   devtools: {
     enabled: true

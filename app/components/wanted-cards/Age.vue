@@ -1,6 +1,6 @@
 <!-- app\components\wanted-cards\Age.vue -->
 <script setup lang="ts">
-import type { WantedCardAgeColor } from '~/utils/wantedCardAge'
+import type { WantedCardAgeColor } from '~/utils/wantedCards/wantedCardAge'
 
 const { date } = defineProps<{ date: string }>()
 

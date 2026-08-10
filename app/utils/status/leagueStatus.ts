@@ -1,4 +1,4 @@
-// app\utils\leagueStatus.ts
+// app\utils\status\leagueStatus.ts
 import type { LeagueStatus } from '~/types'
 
 export const LEAGUE_STATUSES: LeagueStatus[] = ['scheduled', 'ongoing', 'completed']

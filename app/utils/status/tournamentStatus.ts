@@ -1,4 +1,4 @@
-// app\utils\tournamentStatus.ts
+// app\utils\status\tournamentStatus.ts
 import type { TournamentStatus } from '~/types'
 
 export const TOURNAMENT_STATUSES: TournamentStatus[] = ['scheduled', 'ongoing', 'completed', 'canceled']
