@@ -108,13 +108,13 @@
       "createdAt": "Data di creazione",
       "updatedAt": "Data di aggiornamento",
       "updatedBy": "Aggiornato da",
-      "membershipRequestStatus": "Stato richiesta",
-      "membershipStatus": "Stato tesseramento",
+      "membershipRequestStatus": "Stato",
+      "membershipStatus": "Tesseramento",
       "requestDate": "Data richiesta",
-      "paymentDate": "Data pagamento",
+      "paymentDate": "Pagamento",
       "associationDate": "Data di associazione",
       "associateType": "Tipo di associato",
-      "pauperwaveAssociateNumber": "no. tessera PauperWave",
+      "pauperwaveAssociateNumber": "Tessera",
       "consentData": "Consenso dati",
       "consentSocial": "Consenso social",
       "hasReadStatute": "Ha letto lo statuto",
@@ -123,13 +123,13 @@
       "lastName": "Cognome",
       "emailAddress": "Email",
       "phoneNumber": "Cellulare",
-      "taxCode": "Codice fiscale",
+      "taxCode": "Codice Fiscale",
       "bornDate": "Data di nascita",
       "bornLocation": "Luogo di nascita",
       "bornProvince": "Provincia di nascita",
       "bornState": "Nazione di nascita",
       "residencyAddress": "Indirizzo",
-      "residencyHouseNumber": "Numero civico",
+      "residencyHouseNumber": "Civico",
       "residencyCity": "Città",
       "residencyProvince": "Provincia",
       "residencyCap": "CAP",
@@ -227,11 +227,14 @@
       "cancel": "Annulla",
       "create": "Crea"
     },
-    "deleteModal": {
-      "title": "Elimina {count} associato | Elimina {count} associati",
-      "description": "Sei sicuro? Questa azione non può essere annullata.",
+    "approveModal": {
+      "title": "Approva {count} richiesta | Approva {count} richieste",
+      "description": "Confermi l'approvazione della richiesta di tesseramento per i soci selezionati?",
       "cancel": "Annulla",
-      "delete": "Elimina"
+      "approve": "Approva",
+      "successToastTitle": "Richieste approvate",
+      "successToastDescription": "Tesseramento approvato per {count} associato | Tesseramento approvato per {count} associati",
+      "errorToastTitle": "Approvazione fallita"
     }
   },
   "transaction": {
