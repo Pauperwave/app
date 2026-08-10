@@ -105,6 +105,26 @@ const legend = computed(() => (['full', 'partial'] as const).map(access => ({
   label: t(`settings.permissions.access.${access}`)
 })))
 
+// Matches an in-app route mentioned inline in a feature description (e.g. the
+// "(/associates)" in "Gestire l'anagrafica soci (/associates)") so it renders in
+// the same font-mono style domains.vue already uses for routes — but only a
+// path, not any "/" in running Italian text: the lookbehind requires the slash to
+// start right after whitespace, an opening paren, or the start of the string, so
+// e.g. "Assegnare/modificare" (a "/" mid-word) is left as plain text.
+const PATH_PATTERN = /(?<=^|[\s(])\/[a-zA-Z][\w-]*(?:\/[\w-]+)*/g
+
+function renderFeature(text: string) {
+  const parts: (string | ReturnType<typeof h>)[] = []
+  let lastIndex = 0
+  for (const match of text.matchAll(PATH_PATTERN)) {
+    if (match.index! > lastIndex) parts.push(text.slice(lastIndex, match.index))
+    parts.push(h('code', { class: 'font-mono' }, match[0]))
+    lastIndex = match.index! + match[0].length
+  }
+  if (lastIndex < text.length) parts.push(text.slice(lastIndex))
+  return parts
+}
+
 function roleColumn(role: RoleKey): TableColumn<PermissionRow> {
   return {
     accessorKey: role,
@@ -129,7 +149,8 @@ const columns: TableColumn<PermissionRow>[] = [
     // table below stretches this column to fill leftover space with blank padding
     // instead of the icon columns doing that. Deliberately no whitespace-normal
     // wrapping either, unlike domains.vue: every row stays on one line.
-    meta: { class: { th: 'whitespace-nowrap w-px', td: 'whitespace-nowrap w-px' } }
+    meta: { class: { th: 'whitespace-nowrap w-px', td: 'whitespace-nowrap w-px' } },
+    cell: ({ row }) => renderFeature(row.original.feature)
   },
   roleColumn('player'),
   roleColumn('organizer'),
@@ -162,28 +183,24 @@ const columns: TableColumn<PermissionRow>[] = [
         </div>
       </template>
 
-      <!-- Wrapping div carries the scoped class, not UTable directly: a class prop
-           passed straight to a child component still lands on its root element
-           (confirmed), but nesting it like StandingsMatrixTable.vue's proven
-           working pattern removes any doubt about scoped-attribute propagation
-           to a child component's root instead of an ordinary element. -->
-      <div class="permissions-table">
-        <UTable
-          :data="rows"
-          :columns="columns"
-          class="w-full"
-          :ui="{ td: 'py-1.5 px-3 text-sm', th: 'py-1.5 px-3' }"
-        />
-      </div>
+      <UTable
+        :data="rows"
+        :columns="columns"
+        class="w-full"
+        :ui="{
+          td: 'py-1.5 px-3 text-sm group-hover:bg-(--ui-bg-elevated)',
+          th: 'py-1.5 px-3',
+          // Row hover via the public `ui` slot API instead of a scoped :deep()
+          // selector: no wrapper div needed, and it doesn't assume UTable's
+          // internal DOM shape (tbody > tr > td) stays the same across versions —
+          // `tr`/`td` here are UTable's own documented slot names, not a guess.
+          // Standard Tailwind group/group-hover, not an arbitrary variant: `tr`
+          // marked as the group, `td` reacts to its hover state. Plain :hover, no
+          // transition — same reasoning as StandingsMatrixTable.vue for why that
+          // stays cheap at this table size.
+          tr: 'group divide-x divide-default'
+        }"
+      />
     </UPageCard>
   </div>
 </template>
-
-<style scoped>
-/* Row hover, same treatment as StandingsMatrixTable.vue: no transition — with 22
-   rows × 5 columns it's not the perf concern the ~1300-cell matrix tables were,
-   but a plain :hover is still free where a transition measurably wasn't there. */
-.permissions-table :deep(tbody tr:hover > td) {
-  background-color: var(--ui-bg-elevated);
-}
-</style>
