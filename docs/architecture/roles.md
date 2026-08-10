@@ -2,13 +2,13 @@
 
 <!-- docs/architecture/roles.md -->
 
-How to give players a different (restricted, adapted) view of the same app the admin/organizer/judge staff uses, instead of a separate player app or a separate route tree. Written 2026-08-10, starting point requested by the user: `BACKUP CODICE APP/docs` (`1-roles.md`, `3-RLS-policies.md`), cross-checked against `docs/audits/2026-08-09-backup-docs-vs-live-schema.md` and the live generated types (`shared/utils/types/database.ts`) rather than trusted as-is — those backup docs are a design draft, not a description of what was built (see the audit's headline).
+How to give players a different (restricted, adapted) view of the same app the admin/organizer staff uses, instead of a separate player app or a separate route tree. Written 2026-08-10, starting point requested by the user: `BACKUP CODICE APP/docs` (`1-roles.md`, `3-RLS-policies.md`), cross-checked against `docs/audits/2026-08-09-backup-docs-vs-live-schema.md` and the live generated types (`shared/utils/types/database.ts`) rather than trusted as-is — those backup docs are a design draft, not a description of what was built (see the audit's headline).
 
 ## What's actually live today
 
 Confirmed via the audit + `shared/utils/types/database.ts` (generated from the real DB, never hand-edited):
 
-- `app_role` enum: `admin | organizer | judge | player`, matches the backup docs exactly.
+- `app_role` DB enum: `admin | organizer | judge | player`, matches the backup docs exactly. **The application-level role model uses only three of these — `admin | organizer | player`** (decided 2026-08-10, see the hierarchy note below). **`judge` should come out of the enum itself, not just go unused in app code** (confirmed 2026-08-10) — otherwise it's still a selectable, type-valid value that `assign_role`/`MembersList.vue`'s dropdown could accidentally set, silently outside the 3-tier hierarchy the rest of this doc assumes. This is a real migration, not a trivial rename: Postgres has no `ALTER TYPE ... DROP VALUE` — removing a value means creating a new enum type without it, repointing every column/function typed against the old one, then dropping the old type. Do this only after confirming no row anywhere currently has `role = 'judge'` (check `user_roles`, and anywhere else `app_role` is used as a column type) — if one exists, decide what it becomes first (`organizer`, per the hierarchy) before the type migration, not after.
 - `user_roles` table (`user_id → auth.users(id)`, `role`, unique per `(user_id, role)`) exists.
 - RPCs confirmed live: `has_management_permissions(uuid)`, `is_admin(uuid)`, `get_user_role(uuid)`, `get_user_roles`, `has_role`, `is_judge`, `is_organizer`.
 - `get_user_role(uuid)` defaults to `'player'` when a user has no row in `user_roles` — no separate "no role" state to handle.
@@ -50,58 +50,79 @@ The three-layer shape (resolve role → gate routes → adapt in-page UI) held u
 
 **Revised 2026-08-10.** The earlier "`useState`, not Pinia" framing was answering the wrong question. `@pinia/colada` isn't a hypothetical addition to weigh against `useState` — it's already a live, established pattern in this exact codebase (`useWantedCardsQuery.ts`, ADR-007/009 in `docs/PROGRESS.md`), and it exists specifically to solve "fetch this, cache it, expose loading/error state" — precisely what the `role`/`status`/`fetchRole`/`ensureRole` apparatus below was reinventing by hand.
 
-`app/composables/useUserRole.ts`, mirroring `useWantedCardsQuery.ts`'s shape exactly. **Built on `get_user_roles` (plural), not `get_user_role`** — direction set 2026-08-10 (see the multi-role note below: preserving which roles a user actually holds, rather than collapsing to one early, is the preferred default unless verification shows a reason not to):
+**Domain rule, confirmed 2026-08-10: a user has exactly one effective role.** This app's roles are a strict hierarchy, not independent capabilities — `admin` ⊇ `organizer` ⊇ `player`, each level a strict superset of the one below. (`judge` was considered and dropped from the app-level model the same day — see the DB-enum note above.) This settles the multi-role question from earlier drafts of this doc: build on `get_user_role` (singular) after all, not `get_user_roles`, and express `can()` as a numeric level comparison, not a union over a role set:
 
 ```ts
-export const USER_ROLES_KEY = ['user-roles']
+const ROLE_LEVEL = { player: 0, organizer: 1, admin: 2 } as const satisfies Record<AppRole, number>
+
+const PERMISSION_LEVEL = {
+  'register-tournament': 'player',
+  'manage-tournaments': 'organizer',
+  'manage-members': 'admin'
+  // ...
+} as const satisfies Record<Permission, AppRole>
+
+function can(role: AppRole | undefined, permission: Permission): boolean {
+  if (!role) return false
+  return ROLE_LEVEL[role] >= ROLE_LEVEL[PERMISSION_LEVEL[permission]]
+}
+```
+
+This is a smaller permissions matrix than the earlier `role → Permission[]` shape: each permission declares the *minimum* role it needs, once, instead of every role above it having to re-list it. `app/utils/permissions.ts` (§2) becomes `ROLE_LEVEL` + `PERMISSION_LEVEL`, not a `Record<AppRole, Permission[]>`.
+
+`app/composables/useUserRole.ts`, mirroring `useWantedCardsQuery.ts`'s shape:
+
+```ts
+export const USER_ROLE_KEY = ['user-role']
 
 export function useUserRole() {
   const supabase = useSupabaseClient()
   const user = useSupabaseUser()
   return useQuery({
-    key: USER_ROLES_KEY,
+    key: USER_ROLE_KEY,
     enabled: () => !!user.value, // don't fire the RPC with no session to resolve
     query: async () => {
-      const { data, error } = await supabase.rpc('get_user_roles', { p_user_id: user.value!.id })
+      const { data, error } = await supabase.rpc('get_user_role', { p_user_id: user.value!.id })
       if (error) throw error
-      return data // AppRole[] — exact shape pending verification, see below
+      return data // AppRole, defaults to 'player' at the DB level (COALESCE, confirmed above)
     }
   })
 }
 ```
 
-`can()` becomes a union over whatever roles are held, not a single-role lookup:
-
-```ts
-function can(roles: AppRole[] | undefined, permission: Permission): boolean {
-  return (roles ?? []).some(role => permissions[role]?.includes(permission))
-}
-```
-
-An admin who is *also* an organizer gets the union of both roles' permissions this way, rather than whichever one `get_user_role`'s internal tie-break happened to prefer.
-
 This retires almost the entire hand-rolled apparatus the first draft specified, because Colada's `useQuery` already provides it (confirmed against the installed package's own types, `node_modules/@pinia/colada/dist/index.d.mts`, not assumed):
 
 - `status: ShallowRef<'pending' | 'success' | 'error'>` — the idle/loading/ready/error state, for free. `'pending'` covers both "not fetched yet" and "fetching"; there's a *separate* `asyncStatus: 'idle' | 'loading'` for the loading-vs-idle distinction specifically — **`asyncStatus` cannot be `'error'`, only `status` can** (verified against the type declarations; a check like `asyncStatus === 'error'` would be dead code, always false). `can()` and the middleware should treat anything other than `status === 'success'` as "not yet decided," same as the old `null`-means-unresolved rule — just expressed through Colada's status instead of a custom one.
 - `refresh(): Promise<DataState<...>>` — "ensures the current data is fresh; if stale, refetch, if not, return as is." This **is** `ensureRole()` — idempotent, awaitable, and its in-flight-request dedup is handled internally by the query cache. The entire multi-round debate earlier in this doc's history about `_pendingFetch` (module-level `let` vs. `useState` vs. `useNuxtApp()`) is moot: it was solving a problem a real query library already solves correctly as its core job. Nothing here needs a custom Promise-tracking variable.
-- `data`/`error` — the resolved roles (`AppRole[]`, see the multi-role note below) and any fetch error, both reactive.
+- `data`/`error` — the resolved role and any fetch error, both reactive.
 
 **There is no `reset()` on a query's return value** (checked: absent from `UseQueryReturn` in the installed types). Invalidating/clearing a query on logout goes through the query cache, not a method on the query object — see §4.
 
-**A plain composable calling `useQuery` is callable from middleware, same as a store would be — no store is needed for that reason.** `useQuery`'s internal cleanup is gated behind `if (getCurrentScope())` (confirmed in `@pinia/colada`'s source, `dist/index.mjs`): it *skips* the component-scope-bound cleanup when called somewhere without an active Vue effect scope — global middleware, like a plugin — rather than erroring. The query's cache is keyed globally (by `USER_ROLES_KEY`), not bound to whichever call site first created it, so a component and `authorization.global.ts` calling `useUserRole()` read/share the exact same cached entry either way. `auth.global.ts` already calls a composable (`useSupabaseSession()`) directly from middleware today — this is the same shape, not a new capability a store would be uniquely providing.
+**A plain composable calling `useQuery` is callable from middleware, same as a store would be — no store is needed for that reason.** `useQuery`'s internal cleanup is gated behind `if (getCurrentScope())` (confirmed in `@pinia/colada`'s source, `dist/index.mjs`): it *skips* the component-scope-bound cleanup when called somewhere without an active Vue effect scope — global middleware, like a plugin — rather than erroring. The query's cache is keyed globally (by `USER_ROLE_KEY`), not bound to whichever call site first created it, so a component and `authorization.global.ts` calling `useUserRole()` read/share the exact same cached entry either way. `auth.global.ts` already calls a composable (`useSupabaseSession()`) directly from middleware today — this is the same shape, not a new capability a store would be uniquely providing.
 
 What's still genuinely custom, on top of the query:
 
-- `can(permission: Permission)` (union over `data.value`, per the code above) and `isAdmin`/`isOrganizer`/`isJudge`/`isStaff` — `data.value?.includes('admin')` and so on, computed helpers reading the roles array instead of a hand-rolled single `role` ref.
+- `can(role, permission)` (level comparison, per the code above) and `isAdmin`/`isOrganizer`/`isStaff` — `data.value === 'admin'`, `data.value === 'organizer'`, `data.value !== 'player'` respectively, computed helpers for the common coarse checks.
 
 **Do not wrap this in a Pinia store (`defineStore`).** Nothing in this codebase does — every Colada-backed domain (`useWantedCardsQuery`/`useWantedCardsMutations`, and every other `use<Domain>Query.ts`) is a plain composable calling `useQuery`/`useMutation` directly, no store layer in between. A `useSessionStore` bundling user+role+profile together would be inconsistent with that convention for no benefit specific to this codebase: the "utente" part is already free via `useSupabaseUser()` (built into `@nuxtjs/supabase`), and "profilo" already has `useCurrentAssociate()` (not yet Colada-migrated, tracked separately in `docs/BACKLOG.md` P1 — a pre-existing, independent piece of work, not something to fold into this one). Three independent composables, combined at the call site where a component needs more than one, is the shape everything else in this app already uses. **The specific justification "a store is needed so middleware can read the query" doesn't hold up** — see the `getCurrentScope()` note below: a plain composable is equally callable from middleware.
 
 **New finding, not covered by any earlier round of this doc: persistence.** ADR-009 (`docs/PROGRESS.md`) — every `useQuery` in this project persists to `localStorage` by default via `PiniaColadaCachePersister`, registered with no `filter` in `colada.options.ts` (confirmed: the file has no `filter` option today, so nothing is currently excluded). A role is exactly the "sensitive, must not persist" case ADR-009 itself names as the reason the `filter` option exists — without an explicit exclusion, a role fetched for one user could sit in `localStorage` and be visible (even briefly, before `refresh()` resolves) to a different person who logs into the same browser/device afterwards. **`useUserRole`'s query must be excluded via `colada.options.ts`'s `filter` strictly before this composable is built** (confirmed 2026-08-10, not merely "at the same time") — see step 5 in the build order below.
 
-**`user_roles` allows multiple rows per user — direction: don't collapse it, keep the full set.** The unique constraint is on `(user_id, role)`, not on `user_id` alone — a user can hold both `admin` and `organizer` simultaneously. `get_user_role(uuid)` (singular) returns one scalar, silently discarding that information however it resolves ties; **preference set 2026-08-10: don't lose it** — build on `get_user_roles` (plural, confirmed live) and let `can()` union permissions across every role held, per the code above. Two things still need confirming before this is final, not assumed:
+**`user_roles`'s schema still allows multiple rows per user — the app-level single-role rule isn't enforced by the database yet.** The unique constraint is on `(user_id, role)`, not on `user_id` alone. Given the confirmed domain rule above, this is a real gap, the same shape as the P1 `pauperwave_associates` RLS issue elsewhere in this doc: an invariant the app assumes but Postgres doesn't actually guarantee. Tighten it as part of this work, not left for later:
 
-- **What `get_user_roles` actually returns** — exact return shape (array of the `app_role` enum? rows with extra columns?) and its parameter signature, matched against `get_user_role`'s `p_user_id` convention.
-- **What it returns for a user with zero rows in `user_roles`.** `get_user_role` explicitly `COALESCE`s to `'player'` for this case (§ above) — it's unverified whether `get_user_roles` does the plural equivalent (returns `['player']`) or returns an empty array, which would need `can()`/the permissions matrix to treat `[]` as implicitly meaning "player," not just "no permissions at all."
+- Check for existing users with more than one row in `user_roles` before adding any constraint (none expected under the new 3-role model, but confirm rather than assume).
+- Change the constraint from `UNIQUE(user_id, role)` to `UNIQUE(user_id)`, so the database itself rejects a second role row for the same user instead of relying on `assign_role`/application code to remember the rule.
+
+**Bootstrap data for `assign_role` (step 3 below), recorded 2026-08-10 so it isn't lost before the mechanism exists:**
+
+| Person | Role |
+|---|---|
+| Emanuele Nardi | `admin` |
+| Marco Cazzola | `organizer` |
+| Lorenzo Castelli | `organizer` |
+| Nicola Cordeschi | `organizer` |
+
+Everyone else defaults to `player` (no row needed, per `get_user_role`'s `COALESCE`).
 
 ### 2. Route protection — `permission`, not a path allowlist
 
@@ -111,7 +132,7 @@ Reject the path-allowlist idea from the first draft of this doc. Instead, each p
 definePageMeta({ permission: 'manage-members' })
 ```
 
-and a single **permissions matrix** (e.g. `app/utils/permissions.ts`) is the one place that maps `role → Permission[]`. Adding or renaming a route never touches the middleware; deciding "can a judge do X" is a one-line change in the matrix, not a search for scattered `role === 'judge'` checks. Requires augmenting Nuxt's `PageMeta` type so `permission` type-checks:
+and a single **permissions matrix** (`app/utils/permissions.ts`, `ROLE_LEVEL` + `PERMISSION_LEVEL`, per §1) is the one place that decides "who can do X." Adding or renaming a route never touches the middleware; changing which role a permission requires is a one-line change in `PERMISSION_LEVEL`, not a search for scattered `role === 'organizer'` checks. Requires augmenting Nuxt's `PageMeta` type so `permission` type-checks:
 
 ```ts
 // app/types/nuxt.d.ts
@@ -169,7 +190,9 @@ Same route for staff and players, `v-if` inside it:
 | Hand-rolled `useState`/`fetchRole`/`ensureRole`/pending-promise tracking | No — Colada's `status`/`refresh()` already do this |
 | Wrapping it in a Pinia store (`defineStore`) | No — not a pattern used anywhere else in this codebase |
 | Role query persistence | Must be excluded via `colada.options.ts`'s `filter` (ADR-009), strictly before the composable is built — sensitive, shared-device risk otherwise |
-| Multi-role users | Keep the full set (`get_user_roles`, not singular `get_user_role`); `can()` unions permissions across all held roles — exact return shape/empty-array behavior still to verify |
+| Roles per user | Exactly one, hierarchical (`admin` ⊇ `organizer` ⊇ `player`) — confirmed 2026-08-10, dropped `judge` and the earlier multi-role/union design |
+| `can()` | Numeric level comparison (`ROLE_LEVEL[role] >= ROLE_LEVEL[PERMISSION_LEVEL[permission]]`), not a per-role permission list |
+| `user_roles`/`app_role` schema | Both need tightening to match: `UNIQUE(user_id)` instead of `UNIQUE(user_id, role)`, and `judge` removed from the `app_role` enum (real type migration, not a rename) |
 | Middleware | Two, separate: `auth.global` + `authorization.global` |
 | Unresolved role (`status !== 'success'`) | Never treated as decided, in `can()` or anywhere else |
 | Middleware on unresolved role | `await refresh()` — never calls `can()` before that resolves |
@@ -189,13 +212,14 @@ Same route for staff and players, `v-if` inside it:
 
 1. Decide and resolve the `pauperwave_associates` P1 policy (`docs/BACKLOG.md`) — not a hard blocker for starting the steps below, but "player can't see other members' PII" stays false until it's fixed.
 2. Confirm whether `public_read` was applied to `tournaments`/`tournament_standings`/`players` (audit §5.5) — changes what's already safe to read as a player vs. what still needs a BFF/RPC.
-3. Create `assign_role(uuid, app_role)` in Supabase (or document the existing mechanism, if promotion already happens some other way) — prerequisite for wiring `MembersList.vue`'s dropdown. Verify `get_user_roles`'s exact return shape and its empty-rows behavior here too (§1) — same function family, and `assign_role`'s own semantics depend on the answer (e.g. can one user hold two roles at once through this UI, or does assigning a new one replace the old).
-4. `app/utils/permissions.ts` — the `role → Permission[]` matrix and the `Permission` type. Written first because everything else (the composable's `can()`, `definePageMeta({ permission })`, the middleware) reads from it.
-5. `colada.options.ts` — add the `filter` exclusion for the role query key. **Mandatory, strictly before step 6** (confirmed 2026-08-10) — not "alongside," not "whenever it's convenient": the risk this closes (a stale/wrong role sitting in `localStorage` on a shared device) exists the moment `useUserRole()` starts calling `useQuery`, and the gap stops being visible in normal testing once the composable works, which is exactly when it'd stop getting fixed.
-6. `app/composables/useUserRole.ts` — `useQuery`-backed on `get_user_roles` (see §1), `can`/`isAdmin`/`isOrganizer`/`isJudge`/`isStaff` on top of it.
-7. `app/plugins/user-role.ts` — the `onAuthStateChange` → `queryCache.invalidateQueries` subscription (§4). Decide `.client.ts` vs. universal during this step, per the note in §4, rather than assuming either.
-8. `app/types/nuxt.d.ts` — `PageMeta.permission` augmentation, so `definePageMeta({ permission: ... })` type-checks.
-9. `app/middleware/authorization.global.ts` — reads `to.meta.permission`, `await useUserRole().refresh()` then `can()`, redirect to `/403` on denial. `app/middleware/auth.global.ts` stays as-is (session check only); the alphabetical filename ordering (`auth.` before `autho`) is what makes it run first — don't reorder or rename either file without re-checking that.
-10. `/403` page — new, distinct from `/login`.
-11. Wire `can()`/`isStaff` into `app/layouts/default.vue`'s `mainNavGroups` so a player's sidebar never shows sections they can't reach, and into the wanted-cards "Elimina" button (`docs/TODO.md`) as the first concrete `v-if="can(...)"` win, and into `MembersList.vue`'s promotion dropdown (step 3).
-12. Go route by route deciding `permission` requirements and in-page `v-if` adaptation — `/standings/*` (already shared per ADR-011) first since no write path is involved, `/tournaments`/`/leagues`/`/events` after (needs the registration write decision — Postgres function vs. BFF — settled per the worked example above).
+3. Create `assign_role(uuid, app_role)` in Supabase (or document the existing mechanism, if promotion already happens some other way) — prerequisite for wiring `MembersList.vue`'s dropdown.
+4. DB migration for the 3-role model, confirmed 2026-08-10 (§1): remove `judge` from the `app_role` enum (type recreation, after confirming no existing row uses it), tighten `user_roles` from `UNIQUE(user_id, role)` to `UNIQUE(user_id)`, and apply the bootstrap role assignments (Emanuele Nardi → `admin`; Marco Cazzola, Lorenzo Castelli, Nicola Cordeschi → `organizer`) — via `assign_role` from step 3, or by hand via SQL editor if that's not built yet.
+5. `app/utils/permissions.ts` — `ROLE_LEVEL` + `PERMISSION_LEVEL` (§1) and the `Permission` type. Written first because everything else (the composable's `can()`, `definePageMeta({ permission })`, the middleware) reads from it.
+6. `colada.options.ts` — add the `filter` exclusion for the role query key. **Mandatory, strictly before step 7** (confirmed 2026-08-10) — not "alongside," not "whenever it's convenient": the risk this closes (a stale/wrong role sitting in `localStorage` on a shared device) exists the moment `useUserRole()` starts calling `useQuery`, and the gap stops being visible in normal testing once the composable works, which is exactly when it'd stop getting fixed.
+7. `app/composables/useUserRole.ts` — `useQuery`-backed on `get_user_role` (§1), `can`/`isAdmin`/`isOrganizer`/`isStaff` on top of it.
+8. `app/plugins/user-role.ts` — the `onAuthStateChange` → `queryCache.invalidateQueries` subscription (§4). Decide `.client.ts` vs. universal during this step, per the note in §4, rather than assuming either.
+9. `app/types/nuxt.d.ts` — `PageMeta.permission` augmentation, so `definePageMeta({ permission: ... })` type-checks.
+10. `app/middleware/authorization.global.ts` — reads `to.meta.permission`, `await useUserRole().refresh()` then `can()`, redirect to `/403` on denial. `app/middleware/auth.global.ts` stays as-is (session check only); the alphabetical filename ordering (`auth.` before `autho`) is what makes it run first — don't reorder or rename either file without re-checking that.
+11. `/403` page — new, distinct from `/login`.
+12. Wire `can()`/`isStaff` into `app/layouts/default.vue`'s `mainNavGroups` so a player's sidebar never shows sections they can't reach, and into the wanted-cards "Elimina" button (`docs/TODO.md`) as the first concrete `v-if="can(...)"` win, and into `MembersList.vue`'s promotion dropdown (step 3).
+13. Go route by route deciding `permission` requirements and in-page `v-if` adaptation — `/standings/*` (already shared per ADR-011) first since no write path is involved, `/tournaments`/`/leagues`/`/events` after (needs the registration write decision — Postgres function vs. BFF — settled per the worked example above).
