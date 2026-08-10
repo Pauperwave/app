@@ -16,26 +16,31 @@ Human-readable companion to `docs/architecture/roles.md` — that doc has the im
 
 **Rivista 2026-08-10: 4 livelli, non più 3** — `super_admin` aggiunto sopra `admin`, e la parte finanziaria è stata spezzata in due (quote associative vs. pagamenti eventi/tornei — categorie già distinte in `pauperwave_payments.payment_type`: `'Association Fee'` vs `'Event'`).
 
+Ordinata per permessi crescenti — dall'alto (accessibile a `player`) verso il basso (`super_admin` soltanto), riordinata 2026-08-10.
+
 | Funzionalità | player | organizer | admin | super-admin |
 |---|:---:|:---:|:---:|:---:|
 | Visualizzare classifiche (Cittadino, Commander, Premodern, Pauper) | 🟢 | 🟢 | 🟢 | 🟢 |
 | Visualizzare tornei, leghe, eventi | 🟢 | 🟢 | 🟢 | 🟢 |
 | Iscriversi a un torneo/evento | 🟡 (solo per sé stesso) | 🟢 | 🟢 | 🟢 |
-| Creare, modificare tornei/leghe/eventi (inclusa la gestione ordinaria dei round) | 🔴 | 🟢 | 🟢 | 🟢 |
-| **Eliminare definitivamente** tornei/leghe/eventi | 🔴 | 🔴 | 🔴 | 🟢 |
-| **Annullare un round** | 🔴 | 🔴 | 🔴 | 🟢 |
-| Gestire pagamenti di eventi/tornei | 🔴 | 🟢 | 🟢 | 🟢 |
-| Inviare email di ricevuta (quote eventi/tornei, quote associative) | 🔴 | 🔴 | 🟢 | 🟢 |
 | Visualizzare "Carte Cercate" | 🟢 | 🟢 | 🟢 | 🟢 |
 | Creare una richiesta "Carta Cercata" | 🟡 (solo per sé stesso) | 🟢 | 🟢 | 🟢 |
 | Cambiare stato (trovata/abbandonata) della propria richiesta | 🟡 (solo la propria) | 🟢 | 🟢 | 🟢 |
+| Gestire i propri mazzi Commander | 🟢 | 🟢 | 🟢 | 🟢 |
+| Visualizzare il proprio stato di tesseramento/dati anagrafici | 🟡 (solo il proprio) | 🟡 (solo il proprio) | 🟢 (tutti i soci) | 🟢 (tutti i soci) |
+| Creare, modificare tornei/leghe/eventi (inclusa la gestione ordinaria dei round) | 🔴 | 🟢 | 🟢 | 🟢 |
+| Correggere/azzerare i dati di un singolo tavolo/pairing | 🔴 | 🟢 | 🟢 | 🟢 |
+| Gestire pagamenti di eventi/tornei | 🔴 | 🟢 | 🟢 | 🟢 |
 | Eliminare la propria richiesta | 🔴 | 🟢 | 🟢 | 🟢 |
 | Modificare/eliminare/cambiare stato di una richiesta altrui | 🔴 | 🟢 | 🟢 | 🟢 |
-| Gestire i propri mazzi Commander | 🟢 | 🟢 | 🟢 | 🟢 |
+| Inviare email di ricevuta (quote eventi/tornei, quote associative) | 🔴 | 🔴 | 🟢 | 🟢 |
 | Gestire i mazzi Commander di tutti i giocatori | 🔴 | 🔴 | 🟢 | 🟢 |
-| Visualizzare il proprio stato di tesseramento/dati anagrafici | 🟡 (solo il proprio) | 🟡 (solo il proprio) | 🟢 (tutti i soci) | 🟢 (tutti i soci) |
 | Gestire l'anagrafica soci (`/associates`) | 🔴 | 🔴 | 🟢 | 🟢 |
 | Gestire le quote associative | 🔴 | 🔴 | 🟢 | 🟢 |
+| **Eliminare definitivamente** tornei/leghe/eventi | 🔴 | 🔴 | 🔴 | 🟢 |
+| **Annullare un round** (incl. riportare l'intero torneo in registrazione) | 🔴 | 🔴 | 🔴 | 🟢 |
+| **Eliminare** un mazzo Commander altrui | 🔴 | 🔴 | 🔴 | 🟢 |
+| **Eliminare** un regolamento (ruleset) | 🔴 | 🔴 | 🔴 | 🟢 |
 | Assegnare/modificare ruoli (`/settings/members`) | 🔴 | 🔴 | 🔴 | 🟢 |
 
 ## Note
@@ -45,6 +50,11 @@ Human-readable companion to `docs/architecture/roles.md` — that doc has the im
 **Inviare ricevute è separato da "gestire pagamenti," confermato 2026-08-10.** Un organizer registra/gestisce i pagamenti di eventi e tornei (già in matrice), ma l'invio della ricevuta via email — sia per quote eventi/tornei sia per quote associative — sale ad `admin`. Comunicazione ufficiale verso soci/partecipanti trattata più cautamente della semplice registrazione interna del pagamento.
 
 **"Annullare un round" è un'eccezione ritagliata dalla gestione ordinaria dei tornei, confermata 2026-08-10.** Un organizer gestisce un torneo dall'inizio alla fine — inclusi i round, normalmente — ma annullare un round già avviato è trattato come l'eliminazione definitiva: un'azione distruttiva/irreversibile che va oltre l'amministrazione ordinaria, riservata a `super_admin` anche se il torneo nel suo complesso resta gestibile da `organizer`.
+
+**Righe aggiunte 2026-08-10 esaminando il progetto gemello `MagicTheGathering/league`** (nessun sistema di ruoli per utente lì — solo una password condivisa — quindi niente da riusare su *chi* può fare cosa, solo sulle azioni distruttive che esistono nel dominio):
+- `league` ha un endpoint "torna indietro di un round" che, dal round 1, riporta l'intero torneo in fase di registrazione cancellando pairing/standings — trattato come la stessa azione di "annullare un round" sopra, non una riga a parte.
+- Il reset di un **singolo tavolo/pairing** (corregge un errore di inserimento — uccisioni, posizione, comandante, voti) è invece trattato come correzione operativa di routine, non come azione distruttiva grave: `organizer`, non `super_admin`.
+- Eliminare un mazzo Commander altrui e eliminare un regolamento (ruleset) sono entrambe azioni di cancellazione definitiva, quindi `super_admin` — distinte dalla semplice **gestione** dei mazzi altrui (`admin`, riga sopra).
 
 **"Eliminare definitivamente" non si applica ai soci.** A differenza di tornei/leghe/eventi, un associato oggi non viene mai cancellato per davvero — lo stato di tesseramento è calcolato dal confronto fra l'ultimo `renewal_year` in `pauperwave_associate_renewals` e l'anno corrente (`docs/architecture/database.md`, "Membership status model"): un socio non rinnovato resta visibile con l'ultima data di rinnovo nota, non sparisce. Non serve quindi un permesso "elimina socio" riservato a super_admin — la gestione anagrafica di `admin` è già sufficiente. Soft-delete vero e proprio (per tornei/leghe/eventi, o altrove) è pianificato ma non ancora scoped — quando arriva, va deciso se "eliminazione definitiva" resta super_admin-only anche con un soft-delete di mezzo, o se il soft-delete stesso diventa disponibile ad `admin` e solo la purga fisica resta a `super_admin`.
 
