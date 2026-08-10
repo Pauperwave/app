@@ -32,6 +32,7 @@ export const ICONS = {
   logout: 'i-lucide-log-out',
   lock: 'i-lucide-lock',
   security: 'i-lucide-shield',
+  permissions: 'i-lucide-key-round',
   globe: 'i-lucide-globe',
 
   // Status / feedback

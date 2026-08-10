@@ -195,11 +195,13 @@ const mainNavGroups = [[{
   devStatus: 'error',
   disabled: true
 }, {
-  label: t('settings.layout.links.notifications'),
-  icon: ICONS.bell,
-  to: '/settings/notifications',
-  devStatus: 'error',
-  disabled: true
+  label: t('settings.layout.links.permissions'),
+  icon: ICONS.permissions,
+  to: '/settings/permissions',
+  devStatus: 'warning',
+  onSelect: () => {
+    open.value = false
+  }
 }, {
   label: t('settings.layout.links.security'),
   icon: ICONS.security,

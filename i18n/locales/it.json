@@ -808,7 +808,7 @@
       "links": {
         "general": "Generali",
         "members": "Membri",
-        "notifications": "Notifiche",
+        "permissions": "Permessi",
         "security": "Sicurezza",
         "domains": "Domini",
         "documentation": "Documentazione"
@@ -844,6 +844,65 @@
       "warning": {
         "title": "Nessuno di questi domini è ancora configurato",
         "description": "Questa è una tabella scritta a mano, non uno stato reale: non legge DNS né deploy. Prima di pubblicare qualsiasi sottodominio va chiusa la policy RLS troppo permissiva su pauperwave_associates (docs/BACKLOG.md, P1), altrimenti il traffico anonimo raggiungerebbe dati personali."
+      }
+    },
+    "permissions": {
+      "title": "Ruoli e permessi",
+      "description": "Chi può fare cosa, per le quattro fasce di ruolo. Riferimento leggibile — vedi docs/architecture/roles.md e permissions.md per l'implementazione.",
+      "columns": {
+        "feature": "Funzionalità",
+        "player": "Player",
+        "organizer": "Organizer",
+        "admin": "Admin",
+        "superAdmin": "Super Admin"
+      },
+      "access": {
+        "full": "Completo",
+        "partial": "Parziale",
+        "none": "Nessuno"
+      },
+      "warning": {
+        "title": "Questa tabella non è ancora applicata dal codice",
+        "description": "È il piano concordato (docs/architecture/roles.md), non lo stato reale: oggi ogni utente autenticato vede l'intero gestionale, e le uniche scritture protette da un ruolo (\"Carte Cercate\") non distinguono ancora organizer da admin/super-admin."
+      },
+      "rows": {
+        "viewStandings": { "feature": "Visualizzare classifiche (Cittadino, Commander, Premodern, Pauper)" },
+        "viewTournaments": { "feature": "Visualizzare tornei, leghe, eventi" },
+        "registerTournament": {
+          "feature": "Iscriversi a un torneo/evento",
+          "playerNote": "Un player può iscrivere solo sé stesso, non altri giocatori."
+        },
+        "viewWantedCards": { "feature": "Visualizzare \"Carte Cercate\"" },
+        "createWantedCard": {
+          "feature": "Creare una richiesta \"Carta Cercata\"",
+          "playerNote": "Un player può creare richieste solo a proprio nome."
+        },
+        "updateOwnWantedCardStatus": {
+          "feature": "Cambiare stato (trovata/abbandonata) della propria richiesta",
+          "playerNote": "Un player può cambiare stato solo alle proprie richieste, non a quelle altrui."
+        },
+        "manageOwnDecks": { "feature": "Gestire i propri mazzi Commander" },
+        "viewOwnMembership": {
+          "feature": "Visualizzare il proprio stato di tesseramento/dati anagrafici",
+          "playerNote": "Un player vede solo il proprio stato di tesseramento, non quello degli altri soci.",
+          "organizerNote": "Un organizer vede solo il proprio stato di tesseramento, non quello degli altri soci.",
+          "adminNote": "Un admin vede lo stato di tesseramento di tutti i soci.",
+          "superAdminNote": "Un super-admin vede lo stato di tesseramento di tutti i soci."
+        },
+        "manageTournaments": { "feature": "Creare, modificare tornei/leghe/eventi (inclusa la gestione ordinaria dei round)" },
+        "resetPairing": { "feature": "Correggere/azzerare i dati di un singolo tavolo/pairing" },
+        "manageEventPayments": { "feature": "Gestire pagamenti di eventi/tornei" },
+        "deleteOwnWantedCard": { "feature": "Eliminare la propria richiesta" },
+        "manageOthersWantedCards": { "feature": "Modificare/eliminare/cambiare stato di una richiesta altrui" },
+        "sendPaymentReceipts": { "feature": "Inviare email di ricevuta (quote eventi/tornei, quote associative)" },
+        "manageAllDecks": { "feature": "Gestire i mazzi Commander di tutti i giocatori" },
+        "manageMembers": { "feature": "Gestire l'anagrafica soci (/associates)" },
+        "manageMembershipFees": { "feature": "Gestire le quote associative" },
+        "deleteTournaments": { "feature": "Eliminare definitivamente tornei/leghe/eventi" },
+        "cancelRound": { "feature": "Annullare un round (incl. riportare l'intero torneo in registrazione)" },
+        "deleteCommanderDeck": { "feature": "Eliminare un mazzo Commander altrui" },
+        "deleteRuleset": { "feature": "Eliminare un regolamento (ruleset)" },
+        "manageRoles": { "feature": "Assegnare/modificare ruoli (/settings/members)" }
       }
     },
     "general": {
