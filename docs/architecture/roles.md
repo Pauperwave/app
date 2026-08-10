@@ -42,13 +42,108 @@ Same routes for everyone — no `(player)` route group, no separate app. A playe
 
 This replaces the earlier direction explored for the standings pages specifically (a dedicated `(player)`-style minimal layout) — see the correction in ADR-011, `docs/PROGRESS.md`: those pages stay behind the existing magic-link login rather than becoming public, and now fold into this same shared-route model instead of a separate area.
 
-## Proposed pattern — three layers, only one of them is real security
+## Proposed pattern (decided 2026-08-10, reviewed against current Nuxt 4 practice)
 
-1. **Client role resolution** — new composable, e.g. `useUserRole()`, wrapping `get_user_role(uuid)` via `supabase.rpc(...)` (mirrors `serverAuth.ts`'s use of `has_management_permissions`, same RPC-not-raw-select approach, so it doesn't depend on `user_roles` having a working self-read RLS policy — the backup docs disagree with each other on whether that policy exists, see `1-roles.md` vs `3-RLS-policies.md`). Cache it the same way `useCurrentAssociate.ts` caches associate lookup — resolved once per session, not re-fetched per page.
-2. **Route/nav gating** — routes that must be fully inaccessible to players get an explicit allowlist/denylist check (extend `auth.global.ts` or add a sibling middleware), and `app/layouts/default.vue`'s `mainNavGroups` gets filtered by role so a player's sidebar never shows sections they can't use. Explicit list, not an inferred one — a new admin-only route must be added deliberately, the same reasoning `auth.global.ts`'s `publicPages` allowlist already uses for the opposite case.
-3. **In-page adaptation** — on routes that stay shared, components branch on the resolved role: hide edit/delete affordances, swap "all associates" for "my own record," etc. This is where the wanted-cards "Elimina" TODO gets resolved — swap its current "let it fail server-side" behavior for `v-if` on the role.
+The three-layer shape (resolve role → gate routes → adapt in-page UI) held up under review — no newer pattern replaces it — but each layer has a specific, opinionated implementation now, chosen over the alternatives for stated reasons. Not yet implemented; this is the plan to build against.
 
-Layers 2 and 3 are UX. Layer 0, not listed above because it already exists, is the actual enforcement: RLS policies + `requireManagementPermission`-style BFF checks. Any new player-facing write path needs the same BFF treatment `wanted-cards` already has (`server/utils/serverAuth.ts`), not a direct client → Supabase write.
+### 1. Role state — `useState`, not Pinia
+
+A role enum is simple, app-wide state with no reason for a store — `useState` is SSR-safe and shared across components for free, no extra dependency. Pinia would only earn its keep if role became part of a larger session/profile/preferences store; for this alone it's overengineering.
+
+The composable (`app/composables/useUserRole.ts`) exposes more than a role and a boolean:
+
+- `role` — the raw value, `Ref<AppRole | null>`. **`null` here means "not fetched yet," a client-side state distinct from `get_user_role`'s own DB-level default of `'player'` for a user with no `user_roles` row** (§ above) — that default only kicks in once the RPC actually returns; before that, the composable's `role` is `null`, and treating it as `'player'` early would let ungated content flash before the real role loads.
+- `status` — `'idle' | 'loading' | 'ready' | 'error'`. Not a boolean: `'error'` is a distinct, meaningful state (network failure resolving the role is not the same as "still loading" and must not be treated as either "done" or "safe to treat as player").
+- `fetchRole()` — calls `get_user_role` via `supabase.rpc(...)`, unconditionally.
+- `ensureRole()` — idempotent: returns immediately if `status === 'ready'`, returns the in-flight `Promise` if already `'loading'`, otherwise calls `fetchRole()`. Idempotency needs the `Promise` itself kept in a module-level variable (`let _pendingFetch: Promise<void> | null`, not just the status), so two callers racing (the plugin below, and a middleware that runs before the plugin resolves) attach to the same request instead of firing the RPC twice.
+- `reset()` — clears `role`/`status`/`_pendingFetch`, called on logout.
+- `can(permission: Permission)` — looks up a role → permissions matrix (see §2). This is the primary way both middleware and components should ask "is this allowed," not comparisons like `role === 'admin'` scattered around.
+- `isAdmin`, `isOrganizer`, `isJudge`, `isStaff` — computed conveniences derived from `role`, for the common case for/against a role rather than a specific permission.
+
+### 2. Route protection — `permission`, not a path allowlist
+
+Reject the path-allowlist idea from the first draft of this doc. Instead, each page declares what it needs:
+
+```ts
+definePageMeta({ permission: 'manage-members' })
+```
+
+and a single **permissions matrix** (e.g. `app/utils/permissions.ts`) is the one place that maps `role → Permission[]`. Adding or renaming a route never touches the middleware; deciding "can a judge do X" is a one-line change in the matrix, not a search for scattered `role === 'judge'` checks. Requires augmenting Nuxt's `PageMeta` type so `permission` type-checks:
+
+```ts
+// app/types/nuxt.d.ts
+declare module '#app' {
+  interface PageMeta {
+    permission?: Permission
+  }
+}
+export {}
+```
+
+### 3. Two global middlewares, not one
+
+`app/middleware/auth.global.ts` keeps its current, single job: "is there a session?" A new `app/middleware/authorization.global.ts` answers a different question: "is this session allowed on this route?" — reads `to.meta.permission`, calls `can()`, redirects to `/403` (a new, dedicated route — semantically distinct from `/login`: the user *is* who they say they are, they just can't be here) if denied.
+
+Nuxt runs global middleware in filename alphabetical order, so `auth.global.ts` always runs before `authorization.global.ts` without extra configuration (`auth.` < `autho` — the `.` sorts before `o`). No manual ordering needed, but don't rely on that alone being obvious in six months — the alphabetical dependency is exactly why the two files are named this way, not `auth.global.ts` + `permissions.global.ts`.
+
+**`authorization.global.ts` must be self-sufficient.** It never assumes the role was already resolved by the plugin below — it calls `await ensureRole()` itself and only then calls `can()`. If `status` comes back `'error'`, it denies access (fail closed) rather than letting the user through or silently redirecting to login. A `null`/unresolved role must never reach `can()` — always `await ensureRole()` first.
+
+### 4. Initialization — a universal plugin, not `.client.ts`
+
+`app/plugins/user-role.ts` (**no** `.client` suffix). Nuxt runs plugins during `createApp()`, before any middleware, on both server and client. A `.client.ts` plugin wouldn't exist during SSR, so the very first middleware run (during SSR) would see `role === null` with no way to distinguish "not checked yet" from "no role" — exactly the ambiguity `null`'s meaning above is trying to prevent. With a universal plugin:
+
+```
+plugin user-role.ts      → ensureRole() if a session exists
+auth.global.ts           → session check
+authorization.global.ts  → await ensureRole() (already ready, or awaits the in-flight Promise)
+render
+```
+
+the first HTML from the server is already correct for the role — no flash of the wrong UI, no post-hydration redirect. The plugin is a prefetch optimization, not a correctness requirement — layer 3's self-sufficiency is what actually guarantees correctness if the plugin is slow, errors, or (in some edge case) doesn't run.
+
+The plugin also owns cache invalidation, via `supabase.auth.onAuthStateChange`:
+
+- `SIGNED_OUT` → `reset()`
+- `SIGNED_IN` → `fetchRole()` (force a fresh fetch — a different user may have just logged into the same browser)
+- `TOKEN_REFRESHED` → no-op, a token refresh doesn't change the role
+- `USER_UPDATED` → not handled for now; only relevant if a flow lets a logged-in user's own role change mid-session, which doesn't exist yet
+
+### 5. In-page UI — `v-if="can(...)"`, unchanged from the first draft
+
+Confirmed as the right call on review: `v-if="can('manage-members')"` (or `v-if="isStaff"` for the coarse case) inside shared pages/components is correct and idiomatic for hiding/showing pieces of an otherwise-shared page. Reaching for `setPageLayout()` or a computed layout would only be justified if the *structural* chrome (sidebar, header) needed to differ per role — not for hiding a button or a column.
+
+### Enforcement — still RLS/BFF, with one added distinction
+
+Layers 2-5 above are UX, never the real boundary — unchanged from the first draft. What's new is a concrete rule for *which* enforcement mechanism a given player-facing write should use:
+
+- **Plain ownership write** (e.g. `insert ... where user_id = auth.uid()`, no other business logic) → direct client write with the anon key, relying on RLS. Routing this through a BFF adds a network hop for zero extra safety — Postgres already verifies ownership in the policy.
+- **Transactional / business-logic write** (e.g. tournament registration: check the tournament exists and is open, registration isn't closed, the player isn't already registered, a seat is free, then insert — atomically) → either a `SECURITY DEFINER` Postgres function the client calls directly with the anon key (Postgres owns the atomicity, the function itself is the trust boundary), or a BFF endpoint using the service-role key if the logic isn't cleanly expressible in SQL. Both are valid; picking one is a case-by-case call, not a rule.
+- **Never**: a BFF with the service-role key that only re-checks ownership. That's the `requireManagementPermission` pattern misapplied — RLS with `auth.uid()` already does that check, and re-implementing it after bypassing RLS with the service-role key adds a maintenance burden (two places that must agree) for no security gain.
+
+### Worked example — `/tournaments`, `/leagues`, `/events`
+
+Same route for staff and players, `v-if` inside it:
+
+- **Admin-only affordances hidden**: "Nuovo torneo", "Modifica", "Elimina" stay behind `v-if="can('manage-tournaments')"` (or `isStaff`), same shape as the wanted-cards "Elimina" case.
+- **Player-only affordance shown**: an "Iscriviti" button. Registering for a tournament is the transactional case above, not plain ownership — it needs to check the tournament is open, the player isn't already registered, and (if capacity-limited) a seat is free, then insert atomically. That rules out a bare RLS `player_own_registration`-style policy (`3-RLS-policies.md:90-96`) on its own: the checks beyond ownership aren't expressible in a single policy. Use a `SECURITY DEFINER` Postgres function or a dedicated BFF endpoint (`server/api/tournaments/[id]/register.post.ts`), not `requireManagementPermission` (wrong shape — that's "any row, if staff," this is "exactly one row, your own, only if the business rules allow it") and not a raw client insert relying on RLS alone (the business-rule checks would be missing).
+
+### Quick-reference table
+
+| Decision | Choice |
+|---|---|
+| Role state | `useState`, with explicit `status` |
+| Pinia for role | No |
+| Initialization point | Universal plugin (no `.client`) |
+| Middleware | Two, separate: `auth.global` + `authorization.global` |
+| `null` role | Means "not yet resolved," never `'player'` |
+| Middleware on `null` | `await ensureRole()` — never lets `null` through |
+| `status === 'error'` | Deny access (fail closed), not a silent redirect |
+| Protected routes | `definePageMeta({ permission })`, no path allowlist |
+| Role-aware UI | `v-if="can(...)"` in components |
+| Permission-denied redirect | `/403`, distinct from `/login` |
+| Simple ownership write | Direct client write, RLS (`auth.uid()`) enforces it |
+| Transactional/business write | Postgres `SECURITY DEFINER` function, or a BFF endpoint |
+| Real security | Still RLS + server-side checks, unchanged |
 
 ## Wider roadmap (context, not scoped now)
 
@@ -56,8 +151,13 @@ Layers 2 and 3 are UX. Layer 0, not listed above because it already exists, is t
 
 ## Suggested order of work
 
-1. Decide and resolve the `pauperwave_associates` P1 policy (`docs/BACKLOG.md`) — not a hard blocker for starting layers 1-3, but "player can't see other members' PII" stays false until it's fixed.
-2. Confirm whether `public_read` was applied to `tournaments`/`tournament_standings`/`players` (audit §5.5) — changes what's already safe to read as a player vs. what still needs a BFF.
-3. Build `useUserRole()` (layer 1) — smallest independent piece, nothing else depends on it existing first but everything else depends on it existing eventually.
-4. Wire it into `auth.global.ts`/nav filtering (layer 2) for the routes that are unambiguously admin-only.
-5. Go route by route deciding "hidden entirely" vs. "shared, adapted content" (layer 3) — starting with `/standings/*` (already shared per ADR-011) and the wanted-cards "Elimina" TODO as the first concrete win.
+1. Decide and resolve the `pauperwave_associates` P1 policy (`docs/BACKLOG.md`) — not a hard blocker for starting the steps below, but "player can't see other members' PII" stays false until it's fixed.
+2. Confirm whether `public_read` was applied to `tournaments`/`tournament_standings`/`players` (audit §5.5) — changes what's already safe to read as a player vs. what still needs a BFF/RPC.
+3. `app/utils/permissions.ts` — the `role → Permission[]` matrix and the `Permission` type. Written first because everything else (the composable's `can()`, `definePageMeta({ permission })`, the middleware) reads from it.
+4. `app/composables/useUserRole.ts` — `useState`-backed, `role`/`status`/`fetchRole`/`ensureRole`/`reset`/`can`/`isAdmin`/`isOrganizer`/`isJudge`/`isStaff`, with the module-level `_pendingFetch` for idempotency.
+5. `app/plugins/user-role.ts` (universal, no `.client`) — initial `ensureRole()` call plus the `onAuthStateChange` subscription (`SIGNED_OUT` → `reset`, `SIGNED_IN` → `fetchRole`).
+6. `app/types/nuxt.d.ts` — `PageMeta.permission` augmentation, so `definePageMeta({ permission: ... })` type-checks.
+7. `app/middleware/authorization.global.ts` — reads `to.meta.permission`, `await ensureRole()` then `can()`, redirect to `/403` on denial. `app/middleware/auth.global.ts` stays as-is (session check only); the alphabetical filename ordering (`auth.` before `autho`) is what makes it run first — don't reorder or rename either file without re-checking that.
+8. `/403` page — new, distinct from `/login`.
+9. Wire `can()`/`isStaff` into `app/layouts/default.vue`'s `mainNavGroups` so a player's sidebar never shows sections they can't reach, and into the wanted-cards "Elimina" button (`docs/TODO.md`) as the first concrete `v-if="can(...)"` win.
+10. Go route by route deciding `permission` requirements and in-page `v-if` adaptation — `/standings/*` (already shared per ADR-011) first since no write path is involved, `/tournaments`/`/leagues`/`/events` after (needs the registration write decision — Postgres function vs. BFF — settled per the worked example above).
