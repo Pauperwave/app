@@ -25,10 +25,10 @@ const items = computed<DropdownMenuItem[][]>(() => {
     }
   })), [{
     label: t('teamsMenu.createTeam'),
-    icon: 'i-lucide-circle-plus'
+    icon: ICONS.addCircle
   }, {
     label: t('teamsMenu.manageTeams'),
-    icon: 'i-lucide-cog'
+    icon: ICONS.settingsGear
   }]
   ]
 })
@@ -44,7 +44,7 @@ const items = computed<DropdownMenuItem[][]>(() => {
       v-bind="{
         ...selectedTeam,
         label: collapsed ? undefined : selectedTeam?.label,
-        trailingIcon: collapsed ? undefined : 'i-lucide-chevrons-up-down'
+        trailingIcon: collapsed ? undefined : ICONS.chevronsUpDown
       }"
       color="neutral"
       variant="ghost"

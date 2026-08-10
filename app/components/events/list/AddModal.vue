@@ -40,7 +40,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   >
     <AddButton
       :label="$t('event.addModal.openButton')"
-      icon="i-lucide-calendar-plus"
+      :icon="ICONS.calendarAdd"
       @click="open = true"
     />
 

@@ -37,10 +37,10 @@ const eventOptions = [
 
 // Reordered by priority; defaults to 'entry-fee' (tournament)
 const paymentTypeOptions = computed(() => [
-  { value: 'entry-fee', label: t('transaction.addModal.paymentTypeOptions.entryFee'), icon: 'i-lucide-trophy' },
-  { value: 'membership', label: t('transaction.addModal.paymentTypeOptions.membership'), icon: 'i-lucide-users' },
-  { value: 'event-fee', label: t('transaction.addModal.paymentTypeOptions.eventFee'), icon: 'i-lucide-calendar' },
-  { value: 'donation', label: t('transaction.addModal.paymentTypeOptions.donation'), icon: 'i-lucide-heart-handshake' }
+  { value: 'entry-fee', label: t('transaction.addModal.paymentTypeOptions.entryFee'), icon: ICONS.standings },
+  { value: 'membership', label: t('transaction.addModal.paymentTypeOptions.membership'), icon: ICONS.players },
+  { value: 'event-fee', label: t('transaction.addModal.paymentTypeOptions.eventFee'), icon: ICONS.calendar },
+  { value: 'donation', label: t('transaction.addModal.paymentTypeOptions.donation'), icon: ICONS.heartHandshake }
 ])
 
 const paymentMethodOptions = computed(() => [
@@ -162,12 +162,12 @@ const associateDigits = ref('')
 const items = computed(() => [
   {
     label: t('transaction.addModal.tabs.associate'),
-    icon: 'i-lucide-user-check',
+    icon: ICONS.playerConfirmed,
     slot: 'associate'
   },
   {
     label: t('transaction.addModal.tabs.external'),
-    icon: 'i-lucide-pencil-line',
+    icon: ICONS.edit,
     slot: 'external'
   }
 ])
@@ -259,7 +259,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     <!-- Trigger button goes in the default slot -->
     <AddButton
       :label="$t('transaction.addModal.openButton')"
-      icon="i-lucide-coins"
+      :icon="ICONS.coins"
       @click="open = true"
     />
 
@@ -302,7 +302,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                   >
                     <template #leading>
                       <div class="flex items-center gap-1.5">
-                        <UIcon name="i-lucide-credit-card" class="size-4 text-muted" />
+                        <UIcon :name="ICONS.creditCard" class="size-4 text-muted" />
                         <p class="text-sm text-muted">
                           PW-0
                         </p>
@@ -319,7 +319,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                   <UInputMenu
                     :items="users"
                     class="w-full"
-                    icon="i-lucide-user"
+                    :icon="ICONS.player"
                     :placeholder="$t('transaction.addModal.fields.selectMember')"
                     :ui="{ content: 'min-w-fit' }"
                   >
@@ -382,7 +382,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                     class="w-full"
                     color="neutral"
                     :placeholder="$t('transaction.addModal.fields.emailPlaceholder')"
-                    icon="i-lucide-at-sign"
+                    :icon="ICONS.atSign"
                   >
                     <template v-if="state.payer_email?.length" #trailing>
                       <UClearButton v-model="state.payer_email" />

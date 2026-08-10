@@ -47,7 +47,7 @@ export function useWantedCardsTableColumns() {
           onClick: () => row.toggleExpanded()
         }, [
           h(UIcon, {
-            name: row.getIsExpanded() ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right',
+            name: row.getIsExpanded() ? ICONS.chevronDown : ICONS.chevronRight,
             class: 'size-4'
           }),
           h(PlayerTag, { name: getValue<string>() }),

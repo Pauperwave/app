@@ -24,7 +24,7 @@ const { tour } = defineProps<{ tour: UseTourReturn }>()
             {{ tour.current.value?.title }}
           </p>
           <UButton
-            icon="i-lucide-x"
+            :icon="ICONS.close"
             color="neutral"
             variant="ghost"
             size="xs"

@@ -15,22 +15,22 @@ const { t } = useI18n()
 // and no variation badge until a real endpoint is wired up.
 const stats = computed<Stat[]>(() => [{
   title: t('home.stats.associates'),
-  icon: 'i-lucide-users',
+  icon: ICONS.players,
   value: '—',
   variation: 0
 }, {
   title: t('home.stats.conversions'),
-  icon: 'i-lucide-chart-pie',
+  icon: ICONS.chartPie,
   value: '—',
   variation: 0
 }, {
   title: t('home.stats.revenue'),
-  icon: 'i-lucide-badge-euro',
+  icon: ICONS.badgeEuro,
   value: '—',
   variation: 0
 }, {
   title: t('home.stats.orders'),
-  icon: 'i-lucide-shopping-cart',
+  icon: ICONS.shoppingCart,
   value: '—',
   variation: 0
 }])

@@ -63,14 +63,14 @@ function removeSelected() {
 
     <div class="flex flex-col items-center justify-center gap-1">
       <UButton
-        icon="i-lucide-chevron-right"
+        :icon="ICONS.chevronRight"
         color="neutral"
         variant="outline"
         :disabled="!sourceSelection.length"
         @click="transferSelected"
       />
       <UButton
-        icon="i-lucide-chevron-left"
+        :icon="ICONS.chevronLeft"
         color="neutral"
         variant="outline"
         :disabled="!targetSelection.length"

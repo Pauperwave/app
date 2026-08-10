@@ -16,7 +16,7 @@ export function wantedCardStatusColor(status: WantedCardStatus): 'warning' | 'su
  * card footer, which is ~200px wide. In views with room (table) the badge stays
  * textual. */
 export const WANTED_CARD_STATUS_ICONS: Record<WantedCardStatus, string> = {
-  searching: 'i-lucide-search',
-  found: 'i-lucide-check-circle',
-  abandoned: 'i-lucide-ban'
+  searching: ICONS.search,
+  found: ICONS.success,
+  abandoned: ICONS.banned
 }

@@ -11,7 +11,7 @@ interface Props {
   ariaLabel?: string
 }
 
-const { icon = 'i-lucide-circle-x', size = 'xs', ariaLabel } = defineProps<Props>()
+const { icon = ICONS.clear, size = 'xs', ariaLabel } = defineProps<Props>()
 const { t } = useI18n()
 
 const resolvedAriaLabel = computed(() => ariaLabel ?? t('inputs.clearButton.ariaLabel'))

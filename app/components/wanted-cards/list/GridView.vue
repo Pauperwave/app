@@ -77,7 +77,7 @@ const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]
                    already full, so they stay separate. -->
               <div v-if="section.player" class="flex flex-wrap items-center gap-1.5">
                 <UTooltip v-if="card.notes" :text="card.notes">
-                  <UIcon name="i-lucide-message-circle" class="size-4 text-muted shrink-0" />
+                  <UIcon :name="ICONS.messageCircle" class="size-4 text-muted shrink-0" />
                 </UTooltip>
                 <WantedCardsMetaBadges :card="card" />
 
@@ -106,7 +106,7 @@ const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]
                          grouped: it would be redundant here. -->
                     <PlayerTag v-if="!section.player" :name="card.player" />
                     <UTooltip v-if="card.notes" :text="card.notes">
-                      <UIcon name="i-lucide-message-circle" class="size-4 text-muted shrink-0" />
+                      <UIcon :name="ICONS.messageCircle" class="size-4 text-muted shrink-0" />
                     </UTooltip>
                   </div>
                   <WantedCardsPrices

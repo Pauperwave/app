@@ -16,19 +16,19 @@ const items = computed(() => [
     slot: 'acceptance',
     title: t('tournament.stepper.acceptance'),
     description: t('tournament.stepper.acceptanceDescription'),
-    icon: 'i-lucide-users'
+    icon: ICONS.players
   },
   ...Array.from({ length: numberOfRounds }, (_, i) => ({
     slot: `round-${i + 1}`,
     title: t('tournament.stepper.round', { n: i + 1 }),
     description: t('tournament.stepper.roundPending'),
-    icon: 'i-lucide-swords'
+    icon: ICONS.battle
   })),
   {
     slot: 'awards',
     title: t('tournament.stepper.awards'),
     description: t('tournament.stepper.awardsDescription'),
-    icon: 'i-lucide-trophy'
+    icon: ICONS.standings
   },
   {
     slot: 'leaderboard',

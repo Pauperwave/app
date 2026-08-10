@@ -94,7 +94,7 @@ const rows = computed<PermissionRow[]>(() => {
 // entry: those cells render blank (see roleColumn below), not an X — a grid mostly
 // full of "no access" icons was pure noise, the blank space already reads as "no."
 const ACCESS_META: Record<'full' | 'partial', { icon: string, color: string }> = {
-  full: { icon: 'i-lucide-circle-check', color: 'text-success' },
+  full: { icon: ICONS.successFilled, color: 'text-success' },
   partial: { icon: 'i-lucide-circle-dot', color: 'text-warning' }
 }
 

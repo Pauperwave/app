@@ -36,7 +36,7 @@ async function onSubmit() {
   toast.add({
     title: t('settings.general.successToastTitle'),
     description: t('settings.general.successToastDescription'),
-    icon: 'i-lucide-check',
+    icon: ICONS.confirm,
     color: 'success'
   })
 }

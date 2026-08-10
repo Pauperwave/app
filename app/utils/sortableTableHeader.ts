@@ -16,10 +16,10 @@ export function sortableHeader<TData>(label: string, column: Column<TData, unkno
     variant: 'ghost',
     class: '-mx-2.5',
     icon: isSorted === 'asc'
-      ? 'i-lucide-arrow-up-narrow-wide'
+      ? ICONS.sortAscNumeric
       : isSorted === 'desc'
-        ? 'i-lucide-arrow-down-wide-narrow'
-        : 'i-lucide-arrow-up-down',
+        ? ICONS.sortDescNumeric
+        : ICONS.sortBoth,
     onClick: () => {
       if (isSorted === 'asc') column.toggleSorting(true)
       else if (isSorted === 'desc') column.clearSorting()

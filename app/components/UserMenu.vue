@@ -59,14 +59,14 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
   avatar: user.value.avatar
 }], [{
   label: t('userMenu.profile'),
-  icon: 'i-lucide-user'
+  icon: ICONS.player
 }, {
   label: t('userMenu.settings'),
-  icon: 'i-lucide-settings',
+  icon: ICONS.settings,
   to: '/settings'
 }], [{
   label: t('userMenu.theme'),
-  icon: 'i-lucide-palette',
+  icon: ICONS.palette,
   children: [{
     label: t('userMenu.primary'),
     slot: 'chip',
@@ -144,12 +144,12 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
   }]
 }], [{
   label: t('userMenu.githubRepository'),
-  icon: 'i-simple-icons-github',
+  icon: ICONS.github,
   to: 'https://github.com/Pauperwave/app',
   target: '_blank'
 }, {
   label: t('userMenu.logout'),
-  icon: 'i-lucide-log-out',
+  icon: ICONS.logout,
   onSelect: handleLogout
 }]]))
 </script>
@@ -164,7 +164,7 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
       v-bind="{
         ...user,
         label: collapsed ? undefined : user?.name,
-        trailingIcon: collapsed ? undefined : 'i-lucide-chevrons-up-down'
+        trailingIcon: collapsed ? undefined : ICONS.chevronsUpDown
       }"
       color="neutral"
       variant="ghost"

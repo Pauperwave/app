@@ -89,7 +89,7 @@ export const ICONS = {
   palette: 'i-lucide-palette',
 
   // Commander / MTG domain
-  commander: 'i-lucide-shield',
+  commander: 'i-lucide-shield-half',
   crown: 'i-lucide-crown',
   rules: 'i-lucide-scroll-text',
   battle: 'i-lucide-swords',

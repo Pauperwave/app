@@ -18,28 +18,28 @@ const bodyMaxWidth = computed(() => wideBodyRoutes[route.path] ?? 'lg:max-w-2xl'
 
 const links = computed<NavigationMenuItem[][]>(() => [[{
   label: t('settings.layout.links.general'),
-  icon: 'i-lucide-user',
+  icon: ICONS.player,
   to: '/settings',
   exact: true
 }, {
   label: t('settings.layout.links.members'),
-  icon: 'i-lucide-users',
+  icon: ICONS.players,
   to: '/settings/members'
 }, {
   label: t('settings.layout.links.permissions'),
-  icon: 'i-lucide-key-round',
+  icon: ICONS.permissions,
   to: '/settings/permissions'
 }, {
   label: t('settings.layout.links.security'),
-  icon: 'i-lucide-shield',
+  icon: ICONS.security,
   to: '/settings/security'
 }, {
   label: t('settings.layout.links.domains'),
-  icon: 'i-lucide-globe',
+  icon: ICONS.globe,
   to: '/settings/domains'
 }], [{
   label: t('settings.layout.links.documentation'),
-  icon: 'i-lucide-book-open',
+  icon: ICONS.bookOpen,
   to: 'https://ui.nuxt.com/docs/getting-started/installation/nuxt',
   target: '_blank'
 }]])

@@ -2,7 +2,7 @@
 <template>
   <div class="h-screen flex items-center justify-center px-4">
     <UButton
-      icon="i-lucide-chevron-left"
+      :icon="ICONS.chevronLeft"
       to="/"
       size="xl"
       color="neutral"

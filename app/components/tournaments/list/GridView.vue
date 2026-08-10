@@ -54,14 +54,14 @@ function monthPart(startDate: string) {
           {{ tournament.format }}
         </h3>
         <p class="text-sm text-muted flex items-center gap-1 truncate">
-          <UIcon name="i-lucide-map-pin" class="size-4 shrink-0" />
+          <UIcon :name="ICONS.mapPin" class="size-4 shrink-0" />
           <span class="truncate">{{ tournament.location }}</span>
         </p>
       </div>
 
       <template #footer>
         <div class="flex items-center justify-between gap-2">
-          <UBadge color="neutral" variant="subtle" icon="i-lucide-users">
+          <UBadge color="neutral" variant="subtle" :icon="ICONS.players">
             {{ tournament.registeredPlayers }}
           </UBadge>
           <span class="font-medium">{{ tournament.entryFee.toFixed(2) }} €</span>

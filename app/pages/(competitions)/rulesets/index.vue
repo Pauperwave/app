@@ -59,7 +59,7 @@ const activeTab = ref('cittadino')
           v-if="activeTab === 'cittadino'"
           :title="$t('ruleset.cittadino.title')"
           :description="$t('ruleset.cittadino.description')"
-          icon="i-lucide-medal"
+          :icon="ICONS.medal"
         >
           <div class="flex flex-col gap-6">
             <div>
@@ -97,7 +97,7 @@ const activeTab = ref('cittadino')
                 <span>{{ $t('ruleset.cittadino.tieBreak') }}</span>
               </li>
               <li class="flex gap-2">
-                <UIcon name="i-lucide-trophy" class="mt-0.5 size-4 shrink-0 text-primary" />
+                <UIcon :name="ICONS.standings" class="mt-0.5 size-4 shrink-0 text-primary" />
                 <span>
                   {{ $t('ruleset.cittadino.finalists', { finalists: CITTADINO_FINALISTS }) }}
                 </span>

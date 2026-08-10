@@ -42,25 +42,25 @@ function yesNo(value: boolean): string {
 type BadgeColor = 'success' | 'warning' | 'error' | 'neutral'
 
 const membershipStatusConfig: Record<string, { color: BadgeColor, icon: string }> = {
-  active: { color: 'success', icon: 'i-lucide-check-circle' },
-  to_renew: { color: 'warning', icon: 'i-lucide-refresh-cw' },
-  expired: { color: 'error', icon: 'i-lucide-ban' },
-  pending: { color: 'warning', icon: 'i-lucide-circle-dot-dashed' },
-  rejected: { color: 'error', icon: 'i-lucide-x-circle' }
+  active: { color: 'success', icon: ICONS.success },
+  to_renew: { color: 'warning', icon: ICONS.refresh },
+  expired: { color: 'error', icon: ICONS.banned },
+  pending: { color: 'warning', icon: ICONS.pending },
+  rejected: { color: 'error', icon: ICONS.statusRejected }
 }
 
 const currentStatusBadge = computed(() => associate.value
-  ? membershipStatusConfig[associate.value.membership_status] ?? { color: 'neutral' as const, icon: 'i-lucide-help-circle' }
-  : { color: 'neutral' as const, icon: 'i-lucide-help-circle' })
+  ? membershipStatusConfig[associate.value.membership_status] ?? { color: 'neutral' as const, icon: ICONS.help }
+  : { color: 'neutral' as const, icon: ICONS.help })
 
 const anagraficaFields = computed<DetailField[]>(() => !associate.value
   ? []
   : [
-    { icon: 'i-lucide-user', label: t('associate.columns.firstName'), value: associate.value.first_name },
-    { icon: 'i-lucide-user', label: t('associate.columns.lastName'), value: associate.value.last_name },
+    { icon: ICONS.player, label: t('associate.columns.firstName'), value: associate.value.first_name },
+    { icon: ICONS.player, label: t('associate.columns.lastName'), value: associate.value.last_name },
     { icon: 'i-lucide-id-card', label: t('associate.columns.taxCode'), value: associate.value.tax_code || '—' },
     { icon: 'i-lucide-cake', label: t('associate.columns.bornDate'), value: formatDate(associate.value.born_date) || '—' },
-    { icon: 'i-lucide-map-pin', label: t('associate.columns.bornLocation'), value: associate.value.born_location || '—' },
+    { icon: ICONS.mapPin, label: t('associate.columns.bornLocation'), value: associate.value.born_location || '—' },
     { icon: 'i-lucide-map', label: t('associate.columns.bornProvince'), value: associate.value.born_province || '—' },
     { icon: 'i-lucide-flag', label: t('associate.columns.bornState'), value: associate.value.born_state || '—' }
   ])
@@ -68,10 +68,10 @@ const anagraficaFields = computed<DetailField[]>(() => !associate.value
 const contattiFields = computed<DetailField[]>(() => !associate.value
   ? []
   : [
-    { icon: 'i-lucide-mail', label: t('associate.columns.emailAddress'), value: associate.value.email_address },
-    { icon: 'i-lucide-phone', label: t('associate.columns.phoneNumber'), value: associate.value.phone_number || '—' },
-    { icon: 'i-lucide-map-pin', label: t('associate.columns.residencyAddress'), value: associate.value.residency_address },
-    { icon: 'i-lucide-hash', label: t('associate.columns.residencyHouseNumber'), value: associate.value.residency_house_number || '—' },
+    { icon: ICONS.mail, label: t('associate.columns.emailAddress'), value: associate.value.email_address },
+    { icon: ICONS.phone, label: t('associate.columns.phoneNumber'), value: associate.value.phone_number || '—' },
+    { icon: ICONS.mapPin, label: t('associate.columns.residencyAddress'), value: associate.value.residency_address },
+    { icon: ICONS.hash, label: t('associate.columns.residencyHouseNumber'), value: associate.value.residency_house_number || '—' },
     { icon: 'i-lucide-building', label: t('associate.columns.residencyCity'), value: associate.value.residency_city },
     { icon: 'i-lucide-map', label: t('associate.columns.residencyProvince'), value: associate.value.residency_province },
     { icon: 'i-lucide-mailbox', label: t('associate.columns.residencyCap'), value: associate.value.residency_cap }
@@ -82,8 +82,8 @@ const tesseramentoFields = computed<DetailField[]>(() => !associate.value
   : [
     { icon: 'i-lucide-id-card', label: t('associate.columns.pauperwaveAssociateNumber'), value: associate.value.pauperwave_associate_number || '—' },
     { icon: 'i-lucide-tag', label: t('associate.columns.associateType'), value: associate.value.associate_type || '—' },
-    { icon: 'i-lucide-calendar', label: t('associate.columns.requestDate'), value: formatDate(associate.value.request_date) || '—' },
-    { icon: 'i-lucide-credit-card', label: t('associate.columns.paymentDate'), value: formatDate(associate.value.payment_date) || '—' },
+    { icon: ICONS.calendar, label: t('associate.columns.requestDate'), value: formatDate(associate.value.request_date) || '—' },
+    { icon: ICONS.creditCard, label: t('associate.columns.paymentDate'), value: formatDate(associate.value.payment_date) || '—' },
     { icon: 'i-lucide-calendar-check', label: t('associate.columns.associationDate'), value: formatDate(associate.value.association_date) || '—' }
   ])
 
@@ -92,15 +92,15 @@ const consensiFields = computed<DetailField[]>(() => !associate.value
   : [
     { icon: 'i-lucide-shield-check', label: t('associate.columns.consentData'), value: yesNo(associate.value.consent_data) },
     { icon: 'i-lucide-share-2', label: t('associate.columns.consentSocial'), value: yesNo(associate.value.consent_social) },
-    { icon: 'i-lucide-scroll-text', label: t('associate.columns.hasReadStatute'), value: yesNo(associate.value.has_read_statute) },
-    { icon: 'i-lucide-eye', label: t('associate.columns.hasAcknowledgedSurveillanceNotice'), value: yesNo(associate.value.has_acknowledged_surveillance_notice) }
+    { icon: ICONS.rules, label: t('associate.columns.hasReadStatute'), value: yesNo(associate.value.has_read_statute) },
+    { icon: ICONS.show, label: t('associate.columns.hasAcknowledgedSurveillanceNotice'), value: yesNo(associate.value.has_acknowledged_surveillance_notice) }
   ])
 
 const mtgFields = computed<DetailField[]>(() => !associate.value
   ? []
   : [
-    ...(associate.value.mtgo_nickname ? [{ icon: 'i-lucide-gamepad-2', label: t('associate.columns.mtgoNickname'), value: associate.value.mtgo_nickname }] : []),
-    ...(associate.value.mtga_nickname ? [{ icon: 'i-lucide-gamepad-2', label: t('associate.columns.mtgaNickname'), value: associate.value.mtga_nickname }] : [])
+    ...(associate.value.mtgo_nickname ? [{ icon: ICONS.gameplay, label: t('associate.columns.mtgoNickname'), value: associate.value.mtgo_nickname }] : []),
+    ...(associate.value.mtga_nickname ? [{ icon: ICONS.gameplay, label: t('associate.columns.mtgaNickname'), value: associate.value.mtga_nickname }] : [])
   ])
 </script>
 

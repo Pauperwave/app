@@ -10,15 +10,15 @@ const toast = useToast()
 const { t } = useI18n()
 
 const visibilityOptions = computed(() => [
-  { value: 'public', label: t('tournament.addModal.visibilityOptions.public'), icon: 'i-lucide-eye' },
-  { value: 'private', label: t('tournament.addModal.visibilityOptions.private'), icon: 'i-lucide-eye-off' }
+  { value: 'public', label: t('tournament.addModal.visibilityOptions.public'), icon: ICONS.show },
+  { value: 'private', label: t('tournament.addModal.visibilityOptions.private'), icon: ICONS.hide }
 ])
 
 const statusOptions = computed(() => [
-  { value: 'scheduled', label: t('tournament.addModal.statusOptions.scheduled'), icon: 'i-lucide-clock', color: 'info' },
-  { value: 'cancelled', label: t('tournament.addModal.statusOptions.cancelled'), icon: 'i-lucide-circle-x', color: 'error' },
-  { value: 'ongoing', label: t('tournament.addModal.statusOptions.ongoing'), icon: 'i-lucide-circle-dot-dashed', color: 'warning' },
-  { value: 'completed', label: t('tournament.addModal.statusOptions.completed'), icon: 'i-lucide-circle-check-big', color: 'success' }
+  { value: 'scheduled', label: t('tournament.addModal.statusOptions.scheduled'), icon: ICONS.clock, color: 'info' },
+  { value: 'cancelled', label: t('tournament.addModal.statusOptions.cancelled'), icon: ICONS.clear, color: 'error' },
+  { value: 'ongoing', label: t('tournament.addModal.statusOptions.ongoing'), icon: ICONS.pending, color: 'warning' },
+  { value: 'completed', label: t('tournament.addModal.statusOptions.completed'), icon: ICONS.successFilledBig, color: 'success' }
 ])
 
 const formatOptions = [
@@ -180,7 +180,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   >
     <AddButton
       :label="$t('tournament.addModal.openButton')"
-      icon="i-lucide-swords"
+      :icon="ICONS.battle"
       @click="open = true"
     />
 
@@ -231,7 +231,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               <UInput
                 :model-value="state.companion_code ?? ''"
                 :placeholder="$t('tournament.addModal.fields.companionCodePlaceholder')"
-                icon="i-lucide-smartphone"
+                :icon="ICONS.smartphone"
                 class="w-42"
                 @update:model-value="state.companion_code = ($event as string) || undefined"
               />
@@ -245,7 +245,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 v-model="state.name"
                 class="w-full"
                 :placeholder="$t('tournament.addModal.fields.namePlaceholder')"
-                icon="i-lucide-trophy"
+                :icon="ICONS.standings"
               />
             </UFormField>
 
@@ -255,7 +255,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 :min="0"
                 :step="5"
                 class="w-42"
-                icon="i-lucide-euro"
+                :icon="ICONS.euro"
               />
             </UFormField>
           </div>
@@ -265,7 +265,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               :model-value="state.description ?? ''"
               class="w-full"
               :placeholder="$t('tournament.addModal.fields.descriptionPlaceholder')"
-              icon="i-lucide-align-left"
+              :icon="ICONS.alignLeft"
               @update:model-value="state.description = ($event as string) || undefined"
             />
           </UFormField>
@@ -277,7 +277,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 class="w-full"
                 :items="formatOptions"
                 :placeholder="$t('tournament.addModal.fields.selectFormat')"
-                icon="i-lucide-layers"
+                :icon="ICONS.layers"
               />
             </UFormField>
 
@@ -287,7 +287,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 class="w-full"
                 :items="rulesetOptions"
                 :placeholder="$t('tournament.addModal.fields.selectRuleset')"
-                icon="i-lucide-book-open"
+                :icon="ICONS.bookOpen"
               />
             </UFormField>
           </div>
@@ -304,7 +304,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                     :model-value="formattedStartDate"
                     readonly
                     class="w-full"
-                    icon="i-lucide-calendar"
+                    :icon="ICONS.calendar"
                   />
 
                   <template #content>
@@ -327,7 +327,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 <UInputNumber
                   v-model="state.round_count"
                   :min="1"
-                  icon="i-lucide-hash"
+                  :icon="ICONS.hash"
                 />
               </UFormField>
 
@@ -338,7 +338,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 <UInputNumber
                   v-model="state.round_duration"
                   :step="5"
-                  icon="i-lucide-timer"
+                  :icon="ICONS.timer"
                 />
               </UFormField>
             </div>
@@ -356,7 +356,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 class="w-full"
                 :items="organizerOptions"
                 :placeholder="$t('tournament.addModal.fields.selectOrganizer')"
-                icon="i-lucide-user"
+                :icon="ICONS.player"
               />
             </UFormField>
 
@@ -366,7 +366,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 class="w-full"
                 :items="placeOptions"
                 :placeholder="$t('tournament.addModal.fields.selectLocation')"
-                icon="i-lucide-map-pin"
+                :icon="ICONS.mapPin"
               />
             </UFormField>
 
@@ -376,7 +376,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 class="w-full"
                 :items="leagueOptions"
                 :placeholder="$t('tournament.addModal.fields.linkLeague')"
-                icon="i-lucide-trophy"
+                :icon="ICONS.standings"
               >
                 <template #trailing>
                   <UButton
@@ -385,7 +385,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                     color="neutral"
                     variant="ghost"
                     size="xs"
-                    icon="i-lucide-circle-x"
+                    :icon="ICONS.clear"
                     @click="state.league = ''"
                   />
                 </template>
@@ -398,7 +398,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 class="w-full"
                 :items="eventOptions"
                 :placeholder="$t('tournament.addModal.fields.linkEvent')"
-                icon="i-lucide-calendar-arrow-up"
+                :icon="ICONS.calendarRenew"
               >
                 <template #trailing>
                   <UButton
@@ -407,7 +407,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                     color="neutral"
                     variant="ghost"
                     size="xs"
-                    icon="i-lucide-circle-x"
+                    :icon="ICONS.clear"
                     @click="state.event = ''"
                   />
                 </template>
@@ -426,7 +426,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           />
           <UButton
             :label="$t('tournament.addModal.create')"
-            icon="i-lucide-check"
+            :icon="ICONS.confirm"
             type="submit"
           />
         </div>

@@ -43,7 +43,7 @@ onUnmounted(() => clearTimeout(timeoutId))
         </UButton>
       </template>
       <template v-else>
-        <UIcon name="i-lucide-loader-2" class="animate-spin text-4xl mb-4" />
+        <UIcon :name="ICONS.loading" class="animate-spin text-4xl mb-4" />
         <p>{{ $t('login.callback.verifying') }}</p>
       </template>
     </div>

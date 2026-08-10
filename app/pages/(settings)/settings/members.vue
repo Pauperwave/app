@@ -40,7 +40,7 @@ const filteredMembers = computed(() => {
       <template #header>
         <UInput
           v-model="q"
-          icon="i-lucide-search"
+          :icon="ICONS.search"
           :placeholder="$t('settings.members.searchPlaceholder')"
           autofocus
           class="w-full"
