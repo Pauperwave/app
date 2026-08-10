@@ -1,4 +1,4 @@
-// app\composables\useCurrentAssociate.ts
+// app\composables\associates\useCurrentAssociate.ts
 // Resolves the Associate matching the logged-in user by email — there is no direct
 // auth-user -> associate link (unlike Players, which have players.user_id); it is
 // the same comparison used in server/api/check-associate.post.ts for the login

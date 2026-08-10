@@ -1,4 +1,4 @@
-// app\composables\useWantedCardsTableColumns.ts
+// app\composables\wantedCards\useWantedCardsTableColumns.ts
 import { h } from 'vue'
 import { UBadge, UIcon } from '#components'
 import type { TableColumn } from '@nuxt/ui'

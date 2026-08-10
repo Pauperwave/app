@@ -1,4 +1,4 @@
-// app\composables\useLeaguesFilters.ts
+// app\composables\leagues\useLeaguesFilters.ts
 import type { Ref } from 'vue'
 import type { League, LeagueStatus } from '~/types'
 

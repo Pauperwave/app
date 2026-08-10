@@ -1,4 +1,4 @@
-// app\composables\useEventsFilters.ts
+// app\composables\events\useEventsFilters.ts
 import type { Ref } from 'vue'
 import type { Event, EventStatus, Range } from '~/types'
 

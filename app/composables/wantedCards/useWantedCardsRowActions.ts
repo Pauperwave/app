@@ -1,4 +1,4 @@
-// app\composables\useWantedCardsRowActions.ts
+// app\composables\wantedCards\useWantedCardsRowActions.ts
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { WantedCard, WantedCardStatus } from '~/types'
 

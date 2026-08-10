@@ -1,7 +1,7 @@
 <!-- app\components\standings\FormatPage.vue -->
 <script lang="ts" setup>
 import type { TabsItem } from '@nuxt/ui'
-import type { StandingsFormat } from '~/composables/useFormatStandingsQuery'
+import type { StandingsFormat } from '~/composables/standings/useFormatStandingsQuery'
 
 interface Props {
   format: StandingsFormat

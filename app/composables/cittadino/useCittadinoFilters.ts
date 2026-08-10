@@ -1,4 +1,4 @@
-// app\composables\useCittadinoFilters.ts
+// app\composables\cittadino\useCittadinoFilters.ts
 import type { Ref } from 'vue'
 import type { CittadinoEvent, CittadinoPlacement, CittadinoResult, CittadinoStanding } from '~/types'
 

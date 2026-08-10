@@ -1,4 +1,4 @@
-// app\composables\useTournamentsFilters.ts
+// app\composables\tournaments\useTournamentsFilters.ts
 import type { Ref } from 'vue'
 import type { Range, Tournament, TournamentStatus } from '~/types'
 

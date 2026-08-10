@@ -1,4 +1,4 @@
-// app\composables\useAssociates.ts
+// app\composables\associates\useAssociates.ts
 import type { Associate } from '~/types'
 
 export const useAssociates = () => {

@@ -1,4 +1,4 @@
-// app\composables\useWantedCardsMutations.ts
+// app\composables\wantedCards\useWantedCardsMutations.ts
 import type { WantedCardStatus } from '~/types'
 
 export interface NewWantedCard {

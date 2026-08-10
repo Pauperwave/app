@@ -1,4 +1,4 @@
-// app\composables\useEventsTableColumns.ts
+// app\composables\events\useEventsTableColumns.ts
 import { h } from 'vue'
 import { UBadge } from '#components'
 import { format } from 'date-fns'

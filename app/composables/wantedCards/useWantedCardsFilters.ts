@@ -1,4 +1,4 @@
-// app\composables\useWantedCardsFilters.ts
+// app\composables\wantedCards\useWantedCardsFilters.ts
 import type { Ref } from 'vue'
 import type { WantedCard, WantedCardStatus } from '~/types'
 

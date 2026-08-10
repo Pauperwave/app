@@ -1,4 +1,4 @@
-// app\composables\useCittadinoQuery.ts
+// app\composables\cittadino\useCittadinoQuery.ts
 import type { Ref } from 'vue'
 import type { CittadinoEvent, CittadinoPlacement } from '~/types'
 

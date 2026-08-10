@@ -1,4 +1,4 @@
-// app\composables\useAssociateGeocodes.ts
+// app\composables\associates\useAssociateGeocodes.ts
 export interface AssociateGeocode {
   associate_uuid: string
   latitude: number

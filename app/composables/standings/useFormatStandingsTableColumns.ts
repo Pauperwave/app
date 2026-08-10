@@ -1,4 +1,4 @@
-// app\composables\useFormatStandingsTableColumns.ts
+// app\composables\standings\useFormatStandingsTableColumns.ts
 import { h } from 'vue'
 import type { Ref } from 'vue'
 import type { TableColumn } from '@nuxt/ui'

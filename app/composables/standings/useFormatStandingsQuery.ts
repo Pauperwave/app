@@ -1,4 +1,4 @@
-// app\composables\useFormatStandingsQuery.ts
+// app\composables\standings\useFormatStandingsQuery.ts
 import type { Ref } from 'vue'
 import type {
   FormatStandingEvent, FormatStandingPlacement, FormatStandingResult, FormatStandingRow

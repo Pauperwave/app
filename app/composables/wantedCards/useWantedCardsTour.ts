@@ -1,4 +1,4 @@
-// app\composables\useWantedCardsTour.ts
+// app\composables\wantedCards\useWantedCardsTour.ts
 
 // Step order = the page's reading order (top-left -> bottom-right): navbar (view,
 // new request), then toolbar (filters on the left, view on the right), then the page

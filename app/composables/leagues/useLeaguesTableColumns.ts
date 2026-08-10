@@ -1,4 +1,4 @@
-// app\composables\useLeaguesTableColumns.ts
+// app\composables\leagues\useLeaguesTableColumns.ts
 import { h } from 'vue'
 import { UBadge } from '#components'
 import type { TableColumn } from '@nuxt/ui'
