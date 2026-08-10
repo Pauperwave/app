@@ -57,10 +57,11 @@ export const USER_ROLE_KEY = ['user-role']
 
 export function useUserRole() {
   const supabase = useSupabaseClient()
+  const user = useSupabaseUser()
   return useQuery({
     key: USER_ROLE_KEY,
+    enabled: () => !!user.value, // don't fire the RPC with no session to resolve
     query: async () => {
-      const user = useSupabaseUser()
       const { data, error } = await supabase.rpc('get_user_role', { p_user_id: user.value!.id })
       if (error) throw error
       return data
@@ -71,15 +72,19 @@ export function useUserRole() {
 
 This retires almost the entire hand-rolled apparatus the first draft specified, because Colada's `useQuery` already provides it (confirmed against the installed package's own types, `node_modules/@pinia/colada/dist/index.d.mts`, not assumed):
 
-- `status: ShallowRef<'pending' | 'success' | 'error'>` — the idle/loading/ready/error state, for free. `'pending'` covers both "not fetched yet" and "fetching" (there's a separate `isLoading`/`asyncStatus` for the latter if that distinction is ever needed); `can()` and the middleware should treat anything other than `status === 'success'` as "not yet decided," same as the old `null`-means-unresolved rule — just expressed through Colada's status instead of a custom one.
+- `status: ShallowRef<'pending' | 'success' | 'error'>` — the idle/loading/ready/error state, for free. `'pending'` covers both "not fetched yet" and "fetching"; there's a *separate* `asyncStatus: 'idle' | 'loading'` for the loading-vs-idle distinction specifically — **`asyncStatus` cannot be `'error'`, only `status` can** (verified against the type declarations; a check like `asyncStatus === 'error'` would be dead code, always false). `can()` and the middleware should treat anything other than `status === 'success'` as "not yet decided," same as the old `null`-means-unresolved rule — just expressed through Colada's status instead of a custom one.
 - `refresh(): Promise<DataState<...>>` — "ensures the current data is fresh; if stale, refetch, if not, return as is." This **is** `ensureRole()` — idempotent, awaitable, and its in-flight-request dedup is handled internally by the query cache. The entire multi-round debate earlier in this doc's history about `_pendingFetch` (module-level `let` vs. `useState` vs. `useNuxtApp()`) is moot: it was solving a problem a real query library already solves correctly as its core job. Nothing here needs a custom Promise-tracking variable.
 - `data`/`error` — the resolved role and any fetch error, both reactive.
+
+**There is no `reset()` on a query's return value** (checked: absent from `UseQueryReturn` in the installed types). Invalidating/clearing a query on logout goes through the query cache, not a method on the query object — see §4.
+
+**A plain composable calling `useQuery` is callable from middleware, same as a store would be — no store is needed for that reason.** `useQuery`'s internal cleanup is gated behind `if (getCurrentScope())` (confirmed in `@pinia/colada`'s source, `dist/index.mjs`): it *skips* the component-scope-bound cleanup when called somewhere without an active Vue effect scope — global middleware, like a plugin — rather than erroring. The query's cache is keyed globally (by `USER_ROLE_KEY`), not bound to whichever call site first created it, so a component and `authorization.global.ts` calling `useUserRole()` read/share the exact same cached entry either way. `auth.global.ts` already calls a composable (`useSupabaseSession()`) directly from middleware today — this is the same shape, not a new capability a store would be uniquely providing.
 
 What's still genuinely custom, on top of the query:
 
 - `can(permission: Permission)` and `isAdmin`/`isOrganizer`/`isJudge`/`isStaff` — computed helpers reading `data.value`, same purpose as before, just sourced from a Colada query's `data` instead of a hand-rolled `role` ref.
 
-**Do not wrap this in a Pinia store (`defineStore`).** Nothing in this codebase does — every Colada-backed domain (`useWantedCardsQuery`/`useWantedCardsMutations`, and every other `use<Domain>Query.ts`) is a plain composable calling `useQuery`/`useMutation` directly, no store layer in between. A `useSessionStore` bundling user+role+profile together would be inconsistent with that convention for no benefit specific to this codebase: the "utente" part is already free via `useSupabaseUser()` (built into `@nuxtjs/supabase`), and "profilo" already has `useCurrentAssociate()` (not yet Colada-migrated, tracked separately in `docs/BACKLOG.md` P1 — a pre-existing, independent piece of work, not something to fold into this one). Three independent composables, combined at the call site where a component needs more than one, is the shape everything else in this app already uses.
+**Do not wrap this in a Pinia store (`defineStore`).** Nothing in this codebase does — every Colada-backed domain (`useWantedCardsQuery`/`useWantedCardsMutations`, and every other `use<Domain>Query.ts`) is a plain composable calling `useQuery`/`useMutation` directly, no store layer in between. A `useSessionStore` bundling user+role+profile together would be inconsistent with that convention for no benefit specific to this codebase: the "utente" part is already free via `useSupabaseUser()` (built into `@nuxtjs/supabase`), and "profilo" already has `useCurrentAssociate()` (not yet Colada-migrated, tracked separately in `docs/BACKLOG.md` P1 — a pre-existing, independent piece of work, not something to fold into this one). Three independent composables, combined at the call site where a component needs more than one, is the shape everything else in this app already uses. **The specific justification "a store is needed so middleware can read the query" doesn't hold up** — see the `getCurrentScope()` note below: a plain composable is equally callable from middleware.
 
 **New finding, not covered by any earlier round of this doc: persistence.** ADR-009 (`docs/PROGRESS.md`) — every `useQuery` in this project persists to `localStorage` by default via `PiniaColadaCachePersister`, registered with no `filter` in `colada.options.ts` (confirmed: the file has no `filter` option today, so nothing is currently excluded). A role is exactly the "sensitive, must not persist" case ADR-009 itself names as the reason the `filter` option exists — without an explicit exclusion, a role fetched for one user could sit in `localStorage` and be visible (even briefly, before `refresh()` resolves) to a different person who logs into the same browser/device afterwards. **`useUserRole`'s query must be excluded via `colada.options.ts`'s `filter`** before or when this composable is built, not treated as an afterthought.
 
