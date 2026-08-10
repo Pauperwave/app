@@ -8,7 +8,7 @@ How to give players a different (restricted, adapted) view of the same app the a
 
 Confirmed via the audit + `shared/utils/types/database.ts` (generated from the real DB, never hand-edited):
 
-- `app_role` DB enum: `admin | organizer | judge | player`, matches the backup docs exactly. **The application-level role model uses only three of these — `admin | organizer | player`** (decided 2026-08-10, see the hierarchy note below). **`judge` should come out of the enum itself, not just go unused in app code** (confirmed 2026-08-10) — otherwise it's still a selectable, type-valid value that `assign_role`/`MembersList.vue`'s dropdown could accidentally set, silently outside the 3-tier hierarchy the rest of this doc assumes. This is a real migration, not a trivial rename: Postgres has no `ALTER TYPE ... DROP VALUE` — removing a value means creating a new enum type without it, repointing every column/function typed against the old one, then dropping the old type. Do this only after confirming no row anywhere currently has `role = 'judge'` (check `user_roles`, and anywhere else `app_role` is used as a column type) — if one exists, decide what it becomes first (`organizer`, per the hierarchy) before the type migration, not after.
+- `app_role` DB enum: `admin | organizer | judge | player`, matches the backup docs exactly. **The application-level role model needs revising to `player | organizer | admin | super_admin`** (decided 2026-08-10, see the hierarchy note below) — `judge` dropped, a new top tier `super_admin` added above `admin`. **Both changes require the same migration**, and can be done in one pass: Postgres has no `ALTER TYPE ... DROP VALUE` (removing `judge` means creating a new enum type without it, repointing every column/function typed against the old one, then dropping the old type) but does support `ALTER TYPE ... ADD VALUE` cheaply (adding `super_admin`) — since the removal already forces a full type recreation, add the new value as part of that same recreation rather than a separate step. Do this only after confirming no row anywhere currently has `role = 'judge'` (check `user_roles`, and anywhere else `app_role` is used as a column type) — if one exists, decide what it becomes first (`organizer`, per the hierarchy) before the type migration, not after.
 - `user_roles` table (`user_id → auth.users(id)`, `role`, unique per `(user_id, role)`) exists.
 - RPCs confirmed live: `has_management_permissions(uuid)`, `is_admin(uuid)`, `get_user_role(uuid)`, `get_user_roles`, `has_role`, `is_judge`, `is_organizer`.
 - `get_user_role(uuid)` defaults to `'player'` when a user has no row in `user_roles` — no separate "no role" state to handle.
@@ -50,16 +50,25 @@ The three-layer shape (resolve role → gate routes → adapt in-page UI) held u
 
 **Revised 2026-08-10.** The earlier "`useState`, not Pinia" framing was answering the wrong question. `@pinia/colada` isn't a hypothetical addition to weigh against `useState` — it's already a live, established pattern in this exact codebase (`useWantedCardsQuery.ts`, ADR-007/009 in `docs/PROGRESS.md`), and it exists specifically to solve "fetch this, cache it, expose loading/error state" — precisely what the `role`/`status`/`fetchRole`/`ensureRole` apparatus below was reinventing by hand.
 
-**Domain rule, confirmed 2026-08-10: a user has exactly one effective role.** This app's roles are a strict hierarchy, not independent capabilities — `admin` ⊇ `organizer` ⊇ `player`, each level a strict superset of the one below. (`judge` was considered and dropped from the app-level model the same day — see the DB-enum note above.) This settles the multi-role question from earlier drafts of this doc: build on `get_user_role` (singular) after all, not `get_user_roles`, and express `can()` as a numeric level comparison, not a union over a role set:
+**Domain rule, confirmed 2026-08-10: a user has exactly one effective role.** This app's roles are a strict hierarchy, not independent capabilities — `super_admin` ⊇ `admin` ⊇ `organizer` ⊇ `player`, each level a strict superset of the one below. (`judge` was considered and dropped from the app-level model the same day; a 4th tier, `super_admin`, was added above `admin` — see the DB-enum note above and `docs/architecture/permissions.md` for the concrete per-feature split.) This settles the multi-role question from earlier drafts of this doc: build on `get_user_role` (singular) after all, not `get_user_roles`, and express `can()` as a numeric level comparison, not a union over a role set:
 
 ```ts
-const ROLE_LEVEL = { player: 0, organizer: 1, admin: 2 } as const satisfies Record<AppRole, number>
+const ROLE_LEVEL = {
+  player: 0,
+  organizer: 1,
+  admin: 2,
+  super_admin: 3
+} as const satisfies Record<AppRole, number>
 
 const PERMISSION_LEVEL = {
   'register-tournament': 'player',
   'manage-tournaments': 'organizer',
-  'manage-members': 'admin'
-  // ...
+  'manage-event-payments': 'organizer',
+  'manage-members': 'admin',
+  'manage-membership-fees': 'admin',
+  'manage-all-commander-decks': 'admin',
+  'manage-roles': 'super_admin'
+  // ... full list tracked in docs/architecture/permissions.md, kept in sync
 } as const satisfies Record<Permission, AppRole>
 
 function can(role: AppRole | undefined, permission: Permission): boolean {
@@ -102,7 +111,7 @@ This retires almost the entire hand-rolled apparatus the first draft specified, 
 
 What's still genuinely custom, on top of the query:
 
-- `can(role, permission)` (level comparison, per the code above) and `isAdmin`/`isOrganizer`/`isStaff` — `data.value === 'admin'`, `data.value === 'organizer'`, `data.value !== 'player'` respectively, computed helpers for the common coarse checks.
+- `can(role, permission)` (level comparison, per the code above) and `isOrganizer`/`isAdmin`/`isSuperAdmin`/`isStaff` — `data.value === 'organizer'`, `=== 'admin'`, `=== 'super_admin'`, `!== 'player'` respectively, computed helpers for the common coarse checks.
 
 **Do not wrap this in a Pinia store (`defineStore`).** Nothing in this codebase does — every Colada-backed domain (`useWantedCardsQuery`/`useWantedCardsMutations`, and every other `use<Domain>Query.ts`) is a plain composable calling `useQuery`/`useMutation` directly, no store layer in between. A `useSessionStore` bundling user+role+profile together would be inconsistent with that convention for no benefit specific to this codebase: the "utente" part is already free via `useSupabaseUser()` (built into `@nuxtjs/supabase`), and "profilo" already has `useCurrentAssociate()` (not yet Colada-migrated, tracked separately in `docs/BACKLOG.md` P1 — a pre-existing, independent piece of work, not something to fold into this one). Three independent composables, combined at the call site where a component needs more than one, is the shape everything else in this app already uses. **The specific justification "a store is needed so middleware can read the query" doesn't hold up** — see the `getCurrentScope()` note below: a plain composable is equally callable from middleware.
 
@@ -110,14 +119,14 @@ What's still genuinely custom, on top of the query:
 
 **`user_roles`'s schema still allows multiple rows per user — the app-level single-role rule isn't enforced by the database yet.** The unique constraint is on `(user_id, role)`, not on `user_id` alone. Given the confirmed domain rule above, this is a real gap, the same shape as the P1 `pauperwave_associates` RLS issue elsewhere in this doc: an invariant the app assumes but Postgres doesn't actually guarantee. Tighten it as part of this work, not left for later:
 
-- Check for existing users with more than one row in `user_roles` before adding any constraint (none expected under the new 3-role model, but confirm rather than assume).
+- Check for existing users with more than one row in `user_roles` before adding any constraint (none expected under the new 4-role model, but confirm rather than assume).
 - Change the constraint from `UNIQUE(user_id, role)` to `UNIQUE(user_id)`, so the database itself rejects a second role row for the same user instead of relying on `assign_role`/application code to remember the rule.
 
 **Bootstrap data for `assign_role` (step 3 below), recorded 2026-08-10 so it isn't lost before the mechanism exists:**
 
 | Person | Role |
 |---|---|
-| Emanuele Nardi | `admin` |
+| Emanuele Nardi | `super_admin` (**inferred, not stated explicitly** — earlier in this doc's history the user called themselves `admin`, before `super_admin`/role-management existed as a concept; since they're the one making role decisions here, `super_admin` fits, but confirm before applying) |
 | Marco Cazzola | `organizer` |
 | Lorenzo Castelli | `organizer` |
 | Nicola Cordeschi | `organizer` |
@@ -190,7 +199,7 @@ Same route for staff and players, `v-if` inside it:
 | Hand-rolled `useState`/`fetchRole`/`ensureRole`/pending-promise tracking | No — Colada's `status`/`refresh()` already do this |
 | Wrapping it in a Pinia store (`defineStore`) | No — not a pattern used anywhere else in this codebase |
 | Role query persistence | Must be excluded via `colada.options.ts`'s `filter` (ADR-009), strictly before the composable is built — sensitive, shared-device risk otherwise |
-| Roles per user | Exactly one, hierarchical (`admin` ⊇ `organizer` ⊇ `player`) — confirmed 2026-08-10, dropped `judge` and the earlier multi-role/union design |
+| Roles per user | Exactly one, hierarchical (`super_admin` ⊇ `admin` ⊇ `organizer` ⊇ `player`) — confirmed 2026-08-10, dropped `judge`, added `super_admin`, dropped the earlier multi-role/union design |
 | `can()` | Numeric level comparison (`ROLE_LEVEL[role] >= ROLE_LEVEL[PERMISSION_LEVEL[permission]]`), not a per-role permission list |
 | `user_roles`/`app_role` schema | Both need tightening to match: `UNIQUE(user_id)` instead of `UNIQUE(user_id, role)`, and `judge` removed from the `app_role` enum (real type migration, not a rename) |
 | Middleware | Two, separate: `auth.global` + `authorization.global` |
@@ -213,10 +222,10 @@ Same route for staff and players, `v-if` inside it:
 1. Decide and resolve the `pauperwave_associates` P1 policy (`docs/BACKLOG.md`) — not a hard blocker for starting the steps below, but "player can't see other members' PII" stays false until it's fixed.
 2. Confirm whether `public_read` was applied to `tournaments`/`tournament_standings`/`players` (audit §5.5) — changes what's already safe to read as a player vs. what still needs a BFF/RPC.
 3. Create `assign_role(uuid, app_role)` in Supabase (or document the existing mechanism, if promotion already happens some other way) — prerequisite for wiring `MembersList.vue`'s dropdown.
-4. DB migration for the 3-role model, confirmed 2026-08-10 (§1): remove `judge` from the `app_role` enum (type recreation, after confirming no existing row uses it), tighten `user_roles` from `UNIQUE(user_id, role)` to `UNIQUE(user_id)`, and apply the bootstrap role assignments (Emanuele Nardi → `admin`; Marco Cazzola, Lorenzo Castelli, Nicola Cordeschi → `organizer`) — via `assign_role` from step 3, or by hand via SQL editor if that's not built yet.
+4. DB migration for the 4-role model, confirmed 2026-08-10 (§1): recreate the `app_role` enum without `judge` and with `super_admin` added (one type recreation covers both, after confirming no existing row uses `judge`), tighten `user_roles` from `UNIQUE(user_id, role)` to `UNIQUE(user_id)`, and apply the bootstrap role assignments (Emanuele Nardi → `super_admin`, unconfirmed — see §1; Marco Cazzola, Lorenzo Castelli, Nicola Cordeschi → `organizer`) — via `assign_role` from step 3, or by hand via SQL editor if that's not built yet.
 5. `app/utils/permissions.ts` — `ROLE_LEVEL` + `PERMISSION_LEVEL` (§1) and the `Permission` type. Written first because everything else (the composable's `can()`, `definePageMeta({ permission })`, the middleware) reads from it.
 6. `colada.options.ts` — add the `filter` exclusion for the role query key. **Mandatory, strictly before step 7** (confirmed 2026-08-10) — not "alongside," not "whenever it's convenient": the risk this closes (a stale/wrong role sitting in `localStorage` on a shared device) exists the moment `useUserRole()` starts calling `useQuery`, and the gap stops being visible in normal testing once the composable works, which is exactly when it'd stop getting fixed.
-7. `app/composables/useUserRole.ts` — `useQuery`-backed on `get_user_role` (§1), `can`/`isAdmin`/`isOrganizer`/`isStaff` on top of it.
+7. `app/composables/useUserRole.ts` — `useQuery`-backed on `get_user_role` (§1), `can`/`isOrganizer`/`isAdmin`/`isSuperAdmin`/`isStaff` on top of it.
 8. `app/plugins/user-role.ts` — the `onAuthStateChange` → `queryCache.invalidateQueries` subscription (§4). Decide `.client.ts` vs. universal during this step, per the note in §4, rather than assuming either.
 9. `app/types/nuxt.d.ts` — `PageMeta.permission` augmentation, so `definePageMeta({ permission: ... })` type-checks.
 10. `app/middleware/authorization.global.ts` — reads `to.meta.permission`, `await useUserRole().refresh()` then `can()`, redirect to `/403` on denial. `app/middleware/auth.global.ts` stays as-is (session check only); the alphabetical filename ordering (`auth.` before `autho`) is what makes it run first — don't reorder or rename either file without re-checking that.
