@@ -64,6 +64,7 @@ const PERMISSION_LEVEL = {
   'register-tournament': 'player',
   'manage-tournaments': 'organizer',
   'manage-event-payments': 'organizer',
+  'send-payment-receipts': 'admin', // event/tournament AND membership-fee receipts — organizer can manage the payment, not email the receipt
   'manage-members': 'admin',
   'manage-membership-fees': 'admin',
   'manage-all-commander-decks': 'admin',
