@@ -79,25 +79,7 @@ const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]
                 <UTooltip v-if="card.notes" :text="card.notes">
                   <UIcon name="i-lucide-message-circle" class="size-4 text-muted shrink-0" />
                 </UTooltip>
-                <UBadge color="neutral" variant="subtle">
-                  {{ card.copies }}×
-                </UBadge>
-                <UBadge
-                  color="neutral"
-                  variant="subtle"
-                  :icon="WANTED_CARD_LANGUAGE_ICONS[card.language] ?? 'i-lucide-languages'"
-                  class="gap-2"
-                >
-                  {{ t(`wantedCard.languages.${card.language || 'any'}`) }}
-                </UBadge>
-                <UBadge
-                  v-for="treatment in card.treatment"
-                  :key="treatment"
-                  color="neutral"
-                  variant="subtle"
-                >
-                  {{ t(`wantedCard.treatments.${treatment}`) }}
-                </UBadge>
+                <WantedCardsMetaBadges :card="card" />
 
                 <WantedCardsAge :date="card.date" />
 
@@ -134,25 +116,7 @@ const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]
                 </div>
 
                 <div class="flex flex-wrap items-center gap-1.5">
-                  <UBadge color="neutral" variant="subtle">
-                    {{ card.copies }}×
-                  </UBadge>
-                  <UBadge
-                    color="neutral"
-                    variant="subtle"
-                    :icon="WANTED_CARD_LANGUAGE_ICONS[card.language] ?? 'i-lucide-languages'"
-                    class="gap-2"
-                  >
-                    {{ t(`wantedCard.languages.${card.language || 'any'}`) }}
-                  </UBadge>
-                  <UBadge
-                    v-for="treatment in card.treatment"
-                    :key="treatment"
-                    color="neutral"
-                    variant="subtle"
-                  >
-                    {{ t(`wantedCard.treatments.${treatment}`) }}
-                  </UBadge>
+                  <WantedCardsMetaBadges :card="card" />
                   <!-- Right-hand cluster as a single flex child, not two
                        siblings with `ms-auto` on the first: with flex-wrap that
                        margin only aligns right while the row does not wrap —

@@ -207,16 +207,7 @@ const gridSections = computed<GridSection[]>(() => {
               transactions/index.vue), not a bordered UFieldGroup — measured,
               it already aligns with the table (105px vs 106px) without it.
             -->
-            <UFieldGroup>
-              <UButton
-                v-for="option in statusTabs"
-                :key="option.value"
-                :label="option.label"
-                color="neutral"
-                :variant="statusFilter === option.value ? 'solid' : 'outline'"
-                @click="statusFilter = option.value"
-              />
-            </UFieldGroup>
+            <StatusFilterGroup v-model="statusFilter" :items="statusTabs" />
 
             <!-- Search by card name hidden for now: this view serves people
                  looking for cards, not people selling them (which is the real
@@ -323,6 +314,7 @@ const gridSections = computed<GridSection[]>(() => {
             :grouping-options="{
               getGroupedRowModel: getGroupedRowModel()
             }"
+            sticky="header"
             :ui="{ td: 'empty:p-0' }"
             class="w-full"
             @contextmenu="onRowContextmenu"
