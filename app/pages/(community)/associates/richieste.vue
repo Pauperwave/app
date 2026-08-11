@@ -8,7 +8,6 @@ import type { Associate } from '~/types'
 const {
   data: associates, isLoading: loading, status, refetch
 } = useAssociatesQuery()
-const { lastUpdatedAt } = useQueryFreshness(loading, status)
 const { t } = useI18n()
 const { isModalOpen } = useModalOpenFromQuery()
 const {
@@ -411,17 +410,7 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
             </UButton>
           </AssociatesListApproveModal>
 
-          <div class="flex items-center gap-1.5">
-            <DataFreshnessIndicator :last-updated-at="lastUpdatedAt" />
-
-            <UButton
-              :icon="ICONS.refresh"
-              color="neutral"
-              variant="outline"
-              :loading="loading"
-              @click="refetch"
-            />
-          </div>
+          <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refetch" />
 
           <UDropdownMenu :items="visibilityItems" :content="{ align: 'end' }">
             <UButton

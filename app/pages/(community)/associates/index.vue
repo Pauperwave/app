@@ -9,7 +9,6 @@ const {
   data: associates, isLoading: loading, status, refetch
 } = useAssociatesQuery()
 const { data: geocodes, isLoading: geocodesLoading } = useAssociateGeocodesQuery()
-const { lastUpdatedAt } = useQueryFreshness(loading, status)
 const { t } = useI18n()
 const {
   formatDateTime, formatDate, renderAssociateTypeBadge, renderConsentBadge
@@ -519,17 +518,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
         </template>
 
         <template #right>
-          <div class="flex items-center gap-1.5">
-            <DataFreshnessIndicator :last-updated-at="lastUpdatedAt" />
-
-            <UButton
-              :icon="ICONS.refresh"
-              color="neutral"
-              variant="outline"
-              :loading="loading"
-              @click="refetch"
-            />
-          </div>
+          <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refetch" />
 
           <UDropdownMenu :items="visibilityItems" :content="{ align: 'end' }">
             <UButton
