@@ -43,12 +43,7 @@ export function useCittadinoQuery(selectedEdition: Ref<string | null>) {
   const editions = computed(() => data.value.editions)
   const events = computed<CittadinoEvent[]>(() => data.value.events)
 
-  const placements = computed<CittadinoPlacement[]>(() => data.value.results.map(row => ({
-    playerUuid: row.player_uuid,
-    playerName: row.player_name,
-    eventUuid: row.event_uuid,
-    rank: row.rank
-  })))
+  const placements = computed<CittadinoPlacement[]>(() => data.value.results.map(toBestNPlacement))
 
   return { edition, editions, events, placements, loading, error, refresh }
 }
