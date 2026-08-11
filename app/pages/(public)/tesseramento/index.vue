@@ -320,13 +320,7 @@ async function onSubmit() {
         </template>
 
         <template v-else-if="currentStep === 'fiscalInfo'">
-          <UFormField :label="$t('associate.addModal.fields.taxCode')" name="tax_code" required>
-            <UInput
-              v-model="state.tax_code"
-              :placeholder="$t('associate.addModal.placeholders.taxCode')"
-              class="w-full"
-            />
-          </UFormField>
+          <AssociatesFieldsTaxCodeField :state="state" />
         </template>
 
         <template v-else-if="currentStep === 'residencyInfo'">
@@ -383,17 +377,7 @@ async function onSubmit() {
                 </template>
               </UCheckbox>
             </UFormField>
-            <UFormField name="consent_social">
-              <UCheckbox
-                v-model="state.consent_social"
-                :label="$t('associate.addModal.consents.socialLabel')"
-                size="lg"
-              >
-                <template #description>
-                  {{ $t('associate.addModal.consents.socialDescription') }}
-                </template>
-              </UCheckbox>
-            </UFormField>
+            <AssociatesFieldsConsentSocialField :state="state" />
           </div>
         </template>
 
