@@ -1,28 +1,13 @@
 // server\api\wanted-cards\[id]\update.post.ts
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
-
-interface UpdateWantedCardBody {
-  playerAssociateUuid: string
-  scryfallUrl: string
-  scryfallId: string
-  setCode: string
-  manaCost: string
-  colorIdentity: string[]
-  cmc: number
-  imageUrl: string | null
-  cardmarketPrice: number | null
-  copies: number
-  language: string | null
-  treatment: string[]
-  notes: string | null
-}
+import type { WantedCardEditsPayload } from '#shared/types/wantedCards'
 
 export default defineEventHandler(async (event) => {
   const user = await requireManagementPermission(event)
 
   const id = Number(getRouterParam(event, 'id'))
-  const body = await readBody<UpdateWantedCardBody>(event)
+  const body = await readBody<WantedCardEditsPayload>(event)
 
   const supabase = serverSupabaseServiceRole<Database>(event)
 
@@ -49,19 +34,9 @@ export default defineEventHandler(async (event) => {
     .select()
     .single()
 
-  if (error || !data) {
-    throw createError({
-      statusCode: 500,
-      statusMessage: error?.message ?? 'Wanted card update failed'
-    })
-  }
+  const wantedCard = ensureWantedCardRow(data, error, 'update')
+  // Changing edition/printing can point at a card that was never resolved before.
+  prefetchCardTraderBlueprint(event, supabase, body.scryfallId, body.setCode)
 
-  // Same background prefetch as create.post.ts — changing edition/printing can
-  // point at a card that was never resolved before.
-  const token = useRuntimeConfig(event).cardTraderApiToken
-  if (token) {
-    resolveCardTraderBlueprint(supabase, token, body.scryfallId, body.setCode).catch(() => {})
-  }
-
-  return { wantedCard: data }
+  return { wantedCard }
 })
