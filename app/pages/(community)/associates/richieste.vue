@@ -5,7 +5,10 @@ import type { Column } from '@tanstack/vue-table'
 import { upperFirst } from 'scule'
 import type { Associate } from '~/types'
 
-const { data: associates, isLoading: loading, refetch } = useAssociatesQuery()
+const {
+  data: associates, isLoading: loading, status, refetch
+} = useAssociatesQuery()
+const { lastUpdatedAt } = useQueryFreshness(loading, status)
 const { t } = useI18n()
 const { isModalOpen } = useModalOpenFromQuery()
 const {
@@ -395,6 +398,8 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
               </template>
             </UButton>
           </AssociatesListApproveModal>
+
+          <DataFreshnessIndicator :last-updated-at="lastUpdatedAt" />
 
           <UDropdownMenu :items="visibilityItems" :content="{ align: 'end' }">
             <UButton
