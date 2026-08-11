@@ -1,4 +1,7 @@
 // app\composables\events\useEventsFilters.ts
+// fallow-ignore-file code-duplication -- mirrors useTournamentsFilters.ts's
+// date-range/status filter shape on purpose; expected to diverge once real
+// Supabase tables land
 import type { Ref } from 'vue'
 import type { Event, EventStatus, Range } from '~/types'
 
