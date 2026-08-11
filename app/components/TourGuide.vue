@@ -31,9 +31,14 @@ const { tour } = defineProps<{ tour: UseTourReturn }>()
             @click="tour.finish()"
           />
         </div>
-        <p class="text-sm text-muted">
-          {{ tour.current.value?.description }}
-        </p>
+        <!-- Plain text by default; a consumer can override via #description
+             when a step's copy needs rich content (e.g. real UKbd chips
+             instead of quoted letters — see useShortcutsTour.ts). -->
+        <slot name="description" :step="tour.current.value">
+          <p class="text-sm text-muted">
+            {{ tour.current.value?.description }}
+          </p>
+        </slot>
         <div class="flex items-center justify-between pt-1">
           <span class="text-xs text-muted">
             {{ $t('tour.stepIndicator', {

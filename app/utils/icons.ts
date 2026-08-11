@@ -19,6 +19,7 @@ export const ICONS = {
   edit: 'i-lucide-pencil-line',
   confirm: 'i-lucide-check',
   copy: 'i-lucide-copy',
+  link: 'i-lucide-link',
   close: 'i-lucide-x',
   statusRejected: 'i-lucide-x-circle',
   clear: 'i-lucide-circle-x',
@@ -66,6 +67,8 @@ export const ICONS = {
   chevronsUpDown: 'i-lucide-chevrons-up-down',
   ellipsisVertical: 'i-lucide-ellipsis-vertical',
   bookOpen: 'i-lucide-book-open',
+  keyboard: 'i-lucide-keyboard',
+  inbox: 'i-lucide-inbox',
 
   // Sorting
   sortAscNumeric: 'i-lucide-arrow-up-narrow-wide',
