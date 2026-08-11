@@ -3,7 +3,6 @@
 import * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import { CalendarDate, getLocalTimeZone } from '@internationalized/date'
-import { vMaska } from 'maska/vue'
 
 // Define the model to accept open state from parent
 const open = defineModel<boolean>({ default: false })
@@ -17,69 +16,19 @@ function formatDate(date: Date): string {
   return `${day}/${month}/${year}`
 }
 
-const schema = v.object({
-  associate_type: v.picklist(['Ordinario', 'Sostenitore']),
-  first_name: v.pipe(v.string(), v.minLength(2, t('associate.addModal.validation.firstNameTooShort'))),
-  last_name: v.pipe(v.string(), v.minLength(2, t('associate.addModal.validation.lastNameTooShort'))),
-  // trim/toLowerCase are transformations (they never fail on their own), while
-  // v.email() validates the format after normalisation — same order as the
-  // previous Zod pipeline.
-  email_address: v.pipe(
-    v.string(),
-    v.trim(),
-    v.email(t('associate.addModal.validation.invalidEmail')),
-    v.toLowerCase()
-  ),
-  phone_number: v.pipe(
-    v.string(),
-    v.regex(/^\d{10,15}$/, t('associate.addModal.validation.invalidPhoneNumber'))
-  ),
-  tax_code: v.pipe(
-    v.string(),
-    v.regex(/^[A-Z0-9]{16}$/i, t('associate.addModal.validation.invalidTaxCode'))
-  ),
-  born_location: v.pipe(v.string(), v.minLength(2, t('associate.addModal.validation.birthLocationRequired'))),
-  born_date: v.pipe(v.date(), v.maxValue(new Date(), t('associate.addModal.validation.birthDateNotFuture'))),
-  born_province: v.pipe(v.string(), v.length(2, t('associate.addModal.validation.birthProvinceRequired'))),
-  born_state: v.pipe(v.string(), v.minLength(2, t('associate.addModal.validation.birthStateRequired'))),
-  residency_address: v.pipe(
-    v.string(),
-    v.minLength(5, t('associate.addModal.validation.residencyAddressRequired'))
-  ),
-  residency_city: v.pipe(v.string(), v.minLength(2, t('associate.addModal.validation.residencyCityRequired'))),
-  residency_province: v.pipe(
-    v.string(),
-    v.length(2, t('associate.addModal.validation.residencyProvinceInvalid'))
-  ),
-  residency_cap: v.pipe(
-    v.string(),
-    v.regex(/^\d{5}$/, t('associate.addModal.validation.residencyCapInvalid'))
-  ),
-  mtgo_nickname: v.nullable(v.string()),
-  mtga_nickname: v.nullable(v.string()),
-  // v.check rather than v.literal(true, ...): v.literal would narrow the inferred
-  // TYPE to `true`, incompatible with the initial `false` state (checkbox not yet
-  // ticked) — v.check on v.boolean() validates without narrowing the type, same
-  // semantics as the original Zod .refine(val => val === true).
-  consent_data: v.pipe(
-    v.boolean(),
-    v.check(val => val === true, t('associate.addModal.validation.consentDataRequired'))
-  ),
-  consent_social: v.optional(v.boolean()),
-  has_read_statute: v.pipe(
-    v.boolean(),
-    v.check(val => val === true, t('associate.addModal.validation.statuteReadRequired'))
-  ),
-  has_acknowledged_surveillance_notice: v.pipe(
-    v.boolean(),
-    v.check(val => val === true, t('associate.addModal.validation.surveillanceAckRequired'))
-  )
-})
+// Shared with /tesseramento (the public self-service form) — see
+// associateFormSchema.ts.
+const schema = v.object(associateFormSchema(t))
 
 type Schema = v.InferOutput<typeof schema>
 
+const associateTypeOptions = computed(() => [
+  { label: t('associate.types.regular'), value: 'regular' as const },
+  { label: t('associate.types.sustaining'), value: 'sustaining' as const }
+])
+
 const state = reactive<Schema>({
-  associate_type: 'Ordinario',
+  associate_type: 'regular',
   first_name: '',
   last_name: '',
   email_address: '',
@@ -90,13 +39,13 @@ const state = reactive<Schema>({
   born_province: '',
   born_state: '',
   residency_address: '',
+  residency_house_number: null,
   residency_city: '',
   residency_province: '',
   residency_cap: '',
   mtgo_nickname: null,
   mtga_nickname: null,
   has_read_statute: false,
-  has_acknowledged_surveillance_notice: false,
   consent_data: false,
   consent_social: false
 })
@@ -164,7 +113,12 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           <h3 class="text-lg font-semibold text-primary">{{ $t('associate.addModal.sections.associateType') }}</h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
             <UFormField :label="$t('associate.addModal.fields.associateType')" name="associate_type">
-              <USelect v-model="state.associate_type" :items="['Ordinario', 'Sostenitore']" class="w-full" />
+              <USelect
+                v-model="state.associate_type"
+                :items="associateTypeOptions"
+                value-key="value"
+                class="w-full"
+              />
             </UFormField>
           </div>
         </div>
@@ -183,7 +137,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               <UInput v-model="state.email_address" autocomplete="email" class="w-full" />
             </UFormField>
             <UFormField :label="$t('associate.addModal.fields.phoneNumber')" name="phone_number" required>
-              <UInput v-maska="'(+39) ### #######'" :icon="ICONS.phone" v-model="state.phone_number" autocomplete="tel" class="w-full" />
+              <UPhoneInput v-model="state.phone_number" name="phone_number" />
             </UFormField>
           </div>
         </div>
@@ -193,7 +147,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           <h3 class="text-lg font-semibold text-primary">{{ $t('associate.addModal.sections.birthInfo') }}</h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
             <UFormField :label="$t('associate.addModal.fields.birthLocation')" name="born_location" required>
-              <UInput v-model="state.born_location" class="w-full" />
+              <UInput
+                v-model="state.born_location"
+                :placeholder="$t('associate.addModal.placeholders.birthLocation')"
+                class="w-full"
+              />
             </UFormField>
 
             <UFormField :label="$t('associate.addModal.fields.birthDate')" name="born_date" required>
@@ -228,10 +186,18 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             </UFormField>
 
             <UFormField :label="$t('associate.addModal.fields.birthProvince')" name="born_province" required>
-              <UInput v-model="state.born_province" class="w-full" />
+              <UInput
+                v-model="state.born_province"
+                :placeholder="$t('associate.addModal.placeholders.birthProvince')"
+                class="w-full"
+              />
             </UFormField>
             <UFormField :label="$t('associate.addModal.fields.birthState')" name="born_state" required>
-              <UInput v-model="state.born_state" class="w-full" />
+              <UInput
+                v-model="state.born_state"
+                :placeholder="$t('associate.addModal.placeholders.birthState')"
+                class="w-full"
+              />
             </UFormField>
           </div>
         </div>
@@ -241,7 +207,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           <h3 class="text-lg font-semibold text-primary">{{ $t('associate.addModal.sections.fiscalInfo') }}</h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
             <UFormField :label="$t('associate.addModal.fields.taxCode')" name="tax_code" required>
-              <UInput v-model="state.tax_code" class="w-full" />
+              <UInput
+                v-model="state.tax_code"
+                :placeholder="$t('associate.addModal.placeholders.taxCode')"
+                class="w-full"
+              />
             </UFormField>
           </div>
         </div>
@@ -251,16 +221,45 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           <h3 class="text-lg font-semibold text-primary">{{ $t('associate.addModal.sections.residencyInfo') }}</h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
             <UFormField :label="$t('associate.addModal.fields.residencyAddress')" name="residency_address" required>
-              <UInput v-model="state.residency_address" autocomplete="address-line1" class="w-full" />
+              <UInput
+                v-model="state.residency_address"
+                autocomplete="address-line1"
+                :placeholder="$t('associate.addModal.placeholders.residencyAddress')"
+                class="w-full"
+              />
+            </UFormField>
+            <UFormField :label="$t('associate.addModal.fields.residencyHouseNumber')" name="residency_house_number">
+              <UInput
+                :model-value="state.residency_house_number ?? ''"
+                autocomplete="address-line2"
+                :placeholder="$t('associate.addModal.placeholders.residencyHouseNumber')"
+                class="w-full"
+                @update:model-value="state.residency_house_number = ($event as string) || null"
+              />
             </UFormField>
             <UFormField :label="$t('associate.addModal.fields.residencyCity')" name="residency_city" required>
-              <UInput v-model="state.residency_city" autocomplete="address-line2" class="w-full" />
+              <UInput
+                v-model="state.residency_city"
+                autocomplete="address-level2"
+                :placeholder="$t('associate.addModal.placeholders.residencyCity')"
+                class="w-full"
+              />
             </UFormField>
             <UFormField :label="$t('associate.addModal.fields.residencyProvince')" name="residency_province" required>
-              <UInput v-model="state.residency_province" autocomplete="state" class="w-full" />
+              <UInput
+                v-model="state.residency_province"
+                autocomplete="address-level1"
+                :placeholder="$t('associate.addModal.placeholders.residencyProvince')"
+                class="w-full"
+              />
             </UFormField>
             <UFormField :label="$t('associate.addModal.fields.residencyCap')" name="residency_cap" required>
-              <UInput v-model="state.residency_cap" autocomplete="postal-code" class="w-full" />
+              <UInput
+                v-model="state.residency_cap"
+                autocomplete="postal-code"
+                :placeholder="$t('associate.addModal.placeholders.residencyCap')"
+                class="w-full"
+              />
             </UFormField>
           </div>
         </div>
@@ -299,18 +298,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               >
                 <template #description>
                   {{ $t('associate.addModal.consents.statuteDescription') }}
-                </template>
-              </UCheckbox>
-            </UFormField>
-            <UFormField name="has_acknowledged_surveillance_notice">
-              <UCheckbox
-                v-model="state.has_acknowledged_surveillance_notice"
-                required
-                :label="$t('associate.addModal.consents.surveillanceLabel')"
-                size="lg"
-              >
-                <template #description>
-                  {{ $t('associate.addModal.consents.surveillanceDescription') }}
                 </template>
               </UCheckbox>
             </UFormField>

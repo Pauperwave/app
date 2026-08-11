@@ -6,16 +6,23 @@
 // which can silently reject (no .catch()) and leave `useSupabaseUser()` stuck
 // at null even after a successful login.
 const session = useSupabaseSession()
+const route = useRoute()
+
+// /tesseramento's OTP step passes ?redirect=/tesseramento (see its
+// emailRedirectTo) so the magic link lands the applicant back on their form
+// instead of the dashboard — defaults to '/' for every other caller (the
+// regular /login flow never sets this param).
+const redirectTarget = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
 
 const failed = ref(false)
 
 if (session.value) {
-  navigateTo('/', { replace: true })
+  navigateTo(redirectTarget, { replace: true })
 } else {
   const stopWatching = watch(session, () => {
     if (session.value) {
       stopWatching()
-      navigateTo('/', { replace: true })
+      navigateTo(redirectTarget, { replace: true })
     }
   })
 }
