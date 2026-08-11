@@ -491,7 +491,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
            table below rather than switching between separate views. -->
       <UDashboardToolbar
         v-if="viewMode === 'table'"
-        :ui="{ root: 'flex-wrap h-auto py-2 gap-1.5', left: 'gap-4 flex-wrap' }"
+        :ui="{ root: 'flex-wrap h-auto py-2 gap-1.5', left: 'gap-4 flex-wrap', right: 'gap-4' }"
       >
         <template #left>
           <StatusFilterGroup v-model="activeStatusTab" :items="statusTabs" />
@@ -518,7 +518,17 @@ watch(() => consentSocialFilter.value, (newVal) => {
         </template>
 
         <template #right>
-          <DataFreshnessIndicator :last-updated-at="lastUpdatedAt" />
+          <div class="flex items-center gap-1.5">
+            <DataFreshnessIndicator :last-updated-at="lastUpdatedAt" />
+
+            <UButton
+              :icon="ICONS.refresh"
+              color="neutral"
+              variant="outline"
+              :loading="loading"
+              @click="refetch"
+            />
+          </div>
 
           <UDropdownMenu :items="visibilityItems" :content="{ align: 'end' }">
             <UButton
@@ -528,14 +538,6 @@ watch(() => consentSocialFilter.value, (newVal) => {
               :trailing-icon="ICONS.settingsColumns"
             />
           </UDropdownMenu>
-
-          <UButton
-            :icon="ICONS.refresh"
-            color="neutral"
-            variant="outline"
-            :loading="loading"
-            @click="refetch"
-          />
         </template>
       </UDashboardToolbar>
     </template>
