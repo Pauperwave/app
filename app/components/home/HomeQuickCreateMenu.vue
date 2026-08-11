@@ -7,7 +7,7 @@ const { t } = useI18n()
 const items = computed<DropdownMenuItem[][]>(() => [[{
   label: t('home.quickCreate.newAssociate'),
   icon: ICONS.addPlayer,
-  to: '/associates/richieste?action=create'
+  to: '/associates/requests?action=create'
 }, {
   label: t('home.quickCreate.newTransaction'),
   icon: ICONS.coins,

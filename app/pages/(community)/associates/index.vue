@@ -1,8 +1,8 @@
 <!-- app\pages\(community)\associates\index.vue -->
 <script setup lang="ts">
-import type { DropdownMenuItem, TableColumn, TabsItem } from '@nuxt/ui'
-import type { Column } from '@tanstack/vue-table'
+import type { BadgeProps, TableColumn, TabsItem } from '@nuxt/ui'
 import { upperFirst } from 'scule'
+import { UBadge } from '#components'
 import type { Associate } from '~/types'
 
 const {
@@ -10,12 +10,10 @@ const {
 } = useAssociatesQuery()
 const { data: geocodes, isLoading: geocodesLoading } = useAssociateGeocodesQuery()
 const { t } = useI18n()
-const {
-  formatDateTime, formatDate, renderAssociateTypeBadge, renderConsentBadge
-} = useAssociateRenderers()
+const { formatDateTime, formatDate, renderConsentBadge } = useAssociateRenderers()
 
 // Roster = already-approved associates only. Pending/rejected requests moved
-// to /associates/richieste entirely (2026-08-11 UX split) — this table used
+// to /associates/requests entirely (2026-08-11 UX split) — this table used
 // to mix "people who are members" with "people asking to become one", which
 // made it easy to miss new requests buried in a status filter. pendingCount
 // is still computed from the full unfiltered list (not rosterAssociates) —
@@ -34,14 +32,19 @@ const viewModeItems = computed<TabsItem[]>(() => [
   { label: t('associate.views.map'), value: 'map', icon: 'i-lucide-map' }
 ])
 
-const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu')
-const UCheckbox = resolveComponent('UCheckbox')
-
 const route = useRoute()
 const router = useRouter()
 
 const table = useTemplateRef('table')
+const {
+  columnHeaders, visibilityItems,
+  selectColumn, membershipRequestStatusColumn, requestDateColumn, associateTypeColumn,
+  consentDataColumn, consentSocialColumn, hasReadStatuteColumn,
+  firstNameColumn, lastNameColumn, emailAddressColumn, phoneNumberColumn, taxCodeColumn,
+  bornDateColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
+  residencyAddressColumn, residencyHouseNumberColumn, residencyCityColumn,
+  residencyProvinceColumn, residencyCapColumn, mtgoNicknameColumn, mtgaNicknameColumn
+} = useAssociateTableColumns(table)
 
 // Wires the sidebar links (/associates?status=pending|active|to_renew) to the
 // membership_status column filter, which can only be applied after UTable mounts.
@@ -87,82 +90,9 @@ const activeStatusTab = computed({
 
 const columnFilters = ref([])
 
-const columnHeaders = {
-  id: t('associate.columns.id'),
-  uuid: t('associate.columns.uuid'),
-  created_at: t('associate.columns.createdAt'),
-  updated_at: t('associate.columns.updatedAt'),
-  updated_by: t('associate.columns.updatedBy'),
-  membership_request_status: t('associate.columns.membershipRequestStatus'),
-  membership_status: t('associate.columns.membershipStatus'),
-  request_date: t('associate.columns.requestDate'),
-  payment_date: t('associate.columns.paymentDate'),
-  association_date: t('associate.columns.associationDate'),
-  associate_type: t('associate.columns.associateType'),
-  pauperwave_associate_number: t('associate.columns.pauperwaveAssociateNumber'),
-  consent_data: t('associate.columns.consentData'),
-  consent_social: t('associate.columns.consentSocial'),
-  has_read_statute: t('associate.columns.hasReadStatute'),
-  has_acknowledged_surveillance_notice: t('associate.columns.hasAcknowledgedSurveillanceNotice'),
-  first_name: t('associate.columns.firstName'),
-  last_name: t('associate.columns.lastName'),
-  email_address: t('associate.columns.emailAddress'),
-  phone_number: t('associate.columns.phoneNumber'),
-  tax_code: t('associate.columns.taxCode'),
-  born_date: t('associate.columns.bornDate'),
-  born_location: t('associate.columns.bornLocation'),
-  born_province: t('associate.columns.bornProvince'),
-  born_state: t('associate.columns.bornState'),
-  residency_address: t('associate.columns.residencyAddress'),
-  residency_house_number: t('associate.columns.residencyHouseNumber'),
-  residency_city: t('associate.columns.residencyCity'),
-  residency_province: t('associate.columns.residencyProvince'),
-  residency_cap: t('associate.columns.residencyCap'),
-  mtgo_nickname: t('associate.columns.mtgoNickname'),
-  mtga_nickname: t('associate.columns.mtgaNickname')
-} as const
-
-// Define a type for the keys of columnHeaders
-type ColumnHeaderKey = keyof typeof columnHeaders
-
-// Helper to get column label with fallback
-function getColumnLabel(id: string): string {
-  if (id in columnHeaders) {
-    return columnHeaders[id as ColumnHeaderKey]
-  }
-  return id
-}
-
-const visibilityItems = computed(() => getVisibilityItems())
-
-// Generate visibility items based on columns that can be hidden
-const getVisibilityItems = (): DropdownMenuItem[] => {
-  const allColumns = table.value?.tableApi?.getAllColumns()
-  if (!allColumns) return []
-
-  return allColumns
-    .filter((column: Column<Associate>) => column.getCanHide())
-    .map(createVisibilityItem)
-}
-
-// Helper to create visibility toggle items
-function createVisibilityItem(column: Column<Associate>): DropdownMenuItem {
-  return {
-    label: getColumnLabel(column.id),
-    type: 'checkbox' as const,
-    checked: column.getIsVisible(),
-    onUpdateChecked(checked: boolean) {
-      table.value?.tableApi?.getColumn(column.id)?.toggleVisibility(!!checked)
-    },
-    onSelect(e: Event) {
-      e.preventDefault()
-    }
-  }
-}
-
 const columnVisibility = ref({
   // Always "approved" here now that pending/rejected requests live on their
-  // own page (/associates/richieste) — redundant on every row in the roster.
+  // own page (/associates/requests) — redundant on every row in the roster.
   membership_request_status: false,
   uuid: false,
   created_at: false,
@@ -188,27 +118,7 @@ const columnVisibility = ref({
 const rowSelection = ref({})
 
 const columns: TableColumn<Associate>[] = [
-  {
-    id: 'select',
-    enableSorting: false,
-    enableHiding: false,
-    meta: { class: { th: 'text-center', td: 'text-center' } },
-    header: ({ table }) =>
-      h(UCheckbox, {
-        'modelValue': table.getIsSomePageRowsSelected()
-          ? 'indeterminate'
-          : table.getIsAllPageRowsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
-          table.toggleAllPageRowsSelected(!!value),
-        'aria-label': t('common.selectAll')
-      }),
-    cell: ({ row }) =>
-      h(UCheckbox, {
-        'modelValue': row.getIsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
-        'aria-label': t('common.selectRow')
-      })
-  },
+  selectColumn,
   {
     accessorKey: 'id',
     header: ({ column }) => sortableHeader(columnHeaders.id, column),
@@ -237,42 +147,14 @@ const columns: TableColumn<Associate>[] = [
     header: columnHeaders.updated_by,
     cell: ({ row }) => row.original.updated_by
   },
-  {
-    accessorKey: 'membership_request_status',
-    header: ({ column }) => sortableHeader(columnHeaders.membership_request_status, column),
-    meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }) => {
-      const status = row.getValue('membership_request_status') as string
-      const statusConfig: Record<string, { color: string, icon: string }> = {
-        approved: { color: 'success', icon: ICONS.success },
-        pending: { color: 'warning', icon: ICONS.pending },
-        rejected: { color: 'error', icon: ICONS.statusRejected }
-      }
-      const { color, icon } = statusConfig[status] || { color: 'neutral', icon: ICONS.help }
-
-      return h(resolveComponent('UBadge'), {
-        class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity gap-2',
-        variant: 'subtle',
-        icon,
-        color,
-        label: upperFirst(status),
-        onClick: (e: Event) => {
-          e.stopPropagation() // Prevent row click if you add onSelect later
-          const statusColumn = table?.value?.tableApi?.getColumn('membership_request_status')
-          if (statusColumn) {
-            statusColumn.setFilterValue(status)
-          }
-        }
-      })
-    }
-  },
+  membershipRequestStatusColumn,
   {
     accessorKey: 'membership_status',
     header: ({ column }) => sortableHeader(columnHeaders.membership_status, column),
     meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) => {
       const status = row.getValue('membership_status') as string
-      const statusConfig: Record<string, { color: string, icon: string }> = {
+      const statusConfig: Record<string, { color: BadgeProps['color'], icon: string }> = {
         active: { color: 'success', icon: ICONS.success },
         to_renew: { color: 'warning', icon: ICONS.refresh },
         expired: { color: 'error', icon: ICONS.banned },
@@ -281,7 +163,7 @@ const columns: TableColumn<Associate>[] = [
       }
       const { color, icon } = statusConfig[status] || { color: 'neutral', icon: ICONS.help }
 
-      return h(resolveComponent('UBadge'), {
+      return h(UBadge, {
         class: 'capitalize gap-2',
         variant: 'subtle',
         icon,
@@ -290,12 +172,7 @@ const columns: TableColumn<Associate>[] = [
       })
     }
   },
-  {
-    accessorKey: 'request_date',
-    header: ({ column }) => sortableHeader(columnHeaders.request_date, column),
-    meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
-    cell: ({ row }) => formatDateTime(row.original.request_date)
-  },
+  requestDateColumn,
   {
     accessorKey: 'payment_date',
     header: ({ column }) => sortableHeader(columnHeaders.payment_date, column),
@@ -308,36 +185,16 @@ const columns: TableColumn<Associate>[] = [
     meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
     cell: ({ row }) => formatDate(row.original.association_date)
   },
-  {
-    accessorKey: 'associate_type',
-    header: ({ column }) => sortableHeader(columnHeaders.associate_type, column),
-    meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }) => renderAssociateTypeBadge(row.original.associate_type)
-  },
+  associateTypeColumn,
   {
     accessorKey: 'pauperwave_associate_number',
     header: ({ column }) => sortableHeader(columnHeaders.pauperwave_associate_number, column),
     meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
     cell: ({ row }) => row.original.pauperwave_associate_number || ''
   },
-  {
-    accessorKey: 'consent_data',
-    header: ({ column }) => sortableHeader(columnHeaders.consent_data, column),
-    meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }) => renderConsentBadge(row.original.consent_data)
-  },
-  {
-    accessorKey: 'consent_social',
-    header: ({ column }) => sortableHeader(columnHeaders.consent_social, column),
-    meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }) => renderConsentBadge(row.original.consent_social)
-  },
-  {
-    accessorKey: 'has_read_statute',
-    header: ({ column }) => sortableHeader(columnHeaders.has_read_statute, column),
-    meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }) => renderConsentBadge(row.original.has_read_statute)
-  },
+  consentDataColumn,
+  consentSocialColumn,
+  hasReadStatuteColumn,
   {
     accessorKey: 'has_acknowledged_surveillance_notice',
     header: ({ column }) =>
@@ -345,98 +202,26 @@ const columns: TableColumn<Associate>[] = [
     meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) => renderConsentBadge(row.original.has_acknowledged_surveillance_notice)
   },
-  {
-    accessorKey: 'first_name',
-    header: ({ column }) => sortableHeader(columnHeaders.first_name, column),
-    cell: ({ row }) => row.original.first_name
-  },
-  {
-    accessorKey: 'last_name',
-    header: ({ column }) => sortableHeader(columnHeaders.last_name, column),
-    cell: ({ row }) => row.original.last_name
-  },
-  {
-    accessorKey: 'email_address',
-    header: columnHeaders.email_address,
-    cell: ({ row }) => row.original.email_address
-  },
-  {
-    accessorKey: 'phone_number',
-    header: columnHeaders.phone_number,
-    meta: { class: { td: 'font-mono' } },
-    cell: ({ row }) => row.original.phone_number
-  },
-  {
-    accessorKey: 'tax_code',
-    header: columnHeaders.tax_code,
-    meta: { class: { td: 'font-mono' } },
-    cell: ({ row }) => row.original.tax_code
-  },
-  {
-    accessorKey: 'born_date',
-    header: ({ column }) => sortableHeader(columnHeaders.born_date, column),
-    meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
-    cell: ({ row }) => formatDate(row.original.born_date)
-  },
-  {
-    accessorKey: 'born_location',
-    header: ({ column }) => sortableHeader(columnHeaders.born_location, column),
-    cell: ({ row }) => row.original.born_location || ''
-  },
-  {
-    accessorKey: 'born_province',
-    header: columnHeaders.born_province,
-    meta: { class: { th: 'min-w-28', td: 'font-mono' } },
-    cell: ({ row }) => row.original.born_province || ''
-  },
-  {
-    accessorKey: 'born_state',
-    header: columnHeaders.born_state,
-    meta: { class: { th: 'min-w-28' } },
-    cell: ({ row }) => row.original.born_state || ''
-  },
-  {
-    accessorKey: 'residency_address',
-    header: columnHeaders.residency_address,
-    cell: ({ row }) => row.original.residency_address
-  },
-  {
-    accessorKey: 'residency_house_number',
-    header: columnHeaders.residency_house_number,
-    meta: { class: { th: 'text-right', td: 'text-right' } },
-    cell: ({ row }) => row.original.residency_house_number || ''
-  },
-  {
-    accessorKey: 'residency_city',
-    header: ({ column }) => sortableHeader(columnHeaders.residency_city, column),
-    cell: ({ row }) => row.original.residency_city
-  },
-  {
-    accessorKey: 'residency_province',
-    header: columnHeaders.residency_province,
-    meta: { class: { td: 'font-mono' } },
-    cell: ({ row }) => row.original.residency_province
-  },
-  {
-    accessorKey: 'residency_cap',
-    header: columnHeaders.residency_cap,
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => row.original.residency_cap
-  },
-  {
-    accessorKey: 'mtgo_nickname',
-    header: columnHeaders.mtgo_nickname,
-    cell: ({ row }) => row.original.mtgo_nickname
-  },
-  {
-    accessorKey: 'mtga_nickname',
-    header: columnHeaders.mtga_nickname,
-    cell: ({ row }) => row.original.mtga_nickname
-  }
+  firstNameColumn,
+  lastNameColumn,
+  emailAddressColumn,
+  phoneNumberColumn,
+  taxCodeColumn,
+  bornDateColumn,
+  bornLocationColumn,
+  bornProvinceColumn,
+  bornStateColumn,
+  residencyAddressColumn,
+  residencyHouseNumberColumn,
+  residencyCityColumn,
+  residencyProvinceColumn,
+  residencyCapColumn,
+  mtgoNicknameColumn,
+  mtgaNicknameColumn
 ]
 
 function renderNeutralBadge(value: string) {
-  return h(resolveComponent('UBadge'), {
+  return h(UBadge, {
     variant: 'subtle',
     color: 'neutral',
     class: 'font-mono',
@@ -479,7 +264,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
         </template>
       </UDashboardNavbar>
 
-      <!-- Switcher shared with /associates/richieste (see AssociatesSubNav) —
+      <!-- Switcher shared with /associates/requests (see AssociatesSubNav) —
            same sub-nav-row pattern as /settings. -->
       <UDashboardToolbar>
         <AssociatesSubNav :pending-count="pendingCount" />
@@ -552,7 +337,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
             base: 'border-separate border-spacing-0',
             tbody: '[&>tr]:last:[&>td]:border-b-0',
             tr: 'hover:bg-elevated/50',
-            th: 'border-r border-default last:border-r-0',
+            th: 'border-r border-default last:border-r-0 py-2 px-2 font-medium',
             td: 'border-b border-r border-default last:border-r-0 py-1 px-2'
           }"
         />

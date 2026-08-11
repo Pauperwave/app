@@ -5,7 +5,7 @@ import type { BadgeProps } from '@nuxt/ui'
 import type { Associate } from '~/types'
 
 // Shared table-cell rendering between associates/index.vue (roster) and
-// associates/richieste.vue (pending/rejected queue) — extracted 2026-08-11
+// associates/requests.vue (pending/rejected queue) — extracted 2026-08-11
 // when the two pages split, so formatting/badge logic can't drift between
 // them. A composable, not a plain util: renderAssociateTypeBadge/
 // renderConsentBadge both need t() for their labels.
