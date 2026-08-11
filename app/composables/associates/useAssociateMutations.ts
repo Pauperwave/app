@@ -1,7 +1,7 @@
 // app\composables\associates\useAssociateMutations.ts
 // Pinia Colada mutation for the associates domain (ADR-007/ADR-009 pattern, see
 // useWantedCardsMutations.ts): $fetch to the BFF endpoint, then invalidate the
-// associates list so both /associates and /associates/richieste (same query key)
+// associates list so both /associates and /associates/requests (same query key)
 // pick up the change without either page calling refresh() itself.
 export function useAssociateMutations() {
   const queryCache = useQueryCache()

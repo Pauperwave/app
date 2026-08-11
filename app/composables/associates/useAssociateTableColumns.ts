@@ -1,0 +1,312 @@
+// app\composables\associates\useAssociateTableColumns.ts
+import { upperFirst } from 'scule'
+import { UBadge, UCheckbox } from '#components'
+import type { BadgeProps, DropdownMenuItem, TableColumn } from '@nuxt/ui'
+import type { Column, Table } from '@tanstack/vue-table'
+import type { Associate } from '~/types'
+
+// Shared between associates/index.vue (roster) and associates/requests.vue
+// (pending/rejected queue) — every column except the roster-only ones
+// (id/uuid/created_at/updated_at/updated_by/membership_status/payment_date/
+// association_date/pauperwave_associate_number/
+// has_acknowledged_surveillance_notice) was byte-identical in both files
+// (fallow dupes, 2026-08-11), same root cause as useAssociateRenderers.ts:
+// the two pages share one Associate table shape, not two.
+//
+// Two real inconsistencies surfaced while merging: born_location and
+// residency_city were sortable on the roster but plain text on requests —
+// unified to plain text here (sorting free text like a city/birthplace name
+// alphabetically isn't a useful operation), matching requests' version.
+
+export const associateColumnHeaders = (t: (key: string) => string) => ({
+  id: t('associate.columns.id'),
+  uuid: t('associate.columns.uuid'),
+  created_at: t('associate.columns.createdAt'),
+  updated_at: t('associate.columns.updatedAt'),
+  updated_by: t('associate.columns.updatedBy'),
+  membership_request_status: t('associate.columns.membershipRequestStatus'),
+  membership_status: t('associate.columns.membershipStatus'),
+  request_date: t('associate.columns.requestDate'),
+  payment_date: t('associate.columns.paymentDate'),
+  association_date: t('associate.columns.associationDate'),
+  associate_type: t('associate.columns.associateType'),
+  pauperwave_associate_number: t('associate.columns.pauperwaveAssociateNumber'),
+  consent_data: t('associate.columns.consentData'),
+  consent_social: t('associate.columns.consentSocial'),
+  has_read_statute: t('associate.columns.hasReadStatute'),
+  has_acknowledged_surveillance_notice: t('associate.columns.hasAcknowledgedSurveillanceNotice'),
+  first_name: t('associate.columns.firstName'),
+  last_name: t('associate.columns.lastName'),
+  email_address: t('associate.columns.emailAddress'),
+  phone_number: t('associate.columns.phoneNumber'),
+  tax_code: t('associate.columns.taxCode'),
+  born_date: t('associate.columns.bornDate'),
+  born_location: t('associate.columns.bornLocation'),
+  born_province: t('associate.columns.bornProvince'),
+  born_state: t('associate.columns.bornState'),
+  residency_address: t('associate.columns.residencyAddress'),
+  residency_house_number: t('associate.columns.residencyHouseNumber'),
+  residency_city: t('associate.columns.residencyCity'),
+  residency_province: t('associate.columns.residencyProvince'),
+  residency_cap: t('associate.columns.residencyCap'),
+  mtgo_nickname: t('associate.columns.mtgoNickname'),
+  mtga_nickname: t('associate.columns.mtgaNickname')
+} as const)
+
+export type AssociateColumnHeaders = ReturnType<typeof associateColumnHeaders>
+type AssociateColumnHeaderKey = keyof AssociateColumnHeaders
+
+export function useAssociateTableColumns(table: Ref<{ tableApi: Table<Associate> } | null>) {
+  const { t } = useI18n()
+  const {
+    formatDateTime, formatDate, renderAssociateTypeBadge, renderConsentBadge
+  } = useAssociateRenderers()
+
+  const columnHeaders = associateColumnHeaders(t)
+
+  function getColumnLabel(id: string): string {
+    return id in columnHeaders ? columnHeaders[id as AssociateColumnHeaderKey] : id
+  }
+
+  function createVisibilityItem(column: Column<Associate>): DropdownMenuItem {
+    return {
+      label: getColumnLabel(column.id),
+      type: 'checkbox' as const,
+      checked: column.getIsVisible(),
+      onUpdateChecked(checked: boolean) {
+        table.value?.tableApi?.getColumn(column.id)?.toggleVisibility(!!checked)
+      },
+      onSelect(e: Event) {
+        e.preventDefault()
+      }
+    }
+  }
+
+  function getVisibilityItems(): DropdownMenuItem[] {
+    const allColumns = table.value?.tableApi?.getAllColumns()
+    if (!allColumns) return []
+
+    return allColumns
+      .filter((column: Column<Associate>) => column.getCanHide())
+      .map(createVisibilityItem)
+  }
+
+  const visibilityItems = computed(() => getVisibilityItems())
+
+  const selectColumn: TableColumn<Associate> = {
+    id: 'select',
+    enableSorting: false,
+    enableHiding: false,
+    meta: { class: { th: 'text-center', td: 'text-center' } },
+    header: ({ table: t2 }) =>
+      h(UCheckbox, {
+        'modelValue': t2.getIsSomePageRowsSelected()
+          ? 'indeterminate'
+          : t2.getIsAllPageRowsSelected(),
+        'onUpdate:modelValue': (value: unknown) =>
+          t2.toggleAllPageRowsSelected(!!value),
+        'aria-label': t('common.selectAll')
+      }),
+    cell: ({ row }) =>
+      h(UCheckbox, {
+        'modelValue': row.getIsSelected(),
+        'onUpdate:modelValue': (value: unknown) => row.toggleSelected(!!value),
+        'aria-label': t('common.selectRow')
+      })
+  }
+
+  const membershipRequestStatusColumn: TableColumn<Associate> = {
+    accessorKey: 'membership_request_status',
+    header: ({ column }) => sortableHeader(columnHeaders.membership_request_status, column),
+    meta: { class: { th: 'text-center', td: 'text-center' } },
+    cell: ({ row }) => {
+      const status = row.getValue('membership_request_status') as string
+      const statusConfig: Record<string, { color: BadgeProps['color'], icon: string }> = {
+        approved: { color: 'success', icon: ICONS.success },
+        pending: { color: 'warning', icon: ICONS.pending },
+        rejected: { color: 'error', icon: ICONS.statusRejected }
+      }
+      const { color, icon } = statusConfig[status] || { color: 'neutral', icon: ICONS.help }
+
+      return h(UBadge, {
+        class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity gap-2',
+        variant: 'subtle',
+        icon,
+        color,
+        label: upperFirst(status),
+        onClick: (e: Event) => {
+          e.stopPropagation() // Prevent row click if you add onSelect later
+          table.value?.tableApi?.getColumn('membership_request_status')?.setFilterValue(status)
+        }
+      })
+    }
+  }
+
+  const requestDateColumn: TableColumn<Associate> = {
+    accessorKey: 'request_date',
+    header: ({ column }) => sortableHeader(columnHeaders.request_date, column),
+    meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
+    cell: ({ row }) => formatDateTime(row.original.request_date)
+  }
+
+  const associateTypeColumn: TableColumn<Associate> = {
+    accessorKey: 'associate_type',
+    header: ({ column }) => sortableHeader(columnHeaders.associate_type, column),
+    meta: { class: { th: 'text-center', td: 'text-center' } },
+    cell: ({ row }) => renderAssociateTypeBadge(row.original.associate_type)
+  }
+
+  const consentDataColumn: TableColumn<Associate> = {
+    accessorKey: 'consent_data',
+    header: ({ column }) => sortableHeader(columnHeaders.consent_data, column),
+    meta: { class: { th: 'text-center', td: 'text-center' } },
+    cell: ({ row }) => renderConsentBadge(row.original.consent_data)
+  }
+
+  const consentSocialColumn: TableColumn<Associate> = {
+    accessorKey: 'consent_social',
+    header: ({ column }) => sortableHeader(columnHeaders.consent_social, column),
+    meta: { class: { th: 'text-center', td: 'text-center' } },
+    cell: ({ row }) => renderConsentBadge(row.original.consent_social)
+  }
+
+  const hasReadStatuteColumn: TableColumn<Associate> = {
+    accessorKey: 'has_read_statute',
+    header: ({ column }) => sortableHeader(columnHeaders.has_read_statute, column),
+    meta: { class: { th: 'text-center', td: 'text-center' } },
+    cell: ({ row }) => renderConsentBadge(row.original.has_read_statute)
+  }
+
+  const firstNameColumn: TableColumn<Associate> = {
+    accessorKey: 'first_name',
+    header: ({ column }) => sortableHeader(columnHeaders.first_name, column),
+    cell: ({ row }) => row.original.first_name
+  }
+
+  const lastNameColumn: TableColumn<Associate> = {
+    accessorKey: 'last_name',
+    header: ({ column }) => sortableHeader(columnHeaders.last_name, column),
+    cell: ({ row }) => row.original.last_name
+  }
+
+  const emailAddressColumn: TableColumn<Associate> = {
+    accessorKey: 'email_address',
+    header: columnHeaders.email_address,
+    cell: ({ row }) => row.original.email_address
+  }
+
+  const phoneNumberColumn: TableColumn<Associate> = {
+    accessorKey: 'phone_number',
+    header: columnHeaders.phone_number,
+    meta: { class: { td: 'font-mono' } },
+    cell: ({ row }) => row.original.phone_number
+  }
+
+  const taxCodeColumn: TableColumn<Associate> = {
+    accessorKey: 'tax_code',
+    header: columnHeaders.tax_code,
+    meta: { class: { td: 'font-mono' } },
+    cell: ({ row }) => row.original.tax_code
+  }
+
+  const bornDateColumn: TableColumn<Associate> = {
+    accessorKey: 'born_date',
+    header: ({ column }) => sortableHeader(columnHeaders.born_date, column),
+    meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
+    cell: ({ row }) => formatDate(row.original.born_date)
+  }
+
+  const bornLocationColumn: TableColumn<Associate> = {
+    accessorKey: 'born_location',
+    header: columnHeaders.born_location,
+    cell: ({ row }) => row.original.born_location || ''
+  }
+
+  const bornProvinceColumn: TableColumn<Associate> = {
+    accessorKey: 'born_province',
+    header: columnHeaders.born_province,
+    meta: { class: { th: 'min-w-28', td: 'font-mono' } },
+    cell: ({ row }) => row.original.born_province || ''
+  }
+
+  const bornStateColumn: TableColumn<Associate> = {
+    accessorKey: 'born_state',
+    header: columnHeaders.born_state,
+    meta: { class: { th: 'min-w-28' } },
+    cell: ({ row }) => row.original.born_state || ''
+  }
+
+  const residencyAddressColumn: TableColumn<Associate> = {
+    accessorKey: 'residency_address',
+    header: columnHeaders.residency_address,
+    cell: ({ row }) => row.original.residency_address
+  }
+
+  const residencyHouseNumberColumn: TableColumn<Associate> = {
+    accessorKey: 'residency_house_number',
+    header: columnHeaders.residency_house_number,
+    meta: { class: { th: 'text-right', td: 'text-right' } },
+    cell: ({ row }) => row.original.residency_house_number || ''
+  }
+
+  const residencyCityColumn: TableColumn<Associate> = {
+    accessorKey: 'residency_city',
+    header: columnHeaders.residency_city,
+    cell: ({ row }) => row.original.residency_city
+  }
+
+  const residencyProvinceColumn: TableColumn<Associate> = {
+    accessorKey: 'residency_province',
+    header: columnHeaders.residency_province,
+    meta: { class: { td: 'font-mono' } },
+    cell: ({ row }) => row.original.residency_province
+  }
+
+  const residencyCapColumn: TableColumn<Associate> = {
+    accessorKey: 'residency_cap',
+    header: columnHeaders.residency_cap,
+    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
+    cell: ({ row }) => row.original.residency_cap
+  }
+
+  const mtgoNicknameColumn: TableColumn<Associate> = {
+    accessorKey: 'mtgo_nickname',
+    header: columnHeaders.mtgo_nickname,
+    cell: ({ row }) => row.original.mtgo_nickname
+  }
+
+  const mtgaNicknameColumn: TableColumn<Associate> = {
+    accessorKey: 'mtga_nickname',
+    header: columnHeaders.mtga_nickname,
+    cell: ({ row }) => row.original.mtga_nickname
+  }
+
+  return {
+    columnHeaders,
+    getColumnLabel,
+    visibilityItems,
+    selectColumn,
+    membershipRequestStatusColumn,
+    requestDateColumn,
+    associateTypeColumn,
+    consentDataColumn,
+    consentSocialColumn,
+    hasReadStatuteColumn,
+    firstNameColumn,
+    lastNameColumn,
+    emailAddressColumn,
+    phoneNumberColumn,
+    taxCodeColumn,
+    bornDateColumn,
+    bornLocationColumn,
+    bornProvinceColumn,
+    bornStateColumn,
+    residencyAddressColumn,
+    residencyHouseNumberColumn,
+    residencyCityColumn,
+    residencyProvinceColumn,
+    residencyCapColumn,
+    mtgoNicknameColumn,
+    mtgaNicknameColumn
+  }
+}

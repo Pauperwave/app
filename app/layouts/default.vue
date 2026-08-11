@@ -66,7 +66,7 @@ watch(() => shortcutsTour.current.value?.id, (id) => {
 const { data: associates } = useAssociatesQuery()
 
 // Feeds the "Associati" nav item's badge below (see #item-trailing) — same
-// count backing the SubNav badge on /associates/richieste itself, so an admin
+// count backing the SubNav badge on /associates/requests itself, so an admin
 // sees "there's something to do" before ever opening the page.
 const pendingAssociatesCount = computed(() => (associates.value ?? []).filter(
   associate => associate.membership_request_status === 'pending'
@@ -121,7 +121,7 @@ const mainNavGroups = [[{
 }, {
   label: t('associate.subNav.requestsShort'),
   icon: ICONS.inbox,
-  to: '/associates/richieste',
+  to: '/associates/requests',
   devStatus: 'success',
   onSelect: () => {
     open.value = false
@@ -410,9 +410,9 @@ const groups = computed(() => [{
                   </UKbd>
                 </template>
                 <!-- "Something needs action" count — pending tesseramento
-                     requests waiting on /associates/richieste. -->
+                     requests waiting on /associates/requests. -->
                 <UBadge
-                  v-if="item.to === '/associates/richieste' && pendingAssociatesCount > 0"
+                  v-if="item.to === '/associates/requests' && pendingAssociatesCount > 0"
                   :label="pendingAssociatesCount"
                   color="warning"
                   variant="subtle"

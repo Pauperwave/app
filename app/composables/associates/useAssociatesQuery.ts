@@ -2,7 +2,7 @@
 // Pinia Colada query for the associates list (mirrors league's usePlayersQuery,
 // ADR-007/ADR-009) — successor of the 'associates' useAsyncData wrapper. Reads stay
 // client -> Supabase; the shared query cache is what fixes the /associates <->
-// /associates/richieste refetch-on-every-mount lag useAsyncData had (confirmed via
+// /associates/requests refetch-on-every-mount lag useAsyncData had (confirmed via
 // network trace 2026-08-11).
 import type { Associate } from '~/types'
 

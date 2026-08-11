@@ -3,7 +3,7 @@
 import type { DataStateStatus } from '@pinia/colada'
 
 // Pairs DataFreshnessIndicator with the manual refresh button every Pinia
-// Colada-backed list page wires up next to it (associates roster/richieste,
+// Colada-backed list page wires up next to it (associates roster/requests,
 // see docs/architecture/query-keys.md) — one place to keep them in sync instead
 // of re-composing useQueryFreshness + the two elements on every page.
 interface Props {
