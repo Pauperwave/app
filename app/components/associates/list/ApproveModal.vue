@@ -5,10 +5,10 @@ interface Props {
 }
 
 const { ids } = defineProps<Props>()
-const emit = defineEmits<{ approved: [] }>()
 
 const { t } = useI18n()
 const toast = useToast()
+const { approveAssociates } = useAssociateMutations()
 
 const open = ref(false)
 const submitting = ref(false)
@@ -16,10 +16,7 @@ const submitting = ref(false)
 async function onSubmit() {
   submitting.value = true
   try {
-    await $fetch('/api/associates/approve', {
-      method: 'POST',
-      body: { ids }
-    })
+    await approveAssociates.mutateAsync(ids)
 
     toast.add({
       title: t('associate.approveModal.successToastTitle'),
@@ -27,7 +24,6 @@ async function onSubmit() {
       color: 'success'
     })
     open.value = false
-    emit('approved')
   } catch (err) {
     toast.add({
       title: t('associate.approveModal.errorToastTitle'),

@@ -40,13 +40,13 @@ const {
 }>()
 
 const { t } = useI18n()
-const { associates } = useAssociates()
+const { data: associates } = useAssociatesQuery()
 
 // "APS Pauperwave" (PW-0000) is the association's own registry record, not a real
 // player — it makes no sense for it to appear as a requester.
 const APS_PAUPERWAVE_UUID = '8578797c-62b0-4e48-a237-3b65683a2623'
 
-const playerOptions = computed(() => associates.value
+const playerOptions = computed(() => (associates.value ?? [])
   .filter(associate => associate.uuid !== APS_PAUPERWAVE_UUID)
   .map(associate => ({
     label: `${associate.first_name} ${associate.last_name}`,
