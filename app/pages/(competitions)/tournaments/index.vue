@@ -16,7 +16,8 @@ const range = shallowRef<Range>({
 
 const { t } = useI18n()
 
-const { tournaments: data, loading } = useTournamentsQuery()
+const { data: tournamentsData, isLoading: loading } = useTournamentsQuery()
+const data = computed(() => tournamentsData.value ?? [])
 const { statusFilter, filteredTournaments, statusTabs } = useTournamentsFilters(data, range)
 const { columns } = useTournamentsTableColumns()
 

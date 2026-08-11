@@ -35,8 +35,13 @@ Domains migrated to Pinia Colada — shared cache across every mount of the same
 | `associates/useAssociatesQuery.ts` | `['associates']` | `useAssociateMutations` |
 | `associates/useAssociateGeocodesQuery.ts` | `['associate-geocodes']` | read-only (geocodes are written by `scripts/geocode-associates.mjs`, not from the app) |
 | `useScryfallCardSearch.ts` | `['scryfall-printings', cardName]` | read-only (Scryfall data, cached indefinitely per name) |
+| `events/useEventsQuery.ts` | `['events']` | read-only — no mutations composable yet, mock data (see below) |
+| `leagues/useLeaguesQuery.ts` | `['leagues']` | read-only — no mutations composable yet, mock data (see below) |
+| `tournaments/useTournamentsQuery.ts` | `['tournaments']` | read-only — no mutations composable yet, mock data (see below) |
 
 **Persistence note:** `colada.options.ts`'s `PiniaColadaCachePersister` persists every query to `localStorage` by default (ADR-009). `associates` and `associate-geocodes` are explicitly excluded via its `filter` option — associate records carry PII (tax code, address, phone, email) that should not sit in `localStorage` indefinitely. Any future query domain that also carries PII should be added to `PERSISTENCE_EXCLUDED_KEYS` in `colada.options.ts`, not left to the default.
+
+**Mock-backed domains (`events`/`leagues`/`tournaments`):** migrated to `useQuery` on 2026-08-11 even though `server/api/{events,leagues,tournaments}.ts` still return static mock data, not a Supabase read — see `docs/architecture/api.md`. The goal was the calling convention, not caching (mocks are cheap, there was no observed staleness bug like the associates one): every consumer already destructures `data`/`isLoading` the same way real domains do, so when the real tables land (league integration, ADR-003) only the `query()` body changes, not every page that reads the list. No mutations composable exists for them yet — nothing is writable server-side.
 
 ### `useAsyncData` keys (not yet migrated)
 
@@ -44,11 +49,8 @@ Domains still on the `useAsyncData` + `useSupabaseClient`/`$fetch` pattern — s
 
 | Composable | Key | Notes |
 |---|---|---|
-| `events/useEventsQuery.ts` | `'events'` | static string |
-| `leagues/useLeaguesQuery.ts` | `'leagues'` | static string |
-| `tournaments/useTournamentsQuery.ts` | `'tournaments'` | static string |
-| `cittadino/useCittadinoQuery.ts` | `` `cittadino-${selectedEdition ?? 'latest'}` `` | reactive (function form) |
-| `standings/useFormatStandingsQuery.ts` | `` `standings-${format}-${selectedLeague ?? 'current'}` `` | reactive (function form) |
+| `cittadino/useCittadinoQuery.ts` | `` `cittadino-${selectedEdition ?? 'latest'}` `` | reactive (function form), mock data |
+| `standings/useFormatStandingsQuery.ts` | `` `standings-${format}-${selectedLeague ?? 'current'}` `` | reactive (function form), mock data |
 
 ## Adding a new key
 

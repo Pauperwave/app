@@ -16,7 +16,8 @@ const range = shallowRef<Range>({
 
 const { t } = useI18n()
 
-const { events: data, loading } = useEventsQuery()
+const { data: eventsData, isLoading: loading } = useEventsQuery()
+const data = computed(() => eventsData.value ?? [])
 const { statusFilter, filteredEvents, statusTabs } = useEventsFilters(data, range)
 const { columns } = useEventsTableColumns()
 
