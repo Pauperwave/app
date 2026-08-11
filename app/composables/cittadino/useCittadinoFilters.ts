@@ -1,6 +1,6 @@
 // app\composables\cittadino\useCittadinoFilters.ts
 import type { Ref } from 'vue'
-import type { CittadinoEvent, CittadinoPlacement, CittadinoResult, CittadinoStanding } from '~/types'
+import type { CittadinoEvent, CittadinoPlacement, CittadinoStanding } from '~/types'
 
 // Owns the format filter *and* the scoring, because the two cannot be separated:
 // hiding a column while leaving the totals computed over every format would show
@@ -31,43 +31,28 @@ export function useCittadinoFilters(
 
   const standings = computed<CittadinoStanding[]>(() => {
     const visibleEventUuids = new Set(filteredEvents.value.map(event => event.uuid))
-    const byPlayer = new Map<string, { name: string, results: CittadinoResult[] }>()
+    const visiblePlacements = placements.value.filter(
+      placement => visibleEventUuids.has(placement.eventUuid)
+    )
 
-    for (const placement of placements.value) {
-      if (!visibleEventUuids.has(placement.eventUuid)) continue
+    const groups = groupBestNByPlayer(
+      visiblePlacements, cittadinoPointsForRank, CITTADINO_COUNTED_RESULTS
+    )
 
-      const entry = byPlayer.get(placement.playerUuid)
-        ?? { name: placement.playerName, results: [] }
-      entry.results.push({
-        eventUuid: placement.eventUuid,
-        rank: placement.rank,
-        points: cittadinoPointsForRank(placement.rank),
-        counted: false
-      })
-      byPlayer.set(placement.playerUuid, entry)
-    }
-
-    const rows = [...byPlayer.entries()].map<CittadinoStanding>(([playerUuid, entry]) => {
-      // "Verranno conteggiati solo i migliori 11 punteggi" — the total is the sum
-      // of the best N results, not of everything played, and the rest stay on the
-      // row marked as dropped so the matrix can show why they don't add up.
-      const sortedByPoints = [...entry.results].sort((a, b) => b.points - a.points)
-      const bestResults = sortedByPoints.slice(0, CITTADINO_COUNTED_RESULTS)
-      const counted = new Set(bestResults)
-
-      const resultsByEvent: Record<string, CittadinoResult> = {}
-      for (const result of entry.results) {
-        resultsByEvent[result.eventUuid] = { ...result, counted: counted.has(result) }
-      }
+    // "Verranno conteggiati solo i migliori 11 punteggi" — the total is the sum
+    // of the best N results, not of everything played, and the rest stay on the
+    // row marked as dropped so the matrix can show why they don't add up.
+    const rows = groups.map<CittadinoStanding>((group) => {
+      const bestResults = group.sortedByPoints.slice(0, CITTADINO_COUNTED_RESULTS)
 
       return {
         position: 0,
-        playerUuid,
-        playerName: entry.name,
+        playerUuid: group.playerUuid,
+        playerName: group.playerName,
         total: bestResults.reduce((sum, result) => sum + result.points, 0),
-        eventsPlayed: entry.results.length,
-        bestSingle: sortedByPoints[0]?.points ?? 0,
-        resultsByEvent
+        eventsPlayed: group.results.length,
+        bestSingle: group.sortedByPoints[0]?.points ?? 0,
+        resultsByEvent: group.resultsByEvent
       }
     })
 

@@ -1,8 +1,6 @@
 // app\composables\standings\useFormatStandingsQuery.ts
 import type { Ref } from 'vue'
-import type {
-  FormatStandingEvent, FormatStandingPlacement, FormatStandingResult, FormatStandingRow
-} from '~/types'
+import type { FormatStandingEvent, FormatStandingPlacement, FormatStandingRow } from '~/types'
 
 export type StandingsFormat = 'commander' | 'premodern' | 'pauper'
 
@@ -39,11 +37,6 @@ export const FORMAT_STANDINGS_MIN_POINTS = MIN_POINTS
 
 function pointsForRank(rank: number): number {
   return POINTS_BY_RANK[rank - 1] ?? MIN_POINTS
-}
-
-interface PlayerEntry {
-  name: string
-  results: Array<FormatStandingResult & { eventUuid: string }>
 }
 
 // Backed by mock data (no Supabase table yet, see
@@ -91,43 +84,29 @@ export function useFormatStandingsQuery(
   })))
 
   const standings = computed<FormatStandingRow[]>(() => {
-    const byPlayer = new Map<string, PlayerEntry>()
+    const groups = groupBestNByPlayer(
+      placements.value,
+      pointsForRank,
+      countedResults.value,
+      () => ({ participationPoints: participationPoints.value })
+    )
 
-    for (const placement of placements.value) {
-      const entry: PlayerEntry = byPlayer.get(placement.playerUuid)
-        ?? { name: placement.playerName, results: [] }
-      entry.results.push({
-        eventUuid: placement.eventUuid,
-        rank: placement.rank,
-        points: pointsForRank(placement.rank),
-        counted: false,
-        participationPoints: participationPoints.value
-      })
-      byPlayer.set(placement.playerUuid, entry)
-    }
-
-    const rows = [...byPlayer.entries()].map<FormatStandingRow>(([playerUuid, entry]) => {
-      const sortedByPoints = [...entry.results].sort((a, b) => b.points - a.points)
-      const counted = new Set(sortedByPoints.slice(0, countedResults.value))
-
-      const resultsByEvent: FormatStandingRow['resultsByEvent'] = {}
-      for (const result of entry.results) {
-        resultsByEvent[result.eventUuid] = { ...result, counted: counted.has(result) }
-      }
+    const rows = groups.map<FormatStandingRow>((group) => {
+      const counted = group.sortedByPoints.slice(0, countedResults.value)
 
       // Placement points only count for the player's best-N results, but the
       // participation point is flat and unconditional — awarded for every event
       // played, counted or dropped.
-      const placementTotal = [...counted].reduce((sum, result) => sum + result.points, 0)
-      const participationTotal = entry.results
+      const placementTotal = counted.reduce((sum, result) => sum + result.points, 0)
+      const participationTotal = group.results
         .reduce((sum, result) => sum + result.participationPoints, 0)
 
       return {
         position: 0,
-        playerUuid,
-        playerName: entry.name,
+        playerUuid: group.playerUuid,
+        playerName: group.playerName,
         total: placementTotal + participationTotal,
-        resultsByEvent
+        resultsByEvent: group.resultsByEvent
       }
     })
 
