@@ -1,4 +1,6 @@
 // server\utils\cardTrader.ts
+import { serverSupabaseServiceRole } from '#supabase/server'
+import type { H3Event } from 'h3'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '#shared/utils/types/database'
 
@@ -153,4 +155,27 @@ export async function resolveCardTraderBlueprint(
   }
 
   return { blueprintId: null, url: null }
+}
+
+// Shared by resolve.get.ts and price.get.ts: same query validation and
+// service-role/token setup, only what to do when the token is missing differs
+// (resolve treats it as a hard error, price degrades to a null price) — left to
+// each endpoint rather than folded in here.
+export async function resolveCardTraderRequestContext(event: H3Event) {
+  await requireUser(event)
+
+  const { scryfallId, setCode } = getQuery<{ scryfallId?: string, setCode?: string }>(event)
+  if (!scryfallId || !setCode) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'scryfallId e setCode sono richiesti'
+    })
+  }
+
+  return {
+    scryfallId,
+    setCode,
+    token: useRuntimeConfig(event).cardTraderApiToken,
+    supabase: serverSupabaseServiceRole<Database>(event)
+  }
 }
