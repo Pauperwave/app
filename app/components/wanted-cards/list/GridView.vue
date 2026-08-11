@@ -64,9 +64,9 @@ const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]
               v-if="card.imageUrl"
               :src="card.imageUrl"
               :alt="card.cardName"
-              class="w-full aspect-[5/7] object-cover"
+              class="w-full aspect-5/7 object-cover"
             >
-            <div v-else class="w-full aspect-[5/7] bg-elevated flex items-center justify-center">
+            <div v-else class="w-full aspect-5/7 bg-elevated flex items-center justify-center">
               <UIcon name="i-lucide-image-off" class="size-8 text-muted" />
             </div>
 
