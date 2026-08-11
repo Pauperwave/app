@@ -17,6 +17,16 @@ const appConfig = useAppConfig()
 const colors = ['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose']
 const neutrals = ['slate', 'gray', 'zinc', 'neutral', 'stone']
 
+// "Profilo" points at the logged-in user's own associate record — there's no
+// player detail page yet (/players is still a stub), and the associate record
+// is the closer match anyway (membership/anagrafica, not gameplay stats).
+// undefined when no matching associate exists yet, so the item just isn't a
+// link rather than pointing somewhere broken.
+const currentAssociate = useCurrentAssociate()
+const profileLink = computed(() => currentAssociate.value
+  ? `/associate/${slugify(`${currentAssociate.value.first_name} ${currentAssociate.value.last_name}`)}`
+  : undefined)
+
 const user = ref({
   name: 'Emanuele Nardi',
   avatar: {
@@ -59,7 +69,8 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
   avatar: user.value.avatar
 }], [{
   label: t('userMenu.profile'),
-  icon: ICONS.player
+  icon: ICONS.player,
+  to: profileLink.value
 }, {
   label: t('userMenu.settings'),
   icon: ICONS.settings,
