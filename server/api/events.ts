@@ -1,4 +1,6 @@
 // server\api\events.ts
+// fallow-ignore-file code-duplication -- mirrors leagues.ts/tournaments.ts's mock
+// generator shape on purpose; expected to diverge once real Supabase tables land
 const events = Array.from({ length: 30 }, (_, i) => {
   const id = i + 1
   const dateObj = new Date(2025, 8, 2) // Start from 2025-09-02

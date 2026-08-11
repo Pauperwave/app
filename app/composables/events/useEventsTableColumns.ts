@@ -1,4 +1,7 @@
 // app\composables\events\useEventsTableColumns.ts
+// fallow-ignore-file code-duplication -- mirrors useTournamentsTableColumns.ts's
+// status-badge column shape on purpose; expected to diverge once real Supabase
+// tables land
 import { h } from 'vue'
 import { UBadge } from '#components'
 import { format } from 'date-fns'

@@ -1,5 +1,8 @@
 <!-- app\pages\(competitions)\events\index.vue -->
 <script lang="ts" setup>
+// fallow-ignore-file code-duplication -- mirrors leagues/index.vue and
+// tournaments/index.vue's mock-driven layout on purpose; expected to diverge
+// once real Supabase tables land
 import { add, sub } from 'date-fns'
 import type { TabsItem } from '@nuxt/ui'
 import type { Range } from '~/types'
