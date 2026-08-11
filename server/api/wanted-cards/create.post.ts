@@ -1,30 +1,14 @@
 // server\api\wanted-cards\create.post.ts
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
-
-interface CreateWantedCardBody {
-  playerAssociateUuid: string
-  cardName: string
-  scryfallUrl: string
-  scryfallId: string
-  setCode: string
-  manaCost: string
-  colorIdentity: string[]
-  cmc: number
-  imageUrl: string | null
-  cardmarketPrice: number | null
-  copies: number
-  language: string | null
-  treatment: string[]
-  notes: string | null
-}
+import type { NewWantedCardPayload } from '#shared/types/wantedCards'
 
 // Insert is open to any authenticated user — players create their own
 // requests (see former migration 20260807200045, now enforced here instead
 // of via RLS since the service-role client bypasses it).
 export default defineEventHandler(async (event) => {
   const user = await requireUser(event)
-  const body = await readBody<CreateWantedCardBody>(event)
+  const body = await readBody<NewWantedCardPayload>(event)
 
   const supabase = serverSupabaseServiceRole<Database>(event)
 
@@ -51,21 +35,8 @@ export default defineEventHandler(async (event) => {
     .select()
     .single()
 
-  if (error || !data) {
-    throw createError({
-      statusCode: 500,
-      statusMessage: error?.message ?? 'Wanted card insert failed'
-    })
-  }
+  const wantedCard = ensureWantedCardRow(data, error, 'insert')
+  prefetchCardTraderBlueprint(event, supabase, body.scryfallId, body.setCode)
 
-  // Background prefetch: warms the CardTrader cache (server/utils/cardTrader.ts) so
-  // the "Search on CardTrader" button finds the row ready instead of waiting for
-  // the resolve on click. It does not block the response — failure is silent, and
-  // the on-demand resolve will retry anyway.
-  const token = useRuntimeConfig(event).cardTraderApiToken
-  if (token) {
-    resolveCardTraderBlueprint(supabase, token, body.scryfallId, body.setCode).catch(() => {})
-  }
-
-  return { wantedCard: data }
+  return { wantedCard }
 })
