@@ -19,8 +19,6 @@ interface FormatRules {
   participationPoints: number
 }
 
-export type StandingsFormat = 'commander' | 'premodern' | 'pauper'
-
 const SHARED_LEAGUES: FormatLeagueSummary[] = [
   { name: 'Lega Estiva 2025', events: 4, counted: 3, top: 6 },
   { name: 'Lega Invernale 2026', events: 6, counted: 4, top: 8 },

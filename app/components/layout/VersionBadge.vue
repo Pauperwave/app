@@ -18,6 +18,6 @@ const {
     :class="collapsed ? 'text-center' : ''"
   >
     <span class="font-mono">v{{ appVersion }}</span>
-    <span v-if="!collapsed"> · {{ appEnv }}</span>
+    <span v-if="!collapsed"> • {{ appEnv }}</span>
   </p>
 </template>
