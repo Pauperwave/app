@@ -12,25 +12,13 @@
 // Usage:
 //   node --env-file=.env scripts/backfill-wanted-cards-scryfall.mjs
 
-import { createClient } from '@supabase/supabase-js'
+import { createSupabaseAdminClient, sleep } from './lib/supabaseAdminClient.mjs'
 
-const SUPABASE_URL = process.env.SUPABASE_URL
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  console.error('Missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY in the environment (see .env).')
-  process.exit(1)
-}
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+const supabase = createSupabaseAdminClient()
 
 // Scryfall asks for at most 10 requests/sec and a "polite" delay between calls:
 // https://scryfall.com/docs/api#rate-limits-and-good-citizenship
 const REQUEST_DELAY_MS = 100
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
 
 // Segments after "/card/": [set, collectorNumber, lang?, slug] — lang is only
 // present for non-English printings (e.g. "usg/321/it/culla-di-gea-..."). It has to

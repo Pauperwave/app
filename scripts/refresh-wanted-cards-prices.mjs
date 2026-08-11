@@ -15,21 +15,16 @@
 //   node --env-file=.env scripts/refresh-wanted-cards-prices.mjs
 //   node --env-file=.env scripts/refresh-wanted-cards-prices.mjs --all   (include found/abandoned too)
 
-import { createClient } from '@supabase/supabase-js'
+// fallow-ignore-file code-duplication -- mirrors server/utils/cardTrader.ts and
+// server/utils/priceRefresh.ts on purpose, see the file header comment above
+import { createSupabaseAdminClient, sleep } from './lib/supabaseAdminClient.mjs'
 
-const SUPABASE_URL = process.env.SUPABASE_URL
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 const CARDTRADER_API_TOKEN = process.env.CARDTRADER_API_TOKEN
-
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  console.error('Missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY in the environment (see .env).')
-  process.exit(1)
-}
 if (!CARDTRADER_API_TOKEN) {
   console.warn('Missing CARDTRADER_API_TOKEN — cardtrader_price will be skipped for every row.')
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+const supabase = createSupabaseAdminClient()
 
 const MTG_GAME_ID = 1
 const CARDTRADER_API_BASE = 'https://api.cardtrader.com/api/v2'
@@ -40,10 +35,6 @@ const SCRYFALL_USER_AGENT = 'PauperWave-app/1.0 (wanted-cards weekly price refre
 // 10 req/sec limit on the marketplace/products endpoint — the same delay works for
 // both calls made per row.
 const REQUEST_DELAY_MS = 150
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
 
 // The finish has to be inferred from the printing, not just from the request's
 // treatment: foil-only printings exist (Pramikon, Sky Rampart in c19; Duskmourn's
