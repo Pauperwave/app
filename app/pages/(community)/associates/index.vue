@@ -38,7 +38,6 @@ const UCheckbox = resolveComponent('UCheckbox')
 
 const route = useRoute()
 const router = useRouter()
-const { isModalOpen } = useModalOpenFromQuery()
 
 const table = useTemplateRef('table')
 
@@ -470,10 +469,6 @@ watch(() => consentSocialFilter.value, (newVal) => {
 
         <template #right>
           <ViewModeTabs v-model="viewMode" :items="viewModeItems" />
-
-          <USeparator orientation="vertical" class="h-4" />
-
-          <AssociatesListAddModal v-model="isModalOpen" />
 
           <USeparator orientation="vertical" class="h-4" />
 
