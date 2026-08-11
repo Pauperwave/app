@@ -1,6 +1,6 @@
 <!-- app\pages\(community)\associates\index.vue -->
 <script setup lang="ts">
-import type { BadgeProps, TableColumn, TabsItem } from '@nuxt/ui'
+import type { TableColumn, TabsItem } from '@nuxt/ui'
 import { upperFirst } from 'scule'
 import { UBadge } from '#components'
 import type { Associate } from '~/types'
@@ -154,14 +154,7 @@ const columns: TableColumn<Associate>[] = [
     meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) => {
       const status = row.getValue('membership_status') as string
-      const statusConfig: Record<string, { color: BadgeProps['color'], icon: string }> = {
-        active: { color: 'success', icon: ICONS.success },
-        to_renew: { color: 'warning', icon: ICONS.refresh },
-        expired: { color: 'error', icon: ICONS.banned },
-        pending: { color: 'warning', icon: ICONS.pending },
-        rejected: { color: 'error', icon: ICONS.statusRejected }
-      }
-      const { color, icon } = statusConfig[status] || { color: 'neutral', icon: ICONS.help }
+      const { color, icon } = MEMBERSHIP_STATUS_BADGE_CONFIG[status] || { color: 'neutral', icon: ICONS.help }
 
       return h(UBadge, {
         class: 'capitalize gap-2',
