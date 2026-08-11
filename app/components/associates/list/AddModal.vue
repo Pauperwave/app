@@ -143,13 +143,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             {{ $t('associate.addModal.sections.fiscalInfo') }}
           </h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
-            <UFormField :label="$t('associate.addModal.fields.taxCode')" name="tax_code" required>
-              <UInput
-                v-model="state.tax_code"
-                :placeholder="$t('associate.addModal.placeholders.taxCode')"
-                class="w-full"
-              />
-            </UFormField>
+            <AssociatesFieldsTaxCodeField :state="state" />
           </div>
         </div>
 
@@ -203,17 +197,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 </template>
               </UCheckbox>
             </UFormField>
-            <UFormField name="consent_social">
-              <UCheckbox
-                v-model="state.consent_social"
-                :label="$t('associate.addModal.consents.socialLabel')"
-                size="lg"
-              >
-                <template #description>
-                  {{ $t('associate.addModal.consents.socialDescription') }}
-                </template>
-              </UCheckbox>
-            </UFormField>
+            <AssociatesFieldsConsentSocialField :state="state" />
           </div>
         </div>
 
