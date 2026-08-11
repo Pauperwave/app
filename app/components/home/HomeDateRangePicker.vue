@@ -45,7 +45,45 @@ const calendarRange = computed({
   }
 })
 
-const isRangeSelected = (range: { days?: number, months?: number, years?: number, direction?: 'past' | 'future', type?: 'all' }) => {
+interface RangeSpec {
+  days?: number
+  months?: number
+  years?: number
+  direction?: 'past' | 'future'
+  type?: 'all'
+}
+
+// isRangeSelected/selectRange both need "what CalendarDate span does this preset
+// mean, from today" — this is that computation, shared instead of duplicated.
+function rangeDatesFromToday(range: RangeSpec): { startDate: CalendarDate, endDate: CalendarDate } {
+  const currentDate = today(getLocalTimeZone())
+  let startDate = currentDate.copy()
+  let endDate = currentDate.copy()
+
+  if (range.direction === 'future') {
+    startDate = currentDate
+    if (range.days) {
+      endDate = endDate.add({ days: range.days })
+    } else if (range.months) {
+      endDate = endDate.add({ months: range.months })
+    } else if (range.years) {
+      endDate = endDate.add({ years: range.years })
+    }
+  } else {
+    endDate = currentDate
+    if (range.days) {
+      startDate = startDate.subtract({ days: range.days })
+    } else if (range.months) {
+      startDate = startDate.subtract({ months: range.months })
+    } else if (range.years) {
+      startDate = startDate.subtract({ years: range.years })
+    }
+  }
+
+  return { startDate, endDate }
+}
+
+const isRangeSelected = (range: RangeSpec) => {
   if (!selected.value.start || !selected.value.end) return false
 
   // Check if "All time" is selected (e.g., a very wide range)
@@ -56,41 +94,19 @@ const isRangeSelected = (range: { days?: number, months?: number, years?: number
     return diffYears >= 10
   }
 
-  const currentDate = today(getLocalTimeZone())
-  let startDate = currentDate.copy()
-  let endDate = currentDate.copy()
-
-  if (range.direction === 'future') {
-    startDate = currentDate
-    if (range.days) {
-      endDate = endDate.add({ days: range.days })
-    } else if (range.months) {
-      endDate = endDate.add({ months: range.months })
-    } else if (range.years) {
-      endDate = endDate.add({ years: range.years })
-    }
-  } else {
-    endDate = currentDate
-    if (range.days) {
-      startDate = startDate.subtract({ days: range.days })
-    } else if (range.months) {
-      startDate = startDate.subtract({ months: range.months })
-    } else if (range.years) {
-      startDate = startDate.subtract({ years: range.years })
-    }
-  }
-
+  const { startDate, endDate } = rangeDatesFromToday(range)
   const selectedStart = toCalendarDate(selected.value.start)
   const selectedEnd = toCalendarDate(selected.value.end)
 
   return selectedStart.compare(startDate) === 0 && selectedEnd.compare(endDate) === 0
 }
 
-const selectRange = (range: { days?: number, months?: number, years?: number, direction?: 'past' | 'future', type?: 'all' }) => {
+const selectRange = (range: RangeSpec) => {
+  const currentDate = today(getLocalTimeZone())
+
   if (range.type === 'all') {
     // Set a very wide range for "all time"
     // For example: from 10 years ago to 10 years in the future
-    const currentDate = today(getLocalTimeZone())
     selected.value = {
       start: currentDate.subtract({ years: 10 }).toDate(getLocalTimeZone()),
       end: currentDate.add({ years: 10 }).toDate(getLocalTimeZone())
@@ -98,30 +114,7 @@ const selectRange = (range: { days?: number, months?: number, years?: number, di
     return
   }
 
-  const currentDate = today(getLocalTimeZone())
-  let startDate = currentDate.copy()
-  let endDate = currentDate.copy()
-
-  if (range.direction === 'future') {
-    startDate = currentDate
-    if (range.days) {
-      endDate = endDate.add({ days: range.days })
-    } else if (range.months) {
-      endDate = endDate.add({ months: range.months })
-    } else if (range.years) {
-      endDate = endDate.add({ years: range.years })
-    }
-  } else {
-    endDate = currentDate
-    if (range.days) {
-      startDate = startDate.subtract({ days: range.days })
-    } else if (range.months) {
-      startDate = startDate.subtract({ months: range.months })
-    } else if (range.years) {
-      startDate = startDate.subtract({ years: range.years })
-    }
-  }
-
+  const { startDate, endDate } = rangeDatesFromToday(range)
   selected.value = {
     start: startDate.toDate(getLocalTimeZone()),
     end: endDate.toDate(getLocalTimeZone())
