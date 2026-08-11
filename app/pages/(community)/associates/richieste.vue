@@ -71,29 +71,32 @@ const sorting = ref([{ id: 'request_date', desc: false }])
 
 const columnFilters = ref([])
 
+// Keys must match each column's accessorKey (snake_case) exactly — getColumnLabel
+// below looks a column up by its id, so camelCase keys here would silently miss
+// every lookup and fall back to showing the raw field name in "Mostra colonne".
 const columnHeaders = {
-  membershipRequestStatus: t('associate.columns.membershipRequestStatus'),
-  requestDate: t('associate.columns.requestDate'),
-  associateType: t('associate.columns.associateType'),
-  consentData: t('associate.columns.consentData'),
-  consentSocial: t('associate.columns.consentSocial'),
-  hasReadStatute: t('associate.columns.hasReadStatute'),
-  firstName: t('associate.columns.firstName'),
-  lastName: t('associate.columns.lastName'),
-  emailAddress: t('associate.columns.emailAddress'),
-  phoneNumber: t('associate.columns.phoneNumber'),
-  taxCode: t('associate.columns.taxCode'),
-  bornDate: t('associate.columns.bornDate'),
-  bornLocation: t('associate.columns.bornLocation'),
-  bornProvince: t('associate.columns.bornProvince'),
-  bornState: t('associate.columns.bornState'),
-  residencyAddress: t('associate.columns.residencyAddress'),
-  residencyHouseNumber: t('associate.columns.residencyHouseNumber'),
-  residencyCity: t('associate.columns.residencyCity'),
-  residencyProvince: t('associate.columns.residencyProvince'),
-  residencyCap: t('associate.columns.residencyCap'),
-  mtgoNickname: t('associate.columns.mtgoNickname'),
-  mtgaNickname: t('associate.columns.mtgaNickname')
+  membership_request_status: t('associate.columns.membershipRequestStatus'),
+  request_date: t('associate.columns.requestDate'),
+  associate_type: t('associate.columns.associateType'),
+  consent_data: t('associate.columns.consentData'),
+  consent_social: t('associate.columns.consentSocial'),
+  has_read_statute: t('associate.columns.hasReadStatute'),
+  first_name: t('associate.columns.firstName'),
+  last_name: t('associate.columns.lastName'),
+  email_address: t('associate.columns.emailAddress'),
+  phone_number: t('associate.columns.phoneNumber'),
+  tax_code: t('associate.columns.taxCode'),
+  born_date: t('associate.columns.bornDate'),
+  born_location: t('associate.columns.bornLocation'),
+  born_province: t('associate.columns.bornProvince'),
+  born_state: t('associate.columns.bornState'),
+  residency_address: t('associate.columns.residencyAddress'),
+  residency_house_number: t('associate.columns.residencyHouseNumber'),
+  residency_city: t('associate.columns.residencyCity'),
+  residency_province: t('associate.columns.residencyProvince'),
+  residency_cap: t('associate.columns.residencyCap'),
+  mtgo_nickname: t('associate.columns.mtgoNickname'),
+  mtga_nickname: t('associate.columns.mtgaNickname')
 } as const
 
 type ColumnHeaderKey = keyof typeof columnHeaders
@@ -129,19 +132,25 @@ function createVisibilityItem(column: Column<Associate>): DropdownMenuItem {
 
 // Birth/residency/MTG detail stay available (toggleable) but hidden by
 // default — same "not needed at a glance" reasoning as the roster's own
-// columnVisibility, just a different set of columns qualifying.
+// columnVisibility, just a different set of columns qualifying. Keys must
+// match each column's accessorKey (snake_case) exactly — column visibility
+// is keyed by column id, not a display name, so camelCase keys here
+// silently match nothing and leave the column visible.
 const columnVisibility = ref({
-  bornDate: false,
-  bornLocation: false,
-  bornProvince: false,
-  bornState: false,
-  residencyAddress: false,
-  residencyHouseNumber: false,
-  residencyCity: false,
-  residencyProvince: false,
-  residencyCap: false,
-  mtgoNickname: false,
-  mtgaNickname: false
+  // Mandatory to submit /tesseramento — always true, redundant on every row.
+  consent_data: false,
+  has_read_statute: false,
+  born_date: false,
+  born_location: false,
+  born_province: false,
+  born_state: false,
+  residency_address: false,
+  residency_house_number: false,
+  residency_city: false,
+  residency_province: false,
+  residency_cap: false,
+  mtgo_nickname: false,
+  mtga_nickname: false
 })
 
 const rowSelection = ref({})
@@ -174,7 +183,7 @@ const columns: TableColumn<Associate>[] = [
   },
   {
     accessorKey: 'membership_request_status',
-    header: ({ column }) => sortableHeader(columnHeaders.membershipRequestStatus, column),
+    header: ({ column }) => sortableHeader(columnHeaders.membership_request_status, column),
     meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) => {
       const status = row.getValue('membership_request_status') as string
@@ -199,119 +208,120 @@ const columns: TableColumn<Associate>[] = [
   },
   {
     accessorKey: 'request_date',
-    header: ({ column }) => sortableHeader(columnHeaders.requestDate, column),
+    header: ({ column }) => sortableHeader(columnHeaders.request_date, column),
     meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
     cell: ({ row }) => formatDateTime(row.original.request_date)
   },
   {
     accessorKey: 'first_name',
-    header: ({ column }) => sortableHeader(columnHeaders.firstName, column),
+    header: ({ column }) => sortableHeader(columnHeaders.first_name, column),
     cell: ({ row }) => row.original.first_name
   },
   {
     accessorKey: 'last_name',
-    header: ({ column }) => sortableHeader(columnHeaders.lastName, column),
+    header: ({ column }) => sortableHeader(columnHeaders.last_name, column),
     cell: ({ row }) => row.original.last_name
   },
   {
     accessorKey: 'email_address',
-    header: columnHeaders.emailAddress,
+    header: columnHeaders.email_address,
     cell: ({ row }) => row.original.email_address
   },
   {
     accessorKey: 'phone_number',
-    header: columnHeaders.phoneNumber,
+    header: columnHeaders.phone_number,
     meta: { class: { td: 'font-mono' } },
     cell: ({ row }) => row.original.phone_number
   },
   {
     accessorKey: 'tax_code',
-    header: columnHeaders.taxCode,
+    header: columnHeaders.tax_code,
     meta: { class: { td: 'font-mono' } },
     cell: ({ row }) => row.original.tax_code
   },
   {
     accessorKey: 'associate_type',
-    header: ({ column }) => sortableHeader(columnHeaders.associateType, column),
+    header: ({ column }) => sortableHeader(columnHeaders.associate_type, column),
     meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) => renderAssociateTypeBadge(row.original.associate_type)
   },
   {
     accessorKey: 'consent_data',
-    header: ({ column }) => sortableHeader(columnHeaders.consentData, column),
+    header: ({ column }) => sortableHeader(columnHeaders.consent_data, column),
     meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) => renderConsentBadge(row.original.consent_data)
   },
   {
     accessorKey: 'consent_social',
-    header: ({ column }) => sortableHeader(columnHeaders.consentSocial, column),
+    header: ({ column }) => sortableHeader(columnHeaders.consent_social, column),
     meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) => renderConsentBadge(row.original.consent_social)
   },
   {
     accessorKey: 'has_read_statute',
-    header: ({ column }) => sortableHeader(columnHeaders.hasReadStatute, column),
+    header: ({ column }) => sortableHeader(columnHeaders.has_read_statute, column),
     meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) => renderConsentBadge(row.original.has_read_statute)
   },
   {
     accessorKey: 'born_date',
-    header: ({ column }) => sortableHeader(columnHeaders.bornDate, column),
+    header: ({ column }) => sortableHeader(columnHeaders.born_date, column),
     meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
     cell: ({ row }) => formatDate(row.original.born_date)
   },
   {
     accessorKey: 'born_location',
-    header: columnHeaders.bornLocation,
+    header: columnHeaders.born_location,
     cell: ({ row }) => row.original.born_location || ''
   },
   {
     accessorKey: 'born_province',
-    header: columnHeaders.bornProvince,
-    meta: { class: { td: 'font-mono' } },
+    header: columnHeaders.born_province,
+    meta: { class: { th: 'min-w-28', td: 'font-mono' } },
     cell: ({ row }) => row.original.born_province || ''
   },
   {
     accessorKey: 'born_state',
-    header: columnHeaders.bornState,
+    header: columnHeaders.born_state,
+    meta: { class: { th: 'min-w-28' } },
     cell: ({ row }) => row.original.born_state || ''
   },
   {
     accessorKey: 'residency_address',
-    header: columnHeaders.residencyAddress,
+    header: columnHeaders.residency_address,
     cell: ({ row }) => row.original.residency_address
   },
   {
     accessorKey: 'residency_house_number',
-    header: columnHeaders.residencyHouseNumber,
+    header: columnHeaders.residency_house_number,
     meta: { class: { th: 'text-right', td: 'text-right' } },
     cell: ({ row }) => row.original.residency_house_number || ''
   },
   {
     accessorKey: 'residency_city',
-    header: columnHeaders.residencyCity,
+    header: columnHeaders.residency_city,
     cell: ({ row }) => row.original.residency_city
   },
   {
     accessorKey: 'residency_province',
-    header: columnHeaders.residencyProvince,
+    header: columnHeaders.residency_province,
     meta: { class: { td: 'font-mono' } },
     cell: ({ row }) => row.original.residency_province
   },
   {
     accessorKey: 'residency_cap',
-    header: columnHeaders.residencyCap,
+    header: columnHeaders.residency_cap,
     meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
     cell: ({ row }) => row.original.residency_cap
   },
   {
     accessorKey: 'mtgo_nickname',
-    header: columnHeaders.mtgoNickname,
+    header: columnHeaders.mtgo_nickname,
     cell: ({ row }) => row.original.mtgo_nickname
   },
   {
     accessorKey: 'mtga_nickname',
-    header: columnHeaders.mtgaNickname,
+    header: columnHeaders.mtga_nickname,
     cell: ({ row }) => row.original.mtga_nickname
   }
 ]
