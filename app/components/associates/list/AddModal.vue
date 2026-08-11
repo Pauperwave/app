@@ -2,19 +2,11 @@
 <script setup lang="ts">
 import * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
-import { CalendarDate, getLocalTimeZone } from '@internationalized/date'
 
 // Define the model to accept open state from parent
 const open = defineModel<boolean>({ default: false })
 const toast = useToast()
 const { t } = useI18n()
-
-function formatDate(date: Date): string {
-  const day = String(date.getDate()).padStart(2, '0')
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const year = date.getFullYear()
-  return `${day}/${month}/${year}`
-}
 
 // Shared with /tesseramento (the public self-service form) — see
 // associateFormSchema.ts.
@@ -27,7 +19,12 @@ const associateTypeOptions = computed(() => [
   { label: t('associate.types.sustaining'), value: 'sustaining' as const }
 ])
 
-const state = reactive<Schema>({
+// born_date widened to Date | undefined to match BirthInfoFields.vue's shared
+// prop type (also used by /tesseramento, where the field starts unset) —
+// clearing the calendar now leaves it unset instead of silently resetting to
+// 1990-01-01; UForm's own schema validation (v.date()) still catches a
+// missing date at submit time, same as it already does on /tesseramento.
+const state = reactive<Omit<Schema, 'born_date'> & { born_date: Date | undefined }>({
   associate_type: 'regular',
   first_name: '',
   last_name: '',
@@ -48,20 +45,6 @@ const state = reactive<Schema>({
   has_read_statute: false,
   consent_data: false,
   consent_social: false
-})
-
-// calendar sync
-const calendarDate = computed<CalendarDate | null>({
-  get: () => state.born_date
-    ? new CalendarDate(
-      state.born_date.getFullYear(),
-      state.born_date.getMonth() + 1,
-      state.born_date.getDate()
-    )
-    : null,
-  set: (newDate) => {
-    state.born_date = newDate ? newDate.toDate(getLocalTimeZone()) : new Date('1990-01-01')
-  }
 })
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
@@ -107,12 +90,16 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         class="space-y-2"
         @submit="onSubmit"
       >
-        <!-- eslint-disable -->
         <!-- Associate type -->
         <div>
-          <h3 class="text-lg font-semibold text-primary">{{ $t('associate.addModal.sections.associateType') }}</h3>
+          <h3 class="text-lg font-semibold text-primary">
+            {{ $t('associate.addModal.sections.associateType') }}
+          </h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
-            <UFormField :label="$t('associate.addModal.fields.associateType')" name="associate_type">
+            <UFormField
+              :label="$t('associate.addModal.fields.associateType')"
+              name="associate_type"
+            >
               <USelect
                 v-model="state.associate_type"
                 :items="associateTypeOptions"
@@ -125,86 +112,36 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
         <!-- Personal information -->
         <div id="personal-info-section">
-          <h3 class="text-lg font-semibold text-primary">{{ $t('associate.addModal.sections.personalInfo') }}</h3>
+          <h3 class="text-lg font-semibold text-primary">
+            {{ $t('associate.addModal.sections.personalInfo') }}
+          </h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
-            <UFormField :label="$t('associate.addModal.fields.firstName')" name="name" required>
-              <UInput v-model="state.first_name" name="name" autocomplete="given-name" class="w-full" />
-            </UFormField>
-            <UFormField :label="$t('associate.addModal.fields.lastName')" name="surname" required>
-              <UInput v-model="state.last_name" name="surname" autocomplete="family-name" class="w-full" />
-            </UFormField>
-            <UFormField :label="$t('associate.addModal.fields.email')" name="email" required>
+            <AssociatesFieldsPersonalInfoFields :state="state" />
+            <UFormField
+              :label="$t('associate.addModal.fields.email')"
+              name="email_address"
+              required
+            >
               <UInput v-model="state.email_address" autocomplete="email" class="w-full" />
-            </UFormField>
-            <UFormField :label="$t('associate.addModal.fields.phoneNumber')" name="phone_number" required>
-              <UPhoneInput v-model="state.phone_number" name="phone_number" />
             </UFormField>
           </div>
         </div>
 
         <!-- Birth information -->
         <div id="birth-section">
-          <h3 class="text-lg font-semibold text-primary">{{ $t('associate.addModal.sections.birthInfo') }}</h3>
+          <h3 class="text-lg font-semibold text-primary">
+            {{ $t('associate.addModal.sections.birthInfo') }}
+          </h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
-            <UFormField :label="$t('associate.addModal.fields.birthLocation')" name="born_location" required>
-              <UInput
-                v-model="state.born_location"
-                :placeholder="$t('associate.addModal.placeholders.birthLocation')"
-                class="w-full"
-              />
-            </UFormField>
-
-            <UFormField :label="$t('associate.addModal.fields.birthDate')" name="born_date" required>
-              <!-- Hidden input for autofill and schema validation -->
-              <input
-                type="date"
-                v-model="state.born_date"
-                name="born_date"
-                autocomplete="bday"
-                class="hidden"
-              />
-
-              <!-- Pulsante calendario -->
-              <UPopover>
-                <UButton
-                  color="neutral"
-                  variant="outline"
-                  class="w-full justify-start"
-                  :icon="ICONS.calendar"
-                >
-                  {{ state.born_date ? formatDate(state.born_date) : $t('associate.addModal.fields.selectBirthDate') }}
-                </UButton>
-
-                <template #content>
-                  <UCalendar
-                    v-model="calendarDate"
-                    :default-value="new CalendarDate(1995, 1, 1)"
-                    class="p-2"
-                  />
-                </template>
-              </UPopover>
-            </UFormField>
-
-            <UFormField :label="$t('associate.addModal.fields.birthProvince')" name="born_province" required>
-              <UInput
-                v-model="state.born_province"
-                :placeholder="$t('associate.addModal.placeholders.birthProvince')"
-                class="w-full"
-              />
-            </UFormField>
-            <UFormField :label="$t('associate.addModal.fields.birthState')" name="born_state" required>
-              <UInput
-                v-model="state.born_state"
-                :placeholder="$t('associate.addModal.placeholders.birthState')"
-                class="w-full"
-              />
-            </UFormField>
+            <AssociatesFieldsBirthInfoFields :state="state" />
           </div>
         </div>
 
         <!-- Tax information -->
         <div id="fiscal-section">
-          <h3 class="text-lg font-semibold text-primary">{{ $t('associate.addModal.sections.fiscalInfo') }}</h3>
+          <h3 class="text-lg font-semibold text-primary">
+            {{ $t('associate.addModal.sections.fiscalInfo') }}
+          </h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
             <UFormField :label="$t('associate.addModal.fields.taxCode')" name="tax_code" required>
               <UInput
@@ -218,76 +155,29 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
         <!-- Residency -->
         <div id="residency-section">
-          <h3 class="text-lg font-semibold text-primary">{{ $t('associate.addModal.sections.residencyInfo') }}</h3>
+          <h3 class="text-lg font-semibold text-primary">
+            {{ $t('associate.addModal.sections.residencyInfo') }}
+          </h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
-            <UFormField :label="$t('associate.addModal.fields.residencyAddress')" name="residency_address" required>
-              <UInput
-                v-model="state.residency_address"
-                autocomplete="address-line1"
-                :placeholder="$t('associate.addModal.placeholders.residencyAddress')"
-                class="w-full"
-              />
-            </UFormField>
-            <UFormField :label="$t('associate.addModal.fields.residencyHouseNumber')" name="residency_house_number">
-              <UInput
-                :model-value="state.residency_house_number ?? ''"
-                autocomplete="address-line2"
-                :placeholder="$t('associate.addModal.placeholders.residencyHouseNumber')"
-                class="w-full"
-                @update:model-value="state.residency_house_number = ($event as string) || null"
-              />
-            </UFormField>
-            <UFormField :label="$t('associate.addModal.fields.residencyCity')" name="residency_city" required>
-              <UInput
-                v-model="state.residency_city"
-                autocomplete="address-level2"
-                :placeholder="$t('associate.addModal.placeholders.residencyCity')"
-                class="w-full"
-              />
-            </UFormField>
-            <UFormField :label="$t('associate.addModal.fields.residencyProvince')" name="residency_province" required>
-              <UInput
-                v-model="state.residency_province"
-                autocomplete="address-level1"
-                :placeholder="$t('associate.addModal.placeholders.residencyProvince')"
-                class="w-full"
-              />
-            </UFormField>
-            <UFormField :label="$t('associate.addModal.fields.residencyCap')" name="residency_cap" required>
-              <UInput
-                v-model="state.residency_cap"
-                autocomplete="postal-code"
-                :placeholder="$t('associate.addModal.placeholders.residencyCap')"
-                class="w-full"
-              />
-            </UFormField>
+            <AssociatesFieldsResidencyFields :state="state" />
           </div>
         </div>
 
         <!-- Nickname MTG -->
         <div id="mtg-nicknames-section">
-          <h3 class="text-lg font-semibold text-primary">{{ $t('associate.addModal.sections.mtgNicknames') }}</h3>
+          <h3 class="text-lg font-semibold text-primary">
+            {{ $t('associate.addModal.sections.mtgNicknames') }}
+          </h3>
           <div class="grid grid-cols-2 gap-2 mt-2">
-            <UFormField :label="$t('associate.addModal.fields.mtgoNickname')" name="mtgo_nickname">
-              <UInput
-                :model-value="state.mtgo_nickname ?? ''"
-                class="w-full"
-                @update:model-value="state.mtgo_nickname = ($event as string) || null"
-              />
-            </UFormField>
-            <UFormField :label="$t('associate.addModal.fields.mtgaNickname')" name="mtga_nickname">
-              <UInput
-                :model-value="state.mtga_nickname ?? ''"
-                class="w-full"
-                @update:model-value="state.mtga_nickname = ($event as string) || null"
-              />
-            </UFormField>
+            <AssociatesFieldsMtgNicknameFields :state="state" />
           </div>
         </div>
 
         <!-- Consents -->
         <div id="consents-section">
-          <h3 class="text-lg font-semibold text-primary">{{ $t('associate.addModal.sections.consents') }}</h3>
+          <h3 class="text-lg font-semibold text-primary">
+            {{ $t('associate.addModal.sections.consents') }}
+          </h3>
           <div class="mt-2 space-y-2">
             <UFormField name="has_read_statute">
               <UCheckbox
