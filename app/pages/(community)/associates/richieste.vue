@@ -455,7 +455,8 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
           base: 'border-separate border-spacing-0',
           tbody: '[&>tr]:last:[&>td]:border-b-0',
           tr: 'hover:bg-elevated/50',
-          td: 'border-b border-default py-1 px-2'
+          th: 'border-r border-default last:border-r-0',
+          td: 'border-b border-r border-default last:border-r-0 py-1 px-2'
         }"
       />
 

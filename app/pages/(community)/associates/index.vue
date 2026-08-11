@@ -387,12 +387,13 @@ const columns: TableColumn<Associate>[] = [
   {
     accessorKey: 'born_province',
     header: columnHeaders.born_province,
-    meta: { class: { td: 'font-mono' } },
+    meta: { class: { th: 'min-w-28', td: 'font-mono' } },
     cell: ({ row }) => row.original.born_province || ''
   },
   {
     accessorKey: 'born_state',
     header: columnHeaders.born_state,
+    meta: { class: { th: 'min-w-28' } },
     cell: ({ row }) => row.original.born_state || ''
   },
   {
@@ -562,7 +563,8 @@ watch(() => consentSocialFilter.value, (newVal) => {
             base: 'border-separate border-spacing-0',
             tbody: '[&>tr]:last:[&>td]:border-b-0',
             tr: 'hover:bg-elevated/50',
-            td: 'border-b border-default py-1 px-2'
+            th: 'border-r border-default last:border-r-0',
+            td: 'border-b border-r border-default last:border-r-0 py-1 px-2'
           }"
         />
 
