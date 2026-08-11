@@ -6,7 +6,10 @@ export type UserStatus = 'subscribed' | 'unsubscribed' | 'bounced'
 export type SaleStatus = 'paid' | 'failed' | 'refunded'
 
 export type RequestStatus = 'approved' | 'pending' | 'rejected'
-export type AssociateType = 'ordinario' | 'sostenitore'
+// English DB values, not Italian — translated for display via
+// associate.types.* in it.json (see renderAssociateTypeBadge in
+// associates/index.vue), same convention as every other status/type enum.
+export type AssociateType = 'regular' | 'sustaining'
 
 // Membership status computed by the pauperwave_associates_with_status view (never
 // stored in the DB): 'active'/'to_renew'/'expired' derive from the latest renewal
@@ -49,11 +52,16 @@ export interface Mail {
   date: string
 }
 
+// The 4-tier app-level role model decided in docs/architecture/roles.md
+// (2026-08-10): player < organizer < admin < super_admin. Not yet the live DB
+// enum (shared/utils/types/database.ts's app_role is still the pre-migration
+// admin|organizer|judge|player) — this is the target shape everything client-side
+// should already be built against, per that doc's "Suggested order of work".
+export type AppRole = 'player' | 'organizer' | 'admin' | 'super_admin'
+
 export interface Member {
   name: string
-  username: string
-  role: 'member' | 'owner'
-  avatar: AvatarProps
+  role: AppRole
 }
 
 export interface Stat {

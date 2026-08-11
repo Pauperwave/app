@@ -1,46 +1,39 @@
 // server\api\members.ts
-const members = [
+import type { Member } from '~/types'
+
+// Roles from docs/architecture/roles.md's bootstrap table (2026-08-10,
+// corrected/expanded 2026-08-11: Cazzola/Cordeschi/Castelli are admin, not
+// organizer; Marisa/Festi/Baldo added as organizer) — the only people with a
+// non-default role once the real DB migration lands; everyone else defaults
+// to 'player'.
+const members: Member[] = [
   {
     name: 'Emanuele Nardi',
-    username: 'emanuelenardi',
-    role: 'owner',
-    avatar: { src: '' }
+    role: 'super_admin'
   },
   {
     name: 'Marco Cazzola',
-    username: 'marcocazzola',
-    role: 'organizer',
-    avatar: { src: '' }
+    role: 'admin'
   },
   {
     name: 'Nicola Cordeschi',
-    username: 'ilFritto',
-    role: 'organizer',
-    avatar: { src: '' }
+    role: 'admin'
   },
   {
     name: 'Lorenzo Castelli',
-    username: 'lorenzocastelli',
-    role: 'judge',
-    avatar: { src: '' }
+    role: 'admin'
   },
   {
-    name: 'Pietro Bragioto',
-    username: 'crila-peoty',
-    role: 'writer',
-    avatar: { src: '' }
+    name: 'Simone Marisa',
+    role: 'organizer'
   },
   {
-    name: 'Paolo Donfrancesco',
-    username: 'Walker735',
-    role: 'writer',
-    avatar: { src: '' }
+    name: 'Gianluca Festi',
+    role: 'organizer'
   },
   {
-    name: 'Alessandro Moretti',
-    username: 'A_AdeptoTerra',
-    role: 'writer',
-    avatar: { src: '' }
+    name: 'Riccardo Baldo',
+    role: 'organizer'
   }
 ]
 
