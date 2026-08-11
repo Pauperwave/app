@@ -168,11 +168,17 @@ const gridSections = computed<GridSection[]>(() => {
             variant="ghost"
             @click="tour.start()"
           />
+
+          <USeparator orientation="vertical" class="h-4" />
+
           <ViewModeTabs
             id="tour-wanted-cards-view-mode"
             v-model="viewMode"
             :items="viewModeItems"
           />
+
+          <USeparator orientation="vertical" class="h-4" />
+
           <WantedCardsListAddModal />
 
           <USeparator orientation="vertical" class="h-4" />
