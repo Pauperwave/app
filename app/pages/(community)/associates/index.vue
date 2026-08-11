@@ -5,8 +5,8 @@ import type { Column } from '@tanstack/vue-table'
 import { upperFirst } from 'scule'
 import type { Associate } from '~/types'
 
-const { associates, loading, refresh } = useAssociates()
-const { geocodes, loading: geocodesLoading } = useAssociateGeocodes()
+const { data: associates, isLoading: loading, refetch } = useAssociatesQuery()
+const { data: geocodes, isLoading: geocodesLoading } = useAssociateGeocodesQuery()
 const { t } = useI18n()
 const {
   formatDateTime, formatDate, renderAssociateTypeBadge, renderConsentBadge
@@ -19,10 +19,10 @@ const {
 // is still computed from the full unfiltered list (not rosterAssociates) —
 // it feeds the SubNav badge here and the same count backs the sidebar badge
 // in default.vue, both reading the same 'associates' cache key.
-const rosterAssociates = computed(() => associates.value.filter(
+const rosterAssociates = computed(() => (associates.value ?? []).filter(
   associate => associate.membership_request_status === 'approved'
 ))
-const pendingCount = computed(() => associates.value.filter(
+const pendingCount = computed(() => (associates.value ?? []).filter(
   associate => associate.membership_request_status === 'pending'
 ).length)
 
@@ -534,7 +534,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
             color="neutral"
             variant="outline"
             :loading="loading"
-            @click="refresh"
+            @click="refetch"
           />
         </template>
       </UDashboardToolbar>
@@ -577,7 +577,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
       <AssociatesListMapView
         v-else
         :associates="rosterAssociates"
-        :geocodes="geocodes"
+        :geocodes="geocodes ?? []"
         :loading="loading || geocodesLoading"
       />
     </template>

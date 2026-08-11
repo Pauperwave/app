@@ -6,8 +6,8 @@
 // (prefilling "Player" with the logged-in user).
 export function useCurrentAssociate() {
   const authUser = useSupabaseUser()
-  const { associates } = useAssociates()
+  const { data: associates } = useAssociatesQuery()
 
-  return computed(() =>
-    associates.value.find(associate => associate.email_address === authUser.value?.email) ?? null)
+  return computed(() => (associates.value ?? [])
+    .find(associate => associate.email_address === authUser.value?.email) ?? null)
 }

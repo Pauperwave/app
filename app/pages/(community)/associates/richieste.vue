@@ -5,7 +5,7 @@ import type { Column } from '@tanstack/vue-table'
 import { upperFirst } from 'scule'
 import type { Associate } from '~/types'
 
-const { associates, loading, refresh } = useAssociates()
+const { data: associates, isLoading: loading, refetch } = useAssociatesQuery()
 const { t } = useI18n()
 const {
   formatDateTime, formatDate, renderAssociateTypeBadge, renderConsentBadge
@@ -14,10 +14,10 @@ const {
 // The other half of the 2026-08-11 UX split (see associates/index.vue) —
 // everyone NOT yet approved: the triage queue an admin actually needs to act
 // on, kept out of the roster entirely instead of buried in a status filter.
-const requestAssociates = computed(() => associates.value.filter(
+const requestAssociates = computed(() => (associates.value ?? []).filter(
   associate => associate.membership_request_status !== 'approved'
 ))
-const pendingCount = computed(() => associates.value.filter(
+const pendingCount = computed(() => (associates.value ?? []).filter(
   associate => associate.membership_request_status === 'pending'
 ).length)
 
@@ -376,7 +376,6 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
           <AssociatesListApproveModal
             v-if="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
             :ids="table.tableApi.getFilteredSelectedRowModel().rows.map(row => row.original.id)"
-            @approved="refresh"
           >
             <UButton
               :label="$t('associate.approveModal.approve')"
@@ -406,7 +405,7 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
             color="neutral"
             variant="outline"
             :loading="loading"
-            @click="refresh"
+            @click="refetch"
           />
         </template>
       </UDashboardToolbar>

@@ -11,10 +11,11 @@ interface DetailField {
 
 const route = useRoute()
 const { t } = useI18n()
-const { associates, loading } = useAssociates()
+const { data: associates, isLoading: loading } = useAssociatesQuery()
 const { breadcrumbItems } = useBreadcrumbs()
 
-const associate = computed(() => associates.value.find(item => slugify(`${item.first_name} ${item.last_name}`) === route.params.slug))
+const associate = computed(() => (associates.value ?? [])
+  .find(item => slugify(`${item.first_name} ${item.last_name}`) === route.params.slug))
 
 // Emanuele Nardi gets his real GitHub avatar (same one hardcoded in
 // UserMenu.vue) instead of the generated placeholder.

@@ -61,14 +61,14 @@ watch(() => shortcutsTour.current.value?.id, (id) => {
   showChordHints.value = id === 'navigation'
 })
 
-// Same 'associates' useAsyncData key as associates/index.vue — reuses that
+// Same 'associates' Pinia Colada key as associates/index.vue — reuses that
 // page's cached fetch instead of re-querying Supabase from the layout.
-const { associates } = useAssociates()
+const { data: associates } = useAssociatesQuery()
 
 // Feeds the "Associati" nav item's badge below (see #item-trailing) — same
 // count backing the SubNav badge on /associates/richieste itself, so an admin
 // sees "there's something to do" before ever opening the page.
-const pendingAssociatesCount = computed(() => associates.value.filter(
+const pendingAssociatesCount = computed(() => (associates.value ?? []).filter(
   associate => associate.membership_request_status === 'pending'
 ).length)
 
@@ -335,7 +335,7 @@ const groups = computed(() => [{
 }, {
   id: 'associates',
   label: t('nav.search.associates'),
-  items: associates.value.map(associate => ({
+  items: (associates.value ?? []).map(associate => ({
     id: `associate-${associate.id}`,
     label: `${associate.first_name} ${associate.last_name}`,
     suffix: associate.email_address,
