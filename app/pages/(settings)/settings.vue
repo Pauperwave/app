@@ -30,18 +30,9 @@ const links = computed<NavigationMenuItem[][]>(() => [[{
   icon: ICONS.permissions,
   to: '/settings/permissions'
 }, {
-  label: t('settings.layout.links.security'),
-  icon: ICONS.security,
-  to: '/settings/security'
-}, {
   label: t('settings.layout.links.domains'),
   icon: ICONS.globe,
   to: '/settings/domains'
-}], [{
-  label: t('settings.layout.links.documentation'),
-  icon: ICONS.bookOpen,
-  to: 'https://ui.nuxt.com/docs/getting-started/installation/nuxt',
-  target: '_blank'
 }]])
 </script>
 

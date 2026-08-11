@@ -7,20 +7,31 @@ const { data: members } = await useFetch<Member[]>('/api/members', { default: ()
 const q = ref('')
 
 const filteredMembers = computed(() => {
-  return members.value.filter((member) => {
-    return member.name.search(new RegExp(q.value, 'i')) !== -1 || member.username.search(new RegExp(q.value, 'i')) !== -1
-  })
+  return members.value.filter(member => member.name.search(new RegExp(q.value, 'i')) !== -1)
 })
 </script>
 
 <template>
-  <div>
+  <div class="flex flex-col gap-4">
+    <UAlert
+      color="neutral"
+      variant="subtle"
+      :icon="ICONS.permissions"
+      :title="$t('settings.members.permissionsAlert.title')"
+      :description="$t('settings.members.permissionsAlert.description')"
+      :actions="[{
+        label: $t('settings.members.permissionsAlert.action'),
+        color: 'neutral',
+        variant: 'subtle',
+        to: '/settings/permissions'
+      }]"
+    />
+
     <UPageCard
       :title="$t('settings.members.title')"
       :description="$t('settings.members.description')"
       variant="naked"
       orientation="horizontal"
-      class="mb-4"
     >
       <UButton
         :label="$t('settings.members.invitePeople')"
