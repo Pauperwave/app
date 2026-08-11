@@ -1,7 +1,6 @@
 <!-- app\pages\(community)\transactions\index.vue -->
 <script lang="ts" setup>
 import { sub } from 'date-fns'
-import type { TabsItem } from '@nuxt/ui'
 import type { Range } from '~/types'
 
 const range = shallowRef<Range>({
@@ -14,7 +13,9 @@ const router = useRouter()
 const isModalOpen = ref(false)
 const { t } = useI18n()
 
-const typeTabs: TabsItem[] = [
+// Same StatusFilterGroup used by tournaments/leagues/events (#left) with
+// HomeDateRangePicker in #right, not UTabs.
+const typeTabs = [
   { label: t('transaction.tabs.all'), value: 'all' },
   { label: t('transaction.tabs.associationFee'), value: 'association-fee' },
   { label: t('transaction.tabs.eventFee'), value: 'event-fee' },
@@ -53,21 +54,21 @@ onMounted(() => {
         </template>
       </UDashboardNavbar>
 
-      <UDashboardToolbar>
+      <UDashboardToolbar
+        :ui="{
+          root: 'flex-wrap h-auto py-2 gap-4',
+          left: 'gap-4 flex-wrap',
+          right: 'gap-4 flex-wrap'
+        }"
+      >
         <template #left>
-          <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->
+          <StatusFilterGroup v-model="activeTypeTab" :items="typeTabs" />
+        </template>
+
+        <template #right>
           <HomeDateRangePicker v-model="range" class="-ms-1" />
         </template>
       </UDashboardToolbar>
-    </template>
-
-    <template #body>
-      <UTabs
-        v-model="activeTypeTab"
-        :items="typeTabs"
-        variant="link"
-        class="w-full"
-      />
     </template>
   </UDashboardPanel>
 </template>

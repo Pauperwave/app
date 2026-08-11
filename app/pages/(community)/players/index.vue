@@ -1,12 +1,13 @@
 <!-- app\pages\(community)\players\index.vue -->
 <script lang="ts" setup>
-import type { TabsItem } from '@nuxt/ui'
-
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 
-const statusTabs: TabsItem[] = [
+// Same StatusFilterGroup used by associates/index.vue and wanted-cards/index.vue
+// (a UFieldGroup of toggle buttons), not UTabs — this page has no real data
+// source yet, so no per-status counts to pass, unlike those two.
+const statusTabs = [
   { label: t('player.tabs.active'), value: 'active' },
   { label: t('player.tabs.inactive'), value: 'inactive' }
 ]
@@ -31,15 +32,14 @@ const activeStatusTab = computed({
           <NotificationsBellButton />
         </template>
       </UDashboardNavbar>
-    </template>
 
-    <template #body>
-      <UTabs
-        v-model="activeStatusTab"
-        :items="statusTabs"
-        variant="link"
-        class="w-full"
-      />
+      <!-- Same #left toolbar placement as associates/index.vue and
+           wanted-cards/index.vue for their StatusFilterGroup. -->
+      <UDashboardToolbar>
+        <template #left>
+          <StatusFilterGroup v-model="activeStatusTab" :items="statusTabs" />
+        </template>
+      </UDashboardToolbar>
     </template>
   </UDashboardPanel>
 </template>
