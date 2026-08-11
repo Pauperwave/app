@@ -1,5 +1,8 @@
 <!-- app\pages\(community)\associate\[slug].vue -->
 <script setup lang="ts">
+// fallow-ignore-file code-duplication -- the UDashboardPanel navbar/toolbar/breadcrumb
+// header skeleton mirrors other detail pages (events/leagues/tournaments); these are
+// still mock-data pages, expected to change dramatically once real functionality lands
 import { upperFirst } from 'scule'
 import { format, parseISO } from 'date-fns'
 
@@ -40,18 +43,8 @@ function yesNo(value: boolean): string {
   return value ? t('common.yes') : t('common.no')
 }
 
-type BadgeColor = 'success' | 'warning' | 'error' | 'neutral'
-
-const membershipStatusConfig: Record<string, { color: BadgeColor, icon: string }> = {
-  active: { color: 'success', icon: ICONS.success },
-  to_renew: { color: 'warning', icon: ICONS.refresh },
-  expired: { color: 'error', icon: ICONS.banned },
-  pending: { color: 'warning', icon: ICONS.pending },
-  rejected: { color: 'error', icon: ICONS.statusRejected }
-}
-
 const currentStatusBadge = computed(() => associate.value
-  ? membershipStatusConfig[associate.value.membership_status] ?? { color: 'neutral' as const, icon: ICONS.help }
+  ? MEMBERSHIP_STATUS_BADGE_CONFIG[associate.value.membership_status] ?? { color: 'neutral' as const, icon: ICONS.help }
   : { color: 'neutral' as const, icon: ICONS.help })
 
 const anagraficaFields = computed<DetailField[]>(() => !associate.value
@@ -106,6 +99,7 @@ const mtgFields = computed<DetailField[]>(() => !associate.value
 </script>
 
 <template>
+  <!-- fallow-ignore-file code-duplication -- see the top-of-file comment -->
   <UDashboardPanel id="associate-detail">
     <template #header>
       <UDashboardNavbar
