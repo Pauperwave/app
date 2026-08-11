@@ -130,14 +130,17 @@ What's still genuinely custom, on top of the query:
 - Check for existing users with more than one row in `user_roles` before adding any constraint (none expected under the new 4-role model, but confirm rather than assume).
 - Change the constraint from `UNIQUE(user_id, role)` to `UNIQUE(user_id)`, so the database itself rejects a second role row for the same user instead of relying on `assign_role`/application code to remember the rule.
 
-**Bootstrap data for `assign_role` (step 3 below), recorded 2026-08-10 so it isn't lost before the mechanism exists:**
+**Bootstrap data for `assign_role` (step 3 below), recorded 2026-08-10, roles corrected and expanded 2026-08-11 so it isn't lost before the mechanism exists:**
 
 | Person | Role |
 |---|---|
 | Emanuele Nardi | `super_admin` (**inferred, not stated explicitly** — earlier in this doc's history the user called themselves `admin`, before `super_admin`/role-management existed as a concept; since they're the one making role decisions here, `super_admin` fits, but confirm before applying) |
-| Marco Cazzola | `organizer` |
-| Lorenzo Castelli | `organizer` |
-| Nicola Cordeschi | `organizer` |
+| Marco Cazzola | `admin` |
+| Lorenzo Castelli | `admin` |
+| Nicola Cordeschi | `admin` |
+| Simone Marisa | `organizer` |
+| Gianluca Festi | `organizer` |
+| Riccardo Baldo | `organizer` |
 
 Everyone else defaults to `player` (no row needed, per `get_user_role`'s `COALESCE`).
 
@@ -230,7 +233,7 @@ Same route for staff and players, `v-if` inside it:
 1. Decide and resolve the `pauperwave_associates` P1 policy (`docs/BACKLOG.md`) — not a hard blocker for starting the steps below, but "player can't see other members' PII" stays false until it's fixed.
 2. Confirm whether `public_read` was applied to `tournaments`/`tournament_standings`/`players` (audit §5.5) — changes what's already safe to read as a player vs. what still needs a BFF/RPC.
 3. Create `assign_role(uuid, app_role)` in Supabase (or document the existing mechanism, if promotion already happens some other way) — prerequisite for wiring `MembersList.vue`'s dropdown.
-4. DB migration for the 4-role model, confirmed 2026-08-10 (§1): recreate the `app_role` enum without `judge` and with `super_admin` added (one type recreation covers both, after confirming no existing row uses `judge`), tighten `user_roles` from `UNIQUE(user_id, role)` to `UNIQUE(user_id)`, and apply the bootstrap role assignments (Emanuele Nardi → `super_admin`, unconfirmed — see §1; Marco Cazzola, Lorenzo Castelli, Nicola Cordeschi → `organizer`) — via `assign_role` from step 3, or by hand via SQL editor if that's not built yet.
+4. DB migration for the 4-role model, confirmed 2026-08-10 (§1): recreate the `app_role` enum without `judge` and with `super_admin` added (one type recreation covers both, after confirming no existing row uses `judge`), tighten `user_roles` from `UNIQUE(user_id, role)` to `UNIQUE(user_id)`, and apply the bootstrap role assignments (§1's table — Emanuele Nardi's `super_admin` is unconfirmed, see §1) — via `assign_role` from step 3, or by hand via SQL editor if that's not built yet.
 5. `app/utils/permissions.ts` — `ROLE_LEVEL` + `PERMISSION_LEVEL` (§1) and the `Permission` type. Written first because everything else (the composable's `can()`, `definePageMeta({ permission })`, the middleware) reads from it.
 6. `colada.options.ts` — add the `filter` exclusion for the role query key. **Mandatory, strictly before step 7** (confirmed 2026-08-10) — not "alongside," not "whenever it's convenient": the risk this closes (a stale/wrong role sitting in `localStorage` on a shared device) exists the moment `useUserRole()` starts calling `useQuery`, and the gap stops being visible in normal testing once the composable works, which is exactly when it'd stop getting fixed.
 7. `app/composables/useUserRole.ts` — `useQuery`-backed on `get_user_role` (§1), `can`/`isOrganizer`/`isAdmin`/`isSuperAdmin`/`isStaff` on top of it.
