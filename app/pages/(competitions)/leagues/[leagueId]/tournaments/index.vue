@@ -1,10 +1,14 @@
 <!-- app\pages\(competitions)\leagues\[leagueId]\tournaments\index.vue -->
 <script lang="ts" setup>
+// fallow-ignore-file code-duplication -- the UDashboardPanel navbar/toolbar/breadcrumb
+// header skeleton mirrors other detail pages (events/leagues/associates); these are
+// still mock-data pages, expected to change dramatically once real functionality lands
 const { breadcrumbItems } = useBreadcrumbs()
 const route = useRoute()
 </script>
 
 <template>
+  <!-- fallow-ignore-file code-duplication -- see the top-of-file comment -->
   <UDashboardPanel id="league-tournaments">
     <template #header>
       <UDashboardNavbar :title="$t('tournament.breadcrumb')">
