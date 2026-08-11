@@ -14,14 +14,6 @@
 //
 // Seeded per league so the matrix is identical on every request.
 
-function createRng(seed: number) {
-  let state = seed
-  return () => {
-    state = (state * 1664525 + 1013904223) % 4294967296
-    return state / 4294967296
-  }
-}
-
 const FIRST_NAMES = [
   'Marco', 'Luca', 'Andrea', 'Matteo', 'Francesco', 'Alessandro', 'Davide', 'Simone',
   'Giacomo', 'Federico', 'Riccardo', 'Stefano', 'Nicola', 'Giulia', 'Chiara', 'Sara'
@@ -212,28 +204,11 @@ function buildLeagueStandings(format: string, league: FormatLeague) {
     date
   }))
 
-  const players = Array.from({ length: league.playerCount }, (_, i) => ({
-    uuid: `${league.uuid}-ply-${(i + 1).toString().padStart(2, '0')}`,
-    name: `${FIRST_NAMES[i % FIRST_NAMES.length]} ${LAST_NAMES[i % LAST_NAMES.length]}`,
-    // How likely this player is to show up at any given event.
-    regularity: 0.35 + rng() * 0.6
-  }))
+  const players = buildMockPlayers(
+    league.playerCount, `${league.uuid}-ply-`, FIRST_NAMES, LAST_NAMES, rng, [0.35, 0.6]
+  )
 
-  const results = events.flatMap((event) => {
-    const attendees = players.filter(player => rng() < player.regularity)
-
-    for (let i = attendees.length - 1; i > 0; i--) {
-      const j = Math.floor(rng() * (i + 1))
-      ;[attendees[i], attendees[j]] = [attendees[j]!, attendees[i]!]
-    }
-
-    return attendees.map((player, index) => ({
-      player_uuid: player.uuid,
-      player_name: player.name,
-      event_uuid: event.uuid,
-      rank: index + 1
-    }))
-  })
+  const results = events.flatMap(event => buildEventPlacements(players, event.uuid, rng))
 
   return { events, results }
 }

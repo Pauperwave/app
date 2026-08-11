@@ -10,16 +10,6 @@
 // Seeded per edition so the matrix is identical on every request — a mockup being
 // evaluated for layout must not reshuffle under the reader.
 
-// Linear congruential generator (Numerical Recipes constants) — deterministic,
-// and enough for placeholder data.
-function createRng(seed: number) {
-  let state = seed
-  return () => {
-    state = (state * 1664525 + 1013904223) % 4294967296
-    return state / 4294967296
-  }
-}
-
 const FIRST_NAMES = [
   'Marco', 'Luca', 'Andrea', 'Matteo', 'Francesco', 'Alessandro', 'Davide', 'Simone',
   'Giacomo', 'Federico', 'Riccardo', 'Stefano', 'Nicola', 'Paolo', 'Michele', 'Giulia',
@@ -95,30 +85,12 @@ function buildEdition(edition: string) {
     format
   }))
 
-  const players = Array.from({ length: size.players }, (_, i) => ({
-    uuid: `ply-${(i + 1).toString().padStart(2, '0')}`,
-    name: `${FIRST_NAMES[i % FIRST_NAMES.length]} ${LAST_NAMES[i % LAST_NAMES.length]}`,
-    // How likely this player is to show up — produces a realistic mix of regulars
-    // (who exceed the best-11 threshold) and occasional players (who never reach it).
-    regularity: 0.2 + rng() * 0.75
-  }))
+  // Regularity range produces a realistic mix of regulars (who exceed the
+  // best-11 threshold) and occasional players (who never reach it).
+  const players = buildMockPlayers(size.players, 'ply-', FIRST_NAMES, LAST_NAMES, rng, [0.2, 0.75])
 
   // For each event, draw the attendees and shuffle them into a final placement.
-  const results = events.flatMap((event) => {
-    const attendees = players.filter(player => rng() < player.regularity)
-
-    for (let i = attendees.length - 1; i > 0; i--) {
-      const j = Math.floor(rng() * (i + 1))
-      ;[attendees[i], attendees[j]] = [attendees[j]!, attendees[i]!]
-    }
-
-    return attendees.map((player, index) => ({
-      player_uuid: player.uuid,
-      player_name: player.name,
-      event_uuid: event.uuid,
-      rank: index + 1
-    }))
-  })
+  const results = events.flatMap(event => buildEventPlacements(players, event.uuid, rng))
 
   return { events, results }
 }
