@@ -50,7 +50,10 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (error || !data) {
-    throw createError({ statusCode: 500, statusMessage: error?.message ?? 'Wanted card update failed' })
+    throw createError({
+      statusCode: 500,
+      statusMessage: error?.message ?? 'Wanted card update failed'
+    })
   }
 
   // Same background prefetch as create.post.ts — changing edition/printing can

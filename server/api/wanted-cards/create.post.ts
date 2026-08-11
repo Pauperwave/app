@@ -52,7 +52,10 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (error || !data) {
-    throw createError({ statusCode: 500, statusMessage: error?.message ?? 'Wanted card insert failed' })
+    throw createError({
+      statusCode: 500,
+      statusMessage: error?.message ?? 'Wanted card insert failed'
+    })
   }
 
   // Background prefetch: warms the CardTrader cache (server/utils/cardTrader.ts) so

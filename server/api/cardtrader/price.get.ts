@@ -13,7 +13,10 @@ export default defineEventHandler(async (event) => {
 
   const { scryfallId, setCode } = getQuery<{ scryfallId?: string, setCode?: string }>(event)
   if (!scryfallId || !setCode) {
-    throw createError({ statusCode: 400, statusMessage: 'scryfallId e setCode sono richiesti' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'scryfallId e setCode sono richiesti'
+    })
   }
 
   const token = useRuntimeConfig(event).cardTraderApiToken
