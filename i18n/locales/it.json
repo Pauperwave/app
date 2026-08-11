@@ -116,7 +116,8 @@
     "openInformativaDatiLink": "Apri l'informativa sul trattamento dei dati",
     "subNav": {
       "roster": "Anagrafica soci",
-      "requests": "Richieste di tesseramento"
+      "requests": "Richieste di tesseramento",
+      "requestsShort": "Richieste"
     },
     "types": {
       "regular": "Ordinario",

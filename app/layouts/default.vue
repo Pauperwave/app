@@ -119,6 +119,14 @@ const mainNavGroups = [[{
     open.value = false
   }
 }, {
+  label: t('associate.subNav.requestsShort'),
+  icon: ICONS.inbox,
+  to: '/associates/richieste',
+  devStatus: 'success',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
   label: t('player.breadcrumb'),
   icon: ICONS.gameplay,
   to: '/players',
@@ -404,7 +412,7 @@ const groups = computed(() => [{
                 <!-- "Something needs action" count — pending tesseramento
                      requests waiting on /associates/richieste. -->
                 <UBadge
-                  v-if="item.to === '/associates' && pendingAssociatesCount > 0"
+                  v-if="item.to === '/associates/richieste' && pendingAssociatesCount > 0"
                   :label="pendingAssociatesCount"
                   color="warning"
                   variant="subtle"
