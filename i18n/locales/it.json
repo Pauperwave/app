@@ -37,6 +37,7 @@
   "common": {
     "selectAll": "Seleziona tutti",
     "selectRow": "Seleziona riga",
+    "dataFreshness": "Aggiornato {time}",
     "delete": "Delete",
     "back": "Indietro",
     "forward": "Avanti",

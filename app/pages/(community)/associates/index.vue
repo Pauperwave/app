@@ -5,8 +5,11 @@ import type { Column } from '@tanstack/vue-table'
 import { upperFirst } from 'scule'
 import type { Associate } from '~/types'
 
-const { data: associates, isLoading: loading, refetch } = useAssociatesQuery()
+const {
+  data: associates, isLoading: loading, status, refetch
+} = useAssociatesQuery()
 const { data: geocodes, isLoading: geocodesLoading } = useAssociateGeocodesQuery()
+const { lastUpdatedAt } = useQueryFreshness(loading, status)
 const { t } = useI18n()
 const {
   formatDateTime, formatDate, renderAssociateTypeBadge, renderConsentBadge
@@ -515,6 +518,8 @@ watch(() => consentSocialFilter.value, (newVal) => {
         </template>
 
         <template #right>
+          <DataFreshnessIndicator :last-updated-at="lastUpdatedAt" />
+
           <UDropdownMenu :items="visibilityItems" :content="{ align: 'end' }">
             <UButton
               :label="$t('common.showColumns')"
