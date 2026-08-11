@@ -1,7 +1,7 @@
 {
   "nav": {
     "dashboardsSection": "Dashboards",
-    "dashboard": "Panoramica",
+    "dashboard": "Home",
     "calendar": "Calendario",
     "finance": "Finanze",
     "community": "Community",
@@ -19,11 +19,24 @@
       "associates": "Associati",
       "code": "Code",
       "viewSource": "View page source"
+    },
+    "shortcutsTour": {
+      "startButton": "Scorciatoie da tastiera",
+      "steps": {
+        "navigation": {
+          "title": "Naviga con la tastiera",
+          "description": "Premi {g1} seguito da una lettera per saltare direttamente a una sezione (es. {g2} poi {a} per Associati). Tieni premuto {g3} e vedrai i tasti suggeriti accanto a ogni voce, come ora."
+        },
+        "globalActions": {
+          "title": "Altre scorciatoie",
+          "description": "{n} apre le notifiche, {b} comprime o espande la sidebar. Funzionano da qualsiasi pagina, tranne mentre stai scrivendo in un campo."
+        }
+      }
     }
   },
   "common": {
-    "selectAll": "Select all",
-    "selectRow": "Select row",
+    "selectAll": "Seleziona tutti",
+    "selectRow": "Seleziona riga",
     "delete": "Delete",
     "back": "Indietro",
     "forward": "Avanti",
@@ -35,7 +48,10 @@
     "switchToLightMode": "Passa al tema chiaro",
     "switchToDarkMode": "Passa al tema scuro",
     "retry": "Riprova",
-    "mockDataNotice": "Dati di esempio: questa classifica non è ancora collegata al database reale."
+    "mockDataNotice": "Dati di esempio: questa classifica non è ancora collegata al database reale.",
+    "copyLink": "Copia link",
+    "linkCopied": "Link copiato negli appunti",
+    "pageInDevelopment": "Questa pagina è ancora in sviluppo."
   },
   "tour": {
     "back": "Indietro",
@@ -95,14 +111,25 @@
   },
   "associate": {
     "breadcrumb": "Associati",
+    "copyTesseramentoLink": "Copia il link al modulo di tesseramento pubblico",
+    "openTesseramentoLink": "Apri il modulo di tesseramento pubblico",
+    "openInformativaDatiLink": "Apri l'informativa sul trattamento dei dati",
+    "subNav": {
+      "roster": "Anagrafica soci",
+      "requests": "Richieste di tesseramento"
+    },
+    "types": {
+      "regular": "Ordinario",
+      "sustaining": "Sostenitore"
+    },
     "tabs": {
       "all": "Tutti",
-      "pending": "In attesa di approvazione",
+      "pending": "In attesa",
+      "rejected": "Rifiutate",
       "active": "Attivi",
       "toRenew": "Da rinnovare"
     },
     "columns": {
-      "select": "Seleziona",
       "id": "ID",
       "uuid": "UUID",
       "createdAt": "Data di creazione",
@@ -142,7 +169,7 @@
       "yes": "Concesso",
       "no": "Negato"
     },
-    "selectedRows": "{selected} di {total} righe selezionate.",
+    "selectedRows": "{selected} di {total} associati selezionati.",
     "views": {
       "table": "Tabella",
       "map": "Mappa"
@@ -179,8 +206,7 @@
         "residencyProvinceInvalid": "Sigla provincia non valida",
         "residencyCapInvalid": "CAP non valido",
         "consentDataRequired": "Consenso obbligatorio",
-        "statuteReadRequired": "Lettura statuto obbligatoria",
-        "surveillanceAckRequired": "Presa visione obbligatoria"
+        "statuteReadRequired": "Lettura statuto obbligatoria"
       },
       "successToastTitle": "Successo",
       "successToastDescription": "Nuovo associato \"{name}\" aggiunto",
@@ -193,32 +219,42 @@
         "fiscalInfo": "Informazioni fiscali",
         "residencyInfo": "Informazioni sulla residenza",
         "mtgNicknames": "Nickname MTG",
-        "consents": "Consensi e riconoscimenti"
+        "consents": "Consensi"
       },
       "fields": {
         "associateType": "Tipo di associato",
         "firstName": "Nome",
         "lastName": "Cognome",
         "email": "Email",
-        "phoneNumber": "Numero di cellulare",
+        "phoneNumber": "Cellulare",
         "birthLocation": "Luogo di nascita",
         "birthDate": "Data di nascita",
         "selectBirthDate": "Seleziona data di nascita",
-        "birthProvince": "Provincia",
-        "birthState": "Stato",
+        "birthProvince": "Provincia di nascita",
+        "birthState": "Nazione di nascita",
         "taxCode": "Codice Fiscale",
         "residencyAddress": "Indirizzo",
+        "residencyHouseNumber": "Civico",
         "residencyCity": "Città",
         "residencyProvince": "Provincia",
         "residencyCap": "CAP",
-        "mtgoNickname": "MTGO",
-        "mtgaNickname": "Arena"
+        "mtgoNickname": "Nickname MTGO",
+        "mtgaNickname": "Nickname MTGA"
+      },
+      "placeholders": {
+        "birthLocation": "Trento",
+        "birthProvince": "TN",
+        "birthState": "IT",
+        "taxCode": "RSSMRA85M01L378D",
+        "residencyAddress": "Via Roma",
+        "residencyHouseNumber": "1",
+        "residencyCity": "Trento",
+        "residencyProvince": "TN",
+        "residencyCap": "38122"
       },
       "consents": {
         "statuteLabel": "Ho letto lo statuto dell'associazione",
         "statuteDescription": "Dichiaro di aver letto lo statuto dell'associazione.",
-        "surveillanceLabel": "Informativa sulla sorveglianza",
-        "surveillanceDescription": "Dichiaro di aver preso visione dell'informativa sulla sorveglianza.",
         "dataLabel": "Consenso al trattamento dei dati",
         "dataDescription": "Dichiaro di aver preso visione dell'informativa sul trattamento dei dati.",
         "socialLabel": "Consenso Social",
@@ -236,6 +272,49 @@
       "successToastDescription": "Tesseramento approvato per {count} associato | Tesseramento approvato per {count} associati",
       "errorToastTitle": "Approvazione fallita"
     }
+  },
+  "tesseramento": {
+    "seoTitle": "Tesseramento — PauperWave",
+    "seoDescription": "Richiedi il tesseramento all'associazione PauperWave.",
+    "title": "Richiesta di tesseramento",
+    "stepIndicator": "Passo {current} di {total} — {title}",
+    "steps": {
+      "email": {
+        "title": "Email",
+        "description": "Verifichiamo la tua email prima di procedere",
+        "label": "La tua email",
+        "placeholder": "nome{'@'}esempio.it",
+        "submit": "Invia link di verifica",
+        "linkSentTitle": "Link inviato",
+        "linkSentDescription": "Controlla la tua casella email e clicca sul link per continuare.",
+        "errorTitle": "Invio fallito"
+      },
+      "verify": {
+        "title": "Verifica",
+        "description": "In attesa di conferma",
+        "waiting": "Abbiamo inviato un link a {email}. Aprilo per continuare — puoi chiudere questa scheda, ci penserà il link a tornare qui.",
+        "resend": "Non hai ricevuto nulla? Invia di nuovo"
+      },
+      "mtgNicknames": {
+        "skip": "Salta, non gioco su Arena/MTGO"
+      },
+      "consents": {
+        "openStatuto": "Leggi lo statuto",
+        "openData": "Leggi l'informativa sul trattamento dei dati",
+        "submit": "Invia richiesta"
+      }
+    },
+    "back": "Indietro",
+    "next": "Avanti",
+    "successTitle": "Richiesta inviata",
+    "successDescription": "La tua richiesta di tesseramento è stata registrata. Il direttivo la esaminerà a breve.",
+    "errorTitle": "Invio fallito",
+    "errorDuplicateDescription": "Esiste già una richiesta con questa email.",
+    "errorGenericDescription": "Qualcosa è andato storto: {message}",
+    "informativaDati": {
+      "title": "Informativa sul trattamento dei dati"
+    },
+    "backToForm": "Torna al modulo"
   },
   "transaction": {
     "breadcrumb": "Transazioni",
@@ -834,9 +913,7 @@
         "general": "Generali",
         "members": "Membri",
         "permissions": "Permessi",
-        "security": "Sicurezza",
-        "domains": "Domini",
-        "documentation": "Documentazione"
+        "domains": "Domini"
       }
     },
     "domains": {
@@ -876,10 +953,10 @@
       "description": "Chi può fare cosa, per le quattro fasce di ruolo. Riferimento leggibile — vedi docs/architecture/roles.md e permissions.md per l'implementazione.",
       "columns": {
         "feature": "Funzionalità",
-        "player": "Player",
-        "organizer": "Organizer",
-        "admin": "Admin",
-        "superAdmin": "Super Admin"
+        "player": "Giocatore",
+        "organizer": "Organizzatore",
+        "admin": "Amministratore",
+        "superAdmin": "Super amministratore"
       },
       "access": {
         "full": "Completo",
@@ -891,43 +968,43 @@
         "description": "È il piano concordato (docs/architecture/roles.md), non lo stato reale: oggi ogni utente autenticato vede l'intero gestionale, e le uniche scritture protette da un ruolo (\"Carte Cercate\") non distinguono ancora organizer da admin/super-admin."
       },
       "rows": {
-        "viewStandings": { "feature": "Visualizzare classifiche (Cittadino, Commander, Premodern, Pauper)" },
-        "viewTournaments": { "feature": "Visualizzare tornei, leghe, eventi" },
+        "viewStandings": { "feature": "**Visualizzare** classifiche (Cittadino, Commander, Premodern, Pauper)" },
+        "viewTournaments": { "feature": "**Visualizzare** tornei, leghe, eventi" },
         "registerTournament": {
-          "feature": "Iscriversi a un torneo/evento",
+          "feature": "**Iscriversi** a un torneo/evento",
           "playerNote": "Un player può iscrivere solo sé stesso, non altri giocatori."
         },
-        "viewWantedCards": { "feature": "Visualizzare \"Carte Cercate\"" },
+        "viewWantedCards": { "feature": "**Visualizzare** \"Carte Cercate\"" },
         "createWantedCard": {
-          "feature": "Creare una richiesta \"Carta Cercata\"",
+          "feature": "**Creare** una richiesta \"Carta Cercata\"",
           "playerNote": "Un player può creare richieste solo a proprio nome."
         },
         "updateOwnWantedCardStatus": {
-          "feature": "Cambiare stato (trovata/abbandonata) della propria richiesta",
+          "feature": "**Cambiare** stato (trovata/abbandonata) della propria richiesta",
           "playerNote": "Un player può cambiare stato solo alle proprie richieste, non a quelle altrui."
         },
-        "manageOwnDecks": { "feature": "Gestire i propri mazzi Commander" },
+        "manageOwnDecks": { "feature": "**Gestire** i propri mazzi Commander" },
         "viewOwnMembership": {
-          "feature": "Visualizzare il proprio stato di tesseramento/dati anagrafici",
+          "feature": "**Visualizzare** il proprio stato di tesseramento/dati anagrafici",
           "playerNote": "Un player vede solo il proprio stato di tesseramento, non quello degli altri soci.",
           "organizerNote": "Un organizer vede solo il proprio stato di tesseramento, non quello degli altri soci.",
           "adminNote": "Un admin vede lo stato di tesseramento di tutti i soci.",
           "superAdminNote": "Un super-admin vede lo stato di tesseramento di tutti i soci."
         },
-        "manageTournaments": { "feature": "Creare, modificare tornei/leghe/eventi (inclusa la gestione ordinaria dei round)" },
-        "resetPairing": { "feature": "Correggere/azzerare i dati di un singolo tavolo/pairing" },
-        "manageEventPayments": { "feature": "Gestire pagamenti di eventi/tornei" },
-        "deleteOwnWantedCard": { "feature": "Eliminare la propria richiesta" },
-        "manageOthersWantedCards": { "feature": "Modificare/eliminare/cambiare stato di una richiesta altrui" },
-        "sendPaymentReceipts": { "feature": "Inviare email di ricevuta (quote eventi/tornei, quote associative)" },
-        "manageAllDecks": { "feature": "Gestire i mazzi Commander di tutti i giocatori" },
-        "manageMembers": { "feature": "Gestire l'anagrafica soci (/associates)" },
-        "manageMembershipFees": { "feature": "Gestire le quote associative" },
-        "deleteTournaments": { "feature": "Eliminare definitivamente tornei/leghe/eventi" },
-        "cancelRound": { "feature": "Annullare un round (incl. riportare l'intero torneo in registrazione)" },
-        "deleteCommanderDeck": { "feature": "Eliminare un mazzo Commander altrui" },
-        "deleteRuleset": { "feature": "Eliminare un regolamento (ruleset)" },
-        "manageRoles": { "feature": "Assegnare/modificare ruoli (/settings/members)" }
+        "manageTournaments": { "feature": "**Creare**, **modificare** tornei/leghe/eventi (inclusa la gestione ordinaria dei round)" },
+        "resetPairing": { "feature": "**Correggere**/**azzerare** i dati di un singolo tavolo/pairing" },
+        "manageEventPayments": { "feature": "**Gestire** pagamenti di eventi/tornei" },
+        "deleteOwnWantedCard": { "feature": "**Eliminare** la propria richiesta" },
+        "manageOthersWantedCards": { "feature": "**Modificare**/**eliminare**/**cambiare** stato di una richiesta altrui" },
+        "sendPaymentReceipts": { "feature": "**Inviare** email di ricevuta (quote eventi/tornei, quote associative)" },
+        "manageAllDecks": { "feature": "**Gestire** i mazzi Commander di tutti i giocatori" },
+        "manageMembers": { "feature": "**Gestire** l'anagrafica soci (/associates)" },
+        "manageMembershipFees": { "feature": "**Gestire** le quote associative" },
+        "deleteTournaments": { "feature": "**Eliminare** definitivamente tornei/leghe/eventi" },
+        "cancelRound": { "feature": "**Annullare** un round (incl. riportare l'intero torneo in registrazione)" },
+        "deleteCommanderDeck": { "feature": "**Eliminare** un mazzo Commander altrui" },
+        "deleteRuleset": { "feature": "**Eliminare** un regolamento (ruleset)" },
+        "manageRoles": { "feature": "**Assegnare**/**modificare** ruoli (/settings/members)" }
       }
     },
     "general": {
@@ -961,10 +1038,21 @@
       }
     },
     "members": {
-      "title": "Members",
-      "description": "Invite new members by email address.",
-      "invitePeople": "Invite people",
-      "searchPlaceholder": "Search organizers",
+      "title": "Membri",
+      "description": "Invita nuovi membri via indirizzo email.",
+      "invitePeople": "Invita persone",
+      "searchPlaceholder": "Cerca membri",
+      "roles": {
+        "player": "Giocatore",
+        "organizer": "Organizzatore",
+        "admin": "Amministratore",
+        "super_admin": "Super amministratore"
+      },
+      "permissionsAlert": {
+        "title": "Cosa può fare ogni ruolo?",
+        "description": "Questa lista mostra chi ha quale ruolo, non cosa può fare. Per il dettaglio completo dei permessi per ruolo vai nella tab \"Permessi\".",
+        "action": "Vedi permessi"
+      },
       "list": {
         "editMember": "Modifica membro",
         "removeMember": "Rimuovi membro"
@@ -1002,24 +1090,6 @@
           "label": "Important updates",
           "description": "Receive emails about important updates like security fixes, maintenance, etc."
         }
-      }
-    },
-    "security": {
-      "validation": {
-        "minLength": "Must be at least 8 characters",
-        "passwordsMustDiffer": "Passwords must be different"
-      },
-      "password": {
-        "title": "Password",
-        "description": "Confirm your current password before setting a new one.",
-        "currentPlaceholder": "Current password",
-        "newPlaceholder": "New password",
-        "update": "Update"
-      },
-      "account": {
-        "title": "Account",
-        "description": "No longer want to use our service? You can delete your account here. This action is not reversible. All information related to this account will be deleted permanently.",
-        "delete": "Delete account"
       }
     }
   },
