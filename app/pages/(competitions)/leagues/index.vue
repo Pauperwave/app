@@ -39,6 +39,9 @@ const sorting = ref([{ id: 'name', desc: false }])
 
         <template #right>
           <ViewModeTabs v-model="viewMode" :items="viewModeItems" />
+
+          <USeparator orientation="vertical" class="h-4" />
+
           <LeaguesListAddModal v-model="isModalOpen" />
 
           <USeparator orientation="vertical" class="h-4" />
