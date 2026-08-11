@@ -4,7 +4,7 @@
 
 Documento vivo per tracciare avanzamento, architettura e decisioni. Aggiornare quando cambiano scope, stack o convenzioni rilevanti.
 
-**Ultimo aggiornamento:** 2026-08-08
+**Ultimo aggiornamento:** 2026-08-11
 
 ---
 
@@ -173,6 +173,14 @@ Implementato in `useCittadinoFilters.ts` come catena di comparatori dopo il tota
 **Decisione:** nessuna ulteriore ottimizzazione, per ora. Analisi (non profilata sul progetto, ragionamento su ordini di grandezza): il costo del parsing CSS reinserito ad ogni hover è nell'ordine dei microsecondi (~150 byte, aggiornato al più una volta per colonna attraversata — `mouseover` scatta solo al cambio di cella, non ad ogni pixel di `mousemove`); il costo dominante è lo style recalc successivo, identico indipendentemente dalla tecnica di iniezione. Le soglie oltre cui varrebbe la pena rifarlo (>1000 righe, o eventi a framerate) sono molto sopra la scala reale (46 righe × 29 colonne, ~1300 celle). L'unica ottimizzazione con impatto misurabile — rimuovere `transition-colors` dall'hover di riga — era già stata fatta prima di questa valutazione.
 
 **Conseguenze:** non toccare la logica del crosshair finché il DevTools Performance panel non mostra concretamente "Style Recalculation" > 2ms per frame durante l'hover — cosa improbabile a questa scala. Se in futuro la tabella crescerà di molto (centinaia di righe, o un'interazione guidata da `mousemove` invece che `mouseover`), rivalutare passando a un attributo `data-hovered-col` con regole `nth-child` statiche pre-generate invece dell'iniezione dinamica di testo CSS.
+
+### ADR-014 — Fallback per nome su CardTrader quando `scryfall_id` manca lato loro (2026-08-11)
+
+**Contesto:** la ricerca di "Stilt-Man, Towering Terror" (set "Commander: Marvel Super Heroes", `msc`, uscito il 26/06/2026) risultava introvabile su CardTrader nonostante il prodotto esistesse davvero (blueprint id `393799`). `resolveCardTraderBlueprint` (`server/utils/cardTrader.ts`) fa match esatto tra lo `scryfall_id` di Scryfall e quello di ogni blueprint dell'export CardTrader per l'espansione risolta da `setCode`. Verificato sui dati reali: di 338 blueprint del set `msc`, 181 (oltre metà) hanno `scryfall_id: null` lato CardTrader — non è un caso isolato, ma un ritardo strutturale nel loro backfill per i set appena usciti.
+
+**Decisione:** quando il match per `scryfall_id` fallisce su tutte le espansioni candidate, viene fatto un secondo tentativo per **nome esatto della carta** (recuperato da Scryfall con una singola chiamata) tra i blueprint già scaricati nel primo giro — nessuna chiamata aggiuntiva a CardTrader. Il blueprint trovato viene comunque salvato in cache (`pauperwave_cardtrader_blueprints`) con il nostro `scryfallId`, così le ricerche successive per la stessa carta restano immediate anche se CardTrader non collega mai lo `scryfall_id` sul proprio lato.
+
+**Conseguenze:** il match per nome è meno rigoroso di quello per id (in teoria un nome duplicato tra printing diverse della stessa espansione potrebbe produrre un falso positivo, ma non è mai stato osservato e lo scope per espansione lo rende improbabile). Se in futuro emergono falsi positivi, va aggiunto anche il collector number come secondo criterio di spareggio — oggi non salvato da nessuna parte nel flusso wanted-cards, richiederebbe di propagarlo lungo tutta la catena di chiamata.
 
 ## Vedi anche
 
