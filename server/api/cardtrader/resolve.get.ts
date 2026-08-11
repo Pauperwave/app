@@ -7,12 +7,18 @@ export default defineEventHandler(async (event) => {
 
   const { scryfallId, setCode } = getQuery<{ scryfallId?: string, setCode?: string }>(event)
   if (!scryfallId || !setCode) {
-    throw createError({ statusCode: 400, statusMessage: 'scryfallId e setCode sono richiesti' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'scryfallId e setCode sono richiesti'
+    })
   }
 
   const token = useRuntimeConfig(event).cardTraderApiToken
   if (!token) {
-    throw createError({ statusCode: 500, statusMessage: 'CardTrader API token non configurato' })
+    throw createError({
+      statusCode: 500,
+      statusMessage: 'CardTrader API token non configurato'
+    })
   }
 
   const supabase = serverSupabaseServiceRole<Database>(event)

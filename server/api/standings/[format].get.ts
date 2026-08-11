@@ -243,7 +243,10 @@ export default defineEventHandler((event) => {
   const leagues = LEAGUES[format]
 
   if (!leagues) {
-    throw createError({ statusCode: 404, statusMessage: `No leagues for format "${format}"` })
+    throw createError({
+      statusCode: 404,
+      statusMessage: `No leagues for format "${format}"`
+    })
   }
 
   const requested = String(getQuery(event).league ?? '')

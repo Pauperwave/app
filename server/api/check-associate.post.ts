@@ -16,7 +16,10 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (error && error.code !== 'PGRST116') {
-    throw createError({ statusCode: 500, statusMessage: error.message })
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message
+    })
   }
 
   return { exists: !!data }

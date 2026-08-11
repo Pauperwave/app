@@ -11,7 +11,10 @@ export default defineEventHandler(async (event) => {
 
   const { ids } = await readBody<ApproveAssociatesBody>(event)
   if (!ids?.length) {
-    throw createError({ statusCode: 400, statusMessage: 'No associate ids provided' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'No associate ids provided'
+    })
   }
 
   const supabase = serverSupabaseServiceRole<Database>(event)
@@ -23,7 +26,10 @@ export default defineEventHandler(async (event) => {
     .select()
 
   if (error) {
-    throw createError({ statusCode: 500, statusMessage: error.message ?? 'Associates approval failed' })
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message ?? 'Associates approval failed'
+    })
   }
 
   return { associates: data }

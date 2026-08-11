@@ -5,7 +5,13 @@ import type { Database } from '#shared/utils/types/database'
 
 export async function requireUser(event: H3Event) {
   const user = await serverSupabaseUser(event)
-  if (!user) throw createError({ statusCode: 401, statusMessage: 'Non autenticato' })
+  if (!user) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Non autenticato'
+    })
+  }
+
   return user
 }
 
@@ -22,8 +28,19 @@ export async function requireManagementPermission(event: H3Event) {
     p_user_id: user.sub
   })
 
-  if (error) throw createError({ statusCode: 500, statusMessage: error.message })
-  if (!allowed) throw createError({ statusCode: 403, statusMessage: 'Permessi di gestione richiesti' })
+  if (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message
+    })
+  }
+
+  if (!allowed) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Permessi di gestione richiesti'
+    })
+  }
 
   return user
 }

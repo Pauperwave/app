@@ -22,7 +22,10 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (error || !data) {
-    throw createError({ statusCode: 500, statusMessage: error?.message ?? 'Wanted card status update failed' })
+    throw createError({
+      statusCode: 500,
+      statusMessage: error?.message ?? 'Wanted card status update failed'
+    })
   }
 
   return { wantedCard: data }

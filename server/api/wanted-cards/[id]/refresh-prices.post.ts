@@ -18,7 +18,10 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (fetchError || !card) {
-    throw createError({ statusCode: 404, statusMessage: fetchError?.message ?? 'Wanted card not found' })
+    throw createError({
+      statusCode: 404,
+      statusMessage: fetchError?.message ?? 'Wanted card not found'
+    })
   }
   if (!card.scryfall_id || !card.set_code) {
     throw createError({
@@ -48,7 +51,10 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (error || !data) {
-    throw createError({ statusCode: 500, statusMessage: error?.message ?? 'Wanted card price refresh failed' })
+    throw createError({
+      statusCode: 500,
+      statusMessage: error?.message ?? 'Wanted card price refresh failed'
+    })
   }
 
   return { wantedCard: data }
