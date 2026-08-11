@@ -15,6 +15,25 @@ export interface BestNPlacement {
   rank: number
 }
 
+// The mock endpoints (server/api/cittadino.ts, server/api/standings/[format].get.ts)
+// both return this same snake_case row shape — useCittadinoQuery.ts and
+// useFormatStandingsQuery.ts mapped it to BestNPlacement identically.
+export interface PlacementRow {
+  player_uuid: string
+  player_name: string
+  event_uuid: string
+  rank: number
+}
+
+export function toBestNPlacement(row: PlacementRow): BestNPlacement {
+  return {
+    playerUuid: row.player_uuid,
+    playerName: row.player_name,
+    eventUuid: row.event_uuid,
+    rank: row.rank
+  }
+}
+
 export interface BestNResult {
   eventUuid: string
   rank: number
