@@ -1,5 +1,6 @@
 // app\composables\associates\useAssociateRenderers.ts
 import { format, parseISO } from 'date-fns'
+import { UBadge } from '#components'
 import type { Associate } from '~/types'
 
 // Shared table-cell rendering between associates/index.vue (roster) and
@@ -41,7 +42,7 @@ export function useAssociateRenderers() {
     }
     const { color, icon } = typeConfig[type]
 
-    return h(resolveComponent('UBadge'), {
+    return h(UBadge, {
       class: 'gap-2',
       variant: 'subtle',
       icon,
@@ -56,7 +57,7 @@ export function useAssociateRenderers() {
       no: { label: t('common.no'), color: 'error', icon: ICONS.clear }
     }
 
-    return h(resolveComponent('UBadge'), {
+    return h(UBadge, {
       variant: 'subtle',
       class: 'w-[60px]',
       ...consentConfig[consentvalue ? 'yes' : 'no']
