@@ -1,6 +1,9 @@
 {
   "ignorePatterns": [
-    "shared/utils/types/database.ts"
+    "shared/utils/types/database.ts",
+    "changelog.config.ts",
+    "colada.options.ts",
+    "i18n/i18n.config.ts"
   ],
   "duplicates": {
     "ignore": [

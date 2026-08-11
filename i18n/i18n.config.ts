@@ -4,7 +4,10 @@ export default defineI18nConfig(() => ({
   locale: 'it',
   numberFormats: {
     it: {
-      currency: { style: 'currency', currency: 'EUR' }
+      currency: {
+        style: 'currency',
+        currency: 'EUR'
+      }
     }
   }
 }))
