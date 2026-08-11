@@ -4,11 +4,27 @@ import type { DropdownMenuItem, TableColumn, TabsItem } from '@nuxt/ui'
 import type { Column } from '@tanstack/vue-table'
 import { upperFirst } from 'scule'
 import type { Associate } from '~/types'
-import { format, parseISO } from 'date-fns'
 
 const { associates, loading, refresh } = useAssociates()
 const { geocodes, loading: geocodesLoading } = useAssociateGeocodes()
 const { t } = useI18n()
+const {
+  formatDateTime, formatDate, renderAssociateTypeBadge, renderConsentBadge
+} = useAssociateRenderers()
+
+// Roster = already-approved associates only. Pending/rejected requests moved
+// to /associates/richieste entirely (2026-08-11 UX split) — this table used
+// to mix "people who are members" with "people asking to become one", which
+// made it easy to miss new requests buried in a status filter. pendingCount
+// is still computed from the full unfiltered list (not rosterAssociates) —
+// it feeds the SubNav badge here and the same count backs the sidebar badge
+// in default.vue, both reading the same 'associates' cache key.
+const rosterAssociates = computed(() => associates.value.filter(
+  associate => associate.membership_request_status === 'approved'
+))
+const pendingCount = computed(() => associates.value.filter(
+  associate => associate.membership_request_status === 'pending'
+).length)
 
 const viewMode = ref<'table' | 'map'>('table')
 const viewModeItems = computed<TabsItem[]>(() => [
@@ -23,26 +39,6 @@ const UCheckbox = resolveComponent('UCheckbox')
 const route = useRoute()
 const router = useRouter()
 const { isModalOpen } = useModalOpenFromQuery()
-
-function formatDateTime(isoString?: string): string {
-  if (!isoString) return ''
-  try {
-    const date = parseISO(isoString)
-    return format(date, 'dd/MM/yyyy HH:mm')
-  } catch {
-    return ''
-  }
-}
-
-function formatDate(dateString?: string | null): string {
-  if (!dateString) return ''
-  try {
-    const date = parseISO(dateString)
-    return format(date, 'dd/MM/yyyy')
-  } catch {
-    return ''
-  }
-}
 
 const table = useTemplateRef('table')
 
@@ -59,10 +55,11 @@ onMounted(() => nextTick(applyMembershipStatusFilterFromQuery))
 watch(() => route.query.status, applyMembershipStatusFilterFromQuery)
 
 // Real counts per membership status, for the tabs above the table (they replace the
-// old static sidebar links).
+// old static sidebar links). No 'pending' here anymore — rosterAssociates never
+// contains pending requests in the first place.
 const associatesStatusCounts = computed(() => {
-  const counts = { pending: 0, active: 0, to_renew: 0 }
-  for (const associate of associates.value) {
+  const counts = { active: 0, to_renew: 0 }
+  for (const associate of rosterAssociates.value) {
     if (associate.membership_status in counts) {
       counts[associate.membership_status as keyof typeof counts]++
     }
@@ -76,7 +73,6 @@ const associatesStatusCounts = computed(() => {
 // the nested UBadge when it's set.
 const statusTabs = computed(() => [
   { label: t('associate.tabs.all'), value: 'all' as const, count: undefined },
-  { label: t('associate.tabs.pending'), value: 'pending' as const, count: associatesStatusCounts.value.pending },
   { label: t('associate.tabs.active'), value: 'active' as const, count: associatesStatusCounts.value.active },
   { label: t('associate.tabs.toRenew'), value: 'to_renew' as const, count: associatesStatusCounts.value.to_renew }
 ])
@@ -91,7 +87,6 @@ const activeStatusTab = computed({
 const columnFilters = ref([])
 
 const columnHeaders = {
-  select: t('associate.columns.select'),
   id: t('associate.columns.id'),
   uuid: t('associate.columns.uuid'),
   created_at: t('associate.columns.createdAt'),
@@ -165,6 +160,9 @@ function createVisibilityItem(column: Column<Associate>): DropdownMenuItem {
 }
 
 const columnVisibility = ref({
+  // Always "approved" here now that pending/rejected requests live on their
+  // own page (/associates/richieste) — redundant on every row in the roster.
+  membership_request_status: false,
   uuid: false,
   created_at: false,
   updated_at: false,
@@ -193,6 +191,7 @@ const columns: TableColumn<Associate>[] = [
     id: 'select',
     enableSorting: false,
     enableHiding: false,
+    meta: { class: { th: 'text-center', td: 'text-center' } },
     header: ({ table }) =>
       h(UCheckbox, {
         'modelValue': table.getIsSomePageRowsSelected()
@@ -443,42 +442,6 @@ function renderNeutralBadge(value: string) {
   })
 }
 
-function renderAssociateTypeBadge(type: Associate['associate_type']) {
-  // No fallback for null: every associate should have a type in the DB (fixed via
-  // migration 2026-08-10, backfilling the pre-existing nulls to 'ordinario') — a
-  // blank cell here would mean the data went inconsistent again, and should stay
-  // visible as that rather than being masked behind a default.
-  if (!type) return null
-
-  const typeConfig: Record<NonNullable<Associate['associate_type']>, { color: string, icon: string }> = {
-    ordinario: { color: 'neutral', icon: ICONS.player },
-    sostenitore: { color: 'primary', icon: 'i-lucide-star' }
-  }
-  const { color, icon } = typeConfig[type]
-
-  return h(resolveComponent('UBadge'), {
-    class: 'capitalize gap-2',
-    variant: 'subtle',
-    icon,
-    color,
-    label: upperFirst(type)
-  })
-}
-
-function renderConsentBadge(consentvalue: boolean) {
-  const consent = consentvalue
-  const consentConfig: Record<string, { label: string, color: string, icon: string }> = {
-    yes: { label: t('common.yes'), color: 'success', icon: ICONS.success },
-    no: { label: t('common.no'), color: 'error', icon: ICONS.clear }
-  }
-
-  return h(resolveComponent('UBadge'), {
-    variant: 'subtle',
-    class: 'w-[60px]',
-    ...consentConfig[consent ? 'yes' : 'no']
-  })
-}
-
 const consentSocialOptions = [
   { label: t('associate.consentSocialOptions.all'), value: 'all', icon: 'i-lucide-megaphone', color: 'neutral' },
   { label: t('associate.consentSocialOptions.yes'), value: 'yes', icon: ICONS.success, color: 'success' },
@@ -507,6 +470,9 @@ watch(() => consentSocialFilter.value, (newVal) => {
 
         <template #right>
           <ViewModeTabs v-model="viewMode" :items="viewModeItems" />
+
+          <USeparator orientation="vertical" class="h-4" />
+
           <AssociatesListAddModal v-model="isModalOpen" />
 
           <USeparator orientation="vertical" class="h-4" />
@@ -514,6 +480,12 @@ watch(() => consentSocialFilter.value, (newVal) => {
           <NotificationsBellButton />
         </template>
       </UDashboardNavbar>
+
+      <!-- Switcher shared with /associates/richieste (see AssociatesSubNav) —
+           same sub-nav-row pattern as /settings. -->
+      <UDashboardToolbar>
+        <AssociatesSubNav :pending-count="pendingCount" />
+      </UDashboardToolbar>
 
       <!-- Status filter, search/social/columns filters and row-actions all in one
            toolbar row — same #left/#right split as wanted-cards' UDashboardToolbar.
@@ -548,25 +520,6 @@ watch(() => consentSocialFilter.value, (newVal) => {
         </template>
 
         <template #right>
-          <AssociatesListApproveModal
-            v-if="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
-            :ids="table.tableApi.getFilteredSelectedRowModel().rows.map(row => row.original.id)"
-            @approved="refresh"
-          >
-            <UButton
-              :label="$t('associate.approveModal.approve')"
-              color="success"
-              variant="subtle"
-              :icon="ICONS.confirm"
-            >
-              <template #trailing>
-                <UKbd>
-                  {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length }}
-                </UKbd>
-              </template>
-            </UButton>
-          </AssociatesListApproveModal>
-
           <UDropdownMenu :items="visibilityItems" :content="{ align: 'end' }">
             <UButton
               :label="$t('common.showColumns')"
@@ -598,7 +551,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
             estimateSize: 35,
             overscan: 12
           }"
-          :data="associates"
+          :data="rosterAssociates"
           :columns="columns"
           class="flex-1 h-80 shrink-0"
           :loading="loading"
@@ -623,7 +576,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
 
       <AssociatesListMapView
         v-else
-        :associates="associates"
+        :associates="rosterAssociates"
         :geocodes="geocodes"
         :loading="loading || geocodesLoading"
       />
