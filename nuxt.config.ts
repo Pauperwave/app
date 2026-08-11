@@ -137,7 +137,10 @@ export default defineNuxtConfig({
     redirectOptions: {
       login: '/login',
       callback: '/auth/callback',
-      exclude: ['/login', '/auth/callback', '/']
+      exclude: [
+        '/login', '/auth/callback', '/',
+        '/tesseramento', '/tesseramento/informativa-dati'
+      ]
     },
     cookieOptions: {
       domain: '', // lascia vuoto per default (usa il dominio corrente)
