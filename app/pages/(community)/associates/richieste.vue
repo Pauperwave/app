@@ -7,6 +7,7 @@ import type { Associate } from '~/types'
 
 const { data: associates, isLoading: loading, refetch } = useAssociatesQuery()
 const { t } = useI18n()
+const { isModalOpen } = useModalOpenFromQuery()
 const {
   formatDateTime, formatDate, renderAssociateTypeBadge, renderConsentBadge
 } = useAssociateRenderers()
@@ -329,6 +330,10 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
         </template>
 
         <template #right>
+          <AssociatesListAddModal v-model="isModalOpen" />
+
+          <USeparator orientation="vertical" class="h-4" />
+
           <CopyLinkButton :url="tesseramentoLink" :label="$t('associate.copyTesseramentoLink')" />
           <UTooltip :text="$t('associate.openTesseramentoLink')">
             <UButton
