@@ -105,20 +105,28 @@ const legend = computed(() => (['full', 'partial'] as const).map(access => ({
   label: t(`settings.permissions.access.${access}`)
 })))
 
-// Matches an in-app route mentioned inline in a feature description (e.g. the
-// "(/associates)" in "Gestire l'anagrafica soci (/associates)") so it renders in
-// the same font-mono style domains.vue already uses for routes — but only a
-// path, not any "/" in running Italian text: the lookbehind requires the slash to
-// start right after whitespace, an opening paren, or the start of the string, so
-// e.g. "Assegnare/modificare" (a "/" mid-word) is left as plain text.
-const PATH_PATTERN = /(?<=^|[\s(])\/[a-zA-Z][\w-]*(?:\/[\w-]+)*/g
+// Two things to highlight inline in a feature description, matched together
+// so overlapping matches can't fight each other:
+// - `**word**` markers (set by hand in it.json, one per verb — e.g.
+//   "**Creare**, **modificare** tornei..." for rows with more than one verb)
+//   render as <strong>, since which words are verbs isn't reliably derivable
+//   from the Italian text alone.
+// - an in-app route mentioned inline (e.g. the "(/associates)" in "Gestire
+//   l'anagrafica soci (/associates)") renders in the same font-mono style
+//   domains.vue uses for routes — but only a path, not any "/" in running
+//   text: the lookbehind requires the slash to start right after whitespace,
+//   an opening paren, or the start of the string, so e.g.
+//   "Assegnare/modificare" (a "/" mid-word) is left as plain text.
+const INLINE_PATTERN = /\*\*(.+?)\*\*|(?<=^|[\s(])\/[a-zA-Z][\w-]*(?:\/[\w-]+)*/g
 
 function renderFeature(text: string) {
   const parts: (string | ReturnType<typeof h>)[] = []
   let lastIndex = 0
-  for (const match of text.matchAll(PATH_PATTERN)) {
+  for (const match of text.matchAll(INLINE_PATTERN)) {
     if (match.index! > lastIndex) parts.push(text.slice(lastIndex, match.index))
-    parts.push(h('code', { class: 'font-mono' }, match[0]))
+    parts.push(match[1]
+      ? h('strong', match[1])
+      : h('code', { class: 'font-mono' }, match[0]))
     lastIndex = match.index! + match[0].length
   }
   if (lastIndex < text.length) parts.push(text.slice(lastIndex))
