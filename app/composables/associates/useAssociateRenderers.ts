@@ -1,6 +1,7 @@
 // app\composables\associates\useAssociateRenderers.ts
 import { format, parseISO } from 'date-fns'
 import { UBadge } from '#components'
+import type { BadgeProps } from '@nuxt/ui'
 import type { Associate } from '~/types'
 
 // Shared table-cell rendering between associates/index.vue (roster) and
@@ -36,7 +37,7 @@ export function useAssociateRenderers() {
     // visible as that rather than being masked behind a default.
     if (!type) return null
 
-    const typeConfig: Record<NonNullable<Associate['associate_type']>, { color: string, icon: string }> = {
+    const typeConfig: Record<NonNullable<Associate['associate_type']>, { color: BadgeProps['color'], icon: string }> = {
       regular: { color: 'neutral', icon: ICONS.player },
       sustaining: { color: 'primary', icon: 'i-lucide-star' }
     }
@@ -52,7 +53,7 @@ export function useAssociateRenderers() {
   }
 
   function renderConsentBadge(consentvalue: boolean) {
-    const consentConfig: Record<string, { label: string, color: string, icon: string }> = {
+    const consentConfig: Record<string, { label: string, color: BadgeProps['color'], icon: string }> = {
       yes: { label: t('common.yes'), color: 'success', icon: ICONS.success },
       no: { label: t('common.no'), color: 'error', icon: ICONS.clear }
     }
