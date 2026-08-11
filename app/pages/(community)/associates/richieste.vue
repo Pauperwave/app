@@ -375,7 +375,9 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
         <AssociatesSubNav :pending-count="pendingCount" />
       </UDashboardToolbar>
 
-      <UDashboardToolbar :ui="{ root: 'flex-wrap h-auto py-2 gap-1.5', left: 'gap-4 flex-wrap' }">
+      <UDashboardToolbar
+        :ui="{ root: 'flex-wrap h-auto py-2 gap-1.5', left: 'gap-4 flex-wrap', right: 'gap-4' }"
+      >
         <template #left>
           <StatusFilterGroup v-model="activeStatusTab" :items="statusTabs" />
         </template>
@@ -399,7 +401,17 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
             </UButton>
           </AssociatesListApproveModal>
 
-          <DataFreshnessIndicator :last-updated-at="lastUpdatedAt" />
+          <div class="flex items-center gap-1.5">
+            <DataFreshnessIndicator :last-updated-at="lastUpdatedAt" />
+
+            <UButton
+              :icon="ICONS.refresh"
+              color="neutral"
+              variant="outline"
+              :loading="loading"
+              @click="refetch"
+            />
+          </div>
 
           <UDropdownMenu :items="visibilityItems" :content="{ align: 'end' }">
             <UButton
@@ -409,14 +421,6 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
               :trailing-icon="ICONS.settingsColumns"
             />
           </UDropdownMenu>
-
-          <UButton
-            :icon="ICONS.refresh"
-            color="neutral"
-            variant="outline"
-            :loading="loading"
-            @click="refetch"
-          />
         </template>
       </UDashboardToolbar>
     </template>
