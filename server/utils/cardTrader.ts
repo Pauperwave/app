@@ -81,6 +81,31 @@ async function resolveExpansionIds(
   )
 }
 
+async function cacheAndReturn(
+  supabase: SupabaseClient<Database>,
+  scryfallId: string,
+  match: CardTraderBlueprint
+): Promise<CardTraderResolution> {
+  await supabase.from('pauperwave_cardtrader_blueprints').upsert({
+    id: match.id,
+    scryfall_id: scryfallId,
+    expansion_id: match.expansion_id,
+    name: match.name
+  })
+
+  return { blueprintId: match.id, url: `https://www.cardtrader.com/en/cards/${match.id}` }
+}
+
+// CardTrader does not always backfill a blueprint's scryfall_id right after a set
+// releases: confirmed 2026-08-11 on "Commander: Marvel Super Heroes" (msc, released
+// 2026-06-26), where over half of its 338 blueprints — including "Stilt-Man,
+// Towering Terror" — still had scryfall_id: null. The name match below is the
+// fallback for that gap.
+async function fetchScryfallCardName(scryfallId: string): Promise<string | null> {
+  const card = await $fetch<{ name?: string }>(`https://api.scryfall.com/cards/${scryfallId}`)
+  return card.name ?? null
+}
+
 // Resolves scryfallId + setCode into the CardTrader card page id, caching only the
 // row that was found (not the set's whole export, see migration 20260808110000 and
 // the comment in resolve.get.ts) — used both by the on-demand lookup (clicking
@@ -103,6 +128,7 @@ export async function resolveCardTraderBlueprint(
   }
 
   const expansionIds = await resolveExpansionIds(supabase, token, setCode.toLowerCase())
+  const blueprintsByExpansion: CardTraderBlueprint[][] = []
 
   for (const expansionId of expansionIds) {
     const blueprints = await $fetch<CardTraderBlueprint[]>(
@@ -112,18 +138,18 @@ export async function resolveCardTraderBlueprint(
         query: { expansion_id: expansionId }
       }
     )
+    blueprintsByExpansion.push(blueprints)
 
     const match = blueprints.find(blueprint => blueprint.scryfall_id === scryfallId)
-    if (!match) continue
+    if (match) return cacheAndReturn(supabase, scryfallId, match)
+  }
 
-    await supabase.from('pauperwave_cardtrader_blueprints').upsert({
-      id: match.id,
-      scryfall_id: scryfallId,
-      expansion_id: match.expansion_id,
-      name: match.name
-    })
-
-    return { blueprintId: match.id, url: `https://www.cardtrader.com/en/cards/${match.id}` }
+  const cardName = await fetchScryfallCardName(scryfallId).catch(() => null)
+  if (cardName) {
+    for (const blueprints of blueprintsByExpansion) {
+      const match = blueprints.find(blueprint => blueprint.name === cardName)
+      if (match) return cacheAndReturn(supabase, scryfallId, match)
+    }
   }
 
   return { blueprintId: null, url: null }
