@@ -696,6 +696,8 @@ export type Database = {
       pauperwave_payments: {
         Row: {
           associate_uuid: string | null
+          created_at: string
+          created_by: string | null
           event_name: string | null
           event_uuid: string | null
           id: number
@@ -708,11 +710,16 @@ export type Database = {
           payment_date: string
           payment_method: string
           payment_type: string
+          received_by: string
           tournament_uuid: string | null
+          updated_at: string
+          updated_by: string | null
           uuid: string
         }
         Insert: {
           associate_uuid?: string | null
+          created_at?: string
+          created_by?: string | null
           event_name?: string | null
           event_uuid?: string | null
           id?: number
@@ -725,11 +732,16 @@ export type Database = {
           payment_date?: string
           payment_method?: string
           payment_type?: string
+          received_by: string
           tournament_uuid?: string | null
+          updated_at?: string
+          updated_by?: string | null
           uuid?: string
         }
         Update: {
           associate_uuid?: string | null
+          created_at?: string
+          created_by?: string | null
           event_name?: string | null
           event_uuid?: string | null
           id?: number
@@ -742,7 +754,10 @@ export type Database = {
           payment_date?: string
           payment_method?: string
           payment_type?: string
+          received_by?: string
           tournament_uuid?: string | null
+          updated_at?: string
+          updated_by?: string | null
           uuid?: string
         }
         Relationships: [
@@ -772,6 +787,34 @@ export type Database = {
             columns: ["tournament_uuid"]
             isOneToOne: false
             referencedRelation: "tournaments"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "pauperwave_payments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "pauperwave_payments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "pauperwave_payments_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "pauperwave_payments_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
             referencedColumns: ["uuid"]
           },
         ]
