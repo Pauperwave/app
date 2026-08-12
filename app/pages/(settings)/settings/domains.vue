@@ -13,10 +13,10 @@ const NuxtLink = resolveComponent('NuxtLink')
 // would 404 and spam VUE_ROUTER_R0004 warnings on every render of this table.
 const builtRoutes = new Set([
   '/',
-  '/standings/cittadino',
-  '/standings/commander',
-  '/standings/premodern',
-  '/standings/pauper',
+  '/rankings/cittadino',
+  '/rankings/commander',
+  '/rankings/premodern',
+  '/rankings/pauper',
   '/events'
 ])
 
@@ -27,12 +27,13 @@ interface DomainRow {
   // The route in this Nuxt project that backs (or is planned to back) the
   // subdomain's content — see ADR-011, every subdomain serves from here for now.
   // `/tesseramento` is the only planned-but-unbuilt path left (see `builtRoutes`
-  // above); every other non-null route here exists as a page today, though most
-  // are still the authenticated dashboard route reused under that name, not the
-  // standalone public page the subdomain implies. The four rankings (cittadino +
-  // one per format) share the `/standings/*` prefix rather than reusing e.g.
-  // `/commanders`, which already means something else (the Commander deck
-  // database) — decided 2026-08-09; the three format pages are stubs for now.
+  // above); every other non-null route here exists as a page today. The four
+  // rankings (cittadino + one per format) moved to a dedicated `/rankings/*`
+  // prefix 2026-08-13 (was `/standings/*`, which is now the internal
+  // dashboard-only route staff reach via the sidebar) — StandingsPublicFormatPage.vue
+  // and StandingsPublicCittadinoPage.vue back these public pages instead of
+  // FormatPage.vue/the dashboard cittadino page, since the latter two require
+  // the authenticated dashboard shell (see auth.global.ts).
   // Null where the subdomain points at a different project entirely
   // (league.pauperwave.org) or nothing is planned yet (blog.pauperwave.org).
   route: string | null
@@ -45,10 +46,10 @@ interface DomainRow {
 const domains = computed<DomainRow[]>(() => [
   { host: 'pauperwave.org', purpose: t('settings.domains.rows.root'), status: 'planned', route: null },
   { host: 'app.pauperwave.org', purpose: t('settings.domains.rows.app'), status: 'planned', route: '/' },
-  { host: 'cittadino.pauperwave.org', purpose: t('settings.domains.rows.cittadino'), status: 'planned', route: '/standings/cittadino' },
-  { host: 'commander.pauperwave.org', purpose: t('settings.domains.rows.commander'), status: 'planned', route: '/standings/commander' },
-  { host: 'premodern.pauperwave.org', purpose: t('settings.domains.rows.premodern'), status: 'planned', route: '/standings/premodern' },
-  { host: 'pauper.pauperwave.org', purpose: t('settings.domains.rows.pauper'), status: 'planned', route: '/standings/pauper' },
+  { host: 'cittadino.pauperwave.org', purpose: t('settings.domains.rows.cittadino'), status: 'planned', route: '/rankings/cittadino' },
+  { host: 'commander.pauperwave.org', purpose: t('settings.domains.rows.commander'), status: 'planned', route: '/rankings/commander' },
+  { host: 'premodern.pauperwave.org', purpose: t('settings.domains.rows.premodern'), status: 'planned', route: '/rankings/premodern' },
+  { host: 'pauper.pauperwave.org', purpose: t('settings.domains.rows.pauper'), status: 'planned', route: '/rankings/pauper' },
   { host: 'eventi.pauperwave.org', purpose: t('settings.domains.rows.eventi'), status: 'planned', route: '/events' },
   { host: 'tesseramento.pauperwave.org', purpose: t('settings.domains.rows.tesseramento'), status: 'planned', route: '/tesseramento' },
   { host: 'blog.pauperwave.org', purpose: t('settings.domains.rows.blog'), status: 'live', route: null },

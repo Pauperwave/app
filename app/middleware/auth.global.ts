@@ -15,11 +15,17 @@ export default defineNuxtRouteMiddleware((to) => {
   // surveillance notice was dropped entirely the same day (2026-08-11): the
   // association moved premises and it's no longer known whether the new
   // location is under video surveillance, so the consent/page no longer
-  // applies (see docs/TODO.md). Keep in sync with nuxt.config.ts's
-  // supabase.redirectOptions.exclude (see CLAUDE.md).
+  // applies (see docs/TODO.md). /rankings/* (added 2026-08-13) back
+  // cittadino/commander/premodern/pauper.pauperwave.org — deliberately a
+  // different URL than the internal /standings/* dashboard routes of the
+  // same data (see StandingsPublicFormatPage.vue/StandingsPublicCittadinoPage.vue),
+  // so publishing them doesn't take the dashboard version away from staff.
+  // Keep in sync with nuxt.config.ts's supabase.redirectOptions.exclude
+  // (see CLAUDE.md).
   const publicPages = [
     '/login', '/auth/callback', '/logout',
-    '/tesseramento', '/tesseramento/informativa-dati'
+    '/tesseramento', '/tesseramento/informativa-dati',
+    '/rankings/cittadino', '/rankings/commander', '/rankings/premodern', '/rankings/pauper'
   ]
 
   // prevents logged-in users from seeing the login page again
