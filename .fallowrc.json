@@ -5,6 +5,23 @@
     "colada.options.ts",
     "i18n/i18n.config.ts"
   ],
+  "ignoreDependencies": [
+    "@formkit/auto-animate",
+    "@iconify-json/simple-icons",
+    "@pinia/colada-plugin-cache-persister",
+    "@vue-flow/background",
+    "@vue-flow/controls",
+    "@vue-flow/core",
+    "@vue-flow/node-toolbar",
+    "echarts",
+    "fast-levenshtein",
+    "mana-font",
+    "nuxt-auth-utils",
+    "uisfx",
+    "vue-draggable-plus",
+    "vue-echarts",
+    "@vue/test-utils"
+  ],
   "duplicates": {
     "ignore": [
       "shared/utils/types/database.ts"
