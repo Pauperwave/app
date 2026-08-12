@@ -210,16 +210,12 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
             </UButton>
           </AssociatesListApproveModal>
 
-          <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refetch" />
-
-          <UDropdownMenu :items="visibilityItems" :content="{ align: 'end' }">
-            <UButton
-              :label="$t('common.showColumns')"
-              color="neutral"
-              variant="outline"
-              :trailing-icon="ICONS.settingsColumns"
-            />
-          </UDropdownMenu>
+          <AssociatesTableToolbarActions
+            :is-loading="loading"
+            :status="status"
+            :visibility-items="visibilityItems"
+            @refresh="refetch"
+          />
         </template>
       </UDashboardToolbar>
     </template>
@@ -249,14 +245,10 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
         }"
       />
 
-      <div class="flex items-center justify-between gap-3 border-t border-default pt-4 mt-auto">
-        <div class="text-sm text-muted">
-          {{ $t('associate.selectedRows', {
-            selected: table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0,
-            total: table?.tableApi?.getFilteredRowModel().rows.length || 0
-          }) }}
-        </div>
-      </div>
+      <TableSelectionFooter
+        :selected="table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0"
+        :total="table?.tableApi?.getFilteredRowModel().rows.length || 0"
+      />
     </template>
   </UDashboardPanel>
 </template>
