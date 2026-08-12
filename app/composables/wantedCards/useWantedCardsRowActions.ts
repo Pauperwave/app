@@ -1,4 +1,10 @@
 // app\composables\wantedCards\useWantedCardsRowActions.ts
+// fallow-ignore-file security-sink -- the win.location.href assignments (fallow
+// security, open-redirect candidates) only ever receive a hardcoded cardtrader.com/
+// cardmarket URL built with encodeURIComponent, or the url field from our own
+// /api/cardtrader/resolve response (server-constructed, not user input); window.open
+// calls use card.scryfallUrl/cardMarketSearchUrl, both derived from Scryfall data and
+// the card name, not arbitrary user-supplied URLs
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { WantedCard, WantedCardStatus } from '~/types'
 

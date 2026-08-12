@@ -22,6 +22,10 @@
 // Usage:
 //   node scripts/geocode-associates.mjs
 
+// fallow-ignore-file security-sink -- the fetch() calls (fallow security, ssrf
+// candidates) always hit a hardcoded Nominatim/Photon host; only the query string
+// is built from associate address data, the host is never attacker-controllable,
+// and this is an offline admin script anyway, not an HTTP-reachable endpoint
 import { createSupabaseAdminClient, sleep } from './lib/supabaseAdminClient.mjs'
 import { fetchAssociatesAndGeocodedUuids } from './lib/associateGeocodeQueries.mjs'
 

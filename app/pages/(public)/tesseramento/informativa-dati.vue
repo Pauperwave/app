@@ -16,10 +16,12 @@ useSeoMeta({
 // safe here, there's no user input in the render path. Parsed once at setup
 // time: pure sync parsing, no DOM dependency, so it works the same on SSR
 // and client with no onMounted/watch needed.
+// fallow-ignore-file security-sink -- see the comment above
 const html = new MarkdownIt().render(rawContent)
 </script>
 
 <template>
+  <!-- fallow-ignore-file security-sink -- see the top-of-file comment -->
   <UPageCard>
     <!-- @tailwindcss/typography's `prose` gives the markdown output real
          heading/list/blockquote styling for free — the markdown's own <h1>
