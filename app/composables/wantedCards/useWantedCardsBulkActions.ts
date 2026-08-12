@@ -13,6 +13,7 @@ type PendingBulkAction
 export function useWantedCardsBulkActions(selection: Selection<number>) {
   const { t } = useI18n()
   const toast = useToast()
+  const undoable = useUndoableAction()
   const { setStatus, deleteWantedCard, refreshPrices } = useWantedCardsMutations()
   const { copy } = useClipboard()
 
@@ -22,7 +23,6 @@ export function useWantedCardsBulkActions(selection: Selection<number>) {
   // don't lose or change any request data.
   const pendingAction = ref<PendingBulkAction | null>(null)
   const confirmOpen = ref(false)
-  const executing = ref(false)
 
   function requestStatusChange(status: WantedCardStatus, cards: WantedCard[]) {
     pendingAction.value = { type: 'status', status, cards }
@@ -42,33 +42,42 @@ export function useWantedCardsBulkActions(selection: Selection<number>) {
     })
   }
 
-  async function confirmPendingAction() {
+  // Closes the modal immediately and defers the actual mutation(s) behind a
+  // 10-second undo window (useUndoableAction.ts) — the toast shown here
+  // replaces the old inline success/failure toast, which now only fires once
+  // the window elapses and the mutations actually run (see the `commit`
+  // callback below).
+  function confirmPendingAction() {
     const action = pendingAction.value
     if (!action) return
 
-    executing.value = true
-    try {
-      const results = await Promise.allSettled(
-        action.cards.map(card => action.type === 'status'
-          ? setStatus.mutateAsync({ id: card.id, status: action.status })
-          : deleteWantedCard.mutateAsync(card.id))
-      )
-      const failed = results.filter(result => result.status === 'rejected').length
+    confirmOpen.value = false
+    pendingAction.value = null
+    selection.clear()
 
-      toastForFailures(
-        results.length - failed,
-        failed,
-        action.type === 'status'
-          ? t('wantedCard.bulkActions.statusSuccessToast', results.length - failed)
-          : t('wantedCard.bulkActions.deleteSuccessToast', results.length - failed)
-      )
+    undoable.run({
+      title: action.type === 'delete'
+        ? t('wantedCard.bulkActions.deleteUndoToast', action.cards.length)
+        : t('wantedCard.bulkActions.statusUndoToast', {
+          status: t(`wantedCard.status.${action.status}`)
+        }, action.cards.length),
+      commit: async () => {
+        const results = await Promise.allSettled(
+          action.cards.map(card => action.type === 'status'
+            ? setStatus.mutateAsync({ id: card.id, status: action.status })
+            : deleteWantedCard.mutateAsync(card.id))
+        )
+        const failed = results.filter(result => result.status === 'rejected').length
 
-      confirmOpen.value = false
-      pendingAction.value = null
-      selection.clear()
-    } finally {
-      executing.value = false
-    }
+        toastForFailures(
+          results.length - failed,
+          failed,
+          action.type === 'status'
+            ? t('wantedCard.bulkActions.statusSuccessToast', results.length - failed)
+            : t('wantedCard.bulkActions.deleteSuccessToast', results.length - failed)
+        )
+      }
+    })
   }
 
   async function bulkRefreshPrices(cards: WantedCard[]) {
@@ -94,7 +103,6 @@ export function useWantedCardsBulkActions(selection: Selection<number>) {
   return {
     pendingAction,
     confirmOpen,
-    executing,
     requestStatusChange,
     requestDelete,
     confirmPendingAction,

@@ -15,6 +15,11 @@ const data = computed(() => wantedCardsData.value ?? [])
 
 const tour = useWantedCardsTour()
 
+// Same "?action=create" convention as associates/requests, tournaments,
+// leagues and events (useModalOpenFromQuery) — lets the command palette's
+// "New wanted card" action land here with the Add modal already open.
+const { isModalOpen: addModalOpen } = useModalOpenFromQuery()
+
 const viewMode = ref<'table' | 'grid'>('grid')
 const viewModeItems = computed<TabsItem[]>(() => [
   { label: t('wantedCard.views.grid'), value: 'grid', icon: 'i-lucide-layout-grid' },
@@ -46,14 +51,12 @@ const {
   editModalOpen,
   deletingCard,
   deleteConfirmOpen,
-  deleting,
   confirmDelete
 } = useWantedCardsRowActions()
 
 const {
   pendingAction,
   confirmOpen: bulkConfirmOpen,
-  executing: bulkExecuting,
   requestStatusChange,
   requestDelete,
   confirmPendingAction,
@@ -197,7 +200,7 @@ const gridSections = computed<GridSection[]>(() => {
 
           <USeparator orientation="vertical" class="h-4" />
 
-          <WantedCardsListAddModal />
+          <WantedCardsListAddModal v-model="addModalOpen" />
 
           <USeparator orientation="vertical" class="h-4" />
 
@@ -382,7 +385,6 @@ const gridSections = computed<GridSection[]>(() => {
     :warning="$t('common.confirmDeleteWarning')"
     :confirm-label="$t('wantedCard.contextMenu.delete')"
     :confirm-icon="ICONS.delete"
-    :loading="deleting"
     @confirm="confirmDelete"
   >
     <MagicCardPreviewTooltip
@@ -407,7 +409,6 @@ const gridSections = computed<GridSection[]>(() => {
       : $t('wantedCard.bulkActions.confirm')"
     :confirm-color="pendingAction?.type === 'delete' ? 'error' : 'primary'"
     :confirm-icon="pendingAction?.type === 'delete' ? ICONS.delete : undefined"
-    :loading="bulkExecuting"
     @confirm="confirmPendingAction"
   >
     <ul v-if="pendingAction" class="max-h-40 overflow-y-auto text-sm space-y-1">
