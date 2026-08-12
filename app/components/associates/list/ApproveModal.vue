@@ -8,7 +8,7 @@ const { ids } = defineProps<Props>()
 
 const { t } = useI18n()
 const toast = useToast()
-const { approveAssociates } = useAssociateMutations()
+const { approveAssociates } = useAssociatesMutations()
 
 const open = ref(false)
 const submitting = ref(false)

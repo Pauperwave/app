@@ -32,8 +32,8 @@ Domains migrated to Pinia Colada — shared cache across every mount of the same
 | Composable | Key | Invalidated by |
 |---|---|---|
 | `wantedCards/useWantedCardsQuery.ts` | `['wanted-cards']` | `useWantedCardsMutations` |
-| `associates/useAssociatesQuery.ts` | `['associates']` | `useAssociateMutations` |
-| `associates/useAssociateGeocodesQuery.ts` | `['associate-geocodes']` | read-only (geocodes are written by `scripts/geocode-associates.mjs`, not from the app) |
+| `associates/useAssociatesQuery.ts` | `['associates']` | `useAssociatesMutations` |
+| `associates/useAssociatesGeocodesQuery.ts` | `['associate-geocodes']` | read-only (geocodes are written by `scripts/geocode-associates.mjs`, not from the app) |
 | `useScryfallCardSearch.ts` | `['scryfall-printings', cardName]` | read-only (Scryfall data, cached indefinitely per name) |
 | `events/useEventsQuery.ts` | `['events']` | read-only — no mutations composable yet, mock data (see below) |
 | `leagues/useLeaguesQuery.ts` | `['leagues']` | read-only — no mutations composable yet, mock data (see below) |

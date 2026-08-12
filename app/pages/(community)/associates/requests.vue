@@ -33,7 +33,7 @@ const {
   bornDateColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
   residencyAddressColumn, residencyHouseNumberColumn, residencyCityColumn,
   residencyProvinceColumn, residencyCapColumn, mtgoNicknameColumn, mtgaNicknameColumn
-} = useAssociateTableColumns(table)
+} = useAssociatesTableColumns(table)
 
 // fallow-ignore-next-line code-duplication -- see the same comment in
 // associates/index.vue

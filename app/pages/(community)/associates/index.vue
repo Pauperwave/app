@@ -8,9 +8,9 @@ import type { Associate } from '~/types'
 const {
   data: associates, isLoading: loading, status, refetch
 } = useAssociatesQuery()
-const { data: geocodes, isLoading: geocodesLoading } = useAssociateGeocodesQuery()
+const { data: geocodes, isLoading: geocodesLoading } = useAssociatesGeocodesQuery()
 const { t } = useI18n()
-const { formatDateTime, formatDate, renderConsentBadge } = useAssociateRenderers()
+const { formatDateTime, formatDate, renderConsentBadge } = useAssociatesRenderers()
 
 // Roster = already-approved associates only. Pending/rejected requests moved
 // to /associates/requests entirely (2026-08-11 UX split) — this table used
@@ -36,7 +36,7 @@ const route = useRoute()
 const router = useRouter()
 
 const table = useTemplateRef('table')
-// fallow-ignore-next-line code-duplication -- the useAssociateTableColumns destructure
+// fallow-ignore-next-line code-duplication -- the useAssociatesTableColumns destructure
 // and status-filter-from-query function mirror requests.vue's own (different column
 // id and query semantics per page), not worth forcing into a shared helper
 const {
@@ -47,7 +47,7 @@ const {
   bornDateColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
   residencyAddressColumn, residencyHouseNumberColumn, residencyCityColumn,
   residencyProvinceColumn, residencyCapColumn, mtgoNicknameColumn, mtgaNicknameColumn
-} = useAssociateTableColumns(table)
+} = useAssociatesTableColumns(table)
 
 // Wires the sidebar links (/associates?status=pending|active|to_renew) to the
 // membership_status column filter, which can only be applied after UTable mounts.
