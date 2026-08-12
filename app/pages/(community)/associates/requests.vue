@@ -23,6 +23,8 @@ const route = useRoute()
 const router = useRouter()
 
 const table = useTemplateRef('table')
+// fallow-ignore-next-line code-duplication -- see the same comment in
+// associates/index.vue
 const {
   visibilityItems,
   selectColumn, membershipRequestStatusColumn, requestDateColumn, associateTypeColumn,
@@ -33,6 +35,8 @@ const {
   residencyProvinceColumn, residencyCapColumn, mtgoNicknameColumn, mtgaNicknameColumn
 } = useAssociateTableColumns(table)
 
+// fallow-ignore-next-line code-duplication -- see the same comment in
+// associates/index.vue
 function applyRequestStatusFilterFromQuery() {
   const statusColumn = table.value?.tableApi?.getColumn('membership_request_status')
   if (!statusColumn) return

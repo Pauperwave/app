@@ -36,6 +36,9 @@ const route = useRoute()
 const router = useRouter()
 
 const table = useTemplateRef('table')
+// fallow-ignore-next-line code-duplication -- the useAssociateTableColumns destructure
+// and status-filter-from-query function mirror requests.vue's own (different column
+// id and query semantics per page), not worth forcing into a shared helper
 const {
   columnHeaders, visibilityItems,
   selectColumn, membershipRequestStatusColumn, requestDateColumn, associateTypeColumn,
@@ -48,6 +51,7 @@ const {
 
 // Wires the sidebar links (/associates?status=pending|active|to_renew) to the
 // membership_status column filter, which can only be applied after UTable mounts.
+// fallow-ignore-next-line code-duplication -- see the destructure comment above
 function applyMembershipStatusFilterFromQuery() {
   const statusColumn = table.value?.tableApi?.getColumn('membership_status')
   if (!statusColumn) return
