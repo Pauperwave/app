@@ -23,6 +23,7 @@ Master index of all project documentation.
 | `TODO.md` | Forward-looking scratch notes: loose observations, open questions, not yet committed | Roadmap (scratch) |
 | `audits/2026-08-05-fallow-dupes-review.md` | `fallow:dupes` findings and why each was deferred or dismissed as premature | Process |
 | `audits/2026-08-09-backup-docs-vs-live-schema.md` | The `BACKUP CODICE APP/docs` design docs compared table-by-table against the live schema — what drifted, what was never built, what's undocumented | Data model |
+| `audits/2026-08-12-fallow-health-review.md` | `fallow:health` score/hotspots/refactoring-target review — why the B score isn't worth acting on yet | Process |
 
 ## Not yet documented
 
