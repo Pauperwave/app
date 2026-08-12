@@ -27,7 +27,13 @@ export default defineAppConfig({
         // Reserves the vertical scrollbar's gutter even when a table's rows
         // don't overflow, so the table's right edge doesn't shift a
         // scrollbar-width (~16px) depending on row count/filters.
-        root: '[scrollbar-gutter:stable]'
+        root: '[scrollbar-gutter:stable]',
+        // App-wide data-grid look (bordered cells, hover row highlight.
+        base: 'border-separate border-spacing-0',
+        tbody: '[&>tr]:last:[&>td]:border-b-0',
+        tr: 'hover:bg-elevated/50',
+        th: 'border-r border-default last:border-r-0 py-2 px-2 font-medium',
+        td: 'border-b border-r border-default last:border-r-0 py-1 px-2'
       }
     },
     button: {
