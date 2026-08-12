@@ -14,6 +14,7 @@ import type { WantedCard, WantedCardStatus } from '~/types'
 export function useWantedCardsRowActions() {
   const { t } = useI18n()
   const toast = useToast()
+  const undoable = useUndoableAction()
   const { setStatus, deleteWantedCard, refreshPrices } = useWantedCardsMutations()
 
   // Writes are restricted to management by server-side RLS (has_management_
@@ -45,22 +46,29 @@ export function useWantedCardsRowActions() {
     deleteConfirmOpen.value = true
   }
 
-  const deleting = ref(false)
-  async function confirmDelete() {
+  // Closes the modal immediately and defers the actual delete behind a
+  // 10-second undo window (useUndoableAction.ts) instead of awaiting the
+  // mutation on confirm — "loading" no longer applies here, there is nothing
+  // to wait for at confirm time.
+  function confirmDelete() {
     if (!deletingCard.value) return
-    deleting.value = true
-    try {
-      await deleteWantedCard.mutateAsync(deletingCard.value.id)
-      deleteConfirmOpen.value = false
-    } catch (err) {
-      toast.add({
-        title: t('wantedCard.contextMenu.updateErrorTitle'),
-        description: toErrorMessage(err),
-        color: 'error'
-      })
-    } finally {
-      deleting.value = false
-    }
+    const card = deletingCard.value
+    deleteConfirmOpen.value = false
+
+    undoable.run({
+      title: t('wantedCard.contextMenu.deleteUndoToast', { name: card.cardName }),
+      commit: async () => {
+        try {
+          await deleteWantedCard.mutateAsync(card.id)
+        } catch (err) {
+          toast.add({
+            title: t('wantedCard.contextMenu.updateErrorTitle'),
+            description: toErrorMessage(err),
+            color: 'error'
+          })
+        }
+      }
+    })
   }
 
   const STATUS_MENU_ICONS: Record<WantedCardStatus, string> = {
@@ -219,7 +227,6 @@ export function useWantedCardsRowActions() {
     deletingCard,
     deleteConfirmOpen,
     openDeleteConfirm,
-    deleting,
     confirmDelete
   }
 }
