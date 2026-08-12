@@ -17,6 +17,11 @@
 
 // fallow-ignore-file code-duplication -- mirrors server/utils/cardTrader.ts and
 // server/utils/priceRefresh.ts on purpose, see the file header comment above
+// fallow-ignore-file security-sink -- the fetch() calls (fallow security, ssrf
+// candidates) always hit a hardcoded api.scryfall.com/cardtrader host; only the
+// path segment or query string is built from card data, the host is never
+// attacker-controllable, and this is an offline admin script anyway, not an
+// HTTP-reachable endpoint
 import { createSupabaseAdminClient, sleep } from './lib/supabaseAdminClient.mjs'
 
 const CARDTRADER_API_TOKEN = process.env.CARDTRADER_API_TOKEN

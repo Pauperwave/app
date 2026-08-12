@@ -12,6 +12,10 @@
 // Usage:
 //   node --env-file=.env scripts/backfill-wanted-cards-scryfall.mjs
 
+// fallow-ignore-file security-sink -- the fetch() call (fallow security, ssrf
+// candidate) always hits a hardcoded api.scryfall.com host; only the path segment
+// is built from card data, the host is never attacker-controllable, and this is an
+// offline admin script anyway, not an HTTP-reachable endpoint
 import { createSupabaseAdminClient, sleep } from './lib/supabaseAdminClient.mjs'
 
 const supabase = createSupabaseAdminClient()
