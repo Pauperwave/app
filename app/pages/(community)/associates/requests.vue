@@ -36,30 +36,40 @@ const {
 // ConfirmModal rather than a bespoke modal like ApproveModal.vue (that one
 // predates ConfirmModal.vue).
 const { rejectAssociates } = useAssociatesMutations()
+const undoable = useUndoableAction()
 const rejectConfirmOpen = ref(false)
-const rejecting = ref(false)
-const selectedRequestIds = computed<number[]>(() =>
-  table.value?.tableApi?.getFilteredSelectedRowModel().rows.map(row => row.original.id) ?? [])
+const selectedRequestAssociates = computed<Associate[]>(() =>
+  table.value?.tableApi?.getFilteredSelectedRowModel().rows.map(row => row.original) ?? [])
+const selectedRequestIds = computed(() =>
+  selectedRequestAssociates.value.map(associate => associate.id))
 
-async function confirmReject() {
-  rejecting.value = true
-  try {
-    await rejectAssociates.mutateAsync(selectedRequestIds.value)
-    toast.add({
-      title: t('associate.rejectModal.successToastTitle'),
-      description: t('associate.rejectModal.successToastDescription', selectedRequestIds.value.length),
-      color: 'success'
-    })
-    rejectConfirmOpen.value = false
-  } catch (err) {
-    toast.add({
-      title: t('associate.rejectModal.errorToastTitle'),
-      description: toErrorMessage(err),
-      color: 'error'
-    })
-  } finally {
-    rejecting.value = false
-  }
+// Closes the modal immediately and defers the actual reject behind a
+// 10-second undo window (useUndoableAction.ts) instead of awaiting the
+// mutation on confirm.
+function confirmReject() {
+  const ids = selectedRequestIds.value
+  if (!ids.length) return
+  rejectConfirmOpen.value = false
+
+  undoable.run({
+    title: t('associate.rejectModal.undoToast', ids.length),
+    commit: async () => {
+      try {
+        await rejectAssociates.mutateAsync(ids)
+        toast.add({
+          title: t('associate.rejectModal.successToastTitle'),
+          description: t('associate.rejectModal.successToastDescription', ids.length),
+          color: 'success'
+        })
+      } catch (err) {
+        toast.add({
+          title: t('associate.rejectModal.errorToastTitle'),
+          description: toErrorMessage(err),
+          color: 'error'
+        })
+      }
+    }
+  })
 }
 
 // fallow-ignore-next-line code-duplication -- see the same comment in
@@ -318,7 +328,15 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
     :title="$t('associate.rejectModal.title', selectedRequestIds.length)"
     :confirm-label="$t('associate.rejectModal.reject')"
     :confirm-icon="ICONS.statusRejected"
-    :loading="rejecting"
     @confirm="confirmReject"
-  />
+  >
+    <ul v-if="selectedRequestAssociates.length" class="max-h-40 overflow-y-auto text-sm space-y-1">
+      <li v-for="associate in selectedRequestAssociates" :key="associate.id">
+        <PlayerTag
+          :name="`${associate.first_name} ${associate.last_name}`"
+          :associate-uuid="associate.uuid"
+        />
+      </li>
+    </ul>
+  </ConfirmModal>
 </template>
