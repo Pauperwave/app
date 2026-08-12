@@ -7,8 +7,6 @@ defineProps<{
   collapsed?: boolean
 }>()
 
-const supabase = useSupabaseClient()
-const toast = useToast()
 const { t } = useI18n()
 
 const colorMode = useColorMode()
@@ -35,33 +33,7 @@ const user = ref({
   }
 })
 
-const handleLogout = async () => {
-  try {
-    const { error } = await supabase.auth.signOut()
-
-    if (error) {
-      toast.add({
-        title: t('userMenu.logoutErrorTitle'),
-        description: t('userMenu.logoutErrorDescription'),
-        color: 'error'
-      })
-    } else {
-      toast.add({
-        title: t('userMenu.logoutSuccessTitle'),
-        description: t('userMenu.logoutSuccessDescription'),
-        color: 'success'
-      })
-      navigateTo('/login')
-    }
-  } catch (err) {
-    console.error('Logout error:', err)
-    toast.add({
-      title: t('userMenu.logoutErrorTitle'),
-      description: t('userMenu.genericErrorDescription'),
-      color: 'error'
-    })
-  }
-}
+const handleLogout = useLogout()
 
 const items = computed<DropdownMenuItem[][]>(() => ([[{
   type: 'label',

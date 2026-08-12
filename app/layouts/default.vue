@@ -336,7 +336,53 @@ const flattenForSearch = (items: NavigationMenuItem[][]): CommandPaletteItem[] =
   }) as CommandPaletteItem[]
 }
 
+const handleLogout = useLogout()
+
+// "New …" items reuse the same "?action=create" convention as
+// HomeQuickCreateMenu.vue (associates/transactions) and the wanted-cards page
+// (just wired up to it above) — landing on the list page with its Add modal
+// already open, instead of a modal owned by the palette itself.
+// Nested under a single "Create new" item's `children` array so the palette
+// drills into a submenu (CommandPalette.vue's native `navigate`/back
+// behavior) rather than listing every quick-create flat in the actions group.
+const actionItems = computed<CommandPaletteItem[]>(() => [{
+  id: 'create-new',
+  label: t('nav.search.createNew'),
+  icon: ICONS.add,
+  children: [{
+    id: 'create-associate',
+    label: t('home.quickCreate.newAssociate'),
+    icon: ICONS.addPlayer,
+    to: '/associates/requests?action=create',
+    onSelect: () => { open.value = false }
+  }, {
+    id: 'create-transaction',
+    label: t('home.quickCreate.newTransaction'),
+    icon: ICONS.coins,
+    to: '/transactions?action=create',
+    onSelect: () => { open.value = false }
+  }, {
+    id: 'create-wanted-card',
+    label: t('wantedCard.breadcrumb'),
+    icon: ICONS.cardSearch,
+    to: '/wanted-cards?action=create',
+    onSelect: () => { open.value = false }
+  }]
+}, {
+  id: 'sign-out',
+  label: t('userMenu.logout'),
+  icon: ICONS.logout,
+  onSelect: () => {
+    open.value = false
+    handleLogout()
+  }
+}])
+
 const groups = computed(() => [{
+  id: 'actions',
+  label: t('nav.search.actions'),
+  items: actionItems.value
+}, {
   id: 'links',
   label: t('nav.search.goTo'),
   items: flattenForSearch([...mainNavGroups, footerNavItems])
