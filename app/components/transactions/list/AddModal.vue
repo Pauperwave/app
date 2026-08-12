@@ -1,218 +1,112 @@
 <!-- app\components\transactions\list\AddModal.vue -->
 <script setup lang="ts">
-import * as v from 'valibot'
+import type * as v from 'valibot'
+import { format } from 'date-fns'
 import type { FormSubmitEvent } from '@nuxt/ui'
+import type { Associate } from '~/types'
 
 // Define the model to accept open state from parent
 const open = defineModel<boolean>({ default: false })
+// presetAssociate: set when opened from an associate's "Rinnova" context-menu
+// action (useAssociatesRowActions.ts) — locks the payer to that associate and
+// preselects "Association Fee" instead of showing the associate/external tabs,
+// since a renewal is always for a specific, already-known associate.
+// hideTrigger: the associates pages render this component purely to host modal
+// state driven by their own context menu (same convention as
+// AssociatesListEditModal.vue, which has no trigger at all) — presetAssociate
+// alone can't signal that, since it's null until "Rinnova" is actually clicked.
+const { presetAssociate = null, hideTrigger = false } = defineProps<{
+  presetAssociate?: Associate | null
+  hideTrigger?: boolean
+}>()
+
 const toast = useToast()
 const { t } = useI18n()
+const { createTransaction } = useTransactionsMutations()
+const { data: associatesData } = useAssociatesQuery()
 
-// Dati presi da 'nomi_addetti'
-const receiverOptions = [
-  'Baldo Riccardo',
-  'Cazzola Marco',
-  'Castelli Lorenzo',
-  'Cordeschi Nicola',
-  'Debiasi Samuel',
-  'Festi Emanuele',
-  'Marisa Simone',
-  'Nardi Emanuele',
-  'Petrolli Filippo',
-  'Pietropoli Carlo'
-]
+// Only approved associates can be a payment's payer — pending/rejected requests
+// aren't members yet.
+const associateOptions = computed(() => (associatesData.value ?? [])
+  .filter(associate => associate.membership_request_status === 'approved')
+  .map(associate => ({
+    label: `${associate.first_name} ${associate.last_name}`,
+    description: associate.pauperwave_associate_number ?? undefined,
+    value: associate.uuid
+  })))
 
-const eventOptions = [
-  'Torneo Commander',
-  'Torneo Pauper',
-  'Torneo Multiformato',
-  'Quota associativa 2025',
-  'Draft',
-  'Grande evento',
-  'Chaos Draft di Natale',
-  'Torneo One Piece',
-  'Premodern&Birrino',
-  'Commanderwave Fest'
-]
-
-// Reordered by priority; defaults to 'entry-fee' (tournament)
-const paymentTypeOptions = computed(() => [
-  { value: 'entry-fee', label: t('transaction.addModal.paymentTypeOptions.entryFee'), icon: ICONS.standings },
-  { value: 'membership', label: t('transaction.addModal.paymentTypeOptions.membership'), icon: ICONS.players },
-  { value: 'event-fee', label: t('transaction.addModal.paymentTypeOptions.eventFee'), icon: ICONS.calendar },
-  { value: 'donation', label: t('transaction.addModal.paymentTypeOptions.donation'), icon: ICONS.heartHandshake }
-])
-
-const paymentMethodOptions = computed(() => [
-  { value: 'cash', label: t('transaction.addModal.paymentMethodOptions.cash') },
-  { value: 'paypal', label: 'PayPal' },
-  { value: 'pos', label: 'POS' },
-  { value: 'bank-transfer', label: t('transaction.addModal.paymentMethodOptions.bankTransfer') }
-])
-
-// v.forward(v.partialCheck([...paths], requirement, msg), [path]) is Valibot's
-// equivalent of a .superRefine() with ctx.addIssue on a specific path:
-// partialCheck reads several fields (here payer_is_associate + the target field)
-// to decide whether to raise the error, and forward attaches it to the right field
-// instead of the object root — one check for each of the original's 5 conditional
-// fields, same logic 1:1.
-const schema = v.pipe(
-  v.object({
-    associate_id: v.optional(v.string()),
-    payer_is_associate: v.optional(v.boolean(), true),
-    payer_name: v.optional(v.pipe(
-      v.string(), v.minLength(2, t('transaction.addModal.validation.payerFirstNameTooShort'))
-    )),
-    payer_surname: v.optional(v.pipe(
-      v.string(), v.minLength(2, t('transaction.addModal.validation.payerLastNameTooShort'))
-    )),
-    // trim/toLowerCase are transformations, v.email() validates the format —
-    // same order as the previous Zod pipeline.
-    payer_email: v.pipe(v.string(), v.trim(), v.email(), v.toLowerCase()),
-    payer_tax_code: v.optional(v.pipe(v.string(), v.trim())),
-    // dates can be either past or future
-    payment_datetime: v.string(),
-    payment_amount: v.pipe(
-      v.number(), v.minValue(0, t('transaction.addModal.validation.amountNotNegative'))
-    ),
-    payment_method: v.picklist(
-      ['Cash', 'PayPal', 'POS', 'Bank Transfer'],
-      t('transaction.addModal.validation.invalidPaymentMethod')
-    ),
-    received_by: v.optional(v.pipe(v.string(), v.trim())),
-    payment_type: v.picklist(
-      paymentTypeOptions.value.map(option => option.value),
-      t('transaction.addModal.validation.invalidPaymentType')
-    ),
-    event_name: v.optional(v.string()),
-    notes: v.optional(v.string())
-  }),
-  v.forward(
-    v.partialCheck(
-      [['payer_is_associate'], ['payer_name']],
-      input => !!input.payer_is_associate || !!input.payer_name,
-      t('transaction.addModal.validation.payerFirstNameRequired')
-    ),
-    ['payer_name']
-  ),
-  v.forward(
-    v.partialCheck(
-      [['payer_is_associate'], ['payer_surname']],
-      input => !!input.payer_is_associate || !!input.payer_surname,
-      t('transaction.addModal.validation.payerLastNameRequired')
-    ),
-    ['payer_surname']
-  ),
-  v.forward(
-    v.partialCheck(
-      [['payer_is_associate'], ['payer_email']],
-      input => !!input.payer_is_associate || !!input.payer_email,
-      t('transaction.addModal.validation.payerEmailRequired')
-    ),
-    ['payer_email']
-  ),
-  v.forward(
-    v.partialCheck(
-      [['payer_is_associate'], ['payer_tax_code']],
-      input => !!input.payer_is_associate || !!input.payer_tax_code,
-      t('transaction.addModal.validation.payerTaxCodeRequired')
-    ),
-    ['payer_tax_code']
-  ),
-  v.forward(
-    v.partialCheck(
-      [['payer_is_associate'], ['associate_id']],
-      input => !input.payer_is_associate || !!input.associate_id,
-      t('transaction.addModal.validation.associateIdRequired')
-    ),
-    ['associate_id']
-  )
-)
-
-const { data: users } = await useFetch('https://jsonplaceholder.typicode.com/users', {
-  key: 'typicode-users-email',
-  transform: (data: { id: number, name: string, email: string }[]) => {
-    return data?.map(user => ({
-      label: user.name,
-      email: user.email,
-      value: String(user.id),
-      avatar: { src: `https://i.pravatar.cc/120?img=${user.id}` }
-    }))
-  },
-  lazy: true
-})
+const { schema, paymentTypeOptions, paymentMethodOptions } = useTransactionFormOptions()
 
 type Schema = v.InferOutput<typeof schema>
 
 const state = reactive<Partial<Schema>>({
-  payment_amount: 5,
-  payment_method: 'POS',
-  payment_type: 'event-fee',
+  payment_method: 'Cash',
+  payment_type: 'Tournament Fee',
   payer_is_associate: true,
-  payment_datetime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString().slice(0, 16) // default to now + 2 hours, formatted for datetime-local
+  // Local time, not toISOString(): a UTC-formatted default shifts the displayed
+  // date/time by the browser's offset (same class of bug fixed in
+  // AssociatesListEditModal.vue's born_date serialization).
+  payment_datetime: format(new Date(), `yyyy-MM-dd'T'HH:mm`)
 })
 
-// Compute the selected payment type object
-const selectedPaymentType = computed(() => {
-  return paymentTypeOptions.value.find(item => item.value === state.payment_type)
-})
+// Refills every time the modal opens targeting a (possibly new) preset associate —
+// same convention as AssociatesListEditModal.vue's watch on its `associate` prop.
+watch([open, () => presetAssociate], ([isOpen, associate]) => {
+  if (!isOpen || !associate) return
+  state.payer_is_associate = true
+  state.associate_uuid = associate.uuid
+  state.payment_type = 'Association Fee'
+}, { immediate: true })
 
-const associateDigits = ref('')
+// The membership fee is a fixed €5 via PayPal "Friends & Family", first payment
+// and every renewal alike (user decision, 2026-08-12) — not just a suggestion for
+// the Rinnova flow, so this also fires when staff pick "Quota associativa"
+// manually from the generic "Nuova transazione" form. Still editable afterwards.
+watch(() => state.payment_type, (type) => {
+  if (type !== 'Association Fee') return
+  state.payment_amount = MEMBERSHIP_FEE_AMOUNT
+  state.payment_method = MEMBERSHIP_FEE_PAYMENT_METHOD
+  // The event field is hidden for this type (see the template) — clear any value
+  // picked before switching, so a hidden leftover doesn't get submitted.
+  state.event_name = undefined
+})
 
 const items = computed(() => [
   {
     label: t('transaction.addModal.tabs.associate'),
     icon: ICONS.playerConfirmed,
-    slot: 'associate'
+    slot: 'associate',
+    value: 'associate'
   },
   {
     label: t('transaction.addModal.tabs.external'),
     icon: ICONS.edit,
-    slot: 'external'
+    slot: 'external',
+    value: 'external'
   }
 ])
 
-// Track which tab is active
-const activeTab = ref(0)
+// String, not a numeric index: UTabs' v-model always emits the item's `value` as
+// a string once the user interacts with it, even for the already-active tab —
+// comparing against the number 0 only worked before the first interaction
+// (found 2026-08-12: after clicking "Associato" once, activeTab became the
+// string '0', `newTab === 0` silently went false, and payer_is_associate flipped
+// to false, making the external-payer fields required on the associate tab too).
+const activeTab = ref('associate')
 
-// Update payer_is_associate based on tab
 watch(activeTab, (newTab) => {
-  state.payer_is_associate = newTab === 0
+  state.payer_is_associate = newTab === 'associate'
 })
 
-// Handle associate ID input
-const handleAssociateIdInput = (event: Event) => {
-  const input = event.target as HTMLInputElement
-  // Extract only digits and limit to 3
-  const digits = input.value.replace(/\D/g, '').slice(0, 3)
-  associateDigits.value = digits
-  state.associate_id = digits.length === 3 ? `PW-0${digits}` : ''
-}
+// The modal component stays mounted across open/close cycles (transactions/
+// index.vue always renders it) — without this, picking "Persona esterna" once
+// then closing and reopening the modal would leave that tab active on the next,
+// unrelated transaction. A fresh "Nuova transazione" should always start on
+// "Associato".
+watch(open, (isOpen) => {
+  if (isOpen) activeTab.value = 'associate'
+})
 
-// Prevent non-numeric key presses
-const onlyNumbers = (event: KeyboardEvent) => {
-  const key = event.key
-  // Allow control keys
-  if (['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight'].includes(key)) {
-    return
-  }
-
-  // Prevent if not a number
-  if (!/^\d$/.test(key)) {
-    event.preventDefault()
-  }
-}
-
-// Handle paste events
-const handlePaste = (event: ClipboardEvent) => {
-  event.preventDefault()
-  const pastedText = event.clipboardData?.getData('text') || ''
-  const digits = pastedText.replace(/\D/g, '').slice(-3)
-  associateDigits.value = digits
-  state.associate_id = digits.length === 3 ? `PW-0${digits}` : ''
-}
-
-// Computed property to automatically uppercase the tax code
 const payerTaxCodeInput = computed({
   get: () => state.payer_tax_code,
   set: (value) => {
@@ -220,44 +114,105 @@ const payerTaxCodeInput = computed({
   }
 })
 
+const selectedAssociate = computed<Associate | null>(() => presetAssociate
+  ?? associatesData.value?.find(associate => associate.uuid === state.associate_uuid)
+  ?? null)
+
+const selectedAssociateLabel = computed(() => selectedAssociate.value
+  ? `${selectedAssociate.value.first_name} ${selectedAssociate.value.last_name}`
+  : undefined)
+
+// Surfaces membership_status right under the picker so staff notice, before
+// submitting, whether the selected socio actually needs this payment — e.g.
+// picking someone already "active" for a renewal would be redundant. Only
+// active/to_renew/expired are reachable here: both associateOptions and the
+// Rinnova entry point (useAssociatesRowActions.ts) only ever offer approved
+// associates.
+const membershipStatusAlert = computed(() => {
+  const associate = selectedAssociate.value
+  if (!associate) return null
+  const { color, icon } = MEMBERSHIP_STATUS_BADGE_CONFIG[associate.membership_status]
+    ?? { color: 'neutral' as const, icon: ICONS.help }
+  return {
+    color,
+    icon,
+    title: t(
+      `transaction.addModal.membershipStatusAlert.${associate.membership_status}`,
+      { name: selectedAssociateLabel.value }
+    )
+  }
+})
+
+const modalTitle = computed(() => presetAssociate
+  ? t('transaction.addModal.renewTitle', { name: selectedAssociateLabel.value })
+  : t('transaction.addModal.title'))
+
+const modalDescription = computed(() => presetAssociate
+  ? t('transaction.addModal.renewDescription')
+  : t('transaction.addModal.description'))
+
+const submitting = ref(false)
+
 async function onSubmit(event: FormSubmitEvent<Schema>) {
+  submitting.value = true
   try {
-    // Simulate transaction creation logic here (e.g., API call)
-    // await createTransaction(event.data)
+    const { renewed } = await createTransaction.mutateAsync({
+      associateUuid: event.data.payer_is_associate ? (event.data.associate_uuid ?? null) : null,
+      payerName: event.data.payer_is_associate ? null : (event.data.payer_name ?? null),
+      payerSurname: event.data.payer_is_associate ? null : (event.data.payer_surname ?? null),
+      payerEmail: event.data.payer_is_associate ? null : (event.data.payer_email ?? null),
+      payerTaxCode: event.data.payer_is_associate ? null : (event.data.payer_tax_code ?? null),
+      paymentDate: new Date(event.data.payment_datetime).toISOString(),
+      paymentAmount: event.data.payment_amount,
+      paymentMethod: event.data.payment_method,
+      paymentType: event.data.payment_type,
+      receivedBy: event.data.received_by,
+      eventUuid: null,
+      eventName: event.data.event_name ?? null,
+      notes: event.data.notes ?? ''
+    })
 
     toast.add({
       title: t('transaction.addModal.successToastTitle'),
-      description: state.associate_id
-        ? t('transaction.addModal.successToastDescriptionAssociate', { amount: event.data.payment_amount ?? 0, associateId: state.associate_id })
-        : t('transaction.addModal.successToastDescriptionExternal', { amount: event.data.payment_amount ?? 0, name: `${event.data.payer_name ?? ''} ${event.data.payer_surname ?? ''}` }),
+      description: event.data.payer_is_associate
+        ? t('transaction.addModal.successToastDescriptionAssociate', {
+          amount: event.data.payment_amount,
+          name: selectedAssociateLabel.value ?? ''
+        })
+        : t('transaction.addModal.successToastDescriptionExternal', {
+          amount: event.data.payment_amount,
+          name: `${event.data.payer_name ?? ''} ${event.data.payer_surname ?? ''}`
+        }),
       color: 'success'
     })
-    open.value = false
-  } catch (error: unknown) {
-    let message = t('transaction.addModal.errorToastGenericMessage')
-    if (error instanceof Error) {
-      message = error.message
+    if (renewed) {
+      toast.add({ title: t('transaction.addModal.renewedToastTitle'), color: 'success' })
     }
+    open.value = false
+  } catch (err) {
     toast.add({
       title: t('transaction.addModal.errorToastTitle'),
-      description: message,
+      description: toErrorMessage(err),
       color: 'error'
     })
+  } finally {
+    submitting.value = false
   }
 }
 </script>
 
 <template>
-  <!-- TODO make every modal dismissible="false" and content: 'max-w-2xl' -->
   <UModal
     v-model:open="open"
     :dismissible="false"
     :ui="{ content: 'max-w-xl' }"
-    :title="$t('transaction.addModal.title')"
-    :description="$t('transaction.addModal.description')"
+    :title="modalTitle"
+    :description="modalDescription"
   >
-    <!-- Trigger button goes in the default slot -->
+    <!-- No trigger button when opened programmatically with a preset associate
+         (Rinnova) — only the generic "+ Nuova transazione" entry point shows one. -->
     <AddButton
+      v-if="!hideTrigger"
       :label="$t('transaction.addModal.openButton')"
       :icon="ICONS.coins"
       @click="open = true"
@@ -275,63 +230,50 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             {{ $t('transaction.addModal.personalInfo') }}
           </p>
 
-          <!-- Use v-model to track active tab -->
-          <UTabs v-model="activeTab" :items="items">
-            <template #associate>
-              <div class="grid grid-cols-2 gap-2 mt-2">
-                <UFormField
-                  :label="$t('transaction.addModal.fields.associateId')"
-                  name="associate_id"
-                  required
-                >
-                  <UInput
-                    v-model="associateDigits"
-                    placeholder="000"
-                    type="text"
-                    inputmode="numeric"
-                    pattern="[0-9]*"
-                    maxlength="3"
-                    class="w-full"
-                    :ui="{
-                      base: 'pl-17',
-                      leading: 'pointer-events-none'
-                    }"
-                    @keypress="onlyNumbers"
-                    @input="handleAssociateIdInput($event)"
-                    @paste="handlePaste($event)"
-                  >
-                    <template #leading>
-                      <div class="flex items-center gap-1.5">
-                        <UIcon :name="ICONS.creditCard" class="size-4 text-muted" />
-                        <p class="text-sm text-muted">
-                          PW-0
-                        </p>
-                      </div>
-                    </template>
-                  </UInput>
-                </UFormField>
+          <div v-if="presetAssociate" class="space-y-2">
+            <div class="flex items-center gap-2 rounded-md border border-default p-3">
+              <UIcon :name="ICONS.playerConfirmed" class="size-5 text-muted shrink-0" />
+              <div class="min-w-0">
+                <p class="font-medium truncate">
+                  {{ presetAssociate.first_name }} {{ presetAssociate.last_name }}
+                </p>
+                <p v-if="presetAssociate.pauperwave_associate_number" class="text-sm text-muted">
+                  {{ presetAssociate.pauperwave_associate_number }}
+                </p>
+              </div>
+            </div>
 
+            <UAlert v-if="membershipStatusAlert" variant="subtle" v-bind="membershipStatusAlert" />
+          </div>
+
+          <UTabs v-else v-model="activeTab" :items="items">
+            <template #associate>
+              <div class="mt-2 space-y-2">
                 <UFormField
                   :label="$t('transaction.addModal.fields.member')"
-                  name="associate_id"
+                  name="associate_uuid"
                   required
                 >
-                  <UInputMenu
-                    :items="users"
-                    class="w-full"
-                    :icon="ICONS.player"
+                  <USelectMenu
+                    v-model="state.associate_uuid"
+                    :items="associateOptions"
+                    value-key="value"
                     :placeholder="$t('transaction.addModal.fields.selectMember')"
-                    :ui="{ content: 'min-w-fit' }"
+                    :icon="ICONS.player"
+                    class="w-full"
                   >
                     <template #item-label="{ item }">
                       {{ item.label }}
-
-                      <span class="text-muted">
-                        {{ item.email }}
-                      </span>
+                      <span v-if="item.description" class="text-muted">{{ item.description }}</span>
                     </template>
-                  </UInputMenu>
+                  </USelectMenu>
                 </UFormField>
+
+                <UAlert
+                  v-if="membershipStatusAlert"
+                  variant="subtle"
+                  v-bind="membershipStatusAlert"
+                />
               </div>
             </template>
 
@@ -404,14 +346,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                   >
                     <template v-if="state.payer_tax_code?.length" #trailing>
                       <UClearButton v-model="state.payer_tax_code" />
-                      <div
-                        id="character-count"
-                        class="text-xs text-muted tabular-nums"
-                        aria-live="polite"
-                        role="status"
-                      >
-                        {{ state.payer_tax_code?.length }}/16
-                      </div>
                     </template>
                   </UInput>
                 </UFormField>
@@ -425,19 +359,23 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         </p>
 
         <div class="grid grid-cols-2 gap-2 mt-2">
-          <UFormField :label="$t('transaction.addModal.fields.paymentDate')" name="payment_date">
-            <UInput
-              v-model="state.payment_datetime"
-              type="datetime-local"
-              class="w-full"
-              disabled
-            />
+          <UFormField
+            :label="$t('transaction.addModal.fields.paymentDate')"
+            name="payment_datetime"
+            required
+          >
+            <UInput v-model="state.payment_datetime" type="datetime-local" class="w-full" />
           </UFormField>
 
-          <UFormField :label="$t('transaction.addModal.fields.receivedBy')" name="received_by">
-            <USelectMenu
-              v-model="state.received_by"
-              :items="receiverOptions"
+          <UFormField
+            :label="$t('transaction.addModal.fields.paymentAmount')"
+            name="payment_amount"
+            required
+          >
+            <UInputNumber
+              v-model="state.payment_amount"
+              :min="0"
+              :step="0.5"
               class="w-full"
             />
           </UFormField>
@@ -448,11 +386,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               :items="paymentTypeOptions"
               value-key="value"
               class="w-full"
-            >
-              <template #leading>
-                <UIcon v-if="selectedPaymentType" :name="selectedPaymentType.icon" class="size-5 shrink-0" />
-              </template>
-            </USelect>
+            />
           </UFormField>
 
           <UFormField
@@ -462,20 +396,31 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             <USelect
               v-model="state.payment_method"
               :items="paymentMethodOptions"
+              value-key="value"
               class="w-full"
             />
           </UFormField>
-        </div>
 
-        <div class="grid grid-cols-2 gap-2 mt-2">
-          <UFormField :label="$t('transaction.addModal.fields.receivedBy')" name="received_by">
-            <USelect v-model="state.received_by" :items="receiverOptions" class="w-full" />
+          <UFormField
+            :label="$t('transaction.addModal.fields.receivedBy')"
+            name="received_by"
+            required
+          >
+            <USelectMenu
+              v-model="state.received_by"
+              :items="RECEIVER_OPTIONS"
+              class="w-full"
+            />
           </UFormField>
 
-          <UFormField :label="$t('transaction.addModal.fields.event')" name="event_name">
+          <UFormField
+            v-if="state.payment_type !== 'Association Fee'"
+            :label="$t('transaction.addModal.fields.event')"
+            name="event_name"
+          >
             <USelectMenu
               v-model="state.event_name"
-              :items="eventOptions"
+              :items="EVENT_OPTIONS"
               class="w-full"
             />
           </UFormField>
@@ -490,6 +435,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             :label="$t('transaction.addModal.cancel')"
             color="neutral"
             variant="subtle"
+            :disabled="submitting"
             @click="() => { open = false }"
           />
           <UButton
@@ -497,6 +443,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             color="primary"
             variant="solid"
             type="submit"
+            :loading="submitting"
           />
         </div>
       </UForm>
