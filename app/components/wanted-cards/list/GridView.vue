@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { WantedCard } from '~/types'
+import type { Selection } from '~/composables/useSelection'
 
 interface GridSection {
   /** null = nessun raggruppamento attivo, nessuna intestazione di sezione. */
@@ -9,9 +10,12 @@ interface GridSection {
   cards: WantedCard[]
 }
 
-const { sections, contextMenuItems, showStatus = false } = defineProps<{
+const {
+  sections, contextMenuItems, selection, showStatus = false
+} = defineProps<{
   sections: GridSection[]
   contextMenuItems: (card: WantedCard) => DropdownMenuItem[]
+  selection: Selection<number>
   /** Show the status badge (Found/Searching) — only when the active tab is "All", where the filter would otherwise not make it clear. */
   showStatus?: boolean
 }>()
@@ -58,8 +62,23 @@ const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]
           <UCard
             :id="card.id === firstCardId ? 'tour-wanted-cards-first-card' : undefined"
             :ui="{ body: 'p-0 sm:p-0', footer: 'p-3 sm:p-3' }"
-            class="overflow-hidden"
+            class="overflow-hidden relative group"
           >
+            <!-- Hidden until hover, except once selected — same "stays visible
+                 once acted on" reasoning as the header/group checkboxes in
+                 useWantedCardsTableColumns.ts. No touch/hover fallback for
+                 mobile yet (selection starts from the table there instead) —
+                 see docs/TODO.md if that becomes a real need. -->
+            <UCheckbox
+              :model-value="selection.isSelected(card.id)"
+              class="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+              :class="{ '!opacity-100': selection.isSelected(card.id) }"
+              :ui="{ base: 'bg-default/90 rounded' }"
+              :aria-label="$t('common.selectRow')"
+              @update:model-value="selection.toggle(card.id)"
+              @click.stop
+            />
+
             <img
               v-if="card.imageUrl"
               :src="card.imageUrl"

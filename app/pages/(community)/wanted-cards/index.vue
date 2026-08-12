@@ -35,7 +35,8 @@ const {
   statusTabs
 } = useWantedCardsFilters(data)
 
-const { columns, columnHeaders } = useWantedCardsTableColumns()
+const selection = useSelection<number>()
+const { columns, columnHeaders } = useWantedCardsTableColumns(selection)
 
 const {
   rowContextMenuItems,
@@ -48,6 +49,23 @@ const {
   deleting,
   confirmDelete
 } = useWantedCardsRowActions()
+
+const {
+  pendingAction,
+  confirmOpen: bulkConfirmOpen,
+  executing: bulkExecuting,
+  requestStatusChange,
+  requestDelete,
+  confirmPendingAction,
+  bulkRefreshPrices,
+  bulkCopyNames
+} = useWantedCardsBulkActions(selection)
+
+// Selected cards resolved against the currently filtered set, not the full
+// unfiltered data — a card hidden by the active status/language/treatment
+// filter shouldn't be actionable even if it stayed selected from before.
+const selectedCards = computed(() =>
+  filteredCards.value.filter(card => selection.isSelected(card.id)))
 
 // Grouping by player on demand (off by default) — a player with 15 requests can
 // collapse into a single expandable row instead of 15 repeated rows with the same
@@ -203,11 +221,20 @@ const gridSections = computed<GridSection[]>(() => {
         }"
       >
         <template #left>
+          <!-- Swapped for the bulk-actions bar (same row/height) while there's
+               a selection, instead of the filters — see BulkActionsBar.vue for
+               why this replaces rather than adds a row. -->
+          <WantedCardsListBulkActionsBar
+            v-if="selectedCards.length"
+            side="left"
+            :count="selectedCards.length"
+            @clear="selection.clear()"
+          />
           <!-- Wrapper with a dedicated id purely to anchor the guided tour to
                the whole filters area (see useWantedCardsTour) — the class
                mirrors UDashboardToolbar's ui.left (gap-4 flex-wrap) so the
                layout stays identical, just nested one level deeper. -->
-          <div id="tour-wanted-cards-filters" class="flex items-center gap-4 flex-wrap">
+          <div v-else id="tour-wanted-cards-filters" class="flex items-center gap-4 flex-wrap">
             <!--
               No `-ms-1` here on purpose: it's for icon-only buttons (see
               transactions/index.vue), not a bordered UFieldGroup — measured,
@@ -256,10 +283,19 @@ const gridSections = computed<GridSection[]>(() => {
         </template>
 
         <template #right>
+          <WantedCardsListBulkActionsBar
+            v-if="selectedCards.length"
+            side="right"
+            :count="selectedCards.length"
+            @mark-status="status => requestStatusChange(status, selectedCards)"
+            @delete="requestDelete(selectedCards)"
+            @copy-names="bulkCopyNames(selectedCards)"
+            @refresh-prices="bulkRefreshPrices(selectedCards)"
+          />
           <!-- Same reason as the #left wrapper: a dedicated id to anchor the
                tour to the whole view area, with classes mirroring ui.right
                (gap-4 flex-wrap). -->
-          <div id="tour-wanted-cards-view-controls" class="flex items-center gap-4 flex-wrap">
+          <div v-else id="tour-wanted-cards-view-controls" class="flex items-center gap-4 flex-wrap">
             <div v-if="viewMode === 'grid'" class="flex items-center gap-2">
               <USelectMenu
                 v-model="gridSortField"
@@ -331,6 +367,7 @@ const gridSections = computed<GridSection[]>(() => {
           v-else
           :sections="gridSections"
           :context-menu-items="rowContextMenuItems"
+          :selection="selection"
           :show-status="statusFilter === 'all'"
         />
       </template>
@@ -339,30 +376,46 @@ const gridSections = computed<GridSection[]>(() => {
 
   <WantedCardsListEditModal v-model="editModalOpen" :card="editingCard" />
 
-  <UModal
+  <ConfirmModal
     v-model:open="deleteConfirmOpen"
     :title="$t('wantedCard.contextMenu.deleteConfirmTitle')"
-    :description="deletingCard ? deletingCard.cardName : ''"
+    :warning="$t('common.confirmDeleteWarning')"
+    :confirm-label="$t('wantedCard.contextMenu.delete')"
+    :confirm-icon="ICONS.delete"
+    :loading="deleting"
+    @confirm="confirmDelete"
   >
-    <template #footer>
-      <div class="flex justify-end gap-2 w-full">
-        <UButton
-          :label="$t('wantedCard.addModal.cancel')"
-          color="neutral"
-          variant="subtle"
-          :disabled="deleting"
-          @click="deleteConfirmOpen = false"
-        />
-        <UButton
-          :label="$t('wantedCard.contextMenu.delete')"
-          color="error"
-          variant="solid"
-          :loading="deleting"
-          @click="confirmDelete"
-        />
-      </div>
-    </template>
-  </UModal>
+    <MagicCardPreviewTooltip
+      v-if="deletingCard"
+      :name="deletingCard.cardName"
+      :image-url="deletingCard.imageUrl"
+    />
+  </ConfirmModal>
+
+  <!-- Same component as the single-card delete confirm above, generalized for
+       both bulk status changes and bulk delete (useWantedCardsBulkActions.ts). -->
+  <ConfirmModal
+    v-model:open="bulkConfirmOpen"
+    :title="pendingAction?.type === 'delete'
+      ? $t('wantedCard.bulkActions.confirmDeleteTitle', pendingAction.cards.length)
+      : $t('wantedCard.bulkActions.confirmStatusTitle', {
+        status: $t(`wantedCard.status.${pendingAction?.status}`)
+      }, pendingAction?.cards.length ?? 0)"
+    :warning="pendingAction?.type === 'delete' ? $t('common.confirmDeleteWarning') : undefined"
+    :confirm-label="pendingAction?.type === 'delete'
+      ? $t('wantedCard.contextMenu.delete')
+      : $t('wantedCard.bulkActions.confirm')"
+    :confirm-color="pendingAction?.type === 'delete' ? 'error' : 'primary'"
+    :confirm-icon="pendingAction?.type === 'delete' ? ICONS.delete : undefined"
+    :loading="bulkExecuting"
+    @confirm="confirmPendingAction"
+  >
+    <ul v-if="pendingAction" class="max-h-40 overflow-y-auto text-sm space-y-1">
+      <li v-for="card in pendingAction.cards" :key="card.id">
+        <MagicCardPreviewTooltip :name="card.cardName" :image-url="card.imageUrl" />
+      </li>
+    </ul>
+  </ConfirmModal>
 
   <TourGuide :tour="tour" />
 </template>

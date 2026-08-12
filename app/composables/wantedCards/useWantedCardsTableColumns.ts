@@ -1,11 +1,12 @@
 // app\composables\wantedCards\useWantedCardsTableColumns.ts
 import { h } from 'vue'
-import { UBadge, UIcon } from '#components'
+import { UBadge, UCheckbox, UIcon } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { WantedCard } from '~/types'
 import ManaCost from '~/components/magic/ManaCost.vue'
 import CardPreviewTooltip from '~/components/magic/CardPreviewTooltip.vue'
 import PlayerTag from '~/components/PlayerTag.vue'
+import type { Selection } from '~/composables/useSelection'
 
 // Pure config (depends only on t()) — extracted from the page to isolate the ~110
 // lines of column definitions from the rest of the view's logic.
@@ -13,8 +14,47 @@ import PlayerTag from '~/components/PlayerTag.vue'
 // works reliably inside a .vue file's <script setup> block (where the compiler
 // rewrites it), not from a plain .ts file — used here it caused "Failed to resolve
 // component" at runtime.
-export function useWantedCardsTableColumns() {
+export function useWantedCardsTableColumns(selection: Selection<number>) {
   const { t } = useI18n()
+
+  // Bound to the shared selectedIds Set (useSelection.ts), not UTable's own
+  // row-selection state — grouping (rows with subRows) needs a group's checkbox
+  // to reflect/drive all its subRows at once, which the id-Set model handles
+  // the same way as the plain "select all" header checkbox.
+  const selectColumn: TableColumn<WantedCard> = {
+    id: 'select',
+    enableSorting: false,
+    enableHiding: false,
+    meta: { class: { th: 'w-px', td: 'w-px' } },
+    header: ({ table: tableApi }) => {
+      const leafRows = tableApi.getFilteredRowModel().rows.filter(row => row.subRows.length === 0)
+      const ids = leafRows.map(row => row.original.id)
+      const allSelected = ids.length > 0 && ids.every(id => selection.isSelected(id))
+      const someSelected = ids.some(id => selection.isSelected(id))
+      return h(UCheckbox, {
+        'modelValue': allSelected ? true : (someSelected ? 'indeterminate' : false),
+        'onUpdate:modelValue': (value: unknown) => selection.setAll(ids, !!value),
+        'aria-label': t('common.selectAll')
+      })
+    },
+    cell: ({ row }) => {
+      if (row.getIsGrouped()) {
+        const ids = row.subRows.map(subRow => subRow.original.id)
+        const allSelected = ids.length > 0 && ids.every(id => selection.isSelected(id))
+        const someSelected = ids.some(id => selection.isSelected(id))
+        return h(UCheckbox, {
+          'modelValue': allSelected ? true : (someSelected ? 'indeterminate' : false),
+          'onUpdate:modelValue': (value: unknown) => selection.setAll(ids, !!value),
+          'aria-label': t('common.selectRow')
+        })
+      }
+      return h(UCheckbox, {
+        'modelValue': selection.isSelected(row.original.id),
+        'onUpdate:modelValue': () => selection.toggle(row.original.id),
+        'aria-label': t('common.selectRow')
+      })
+    }
+  }
 
   // Readable labels for the "Columns" menu — same i18n map used for the actual
   // column headers (pattern from associates/index.vue).
@@ -33,6 +73,7 @@ export function useWantedCardsTableColumns() {
   }
 
   const columns: TableColumn<WantedCard>[] = [
+    selectColumn,
     {
       accessorKey: 'player',
       header: ({ column }) => sortableHeader(t('wantedCard.columns.player'), column),
