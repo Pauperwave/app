@@ -1,4 +1,4 @@
-// app\composables\associates\useAssociateTableColumns.ts
+// app\composables\associates\useAssociatesTableColumns.ts
 import { upperFirst } from 'scule'
 import { UBadge, UCheckbox } from '#components'
 import type { BadgeProps, DropdownMenuItem, TableColumn } from '@nuxt/ui'
@@ -10,7 +10,7 @@ import type { Associate } from '~/types'
 // (id/uuid/created_at/updated_at/updated_by/membership_status/payment_date/
 // association_date/pauperwave_associate_number/
 // has_acknowledged_surveillance_notice) was byte-identical in both files
-// (fallow dupes, 2026-08-11), same root cause as useAssociateRenderers.ts:
+// (fallow dupes, 2026-08-11), same root cause as useAssociatesRenderers.ts:
 // the two pages share one Associate table shape, not two.
 //
 // Two real inconsistencies surfaced while merging: born_location and
@@ -18,7 +18,7 @@ import type { Associate } from '~/types'
 // unified to plain text here (sorting free text like a city/birthplace name
 // alphabetically isn't a useful operation), matching requests' version.
 
-export const associateColumnHeaders = (t: (key: string) => string) => ({
+export const associatesColumnHeaders = (t: (key: string) => string) => ({
   id: t('associate.columns.id'),
   uuid: t('associate.columns.uuid'),
   created_at: t('associate.columns.createdAt'),
@@ -53,19 +53,19 @@ export const associateColumnHeaders = (t: (key: string) => string) => ({
   mtga_nickname: t('associate.columns.mtgaNickname')
 } as const)
 
-export type AssociateColumnHeaders = ReturnType<typeof associateColumnHeaders>
-type AssociateColumnHeaderKey = keyof AssociateColumnHeaders
+export type AssociatesColumnHeaders = ReturnType<typeof associatesColumnHeaders>
+type AssociatesColumnHeaderKey = keyof AssociatesColumnHeaders
 
-export function useAssociateTableColumns(table: Ref<{ tableApi: Table<Associate> } | null>) {
+export function useAssociatesTableColumns(table: Ref<{ tableApi: Table<Associate> } | null>) {
   const { t } = useI18n()
   const {
     formatDateTime, formatDate, renderAssociateTypeBadge, renderConsentBadge
-  } = useAssociateRenderers()
+  } = useAssociatesRenderers()
 
-  const columnHeaders = associateColumnHeaders(t)
+  const columnHeaders = associatesColumnHeaders(t)
 
   function getColumnLabel(id: string): string {
-    return id in columnHeaders ? columnHeaders[id as AssociateColumnHeaderKey] : id
+    return id in columnHeaders ? columnHeaders[id as AssociatesColumnHeaderKey] : id
   }
 
   function createVisibilityItem(column: Column<Associate>): DropdownMenuItem {

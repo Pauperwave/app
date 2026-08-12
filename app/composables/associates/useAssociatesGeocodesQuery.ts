@@ -1,17 +1,17 @@
-// app\composables\associates\useAssociateGeocodesQuery.ts
+// app\composables\associates\useAssociatesGeocodesQuery.ts
 export interface AssociateGeocode {
   associate_uuid: string
   latitude: number
   longitude: number
 }
 
-export const ASSOCIATE_GEOCODES_KEY = ['associate-geocodes']
+export const ASSOCIATES_GEOCODES_KEY = ['associate-geocodes']
 
-export function useAssociateGeocodesQuery() {
+export function useAssociatesGeocodesQuery() {
   const supabase = useSupabaseClient()
 
   return useQuery({
-    key: ASSOCIATE_GEOCODES_KEY,
+    key: ASSOCIATES_GEOCODES_KEY,
     query: async (): Promise<AssociateGeocode[]> => {
       const { data, error } = await supabase
         .from('pauperwave_associate_geocodes')

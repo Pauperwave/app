@@ -1,4 +1,4 @@
-// app\composables\associates\useAssociateRenderers.ts
+// app\composables\associates\useAssociatesRenderers.ts
 import { format, parseISO } from 'date-fns'
 import { UBadge } from '#components'
 import type { BadgeProps } from '@nuxt/ui'
@@ -9,7 +9,7 @@ import type { Associate } from '~/types'
 // when the two pages split, so formatting/badge logic can't drift between
 // them. A composable, not a plain util: renderAssociateTypeBadge/
 // renderConsentBadge both need t() for their labels.
-export function useAssociateRenderers() {
+export function useAssociatesRenderers() {
   const { t } = useI18n()
 
   function formatDateTime(isoString?: string): string {

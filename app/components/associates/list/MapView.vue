@@ -1,7 +1,7 @@
 <!-- app\components\associates\list\MapView.vue -->
 <script setup lang="ts">
 import type { Associate } from '~/types'
-import type { AssociateGeocode } from '~/composables/associates/useAssociateGeocodesQuery'
+import type { AssociateGeocode } from '~/composables/associates/useAssociatesGeocodesQuery'
 
 const { associates, geocodes, loading = false } = defineProps<{
   associates: Associate[]
