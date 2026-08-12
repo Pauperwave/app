@@ -39,6 +39,9 @@
     "selectRow": "Seleziona riga",
     "dataFreshness": "Aggiornato {time}",
     "delete": "Delete",
+    "confirm": "Conferma",
+    "cancel": "Annulla",
+    "confirmDeleteWarning": "Questa azione non può essere annullata.",
     "back": "Indietro",
     "forward": "Avanti",
     "dummyLinkLabel": "Vedi esempio (ID fittizio)",
@@ -49,6 +52,10 @@
     "switchToLightMode": "Passa al tema chiaro",
     "switchToDarkMode": "Passa al tema scuro",
     "retry": "Riprova",
+    "playerTag": {
+      "lastRenewal": "Ultimo rinnovo",
+      "neverRenewed": "Mai rinnovato"
+    },
     "mockDataNotice": "Dati di esempio: questa classifica non è ancora collegata al database reale.",
     "copyLink": "Copia link",
     "linkCopied": "Link copiato negli appunti",
@@ -265,6 +272,20 @@
       "cancel": "Annulla",
       "create": "Crea"
     },
+    "editModal": {
+      "title": "Modifica associato",
+      "openButton": "Modifica",
+      "successToastTitle": "Successo",
+      "successToastDescription": "Associato \"{name}\" aggiornato",
+      "errorToastTitle": "Errore",
+      "cancel": "Annulla",
+      "save": "Salva"
+    },
+    "rowActions": {
+      "approve": "Approva",
+      "renew": "Rinnova",
+      "edit": "Modifica"
+    },
     "approveModal": {
       "title": "Approva {count} richiesta | Approva {count} richieste",
       "description": "Confermi l'approvazione della richiesta di tesseramento per i soci selezionati?",
@@ -273,6 +294,13 @@
       "successToastTitle": "Richieste approvate",
       "successToastDescription": "Tesseramento approvato per {count} associato | Tesseramento approvato per {count} associati",
       "errorToastTitle": "Approvazione fallita"
+    },
+    "rejectModal": {
+      "title": "Rifiuta {count} richiesta | Rifiuta {count} richieste",
+      "reject": "Rifiuta",
+      "successToastTitle": "Richieste rifiutate",
+      "successToastDescription": "Tesseramento rifiutato per {count} associato | Tesseramento rifiutato per {count} associati",
+      "errorToastTitle": "Rifiuto fallito"
     }
   },
   "tesseramento": {
@@ -323,13 +351,46 @@
     "tabs": {
       "all": "Tutte le transazioni",
       "associationFee": "Quote associative",
+      "tournamentFee": "Quote tornei",
       "eventFee": "Quote eventi",
       "donations": "Donazioni"
+    },
+    "columns": {
+      "paymentDate": "Data",
+      "payer": "Da",
+      "paymentAmount": "Importo",
+      "paymentType": "Tipologia",
+      "paymentMethod": "Metodo",
+      "receivedBy": "Ricevuto da",
+      "event": "Evento",
+      "notes": "Note"
+    },
+    "empty": "Nessuna transazione trovata con questi filtri",
+    "groupByPayer": "Raggruppa per giocatore",
+    "rowActions": {
+      "edit": "Modifica"
+    },
+    "editModal": {
+      "title": "Modifica transazione",
+      "successToastTitle": "Transazione aggiornata",
+      "errorToastTitle": "Impossibile aggiornare la transazione",
+      "cancel": "Annulla",
+      "save": "Salva",
+      "unknown": "Sconosciuto",
+      "createdBy": "Creata da {name} il {date}",
+      "updatedBy": "Ultima modifica di {name} il {date}"
     },
     "addModal": {
       "title": "Nuova transazione",
       "description": "Aggiungi una nuova transazione al database",
       "openButton": "Nuova transazione",
+      "renewTitle": "Rinnova tesseramento — {name}",
+      "renewDescription": "Registra il pagamento della quota associativa per rinnovare il tesseramento.",
+      "membershipStatusAlert": {
+        "active": "{name} ha già rinnovato per quest'anno.",
+        "to_renew": "{name} deve ancora rinnovare il tesseramento per quest'anno.",
+        "expired": "{name} non rinnova da più di un anno."
+      },
       "personalInfo": "Informazioni personali",
       "paymentInfo": "Informazioni sul pagamento",
       "tabs": {
@@ -337,7 +398,6 @@
         "external": "Persona esterna"
       },
       "fields": {
-        "associateId": "ID Associato",
         "member": "Socio",
         "selectMember": "Seleziona un socio",
         "firstName": "Nome",
@@ -346,9 +406,10 @@
         "emailPlaceholder": "Inserisci la tua email",
         "taxCode": "Codice Fiscale",
         "paymentDate": "Data pagamento",
-        "receivedBy": "Incassati da",
+        "paymentAmount": "Importo",
         "paymentType": "Tipologia di pagamento",
         "paymentMethod": "Metodo di Pagamento",
+        "receivedBy": "Ricevuto da",
         "event": "Evento",
         "notes": "Note"
       },
@@ -359,12 +420,12 @@
         "donation": "Donazione"
       },
       "paymentMethodOptions": {
-        "cash": "Contanti",
-        "bankTransfer": "Bonifico"
+        "cash": "Contanti"
       },
       "validation": {
         "payerFirstNameTooShort": "Nome troppo corto",
         "payerLastNameTooShort": "Cognome troppo corto",
+        "amountRequired": "Importo richiesto",
         "amountNotNegative": "L'importo non può essere negativo",
         "invalidPaymentMethod": "Metodo di pagamento non valido",
         "invalidPaymentType": "Tipo di pagamento non valido",
@@ -372,15 +433,17 @@
         "payerLastNameRequired": "Cognome richiesto",
         "payerEmailRequired": "Email richiesta",
         "payerTaxCodeRequired": "Codice Fiscale richiesto",
-        "associateIdRequired": "ID associato richiesto"
+        "associateRequired": "Seleziona un associato",
+        "receivedByRequired": "Seleziona chi ha ricevuto il pagamento"
       },
       "successToastTitle": "Successo",
-      "successToastDescriptionAssociate": "Nuova transazione di {amount}€ dall'associato #{associateId} aggiunta",
+      "successToastDescriptionAssociate": "Nuova transazione di {amount}€ per {name} aggiunta",
       "successToastDescriptionExternal": "Nuova transazione di {amount}€ da {name} aggiunta",
+      "renewedToastTitle": "Tesseramento rinnovato",
       "errorToastTitle": "Errore",
       "errorToastGenericMessage": "Impossibile aggiungere la transazione",
-      "cancel": "Cancel",
-      "create": "Create"
+      "cancel": "Annulla",
+      "create": "Crea"
     }
   },
   "league": {
@@ -785,6 +848,21 @@
       "edit": "Modifica",
       "delete": "Elimina",
       "deleteConfirmTitle": "Eliminare questa richiesta?"
+    },
+    "bulkActions": {
+      "selectedCount": "{count} selezionata | {count} selezionate",
+      "clearSelection": "Deseleziona",
+      "markAs": "Segna come",
+      "copyNames": "Copia nomi",
+      "refreshPrices": "Aggiorna prezzi",
+      "confirm": "Conferma",
+      "confirmStatusTitle": "Segna {count} richiesta come {status}? | Segna {count} richieste come {status}?",
+      "confirmDeleteTitle": "Eliminare {count} richiesta? | Eliminare {count} richieste?",
+      "statusSuccessToast": "{count} richiesta aggiornata | {count} richieste aggiornate",
+      "deleteSuccessToast": "{count} richiesta eliminata | {count} richieste eliminate",
+      "refreshSuccessToast": "Prezzo aggiornato per {count} carta | Prezzi aggiornati per {count} carte",
+      "copiedToast": "{count} nome copiato | {count} nomi copiati",
+      "partialFailure": "{count} operazione non riuscita | {count} operazioni non riuscite"
     },
     "columns": {
       "date": "Data",
