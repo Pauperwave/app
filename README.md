@@ -30,11 +30,24 @@ Vedi la [documentazione di deploy Nuxt](https://nuxt.com/docs/getting-started/de
 ## Qualità del codice
 
 ```bash
-pnpm lint               # eslint . — 0 warning/0 errori richiesti
-pnpm typecheck           # nuxt typecheck (vue-tsc) — 0 errori richiesti
-pnpm fallow:dead-code      # dipendenze/export inutilizzati
-pnpm fallow:dupes           # duplicazione di codice
-pnpm fallow:health            # audit complessità/hotspot
+pnpm lint             # eslint . — 0 warning/0 errori richiesti
+pnpm typecheck        # nuxt typecheck (vue-tsc) — 0 errori richiesti
+pnpm check:paths      # verifica l'header di percorso su ogni file sorgente
+pnpm fallow:dead-code # dipendenze/export inutilizzati
+pnpm fallow:dupes     # duplicazione di codice
+pnpm fallow:audit     # dead-code + complessità + duplicazione sui file modificati
+pnpm fallow:health    # audit complessità/hotspot
+pnpm fallow:security  # candidati di sicurezza (richiedono verifica manuale)
+```
+
+## Test
+
+```bash
+pnpm test             # vitest run
+pnpm test:watch       # vitest --watch
+pnpm test:coverage    # vitest run --coverage
+pnpm test:e2e         # playwright test
+pnpm test:e2e:headed  # playwright test, headed + rallentato
 ```
 
 ## Supabase
@@ -45,7 +58,7 @@ Le migration vivono in `supabase/migrations/` (`YYYYMMDDHHMMSS_descrizione.sql`)
 pnpm run supabase:types
 ```
 
-`app/types/database.types.ts` è generato: non va editato a mano.
+`shared/utils/types/database.ts` è generato: non va editato a mano.
 
 ## Documentazione
 
