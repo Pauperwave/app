@@ -208,6 +208,8 @@ function buildLeagueStandings(format: string, league: FormatLeague) {
     league.playerCount, `${league.uuid}-ply-`, FIRST_NAMES, LAST_NAMES, rng, [0.35, 0.6]
   )
 
+  // fallow-ignore-next-line code-duplication -- see the same comment in
+  // server/api/cittadino.ts
   const results = events.flatMap(event => buildEventPlacements(players, event.uuid, rng))
 
   return { events, results }
