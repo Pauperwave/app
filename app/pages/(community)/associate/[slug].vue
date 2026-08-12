@@ -20,6 +20,8 @@ const { breadcrumbItems } = useBreadcrumbs()
 const associate = computed(() => (associates.value ?? [])
   .find(item => slugify(`${item.first_name} ${item.last_name}`) === route.params.slug))
 
+const editModalOpen = ref(false)
+
 // Emanuele Nardi gets his real GitHub avatar (same one hardcoded in
 // UserMenu.vue) instead of the generated placeholder.
 const avatar = computed(() => {
@@ -112,6 +114,17 @@ const mtgFields = computed<DetailField[]>(() => !associate.value
         </template>
 
         <template #right>
+          <UButton
+            v-if="associate"
+            :label="$t('associate.editModal.openButton')"
+            :icon="ICONS.edit"
+            color="neutral"
+            variant="outline"
+            @click="editModalOpen = true"
+          />
+
+          <USeparator orientation="vertical" class="h-4" />
+
           <NotificationsBellButton />
         </template>
       </UDashboardNavbar>
@@ -222,4 +235,6 @@ const mtgFields = computed<DetailField[]>(() => !associate.value
       </div>
     </template>
   </UDashboardPanel>
+
+  <AssociatesListEditModal v-model="editModalOpen" :associate="associate ?? null" />
 </template>

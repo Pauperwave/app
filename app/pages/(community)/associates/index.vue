@@ -36,13 +36,18 @@ const route = useRoute()
 const router = useRouter()
 
 const table = useTemplateRef('table')
+const {
+  editingAssociate, editModalOpen,
+  renewingAssociate, renewModalOpen,
+  tableContextMenuItems, onRowContextmenu
+} = useAssociatesRowActions()
 // fallow-ignore-next-line code-duplication -- the useAssociatesTableColumns destructure
 // and status-filter-from-query function mirror requests.vue's own (different column
 // id and query semantics per page), not worth forcing into a shared helper
 const {
   columnHeaders, visibilityItems,
-  selectColumn, membershipRequestStatusColumn, requestDateColumn, associateTypeColumn,
-  consentDataColumn, consentSocialColumn, hasReadStatuteColumn,
+  selectColumn, membershipRequestStatusColumn,
+  associateTypeColumn, consentDataColumn, consentSocialColumn, hasReadStatuteColumn,
   firstNameColumn, lastNameColumn, emailAddressColumn, phoneNumberColumn, taxCodeColumn,
   bornDateColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
   residencyAddressColumn, residencyHouseNumberColumn, residencyCityColumn,
@@ -169,7 +174,6 @@ const columns: TableColumn<Associate>[] = [
       })
     }
   },
-  requestDateColumn,
   {
     accessorKey: 'payment_date',
     header: ({ column }) => sortableHeader(columnHeaders.payment_date, column),
@@ -312,28 +316,24 @@ watch(() => consentSocialFilter.value, (newVal) => {
 
     <template #body>
       <template v-if="viewMode === 'table'">
-        <UTable
-          ref="table"
-          v-model:column-filters="columnFilters"
-          v-model:column-visibility="columnVisibility"
-          v-model:row-selection="rowSelection"
-          :virtualize="{
-            estimateSize: 35,
-            overscan: 12
-          }"
-          :data="rosterAssociates"
-          :columns="columns"
-          class="flex-1 h-80 shrink-0"
-          :loading="loading"
-          sticky="header"
-          :ui="{
-            base: 'border-separate border-spacing-0',
-            tbody: '[&>tr]:last:[&>td]:border-b-0',
-            tr: 'hover:bg-elevated/50',
-            th: 'border-r border-default last:border-r-0 py-2 px-2 font-medium',
-            td: 'border-b border-r border-default last:border-r-0 py-1 px-2'
-          }"
-        />
+        <UContextMenu :items="tableContextMenuItems">
+          <UTable
+            ref="table"
+            v-model:column-filters="columnFilters"
+            v-model:column-visibility="columnVisibility"
+            v-model:row-selection="rowSelection"
+            :virtualize="{
+              estimateSize: 35,
+              overscan: 12
+            }"
+            :data="rosterAssociates"
+            :columns="columns"
+            class="flex-1 h-80 shrink-0"
+            :loading="loading"
+            sticky="header"
+            @contextmenu="onRowContextmenu"
+          />
+        </UContextMenu>
 
         <TableSelectionFooter
           :selected="table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0"
@@ -349,4 +349,11 @@ watch(() => consentSocialFilter.value, (newVal) => {
       />
     </template>
   </UDashboardPanel>
+
+  <AssociatesListEditModal v-model="editModalOpen" :associate="editingAssociate" />
+  <TransactionsListAddModal
+    v-model="renewModalOpen"
+    :preset-associate="renewingAssociate"
+    hide-trigger
+  />
 </template>

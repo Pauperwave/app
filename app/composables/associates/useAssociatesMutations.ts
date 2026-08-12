@@ -3,6 +3,8 @@
 // useWantedCardsMutations.ts): $fetch to the BFF endpoint, then invalidate the
 // associates list so both /associates and /associates/requests (same query key)
 // pick up the change without either page calling refresh() itself.
+import type { AssociateEditsPayload } from '#shared/types/associates'
+
 export function useAssociatesMutations() {
   const queryCache = useQueryCache()
   const invalidate = () => queryCache.invalidateQueries({ key: ASSOCIATES_KEY })
@@ -13,5 +15,17 @@ export function useAssociatesMutations() {
     onSettled: invalidate
   })
 
-  return { approveAssociates }
+  const rejectAssociates = useMutation({
+    mutation: (ids: number[]) =>
+      $fetch('/api/associates/reject', { method: 'POST', body: { ids } }),
+    onSettled: invalidate
+  })
+
+  const updateAssociate = useMutation({
+    mutation: ({ id, edits }: { id: number, edits: AssociateEditsPayload }) =>
+      $fetch(`/api/associates/${id}/update`, { method: 'POST', body: edits }),
+    onSettled: invalidate
+  })
+
+  return { approveAssociates, rejectAssociates, updateAssociate }
 }
