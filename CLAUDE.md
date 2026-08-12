@@ -9,9 +9,9 @@ PauperWave — a Magic: The Gathering Pauper League Manager dashboard. Nuxt 4 + 
 ## Commands
 
 ```bash
-pnpm dev         # dev server at http://localhost:3000
-pnpm build       # production build
-pnpm preview     # preview production build
+pnpm dev              # dev server at http://localhost:3000
+pnpm build            # production build
+pnpm preview          # preview production build
 pnpm lint             # eslint .
 pnpm typecheck        # nuxt typecheck (vue-tsc)
 pnpm check:paths      # verify every app/server/shared source file has a correct path header
@@ -21,6 +21,12 @@ pnpm test:watch       # vitest --watch
 pnpm test:coverage    # vitest run --coverage
 pnpm test:e2e         # playwright test
 pnpm test:e2e:headed  # playwright test, headed + slowed down
+pnpm supabase:types   # regenerate shared/utils/types/database.ts from the Supabase schema
+pnpm fallow:health    # fallow health --score --hotspots --targets
+pnpm fallow:dead-code # fallow dead-code
+pnpm fallow:dupes     # fallow dupes
+pnpm fallow:audit     # fallow audit
+pnpm fallow:security  # fallow security
 ```
 
 vitest and Playwright are configured (mirroring `MagicTheGathering/league`), but no tests exist yet — see `test/README.md` and `test/e2e/README.md`. Always run `pnpm lint` and `pnpm typecheck` after changes; both must be clean (see the zero-warning policy in global CLAUDE.md).
@@ -54,8 +60,8 @@ Supabase magic-link (OTP) auth via `@nuxtjs/supabase`:
 
 ### Data fetching
 Two patterns coexist during the migration to Pinia Colada + BFF (ADR-007, `docs/PROGRESS.md`):
-- **New/migrated domains** (e.g. `wanted-cards`): `use<Domain>Query.ts` (`useQuery` from Pinia Colada, reads Supabase directly with the anon client) + `use<Domain>Mutations.ts` (`useMutation`, calls a `server/api/<domain>/*.post.ts` BFF endpoint via `$fetch`, never Supabase directly from the client). Use `app/composables/useWantedCards{Query,Mutations}.ts` as the template for new domains, not `useAssociates.ts`.
-- **Not yet migrated** (e.g. `useAssociates.ts`): `useAsyncData` + `useSupabaseClient()`, `lazy: true`, an explicit `default: () => []`, Supabase errors rethrown via `createError`. Being phased out — see `docs/BACKLOG.md`.
+- **New/migrated domains** (e.g. `wanted-cards`, `associates`): `use<Domain>Query.ts` (`useQuery` from Pinia Colada, reads Supabase directly with the anon client) + `use<Domain>Mutations.ts` (`useMutation`, calls a `server/api/<domain>/*.post.ts` BFF endpoint via `$fetch`, never Supabase directly from the client). Use `app/composables/wantedCards/useWantedCards{Query,Mutations}.ts` as the template for new domains.
+- **Not yet migrated** (`cittadino`, `events`, `leagues`, `standings`, `tournaments`): `useAsyncData` + `useSupabaseClient()`, `lazy: true`, an explicit `default: () => []`, Supabase errors rethrown via `createError`. Being phased out — see `docs/BACKLOG.md`.
 
 Some `server/api/*` endpoints (`tournaments.ts`, `leagues.ts`, `members.ts`, `notifications.ts`) still return mock/static data rather than querying Supabase — check an endpoint's implementation before assuming it's backed by the database.
 
