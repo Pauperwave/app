@@ -10,7 +10,7 @@ Stack: Nuxt 4 · Vue 3.5 · Nuxt UI · Supabase (Postgres + RLS) · TypeScript.
 pnpm install
 ```
 
-Richiede un `.env` con le variabili del progetto Supabase collegato (`SUPABASE_URL`, `SUPABASE_KEY`).
+Richiede un `.env` con le variabili del progetto Supabase collegato (`NUXT_PUBLIC_SUPABASE_URL`, `NUXT_PUBLIC_SUPABASE_KEY`, `NUXT_SUPABASE_SECRET_KEY`).
 
 ## Sviluppo
 
