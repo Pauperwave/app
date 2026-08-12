@@ -1,6 +1,7 @@
 // app\types\index.d.ts
 import type { AvatarProps } from '@nuxt/ui'
 import type { Database } from '#shared/utils/types/database'
+import type { PaymentMethod, PaymentType } from '#shared/types/transactions'
 
 export type UserStatus = 'subscribed' | 'unsubscribed' | 'bounced'
 export type SaleStatus = 'paid' | 'failed' | 'refunded'
@@ -33,14 +34,21 @@ export interface Associate extends Omit<AssociateRow, 'membership_request_status
   avatar?: AvatarProps
 }
 
-export type TransactionStatus = 'paid' | 'failed' | 'refunded'
+type PaymentRow = Database['public']['Tables']['pauperwave_payments']['Row']
 
-export interface Transaction {
-  id: number
-  amount: number
-  date: string
-  status: TransactionStatus
-  associate: Associate
+// Derived from the real pauperwave_payments row (see shared/types/transactions.ts
+// for the PaymentMethod/PaymentType value unions, shared with the create
+// endpoint/mutation) — `associate` is the joined payer when associate_uuid is
+// set, null for an external (non-associate) payer.
+export interface Transaction extends Omit<PaymentRow, 'payment_type' | 'payment_method'> {
+  payment_type: PaymentType
+  payment_method: PaymentMethod
+  associate: {
+    uuid: string
+    first_name: string
+    last_name: string
+    pauperwave_associate_number: string | null
+  } | null
 }
 
 export interface Mail {
