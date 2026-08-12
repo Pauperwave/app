@@ -7,7 +7,9 @@ import type { Period, Range, Sale } from '~/types'
 // period/range are wired up for when a real sales endpoint replaces the
 // empty placeholder below, kept as props so the parent binding stays intact.
 defineProps<{
+  // fallow-ignore-next-line unused-component-prop -- see comment above
   period: Period
+  // fallow-ignore-next-line unused-component-prop -- see comment above
   range: Range
 }>()
 
