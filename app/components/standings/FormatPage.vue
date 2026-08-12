@@ -42,6 +42,11 @@ const leagueTabs = computed<TabsItem[]>(() =>
 
 const { columns } = useFormatStandingsTableColumns(events, topCutoff)
 
+// Same convention as associates/requests.vue's tesseramentoLink: point at
+// this deploy's own /rankings/<format> for now, until each subdomain is
+// wired up in DNS (settings/domains.vue).
+const publicUrl = computed(() => `${useRequestURL().origin}/rankings/${format}`)
+
 const isInitialLoad = computed(() => loading.value && standings.value.length === 0)
 
 // A rule under the top-cutoff row, same treatment as the Cittadino finalist line.
@@ -72,6 +77,25 @@ const tableMeta = {
             size="md"
             :ui="BOXED_TABS_UI"
           />
+
+          <USeparator orientation="vertical" class="h-4" />
+
+          <!-- Same copy/open-link pair as associates/requests.vue's tesseramento
+               link — points at this format's public standing page
+               (/rankings/<format>, see PublicFormatPage.vue), not this
+               internal dashboard route. -->
+          <CopyLinkButton :url="publicUrl" :label="$t('standings.copyPublicLink')" />
+          <UTooltip :text="$t('standings.openPublicLink')">
+            <UButton
+              :to="publicUrl"
+              target="_blank"
+              :icon="ICONS.externalLink"
+              :aria-label="$t('standings.openPublicLink')"
+              color="neutral"
+              variant="outline"
+              square
+            />
+          </UTooltip>
 
           <USeparator orientation="vertical" class="h-4" />
 

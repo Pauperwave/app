@@ -48,6 +48,11 @@ const editionTabs = computed<TabsItem[]>(() =>
 
 const { columns, columnAccentColors } = useCittadinoTableColumns(events)
 
+// Same convention as associates/requests.vue's tesseramentoLink: point at
+// this deploy's own /rankings/cittadino for now, until the subdomain is
+// wired up in DNS (settings/domains.vue).
+const publicUrl = computed(() => `${useRequestURL().origin}/rankings/cittadino`)
+
 // A rule under the last qualifying row: the top-N cutoff is what most people read
 // this table for, and a weight difference on the position number is too weak to
 // find while scanning 46 rows.
@@ -87,6 +92,25 @@ const isInitialLoad = computed(() => loading.value && standings.value.length ===
             size="md"
             :ui="BOXED_TABS_UI"
           />
+
+          <USeparator orientation="vertical" class="h-4" />
+
+          <!-- Same copy/open-link pair as associates/requests.vue's
+               tesseramento link — points at the public standings page
+               (/rankings/cittadino, see PublicCittadinoPage.vue), not this
+               internal dashboard route. -->
+          <CopyLinkButton :url="publicUrl" :label="$t('standings.copyPublicLink')" />
+          <UTooltip :text="$t('standings.openPublicLink')">
+            <UButton
+              :to="publicUrl"
+              target="_blank"
+              :icon="ICONS.externalLink"
+              :aria-label="$t('standings.openPublicLink')"
+              color="neutral"
+              variant="outline"
+              square
+            />
+          </UTooltip>
 
           <USeparator orientation="vertical" class="h-4" />
 
