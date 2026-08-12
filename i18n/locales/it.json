@@ -15,6 +15,8 @@
     "helpSupport": "Help & Support",
     "helpSupportSubject": "PauperWave - Richiesta di supporto",
     "search": {
+      "actions": "Actions",
+      "createNew": "Create new",
       "goTo": "Go to",
       "associates": "Associati",
       "code": "Code",
@@ -298,6 +300,7 @@
     "rejectModal": {
       "title": "Rifiuta {count} richiesta | Rifiuta {count} richieste",
       "reject": "Rifiuta",
+      "undoToast": "{count} richiesta verrà rifiutata | {count} richieste verranno rifiutate",
       "successToastTitle": "Richieste rifiutate",
       "successToastDescription": "Tesseramento rifiutato per {count} associato | Tesseramento rifiutato per {count} associati",
       "errorToastTitle": "Rifiuto fallito"
@@ -746,7 +749,9 @@
       "dropped": "scartato",
       "absent": "assente",
       "participation": "punto di partecipazione"
-    }
+    },
+    "copyPublicLink": "Copia il link alla classifica pubblica",
+    "openPublicLink": "Apri la classifica pubblica"
   },
   "cittadino": {
     "breadcrumb": "Cittadino",
@@ -847,7 +852,8 @@
       "pricesRefreshed": "Prezzi aggiornati",
       "edit": "Modifica",
       "delete": "Elimina",
-      "deleteConfirmTitle": "Eliminare questa richiesta?"
+      "deleteConfirmTitle": "Eliminare questa richiesta?",
+      "deleteUndoToast": "\"{name}\" verrà eliminata"
     },
     "bulkActions": {
       "selectedCount": "{count} selezionata | {count} selezionate",
@@ -858,6 +864,8 @@
       "confirm": "Conferma",
       "confirmStatusTitle": "Segna {count} richiesta come {status}? | Segna {count} richieste come {status}?",
       "confirmDeleteTitle": "Eliminare {count} richiesta? | Eliminare {count} richieste?",
+      "statusUndoToast": "{count} richiesta verrà segnata come {status} | {count} richieste verranno segnate come {status}",
+      "deleteUndoToast": "{count} richiesta verrà eliminata | {count} richieste verranno eliminate",
       "statusSuccessToast": "{count} richiesta aggiornata | {count} richieste aggiornate",
       "deleteSuccessToast": "{count} richiesta eliminata | {count} richieste eliminate",
       "refreshSuccessToast": "Prezzo aggiornato per {count} carta | Prezzi aggiornati per {count} carte",
