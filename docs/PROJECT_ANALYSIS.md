@@ -406,9 +406,9 @@ export default defineAppConfig({
 
 ### 7.4 Environment Security
 ```
-SUPABASE_URL              # Public
-SUPABASE_KEY              # Public (anon key)
-SUPABASE_SERVICE_ROLE_KEY # Server-only (secret) — used in server/api/check-associate.post.ts
+NUXT_PUBLIC_SUPABASE_URL  # Public
+NUXT_PUBLIC_SUPABASE_KEY  # Public (anon key)
+NUXT_SUPABASE_SECRET_KEY  # Server-only (secret) — used in server/api/check-associate.post.ts
 ```
 
 ---

@@ -28,7 +28,7 @@ Established 2026-08-08 (ADR-007), replicating `MagicTheGathering/league`'s patte
 
 | Route | Method | Backed by | Notes |
 |---|---|---|---|
-| `server/api/check-associate.post.ts` | `POST` | Supabase (real) | Checks if an email exists in `pauperwave_associates` before `login.vue` calls `signInWithOtp`. Predates the BFF pattern above — uses `@supabase/supabase-js`'s `createClient` directly with `SUPABASE_SERVICE_ROLE_KEY` instead of `serverSupabaseServiceRole`, since it runs unauthenticated, pre-login (no session for `serverSupabase*` helpers to read). |
+| `server/api/check-associate.post.ts` | `POST` | Supabase (real) | Checks if an email exists in `pauperwave_associates` before `login.vue` calls `signInWithOtp`. Predates the BFF pattern above — uses `@supabase/supabase-js`'s `createClient` directly with `useRuntimeConfig(event).supabase.secretKey` (from `NUXT_SUPABASE_SECRET_KEY`) instead of `serverSupabaseServiceRole`, since it runs unauthenticated, pre-login (no session for `serverSupabase*` helpers to read). |
 | `server/api/leagues.ts` | `GET` | Mock | Generates 30 fake leagues in-memory on every request (`Array.from({ length: 30 }, ...)`), not persisted, not read from `leagues` table. |
 | `server/api/members.ts` | `GET` | Mock | Hardcoded array of fake members/roles. |
 | `server/api/notifications.ts` | `GET` | Mock | Hardcoded array of fake notifications. |

@@ -4,15 +4,15 @@
 import { createClient } from '@supabase/supabase-js'
 
 export function createSupabaseAdminClient() {
-  const SUPABASE_URL = process.env.SUPABASE_URL
-  const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const SUPABASE_URL = process.env.NUXT_PUBLIC_SUPABASE_URL
+  const SUPABASE_SECRET_KEY = process.env.NUXT_SUPABASE_SECRET_KEY
 
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    console.error('Missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY in the environment (see .env).')
+  if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) {
+    console.error('Missing NUXT_PUBLIC_SUPABASE_URL / NUXT_SUPABASE_SECRET_KEY in the environment (see .env).')
     process.exit(1)
   }
 
-  return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+  return createClient(SUPABASE_URL, SUPABASE_SECRET_KEY)
 }
 
 export function sleep(ms) {
