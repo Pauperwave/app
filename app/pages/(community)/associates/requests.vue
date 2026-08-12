@@ -1,12 +1,14 @@
 <!-- app\pages\(community)\associates\requests.vue -->
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
+import type { Table } from '@tanstack/vue-table'
 import type { Associate } from '~/types'
 
 const {
   data: associates, isLoading: loading, status, refetch
 } = useAssociatesQuery()
 const { t } = useI18n()
+const toast = useToast()
 const { isModalOpen } = useModalOpenFromQuery()
 
 // The other half of the 2026-08-11 UX split (see associates/index.vue) —
@@ -22,13 +24,50 @@ const pendingCount = computed(() => (associates.value ?? []).filter(
 const route = useRoute()
 const router = useRouter()
 
-const table = useTemplateRef('table')
+const table = useTemplateRef<{ tableApi: Table<Associate> }>('table')
+const {
+  editingAssociate, editModalOpen,
+  renewingAssociate, renewModalOpen,
+  tableContextMenuItems, onRowContextmenu
+} = useAssociatesRowActions()
+
+// Bulk "Rifiuta" next to the existing bulk "Approva" — same selected-rows
+// source (UTable's own row-selection, via `table.tableApi`), through
+// ConfirmModal rather than a bespoke modal like ApproveModal.vue (that one
+// predates ConfirmModal.vue).
+const { rejectAssociates } = useAssociatesMutations()
+const rejectConfirmOpen = ref(false)
+const rejecting = ref(false)
+const selectedRequestIds = computed<number[]>(() =>
+  table.value?.tableApi?.getFilteredSelectedRowModel().rows.map(row => row.original.id) ?? [])
+
+async function confirmReject() {
+  rejecting.value = true
+  try {
+    await rejectAssociates.mutateAsync(selectedRequestIds.value)
+    toast.add({
+      title: t('associate.rejectModal.successToastTitle'),
+      description: t('associate.rejectModal.successToastDescription', selectedRequestIds.value.length),
+      color: 'success'
+    })
+    rejectConfirmOpen.value = false
+  } catch (err) {
+    toast.add({
+      title: t('associate.rejectModal.errorToastTitle'),
+      description: toErrorMessage(err),
+      color: 'error'
+    })
+  } finally {
+    rejecting.value = false
+  }
+}
+
 // fallow-ignore-next-line code-duplication -- see the same comment in
 // associates/index.vue
 const {
   visibilityItems,
-  selectColumn, membershipRequestStatusColumn, requestDateColumn, associateTypeColumn,
-  consentDataColumn, consentSocialColumn, hasReadStatuteColumn,
+  selectColumn, membershipRequestStatusColumn, requestDateColumn,
+  associateTypeColumn, consentDataColumn, consentSocialColumn, hasReadStatuteColumn,
   firstNameColumn, lastNameColumn, emailAddressColumn, phoneNumberColumn, taxCodeColumn,
   bornDateColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
   residencyAddressColumn, residencyHouseNumberColumn, residencyCityColumn,
@@ -214,6 +253,21 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
             </UButton>
           </AssociatesListApproveModal>
 
+          <UButton
+            v-if="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
+            :label="$t('associate.rejectModal.reject')"
+            color="error"
+            variant="subtle"
+            :icon="ICONS.statusRejected"
+            @click="rejectConfirmOpen = true"
+          >
+            <template #trailing>
+              <UKbd>
+                {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length }}
+              </UKbd>
+            </template>
+          </UButton>
+
           <AssociatesTableToolbarActions
             :is-loading="loading"
             :status="status"
@@ -225,29 +279,25 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
     </template>
 
     <template #body>
-      <UTable
-        ref="table"
-        v-model:sorting="sorting"
-        v-model:column-filters="columnFilters"
-        v-model:column-visibility="columnVisibility"
-        v-model:row-selection="rowSelection"
-        :virtualize="{
-          estimateSize: 35,
-          overscan: 12
-        }"
-        :data="requestAssociates"
-        :columns="columns"
-        class="flex-1 h-80 shrink-0"
-        :loading="loading"
-        sticky="header"
-        :ui="{
-          base: 'border-separate border-spacing-0',
-          tbody: '[&>tr]:last:[&>td]:border-b-0',
-          tr: 'hover:bg-elevated/50',
-          th: 'border-r border-default last:border-r-0 py-2 px-2 font-medium',
-          td: 'border-b border-r border-default last:border-r-0 py-1 px-2'
-        }"
-      />
+      <UContextMenu :items="tableContextMenuItems">
+        <UTable
+          ref="table"
+          v-model:sorting="sorting"
+          v-model:column-filters="columnFilters"
+          v-model:column-visibility="columnVisibility"
+          v-model:row-selection="rowSelection"
+          :virtualize="{
+            estimateSize: 35,
+            overscan: 12
+          }"
+          :data="requestAssociates"
+          :columns="columns"
+          class="flex-1 h-80 shrink-0"
+          :loading="loading"
+          sticky="header"
+          @contextmenu="onRowContextmenu"
+        />
+      </UContextMenu>
 
       <TableSelectionFooter
         :selected="table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0"
@@ -255,4 +305,20 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
       />
     </template>
   </UDashboardPanel>
+
+  <AssociatesListEditModal v-model="editModalOpen" :associate="editingAssociate" />
+  <TransactionsListAddModal
+    v-model="renewModalOpen"
+    :preset-associate="renewingAssociate"
+    hide-trigger
+  />
+
+  <ConfirmModal
+    v-model:open="rejectConfirmOpen"
+    :title="$t('associate.rejectModal.title', selectedRequestIds.length)"
+    :confirm-label="$t('associate.rejectModal.reject')"
+    :confirm-icon="ICONS.statusRejected"
+    :loading="rejecting"
+    @confirm="confirmReject"
+  />
 </template>
