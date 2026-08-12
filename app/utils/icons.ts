@@ -24,6 +24,7 @@ export const ICONS = {
   statusRejected: 'i-lucide-x-circle',
   clear: 'i-lucide-circle-x',
   refresh: 'i-lucide-refresh-cw',
+  undo: 'i-lucide-undo-2',
   search: 'i-lucide-search',
   filter: 'i-lucide-filter',
   filterClear: 'i-lucide-filter-x',
@@ -44,6 +45,7 @@ export const ICONS = {
   loading: 'i-lucide-loader-2',
   pending: 'i-lucide-circle-dot-dashed',
   banned: 'i-lucide-ban',
+  warning: 'i-lucide-alert-triangle',
   list: 'i-lucide-list',
 
   // People
