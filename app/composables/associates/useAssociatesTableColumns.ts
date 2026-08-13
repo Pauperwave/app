@@ -97,7 +97,12 @@ export function useAssociatesTableColumns(table: Ref<{ tableApi: Table<Associate
     id: 'select',
     enableSorting: false,
     enableHiding: false,
-    meta: { class: { th: 'text-center', td: 'text-center' } },
+    // w-px (not text-center): shrinks the column to content width so the
+    // checkbox sits tight against the inherited px-2 padding, matching
+    // useWantedCardsTableColumns.ts's selectColumn — text-center alone left
+    // this column free to grow wider than its content (table auto-layout),
+    // reading as visibly wider/looser than wanted-cards' checkbox column.
+    meta: { class: { th: 'w-px', td: 'w-px' } },
     header: ({ table: t2 }) =>
       h(UCheckbox, {
         'modelValue': t2.getIsSomePageRowsSelected()
