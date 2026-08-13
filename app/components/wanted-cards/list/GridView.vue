@@ -68,10 +68,18 @@ const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]
                  once acted on" reasoning as the header/group checkboxes in
                  useWantedCardsTableColumns.ts. No touch/hover fallback for
                  mobile yet (selection starts from the table there instead) —
-                 see docs/TODO.md if that becomes a real need. -->
+                 see docs/TODO.md if that becomes a real need. A dark top-down
+                 gradient fades in alongside the checkbox (same opacity/
+                 selected-state logic) so it stays legible over busy card art
+                 instead of relying solely on its own background pill. -->
+            <div
+              class="absolute inset-x-0 top-0 h-20 z-10 bg-gradient-to-b from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+              :class="{ '!opacity-100': selection.isSelected(card.id) }"
+            />
             <UCheckbox
               :model-value="selection.isSelected(card.id)"
-              class="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+              size="xl"
+              class="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
               :class="{ '!opacity-100': selection.isSelected(card.id) }"
               :ui="{ base: 'bg-default/90 rounded' }"
               :aria-label="$t('common.selectRow')"
