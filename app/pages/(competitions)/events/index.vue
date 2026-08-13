@@ -19,6 +19,8 @@ const range = shallowRef<Range>({
 
 const { t } = useI18n()
 
+useSeoMeta({ title: () => t('event.seoTitle') })
+
 const { data: eventsData, isLoading: loading } = useEventsQuery()
 const data = computed(() => eventsData.value ?? [])
 const { statusFilter, filteredEvents, statusTabs } = useEventsFilters(data, range)
