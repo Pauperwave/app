@@ -111,7 +111,6 @@ onMounted(() => {
             getGroupedRowModel: getGroupedRowModel()
           }"
           class="flex-1 h-80 shrink-0"
-          :ui="{ td: 'empty:p-0 empty:border-0' }"
           :loading="loading"
           sticky="header"
           @contextmenu="onRowContextmenu"

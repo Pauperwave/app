@@ -33,7 +33,14 @@ export default defineAppConfig({
         tbody: '[&>tr]:last:[&>td]:border-b-0',
         tr: 'hover:bg-elevated/50',
         th: 'border-r border-default last:border-r-0 py-2 px-2 font-medium',
-        td: 'border-b border-r border-default last:border-r-0 py-1 px-2'
+        // empty:p-0 empty:border-0: TanStack's getGroupedRowModel() renders a
+        // near-invisible empty placeholder <tr><td></td></tr> between a group
+        // header row and its first expanded child — Nuxt UI/TanStack expose
+        // no option to suppress it, so this collapses it via CSS instead of
+        // inheriting the full padding/border and showing as a stray gap.
+        // App-wide since every grouped table needs it (was per-instance :ui
+        // on /wanted-cards and /transactions until 2026-08-13).
+        td: 'border-b border-r border-default last:border-r-0 py-1 px-2 empty:p-0 empty:border-0'
       }
     },
     button: {
