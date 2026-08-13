@@ -9,6 +9,8 @@ interface Props {
 
 const { format } = defineProps<Props>()
 
+const { t } = useI18n()
+
 // Panel id and breadcrumb i18n key both derive from `format` — the three
 // /standings/<format> pages (commander, pauper, premodern) were byte-identical
 // aside from these two strings and the `format` passed to
@@ -41,6 +43,10 @@ const leagueTabs = computed<TabsItem[]>(() =>
 )
 
 const { columns } = useFormatStandingsTableColumns(events, topCutoff)
+
+useSeoMeta({
+  title: () => t('standings.tabTitle', { format: t(breadcrumbKeys[format]) })
+})
 
 // Same convention as associates/requests.vue's tesseramentoLink: point at
 // this deploy's own /rankings/<format> for now, until each subdomain is

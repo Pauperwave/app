@@ -2,6 +2,12 @@
 <script lang="ts" setup>
 import type { TabsItem } from '@nuxt/ui'
 
+const { t } = useI18n()
+
+useSeoMeta({
+  title: () => t('standings.tabTitle', { format: t('cittadino.breadcrumb') })
+})
+
 // null, not '': the endpoint resolves a missing edition to the most recent one, so
 // no year is hardcoded here, and a null sentinel cannot collide with a legitimate
 // edition value the way an empty string could.

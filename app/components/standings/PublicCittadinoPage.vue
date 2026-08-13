@@ -11,6 +11,12 @@
 <script lang="ts" setup>
 import type { TabsItem } from '@nuxt/ui'
 
+const { t } = useI18n()
+
+useSeoMeta({
+  title: () => t('standings.tabTitle', { format: t('cittadino.breadcrumb') })
+})
+
 const selectedEdition = ref<string | null>(null)
 
 const {
