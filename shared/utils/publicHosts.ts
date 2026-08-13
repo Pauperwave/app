@@ -16,7 +16,11 @@ export const HOST_ROUTE_MAP: Record<string, string> = {
   'premodern.pauperwave.org': '/rankings/premodern',
   'pauper.pauperwave.org': '/rankings/pauper',
   'tesseramento.pauperwave.org': '/tesseramento',
-  'eventi.pauperwave.org': '/events'
+  // Distinct from the internal /events dashboard route (auth-only,
+  // UDashboardPanel shell) — same reasoning as /rankings/<format> above vs.
+  // /standings/<format> (dashboard-only). Not /calendar either: that's an
+  // unrelated in-development dashboard page (pages/calendar/index.vue).
+  'eventi.pauperwave.org': '/eventi'
 }
 
 export const PUBLIC_HOSTS = Object.keys(HOST_ROUTE_MAP)

@@ -143,7 +143,8 @@ export default defineNuxtConfig({
         '/rankings/cittadino', '/rankings/cittadino/**',
         '/rankings/commander', '/rankings/commander/**',
         '/rankings/premodern', '/rankings/premodern/**',
-        '/rankings/pauper', '/rankings/pauper/**'
+        '/rankings/pauper', '/rankings/pauper/**',
+        '/eventi', '/eventi/**'
       ]
     },
     cookieOptions: {
