@@ -360,7 +360,7 @@ const gridSections = computed<GridSection[]>(() => {
               getGroupedRowModel: getGroupedRowModel()
             }"
             sticky="header"
-            :ui="{ td: 'empty:p-0' }"
+            :ui="{ td: 'empty:p-0 empty:border-0' }"
             class="w-full"
             @contextmenu="onRowContextmenu"
           />
