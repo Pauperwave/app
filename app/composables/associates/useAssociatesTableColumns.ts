@@ -99,27 +99,22 @@ export function useAssociatesTableColumns(table: Ref<{ tableApi: Table<Associate
     id: 'select',
     enableSorting: false,
     enableHiding: false,
-    // w-px (not text-center): shrinks the column to content width so the
-    // checkbox sits tight against the inherited px-2 padding, matching
-    // useWantedCardsTableColumns.ts's selectColumn — text-center alone left
-    // this column free to grow wider than its content (table auto-layout),
-    // reading as visibly wider/looser than wanted-cards' checkbox column.
-    meta: { class: { th: 'w-px', td: 'w-px' } },
+    meta: { class: { th: 'w-px p-0', td: 'w-px p-0' } },
     header: ({ table: t2 }) =>
-      h(UCheckbox, {
+      centerTableCell(h(UCheckbox, {
         'modelValue': t2.getIsSomePageRowsSelected()
           ? 'indeterminate'
           : t2.getIsAllPageRowsSelected(),
         'onUpdate:modelValue': (value: unknown) =>
           t2.toggleAllPageRowsSelected(!!value),
         'aria-label': t('common.selectAll')
-      }),
+      })),
     cell: ({ row }) =>
-      h(UCheckbox, {
+      centerTableCell(h(UCheckbox, {
         'modelValue': row.getIsSelected(),
         'onUpdate:modelValue': (value: unknown) => row.toggleSelected(!!value),
         'aria-label': t('common.selectRow')
-      })
+      }))
   }
 
   // Shared with associates/index.vue since 2026-08-13 (was inline there only) —
