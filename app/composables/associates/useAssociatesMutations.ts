@@ -21,11 +21,19 @@ export function useAssociatesMutations() {
     onSettled: invalidate
   })
 
+  const restoreAssociates = useMutation({
+    mutation: (ids: number[]) =>
+      $fetch('/api/associates/restore', { method: 'POST', body: { ids } }),
+    onSettled: invalidate
+  })
+
   const updateAssociate = useMutation({
     mutation: ({ id, edits }: { id: number, edits: AssociateEditsPayload }) =>
       $fetch(`/api/associates/${id}/update`, { method: 'POST', body: edits }),
     onSettled: invalidate
   })
 
-  return { approveAssociates, rejectAssociates, updateAssociate }
+  return {
+    approveAssociates, rejectAssociates, restoreAssociates, updateAssociate
+  }
 }

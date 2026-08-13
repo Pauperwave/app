@@ -35,13 +35,16 @@ const {
 // source (UTable's own row-selection, via `table.tableApi`), through
 // ConfirmModal rather than a bespoke modal like ApproveModal.vue (that one
 // predates ConfirmModal.vue).
-const { rejectAssociates } = useAssociatesMutations()
+const { rejectAssociates, restoreAssociates } = useAssociatesMutations()
 const undoable = useUndoableAction()
 const rejectConfirmOpen = ref(false)
 const selectedRequestAssociates = computed<Associate[]>(() =>
   table.value?.tableApi?.getFilteredSelectedRowModel().rows.map(row => row.original) ?? [])
 const selectedRequestIds = computed(() =>
   selectedRequestAssociates.value.map(associate => associate.id))
+const selectedRejectedIds = computed(() => selectedRequestAssociates.value
+  .filter(associate => associate.membership_request_status === 'rejected')
+  .map(associate => associate.id))
 
 // Closes the modal immediately and defers the actual reject behind a
 // 10-second undo window (useUndoableAction.ts) instead of awaiting the
@@ -70,6 +73,30 @@ function confirmReject() {
       }
     }
   })
+}
+
+// Bulk "Ripristina" — the counterpart to bulk reject, for rows already
+// rejected (from a previous session/page load, unlike the reject undo-toast
+// above which only covers the last 10s). No confirm step, same directness as
+// the single-row approve() in useAssociatesRowActions.ts — reverting a
+// rejection isn't destructive, worst case it can be re-rejected.
+async function bulkRestore() {
+  const ids = selectedRejectedIds.value
+  if (!ids.length) return
+  try {
+    await restoreAssociates.mutateAsync(ids)
+    toast.add({
+      title: t('associate.restoreModal.successToastTitle'),
+      description: t('associate.restoreModal.successToastDescription', ids.length),
+      color: 'success'
+    })
+  } catch (err) {
+    toast.add({
+      title: t('associate.restoreModal.errorToastTitle'),
+      description: toErrorMessage(err),
+      color: 'error'
+    })
+  }
 }
 
 // fallow-ignore-next-line code-duplication -- see the same comment in
@@ -274,6 +301,21 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
             <template #trailing>
               <UKbd>
                 {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length }}
+              </UKbd>
+            </template>
+          </UButton>
+
+          <UButton
+            v-if="selectedRejectedIds.length"
+            :label="$t('associate.restoreModal.restore')"
+            color="success"
+            variant="subtle"
+            :icon="ICONS.undo"
+            @click="bulkRestore"
+          >
+            <template #trailing>
+              <UKbd>
+                {{ selectedRejectedIds.length }}
               </UKbd>
             </template>
           </UButton>
