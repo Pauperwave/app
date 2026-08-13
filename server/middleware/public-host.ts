@@ -1,20 +1,31 @@
 // server\middleware\public-host.ts
 import { HOST_ROUTE_MAP } from '#shared/utils/publicHosts'
 
-// vercel.json's host-based rewrites never reach Nuxt on this deployment (see
-// shared/utils/publicHosts.ts) — replicate the host -> internal path mapping
-// here instead, before Nuxt's router resolves the request, so both SSR and
-// the isPublicHost flag (read by app/middleware/auth.global.ts) see the
-// correct rewritten path.
+// A same-URL rewrite (mutating event.node.req.url so the browser keeps
+// showing e.g. cittadino.pauperwave.org/ while a different page renders)
+// turned out not to work with this h3/Nitro version: h3's own dispatcher
+// (createAppEventHandler in node_modules/h3/dist/index.mjs) captures the
+// request path once, in a closure variable, before the middleware stack
+// runs, and resets event._path/event.node.req.url back to that original
+// value before *every* layer — including Nuxt's own render handler. Any
+// mutation a middleware makes to the path is silently discarded before the
+// next layer runs; only event.context survives across layers. Confirmed
+// 2026-08-13 in production: cittadino.pauperwave.org/ rendered the
+// dashboard home page (dashboard-panel-home), not /rankings/cittadino,
+// even though an earlier isPublicHost-on-context version of this file
+// correctly skipped the login redirect (context alone works, path
+// mutation doesn't).
+//
+// A real redirect sidesteps the problem entirely: the browser makes a
+// fresh request for the target path, which auth.global.ts's publicPrefixes
+// already recognizes as public without needing any Host-based flag.
 export default defineEventHandler((event) => {
   const host = getHeader(event, 'host')?.toLowerCase()
   const base = host ? HOST_ROUTE_MAP[host] : undefined
-  event.context.isPublicHost = Boolean(base)
   if (!base) return
 
-  const url = event.node.req.url ?? '/'
-  const [path = '/', search] = url.split('?')
-  if (path === base || path.startsWith(`${base}/`)) return // already-rewritten or a direct link
+  const path = event.path.split('?')[0] ?? '/'
+  if (path === base || path.startsWith(`${base}/`)) return // already at the target path
 
-  event.node.req.url = base + (path === '/' ? '' : path) + (search ? `?${search}` : '')
+  return sendRedirect(event, base, 302)
 })
