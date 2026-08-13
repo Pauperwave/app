@@ -31,16 +31,28 @@ export default defineAppConfig({
         // App-wide data-grid look (bordered cells, hover row highlight.
         base: 'border-separate border-spacing-0',
         tbody: '[&>tr]:last:[&>td]:border-b-0',
-        tr: 'hover:bg-elevated/50',
+        // data-[expanded=true]:[&>td]:border-b-0: an expanded group header row
+        // (TanStack sets data-expanded="true" on it) drops its own bottom
+        // border — the placeholder row below it (see td, below) is a single
+        // 0-height <td colspan> already sitting right where that line would
+        // be, so keeping both drew two stacked borders. Removing the header's
+        // own border leaves exactly the placeholder's as the one seam between
+        // the group header and its first child.
+        tr: 'hover:bg-elevated/50 data-[expanded=true]:[&>td]:border-b-0',
         th: 'border-r border-default last:border-r-0 py-2 px-2 font-medium',
-        // empty:p-0 empty:border-0: TanStack's getGroupedRowModel() renders a
-        // near-invisible empty placeholder <tr><td></td></tr> between a group
-        // header row and its first expanded child — Nuxt UI/TanStack expose
-        // no option to suppress it, so this collapses it via CSS instead of
-        // inheriting the full padding/border and showing as a stray gap.
-        // App-wide since every grouped table needs it (was per-instance :ui
-        // on /wanted-cards and /transactions until 2026-08-13).
-        td: 'border-b border-r border-default last:border-r-0 py-1 px-2 empty:p-0 empty:border-0'
+        // [&[colspan]]:p-0: TanStack's getGroupedRowModel() renders a
+        // near-invisible placeholder <tr><td colspan="N"></td></tr> between a
+        // group header row and its first expanded child — Nuxt UI/TanStack
+        // expose no option to suppress it, so this collapses its padding via
+        // CSS instead. Targets the `colspan` attribute specifically (only
+        // TanStack's own placeholder cell has it), not a generic `:empty`
+        // selector — an empty *real* cell (e.g. a grouped header row's other
+        // columns, which render null while grouped) still needs its normal
+        // border to keep that row's border-bottom continuous across its full
+        // width; matching on emptiness broke that. App-wide since every
+        // grouped table needs it (was per-instance :ui on /wanted-cards and
+        // /transactions until 2026-08-13).
+        td: 'border-b border-r border-default last:border-r-0 py-1 px-2 [&[colspan]]:p-0'
       }
     },
     button: {
