@@ -17,15 +17,16 @@ import { HOST_ROUTE_MAP } from '#shared/utils/publicHosts'
 // mutation doesn't).
 //
 // A real redirect sidesteps the problem entirely: the browser makes a
-// fresh request for the target path, which auth.global.ts's publicPrefixes
+// fresh request for the target URL, which auth.global.ts's publicPrefixes
 // already recognizes as public without needing any Host-based flag.
+//
+// The target is an absolute app.pauperwave.org URL (cross-domain redirect),
+// not a same-host path, so there's no risk of the target itself re-entering
+// this middleware — app.pauperwave.org isn't in HOST_ROUTE_MAP.
 export default defineEventHandler((event) => {
   const host = getHeader(event, 'host')?.toLowerCase()
-  const base = host ? HOST_ROUTE_MAP[host] : undefined
-  if (!base) return
+  const target = host ? HOST_ROUTE_MAP[host] : undefined
+  if (!target) return
 
-  const path = event.path.split('?')[0] ?? '/'
-  if (path === base || path.startsWith(`${base}/`)) return // already at the target path
-
-  return sendRedirect(event, base, 302)
+  return sendRedirect(event, target, 302)
 })
