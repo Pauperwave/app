@@ -7,11 +7,13 @@ import type { Associate } from '~/types'
 
 // Shared between associates/index.vue (roster) and associates/requests.vue
 // (pending/rejected queue) — every column except the roster-only ones
-// (id/uuid/created_at/updated_at/updated_by/membership_status/payment_date/
-// association_date/pauperwave_associate_number/
+// (uuid/created_at/membership_status/association_date/
 // has_acknowledged_surveillance_notice) was byte-identical in both files
 // (fallow dupes, 2026-08-11), same root cause as useAssociatesRenderers.ts:
-// the two pages share one Associate table shape, not two.
+// the two pages share one Associate table shape, not two. id/updated_at/
+// updated_by/payment_date/pauperwave_associate_number moved from roster-only
+// to shared 2026-08-13 (user request — requests.vue was showing fewer
+// columns than the roster for no real reason on these five).
 //
 // Two real inconsistencies surfaced while merging: born_location and
 // residency_city were sortable on the roster but plain text on requests —
@@ -118,6 +120,45 @@ export function useAssociatesTableColumns(table: Ref<{ tableApi: Table<Associate
         'onUpdate:modelValue': (value: unknown) => row.toggleSelected(!!value),
         'aria-label': t('common.selectRow')
       })
+  }
+
+  // Shared with associates/index.vue since 2026-08-13 (was inline there only) —
+  // requests.vue shows these too now: id/updated_at/updated_by for traceability
+  // on a request under review, payment_date/pauperwave_associate_number to
+  // preview what a pending request would get once approved (the number is
+  // potential/unassigned until then, same shared "Tessera" label as the roster).
+  const idColumn: TableColumn<Associate> = {
+    accessorKey: 'id',
+    header: ({ column }) => sortableHeader(columnHeaders.id, column),
+    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
+    cell: ({ row }) => row.original.id
+  }
+
+  const updatedAtColumn: TableColumn<Associate> = {
+    accessorKey: 'updated_at',
+    header: ({ column }) => sortableHeader(columnHeaders.updated_at, column),
+    meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
+    cell: ({ row }) => formatDateTime(row.original.updated_at)
+  }
+
+  const updatedByColumn: TableColumn<Associate> = {
+    accessorKey: 'updated_by',
+    header: columnHeaders.updated_by,
+    cell: ({ row }) => row.original.updated_by
+  }
+
+  const paymentDateColumn: TableColumn<Associate> = {
+    accessorKey: 'payment_date',
+    header: ({ column }) => sortableHeader(columnHeaders.payment_date, column),
+    meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
+    cell: ({ row }) => formatDate(row.original.payment_date)
+  }
+
+  const pauperwaveAssociateNumberColumn: TableColumn<Associate> = {
+    accessorKey: 'pauperwave_associate_number',
+    header: ({ column }) => sortableHeader(columnHeaders.pauperwave_associate_number, column),
+    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
+    cell: ({ row }) => row.original.pauperwave_associate_number || ''
   }
 
   const membershipRequestStatusColumn: TableColumn<Associate> = {
@@ -291,6 +332,11 @@ export function useAssociatesTableColumns(table: Ref<{ tableApi: Table<Associate
     getColumnLabel,
     visibilityItems,
     selectColumn,
+    idColumn,
+    updatedAtColumn,
+    updatedByColumn,
+    paymentDateColumn,
+    pauperwaveAssociateNumberColumn,
     membershipRequestStatusColumn,
     requestDateColumn,
     associateTypeColumn,

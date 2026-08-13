@@ -103,7 +103,9 @@ async function bulkRestore() {
 // associates/index.vue
 const {
   visibilityItems,
-  selectColumn, membershipRequestStatusColumn, requestDateColumn,
+  selectColumn, idColumn, updatedAtColumn, updatedByColumn,
+  paymentDateColumn, pauperwaveAssociateNumberColumn,
+  membershipRequestStatusColumn, requestDateColumn,
   associateTypeColumn, consentDataColumn, consentSocialColumn, hasReadStatuteColumn,
   firstNameColumn, lastNameColumn, emailAddressColumn, phoneNumberColumn, taxCodeColumn,
   bornDateColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
@@ -161,6 +163,13 @@ const columnFilters = ref([])
 // is keyed by column id, not a display name, so camelCase keys here
 // silently match nothing and leave the column visible.
 const columnVisibility = ref({
+  // Traceability/roster-preview columns (2026-08-13, matching the roster's
+  // own set) — useful but not needed at a glance while triaging the queue.
+  id: false,
+  updated_at: false,
+  updated_by: false,
+  payment_date: false,
+  pauperwave_associate_number: false,
   // Mandatory to submit /tesseramento — always true, redundant on every row.
   consent_data: false,
   has_read_statute: false,
@@ -181,8 +190,13 @@ const rowSelection = ref({})
 
 const columns: TableColumn<Associate>[] = [
   selectColumn,
+  idColumn,
   membershipRequestStatusColumn,
   requestDateColumn,
+  updatedAtColumn,
+  updatedByColumn,
+  paymentDateColumn,
+  pauperwaveAssociateNumberColumn,
   firstNameColumn,
   lastNameColumn,
   emailAddressColumn,
