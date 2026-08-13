@@ -286,6 +286,7 @@
     "rowActions": {
       "approve": "Approva",
       "renew": "Rinnova",
+      "restore": "Ripristina",
       "edit": "Modifica"
     },
     "approveModal": {
@@ -304,6 +305,12 @@
       "successToastTitle": "Richieste rifiutate",
       "successToastDescription": "Tesseramento rifiutato per {count} associato | Tesseramento rifiutato per {count} associati",
       "errorToastTitle": "Rifiuto fallito"
+    },
+    "restoreModal": {
+      "restore": "Ripristina",
+      "successToastTitle": "Richieste ripristinate",
+      "successToastDescription": "Richiesta rimessa in attesa per {count} associato | Richieste rimesse in attesa per {count} associati",
+      "errorToastTitle": "Ripristino fallito"
     }
   },
   "tesseramento": {
