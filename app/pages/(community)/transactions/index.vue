@@ -35,6 +35,11 @@ const {
 const table = useTemplateRef('table')
 const sorting = ref([{ id: 'payment_date', desc: true }])
 
+// Hidden once a specific type tab is active: with the tab already saying
+// "Quote associative"/"Quote tornei"/etc., a "Tipologia" column repeating the
+// same value on every row is redundant. Reappears on "Tutte le transazioni".
+const columnVisibility = computed(() => ({ payment_type: activeTypeTab.value === 'all' }))
+
 // Same "Group by player" convention as wanted-cards/index.vue: off by default,
 // a single toggle collapses repeated payer rows into an expandable group.
 const grouping = ref<string[]>([])
@@ -98,6 +103,7 @@ onMounted(() => {
         <UTable
           ref="table"
           v-model:sorting="sorting"
+          :column-visibility="columnVisibility"
           :data="filteredTransactions"
           :columns="columns"
           :grouping="grouping"
@@ -105,6 +111,7 @@ onMounted(() => {
             getGroupedRowModel: getGroupedRowModel()
           }"
           class="flex-1 h-80 shrink-0"
+          :ui="{ td: 'empty:p-0 empty:border-0' }"
           :loading="loading"
           sticky="header"
           @contextmenu="onRowContextmenu"
