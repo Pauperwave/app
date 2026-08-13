@@ -9,7 +9,7 @@ import type { Associate } from '~/types'
 export function useAssociatesRowActions() {
   const { t } = useI18n()
   const toast = useToast()
-  const { approveAssociates } = useAssociatesMutations()
+  const { approveAssociates, restoreAssociates } = useAssociatesMutations()
 
   const editingAssociate = ref<Associate | null>(null)
   const editModalOpen = ref(false)
@@ -50,6 +50,26 @@ export function useAssociatesRowActions() {
     }
   }
 
+  // Reverts a rejected request back to 'pending' — the counterpart to
+  // useAssociatesMutations.ts's rejectAssociates, same permission/error
+  // handling shape as approve() above.
+  async function restore(associate: Associate) {
+    try {
+      await restoreAssociates.mutateAsync([associate.id])
+      toast.add({
+        title: t('associate.restoreModal.successToastTitle'),
+        description: t('associate.restoreModal.successToastDescription', 1),
+        color: 'success'
+      })
+    } catch (err) {
+      toast.add({
+        title: t('associate.restoreModal.errorToastTitle'),
+        description: toErrorMessage(err),
+        color: 'error'
+      })
+    }
+  }
+
   function rowContextMenuItems(associate: Associate): DropdownMenuItem[] {
     return [
       // Only on the requests queue's pending rows — the roster never contains
@@ -60,6 +80,17 @@ export function useAssociatesRowActions() {
           icon: ICONS.confirm,
           color: 'success' as const,
           onSelect: () => approve(associate)
+        }, { type: 'separator' as const }]
+        : []),
+      // Only on rejected rows — undoes a reject that has already committed
+      // (unlike the 10s undo-toast on the bulk action, this is for a
+      // rejection from a previous session/page load).
+      ...(associate.membership_request_status === 'rejected'
+        ? [{
+          label: t('associate.rowActions.restore'),
+          icon: ICONS.undo,
+          color: 'success' as const,
+          onSelect: () => restore(associate)
         }, { type: 'separator' as const }]
         : []),
       // Only when there's actually something to renew: approved, and not already
