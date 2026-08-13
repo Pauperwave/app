@@ -19,6 +19,8 @@ interface Props {
 
 const { format } = defineProps<Props>()
 
+const { t } = useI18n()
+
 const breadcrumbKeys: Record<StandingsFormat, string> = {
   commander: 'standings.commanderBreadcrumb',
   pauper: 'standings.pauperBreadcrumb',
@@ -42,6 +44,10 @@ const leagueTabs = computed<TabsItem[]>(() =>
   leagues.value.map(item => ({ label: item.name, value: item.uuid })))
 
 const { columns } = useFormatStandingsTableColumns(events, topCutoff)
+
+useSeoMeta({
+  title: () => t('standings.tabTitle', { format: t(breadcrumbKeys[format]) })
+})
 
 const isInitialLoad = computed(() => loading.value && standings.value.length === 0)
 

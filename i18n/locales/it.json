@@ -758,7 +758,8 @@
       "participation": "punto di partecipazione"
     },
     "copyPublicLink": "Copia il link alla classifica pubblica",
-    "openPublicLink": "Apri la classifica pubblica"
+    "openPublicLink": "Apri la classifica pubblica",
+    "tabTitle": "Classifica {format}"
   },
   "cittadino": {
     "breadcrumb": "Cittadino",
