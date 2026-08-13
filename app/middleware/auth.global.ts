@@ -25,21 +25,12 @@ export default defineNuxtRouteMiddleware((to) => {
     '/eventi'
   ]
 
-  // Set server-side by server/middleware/public-host.ts + plugins/publicHost.server.ts
-  // from the request Host header, then serialized into the SSR payload — so
-  // hydration reads it synchronously instead of re-deriving it from
-  // window.location, which Vercel's host rewrite (see {@link ../../vercel.json})
-  // never touches, but whose path it does (`to.path` stays "/" client-side
-  // and won't match publicPrefixes below).
-  const isPublicHost = useState<boolean>('isPublicHost').value ?? false
-
   // prevents logged-in users from seeing the login page again
   if (session.value && to.path === '/login') {
     return navigateTo('/')
   }
 
-  const isPublic = isPublicHost
-    || publicPages.includes(to.path)
+  const isPublic = publicPages.includes(to.path)
     || publicPrefixes.some(prefix => to.path === prefix
                                   || to.path.startsWith(`${prefix}/`))
 
