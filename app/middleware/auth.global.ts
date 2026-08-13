@@ -1,5 +1,5 @@
-/* eslint-disable @stylistic/indent-binary-ops */
 // app\middleware\auth.global.ts
+/* eslint-disable @stylistic/indent-binary-ops */
 export default defineNuxtRouteMiddleware((to) => {
   // `useSupabaseSession` is set synchronously from the Supabase
   // `onAuthStateChange` event. `useSupabaseUser` additionally depends on an
@@ -24,29 +24,20 @@ export default defineNuxtRouteMiddleware((to) => {
     '/rankings/pauper'
   ]
 
-  /**
-   * Vercel rewrites these hosts to /rankings/*, /tesseramento/*, etc.
-   * server-side without changing the visible URL (see {@link ../../vercel.json}),
-   * so on the client `to.path` is still "/" and won't match publicPrefixes
-   * above — treat the whole host as public instead of trying to match the path.
-   */
-  const publicHosts = [
-    'cittadino.pauperwave.org',
-    'commander.pauperwave.org',
-    'premodern.pauperwave.org',
-    'pauper.pauperwave.org',
-    'tesseramento.pauperwave.org',
-    'eventi.pauperwave.org'
-  ]
-
-  const host = useRequestURL().host
+  // Set server-side by server/middleware/public-host.ts + plugins/publicHost.server.ts
+  // from the request Host header, then serialized into the SSR payload — so
+  // hydration reads it synchronously instead of re-deriving it from
+  // window.location, which Vercel's host rewrite (see {@link ../../vercel.json})
+  // never touches, but whose path it does (`to.path` stays "/" client-side
+  // and won't match publicPrefixes below).
+  const isPublicHost = useState<boolean>('isPublicHost').value ?? false
 
   // prevents logged-in users from seeing the login page again
   if (session.value && to.path === '/login') {
     return navigateTo('/')
   }
 
-  const isPublic = publicHosts.includes(host)
+  const isPublic = isPublicHost
     || publicPages.includes(to.path)
     || publicPrefixes.some(prefix => to.path === prefix
                                   || to.path.startsWith(`${prefix}/`))
