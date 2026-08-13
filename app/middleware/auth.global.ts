@@ -21,7 +21,8 @@ export default defineNuxtRouteMiddleware((to) => {
     '/rankings/cittadino',
     '/rankings/commander',
     '/rankings/premodern',
-    '/rankings/pauper'
+    '/rankings/pauper',
+    '/eventi'
   ]
 
   // Set server-side by server/middleware/public-host.ts + plugins/publicHost.server.ts

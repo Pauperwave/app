@@ -28,7 +28,7 @@
     {
       "source": "/:path*",
       "has": [{ "type": "host", "value": "eventi.pauperwave.org" }],
-      "destination": "/events/:path*"
+      "destination": "/eventi/:path*"
     }
   ]
 }

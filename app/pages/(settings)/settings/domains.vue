@@ -17,7 +17,7 @@ const builtRoutes = new Set([
   '/rankings/commander',
   '/rankings/premodern',
   '/rankings/pauper',
-  '/events'
+  '/eventi'
 ])
 
 interface DomainRow {
@@ -33,7 +33,11 @@ interface DomainRow {
   // dashboard-only route staff reach via the sidebar) — StandingsPublicFormatPage.vue
   // and StandingsPublicCittadinoPage.vue back these public pages instead of
   // FormatPage.vue/the dashboard cittadino page, since the latter two require
-  // the authenticated dashboard shell (see auth.global.ts).
+  // the authenticated dashboard shell (see auth.global.ts). `eventi.` moved
+  // from `/events` (the internal dashboard route) to a dedicated `/eventi`
+  // page the same way, backed by EventsPublicCalendarPage.vue — not `/calendar`,
+  // which already exists as an unrelated in-development dashboard page
+  // (pages/calendar/index.vue, "Calendario" in the sidebar nav).
   // Null where the subdomain points at a different project entirely
   // (league.pauperwave.org) or nothing is planned yet (blog.pauperwave.org).
   route: string | null
@@ -50,7 +54,7 @@ const domains = computed<DomainRow[]>(() => [
   { host: 'commander.pauperwave.org', purpose: t('settings.domains.rows.commander'), status: 'planned', route: '/rankings/commander' },
   { host: 'premodern.pauperwave.org', purpose: t('settings.domains.rows.premodern'), status: 'planned', route: '/rankings/premodern' },
   { host: 'pauper.pauperwave.org', purpose: t('settings.domains.rows.pauper'), status: 'planned', route: '/rankings/pauper' },
-  { host: 'eventi.pauperwave.org', purpose: t('settings.domains.rows.eventi'), status: 'planned', route: '/events' },
+  { host: 'eventi.pauperwave.org', purpose: t('settings.domains.rows.eventi'), status: 'planned', route: '/eventi' },
   { host: 'tesseramento.pauperwave.org', purpose: t('settings.domains.rows.tesseramento'), status: 'planned', route: '/tesseramento' },
   { host: 'blog.pauperwave.org', purpose: t('settings.domains.rows.blog'), status: 'live', route: null },
   { host: 'league.pauperwave.org', purpose: t('settings.domains.rows.league'), status: 'live', route: null }
