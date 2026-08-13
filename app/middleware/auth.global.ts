@@ -23,9 +23,17 @@ export default defineNuxtRouteMiddleware((to) => {
   // Keep in sync with nuxt.config.ts's supabase.redirectOptions.exclude
   // (see CLAUDE.md).
   const publicPages = [
-    '/login', '/auth/callback', '/logout',
-    '/tesseramento', '/tesseramento/informativa-dati',
-    '/rankings/cittadino', '/rankings/commander', '/rankings/premodern', '/rankings/pauper'
+    '/login', '/auth/callback', '/logout'
+  ]
+
+  // Prefix-matched (not just exact) so a trailing slash or future sub-route
+  // (e.g. from the Vercel host rewrite in vercel.json) still counts as public.
+  const publicPrefixes = [
+    '/tesseramento',
+    '/rankings/cittadino',
+    '/rankings/commander',
+    '/rankings/premodern',
+    '/rankings/pauper'
   ]
 
   // prevents logged-in users from seeing the login page again
@@ -34,7 +42,10 @@ export default defineNuxtRouteMiddleware((to) => {
   }
 
   // If the route is public, allow access
-  if (publicPages.includes(to.path)) {
+  const isPublic = publicPages.includes(to.path)
+    || publicPrefixes.some(prefix => to.path === prefix
+      || to.path.startsWith(`${prefix}/`))
+  if (isPublic) {
     return
   }
 
