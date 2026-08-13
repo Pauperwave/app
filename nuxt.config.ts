@@ -139,8 +139,11 @@ export default defineNuxtConfig({
       callback: '/auth/callback',
       exclude: [
         '/login', '/auth/callback', '/',
-        '/tesseramento', '/tesseramento/informativa-dati',
-        '/rankings/cittadino', '/rankings/commander', '/rankings/premodern', '/rankings/pauper'
+        '/tesseramento', '/tesseramento/**',
+        '/rankings/cittadino', '/rankings/cittadino/**',
+        '/rankings/commander', '/rankings/commander/**',
+        '/rankings/premodern', '/rankings/premodern/**',
+        '/rankings/pauper', '/rankings/pauper/**'
       ]
     },
     cookieOptions: {
