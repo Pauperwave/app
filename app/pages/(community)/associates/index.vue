@@ -46,7 +46,8 @@ const {
 // id and query semantics per page), not worth forcing into a shared helper
 const {
   columnHeaders, visibilityItems,
-  selectColumn, membershipRequestStatusColumn,
+  selectColumn, idColumn, updatedAtColumn, updatedByColumn,
+  paymentDateColumn, pauperwaveAssociateNumberColumn, membershipRequestStatusColumn,
   associateTypeColumn, consentDataColumn, consentSocialColumn, hasReadStatuteColumn,
   firstNameColumn, lastNameColumn, emailAddressColumn, phoneNumberColumn, taxCodeColumn,
   bornDateColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
@@ -128,12 +129,7 @@ const rowSelection = ref({})
 
 const columns: TableColumn<Associate>[] = [
   selectColumn,
-  {
-    accessorKey: 'id',
-    header: ({ column }) => sortableHeader(columnHeaders.id, column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => row.original.id
-  },
+  idColumn,
   {
     accessorKey: 'uuid',
     header: columnHeaders.uuid,
@@ -145,17 +141,8 @@ const columns: TableColumn<Associate>[] = [
     meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
     cell: ({ row }) => formatDateTime(row.original.created_at)
   },
-  {
-    accessorKey: 'updated_at',
-    header: ({ column }) => sortableHeader(columnHeaders.updated_at, column),
-    meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
-    cell: ({ row }) => formatDateTime(row.original.updated_at)
-  },
-  {
-    accessorKey: 'updated_by',
-    header: columnHeaders.updated_by,
-    cell: ({ row }) => row.original.updated_by
-  },
+  updatedAtColumn,
+  updatedByColumn,
   membershipRequestStatusColumn,
   {
     accessorKey: 'membership_status',
@@ -174,12 +161,7 @@ const columns: TableColumn<Associate>[] = [
       })
     }
   },
-  {
-    accessorKey: 'payment_date',
-    header: ({ column }) => sortableHeader(columnHeaders.payment_date, column),
-    meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
-    cell: ({ row }) => formatDate(row.original.payment_date)
-  },
+  paymentDateColumn,
   {
     accessorKey: 'association_date',
     header: ({ column }) => sortableHeader(columnHeaders.association_date, column),
@@ -187,12 +169,7 @@ const columns: TableColumn<Associate>[] = [
     cell: ({ row }) => formatDate(row.original.association_date)
   },
   associateTypeColumn,
-  {
-    accessorKey: 'pauperwave_associate_number',
-    header: ({ column }) => sortableHeader(columnHeaders.pauperwave_associate_number, column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => row.original.pauperwave_associate_number || ''
-  },
+  pauperwaveAssociateNumberColumn,
   consentDataColumn,
   consentSocialColumn,
   hasReadStatuteColumn,
