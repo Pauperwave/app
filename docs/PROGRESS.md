@@ -128,15 +128,15 @@ Di conseguenza `docs/CHANGELOG.md` (curato) si alleggerisce: non deve più trasc
 
 **Decisione:** un solo progetto Nuxt, più sottodomini che puntano allo stesso deploy, invece di build separate. La scelta è motivata dal fatto che il modulo di adesione deve comunque **scrivere** sul DB — un deploy separato dovrebbe replicare la validazione e gli endpoint BFF, che già esistono qui.
 
-Mappa decisa il 2026-08-09, **corretta il 2026-08-10** sulla colonna Auth delle classifiche (vedi nota sotto):
+Mappa decisa il 2026-08-09, **corretta il 2026-08-10** sulla colonna Auth delle classifiche (vedi nota sotto), **e di nuovo il 2026-08-13** (vedi seconda correzione):
 
 | Sottodominio | Scopo | Auth |
 |---|---|---|
 | `app.pauperwave.org` | il gestionale, cioè questa applicazione | sì |
-| `cittadino.pauperwave.org` | classifica del Campionato Cittadino, sola lettura | sì |
-| `commander.pauperwave.org` | classifica Commander, sola lettura | sì |
-| `premodern.pauperwave.org` | classifica Premodern, sola lettura | sì |
-| `pauper.pauperwave.org` | classifica Pauper, sola lettura | sì |
+| `cittadino.pauperwave.org` | classifica del Campionato Cittadino, sola lettura | no |
+| `commander.pauperwave.org` | classifica Commander, sola lettura | no |
+| `premodern.pauperwave.org` | classifica Premodern, sola lettura | no |
+| `pauper.pauperwave.org` | classifica Pauper, sola lettura | no |
 | `eventi.pauperwave.org` | calendario eventi pubblico, con ICS scaricabile (`docs/TODO.md`) | no |
 | `tesseramento.pauperwave.org` | modulo di adesione, scrive nel DB | no |
 | `blog.pauperwave.org` | blog dell'associazione | no |
@@ -146,9 +146,11 @@ Sul nome del sottodominio di adesione: la prima idea era `associati.`, imperativ
 
 **Correzione 2026-08-10 — le classifiche non sono "pubbliche" in senso stretto, restano dietro il magic-link esistente.** Le classifiche mostrano nome e cognome dei soci, dato personale ma non di categoria particolare (art. 9 GDPR) — pubblicarlo a chiunque, senza login, rientrerebbe nel consenso "Diffusione di immagini" dell'informativa soci, che è **facoltativo e non universale** (non tutti i soci lo danno). La stessa informativa autorizza però la comunicazione dei dati **agli altri soci** per l'organizzazione delle attività, già coperta dal consenso obbligatorio all'adesione — quindi una classifica visibile solo a chi ha fatto login (stesso magic-link OTP di `app.pauperwave.org`, non una utenza condivisa) è coperta senza bisogno di raccogliere altro. `eventi.` e `tesseramento.` restano genuinamente pubbliche perché devono per forza raggiungere chi socio non è ancora.
 
+**Correzione 2026-08-13 — la correzione del 2026-08-10 è superata: le quattro classifiche tornano pubbliche, senza login.** Costruite come pagine standalone (`app/pages/(public)/rankings/<format>/index.vue`, layout `public-wide.vue`, componenti `StandingsPublicFormatPage.vue`/`StandingsPublicCittadinoPage.vue`) distinte dalle rotte interne `/standings/<format>` che restano dietro login per lo staff — vedi `app/middleware/auth.global.ts` e l'`exclude` di `@nuxtjs/supabase` in `nuxt.config.ts`, entrambi aggiornati per includere `/rankings/*`. Decisione confermata esplicitamente dall'utente il 2026-08-13 nonostante il conflitto con il ragionamento GDPR del 2026-08-10 (consenso "Diffusione di immagini" facoltativo e non universale) — **quel ragionamento non è stato invalidato**, solo scavalcato da una decisione di prodotto più recente. Se il vincolo di consenso è ancora valido, resta un rischio di conformità aperto su questa scelta; non verificato in questa sessione.
+
 Vincolo che rende accettabile la parte **davvero** pubblica (`eventi.`, `tesseramento.`, `blog.`): **i dati pubblici passano solo attraverso viste dedicate, mai attraverso le tabelle**. Nessuna policy `anon` va aggiunta a `pauperwave_associates`, `players` o `tournament_standings`; si crea invece una vista che espone il minimo indispensabile. Le classifiche, essendo dietro login, non hanno bisogno di questo vincolo — leggono già con l'utente autenticato come ogni altra pagina del gestionale.
 
-**Conseguenze:** essendo dietro login, le classifiche **non** vanno aggiunte a `publicPages` in `app/middleware/auth.global.ts` né a `redirectOptions`/`exclude` di `@nuxtjs/supabase` in `nuxt.config.ts` — quella sync in due posti (vedi `CLAUDE.md`) serve solo per `eventi.` e `tesseramento.`, le uniche rotte genuinamente senza autenticazione. Rafforza comunque la P1 di `docs/BACKLOG.md` sulla policy catch-all troppo permissiva di `pauperwave_associates`: finché quella resta, va chiusa **prima** di pubblicare `eventi.` o `tesseramento.`, che sono le uniche a servire traffico anonimo dallo stesso deploy.
+**Conseguenze (superate dalla correzione 2026-08-13 sopra):** ~~essendo dietro login, le classifiche **non** vanno aggiunte a `publicPages` in `app/middleware/auth.global.ts` né a `redirectOptions`/`exclude` di `@nuxtjs/supabase` in `nuxt.config.ts`~~ — ora **sono** state aggiunte a entrambe le liste, insieme a `eventi.` e `tesseramento.`, dato che `/rankings/*` è tornato pubblico. Rafforza comunque la P1 di `docs/BACKLOG.md` sulla policy catch-all troppo permissiva di `pauperwave_associates`: finché quella resta, va chiusa **prima** di pubblicare `eventi.`, `tesseramento.` o `rankings.`, che ora sono tutte rotte che servono traffico anonimo dallo stesso deploy.
 
 Direzione registrata, implementazione **non** decisa: un sottodominio per formato non può nascere da solo, servirebbe **DNS wildcard** (`*.pauperwave.org`) più una rotta che risolve il formato dall'hostname, altrimenti ogni nuovo formato richiede un record DNS a mano. L'alternativa è tenerli come percorsi sotto `cittadino.` (`cittadino.pauperwave.org/pauper`), che è automatico davvero e non costa nulla in configurazione. Non va costruito ora: il filtro per formato su `/cittadino` (2026-08-09) già ricalcola la classifica sul sottoinsieme selezionato, quindi il motore c'è — manca solo di decidere se merita una superficie propria. Vale anche qui la cautela già applicata alla sezione "Commander" della sidebar (`docs/TODO.md`): `mtg_formats` ha 0 righe, nessun formato è ancora un dato.
 
