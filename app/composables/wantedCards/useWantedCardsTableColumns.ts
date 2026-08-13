@@ -25,34 +25,34 @@ export function useWantedCardsTableColumns(selection: Selection<number>) {
     id: 'select',
     enableSorting: false,
     enableHiding: false,
-    meta: { class: { th: 'w-px', td: 'w-px' } },
+    meta: { class: { th: 'w-px p-0', td: 'w-px p-0' } },
     header: ({ table: tableApi }) => {
       const leafRows = tableApi.getFilteredRowModel().rows.filter(row => row.subRows.length === 0)
       const ids = leafRows.map(row => row.original.id)
       const allSelected = ids.length > 0 && ids.every(id => selection.isSelected(id))
       const someSelected = ids.some(id => selection.isSelected(id))
-      return h(UCheckbox, {
+      return centerTableCell(h(UCheckbox, {
         'modelValue': allSelected ? true : (someSelected ? 'indeterminate' : false),
         'onUpdate:modelValue': (value: unknown) => selection.setAll(ids, !!value),
         'aria-label': t('common.selectAll')
-      })
+      }))
     },
     cell: ({ row }) => {
       if (row.getIsGrouped()) {
         const ids = row.subRows.map(subRow => subRow.original.id)
         const allSelected = ids.length > 0 && ids.every(id => selection.isSelected(id))
         const someSelected = ids.some(id => selection.isSelected(id))
-        return h(UCheckbox, {
+        return centerTableCell(h(UCheckbox, {
           'modelValue': allSelected ? true : (someSelected ? 'indeterminate' : false),
           'onUpdate:modelValue': (value: unknown) => selection.setAll(ids, !!value),
           'aria-label': t('common.selectRow')
-        })
+        }))
       }
-      return h(UCheckbox, {
+      return centerTableCell(h(UCheckbox, {
         'modelValue': selection.isSelected(row.original.id),
         'onUpdate:modelValue': () => selection.toggle(row.original.id),
         'aria-label': t('common.selectRow')
-      })
+      }))
     }
   }
 
