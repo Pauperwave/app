@@ -71,7 +71,7 @@ onUnmounted(() => window.removeEventListener('popstate', onPopState))
 function tournamentTimeRange(startDate: string, endDate: string): string {
   const start = format(new Date(startDate), 'HH:mm')
   const end = format(new Date(endDate), 'HH:mm')
-  return `${start}–${end}`
+  return `${start} - ${end}`
 }
 
 const selectedTournamentTimeRange = computed(() => {
@@ -92,27 +92,25 @@ function openTournament(tournament: Tournament) {
     v-model:open="isOpen"
     inset
     :close="false"
-    :ui="{ body: 'p-0 flex-1 overflow-y-auto' }"
+    :ui="{ body: 'p-0 sm:p-0 flex-1 overflow-y-auto' }"
   >
     <template #body="{ close }">
       <template v-if="selection?.kind === 'event'">
-        <div class="relative">
+        <div class="relative overflow-hidden rounded-t-lg">
           <img
-            v-if="selection.event.image"
-            :src="selection.event.image"
+            :src="selection.event.image ?? DEFAULT_CALENDAR_COVER_IMAGE"
             :alt="selection.event.name"
-            class="w-full aspect-video object-cover"
+            class="w-full max-h-80 sm:max-h-96 object-cover"
           >
-          <div v-else class="w-full aspect-video bg-elevated" />
 
-          <div class="absolute inset-0 bg-gradient-to-b from-transparent to-(--ui-bg)" />
+          <div class="absolute inset-0 bg-linear-to-b from-transparent to-default" />
 
           <UButton
             :icon="ICONS.close"
             color="neutral"
             variant="subtle"
             square
-            class="absolute top-4 end-4"
+            class="absolute top-4 inset-e-4"
             :aria-label="$t('common.close')"
             @click="close"
           />
@@ -176,23 +174,21 @@ function openTournament(tournament: Tournament) {
       </template>
 
       <template v-else-if="selection?.kind === 'tournament'">
-        <div class="relative">
+        <div class="relative overflow-hidden rounded-t-lg">
           <img
-            v-if="selection.tournament.image"
-            :src="selection.tournament.image"
+            :src="selection.tournament.image ?? DEFAULT_CALENDAR_COVER_IMAGE"
             :alt="selection.tournament.name"
-            class="w-full aspect-video object-cover"
+            class="w-full max-h-80 sm:max-h-96 object-cover"
           >
-          <div v-else class="w-full aspect-video bg-elevated" />
 
-          <div class="absolute inset-0 bg-gradient-to-b from-transparent to-(--ui-bg)" />
+          <div class="absolute inset-0 bg-linear-to-b from-transparent to-default" />
 
           <UButton
             :icon="ICONS.close"
             color="neutral"
             variant="subtle"
             square
-            class="absolute top-4 end-4"
+            class="absolute top-4 inset-e-4"
             :aria-label="$t('common.close')"
             @click="close"
           />
