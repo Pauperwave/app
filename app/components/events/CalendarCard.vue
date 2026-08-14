@@ -41,6 +41,10 @@ const { t } = useI18n()
 // dropped from the header corner (2026-08-14, replaced by the share button
 // there) — status is still visible in CalendarDetailSlideover.vue.
 const isPast = computed(() => status === 'completed')
+
+// Falls back to a shared default cover (2026-08-15) instead of the old
+// date-box placeholder — every card always has an image now.
+const coverImage = computed(() => image ?? DEFAULT_CALENDAR_COVER_IMAGE)
 </script>
 
 <template>
@@ -50,26 +54,14 @@ const isPast = computed(() => status === 'completed')
     @click="$emit('select')"
   >
     <div class="flex items-start gap-4">
-      <!-- Luma-inspired: a cover image (both Event.image/Tournament.image are
-           optional) takes over the date box's spot — the date moves into a
-           text line below the title instead. -->
+      <!-- Luma-inspired: a cover image (real or the shared default) takes the
+           date box's spot — the date moves into a text line below the title
+           instead. -->
       <img
-        v-if="image"
-        :src="image"
+        :src="coverImage"
         :alt="name"
         class="size-20 rounded-xl object-cover shrink-0"
       >
-      <div
-        v-else
-        class="flex flex-col items-center justify-center shrink-0 rounded-lg bg-elevated px-3 py-2 text-center"
-      >
-        <span class="text-xs font-medium uppercase text-muted">
-          {{ format(new Date(startDate), 'MMM', { locale: it }) }}
-        </span>
-        <span class="text-2xl font-bold text-highlighted leading-none">
-          {{ format(new Date(startDate), 'd') }}
-        </span>
-      </div>
 
       <div class="flex-1 min-w-0">
         <div class="flex items-start justify-between gap-2">
@@ -81,7 +73,7 @@ const isPast = computed(() => status === 'completed')
           </div>
         </div>
 
-        <p v-if="image" class="flex items-center gap-1 text-sm text-muted mt-1">
+        <p class="flex items-center gap-1 text-sm text-muted mt-1">
           <UIcon :name="ICONS.calendar" class="size-4 shrink-0" />
           <span>{{ format(new Date(startDate), 'd MMMM', { locale: it }) }}</span>
         </p>
