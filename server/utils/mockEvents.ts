@@ -8,17 +8,16 @@
 // is unreliable in dev (the array came back empty at runtime, confirmed
 // 2026-08-13) since Nitro treats each api route as its own isolated entry.
 
-// Anchored to today (not a fixed calendar date) so the public /calendario
-// page's "current month" default always has something to show — 12
-// weeks back to 17 weeks forward, weekly increments, evaluated once at
-// module load (server start).
-const anchor = new Date()
-anchor.setDate(anchor.getDate() - 12 * 7)
+// Pinned to September 2026 (user request 2026-08-14, moved off the previous
+// "anchored to today" scheme) — one event per day across the month (30
+// items, 30 days). The "Lo Hobbit" draft in tournaments.ts is the one
+// deliberate exception, left on its own fixed August 30th date.
+const anchor = new Date(2026, 8, 1)
 
 export const MOCK_EVENTS = Array.from({ length: 30 }, (_, i) => {
   const id = i + 1
   const dateObj = new Date(anchor)
-  dateObj.setDate(dateObj.getDate() + i * 7) // Weekly increments
+  dateObj.setDate(dateObj.getDate() + i) // Daily increments across September
 
   const pad = (n: number) => n.toString().padStart(2, '0')
   // Supabase timestampz format: 'YYYY-MM-DDTHH:mm:ss+02:00' (CEST is UTC+2)

@@ -37,6 +37,7 @@
     }
   },
   "common": {
+    "close": "Chiudi",
     "selectAll": "Seleziona tutti",
     "selectRow": "Seleziona riga",
     "dataFreshness": "Aggiornato {time}",
@@ -541,7 +542,10 @@
       "sponsoredBy": "Con il supporto di",
       "register": "Iscriviti",
       "registerComingSoonTitle": "Funzionalità in arrivo",
-      "registerComingSoonDescription": "L'iscrizione online non è ancora attiva, scrivi sul gruppo WhatsApp o contatta il referente per iscriverti."
+      "registerComingSoonDescription": "L'iscrizione online non è ancora attiva, scrivi sul gruppo WhatsApp o contatta il referente per iscriverti.",
+      "share": "Condividi",
+      "shareLinkCopiedTitle": "Link copiato",
+      "shareErrorTitle": "Impossibile condividere"
     },
     "status": {
       "scheduled": "Pianificato",
@@ -715,6 +719,8 @@
         "entryFee": "Quota (€)",
         "description": "Descrizione",
         "descriptionPlaceholder": "Descrizione (opzionale)",
+        "prizes": "Premi",
+        "prizesPlaceholder": "Premi in palio (opzionale)",
         "format": "Formato",
         "selectFormat": "Seleziona formato",
         "ruleset": "Regolamento",

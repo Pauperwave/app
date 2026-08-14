@@ -2,7 +2,7 @@
 <!--
   Sponsor, site link, and contact for /calendario (see PublicCalendarPage.vue),
   one row: sponsor on the left, a flex-1 spacer, site/phone buttons on the
-  right (CalendarWebsiteButton.vue / CalendarContactButton.vue) — layout per
+  right (CalendarContactButton.vue) — layout per
   the user's request 2026-08-14.
 -->
 <script lang="ts" setup></script>
@@ -28,7 +28,6 @@
     <div class="flex-1" />
 
     <div class="flex items-center gap-2">
-      <EventsCalendarWebsiteButton />
       <EventsCalendarContactButton />
     </div>
   </div>

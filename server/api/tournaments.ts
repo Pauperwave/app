@@ -5,11 +5,10 @@
 // explicit import statement) — see that file's comment for why it isn't a
 // plain cross-route import of events.ts instead.
 
-// Anchored to today, same reasoning as mockEvents.ts — only applies to the
-// standalone tournaments below (not one of linkedEvents); linked ones
+// Pinned to September 2026, same reasoning as mockEvents.ts — only applies
+// to the standalone tournaments below (not one of linkedEvents); linked ones
 // inherit their date from the event they belong to instead.
-const anchor = new Date()
-anchor.setDate(anchor.getDate() - 12 * 7)
+const anchor = new Date(2026, 8, 1)
 
 // Two of MOCK_EVENTS land in the current month by construction (index 12 is
 // exactly "today", weekly increments either side — see mockEvents.ts's
@@ -27,7 +26,7 @@ const tournaments = Array.from({ length: 30 }, (_, i) => {
   const linkedEvent = linkedEvents[i]
 
   const dateObj = linkedEvent ? new Date(linkedEvent.start_date) : new Date(anchor)
-  if (!linkedEvent) dateObj.setDate(dateObj.getDate() + i * 7) // Weekly increments
+  if (!linkedEvent) dateObj.setDate(dateObj.getDate() + i) // Daily increments across September
 
   const pad = (n: number) => n.toString().padStart(2, '0')
   dateObj.setHours(20, 0, 0, 0) // Set start time to 20:00 (8 PM)
@@ -121,21 +120,20 @@ if (hobbitDraft) {
   const pastAug30 = now.getMonth() > 7 || (now.getMonth() === 7 && now.getDate() > 30)
   const hobbitYear = now.getFullYear() + (pastAug30 ? 1 : 0)
   const hobbitStart = `${hobbitYear}-08-30T14:00:00+02:00`
-  const hobbitEnd = `${hobbitYear}-08-30T17:00:00+02:00`
+  const hobbitEnd = `${hobbitYear}-08-30T21:00:00+02:00`
 
   hobbitDraft.event = null
   hobbitDraft.name = 'Draft "Lo Hobbit"'
   hobbitDraft.format = 'Draft'
   hobbitDraft.start_date = hobbitStart
   hobbitDraft.end_date = hobbitEnd
-  hobbitDraft.location = 'Smart Lab - Centro Giovani Rovereto, V.le Trento 47/49, 38068 Rovereto TN'
+  // TODO it should be shown just the name of the place: V.le Trento 47/49, 38068 Rovereto TN
+  // TODO we should have a table for 'location' or 'venue'
+  hobbitDraft.location = 'Smart Lab - Centro Giovani Rovereto'
   hobbitDraft.entry_fee = 21.00
-  hobbitDraft.description = 'Draft The Hobbit by Pauperwave — domenica 30 agosto ore 14:00 '
-    + '(start: 14:10) presso Smart Lab - Centro Giovani Rovereto. Contributo evento 21€ '
-    + '(4 buste a partecipante + 1 di premio).\n\n'
-    + 'Per tutti quelli che vinceranno o hanno vinto buste de Lo Hobbit alle pre, '
-    + 'l\'iscrizione al draft associativo può essere pagata con 4 buste '
-    + '(possibilmente ENG, quelle in italiano verranno eventualmente messe in premio 🏆).'
+  hobbitDraft.description = 'Start: 14:10 (4 buste a partecipante + 1 di premio).\n\n'
+    + 'L\'iscrizione al draft associativo può essere pagata con 4 bustine de "Lo Hobbit"'
+    + '(possibilmente in lingua Inglese, quelle in italiano verranno eventualmente messe in premio).'
   hobbitDraft.participants = [
     'Nicola Cordeschi',
     'Roberto Caliari',
@@ -157,8 +155,7 @@ if (hobbitDraft) {
   hobbitDraft.created_at = hobbitStart
   hobbitDraft.updated_at = hobbitStart
   hobbitDraft.image = 'https://images.ctfassets.net/s5n2t79q9icq/2jyTggK2QocU3Hx5V5O6PI/b20a4df9a36f623c7002d8011a55ee53/OVWJJVEWPPD_1023x700.webp?q=80&w=1023&h=1536&fit=crop&f=center&fm=webp'
-  // First name only, matching CalendarContactButton.vue's footer contact
-  // (same person, 2026-08-14).
+  // First name only
   hobbitDraft.contact_name = 'Nicola'
   hobbitDraft.contact_phone = '35188033399'
 }
