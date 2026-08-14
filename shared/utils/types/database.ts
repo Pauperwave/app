@@ -996,52 +996,11 @@ export type Database = {
           },
         ]
       }
-      player_formats: {
-        Row: {
-          format_uuid: string
-          id: number
-          player_uuid: string
-        }
-        Insert: {
-          format_uuid: string
-          id?: number
-          player_uuid: string
-        }
-        Update: {
-          format_uuid?: string
-          id?: number
-          player_uuid?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_players_formats_format_uuid_fkey"
-            columns: ["format_uuid"]
-            isOneToOne: false
-            referencedRelation: "mtg_formats"
-            referencedColumns: ["uuid"]
-          },
-          {
-            foreignKeyName: "fk_players_formats_player_uuid_fkey"
-            columns: ["player_uuid"]
-            isOneToOne: false
-            referencedRelation: "players"
-            referencedColumns: ["uuid"]
-          },
-          {
-            foreignKeyName: "fk_players_formats_player_uuid_fkey"
-            columns: ["player_uuid"]
-            isOneToOne: false
-            referencedRelation: "players_full"
-            referencedColumns: ["uuid"]
-          },
-        ]
-      }
       players: {
         Row: {
           associate_uuid: string
           created_at: string
           id: number
-          is_banned: boolean
           nickname: string | null
           updated_at: string
           user_id: string | null
@@ -1051,7 +1010,6 @@ export type Database = {
           associate_uuid: string
           created_at?: string
           id?: number
-          is_banned?: boolean
           nickname?: string | null
           updated_at?: string
           user_id?: string | null
@@ -1061,7 +1019,6 @@ export type Database = {
           associate_uuid?: string
           created_at?: string
           id?: number
-          is_banned?: boolean
           nickname?: string | null
           updated_at?: string
           user_id?: string | null
@@ -1852,7 +1809,6 @@ export type Database = {
           first_name: string | null
           id: number | null
           is_active: boolean | null
-          is_banned: boolean | null
           last_name: string | null
           nickname: string | null
           pauperwave_associate_number: string | null

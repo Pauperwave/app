@@ -816,6 +816,13 @@
     "tabs": {
       "active": "Attivi",
       "inactive": "Non attivi"
+    },
+    "empty": "Nessun giocatore trovato",
+    "columns": {
+      "name": "Nome",
+      "pauperwaveAssociateNumber": "Tessera",
+      "emailAddress": "Email",
+      "createdAt": "Registrato il"
     }
   },
   "wantedCard": {
