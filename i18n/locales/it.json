@@ -531,7 +531,12 @@
       "addToCalendar": "Aggiungi al calendario",
       "previousMonth": "Mese precedente",
       "nextMonth": "Mese successivo",
-      "mockDataNotice": "Dati di esempio: questo calendario non è ancora collegato al database reale."
+      "mockDataNotice": "Dati di esempio: questo calendario non è ancora collegato al database reale.",
+      "contact": "Referente",
+      "sponsoredBy": "Con il supporto di",
+      "register": "Iscriviti",
+      "registerComingSoonTitle": "Funzionalità in arrivo",
+      "registerComingSoonDescription": "L'iscrizione online non è ancora attiva, scrivi sul gruppo WhatsApp o contatta il referente per iscriverti."
     },
     "status": {
       "scheduled": "Pianificato",
@@ -611,6 +616,8 @@
   },
   "tournament": {
     "breadcrumb": "Tornei",
+    "participants": "Preiscritti",
+    "contact": "Referente",
     "columns": {
       "select": "Seleziona",
       "id": "ID",
@@ -626,7 +633,8 @@
       "organizer": "Organizzatore",
       "location": "Luogo",
       "entryFee": "Quota Iscrizione",
-      "companionCode": "Codice Companion"
+      "companionCode": "Codice Companion",
+      "prizes": "Premi"
     },
     "views": {
       "table": "Tabella",

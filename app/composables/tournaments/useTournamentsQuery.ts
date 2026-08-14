@@ -21,6 +21,9 @@ interface TournamentRow {
   prizes: string
   companion_code: string | null
   image: string | null
+  participants: string[]
+  contact_name: string | null
+  contact_phone: string | null
 }
 
 export const TOURNAMENTS_KEY = ['tournaments']
@@ -54,7 +57,10 @@ export function useTournamentsQuery() {
         description: row.description,
         prizes: row.prizes,
         companionCode: row.companion_code,
-        image: row.image
+        image: row.image,
+        participants: row.participants,
+        contactName: row.contact_name,
+        contactPhone: row.contact_phone
       }))
     }
   })

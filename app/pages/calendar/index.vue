@@ -24,5 +24,9 @@ const publicUrl = computed(() => `${useRequestURL().origin}/calendario`)
 
       <USeparator orientation="vertical" class="h-4" />
     </template>
+
+    <template #body>
+      <EventsPublicCalendarPage />
+    </template>
   </PageInDevelopment>
 </template>

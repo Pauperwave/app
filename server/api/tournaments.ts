@@ -58,8 +58,11 @@ const tournaments = Array.from({ length: 30 }, (_, i) => {
   ]
   const organizer = organizers[i % organizers.length]
 
+  // Real MTG formats only — "Commander Party"/"Commander Precon" (removed
+  // 2026-08-14) aren't official formats, "Precon" is a product type, not a
+  // format. Kept consistent with CITTADINO_FORMATS (app/utils/cittadinoFormats.ts).
   const formats = [
-    'Commander', 'Commander Party', 'Commander Precon', 'Modern', 'Premodern'
+    'Commander', 'Cubo Commander', 'Modern', 'Premodern', 'Draft'
   ]
   const format = formats[i % formats.length]
 
@@ -94,6 +97,9 @@ const tournaments = Array.from({ length: 30 }, (_, i) => {
     prizes: i % 2 === 0 ? 'Buoni acquisto' : 'Buoni acquisto e gadget',
     companion_code: i < 5 ? `CODE${id}` : null,
     image: null as string | null, // overridden below for one example tournament
+    participants: [] as string[], // overridden below for one example tournament
+    contact_name: null as string | null, // overridden below for one example tournament
+    contact_phone: null as string | null, // overridden below for one example tournament
     created_at: dateStr,
     updated_at: dateStr,
     updated_by: 'admin'
@@ -103,26 +109,58 @@ const tournaments = Array.from({ length: 30 }, (_, i) => {
 // A deliberate example fixture, not part of the formula-generated data above
 // — the user asked specifically for a Draft named "Lo Hobbit" on August 30th
 // with this cover image, as a concrete example of Tournament.image on
-// /calendario (2026-08-14). Overwrites one of the standalone (unlinked)
-// tournaments in place rather than adding a 31st entry. Rolls forward to
-// next year if this year's August 30th has already passed, so the example
-// doesn't just vanish out of the calendar during a long-running dev server.
+// /calendario (2026-08-13). Real description/location/entry fee/participants
+// added 2026-08-14 (the user's own words, verbatim except formatting).
+// Overwrites one of the standalone (unlinked) tournaments in place rather
+// than adding a 31st entry. Rolls forward to next year if this year's
+// August 30th has already passed, so the example doesn't just vanish out of
+// the calendar during a long-running dev server.
 const hobbitDraft = tournaments[20]
 if (hobbitDraft) {
   const now = new Date()
   const pastAug30 = now.getMonth() > 7 || (now.getMonth() === 7 && now.getDate() > 30)
   const hobbitYear = now.getFullYear() + (pastAug30 ? 1 : 0)
-  const hobbitStart = `${hobbitYear}-08-30T20:00:00+02:00`
-  const hobbitEnd = `${hobbitYear}-08-30T23:00:00+02:00`
+  const hobbitStart = `${hobbitYear}-08-30T14:00:00+02:00`
+  const hobbitEnd = `${hobbitYear}-08-30T17:00:00+02:00`
 
   hobbitDraft.event = null
   hobbitDraft.name = 'Draft "Lo Hobbit"'
   hobbitDraft.format = 'Draft'
   hobbitDraft.start_date = hobbitStart
   hobbitDraft.end_date = hobbitEnd
+  hobbitDraft.location = 'Smart Lab - Centro Giovani Rovereto, V.le Trento 47/49, 38068 Rovereto TN'
+  hobbitDraft.entry_fee = 21.00
+  hobbitDraft.description = 'Draft The Hobbit by Pauperwave — domenica 30 agosto ore 14:00 '
+    + '(start: 14:10) presso Smart Lab - Centro Giovani Rovereto. Contributo evento 21€ '
+    + '(4 buste a partecipante + 1 di premio).\n\n'
+    + 'Per tutti quelli che vinceranno o hanno vinto buste de Lo Hobbit alle pre, '
+    + 'l\'iscrizione al draft associativo può essere pagata con 4 buste '
+    + '(possibilmente ENG, quelle in italiano verranno eventualmente messe in premio 🏆).'
+  hobbitDraft.participants = [
+    'Nicola Cordeschi',
+    'Roberto Caliari',
+    'Marco Campostrini',
+    'Giulia Grillini',
+    'Simone Marisa',
+    'Luca Ferrando',
+    'Stefano Fait',
+    'Luca Atanasio',
+    'Nicola March',
+    'Trettel Marco',
+    'Mattia Slaifer',
+    'Davide Bonecher',
+    'Michele Grandi',
+    'Andrea Bontempo',
+    'Francesco Dellagiacoma',
+    'Michele Giovanelli'
+  ]
   hobbitDraft.created_at = hobbitStart
   hobbitDraft.updated_at = hobbitStart
-  hobbitDraft.image = 'https://images.ctfassets.net/s5n2t79q9icq/5C1850DJDvhD3otrpCeE3c/f4d4de80cb37c59cdee000582e223999/Bioar8rbgkaorbnieob_575x700.webp?fm=webp'
+  hobbitDraft.image = 'https://images.ctfassets.net/s5n2t79q9icq/2jyTggK2QocU3Hx5V5O6PI/b20a4df9a36f623c7002d8011a55ee53/OVWJJVEWPPD_1023x700.webp?q=80&w=1023&h=1536&fit=crop&f=center&fm=webp'
+  // First name only, matching CalendarContactButton.vue's footer contact
+  // (same person, 2026-08-14).
+  hobbitDraft.contact_name = 'Nicola'
+  hobbitDraft.contact_phone = '35188033399'
 }
 
 export default defineEventHandler(async () => {
