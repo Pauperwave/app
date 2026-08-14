@@ -1,7 +1,7 @@
 <!-- app\components\transactions\list\AddModal.vue -->
 <script setup lang="ts">
 import type * as v from 'valibot'
-import { format } from 'date-fns'
+import { now, getLocalTimeZone, toCalendarDateTime } from '@internationalized/date'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { Associate } from '~/types'
 
@@ -26,28 +26,69 @@ const { createTransaction } = useTransactionsMutations()
 const { data: associatesData } = useAssociatesQuery()
 
 // Only approved associates can be a payment's payer — pending/rejected requests
-// aren't members yet.
+// aren't members yet. APS Pauperwave's own membership record is excluded too —
+// it's the association itself, not an actual payer.
 const associateOptions = computed(() => (associatesData.value ?? [])
-  .filter(associate => associate.membership_request_status === 'approved')
-  .map(associate => ({
-    label: `${associate.first_name} ${associate.last_name}`,
-    description: associate.pauperwave_associate_number ?? undefined,
-    value: associate.uuid
-  })))
+  .filter(associate => associate.membership_request_status === 'approved'
+    && associate.uuid !== APS_PAUPERWAVE_ASSOCIATE_UUID)
+  .map((associate) => {
+    const label = `${associate.first_name} ${associate.last_name}`
+    return {
+      label,
+      description: associate.pauperwave_associate_number ?? undefined,
+      value: associate.uuid,
+      avatar: { src: generatePlayerAvatar(label), alt: label }
+    }
+  }))
 
-const { schema, paymentTypeOptions, paymentMethodOptions } = useTransactionFormOptions()
+const {
+  schema, paymentTypeOptions, paymentMethodOptions, receiverOptions
+} = useTransactionFormOptions()
 
 type Schema = v.InferOutput<typeof schema>
 
-const state = reactive<Partial<Schema>>({
+const state = shallowReactive<Partial<Schema>>({
   payment_method: 'Cash',
   payment_type: 'Tournament Fee',
   payer_is_associate: true,
-  // Local time, not toISOString(): a UTC-formatted default shifts the displayed
-  // date/time by the browser's offset (same class of bug fixed in
+  // Local time, not UTC: a UTC-based default shifts the displayed date/time by
+  // the browser's offset (same class of bug fixed in
   // AssociatesListEditModal.vue's born_date serialization).
-  payment_datetime: format(new Date(), `yyyy-MM-dd'T'HH:mm`)
+  payment_datetime: toCalendarDateTime(now(getLocalTimeZone())),
+  // Present (as undefined) rather than omitted: valibot's v.object() treats a
+  // genuinely absent key differently from a key whose value is undefined —
+  // absent raises its own generic "Invalid key: Expected ... but received
+  // undefined" issue instead of running the field's actual v.number()/
+  // v.string() check, which is where our custom validation messages
+  // (amountRequired/receivedByRequired) actually live. Every other required
+  // field above already has a real default value, so it never hit this.
+  payment_amount: 5,
+  received_by: undefined
 })
+
+// USelect/USelectMenu only bind the selected value (via value-key), not the
+// whole item — these compute the matching item's icon/avatar back out so the
+// trigger shows it too, not just the open dropdown's item list (Nuxt UI's own
+// USelectMenu avatar example does the same: :avatar="value?.avatar").
+const selectedPaymentTypeIcon = computed(() =>
+  paymentTypeOptions.value.find(option => option.value === state.payment_type)?.icon)
+const selectedPaymentMethodIcon = computed(() =>
+  paymentMethodOptions.value.find(option => option.value === state.payment_method)?.icon)
+const selectedAssociateAvatar = computed(() =>
+  associateOptions.value.find(option => option.value === state.associate_uuid)?.avatar)
+const selectedReceiverAvatar = computed(() =>
+  receiverOptions.value.find(option => option.value === state.received_by)?.avatar)
+
+// The event field only makes sense for a tournament/event-linked payment —
+// hidden for "Quota associativa" (a membership fee, not tied to any event)
+// and "Donazione" (a free-standing gift, same reasoning).
+const showEventField = computed(() =>
+  state.payment_type !== 'Association Fee' && state.payment_type !== 'Donation')
+
+// The membership fee is a fixed €5 via PayPal "Friends & Family" (see the
+// watch below) — both fields are disabled for this type since neither is a
+// per-transaction choice once that rule applies.
+const isAssociationFee = computed(() => state.payment_type === 'Association Fee')
 
 // Refills every time the modal opens targeting a (possibly new) preset associate —
 // same convention as AssociatesListEditModal.vue's watch on its `associate` prop.
@@ -61,14 +102,20 @@ watch([open, () => presetAssociate], ([isOpen, associate]) => {
 // The membership fee is a fixed €5 via PayPal "Friends & Family", first payment
 // and every renewal alike (user decision, 2026-08-12) — not just a suggestion for
 // the Rinnova flow, so this also fires when staff pick "Quota associativa"
-// manually from the generic "Nuova transazione" form. Still editable afterwards.
+// manually from the generic "Nuova transazione" form. The amount field is
+// disabled for this type in the template (2026-08-14 decision) since it's a
+// fixed bylaw value, not a per-transaction choice.
 watch(() => state.payment_type, (type) => {
   if (type !== 'Association Fee') return
   state.payment_amount = MEMBERSHIP_FEE_AMOUNT
   state.payment_method = MEMBERSHIP_FEE_PAYMENT_METHOD
-  // The event field is hidden for this type (see the template) — clear any value
-  // picked before switching, so a hidden leftover doesn't get submitted.
-  state.event_name = undefined
+})
+
+// Clears any event picked before switching to a type whose field is hidden
+// (see showEventField) — separate from the watch above since this also
+// covers "Donazione", which doesn't force the amount/method.
+watch(showEventField, (visible) => {
+  if (!visible) state.event_name = undefined
 })
 
 const items = computed(() => [
@@ -162,7 +209,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       payerSurname: event.data.payer_is_associate ? null : (event.data.payer_surname ?? null),
       payerEmail: event.data.payer_is_associate ? null : (event.data.payer_email ?? null),
       payerTaxCode: event.data.payer_is_associate ? null : (event.data.payer_tax_code ?? null),
-      paymentDate: new Date(event.data.payment_datetime).toISOString(),
+      paymentDate: event.data.payment_datetime.toDate(getLocalTimeZone()).toISOString(),
       paymentAmount: event.data.payment_amount,
       paymentMethod: event.data.payment_method,
       paymentType: event.data.payment_type,
@@ -243,7 +290,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               </div>
             </div>
 
-            <UAlert v-if="membershipStatusAlert" variant="subtle" v-bind="membershipStatusAlert" />
+            <UAlert
+              v-if="membershipStatusAlert"
+              variant="subtle"
+              v-bind="membershipStatusAlert"
+            />
           </div>
 
           <UTabs v-else v-model="activeTab" :items="items">
@@ -259,14 +310,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                     :items="associateOptions"
                     value-key="value"
                     :placeholder="$t('transaction.addModal.fields.selectMember')"
-                    :icon="ICONS.player"
+                    :icon="selectedAssociateAvatar ? undefined : ICONS.player"
+                    :avatar="selectedAssociateAvatar"
                     class="w-full"
-                  >
-                    <template #item-label="{ item }">
-                      {{ item.label }}
-                      <span v-if="item.description" class="text-muted">{{ item.description }}</span>
-                    </template>
-                  </USelectMenu>
+                  />
                 </UFormField>
 
                 <UAlert
@@ -364,7 +411,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             name="payment_datetime"
             required
           >
-            <UInput v-model="state.payment_datetime" type="datetime-local" class="w-full" />
+            <UDateTimeInput v-model="state.payment_datetime" disabled class="w-full" />
           </UFormField>
 
           <UFormField
@@ -376,15 +423,22 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               v-model="state.payment_amount"
               :min="0"
               :step="0.5"
+              :icon="ICONS.euro"
+              :disabled="isAssociationFee"
               class="w-full"
             />
           </UFormField>
 
-          <UFormField :label="$t('transaction.addModal.fields.paymentType')" name="payment_type">
-            <USelect
-              v-model="state.payment_type"
-              :items="paymentTypeOptions"
+          <UFormField
+            :label="$t('transaction.addModal.fields.receivedBy')"
+            name="received_by"
+            required
+          >
+            <USelectMenu
+              v-model="state.received_by"
+              :items="receiverOptions"
               value-key="value"
+              :avatar="selectedReceiverAvatar"
               class="w-full"
             />
           </UFormField>
@@ -397,24 +451,24 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               v-model="state.payment_method"
               :items="paymentMethodOptions"
               value-key="value"
+              :icon="selectedPaymentMethodIcon"
+              :disabled="isAssociationFee"
+              class="w-full"
+            />
+          </UFormField>
+
+          <UFormField :label="$t('transaction.addModal.fields.paymentType')" name="payment_type">
+            <USelect
+              v-model="state.payment_type"
+              :items="paymentTypeOptions"
+              value-key="value"
+              :icon="selectedPaymentTypeIcon"
               class="w-full"
             />
           </UFormField>
 
           <UFormField
-            :label="$t('transaction.addModal.fields.receivedBy')"
-            name="received_by"
-            required
-          >
-            <USelectMenu
-              v-model="state.received_by"
-              :items="RECEIVER_OPTIONS"
-              class="w-full"
-            />
-          </UFormField>
-
-          <UFormField
-            v-if="state.payment_type !== 'Association Fee'"
+            v-if="showEventField"
             :label="$t('transaction.addModal.fields.event')"
             name="event_name"
           >
