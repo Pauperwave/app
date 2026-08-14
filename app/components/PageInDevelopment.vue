@@ -32,9 +32,11 @@ const { panelId, title } = defineProps<Props>()
     </template>
 
     <template #body>
-      <div class="text-center py-12 text-muted">
-        {{ $t('common.pageInDevelopment') }}
-      </div>
+      <slot name="body">
+        <div class="text-center py-12 text-muted">
+          {{ $t('common.pageInDevelopment') }}
+        </div>
+      </slot>
     </template>
   </UDashboardPanel>
 </template>

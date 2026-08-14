@@ -172,6 +172,13 @@ export interface Tournament {
   prizes: string
   companionCode: string | null
   image: string | null
+  participants: string[]
+  // Distinct from `organizer` (the running club/group, e.g. "PauperWave") —
+  // the specific person to contact about this tournament. Both optional:
+  // most mock tournaments have neither, only a real name implies a phone
+  // worth showing (see server/api/tournaments.ts's Hobbit draft override).
+  contactName: string | null
+  contactPhone: string | null
 }
 
 // Backed by mock data in server/api/leagues.ts (no Supabase table yet) — same
