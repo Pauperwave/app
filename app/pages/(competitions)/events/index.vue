@@ -21,7 +21,9 @@ const { t } = useI18n()
 
 useSeoMeta({ title: () => t('event.seoTitle') })
 
-const { data: eventsData, isLoading: loading } = useEventsQuery()
+const {
+  data: eventsData, isLoading: loading, status, refetch
+} = useEventsQuery()
 const data = computed(() => eventsData.value ?? [])
 const { statusFilter, filteredEvents, statusTabs } = useEventsFilters(data, range)
 const { columns } = useEventsTableColumns()
@@ -41,6 +43,12 @@ const sorting = ref([{ id: 'startDate', desc: false }])
       <UDashboardNavbar :title="$t('event.breadcrumb')" :ui="{ right: 'gap-2' }">
         <template #leading>
           <UDashboardSidebarCollapse />
+        </template>
+
+        <template #trailing>
+          <USeparator orientation="vertical" class="h-4" />
+
+          <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refetch" />
         </template>
 
         <template #right>
