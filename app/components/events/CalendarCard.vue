@@ -35,10 +35,20 @@ const {
 defineEmits<{ select: [] }>()
 
 const { t } = useI18n()
+
+// A completed (past) card is muted instead of colored, so the timeline
+// visually recedes as it scrolls further back. The status badge itself was
+// dropped from the header corner (2026-08-14, replaced by the share button
+// there) — status is still visible in CalendarDetailSlideover.vue.
+const isPast = computed(() => status === 'completed')
 </script>
 
 <template>
-  <UCard class="cursor-pointer" @click="$emit('select')">
+  <UCard
+    class="cursor-pointer"
+    :class="{ 'opacity-60 saturate-50': isPast }"
+    @click="$emit('select')"
+  >
     <div class="flex items-start gap-4">
       <!-- Luma-inspired: a cover image (both Event.image/Tournament.image are
            optional) takes over the date box's spot — the date moves into a
@@ -66,20 +76,17 @@ const { t } = useI18n()
           <h3 class="font-semibold truncate">
             {{ name }}
           </h3>
-          <UBadge
-            :color="eventStatusColor(status)"
-            variant="subtle"
-            :icon="EVENT_STATUS_ICONS[status]"
-            class="shrink-0"
-          >
-            {{ t(`event.status.${status}`) }}
-          </UBadge>
+          <div class="shrink-0" @click.stop>
+            <EventsShareButton :name="name" :start-date="startDate" :show-label="false" />
+          </div>
         </div>
 
         <p v-if="image" class="flex items-center gap-1 text-sm text-muted mt-1">
           <UIcon :name="ICONS.calendar" class="size-4 shrink-0" />
           <span>{{ format(new Date(startDate), 'd MMMM', { locale: it }) }}</span>
         </p>
+
+        <slot name="meta" />
 
         <a
           :href="googleMapsUrl(location)"

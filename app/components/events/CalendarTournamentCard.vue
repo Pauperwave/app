@@ -41,6 +41,13 @@ function openDetail() {
     :participants="tournament.participants"
     @select="openDetail"
   >
+    <template #meta>
+      <p class="flex items-center gap-1 text-sm text-muted mt-1">
+        <UIcon :name="ICONS.clock" class="size-4 shrink-0" />
+        <span>{{ timeRange }}</span>
+      </p>
+    </template>
+
     <template #body>
       <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mt-2 text-sm">
         <span
@@ -48,9 +55,6 @@ function openDetail() {
           :class="cittadinoFormatClass(tournament.format)"
         >
           {{ tournament.format }}
-        </span>
-        <span class="text-muted text-xs shrink-0">
-          {{ timeRange }}
         </span>
       </div>
     </template>

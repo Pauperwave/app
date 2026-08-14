@@ -6,6 +6,14 @@
   CalendarTournamentCard.vue when a card is tapped. Mounted once in
   PublicCalendarPage.vue.
 
+  No native header/title bar (2026-08-14 redesign, same "full-bleed image +
+  bottom gradient + overlaid title" hero as MagicTheGathering/league's
+  CommanderArt.vue) — the image spans the top edge-to-edge, close button
+  floats over it, and the title sits on the gradient instead of a separate
+  bar above. :close="false" + no :title prop suppresses USlideover's default
+  header entirely (see its own source: the header only renders when a
+  title/description/close prop or slot is present).
+
   Participant rows use UUser + generatePlayerAvatar() directly, not
   PlayerTag.vue — that component always calls useAssociatesQuery()
   internally (even without an associateUuid prop), which queries
@@ -30,10 +38,35 @@ const isOpen = computed({
   }
 })
 
-const title = computed(() => {
-  if (!selection.value) return ''
-  return selection.value.kind === 'event' ? selection.value.event.name : selection.value.tournament.name
+// Mobile back-gesture support (user request 2026-08-14): without a pushed
+// history entry, swiping back while the slideover is open navigates away
+// from /calendario entirely instead of just dismissing it. Pushing a marker
+// entry when it opens means the gesture's popstate closes the slideover
+// first; `closingViaPopState` stops the resulting selection→isOpen watch
+// from calling history.back() a second time for a back that already
+// happened. Closing any other way (X button, clicking outside, selecting a
+// nested tournament) still needs that history.back() to drop the marker
+// entry, or the next real back-gesture would land on a stale one instead of
+// leaving the page.
+let closingViaPopState = false
+
+watch(isOpen, (open, wasOpen) => {
+  if (open && !wasOpen) {
+    history.pushState({ calendarDetailOpen: true }, '')
+  } else if (!open && wasOpen && !closingViaPopState) {
+    history.back()
+  }
+  closingViaPopState = false
 })
+
+function onPopState() {
+  if (!selection.value) return
+  closingViaPopState = true
+  selection.value = null
+}
+
+onMounted(() => window.addEventListener('popstate', onPopState))
+onUnmounted(() => window.removeEventListener('popstate', onPopState))
 
 function tournamentTimeRange(startDate: string, endDate: string): string {
   const start = format(new Date(startDate), 'HH:mm')
@@ -55,160 +88,190 @@ function openTournament(tournament: Tournament) {
 </script>
 
 <template>
-  <USlideover v-model:open="isOpen" :title="title" inset>
-    <template #body>
+  <USlideover
+    v-model:open="isOpen"
+    inset
+    :close="false"
+    :ui="{ body: 'p-0 flex-1 overflow-y-auto' }"
+  >
+    <template #body="{ close }">
       <template v-if="selection?.kind === 'event'">
-        <img
-          v-if="selection.event.image"
-          :src="selection.event.image"
-          :alt="selection.event.name"
-          class="w-full max-h-56 object-cover rounded-xl mb-4"
-        >
-
-        <UBadge
-          :color="eventStatusColor(selection.event.status)"
-          variant="subtle"
-          :icon="EVENT_STATUS_ICONS[selection.event.status]"
-          class="mb-3"
-        >
-          {{ t(`event.status.${selection.event.status}`) }}
-        </UBadge>
-
-        <div class="flex flex-col gap-2 text-sm text-muted mb-4">
-          <p class="flex items-center gap-2">
-            <UIcon :name="ICONS.calendar" class="size-4 shrink-0" />
-            {{ format(new Date(selection.event.startDate), 'PPPP', { locale: it }) }}
-          </p>
-          <a
-            :href="googleMapsUrl(selection.event.location)"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="flex items-center gap-2 hover:underline w-fit"
+        <div class="relative">
+          <img
+            v-if="selection.event.image"
+            :src="selection.event.image"
+            :alt="selection.event.name"
+            class="w-full aspect-video object-cover"
           >
-            <UIcon :name="ICONS.mapPin" class="size-4 shrink-0" />
-            {{ selection.event.location }}
-          </a>
+          <div v-else class="w-full aspect-video bg-elevated" />
+
+          <div class="absolute inset-0 bg-gradient-to-b from-transparent to-(--ui-bg)" />
+
+          <UButton
+            :icon="ICONS.close"
+            color="neutral"
+            variant="subtle"
+            square
+            class="absolute top-4 end-4"
+            :aria-label="$t('common.close')"
+            @click="close"
+          />
+
+          <h2 class="absolute bottom-0 left-0 right-0 p-4 text-xl font-bold text-white truncate">
+            {{ selection.event.name }}
+          </h2>
         </div>
 
-        <div class="flex flex-wrap gap-2 mb-4">
-          <EventsAddToCalendarButton :item="selection.event" />
-          <EventsRegisterButton />
-        </div>
-
-        <div v-if="selection.tournaments.length" class="pt-4 border-t border-default flex flex-col gap-2">
-          <p class="text-xs font-medium uppercase text-muted">
-            {{ t('tournament.breadcrumb') }}
-          </p>
-
-          <button
-            v-for="tournament in selection.tournaments"
-            :key="tournament.id"
-            type="button"
-            class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-left hover:underline"
-            @click="openTournament(tournament)"
-          >
-            <span
-              class="px-1.5 py-0.5 rounded text-xs font-medium shrink-0"
-              :class="cittadinoFormatClass(tournament.format)"
+        <div class="p-4 sm:p-6">
+          <div class="flex flex-col gap-2 text-sm text-muted mb-4">
+            <p class="flex items-center gap-2">
+              <UIcon :name="ICONS.calendar" class="size-5 shrink-0" />
+              {{ format(new Date(selection.event.startDate), 'PPPP', { locale: it }) }}
+            </p>
+            <a
+              :href="googleMapsUrl(selection.event.location)"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex items-center gap-2 hover:underline w-fit"
             >
-              {{ tournament.format }}
-            </span>
-            <span class="truncate flex-1 min-w-0">{{ tournament.name }}</span>
-            <span class="text-muted text-xs shrink-0">
-              {{ tournamentTimeRange(tournament.startDate, tournament.endDate) }}
-            </span>
-          </button>
+              <UIcon :name="ICONS.mapPin" class="size-5 shrink-0" />
+              {{ selection.event.location }}
+            </a>
+          </div>
+
+          <div class="flex flex-wrap gap-2 mb-4">
+            <EventsShareButton
+              :name="selection.event.name"
+              :start-date="selection.event.startDate"
+            />
+            <EventsAddToCalendarButton :item="selection.event" />
+            <EventsRegisterButton />
+          </div>
+
+          <div v-if="selection.tournaments.length" class="pt-4 border-t border-default flex flex-col gap-2">
+            <p class="text-xs font-medium uppercase text-muted">
+              {{ t('tournament.breadcrumb') }}
+            </p>
+
+            <button
+              v-for="tournament in selection.tournaments"
+              :key="tournament.id"
+              type="button"
+              class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-left hover:underline"
+              @click="openTournament(tournament)"
+            >
+              <span
+                class="px-1.5 py-0.5 rounded text-xs font-medium shrink-0"
+                :class="cittadinoFormatClass(tournament.format)"
+              >
+                {{ tournament.format }}
+              </span>
+              <span class="truncate flex-1 min-w-0">{{ tournament.name }}</span>
+              <span class="text-muted text-xs shrink-0">
+                {{ tournamentTimeRange(tournament.startDate, tournament.endDate) }}
+              </span>
+            </button>
+          </div>
         </div>
       </template>
 
       <template v-else-if="selection?.kind === 'tournament'">
-        <img
-          v-if="selection.tournament.image"
-          :src="selection.tournament.image"
-          :alt="selection.tournament.name"
-          class="w-full max-h-56 object-cover rounded-xl mb-4"
-        >
-
-        <div class="flex items-center gap-2 mb-3">
-          <span
-            class="px-1.5 py-0.5 rounded text-xs font-medium"
-            :class="cittadinoFormatClass(selection.tournament.format)"
+        <div class="relative">
+          <img
+            v-if="selection.tournament.image"
+            :src="selection.tournament.image"
+            :alt="selection.tournament.name"
+            class="w-full aspect-video object-cover"
           >
-            {{ selection.tournament.format }}
-          </span>
-          <UBadge
-            :color="tournamentStatusColor(selection.tournament.status)"
+          <div v-else class="w-full aspect-video bg-elevated" />
+
+          <div class="absolute inset-0 bg-gradient-to-b from-transparent to-(--ui-bg)" />
+
+          <UButton
+            :icon="ICONS.close"
+            color="neutral"
             variant="subtle"
-            :icon="TOURNAMENT_STATUS_ICONS[selection.tournament.status]"
-          >
-            {{ t(`event.status.${selection.tournament.status}`) }}
-          </UBadge>
+            square
+            class="absolute top-4 end-4"
+            :aria-label="$t('common.close')"
+            @click="close"
+          />
+
+          <h2 class="absolute bottom-0 left-0 right-0 p-4 text-xl font-bold text-white truncate">
+            {{ selection.tournament.name }}
+          </h2>
         </div>
 
-        <div class="flex flex-col gap-2 text-sm text-muted mb-4">
-          <p class="flex items-center gap-2">
-            <UIcon :name="ICONS.calendar" class="size-4 shrink-0" />
-            {{ format(new Date(selection.tournament.startDate), 'PPPP', { locale: it }) }}
-            · {{ selectedTournamentTimeRange }}
-          </p>
-          <a
-            :href="googleMapsUrl(selection.tournament.location)"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="flex items-center gap-2 hover:underline w-fit"
-          >
-            <UIcon :name="ICONS.mapPin" class="size-4 shrink-0" />
-            {{ selection.tournament.location }}
-          </a>
-          <p class="flex items-center gap-2">
-            <UIcon :name="ICONS.player" class="size-4 shrink-0" />
-            {{ t('tournament.columns.organizer') }}: {{ selection.tournament.organizer }}
-          </p>
-          <a
-            v-if="selection.tournament.contactName"
-            :href="`tel:${selection.tournament.contactPhone}`"
-            class="flex items-center gap-2 hover:underline w-fit"
-          >
-            <UIcon :name="ICONS.phone" class="size-4 shrink-0" />
-            {{ t('tournament.contact') }}: {{ selection.tournament.contactName }}
-          </a>
-          <p class="flex items-center gap-2">
-            <UIcon :name="ICONS.euro" class="size-4 shrink-0" />
-            {{ t('tournament.columns.entryFee') }}: {{ selection.tournament.entryFee }} €
-          </p>
-        </div>
-
-        <p v-if="selection.tournament.description" class="text-sm whitespace-pre-line mb-4">
-          {{ selection.tournament.description }}
-        </p>
-
-        <p v-if="selection.tournament.prizes" class="text-sm text-muted mb-4">
-          {{ t('tournament.columns.prizes') }}: {{ selection.tournament.prizes }}
-        </p>
-
-        <div class="flex flex-wrap gap-2 mb-4">
-          <EventsAddToCalendarButton :item="selection.tournament" />
-          <EventsRegisterButton />
-        </div>
-
-        <div v-if="selection.tournament.participants.length" class="pt-4 border-t border-default">
-          <p class="text-xs font-medium uppercase text-muted mb-2">
-            {{ t('tournament.participants') }} ({{ selection.tournament.participants.length }})
-          </p>
-          <ul class="flex flex-col gap-2">
-            <li
-              v-for="(participant, index) in selection.tournament.participants"
-              :key="participant"
-              class="flex items-center gap-2"
+        <div class="p-4 sm:p-6">
+          <div class="flex flex-col gap-2 text-sm text-muted mb-4">
+            <p class="flex items-center gap-2">
+              <UIcon :name="ICONS.calendar" class="size-5 shrink-0" />
+              {{ format(new Date(selection.tournament.startDate), 'PPPP', { locale: it }) }}
+              · {{ selectedTournamentTimeRange }}
+            </p>
+            <a
+              :href="googleMapsUrl(selection.tournament.location)"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex items-center gap-2 hover:underline w-fit"
             >
-              <span class="text-xs text-dimmed w-4 text-right shrink-0">{{ index + 1 }}.</span>
-              <UUser
-                :name="participant"
-                :avatar="{ src: generatePlayerAvatar(participant), alt: participant }"
-                size="sm"
-              />
-            </li>
-          </ul>
+              <UIcon :name="ICONS.mapPin" class="size-5 shrink-0" />
+              {{ selection.tournament.location }}
+            </a>
+            <p class="flex items-center gap-2">
+              <UIcon :name="ICONS.player" class="size-5 shrink-0" />
+              {{ t('tournament.columns.organizer') }}: {{ selection.tournament.organizer }}
+            </p>
+            <a
+              v-if="selection.tournament.contactName"
+              :href="`tel:${selection.tournament.contactPhone}`"
+              class="flex items-center gap-2 hover:underline w-fit"
+            >
+              <UIcon :name="ICONS.phone" class="size-5 shrink-0" />
+              {{ t('tournament.contact') }}: {{ selection.tournament.contactName }}
+            </a>
+            <p class="flex items-center gap-2">
+              <UIcon :name="ICONS.euro" class="size-5 shrink-0" />
+              {{ t('tournament.columns.entryFee') }}: {{ selection.tournament.entryFee }} €
+            </p>
+            <p v-if="selection.tournament.prizes" class="flex items-center gap-2">
+              <UIcon :name="ICONS.standings" class="size-5 shrink-0" />
+              {{ t('tournament.columns.prizes') }}: {{ selection.tournament.prizes }}
+            </p>
+          </div>
+
+          <p v-if="selection.tournament.description" class="text-sm whitespace-pre-line mb-4">
+            {{ selection.tournament.description }}
+          </p>
+
+          <div class="flex flex-wrap gap-2 mb-4">
+            <EventsShareButton
+              :name="selection.tournament.name"
+              :start-date="selection.tournament.startDate"
+            />
+            <EventsAddToCalendarButton :item="selection.tournament" />
+            <EventsRegisterButton />
+          </div>
+
+          <div v-if="selection.tournament.participants.length" class="pt-4 border-t border-default">
+            <p class="text-xs font-medium uppercase text-muted mb-2">
+              {{ t('tournament.participants') }} ({{ selection.tournament.participants.length }})
+            </p>
+            <ul class="flex flex-col gap-2">
+              <li
+                v-for="(participant, index) in selection.tournament.participants"
+                :key="participant"
+                class="flex items-center gap-2"
+              >
+                <span class="text-xs text-dimmed w-4 text-right shrink-0">{{ index + 1 }}.</span>
+                <UUser
+                  :name="participant"
+                  :avatar="{ src: generatePlayerAvatar(participant), alt: participant }"
+                  size="sm"
+                />
+              </li>
+            </ul>
+          </div>
         </div>
       </template>
     </template>

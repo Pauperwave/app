@@ -80,6 +80,7 @@ const schema = v.object({
   name: v.optional(v.string(t('tournament.addModal.validation.nameRequired'))),
   description: v.optional(v.nullable(v.string())),
   entry_fee: v.pipe(v.number(), v.minValue(0, t('tournament.addModal.validation.entryFeeNegative'))),
+  prizes: v.optional(v.nullable(v.string())),
   format: v.string(),
   ruleset: v.string(),
   start_date: v.string(),
@@ -115,6 +116,7 @@ const state = reactive<Schema>({
   event: undefined,
   format: 'Commander',
   description: undefined,
+  prizes: undefined,
   organizer: 'Pauperwave',
   location: 'Magazzino Fantasia',
   entry_fee: 5,
@@ -267,6 +269,16 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               :placeholder="$t('tournament.addModal.fields.descriptionPlaceholder')"
               :icon="ICONS.alignLeft"
               @update:model-value="state.description = ($event as string) || undefined"
+            />
+          </UFormField>
+
+          <UFormField :label="$t('tournament.addModal.fields.prizes')" name="prizes">
+            <UInput
+              :model-value="state.prizes ?? ''"
+              class="w-full"
+              :placeholder="$t('tournament.addModal.fields.prizesPlaceholder')"
+              :icon="ICONS.euro"
+              @update:model-value="state.prizes = ($event as string) || undefined"
             />
           </UFormField>
 

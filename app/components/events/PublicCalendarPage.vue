@@ -28,7 +28,9 @@ import type { Event, Tournament } from '~/types'
 
 const { t } = useI18n()
 
-useSeoMeta({ title: () => t('event.seoTitle') })
+useSeoMeta({
+  title: () => t('event.seoTitle')
+})
 
 // Scoped to a single month at a time, per user request 2026-08-13 — unlike
 // the dashboard grid (events/index.vue), which defaults to "all time". Starts
@@ -57,8 +59,15 @@ const { data: eventsData, isLoading: loadingEvents } = useEventsQuery()
 const { data: tournamentsData, isLoading: loadingTournaments } = useTournamentsQuery()
 const loading = computed(() => loadingEvents.value || loadingTournaments.value)
 
-interface EventCard { kind: 'event', event: Event, tournaments: Tournament[] }
-interface TournamentCard { kind: 'tournament', tournament: Tournament }
+interface EventCard {
+  kind: 'event'
+  event: Event
+  tournaments: Tournament[]
+}
+interface TournamentCard {
+  kind: 'tournament'
+  tournament: Tournament
+}
 type CalendarCardEntry = EventCard | TournamentCard
 
 function cardDate(card: CalendarCardEntry): Date {
@@ -111,6 +120,7 @@ const filteredCards = computed(() => cards.value.filter((card) => {
       {{ $t('event.breadcrumb') }}
     </h1>
 
+    <!-- TODO there is a bug on mobile -->
     <LayoutColorModeSwitch class="absolute right-4 top-4 z-10 md:right-8 md:top-8" />
 
     <div class="flex justify-center">
@@ -120,6 +130,7 @@ const filteredCards = computed(() => cards.value.filter((card) => {
           alt="PauperWave"
           class="size-10 rounded-full shrink-0"
         >
+        <!-- TODO Make the "Pauperwave" string interesting (is the name of the association) -->
         <span>Pauperwave</span>
       </div>
     </div>
@@ -135,7 +146,11 @@ const filteredCards = computed(() => cards.value.filter((card) => {
         />
 
         <template #content>
-          <UCalendar v-model="calendarMonthValue" type="month" class="p-2" />
+          <UCalendar
+            v-model="calendarMonthValue"
+            type="month"
+            class="p-2"
+          />
         </template>
       </UPopover>
     </div>
@@ -152,7 +167,10 @@ const filteredCards = computed(() => cards.value.filter((card) => {
     </div>
 
     <div v-else class="flex flex-col gap-4 max-w-2xl w-full mx-auto">
-      <template v-for="card in filteredCards" :key="cardKey(card)">
+      <template
+        v-for="card in filteredCards"
+        :key="cardKey(card)"
+      >
         <EventsCalendarEventCard
           v-if="card.kind === 'event'"
           :event="card.event"

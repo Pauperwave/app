@@ -23,6 +23,14 @@ function openDetail() {
   selection.value = { kind: 'event', event, tournaments }
 }
 
+// Tapping a specific tournament row jumps straight to its own detail
+// instead of always landing on the event overview (user request 2026-08-14)
+// — same target shape CalendarDetailSlideover.vue's own nested list already
+// opens via openTournament().
+function openTournamentDetail(tournament: Tournament) {
+  selection.value = { kind: 'tournament', tournament }
+}
+
 // Same reasoning as CalendarTournamentCard.vue's timeRange.
 function tournamentTimeRange(tournament: Tournament): string {
   const start = format(new Date(tournament.startDate), 'HH:mm')
@@ -48,10 +56,13 @@ const participants = computed(() => tournaments.flatMap(tournament => tournament
   >
     <template #footer>
       <div class="mt-3 pt-3 border-t border-default flex flex-col gap-2">
-        <div
+        <button
           v-for="tournament in tournaments"
           :key="tournament.id"
-          class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm"
+          type="button"
+          class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-left rounded-md px-1.5 py-1 -mx-1.5 hover:bg-elevated transition-colors"
+          :class="{ 'opacity-60 saturate-50': tournament.status === 'completed' }"
+          @click.stop="openTournamentDetail(tournament)"
         >
           <span
             class="px-1.5 py-0.5 rounded text-xs font-medium shrink-0"
@@ -60,22 +71,23 @@ const participants = computed(() => tournaments.flatMap(tournament => tournament
             {{ tournament.format }}
           </span>
 
-          <span class="truncate flex-1 min-w-0">{{ tournament.name }}</span>
-
-          <UBadge
-            :color="tournamentStatusColor(tournament.status)"
-            variant="subtle"
-            :icon="TOURNAMENT_STATUS_ICONS[tournament.status]"
-            size="sm"
-            class="shrink-0"
+          <span
+            class="truncate flex-1 min-w-0"
+            :class="{ 'line-through text-error': tournament.status === 'canceled' }"
           >
-            {{ t(`event.status.${tournament.status}`) }}
-          </UBadge>
+            {{ tournament.name }}
+          </span>
+
+          <span
+            v-if="tournament.status === 'ongoing'"
+            class="size-2 rounded-full bg-warning shrink-0 animate-pulse motion-reduce:animate-none"
+            :title="t('event.status.ongoing')"
+          />
 
           <span class="text-muted text-xs shrink-0">
             {{ tournamentTimeRange(tournament) }}
           </span>
-        </div>
+        </button>
       </div>
     </template>
   </EventsCalendarCard>

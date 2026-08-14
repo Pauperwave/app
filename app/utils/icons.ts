@@ -19,6 +19,7 @@ export const ICONS = {
   edit: 'i-lucide-pencil-line',
   confirm: 'i-lucide-check',
   copy: 'i-lucide-copy',
+  share: 'i-lucide-share-2',
   link: 'i-lucide-link',
   close: 'i-lucide-x',
   statusRejected: 'i-lucide-x-circle',
