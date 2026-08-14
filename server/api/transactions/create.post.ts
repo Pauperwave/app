@@ -48,32 +48,14 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // An "Association Fee" payment for a known associate IS a renewal — insert the
-  // current year's row in pauperwave_associate_renewals, the table
-  // pauperwave_associates_with_status actually derives membership_status from
-  // (see migration 20260805035231). ignoreDuplicates: a second Association Fee
-  // payment in the same year (e.g. an amount correction) is valid and shouldn't
-  // fail the transaction just because that year's renewal row already exists.
+  // An "Association Fee" payment for a known associate IS a renewal — see
+  // server/utils/associateRenewals.ts.
   let renewed = false
   if (body.paymentType === 'Association Fee' && body.associateUuid) {
-    const { error: renewalError, data: renewalRows } = await supabase
-      .from('pauperwave_associate_renewals')
-      .upsert(
-        {
-          associate_uuid: body.associateUuid,
-          renewal_year: new Date().getFullYear()
-        },
-        { onConflict: 'associate_uuid,renewal_year', ignoreDuplicates: true }
-      )
-      .select()
-
-    if (renewalError) {
-      throw createError({
-        statusCode: 500,
-        statusMessage: renewalError.message ?? 'Transaction saved but renewal recording failed'
-      })
-    }
-    renewed = (renewalRows?.length ?? 0) > 0
+    renewed = await ensureRenewalForPayment(supabase, {
+      associateUuid: body.associateUuid,
+      paymentDate: body.paymentDate
+    })
   }
 
   return { transaction: payment, renewed }

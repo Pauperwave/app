@@ -2,7 +2,16 @@
 // Shared by AddModal.vue and EditModal.vue — the select options and payment
 // schema are identical between creating and editing a transaction.
 import * as v from 'valibot'
+import { CalendarDateTime } from '@internationalized/date'
 import { PAYMENT_METHODS, PAYMENT_TYPES } from '#shared/types/transactions'
+
+// The association's own membership record (used for its own admin/bookkeeping
+// purposes, not an actual payer) — excluded from payer pickers on transaction
+// forms. Matched by uuid, not name, since names can be edited freely.
+// Declared before the array-literal exports below: an export placed
+// immediately after one is silently dropped from Nuxt's auto-imports (see
+// CLAUDE.md's "Auto-imports" note, confirmed 2026-08-09 on cittadinoPoints.ts).
+export const APS_PAUPERWAVE_ASSOCIATE_UUID = '8578797c-62b0-4e48-a237-3b65683a2623'
 
 // No formal "staff members" table to select from/FK against — same hardcoded
 // list the original mock form used, restored alongside received_by
@@ -38,16 +47,26 @@ export function useTransactionFormOptions() {
 
   const paymentTypeOptions = computed(() => [
     { value: 'Tournament Fee' as const, label: t('transaction.addModal.paymentTypeOptions.entryFee'), icon: ICONS.standings },
-    { value: 'Association Fee' as const, label: t('transaction.addModal.paymentTypeOptions.membership'), icon: ICONS.players },
     { value: 'Event Fee' as const, label: t('transaction.addModal.paymentTypeOptions.eventFee'), icon: ICONS.calendar },
+    { value: 'Association Fee' as const, label: t('transaction.addModal.paymentTypeOptions.membership'), icon: ICONS.players },
     { value: 'Donation' as const, label: t('transaction.addModal.paymentTypeOptions.donation'), icon: ICONS.heartHandshake }
   ])
 
   const paymentMethodOptions = computed(() => [
-    { value: 'Cash' as const, label: t('transaction.addModal.paymentMethodOptions.cash') },
-    { value: 'PayPal' as const, label: 'PayPal' },
-    { value: 'POS' as const, label: 'POS' }
+    { value: 'Cash' as const, label: t('transaction.addModal.paymentMethodOptions.cash'), icon: ICONS.wallet },
+    { value: 'PayPal' as const, label: 'PayPal', icon: 'i-simple-icons-paypal' },
+    { value: 'POS' as const, label: 'POS', icon: ICONS.creditCard }
   ])
+
+  // Same avatar convention as PlayerTag.vue (DiceBear, generated deterministically
+  // from the name) — RECEIVER_OPTIONS has no associate_uuid to look up (it's a
+  // hardcoded staff-name list, see the constant's own comment), so this can't
+  // reuse PlayerTag itself, only the avatar it'd produce.
+  const receiverOptions = computed(() => RECEIVER_OPTIONS.map(name => ({
+    label: name,
+    value: name,
+    avatar: { src: generatePlayerAvatar(name), alt: name }
+  })))
 
   // v.forward(v.partialCheck([...paths], requirement, msg), [path]) is Valibot's
   // equivalent of a .superRefine() with ctx.addIssue on a specific path:
@@ -64,9 +83,11 @@ export function useTransactionFormOptions() {
       payer_surname: v.optional(v.pipe(
         v.string(), v.minLength(2, t('transaction.addModal.validation.payerLastNameTooShort'))
       )),
-      payer_email: v.optional(v.pipe(v.string(), v.trim(), v.email(), v.toLowerCase())),
+      payer_email: v.optional(v.pipe(
+        v.string(), v.trim(), v.email(t('transaction.addModal.validation.payerEmailInvalid')), v.toLowerCase()
+      )),
       payer_tax_code: v.optional(v.pipe(v.string(), v.trim())),
-      payment_datetime: v.string(),
+      payment_datetime: v.instance(CalendarDateTime, t('transaction.addModal.validation.paymentDateRequired')),
       payment_amount: v.pipe(
         v.number(t('transaction.addModal.validation.amountRequired')),
         v.minValue(0, t('transaction.addModal.validation.amountNotNegative'))
@@ -122,5 +143,5 @@ export function useTransactionFormOptions() {
     )
   )
 
-  return { schema, paymentTypeOptions, paymentMethodOptions }
+  return { schema, paymentTypeOptions, paymentMethodOptions, receiverOptions }
 }

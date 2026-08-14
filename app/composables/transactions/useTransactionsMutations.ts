@@ -25,5 +25,11 @@ export function useTransactionsMutations() {
     onSettled: invalidate
   })
 
-  return { createTransaction, updateTransaction }
+  const deleteTransaction = useMutation({
+    mutation: (id: number) =>
+      $fetch(`/api/transactions/${id}/delete`, { method: 'POST' }),
+    onSettled: invalidate
+  })
+
+  return { createTransaction, updateTransaction, deleteTransaction }
 }

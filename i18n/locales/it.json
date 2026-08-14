@@ -378,7 +378,10 @@
     "empty": "Nessuna transazione trovata con questi filtri",
     "groupByPayer": "Raggruppa per giocatore",
     "rowActions": {
-      "edit": "Modifica"
+      "edit": "Modifica",
+      "delete": "Elimina",
+      "deleteConfirmTitle": "Eliminare questa transazione?",
+      "deleteErrorTitle": "Impossibile eliminare la transazione"
     },
     "editModal": {
       "title": "Modifica transazione",
@@ -435,6 +438,7 @@
       "validation": {
         "payerFirstNameTooShort": "Nome troppo corto",
         "payerLastNameTooShort": "Cognome troppo corto",
+        "paymentDateRequired": "Data richiesta",
         "amountRequired": "Importo richiesto",
         "amountNotNegative": "L'importo non può essere negativo",
         "invalidPaymentMethod": "Metodo di pagamento non valido",
@@ -442,6 +446,7 @@
         "payerFirstNameRequired": "Nome richiesto",
         "payerLastNameRequired": "Cognome richiesto",
         "payerEmailRequired": "Email richiesta",
+        "payerEmailInvalid": "Email non valida",
         "payerTaxCodeRequired": "Codice Fiscale richiesto",
         "associateRequired": "Seleziona un associato",
         "receivedByRequired": "Seleziona chi ha ricevuto il pagamento"

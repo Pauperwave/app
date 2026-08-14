@@ -14,7 +14,9 @@ const route = useRoute()
 const router = useRouter()
 const isModalOpen = ref(false)
 
-const { data: transactionsData, isLoading: loading } = useTransactionsQuery()
+const {
+  data: transactionsData, isLoading: loading, status, refetch
+} = useTransactionsQuery()
 const data = computed(() => transactionsData.value ?? [])
 
 // Same StatusFilterGroup used by tournaments/leagues/events (#left) with
@@ -29,7 +31,8 @@ const activeTypeTab = computed<'all' | PaymentType>({
 const { filteredTransactions, typeTabs } = useTransactionsFilters(data, range, activeTypeTab)
 const { columns } = useTransactionsTableColumns()
 const {
-  editingTransaction, editModalOpen, tableContextMenuItems, onRowContextmenu
+  editingTransaction, editModalOpen, deletingTransaction, deleteConfirmOpen, deleting,
+  confirmDelete, tableContextMenuItems, onRowContextmenu
 } = useTransactionsRowActions()
 
 const table = useTemplateRef('table')
@@ -62,6 +65,12 @@ onMounted(() => {
       <UDashboardNavbar :title="$t('transaction.breadcrumb')">
         <template #leading>
           <UDashboardSidebarCollapse />
+        </template>
+
+        <template #trailing>
+          <USeparator orientation="vertical" class="h-4" />
+
+          <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refetch" />
         </template>
 
         <template #right>
@@ -126,4 +135,22 @@ onMounted(() => {
   </UDashboardPanel>
 
   <TransactionsListEditModal v-model="editModalOpen" :transaction="editingTransaction" />
+
+  <ConfirmModal
+    v-model:open="deleteConfirmOpen"
+    :title="$t('transaction.rowActions.deleteConfirmTitle')"
+    :warning="$t('common.confirmDeleteWarning')"
+    :confirm-label="$t('transaction.rowActions.delete')"
+    :confirm-icon="ICONS.delete"
+    :loading="deleting"
+    @confirm="confirmDelete"
+  >
+    <p v-if="deletingTransaction" class="text-sm text-muted">
+      {{ deletingTransaction.payment_amount }}€
+      —
+      {{ deletingTransaction.associate
+        ? `${deletingTransaction.associate.first_name} ${deletingTransaction.associate.last_name}`
+        : `${deletingTransaction.payer_name} ${deletingTransaction.payer_surname}` }}
+    </p>
+  </ConfirmModal>
 </template>
