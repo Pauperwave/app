@@ -235,6 +235,12 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
           <UDashboardSidebarCollapse />
         </template>
 
+        <template #trailing>
+          <USeparator orientation="vertical" class="h-4" />
+
+          <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refetch" />
+        </template>
+
         <template #right>
           <AssociatesListAddModal v-model="isModalOpen" />
 
@@ -334,12 +340,7 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
             </template>
           </UButton>
 
-          <AssociatesTableToolbarActions
-            :is-loading="loading"
-            :status="status"
-            :visibility-items="visibilityItems"
-            @refresh="refetch"
-          />
+          <AssociatesTableToolbarActions :visibility-items="visibilityItems" />
         </template>
       </UDashboardToolbar>
     </template>

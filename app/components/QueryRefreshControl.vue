@@ -19,8 +19,6 @@ const { lastUpdatedAt } = useQueryFreshness(computed(() => isLoading), computed(
 
 <template>
   <div class="flex items-center gap-1.5">
-    <DataFreshnessIndicator :last-updated-at="lastUpdatedAt" />
-
     <UButton
       :icon="ICONS.refresh"
       color="neutral"
@@ -28,5 +26,7 @@ const { lastUpdatedAt } = useQueryFreshness(computed(() => isLoading), computed(
       :loading="isLoading"
       @click="$emit('refresh')"
     />
+
+    <DataFreshnessIndicator :last-updated-at="lastUpdatedAt" />
   </div>
 </template>

@@ -233,6 +233,12 @@ watch(() => consentSocialFilter.value, (newVal) => {
           <UDashboardSidebarCollapse />
         </template>
 
+        <template #trailing>
+          <USeparator orientation="vertical" class="h-4" />
+
+          <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refetch" />
+        </template>
+
         <template #right>
           <ViewModeTabs v-model="viewMode" :items="viewModeItems" />
 
@@ -281,12 +287,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
         </template>
 
         <template #right>
-          <AssociatesTableToolbarActions
-            :is-loading="loading"
-            :status="status"
-            :visibility-items="visibilityItems"
-            @refresh="refetch"
-          />
+          <AssociatesTableToolbarActions :visibility-items="visibilityItems" />
         </template>
       </UDashboardToolbar>
     </template>

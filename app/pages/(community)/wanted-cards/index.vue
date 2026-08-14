@@ -10,7 +10,9 @@ const { t } = useI18n()
 // background refetches after invalidateQueries (e.g. changing a card's status) —
 // that would unmount the table/grid on every mutation. isPending is only true while
 // there is still no data in the cache.
-const { data: wantedCardsData, isPending: loading } = useWantedCardsQuery()
+const {
+  data: wantedCardsData, isPending: loading, isLoading, status, refetch
+} = useWantedCardsQuery()
 const data = computed(() => wantedCardsData.value ?? [])
 
 const tour = useWantedCardsTour()
@@ -179,6 +181,12 @@ const gridSections = computed<GridSection[]>(() => {
       <UDashboardNavbar :title="$t('wantedCard.breadcrumb')" :ui="{ right: 'gap-2' }">
         <template #leading>
           <UDashboardSidebarCollapse />
+        </template>
+
+        <template #trailing>
+          <USeparator orientation="vertical" class="h-4" />
+
+          <QueryRefreshControl :is-loading="isLoading" :status="status" @refresh="refetch" />
         </template>
 
         <template #right>

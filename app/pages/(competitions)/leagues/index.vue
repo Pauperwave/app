@@ -19,7 +19,9 @@ const range = shallowRef<Range>({
 
 const { t } = useI18n()
 
-const { data: leaguesData, isLoading: loading } = useLeaguesQuery()
+const {
+  data: leaguesData, isLoading: loading, status, refetch
+} = useLeaguesQuery()
 const data = computed(() => leaguesData.value ?? [])
 const { statusFilter, filteredLeagues, statusTabs } = useLeaguesFilters(data)
 const { columns } = useLeaguesTableColumns()
@@ -39,6 +41,12 @@ const sorting = ref([{ id: 'name', desc: false }])
       <UDashboardNavbar :title="$t('league.breadcrumb')" :ui="{ right: 'gap-2' }">
         <template #leading>
           <UDashboardSidebarCollapse />
+        </template>
+
+        <template #trailing>
+          <USeparator orientation="vertical" class="h-4" />
+
+          <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refetch" />
         </template>
 
         <template #right>

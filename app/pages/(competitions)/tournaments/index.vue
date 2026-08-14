@@ -19,7 +19,9 @@ const range = shallowRef<Range>({
 
 const { t } = useI18n()
 
-const { data: tournamentsData, isLoading: loading } = useTournamentsQuery()
+const {
+  data: tournamentsData, isLoading: loading, status, refetch
+} = useTournamentsQuery()
 const data = computed(() => tournamentsData.value ?? [])
 const { statusFilter, filteredTournaments, statusTabs } = useTournamentsFilters(data, range)
 const { columns } = useTournamentsTableColumns()
@@ -39,6 +41,12 @@ const sorting = ref([{ id: 'startDate', desc: false }])
       <UDashboardNavbar :title="$t('tournament.breadcrumb')" :ui="{ right: 'gap-2' }">
         <template #leading>
           <UDashboardSidebarCollapse />
+        </template>
+
+        <template #trailing>
+          <USeparator orientation="vertical" class="h-4" />
+
+          <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refetch" />
         </template>
 
         <template #right>
