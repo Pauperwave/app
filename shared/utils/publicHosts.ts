@@ -14,8 +14,10 @@ export const HOST_ROUTE_MAP: Record<string, string> = {
   // Distinct from the internal /events dashboard route (auth-only,
   // UDashboardPanel shell) — same reasoning as /rankings/<format> above vs.
   // /standings/<format> (dashboard-only). Not /calendar either: that's an
-  // unrelated in-development dashboard page (pages/calendar/index.vue).
-  'eventi.pauperwave.org': 'https://app.pauperwave.org/eventi'
+  // unrelated in-development dashboard page (pages/calendar/index.vue) —
+  // distinct word ("calendario" vs "calendar"), no collision. Renamed from
+  // eventi./ /eventi 2026-08-14 at the user's request.
+  'calendario.pauperwave.org': 'https://app.pauperwave.org/calendario'
 }
 
 export const PUBLIC_HOSTS = Object.keys(HOST_ROUTE_MAP)

@@ -8,6 +8,7 @@ interface TournamentRow {
   league: string | null
   name: string
   start_date: string
+  end_date: string
   round_count: number
   round_duration: number
   registered_players: number
@@ -19,6 +20,7 @@ interface TournamentRow {
   description: string
   prizes: string
   companion_code: string | null
+  image: string | null
 }
 
 export const TOURNAMENTS_KEY = ['tournaments']
@@ -40,6 +42,7 @@ export function useTournamentsQuery() {
         league: row.league,
         name: row.name,
         startDate: row.start_date,
+        endDate: row.end_date,
         roundCount: row.round_count,
         roundDuration: row.round_duration,
         registeredPlayers: row.registered_players,
@@ -50,7 +53,8 @@ export function useTournamentsQuery() {
         entryFee: row.entry_fee,
         description: row.description,
         prizes: row.prizes,
-        companionCode: row.companion_code
+        companionCode: row.companion_code,
+        image: row.image
       }))
     }
   })

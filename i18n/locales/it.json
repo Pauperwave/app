@@ -525,6 +525,14 @@
     "grid": {
       "empty": "Nessun evento trovato con questi filtri"
     },
+    "copyPublicLink": "Copia il link al calendario pubblico",
+    "openPublicLink": "Apri il calendario pubblico",
+    "calendar": {
+      "addToCalendar": "Aggiungi al calendario",
+      "previousMonth": "Mese precedente",
+      "nextMonth": "Mese successivo",
+      "mockDataNotice": "Dati di esempio: questo calendario non è ancora collegato al database reale."
+    },
     "status": {
       "scheduled": "Pianificato",
       "ongoing": "In corso",
@@ -1035,7 +1043,7 @@
         "commander": "Classifica pubblica del formato Commander: tabella statica, aggiornata quando un evento viene terminato.",
         "premodern": "Classifica pubblica del formato Premodern: tabella statica, aggiornata quando un evento viene terminato.",
         "pauper": "Classifica pubblica del formato Pauper: tabella statica, aggiornata quando un evento viene terminato.",
-        "eventi": "Calendario pubblico degli eventi, sola lettura.",
+        "calendario": "Calendario pubblico di eventi e tornei, sola lettura.",
         "tesseramento": "Modulo pubblico di adesione: i dati arrivano direttamente nel database.",
         "blog": "Blog dell'associazione.",
         "league": "Benchmark temporaneo per le leghe Commander, da dismettere una volta completata la migrazione."

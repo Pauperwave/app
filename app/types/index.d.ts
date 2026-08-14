@@ -159,6 +159,7 @@ export interface Tournament {
   league: string | null
   name: string
   startDate: string
+  endDate: string
   roundCount: number
   roundDuration: number
   registeredPlayers: number
@@ -170,6 +171,7 @@ export interface Tournament {
   description: string
   prizes: string
   companionCode: string | null
+  image: string | null
 }
 
 // Backed by mock data in server/api/leagues.ts (no Supabase table yet) — same
@@ -190,6 +192,8 @@ export interface Event {
   name: string
   startDate: string
   tournamentCount: number
+  location: string
+  image: string | null
 }
 
 // --- Campionato Cittadino -----------------------------------------------------

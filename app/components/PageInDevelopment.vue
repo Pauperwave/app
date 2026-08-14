@@ -1,7 +1,8 @@
 <!-- app\components\PageInDevelopment.vue -->
 <!-- Shared by /calendar and /finance — same placeholder shell, byte-identical
-     except for the panel id and title (fallow dupes, 2026-08-12). Give this a
-     real body once either page's feature actually starts. -->
+     except for the panel id, title, and the optional #actions slot
+     (fallow dupes, 2026-08-12). Give this a real body once either page's
+     feature actually starts. -->
 <script setup lang="ts">
 interface Props {
   panelId: string
@@ -20,6 +21,11 @@ const { panelId, title } = defineProps<Props>()
         </template>
 
         <template #right>
+          <!-- Empty by default (e.g. /finance) — /calendar uses this for its
+               link to the public /eventi calendar, same copy/open-link
+               pattern as FormatPage.vue / associates/requests.vue. -->
+          <slot name="actions" />
+
           <NotificationsBellButton />
         </template>
       </UDashboardNavbar>

@@ -144,7 +144,7 @@ export default defineNuxtConfig({
         '/rankings/commander', '/rankings/commander/**',
         '/rankings/premodern', '/rankings/premodern/**',
         '/rankings/pauper', '/rankings/pauper/**',
-        '/eventi', '/eventi/**'
+        '/calendario', '/calendario/**'
       ]
     },
     cookieOptions: {

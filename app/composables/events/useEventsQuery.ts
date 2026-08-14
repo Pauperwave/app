@@ -7,6 +7,8 @@ interface EventRow {
   tournament_count: number
   name: string
   start_date: string
+  location: string
+  image: string | null
 }
 
 export const EVENTS_KEY = ['events']
@@ -26,7 +28,9 @@ export function useEventsQuery() {
         status: row.status as EventStatus,
         name: row.name,
         startDate: row.start_date,
-        tournamentCount: row.tournament_count
+        tournamentCount: row.tournament_count,
+        location: row.location,
+        image: row.image
       }))
     }
   })

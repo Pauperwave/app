@@ -22,7 +22,7 @@ export default defineNuxtRouteMiddleware((to) => {
     '/rankings/commander',
     '/rankings/premodern',
     '/rankings/pauper',
-    '/eventi'
+    '/calendario'
   ]
 
   // prevents logged-in users from seeing the login page again
