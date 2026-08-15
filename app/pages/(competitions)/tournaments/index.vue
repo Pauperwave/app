@@ -107,7 +107,9 @@ const tour = useTournamentsTour()
             :data="filteredTournaments"
             :columns="columns"
             class="w-full"
+            :ui="{ tr: 'cursor-pointer' }"
             @contextmenu="onRowContextmenu"
+            @select="(_e, row) => navigateTo(`/tournaments/${row.original.uuid}`)"
           />
         </UContextMenu>
 

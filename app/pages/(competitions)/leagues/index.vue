@@ -105,7 +105,9 @@ const tour = useLeaguesTour()
             :data="filteredLeagues"
             :columns="columns"
             class="w-full"
+            :ui="{ tr: 'cursor-pointer' }"
             @contextmenu="onRowContextmenu"
+            @select="(_e, row) => navigateTo(`/leagues/${row.original.uuid}`)"
           />
         </UContextMenu>
 
