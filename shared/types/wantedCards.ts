@@ -14,6 +14,7 @@ export interface NewWantedCardPayload {
   setCode: string
   manaCost: string
   colorIdentity: string[]
+  typeLine: string | null
   cmc: number
   imageUrl: string | null
   cardmarketPrice: number | null

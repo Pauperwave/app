@@ -38,6 +38,7 @@ export function useWantedCardsQuery() {
         treatment: row.treatment,
         manaCost: row.mana_cost ?? '',
         colorIdentity: row.color_identity,
+        typeLine: row.type_line,
         cmc: row.cmc ?? 0,
         imageUrl: row.image_url ?? '',
         cardmarketPrice: row.cardmarket_price,

@@ -18,6 +18,7 @@ export interface ScryfallPrinting {
   set: string
   setName: string
   collectorNumber: string
+  typeLine: string
   imageUrl: string | null
   manaCost: string
   colorIdentity: string[]
@@ -47,6 +48,7 @@ interface ScryfallApiCard {
   set: string
   set_name: string
   collector_number: string
+  type_line?: string
   mana_cost?: string
   color_identity?: string[]
   cmc?: number
@@ -76,6 +78,7 @@ function toPrinting(card: ScryfallApiCard): ScryfallPrinting {
     set: card.set,
     setName: card.set_name,
     collectorNumber: card.collector_number,
+    typeLine: card.type_line ?? '',
     imageUrl: frontFace?.image_uris?.normal ?? frontFace?.image_uris?.large ?? null,
     manaCost: card.mana_cost ?? card.card_faces?.[0]?.mana_cost ?? '',
     colorIdentity: card.color_identity ?? [],
