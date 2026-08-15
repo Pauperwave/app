@@ -57,6 +57,8 @@ onMounted(() => {
     router.replace({ query: {} })
   }
 })
+
+const tour = useTransactionsTour()
 </script>
 
 <template>
@@ -74,7 +76,19 @@ onMounted(() => {
         </template>
 
         <template #right>
-          <TransactionsListAddModal v-model="isModalOpen" />
+          <UButton
+            :label="$t('transaction.tour.startButton')"
+            icon="i-lucide-circle-help"
+            color="neutral"
+            variant="ghost"
+            @click="tour.start()"
+          />
+
+          <USeparator orientation="vertical" class="h-4" />
+
+          <div id="tour-transactions-add">
+            <TransactionsListAddModal v-model="isModalOpen" />
+          </div>
 
           <USeparator orientation="vertical" class="h-4" />
 
@@ -90,19 +104,23 @@ onMounted(() => {
         }"
       >
         <template #left>
-          <StatusFilterGroup v-model="activeTypeTab" :items="typeTabs" />
+          <div id="tour-transactions-filters">
+            <StatusFilterGroup v-model="activeTypeTab" :items="typeTabs" />
+          </div>
         </template>
 
         <template #right>
-          <UButton
-            :label="$t('transaction.groupByPayer')"
-            :icon="ICONS.players"
-            color="neutral"
-            :variant="isGrouped ? 'solid' : 'outline'"
-            @click="toggleGrouping"
-          />
+          <div id="tour-transactions-actions" class="flex items-center gap-4 flex-wrap">
+            <UButton
+              :label="$t('transaction.groupByPayer')"
+              :icon="ICONS.players"
+              color="neutral"
+              :variant="isGrouped ? 'solid' : 'outline'"
+              @click="toggleGrouping"
+            />
 
-          <HomeDateRangePicker v-model="range" class="-ms-1" />
+            <HomeDateRangePicker v-model="range" class="-ms-1" />
+          </div>
         </template>
       </UDashboardToolbar>
     </template>
@@ -110,6 +128,7 @@ onMounted(() => {
     <template #body>
       <UContextMenu :items="tableContextMenuItems">
         <UTable
+          id="tour-transactions-table"
           ref="table"
           v-model:sorting="sorting"
           :column-visibility="columnVisibility"
@@ -133,6 +152,8 @@ onMounted(() => {
       </UContextMenu>
     </template>
   </UDashboardPanel>
+
+  <TourGuide :tour="tour" />
 
   <TransactionsListEditModal v-model="editModalOpen" :transaction="editingTransaction" />
 

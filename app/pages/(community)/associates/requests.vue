@@ -225,6 +225,8 @@ const columns: TableColumn<Associate>[] = [
 // request-intake workflow, not roster management.
 const tesseramentoLink = computed(() => `${useRequestURL().origin}/tesseramento`)
 const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramento/informativa-dati`)
+
+const tour = useAssociatesRequestsTour()
 </script>
 
 <template>
@@ -242,36 +244,48 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
         </template>
 
         <template #right>
-          <AssociatesListAddModal v-model="isModalOpen" />
+          <UButton
+            :label="$t('associate.requestsTour.startButton')"
+            icon="i-lucide-circle-help"
+            color="neutral"
+            variant="ghost"
+            @click="tour.start()"
+          />
 
           <USeparator orientation="vertical" class="h-4" />
 
-          <CopyLinkButton :url="tesseramentoLink" :label="$t('associate.copyTesseramentoLink')" />
-          <UTooltip :text="$t('associate.openTesseramentoLink')">
-            <UButton
-              :to="tesseramentoLink"
-              target="_blank"
-              :icon="ICONS.externalLink"
-              :aria-label="$t('associate.openTesseramentoLink')"
-              color="neutral"
-              variant="outline"
-              square
-            />
-          </UTooltip>
+          <div id="tour-requests-add">
+            <AssociatesListAddModal v-model="isModalOpen" />
+          </div>
 
           <USeparator orientation="vertical" class="h-4" />
 
-          <UTooltip :text="$t('associate.openInformativaDatiLink')">
-            <UButton
-              :to="informativaDatiLink"
-              target="_blank"
-              :icon="ICONS.externalLink"
-              :aria-label="$t('associate.openInformativaDatiLink')"
-              color="neutral"
-              variant="outline"
-              square
-            />
-          </UTooltip>
+          <div id="tour-requests-links" class="flex items-center gap-2">
+            <CopyLinkButton :url="tesseramentoLink" :label="$t('associate.copyTesseramentoLink')" />
+            <UTooltip :text="$t('associate.openTesseramentoLink')">
+              <UButton
+                :to="tesseramentoLink"
+                target="_blank"
+                :icon="ICONS.externalLink"
+                :aria-label="$t('associate.openTesseramentoLink')"
+                color="neutral"
+                variant="outline"
+                square
+              />
+            </UTooltip>
+
+            <UTooltip :text="$t('associate.openInformativaDatiLink')">
+              <UButton
+                :to="informativaDatiLink"
+                target="_blank"
+                :icon="ICONS.externalLink"
+                :aria-label="$t('associate.openInformativaDatiLink')"
+                color="neutral"
+                variant="outline"
+                square
+              />
+            </UTooltip>
+          </div>
 
           <USeparator orientation="vertical" class="h-4" />
 
@@ -281,14 +295,18 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
 
       <!-- Switcher shared with /associates (see AssociatesSubNav). -->
       <UDashboardToolbar>
-        <AssociatesSubNav :pending-count="pendingCount" />
+        <div id="tour-requests-subnav" class="w-fit">
+          <AssociatesSubNav :pending-count="pendingCount" />
+        </div>
       </UDashboardToolbar>
 
       <UDashboardToolbar
         :ui="{ root: 'flex-wrap h-auto py-2 gap-1.5', left: 'gap-4 flex-wrap', right: 'gap-4' }"
       >
         <template #left>
-          <StatusFilterGroup v-model="activeStatusTab" :items="statusTabs" />
+          <div id="tour-requests-filters">
+            <StatusFilterGroup v-model="activeStatusTab" :items="statusTabs" />
+          </div>
         </template>
 
         <template #right>
@@ -348,6 +366,7 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
     <template #body>
       <UContextMenu :items="tableContextMenuItems">
         <UTable
+          id="tour-requests-table"
           ref="table"
           v-model:sorting="sorting"
           v-model:column-filters="columnFilters"
@@ -396,4 +415,6 @@ const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramen
       </li>
     </ul>
   </ConfirmModal>
+
+  <TourGuide :tour="tour" />
 </template>

@@ -34,6 +34,8 @@ const viewModeItems = computed<TabsItem[]>(() => [
 ])
 
 const sorting = ref([{ id: 'startDate', desc: false }])
+
+const tour = useTournamentsTour()
 </script>
 
 <template>
@@ -51,11 +53,25 @@ const sorting = ref([{ id: 'startDate', desc: false }])
         </template>
 
         <template #right>
-          <ViewModeTabs v-model="viewMode" :items="viewModeItems" />
+          <UButton
+            :label="$t('tournament.tour.startButton')"
+            icon="i-lucide-circle-help"
+            color="neutral"
+            variant="ghost"
+            @click="tour.start()"
+          />
 
           <USeparator orientation="vertical" class="h-4" />
 
-          <TournamentsListAddModal v-model="isModalOpen" />
+          <div id="tour-tournaments-view-mode">
+            <ViewModeTabs v-model="viewMode" :items="viewModeItems" />
+          </div>
+
+          <USeparator orientation="vertical" class="h-4" />
+
+          <div id="tour-tournaments-add">
+            <TournamentsListAddModal v-model="isModalOpen" />
+          </div>
 
           <USeparator orientation="vertical" class="h-4" />
 
@@ -71,12 +87,16 @@ const sorting = ref([{ id: 'startDate', desc: false }])
         }"
       >
         <template #left>
-          <StatusFilterGroup v-model="statusFilter" :items="statusTabs" />
+          <div id="tour-tournaments-filters">
+            <StatusFilterGroup v-model="statusFilter" :items="statusTabs" />
+          </div>
         </template>
 
         <template #right>
           <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->
-          <HomeDateRangePicker v-model="range" class="-ms-1" />
+          <div id="tour-tournaments-actions">
+            <HomeDateRangePicker v-model="range" class="-ms-1" />
+          </div>
         </template>
       </UDashboardToolbar>
     </template>
@@ -86,7 +106,7 @@ const sorting = ref([{ id: 'startDate', desc: false }])
         <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
       </div>
 
-      <template v-else>
+      <div v-else id="tour-tournaments-content">
         <UContextMenu v-if="viewMode === 'table'" :items="tableContextMenuItems">
           <UTable
             v-model:sorting="sorting"
@@ -102,7 +122,9 @@ const sorting = ref([{ id: 'startDate', desc: false }])
           :tournaments="filteredTournaments"
           :context-menu-items="rowContextMenuItems"
         />
-      </template>
+      </div>
     </template>
   </UDashboardPanel>
+
+  <TourGuide :tour="tour" />
 </template>

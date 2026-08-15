@@ -121,6 +121,35 @@
       "conversions": "Conversioni",
       "revenue": "Revenue",
       "orders": "Ordini"
+    },
+    "tour": {
+      "startButton": "Tour guidato",
+      "steps": {
+        "quickCreate": {
+          "title": "Crea al volo",
+          "description": "Nuovo associato, transazione, torneo, lega o evento: da qui arrivi subito al modulo giusto, senza passare dalla pagina."
+        },
+        "filters": {
+          "title": "Periodo",
+          "description": "L'intervallo di date e il raggruppamento (giornaliero, settimanale, mensile) filtrano tutta la dashboard qui sotto: statistiche, grafico e vendite."
+        },
+        "stats": {
+          "title": "Statistiche",
+          "description": "Un colpo d'occhio su associati, conversioni, revenue e ordini nel periodo selezionato."
+        },
+        "chart": {
+          "title": "Andamento",
+          "description": "Lo stesso periodo, in un grafico: utile per notare picchi o cali a occhio prima di guardare i numeri."
+        },
+        "sales": {
+          "title": "Ultime vendite",
+          "description": "Le transazioni più recenti nel periodo selezionato, con stato e importo."
+        },
+        "done": {
+          "title": "Pronto!",
+          "description": "Ora sai come funziona questa pagina. Buon lavoro!"
+        }
+      }
     }
   },
   "associate": {
@@ -188,6 +217,64 @@
     "views": {
       "table": "Tabella",
       "map": "Mappa"
+    },
+    "tour": {
+      "startButton": "Tour guidato",
+      "steps": {
+        "viewMode": {
+          "title": "Tabella o Mappa",
+          "description": "Passa dalla tabella alla vista mappa: mostra i soci già geolocalizzati sul territorio."
+        },
+        "subNav": {
+          "title": "Anagrafica o Richieste",
+          "description": "Qui vedi solo i soci già approvati. Le richieste di tesseramento in attesa o rifiutate sono in una pagina a parte."
+        },
+        "filters": {
+          "title": "Filtri",
+          "description": "Stato (attivi, da rinnovare), email e consenso social restringono chi vedi in tabella."
+        },
+        "actions": {
+          "title": "Colonne",
+          "description": "Molte colonne sono nascoste di default: mostra o nascondi quelle che ti servono da qui."
+        },
+        "table": {
+          "title": "Azioni sul socio",
+          "description": "Tasto destro su una riga per modificare i dati del socio o registrare un rinnovo."
+        },
+        "done": {
+          "title": "Pronto!",
+          "description": "Ora sai come funziona questa pagina. Buon lavoro!"
+        }
+      }
+    },
+    "requestsTour": {
+      "startButton": "Tour guidato",
+      "steps": {
+        "add": {
+          "title": "Nuova richiesta",
+          "description": "Aggiungi manualmente una richiesta di tesseramento, ad esempio per chi si iscrive di persona."
+        },
+        "links": {
+          "title": "Modulo pubblico",
+          "description": "Copia o apri il link al modulo di tesseramento online, e l'informativa sul trattamento dei dati che lo accompagna."
+        },
+        "subNav": {
+          "title": "Anagrafica o Richieste",
+          "description": "Questa è la coda da lavorare: solo le richieste non ancora approvate. I soci già approvati sono nell'anagrafica."
+        },
+        "filters": {
+          "title": "Filtri",
+          "description": "In attesa o rifiutate: la pagina si apre di default su \"In attesa\", la coda che serve davvero un'azione."
+        },
+        "table": {
+          "title": "Azioni sulla richiesta",
+          "description": "Tasto destro su una riga per approvare una richiesta in attesa o ripristinarne una rifiutata. Seleziona più righe per approvare o rifiutare in blocco."
+        },
+        "done": {
+          "title": "Pronto!",
+          "description": "Ora sai come funziona questa pagina. Buon lavoro!"
+        }
+      }
     },
     "map": {
       "missingCoordinates": "1 associato non ancora geolocalizzato | {count} associati non ancora geolocalizzati"
@@ -362,6 +449,31 @@
   },
   "transaction": {
     "breadcrumb": "Transazioni",
+    "tour": {
+      "startButton": "Tour guidato",
+      "steps": {
+        "add": {
+          "title": "Nuova transazione",
+          "description": "Registra un pagamento: quota associativa, torneo, evento o donazione."
+        },
+        "filters": {
+          "title": "Tipologia",
+          "description": "Filtra per tipo di pagamento — con un tipo specifico attivo la colonna \"Tipologia\" si nasconde da sola, tanto la sai già."
+        },
+        "actions": {
+          "title": "Raggruppa e periodo",
+          "description": "Raggruppa le transazioni per chi ha pagato, e restringi il periodo con il selettore di date."
+        },
+        "table": {
+          "title": "Azioni sulla transazione",
+          "description": "Tasto destro su una riga per modificarla o eliminarla."
+        },
+        "done": {
+          "title": "Pronto!",
+          "description": "Ora sai come funziona questa pagina. Buon lavoro!"
+        }
+      }
+    },
     "tabs": {
       "all": "Tutte le transazioni",
       "associationFee": "Quote associative",
@@ -475,6 +587,31 @@
     "grid": {
       "empty": "Nessuna lega trovata con questi filtri"
     },
+    "tour": {
+      "startButton": "Tour guidato",
+      "steps": {
+        "viewMode": {
+          "title": "Griglia o Tabella",
+          "description": "Passa dalla vista a griglia a quella tabellare in qualsiasi momento."
+        },
+        "add": {
+          "title": "Nuova lega",
+          "description": "Crea una nuova lega da qui."
+        },
+        "filters": {
+          "title": "Stato",
+          "description": "Filtra le leghe per stato: bozza, attiva, completata o annullata."
+        },
+        "content": {
+          "title": "Elenco leghe",
+          "description": "Qui trovi tutte le leghe, con i relativi tornei collegati. Clic destro per copiare link o ID."
+        },
+        "done": {
+          "title": "Pronto!",
+          "description": "Ora sai come funziona questa pagina. Buon lavoro!"
+        }
+      }
+    },
     "status": {
       "draft": "Bozza",
       "active": "Attiva",
@@ -547,8 +684,58 @@
     "grid": {
       "empty": "Nessun evento trovato con questi filtri"
     },
+    "tour": {
+      "startButton": "Tour guidato",
+      "steps": {
+        "viewMode": {
+          "title": "Griglia o Tabella",
+          "description": "Passa dalla vista a griglia a quella tabellare in qualsiasi momento."
+        },
+        "add": {
+          "title": "Nuovo evento",
+          "description": "Crea un nuovo evento da qui."
+        },
+        "filters": {
+          "title": "Stato",
+          "description": "Filtra gli eventi per stato."
+        },
+        "actions": {
+          "title": "Intervallo di date",
+          "description": "Restringi gli eventi visualizzati a un intervallo di date specifico."
+        },
+        "content": {
+          "title": "Elenco eventi",
+          "description": "Qui trovi tutti gli eventi, con dettagli su data e tornei collegati. Clic destro per copiare link o ID."
+        },
+        "done": {
+          "title": "Pronto!",
+          "description": "Ora sai come funziona questa pagina. Buon lavoro!"
+        }
+      }
+    },
     "copyPublicLink": "Copia il link al calendario pubblico",
     "openPublicLink": "Apri il calendario pubblico",
+    "calendarTour": {
+      "startButton": "Tour guidato",
+      "steps": {
+        "publicLink": {
+          "title": "Link pubblico",
+          "description": "Questa è la stessa pagina che vedono i visitatori su {link}: copia o apri il link per condividerla."
+        },
+        "monthPicker": {
+          "title": "Cambia mese",
+          "description": "Sfoglia i mesi per vedere gli eventi e i tornei passati o futuri."
+        },
+        "cards": {
+          "title": "Eventi e tornei",
+          "description": "Tocca una scheda per i dettagli: luogo, referente, quota e preiscritti. I tornei raggruppati sotto un evento si aprono allo stesso modo."
+        },
+        "done": {
+          "title": "Pronto!",
+          "description": "Ora sai come funziona questa pagina. Buon lavoro!"
+        }
+      }
+    },
     "calendar": {
       "addToCalendar": "Aggiungi al calendario",
       "previousMonth": "Mese precedente",
@@ -686,6 +873,35 @@
     },
     "grid": {
       "empty": "Nessun torneo trovato con questi filtri"
+    },
+    "tour": {
+      "startButton": "Tour guidato",
+      "steps": {
+        "viewMode": {
+          "title": "Griglia o Tabella",
+          "description": "Passa dalla vista a griglia a quella tabellare in qualsiasi momento."
+        },
+        "add": {
+          "title": "Nuovo torneo",
+          "description": "Crea un nuovo torneo da qui."
+        },
+        "filters": {
+          "title": "Stato",
+          "description": "Filtra i tornei per stato: bozza, iscrizioni aperte, in corso e altro."
+        },
+        "actions": {
+          "title": "Intervallo di date",
+          "description": "Restringi i tornei visualizzati a un intervallo di date specifico."
+        },
+        "content": {
+          "title": "Elenco tornei",
+          "description": "Qui trovi tutti i tornei, con dettagli su data, formato e iscritti. Clic destro per copiare link o ID."
+        },
+        "done": {
+          "title": "Pronto!",
+          "description": "Ora sai come funziona questa pagina. Buon lavoro!"
+        }
+      }
     },
     "status": {
       "draft": "Bozza",
@@ -825,7 +1041,28 @@
     },
     "copyPublicLink": "Copia il link alla classifica pubblica",
     "openPublicLink": "Apri la classifica pubblica",
-    "tabTitle": "Classifica {format}"
+    "tabTitle": "Classifica {format}",
+    "tour": {
+      "startButton": "Tour guidato",
+      "steps": {
+        "leagueTabs": {
+          "title": "Cambia lega",
+          "description": "Sfoglia le leghe per vedere la classifica di ciascuna."
+        },
+        "publicLink": {
+          "title": "Link pubblico",
+          "description": "Questa è la stessa classifica che vedono i visitatori: copia o apri il link per condividerla."
+        },
+        "content": {
+          "title": "Classifica",
+          "description": "Ogni colonna è un evento della lega; il totale somma solo i migliori punteggi, gli altri restano visibili tra parentesi."
+        },
+        "done": {
+          "title": "Pronto!",
+          "description": "Ora sai come funziona questa pagina. Buon lavoro!"
+        }
+      }
+    }
   },
   "cittadino": {
     "breadcrumb": "Cittadino",
@@ -858,7 +1095,32 @@
       "title": "Classifica non disponibile",
       "description": "Non è stato possibile caricare la classifica di questa edizione."
     },
-    "footnote": "Il totale somma solo i {counted} migliori punteggi di ogni giocatore; i risultati scartati restano visibili tra parentesi. I primi {finalists} accedono alla finale."
+    "footnote": "Il totale somma solo i {counted} migliori punteggi di ogni giocatore; i risultati scartati restano visibili tra parentesi. I primi {finalists} accedono alla finale.",
+    "tour": {
+      "startButton": "Tour guidato",
+      "steps": {
+        "editionTabs": {
+          "title": "Cambia edizione",
+          "description": "Sfoglia le edizioni passate del Cittadino."
+        },
+        "publicLink": {
+          "title": "Link pubblico",
+          "description": "Questa è la stessa classifica che vedono i visitatori: copia o apri il link per condividerla."
+        },
+        "filters": {
+          "title": "Filtra per formato",
+          "description": "Ricalcola la classifica considerando solo i formati selezionati."
+        },
+        "content": {
+          "title": "Classifica",
+          "description": "Ogni colonna è un evento; il totale somma solo i migliori punteggi, gli altri restano visibili tra parentesi. La riga evidenziata segna il taglio dei finalisti."
+        },
+        "done": {
+          "title": "Pronto!",
+          "description": "Ora sai come funziona questa pagina. Buon lavoro!"
+        }
+      }
+    }
   },
   "player": {
     "breadcrumb": "Giocatori",
@@ -872,6 +1134,23 @@
       "pauperwaveAssociateNumber": "Tessera",
       "emailAddress": "Email",
       "createdAt": "Registrato il"
+    },
+    "tour": {
+      "startButton": "Tour guidato",
+      "steps": {
+        "filters": {
+          "title": "Attivi o Non attivi",
+          "description": "Filtra i giocatori per stato — la pagina si apre di default sugli attivi."
+        },
+        "actions": {
+          "title": "Colonne",
+          "description": "Mostra o nascondi le colonne della tabella da qui."
+        },
+        "done": {
+          "title": "Pronto!",
+          "description": "Ora sai come funziona questa pagina. Buon lavoro!"
+        }
+      }
     }
   },
   "wantedCard": {
@@ -1052,6 +1331,23 @@
       "commander": "Commander",
       "premodern": "Premodern",
       "pauper": "Pauper"
+    },
+    "tour": {
+      "startButton": "Tour guidato",
+      "steps": {
+        "tabs": {
+          "title": "Cambia formato",
+          "description": "Passa da un formato all'altro per leggere il regolamento specifico."
+        },
+        "content": {
+          "title": "Regolamento",
+          "description": "Qui trovi come si assegnano i punti, i criteri di spareggio e le altre regole del formato selezionato."
+        },
+        "done": {
+          "title": "Pronto!",
+          "description": "Ora sai come funziona questa pagina. Buon lavoro!"
+        }
+      }
     },
     "cittadino": {
       "title": "Campionato Cittadino",
