@@ -10,7 +10,9 @@ export function useLeaguesTableColumns() {
   const columnHeaders: Record<string, string> = {
     status: t('league.columns.status'),
     name: t('league.columns.name'),
-    tournamentCount: t('league.columns.tournamentCount')
+    tournamentCount: t('league.columns.tournamentCount'),
+    season: t('league.columns.season'),
+    ruleset: t('league.columns.ruleset')
   }
 
   const columns: TableColumn<League>[] = [
@@ -35,6 +37,14 @@ export function useLeaguesTableColumns() {
         completed: row.original.completedTournamentCount,
         total: row.original.tournamentCount
       })
+    },
+    {
+      accessorKey: 'season',
+      header: t('league.columns.season')
+    },
+    {
+      accessorKey: 'ruleset',
+      header: t('league.columns.ruleset')
     }
   ]
 

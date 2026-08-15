@@ -1,64 +1,60 @@
 // app\composables\tournaments\useTournamentsQuery.ts
 import type { Tournament, TournamentStatus } from '~/types'
 
-interface TournamentRow {
-  id: number
-  uuid: string
-  event: string | null
-  league: string | null
-  name: string
-  start_date: string
-  end_date: string
-  round_count: number
-  round_duration: number
-  registered_players: number
-  organizer: string
-  format: string
-  status: string
-  location: string
-  entry_fee: number
-  description: string
-  prizes: string
-  companion_code: string | null
-  image: string | null
-  participants: string[]
-  contact_name: string | null
-  contact_phone: string | null
-}
-
 export const TOURNAMENTS_KEY = ['tournaments']
 
-// Backed by mock data (no Supabase table yet, see server/api/tournaments.ts) —
-// still wrapped in useQuery (not useAsyncData) so the calling convention already
-// matches the migrated domains (wanted-cards, associates): swapping the mock
-// $fetch for a real Supabase read later only touches the query() body here, not
-// every consumer. No mutations composable yet — nothing writable exists server-side.
+// Migrated off mock data (server/api/tournaments.ts, removed) onto the real
+// `tournaments` table (migration 20260815100000/20260815101000) — direct
+// Supabase read + join, same pattern as useWantedCardsQuery.ts. `events` and
+// `leagues` are both real now too (2026-08-15), so event_uuid/league_uuid
+// resolve to real names — PublicCalendarPage.vue groups by eventUuid, not
+// the name, to avoid a name-collision misgrouping.
 export function useTournamentsQuery() {
+  const supabase = useSupabaseClient()
+
   return useQuery({
     key: TOURNAMENTS_KEY,
     query: async (): Promise<Tournament[]> => {
-      const rows = await $fetch<TournamentRow[]>('/api/tournaments')
-      return rows.map(row => ({
+      const { data, error } = await supabase
+        .from('tournaments')
+        .select(`
+          *,
+          location:locations(name, address, city, province, postal_code, country),
+          organizer:organizations(name),
+          format:mtg_formats(name),
+          event:events(uuid, name),
+          league:leagues(name)
+        `)
+        .is('deleted_at', null)
+        .order('starts_at', { ascending: true })
+        .order('id', { ascending: true })
+
+      if (error) throw error
+
+      return data.map(row => ({
         id: row.id,
         uuid: row.uuid,
-        event: row.event,
-        league: row.league,
+        event: row.event?.name ?? null,
+        eventUuid: row.event?.uuid ?? null,
+        league: row.league?.name ?? null,
         name: row.name,
-        startDate: row.start_date,
-        endDate: row.end_date,
+        startDate: row.starts_at ?? row.created_at,
+        endDate: row.ends_at,
         roundCount: row.round_count,
-        roundDuration: row.round_duration,
         registeredPlayers: row.registered_players,
-        organizer: row.organizer,
-        format: row.format,
+        organizer: row.organizer?.name ?? null,
+        format: row.format?.name ?? '',
         status: row.status as TournamentStatus,
-        location: row.location,
+        location: row.location?.name ?? null,
+        locationAddress: row.location
+          ? `${row.location.address}, ${row.location.postal_code} ${row.location.city} ${row.location.province}, ${row.location.country}`
+          : null,
         entryFee: row.entry_fee,
         description: row.description,
         prizes: row.prizes,
         companionCode: row.companion_code,
-        image: row.image,
-        participants: row.participants,
+        image: row.image_url,
+        participants: row.participant_names ?? [],
         contactName: row.contact_name,
         contactPhone: row.contact_phone
       }))

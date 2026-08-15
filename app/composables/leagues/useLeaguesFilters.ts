@@ -15,7 +15,7 @@ export function useLeaguesFilters(data: Ref<League[]>) {
   // Counts from the full unfiltered `data`, same convention as
   // useWantedCardsFilters.ts's statusTabs.
   const statusCounts = computed(() => {
-    const counts: Record<LeagueStatus, number> = { scheduled: 0, ongoing: 0, completed: 0 }
+    const counts: Record<LeagueStatus, number> = { draft: 0, active: 0, completed: 0, cancelled: 0 }
     for (const league of data.value) {
       if (league.status in counts) counts[league.status]++
     }
@@ -24,9 +24,11 @@ export function useLeaguesFilters(data: Ref<League[]>) {
 
   const statusTabs = computed<{ label: string, value: 'all' | LeagueStatus, count?: number }[]>(() => [
     { label: t('league.filters.statusAll'), value: 'all', count: undefined },
-    { label: t('league.status.scheduled'), value: 'scheduled', count: statusCounts.value.scheduled },
-    { label: t('league.status.ongoing'), value: 'ongoing', count: statusCounts.value.ongoing },
-    { label: t('league.status.completed'), value: 'completed', count: statusCounts.value.completed }
+    ...LEAGUE_STATUSES.map(status => ({
+      label: t(`league.status.${status}`),
+      value: status,
+      count: statusCounts.value[status]
+    }))
   ])
 
   return { statusFilter, filteredLeagues, statusTabs }

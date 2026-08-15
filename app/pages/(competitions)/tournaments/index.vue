@@ -25,6 +25,7 @@ const {
 const data = computed(() => tournamentsData.value ?? [])
 const { statusFilter, filteredTournaments, statusTabs } = useTournamentsFilters(data, range)
 const { columns } = useTournamentsTableColumns()
+const { rowContextMenuItems, onRowContextmenu, tableContextMenuItems } = useCopyLinkContextMenu('/tournaments')
 
 const viewMode = ref<'table' | 'grid'>('grid')
 const viewModeItems = computed<TabsItem[]>(() => [
@@ -86,17 +87,20 @@ const sorting = ref([{ id: 'startDate', desc: false }])
       </div>
 
       <template v-else>
-        <UTable
-          v-if="viewMode === 'table'"
-          v-model:sorting="sorting"
-          :data="filteredTournaments"
-          :columns="columns"
-          class="w-full"
-        />
+        <UContextMenu v-if="viewMode === 'table'" :items="tableContextMenuItems">
+          <UTable
+            v-model:sorting="sorting"
+            :data="filteredTournaments"
+            :columns="columns"
+            class="w-full"
+            @contextmenu="onRowContextmenu"
+          />
+        </UContextMenu>
 
         <TournamentsListGridView
           v-else
           :tournaments="filteredTournaments"
+          :context-menu-items="rowContextMenuItems"
         />
       </template>
     </template>

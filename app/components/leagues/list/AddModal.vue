@@ -1,40 +1,109 @@
 <!-- app\components\leagues\list\AddModal.vue -->
 <script setup lang="ts">
+import { CalendarDate, getLocalTimeZone } from '@internationalized/date'
+import type { DateValue } from '@internationalized/date'
 import * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
+import type { NewLeaguePayload } from '#shared/types/leagues'
 
-// Define the model to accept open state from parent
 const open = defineModel<boolean>({ default: false })
 const toast = useToast()
 const { t } = useI18n()
 
+// Migrated off the name/email placeholder stub onto the real `leagues` table
+// (2026-08-15) — rulesets, see useRulesetsQuery.ts (same shared-lookup
+// convention as tournaments'/events' AddModal.vue).
+const { data: rulesets } = useRulesetsQuery()
+const { createLeague } = useLeaguesMutations()
+
+const statusOptions = computed(() => LEAGUE_STATUSES.map(status => ({
+  value: status,
+  label: t(`league.addModal.statusOptions.${status}`),
+  icon: LEAGUE_STATUS_ICONS[status],
+  color: leagueStatusColor(status)
+})))
+
+const rulesetOptions = computed(() => (rulesets.value ?? []).map(ruleset => ({
+  value: ruleset.uuid, label: ruleset.name
+})))
+
+const today = new Date()
+const todayString = today.toISOString().substring(0, 10)
+
 const schema = v.object({
-  name: v.pipe(
-    v.string(t('league.addModal.validation.nameRequired')),
-    v.minLength(2, t('league.addModal.validation.nameTooShort'))
-  ),
-  email: v.pipe(
-    v.string(t('league.addModal.validation.emailRequired')),
-    v.email(t('league.addModal.validation.invalidEmail'))
-  )
+  status: v.picklist(LEAGUE_STATUSES),
+  name: v.pipe(v.string(), v.minLength(1, t('league.addModal.validation.nameRequired'))),
+  season: v.optional(v.nullable(v.string())),
+  startDate: v.string(),
+  rulesetUuid: v.optional(v.string())
 })
 
 type Schema = v.InferOutput<typeof schema>
 
-const state = reactive<Partial<Schema>>({
-  name: undefined,
-  email: undefined
+const state = reactive<Schema>({
+  name: '',
+  status: 'draft',
+  season: undefined,
+  startDate: todayString,
+  rulesetUuid: undefined
 })
 
+const startDate = shallowRef<DateValue>(
+  new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate())
+)
+
+watch(startDate, (newDate) => {
+  if (newDate) {
+    state.startDate = `${newDate.year}-${String(newDate.month).padStart(2, '0')}-${String(newDate.day).padStart(2, '0')}`
+  }
+})
+
+const formattedStartDate = computed(() => {
+  if (!startDate.value) return ''
+  const date = new Date(startDate.value.year, startDate.value.month - 1, startDate.value.day)
+  return date.toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' })
+})
+
+const selectedStatus = computed(() =>
+  statusOptions.value.find(option => option.value === state.status))
+
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  toast.add({ title: t('league.addModal.successToastTitle'), description: t('league.addModal.successToastDescription', { name: event.data.name }), color: 'success' })
-  open.value = false
+  const startsAt = new CalendarDate(
+    startDate.value!.year, startDate.value!.month, startDate.value!.day
+  ).toDate(getLocalTimeZone())
+
+  const payload: NewLeaguePayload = {
+    name: event.data.name,
+    status: event.data.status,
+    season: event.data.season || null,
+    rulesetUuid: event.data.rulesetUuid || null,
+    startsAt: startsAt.toISOString(),
+    endsAt: null
+  }
+
+  try {
+    await createLeague.mutateAsync(payload)
+    toast.add({
+      title: t('league.addModal.successToastTitle'),
+      description: t('league.addModal.successToastDescription', { name: payload.name }),
+      color: 'success'
+    })
+    open.value = false
+  } catch (err) {
+    toast.add({
+      title: t('league.addModal.errorToastTitle'),
+      description: toErrorMessage(err),
+      color: 'error'
+    })
+  }
 }
 </script>
 
 <template>
   <UModal
     v-model:open="open"
+    :dismissible="false"
+    :ui="{ content: 'max-w-xl' }"
     :title="$t('league.addModal.title')"
     :description="$t('league.addModal.description')"
   >
@@ -48,31 +117,89 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       <UForm
         :schema="schema"
         :state="state"
-        class="space-y-4"
+        class="space-y-6"
         @submit="onSubmit"
       >
-        <UFormField :label="$t('league.addModal.fields.name')" placeholder="John Doe" name="name">
-          <UInput v-model="state.name" class="w-full" />
-        </UFormField>
-        <UFormField
-          :label="$t('league.addModal.fields.email')"
-          placeholder="john.doe@example.com"
-          name="email"
-        >
-          <UInput v-model="state.email" class="w-full" />
-        </UFormField>
-        <div class="flex justify-end gap-2">
+        <div class="space-y-4">
+          <p class="text-lg font-semibold text-primary">
+            {{ $t('league.addModal.leagueData') }}
+          </p>
+
+          <div class="flex justify-between gap-2">
+            <UFormField :label="$t('league.addModal.fields.status')" class="flex-1" name="status">
+              <USelect
+                v-model="state.status"
+                :items="statusOptions"
+                value-key="value"
+                class="w-full"
+              >
+                <template #leading>
+                  <UIcon v-if="selectedStatus" :name="selectedStatus.icon" class="size-5 shrink-0" />
+                </template>
+              </USelect>
+            </UFormField>
+
+            <UFormField :label="$t('league.addModal.fields.season')" name="season">
+              <UInput
+                :model-value="state.season ?? ''"
+                :placeholder="$t('league.addModal.fields.seasonPlaceholder')"
+                class="w-42"
+                @update:model-value="state.season = ($event as string) || undefined"
+              />
+            </UFormField>
+          </div>
+
+          <!-- eslint-disable-next-line -->
+          <UFormField :label="$t('league.addModal.fields.name')" name="name" required>
+            <UInput
+              v-model="state.name"
+              class="w-full"
+              :placeholder="$t('league.addModal.fields.namePlaceholder')"
+              :icon="ICONS.standings"
+            />
+          </UFormField>
+
+          <div class="grid grid-cols-2 gap-4">
+            <UFormField :label="$t('event.addModal.fields.startDate')" name="startDate">
+              <UPopover>
+                <UInput
+                  :model-value="formattedStartDate"
+                  readonly
+                  class="w-full"
+                  :icon="ICONS.calendar"
+                />
+
+                <template #content>
+                  <UCalendar v-model="startDate" class="p-2" />
+                </template>
+              </UPopover>
+            </UFormField>
+
+            <UFormField :label="$t('league.addModal.fields.ruleset')" name="rulesetUuid">
+              <USelectMenu
+                v-model="state.rulesetUuid"
+                class="w-full"
+                :items="rulesetOptions"
+                value-key="value"
+                :placeholder="$t('league.addModal.fields.selectRuleset')"
+                :icon="ICONS.bookOpen"
+              />
+            </UFormField>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-4">
           <UButton
             :label="$t('league.addModal.cancel')"
             color="neutral"
-            variant="subtle"
-            @click="() => { open = false }"
+            variant="ghost"
+            @click="open = false"
           />
           <UButton
             :label="$t('league.addModal.create')"
-            color="primary"
-            variant="solid"
+            :icon="ICONS.confirm"
             type="submit"
+            :loading="createLeague.isLoading.value"
           />
         </div>
       </UForm>

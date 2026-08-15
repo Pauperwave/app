@@ -15,21 +15,28 @@
 <script lang="ts" setup>
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
-import type { EventStatus } from '~/types'
 import type { CalendarIcsItem } from '~/utils/events/eventIcs'
 
 interface Props {
   name: string
   startDate: string
-  status: EventStatus
-  location: string
+  // Shared between Event and Tournament cards, which have independently
+  // evolving status vocabularies (EventStatus vs. TournamentStatus, migration
+  // 20260815100000) — only the 'completed' literal common to both is ever
+  // compared here, so a plain string is looser but correct for both.
+  status: string
+  // Nullable (2026-08-15): not every tournament has a location_uuid set yet.
+  // locationAddress feeds the maps link when present (more precise than the
+  // venue name alone); falls back to `location` when it isn't.
+  location: string | null
+  locationAddress?: string | null
   image: string | null
   icsItem: CalendarIcsItem
   participants?: string[]
 }
 
 const {
-  name, startDate, status, location, image, icsItem, participants = []
+  name, startDate, status, location, locationAddress = null, image, icsItem, participants = []
 } = defineProps<Props>()
 
 defineEmits<{ select: [] }>()
@@ -81,7 +88,8 @@ const coverImage = computed(() => image ?? DEFAULT_CALENDAR_COVER_IMAGE)
         <slot name="meta" />
 
         <a
-          :href="googleMapsUrl(location)"
+          v-if="location"
+          :href="googleMapsUrl(locationAddress ?? location)"
           target="_blank"
           rel="noopener noreferrer"
           class="flex items-center gap-1 text-sm text-muted mt-1 hover:underline w-fit"

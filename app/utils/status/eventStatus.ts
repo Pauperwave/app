@@ -1,18 +1,20 @@
 // app\utils\status\eventStatus.ts
 import type { EventStatus } from '~/types'
 
-export const EVENT_STATUSES: EventStatus[] = ['scheduled', 'ongoing', 'completed', 'canceled']
+export const EVENT_STATUSES: EventStatus[] = ['draft', 'published', 'ongoing', 'completed', 'cancelled']
 
-export function eventStatusColor(status: EventStatus): 'info' | 'warning' | 'success' | 'error' {
+export function eventStatusColor(status: EventStatus): 'neutral' | 'info' | 'warning' | 'success' | 'error' {
+  if (status === 'draft') return 'neutral'
   if (status === 'ongoing') return 'warning'
   if (status === 'completed') return 'success'
-  if (status === 'canceled') return 'error'
+  if (status === 'cancelled') return 'error'
   return 'info'
 }
 
 export const EVENT_STATUS_ICONS: Record<EventStatus, string> = {
-  scheduled: ICONS.clock,
+  draft: ICONS.edit,
+  published: ICONS.clock,
   ongoing: ICONS.pending,
   completed: ICONS.successFilledBig,
-  canceled: ICONS.clear
+  cancelled: ICONS.clear
 }

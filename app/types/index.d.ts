@@ -18,9 +18,15 @@ export type AssociateType = 'regular' | 'sustaining'
 // membership_request_status ('pending'/'rejected').
 export type MembershipStatus = RequestStatus | 'active' | 'to_renew' | 'expired'
 
-export type TournamentStatus = 'scheduled' | 'canceled' | 'ongoing' | 'completed'
-export type LeagueStatus = 'scheduled' | 'ongoing' | 'completed'
-export type EventStatus = 'scheduled' | 'ongoing' | 'completed' | 'canceled'
+// Matches the DB check constraint (ck_tournaments_status) verbatim — adopted
+// directly instead of mapped to a UI-only vocabulary (2026-08-15 user request).
+export type TournamentStatus = 'draft' | 'registration_open' | 'in_progress' | 'completed' | 'cancelled'
+// Matches the DB check constraint (ck_leagues_status) verbatim, same
+// convention as TournamentStatus/EventStatus (2026-08-15 user request).
+export type LeagueStatus = 'draft' | 'active' | 'completed' | 'cancelled'
+// Matches the DB check constraint (ck_events_status) verbatim, same
+// convention as TournamentStatus (2026-08-15 user request).
+export type EventStatus = 'draft' | 'published' | 'ongoing' | 'completed' | 'cancelled'
 
 type AssociateRow = Database['public']['Tables']['pauperwave_associates']['Row']
 
@@ -161,58 +167,79 @@ export interface WantedCard {
   playerAssociateUuid: string
 }
 
-// Backed by mock data in server/api/tournaments.ts (no Supabase table yet) — mapped
-// from its snake_case rows onto this camelCase interface in useTournamentsQuery.ts,
-// same convention as WantedCard above.
+// Backed by the real `tournaments` table (migration 20260815100000) — mapped
+// from its snake_case rows, with location/organizer/format/event resolved
+// from their FK'd tables into flat display strings, onto this camelCase
+// interface in useTournamentsQuery.ts, same convention as WantedCard above.
 export interface Tournament {
   id: number
   uuid: string
   event: string | null
+  // Matched against separately, not by `event` name (2026-08-15) — PublicCalendarPage.vue
+  // groups tournaments under their event by uuid, a name collision can't misgroup them.
+  eventUuid: string | null
   league: string | null
   name: string
   startDate: string
-  endDate: string
-  roundCount: number
-  roundDuration: number
-  registeredPlayers: number
-  organizer: string
+  endDate: string | null
+  roundCount: number | null
+  registeredPlayers: number | null
+  organizer: string | null
   format: string
   status: TournamentStatus
-  location: string
-  entryFee: number
-  description: string
-  prizes: string
+  // Venue name (e.g. "Smart Lab - Centro Giovani Rovereto") — kept separate
+  // from `locationAddress` (see locations table, migration 20260815100000)
+  // so a maps link can use the precise address while the UI still shows the
+  // friendlier name, resolving the old "just the name of the place" TODO.
+  location: string | null
+  locationAddress: string | null
+  entryFee: number | null
+  description: string | null
+  prizes: string | null
   companionCode: string | null
   image: string | null
   participants: string[]
   // Distinct from `organizer` (the running club/group, e.g. "PauperWave") —
   // the specific person to contact about this tournament. Both optional:
-  // most mock tournaments have neither, only a real name implies a phone
-  // worth showing (see server/api/tournaments.ts's Hobbit draft override).
+  // most tournaments have neither, only a real name implies a phone worth
+  // showing (see the Hobbit draft seed, migration 20260815100500).
   contactName: string | null
   contactPhone: string | null
 }
 
-// Backed by mock data in server/api/leagues.ts (no Supabase table yet) — same
-// mapping convention as Tournament above.
+// Backed by the real `leagues` table — mapped from its snake_case rows, with
+// ruleset resolved from its FK'd table, same convention as Tournament above.
+// tournamentCount/completedTournamentCount are derived (count of
+// tournaments.league_uuid = this league, and of those with status
+// 'completed'), not stored columns.
 export interface League {
   id: number
+  uuid: string
   status: LeagueStatus
   name: string
+  season: string | null
+  ruleset: string | null
   tournamentCount: number
   completedTournamentCount: number
 }
 
-// Backed by mock data in server/api/events.ts (no Supabase table yet) — same
-// mapping convention as League above.
+// Backed by the real `events` table — mapped from its snake_case rows, with
+// location/organizer resolved from their FK'd tables into flat display
+// strings, same convention as Tournament above. tournamentCount is derived
+// (count of tournaments.event_uuid = this event), not a stored column.
 export interface Event {
   id: number
+  uuid: string
   status: EventStatus
   name: string
   startDate: string
+  endDate: string | null
   tournamentCount: number
-  location: string
+  organizer: string | null
+  location: string | null
+  locationAddress: string | null
   image: string | null
+  companionCode: string | null
 }
 
 // --- Campionato Cittadino -----------------------------------------------------

@@ -31,9 +31,10 @@ function openTournamentDetail(tournament: Tournament) {
   selection.value = { kind: 'tournament', tournament }
 }
 
-// Same reasoning as CalendarTournamentCard.vue's timeRange.
+// Same reasoning as CalendarTournamentCard.vue's timeRange (endDate nullable).
 function tournamentTimeRange(tournament: Tournament): string {
   const start = format(new Date(tournament.startDate), 'HH:mm')
+  if (!tournament.endDate) return start
   const end = format(new Date(tournament.endDate), 'HH:mm')
   return `${start}–${end}`
 }
@@ -73,15 +74,15 @@ const participants = computed(() => tournaments.flatMap(tournament => tournament
 
           <span
             class="truncate flex-1 min-w-0"
-            :class="{ 'line-through text-error': tournament.status === 'canceled' }"
+            :class="{ 'line-through text-error': tournament.status === 'cancelled' }"
           >
             {{ tournament.name }}
           </span>
 
           <span
-            v-if="tournament.status === 'ongoing'"
+            v-if="tournament.status === 'in_progress'"
             class="size-2 rounded-full bg-warning shrink-0 animate-pulse motion-reduce:animate-none"
-            :title="t('event.status.ongoing')"
+            :title="t('tournament.status.in_progress')"
           />
 
           <span class="text-muted text-xs shrink-0">
