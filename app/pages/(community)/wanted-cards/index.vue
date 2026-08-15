@@ -3,6 +3,7 @@
 import { getGroupedRowModel } from '@tanstack/vue-table'
 import type { TabsItem } from '@nuxt/ui'
 import type { WantedCard } from '~/types'
+import type { WantedCardColorFilter } from '~/composables/wantedCards/useWantedCardsFilters'
 
 const { t } = useI18n()
 
@@ -31,16 +32,17 @@ const viewModeItems = computed<TabsItem[]>(() => [
 const {
   currentAssociate,
   statusFilter,
-  languageFilter,
-  treatmentFilter,
+  colorFilters,
+  toggleColorFilter,
   onlyMine,
-  toggleTreatmentFilter,
   filteredCards,
-  languageFacetItems,
-  selectedLanguage,
-  treatmentFacetItems,
-  statusTabs
+  statusTabs,
+  colorTabs
 } = useWantedCardsFilters(data)
+
+function isColorTabActive(value: WantedCardColorFilter): boolean {
+  return value === 'all' ? colorFilters.value.length === 0 : colorFilters.value.includes(value)
+}
 
 const selection = useSelection<number>()
 const { columns, columnHeaders } = useWantedCardsTableColumns(selection)
@@ -129,13 +131,14 @@ function toggleGrouping() {
 
 // The table sorts through clickable column headers (sortableHeader); the grid has
 // no columns, so it uses a dedicated selector instead.
-const gridSortField = ref<'player' | 'cardmarketPrice' | 'date' | 'cardName'>('player')
+const gridSortField = ref<'player' | 'cardmarketPrice' | 'date' | 'cardName' | 'color'>('player')
 const gridSortDesc = ref(true)
 const gridSortItems = computed(() => [
   { label: t('wantedCard.columns.player'), value: 'player' as const },
   { label: t('wantedCard.columns.cardmarketPrice'), value: 'cardmarketPrice' as const },
   { label: t('wantedCard.columns.date'), value: 'date' as const },
-  { label: t('wantedCard.grid.sortByName'), value: 'cardName' as const }
+  { label: t('wantedCard.grid.sortByName'), value: 'cardName' as const },
+  { label: t('wantedCard.grid.sortByColor'), value: 'color' as const }
 ])
 
 const sortedCards = computed(() => {
@@ -147,6 +150,13 @@ const sortedCards = computed(() => {
     else if (field === 'cardName') diff = a.cardName.localeCompare(b.cardName)
     else if (field === 'cardmarketPrice') diff = (a.cardmarketPrice ?? 0) - (b.cardmarketPrice ?? 0)
     else if (field === 'date') diff = (a.date || '').localeCompare(b.date || '')
+    // Finer than the table's "Mana" column sort (2026-08-15 user request):
+    // color count/identity in WUBRG order (e.g. White, then Black, then White-
+    // Black) as the second level, ascending mana cost as the third.
+    else if (field === 'color') {
+      diff = compareColorIdentity(a.colorIdentity, b.colorIdentity)
+      if (diff === 0) diff = a.cmc - b.cmc
+    }
     return diff * direction
   })
 })
@@ -257,25 +267,23 @@ const gridSections = computed<GridSection[]>(() => {
                  looking for cards, not people selling them (which is the real
                  use case for search by name) — see the TODO in docs/TODO.md. -->
 
-            <USelectMenu
-              v-model="languageFilter"
-              :items="languageFacetItems"
-              value-key="value"
-              :icon="selectedLanguage?.icon"
-              :placeholder="$t('wantedCard.filters.languagePlaceholder')"
-              :ui="{ content: 'max-h-none' }"
-              class="w-40"
-            />
-
+            <!-- Replaces the old language select + foil toggle (2026-08-15 user
+                 request) — mana-symbol tabs instead of StatusFilterGroup's plain
+                 text labels, "Tutte" aside, since that component has no
+                 icon/leading-content slot for the others. Multi-select
+                 (2026-08-15 follow-up): several tabs stay active together
+                 (toggleColorFilter), "Tutte" resets back to none. -->
             <UFieldGroup>
               <UButton
-                v-for="option in treatmentFacetItems"
+                v-for="option in colorTabs"
                 :key="option.value"
-                :label="option.label"
                 color="neutral"
-                :variant="treatmentFilter.includes(option.value) ? 'solid' : 'outline'"
-                @click="toggleTreatmentFilter(option.value)"
-              />
+                :variant="isColorTabActive(option.value) ? 'solid' : 'outline'"
+                @click="toggleColorFilter(option.value)"
+              >
+                <span v-if="option.value === 'all'">{{ option.label }}</span>
+                <MagicManaCost v-else :mana-cost="option.manaCost" :aria-label="option.label" />
+              </UButton>
             </UFieldGroup>
 
             <UTooltip

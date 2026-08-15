@@ -17,6 +17,31 @@ export function colorGroupRank(colorIdentity: string[]): number {
   return WUBRG_ORDER.length
 }
 
+/**
+ * Finer-grained color comparator for the wanted-cards grid's "Identità colore"
+ * sort (2026-08-15 user request): mono-color cards before multicolor before
+ * colorless, then — unlike colorGroupRank's single "multicolor" bucket — cards
+ * with the same color count are further ordered by their actual WUBRG colors
+ * (e.g. selecting White+Black sorts mono-White, then mono-Black, then WB).
+ */
+export function compareColorIdentity(a: string[], b: string[]): number {
+  const rank = (color: string) => {
+    const index = WUBRG_ORDER.indexOf(color)
+    return index === -1 ? WUBRG_ORDER.length : index
+  }
+  const countA = a.length === 0 ? WUBRG_ORDER.length + 1 : a.length
+  const countB = b.length === 0 ? WUBRG_ORDER.length + 1 : b.length
+  if (countA !== countB) return countA - countB
+
+  const sortedA = [...a].map(rank).sort((x, y) => x - y)
+  const sortedB = [...b].map(rank).sort((x, y) => x - y)
+  for (let i = 0; i < sortedA.length; i++) {
+    const diff = sortedA[i]! - sortedB[i]!
+    if (diff !== 0) return diff
+  }
+  return 0
+}
+
 // Same colors used by MagicTheGathering/league's resolveCardColors +
 // buildGradientClass (app/utils/cardColors.ts there), but as direct CSS values
 // instead of `from-${color}` Tailwind classes built at runtime: Tailwind does not
