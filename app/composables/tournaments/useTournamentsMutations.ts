@@ -14,5 +14,11 @@ export function useTournamentsMutations() {
     onSettled: invalidate
   })
 
-  return { createTournament }
+  const updateTournament = useMutation({
+    mutation: ({ id, edits }: { id: number, edits: NewTournamentPayload }) =>
+      $fetch(`/api/tournaments/${id}/update`, { method: 'POST', body: edits }),
+    onSettled: invalidate
+  })
+
+  return { createTournament, updateTournament }
 }
