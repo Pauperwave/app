@@ -79,13 +79,7 @@ const tour = useTournamentsTour()
         </template>
       </UDashboardNavbar>
 
-      <UDashboardToolbar
-        :ui="{
-          root: 'flex-wrap h-auto py-2 gap-4',
-          left: 'gap-4 flex-wrap',
-          right: 'gap-4 flex-wrap'
-        }"
-      >
+      <UDashboardToolbar>
         <template #left>
           <div id="tour-tournaments-filters">
             <StatusFilterGroup v-model="statusFilter" :items="statusTabs" />
