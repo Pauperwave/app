@@ -209,25 +209,6 @@ const mainNavGroups = [[{
   onSelect: () => {
     open.value = false
   }
-}], [{
-  label: t('nav.commanderSection'),
-  type: 'label'
-}, {
-  label: t('commander.breadcrumb'),
-  icon: ICONS.crown,
-  to: '/commanders',
-  devStatus: 'error',
-  onSelect: () => {
-    open.value = false
-  }
-}, {
-  label: t('statistic.decksBreadcrumb'),
-  icon: ICONS.layers,
-  to: '/statistics/decks',
-  devStatus: 'error',
-  onSelect: () => {
-    open.value = false
-  }
 }, {
   label: t('ruleset.breadcrumb'),
   icon: ICONS.rules,
@@ -243,6 +224,22 @@ const mainNavGroups = [[{
   label: t('statistic.overviewBreadcrumb'),
   icon: ICONS.chartPie,
   to: '/statistics',
+  devStatus: 'error',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
+  label: t('statistic.decksBreadcrumb'),
+  icon: ICONS.layers,
+  to: '/statistics/decks',
+  devStatus: 'error',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
+  label: t('commander.breadcrumb'),
+  icon: ICONS.crown,
+  to: '/statistics/commanders',
   devStatus: 'error',
   onSelect: () => {
     open.value = false
