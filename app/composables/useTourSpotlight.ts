@@ -83,7 +83,15 @@ export function useTourSpotlight(tour: UseTourReturn, options: UseTourSpotlightO
   // remains smooth.
   const spotlightStyle = computed(() => {
     const rect = highlightRect.value
-    const box = rect
+    // Nuxt UI's own null-target anchor (`reference.value` for a step with no
+    // `target`) is a virtual element whose getBoundingClientRect() already
+    // reports width/height 0 at the viewport center — not the `null` this
+    // composable's own `update()` returns when `reference` is genuinely
+    // absent. Padding must be skipped for that already-zero-size rect too,
+    // or the two 8px paddings turn it into a 16x16 box that `rounded-lg`
+    // renders as a circle instead of a rectangle.
+    const hasArea = rect && (rect.width > 0 || rect.height > 0)
+    const box = hasArea
       ? {
         top: rect.top - padding,
         left: rect.left - padding,
@@ -91,8 +99,8 @@ export function useTourSpotlight(tour: UseTourReturn, options: UseTourSpotlightO
         height: rect.height + padding * 2
       }
       : {
-        top: (import.meta.client ? window.innerHeight : 0) / 2,
-        left: (import.meta.client ? window.innerWidth : 0) / 2,
+        top: rect ? rect.top : (import.meta.client ? window.innerHeight : 0) / 2,
+        left: rect ? rect.left : (import.meta.client ? window.innerWidth : 0) / 2,
         width: 0,
         height: 0
       }

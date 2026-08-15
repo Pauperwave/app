@@ -55,6 +55,9 @@ Deliberately not part of the `g-x` navigation set — these aren't "go to a plac
 |---|---|---|
 | `n` | Toggle the notifications slideover | `useDashboard.ts` |
 | `b` | Toggle sidebar collapsed/expanded | `default.vue` (see below) |
+| `h` | Start/restart the current page's guided tour | `TourGuide.vue` (see below) |
+
+Doesn't collide with the `g-h` chord (Home) — `defineShortcuts` treats a bare `h` and the two-key chord `g` then `h` as distinct bindings, the same way bare `n` already coexists with `g-n` (Transazioni).
 
 There used to be a `t` shortcut for the light/dark theme toggle, removed 2026-08-11. It also would have needed to bypass `LayoutColorModeSwitch.vue`'s own click handler (`useThemeTransition().toggleTheme` takes a `MouseEvent` to anchor its circular reveal animation at the click position, which a keyboard press doesn't have), so nothing else was affected by dropping it.
 
@@ -65,6 +68,12 @@ The sidebar's collapsed state is normally reached via Nuxt UI's own internal `us
 An earlier version of this worked around that by injecting the state from a tiny renderless placeholder component rendered inside `<UDashboardGroup>`'s template. Removed 2026-08-11 in favor of the pattern from Nuxt UI's own "Control collapsed state" docs example: `default.vue` just owns a plain `sidebarCollapsed` ref, bound via `v-model:collapsed` on `<UDashboardSidebar>`, and the shortcut flips that ref directly — no injection needed. `<UDashboardSidebarCollapse>`'s own button stays in sync automatically, since it's a descendant reading the same provided context, which now simply mirrors this ref.
 
 The ref is named `sidebarCollapsed`, not `collapsed`: the sidebar's `#header`/`#default`/`#footer` slots already destructure a scoped `collapsed` prop of their own, and reusing the name trips `vue/no-template-shadow`.
+
+## Why `h` lives in `TourGuide.vue`, not `useDashboard.ts`
+
+Same reasoning as `b`: the thing the shortcut needs — which tour is "active" — is page-local state (each page defines its own `use<Page>Tour()` and renders its own `<TourGuide :tour="...">`), not something `useDashboard.ts` has access to. Rather than building a global registry that pages register/unregister into, `TourGuide.vue` just calls `defineShortcuts({ h: () => tour.start() })` directly on the `tour` prop it already has. At most one page tour's `<TourGuide>` is ever mounted at a time, and `defineShortcuts` cleans up its own listeners when the calling component unmounts — so navigating between pages automatically swaps which tour `h` starts, with no coordination code needed anywhere.
+
+One exception: `default.vue`'s own `<TourGuide :tour="shortcutsTour">` (the "Scorciatoie da tastiera" tour) is part of the *layout*, so it's mounted on every page alongside whatever page-specific tour that page renders — two simultaneous `defineShortcuts({ h: ... })` calls would collide. It opts out via `<TourGuide :tour="shortcutsTour" :h-shortcut="false">`; the shortcuts tour keeps its existing trigger (the sidebar item), it just doesn't also claim the bare `h` key.
 
 ## Adding a new shortcut
 
