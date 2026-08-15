@@ -4,6 +4,7 @@ import type * as v from 'valibot'
 import { parseAbsoluteToLocal, getLocalTimeZone, toCalendarDateTime } from '@internationalized/date'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { Transaction } from '~/types'
+import type { TransactionFormState } from '~/composables/transactions/useTransactionFormFields'
 
 const open = defineModel<boolean>({ default: false })
 const { transaction } = defineProps<{ transaction: Transaction | null }>()
@@ -11,61 +12,22 @@ const { transaction } = defineProps<{ transaction: Transaction | null }>()
 const toast = useToast()
 const { t } = useI18n()
 const { updateTransaction } = useTransactionsMutations()
-const { data: associatesData } = useAssociatesQuery()
-
-// APS Pauperwave's own membership record is excluded — it's the association
-// itself, not an actual payer.
-const associateOptions = computed(() => (associatesData.value ?? [])
-  .filter(associate => associate.membership_request_status === 'approved'
-    && associate.uuid !== APS_PAUPERWAVE_ASSOCIATE_UUID)
-  .map((associate) => {
-    const label = `${associate.first_name} ${associate.last_name}`
-    return {
-      label,
-      description: associate.pauperwave_associate_number ?? undefined,
-      value: associate.uuid,
-      avatar: { src: generatePlayerAvatar(label), alt: label }
-    }
-  }))
-
-const {
-  schema, paymentTypeOptions, paymentMethodOptions, receiverOptions
-} = useTransactionFormOptions()
-
-type Schema = v.InferOutput<typeof schema>
 
 // Same reasoning as AddModal.vue's state init: payment_amount/received_by
 // must be present (even as undefined) or valibot's v.object() raises its own
 // generic "missing key" issue instead of running the field's real check.
 // The [open, transaction] watch below fills these immediately in practice,
 // but this keeps the object shape correct even before that watch runs.
-const state = shallowReactive<Partial<Schema>>({
+const state = shallowReactive<TransactionFormState>({
   payment_amount: undefined,
   received_by: undefined
 })
 
-// See AddModal.vue's identical computeds for why these are needed: USelect/
-// USelectMenu only bind the selected value (via value-key), not the item, so
-// the trigger can't show its icon/avatar without looking it back up.
-const selectedPaymentTypeIcon = computed(() =>
-  paymentTypeOptions.value.find(option => option.value === state.payment_type)?.icon)
-const selectedPaymentMethodIcon = computed(() =>
-  paymentMethodOptions.value.find(option => option.value === state.payment_method)?.icon)
-const selectedAssociateAvatar = computed(() =>
-  associateOptions.value.find(option => option.value === state.associate_uuid)?.avatar)
-const selectedReceiverAvatar = computed(() =>
-  receiverOptions.value.find(option => option.value === state.received_by)?.avatar)
+const {
+  schema, associatesData, associateOptions, selectedAssociateAvatar, showEventField, payerTabItems
+} = useTransactionFormFields(state)
 
-// The event field only makes sense for a tournament/event-linked payment —
-// hidden for "Quota associativa" (a membership fee, not tied to any event)
-// and "Donazione" (a free-standing gift, same reasoning).
-const showEventField = computed(() =>
-  state.payment_type !== 'Association Fee' && state.payment_type !== 'Donation')
-
-// The membership fee is a fixed €5 via PayPal "Friends & Family" (see the
-// watch below) — both fields are disabled for this type since neither is a
-// per-transaction choice once that rule applies.
-const isAssociationFee = computed(() => state.payment_type === 'Association Fee')
+type Schema = v.InferOutput<typeof schema>
 
 // Refills every time the modal opens on a (possibly new) transaction — same
 // convention as AssociatesListEditModal.vue's watch on its `associate` prop.
@@ -90,11 +52,6 @@ const activeTab = computed({
   get: () => (state.payer_is_associate ? 'associate' : 'external'),
   set: (value: string) => { state.payer_is_associate = value === 'associate' }
 })
-
-const items = computed(() => [
-  { label: t('transaction.addModal.tabs.associate'), icon: ICONS.playerConfirmed, slot: 'associate', value: 'associate' },
-  { label: t('transaction.addModal.tabs.external'), icon: ICONS.edit, slot: 'external', value: 'external' }
-])
 
 const payerTaxCodeInput = computed({
   get: () => state.payer_tax_code,
@@ -204,7 +161,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             {{ $t('transaction.addModal.personalInfo') }}
           </p>
 
-          <UTabs v-model="activeTab" :items="items">
+          <UTabs v-model="activeTab" :items="payerTabItems">
             <template #associate>
               <div class="mt-2">
                 <UFormField
@@ -285,84 +242,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           </UTabs>
         </div>
 
-        <p class="text-lg font-semibold text-primary">
-          {{ $t('transaction.addModal.paymentInfo') }}
-        </p>
-
-        <div class="grid grid-cols-2 gap-2 mt-2">
-          <UFormField
-            :label="$t('transaction.addModal.fields.paymentDate')"
-            name="payment_datetime"
-            required
-          >
-            <UDateTimeInput v-model="state.payment_datetime" disabled class="w-full" />
-          </UFormField>
-
-          <UFormField
-            :label="$t('transaction.addModal.fields.paymentAmount')"
-            name="payment_amount"
-            required
-          >
-            <UInputNumber
-              v-model="state.payment_amount"
-              :min="0"
-              :step="0.5"
-              :icon="ICONS.euro"
-              :disabled="isAssociationFee"
-              class="w-full"
-            />
-          </UFormField>
-
-          <UFormField
-            :label="$t('transaction.addModal.fields.receivedBy')"
-            name="received_by"
-            required
-          >
-            <USelectMenu
-              v-model="state.received_by"
-              :items="receiverOptions"
-              value-key="value"
-              :avatar="selectedReceiverAvatar"
-              class="w-full"
-            />
-          </UFormField>
-
-          <UFormField
-            :label="$t('transaction.addModal.fields.paymentMethod')"
-            name="payment_method"
-          >
-            <USelect
-              v-model="state.payment_method"
-              :items="paymentMethodOptions"
-              value-key="value"
-              :icon="selectedPaymentMethodIcon"
-              :disabled="isAssociationFee"
-              class="w-full"
-            />
-          </UFormField>
-
-          <UFormField :label="$t('transaction.addModal.fields.paymentType')" name="payment_type">
-            <USelect
-              v-model="state.payment_type"
-              :items="paymentTypeOptions"
-              value-key="value"
-              :icon="selectedPaymentTypeIcon"
-              class="w-full"
-            />
-          </UFormField>
-
-          <UFormField
-            v-if="showEventField"
-            :label="$t('transaction.addModal.fields.event')"
-            name="event_name"
-          >
-            <USelectMenu v-model="state.event_name" :items="EVENT_OPTIONS" class="w-full" />
-          </UFormField>
-        </div>
-
-        <UFormField :label="$t('transaction.addModal.fields.notes')" name="notes">
-          <UTextarea v-model="state.notes" class="w-full" />
-        </UFormField>
+        <TransactionsListPaymentInfoFields v-model:state="state" />
 
         <p v-if="traceability" class="text-xs text-muted">
           {{ $t('transaction.editModal.createdBy', {
