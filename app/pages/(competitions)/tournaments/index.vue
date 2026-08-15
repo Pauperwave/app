@@ -24,8 +24,9 @@ const {
 } = useTournamentsQuery()
 const data = computed(() => tournamentsData.value ?? [])
 const { statusFilter, filteredTournaments, statusTabs } = useTournamentsFilters(data, range)
-const { columns } = useTournamentsTableColumns()
 const { rowContextMenuItems, onRowContextmenu, tableContextMenuItems } = useCopyLinkContextMenu('/tournaments')
+const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowActions()
+const { columns } = useTournamentsTableColumns(openEditModal)
 
 const viewMode = ref<'table' | 'grid'>('grid')
 const viewModeItems = computed<TabsItem[]>(() => [
@@ -117,10 +118,13 @@ const tour = useTournamentsTour()
           v-else
           :tournaments="filteredTournaments"
           :context-menu-items="rowContextMenuItems"
+          :on-edit="openEditModal"
         />
       </div>
     </template>
   </UDashboardPanel>
 
   <TourGuide :tour="tour" />
+
+  <TournamentsListEditModal v-model="editModalOpen" :tournament="editingTournament" />
 </template>

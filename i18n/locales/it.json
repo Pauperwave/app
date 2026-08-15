@@ -864,7 +864,11 @@
       "location": "Luogo",
       "entryFee": "Quota Iscrizione",
       "companionCode": "Codice Companion",
-      "prizes": "Premi"
+      "prizes": "Premi",
+      "actions": "Azioni"
+    },
+    "rowActions": {
+      "edit": "Modifica torneo"
     },
     "views": {
       "table": "Tabella",
@@ -1002,6 +1006,13 @@
       "errorToastTitle": "Impossibile creare il torneo",
       "cancel": "Annulla",
       "create": "Crea torneo"
+    },
+    "editModal": {
+      "title": "Modifica torneo",
+      "successToastTitle": "Torneo aggiornato",
+      "errorToastTitle": "Impossibile aggiornare il torneo",
+      "cancel": "Annulla",
+      "save": "Salva"
     },
     "single": {
       "acceptancePicker": {

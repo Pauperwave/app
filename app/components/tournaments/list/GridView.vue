@@ -3,9 +3,10 @@
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Tournament } from '~/types'
 
-const { tournaments, contextMenuItems } = defineProps<{
+const { tournaments, contextMenuItems, onEdit } = defineProps<{
   tournaments: Tournament[]
   contextMenuItems: (tournament: Tournament) => DropdownMenuItem[]
+  onEdit: (tournament: Tournament) => void
 }>()
 
 const { t } = useI18n()
@@ -64,12 +65,24 @@ function monthPart(startDate: string) {
           />
         </div>
 
-        <h3
-          class="font-semibold truncate"
-          :class="{ 'line-through text-error': tournament.status === 'cancelled' }"
-        >
-          {{ tournament.name }}
-        </h3>
+        <div class="flex items-start justify-between gap-2">
+          <h3
+            class="font-semibold truncate"
+            :class="{ 'line-through text-error': tournament.status === 'cancelled' }"
+          >
+            {{ tournament.name }}
+          </h3>
+
+          <UButton
+            :icon="ICONS.edit"
+            color="neutral"
+            variant="ghost"
+            size="xs"
+            class="shrink-0"
+            :aria-label="t('tournament.rowActions.edit')"
+            @click.stop="onEdit(tournament)"
+          />
+        </div>
 
         <div class="flex items-center gap-2 mt-1.5 flex-wrap">
           <UBadge color="neutral" variant="subtle" :icon="ICONS.gameplay">
