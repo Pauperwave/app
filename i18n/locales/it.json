@@ -848,7 +848,8 @@
       "cardtraderPriceHint": "Prezzo minimo CardTrader (Near Mint, lingua della richiesta)",
       "cardmarketShort": "CM",
       "cardtraderShort": "CT",
-      "sortBy": "Ordina per"
+      "sortBy": "Ordina per",
+      "sortByName": "Nome"
     },
     "tour": {
       "startButton": "Tour guidato",
