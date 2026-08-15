@@ -3,6 +3,7 @@
 import { getGroupedRowModel } from '@tanstack/vue-table'
 import type { TabsItem } from '@nuxt/ui'
 import type { WantedCard } from '~/types'
+import type { DroppedCardInfo } from '~/composables/wantedCards/useScryfallDragDrop'
 import type { WantedCardColorFilter } from '~/composables/wantedCards/useWantedCardsFilters'
 
 const { t } = useI18n()
@@ -22,6 +23,17 @@ const tour = useWantedCardsTour()
 // leagues and events (useModalOpenFromQuery) — lets the command palette's
 // "New wanted card" action land here with the Add modal already open.
 const { isModalOpen: addModalOpen } = useModalOpenFromQuery()
+
+// Drag a card image off Scryfall onto the page to open the Add modal with
+// its name pre-filled (user request 2026-08-15, useScryfallDragDrop.ts).
+// Whole document as the drop target, not a scoped template ref — a card
+// dropped anywhere on the page (not just over the table/grid) should work,
+// and a failed parse (not a Scryfall image) already does nothing either way.
+const draggedCard = ref<DroppedCardInfo | null>(null)
+const { isOverDropZone } = useScryfallDragDrop(() => document.body, (card) => {
+  draggedCard.value = card
+  addModalOpen.value = true
+})
 
 const viewMode = ref<'table' | 'grid'>('grid')
 const viewModeItems = computed<TabsItem[]>(() => [
@@ -218,7 +230,7 @@ const gridSections = computed<GridSection[]>(() => {
 
           <USeparator orientation="vertical" class="h-4" />
 
-          <WantedCardsListAddModal v-model="addModalOpen" />
+          <WantedCardsListAddModal v-model="addModalOpen" :initial-card="draggedCard" />
 
           <USeparator orientation="vertical" class="h-4" />
 
@@ -391,6 +403,20 @@ const gridSections = computed<GridSection[]>(() => {
       </template>
     </template>
   </UDashboardPanel>
+
+  <!-- Shown while dragging a card over the page (useScryfallDragDrop.ts) —
+       purely a visual affordance, the actual drop handling doesn't need it. -->
+  <div
+    v-if="isOverDropZone"
+    class="fixed inset-4 z-50 pointer-events-none flex items-center justify-center rounded-xl border-2 border-dashed border-primary bg-black/80"
+  >
+    <div class="text-center">
+      <UIcon :name="ICONS.cardSearch" class="size-10 text-primary mx-auto mb-2" />
+      <p class="text-lg font-semibold text-white">
+        {{ $t('wantedCard.addModal.dropHint') }}
+      </p>
+    </div>
+  </div>
 
   <WantedCardsListEditModal v-model="editModalOpen" :card="editingCard" />
 
