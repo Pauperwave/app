@@ -179,6 +179,13 @@ export interface Tournament {
   // groups tournaments under their event by uuid, a name collision can't misgroup them.
   eventUuid: string | null
   league: string | null
+  // FK uuids alongside their resolved display names above (2026-08-16) —
+  // needed to prefill TournamentsListEditModal.vue's selects, which bind by
+  // uuid (see useTournamentFormFields.ts), not by the human-readable name.
+  leagueUuid: string | null
+  formatUuid: string
+  organizerUuid: string | null
+  locationUuid: string | null
   name: string
   startDate: string
   endDate: string | null
