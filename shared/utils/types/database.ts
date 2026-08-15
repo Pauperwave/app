@@ -844,6 +844,7 @@ export type Database = {
           set_code: string | null
           status: string
           treatment: string[]
+          type_line: string | null
           updated_at: string
           updated_by: string | null
           uuid: string
@@ -872,6 +873,7 @@ export type Database = {
           set_code?: string | null
           status?: string
           treatment?: string[]
+          type_line?: string | null
           updated_at?: string
           updated_by?: string | null
           uuid?: string
@@ -900,6 +902,7 @@ export type Database = {
           set_code?: string | null
           status?: string
           treatment?: string[]
+          type_line?: string | null
           updated_at?: string
           updated_by?: string | null
           uuid?: string

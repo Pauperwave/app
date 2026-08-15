@@ -76,6 +76,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         setCode: printing.set,
         manaCost: printing.manaCost,
         colorIdentity: printing.colorIdentity,
+        typeLine: printing.typeLine || null,
         cmc: printing.cmc,
         imageUrl: printing.imageUrl,
         cardmarketPrice: printing.price,

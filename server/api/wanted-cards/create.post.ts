@@ -22,6 +22,7 @@ export default defineEventHandler(async (event) => {
       set_code: body.setCode,
       mana_cost: body.manaCost || null,
       color_identity: body.colorIdentity,
+      type_line: body.typeLine,
       cmc: body.cmc,
       image_url: body.imageUrl,
       cardmarket_price: body.cardmarketPrice,

@@ -141,6 +141,11 @@ export interface WantedCard {
   treatment: string[]
   manaCost: string
   colorIdentity: string[]
+  // Scryfall's own field (e.g. "Land", "Creature — Elf Wizard") — null for
+  // requests created before migration 20260815090000, backfilled via
+  // scripts/backfill-wanted-cards-type-line.mjs. Distinguishes a land from
+  // a colorless nonland card, which color_identity alone can't (both are []).
+  typeLine: string | null
   cmc: number
   imageUrl: string
   // Two distinct price sources, not recomputed on every read — snapshots updated
