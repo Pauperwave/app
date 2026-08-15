@@ -28,36 +28,32 @@ function monthPart(startDate: string) {
       :key="tournament.id"
       :to="`/tournaments/${tournament.id}`"
       class="relative overflow-hidden hover:ring-primary transition-colors"
+      :class="{ 'opacity-60 saturate-50': tournament.status === 'completed' }"
       :ui="{ body: 'pt-1', footer: 'p-3 sm:p-3' }"
     >
-      <!-- Calendar tear-off badge: day/month instead of a plain date string, since
-           these are recurring weekly events and the date is the primary thing a
-           player scans for. -->
-      <div class="absolute top-3 left-3 flex flex-col items-center justify-center rounded-lg bg-elevated border border-default w-14 h-14 shrink-0">
-        <span class="text-lg font-bold leading-none">{{ dayPart(tournament.startDate) }}</span>
-        <span class="text-xs uppercase text-muted">{{ monthPart(tournament.startDate) }}</span>
-      </div>
+      <template #header>
+        <!-- Calendar tear-off badge: day/month instead of a plain date string, since
+            these are recurring weekly events and the date is the primary thing a
+            player scans for. -->
+        <div class="flex flex-col items-center justify-center rounded-lg bg-elevated border border-default w-14 h-14 shrink-0">
+          <span class="text-lg font-bold leading-none">{{ dayPart(tournament.startDate) }}</span>
+          <span class="text-xs uppercase text-muted">{{ monthPart(tournament.startDate) }}</span>
+        </div>
 
-      <UBadge
-        :color="tournamentStatusColor(tournament.status)"
-        variant="subtle"
-        :icon="TOURNAMENT_STATUS_ICONS[tournament.status]"
-        class="absolute top-3 right-3"
-      >
-        {{ t(`tournament.status.${tournament.status}`) }}
-      </UBadge>
+        <!-- Status is shown through the card's own styling, not a badge (same
+             convention as calendar/card/Base.vue): completed cards recede via
+             opacity/saturation above, canceled is a strikethrough+error title
+             below, ongoing gets a pulsing dot. Scheduled is the default look. -->
+        <span
+          v-if="tournament.status === 'ongoing'"
+          class="size-2 rounded-full bg-warning shrink-0 animate-pulse motion-reduce:animate-none"
+          :title="t('tournament.status.ongoing')"
+        />
+      </template>
 
-      <!-- pl matches the date badge's width (w-14) + gap so the title never
-           overlaps it. -->
-      <div class="pl-[4.75rem] min-h-14 flex flex-col justify-center gap-1">
-        <h3 class="font-semibold truncate">
-          {{ tournament.format }}
-        </h3>
-        <p class="text-sm text-muted flex items-center gap-1 truncate">
-          <UIcon :name="ICONS.mapPin" class="size-4 shrink-0" />
-          <span class="truncate">{{ tournament.location }}</span>
-        </p>
-      </div>
+      <span :class="{ 'line-through text-error': tournament.status === 'canceled' }">
+        {{ tournament.name }}
+      </span>
 
       <template #footer>
         <div class="flex items-center justify-between gap-2">
