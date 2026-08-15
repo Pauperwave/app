@@ -109,7 +109,9 @@ const tour = useEventsTour()
             :data="filteredEvents"
             :columns="columns"
             class="w-full"
+            :ui="{ tr: 'cursor-pointer' }"
             @contextmenu="onRowContextmenu"
+            @select="(_e, row) => navigateTo(`/events/${row.original.uuid}`)"
           />
         </UContextMenu>
 
