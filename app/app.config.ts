@@ -39,7 +39,7 @@ export default defineAppConfig({
         // own border leaves exactly the placeholder's as the one seam between
         // the group header and its first child.
         tr: 'hover:bg-elevated/50 data-[expanded=true]:[&>td]:border-b-0',
-        th: 'border-r border-default last:border-r-0 py-2 px-2 font-medium',
+        th: 'border-r border-default last:border-r-0 py-1 px-2 font-medium',
         // [&[colspan]]:p-0: TanStack's getGroupedRowModel() renders a
         // near-invisible placeholder <tr><td colspan="N"></td></tr> between a
         // group header row and its first expanded child — Nuxt UI/TanStack
