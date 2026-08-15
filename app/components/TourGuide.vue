@@ -14,8 +14,8 @@ const { tour } = defineProps<{ tour: UseTourReturn }>()
   <UPopover
     :open="tour.open.value"
     :reference="tour.reference.value"
-    :dismissible="false"
     :ui="{ content: 'z-20' }"
+    @update:open="(value: boolean) => { if (!value) tour.finish() }"
   >
     <template #content>
       <div class="p-4 w-72 space-y-3">
