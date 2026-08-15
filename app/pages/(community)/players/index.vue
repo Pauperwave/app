@@ -39,6 +39,8 @@ const filteredPlayers = computed(() => data.value.filter(
   player => (activeStatusTab.value === 'active' ? player.is_active : !player.is_active)
 ))
 
+const tour = usePlayersTour()
+
 const { columns, columnHeaders } = usePlayersTableColumns()
 const sorting = ref([{ id: 'name', desc: false }])
 
@@ -91,6 +93,16 @@ const columnVisibilityItems = computed(() => {
         </template>
 
         <template #right>
+          <UButton
+            :label="$t('player.tour.startButton')"
+            icon="i-lucide-circle-help"
+            color="neutral"
+            variant="ghost"
+            @click="tour.start()"
+          />
+
+          <USeparator orientation="vertical" class="h-4" />
+
           <NotificationsBellButton />
         </template>
       </UDashboardNavbar>
@@ -99,18 +111,22 @@ const columnVisibilityItems = computed(() => {
            wanted-cards/index.vue for their StatusFilterGroup. -->
       <UDashboardToolbar>
         <template #left>
-          <StatusFilterGroup v-model="activeStatusTab" :items="statusTabs" />
+          <div id="tour-players-filters">
+            <StatusFilterGroup v-model="activeStatusTab" :items="statusTabs" />
+          </div>
         </template>
 
         <template #right>
-          <UDropdownMenu :items="columnVisibilityItems" :content="{ align: 'end' }">
-            <UButton
-              :label="$t('common.showColumns')"
-              color="neutral"
-              variant="outline"
-              :trailing-icon="ICONS.settingsColumns"
-            />
-          </UDropdownMenu>
+          <div id="tour-players-actions">
+            <UDropdownMenu :items="columnVisibilityItems" :content="{ align: 'end' }">
+              <UButton
+                :label="$t('common.showColumns')"
+                color="neutral"
+                variant="outline"
+                :trailing-icon="ICONS.settingsColumns"
+              />
+            </UDropdownMenu>
+          </div>
         </template>
       </UDashboardToolbar>
     </template>
@@ -134,4 +150,6 @@ const columnVisibilityItems = computed(() => {
       </UTable>
     </template>
   </UDashboardPanel>
+
+  <TourGuide :tour="tour" />
 </template>

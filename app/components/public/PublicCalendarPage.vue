@@ -144,7 +144,7 @@ const filteredCards = computed(() => cards.value.filter((card) => {
       </div>
     </div>
 
-    <div class="flex justify-center">
+    <div id="tour-calendar-month-picker" class="flex justify-center">
       <UPopover>
         <UButton
           :label="format(selectedMonth, 'MMMM yyyy', { locale: it })"
@@ -175,7 +175,7 @@ const filteredCards = computed(() => cards.value.filter((card) => {
       {{ $t('event.grid.empty') }}
     </div>
 
-    <div v-else class="flex flex-col gap-4 max-w-2xl w-full mx-auto">
+    <div v-else id="tour-calendar-cards" class="flex flex-col gap-4 max-w-2xl w-full mx-auto">
       <template
         v-for="card in filteredCards"
         :key="cardKey(card)"

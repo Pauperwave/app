@@ -8,6 +8,8 @@ const range = shallowRef<Range>({
   end: new Date()
 })
 const period = ref<Period>('daily')
+
+const tour = useHomeTour()
 </script>
 
 <template>
@@ -19,7 +21,19 @@ const period = ref<Period>('daily')
         </template>
 
         <template #right>
-          <HomeQuickCreateMenu />
+          <UButton
+            :label="$t('home.tour.startButton')"
+            icon="i-lucide-circle-help"
+            color="neutral"
+            variant="ghost"
+            @click="tour.start()"
+          />
+
+          <USeparator orientation="vertical" class="h-4" />
+
+          <div id="tour-home-quick-create">
+            <HomeQuickCreateMenu />
+          </div>
 
           <USeparator orientation="vertical" class="h-4" />
 
@@ -30,17 +44,27 @@ const period = ref<Period>('daily')
       <UDashboardToolbar>
         <template #left>
           <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->
-          <HomeDateRangePicker v-model="range" class="-ms-1" />
+          <div id="tour-home-filters" class="flex items-center gap-2 -ms-1">
+            <HomeDateRangePicker v-model="range" />
 
-          <HomePeriodSelect v-model="period" :range="range" />
+            <HomePeriodSelect v-model="period" :range="range" />
+          </div>
         </template>
       </UDashboardToolbar>
     </template>
 
     <template #body>
-      <HomeStats :period="period" :range="range" />
-      <HomeChart :period="period" :range="range" />
-      <HomeSales :period="period" :range="range" />
+      <div id="tour-home-stats">
+        <HomeStats :period="period" :range="range" />
+      </div>
+      <div id="tour-home-chart">
+        <HomeChart :period="period" :range="range" />
+      </div>
+      <div id="tour-home-sales">
+        <HomeSales :period="period" :range="range" />
+      </div>
     </template>
   </UDashboardPanel>
+
+  <TourGuide :tour="tour" />
 </template>

@@ -78,6 +78,8 @@ const legendDroppedSample = CITTADINO_MIN_POINTS
 // unmounting the whole matrix for it would make the page jump; UTable's own
 // loading bar keeps the headers and the previous edition in place instead.
 const isInitialLoad = computed(() => loading.value && standings.value.length === 0)
+
+const tour = useCittadinoTour()
 </script>
 
 <template>
@@ -89,15 +91,27 @@ const isInitialLoad = computed(() => loading.value && standings.value.length ===
         </template>
 
         <template #right>
-          <!-- Same treatment as the period tabs in NotificationsSlideover.vue. -->
-          <UTabs
-            v-model="activeEdition"
-            :items="editionTabs"
-            :content="false"
+          <UButton
+            :label="$t('cittadino.tour.startButton')"
+            icon="i-lucide-circle-help"
             color="neutral"
-            size="md"
-            :ui="BOXED_TABS_UI"
+            variant="ghost"
+            @click="tour.start()"
           />
+
+          <USeparator orientation="vertical" class="h-4" />
+
+          <!-- Same treatment as the period tabs in NotificationsSlideover.vue. -->
+          <div id="tour-cittadino-edition-tabs">
+            <UTabs
+              v-model="activeEdition"
+              :items="editionTabs"
+              :content="false"
+              color="neutral"
+              size="md"
+              :ui="BOXED_TABS_UI"
+            />
+          </div>
 
           <USeparator orientation="vertical" class="h-4" />
 
@@ -105,18 +119,20 @@ const isInitialLoad = computed(() => loading.value && standings.value.length ===
                tesseramento link — points at the public standings page
                (/rankings/cittadino, see PublicCittadinoPage.vue), not this
                internal dashboard route. -->
-          <CopyLinkButton :url="publicUrl" :label="$t('standings.copyPublicLink')" />
-          <UTooltip :text="$t('standings.openPublicLink')">
-            <UButton
-              :to="publicUrl"
-              target="_blank"
-              :icon="ICONS.externalLink"
-              :aria-label="$t('standings.openPublicLink')"
-              color="neutral"
-              variant="outline"
-              square
-            />
-          </UTooltip>
+          <div id="tour-cittadino-public-link" class="flex items-center gap-2">
+            <CopyLinkButton :url="publicUrl" :label="$t('standings.copyPublicLink')" />
+            <UTooltip :text="$t('standings.openPublicLink')">
+              <UButton
+                :to="publicUrl"
+                target="_blank"
+                :icon="ICONS.externalLink"
+                :aria-label="$t('standings.openPublicLink')"
+                color="neutral"
+                variant="outline"
+                square
+              />
+            </UTooltip>
+          </div>
 
           <USeparator orientation="vertical" class="h-4" />
 
@@ -126,21 +142,23 @@ const isInitialLoad = computed(() => loading.value && standings.value.length ===
 
       <UDashboardToolbar :ui="{ root: 'flex-wrap h-auto py-2 gap-4', left: 'gap-4 flex-wrap' }">
         <template #left>
-          <UDropdownMenu :items="formatItems" :content="{ align: 'start' }">
-            <UButton
-              :label="$t('cittadino.filters.formats')"
-              color="neutral"
-              :variant="isFiltered ? 'solid' : 'outline'"
-              trailing-icon="i-lucide-list-filter"
-            />
-          </UDropdownMenu>
+          <div id="tour-cittadino-filters" class="flex items-center gap-4 flex-wrap">
+            <UDropdownMenu :items="formatItems" :content="{ align: 'start' }">
+              <UButton
+                :label="$t('cittadino.filters.formats')"
+                color="neutral"
+                :variant="isFiltered ? 'solid' : 'outline'"
+                trailing-icon="i-lucide-list-filter"
+              />
+            </UDropdownMenu>
 
-          <p class="text-sm text-muted">
-            {{ $t('cittadino.summary', { players: standings.length, events: events.length }) }}
-            <span v-if="isFiltered" class="text-warning">
-              {{ $t('cittadino.filters.recomputed') }}
-            </span>
-          </p>
+            <p class="text-sm text-muted">
+              {{ $t('cittadino.summary', { players: standings.length, events: events.length }) }}
+              <span v-if="isFiltered" class="text-warning">
+                {{ $t('cittadino.filters.recomputed') }}
+              </span>
+            </p>
+          </div>
         </template>
 
         <template #right>
@@ -195,7 +213,7 @@ const isInitialLoad = computed(() => loading.value && standings.value.length ===
         <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
       </div>
 
-      <template v-else>
+      <div v-else id="tour-cittadino-content">
         <PublicMatrixTable
           :data="standings"
           :columns="columns"
@@ -203,7 +221,9 @@ const isInitialLoad = computed(() => loading.value && standings.value.length ===
           :meta="tableMeta"
           :column-accent-colors="columnAccentColors"
         />
-      </template>
+      </div>
     </template>
   </UDashboardPanel>
+
+  <TourGuide :tour="tour" />
 </template>

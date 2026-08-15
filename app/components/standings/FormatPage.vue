@@ -60,6 +60,8 @@ const publicUrl = computed(() => `${useRequestURL().origin}/rankings/${format}`)
 
 const isInitialLoad = computed(() => loading.value && standings.value.length === 0)
 
+const tour = useStandingsFormatTour()
+
 // A rule under the top-cutoff row, same treatment as the Cittadino finalist line.
 const tableMeta = {
   class: {
@@ -78,16 +80,28 @@ const tableMeta = {
         </template>
 
         <template #right>
+          <UButton
+            :label="$t('standings.tour.startButton')"
+            icon="i-lucide-circle-help"
+            color="neutral"
+            variant="ghost"
+            @click="tour.start()"
+          />
+
+          <USeparator orientation="vertical" class="h-4" />
+
           <!-- Same treatment as the period tabs in NotificationsSlideover.vue and
                the edition tabs on /standings/cittadino. -->
-          <UTabs
-            v-model="activeLeague"
-            :items="leagueTabs"
-            :content="false"
-            color="neutral"
-            size="md"
-            :ui="BOXED_TABS_UI"
-          />
+          <div id="tour-standings-league-tabs">
+            <UTabs
+              v-model="activeLeague"
+              :items="leagueTabs"
+              :content="false"
+              color="neutral"
+              size="md"
+              :ui="BOXED_TABS_UI"
+            />
+          </div>
 
           <USeparator orientation="vertical" class="h-4" />
 
@@ -95,18 +109,20 @@ const tableMeta = {
                link — points at this format's public standing page
                (/rankings/<format>, see PublicFormatPage.vue), not this
                internal dashboard route. -->
-          <CopyLinkButton :url="publicUrl" :label="$t('standings.copyPublicLink')" />
-          <UTooltip :text="$t('standings.openPublicLink')">
-            <UButton
-              :to="publicUrl"
-              target="_blank"
-              :icon="ICONS.externalLink"
-              :aria-label="$t('standings.openPublicLink')"
-              color="neutral"
-              variant="outline"
-              square
-            />
-          </UTooltip>
+          <div id="tour-standings-public-link" class="flex items-center gap-2">
+            <CopyLinkButton :url="publicUrl" :label="$t('standings.copyPublicLink')" />
+            <UTooltip :text="$t('standings.openPublicLink')">
+              <UButton
+                :to="publicUrl"
+                target="_blank"
+                :icon="ICONS.externalLink"
+                :aria-label="$t('standings.openPublicLink')"
+                color="neutral"
+                variant="outline"
+                square
+              />
+            </UTooltip>
+          </div>
 
           <USeparator orientation="vertical" class="h-4" />
 
@@ -157,13 +173,16 @@ const tableMeta = {
         <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
       </div>
 
-      <PublicMatrixTable
-        v-else
-        :data="standings"
-        :columns="columns"
-        :loading="loading"
-        :meta="tableMeta"
-      />
+      <div v-else id="tour-standings-content">
+        <PublicMatrixTable
+          :data="standings"
+          :columns="columns"
+          :loading="loading"
+          :meta="tableMeta"
+        />
+      </div>
     </template>
   </UDashboardPanel>
+
+  <TourGuide :tour="tour" />
 </template>

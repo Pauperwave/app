@@ -34,6 +34,8 @@ const viewModeItems = computed<TabsItem[]>(() => [
 ])
 
 const sorting = ref([{ id: 'name', desc: false }])
+
+const tour = useLeaguesTour()
 </script>
 
 <template>
@@ -51,11 +53,25 @@ const sorting = ref([{ id: 'name', desc: false }])
         </template>
 
         <template #right>
-          <ViewModeTabs v-model="viewMode" :items="viewModeItems" />
+          <UButton
+            :label="$t('league.tour.startButton')"
+            icon="i-lucide-circle-help"
+            color="neutral"
+            variant="ghost"
+            @click="tour.start()"
+          />
 
           <USeparator orientation="vertical" class="h-4" />
 
-          <LeaguesListAddModal v-model="isModalOpen" />
+          <div id="tour-leagues-view-mode">
+            <ViewModeTabs v-model="viewMode" :items="viewModeItems" />
+          </div>
+
+          <USeparator orientation="vertical" class="h-4" />
+
+          <div id="tour-leagues-add">
+            <LeaguesListAddModal v-model="isModalOpen" />
+          </div>
 
           <USeparator orientation="vertical" class="h-4" />
 
@@ -65,7 +81,9 @@ const sorting = ref([{ id: 'name', desc: false }])
 
       <UDashboardToolbar>
         <template #left>
-          <StatusFilterGroup v-model="statusFilter" :items="statusTabs" />
+          <div id="tour-leagues-filters">
+            <StatusFilterGroup v-model="statusFilter" :items="statusTabs" />
+          </div>
         </template>
 
         <template #right>
@@ -80,7 +98,7 @@ const sorting = ref([{ id: 'name', desc: false }])
         <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
       </div>
 
-      <template v-else>
+      <div v-else id="tour-leagues-content">
         <UContextMenu v-if="viewMode === 'table'" :items="tableContextMenuItems">
           <UTable
             v-model:sorting="sorting"
@@ -96,7 +114,9 @@ const sorting = ref([{ id: 'name', desc: false }])
           :leagues="filteredLeagues"
           :context-menu-items="rowContextMenuItems"
         />
-      </template>
+      </div>
     </template>
   </UDashboardPanel>
+
+  <TourGuide :tour="tour" />
 </template>

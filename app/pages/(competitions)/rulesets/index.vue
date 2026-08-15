@@ -29,6 +29,8 @@ const tabs = computed<TabsItem[]>(() => [
 ])
 
 const activeTab = ref('cittadino')
+
+const tour = useRulesetsTour()
 </script>
 
 <template>
@@ -40,6 +42,16 @@ const activeTab = ref('cittadino')
         </template>
 
         <template #right>
+          <UButton
+            :label="$t('ruleset.tour.startButton')"
+            icon="i-lucide-circle-help"
+            color="neutral"
+            variant="ghost"
+            @click="tour.start()"
+          />
+
+          <USeparator orientation="vertical" class="h-4" />
+
           <NotificationsBellButton />
         </template>
       </UDashboardNavbar>
@@ -47,83 +59,89 @@ const activeTab = ref('cittadino')
 
     <template #body>
       <div class="flex flex-col gap-6">
-        <UTabs
-          v-model="activeTab"
-          :items="tabs"
-          variant="link"
-          class="w-full"
-          :content="false"
-        />
+        <div id="tour-rulesets-tabs" class="w-fit">
+          <UTabs
+            v-model="activeTab"
+            :items="tabs"
+            variant="link"
+            class="w-full"
+            :content="false"
+          />
+        </div>
 
-        <UPageCard
-          v-if="activeTab === 'cittadino'"
-          :title="$t('ruleset.cittadino.title')"
-          :description="$t('ruleset.cittadino.description')"
-          :icon="ICONS.medal"
-        >
-          <div class="flex flex-col gap-6">
-            <div>
-              <p class="mb-2 text-sm font-medium text-highlighted">
-                {{ $t('ruleset.cittadino.pointsTitle') }}
-              </p>
+        <div id="tour-rulesets-content">
+          <UPageCard
+            v-if="activeTab === 'cittadino'"
+            :title="$t('ruleset.cittadino.title')"
+            :description="$t('ruleset.cittadino.description')"
+            :icon="ICONS.medal"
+          >
+            <div class="flex flex-col gap-6">
+              <div>
+                <p class="mb-2 text-sm font-medium text-highlighted">
+                  {{ $t('ruleset.cittadino.pointsTitle') }}
+                </p>
 
-              <div class="flex flex-wrap gap-1.5">
-                <div
-                  v-for="row in pointRows"
-                  :key="row.place"
-                  class="flex flex-col items-center rounded-lg border border-default px-3 py-1.5"
-                >
-                  <span class="text-xs text-muted">{{ row.place }}</span>
-                  <span class="text-sm font-semibold text-highlighted tabular-nums">
-                    {{ row.points }}
-                  </span>
+                <div class="flex flex-wrap gap-1.5">
+                  <div
+                    v-for="row in pointRows"
+                    :key="row.place"
+                    class="flex flex-col items-center rounded-lg border border-default px-3 py-1.5"
+                  >
+                    <span class="text-xs text-muted">{{ row.place }}</span>
+                    <span class="text-sm font-semibold text-highlighted tabular-nums">
+                      {{ row.points }}
+                    </span>
+                  </div>
                 </div>
               </div>
+
+              <USeparator />
+
+              <ul class="flex flex-col gap-3 text-sm text-muted">
+                <li class="flex gap-2">
+                  <UIcon name="i-lucide-calculator" class="mt-0.5 size-4 shrink-0 text-primary" />
+                  <span>
+                    {{ $t('ruleset.cittadino.bestResults', {
+                      counted: CITTADINO_COUNTED_RESULTS
+                    }) }}
+                  </span>
+                </li>
+                <li class="flex gap-2">
+                  <UIcon name="i-lucide-git-compare-arrows" class="mt-0.5 size-4 shrink-0 text-primary" />
+                  <span>{{ $t('ruleset.cittadino.tieBreak') }}</span>
+                </li>
+                <li class="flex gap-2">
+                  <UIcon :name="ICONS.standings" class="mt-0.5 size-4 shrink-0 text-primary" />
+                  <span>
+                    {{ $t('ruleset.cittadino.finalists', { finalists: CITTADINO_FINALISTS }) }}
+                  </span>
+                </li>
+                <li class="flex gap-2">
+                  <UIcon name="i-lucide-calendar-check" class="mt-0.5 size-4 shrink-0 text-primary" />
+                  <span>{{ $t('ruleset.cittadino.eligibility') }}</span>
+                </li>
+                <li class="flex gap-2">
+                  <UIcon name="i-lucide-megaphone" class="mt-0.5 size-4 shrink-0 text-primary" />
+                  <span>{{ $t('ruleset.cittadino.publication') }}</span>
+                </li>
+              </ul>
+
+              <USeparator />
+
+              <p class="text-xs text-muted">
+                {{ $t('ruleset.cittadino.legend') }}
+              </p>
             </div>
+          </UPageCard>
 
-            <USeparator />
-
-            <ul class="flex flex-col gap-3 text-sm text-muted">
-              <li class="flex gap-2">
-                <UIcon name="i-lucide-calculator" class="mt-0.5 size-4 shrink-0 text-primary" />
-                <span>
-                  {{ $t('ruleset.cittadino.bestResults', {
-                    counted: CITTADINO_COUNTED_RESULTS
-                  }) }}
-                </span>
-              </li>
-              <li class="flex gap-2">
-                <UIcon name="i-lucide-git-compare-arrows" class="mt-0.5 size-4 shrink-0 text-primary" />
-                <span>{{ $t('ruleset.cittadino.tieBreak') }}</span>
-              </li>
-              <li class="flex gap-2">
-                <UIcon :name="ICONS.standings" class="mt-0.5 size-4 shrink-0 text-primary" />
-                <span>
-                  {{ $t('ruleset.cittadino.finalists', { finalists: CITTADINO_FINALISTS }) }}
-                </span>
-              </li>
-              <li class="flex gap-2">
-                <UIcon name="i-lucide-calendar-check" class="mt-0.5 size-4 shrink-0 text-primary" />
-                <span>{{ $t('ruleset.cittadino.eligibility') }}</span>
-              </li>
-              <li class="flex gap-2">
-                <UIcon name="i-lucide-megaphone" class="mt-0.5 size-4 shrink-0 text-primary" />
-                <span>{{ $t('ruleset.cittadino.publication') }}</span>
-              </li>
-            </ul>
-
-            <USeparator />
-
-            <p class="text-xs text-muted">
-              {{ $t('ruleset.cittadino.legend') }}
-            </p>
-          </div>
-        </UPageCard>
-
-        <RulesetsFormatRulesCard v-else-if="activeTab === 'commander'" format="commander" />
-        <RulesetsFormatRulesCard v-else-if="activeTab === 'premodern'" format="premodern" />
-        <RulesetsFormatRulesCard v-else-if="activeTab === 'pauper'" format="pauper" />
+          <RulesetsFormatRulesCard v-else-if="activeTab === 'commander'" format="commander" />
+          <RulesetsFormatRulesCard v-else-if="activeTab === 'premodern'" format="premodern" />
+          <RulesetsFormatRulesCard v-else-if="activeTab === 'pauper'" format="pauper" />
+        </div>
       </div>
     </template>
   </UDashboardPanel>
+
+  <TourGuide :tour="tour" />
 </template>

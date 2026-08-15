@@ -26,6 +26,8 @@ const pendingCount = computed(() => (associates.value ?? []).filter(
   associate => associate.membership_request_status === 'pending'
 ).length)
 
+const tour = useAssociatesTour()
+
 const viewMode = ref<'table' | 'map'>('table')
 const viewModeItems = computed<TabsItem[]>(() => [
   { label: t('associate.views.table'), value: 'table', icon: 'i-lucide-table' },
@@ -240,7 +242,19 @@ watch(() => consentSocialFilter.value, (newVal) => {
         </template>
 
         <template #right>
-          <ViewModeTabs v-model="viewMode" :items="viewModeItems" />
+          <UButton
+            :label="$t('associate.tour.startButton')"
+            icon="i-lucide-circle-help"
+            color="neutral"
+            variant="ghost"
+            @click="tour.start()"
+          />
+
+          <USeparator orientation="vertical" class="h-4" />
+
+          <div id="tour-associates-view-mode">
+            <ViewModeTabs v-model="viewMode" :items="viewModeItems" />
+          </div>
 
           <USeparator orientation="vertical" class="h-4" />
 
@@ -251,7 +265,9 @@ watch(() => consentSocialFilter.value, (newVal) => {
       <!-- Switcher shared with /associates/requests (see AssociatesSubNav) —
            same sub-nav-row pattern as /settings. -->
       <UDashboardToolbar>
-        <AssociatesSubNav :pending-count="pendingCount" />
+        <div id="tour-associates-subnav" class="w-fit">
+          <AssociatesSubNav :pending-count="pendingCount" />
+        </div>
       </UDashboardToolbar>
 
       <!-- Status filter, search/social/columns filters and row-actions all in one
@@ -263,31 +279,35 @@ watch(() => consentSocialFilter.value, (newVal) => {
         :ui="{ root: 'flex-wrap h-auto py-2 gap-1.5', left: 'gap-4 flex-wrap', right: 'gap-4' }"
       >
         <template #left>
-          <StatusFilterGroup v-model="activeStatusTab" :items="statusTabs" />
+          <div id="tour-associates-filters" class="flex items-center gap-4 flex-wrap">
+            <StatusFilterGroup v-model="activeStatusTab" :items="statusTabs" />
 
-          <UInput
-            :model-value="(
-              table?.tableApi?.getColumn('email_address')?.getFilterValue() as string
-            )"
-            class="max-w-sm"
-            :icon="ICONS.search"
-            :placeholder="$t('common.filterEmailsPlaceholder')"
-            @update:model-value="
-              table?.tableApi?.getColumn('email_address')?.setFilterValue($event)
-            "
-          />
-
-          <UTooltip :text="$t('associate.consentSocialLabel')">
-            <UStatusSelect
-              v-model="consentSocialFilter"
-              :items="consentSocialOptions"
-              name="consentSocialFilter"
+            <UInput
+              :model-value="(
+                table?.tableApi?.getColumn('email_address')?.getFilterValue() as string
+              )"
+              class="max-w-sm"
+              :icon="ICONS.search"
+              :placeholder="$t('common.filterEmailsPlaceholder')"
+              @update:model-value="
+                table?.tableApi?.getColumn('email_address')?.setFilterValue($event)
+              "
             />
-          </UTooltip>
+
+            <UTooltip :text="$t('associate.consentSocialLabel')">
+              <UStatusSelect
+                v-model="consentSocialFilter"
+                :items="consentSocialOptions"
+                name="consentSocialFilter"
+              />
+            </UTooltip>
+          </div>
         </template>
 
         <template #right>
-          <AssociatesTableToolbarActions :visibility-items="visibilityItems" />
+          <div id="tour-associates-actions">
+            <AssociatesTableToolbarActions :visibility-items="visibilityItems" />
+          </div>
         </template>
       </UDashboardToolbar>
     </template>
@@ -296,6 +316,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
       <template v-if="viewMode === 'table'">
         <UContextMenu :items="tableContextMenuItems">
           <UTable
+            id="tour-associates-table"
             ref="table"
             v-model:column-filters="columnFilters"
             v-model:column-visibility="columnVisibility"
@@ -334,4 +355,6 @@ watch(() => consentSocialFilter.value, (newVal) => {
     :preset-associate="renewingAssociate"
     hide-trigger
   />
+
+  <TourGuide :tour="tour" />
 </template>
