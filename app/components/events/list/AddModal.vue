@@ -110,7 +110,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 <template>
   <UModal
     v-model:open="open"
-    :dismissible="false"
     :ui="{ content: 'max-w-xl' }"
     :title="$t('event.addModal.title')"
     :description="$t('event.addModal.description')"
