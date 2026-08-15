@@ -31,10 +31,10 @@ function monthPart(startDate: string) {
       :items="contextMenuItems(tournament)"
     >
       <UCard
-        :to="`/tournaments/${tournament.id}`"
-        class="overflow-hidden hover:ring-primary transition-colors"
+        class="overflow-hidden cursor-pointer hover:ring-primary transition-colors"
         :class="{ 'opacity-60 saturate-50': tournament.status === 'completed' }"
         :ui="{ body: 'p-3 sm:p-3', footer: 'p-3 sm:p-3' }"
+        @click="navigateTo(`/tournaments/${tournament.uuid}`)"
       >
         <!-- Luma-inspired cover, same convention as calendar/card/Base.vue: a
              real or default image up top, with the day/month tear-off badge

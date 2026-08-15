@@ -3,11 +3,18 @@
 // have edit/delete infrastructure (events/leagues/tournaments are still
 // read-only, mock-data pages — see docs/BACKLOG.md). Unlike
 // useWantedCardsRowActions.ts/useTransactionsRowActions.ts there is no
-// per-domain logic here, just a route prefix and an id, so one shared
+// per-domain logic here, just a route prefix and an item, so one shared
 // composable covers all three instead of three near-identical copies.
+// "Copia link" uses `uuid` (the public, non-enumerable identifier — an
+// auto-increment `id` in the URL would let a visitor enumerate every row by
+// walking /tournaments/1, /tournaments/2, ...); "Copia ID" intentionally
+// keeps the numeric `id`, since that's the one support/admin conversations
+// actually reference.
 import type { DropdownMenuItem } from '@nuxt/ui'
 
-export function useCopyLinkContextMenu<T extends { id: number | string }>(routeBase: string) {
+type LinkableItem = { id: number | string, uuid: string }
+
+export function useCopyLinkContextMenu<T extends LinkableItem>(routeBase: string) {
   const { t } = useI18n()
   const toast = useToast()
 
@@ -29,7 +36,7 @@ export function useCopyLinkContextMenu<T extends { id: number | string }>(routeB
       {
         label: t('common.copyLink'),
         icon: ICONS.link,
-        onSelect: () => copyText(`${window.location.origin}${routeBase}/${item.id}`, t('common.linkCopied'))
+        onSelect: () => copyText(`${window.location.origin}${routeBase}/${item.uuid}`, t('common.linkCopied'))
       },
       {
         label: t('common.copyId'),
