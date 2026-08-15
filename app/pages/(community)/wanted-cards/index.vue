@@ -135,7 +135,7 @@ const gridSortItems = computed(() => [
   { label: t('wantedCard.columns.player'), value: 'player' as const },
   { label: t('wantedCard.columns.cardmarketPrice'), value: 'cardmarketPrice' as const },
   { label: t('wantedCard.columns.date'), value: 'date' as const },
-  { label: t('wantedCard.columns.name'), value: 'cardName' as const }
+  { label: t('wantedCard.grid.sortByName'), value: 'cardName' as const }
 ])
 
 const sortedCards = computed(() => {
