@@ -94,7 +94,10 @@ const sorting = ref([{ id: 'startDate', desc: false }])
           class="w-full"
         />
 
-        <TournamentsListGridView v-else :tournaments="filteredTournaments" />
+        <TournamentsListGridView
+          v-else
+          :tournaments="filteredTournaments"
+        />
       </template>
     </template>
   </UDashboardPanel>

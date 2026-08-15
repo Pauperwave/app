@@ -43,7 +43,6 @@ const statusItems = computed(() => WANTED_CARD_STATUSES.map(status => ({
       :label="t('wantedCard.bulkActions.clearSelection')"
       color="neutral"
       variant="ghost"
-      size="xs"
       @click="$emit('clear')"
     />
   </div>
