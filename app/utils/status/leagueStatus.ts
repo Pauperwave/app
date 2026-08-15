@@ -1,16 +1,18 @@
 // app\utils\status\leagueStatus.ts
 import type { LeagueStatus } from '~/types'
 
-export const LEAGUE_STATUSES: LeagueStatus[] = ['scheduled', 'ongoing', 'completed']
+export const LEAGUE_STATUSES: LeagueStatus[] = ['draft', 'active', 'completed', 'cancelled']
 
-export function leagueStatusColor(status: LeagueStatus): 'info' | 'warning' | 'success' {
-  if (status === 'ongoing') return 'warning'
+export function leagueStatusColor(status: LeagueStatus): 'neutral' | 'info' | 'success' | 'error' {
+  if (status === 'draft') return 'neutral'
+  if (status === 'active') return 'info'
   if (status === 'completed') return 'success'
-  return 'info'
+  return 'error'
 }
 
 export const LEAGUE_STATUS_ICONS: Record<LeagueStatus, string> = {
-  scheduled: ICONS.clock,
-  ongoing: ICONS.pending,
-  completed: ICONS.successFilledBig
+  draft: ICONS.edit,
+  active: ICONS.pending,
+  completed: ICONS.successFilledBig,
+  cancelled: ICONS.clear
 }

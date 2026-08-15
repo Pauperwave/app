@@ -23,7 +23,7 @@ export function useEventsFilters(data: Ref<Event[]>, range: Ref<Range>) {
   // useWantedCardsFilters.ts's statusTabs.
   const statusCounts = computed(() => {
     const counts: Record<EventStatus, number> = {
-      scheduled: 0, ongoing: 0, completed: 0, canceled: 0
+      draft: 0, published: 0, ongoing: 0, completed: 0, cancelled: 0
     }
     for (const event of data.value) {
       if (event.status in counts) counts[event.status]++
@@ -33,10 +33,11 @@ export function useEventsFilters(data: Ref<Event[]>, range: Ref<Range>) {
 
   const statusTabs = computed<{ label: string, value: 'all' | EventStatus, count?: number }[]>(() => [
     { label: t('event.filters.statusAll'), value: 'all', count: undefined },
-    { label: t('event.status.scheduled'), value: 'scheduled', count: statusCounts.value.scheduled },
-    { label: t('event.status.ongoing'), value: 'ongoing', count: statusCounts.value.ongoing },
-    { label: t('event.status.completed'), value: 'completed', count: statusCounts.value.completed },
-    { label: t('event.status.canceled'), value: 'canceled', count: statusCounts.value.canceled }
+    ...EVENT_STATUSES.map(status => ({
+      label: t(`event.status.${status}`),
+      value: status,
+      count: statusCounts.value[status]
+    }))
   ])
 
   return { statusFilter, filteredEvents, statusTabs }

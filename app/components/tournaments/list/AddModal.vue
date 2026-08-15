@@ -1,174 +1,144 @@
 <!-- app\components\tournaments\list\AddModal.vue -->
 <script setup lang="ts">
-import { CalendarDate } from '@internationalized/date'
+import { CalendarDate, getLocalTimeZone } from '@internationalized/date'
 import type { DateValue } from '@internationalized/date'
 import * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
+import type { NewTournamentPayload } from '#shared/types/tournaments'
 
 const open = defineModel<boolean>({ default: false })
 const toast = useToast()
 const { t } = useI18n()
 
-const visibilityOptions = computed(() => [
-  { value: 'public', label: t('tournament.addModal.visibilityOptions.public'), icon: ICONS.show },
-  { value: 'private', label: t('tournament.addModal.visibilityOptions.private'), icon: ICONS.hide }
-])
+// Migrated off hardcoded option arrays onto the real lookup tables
+// (2026-08-15) — locations/organizations/mtg_formats, see
+// useLocationsQuery.ts/useOrganizationsQuery.ts/useMtgFormatsQuery.ts.
+// `visibility`/`ruleset` dropped entirely: neither is a real tournaments
+// column, they only ever existed in the mock form. League/event linking
+// dropped too — leagues and events are still mock data, not migrated yet
+// (see docs/BACKLOG.md), so there's nothing real to link to.
+const { data: locations } = useLocationsQuery()
+const { data: organizations } = useOrganizationsQuery()
+const { data: formats } = useMtgFormatsQuery()
+const { createTournament } = useTournamentsMutations()
 
-const statusOptions = computed(() => [
-  { value: 'scheduled', label: t('tournament.addModal.statusOptions.scheduled'), icon: ICONS.clock, color: 'info' },
-  { value: 'cancelled', label: t('tournament.addModal.statusOptions.cancelled'), icon: ICONS.clear, color: 'error' },
-  { value: 'ongoing', label: t('tournament.addModal.statusOptions.ongoing'), icon: ICONS.pending, color: 'warning' },
-  { value: 'completed', label: t('tournament.addModal.statusOptions.completed'), icon: ICONS.successFilledBig, color: 'success' }
-])
+const statusOptions = computed(() => TOURNAMENT_STATUSES.map(status => ({
+  value: status,
+  label: t(`tournament.addModal.statusOptions.${status}`),
+  icon: TOURNAMENT_STATUS_ICONS[status],
+  color: tournamentStatusColor(status)
+})))
 
-const formatOptions = [
-  'Standard',
-  'Modern',
-  'Pioneer',
-  'Commander',
-  'Legacy',
-  'Vintage',
-  'Pauper'
-]
+const locationOptions = computed(() => (locations.value ?? []).map(location => ({
+  value: location.uuid, label: location.name
+})))
+const organizerOptions = computed(() => (organizations.value ?? []).map(organization => ({
+  value: organization.uuid, label: organization.name
+})))
+const formatOptions = computed(() => (formats.value ?? []).map(format => ({
+  value: format.uuid, label: format.name
+})))
 
-const organizerOptions = [
-  'Magman',
-  'Pauperwave',
-  'Commanderwave',
-  'MagicCorner'
-]
-
-const placeOptions = [
-  'Magazzino Fantasia',
-  'Bruno',
-  'Magman'
-]
-
-const rulesetOptions = [
-  'REL Regular',
-  'REL Competitive',
-  'REL Professional'
-]
-
-const leagueOptions = [
-  'Magman Autunno 2025',
-  'Magman Primavera 2025',
-  'Magman Estate 2025',
-  'Magman Inverno 2025'
-]
-
-const eventOptions = [
-  'CommanderFest',
-  'CommanderFest Summer'
-]
-
-// Get today's date
 const today = new Date()
-const todayString = today.toISOString().substring(0, 10) // Format as YYYY-MM-DD
+const todayString = today.toISOString().substring(0, 10)
 
-// Custom messages only on the free-text/numeric fields (name, entry_fee,
-// round_count, round_duration) — the others are constrained selects with an
-// already valid default, so no user state can ever make them invalid.
 const schema = v.object({
-  status: v.string(),
-  visibility: v.string(),
-  companion_code: v.optional(v.nullable(v.string())),
-  // .optional() here mirrors the original Zod schema: "name" shows as "required"
-  // in the UI (see UFormField required) but the validation schema does not enforce
-  // it — a pre-existing inconsistency, not introduced by this migration, left as
-  // is so behaviour does not change.
+  status: v.picklist(TOURNAMENT_STATUSES),
+  companionCode: v.optional(v.nullable(v.string())),
+  // .optional() here mirrors the pre-migration schema: "name" shows as
+  // "required" in the UI (see UFormField required) but the validation schema
+  // does not enforce it — a pre-existing inconsistency, left as is.
   name: v.optional(v.string(t('tournament.addModal.validation.nameRequired'))),
   description: v.optional(v.nullable(v.string())),
-  entry_fee: v.pipe(v.number(), v.minValue(0, t('tournament.addModal.validation.entryFeeNegative'))),
+  entryFee: v.pipe(v.number(), v.minValue(0, t('tournament.addModal.validation.entryFeeNegative'))),
   prizes: v.optional(v.nullable(v.string())),
-  format: v.string(),
-  ruleset: v.string(),
-  start_date: v.string(),
-  start_time: v.string(),
-  round_count: v.pipe(
+  formatUuid: v.string(),
+  startDate: v.string(),
+  startTime: v.string(),
+  roundCount: v.pipe(
     v.number(),
     v.integer(),
     v.minValue(1, t('tournament.addModal.validation.roundCountPositive'))
   ),
-  round_duration: v.pipe(
-    v.number(),
-    v.integer(),
-    v.minValue(1, t('tournament.addModal.validation.roundDurationPositive'))
-  ),
-  organizer: v.string(),
-  location: v.string(),
-  league: v.optional(v.string()),
-  event: v.optional(v.string())
+  organizerUuid: v.optional(v.string()),
+  locationUuid: v.optional(v.string())
 })
 
 type Schema = v.InferOutput<typeof schema>
 
 const state = reactive<Schema>({
   name: undefined,
-  ruleset: 'REL Regular',
-  status: 'scheduled',
-  start_date: todayString,
-  visibility: 'private',
-  start_time: '20:00',
-  round_count: 2,
-  round_duration: 60,
-  league: undefined,
-  event: undefined,
-  format: 'Commander',
+  status: 'draft',
+  startDate: todayString,
+  startTime: '20:00',
+  roundCount: 2,
+  formatUuid: undefined as unknown as string,
   description: undefined,
   prizes: undefined,
-  organizer: 'Pauperwave',
-  location: 'Magazzino Fantasia',
-  entry_fee: 5,
-  companion_code: undefined
+  organizerUuid: undefined,
+  locationUuid: undefined,
+  entryFee: 5,
+  companionCode: undefined
 })
 
-// Initialize CalendarDate from today - use shallowRef with proper type
 const startDate = shallowRef<DateValue>(
   new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate())
 )
 
-// Watch for changes to startDate and update state.start_date
 watch(startDate, (newDate) => {
   if (newDate) {
-    // Format as YYYY-MM-DD
-    state.start_date = `${newDate.year}-${String(newDate.month).padStart(2, '0')}-${String(newDate.day).padStart(2, '0')}`
+    state.startDate = `${newDate.year}-${String(newDate.month).padStart(2, '0')}-${String(newDate.day).padStart(2, '0')}`
   }
 })
 
 const formattedStartDate = computed(() => {
   if (!startDate.value) return ''
   const date = new Date(startDate.value.year, startDate.value.month - 1, startDate.value.day)
-  return date.toLocaleDateString('it-IT', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric'
-  })
+  return date.toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' })
 })
 
-// Computed property to get the selected visibility object
-const selectedVisibility = computed(() => {
-  return visibilityOptions.value.find(option => option.value === state.visibility)
-})
-
-// Computed property to get the selected status object
-const selectedStatus = computed(() => {
-  return statusOptions.value.find(option => option.value === state.status)
-})
+const selectedStatus = computed(() =>
+  statusOptions.value.find(option => option.value === state.status))
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 1000))
+  const [hours, minutes] = event.data.startTime.split(':').map(Number)
+  const startsAt = new CalendarDate(
+    startDate.value!.year, startDate.value!.month, startDate.value!.day
+  ).toDate(getLocalTimeZone())
+  startsAt.setHours(hours ?? 0, minutes ?? 0, 0, 0)
 
-  // Show success toast
-  toast.add({
-    title: t('tournament.addModal.successToastTitle'),
-    description: t('tournament.addModal.successToastDescription', { name: event.data.name }),
-    color: 'success'
-  })
+  const payload: NewTournamentPayload = {
+    name: event.data.name ?? '',
+    status: event.data.status,
+    formatUuid: event.data.formatUuid,
+    locationUuid: event.data.locationUuid || null,
+    organizerUuid: event.data.organizerUuid || null,
+    leagueUuid: null,
+    eventUuid: null,
+    startsAt: startsAt.toISOString(),
+    endsAt: null,
+    roundCount: event.data.roundCount,
+    entryFee: event.data.entryFee,
+    description: event.data.description || null,
+    prizes: event.data.prizes || null,
+    companionCode: event.data.companionCode || null
+  }
 
-  // Close modal
-  open.value = false
+  try {
+    await createTournament.mutateAsync(payload)
+    toast.add({
+      title: t('tournament.addModal.successToastTitle'),
+      description: t('tournament.addModal.successToastDescription', { name: payload.name }),
+      color: 'success'
+    })
+    open.value = false
+  } catch (err) {
+    toast.add({
+      title: t('tournament.addModal.errorToastTitle'),
+      description: toErrorMessage(err),
+      color: 'error'
+    })
+  }
 }
 </script>
 
@@ -193,7 +163,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         class="space-y-6"
         @submit="onSubmit"
       >
-        <!-- Dati relativi all'evento -->
         <div class="space-y-4">
           <p class="text-lg font-semibold text-primary">
             {{ $t('tournament.addModal.tournamentData') }}
@@ -213,29 +182,16 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               </USelect>
             </UFormField>
 
-            <UFormField :label="$t('tournament.addModal.fields.visibility')" class="flex-1" name="visibility">
-              <USelect
-                v-model="state.visibility"
-                :items="visibilityOptions"
-                value-key="value"
-                class="w-full"
-              >
-                <template #leading>
-                  <UIcon v-if="selectedVisibility" :name="selectedVisibility.icon" class="size-5 shrink-0" />
-                </template>
-              </USelect>
-            </UFormField>
-
             <UFormField
               :label="$t('tournament.addModal.fields.companionCode')"
-              name="companion_code"
+              name="companionCode"
             >
               <UInput
-                :model-value="state.companion_code ?? ''"
+                :model-value="state.companionCode ?? ''"
                 :placeholder="$t('tournament.addModal.fields.companionCodePlaceholder')"
                 :icon="ICONS.smartphone"
                 class="w-42"
-                @update:model-value="state.companion_code = ($event as string) || undefined"
+                @update:model-value="state.companionCode = ($event as string) || undefined"
               />
             </UFormField>
           </div>
@@ -251,9 +207,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               />
             </UFormField>
 
-            <UFormField :label="$t('tournament.addModal.fields.entryFee')" name="entry_fee">
+            <UFormField :label="$t('tournament.addModal.fields.entryFee')" name="entryFee">
               <UInputNumber
-                v-model="state.entry_fee"
+                v-model="state.entryFee"
                 :min="0"
                 :step="5"
                 class="w-42"
@@ -282,27 +238,16 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             />
           </UFormField>
 
-          <div class="grid grid-cols-2 gap-4">
-            <UFormField :label="$t('tournament.addModal.fields.format')" name="format">
-              <USelectMenu
-                v-model="state.format"
-                class="w-full"
-                :items="formatOptions"
-                :placeholder="$t('tournament.addModal.fields.selectFormat')"
-                :icon="ICONS.layers"
-              />
-            </UFormField>
-
-            <UFormField :label="$t('tournament.addModal.fields.ruleset')" name="ruleset">
-              <USelect
-                v-model="state.ruleset"
-                class="w-full"
-                :items="rulesetOptions"
-                :placeholder="$t('tournament.addModal.fields.selectRuleset')"
-                :icon="ICONS.bookOpen"
-              />
-            </UFormField>
-          </div>
+          <UFormField :label="$t('tournament.addModal.fields.format')" name="formatUuid">
+            <USelectMenu
+              v-model="state.formatUuid"
+              class="w-full"
+              :items="formatOptions"
+              value-key="value"
+              :placeholder="$t('tournament.addModal.fields.selectFormat')"
+              :icon="ICONS.layers"
+            />
+          </UFormField>
 
           <p class="text-lg font-semibold text-primary">
             {{ $t('tournament.addModal.scheduling') }}
@@ -310,7 +255,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
           <div class="grid grid-cols-2 gap-4">
             <div class="flex justify-between gap-2">
-              <UFormField :label="$t('tournament.addModal.fields.startDate')" class="flex-1" name="start_date">
+              <UFormField :label="$t('tournament.addModal.fields.startDate')" class="flex-1" name="startDate">
                 <UPopover>
                   <UInput
                     :model-value="formattedStartDate"
@@ -325,110 +270,53 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 </UPopover>
               </UFormField>
 
-              <UFormField :label="$t('tournament.addModal.fields.startTime')" name="start_time">
+              <UFormField :label="$t('tournament.addModal.fields.startTime')" name="startTime">
                 <UTimePicker
-                  v-model="state.start_time"
+                  v-model="state.startTime"
                   :placeholder="$t('tournament.addModal.fields.selectTime')"
                   :minute-step="15"
                 />
               </UFormField>
             </div>
 
-            <div class="flex gap-2">
-              <UFormField :label="$t('tournament.addModal.fields.roundCount')" name="round_count">
-                <UInputNumber
-                  v-model="state.round_count"
-                  :min="1"
-                  :icon="ICONS.hash"
-                />
-              </UFormField>
-
-              <UFormField
-                :label="$t('tournament.addModal.fields.roundDuration')"
-                name="round_duration"
-              >
-                <UInputNumber
-                  v-model="state.round_duration"
-                  :step="5"
-                  :icon="ICONS.timer"
-                />
-              </UFormField>
-            </div>
+            <UFormField :label="$t('tournament.addModal.fields.roundCount')" name="roundCount">
+              <UInputNumber
+                v-model="state.roundCount"
+                :min="1"
+                :icon="ICONS.hash"
+              />
+            </UFormField>
           </div>
 
-          <!-- Organizer details -->
           <p class="text-lg font-semibold text-primary">
             {{ $t('tournament.addModal.organizerData') }}
           </p>
 
           <div class="grid grid-cols-2 gap-4">
-            <UFormField :label="$t('tournament.addModal.fields.organizer')" name="organizer">
-              <USelect
-                v-model="state.organizer"
+            <UFormField :label="$t('tournament.addModal.fields.organizer')" name="organizerUuid">
+              <USelectMenu
+                v-model="state.organizerUuid"
                 class="w-full"
                 :items="organizerOptions"
+                value-key="value"
                 :placeholder="$t('tournament.addModal.fields.selectOrganizer')"
                 :icon="ICONS.player"
               />
             </UFormField>
 
-            <UFormField :label="$t('tournament.addModal.fields.location')" name="location">
-              <USelect
-                v-model="state.location"
+            <UFormField :label="$t('tournament.addModal.fields.location')" name="locationUuid">
+              <USelectMenu
+                v-model="state.locationUuid"
                 class="w-full"
-                :items="placeOptions"
+                :items="locationOptions"
+                value-key="value"
                 :placeholder="$t('tournament.addModal.fields.selectLocation')"
                 :icon="ICONS.mapPin"
               />
             </UFormField>
-
-            <UFormField :label="$t('tournament.addModal.fields.league')" name="league">
-              <USelectMenu
-                v-model="state.league"
-                class="w-full"
-                :items="leagueOptions"
-                :placeholder="$t('tournament.addModal.fields.linkLeague')"
-                :icon="ICONS.standings"
-              >
-                <template #trailing>
-                  <UButton
-                    v-if="state.league"
-                    class="cursor-pointer"
-                    color="neutral"
-                    variant="ghost"
-                    size="xs"
-                    :icon="ICONS.clear"
-                    @click="state.league = ''"
-                  />
-                </template>
-              </USelectMenu>
-            </UFormField>
-
-            <UFormField :label="$t('tournament.addModal.fields.event')" name="event">
-              <USelectMenu
-                v-model="state.event"
-                class="w-full"
-                :items="eventOptions"
-                :placeholder="$t('tournament.addModal.fields.linkEvent')"
-                :icon="ICONS.calendarRenew"
-              >
-                <template #trailing>
-                  <UButton
-                    v-if="state.event"
-                    class="cursor-pointer"
-                    color="neutral"
-                    variant="ghost"
-                    size="xs"
-                    :icon="ICONS.clear"
-                    @click="state.event = ''"
-                  />
-                </template>
-              </USelectMenu>
-            </UFormField>
           </div>
         </div>
 
-        <!-- Action buttons -->
         <div class="flex justify-end gap-2 pt-4">
           <UButton
             :label="$t('tournament.addModal.cancel')"
@@ -440,6 +328,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             :label="$t('tournament.addModal.create')"
             :icon="ICONS.confirm"
             type="submit"
+            :loading="createTournament.isLoading.value"
           />
         </div>
       </UForm>

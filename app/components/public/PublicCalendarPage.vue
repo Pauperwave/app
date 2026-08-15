@@ -14,11 +14,11 @@
   clarification: most calendar items are standalone tournaments (e.g. a
   single Draft night is just a Tournament with format "draft"), not an
   "Evento" — an Event only shows up here as a grouping card when at least
-  one Tournament actually names it (Tournament.event, matched by name, see
-  server/api/tournaments.ts); a bare Event with no linked tournaments
-  doesn't appear at all. Rendering itself lives in CalendarCard.vue (shared
-  shell) and its two variants, CalendarEventCard.vue / CalendarTournamentCard.vue
-  — this component only builds and filters the `filteredCards` list.
+  one Tournament actually links it (tournaments.event_uuid, matched by uuid);
+  a bare Event with no linked tournaments doesn't appear at all. Rendering
+  itself lives in calendar/card/Base.vue (shared shell) and its two variants,
+  calendar/card/Event.vue / calendar/card/Tournament.vue — this component
+  only builds and filters the `filteredCards` list.
 -->
 <script lang="ts" setup>
 import { format, startOfMonth, endOfMonth } from 'date-fns'
@@ -80,22 +80,25 @@ function cardKey(card: CalendarCardEntry): string {
 }
 
 const cards = computed<CalendarCardEntry[]>(() => {
-  const eventsByName = new Map((eventsData.value ?? []).map(event => [event.name, event]))
+  // Matched by uuid, not name (2026-08-15, both events and tournaments are
+  // real now) — a name collision between two events can't misgroup a
+  // tournament under the wrong one.
+  const eventsByUuid = new Map((eventsData.value ?? []).map(event => [event.uuid, event]))
   const eventGroups = new Map<string, Tournament[]>()
   const standalone: Tournament[] = []
 
   for (const tournament of tournamentsData.value ?? []) {
-    if (tournament.event) {
-      const existing = eventGroups.get(tournament.event) ?? []
-      eventGroups.set(tournament.event, [...existing, tournament])
+    if (tournament.eventUuid) {
+      const existing = eventGroups.get(tournament.eventUuid) ?? []
+      eventGroups.set(tournament.eventUuid, [...existing, tournament])
     } else {
       standalone.push(tournament)
     }
   }
 
   const eventCards: CalendarCardEntry[] = [...eventGroups.entries()].flatMap(
-    ([eventName, tournaments]) => {
-      const event = eventsByName.get(eventName)
+    ([eventUuid, tournaments]) => {
+      const event = eventsByUuid.get(eventUuid)
       return event ? [{ kind: 'event' as const, event, tournaments }] : []
     }
   )

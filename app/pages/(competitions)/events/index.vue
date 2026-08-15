@@ -27,6 +27,7 @@ const {
 const data = computed(() => eventsData.value ?? [])
 const { statusFilter, filteredEvents, statusTabs } = useEventsFilters(data, range)
 const { columns } = useEventsTableColumns()
+const { rowContextMenuItems, onRowContextmenu, tableContextMenuItems } = useCopyLinkContextMenu('/events')
 
 const viewMode = ref<'table' | 'grid'>('grid')
 const viewModeItems = computed<TabsItem[]>(() => [
@@ -82,15 +83,21 @@ const sorting = ref([{ id: 'startDate', desc: false }])
       </div>
 
       <template v-else>
-        <UTable
-          v-if="viewMode === 'table'"
-          v-model:sorting="sorting"
-          :data="filteredEvents"
-          :columns="columns"
-          class="w-full"
-        />
+        <UContextMenu v-if="viewMode === 'table'" :items="tableContextMenuItems">
+          <UTable
+            v-model:sorting="sorting"
+            :data="filteredEvents"
+            :columns="columns"
+            class="w-full"
+            @contextmenu="onRowContextmenu"
+          />
+        </UContextMenu>
 
-        <EventsListGridView v-else :events="filteredEvents" />
+        <EventsListGridView
+          v-else
+          :events="filteredEvents"
+          :context-menu-items="rowContextMenuItems"
+        />
       </template>
     </template>
   </UDashboardPanel>

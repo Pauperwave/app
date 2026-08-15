@@ -62,7 +62,7 @@ export function useTournamentsTableColumns() {
     {
       accessorKey: 'entryFee',
       header: ({ column }) => sortableHeader(t('tournament.columns.entryFee'), column),
-      cell: ({ row }) => `${row.original.entryFee.toFixed(2)} €`
+      cell: ({ row }) => `${(row.original.entryFee ?? 0).toFixed(2)} €`
     }
   ]
 

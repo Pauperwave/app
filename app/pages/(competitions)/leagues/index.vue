@@ -25,6 +25,7 @@ const {
 const data = computed(() => leaguesData.value ?? [])
 const { statusFilter, filteredLeagues, statusTabs } = useLeaguesFilters(data)
 const { columns } = useLeaguesTableColumns()
+const { rowContextMenuItems, onRowContextmenu, tableContextMenuItems } = useCopyLinkContextMenu('/leagues')
 
 const viewMode = ref<'table' | 'grid'>('grid')
 const viewModeItems = computed<TabsItem[]>(() => [
@@ -80,15 +81,21 @@ const sorting = ref([{ id: 'name', desc: false }])
       </div>
 
       <template v-else>
-        <UTable
-          v-if="viewMode === 'table'"
-          v-model:sorting="sorting"
-          :data="filteredLeagues"
-          :columns="columns"
-          class="w-full"
-        />
+        <UContextMenu v-if="viewMode === 'table'" :items="tableContextMenuItems">
+          <UTable
+            v-model:sorting="sorting"
+            :data="filteredLeagues"
+            :columns="columns"
+            class="w-full"
+            @contextmenu="onRowContextmenu"
+          />
+        </UContextMenu>
 
-        <LeaguesListGridView v-else :leagues="filteredLeagues" />
+        <LeaguesListGridView
+          v-else
+          :leagues="filteredLeagues"
+          :context-menu-items="rowContextMenuItems"
+        />
       </template>
     </template>
   </UDashboardPanel>

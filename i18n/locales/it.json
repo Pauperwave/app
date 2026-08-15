@@ -62,6 +62,9 @@
     "mockDataNotice": "Dati di esempio: questa classifica non è ancora collegata al database reale.",
     "copyLink": "Copia link",
     "linkCopied": "Link copiato negli appunti",
+    "copyId": "Copia ID",
+    "idCopied": "ID copiato negli appunti",
+    "copyErrorTitle": "Impossibile copiare",
     "pageInDevelopment": "Questa pagina è ancora in sviluppo."
   },
   "tour": {
@@ -473,9 +476,10 @@
       "empty": "Nessuna lega trovata con questi filtri"
     },
     "status": {
-      "scheduled": "Pianificata",
-      "ongoing": "In corso",
-      "completed": "Completata"
+      "draft": "Bozza",
+      "active": "Attiva",
+      "completed": "Completata",
+      "cancelled": "Annullata"
     },
     "filters": {
       "statusAll": "Tutte"
@@ -483,7 +487,9 @@
     "columns": {
       "status": "Stato",
       "name": "Nome",
-      "tournamentCount": "Tornei"
+      "tournamentCount": "Tornei",
+      "season": "Stagione",
+      "ruleset": "Regolamento"
     },
     "tournamentsLabel": "Tornei completati",
     "progress": "{completed}/{total}",
@@ -491,20 +497,30 @@
       "title": "Nuova lega",
       "description": "Aggiungi una nuova lega al database",
       "openButton": "Nuova lega",
+      "leagueData": "Dati relativi alla lega",
+      "statusOptions": {
+        "draft": "Bozza",
+        "active": "Attiva",
+        "completed": "Completata",
+        "cancelled": "Annullata"
+      },
       "validation": {
-        "nameRequired": "Il nome è obbligatorio",
-        "nameTooShort": "Nome troppo corto",
-        "emailRequired": "L'email è obbligatoria",
-        "invalidEmail": "Email non valida"
+        "nameRequired": "Il nome è obbligatorio"
       },
       "fields": {
-        "name": "Name",
-        "email": "Email"
+        "status": "Stato",
+        "name": "Nome",
+        "namePlaceholder": "Nome della lega",
+        "season": "Stagione",
+        "seasonPlaceholder": "Stagione (opzionale)",
+        "ruleset": "Regolamento",
+        "selectRuleset": "Seleziona regolamento"
       },
       "successToastTitle": "Success",
       "successToastDescription": "Nuova lega {name} aggiunta",
-      "cancel": "Cancel",
-      "create": "Create"
+      "errorToastTitle": "Impossibile creare la lega",
+      "cancel": "Annulla",
+      "create": "Crea lega"
     },
     "detail": {
       "navbarTitle": "Lega",
@@ -548,10 +564,11 @@
       "shareErrorTitle": "Impossibile condividere"
     },
     "status": {
-      "scheduled": "Pianificato",
+      "draft": "Bozza",
+      "published": "Pubblicato",
       "ongoing": "In corso",
       "completed": "Completato",
-      "canceled": "Annullato"
+      "cancelled": "Annullato"
     },
     "filters": {
       "statusAll": "Tutti"
@@ -560,27 +577,45 @@
       "status": "Stato",
       "name": "Nome",
       "startDate": "Data",
-      "tournamentCount": "Tornei"
+      "tournamentCount": "Tornei",
+      "organizer": "Organizzatore",
+      "location": "Luogo"
     },
     "tournamentsLabel": "{count} torneo | {count} tornei",
     "addModal": {
       "title": "Nuovo evento",
       "description": "Aggiungi un nuovo evento al database",
       "openButton": "Nuovo evento",
+      "eventData": "Dati relativi all'evento",
+      "scheduling": "Pianificazione dell'evento",
+      "organizerData": "Dati relativi all'organizzatore",
+      "statusOptions": {
+        "draft": "Bozza",
+        "published": "Pubblicato",
+        "ongoing": "In corso",
+        "completed": "Completato",
+        "cancelled": "Annullato"
+      },
       "validation": {
-        "nameRequired": "Il nome è obbligatorio",
-        "nameTooShort": "Nome troppo corto",
-        "emailRequired": "L'email è obbligatoria",
-        "invalidEmail": "Email non valida"
+        "nameRequired": "Il nome è obbligatorio"
       },
       "fields": {
-        "name": "Name",
-        "email": "Email"
+        "status": "Stato",
+        "name": "Nome",
+        "namePlaceholder": "Nome dell'evento",
+        "companionCode": "Codice Companion",
+        "companionCodePlaceholder": "Codice (opzionale)",
+        "startDate": "Data di inizio",
+        "organizer": "Organizzatore",
+        "selectOrganizer": "Seleziona organizzatore",
+        "location": "Luogo",
+        "selectLocation": "Seleziona luogo"
       },
       "successToastTitle": "Successo",
       "successToastDescription": "Nuovo evento \"{name}\" aggiunto",
-      "cancel": "Cancel",
-      "create": "Create"
+      "errorToastTitle": "Impossibile creare l'evento",
+      "cancel": "Annulla",
+      "create": "Crea evento"
     },
     "detail": {
       "navbarTitle": "Evento",
@@ -653,10 +688,11 @@
       "empty": "Nessun torneo trovato con questi filtri"
     },
     "status": {
-      "scheduled": "Pianificato",
-      "ongoing": "In corso",
+      "draft": "Bozza",
+      "registration_open": "Iscrizioni aperte",
+      "in_progress": "In corso",
       "completed": "Completato",
-      "canceled": "Annullato"
+      "cancelled": "Annullato"
     },
     "filters": {
       "statusAll": "Tutti"
@@ -704,10 +740,11 @@
         "private": "Privato"
       },
       "statusOptions": {
-        "scheduled": "Pianificato",
-        "cancelled": "Annullato",
-        "ongoing": "In corso",
-        "completed": "Completato"
+        "draft": "Bozza",
+        "registration_open": "Iscrizioni aperte",
+        "in_progress": "In corso",
+        "completed": "Completato",
+        "cancelled": "Annullato"
       },
       "fields": {
         "status": "Stato",
@@ -747,6 +784,7 @@
       },
       "successToastTitle": "Success",
       "successToastDescription": "Nuovo torneo \"{name}\" aggiunto",
+      "errorToastTitle": "Impossibile creare il torneo",
       "cancel": "Annulla",
       "create": "Crea torneo"
     },

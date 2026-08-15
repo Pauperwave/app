@@ -1,32 +1,54 @@
 // app\composables\leagues\useLeaguesQuery.ts
 import type { League, LeagueStatus } from '~/types'
 
-interface LeagueRow {
-  id: number
-  status: string
-  tournament_count: number
-  completed_tournament_count: number
-  name: string
-}
-
 export const LEAGUES_KEY = ['leagues']
 
-// Backed by mock data (no Supabase table yet, see server/api/leagues.ts) — still
-// wrapped in useQuery (not useAsyncData) so the calling convention already
-// matches the migrated domains (wanted-cards, associates): swapping the mock
-// $fetch for a real Supabase read later only touches the query() body here, not
-// every consumer. No mutations composable yet — nothing writable exists server-side.
+// Migrated off mock data (server/api/leagues.ts, removed) onto the real
+// `leagues` table — direct Supabase read + join, same pattern as
+// useEventsQuery.ts. tournamentCount/completedTournamentCount are derived
+// from a second, lightweight tournaments read (league_uuid + status only),
+// same reasoning as useEventsQuery.ts's tournamentCount.
 export function useLeaguesQuery() {
+  const supabase = useSupabaseClient()
+
   return useQuery({
     key: LEAGUES_KEY,
     query: async (): Promise<League[]> => {
-      const rows = await $fetch<LeagueRow[]>('/api/leagues')
-      return rows.map(row => ({
+      const [leaguesResult, tournamentsResult] = await Promise.all([
+        supabase
+          .from('leagues')
+          .select('*, ruleset:rulesets(name)')
+          .is('deleted_at', null)
+          .order('starts_at', { ascending: true })
+          .order('id', { ascending: true }),
+        supabase
+          .from('tournaments')
+          .select('league_uuid, status')
+          .not('league_uuid', 'is', null)
+      ])
+
+      if (leaguesResult.error) throw leaguesResult.error
+      if (tournamentsResult.error) throw tournamentsResult.error
+
+      const totals = new Map<string, number>()
+      const completed = new Map<string, number>()
+      for (const row of tournamentsResult.data) {
+        if (!row.league_uuid) continue
+        totals.set(row.league_uuid, (totals.get(row.league_uuid) ?? 0) + 1)
+        if (row.status === 'completed') {
+          completed.set(row.league_uuid, (completed.get(row.league_uuid) ?? 0) + 1)
+        }
+      }
+
+      return leaguesResult.data.map(row => ({
         id: row.id,
+        uuid: row.uuid,
         status: row.status as LeagueStatus,
         name: row.name,
-        tournamentCount: row.tournament_count,
-        completedTournamentCount: row.completed_tournament_count
+        season: row.season,
+        ruleset: row.ruleset?.name ?? null,
+        tournamentCount: totals.get(row.uuid) ?? 0,
+        completedTournamentCount: completed.get(row.uuid) ?? 0
       }))
     }
   })

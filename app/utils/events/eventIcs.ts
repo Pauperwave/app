@@ -22,8 +22,8 @@ export interface CalendarIcsItem {
   id: number
   name: string
   startDate: string
-  endDate?: string
-  location: string
+  endDate?: string | null
+  location: string | null
 }
 
 export function downloadEventIcs(item: CalendarIcsItem) {
@@ -39,7 +39,7 @@ export function downloadEventIcs(item: CalendarIcsItem) {
     `DTSTAMP:${toIcsDate(now)}`,
     `DTSTART:${toIcsDate(start)}`,
     `SUMMARY:${escapeIcsText(item.name)}`,
-    `LOCATION:${escapeIcsText(item.location)}`,
+    `LOCATION:${escapeIcsText(item.location ?? '')}`,
     'END:VEVENT',
     'END:VCALENDAR'
   ]
@@ -69,7 +69,7 @@ export function googleCalendarUrl(item: CalendarIcsItem): string {
     action: 'TEMPLATE',
     text: item.name,
     dates: `${toIcsDate(start)}/${toIcsDate(end)}`,
-    location: item.location
+    location: item.location ?? ''
   })
 
   return `https://calendar.google.com/calendar/render?${params.toString()}`

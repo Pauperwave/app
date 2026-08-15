@@ -15,7 +15,9 @@ export function useEventsTableColumns() {
     status: t('event.columns.status'),
     name: t('event.columns.name'),
     startDate: t('event.columns.startDate'),
-    tournamentCount: t('event.columns.tournamentCount')
+    tournamentCount: t('event.columns.tournamentCount'),
+    organizer: t('event.columns.organizer'),
+    location: t('event.columns.location')
   }
 
   const columns: TableColumn<Event>[] = [
@@ -42,6 +44,14 @@ export function useEventsTableColumns() {
       accessorKey: 'tournamentCount',
       header: ({ column }) => sortableHeader(t('event.columns.tournamentCount'), column),
       cell: ({ row }) => row.original.tournamentCount
+    },
+    {
+      accessorKey: 'organizer',
+      header: t('event.columns.organizer')
+    },
+    {
+      accessorKey: 'location',
+      header: t('event.columns.location')
     }
   ]
 

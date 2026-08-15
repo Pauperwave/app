@@ -14,12 +14,14 @@ interface Props {
 
 const { tournament } = defineProps<Props>()
 
-// Tournament.startDate/endDate are explicit fields (server/api/tournaments.ts,
-// fake for now — a real "inizio"/"fine" pair once a Supabase table backs
-// this), not derived from roundCount/roundDuration — so overlapping
-// tournaments within the same event show real, distinct ranges.
+// Tournament.startDate/endDate are explicit fields (migration 20260815101000,
+// tournaments.starts_at/ends_at), not derived from roundCount — so
+// overlapping tournaments within the same event show real, distinct ranges.
+// endDate is nullable (not every tournament has one set) — falls back to a
+// dash rather than pretending there's a real end time.
 const timeRange = computed(() => {
   const start = format(new Date(tournament.startDate), 'HH:mm')
+  if (!tournament.endDate) return start
   const end = format(new Date(tournament.endDate), 'HH:mm')
   return `${start}–${end}`
 })
@@ -36,6 +38,7 @@ function openDetail() {
     :start-date="tournament.startDate"
     :status="tournament.status"
     :location="tournament.location"
+    :location-address="tournament.locationAddress"
     :image="tournament.image"
     :ics-item="tournament"
     :participants="tournament.participants"

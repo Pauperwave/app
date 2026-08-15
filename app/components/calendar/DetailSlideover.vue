@@ -68,8 +68,9 @@ function onPopState() {
 onMounted(() => window.addEventListener('popstate', onPopState))
 onUnmounted(() => window.removeEventListener('popstate', onPopState))
 
-function tournamentTimeRange(startDate: string, endDate: string): string {
+function tournamentTimeRange(startDate: string, endDate: string | null): string {
   const start = format(new Date(startDate), 'HH:mm')
+  if (!endDate) return start
   const end = format(new Date(endDate), 'HH:mm')
   return `${start} - ${end}`
 }
@@ -127,10 +128,9 @@ function openTournament(tournament: Tournament) {
               <UIcon :name="ICONS.calendar" class="size-5 shrink-0" />
               {{ format(new Date(selection.event.startDate), 'PPPP', { locale: it }) }}
             </p>
-            <!-- TODO associare a Smart Lab - Centro Giovani Rovereto l'indirizzo
-                 "V.le Trento, 47/49, 38068 Rovereto TN, Italia" -->
             <a
-              :href="googleMapsUrl(selection.event.location)"
+              v-if="selection.event.location"
+              :href="googleMapsUrl(selection.event.locationAddress ?? selection.event.location)"
               target="_blank"
               rel="noopener noreferrer"
               class="flex items-center gap-2 hover:underline w-fit"
@@ -209,7 +209,10 @@ function openTournament(tournament: Tournament) {
               · {{ selectedTournamentTimeRange }}
             </p>
             <a
-              :href="googleMapsUrl(selection.tournament.location)"
+              v-if="selection.tournament.location"
+              :href="googleMapsUrl(
+                selection.tournament.locationAddress ?? selection.tournament.location
+              )"
               target="_blank"
               rel="noopener noreferrer"
               class="flex items-center gap-2 hover:underline w-fit"
@@ -217,7 +220,7 @@ function openTournament(tournament: Tournament) {
               <UIcon :name="ICONS.mapPin" class="size-5 shrink-0" />
               {{ selection.tournament.location }}
             </a>
-            <p class="flex items-center gap-2">
+            <p v-if="selection.tournament.organizer" class="flex items-center gap-2">
               <UIcon :name="ICONS.player" class="size-5 shrink-0" />
               {{ t('tournament.columns.organizer') }}: {{ selection.tournament.organizer }}
             </p>
@@ -229,7 +232,7 @@ function openTournament(tournament: Tournament) {
               <UIcon :name="ICONS.phone" class="size-5 shrink-0" />
               {{ t('tournament.contact') }}: {{ selection.tournament.contactName }}
             </a>
-            <p class="flex items-center gap-2">
+            <p v-if="selection.tournament.entryFee !== null" class="flex items-center gap-2">
               <UIcon :name="ICONS.euro" class="size-5 shrink-0" />
               {{ t('tournament.columns.entryFee') }}: {{ selection.tournament.entryFee }} €
             </p>
