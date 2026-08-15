@@ -1,8 +1,8 @@
-<!-- app\components\standings\PublicFormatPage.vue -->
+<!-- app\components\public\PublicFormatPage.vue -->
 <!--
   Public (no auth) counterpart to FormatPage.vue, backing the
   commander/premodern/pauper.pauperwave.org subdomains (settings/domains.vue).
-  Same data composables and StandingsMatrixTable, but a plain header instead
+  Same data composables and PublicMatrixTable, but a plain header instead
   of UDashboardPanel/Navbar (both require the authenticated UDashboardGroup
   context from layouts/default.vue) and no NotificationsBellButton (personal,
   needs auth) or UDashboardSidebarCollapse (no sidebar exists on a public
@@ -112,7 +112,7 @@ const tableMeta = {
       <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
     </div>
 
-    <StandingsMatrixTable
+    <PublicMatrixTable
       v-else
       :data="standings"
       :columns="columns"

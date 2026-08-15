@@ -1,4 +1,4 @@
-<!-- app\components\events\AddToCalendarButton.vue -->
+<!-- app\components\calendar\button\AddToCalendarButton.vue -->
 <!--
   Device-aware "add to calendar" action, used by CalendarCard.vue for both
   Event and Tournament cards on /calendario. A downloaded .ics is friction

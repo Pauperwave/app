@@ -1,4 +1,9 @@
 <!-- app\components\standings\FormatPage.vue -->
+<!-- Moved back out of components/public/ (2026-08-15) to fix a component-name
+     collision: components/public/PublicFormatPage.vue and a since-moved
+     components/public/FormatPage.vue both resolved to the auto-import name
+     PublicFormatPage (NUXT_B3011). This is the internal/authenticated
+     variant — see PublicFormatPage.vue's own header for the split. -->
 <script lang="ts" setup>
 import type { TabsItem } from '@nuxt/ui'
 import type { StandingsFormat } from '~/composables/standings/useFormatStandingsQuery'
@@ -152,7 +157,7 @@ const tableMeta = {
         <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
       </div>
 
-      <StandingsMatrixTable
+      <PublicMatrixTable
         v-else
         :data="standings"
         :columns="columns"

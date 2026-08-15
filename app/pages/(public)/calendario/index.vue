@@ -13,5 +13,5 @@ definePageMeta({ layout: 'public-wide' })
 </script>
 
 <template>
-  <EventsPublicCalendarPage />
+  <PublicCalendarPage />
 </template>

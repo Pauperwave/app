@@ -1,4 +1,4 @@
-<!-- app\components\events\CalendarEventCard.vue -->
+<!-- app\components\calendar\card\Event.vue -->
 <!--
   Event variant of CalendarCard.vue (see PublicCalendarPage.vue) — the
   nested tournament list sits in the #footer slot, full-width below the
@@ -44,7 +44,7 @@ const participants = computed(() => tournaments.flatMap(tournament => tournament
 </script>
 
 <template>
-  <EventsCalendarCard
+  <CalendarCardBase
     :name="event.name"
     :start-date="event.startDate"
     :status="event.status"
@@ -90,5 +90,5 @@ const participants = computed(() => tournaments.flatMap(tournament => tournament
         </button>
       </div>
     </template>
-  </EventsCalendarCard>
+  </CalendarCardBase>
 </template>

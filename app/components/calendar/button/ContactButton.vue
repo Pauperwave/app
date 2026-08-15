@@ -1,4 +1,4 @@
-<!-- app\components\events\CalendarContactButton.vue -->
+<!-- app\components\calendar\button\ContactButton.vue -->
 <!--
   Tappable phone number for the calendar's contact person, used in
   CalendarFooter.vue (/calendario). First name only ("Nicola", not the

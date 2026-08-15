@@ -6,5 +6,5 @@ definePageMeta({ layout: 'public-wide' })
 </script>
 
 <template>
-  <StandingsPublicFormatPage format="premodern" />
+  <PublicFormatPage format="premodern" />
 </template>

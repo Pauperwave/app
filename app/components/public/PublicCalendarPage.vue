@@ -1,4 +1,4 @@
-<!-- app\components\events\PublicCalendarPage.vue -->
+<!-- app\components\public\PublicCalendarPage.vue -->
 <!--
   Public (no auth) counterpart to pages/(competitions)/events/index.vue,
   backing calendario.pauperwave.org (settings/domains.vue, renamed from
@@ -130,8 +130,14 @@ const filteredCards = computed(() => cards.value.filter((card) => {
           alt="PauperWave"
           class="size-10 rounded-full shrink-0"
         >
-        <!-- TODO Make the "Pauperwave" string interesting (is the name of the association) -->
-        <span>Pauperwave</span>
+        <a
+          href="https://blog.pauperwave.org"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="font-bold tracking-tight hover:underline"
+        >
+          Pauperwave
+        </a>
       </div>
     </div>
 
@@ -171,19 +177,19 @@ const filteredCards = computed(() => cards.value.filter((card) => {
         v-for="card in filteredCards"
         :key="cardKey(card)"
       >
-        <EventsCalendarEventCard
+        <CalendarCardEvent
           v-if="card.kind === 'event'"
           :event="card.event"
           :tournaments="card.tournaments"
         />
-        <EventsCalendarTournamentCard
+        <CalendarCardTournament
           v-else
           :tournament="card.tournament"
         />
       </template>
     </div>
 
-    <EventsCalendarFooter />
-    <EventsCalendarDetailSlideover />
+    <CalendarFooter />
+    <CalendarDetailSlideover />
   </div>
 </template>
