@@ -1,4 +1,4 @@
-<!-- app\components\events\CalendarCard.vue -->
+<!-- app\components\calendar\card\Base.vue -->
 <!--
   Shared shell for /calendario's mixed timeline (see PublicCalendarPage.vue):
   the image/date-box, title, status badge, and location line are identical
@@ -69,7 +69,7 @@ const coverImage = computed(() => image ?? DEFAULT_CALENDAR_COVER_IMAGE)
             {{ name }}
           </h3>
           <div class="shrink-0" @click.stop>
-            <EventsShareButton :name="name" :start-date="startDate" :show-label="false" />
+            <CalendarButtonShareButton :name="name" :start-date="startDate" :show-label="false" />
           </div>
         </div>
 
@@ -112,8 +112,8 @@ const coverImage = computed(() => image ?? DEFAULT_CALENDAR_COVER_IMAGE)
     <slot name="footer" />
 
     <div class="flex justify-end gap-2 mt-4" @click.stop>
-      <EventsAddToCalendarButton :item="icsItem" />
-      <EventsRegisterButton />
+      <CalendarButtonAddToCalendarButton :item="icsItem" />
+      <CalendarButtonRegisterButton />
     </div>
   </UCard>
 </template>

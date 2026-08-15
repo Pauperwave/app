@@ -30,8 +30,8 @@ interface DomainRow {
   // above); every other non-null route here exists as a page today. The four
   // rankings (cittadino + one per format) moved to a dedicated `/rankings/*`
   // prefix 2026-08-13 (was `/standings/*`, which is now the internal
-  // dashboard-only route staff reach via the sidebar) — StandingsPublicFormatPage.vue
-  // and StandingsPublicCittadinoPage.vue back these public pages instead of
+  // dashboard-only route staff reach via the sidebar) — PublicFormatPage.vue
+  // and PublicCittadinoPage.vue back these public pages instead of
   // FormatPage.vue/the dashboard cittadino page, since the latter two require
   // the authenticated dashboard shell (see auth.global.ts). `calendario.`
   // (renamed from `eventi.` 2026-08-14) moved from `/events` (the internal

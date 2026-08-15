@@ -9,5 +9,5 @@ definePageMeta({ layout: 'public-wide' })
 </script>
 
 <template>
-  <StandingsPublicCittadinoPage />
+  <PublicCittadinoPage />
 </template>

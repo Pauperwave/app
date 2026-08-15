@@ -1,8 +1,8 @@
-<!-- app\components\standings\PublicCittadinoPage.vue -->
+<!-- app\components\public\PublicCittadinoPage.vue -->
 <!--
   Public (no auth) counterpart to pages/(competitions)/standings/cittadino/
   index.vue, backing cittadino.pauperwave.org (settings/domains.vue). Same
-  data composables and StandingsMatrixTable, but a plain header instead of
+  data composables and PublicMatrixTable, but a plain header instead of
   UDashboardPanel/Navbar (both require the authenticated UDashboardGroup
   context from layouts/default.vue) — see PublicFormatPage.vue for the same
   reasoning applied to the other three rankings. The internal dashboard page
@@ -151,7 +151,7 @@ const isInitialLoad = computed(() => loading.value && standings.value.length ===
     </div>
 
     <template v-else>
-      <StandingsMatrixTable
+      <PublicMatrixTable
         :data="standings"
         :columns="columns"
         :loading="loading"

@@ -1,4 +1,4 @@
-<!-- app\components\events\RegisterButton.vue -->
+<!-- app\components\calendar\button\RegisterButton.vue -->
 <!--
   "Iscriviti" button for /calendario's cards and detail slideover (user
   request 2026-08-14) — UI placeholder only. Registering doesn't send a

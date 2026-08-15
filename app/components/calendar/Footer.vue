@@ -1,4 +1,4 @@
-<!-- app\components\events\CalendarFooter.vue -->
+<!-- app\components\calendar\Footer.vue -->
 <!--
   Sponsor, site link, and contact for /calendario (see PublicCalendarPage.vue),
   one row: sponsor on the left, a flex-1 spacer, site/phone buttons on the
@@ -28,7 +28,7 @@
     <div class="flex-1" />
 
     <div class="flex items-center gap-2">
-      <EventsCalendarContactButton />
+      <CalendarButtonContactButton />
     </div>
   </div>
 </template>

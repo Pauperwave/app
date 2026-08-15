@@ -26,7 +26,7 @@ const publicUrl = computed(() => `${useRequestURL().origin}/calendario`)
     </template>
 
     <template #body>
-      <EventsPublicCalendarPage />
+      <PublicCalendarPage />
     </template>
   </PageInDevelopment>
 </template>

@@ -204,7 +204,7 @@ const columns: TableColumn<PermissionRow>[] = [
           // `tr`/`td` here are UTable's own documented slot names, not a guess.
           // Standard Tailwind group/group-hover, not an arbitrary variant: `tr`
           // marked as the group, `td` reacts to its hover state. Plain :hover, no
-          // transition — same reasoning as StandingsMatrixTable.vue for why that
+          // transition — same reasoning as PublicMatrixTable.vue for why that
           // stays cheap at this table size.
           tr: 'group divide-x divide-default'
         }"

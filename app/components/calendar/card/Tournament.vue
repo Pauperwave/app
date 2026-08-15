@@ -1,4 +1,4 @@
-<!-- app\components\events\CalendarTournamentCard.vue -->
+<!-- app\components\calendar\card\Tournament.vue -->
 <!--
   Standalone-tournament variant of CalendarCard.vue (see
   PublicCalendarPage.vue) — format chip + time range sit in the #body slot,
@@ -31,7 +31,7 @@ function openDetail() {
 </script>
 
 <template>
-  <EventsCalendarCard
+  <CalendarCardBase
     :name="tournament.name"
     :start-date="tournament.startDate"
     :status="tournament.status"
@@ -58,5 +58,5 @@ function openDetail() {
         </span>
       </div>
     </template>
-  </EventsCalendarCard>
+  </CalendarCardBase>
 </template>

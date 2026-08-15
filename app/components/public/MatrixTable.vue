@@ -1,4 +1,4 @@
-<!-- app\components\standings\MatrixTable.vue -->
+<!-- app\components\public\MatrixTable.vue -->
 <script setup lang="ts" generic="T">
 import type { TableColumn } from '@nuxt/ui'
 

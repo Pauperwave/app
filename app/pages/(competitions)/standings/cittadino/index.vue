@@ -196,7 +196,7 @@ const isInitialLoad = computed(() => loading.value && standings.value.length ===
       </div>
 
       <template v-else>
-        <StandingsMatrixTable
+        <PublicMatrixTable
           :data="standings"
           :columns="columns"
           :loading="loading"

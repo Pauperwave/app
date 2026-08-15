@@ -23,7 +23,7 @@ function formatEventDate(date: string) {
 // Direct import from #components rather than resolveComponent() — see the note in
 // CLAUDE.md: resolveComponent only works inside a .vue <script setup>.
 //
-// The hover crosshair (both row and column) is StandingsMatrixTable's own
+// The hover crosshair (both row and column) is PublicMatrixTable's own
 // responsibility now — DOM event delegation there, not per-cell state here. See
 // its source for why: `meta.class.td` looked reactive but wasn't.
 export function useCittadinoTableColumns(events: Ref<CittadinoEvent[]>) {
@@ -160,7 +160,7 @@ export function useCittadinoTableColumns(events: Ref<CittadinoEvent[]>) {
   ])
 
   // Keyed by event uuid, same id the event columns above are given — read by
-  // StandingsMatrixTable to tint a hovered event column's crosshair toward its
+  // PublicMatrixTable to tint a hovered event column's crosshair toward its
   // format's colour instead of the default neutral highlight.
   const columnAccentColors = computed<Record<string, string>>(() =>
     Object.fromEntries(

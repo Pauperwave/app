@@ -1,4 +1,4 @@
-<!-- app\components\events\CalendarDetailSlideover.vue -->
+<!-- app\components\calendar\DetailSlideover.vue -->
 <!--
   Right-side detail panel for /calendario (user request 2026-08-14, same
   USlideover pattern as NotificationsSlideover.vue) — reads
@@ -105,7 +105,8 @@ function openTournament(tournament: Tournament) {
 
           <div class="absolute inset-0 bg-linear-to-b from-transparent to-default" />
 
-          <UButton
+          <!-- Da rimpiazzare con il bottone di condivisione -->
+          <!-- <UButton
             :icon="ICONS.close"
             color="neutral"
             variant="subtle"
@@ -113,7 +114,7 @@ function openTournament(tournament: Tournament) {
             class="absolute top-4 inset-e-4"
             :aria-label="$t('common.close')"
             @click="close"
-          />
+          /> -->
 
           <h2 class="absolute bottom-0 left-0 right-0 p-4 text-xl font-bold text-white truncate">
             {{ selection.event.name }}
@@ -126,6 +127,8 @@ function openTournament(tournament: Tournament) {
               <UIcon :name="ICONS.calendar" class="size-5 shrink-0" />
               {{ format(new Date(selection.event.startDate), 'PPPP', { locale: it }) }}
             </p>
+            <!-- TODO associare a Smart Lab - Centro Giovani Rovereto l'indirizzo
+                 "V.le Trento, 47/49, 38068 Rovereto TN, Italia" -->
             <a
               :href="googleMapsUrl(selection.event.location)"
               target="_blank"
@@ -138,12 +141,12 @@ function openTournament(tournament: Tournament) {
           </div>
 
           <div class="flex flex-wrap gap-2 mb-4">
-            <EventsShareButton
+            <CalendarButtonShareButton
               :name="selection.event.name"
               :start-date="selection.event.startDate"
             />
-            <EventsAddToCalendarButton :item="selection.event" />
-            <EventsRegisterButton />
+            <CalendarButtonAddToCalendarButton :item="selection.event" />
+            <CalendarButtonRegisterButton />
           </div>
 
           <div v-if="selection.tournaments.length" class="pt-4 border-t border-default flex flex-col gap-2">
@@ -241,12 +244,12 @@ function openTournament(tournament: Tournament) {
           </p>
 
           <div class="flex flex-wrap gap-2 mb-4">
-            <EventsShareButton
+            <CalendarButtonShareButton
               :name="selection.tournament.name"
               :start-date="selection.tournament.startDate"
             />
-            <EventsAddToCalendarButton :item="selection.tournament" />
-            <EventsRegisterButton />
+            <CalendarButtonAddToCalendarButton :item="selection.tournament" />
+            <CalendarButtonRegisterButton />
           </div>
 
           <div v-if="selection.tournament.participants.length" class="pt-4 border-t border-default">

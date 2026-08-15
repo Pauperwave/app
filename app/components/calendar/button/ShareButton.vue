@@ -1,4 +1,4 @@
-<!-- app\components\events\ShareButton.vue -->
+<!-- app\components\calendar\button\ShareButton.vue -->
 <!--
   Share action for /calendario's cards and detail slideover (user request
   2026-08-14). No per-item deep link exists yet (cards aren't individually
