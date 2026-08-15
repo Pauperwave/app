@@ -2,8 +2,16 @@
 <script setup lang="ts">
 import * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
+import type { DroppedCardInfo } from '~/composables/wantedCards/useScryfallDragDrop'
 
 const open = defineModel<boolean>({ default: false })
+
+// Set by wanted-cards/index.vue's Scryfall drag-and-drop (useScryfallDragDrop.ts,
+// user request 2026-08-15) — a plain prop, not part of `state`, so a second drop
+// while the modal is already open can still overwrite the name/printing fields
+// (a watch, not a one-time read on mount).
+const { initialCard = null } = defineProps<{ initialCard?: DroppedCardInfo | null }>()
+
 const toast = useToast()
 const { t } = useI18n()
 
@@ -52,6 +60,36 @@ watch([open, currentAssociate], ([isOpen, associate]) => {
 const {
   query, nameSuggestions, isSuggesting, printings, isLoadingPrintings, fetchPrintings
 } = useScryfallCardSearch()
+
+// Always overwrites (no !state.name guard, unlike the player prefill above) —
+// a new drop is a deliberate "search for this instead", so it should win even
+// if the user had already typed/picked a different name.
+watch(() => initialCard, (card) => {
+  if (!card) return
+  state.name = card.name
+  query.value = card.name
+})
+
+// Runs once `printings` actually loads for the dropped name (fetchPrintings
+// is async, triggered by the state.name watch below) — matches on collector
+// number first (closer to a stable id than the set name, which Scryfall's
+// alt text doesn't always spell the same way as `setName`), falling back to
+// a fuzzy set-name contains-check only if that's ambiguous. Guarded on
+// initialCard.name === state.name so a manually-typed search afterwards
+// (different name, printings reloads) never triggers a stale auto-select.
+watch(printings, (list) => {
+  const card = initialCard
+  if (!card?.collectorNumber || card.name !== state.name) return
+
+  const byCollectorNumber = list.filter(p => p.collectorNumber === card.collectorNumber)
+  const match = byCollectorNumber.length === 1
+    ? byCollectorNumber[0]
+    : byCollectorNumber.find(p => card.setName
+      && (p.setName.toLowerCase().includes(card.setName.toLowerCase())
+        || card.setName.toLowerCase().includes(p.setName.toLowerCase())))
+
+  if (match) state.printingId = match.id
+})
 
 // value-key on the name: this keeps state.name a string even though the items also
 // carry the mana cost to show in the row.
