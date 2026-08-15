@@ -68,6 +68,14 @@ export function useTransactionFormOptions() {
     avatar: { src: generatePlayerAvatar(name), alt: name }
   })))
 
+  // The associate/external payer UTabs — identical between AddModal.vue and
+  // EditModal.vue (extracted 2026-08-15), only the tab's *meaning* differs
+  // (payer_is_associate toggle) which stays per-file.
+  const payerTabItems = computed(() => [
+    { label: t('transaction.addModal.tabs.associate'), icon: ICONS.playerConfirmed, slot: 'associate', value: 'associate' },
+    { label: t('transaction.addModal.tabs.external'), icon: ICONS.edit, slot: 'external', value: 'external' }
+  ])
+
   // v.forward(v.partialCheck([...paths], requirement, msg), [path]) is Valibot's
   // equivalent of a .superRefine() with ctx.addIssue on a specific path:
   // partialCheck reads several fields (here payer_is_associate + the target
@@ -143,5 +151,7 @@ export function useTransactionFormOptions() {
     )
   )
 
-  return { schema, paymentTypeOptions, paymentMethodOptions, receiverOptions }
+  return {
+    schema, paymentTypeOptions, paymentMethodOptions, receiverOptions, payerTabItems
+  }
 }
