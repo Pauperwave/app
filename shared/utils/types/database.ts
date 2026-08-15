@@ -147,54 +147,6 @@ export type Database = {
           },
         ]
       }
-      event_locations: {
-        Row: {
-          address: string
-          city: string
-          country: string
-          created_at: string
-          email: string | null
-          id: number
-          name: string
-          phone: string | null
-          postal_code: string
-          province: string
-          updated_at: string
-          uuid: string
-          website: string | null
-        }
-        Insert: {
-          address: string
-          city: string
-          country?: string
-          created_at?: string
-          email?: string | null
-          id?: number
-          name: string
-          phone?: string | null
-          postal_code: string
-          province: string
-          updated_at?: string
-          uuid?: string
-          website?: string | null
-        }
-        Update: {
-          address?: string
-          city?: string
-          country?: string
-          created_at?: string
-          email?: string | null
-          id?: number
-          name?: string
-          phone?: string | null
-          postal_code?: string
-          province?: string
-          updated_at?: string
-          uuid?: string
-          website?: string | null
-        }
-        Relationships: []
-      }
       events: {
         Row: {
           companion_app_code: string | null
@@ -202,6 +154,7 @@ export type Database = {
           deleted_at: string | null
           ends_at: string | null
           id: number
+          image_url: string | null
           location_uuid: string | null
           name: string
           organizer_uuid: string
@@ -216,6 +169,7 @@ export type Database = {
           deleted_at?: string | null
           ends_at?: string | null
           id?: number
+          image_url?: string | null
           location_uuid?: string | null
           name: string
           organizer_uuid: string
@@ -230,6 +184,7 @@ export type Database = {
           deleted_at?: string | null
           ends_at?: string | null
           id?: number
+          image_url?: string | null
           location_uuid?: string | null
           name?: string
           organizer_uuid?: string
@@ -243,7 +198,7 @@ export type Database = {
             foreignKeyName: "fk_events_location_uuid_fkey"
             columns: ["location_uuid"]
             isOneToOne: false
-            referencedRelation: "event_locations"
+            referencedRelation: "locations"
             referencedColumns: ["uuid"]
           },
           {
@@ -304,6 +259,54 @@ export type Database = {
             referencedColumns: ["uuid"]
           },
         ]
+      }
+      locations: {
+        Row: {
+          address: string
+          city: string
+          country: string
+          created_at: string
+          email: string | null
+          id: number
+          name: string
+          phone: string | null
+          postal_code: string
+          province: string
+          updated_at: string
+          uuid: string
+          website: string | null
+        }
+        Insert: {
+          address: string
+          city: string
+          country?: string
+          created_at?: string
+          email?: string | null
+          id?: number
+          name: string
+          phone?: string | null
+          postal_code: string
+          province: string
+          updated_at?: string
+          uuid?: string
+          website?: string | null
+        }
+        Update: {
+          address?: string
+          city?: string
+          country?: string
+          created_at?: string
+          email?: string | null
+          id?: number
+          name?: string
+          phone?: string | null
+          postal_code?: string
+          province?: string
+          updated_at?: string
+          uuid?: string
+          website?: string | null
+        }
+        Relationships: []
       }
       mtg_commanders: {
         Row: {
@@ -1662,51 +1665,84 @@ export type Database = {
       tournaments: {
         Row: {
           cittadino_edition_uuid: string | null
+          companion_code: string | null
+          contact_name: string | null
+          contact_phone: string | null
           created_at: string
-          datetime: string | null
           deleted_at: string | null
           description: string | null
+          ends_at: string | null
+          entry_fee: number | null
           event_uuid: string | null
           format_uuid: string
           id: number
+          image_url: string | null
           league_uuid: string | null
+          location_uuid: string | null
           name: string
+          organizer_uuid: string | null
+          participant_names: string[]
+          prizes: string | null
+          registered_players: number | null
           round_count: number | null
           round_current: number | null
+          starts_at: string | null
           status: string
           updated_at: string
           uuid: string
         }
         Insert: {
           cittadino_edition_uuid?: string | null
+          companion_code?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           created_at?: string
-          datetime?: string | null
           deleted_at?: string | null
           description?: string | null
+          ends_at?: string | null
+          entry_fee?: number | null
           event_uuid?: string | null
           format_uuid: string
           id?: number
+          image_url?: string | null
           league_uuid?: string | null
+          location_uuid?: string | null
           name: string
+          organizer_uuid?: string | null
+          participant_names?: string[]
+          prizes?: string | null
+          registered_players?: number | null
           round_count?: number | null
           round_current?: number | null
+          starts_at?: string | null
           status: string
           updated_at?: string
           uuid?: string
         }
         Update: {
           cittadino_edition_uuid?: string | null
+          companion_code?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           created_at?: string
-          datetime?: string | null
           deleted_at?: string | null
           description?: string | null
+          ends_at?: string | null
+          entry_fee?: number | null
           event_uuid?: string | null
           format_uuid?: string
           id?: number
+          image_url?: string | null
           league_uuid?: string | null
+          location_uuid?: string | null
           name?: string
+          organizer_uuid?: string | null
+          participant_names?: string[]
+          prizes?: string | null
+          registered_players?: number | null
           round_count?: number | null
           round_current?: number | null
+          starts_at?: string | null
           status?: string
           updated_at?: string
           uuid?: string
@@ -1738,6 +1774,20 @@ export type Database = {
             columns: ["cittadino_edition_uuid"]
             isOneToOne: false
             referencedRelation: "cittadino_editions"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "tournaments_location_uuid_fkey"
+            columns: ["location_uuid"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "tournaments_organizer_uuid_fkey"
+            columns: ["organizer_uuid"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["uuid"]
           },
         ]
