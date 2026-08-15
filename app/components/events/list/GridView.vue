@@ -24,8 +24,8 @@ const { t } = useI18n()
       :items="contextMenuItems(event)"
     >
       <UCard
-        :to="`/events/${event.id}`"
-        class="hover:ring-primary transition-colors"
+        class="cursor-pointer hover:ring-primary transition-colors"
+        @click="navigateTo(`/events/${event.uuid}`)"
       >
         <div class="flex items-start justify-between gap-2 mb-4">
           <h3 class="font-semibold truncate">

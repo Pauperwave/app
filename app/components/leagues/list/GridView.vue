@@ -28,8 +28,8 @@ function progress(league: League) {
       :items="contextMenuItems(league)"
     >
       <UCard
-        :to="`/leagues/${league.id}`"
-        class="hover:ring-primary transition-colors"
+        class="cursor-pointer hover:ring-primary transition-colors"
+        @click="navigateTo(`/leagues/${league.uuid}`)"
       >
         <div class="flex items-start justify-between gap-2 mb-4">
           <h3 class="font-semibold truncate">
