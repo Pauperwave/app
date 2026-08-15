@@ -849,7 +849,8 @@
       "cardmarketShort": "CM",
       "cardtraderShort": "CT",
       "sortBy": "Ordina per",
-      "sortByName": "Nome"
+      "sortByName": "Nome",
+      "sortByColor": "Identità colore"
     },
     "tour": {
       "startButton": "Tour guidato",
@@ -868,7 +869,7 @@
         },
         "filters": {
           "title": "Filtri",
-          "description": "A sinistra trovi sempre i filtri: stato, lingua, trattamento e \"Le mie richieste\" restringono quali carte vedi, senza cambiarne l'ordine o la disposizione."
+          "description": "A sinistra trovi sempre i filtri: stato, colore/terra e \"Le mie richieste\" restringono quali carte vedi, senza cambiarne l'ordine o la disposizione."
         },
         "viewControls": {
           "title": "Vista",
@@ -937,10 +938,17 @@
     "filters": {
       "cardNamePlaceholder": "Cerca per nome carta...",
       "statusAll": "Tutte",
-      "languagePlaceholder": "Lingua",
       "groupByPlayer": "Raggruppa per giocatore",
       "onlyMine": "Le mie richieste",
-      "onlyMineUnavailable": "Nessun profilo associato trovato per la tua email"
+      "onlyMineUnavailable": "Nessun profilo associato trovato per la tua email",
+      "colorAll": "Tutte",
+      "colorWhite": "Bianco",
+      "colorBlue": "Blu",
+      "colorBlack": "Nero",
+      "colorGreen": "Verde",
+      "colorRed": "Rosso",
+      "colorColorless": "Incolore",
+      "colorLand": "Terre"
     },
     "languages": {
       "any": "Indifferente",
@@ -958,6 +966,7 @@
       "openButton": "Nuova richiesta",
       "title": "Nuova richiesta",
       "description": "Aggiungi una carta che stai cercando",
+      "dropHint": "Rilascia per cercare questa carta",
       "validation": {
         "nameRequired": "Seleziona una carta",
         "nameTooShort": "Nome carta troppo corto",

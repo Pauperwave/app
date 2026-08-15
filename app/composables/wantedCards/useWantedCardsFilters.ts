@@ -2,6 +2,8 @@
 import type { Ref } from 'vue'
 import type { WantedCard, WantedCardStatus } from '~/types'
 
+export type WantedCardColorFilter = 'all' | 'W' | 'U' | 'B' | 'G' | 'R' | 'C' | 'land'
+
 export function useWantedCardsFilters(data: Ref<WantedCard[]>) {
   const { t } = useI18n()
 
@@ -11,17 +13,60 @@ export function useWantedCardsFilters(data: Ref<WantedCard[]>) {
   // "Searching" by default — cards already found or abandoned stay hidden until
   // another tab is explicitly chosen.
   const statusFilter = ref<'all' | WantedCardStatus>('searching')
-  // Single selection (not multiple): it allows showing the chosen language's icon
-  // in the trigger through the `:icon` prop, which has no clean official pattern
-  // with USelectMenu/UInputMenu `multiple`.
-  const languageFilter = ref<string | undefined>(undefined)
-  const treatmentFilter = ref<string[]>([])
+  // Replaces the old language select + foil toggle (2026-08-15 user request) —
+  // color identity/land is the more useful axis for "does someone have a card
+  // I could trade for this". Multi-select (2026-08-15 follow-up): several tabs
+  // can be active together as a subset filter (cardMatchesColor below) —
+  // clicking "Tutte" clears the set back to "no filter".
+  const colorFilters = ref<Exclude<WantedCardColorFilter, 'all'>[]>([])
+
+  function toggleColorFilter(value: WantedCardColorFilter) {
+    if (value === 'all') {
+      colorFilters.value = []
+      return
+    }
+    colorFilters.value = colorFilters.value.includes(value)
+      ? colorFilters.value.filter(active => active !== value)
+      : [...colorFilters.value, value]
+  }
+
   const onlyMine = ref(false)
 
-  function toggleTreatmentFilter(value: string) {
-    const index = treatmentFilter.value.indexOf(value)
-    if (index === -1) treatmentFilter.value = [...treatmentFilter.value, value]
-    else treatmentFilter.value = treatmentFilter.value.filter(item => item !== value)
+  function cardMatchesColor(card: WantedCard, selected: Exclude<WantedCardColorFilter, 'all'>[]): boolean {
+    if (selected.length === 0) return true
+
+    // typeLine is null for requests created before migration 20260815090000
+    // that haven't been backfilled yet (scripts/backfill-wanted-cards-type-line.mjs)
+    // — they just never match "land", same as any other unresolved filter value.
+    const isLand = (card.typeLine ?? '').includes('Land')
+    const colors = selected.filter((value): value is Exclude<WantedCardColorFilter, 'all' | 'C' | 'land'> =>
+      value !== 'C' && value !== 'land')
+    const hasColorless = selected.includes('C')
+    const hasLand = selected.includes('land')
+
+    // Subset match (2026-08-15 user request): Verde+Blu must show mono-Verde,
+    // mono-Blu, AND Verde-Blu cards — never a 3rd color — so "strict" means "no
+    // colors outside the selection", not "exactly these colors". A single color
+    // selected is just the one-element case of this same rule (still excludes
+    // Verde-Blu when only Verde is picked).
+    const colorSet: string[] = colors
+    const matchesColors = colors.length > 0
+      && card.colorIdentity.length > 0
+      && card.colorIdentity.every(color => colorSet.includes(color))
+    const matchesColorless = hasColorless && card.colorIdentity.length === 0
+
+    // Terra combined with a color/Incolore narrows to that color of land (e.g.
+    // Terra+Verde = green lands only); Terra alone still means any land — land
+    // is the one bucket that ANDs with the rest instead of OR-ing in, since
+    // "land AND green" is a meaningful, useful combination.
+    if (hasLand) {
+      if (colors.length === 0 && !hasColorless) return isLand
+      return isLand && (matchesColors || matchesColorless)
+    }
+
+    // Without the Terra tab, Incolore stays land-exclusive (that's what Terra is
+    // for) — same reasoning as the original single-select design.
+    return (hasColorless && !isLand && card.colorIdentity.length === 0) || matchesColors
   }
 
   // Single source of truth for filtering, used by both UTable :data and GridView
@@ -33,56 +78,16 @@ export function useWantedCardsFilters(data: Ref<WantedCard[]>) {
     if (cardNameFilter.value
       && !card.cardName.toLowerCase().includes(cardNameFilter.value.toLowerCase())) return false
     if (statusFilter.value !== 'all' && card.status !== statusFilter.value) return false
-    if (languageFilter.value !== undefined) {
-      const wantedLanguage = languageFilter.value === 'any' ? '' : languageFilter.value
-      if (card.language !== wantedLanguage) return false
-    }
-    if (treatmentFilter.value.length
-      && !treatmentFilter.value.some(treatment => card.treatment.includes(treatment))) return false
+    if (!cardMatchesColor(card, colorFilters.value)) return false
     if (onlyMine.value
       && currentAssociate.value
       && card.playerAssociateUuid !== currentAssociate.value.uuid) return false
     return true
   }))
 
-  // Distinct codes present in a column, sorted — the common basis for the
-  // Language/Treatment filter items. Computed from `data` (unfiltered): otherwise
-  // picking a language would make the other options vanish from the menu instead of
-  // just filtering the rows on show.
-  function getFacetedCodes(columnId: 'language' | 'treatment'): string[] {
-    const codes = new Set<string>()
-    for (const card of data.value) {
-      if (columnId === 'language') codes.add(card.language)
-      else card.treatment.forEach(treatment => codes.add(treatment))
-    }
-    return Array.from(codes).sort()
-  }
-
-  const languageFacetItems = computed<{ label: string, value: string, icon: string }[]>(() => {
-    return getFacetedCodes('language').map((code: string) => ({
-      // ComboboxItem (Reka UI, underneath USelectMenu/UInputMenu) does not accept
-      // value="" — it is reserved to mean "no selection"/placeholder. The empty
-      // language code ("Any") therefore uses the 'any' sentinel, translated back to
-      // '' above before filtering.
-      label: t(`wantedCard.languages.${code || 'any'}`),
-      value: code || 'any',
-      icon: WANTED_CARD_LANGUAGE_ICONS[code] ?? 'i-lucide-languages'
-    }))
-  })
-
-  const selectedLanguage = computed(() =>
-    languageFacetItems.value.find(item => item.value === languageFilter.value))
-
-  const treatmentFacetItems = computed<{ label: string, value: string }[]>(() => {
-    return getFacetedCodes('treatment').map((code: string) => ({
-      label: t(`wantedCard.treatments.${code}`),
-      value: code
-    }))
-  })
-
-  // Counts from the full unfiltered `data`, same convention as associates'
-  // statusTabs — a status filter shows how many cards exist in each bucket
-  // overall, not how many survive the other active filters.
+  // Counts from the full unfiltered `data`, same convention as statusTabs below —
+  // a filter tab shows how many cards exist in each bucket overall, not how many
+  // survive the other active filters.
   const statusCounts = computed(() => {
     const counts: Record<WantedCardStatus, number> = { searching: 0, found: 0, abandoned: 0 }
     for (const card of data.value) {
@@ -98,18 +103,35 @@ export function useWantedCardsFilters(data: Ref<WantedCard[]>) {
     { label: t('wantedCard.status.abandoned'), value: 'abandoned', count: statusCounts.value.abandoned }
   ])
 
+  // manaCost feeds MagicManaCost (mana-font) directly — "land" has no real mana
+  // symbol, {LAND} just maps to mana-font's own .ms-land icon (see ManaCost.vue,
+  // it turns whatever sits between the braces into a lowercased CSS class).
+  interface ColorTab {
+    label: string
+    value: WantedCardColorFilter
+    manaCost?: string
+  }
+
+  const colorTabs: ColorTab[] = [
+    { label: t('wantedCard.filters.colorAll'), value: 'all' },
+    { label: t('wantedCard.filters.colorWhite'), value: 'W', manaCost: '{W}' },
+    { label: t('wantedCard.filters.colorBlue'), value: 'U', manaCost: '{U}' },
+    { label: t('wantedCard.filters.colorBlack'), value: 'B', manaCost: '{B}' },
+    { label: t('wantedCard.filters.colorGreen'), value: 'G', manaCost: '{G}' },
+    { label: t('wantedCard.filters.colorRed'), value: 'R', manaCost: '{R}' },
+    { label: t('wantedCard.filters.colorColorless'), value: 'C', manaCost: '{C}' },
+    { label: t('wantedCard.filters.colorLand'), value: 'land', manaCost: '{LAND}' }
+  ]
+
   return {
     currentAssociate,
     cardNameFilter,
     statusFilter,
-    languageFilter,
-    treatmentFilter,
+    colorFilters,
+    toggleColorFilter,
     onlyMine,
-    toggleTreatmentFilter,
     filteredCards,
-    languageFacetItems,
-    selectedLanguage,
-    treatmentFacetItems,
-    statusTabs
+    statusTabs,
+    colorTabs
   }
 }
