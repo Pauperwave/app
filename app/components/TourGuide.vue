@@ -2,7 +2,49 @@
 <script setup lang="ts">
 import type { UseTourReturn } from '@nuxt/ui/composables'
 
-const { tour } = defineProps<{ tour: UseTourReturn }>()
+// hShortcut: default.vue's own <TourGuide :tour="shortcutsTour"> is mounted
+// on every page alongside whichever page-specific tour that page renders
+// (default.vue is the layout, not a page) — both instances registering a
+// bare "h" would collide, and the shortcuts tour already has its own trigger
+// (the sidebar's "Scorciatoie da tastiera" item). Opted out there via
+// :h-shortcut="false"; every page tour keeps the default (true).
+const { tour, hShortcut = true } = defineProps<{ tour: UseTourReturn, hShortcut?: boolean }>()
+
+// Bare "h" starts/restarts this page's tour — same "b pattern" as
+// default.vue's sidebar-collapse shortcut (docs/architecture/shortcuts.md):
+// the active tour is page-local state useDashboard.ts can't reach, so
+// defineShortcuts is called directly from here instead. At most one page
+// tour's TourGuide is ever mounted at a time, and Nuxt UI's defineShortcuts
+// tears itself down on unmount, so navigating to another page automatically
+// swaps which tour "h" starts — no manual registry needed. Doesn't collide
+// with the existing g-h chord (Home): defineShortcuts treats a bare "h" and
+// the two-key chord "g" then "h" as distinct bindings.
+if (hShortcut) {
+  defineShortcuts({
+    h: () => tour.start()
+  })
+}
+
+// Left/Right arrow keys mirror the Indietro/Avanti buttons — same
+// usingInput/modifier-key guard as default.vue's own global keydown listener,
+// so this doesn't hijack cursor movement while typing in a form field (e.g.
+// while a step is anchored to an input the visitor is actively using).
+useEventListener('keydown', (event: KeyboardEvent) => {
+  if (!tour.open.value) return
+
+  const target = event.target as HTMLElement | null
+  const usingInput = target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable
+  if (usingInput || event.metaKey || event.ctrlKey || event.altKey) return
+
+  if (event.key === 'ArrowLeft' && tour.hasPrev.value) {
+    event.preventDefault()
+    tour.prev()
+  } else if (event.key === 'ArrowRight') {
+    event.preventDefault()
+    if (tour.hasNext.value) tour.next()
+    else tour.finish()
+  }
+})
 </script>
 
 <template>

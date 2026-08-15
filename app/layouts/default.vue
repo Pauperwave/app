@@ -504,7 +504,7 @@ const groups = computed(() => [{
          instead of quoted letters — the keypath/placeholder names come from
          useShortcutsTour.ts's step.description. Slots unused by a given
          step's keypath are simply ignored by <i18n-t>. -->
-    <TourGuide :tour="shortcutsTour">
+    <TourGuide :tour="shortcutsTour" :h-shortcut="false">
       <template #description="{ step }">
         <i18n-t
           v-if="step"
