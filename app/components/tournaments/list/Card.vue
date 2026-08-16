@@ -81,10 +81,15 @@ function timePart(startDate: string) {
         />
       </div>
 
-      <div class="flex items-center gap-2 mt-1.5 flex-wrap">
-        <BadgesFormatBadge :format="tournament.format" :icon="ICONS.gameplay" />
+      <div class="flex items-center gap-2 mt-1.5 flex-nowrap overflow-hidden">
+        <BadgesFormatBadge :format="tournament.format" :icon="ICONS.gameplay" class="shrink-0" />
 
-        <UBadge color="neutral" variant="subtle" :icon="ICONS.clock">
+        <UBadge
+          color="neutral"
+          variant="subtle"
+          :icon="ICONS.clock"
+          class="shrink-0"
+        >
           {{ timePart(tournament.startDate) }}
         </UBadge>
 
@@ -93,6 +98,7 @@ function timePart(startDate: string) {
           :location="tournament.location"
           :location-address="tournament.locationAddress"
           :maps-url="tournament.locationMapsUrl"
+          class="min-w-0"
         />
       </div>
 

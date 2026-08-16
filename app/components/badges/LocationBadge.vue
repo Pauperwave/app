@@ -24,12 +24,16 @@ const shortLocation = computed(() => location.split(' - ')[0])
     :href="mapsUrl ?? googleMapsUrl(locationAddress ?? location)"
     target="_blank"
     rel="noopener noreferrer"
-    class="inline-flex w-fit"
+    class="inline-flex min-w-0"
     :title="location"
     @click.stop
   >
-    <UBadge color="neutral" variant="subtle" :icon="ICONS.mapPin">
-      {{ shortLocation }}
-    </UBadge>
+    <UBadge
+      color="neutral"
+      variant="subtle"
+      :icon="ICONS.mapPin"
+      :label="shortLocation"
+      :ui="{ base: 'min-w-0', label: 'truncate min-w-0' }"
+    />
   </a>
 </template>
