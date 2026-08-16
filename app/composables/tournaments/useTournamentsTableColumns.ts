@@ -3,7 +3,9 @@
 // status-badge column shape on purpose; expected to diverge once real Supabase
 // tables land
 import { h } from 'vue'
-import { UBadge, UButton, UCheckbox } from '#components'
+import {
+  BadgesFormatBadge, EditIconButton, UBadge, UCheckbox
+} from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { Tournament } from '~/types'
 import type { Selection } from '~/composables/useSelection'
@@ -100,7 +102,8 @@ export function useTournamentsTableColumns(
     },
     {
       accessorKey: 'format',
-      header: ({ column }) => sortableHeader(t('tournament.columns.format'), column)
+      header: ({ column }) => sortableHeader(t('tournament.columns.format'), column),
+      cell: ({ row }) => h(BadgesFormatBadge, { format: row.original.format })
     },
     {
       accessorKey: 'location',
@@ -121,13 +124,10 @@ export function useTournamentsTableColumns(
       // stopPropagation: the row itself also navigates on click (UTable's
       // @select, see tournaments/index.vue) — without this, clicking the
       // edit button would open the edit modal AND navigate away underneath it.
-      cell: ({ row }) => h(UButton, {
-        'icon': ICONS.edit,
-        'color': 'neutral',
-        'variant': 'ghost',
-        'size': 'xs',
-        'aria-label': t('tournament.rowActions.edit'),
-        'onClick': (e: MouseEvent) => {
+      cell: ({ row }) => h(EditIconButton, {
+        label: t('tournament.rowActions.edit'),
+        size: 'xs',
+        onClick: (e: MouseEvent) => {
           e.stopPropagation()
           onEdit(row.original)
         }
