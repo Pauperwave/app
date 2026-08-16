@@ -53,11 +53,6 @@ const activeTab = computed({
   set: (value: string) => { state.payer_is_associate = value === 'associate' }
 })
 
-const payerTaxCodeInput = computed({
-  get: () => state.payer_tax_code,
-  set: (value) => { state.payer_tax_code = value?.toUpperCase() || '' }
-})
-
 // The membership fee is a fixed €5 via PayPal "Friends & Family" — same rule as
 // AddModal.vue, applied here too since editing a payment into "Association Fee"
 // should follow it just as much as creating one.
@@ -161,85 +156,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             {{ $t('transaction.addModal.personalInfo') }}
           </p>
 
-          <UTabs v-model="activeTab" :items="payerTabItems">
-            <template #associate>
-              <div class="mt-2">
-                <UFormField
-                  :label="$t('transaction.addModal.fields.member')"
-                  name="associate_uuid"
-                  required
-                >
-                  <USelectMenu
-                    v-model="state.associate_uuid"
-                    :items="associateOptions"
-                    value-key="value"
-                    :placeholder="$t('transaction.addModal.fields.selectMember')"
-                    :icon="selectedAssociateAvatar ? undefined : ICONS.player"
-                    :avatar="selectedAssociateAvatar"
-                    class="w-full"
-                  />
-                </UFormField>
-              </div>
-            </template>
-
-            <template #external>
-              <div class="grid grid-cols-2 gap-2 mt-2">
-                <UFormField
-                  :label="$t('transaction.addModal.fields.firstName')"
-                  name="payer_name"
-                  required
-                >
-                  <UInput
-                    v-model="state.payer_name"
-                    type="text"
-                    class="w-full"
-                    color="neutral"
-                  />
-                </UFormField>
-
-                <UFormField
-                  :label="$t('transaction.addModal.fields.lastName')"
-                  name="payer_surname"
-                  required
-                >
-                  <UInput
-                    v-model="state.payer_surname"
-                    type="text"
-                    class="w-full"
-                    color="neutral"
-                  />
-                </UFormField>
-
-                <UFormField
-                  :label="$t('transaction.addModal.fields.email')"
-                  name="payer_email"
-                  required
-                >
-                  <UInput
-                    v-model="state.payer_email"
-                    type="email"
-                    class="w-full"
-                    color="neutral"
-                    :icon="ICONS.atSign"
-                  />
-                </UFormField>
-
-                <UFormField
-                  :label="$t('transaction.addModal.fields.taxCode')"
-                  name="payer_tax_code"
-                  required
-                >
-                  <UInput
-                    v-model="payerTaxCodeInput"
-                    type="text"
-                    class="w-full"
-                    color="neutral"
-                    maxlength="16"
-                  />
-                </UFormField>
-              </div>
-            </template>
-          </UTabs>
+          <TransactionsFieldsPayerFields
+            v-model:active-tab="activeTab"
+            :state="state"
+            :associate-options="associateOptions"
+            :selected-associate-avatar="selectedAssociateAvatar"
+            :payer-tab-items="payerTabItems"
+          />
         </div>
 
         <TransactionsListPaymentInfoFields v-model:state="state" />

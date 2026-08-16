@@ -75,8 +75,8 @@ const formattedStartDate = computed(() => {
 })
 
 const {
-  schema, statusOptions, locationOptions, organizerOptions, formatOptions, selectedStatus
-} = useTournamentFormFields(state)
+  schema, statusOptions, locationOptions, organizerOptions, formatOptions
+} = useTournamentFormFields()
 
 type Schema = v.InferOutput<typeof schema>
 
@@ -143,145 +143,23 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         @submit="onSubmit"
       >
         <div class="space-y-4">
-          <div class="flex justify-between gap-2">
-            <UFormField :label="$t('tournament.addModal.fields.status')" class="flex-1" name="status">
-              <USelect
-                v-model="state.status"
-                :items="statusOptions"
-                value-key="value"
-                class="w-full"
-              >
-                <template #leading>
-                  <UIcon v-if="selectedStatus" :name="selectedStatus.icon" class="size-5 shrink-0" />
-                </template>
-              </USelect>
-            </UFormField>
+          <TournamentsFieldsTournamentDataFields
+            :state="state"
+            :status-options="statusOptions"
+            :format-options="formatOptions"
+          />
 
-            <UFormField
-              :label="$t('tournament.addModal.fields.companionCode')"
-              name="companionCode"
-            >
-              <UInput
-                :model-value="state.companionCode ?? ''"
-                :placeholder="$t('tournament.addModal.fields.companionCodePlaceholder')"
-                :icon="ICONS.smartphone"
-                class="w-42"
-                @update:model-value="state.companionCode = ($event as string) || undefined"
-              />
-            </UFormField>
-          </div>
+          <TournamentsFieldsSchedulingFields
+            v-model:start-date="startDate"
+            :state="state"
+            :formatted-start-date="formattedStartDate"
+          />
 
-          <div class="flex items-end gap-2">
-            <!-- eslint-disable-next-line -->
-            <UFormField :label="$t('tournament.addModal.fields.name')" name="name" class="flex-1" required>
-              <UInput
-                v-model="state.name"
-                class="w-full"
-                :placeholder="$t('tournament.addModal.fields.namePlaceholder')"
-                :icon="ICONS.standings"
-              />
-            </UFormField>
-
-            <UFormField :label="$t('tournament.addModal.fields.entryFee')" name="entryFee">
-              <UInputNumber
-                v-model="state.entryFee"
-                :min="0"
-                :step="5"
-                class="w-42"
-                :icon="ICONS.euro"
-              />
-            </UFormField>
-          </div>
-
-          <UFormField :label="$t('tournament.addModal.fields.description')" name="description">
-            <UTextarea
-              :model-value="state.description ?? ''"
-              class="w-full"
-              :placeholder="$t('tournament.addModal.fields.descriptionPlaceholder')"
-              :icon="ICONS.alignLeft"
-              @update:model-value="state.description = ($event as string) || undefined"
-            />
-          </UFormField>
-
-          <UFormField :label="$t('tournament.addModal.fields.prizes')" name="prizes">
-            <UInput
-              :model-value="state.prizes ?? ''"
-              class="w-full"
-              :placeholder="$t('tournament.addModal.fields.prizesPlaceholder')"
-              :icon="ICONS.euro"
-              @update:model-value="state.prizes = ($event as string) || undefined"
-            />
-          </UFormField>
-
-          <UFormField :label="$t('tournament.addModal.fields.format')" name="formatUuid">
-            <USelectMenu
-              v-model="state.formatUuid"
-              class="w-full"
-              :items="formatOptions"
-              value-key="value"
-              :placeholder="$t('tournament.addModal.fields.selectFormat')"
-              :icon="ICONS.layers"
-            />
-          </UFormField>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div class="flex justify-between gap-2">
-              <UFormField :label="$t('tournament.addModal.fields.startDate')" class="flex-1" name="startDate">
-                <UPopover>
-                  <UInput
-                    :model-value="formattedStartDate"
-                    readonly
-                    class="w-full"
-                    :icon="ICONS.calendar"
-                  />
-
-                  <template #content>
-                    <UCalendar v-model="startDate" class="p-2" />
-                  </template>
-                </UPopover>
-              </UFormField>
-
-              <UFormField :label="$t('tournament.addModal.fields.startTime')" name="startTime">
-                <UTimePicker
-                  v-model="state.startTime"
-                  :placeholder="$t('tournament.addModal.fields.selectTime')"
-                  :minute-step="15"
-                />
-              </UFormField>
-            </div>
-
-            <UFormField :label="$t('tournament.addModal.fields.roundCount')" name="roundCount">
-              <UInputNumber
-                v-model="state.roundCount"
-                :min="1"
-                :icon="ICONS.hash"
-              />
-            </UFormField>
-          </div>
-
-          <div class="grid grid-cols-2 gap-4">
-            <UFormField :label="$t('tournament.addModal.fields.organizer')" name="organizerUuid">
-              <USelectMenu
-                v-model="state.organizerUuid"
-                class="w-full"
-                :items="organizerOptions"
-                value-key="value"
-                :placeholder="$t('tournament.addModal.fields.selectOrganizer')"
-                :icon="ICONS.player"
-              />
-            </UFormField>
-
-            <UFormField :label="$t('tournament.addModal.fields.location')" name="locationUuid">
-              <USelectMenu
-                v-model="state.locationUuid"
-                class="w-full"
-                :items="locationOptions"
-                value-key="value"
-                :placeholder="$t('tournament.addModal.fields.selectLocation')"
-                :icon="ICONS.mapPin"
-              />
-            </UFormField>
-          </div>
+          <TournamentsFieldsOrganizerDataFields
+            :state="state"
+            :organizer-options="organizerOptions"
+            :location-options="locationOptions"
+          />
         </div>
 
         <div class="flex justify-end gap-2 pt-4">

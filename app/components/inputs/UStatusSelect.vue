@@ -14,10 +14,14 @@ interface Props {
   label?: string
   items: StatusItem[]
   placeholder?: string
+  /** Width of the inner USelect — 'w-34' fits the associates toolbar filter
+   *  this was originally built for; form usages (event/league/tournament
+   *  AddModal.vue) pass 'w-full' to match their sibling fields. */
+  class?: string
 }
 
 const {
-  modelValue, name = 'status', label, items, placeholder
+  modelValue, name = 'status', label, items, placeholder, class: selectClass = 'w-34'
 } = defineProps<Props>()
 const { t } = useI18n()
 
@@ -44,7 +48,7 @@ const selectedItem = computed(() =>
       :items="items"
       :placeholder="resolvedPlaceholder"
       value-key="value"
-      class="w-34"
+      :class="selectClass"
       :ui="{
         trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200'
       }"

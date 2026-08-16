@@ -105,56 +105,31 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                this column naturally taller, so it stays paired with just
                general info rather than also carrying contacts). -->
           <div class="space-y-6">
-            <div>
-              <h3 class="text-lg font-semibold text-primary">
-                {{ $t('location.addModal.sections.generalInfo') }}
-              </h3>
-              <div class="space-y-4 mt-2">
-                <LocationsFieldsGeneralInfoFields v-model:image="image" :state="state" />
-              </div>
-            </div>
+            <LocationsListFormSection :title="$t('location.addModal.sections.generalInfo')">
+              <LocationsFieldsGeneralInfoFields v-model:image="image" :state="state" />
+            </LocationsListFormSection>
 
-            <div>
-              <h3 class="text-lg font-semibold text-primary">
-                {{ $t('location.addModal.sections.position') }}
-              </h3>
-              <div class="space-y-4 mt-2">
-                <LocationsFieldsPositionFields :state="state" />
-              </div>
-            </div>
+            <LocationsListFormSection :title="$t('location.addModal.sections.position')">
+              <LocationsFieldsPositionFields :state="state" />
+            </LocationsListFormSection>
           </div>
 
           <!-- Right column: contacts + opening hours + social -->
           <div class="space-y-6">
-            <div>
-              <h3 class="text-lg font-semibold text-primary">
-                {{ $t('location.addModal.sections.contacts') }}
-              </h3>
-              <div class="space-y-4 mt-2">
-                <LocationsFieldsContactFields :state="state" />
-              </div>
-            </div>
+            <LocationsListFormSection :title="$t('location.addModal.sections.contacts')">
+              <LocationsFieldsContactFields :state="state" />
+            </LocationsListFormSection>
 
-            <div>
-              <h3 class="text-lg font-semibold text-primary">
-                {{ $t('location.addModal.sections.openingHours') }}
-              </h3>
-              <div class="space-y-4 mt-2">
-                <LocationsFieldsOpeningHoursFields
-                  v-model:opening-hours="openingHours"
-                  :state="state"
-                />
-              </div>
-            </div>
+            <LocationsListFormSection :title="$t('location.addModal.sections.openingHours')">
+              <LocationsFieldsOpeningHoursFields
+                v-model:opening-hours="openingHours"
+                :state="state"
+              />
+            </LocationsListFormSection>
 
-            <div>
-              <h3 class="text-lg font-semibold text-primary">
-                {{ $t('location.addModal.sections.social') }}
-              </h3>
-              <div class="space-y-4 mt-2">
-                <LocationsFieldsSocialFields :state="state" />
-              </div>
-            </div>
+            <LocationsListFormSection :title="$t('location.addModal.sections.social')">
+              <LocationsFieldsSocialFields :state="state" />
+            </LocationsListFormSection>
           </div>
         </div>
 
