@@ -4,6 +4,15 @@ import type { WantedCard, WantedCardStatus } from '~/types'
 
 export type WantedCardColorFilter = 'all' | 'W' | 'U' | 'B' | 'G' | 'R' | 'C' | 'land'
 
+// manaCost feeds MagicManaCost (mana-font) directly — "land" has no real mana
+// symbol, {LAND} just maps to mana-font's own .ms-land icon (see ManaCost.vue,
+// it turns whatever sits between the braces into a lowercased CSS class).
+export interface ColorTab {
+  label: string
+  value: WantedCardColorFilter
+  manaCost?: string
+}
+
 export function useWantedCardsFilters(data: Ref<WantedCard[]>) {
   const { t } = useI18n()
 
@@ -106,12 +115,6 @@ export function useWantedCardsFilters(data: Ref<WantedCard[]>) {
   // manaCost feeds MagicManaCost (mana-font) directly — "land" has no real mana
   // symbol, {LAND} just maps to mana-font's own .ms-land icon (see ManaCost.vue,
   // it turns whatever sits between the braces into a lowercased CSS class).
-  interface ColorTab {
-    label: string
-    value: WantedCardColorFilter
-    manaCost?: string
-  }
-
   const colorTabs: ColorTab[] = [
     { label: t('wantedCard.filters.colorAll'), value: 'all' },
     { label: t('wantedCard.filters.colorWhite'), value: 'W', manaCost: '{W}' },

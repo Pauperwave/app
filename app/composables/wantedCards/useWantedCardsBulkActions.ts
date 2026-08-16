@@ -8,7 +8,7 @@
 import type { WantedCard, WantedCardStatus } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 
-type PendingBulkAction
+export type PendingBulkAction
   = | { type: 'status', status: WantedCardStatus, cards: WantedCard[] }
     | { type: 'delete', cards: WantedCard[] }
 

@@ -258,48 +258,15 @@ const gridSections = computed<GridSection[]>(() => {
                mirrors UDashboardToolbar's ui.left (gap-4 flex-wrap) so the
                layout stays identical, just nested one level deeper. -->
           <div v-else id="tour-wanted-cards-filters" class="flex items-center gap-4 flex-wrap">
-            <!--
-              No `-ms-1` here on purpose: it's for icon-only buttons (see
-              transactions/index.vue), not a bordered UFieldGroup — measured,
-              it already aligns with the table (105px vs 106px) without it.
-            -->
-            <StatusFilterGroup v-model="statusFilter" :items="statusTabs" />
-
-            <!-- Search by card name hidden for now: this view serves people
-                 looking for cards, not people selling them (which is the real
-                 use case for search by name) — see the TODO in docs/TODO.md. -->
-
-            <!-- Replaces the old language select + foil toggle (2026-08-15 user
-                 request) — mana-symbol tabs instead of StatusFilterGroup's plain
-                 text labels, "Tutte" aside, since that component has no
-                 icon/leading-content slot for the others. Multi-select
-                 (2026-08-15 follow-up): several tabs stay active together
-                 (toggleColorFilter), "Tutte" resets back to none. -->
-            <UFieldGroup>
-              <UButton
-                v-for="option in colorTabs"
-                :key="option.value"
-                color="neutral"
-                :variant="isColorTabActive(option.value) ? 'solid' : 'outline'"
-                @click="toggleColorFilter(option.value)"
-              >
-                <span v-if="option.value === 'all'">{{ option.label }}</span>
-                <MagicManaCost v-else :mana-cost="option.manaCost" :aria-label="option.label" />
-              </UButton>
-            </UFieldGroup>
-
-            <UTooltip
-              :text="!currentAssociate ? $t('wantedCard.filters.onlyMineUnavailable') : undefined"
-            >
-              <UButton
-                :label="$t('wantedCard.filters.onlyMine')"
-                icon="i-lucide-user-round"
-                color="neutral"
-                :variant="onlyMine ? 'solid' : 'outline'"
-                :disabled="!currentAssociate"
-                @click="onlyMine = !onlyMine"
-              />
-            </UTooltip>
+            <WantedCardsListFiltersBar
+              v-model:status-filter="statusFilter"
+              v-model:only-mine="onlyMine"
+              :status-tabs="statusTabs"
+              :color-tabs="colorTabs"
+              :is-color-tab-active="isColorTabActive"
+              :current-associate="currentAssociate"
+              @toggle-color="toggleColorFilter"
+            />
           </div>
         </template>
 
@@ -317,44 +284,15 @@ const gridSections = computed<GridSection[]>(() => {
                tour to the whole view area, with classes mirroring ui.right
                (gap-4 flex-wrap). -->
           <div v-else id="tour-wanted-cards-view-controls" class="flex items-center gap-4 flex-wrap">
-            <div v-if="viewMode === 'grid'" class="flex items-center gap-2">
-              <USelectMenu
-                v-model="gridSortField"
-                :items="gridSortItems"
-                value-key="value"
-                :placeholder="$t('wantedCard.grid.sortBy')"
-                class="w-40"
-              />
-              <UButton
-                :icon="gridSortDesc
-                  ? ICONS.sortDescNumeric
-                  : ICONS.sortAscNumeric"
-                color="neutral"
-                variant="outline"
-                @click="gridSortDesc = !gridSortDesc"
-              />
-            </div>
-
-            <UButton
-              :label="$t('wantedCard.filters.groupByPlayer')"
-              :icon="ICONS.players"
-              color="neutral"
-              :variant="isGrouped ? 'solid' : 'outline'"
-              @click="toggleGrouping"
+            <WantedCardsListViewControls
+              v-model:grid-sort-field="gridSortField"
+              v-model:grid-sort-desc="gridSortDesc"
+              :view-mode="viewMode"
+              :grid-sort-items="gridSortItems"
+              :is-grouped="isGrouped"
+              :view-items="viewItems"
+              @toggle-grouping="toggleGrouping"
             />
-
-            <UDropdownMenu
-              v-if="viewMode === 'table'"
-              :items="viewItems"
-              :content="{ align: 'end' }"
-            >
-              <UButton
-                :label="$t('common.showColumns')"
-                color="neutral"
-                variant="outline"
-                :trailing-icon="ICONS.settingsColumns"
-              />
-            </UDropdownMenu>
           </div>
         </template>
       </UDashboardToolbar>
@@ -410,44 +348,14 @@ const gridSections = computed<GridSection[]>(() => {
 
   <WantedCardsListEditModal v-model="editModalOpen" :card="editingCard" />
 
-  <ConfirmModal
-    v-model:open="deleteConfirmOpen"
-    :title="$t('wantedCard.contextMenu.deleteConfirmTitle')"
-    :warning="$t('common.confirmDeleteWarning')"
-    :confirm-label="$t('wantedCard.contextMenu.delete')"
-    :confirm-icon="ICONS.delete"
-    @confirm="confirmDelete"
-  >
-    <MagicCardPreviewTooltip
-      v-if="deletingCard"
-      :name="deletingCard.cardName"
-      :image-url="deletingCard.imageUrl"
-    />
-  </ConfirmModal>
-
-  <!-- Same component as the single-card delete confirm above, generalized for
-       both bulk status changes and bulk delete (useWantedCardsBulkActions.ts). -->
-  <ConfirmModal
-    v-model:open="bulkConfirmOpen"
-    :title="pendingAction?.type === 'delete'
-      ? $t('wantedCard.bulkActions.confirmDeleteTitle', pendingAction.cards.length)
-      : $t('wantedCard.bulkActions.confirmStatusTitle', {
-        status: $t(`wantedCard.status.${pendingAction?.status}`)
-      }, pendingAction?.cards.length ?? 0)"
-    :warning="pendingAction?.type === 'delete' ? $t('common.confirmDeleteWarning') : undefined"
-    :confirm-label="pendingAction?.type === 'delete'
-      ? $t('wantedCard.contextMenu.delete')
-      : $t('wantedCard.bulkActions.confirm')"
-    :confirm-color="pendingAction?.type === 'delete' ? 'error' : 'primary'"
-    :confirm-icon="pendingAction?.type === 'delete' ? ICONS.delete : undefined"
-    @confirm="confirmPendingAction"
-  >
-    <ul v-if="pendingAction" class="max-h-40 overflow-y-auto text-sm space-y-1">
-      <li v-for="card in pendingAction.cards" :key="card.id">
-        <MagicCardPreviewTooltip :name="card.cardName" :image-url="card.imageUrl" />
-      </li>
-    </ul>
-  </ConfirmModal>
+  <WantedCardsListConfirmModals
+    v-model:delete-confirm-open="deleteConfirmOpen"
+    v-model:bulk-confirm-open="bulkConfirmOpen"
+    :deleting-card="deletingCard"
+    :pending-action="pendingAction"
+    :on-confirm-delete="confirmDelete"
+    :on-confirm-pending-action="confirmPendingAction"
+  />
 
   <TourGuide :tour="tour" />
 </template>
