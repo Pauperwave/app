@@ -225,48 +225,20 @@ async function onSubmit() {
       :state="state"
       class="space-y-4"
     >
-      <template v-if="currentStep === 'email'">
-        <UFormField :label="$t('tesseramento.steps.email.label')" name="email_address" required>
-          <UInput
-            v-model="state.email_address"
-            type="email"
-            autocomplete="email"
-            :icon="ICONS.atSign"
-            :placeholder="$t('tesseramento.steps.email.placeholder')"
-            class="w-full"
-          />
-        </UFormField>
+      <TesseramentoEmailStep
+        v-if="currentStep === 'email'"
+        :state="state"
+        :sending-otp="sendingOtp"
+        @send-otp="sendOtp"
+      />
 
-        <div class="flex justify-end">
-          <UButton
-            :label="$t('tesseramento.steps.email.submit')"
-            color="primary"
-            :loading="sendingOtp"
-            @click="sendOtp"
-          />
-        </div>
-      </template>
-
-      <template v-else-if="currentStep === 'verify'">
-        <div class="flex flex-col items-center gap-4 py-6 text-center">
-          <UIcon :name="ICONS.loading" class="animate-spin text-4xl" />
-          <p class="text-muted">
-            {{ $t('tesseramento.steps.verify.waiting', { email: state.email_address }) }}
-          </p>
-          <UButton
-            :label="$t('tesseramento.steps.verify.resend')"
-            variant="link"
-            :loading="sendingOtp"
-            @click="sendOtp"
-          />
-          <UButton
-            :label="$t('tesseramento.back')"
-            color="neutral"
-            variant="ghost"
-            @click="goBack"
-          />
-        </div>
-      </template>
+      <TesseramentoVerifyStep
+        v-else-if="currentStep === 'verify'"
+        :email="state.email_address"
+        :sending-otp="sendingOtp"
+        @resend="sendOtp"
+        @back="goBack"
+      />
 
       <template v-else>
         <template v-if="currentStep === 'associateType'">
@@ -311,51 +283,7 @@ async function onSubmit() {
           </div>
         </template>
 
-        <template v-else-if="currentStep === 'consents'">
-          <div class="space-y-2">
-            <UFormField name="has_read_statute">
-              <UCheckbox
-                v-model="state.has_read_statute"
-                required
-                :label="$t('associate.addModal.consents.statuteLabel')"
-                size="lg"
-              >
-                <template #description>
-                  <!-- External, not /tesseramento/statuto: the statute is the
-                       association's own governance document, published on
-                       the blog independently of this app — linking to that
-                       canonical copy avoids two versions drifting apart. The
-                       icon marks it as leaving the app's domain, unlike the
-                       two consents below (still internal pages). -->
-                  <a
-                    href="https://blog.pauperwave.org/docs/statuto"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="underline inline-flex items-center gap-1"
-                  >
-                    {{ $t('tesseramento.steps.consents.openStatuto') }}
-                    <UIcon :name="ICONS.externalLink" class="size-3.5" />
-                  </a>
-                </template>
-              </UCheckbox>
-            </UFormField>
-            <UFormField name="consent_data">
-              <UCheckbox
-                v-model="state.consent_data"
-                required
-                :label="$t('associate.addModal.consents.dataLabel')"
-                size="lg"
-              >
-                <template #description>
-                  <NuxtLink to="/tesseramento/informativa-dati" target="_blank" class="underline">
-                    {{ $t('tesseramento.steps.consents.openData') }}
-                  </NuxtLink>
-                </template>
-              </UCheckbox>
-            </UFormField>
-            <AssociatesFieldsConsentSocialField :state="state" />
-          </div>
-        </template>
+        <TesseramentoConsentsStep v-else-if="currentStep === 'consents'" :state="state" />
 
         <div class="flex justify-between gap-2 pt-2">
           <UButton
