@@ -25,6 +25,16 @@ const {
   data: tournamentsData, isLoading: loading, status, refetch
 } = useTournamentsQuery()
 const data = computed(() => tournamentsData.value ?? [])
+// Passed to MtgFormatsManageModal so it can disable deleting a format still
+// referenced by a tournament (and show how many), instead of only failing
+// after the fact.
+const formatUsageCounts = computed(() => {
+  const counts = new Map<string, number>()
+  for (const tournament of data.value) {
+    counts.set(tournament.formatUuid, (counts.get(tournament.formatUuid) ?? 0) + 1)
+  }
+  return counts
+})
 const {
   statusFilter, formatFilter, filteredTournaments, statusTabs, formatTabs
 } = useTournamentsFilters(data, range)
@@ -189,7 +199,7 @@ const tour = useTournamentsTour()
 
   <TournamentsListEditModal v-model="editModalOpen" :tournament="editingTournament" />
 
-  <MtgFormatsManageModal v-model="manageFormatsOpen" />
+  <MtgFormatsManageModal v-model="manageFormatsOpen" :format-usage-counts="formatUsageCounts" />
 
   <ConfirmModal
     v-model:open="bulkConfirmOpen"

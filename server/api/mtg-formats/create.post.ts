@@ -13,10 +13,7 @@ export default defineEventHandler(async (event) => {
 
   const { data: format, error } = await supabase
     .from('mtg_formats')
-    .insert({
-      name: body.name,
-      description: body.description
-    })
+    .insert({ name: body.name })
     .select()
     .single()
 
