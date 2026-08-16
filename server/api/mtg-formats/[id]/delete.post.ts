@@ -8,18 +8,6 @@
 // mtgFormats/useMtgFormatsQuery.ts already filters `is('deleted_at', null)`.
 export default defineEventHandler(async (event) => {
   const { id, supabase } = await parseIdRequest(event)
-
-  const { error } = await supabase
-    .from('mtg_formats')
-    .update({ deleted_at: new Date().toISOString() })
-    .eq('id', id)
-
-  if (error) {
-    throw createError({
-      statusCode: 500,
-      statusMessage: error.message
-    })
-  }
-
+  await softDeleteById(supabase, 'mtg_formats', id)
   return { deleted: true }
 })
