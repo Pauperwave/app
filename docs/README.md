@@ -16,6 +16,7 @@ Master index of all project documentation.
 | `architecture/permissions.md` | Human-readable 🟢🟡🔴 role × feature matrix — the reference table for "who can do what," companion to `roles.md`'s implementation | Roles/permissions reference |
 | `architecture/shortcuts.md` | Full keyboard-shortcut map (`g-x` navigation chords + global toggles), why there are two `defineShortcuts` call sites, and how to add a new one | UI reference |
 | `architecture/query-keys.md` | Inventory of every `useAsyncData` and Pinia Colada `useQuery` key, naming convention, and which are excluded from `localStorage` persistence for PII | Data-fetching reference |
+| `architecture/actions.md` | Per-domain inventory of row context-menu / inline row / bulk-selection actions — what exists, where, and deliberate gaps vs. real ones | UI reference |
 | `PROJECT_ANALYSIS.md` | Initial codebase audit (stack, routing, auth flow, data-fetching conventions) — **dated snapshot, several claims superseded by `PROGRESS.md`'s ADRs, see its own header note** | Onboarding (with caveats) |
 | `PROGRESS.md` | Backward-looking curated changelog + architecture decisions (ADRs) — the most current architectural source of truth | Architecture history |
 | `CHANGELOG.md` | Curated commit trail, grouped by date, with "what/why" for notable commits — not every commit, see the auto-generated root `CHANGELOG.md` for the complete raw index | Architecture history |
