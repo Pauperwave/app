@@ -15,6 +15,7 @@ export function useWantedCardsQuery() {
         // reference pauperwave_associates, PostgREST can no longer work out on its
         // own which of the three relations "associate" means.
         .select('*, associate:pauperwave_associates!player_associate_uuid(first_name, last_name)')
+        .is('deleted_at', null)
         // `id` as a tiebreaker: without a fully deterministic ORDER BY, rows
         // with an equal (or null) requested_at have no guaranteed order across
         // query executions — an UPDATE (e.g. "Aggiorna prezzi", which only

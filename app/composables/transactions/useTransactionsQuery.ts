@@ -24,6 +24,7 @@ export function useTransactionsQuery() {
           *,
           associate:pauperwave_associates!associate_uuid(uuid, first_name, last_name, pauperwave_associate_number)
         `)
+        .is('deleted_at', null)
         .order('payment_date', { ascending: false })
 
       if (error) throw error
