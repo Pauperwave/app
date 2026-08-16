@@ -76,37 +76,22 @@ const tour = useTransactionsTour()
 <template>
   <UDashboardPanel id="payments">
     <template #header>
-      <UDashboardNavbar :title="$t('transaction.breadcrumb')">
-        <template #leading>
-          <UDashboardSidebarCollapse />
-        </template>
+      <ListPageNavbar
+        :title="$t('transaction.breadcrumb')"
+        :tour-label="$t('transaction.tour.startButton')"
+        :loading="loading"
+        :status="status"
+        @refresh="refetch"
+        @tour-start="tour.start()"
+      >
+        <div id="tour-transactions-add">
+          <TransactionsListAddModal v-model="isModalOpen" />
+        </div>
 
-        <template #trailing>
-          <USeparator orientation="vertical" class="h-4" />
+        <USeparator orientation="vertical" class="h-4" />
 
-          <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refetch" />
-        </template>
-
-        <template #right>
-          <UButton
-            :label="$t('transaction.tour.startButton')"
-            icon="i-lucide-circle-help"
-            color="neutral"
-            variant="ghost"
-            @click="tour.start()"
-          />
-
-          <USeparator orientation="vertical" class="h-4" />
-
-          <div id="tour-transactions-add">
-            <TransactionsListAddModal v-model="isModalOpen" />
-          </div>
-
-          <USeparator orientation="vertical" class="h-4" />
-
-          <NotificationsBellButton />
-        </template>
-      </UDashboardNavbar>
+        <NotificationsBellButton />
+      </ListPageNavbar>
 
       <UDashboardToolbar
         :ui="{

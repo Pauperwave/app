@@ -1,29 +1,7 @@
 // server\api\associates\apply.post.ts
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
-
-interface ApplyBody {
-  associate_type: 'regular' | 'sustaining'
-  first_name: string
-  last_name: string
-  email_address: string
-  phone_number: string
-  tax_code: string
-  born_location: string
-  born_date: string
-  born_province: string
-  born_state: string
-  residency_address: string
-  residency_house_number: string | null
-  residency_city: string
-  residency_province: string
-  residency_cap: string
-  mtgo_nickname: string | null
-  mtga_nickname: string | null
-  consent_data: boolean
-  consent_social: boolean
-  has_read_statute: boolean
-}
+import type { AssociateEditsPayload } from '#shared/types/associates'
 
 // The /tesseramento public form's BFF endpoint — gated by requireUser (a valid
 // OTP-verified Supabase session), not requireManagementPermission: the whole
@@ -34,7 +12,7 @@ interface ApplyBody {
 export default defineEventHandler(async (event) => {
   const user = await requireUser(event)
 
-  const body = await readBody<ApplyBody>(event)
+  const body = await readBody<AssociateEditsPayload>(event)
   if (body.email_address?.toLowerCase() !== user.email?.toLowerCase()) {
     throw createError({
       statusCode: 403,

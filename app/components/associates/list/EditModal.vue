@@ -18,33 +18,9 @@ const schema = v.object(associateFormSchema(t))
 
 type Schema = v.InferOutput<typeof schema>
 
-const associateTypeOptions = computed(() => [
-  { label: t('associate.types.regular'), value: 'regular' as const },
-  { label: t('associate.types.sustaining'), value: 'sustaining' as const }
-])
+const associateTypeOptions = useAssociateTypeOptions()
 
-const state = reactive<Omit<Schema, 'born_date'> & { born_date: Date | undefined }>({
-  associate_type: 'regular',
-  first_name: '',
-  last_name: '',
-  email_address: '',
-  phone_number: '',
-  tax_code: '',
-  born_location: '',
-  born_date: undefined,
-  born_province: '',
-  born_state: '',
-  residency_address: '',
-  residency_house_number: null,
-  residency_city: '',
-  residency_province: '',
-  residency_cap: '',
-  mtgo_nickname: null,
-  mtga_nickname: null,
-  has_read_statute: false,
-  consent_data: false,
-  consent_social: false
-})
+const state = createAssociateFormState()
 
 // Refills the form state every time the modal opens on a different associate —
 // unlike AddModal.vue there is no successful submit that clears it (this one

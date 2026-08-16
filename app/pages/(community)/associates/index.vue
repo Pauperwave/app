@@ -240,37 +240,23 @@ watch(() => consentSocialFilter.value, (newVal) => {
 <template>
   <UDashboardPanel id="associates">
     <template #header>
-      <UDashboardNavbar :title="$t('associate.breadcrumb')" :ui="{ right: 'gap-2' }">
-        <template #leading>
-          <UDashboardSidebarCollapse />
-        </template>
+      <ListPageNavbar
+        :title="$t('associate.breadcrumb')"
+        :tour-label="$t('associate.tour.startButton')"
+        :loading="loading"
+        :status="status"
+        :ui="{ right: 'gap-2' }"
+        @refresh="refetch"
+        @tour-start="tour.start()"
+      >
+        <div id="tour-associates-view-mode">
+          <ViewModeTabs v-model="viewMode" :items="viewModeItems" />
+        </div>
 
-        <template #trailing>
-          <USeparator orientation="vertical" class="h-4" />
+        <USeparator orientation="vertical" class="h-4" />
 
-          <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refetch" />
-        </template>
-
-        <template #right>
-          <UButton
-            :label="$t('associate.tour.startButton')"
-            icon="i-lucide-circle-help"
-            color="neutral"
-            variant="ghost"
-            @click="tour.start()"
-          />
-
-          <USeparator orientation="vertical" class="h-4" />
-
-          <div id="tour-associates-view-mode">
-            <ViewModeTabs v-model="viewMode" :items="viewModeItems" />
-          </div>
-
-          <USeparator orientation="vertical" class="h-4" />
-
-          <NotificationsBellButton />
-        </template>
-      </UDashboardNavbar>
+        <NotificationsBellButton />
+      </ListPageNavbar>
 
       <!-- Switcher shared with /associates/requests (see AssociatesSubNav) —
            same sub-nav-row pattern as /settings. -->

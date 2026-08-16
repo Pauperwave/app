@@ -1,15 +1,10 @@
 // server\api\wanted-cards\[id]\update.post.ts
-import { serverSupabaseServiceRole } from '#supabase/server'
-import type { Database } from '#shared/utils/types/database'
 import type { WantedCardEditsPayload } from '#shared/types/wantedCards'
 
 export default defineEventHandler(async (event) => {
-  const user = await requireManagementPermission(event)
-
-  const id = Number(getRouterParam(event, 'id'))
-  const body = await readBody<WantedCardEditsPayload>(event)
-
-  const supabase = serverSupabaseServiceRole<Database>(event)
+  const {
+    user, id, body, supabase
+  } = await parseIdMutationRequest<WantedCardEditsPayload>(event)
 
   const { data, error } = await supabase
     .from('pauperwave_wanted_cards')

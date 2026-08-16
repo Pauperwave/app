@@ -35,9 +35,8 @@ export type TournamentFormState = Partial<InferOutput<ReturnType<typeof buildSch
 export function useTournamentFormFields() {
   const { t } = useI18n()
 
-  const { data: locations } = useLocationsQuery()
-  const { data: organizations } = useOrganizationsQuery()
   const { data: formats } = useMtgFormatsQuery()
+  const { locationOptions, organizerOptions } = useLocationOrganizerOptions()
 
   const schema = buildSchema(t)
 
@@ -48,12 +47,6 @@ export function useTournamentFormFields() {
     color: tournamentStatusColor(status)
   })))
 
-  const locationOptions = computed(() => (locations.value ?? []).map(location => ({
-    value: location.uuid, label: location.name
-  })))
-  const organizerOptions = computed(() => (organizations.value ?? []).map(organization => ({
-    value: organization.uuid, label: organization.name
-  })))
   const formatOptions = computed(() => (formats.value ?? []).map(format => ({
     value: format.uuid, label: format.name
   })))

@@ -1,6 +1,5 @@
 <!-- app\components\leagues\list\AddModal.vue -->
 <script setup lang="ts">
-import { CalendarDate, getLocalTimeZone } from '@internationalized/date'
 import * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { NewLeaguePayload } from '#shared/types/leagues'
@@ -48,10 +47,10 @@ const state = reactive<Schema>({
 
 const { startDate, formattedStartDate } = useStartDateField(state)
 
+// fallow-ignore-next-line code-duplication -- see the same comment in
+// events/list/AddModal.vue
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  const startsAt = new CalendarDate(
-    startDate.value!.year, startDate.value!.month, startDate.value!.day
-  ).toDate(getLocalTimeZone())
+  const startsAt = dateValueToDate(startDate.value!)
 
   const payload: NewLeaguePayload = {
     name: event.data.name,
@@ -137,20 +136,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           </UFormField>
 
           <div class="grid grid-cols-2 gap-4">
-            <UFormField :label="$t('event.addModal.fields.startDate')" name="startDate">
-              <UPopover>
-                <UInput
-                  :model-value="formattedStartDate"
-                  readonly
-                  class="w-full"
-                  :icon="ICONS.calendar"
-                />
-
-                <template #content>
-                  <UCalendar v-model="startDate" class="p-2" />
-                </template>
-              </UPopover>
-            </UFormField>
+            <StartDatePickerField
+              v-model:start-date="startDate"
+              :label="$t('event.addModal.fields.startDate')"
+              :formatted-start-date="formattedStartDate"
+            />
 
             <UFormField :label="$t('league.addModal.fields.ruleset')" name="rulesetUuid">
               <USelectMenu

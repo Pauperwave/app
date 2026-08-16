@@ -3,7 +3,6 @@
 import type * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { Location, OpeningHours } from '~/types'
-import type { NewLocationPayload } from '#shared/types/locations'
 import type { LocationFormState } from '~/composables/locations/useLocationFormFields'
 
 const open = defineModel<boolean>({ default: false })
@@ -65,25 +64,7 @@ const submitting = ref(false)
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   if (!location) return
 
-  const payload: NewLocationPayload = {
-    name: event.data.name,
-    address: event.data.address,
-    city: event.data.city,
-    province: event.data.province,
-    postalCode: event.data.postalCode,
-    country: event.data.country,
-    phone: event.data.phone || null,
-    email: event.data.email || null,
-    website: event.data.website || null,
-    googleMapsUrl: event.data.googleMapsUrl || null,
-    openingHours: openingHours.value,
-    image: image.value || null,
-    facebook: event.data.facebook || null,
-    instagram: event.data.instagram || null,
-    telegramChannel: event.data.telegramChannel || null,
-    whatsapp: event.data.whatsapp || null,
-    temporarilyClosed: event.data.temporarilyClosed ?? false
-  }
+  const payload = buildLocationPayload(event.data, openingHours.value, image.value)
 
   submitting.value = true
   try {
@@ -119,38 +100,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         class="space-y-4"
         @submit="onSubmit"
       >
-        <div class="grid grid-cols-2 gap-x-8 gap-y-6">
-          <!-- Left column: general info + position (the map preview makes
-               this column naturally taller, so it stays paired with just
-               general info rather than also carrying contacts). -->
-          <div class="space-y-6">
-            <LocationsListFormSection :title="$t('location.addModal.sections.generalInfo')">
-              <LocationsFieldsGeneralInfoFields v-model:image="image" :state="state" />
-            </LocationsListFormSection>
-
-            <LocationsListFormSection :title="$t('location.addModal.sections.position')">
-              <LocationsFieldsPositionFields :state="state" />
-            </LocationsListFormSection>
-          </div>
-
-          <!-- Right column: contacts + opening hours + social -->
-          <div class="space-y-6">
-            <LocationsListFormSection :title="$t('location.addModal.sections.contacts')">
-              <LocationsFieldsContactFields :state="state" />
-            </LocationsListFormSection>
-
-            <LocationsListFormSection :title="$t('location.addModal.sections.openingHours')">
-              <LocationsFieldsOpeningHoursFields
-                v-model:opening-hours="openingHours"
-                :state="state"
-              />
-            </LocationsListFormSection>
-
-            <LocationsListFormSection :title="$t('location.addModal.sections.social')">
-              <LocationsFieldsSocialFields :state="state" />
-            </LocationsListFormSection>
-          </div>
-        </div>
+        <LocationsListFormFields
+          v-model:image="image"
+          v-model:opening-hours="openingHours"
+          :state="state"
+        />
 
         <div class="flex justify-end gap-2 pt-4">
           <UButton
