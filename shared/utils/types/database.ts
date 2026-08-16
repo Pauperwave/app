@@ -408,6 +408,7 @@ export type Database = {
       }
       mtg_formats: {
         Row: {
+          color: string | null
           created_at: string
           description: string | null
           id: number
@@ -416,6 +417,7 @@ export type Database = {
           uuid: string
         }
         Insert: {
+          color?: string | null
           created_at?: string
           description?: string | null
           id?: number
@@ -424,6 +426,7 @@ export type Database = {
           uuid?: string
         }
         Update: {
+          color?: string | null
           created_at?: string
           description?: string | null
           id?: number

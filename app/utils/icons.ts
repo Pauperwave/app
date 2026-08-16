@@ -31,7 +31,7 @@ export const ICONS = {
   filterClear: 'i-lucide-filter-x',
   settings: 'i-lucide-settings',
   settingsColumns: 'i-lucide-settings-2',
-  settingsGear: 'i-lucide-cog',
+  settingsGear: 'i-lucide-settings',
   logout: 'i-lucide-log-out',
   lock: 'i-lucide-lock',
   security: 'i-lucide-shield',
