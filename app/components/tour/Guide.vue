@@ -1,4 +1,4 @@
-<!-- app\components\TourGuide.vue -->
+<!-- app\components\tour\Guide.vue -->
 <script setup lang="ts">
 import type { UseTourReturn } from '@nuxt/ui/composables'
 

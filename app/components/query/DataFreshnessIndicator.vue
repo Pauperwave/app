@@ -1,4 +1,4 @@
-<!-- app\components\DataFreshnessIndicator.vue -->
+<!-- app\components\query\DataFreshnessIndicator.vue -->
 <script setup lang="ts">
 import { formatDistanceToNow } from 'date-fns'
 import { it } from 'date-fns/locale'
