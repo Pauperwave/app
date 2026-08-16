@@ -4,7 +4,6 @@
 // header skeleton mirrors other detail pages (leagues/tournaments/associates); these are
 // still mock-data pages, expected to change dramatically once real functionality lands
 const { breadcrumbItems } = useBreadcrumbs()
-const route = useRoute()
 </script>
 
 <template>
@@ -24,18 +23,6 @@ const route = useRoute()
       <UDashboardToolbar>
         <template #left>
           <UBreadcrumb :items="breadcrumbItems" class="ms-2" />
-        </template>
-
-        <template #right>
-          <UButton
-            :to="`/events/${route.params.eventId}/tournaments`"
-            :trailing-icon="ICONS.chevronRight"
-            color="neutral"
-            variant="ghost"
-            size="xs"
-          >
-            {{ $t('common.forward') }}
-          </UButton>
         </template>
       </UDashboardToolbar>
     </template>

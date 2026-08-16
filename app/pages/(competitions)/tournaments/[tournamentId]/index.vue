@@ -3,8 +3,27 @@
 // fallow-ignore-file code-duplication -- the UDashboardPanel navbar/toolbar/breadcrumb
 // header skeleton mirrors other detail pages (events/leagues/associates); these are
 // still mock-data pages, expected to change dramatically once real functionality lands
-const { breadcrumbItems } = useBreadcrumbs()
 const { t } = useI18n()
+const route = useRoute()
+const tournamentUuid = computed(() => route.params.tournamentId as string)
+
+const { data: tournamentsData } = useTournamentsQuery()
+const tournament = computed(() =>
+  tournamentsData.value?.find(item => item.uuid === tournamentUuid.value) ?? null)
+
+// Overrides the raw uuid path segment with the tournament's real name — same
+// mechanism as leagues/[leagueId]/index.vue's own breadcrumb override.
+const { breadcrumbItems } = useBreadcrumbs(
+  computed(() => (tournament.value ? { [tournamentUuid.value]: tournament.value.name } : {}))
+)
+
+// "Back to league" link — see app/utils/tournamentOrigin.ts for why this is
+// a query param (?from=league:<uuid>) rather than a nested route.
+const origin = computed(() => parseNavigationOrigin(route.query.from))
+const { data: leaguesData } = useLeaguesQuery()
+const originLeague = computed(() => origin.value
+  ? leaguesData.value?.find(league => league.uuid === origin.value?.uuid) ?? null
+  : null)
 
 // This could be dynamic based on tournament settings
 const numberOfRounds = 2
@@ -59,6 +78,23 @@ const items = computed(() => [
       <UDashboardToolbar>
         <template #left>
           <UBreadcrumb :items="breadcrumbItems" class="ms-2" />
+        </template>
+
+        <template v-if="originLeague" #right>
+          <!-- :ui leadingIcon override: UBreadcrumb's own separator chevron
+               renders at size-5, but UButton's xs/sm sizes both default to
+               size-4 — matched explicitly so the two chevrons in this same
+               toolbar row read as the same size. -->
+          <UButton
+            :to="`/leagues/${originLeague.uuid}`"
+            :icon="ICONS.chevronLeft"
+            :ui="{ leadingIcon: 'size-5' }"
+            color="neutral"
+            variant="ghost"
+            size="xs"
+          >
+            {{ $t('tournament.backToLeague', { league: originLeague.name }) }}
+          </UButton>
         </template>
       </UDashboardToolbar>
     </template>
