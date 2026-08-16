@@ -65,6 +65,13 @@ function parsePrice(value: string | null | undefined): number | null {
   return Number.isFinite(parsed) ? parsed : null
 }
 
+// Flagged cyclomatic 26, but every point is a ??/?. operator (no if/switch/
+// loop anywhere) reflecting Scryfall's genuinely inconsistent card-face
+// shape (a double-faced card stores image/mana-cost on the *face*, not the
+// card — see the comment below). Splitting into smaller functions would
+// just redistribute the same ??/?. chains across more functions, not
+// reduce them.
+// fallow-ignore-next-line complexity
 function toPrinting(card: ScryfallApiCard): ScryfallPrinting {
   // Double-faced cards (transform/modal) carry image_uris on the individual face,
   // not on the card — the first face stands in as the representative one.
