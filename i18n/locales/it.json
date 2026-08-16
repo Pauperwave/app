@@ -641,7 +641,6 @@
       "status": "Stato",
       "name": "Nome",
       "tournamentCount": "Tornei",
-      "season": "Stagione",
       "ruleset": "Regolamento"
     },
     "tournamentsLabel": "Tornei completati",
@@ -664,8 +663,6 @@
         "status": "Stato",
         "name": "Nome",
         "namePlaceholder": "Nome della lega",
-        "season": "Stagione",
-        "seasonPlaceholder": "Stagione (opzionale)",
         "ruleset": "Regolamento",
         "selectRuleset": "Seleziona regolamento"
       },

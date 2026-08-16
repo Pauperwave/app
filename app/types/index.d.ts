@@ -228,7 +228,6 @@ export interface League {
   uuid: string
   status: LeagueStatus
   name: string
-  season: string | null
   ruleset: string | null
   tournamentCount: number
   completedTournamentCount: number

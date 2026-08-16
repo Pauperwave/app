@@ -17,7 +17,6 @@ export default defineEventHandler(async (event) => {
     .insert({
       name: body.name,
       status: body.status,
-      season: body.season,
       ruleset_uuid: body.rulesetUuid,
       starts_at: body.startsAt,
       ends_at: body.endsAt

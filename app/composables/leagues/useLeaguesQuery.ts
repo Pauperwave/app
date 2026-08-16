@@ -45,7 +45,6 @@ export function useLeaguesQuery() {
         uuid: row.uuid,
         status: row.status as LeagueStatus,
         name: row.name,
-        season: row.season,
         ruleset: row.ruleset?.name ?? null,
         tournamentCount: totals.get(row.uuid) ?? 0,
         completedTournamentCount: completed.get(row.uuid) ?? 0

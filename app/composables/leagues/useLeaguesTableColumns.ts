@@ -11,7 +11,6 @@ export function useLeaguesTableColumns() {
     status: t('league.columns.status'),
     name: t('league.columns.name'),
     tournamentCount: t('league.columns.tournamentCount'),
-    season: t('league.columns.season'),
     ruleset: t('league.columns.ruleset')
   }
 
@@ -37,10 +36,6 @@ export function useLeaguesTableColumns() {
         completed: row.original.completedTournamentCount,
         total: row.original.tournamentCount
       })
-    },
-    {
-      accessorKey: 'season',
-      header: t('league.columns.season')
     },
     {
       accessorKey: 'ruleset',

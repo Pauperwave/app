@@ -6,7 +6,6 @@
 export interface NewLeaguePayload {
   name: string
   status: string
-  season: string | null
   rulesetUuid: string | null
   startsAt: string | null
   endsAt: string | null
