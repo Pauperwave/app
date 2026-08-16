@@ -161,12 +161,7 @@ function openTournament(tournament: Tournament) {
               class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-left hover:underline"
               @click="openTournament(tournament)"
             >
-              <span
-                class="px-1.5 py-0.5 rounded text-xs font-medium shrink-0"
-                :class="cittadinoFormatClass(tournament.format)"
-              >
-                {{ tournament.format }}
-              </span>
+              <FormatBadge :format="tournament.format" />
               <span class="truncate flex-1 min-w-0">{{ tournament.name }}</span>
               <span class="text-muted text-xs shrink-0">
                 {{ tournamentTimeRange(tournament.startDate, tournament.endDate) }}
