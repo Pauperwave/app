@@ -1,4 +1,5 @@
 // app\composables\tournaments\useTournamentsMutations.ts
+import type { TournamentStatus } from '~/types'
 import type { NewTournamentPayload } from '#shared/types/tournaments'
 
 export function useTournamentsMutations() {
@@ -20,5 +21,17 @@ export function useTournamentsMutations() {
     onSettled: invalidate
   })
 
-  return { createTournament, updateTournament }
+  const setStatus = useMutation({
+    mutation: ({ id, status }: { id: number, status: TournamentStatus }) =>
+      $fetch(`/api/tournaments/${id}/status`, { method: 'POST', body: { status } }),
+    onSettled: invalidate
+  })
+
+  const deleteTournament = useMutation({
+    mutation: (id: number) =>
+      $fetch(`/api/tournaments/${id}/delete`, { method: 'POST' }),
+    onSettled: invalidate
+  })
+
+  return { createTournament, updateTournament, setStatus, deleteTournament }
 }
