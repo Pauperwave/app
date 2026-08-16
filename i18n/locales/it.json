@@ -849,12 +849,13 @@
       "title": "Gestisci formati",
       "description": "Formati disponibili per i tornei",
       "namePlaceholder": "Nome formato",
-      "descriptionPlaceholder": "Descrizione (opzionale)",
       "empty": "Nessun formato",
       "add": "Aggiungi formato",
       "delete": "Elimina formato",
+      "usageCount": "{count} torneo | {count} tornei",
+      "deleteDisabledInUse": "Non eliminabile: usato da {count} torneo | Non eliminabile: usato da {count} tornei",
       "deleteConfirmTitle": "Eliminare questo formato?",
-      "deleteConfirmDescription": "Fallisce se è ancora usato da qualche torneo.",
+      "deleteConfirmDescription": "Questa azione non può essere annullata.",
       "errorToastTitle": "Impossibile salvare il formato",
       "deleteErrorToastTitle": "Impossibile eliminare il formato"
     }

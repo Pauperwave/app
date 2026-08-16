@@ -4,5 +4,4 @@
 // thin-pass-through convention as shared/types/locations.ts.
 export interface NewMtgFormatPayload {
   name: string
-  description: string | null
 }
