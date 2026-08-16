@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-PauperWave — a Magic: The Gathering Pauper League Manager dashboard. Nuxt 4 + Vue 3 + TypeScript, using Nuxt UI (Tailwind-based), Supabase (Postgres + Auth), and Nitro server routes. UI copy and route labels are in Italian; the codebase (identifiers, comments) is in English.
+Pauperwave — a Magic: The Gathering Pauper League Manager dashboard. Nuxt 4 + Vue 3 + TypeScript, using Nuxt UI (Tailwind-based), Supabase (Postgres + Auth), and Nitro server routes. UI copy and route labels are in Italian; the codebase (identifiers, comments) is in English.
 
 ## Commands
 

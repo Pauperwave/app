@@ -3,7 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '#shared/utils/types/database'
 
 const CARDTRADER_API_BASE = 'https://api.cardtrader.com/api/v2'
-const SCRYFALL_USER_AGENT = 'PauperWave-app/1.0 (wanted-cards price refresh; contact: emanuelenardi.dev@gmail.com)'
+const SCRYFALL_USER_AGENT = 'Pauperwave-app/1.0 (wanted-cards price refresh; contact: emanuelenardi.dev@gmail.com)'
 
 interface CardTraderMarketplaceProduct {
   price_cents: number

@@ -1,6 +1,6 @@
-# PauperWave
+# Pauperwave
 
-Gestionale Nuxt 4 per l'associazione **PauperWave**: tesseramenti/rinnovi, incassi, e organizzazione di tornei multi-formato (Commander, Premodern, Draft, Pauper, ecc.).
+Gestionale Nuxt 4 per l'associazione **Pauperwave**: tesseramenti/rinnovi, incassi, e organizzazione di tornei multi-formato (Commander, Premodern, Draft, Pauper, ecc.).
 
 Stack: Nuxt 4 · Vue 3.5 · Nuxt UI · Supabase (Postgres + RLS) · TypeScript.
 

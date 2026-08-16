@@ -33,7 +33,7 @@ export function downloadEventIcs(item: CalendarIcsItem) {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//PauperWave//Eventi//IT',
+    'PRODID:-//Pauperwave//Eventi//IT',
     'BEGIN:VEVENT',
     `UID:calendar-item-${item.id}@pauperwave.org`,
     `DTSTAMP:${toIcsDate(now)}`,

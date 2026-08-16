@@ -130,7 +130,7 @@ const filteredCards = computed(() => cards.value.filter((card) => {
       <div class="flex items-center gap-3 bg-elevated rounded-2xl px-6 py-3 shadow-xl">
         <img
           src="https://avatars.githubusercontent.com/u/225214755?s=200&v=4"
-          alt="PauperWave"
+          alt="Pauperwave"
           class="size-10 rounded-full shrink-0"
         >
         <a
