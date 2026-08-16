@@ -2,17 +2,16 @@
 <!--
   Extracted out of DetailSlideover.vue's `selection?.kind === 'tournament'`
   branch (2026-08-16) — see EventDetailContent.vue's own header for why this
-  isn't a shared component with it.
+  isn't a shared component with it. The hero (image/gradient/title/close
+  button) itself lives in TournamentDetailHero.vue, rendered in USlideover's
+  #header slot instead — this component is #body content only.
 -->
 <script setup lang="ts">
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import type { Tournament } from '~/types'
 
-const { tournament } = defineProps<{
-  tournament: Tournament
-  close: () => void
-}>()
+const { tournament } = defineProps<{ tournament: Tournament }>()
 
 const { t } = useI18n()
 
@@ -20,30 +19,6 @@ const timeRange = computed(() => tournamentTimeRange(tournament.startDate, tourn
 </script>
 
 <template>
-  <div class="relative overflow-hidden rounded-t-lg">
-    <img
-      :src="tournament.image ?? DEFAULT_CALENDAR_COVER_IMAGE"
-      :alt="tournament.name"
-      class="w-full max-h-80 sm:max-h-96 object-cover"
-    >
-
-    <div class="absolute inset-0 bg-linear-to-b from-transparent to-default" />
-
-    <UButton
-      :icon="ICONS.close"
-      color="neutral"
-      variant="subtle"
-      square
-      class="absolute top-4 inset-e-4"
-      :aria-label="$t('common.close')"
-      @click="close"
-    />
-
-    <h2 class="absolute bottom-0 left-0 right-0 p-4 text-xl font-bold text-white truncate">
-      {{ tournament.name }}
-    </h2>
-  </div>
-
   <div class="p-4 sm:p-6">
     <div class="flex flex-col gap-2 text-sm text-muted mb-4">
       <p class="flex items-center gap-2">

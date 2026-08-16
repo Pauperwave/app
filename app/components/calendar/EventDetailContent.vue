@@ -8,7 +8,9 @@
   prizes/description), so merging them was already rejected as
   over-abstraction (see feedback_dedup_threshold_call_sites memory). This
   split just moves each branch's own complexity out of the parent, it
-  doesn't deduplicate anything.
+  doesn't deduplicate anything. The hero (image/gradient/title) itself lives
+  in EventDetailHero.vue, rendered in USlideover's #header slot instead —
+  this component is #body content only.
 -->
 <script setup lang="ts">
 import { format } from 'date-fns'
@@ -24,31 +26,6 @@ const emit = defineEmits<{ openTournament: [tournament: Tournament] }>()
 </script>
 
 <template>
-  <div class="relative overflow-hidden rounded-t-lg">
-    <img
-      :src="event.image ?? DEFAULT_CALENDAR_COVER_IMAGE"
-      :alt="event.name"
-      class="w-full max-h-80 sm:max-h-96 object-cover"
-    >
-
-    <div class="absolute inset-0 bg-linear-to-b from-transparent to-default" />
-
-    <!-- TODO Da rimpiazzare con il bottone di condivisione -->
-    <!-- <UButton
-      :icon="ICONS.close"
-      color="neutral"
-      variant="subtle"
-      square
-      class="absolute top-4 inset-e-4"
-      :aria-label="$t('common.close')"
-      @click="close"
-    /> -->
-
-    <h2 class="absolute bottom-0 left-0 right-0 p-4 text-xl font-bold text-white truncate">
-      {{ event.name }}
-    </h2>
-  </div>
-
   <div class="p-4 sm:p-6">
     <div class="flex flex-col gap-2 text-sm text-muted mb-4">
       <p class="flex items-center gap-2">
