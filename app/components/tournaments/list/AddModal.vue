@@ -39,6 +39,21 @@ const {
   schema, statusOptions, locationOptions, organizerOptions, formatOptions
 } = useTournamentFormFields()
 
+// Nearly every tournament created here is organized by Pauperwave at Smart
+// Lab — defaulted once each list resolves (async, off useOrganizationsQuery/
+// useLocationsQuery) rather than hardcoding a uuid, and only if the field is
+// still empty so it never overrides a manual choice made before the lists
+// finished loading. `startsWith` for the location: its full display name is
+// "Smart Lab - Centro Giovani Rovereto" (see the locations seed migration).
+watch(organizerOptions, (options) => {
+  if (state.organizerUuid) return
+  state.organizerUuid = options.find(option => option.label === 'Pauperwave')?.value
+}, { immediate: true })
+watch(locationOptions, (options) => {
+  if (state.locationUuid) return
+  state.locationUuid = options.find(option => option.label.startsWith('Smart Lab'))?.value
+}, { immediate: true })
+
 type Schema = v.InferOutput<typeof schema>
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
