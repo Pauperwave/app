@@ -145,30 +145,36 @@ const tour = useTournamentsTour()
           <div v-else id="tour-tournaments-filters" class="flex items-center gap-4 flex-wrap">
             <StatusFilterGroup v-model="statusFilter" :items="statusTabs" />
 
-            <!-- Dropdown, not a StatusFilterGroup button row: format isn't a
+            <div class="flex items-center gap-2 shrink-0">
+              <!-- Dropdown, not a StatusFilterGroup button row: format isn't a
                  small fixed set like status (5 values) — it's whatever
                  mtg_formats rows exist, up to the 8 the association actually
                  runs (see app/utils/cittadinoFormats.ts). A button per
                  format alongside the status buttons would crowd/wrap the
                  toolbar; a dropdown scales to that count the same way it
-                 already does for format selection in AddModal.vue. -->
-            <USelectMenu
-              v-model="formatFilter"
-              :items="formatTabs"
-              value-key="value"
-              :placeholder="$t('tournament.filters.formatPlaceholder')"
-              :icon="ICONS.layers"
-              class="w-40"
-            />
+                 already does for format selection in AddModal.vue.
+                 shrink-0/no flex-wrap: both children (w-40 select + an
+                 icon-only button) are small and fixed-width, so this pair
+                 never needs to wrap internally — the outer #tour-tournaments-
+                 filters row (flex-wrap) is what actually reflows on narrow
+                 screens, by moving this whole block to its own line. -->
+              <USelectMenu
+                v-model="formatFilter"
+                :items="formatTabs"
+                value-key="value"
+                :placeholder="$t('tournament.filters.formatPlaceholder')"
+                :icon="ICONS.layers"
+                class="w-40"
+              />
 
-            <UButton
-              :icon="ICONS.settingsGear"
-              color="neutral"
-              variant="ghost"
-              size="sm"
-              :aria-label="$t('mtgFormat.manageModal.title')"
-              @click="manageFormatsOpen = true"
-            />
+              <UButton
+                :icon="ICONS.settingsGear"
+                color="neutral"
+                variant="outline"
+                :aria-label="$t('mtgFormat.manageModal.title')"
+                @click="manageFormatsOpen = true"
+              />
+            </div>
           </div>
         </template>
 
