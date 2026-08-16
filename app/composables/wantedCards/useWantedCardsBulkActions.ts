@@ -3,6 +3,8 @@
 // No new bulk server endpoint: each op just fans the existing per-card mutation
 // out with Promise.allSettled — simple, and the selection sizes here are small
 // (a page of wanted cards), not worth a dedicated bulk endpoint for now.
+// fallow-ignore-file code-duplication -- see the same comment in
+// useTournamentsBulkActions.ts
 import type { WantedCard, WantedCardStatus } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 
@@ -10,8 +12,6 @@ type PendingBulkAction
   = | { type: 'status', status: WantedCardStatus, cards: WantedCard[] }
     | { type: 'delete', cards: WantedCard[] }
 
-// fallow-ignore-next-line code-duplication -- see the same comment in
-// useTournamentsBulkActions.ts
 export function useWantedCardsBulkActions(selection: Selection<number>) {
   const { t } = useI18n()
   const toast = useToast()

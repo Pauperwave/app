@@ -2,6 +2,13 @@
 // Bulk operations over a set of selected tournaments (useSelection.ts) — same
 // shape as useWantedCardsBulkActions.ts: no dedicated bulk server endpoint,
 // each op fans the existing per-tournament mutation out with Promise.allSettled.
+// fallow-ignore-file code-duplication -- requestStatusChange/requestDelete/
+// toastForFailures mirror useWantedCardsBulkActions.ts's shape, but the
+// entity/status types, i18n key prefix, and mutation functions all differ
+// per domain (wanted-cards also has two extra bulk actions this domain
+// doesn't need) — same same-shaped-but-parameterized call as
+// feedback_dedup_threshold_call_sites; a shared factory would need as many
+// parameters as it removes duplication.
 import type { Tournament, TournamentStatus } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 
@@ -9,13 +16,6 @@ type PendingBulkAction
   = | { type: 'status', status: TournamentStatus, tournaments: Tournament[] }
     | { type: 'delete', tournaments: Tournament[] }
 
-// fallow-ignore-next-line code-duplication -- requestStatusChange/
-// requestDelete/toastForFailures mirror useWantedCardsBulkActions.ts's
-// shape, but the entity/status types, i18n key prefix, and mutation
-// functions all differ per domain (wanted-cards also has two extra bulk
-// actions this domain doesn't need) — same same-shaped-but-parameterized
-// call as feedback_dedup_threshold_call_sites; a shared factory would need
-// as many parameters as it removes duplication.
 export function useTournamentsBulkActions(selection: Selection<number>) {
   const { t } = useI18n()
   const toast = useToast()

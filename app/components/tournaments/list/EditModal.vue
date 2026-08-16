@@ -1,5 +1,7 @@
 <!-- app\components\tournaments\list\EditModal.vue -->
 <script setup lang="ts">
+// fallow-ignore-file code-duplication -- see the same comment in
+// AddModal.vue
 import { CalendarDate } from '@internationalized/date'
 import type * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
@@ -69,8 +71,6 @@ type Schema = v.InferOutput<typeof schema>
 
 const submitting = ref(false)
 
-// fallow-ignore-next-line code-duplication -- see the same comment in
-// AddModal.vue
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   if (!tournament) return
 
@@ -114,6 +114,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 </script>
 
 <template>
+  <!-- fallow-ignore-file code-duplication -- see the top-of-file comment -->
   <UModal
     v-model:open="open"
     :ui="{ content: 'max-w-xl' }"

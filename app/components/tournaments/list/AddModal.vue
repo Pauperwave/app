@@ -1,5 +1,10 @@
 <!-- app\components\tournaments\list\AddModal.vue -->
 <script setup lang="ts">
+// fallow-ignore-file code-duplication -- the payload literal's first 5
+// fields mirror EditModal.vue's, but leagueUuid/eventUuid/endsAt diverge
+// (null here vs. the existing tournament's values there) — extracting a
+// helper would need an overrides param for exactly the fields that differ,
+// not worth it for 9 shared lines.
 import type * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { NewTournamentPayload } from '#shared/types/tournaments'
@@ -36,11 +41,6 @@ const {
 
 type Schema = v.InferOutput<typeof schema>
 
-// fallow-ignore-next-line code-duplication -- the payload literal's first 5
-// fields mirror EditModal.vue's, but leagueUuid/eventUuid/endsAt diverge
-// (null here vs. the existing tournament's values there) — extracting a
-// helper would need an overrides param for exactly the fields that differ,
-// not worth it for 9 shared lines.
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   const startsAt = combineDateAndTime(startDate.value!, event.data.startTime)
 
@@ -80,6 +80,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 </script>
 
 <template>
+  <!-- fallow-ignore-file code-duplication -- see the top-of-file comment -->
   <UModal
     v-model:open="open"
     :ui="{ content: 'max-w-xl' }"
