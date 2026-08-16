@@ -84,6 +84,8 @@ export function useWantedCardsBulkActions(selection: Selection<number>) {
     const eligible = cards.filter(card => card.scryfallId && card.setCode)
     if (!eligible.length) return
 
+    selection.clear()
+
     const results = await Promise.allSettled(
       eligible.map(card => refreshPrices.mutateAsync(card.id))
     )
@@ -97,6 +99,7 @@ export function useWantedCardsBulkActions(selection: Selection<number>) {
 
   async function bulkCopyNames(cards: WantedCard[]) {
     await copy(cards.map(card => card.cardName).join('\n'))
+    selection.clear()
     toast.add({ title: t('wantedCard.bulkActions.copiedToast', cards.length), color: 'success' })
   }
 
