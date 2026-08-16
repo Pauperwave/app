@@ -1,4 +1,4 @@
-// app\composables\useQueryFreshness.ts
+// app\composables\query\useQueryFreshness.ts
 import type { DataStateStatus } from '@pinia/colada'
 
 // Pinia Colada's own cache entry does track a `when` timestamp internally

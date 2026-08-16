@@ -433,7 +433,7 @@ const groups = computed(() => [{
       }"
     >
       <template #header="{ collapsed }">
-        <TeamsMenu :collapsed="collapsed" />
+        <LayoutTeamsMenu :collapsed="collapsed" />
       </template>
 
       <template #default="{ collapsed }">
@@ -492,7 +492,7 @@ const groups = computed(() => [{
              "these work anywhere" — n/b don't have dedicated UI in this
              exact spot, this is just a stable target near the bottom. -->
         <div id="tour-shortcuts-global" class="flex items-center gap-2 w-full" :class="collapsed ? 'flex-col' : ''">
-          <UserMenu :collapsed="collapsed" class="flex-1" />
+          <LayoutUserMenu :collapsed="collapsed" class="flex-1" />
           <LayoutColorModeSwitch />
         </div>
       </template>

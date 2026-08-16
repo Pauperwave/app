@@ -3,7 +3,7 @@ import { h } from 'vue'
 import type { Ref } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import type { FormatStandingEvent, FormatStandingRow } from '~/types'
-import PlayerTag from '~/components/PlayerTag.vue'
+import PlayerTag from '~/components/ui/PlayerTag.vue'
 
 // Same pinned-column shape as useCittadinoTableColumns.ts (position/playerName
 // left, total right) — see the note there on why `size` and the w-[…] class are

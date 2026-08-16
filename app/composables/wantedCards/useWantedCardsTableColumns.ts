@@ -5,7 +5,7 @@ import type { TableColumn } from '@nuxt/ui'
 import type { WantedCard } from '~/types'
 import ManaCost from '~/components/magic/ManaCost.vue'
 import CardPreviewTooltip from '~/components/magic/CardPreviewTooltip.vue'
-import PlayerTag from '~/components/PlayerTag.vue'
+import PlayerTag from '~/components/ui/PlayerTag.vue'
 import type { Selection } from '~/composables/useSelection'
 
 // Pure config (depends only on t()) — extracted from the page to isolate the ~110

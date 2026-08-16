@@ -1,4 +1,4 @@
-// app\composables\useBreadcrumbs.ts
+// app\composables\layout\useBreadcrumbs.ts
 import type { BreadcrumbItem } from '#ui/types'
 
 // `overrides` maps a raw path segment (e.g. a uuid dynamic route param) to

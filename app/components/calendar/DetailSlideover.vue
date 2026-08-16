@@ -161,7 +161,7 @@ function openTournament(tournament: Tournament) {
               class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-left hover:underline"
               @click="openTournament(tournament)"
             >
-              <FormatBadge :format="tournament.format" />
+              <BadgesFormatBadge :format="tournament.format" />
               <span class="truncate flex-1 min-w-0">{{ tournament.name }}</span>
               <span class="text-muted text-xs shrink-0">
                 {{ tournamentTimeRange(tournament.startDate, tournament.endDate) }}

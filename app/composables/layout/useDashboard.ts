@@ -1,4 +1,4 @@
-// app\composables\useDashboard.ts
+// app\composables\layout\useDashboard.ts
 import { createSharedComposable } from '@vueuse/core'
 
 const _useDashboard = () => {

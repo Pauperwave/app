@@ -48,7 +48,7 @@ Two layouts: `default.vue` (sidebar + navbar + toolbar dashboard shell) and `aut
 ### Components
 Feature-based organization under `app/components/<domain>/`, mirroring the page domains (`associates`, `tournaments`, `leagues`, `events`, `transactions`, `home`, `settings`). Within a domain, `list/` holds list-view + CRUD modal components, `single/` holds detail-view components.
 
-`app/components/inputs` is registered in `nuxt.config.ts` with `pathPrefix: false`, so components there are auto-imported *without* an `Inputs` prefix (e.g. `<TaxCodeInput>`, not `<InputsTaxCodeInput>`). All other component directories keep the default prefixed auto-import behavior.
+`app/components/inputs` and `app/components/ui` are registered in `nuxt.config.ts` with `pathPrefix: false`, so components there are auto-imported *without* a folder prefix (e.g. `<TaxCodeInput>`, not `<InputsTaxCodeInput>`; `<ConfirmModal>`, not `<UiConfirmModal>`). `ui/` is for generic, single-purpose primitives whose names are already unique (`AddButton`, `ConfirmModal`, `StatusFilterGroup`, ...) — domain folders (`tournaments/`, `locations/`, ...) keep the default prefixed behavior on purpose, since `AddModal.vue`/`GridView.vue`/etc. repeat by design across domains and need the prefix to stay distinguishable.
 
 ### Auth
 Supabase magic-link (OTP) auth via `@nuxtjs/supabase`:

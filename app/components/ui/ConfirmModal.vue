@@ -1,4 +1,4 @@
-<!-- app\components\ConfirmModal.vue -->
+<!-- app\components\ui\ConfirmModal.vue -->
 <!--
   Generalized confirmation modal — ported from MagicTheGathering/league's
   ui/modal/ConfirmModal.vue (2026-08-12), simplified to what Pauperwave's

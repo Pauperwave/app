@@ -1,4 +1,4 @@
-<!-- app\components\PlayerTag.vue -->
+<!-- app\components\ui\PlayerTag.vue -->
 
 <!--
   Nome giocatore con avatar, tramite UUser. L'avatar è generato

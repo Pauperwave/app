@@ -25,6 +25,14 @@ export default defineNuxtConfig({
       path: '~/components/inputs',
       pathPrefix: false // This removes the 'inputs' prefix
     },
+    // Same as inputs/ — generic single-purpose UI primitives (AddButton,
+    // ConfirmModal, ...) with inherently unique names, unlike domain folders
+    // (tournaments/, locations/, ...) where AddModal.vue/GridView.vue repeat
+    // by design and need the prefix to stay distinguishable.
+    {
+      path: '~/components/ui',
+      pathPrefix: false
+    },
     // Preserve the default behavior for other components
     {
       path: '~/components',

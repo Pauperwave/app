@@ -65,7 +65,7 @@ const participants = computed(() => tournaments.flatMap(tournament => tournament
           :class="{ 'opacity-60 saturate-50': tournament.status === 'completed' }"
           @click.stop="openTournamentDetail(tournament)"
         >
-          <FormatBadge :format="tournament.format" />
+          <BadgesFormatBadge :format="tournament.format" />
 
           <span
             class="truncate flex-1 min-w-0"

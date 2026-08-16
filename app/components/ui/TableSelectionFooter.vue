@@ -1,4 +1,4 @@
-<!-- app\components\TableSelectionFooter.vue -->
+<!-- app\components\ui\TableSelectionFooter.vue -->
 <!--
   Shared by associates/index.vue and associates/requests.vue (fallow dupes,
   2026-08-12): the "N of M selected" row under a UTable, identical on both.

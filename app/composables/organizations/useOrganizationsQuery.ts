@@ -1,4 +1,4 @@
-// app\composables\useOrganizationsQuery.ts
+// app\composables\organizations\useOrganizationsQuery.ts
 // Read-only lookup, reused across every domain's AddModal that needs to pick
 // an organizer (tournaments today, events/leagues once those migrate too).
 export const ORGANIZATIONS_KEY = ['organizations']

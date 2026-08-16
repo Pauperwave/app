@@ -1,4 +1,4 @@
-// app\composables\useShortcutsTour.ts
+// app\composables\tour\useShortcutsTour.ts
 
 // Two steps, targeting ids set on default.vue's own sidebar markup (not a
 // page): the nav menu (for the "g-x" chords) and the footer row (for the

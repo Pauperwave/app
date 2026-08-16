@@ -1,4 +1,4 @@
-<!-- app\components\StatusFilterGroup.vue -->
+<!-- app\components\ui\StatusFilterGroup.vue -->
 <script setup lang="ts" generic="T extends string">
 interface StatusFilterItem<T extends string> {
   label: string

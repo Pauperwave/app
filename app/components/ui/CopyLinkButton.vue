@@ -1,4 +1,4 @@
-<!-- app\components\CopyLinkButton.vue -->
+<!-- app\components\ui\CopyLinkButton.vue -->
 <script setup lang="ts">
 // Icon-only "copy link" button — generic (not associates-specific): give it
 // any URL and it copies it, with a toast + a brief check-icon confirmation.

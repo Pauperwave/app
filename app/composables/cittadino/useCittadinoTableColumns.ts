@@ -3,7 +3,7 @@ import { h } from 'vue'
 import type { Ref } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import type { CittadinoEvent, CittadinoStanding } from '~/types'
-import PlayerTag from '~/components/PlayerTag.vue'
+import PlayerTag from '~/components/ui/PlayerTag.vue'
 
 // Column widths are declared twice on purpose: `size` feeds TanStack's
 // getStart('left')/getAfter('right'), which is how UTable computes the offset of

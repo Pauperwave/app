@@ -1,4 +1,4 @@
-<!-- app\components\FormatBadge.vue -->
+<!-- app\components\badges\FormatBadge.vue -->
 <!--
   Single source of truth for the "format" badge's colour (Commander, Pauper,
   Draft, ...) — shared/utils/formatColors.ts's tint, applied by overriding
