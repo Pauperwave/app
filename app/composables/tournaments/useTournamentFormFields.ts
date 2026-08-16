@@ -32,7 +32,7 @@ function buildSchema(t: ReturnType<typeof useI18n>['t']) {
 
 export type TournamentFormState = Partial<InferOutput<ReturnType<typeof buildSchema>>>
 
-export function useTournamentFormFields(state: TournamentFormState) {
+export function useTournamentFormFields() {
   const { t } = useI18n()
 
   const { data: locations } = useLocationsQuery()
@@ -58,13 +58,7 @@ export function useTournamentFormFields(state: TournamentFormState) {
     value: format.uuid, label: format.name
   })))
 
-  // USelect only binds the selected value (via value-key), not the whole
-  // item — this computes the matching item's icon back out so the trigger
-  // shows it too, not just the open dropdown's item list.
-  const selectedStatus = computed(() =>
-    statusOptions.value.find(option => option.value === state.status))
-
   return {
-    schema, statusOptions, locationOptions, organizerOptions, formatOptions, selectedStatus
+    schema, statusOptions, locationOptions, organizerOptions, formatOptions
   }
 }

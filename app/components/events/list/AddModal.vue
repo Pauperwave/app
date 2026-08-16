@@ -1,7 +1,6 @@
 <!-- app\components\events\list\AddModal.vue -->
 <script setup lang="ts">
 import { CalendarDate, getLocalTimeZone } from '@internationalized/date'
-import type { DateValue } from '@internationalized/date'
 import * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { NewEventPayload } from '#shared/types/events'
@@ -32,8 +31,7 @@ const organizerOptions = computed(() => (organizations.value ?? []).map(organiza
   value: organization.uuid, label: organization.name
 })))
 
-const today = new Date()
-const todayString = today.toISOString().substring(0, 10)
+const todayString = new Date().toISOString().substring(0, 10)
 
 const schema = v.object({
   status: v.picklist(EVENT_STATUSES),
@@ -55,24 +53,7 @@ const state = reactive<Schema>({
   companionCode: undefined
 })
 
-const startDate = shallowRef<DateValue>(
-  new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate())
-)
-
-watch(startDate, (newDate) => {
-  if (newDate) {
-    state.startDate = `${newDate.year}-${String(newDate.month).padStart(2, '0')}-${String(newDate.day).padStart(2, '0')}`
-  }
-})
-
-const formattedStartDate = computed(() => {
-  if (!startDate.value) return ''
-  const date = new Date(startDate.value.year, startDate.value.month - 1, startDate.value.day)
-  return date.toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' })
-})
-
-const selectedStatus = computed(() =>
-  statusOptions.value.find(option => option.value === state.status))
+const { startDate, formattedStartDate } = useStartDateField(state)
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   const startsAt = new CalendarDate(
@@ -133,18 +114,15 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           </p>
 
           <div class="flex justify-between gap-2">
-            <UFormField :label="$t('event.addModal.fields.status')" class="flex-1" name="status">
-              <USelect
+            <div class="flex-1">
+              <UStatusSelect
                 v-model="state.status"
                 :items="statusOptions"
-                value-key="value"
+                name="status"
+                :label="$t('event.addModal.fields.status')"
                 class="w-full"
-              >
-                <template #leading>
-                  <UIcon v-if="selectedStatus" :name="selectedStatus.icon" class="size-5 shrink-0" />
-                </template>
-              </USelect>
-            </UFormField>
+              />
+            </div>
 
             <UFormField
               :label="$t('event.addModal.fields.companionCode')"

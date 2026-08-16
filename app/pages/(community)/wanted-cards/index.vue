@@ -8,6 +8,7 @@ import type { WantedCardColorFilter } from '~/composables/wantedCards/useWantedC
 
 const { t } = useI18n()
 
+// ---- Data & tour --------------------------------------------------------
 // isPending (not isLoading): isLoading is true for any fetch in flight, including
 // background refetches after invalidateQueries (e.g. changing a card's status) —
 // that would unmount the table/grid on every mutation. isPending is only true while
@@ -19,6 +20,7 @@ const data = computed(() => wantedCardsData.value ?? [])
 
 const tour = useWantedCardsTour()
 
+// ---- Add-card entry points ------------------------------------------------
 // Same "?action=create" convention as associates/requests, tournaments,
 // leagues and events (useModalOpenFromQuery) — lets the command palette's
 // "New wanted card" action land here with the Add modal already open.
@@ -35,12 +37,14 @@ const { isOverDropZone } = useScryfallDragDrop(() => document.body, (card) => {
   addModalOpen.value = true
 })
 
+// ---- View mode (grid/table toggle) ---------------------------------------
 const viewMode = ref<'table' | 'grid'>('grid')
 const viewModeItems = computed<TabsItem[]>(() => [
   { label: t('wantedCard.views.grid'), value: 'grid', icon: 'i-lucide-layout-grid' },
   { label: t('wantedCard.views.table'), value: 'table', icon: 'i-lucide-table' }
 ])
 
+// ---- Filters --------------------------------------------------------------
 const {
   currentAssociate,
   statusFilter,
@@ -56,8 +60,8 @@ function isColorTabActive(value: WantedCardColorFilter): boolean {
   return value === 'all' ? colorFilters.value.length === 0 : colorFilters.value.includes(value)
 }
 
+// ---- Row selection, row actions & bulk actions -----------------------------
 const selection = useSelection<number>()
-const { columns, columnHeaders } = useWantedCardsTableColumns(selection)
 
 const {
   rowContextMenuItems,
@@ -85,6 +89,9 @@ const {
 // filter shouldn't be actionable even if it stayed selected from before.
 const selectedCards = computed(() =>
   filteredCards.value.filter(card => selection.isSelected(card.id)))
+
+// ---- Table configuration: columns, grouping, sorting, column visibility ---
+const { columns, columnHeaders } = useWantedCardsTableColumns(selection)
 
 // Grouping by player on demand (off by default) — a player with 15 requests can
 // collapse into a single expandable row instead of 15 repeated rows with the same
@@ -141,6 +148,7 @@ function toggleGrouping() {
   grouping.value = isGrouped.value ? [] : ['player']
 }
 
+// ---- Grid-only sorting & sections ------------------------------------------
 // The table sorts through clickable column headers (sortableHeader); the grid has
 // no columns, so it uses a dedicated selector instead.
 const gridSortField = ref<'player' | 'cardmarketPrice' | 'date' | 'cardName' | 'color'>('player')

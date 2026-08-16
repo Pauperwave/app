@@ -99,13 +99,6 @@ watch(open, (isOpen) => {
   if (isOpen) activeTab.value = 'associate'
 })
 
-const payerTaxCodeInput = computed({
-  get: () => state.payer_tax_code,
-  set: (value) => {
-    state.payer_tax_code = value?.toUpperCase() || ''
-  }
-})
-
 const selectedAssociate = computed<Associate | null>(() => presetAssociate
   ?? associatesData.value?.find(associate => associate.uuid === state.associate_uuid)
   ?? null)
@@ -221,128 +214,17 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             {{ $t('transaction.addModal.personalInfo') }}
           </p>
 
-          <div v-if="presetAssociate" class="space-y-2">
-            <div class="flex items-center gap-2 rounded-md border border-default p-3">
-              <UIcon :name="ICONS.playerConfirmed" class="size-5 text-muted shrink-0" />
-              <div class="min-w-0">
-                <p class="font-medium truncate">
-                  {{ presetAssociate.first_name }} {{ presetAssociate.last_name }}
-                </p>
-                <p v-if="presetAssociate.pauperwave_associate_number" class="text-sm text-muted">
-                  {{ presetAssociate.pauperwave_associate_number }}
-                </p>
-              </div>
-            </div>
-
-            <UAlert
-              v-if="membershipStatusAlert"
-              variant="subtle"
-              v-bind="membershipStatusAlert"
-            />
-          </div>
-
-          <UTabs v-else v-model="activeTab" :items="payerTabItems">
-            <template #associate>
-              <div class="mt-2 space-y-2">
-                <UFormField
-                  :label="$t('transaction.addModal.fields.member')"
-                  name="associate_uuid"
-                  required
-                >
-                  <USelectMenu
-                    v-model="state.associate_uuid"
-                    :items="associateOptions"
-                    value-key="value"
-                    :placeholder="$t('transaction.addModal.fields.selectMember')"
-                    :icon="selectedAssociateAvatar ? undefined : ICONS.player"
-                    :avatar="selectedAssociateAvatar"
-                    class="w-full"
-                  />
-                </UFormField>
-
-                <UAlert
-                  v-if="membershipStatusAlert"
-                  variant="subtle"
-                  v-bind="membershipStatusAlert"
-                />
-              </div>
-            </template>
-
-            <template #external>
-              <div class="grid grid-cols-2 gap-2 mt-2">
-                <UFormField
-                  :label="$t('transaction.addModal.fields.firstName')"
-                  name="payer_name"
-                  required
-                >
-                  <UInput
-                    v-model="state.payer_name"
-                    type="text"
-                    class="w-full"
-                    color="neutral"
-                  >
-                    <template v-if="state.payer_name?.length" #trailing>
-                      <UClearButton v-model="state.payer_name" />
-                    </template>
-                  </UInput>
-                </UFormField>
-
-                <UFormField
-                  :label="$t('transaction.addModal.fields.lastName')"
-                  name="payer_surname"
-                  required
-                >
-                  <UInput
-                    v-model="state.payer_surname"
-                    type="text"
-                    class="w-full"
-                    color="neutral"
-                  >
-                    <template v-if="state.payer_surname?.length" #trailing>
-                      <UClearButton v-model="state.payer_surname" />
-                    </template>
-                  </UInput>
-                </UFormField>
-
-                <UFormField
-                  :label="$t('transaction.addModal.fields.email')"
-                  name="payer_email"
-                  required
-                >
-                  <UInput
-                    v-model="state.payer_email"
-                    type="email"
-                    class="w-full"
-                    color="neutral"
-                    :placeholder="$t('transaction.addModal.fields.emailPlaceholder')"
-                    :icon="ICONS.atSign"
-                  >
-                    <template v-if="state.payer_email?.length" #trailing>
-                      <UClearButton v-model="state.payer_email" />
-                    </template>
-                  </UInput>
-                </UFormField>
-
-                <UFormField
-                  :label="$t('transaction.addModal.fields.taxCode')"
-                  name="payer_tax_code"
-                  required
-                >
-                  <UInput
-                    v-model="payerTaxCodeInput"
-                    type="text"
-                    class="w-full"
-                    color="neutral"
-                    maxlength="16"
-                  >
-                    <template v-if="state.payer_tax_code?.length" #trailing>
-                      <UClearButton v-model="state.payer_tax_code" />
-                    </template>
-                  </UInput>
-                </UFormField>
-              </div>
-            </template>
-          </UTabs>
+          <TransactionsFieldsPayerFields
+            v-model:active-tab="activeTab"
+            :state="state"
+            :preset-associate="presetAssociate"
+            :associate-options="associateOptions"
+            :selected-associate-avatar="selectedAssociateAvatar"
+            :payer-tab-items="payerTabItems"
+            :membership-status-alert="membershipStatusAlert"
+            :email-placeholder="$t('transaction.addModal.fields.emailPlaceholder')"
+            show-clear-buttons
+          />
         </div>
 
         <TransactionsListPaymentInfoFields v-model:state="state" />
