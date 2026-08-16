@@ -1,4 +1,4 @@
-<!-- app\components\TourSpotlight.vue -->
+<!-- app\components\tour\Spotlight.vue -->
 <script setup lang="ts">
 import type { UseTourReturn } from '@nuxt/ui/composables'
 

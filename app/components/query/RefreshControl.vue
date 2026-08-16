@@ -1,4 +1,4 @@
-<!-- app\components\QueryRefreshControl.vue -->
+<!-- app\components\query\RefreshControl.vue -->
 <script setup lang="ts">
 import type { DataStateStatus } from '@pinia/colada'
 
@@ -27,6 +27,6 @@ const { lastUpdatedAt } = useQueryFreshness(computed(() => isLoading), computed(
       @click="$emit('refresh')"
     />
 
-    <DataFreshnessIndicator :last-updated-at="lastUpdatedAt" />
+    <QueryDataFreshnessIndicator :last-updated-at="lastUpdatedAt" />
   </div>
 </template>

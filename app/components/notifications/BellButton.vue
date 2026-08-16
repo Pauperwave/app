@@ -1,4 +1,4 @@
-<!-- app\components\NotificationsBellButton.vue -->
+<!-- app\components\notifications\BellButton.vue -->
 <script setup lang="ts">
 import { ICONS } from '~/utils/icons'
 

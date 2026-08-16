@@ -1,4 +1,4 @@
-<!-- app\components\NotificationsSlideover.vue -->
+<!-- app\components\notifications\Slideover.vue -->
 <script setup lang="ts">
 import { isThisWeek, isToday } from 'date-fns'
 import { formatTimeAgo } from '@vueuse/core'
