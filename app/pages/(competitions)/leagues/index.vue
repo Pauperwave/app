@@ -4,8 +4,8 @@
 // tournaments/index.vue's mock-driven layout on purpose; expected to diverge
 // once real Supabase tables land
 import { add, sub } from 'date-fns'
-import type { TabsItem } from '@nuxt/ui'
-import type { Range } from '~/types'
+import type { DropdownMenuItem, TabsItem } from '@nuxt/ui'
+import type { League, Range } from '~/types'
 
 const { isModalOpen } = useModalOpenFromQuery()
 
@@ -24,8 +24,42 @@ const {
 } = useLeaguesQuery()
 const data = computed(() => leaguesData.value ?? [])
 const { statusFilter, filteredLeagues, statusTabs } = useLeaguesFilters(data)
-const { columns } = useLeaguesTableColumns()
-const { rowContextMenuItems, onRowContextmenu, tableContextMenuItems } = useCopyLinkContextMenu('/leagues')
+const {
+  rowContextMenuItems, onRowContextmenu, contextMenuRow
+} = useCopyLinkContextMenu<League>('/leagues')
+const { editingLeague, editModalOpen, openEditModal } = useLeaguesRowActions()
+
+const selection = useSelection<number>()
+const { columns } = useLeaguesTableColumns(selection, openEditModal)
+const {
+  pendingAction, confirmOpen: bulkConfirmOpen, requestStatusChange, requestDelete,
+  confirmPendingAction
+} = useLeaguesBulkActions(selection)
+
+// Adds edit/delete to the shared copy-link/copy-id items — same reasoning as
+// tournaments/index.vue's tournamentContextMenuItems(), now that leagues has
+// real CRUD too.
+function leagueContextMenuItems(league: League): DropdownMenuItem[] {
+  return [
+    ...rowContextMenuItems(league),
+    { label: t('league.rowActions.edit'), icon: ICONS.edit, onSelect: () => openEditModal(league) },
+    {
+      label: t('league.rowActions.delete'),
+      icon: ICONS.delete,
+      color: 'error',
+      onSelect: () => requestDelete([league])
+    }
+  ]
+}
+
+const tableContextMenuItems = computed<DropdownMenuItem[]>(() =>
+  contextMenuRow.value ? leagueContextMenuItems(contextMenuRow.value) : [])
+
+// Selected leagues resolved against the currently filtered set, not the full
+// unfiltered data — same reasoning as tournaments/index.vue's
+// selectedTournaments.
+const selectedLeagues = computed(() =>
+  filteredLeagues.value.filter(league => selection.isSelected(league.id)))
 
 const viewMode = ref<'table' | 'grid'>('grid')
 const viewModeItems = computed<TabsItem[]>(() => [
@@ -81,14 +115,32 @@ const tour = useLeaguesTour()
 
       <UDashboardToolbar>
         <template #left>
-          <div id="tour-leagues-filters">
+          <!-- Swapped for the bulk-actions bar (same row/height) while
+               there's a selection, instead of the filters — see
+               TournamentsListBulkActionsBar.vue for why this replaces rather
+               than adds a row. -->
+          <LeaguesListBulkActionsBar
+            v-if="selectedLeagues.length"
+            side="left"
+            :count="selectedLeagues.length"
+            @clear="selection.clear()"
+          />
+          <div v-else id="tour-leagues-filters">
             <StatusFilterGroup v-model="statusFilter" :items="statusTabs" />
           </div>
         </template>
 
         <template #right>
+          <LeaguesListBulkActionsBar
+            v-if="selectedLeagues.length"
+            side="right"
+            :count="selectedLeagues.length"
+            @mark-status="requestedStatus =>
+              requestStatusChange(requestedStatus, selectedLeagues)"
+            @delete="requestDelete(selectedLeagues)"
+          />
           <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->
-          <HomeDateRangePicker v-model="range" class="-ms-1" />
+          <HomeDateRangePicker v-else v-model="range" class="-ms-1" />
         </template>
       </UDashboardToolbar>
     </template>
@@ -114,11 +166,37 @@ const tour = useLeaguesTour()
         <LeaguesListGridView
           v-else
           :leagues="filteredLeagues"
-          :context-menu-items="rowContextMenuItems"
+          :context-menu-items="leagueContextMenuItems"
+          :on-edit="openEditModal"
+          :selection="selection"
         />
       </div>
     </template>
   </UDashboardPanel>
 
   <TourGuide :tour="tour" />
+
+  <LeaguesListEditModal v-model="editModalOpen" :league="editingLeague" />
+
+  <ConfirmModal
+    v-model:open="bulkConfirmOpen"
+    :title="pendingAction?.type === 'delete'
+      ? $t('league.bulkActions.confirmDeleteTitle', pendingAction.leagues.length)
+      : $t('league.bulkActions.confirmStatusTitle', {
+        status: $t(`league.status.${pendingAction?.status}`)
+      }, pendingAction?.leagues.length ?? 0)"
+    :warning="pendingAction?.type === 'delete' ? $t('common.confirmDeleteWarning') : undefined"
+    :confirm-label="pendingAction?.type === 'delete'
+      ? $t('league.rowActions.delete')
+      : $t('league.bulkActions.confirm')"
+    :confirm-color="pendingAction?.type === 'delete' ? 'error' : 'primary'"
+    :confirm-icon="pendingAction?.type === 'delete' ? ICONS.delete : undefined"
+    @confirm="confirmPendingAction"
+  >
+    <ul v-if="pendingAction" class="max-h-40 overflow-y-auto text-sm space-y-1">
+      <li v-for="league in pendingAction.leagues" :key="league.id">
+        {{ league.name }}
+      </li>
+    </ul>
+  </ConfirmModal>
 </template>

@@ -45,7 +45,12 @@ export function useLeaguesQuery() {
         uuid: row.uuid,
         status: row.status as LeagueStatus,
         name: row.name,
+        // starts_at is nullable at the DB level but every insert sets it
+        // (see AddModal.vue) — created_at is only a fallback for rows
+        // predating that, so EditModal.vue's date picker always has a value.
+        startDate: row.starts_at ?? row.created_at,
         ruleset: row.ruleset?.name ?? null,
+        rulesetUuid: row.ruleset_uuid,
         tournamentCount: totals.get(row.uuid) ?? 0,
         completedTournamentCount: completed.get(row.uuid) ?? 0
       }))
