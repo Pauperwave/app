@@ -11,7 +11,7 @@ export function useMtgFormatsQuery() {
     query: async () => {
       const { data, error } = await supabase
         .from('mtg_formats')
-        .select('uuid, name')
+        .select('id, uuid, name, description')
         .order('name', { ascending: true })
 
       if (error) throw error

@@ -19,6 +19,8 @@ const range = shallowRef<Range>({
 
 const { t } = useI18n()
 
+const manageFormatsOpen = ref(false)
+
 const {
   data: tournamentsData, isLoading: loading, status, refetch
 } = useTournamentsQuery()
@@ -125,6 +127,15 @@ const tour = useTournamentsTour()
               :icon="ICONS.layers"
               class="w-40"
             />
+
+            <UButton
+              :icon="ICONS.settingsGear"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              :aria-label="$t('mtgFormat.manageModal.title')"
+              @click="manageFormatsOpen = true"
+            />
           </div>
         </template>
 
@@ -177,6 +188,8 @@ const tour = useTournamentsTour()
   <TourGuide :tour="tour" />
 
   <TournamentsListEditModal v-model="editModalOpen" :tournament="editingTournament" />
+
+  <MtgFormatsManageModal v-model="manageFormatsOpen" />
 
   <ConfirmModal
     v-model:open="bulkConfirmOpen"
