@@ -30,7 +30,6 @@ const todayString = new Date().toISOString().substring(0, 10)
 const schema = v.object({
   status: v.picklist(LEAGUE_STATUSES),
   name: v.pipe(v.string(), v.minLength(1, t('league.addModal.validation.nameRequired'))),
-  season: v.optional(v.nullable(v.string())),
   startDate: v.string(),
   rulesetUuid: v.optional(v.string())
 })
@@ -41,7 +40,6 @@ function createInitialState(): Schema {
   return {
     name: '',
     status: 'draft',
-    season: undefined,
     startDate: todayString,
     rulesetUuid: undefined
   }
@@ -59,7 +57,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   const payload: NewLeaguePayload = {
     name: event.data.name,
     status: event.data.status,
-    season: event.data.season || null,
     rulesetUuid: event.data.rulesetUuid || null,
     startsAt: startsAt.toISOString(),
     endsAt: null
@@ -110,26 +107,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             {{ $t('league.addModal.leagueData') }}
           </p>
 
-          <div class="flex justify-between gap-2">
-            <div class="flex-1">
-              <UStatusSelect
-                v-model="state.status"
-                :items="statusOptions"
-                name="status"
-                :label="$t('league.addModal.fields.status')"
-                class="w-full"
-              />
-            </div>
-
-            <UFormField :label="$t('league.addModal.fields.season')" name="season">
-              <UInput
-                :model-value="state.season ?? ''"
-                :placeholder="$t('league.addModal.fields.seasonPlaceholder')"
-                class="w-42"
-                @update:model-value="state.season = ($event as string) || undefined"
-              />
-            </UFormField>
-          </div>
+          <UStatusSelect
+            v-model="state.status"
+            :items="statusOptions"
+            name="status"
+            :label="$t('league.addModal.fields.status')"
+            class="w-full"
+          />
 
           <!-- eslint-disable-next-line -->
           <UFormField :label="$t('league.addModal.fields.name')" name="name" required>

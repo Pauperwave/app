@@ -218,7 +218,6 @@ export type Database = {
           id: number
           name: string
           ruleset_uuid: string | null
-          season: string | null
           starts_at: string | null
           status: string
           updated_at: string
@@ -231,7 +230,6 @@ export type Database = {
           id?: number
           name: string
           ruleset_uuid?: string | null
-          season?: string | null
           starts_at?: string | null
           status: string
           updated_at?: string
@@ -244,7 +242,6 @@ export type Database = {
           id?: number
           name?: string
           ruleset_uuid?: string | null
-          season?: string | null
           starts_at?: string | null
           status?: string
           updated_at?: string
