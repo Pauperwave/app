@@ -24,14 +24,20 @@ const minLines = Number(argValue('--min-lines') ?? 0)
 const jsonPath = argValue('--json')
 const savePath = argValue('--save')
 
-const raw = jsonPath
-  ? readFileSync(jsonPath, 'utf8')
-  // stdio: ['ignore', 'pipe', 'ignore'] — fallow writes progress/warnings to
-  // stderr even with --quiet in some versions; only stdout is the JSON body.
-  : execSync('npx fallow dupes --format json --quiet', {
-      stdio: ['ignore', 'pipe', 'ignore'],
-      maxBuffer: 1024 * 1024 * 32
-    }).toString('utf8')
+// fallow exits 1 when it finds error-severity issues (e.g. a --threshold
+// breach) — not a real failure here, so the JSON has to be pulled off the
+// thrown error's own stdout instead of the successful return value.
+function runFallowDupes() {
+  const options = { stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 1024 * 1024 * 32 }
+  try {
+    return execSync('npx fallow dupes --format json --quiet', options).toString('utf8')
+  } catch (err) {
+    if (err.stdout) return err.stdout.toString('utf8')
+    throw err
+  }
+}
+
+const raw = jsonPath ? readFileSync(jsonPath, 'utf8') : runFallowDupes()
 
 if (savePath) writeFileSync(savePath, raw)
 
