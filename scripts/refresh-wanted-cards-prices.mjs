@@ -33,7 +33,7 @@ const supabase = createSupabaseAdminClient()
 
 const MTG_GAME_ID = 1
 const CARDTRADER_API_BASE = 'https://api.cardtrader.com/api/v2'
-const SCRYFALL_USER_AGENT = 'PauperWave-app/1.0 (wanted-cards weekly price refresh; contact: emanuelenardi.dev@gmail.com)'
+const SCRYFALL_USER_AGENT = 'Pauperwave-app/1.0 (wanted-cards weekly price refresh; contact: emanuelenardi.dev@gmail.com)'
 
 // Scryfall asks for at most 10 requests/sec and a "polite" delay between calls:
 // https://scryfall.com/docs/api#rate-limits-and-good-citizenship. CardTrader has a

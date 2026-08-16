@@ -39,7 +39,7 @@ function parseScryfallUrl(url) {
   return { set, collectorNumber, lang }
 }
 
-const USER_AGENT = 'PauperWave-app/1.0 (wanted-cards scryfall_id backfill; contact: emanuelenardi.dev@gmail.com)'
+const USER_AGENT = 'Pauperwave-app/1.0 (wanted-cards scryfall_id backfill; contact: emanuelenardi.dev@gmail.com)'
 
 async function fetchScryfallId({ set, collectorNumber, lang }) {
   const path = lang ? `${set}/${collectorNumber}/${lang}` : `${set}/${collectorNumber}`

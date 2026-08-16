@@ -47,7 +47,7 @@ export default defineNuxtConfig({
     cardTraderApiToken: process.env.CARDTRADER_API_TOKEN,
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-      siteName: 'PauperWave',
+      siteName: 'Pauperwave',
       siteDescription: 'The Pauper League Manager',
       appVersion: pkg.version,
       appEnv: process.env.NODE_ENV ?? 'development'

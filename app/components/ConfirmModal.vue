@@ -1,7 +1,7 @@
 <!-- app\components\ConfirmModal.vue -->
 <!--
   Generalized confirmation modal — ported from MagicTheGathering/league's
-  ui/modal/ConfirmModal.vue (2026-08-12), simplified to what PauperWave's
+  ui/modal/ConfirmModal.vue (2026-08-12), simplified to what Pauperwave's
   existing confirm dialogs actually needed: no `useButtonLogging` (analytics
   composable that doesn't exist in this app) and no separate CancelButton/
   ConfirmButton sub-components (only used here, own inline UButtons instead).

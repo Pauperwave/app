@@ -9,10 +9,10 @@ defineProps<{
 const { t } = useI18n()
 
 const teams = ref([{
-  label: 'PauperWave',
+  label: 'Pauperwave',
   avatar: {
     src: 'https://github.com/pauperwave.png',
-    alt: 'PauperWave'
+    alt: 'Pauperwave'
   }
 }])
 const selectedTeam = ref(teams.value[0])

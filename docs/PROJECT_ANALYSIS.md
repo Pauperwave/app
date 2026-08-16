@@ -1,8 +1,8 @@
-# PauperWave - Project Architecture Analysis
+# Pauperwave - Project Architecture Analysis
 
 **Generated:** April 2026
 **Updated:** August 2026
-**Project:** PauperWave - Pauper League Manager Dashboard
+**Project:** Pauperwave - Pauper League Manager Dashboard
 **Type:** Nuxt 4 Full-Stack Web Application
 
 > **⚠️ Point-in-time snapshot, not a living doc.** Several claims below are superseded — check `docs/PROGRESS.md` (ADRs, the current architectural source of truth) before trusting anything here as current fact. Known-stale as of 2026-08-08:
@@ -16,7 +16,7 @@
 
 ## 1. Executive Summary
 
-PauperWave is a **Magic: The Gathering Pauper League Management Dashboard** built as a modern full-stack web application. It serves as a comprehensive platform for managing card game tournaments, leagues, member associations, and event transactions.
+Pauperwave is a **Magic: The Gathering Pauper League Management Dashboard** built as a modern full-stack web application. It serves as a comprehensive platform for managing card game tournaments, leagues, member associations, and event transactions.
 
 ### Core Value Proposition
 - **Tournament Management**: Create, schedule, and track MTG tournaments with round management
@@ -534,7 +534,7 @@ There is no test runner configured in this repo (no Vitest/Playwright installed 
 
 ## 14. Conclusion
 
-PauperWave demonstrates a **well-architected modern Vue application** with:
+Pauperwave demonstrates a **well-architected modern Vue application** with:
 - Clean feature-based organization
 - Type-safe full-stack development
 - Production-ready UI/UX with Nuxt UI

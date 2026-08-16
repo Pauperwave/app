@@ -33,7 +33,7 @@ const supabase = createSupabaseAdminClient()
 
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search'
 const PHOTON_URL = 'https://photon.komoot.io/api/'
-const USER_AGENT = 'PauperWave-app/1.0 (associate residency map; contact: emanuelenardi.dev@gmail.com)'
+const USER_AGENT = 'Pauperwave-app/1.0 (associate residency map; contact: emanuelenardi.dev@gmail.com)'
 const REQUEST_DELAY_MS = 1100
 
 async function geocodeViaNominatim(query, { restrictToItaly = true } = {}) {

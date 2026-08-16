@@ -23,8 +23,8 @@ useHead({
 // own full title). Without this, <head> has no <title> at all on any
 // dashboard route.
 useSeoMeta({
-  title: 'PauperWave',
-  description: 'Gestionale della lega Pauper PauperWave: associati, tornei, leghe, eventi, carte cercate e classifiche.'
+  title: 'Pauperwave',
+  description: 'Gestionale della lega Pauper Pauperwave: associati, tornei, leghe, eventi, carte cercate e classifiche.'
 })
 </script>
 
