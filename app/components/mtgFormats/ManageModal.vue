@@ -37,6 +37,14 @@ const newName = ref('')
 const deletingFormat = ref<{ id: number, name: string } | null>(null)
 const confirmDeleteOpen = ref(false)
 
+// Optimistic, UI-only: filters a format out of the visible list the instant
+// its delete is confirmed, before the real mutation (deferred behind the
+// undo window) ever runs — makes the action feel immediate instead of
+// "queued" for 10 seconds. Restored by removing the id again if undone.
+const pendingDeleteIds = ref(new Set<number>())
+const visibleFormats = computed(() =>
+  (formats.value ?? []).filter(format => !pendingDeleteIds.value.has(format.id)))
+
 function saveName(id: number, name: string) {
   updateFormat.mutateAsync({ id, edits: { name } }).catch((err) => {
     toast.add({
@@ -118,10 +126,15 @@ function onConfirmDelete() {
 
   undoable.run({
     title: t('mtgFormat.manageModal.deleteUndoToast', { name: format.name }),
+    onApply: () => pendingDeleteIds.value.add(format.id),
+    onRevert: () => pendingDeleteIds.value.delete(format.id),
     commit: async () => {
       try {
         await deleteFormat.mutateAsync(format.id)
       } catch (err) {
+        // The optimistic hide only reverts on undo — a failed real delete
+        // needs its own cleanup so the row doesn't stay hidden forever.
+        pendingDeleteIds.value.delete(format.id)
         toast.add({
           title: t('mtgFormat.manageModal.deleteErrorToastTitle'),
           description: toErrorMessage(err),
@@ -143,7 +156,7 @@ function onConfirmDelete() {
     <template #body>
       <div class="space-y-3">
         <div
-          v-for="format in formats"
+          v-for="format in visibleFormats"
           :key="format.id"
           class="flex items-center gap-2"
         >
@@ -218,7 +231,7 @@ function onConfirmDelete() {
           />
         </div>
 
-        <div v-if="!formats?.length" class="text-center py-6 text-muted text-sm">
+        <div v-if="!visibleFormats.length" class="text-center py-6 text-muted text-sm">
           {{ $t('mtgFormat.manageModal.empty') }}
         </div>
 
