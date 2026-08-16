@@ -1,6 +1,5 @@
 <!-- app\pages\(community)\associates\requests.vue -->
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
 import type { Table } from '@tanstack/vue-table'
 import type { Associate } from '~/types'
 
@@ -38,6 +37,7 @@ const {
 const { rejectAssociates, restoreAssociates } = useAssociatesMutations()
 const undoable = useUndoableAction()
 const rejectConfirmOpen = ref(false)
+const approveConfirmOpen = ref(false)
 const selectedRequestAssociates = computed<Associate[]>(() =>
   table.value?.tableApi?.getFilteredSelectedRowModel().rows.map(row => row.original) ?? [])
 const selectedRequestIds = computed(() =>
@@ -101,17 +101,7 @@ async function bulkRestore() {
 
 // fallow-ignore-next-line code-duplication -- see the same comment in
 // associates/index.vue
-const {
-  visibilityItems,
-  selectColumn, idColumn, updatedAtColumn, updatedByColumn,
-  paymentDateColumn, pauperwaveAssociateNumberColumn,
-  membershipRequestStatusColumn, requestDateColumn,
-  associateTypeColumn, consentDataColumn, consentSocialColumn, hasReadStatuteColumn,
-  firstNameColumn, lastNameColumn, emailAddressColumn, phoneNumberColumn, taxCodeColumn,
-  bornDateColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
-  residencyAddressColumn, residencyHouseNumberColumn, residencyCityColumn,
-  residencyProvinceColumn, residencyCapColumn, mtgoNicknameColumn, mtgaNicknameColumn
-} = useAssociatesTableColumns(table)
+const { columns, visibilityItems } = useAssociatesRequestsTableColumns(table)
 
 // fallow-ignore-next-line code-duplication -- see the same comment in
 // associates/index.vue
@@ -187,37 +177,6 @@ const columnVisibility = ref({
 })
 
 const rowSelection = ref({})
-
-const columns: TableColumn<Associate>[] = [
-  selectColumn,
-  idColumn,
-  membershipRequestStatusColumn,
-  requestDateColumn,
-  updatedAtColumn,
-  updatedByColumn,
-  paymentDateColumn,
-  pauperwaveAssociateNumberColumn,
-  firstNameColumn,
-  lastNameColumn,
-  emailAddressColumn,
-  phoneNumberColumn,
-  taxCodeColumn,
-  associateTypeColumn,
-  consentDataColumn,
-  consentSocialColumn,
-  hasReadStatuteColumn,
-  bornDateColumn,
-  bornLocationColumn,
-  bornProvinceColumn,
-  bornStateColumn,
-  residencyAddressColumn,
-  residencyHouseNumberColumn,
-  residencyCityColumn,
-  residencyProvinceColumn,
-  residencyCapColumn,
-  mtgoNicknameColumn,
-  mtgaNicknameColumn
-]
 
 // Same convention as associates/index.vue: point at this deploy's own
 // /tesseramento for now, until the subdomain is wired up in DNS (docs/TODO.md).
@@ -304,61 +263,30 @@ const tour = useAssociatesRequestsTour()
         :ui="{ root: 'flex-wrap h-auto py-2 gap-1.5', left: 'gap-4 flex-wrap', right: 'gap-4' }"
       >
         <template #left>
-          <div id="tour-requests-filters">
+          <AssociatesListBulkActionsBar
+            v-if="selectedRequestAssociates.length"
+            side="left"
+            :count="selectedRequestAssociates.length"
+            @clear="table?.tableApi?.resetRowSelection()"
+          />
+          <div v-else id="tour-requests-filters">
             <StatusFilterGroup v-model="activeStatusTab" :items="statusTabs" />
           </div>
         </template>
 
         <template #right>
-          <AssociatesListApproveModal
-            v-if="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
-            :ids="table.tableApi.getFilteredSelectedRowModel().rows.map(row => row.original.id)"
-          >
-            <UButton
-              :label="$t('associate.approveModal.approve')"
-              color="success"
-              variant="subtle"
-              :icon="ICONS.confirm"
-            >
-              <template #trailing>
-                <UKbd>
-                  {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length }}
-                </UKbd>
-              </template>
-            </UButton>
-          </AssociatesListApproveModal>
-
-          <UButton
-            v-if="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
-            :label="$t('associate.rejectModal.reject')"
-            color="error"
-            variant="subtle"
-            :icon="ICONS.statusRejected"
-            @click="rejectConfirmOpen = true"
-          >
-            <template #trailing>
-              <UKbd>
-                {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length }}
-              </UKbd>
-            </template>
-          </UButton>
-
-          <UButton
-            v-if="selectedRejectedIds.length"
-            :label="$t('associate.restoreModal.restore')"
-            color="success"
-            variant="subtle"
-            :icon="ICONS.undo"
-            @click="bulkRestore"
-          >
-            <template #trailing>
-              <UKbd>
-                {{ selectedRejectedIds.length }}
-              </UKbd>
-            </template>
-          </UButton>
-
-          <AssociatesTableToolbarActions :visibility-items="visibilityItems" />
+          <AssociatesListBulkActionsBar
+            v-if="selectedRequestAssociates.length"
+            side="right"
+            :count="selectedRequestAssociates.length"
+            show-approve
+            show-reject
+            :show-restore="!!selectedRejectedIds.length"
+            @approve="approveConfirmOpen = true"
+            @reject="rejectConfirmOpen = true"
+            @restore="bulkRestore"
+          />
+          <AssociatesTableToolbarActions v-else :visibility-items="visibilityItems" />
         </template>
       </UDashboardToolbar>
     </template>
@@ -397,6 +325,11 @@ const tour = useAssociatesRequestsTour()
     v-model="renewModalOpen"
     :preset-associate="renewingAssociate"
     hide-trigger
+  />
+
+  <AssociatesListApproveModal
+    v-model:open="approveConfirmOpen"
+    :ids="selectedRequestIds"
   />
 
   <ConfirmModal
