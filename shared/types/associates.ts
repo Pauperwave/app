@@ -1,10 +1,9 @@
 // shared\types\associates.ts
 
-// Shared by app/components/associates/list/EditModal.vue and
-// server/api/associates/[id]/update.post.ts — same shape as associateFormSchema's
-// output (snake_case, matching the DB columns 1:1), just with born_date as an ISO
-// string instead of a Date (the wire format), same convention as apply.post.ts's
-// local ApplyBody.
+// Shared by app/components/associates/list/EditModal.vue,
+// server/api/associates/[id]/update.post.ts, and apply.post.ts — same shape
+// as associateFormSchema's output (snake_case, matching the DB columns 1:1),
+// just with born_date as an ISO string instead of a Date (the wire format).
 export interface AssociateEditsPayload {
   associate_type: 'regular' | 'sustaining'
   first_name: string

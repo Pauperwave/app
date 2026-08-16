@@ -1,6 +1,5 @@
 <!-- app\components\tournaments\list\AddModal.vue -->
 <script setup lang="ts">
-import { CalendarDate, getLocalTimeZone } from '@internationalized/date'
 import type * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { NewTournamentPayload } from '#shared/types/tournaments'
@@ -37,12 +36,13 @@ const {
 
 type Schema = v.InferOutput<typeof schema>
 
+// fallow-ignore-next-line code-duplication -- the payload literal's first 5
+// fields mirror EditModal.vue's, but leagueUuid/eventUuid/endsAt diverge
+// (null here vs. the existing tournament's values there) — extracting a
+// helper would need an overrides param for exactly the fields that differ,
+// not worth it for 9 shared lines.
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  const [hours, minutes] = event.data.startTime.split(':').map(Number)
-  const startsAt = new CalendarDate(
-    startDate.value!.year, startDate.value!.month, startDate.value!.day
-  ).toDate(getLocalTimeZone())
-  startsAt.setHours(hours ?? 0, minutes ?? 0, 0, 0)
+  const startsAt = combineDateAndTime(startDate.value!, event.data.startTime)
 
   const payload: NewTournamentPayload = {
     name: event.data.name ?? '',

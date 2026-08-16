@@ -1,6 +1,6 @@
 // app\composables\wantedCards\useWantedCardsTableColumns.ts
 import { h } from 'vue'
-import { UBadge, UCheckbox, UIcon } from '#components'
+import { UBadge, UIcon } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { WantedCard } from '~/types'
 import ManaCost from '~/components/magic/ManaCost.vue'
@@ -17,58 +17,12 @@ import type { Selection } from '~/composables/useSelection'
 export function useWantedCardsTableColumns(selection: Selection<number>) {
   const { t } = useI18n()
 
-  // Captured from the checkbox's own native `click` (fires synchronously
-  // before the `update:modelValue` it triggers) so a shift-click can be told
-  // apart from a plain one — UCheckbox's v-model only reports the new value,
-  // not the triggering event. Module-level to this function (not per-cell),
-  // shared across every checkbox's render.
-  let lastClickShiftKey = false
-
   // Bound to the shared selectedIds Set (useSelection.ts), not UTable's own
   // row-selection state — grouping (rows with subRows) needs a group's checkbox
   // to reflect/drive all its subRows at once, which the id-Set model handles
-  // the same way as the plain "select all" header checkbox.
-  const selectColumn: TableColumn<WantedCard> = {
-    id: 'select',
-    enableSorting: false,
-    enableHiding: false,
-    meta: { class: { th: 'w-px p-0', td: 'w-px p-0' } },
-    header: ({ table: tableApi }) => {
-      const leafRows = tableApi.getFilteredRowModel().rows.filter(row => row.subRows.length === 0)
-      const ids = leafRows.map(row => row.original.id)
-      const allSelected = ids.length > 0 && ids.every(id => selection.isSelected(id))
-      const someSelected = ids.some(id => selection.isSelected(id))
-      return centerTableCell(h(UCheckbox, {
-        'modelValue': allSelected ? true : (someSelected ? 'indeterminate' : false),
-        'onUpdate:modelValue': (value: unknown) => selection.setAll(ids, !!value),
-        'aria-label': t('common.selectAll')
-      }))
-    },
-    cell: ({ row, table: tableApi }) => {
-      if (row.getIsGrouped()) {
-        const ids = row.subRows.map(subRow => subRow.original.id)
-        const allSelected = ids.length > 0 && ids.every(id => selection.isSelected(id))
-        const someSelected = ids.some(id => selection.isSelected(id))
-        return centerTableCell(h(UCheckbox, {
-          'modelValue': allSelected ? true : (someSelected ? 'indeterminate' : false),
-          'onUpdate:modelValue': (value: unknown) => selection.setAll(ids, !!value),
-          'aria-label': t('common.selectRow')
-        }))
-      }
-      // Range = the currently visible leaf rows, same set the header
-      // checkbox's "select all" already operates on — a shift-click range
-      // resolves against what's on screen, not the full unfiltered dataset.
-      const leafRows = tableApi.getFilteredRowModel().rows.filter(r => r.subRows.length === 0)
-      const range = leafRows.map(r => r.original.id)
-      return centerTableCell(h(UCheckbox, {
-        'modelValue': selection.isSelected(row.original.id),
-        'onUpdate:modelValue': () =>
-          selection.toggle(row.original.id, { shiftKey: lastClickShiftKey, range }),
-        'onClick': (e: MouseEvent) => { lastClickShiftKey = e.shiftKey },
-        'aria-label': t('common.selectRow')
-      }))
-    }
-  }
+  // the same way as the plain "select all" header checkbox. See
+  // useGroupedSelectColumn.ts for the shared implementation.
+  const selectColumn = useGroupedSelectColumn<WantedCard>(selection)
 
   // Readable labels for the "Columns" menu — same i18n map used for the actual
   // column headers (pattern from associates/index.vue).

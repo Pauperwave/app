@@ -1,7 +1,6 @@
 <!-- app\components\tournaments\list\EditModal.vue -->
 <script setup lang="ts">
-import { CalendarDate, getLocalTimeZone } from '@internationalized/date'
-import type { DateValue } from '@internationalized/date'
+import { CalendarDate } from '@internationalized/date'
 import type * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { Tournament } from '~/types'
@@ -36,7 +35,7 @@ const state = reactive<TournamentFormState>({
   companionCode: undefined
 })
 
-const startDate = shallowRef<DateValue>()
+const { startDate, formattedStartDate } = useStartDateField(state, { defaultToToday: false })
 
 // Refills every time the modal opens on a (possibly new) tournament — same
 // convention as TransactionsListEditModal.vue's watch on its `transaction` prop.
@@ -62,18 +61,6 @@ watch([open, () => tournament], ([isOpen, current]) => {
   state.companionCode = current.companionCode ?? undefined
 }, { immediate: true })
 
-watch(startDate, (newDate) => {
-  if (newDate) {
-    state.startDate = `${newDate.year}-${String(newDate.month).padStart(2, '0')}-${String(newDate.day).padStart(2, '0')}`
-  }
-})
-
-const formattedStartDate = computed(() => {
-  if (!startDate.value) return ''
-  const date = new Date(startDate.value.year, startDate.value.month - 1, startDate.value.day)
-  return date.toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' })
-})
-
 const {
   schema, statusOptions, locationOptions, organizerOptions, formatOptions
 } = useTournamentFormFields()
@@ -82,14 +69,12 @@ type Schema = v.InferOutput<typeof schema>
 
 const submitting = ref(false)
 
+// fallow-ignore-next-line code-duplication -- see the same comment in
+// AddModal.vue
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   if (!tournament) return
 
-  const [hours, minutes] = event.data.startTime.split(':').map(Number)
-  const startsAt = new CalendarDate(
-    startDate.value!.year, startDate.value!.month, startDate.value!.day
-  ).toDate(getLocalTimeZone())
-  startsAt.setHours(hours ?? 0, minutes ?? 0, 0, 0)
+  const startsAt = combineDateAndTime(startDate.value!, event.data.startTime)
 
   const payload: NewTournamentPayload = {
     name: event.data.name ?? '',

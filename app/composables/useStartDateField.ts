@@ -1,16 +1,23 @@
 // app\composables\useStartDateField.ts
 // Extracted out of events/leagues/tournaments' AddModal.vue (2026-08-16,
 // fallow:dupes flagged the identical startDate ref + watch + formattedStartDate
-// computed trio across all three) — the "Add" pattern specifically: defaults
-// to today. Not used by EditModal.vue variants, which start undefined and
-// fill in via a watch on their own entity prop instead.
+// computed trio across all three) — the "Add" pattern defaults to today.
+// tournaments' EditModal.vue also uses this (defaultToToday: false since it
+// starts undefined and fills in via a watch on its own `tournament` prop
+// instead — fallow:dupes flagged that duplicate watch/computed pair too).
 import { CalendarDate } from '@internationalized/date'
 import type { DateValue } from '@internationalized/date'
 
-export function useStartDateField(state: { startDate?: string }) {
+export function useStartDateField(
+  state: { startDate?: string },
+  options: { defaultToToday?: boolean } = {}
+) {
+  const { defaultToToday = true } = options
   const today = new Date()
-  const startDate = shallowRef<DateValue>(
-    new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate())
+  const startDate = shallowRef<DateValue | undefined>(
+    defaultToToday
+      ? new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate())
+      : undefined
   )
 
   watch(startDate, (newDate) => {

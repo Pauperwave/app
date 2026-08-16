@@ -86,9 +86,17 @@ const selectedTournamentTimeRange = computed(() => {
 function openTournament(tournament: Tournament) {
   selection.value = { kind: 'tournament', tournament }
 }
+
+// fallow-ignore-file code-duplication -- the event/tournament hero markup
+// (image + gradient + title, then the date row) shares shape, but each
+// branch diverges immediately after: event shows a nested tournaments list,
+// tournament shows organizer/contact/fee/prizes/description. Extracting a
+// shared component for the ~9-line overlap would need several slots just to
+// paper over that divergence — see feedback_dedup_threshold_call_sites memory.
 </script>
 
 <template>
+  <!-- fallow-ignore-file code-duplication -- see the top-of-file comment -->
   <USlideover
     v-model:open="isOpen"
     inset

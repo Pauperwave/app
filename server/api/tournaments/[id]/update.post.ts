@@ -1,18 +1,11 @@
 // server\api\tournaments\[id]\update.post.ts
-import { serverSupabaseServiceRole } from '#supabase/server'
-import type { Database } from '#shared/utils/types/database'
 import type { NewTournamentPayload } from '#shared/types/tournaments'
 
 // Same convention as create.post.ts: tournaments' RLS (management_full_access)
 // already gates writes to management users, but every write still goes
 // through a BFF endpoint rather than relying on RLS evaluated from the client.
 export default defineEventHandler(async (event) => {
-  await requireManagementPermission(event)
-
-  const id = Number(getRouterParam(event, 'id'))
-  const body = await readBody<NewTournamentPayload>(event)
-
-  const supabase = serverSupabaseServiceRole<Database>(event)
+  const { id, body, supabase } = await parseIdMutationRequest<NewTournamentPayload>(event)
 
   const { data: tournament, error } = await supabase
     .from('tournaments')

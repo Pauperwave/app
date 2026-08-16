@@ -119,25 +119,7 @@ const table = useTemplateRef<TableRef>('table')
 // "Status" hidden by default: it is already implied by the active Found/Searching tab.
 const columnVisibility = ref({ status: false })
 
-// Rebuilt every time the menu opens (via :items) — the official Nuxt UI pattern
-// (UTable docs, "Column visibility" section): getAllColumns() + getCanHide() +
-// toggleVisibility(), not a direct v-model on the individual items.
-const columnVisibilityItems = computed(() => {
-  void columnVisibility.value
-  return (table.value?.tableApi?.getAllColumns() ?? [])
-    .filter(column => column.getCanHide())
-    .map(column => ({
-      label: columnHeaders[column.id] ?? column.id,
-      type: 'checkbox' as const,
-      checked: column.getIsVisible(),
-      onUpdateChecked(checked: boolean) {
-        table.value?.tableApi?.getColumn(column.id)?.toggleVisibility(checked)
-      },
-      onSelect(e: Event) {
-        e.preventDefault()
-      }
-    }))
-})
+const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, columnHeaders)
 
 const viewItems = computed(() => columnVisibilityItems.value)
 

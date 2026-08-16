@@ -4,6 +4,8 @@
 // Location has no FK fields, every field here is a plain string column).
 import * as v from 'valibot'
 import type { InferOutput } from 'valibot'
+import type { NewLocationPayload } from '#shared/types/locations'
+import type { OpeningHours } from '~/types'
 
 function buildSchema(t: ReturnType<typeof useI18n>['t']) {
   return v.object({
@@ -28,10 +30,40 @@ function buildSchema(t: ReturnType<typeof useI18n>['t']) {
 }
 
 export type LocationFormState = Partial<InferOutput<ReturnType<typeof buildSchema>>>
+export type LocationFormData = InferOutput<ReturnType<typeof buildSchema>>
 
 export function useLocationFormFields() {
   const { t } = useI18n()
   const schema = buildSchema(t)
 
   return { schema }
+}
+
+// Shared between AddModal.vue/EditModal.vue's onSubmit — same payload shape,
+// only openingHours/image (kept outside the valibot schema, see the comment
+// above) need to be passed in separately.
+export function buildLocationPayload(
+  data: LocationFormData,
+  openingHours: OpeningHours,
+  image: string | undefined
+): NewLocationPayload {
+  return {
+    name: data.name,
+    address: data.address,
+    city: data.city,
+    province: data.province,
+    postalCode: data.postalCode,
+    country: data.country,
+    phone: data.phone || null,
+    email: data.email || null,
+    website: data.website || null,
+    googleMapsUrl: data.googleMapsUrl || null,
+    openingHours,
+    image: image || null,
+    facebook: data.facebook || null,
+    instagram: data.instagram || null,
+    telegramChannel: data.telegramChannel || null,
+    whatsapp: data.whatsapp || null,
+    temporarilyClosed: data.temporarilyClosed ?? false
+  }
 }

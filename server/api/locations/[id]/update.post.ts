@@ -1,15 +1,8 @@
 // server\api\locations\[id]\update.post.ts
-import { serverSupabaseServiceRole } from '#supabase/server'
-import type { Database } from '#shared/utils/types/database'
 import type { NewLocationPayload } from '#shared/types/locations'
 
 export default defineEventHandler(async (event) => {
-  await requireManagementPermission(event)
-
-  const id = Number(getRouterParam(event, 'id'))
-  const body = await readBody<NewLocationPayload>(event)
-
-  const supabase = serverSupabaseServiceRole<Database>(event)
+  const { id, body, supabase } = await parseIdMutationRequest<NewLocationPayload>(event)
 
   const { data: location, error } = await supabase
     .from('locations')

@@ -203,6 +203,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     />
 
     <template #body>
+      <!-- fallow-ignore-next-line code-duplication -- UForm scaffolding + the
+           "personal info" heading mirror EditModal.vue's, but the
+           TransactionsFieldsPayerFields call right below diverges (AddModal
+           passes presetAssociate/emailPlaceholder/showClearButtons, EditModal
+           doesn't) — same same-shaped-but-parameterized call as
+           feedback_dedup_threshold_call_sites, not worth a wrapper for 5
+           lines of markup. -->
       <UForm
         :schema="schema"
         :state="state"

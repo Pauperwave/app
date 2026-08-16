@@ -144,6 +144,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     :title="$t('transaction.editModal.title')"
   >
     <template #body>
+      <!-- fallow-ignore-next-line code-duplication -- see the same comment in
+           AddModal.vue -->
       <UForm
         v-if="transaction"
         :schema="schema"

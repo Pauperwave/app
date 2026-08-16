@@ -27,43 +27,29 @@ const tour = useLocationsTour()
 <template>
   <UDashboardPanel id="locations">
     <template #header>
-      <UDashboardNavbar :title="$t('location.breadcrumb')" :ui="{ right: 'gap-2' }">
-        <template #leading>
-          <UDashboardSidebarCollapse />
-        </template>
+      <ListPageNavbar
+        :title="$t('location.breadcrumb')"
+        :tour-label="$t('location.tour.startButton')"
+        :loading="loading"
+        :status="status"
+        :ui="{ right: 'gap-2' }"
+        @refresh="refetch"
+        @tour-start="tour.start()"
+      >
+        <div id="tour-locations-view-mode">
+          <ViewModeTabs v-model="viewMode" :items="viewModeItems" />
+        </div>
 
-        <template #trailing>
-          <USeparator orientation="vertical" class="h-4" />
+        <USeparator orientation="vertical" class="h-4" />
 
-          <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refetch" />
-        </template>
+        <div id="tour-locations-add">
+          <LocationsListAddModal v-model="isModalOpen" />
+        </div>
 
-        <template #right>
-          <UButton
-            :label="$t('location.tour.startButton')"
-            icon="i-lucide-circle-help"
-            color="neutral"
-            variant="ghost"
-            @click="tour.start()"
-          />
+        <USeparator orientation="vertical" class="h-4" />
 
-          <USeparator orientation="vertical" class="h-4" />
-
-          <div id="tour-locations-view-mode">
-            <ViewModeTabs v-model="viewMode" :items="viewModeItems" />
-          </div>
-
-          <USeparator orientation="vertical" class="h-4" />
-
-          <div id="tour-locations-add">
-            <LocationsListAddModal v-model="isModalOpen" />
-          </div>
-
-          <USeparator orientation="vertical" class="h-4" />
-
-          <NotificationsBellButton />
-        </template>
-      </UDashboardNavbar>
+        <NotificationsBellButton />
+      </ListPageNavbar>
     </template>
 
     <template #body>

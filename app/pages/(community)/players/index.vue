@@ -52,60 +52,32 @@ interface TableColumnRef {
   id: string
   getCanHide: () => boolean
   getIsVisible: () => boolean
-  toggleVisibility: (value: boolean) => void
 }
 interface TableRef {
-  tableApi: { getAllColumns: () => TableColumnRef[] }
+  tableApi: {
+    getAllColumns: () => TableColumnRef[]
+    getColumn: (id: string) => { toggleVisibility: (value: boolean) => void } | undefined
+  }
 }
 const table = useTemplateRef<TableRef>('table')
 const columnVisibility = ref({})
 
-const columnVisibilityItems = computed(() => {
-  void columnVisibility.value
-  return (table.value?.tableApi?.getAllColumns() ?? [])
-    .filter(column => column.getCanHide())
-    .map(column => ({
-      label: columnHeaders[column.id] ?? column.id,
-      type: 'checkbox' as const,
-      checked: column.getIsVisible(),
-      onUpdateChecked(checked: boolean) {
-        column.toggleVisibility(checked)
-      },
-      onSelect(e: Event) {
-        e.preventDefault()
-      }
-    }))
-})
+const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, columnHeaders)
 </script>
 
 <template>
   <UDashboardPanel id="players">
     <template #header>
-      <UDashboardNavbar :title="$t('player.breadcrumb')">
-        <template #leading>
-          <UDashboardSidebarCollapse />
-        </template>
-
-        <template #trailing>
-          <USeparator orientation="vertical" class="h-4" />
-
-          <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refetch" />
-        </template>
-
-        <template #right>
-          <UButton
-            :label="$t('player.tour.startButton')"
-            icon="i-lucide-circle-help"
-            color="neutral"
-            variant="ghost"
-            @click="tour.start()"
-          />
-
-          <USeparator orientation="vertical" class="h-4" />
-
-          <NotificationsBellButton />
-        </template>
-      </UDashboardNavbar>
+      <ListPageNavbar
+        :title="$t('player.breadcrumb')"
+        :tour-label="$t('player.tour.startButton')"
+        :loading="loading"
+        :status="status"
+        @refresh="refetch"
+        @tour-start="tour.start()"
+      >
+        <NotificationsBellButton />
+      </ListPageNavbar>
 
       <!-- Same #left toolbar placement as associates/index.vue and
            wanted-cards/index.vue for their StatusFilterGroup. -->

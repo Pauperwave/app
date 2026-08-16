@@ -191,66 +191,45 @@ const tour = useAssociatesRequestsTour()
 <template>
   <UDashboardPanel id="associates-requests">
     <template #header>
-      <UDashboardNavbar :title="$t('associate.subNav.requests')" :ui="{ right: 'gap-2' }">
-        <template #leading>
-          <UDashboardSidebarCollapse />
-        </template>
+      <ListPageNavbar
+        :title="$t('associate.subNav.requests')"
+        :tour-label="$t('associate.requestsTour.startButton')"
+        :loading="loading"
+        :status="status"
+        :ui="{ right: 'gap-2' }"
+        @refresh="refetch"
+        @tour-start="tour.start()"
+      >
+        <div id="tour-requests-add">
+          <AssociatesListAddModal v-model="isModalOpen" />
+        </div>
 
-        <template #trailing>
-          <USeparator orientation="vertical" class="h-4" />
+        <USeparator orientation="vertical" class="h-4" />
 
-          <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refetch" />
-        </template>
-
-        <template #right>
-          <UButton
-            :label="$t('associate.requestsTour.startButton')"
-            icon="i-lucide-circle-help"
-            color="neutral"
-            variant="ghost"
-            @click="tour.start()"
+        <div id="tour-requests-links" class="flex items-center gap-2">
+          <CopyOpenLinkPair
+            :url="tesseramentoLink"
+            :copy-label="$t('associate.copyTesseramentoLink')"
+            :open-label="$t('associate.openTesseramentoLink')"
           />
 
-          <USeparator orientation="vertical" class="h-4" />
+          <UTooltip :text="$t('associate.openInformativaDatiLink')">
+            <UButton
+              :to="informativaDatiLink"
+              target="_blank"
+              :icon="ICONS.externalLink"
+              :aria-label="$t('associate.openInformativaDatiLink')"
+              color="neutral"
+              variant="outline"
+              square
+            />
+          </UTooltip>
+        </div>
 
-          <div id="tour-requests-add">
-            <AssociatesListAddModal v-model="isModalOpen" />
-          </div>
+        <USeparator orientation="vertical" class="h-4" />
 
-          <USeparator orientation="vertical" class="h-4" />
-
-          <div id="tour-requests-links" class="flex items-center gap-2">
-            <CopyLinkButton :url="tesseramentoLink" :label="$t('associate.copyTesseramentoLink')" />
-            <UTooltip :text="$t('associate.openTesseramentoLink')">
-              <UButton
-                :to="tesseramentoLink"
-                target="_blank"
-                :icon="ICONS.externalLink"
-                :aria-label="$t('associate.openTesseramentoLink')"
-                color="neutral"
-                variant="outline"
-                square
-              />
-            </UTooltip>
-
-            <UTooltip :text="$t('associate.openInformativaDatiLink')">
-              <UButton
-                :to="informativaDatiLink"
-                target="_blank"
-                :icon="ICONS.externalLink"
-                :aria-label="$t('associate.openInformativaDatiLink')"
-                color="neutral"
-                variant="outline"
-                square
-              />
-            </UTooltip>
-          </div>
-
-          <USeparator orientation="vertical" class="h-4" />
-
-          <NotificationsBellButton />
-        </template>
-      </UDashboardNavbar>
+        <NotificationsBellButton />
+      </ListPageNavbar>
 
       <!-- Switcher shared with /associates (see AssociatesSubNav). -->
       <UDashboardToolbar>

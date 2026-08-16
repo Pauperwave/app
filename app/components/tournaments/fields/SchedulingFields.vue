@@ -23,20 +23,12 @@ const startDate = defineModel<DateValue>('startDate')
   <!-- eslint-disable vue/no-mutating-props -- see the top-of-file comment -->
   <div class="grid grid-cols-2 gap-4">
     <div class="flex justify-between gap-2">
-      <UFormField :label="$t('tournament.addModal.fields.startDate')" class="flex-1" name="startDate">
-        <UPopover>
-          <UInput
-            :model-value="formattedStartDate"
-            readonly
-            class="w-full"
-            :icon="ICONS.calendar"
-          />
-
-          <template #content>
-            <UCalendar v-model="startDate" class="p-2" />
-          </template>
-        </UPopover>
-      </UFormField>
+      <StartDatePickerField
+        v-model:start-date="startDate"
+        class="flex-1"
+        :label="$t('tournament.addModal.fields.startDate')"
+        :formatted-start-date="formattedStartDate"
+      />
 
       <UFormField :label="$t('tournament.addModal.fields.startTime')" name="startTime">
         <UTimePicker

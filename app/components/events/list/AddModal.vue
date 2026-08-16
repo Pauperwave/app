@@ -1,6 +1,5 @@
 <!-- app\components\events\list\AddModal.vue -->
 <script setup lang="ts">
-import { CalendarDate, getLocalTimeZone } from '@internationalized/date'
 import * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { NewEventPayload } from '#shared/types/events'
@@ -13,22 +12,14 @@ const { t } = useI18n()
 // (2026-08-15) — locations/organizations, see
 // useLocationsQuery.ts/useOrganizationsQuery.ts (shared with tournaments'
 // AddModal.vue).
-const { data: locations } = useLocationsQuery()
-const { data: organizations } = useOrganizationsQuery()
 const { createEvent } = useEventsMutations()
+const { locationOptions, organizerOptions } = useLocationOrganizerOptions()
 
 const statusOptions = computed(() => EVENT_STATUSES.map(status => ({
   value: status,
   label: t(`event.addModal.statusOptions.${status}`),
   icon: EVENT_STATUS_ICONS[status],
   color: eventStatusColor(status)
-})))
-
-const locationOptions = computed(() => (locations.value ?? []).map(location => ({
-  value: location.uuid, label: location.name
-})))
-const organizerOptions = computed(() => (organizations.value ?? []).map(organization => ({
-  value: organization.uuid, label: organization.name
 })))
 
 const todayString = new Date().toISOString().substring(0, 10)
@@ -55,10 +46,12 @@ const state = reactive<Schema>({
 
 const { startDate, formattedStartDate } = useStartDateField(state)
 
+// fallow-ignore-next-line code-duplication -- the state literal + onSubmit
+// scaffolding mirror leagues/list/AddModal.vue's, but the payload type/fields
+// (NewEventPayload vs NewLeaguePayload) and mutation differ per domain — same
+// same-shaped-but-parameterized call as feedback_dedup_threshold_call_sites.
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  const startsAt = new CalendarDate(
-    startDate.value!.year, startDate.value!.month, startDate.value!.day
-  ).toDate(getLocalTimeZone())
+  const startsAt = dateValueToDate(startDate.value!)
 
   const payload: NewEventPayload = {
     name: event.data.name,
@@ -152,20 +145,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             {{ $t('event.addModal.scheduling') }}
           </p>
 
-          <UFormField :label="$t('event.addModal.fields.startDate')" name="startDate">
-            <UPopover>
-              <UInput
-                :model-value="formattedStartDate"
-                readonly
-                class="w-full"
-                :icon="ICONS.calendar"
-              />
-
-              <template #content>
-                <UCalendar v-model="startDate" class="p-2" />
-              </template>
-            </UPopover>
-          </UFormField>
+          <StartDatePickerField
+            v-model:start-date="startDate"
+            :label="$t('event.addModal.fields.startDate')"
+            :formatted-start-date="formattedStartDate"
+          />
 
           <p class="text-lg font-semibold text-primary">
             {{ $t('event.addModal.organizerData') }}

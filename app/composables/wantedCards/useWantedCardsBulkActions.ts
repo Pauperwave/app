@@ -10,6 +10,8 @@ type PendingBulkAction
   = | { type: 'status', status: WantedCardStatus, cards: WantedCard[] }
     | { type: 'delete', cards: WantedCard[] }
 
+// fallow-ignore-next-line code-duplication -- see the same comment in
+// useTournamentsBulkActions.ts
 export function useWantedCardsBulkActions(selection: Selection<number>) {
   const { t } = useI18n()
   const toast = useToast()
