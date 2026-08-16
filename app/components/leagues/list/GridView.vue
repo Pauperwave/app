@@ -2,18 +2,20 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { League } from '~/types'
+import type { Selection } from '~/composables/useSelection'
 
-const { leagues, contextMenuItems } = defineProps<{
+const {
+  leagues, contextMenuItems, onEdit, selection
+} = defineProps<{
   leagues: League[]
   contextMenuItems: (league: League) => DropdownMenuItem[]
+  onEdit: (league: League) => void
+  selection: Selection<number>
 }>()
 
-const { t } = useI18n()
-
-function progress(league: League) {
-  if (!league.tournamentCount) return 0
-  return Math.round((league.completedTournamentCount / league.tournamentCount) * 100)
-}
+// The ordered list a shift-click range resolves against — same reasoning as
+// TournamentsListGridView.vue's own range.
+const range = computed(() => leagues.map(league => league.id))
 </script>
 
 <template>
@@ -22,39 +24,14 @@ function progress(league: League) {
   </div>
 
   <div v-else class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(280px,90vw),1fr))]">
-    <UContextMenu
+    <LeaguesListCard
       v-for="league in leagues"
       :key="league.id"
-      :items="contextMenuItems(league)"
-    >
-      <UCard
-        class="cursor-pointer hover:ring-primary transition-colors"
-        @click="navigateTo(`/leagues/${league.uuid}`)"
-      >
-        <div class="flex items-start justify-between gap-2 mb-4">
-          <h3 class="font-semibold truncate">
-            {{ league.name }}
-          </h3>
-          <UBadge
-            :color="leagueStatusColor(league.status)"
-            variant="subtle"
-            :icon="LEAGUE_STATUS_ICONS[league.status]"
-            class="shrink-0"
-          >
-            {{ t(`league.status.${league.status}`) }}
-          </UBadge>
-        </div>
-
-        <div class="flex flex-col gap-1.5">
-          <div class="flex items-center justify-between text-sm text-muted">
-            <span>{{ t('league.tournamentsLabel') }}</span>
-            <span>{{ t('league.progress', {
-              completed: league.completedTournamentCount, total: league.tournamentCount
-            }) }}</span>
-          </div>
-          <UProgress :model-value="progress(league)" size="sm" />
-        </div>
-      </UCard>
-    </UContextMenu>
+      :league="league"
+      :context-menu-items="contextMenuItems"
+      :on-edit="onEdit"
+      :selection="selection"
+      :range="range"
+    />
   </div>
 </template>

@@ -1,42 +1,19 @@
 <!-- app\components\leagues\list\AddModal.vue -->
 <script setup lang="ts">
-import * as v from 'valibot'
+import type * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { NewLeaguePayload } from '#shared/types/leagues'
+import type { LeagueFormState } from '~/composables/leagues/useLeagueFormFields'
 
 const open = defineModel<boolean>({ default: false })
 const toast = useToast()
 const { t } = useI18n()
 
-// Migrated off the name/email placeholder stub onto the real `leagues` table
-// (2026-08-15) — rulesets, see useRulesetsQuery.ts (same shared-lookup
-// convention as tournaments'/events' AddModal.vue).
-const { data: rulesets } = useRulesetsQuery()
 const { createLeague } = useLeaguesMutations()
-
-const statusOptions = computed(() => LEAGUE_STATUSES.map(status => ({
-  value: status,
-  label: t(`league.addModal.statusOptions.${status}`),
-  icon: LEAGUE_STATUS_ICONS[status],
-  color: leagueStatusColor(status)
-})))
-
-const rulesetOptions = computed(() => (rulesets.value ?? []).map(ruleset => ({
-  value: ruleset.uuid, label: ruleset.name
-})))
 
 const todayString = new Date().toISOString().substring(0, 10)
 
-const schema = v.object({
-  status: v.picklist(LEAGUE_STATUSES),
-  name: v.pipe(v.string(), v.minLength(1, t('league.addModal.validation.nameRequired'))),
-  startDate: v.string(),
-  rulesetUuid: v.optional(v.string())
-})
-
-type Schema = v.InferOutput<typeof schema>
-
-function createInitialState(): Schema {
+function createInitialState(): LeagueFormState {
   return {
     name: '',
     status: 'draft',
@@ -45,9 +22,13 @@ function createInitialState(): Schema {
   }
 }
 
-const state = reactive<Schema>(createInitialState())
+const state = reactive<LeagueFormState>(createInitialState())
 
 const { startDate, formattedStartDate, reset: resetStartDate } = useStartDateField(state)
+
+const { schema, statusOptions, rulesetOptions } = useLeagueFormFields()
+
+type Schema = v.InferOutput<typeof schema>
 
 // fallow-ignore-next-line code-duplication -- see the same comment in
 // events/list/AddModal.vue
@@ -107,42 +88,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             {{ $t('league.addModal.leagueData') }}
           </p>
 
-          <UStatusSelect
-            v-model="state.status"
-            :items="statusOptions"
-            name="status"
-            :label="$t('league.addModal.fields.status')"
-            class="w-full"
+          <LeaguesFieldsLeagueDataFields
+            v-model:start-date="startDate"
+            :state="state"
+            :status-options="statusOptions"
+            :ruleset-options="rulesetOptions"
+            :formatted-start-date="formattedStartDate"
           />
-
-          <!-- eslint-disable-next-line -->
-          <UFormField :label="$t('league.addModal.fields.name')" name="name" required>
-            <UInput
-              v-model="state.name"
-              class="w-full"
-              :placeholder="$t('league.addModal.fields.namePlaceholder')"
-              :icon="ICONS.standings"
-            />
-          </UFormField>
-
-          <div class="grid grid-cols-2 gap-4">
-            <StartDatePickerField
-              v-model:start-date="startDate"
-              :label="$t('event.addModal.fields.startDate')"
-              :formatted-start-date="formattedStartDate"
-            />
-
-            <UFormField :label="$t('league.addModal.fields.ruleset')" name="rulesetUuid">
-              <USelectMenu
-                v-model="state.rulesetUuid"
-                class="w-full"
-                :items="rulesetOptions"
-                value-key="value"
-                :placeholder="$t('league.addModal.fields.selectRuleset')"
-                :icon="ICONS.bookOpen"
-              />
-            </UFormField>
-          </div>
         </div>
 
         <div class="flex justify-end gap-2 pt-4">

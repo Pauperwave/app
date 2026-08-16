@@ -596,6 +596,23 @@
   "league": {
     "breadcrumb": "Leghe",
     "singleLeaderboard": "Classifica singola lega",
+    "rowActions": {
+      "edit": "Modifica lega",
+      "delete": "Elimina"
+    },
+    "bulkActions": {
+      "selectedCount": "{count} selezionata | {count} selezionate",
+      "clearSelection": "Deseleziona",
+      "markAs": "Segna come",
+      "confirm": "Conferma",
+      "confirmStatusTitle": "Segna {count} lega come {status}? | Segna {count} leghe come {status}?",
+      "confirmDeleteTitle": "Eliminare {count} lega? | Eliminare {count} leghe?",
+      "statusUndoToast": "{count} lega verrà segnata come {status} | {count} leghe verranno segnate come {status}",
+      "deleteUndoToast": "{count} lega verrà eliminata | {count} leghe verranno eliminate",
+      "statusSuccessToast": "{count} lega aggiornata | {count} leghe aggiornate",
+      "deleteSuccessToast": "{count} lega eliminata | {count} leghe eliminate",
+      "partialFailure": "{count} operazione non riuscita | {count} operazioni non riuscite"
+    },
     "views": {
       "table": "Tabella",
       "grid": "Griglia"
@@ -641,7 +658,8 @@
       "status": "Stato",
       "name": "Nome",
       "tournamentCount": "Tornei",
-      "ruleset": "Regolamento"
+      "ruleset": "Regolamento",
+      "actions": "Azioni"
     },
     "tournamentsLabel": "Tornei completati",
     "progress": "{completed}/{total}",
@@ -671,6 +689,13 @@
       "errorToastTitle": "Impossibile creare la lega",
       "cancel": "Annulla",
       "create": "Crea lega"
+    },
+    "editModal": {
+      "title": "Modifica lega",
+      "successToastTitle": "Lega aggiornata",
+      "errorToastTitle": "Impossibile aggiornare la lega",
+      "cancel": "Annulla",
+      "save": "Salva"
     },
     "detail": {
       "navbarTitle": "Lega",
@@ -1030,6 +1055,7 @@
         "selectRuleset": "Seleziona regolamento",
         "startDate": "Data di inizio",
         "startTime": "Ora di inizio",
+        "endTime": "Ora di fine",
         "selectTime": "Seleziona orario",
         "roundCount": "Numero di round",
         "roundDuration": "Durata round",

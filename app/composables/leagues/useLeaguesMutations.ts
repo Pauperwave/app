@@ -1,4 +1,5 @@
 // app\composables\leagues\useLeaguesMutations.ts
+import type { LeagueStatus } from '~/types'
 import type { NewLeaguePayload } from '#shared/types/leagues'
 
 export function useLeaguesMutations() {
@@ -13,5 +14,25 @@ export function useLeaguesMutations() {
     onSettled: invalidate
   })
 
-  return { createLeague }
+  const updateLeague = useMutation({
+    mutation: ({ id, edits }: { id: number, edits: NewLeaguePayload }) =>
+      $fetch(`/api/leagues/${id}/update`, { method: 'POST', body: edits }),
+    onSettled: invalidate
+  })
+
+  const setStatus = useMutation({
+    mutation: ({ id, status }: { id: number, status: LeagueStatus }) =>
+      $fetch(`/api/leagues/${id}/status`, { method: 'POST', body: { status } }),
+    onSettled: invalidate
+  })
+
+  const deleteLeague = useMutation({
+    mutation: (id: number) =>
+      $fetch(`/api/leagues/${id}/delete`, { method: 'POST' }),
+    onSettled: invalidate
+  })
+
+  return {
+    createLeague, updateLeague, setStatus, deleteLeague
+  }
 }

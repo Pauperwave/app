@@ -228,7 +228,13 @@ export interface League {
   uuid: string
   status: LeagueStatus
   name: string
+  startDate: string
   ruleset: string | null
+  // FK uuid alongside its resolved display name above (2026-08-16) — needed
+  // to prefill LeaguesListEditModal.vue's ruleset select, which binds by
+  // uuid, not by the human-readable name — same convention as Tournament's
+  // formatUuid/leagueUuid/etc.
+  rulesetUuid: string | null
   tournamentCount: number
   completedTournamentCount: number
 }
