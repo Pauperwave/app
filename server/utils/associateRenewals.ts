@@ -62,6 +62,11 @@ export async function removeStaleRenewal(
     .eq('payment_type', 'Association Fee')
     .gte('payment_date', yearStart)
     .lt('payment_date', yearEnd)
+    // Excludes soft-deleted payments (2026-08-16) — delete.post.ts now
+    // soft-deletes the triggering row before calling this, so without this
+    // filter it would still count as "another payment still backs this
+    // renewal" and the stale renewal would never get cleaned up.
+    .is('deleted_at', null)
 
   if (params.excludePaymentId !== undefined) {
     query = query.neq('id', params.excludePaymentId)

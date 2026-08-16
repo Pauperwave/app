@@ -410,6 +410,7 @@ export type Database = {
         Row: {
           color: string | null
           created_at: string
+          deleted_at: string | null
           description: string | null
           id: number
           name: string
@@ -419,6 +420,7 @@ export type Database = {
         Insert: {
           color?: string | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           id?: number
           name: string
@@ -428,6 +430,7 @@ export type Database = {
         Update: {
           color?: string | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           id?: number
           name?: string
@@ -728,6 +731,7 @@ export type Database = {
           associate_uuid: string | null
           created_at: string
           created_by: string | null
+          deleted_at: string | null
           event_name: string | null
           event_uuid: string | null
           id: number
@@ -750,6 +754,7 @@ export type Database = {
           associate_uuid?: string | null
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           event_name?: string | null
           event_uuid?: string | null
           id?: number
@@ -772,6 +777,7 @@ export type Database = {
           associate_uuid?: string | null
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           event_name?: string | null
           event_uuid?: string | null
           id?: number
@@ -861,6 +867,7 @@ export type Database = {
           copies: number
           created_at: string
           created_by: string | null
+          deleted_at: string | null
           found_at: string | null
           id: number
           image_url: string | null
@@ -890,6 +897,7 @@ export type Database = {
           copies?: number
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           found_at?: string | null
           id?: never
           image_url?: string | null
@@ -919,6 +927,7 @@ export type Database = {
           copies?: number
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           found_at?: string | null
           id?: never
           image_url?: string | null

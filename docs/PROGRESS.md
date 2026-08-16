@@ -216,6 +216,14 @@ Implementato in `useCittadinoFilters.ts` come catena di comparatori dopo il tota
 
 **Conseguenze:** ogni nuovo formato creato parte senza colore (badge neutro) finché qualcuno non ne sceglie uno dalla modale. La mappa statica resta come fallback legacy, non va più estesa per nuovi formati.
 
+### ADR-017 — Soft delete ovunque ci sia una delete (2026-08-16)
+
+**Contesto:** `mtg_formats` è passata a soft delete (ADR-016) per permettere di rimuovere un formato ancora referenziato da tornei passati senza rompere la loro FK. A quel punto restavano solo due endpoint con una `.delete()` hard: `transactions/[id]/delete.post.ts` (`pauperwave_payments`) e `wanted-cards/[id]/delete.post.ts` (`pauperwave_wanted_cards`) — `tournaments/[id]/delete.post.ts` era già soft delete da prima.
+
+**Decisione:** aggiunta `deleted_at timestamptz` anche a `pauperwave_payments` e `pauperwave_wanted_cards`; entrambi gli endpoint ora fanno `update({ deleted_at: now() })` invece di `delete()`. Le rispettive `useQuery` (`useTransactionsQuery.ts`, `useWantedCardsQuery.ts`) filtrano `is('deleted_at', null)`. `server/utils/associateRenewals.ts`'s `removeStaleRenewal` ha dovuto aggiungere lo stesso filtro alla sua query di conteggio — senza, un pagamento appena soft-eliminato continuava a contare come "esiste ancora un'altra rata Association Fee per questo anno", e il renewal associato non veniva mai ripulito.
+
+**Conseguenze:** nessuna riga viene più persa per errore da queste due tabelle; un "delete" da UI è sempre recuperabile via SQL diretto finché non si decide di aggiungere un flusso di purge/restore. Il bottone "elimina formato" di `ManageModal.vue` resta comunque disabilitato quando il formato è in uso (scelta esplicita dell'utente, non legata alla sicurezza del delete — vedi ADR-016).
+
 ## Vedi anche
 
 - `docs/architecture/database.md` — schema, RLS, migrazioni
