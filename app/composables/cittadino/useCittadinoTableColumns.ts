@@ -116,7 +116,7 @@ export function useCittadinoTableColumns(events: Ref<CittadinoEvent[]>) {
         h('span', {
           class: [
             'rounded px-1 py-1 text-[10px] leading-none tabular-nums',
-            cittadinoFormatClass(event.format)
+            formatColorClass(event.format)
           ]
         }, formatEventDate(event.date))
       ]),
@@ -165,7 +165,7 @@ export function useCittadinoTableColumns(events: Ref<CittadinoEvent[]>) {
   const columnAccentColors = computed<Record<string, string>>(() =>
     Object.fromEntries(
       events.value
-        .map(event => [event.uuid, cittadinoFormatColor(event.format)] as const)
+        .map(event => [event.uuid, formatColor(event.format)] as const)
         .filter((entry): entry is [string, string] => entry[1] !== undefined)
     ))
 

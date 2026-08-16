@@ -53,12 +53,7 @@ function openDetail() {
 
     <template #body>
       <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mt-2 text-sm">
-        <span
-          class="px-1.5 py-0.5 rounded text-xs font-medium shrink-0"
-          :class="cittadinoFormatClass(tournament.format)"
-        >
-          {{ tournament.format }}
-        </span>
+        <FormatBadge :format="tournament.format" />
       </div>
     </template>
   </CalendarCardBase>

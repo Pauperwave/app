@@ -65,12 +65,7 @@ const participants = computed(() => tournaments.flatMap(tournament => tournament
           :class="{ 'opacity-60 saturate-50': tournament.status === 'completed' }"
           @click.stop="openTournamentDetail(tournament)"
         >
-          <span
-            class="px-1.5 py-0.5 rounded text-xs font-medium shrink-0"
-            :class="cittadinoFormatClass(tournament.format)"
-          >
-            {{ tournament.format }}
-          </span>
+          <FormatBadge :format="tournament.format" />
 
           <span
             class="truncate flex-1 min-w-0"
