@@ -20,7 +20,7 @@ Per-domain inventory of row-level context-menu actions, always-visible inline ro
 | **transactions** | edit, delete | — | delete (**no undo** — see note) | `useTransactionsRowActions.ts`, `useTransactionsBulkActions.ts` |
 | **tournaments** | copy link, copy id, edit, delete | edit (button, table+grid) | status-change, delete (10s undo) | `useCopyLinkContextMenu.ts` + page-local `tournamentContextMenuItems()`, `useTournamentsRowActions.ts`, `useTournamentsBulkActions.ts` |
 | **events** | copy link, copy id | — | — | `useCopyLinkContextMenu.ts` |
-| **leagues** | copy link, copy id | — | — | `useCopyLinkContextMenu.ts` |
+| **leagues** | copy link, copy id, edit, delete | edit (button, table+grid) | status-change, delete (10s undo) | `useCopyLinkContextMenu.ts` + page-local `leagueContextMenuItems()`, `useLeaguesRowActions.ts`, `useLeaguesBulkActions.ts` |
 | **locations** | — | edit (button, table+grid) | — | `useLocationsRowActions.ts` |
 | **rulesets** | — | — | — | read-only, no mutations built |
 | **players** | — | — | — | read-only, no mutations built |
@@ -33,9 +33,9 @@ Per-domain inventory of row-level context-menu actions, always-visible inline ro
 
 **Associates' bulk "Rinnova" needs a `received_by` value that can't be auto-derived.** `RECEIVER_OPTIONS` (`useTransactionFormOptions.ts`) is a hardcoded board-member name list — there's no "current logged-in user" concept in this app to default to. The bulk-renew confirm modal (`useAssociatesBulkActions.ts`) has its own required selector for it rather than guessing or silently omitting it.
 
-**Events/leagues are pre-CRUD by design, not an oversight.** Both only have a create flow (`AddModal.vue`, no `EditModal.vue`) and mock/static-adjacent data — `useCopyLinkContextMenu.ts` is the generic "copy link / copy id" menu shared by all three (events/leagues/tournaments) for domains without real edit/delete infrastructure. Tournaments outgrew it (see below) but events/leagues haven't yet — see `docs/BACKLOG.md` for when real CRUD lands there.
+**Events is still pre-CRUD by design, not an oversight.** It only has a create flow (`AddModal.vue`, no `EditModal.vue`) — `useCopyLinkContextMenu.ts` is the generic "copy link / copy id" menu shared by all three (events/leagues/tournaments) for domains without real edit/delete infrastructure. Tournaments and leagues (2026-08-16) have both outgrown it; events hasn't yet — see `docs/BACKLOG.md` for when real CRUD lands there.
 
-**Tournaments' context menu composes the shared generic items with its own.** Rather than growing `useCopyLinkContextMenu.ts` a tournament-specific branch, `tournaments/index.vue` defines its own `tournamentContextMenuItems()` that spreads `rowContextMenuItems(tournament)` (copy link/id) and appends edit/delete, reusing `useTournamentsBulkActions.ts`'s `requestDelete` fed a single-item array rather than a separate single-delete code path.
+**Tournaments' and leagues' context menus compose the shared generic items with their own.** Rather than growing `useCopyLinkContextMenu.ts` a domain-specific branch, `tournaments/index.vue`/`leagues/index.vue` each define their own `tournamentContextMenuItems()`/`leagueContextMenuItems()` that spread `rowContextMenuItems(item)` (copy link/id) and append edit/delete, reusing `use<Domain>BulkActions.ts`'s `requestDelete` fed a single-item array rather than a separate single-delete code path. Leagues' version (`useLeaguesRowActions.ts`, `useLeaguesBulkActions.ts`, `LeaguesListEditModal.vue`, `LeaguesListBulkActionsBar.vue`) mirrors the tournaments one file-for-file.
 
 **Locations has no delete, row or bulk.** Only inline edit exists today (`useLocationsRowActions.ts`). Not evaluated as part of this pass — worth a look if locations gets more actively managed.
 
