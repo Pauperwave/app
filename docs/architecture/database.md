@@ -87,7 +87,7 @@ An `admin` (elevated authorization) is very likely *also* a `players` row (they 
 | `tournaments` | 🟢 Agnostic | no Commander-specific columns |
 | `tournament_registrations` | 🟢 Agnostic | |
 | `tournament_rounds` | 🟢 Agnostic | `round_number`/`status`/timestamps only |
-| `mtg_formats` | 🟢 Agnostic | the format registry itself — **but 0 rows**, structurally ready for multi-format, never populated |
+| `mtg_formats` | 🟢 Agnostic | the format registry itself — seeded (`Commander`, `Pauper`, `Draft`, ...) and user-editable via `mtgFormats/ManageModal.vue`, including a `color` column (ADR-016) |
 | `player_formats` | 🟢 Agnostic | player↔format junction via `format_uuid` |
 | `players` | 🟢 Agnostic | |
 | `leagues` | 🟢 Agnostic | |

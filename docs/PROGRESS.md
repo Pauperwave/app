@@ -208,6 +208,14 @@ Implementato in `useCittadinoFilters.ts` come catena di comparatori dopo il tota
 
 **Conseguenze:** quando l'app diventerà multi-tenant, `organizations` sarà probabilmente la prima entità da esporre con una UI dedicata (segue lo stesso pattern CRUD di `/locations`), dato che a quel punto smette di essere una singola riga fissa.
 
+### ADR-016 — Colore dei formati spostato da mappa statica a colonna `mtg_formats.color` (2026-08-16)
+
+**Contesto:** i colori dei formati (Commander, Pauper, Draft, ...) erano hardcoded in `shared/utils/formatColors.ts`, una mappa statica per nome — nessun modo di vederli o cambiarli dalla UI. Richiesta utente: poterli vedere e modificare dalla modale "Gestisci formati".
+
+**Decisione:** aggiunta la colonna `color` (text, nullable) a `mtg_formats`, popolata via migration con l'equivalente hex dei colori già in uso (poi normalizzati in uppercase per coerenza con l'output di `UColorPicker`). `ManageModal.vue` espone uno swatch per riga che apre `UColorPicker` + un input hex in un popover — valore staged localmente, salvato una sola volta alla chiusura del popover (non ad ogni tick del drag, che genererebbe una raffica di scritture concorrenti). `formatColor()`/`formatColorClass()` non sono più funzioni pure in `shared/utils/`: sono diventate il composable `useFormatColor()` (legge la query live di `mtg_formats`), con fallback alla vecchia mappa statica per i formati non ancora migrati/senza colore assegnato.
+
+**Conseguenze:** ogni nuovo formato creato parte senza colore (badge neutro) finché qualcuno non ne sceglie uno dalla modale. La mappa statica resta come fallback legacy, non va più estesa per nuovi formati.
+
 ## Vedi anche
 
 - `docs/architecture/database.md` — schema, RLS, migrazioni
