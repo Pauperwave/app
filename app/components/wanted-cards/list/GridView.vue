@@ -28,6 +28,31 @@ const hasCards = computed(() => sections.some(section => section.cards.length))
 // wanted-cards/index.vue) on the first rendered card, whatever the active
 // section/grouping is.
 const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]?.id)
+
+// The ordered list a shift-click range resolves against — every currently
+// rendered card, flattened across sections in the same order they're drawn
+// (top to bottom, left to right within a section).
+const range = computed(() => sections.flatMap(section => section.cards).map(card => card.id))
+
+// Captured from the checkbox's own native `click` (fires synchronously
+// before the `update:modelValue` it triggers) so a shift-click can be told
+// apart from a plain one — same convention as useWantedCardsTableColumns.ts.
+// A ref, not a plain `let`: the template assigns to this on click, and only
+// a ref's assignment is visible to Vue's template compiler (a closure
+// variable's write inside a template expression isn't observed there).
+const lastClickShiftKey = ref(false)
+
+// Ctrl/Cmd+click or shift+click anywhere on the card toggles/range-selects —
+// same modifier convention as a file manager, lets a visitor select without
+// having to land precisely on the (small, hover-revealed) checkbox. Purely
+// additive: this card has no other whole-card click behavior to conflict
+// with. A shift-click here ranges from whatever card was last toggled (by
+// either method), so a Ctrl+click to pick the first card still anchors a
+// following Shift+click elsewhere on the grid.
+function onCardClick(card: WantedCard, event: MouseEvent) {
+  if (!event.ctrlKey && !event.metaKey && !event.shiftKey) return
+  selection.toggle(card.id, { shiftKey: event.shiftKey, range: range.value })
+}
 </script>
 
 <template>
@@ -63,6 +88,7 @@ const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]
             :id="card.id === firstCardId ? 'tour-wanted-cards-first-card' : undefined"
             :ui="{ body: 'p-0 sm:p-0', footer: 'p-3 sm:p-3' }"
             class="overflow-hidden relative group"
+            @click="onCardClick(card, $event)"
           >
             <!-- Hidden until hover, except once selected — same "stays visible
                  once acted on" reasoning as the header/group checkboxes in
@@ -83,8 +109,10 @@ const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]
               :class="{ '!opacity-100': selection.isSelected(card.id) }"
               :ui="{ base: 'bg-default/90 rounded' }"
               :aria-label="$t('common.selectRow')"
-              @update:model-value="selection.toggle(card.id)"
-              @click.stop
+              @update:model-value="() => selection.toggle(
+                card.id, { shiftKey: lastClickShiftKey, range }
+              )"
+              @click.stop="lastClickShiftKey = $event.shiftKey"
             />
 
             <img

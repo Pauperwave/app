@@ -9,15 +9,40 @@
 export function useSelection<TId = number>() {
   const selectedIds = ref<Set<TId>>(new Set()) as Ref<Set<TId>>
 
+  // Tracks the last id toggled by a plain (non-shift) click — the anchor a
+  // subsequent shift-click range selects against, same convention as
+  // Explorer/Gmail. Reset to null on `clear()`/`setAll` so a stale anchor
+  // from a previous, now-cleared selection can't silently reappear.
+  const lastToggledId = ref<TId | null>(null) as Ref<TId | null>
+
   function isSelected(id: TId) {
     return selectedIds.value.has(id)
   }
 
-  function toggle(id: TId) {
+  // `range`, when passed alongside a shift-click, is the full ordered list of
+  // ids currently on screen (a table's filtered rows, a grid's flattened
+  // cards) — the range between the last toggled id and `id` is resolved
+  // against it, then every id in between is selected (not toggled: shift-click
+  // always selects the range, it doesn't flip already-selected rows off).
+  // Falls back to a plain toggle when there's no prior anchor or `id` isn't
+  // in `range` (e.g. the anchor came from a different, now-filtered-out view).
+  function toggle(id: TId, options?: { shiftKey?: boolean, range?: TId[] }) {
+    if (options?.shiftKey && options.range && lastToggledId.value !== null) {
+      const fromIndex = options.range.indexOf(lastToggledId.value)
+      const toIndex = options.range.indexOf(id)
+      if (fromIndex !== -1 && toIndex !== -1) {
+        const [start, end] = fromIndex < toIndex ? [fromIndex, toIndex] : [toIndex, fromIndex]
+        setAll(options.range.slice(start, end + 1), true)
+        lastToggledId.value = id
+        return
+      }
+    }
+
     const next = new Set(selectedIds.value)
     if (next.has(id)) next.delete(id)
     else next.add(id)
     selectedIds.value = next
+    lastToggledId.value = id
   }
 
   // Used both for the "select all" header checkbox (against the currently
@@ -34,7 +59,24 @@ export function useSelection<TId = number>() {
 
   function clear() {
     selectedIds.value = new Set()
+    lastToggledId.value = null
   }
+
+  // Escape always exits a selection (user request, 2026-08-16) — same
+  // usingInput/modifier-key guard as TourGuide.vue's arrow-key listener, so
+  // this doesn't fire while typing in a form field. Only acts while
+  // something is actually selected, so it doesn't fight a modal's own
+  // Escape-to-close handling (e.g. the bulk-actions confirm dialog) when
+  // there's nothing to clear.
+  useEventListener('keydown', (event: KeyboardEvent) => {
+    if (event.key !== 'Escape' || selectedIds.value.size === 0) return
+
+    const target = event.target as HTMLElement | null
+    const usingInput = target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable
+    if (usingInput || event.metaKey || event.ctrlKey || event.altKey) return
+
+    clear()
+  })
 
   return { selectedIds, isSelected, toggle, setAll, clear }
 }
