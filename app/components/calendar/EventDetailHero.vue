@@ -13,7 +13,7 @@ defineProps<{ event: Event }>()
 </script>
 
 <template>
-  <div class="relative overflow-hidden w-full">
+  <div class="relative overflow-hidden rounded-t-lg w-full">
     <img
       :src="event.image ?? DEFAULT_CALENDAR_COVER_IMAGE"
       :alt="event.name"
@@ -22,16 +22,17 @@ defineProps<{ event: Event }>()
 
     <div class="absolute inset-0 bg-linear-to-b from-transparent to-default" />
 
-    <!-- TODO Da rimpiazzare con il bottone di condivisione -->
-    <!-- <UButton
-      :icon="ICONS.close"
-      color="neutral"
-      variant="subtle"
-      square
+    <!-- No close button here (unlike TournamentDetailHero.vue) — this
+         branch has a nested "open a tournament" flow (see DetailSlideover.
+         vue's openTournament), so dismissing needs to stay reachable via
+         USlideover's own overlay-click/Escape, not compete with a close
+         button in the same top-right corner as this share action. -->
+    <CalendarButtonShareButton
+      :name="event.name"
+      :start-date="event.startDate"
+      :show-label="false"
       class="absolute top-4 inset-e-4"
-      :aria-label="$t('common.close')"
-      @click="close"
-    /> -->
+    />
 
     <h2 class="absolute bottom-0 left-0 right-0 p-4 text-xl font-bold text-white truncate">
       {{ event.name }}
