@@ -225,6 +225,11 @@ const consentSocialOptions = [
   { label: t('associate.consentSocialOptions.no'), value: 'no', icon: ICONS.clear, color: 'error' }
 ]
 
+const emailFilter = computed({
+  get: () => (table.value?.tableApi?.getColumn('email_address')?.getFilterValue() as string) ?? '',
+  set: (value: string) => table.value?.tableApi?.getColumn('email_address')?.setFilterValue(value)
+})
+
 const consentSocialFilter = ref('all')
 
 watch(() => consentSocialFilter.value, (newVal) => {
@@ -282,27 +287,13 @@ watch(() => consentSocialFilter.value, (newVal) => {
             @clear="table?.tableApi?.resetRowSelection()"
           />
           <div v-else id="tour-associates-filters" class="flex items-center gap-4 flex-wrap">
-            <StatusFilterGroup v-model="activeStatusTab" :items="statusTabs" />
-
-            <UInput
-              :model-value="(
-                table?.tableApi?.getColumn('email_address')?.getFilterValue() as string
-              )"
-              class="max-w-sm"
-              :icon="ICONS.search"
-              :placeholder="$t('common.filterEmailsPlaceholder')"
-              @update:model-value="
-                table?.tableApi?.getColumn('email_address')?.setFilterValue($event)
-              "
+            <AssociatesListFiltersBar
+              v-model:active-status-tab="activeStatusTab"
+              v-model:email-filter="emailFilter"
+              v-model:consent-social-filter="consentSocialFilter"
+              :status-tabs="statusTabs"
+              :consent-social-options="consentSocialOptions"
             />
-
-            <UTooltip :text="$t('associate.consentSocialLabel')">
-              <UStatusSelect
-                v-model="consentSocialFilter"
-                :items="consentSocialOptions"
-                name="consentSocialFilter"
-              />
-            </UTooltip>
           </div>
         </template>
 
