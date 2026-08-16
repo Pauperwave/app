@@ -2,6 +2,8 @@
 
 <!-- docs/audits/2026-08-12-fallow-health-review.md -->
 
+> **Superseded by [`2026-08-16-fallow-health-review.md`](./2026-08-16-fallow-health-review.md).** Kept for history — two of this review's three deferred targets (`GridView.vue`, `tesseramento/index.vue`) were addressed in the follow-up session; see the new audit for current numbers and open items.
+
 `pnpm run fallow:health` (`fallow health --score --hotspots --targets`) was run against the full codebase (16,531 LOC, 882 functions analyzed across 161 files).
 
 **Health score: 80 (B).** Maintainability index 94.4 ("good"), 0% dead files/exports, 0.4% duplication (down from ~7.6% after the 2026-08-05 through 2026-08-12 dupe-resolution work, see `2026-08-05-fallow-dupes-review.md`). The two deductions (`-10` hotspots, `-10` unit size) both trace back to the same handful of files, not a systemic problem.
