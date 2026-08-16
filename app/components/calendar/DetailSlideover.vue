@@ -6,13 +6,15 @@
   CalendarTournamentCard.vue when a card is tapped. Mounted once in
   PublicCalendarPage.vue.
 
-  No native header/title bar (2026-08-14 redesign, same "full-bleed image +
-  bottom gradient + overlaid title" hero as MagicTheGathering/league's
-  CommanderArt.vue) — the image spans the top edge-to-edge, close button
-  floats over it, and the title sits on the gradient instead of a separate
-  bar above. :close="false" + no :title prop suppresses USlideover's default
-  header entirely (see its own source: the header only renders when a
-  title/description/close prop or slot is present).
+  No :title/:description prop — the #header slot instead holds the
+  "full-bleed image + bottom gradient + overlaid title" hero (same style as
+  MagicTheGathering/league's CommanderArt.vue), pinned in place while #body
+  scrolls underneath it (2026-08-16 user request — previously this hero was
+  the first element of #body and scrolled away with the rest). :close="false"
+  + a custom close button on the hero itself (tournament branch) replaces
+  USlideover's own; `header: 'p-0 min-h-0'` / `content: 'divide-y-0'` strip
+  the default header's padding and the header/body divider line so the image
+  can still sit edge-to-edge.
 
   Participant rows use UUser + generatePlayerAvatar() directly, not
   PlayerTag.vue — that component always calls useAssociatesQuery()
@@ -77,9 +79,30 @@ function openTournament(tournament: Tournament) {
     v-model:open="isOpen"
     inset
     :close="false"
-    :ui="{ body: 'p-0 sm:p-0 flex-1 overflow-y-auto' }"
+    :ui="{
+      header: 'p-0 min-h-0',
+      body: 'p-0 sm:p-0 flex-1 overflow-y-auto',
+      content: 'divide-y-0'
+    }"
   >
-    <template #body="{ close }">
+    <!-- Hero (image/gradient/title) pinned in the native #header slot
+         (2026-08-16 user request) — stays visible while the rest of the
+         details scroll underneath it in #body, instead of scrolling away
+         as it did when it was the first element of #body. -->
+    <template #header="{ close }">
+      <CalendarEventDetailHero
+        v-if="selection?.kind === 'event'"
+        :event="selection.event"
+      />
+
+      <CalendarTournamentDetailHero
+        v-else-if="selection?.kind === 'tournament'"
+        :tournament="selection.tournament"
+        :close="close"
+      />
+    </template>
+
+    <template #body>
       <CalendarEventDetailContent
         v-if="selection?.kind === 'event'"
         :event="selection.event"
@@ -90,7 +113,6 @@ function openTournament(tournament: Tournament) {
       <CalendarTournamentDetailContent
         v-else-if="selection?.kind === 'tournament'"
         :tournament="selection.tournament"
-        :close="close"
       />
     </template>
   </USlideover>
