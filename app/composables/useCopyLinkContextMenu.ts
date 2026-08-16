@@ -1,10 +1,12 @@
 // app\composables\useCopyLinkContextMenu.ts
-// Generic "Copia link" + "Copia ID" context menu for domains that don't yet
-// have edit/delete infrastructure (events/leagues/tournaments are still
-// read-only, mock-data pages — see docs/BACKLOG.md). Unlike
-// useWantedCardsRowActions.ts/useTransactionsRowActions.ts there is no
-// per-domain logic here, just a route prefix and an item, so one shared
-// composable covers all three instead of three near-identical copies.
+// Generic "Copia link" + "Copia ID" context menu, shared across events/
+// leagues/tournaments so each doesn't hand-roll the same two items — just a
+// route prefix and an item, no per-domain logic. Tournaments now has real
+// edit/delete infrastructure (unlike events/leagues, still pre-CRUD — see
+// docs/BACKLOG.md); its index.vue appends its own items to
+// rowContextMenuItems()'s result and reads `contextMenuRow` directly to do
+// the same for the table's right-click menu, rather than this composable
+// growing domain-specific branches.
 // "Copia link" uses `uuid` (the public, non-enumerable identifier — an
 // auto-increment `id` in the URL would let a visitor enumerate every row by
 // walking /tournaments/1, /tournaments/2, ...); "Copia ID" intentionally
@@ -57,5 +59,7 @@ export function useCopyLinkContextMenu<T extends LinkableItem>(routeBase: string
   const tableContextMenuItems = computed<DropdownMenuItem[]>(() =>
     contextMenuRow.value ? rowContextMenuItems(contextMenuRow.value) : [])
 
-  return { rowContextMenuItems, onRowContextmenu, tableContextMenuItems }
+  return {
+    rowContextMenuItems, onRowContextmenu, tableContextMenuItems, contextMenuRow
+  }
 }
