@@ -6,18 +6,6 @@
 // active list.
 export default defineEventHandler(async (event) => {
   const { id, supabase } = await parseIdRequest(event)
-
-  const { error } = await supabase
-    .from('tournaments')
-    .update({ deleted_at: new Date().toISOString() })
-    .eq('id', id)
-
-  if (error) {
-    throw createError({
-      statusCode: 500,
-      statusMessage: error.message
-    })
-  }
-
+  await softDeleteById(supabase, 'tournaments', id)
   return { deleted: true }
 })

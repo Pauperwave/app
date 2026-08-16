@@ -21,6 +21,7 @@
     "refresh:wanted-cards-prices": "node --env-file=.env scripts/refresh-wanted-cards-prices.mjs",
     "fallow:dead-code": "fallow dead-code",
     "fallow:dupes": "fallow dupes",
+    "fallow:dupes:report": "node scripts/fallow-dupes-report.mjs",
     "fallow:audit": "fallow audit",
     "fallow:health": "fallow health --score --hotspots --targets",
     "fallow:security": "fallow security",
