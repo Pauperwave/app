@@ -1,4 +1,4 @@
-<!-- app\components\PageInDevelopment.vue -->
+<!-- app\components\ui\PageInDevelopment.vue -->
 <!-- Shared by /calendar and /finance — same placeholder shell, byte-identical
      except for the panel id, title, and the optional #actions slot
      (fallow dupes, 2026-08-12). Give this a real body once either page's

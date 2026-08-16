@@ -1,4 +1,4 @@
-// app\composables\useTourSpotlight.ts
+// app\composables\tour\useTourSpotlight.ts
 import type { UseTourReturn } from '@nuxt/ui/composables'
 
 const DEFAULT_PADDING = 8

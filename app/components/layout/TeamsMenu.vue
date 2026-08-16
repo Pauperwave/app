@@ -1,4 +1,4 @@
-<!-- app\components\TeamsMenu.vue -->
+<!-- app\components\layout\TeamsMenu.vue -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 

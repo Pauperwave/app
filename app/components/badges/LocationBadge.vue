@@ -1,4 +1,4 @@
-<!-- app\components\LocationBadge.vue -->
+<!-- app\components\badges\LocationBadge.vue -->
 <!--
   A tournament/event's venue as a clickable pill linking out to Google Maps —
   extracted out of tournaments/list/Card.vue (2026-08-16), same "single

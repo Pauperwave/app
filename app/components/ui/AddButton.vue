@@ -1,4 +1,4 @@
-<!-- app\components\AddButton.vue -->
+<!-- app\components\ui\AddButton.vue -->
 <script setup lang="ts">
 interface Props {
   label: string

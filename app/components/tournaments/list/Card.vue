@@ -82,13 +82,13 @@ function timePart(startDate: string) {
       </div>
 
       <div class="flex items-center gap-2 mt-1.5 flex-wrap">
-        <FormatBadge :format="tournament.format" :icon="ICONS.gameplay" />
+        <BadgesFormatBadge :format="tournament.format" :icon="ICONS.gameplay" />
 
         <UBadge color="neutral" variant="subtle" :icon="ICONS.clock">
           {{ timePart(tournament.startDate) }}
         </UBadge>
 
-        <LocationBadge
+        <BadgesLocationBadge
           v-if="tournament.location"
           :location="tournament.location"
           :location-address="tournament.locationAddress"

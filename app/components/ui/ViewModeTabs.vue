@@ -1,4 +1,4 @@
-<!-- app\components\ViewModeTabs.vue -->
+<!-- app\components\ui\ViewModeTabs.vue -->
 <script setup lang="ts">
 import type { TabsItem } from '@nuxt/ui'
 

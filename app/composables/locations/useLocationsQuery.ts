@@ -1,4 +1,4 @@
-// app\composables\useLocationsQuery.ts
+// app\composables\locations\useLocationsQuery.ts
 // Reused across every domain's AddModal that needs to pick a venue
 // (tournaments today, events/leagues once those migrate too) — same
 // reasoning as useOrganizationsQuery.ts/useMtgFormatsQuery.ts. Also backs
