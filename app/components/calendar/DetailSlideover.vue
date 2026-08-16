@@ -82,7 +82,7 @@ function openTournament(tournament: Tournament) {
     :ui="{
       header: 'p-0 min-h-0',
       body: 'p-0 sm:p-0 flex-1 overflow-y-auto',
-      content: 'divide-y-0'
+      content: 'divide-y-0 overflow-hidden'
     }"
   >
     <!-- Hero (image/gradient/title) pinned in the native #header slot

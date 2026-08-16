@@ -11,7 +11,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="relative overflow-hidden w-full">
+  <div class="relative overflow-hidden rounded-t-lg w-full">
     <img
       :src="tournament.image ?? DEFAULT_CALENDAR_COVER_IMAGE"
       :alt="tournament.name"
