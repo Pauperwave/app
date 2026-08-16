@@ -12,6 +12,13 @@
   calendar app. See eventIcs.ts's googleCalendarUrl comment.
 -->
 <script lang="ts" setup>
+// fallow-ignore-file security-sink -- fallow flags window.open() below as a
+// possible open-redirect (CWE-601) since its target isn't a literal string.
+// Verified: googleCalendarUrl() (eventIcs.ts) always returns a hardcoded
+// https://calendar.google.com/calendar/render?... origin — the dynamic
+// parts (item.name/location/dates) only ever reach the query string via
+// URLSearchParams, which percent-encodes them, so none of them can alter
+// the scheme/origin or produce a javascript: URL.
 import type { CalendarIcsItem } from '~/utils/events/eventIcs'
 
 interface Props {
