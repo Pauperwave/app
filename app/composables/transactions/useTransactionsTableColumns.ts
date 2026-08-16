@@ -1,8 +1,9 @@
 // app\composables\transactions\useTransactionsTableColumns.ts
-import { PlayerTag, UBadge, UIcon } from '#components'
+import { PlayerTag, UBadge, UCheckbox, UIcon } from '#components'
 import type { BadgeProps, TableColumn } from '@nuxt/ui'
 import type { PaymentType } from '#shared/types/transactions'
 import type { Transaction } from '~/types'
+import type { Selection } from '~/composables/useSelection'
 
 export const transactionsColumnHeaders = (t: (key: string) => string) => ({
   payer: t('transaction.columns.payer'),
@@ -22,7 +23,13 @@ const PAYMENT_TYPE_BADGE_CONFIG: Record<PaymentType, { color: BadgeProps['color'
   'Donation': { color: 'neutral', icon: ICONS.heartHandshake }
 }
 
-export function useTransactionsTableColumns() {
+// selection: threaded through rather than read from a composable here, same
+// reasoning as useTournamentsTableColumns.ts/useWantedCardsTableColumns.ts —
+// that state (useSelection.ts) is owned by the page. Grouping (by payer) is
+// on here, unlike tournaments, so the select column follows
+// useWantedCardsTableColumns.ts's shape (a group's checkbox drives all its
+// subRows), not tournaments' simpler ungrouped one.
+export function useTransactionsTableColumns(selection: Selection<number>) {
   const { t } = useI18n()
 
   const columnHeaders = transactionsColumnHeaders(t)
@@ -31,6 +38,47 @@ export function useTransactionsTableColumns() {
     day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
   })
   const amountFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
+
+  let lastClickShiftKey = false
+
+  const selectColumn: TableColumn<Transaction> = {
+    id: 'select',
+    enableSorting: false,
+    enableHiding: false,
+    meta: { class: { th: 'w-px p-0', td: 'w-px p-0' } },
+    header: ({ table: tableApi }) => {
+      const leafRows = tableApi.getFilteredRowModel().rows.filter(row => row.subRows.length === 0)
+      const ids = leafRows.map(row => row.original.id)
+      const allSelected = ids.length > 0 && ids.every(id => selection.isSelected(id))
+      const someSelected = ids.some(id => selection.isSelected(id))
+      return centerTableCell(h(UCheckbox, {
+        'modelValue': allSelected ? true : (someSelected ? 'indeterminate' : false),
+        'onUpdate:modelValue': (value: unknown) => selection.setAll(ids, !!value),
+        'aria-label': t('common.selectAll')
+      }))
+    },
+    cell: ({ row, table: tableApi }) => {
+      if (row.getIsGrouped()) {
+        const ids = row.subRows.map(subRow => subRow.original.id)
+        const allSelected = ids.length > 0 && ids.every(id => selection.isSelected(id))
+        const someSelected = ids.some(id => selection.isSelected(id))
+        return centerTableCell(h(UCheckbox, {
+          'modelValue': allSelected ? true : (someSelected ? 'indeterminate' : false),
+          'onUpdate:modelValue': (value: unknown) => selection.setAll(ids, !!value),
+          'aria-label': t('common.selectRow')
+        }))
+      }
+      const leafRows = tableApi.getFilteredRowModel().rows.filter(r => r.subRows.length === 0)
+      const range = leafRows.map(r => r.original.id)
+      return centerTableCell(h(UCheckbox, {
+        'modelValue': selection.isSelected(row.original.id),
+        'onUpdate:modelValue': () =>
+          selection.toggle(row.original.id, { shiftKey: lastClickShiftKey, range }),
+        'onClick': (e: MouseEvent) => { lastClickShiftKey = e.shiftKey },
+        'aria-label': t('common.selectRow')
+      }))
+    }
+  }
 
   // Own accessorFn (not accessorKey) since the payer name isn't a single raw
   // column on the row — it's derived from either the linked associate or the
@@ -45,6 +93,7 @@ export function useTransactionsTableColumns() {
   }
 
   const columns: TableColumn<Transaction>[] = [
+    selectColumn,
     {
       id: 'payer',
       accessorFn: payerName,

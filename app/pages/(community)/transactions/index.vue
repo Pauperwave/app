@@ -29,13 +29,25 @@ const activeTypeTab = computed<'all' | PaymentType>({
 })
 
 const { filteredTransactions, typeTabs } = useTransactionsFilters(data, range, activeTypeTab)
-const { columns } = useTransactionsTableColumns()
 const {
   editingTransaction, editModalOpen, deletingTransaction, deleteConfirmOpen, deleting,
   confirmDelete, tableContextMenuItems, onRowContextmenu
 } = useTransactionsRowActions()
 
-const table = useTemplateRef('table')
+const selection = useSelection<number>()
+const { columns } = useTransactionsTableColumns(selection)
+
+// No selection UI wired up here previously — no bulk actions at all despite
+// tournaments/wanted-cards having this exact delete-with-confirm pattern for
+// a similarly-shaped record (2026-08-16). Same selectedX-filtered-by-selection
+// shape as tournaments/index.vue's own selectedTournaments.
+const selectedTransactions = computed(() =>
+  filteredTransactions.value.filter(transaction => selection.isSelected(transaction.id)))
+const {
+  pendingDelete, confirmOpen: bulkDeleteConfirmOpen, deleting: bulkDeleting,
+  requestBulkDelete, confirmBulkDelete
+} = useTransactionsBulkActions()
+
 const sorting = ref([{ id: 'payment_date', desc: true }])
 
 // Hidden once a specific type tab is active: with the tab already saying
@@ -104,13 +116,25 @@ const tour = useTransactionsTour()
         }"
       >
         <template #left>
-          <div id="tour-transactions-filters">
+          <TransactionsListBulkActionsBar
+            v-if="selectedTransactions.length"
+            side="left"
+            :count="selectedTransactions.length"
+            @clear="selection.clear()"
+          />
+          <div v-else id="tour-transactions-filters">
             <StatusFilterGroup v-model="activeTypeTab" :items="typeTabs" />
           </div>
         </template>
 
         <template #right>
-          <div id="tour-transactions-actions" class="flex items-center gap-4 flex-wrap">
+          <TransactionsListBulkActionsBar
+            v-if="selectedTransactions.length"
+            side="right"
+            :count="selectedTransactions.length"
+            @delete="requestBulkDelete(selectedTransactions)"
+          />
+          <div v-else id="tour-transactions-actions" class="flex items-center gap-4 flex-wrap">
             <UButton
               :label="$t('transaction.groupByPayer')"
               :icon="ICONS.players"
@@ -129,7 +153,6 @@ const tour = useTransactionsTour()
       <UContextMenu :items="tableContextMenuItems">
         <UTable
           id="tour-transactions-table"
-          ref="table"
           v-model:sorting="sorting"
           :column-visibility="columnVisibility"
           :data="filteredTransactions"
@@ -173,5 +196,25 @@ const tour = useTransactionsTour()
         ? `${deletingTransaction.associate.first_name} ${deletingTransaction.associate.last_name}`
         : `${deletingTransaction.payer_name} ${deletingTransaction.payer_surname}` }}
     </p>
+  </ConfirmModal>
+
+  <ConfirmModal
+    v-model:open="bulkDeleteConfirmOpen"
+    :title="$t('transaction.bulkActions.deleteConfirmTitle', pendingDelete?.length ?? 0)"
+    :warning="$t('common.confirmDeleteWarning')"
+    :confirm-label="$t('transaction.rowActions.delete')"
+    :confirm-icon="ICONS.delete"
+    :loading="bulkDeleting"
+    @confirm="confirmBulkDelete"
+  >
+    <ul v-if="pendingDelete" class="max-h-40 overflow-y-auto text-sm space-y-1">
+      <li v-for="transaction in pendingDelete" :key="transaction.id">
+        {{ transaction.payment_amount }}€
+        —
+        {{ transaction.associate
+          ? `${transaction.associate.first_name} ${transaction.associate.last_name}`
+          : `${transaction.payer_name} ${transaction.payer_surname}` }}
+      </li>
+    </ul>
   </ConfirmModal>
 </template>
