@@ -5,12 +5,18 @@ interface Props {
 }
 
 const { ids } = defineProps<Props>()
+// v-model, not an internal ref + default-slot trigger (2026-08-16) — needed
+// so the shared AssociatesListBulkActionsBar's @approve can open this from
+// requests.vue, same as reject/restore's plain ConfirmModal/function already
+// work. Kept its own component (not folded into ConfirmModal.vue) since it
+// needs both a cancel AND an approve button with independent labels/colors,
+// not ConfirmModal's single confirm+cancel pair.
+const open = defineModel<boolean>('open', { default: false })
 
 const { t } = useI18n()
 const toast = useToast()
 const { approveAssociates } = useAssociatesMutations()
 
-const open = ref(false)
 const submitting = ref(false)
 
 async function onSubmit() {
@@ -42,8 +48,6 @@ async function onSubmit() {
     :title="t('associate.approveModal.title', ids.length)"
     :description="t('associate.approveModal.description')"
   >
-    <slot />
-
     <template #body>
       <div class="flex justify-end gap-2">
         <UButton

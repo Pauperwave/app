@@ -3,6 +3,7 @@
 import type { TableColumn, TabsItem } from '@nuxt/ui'
 import { upperFirst } from 'scule'
 import { UBadge } from '#components'
+import type { Table } from '@tanstack/vue-table'
 import type { Associate } from '~/types'
 
 const {
@@ -37,12 +38,21 @@ const viewModeItems = computed<TabsItem[]>(() => [
 const route = useRoute()
 const router = useRouter()
 
-const table = useTemplateRef('table')
+const table = useTemplateRef<{ tableApi: Table<Associate> }>('table')
 const {
   editingAssociate, editModalOpen,
   renewingAssociate, renewModalOpen,
   tableContextMenuItems, onRowContextmenu
 } = useAssociatesRowActions()
+
+// Row-selection existed here with nothing wired to it (2026-08-16) — bulk
+// "Rinnova" is the fix, same shape as tournaments'/wanted-cards' bulk bars.
+const selectedRosterAssociates = computed<Associate[]>(() =>
+  table.value?.tableApi?.getFilteredSelectedRowModel().rows.map(row => row.original) ?? [])
+const {
+  pendingRenewal, confirmOpen: renewConfirmOpen, receivedBy, receiverOptions,
+  requestBulkRenew, confirmBulkRenew
+} = useAssociatesBulkActions()
 // fallow-ignore-next-line code-duplication -- the useAssociatesTableColumns destructure
 // and status-filter-from-query function mirror requests.vue's own (different column
 // id and query semantics per page), not worth forcing into a shared helper
@@ -279,7 +289,13 @@ watch(() => consentSocialFilter.value, (newVal) => {
         :ui="{ root: 'flex-wrap h-auto py-2 gap-1.5', left: 'gap-4 flex-wrap', right: 'gap-4' }"
       >
         <template #left>
-          <div id="tour-associates-filters" class="flex items-center gap-4 flex-wrap">
+          <AssociatesListBulkActionsBar
+            v-if="selectedRosterAssociates.length"
+            side="left"
+            :count="selectedRosterAssociates.length"
+            @clear="table?.tableApi?.resetRowSelection()"
+          />
+          <div v-else id="tour-associates-filters" class="flex items-center gap-4 flex-wrap">
             <StatusFilterGroup v-model="activeStatusTab" :items="statusTabs" />
 
             <UInput
@@ -305,7 +321,14 @@ watch(() => consentSocialFilter.value, (newVal) => {
         </template>
 
         <template #right>
-          <div id="tour-associates-actions">
+          <AssociatesListBulkActionsBar
+            v-if="selectedRosterAssociates.length"
+            side="right"
+            :count="selectedRosterAssociates.length"
+            show-renew
+            @renew="requestBulkRenew(selectedRosterAssociates)"
+          />
+          <div v-else id="tour-associates-actions">
             <AssociatesTableToolbarActions :visibility-items="visibilityItems" />
           </div>
         </template>
@@ -355,6 +378,33 @@ watch(() => consentSocialFilter.value, (newVal) => {
     :preset-associate="renewingAssociate"
     hide-trigger
   />
+
+  <ConfirmModal
+    v-model:open="renewConfirmOpen"
+    :title="$t('associate.bulkActions.renewModalTitle', pendingRenewal?.length ?? 0)"
+    :confirm-label="$t('associate.rowActions.renew')"
+    :confirm-icon="ICONS.refresh"
+    confirm-color="primary"
+    :confirm-disabled="!receivedBy"
+    @confirm="confirmBulkRenew"
+  >
+    <UFormField :label="$t('associate.bulkActions.renewModalReceivedByLabel')" class="mb-3">
+      <USelectMenu
+        v-model="receivedBy"
+        :items="receiverOptions"
+        value-key="value"
+        :avatar="receiverOptions.find(option => option.value === receivedBy)?.avatar"
+        :placeholder="$t('associate.bulkActions.renewModalReceivedByPlaceholder')"
+        class="w-full"
+      />
+    </UFormField>
+
+    <ul v-if="pendingRenewal" class="max-h-40 overflow-y-auto text-sm space-y-1">
+      <li v-for="associate in pendingRenewal" :key="associate.id">
+        {{ associate.first_name }} {{ associate.last_name }}
+      </li>
+    </ul>
+  </ConfirmModal>
 
   <TourGuide :tour="tour" />
 </template>

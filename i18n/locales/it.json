@@ -401,6 +401,16 @@
       "successToastTitle": "Richieste ripristinate",
       "successToastDescription": "Richiesta rimessa in attesa per {count} associato | Richieste rimesse in attesa per {count} associati",
       "errorToastTitle": "Ripristino fallito"
+    },
+    "bulkActions": {
+      "selectedCount": "{count} selezionato | {count} selezionati",
+      "clearSelection": "Deseleziona",
+      "renewModalTitle": "Rinnova {count} associato | Rinnova {count} associati",
+      "renewModalReceivedByLabel": "Ricevuto da",
+      "renewModalReceivedByPlaceholder": "Seleziona chi ha ricevuto il pagamento",
+      "renewUndoToast": "{count} rinnovo verrà creato | {count} rinnovi verranno creati",
+      "renewSuccessToast": "Rinnovo creato per {count} associato | Rinnovi creati per {count} associati",
+      "partialFailure": "{count} operazione non riuscita | {count} operazioni non riuscite"
     }
   },
   "tesseramento": {
@@ -497,6 +507,13 @@
       "delete": "Elimina",
       "deleteConfirmTitle": "Eliminare questa transazione?",
       "deleteErrorTitle": "Impossibile eliminare la transazione"
+    },
+    "bulkActions": {
+      "selectedCount": "{count} selezionata | {count} selezionate",
+      "clearSelection": "Deseleziona",
+      "deleteConfirmTitle": "Eliminare {count} transazione? | Eliminare {count} transazioni?",
+      "deleteSuccessToast": "{count} transazione eliminata | {count} transazioni eliminate",
+      "partialFailure": "{count} operazione non riuscita | {count} operazioni non riuscite"
     },
     "editModal": {
       "title": "Modifica transazione",

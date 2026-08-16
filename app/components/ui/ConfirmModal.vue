@@ -28,7 +28,8 @@ const {
   cancelIcon = ICONS.undo,
   confirmColor = 'error',
   loading = false,
-  dismissible = true
+  dismissible = true,
+  confirmDisabled = false
 } = defineProps<{
   title: string
   /** Shown under the title, e.g. a one-line summary of the action. */
@@ -46,6 +47,10 @@ const {
   confirmColor?: 'error' | 'warning' | 'primary'
   loading?: boolean
   dismissible?: boolean
+  /** For confirms that need extra required input in the #body slot (e.g. a
+   *  "who received this" select) before confirming makes sense — disables the
+   *  confirm button without blocking the whole modal. */
+  confirmDisabled?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -93,6 +98,7 @@ function onCancel() {
         variant="solid"
         :trailing-icon="confirmIcon"
         :loading="loading"
+        :disabled="confirmDisabled"
         :label="displayConfirmLabel"
         @click="emit('confirm')"
       />
