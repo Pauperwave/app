@@ -23,10 +23,25 @@ const {
   data: tournamentsData, isLoading: loading, status, refetch
 } = useTournamentsQuery()
 const data = computed(() => tournamentsData.value ?? [])
-const { statusFilter, filteredTournaments, statusTabs } = useTournamentsFilters(data, range)
+const {
+  statusFilter, formatFilter, filteredTournaments, statusTabs, formatTabs
+} = useTournamentsFilters(data, range)
 const { rowContextMenuItems, onRowContextmenu, tableContextMenuItems } = useCopyLinkContextMenu('/tournaments')
 const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowActions()
-const { columns } = useTournamentsTableColumns(openEditModal)
+
+const selection = useSelection<number>()
+const { columns } = useTournamentsTableColumns(selection, openEditModal)
+const {
+  pendingAction, confirmOpen: bulkConfirmOpen, requestStatusChange, requestDelete,
+  confirmPendingAction
+} = useTournamentsBulkActions(selection)
+
+// Selected tournaments resolved against the currently filtered set, not the
+// full unfiltered data — same reasoning as wanted-cards/index.vue's
+// selectedCards: a tournament hidden by the active status filter shouldn't
+// be actionable even if it stayed selected from before.
+const selectedTournaments = computed(() =>
+  filteredTournaments.value.filter(tournament => selection.isSelected(tournament.id)))
 
 const viewMode = ref<'table' | 'grid'>('grid')
 const viewModeItems = computed<TabsItem[]>(() => [
@@ -82,14 +97,48 @@ const tour = useTournamentsTour()
 
       <UDashboardToolbar>
         <template #left>
-          <div id="tour-tournaments-filters">
+          <!-- Swapped for the bulk-actions bar (same row/height) while
+               there's a selection, instead of the filters — see
+               TournamentsListBulkActionsBar.vue for why this replaces rather
+               than adds a row. -->
+          <TournamentsListBulkActionsBar
+            v-if="selectedTournaments.length"
+            side="left"
+            :count="selectedTournaments.length"
+            @clear="selection.clear()"
+          />
+          <div v-else id="tour-tournaments-filters" class="flex items-center gap-4 flex-wrap">
             <StatusFilterGroup v-model="statusFilter" :items="statusTabs" />
+
+            <!-- Dropdown, not a StatusFilterGroup button row: format isn't a
+                 small fixed set like status (5 values) — it's whatever
+                 mtg_formats rows exist, up to the 8 the association actually
+                 runs (see app/utils/cittadinoFormats.ts). A button per
+                 format alongside the status buttons would crowd/wrap the
+                 toolbar; a dropdown scales to that count the same way it
+                 already does for format selection in AddModal.vue. -->
+            <USelectMenu
+              v-model="formatFilter"
+              :items="formatTabs"
+              value-key="value"
+              :placeholder="$t('tournament.filters.formatPlaceholder')"
+              :icon="ICONS.layers"
+              class="w-40"
+            />
           </div>
         </template>
 
         <template #right>
+          <TournamentsListBulkActionsBar
+            v-if="selectedTournaments.length"
+            side="right"
+            :count="selectedTournaments.length"
+            @mark-status="requestedStatus =>
+              requestStatusChange(requestedStatus, selectedTournaments)"
+            @delete="requestDelete(selectedTournaments)"
+          />
           <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->
-          <div id="tour-tournaments-actions">
+          <div v-else id="tour-tournaments-actions">
             <HomeDateRangePicker v-model="range" class="-ms-1" />
           </div>
         </template>
@@ -110,7 +159,7 @@ const tour = useTournamentsTour()
             class="w-full"
             :ui="{ tr: 'cursor-pointer' }"
             @contextmenu="onRowContextmenu"
-            @select="(_e, row) => navigateTo(`/tournaments/${row.original.uuid}`)"
+            @select="(_e, row) => navigateTo(tournamentDetailUrl(row.original))"
           />
         </UContextMenu>
 
@@ -119,6 +168,7 @@ const tour = useTournamentsTour()
           :tournaments="filteredTournaments"
           :context-menu-items="rowContextMenuItems"
           :on-edit="openEditModal"
+          :selection="selection"
         />
       </div>
     </template>
@@ -127,4 +177,26 @@ const tour = useTournamentsTour()
   <TourGuide :tour="tour" />
 
   <TournamentsListEditModal v-model="editModalOpen" :tournament="editingTournament" />
+
+  <ConfirmModal
+    v-model:open="bulkConfirmOpen"
+    :title="pendingAction?.type === 'delete'
+      ? $t('tournament.bulkActions.confirmDeleteTitle', pendingAction.tournaments.length)
+      : $t('tournament.bulkActions.confirmStatusTitle', {
+        status: $t(`tournament.status.${pendingAction?.status}`)
+      }, pendingAction?.tournaments.length ?? 0)"
+    :warning="pendingAction?.type === 'delete' ? $t('common.confirmDeleteWarning') : undefined"
+    :confirm-label="pendingAction?.type === 'delete'
+      ? $t('tournament.rowActions.delete')
+      : $t('tournament.bulkActions.confirm')"
+    :confirm-color="pendingAction?.type === 'delete' ? 'error' : 'primary'"
+    :confirm-icon="pendingAction?.type === 'delete' ? ICONS.delete : undefined"
+    @confirm="confirmPendingAction"
+  >
+    <ul v-if="pendingAction" class="max-h-40 overflow-y-auto text-sm space-y-1">
+      <li v-for="tournament in pendingAction.tournaments" :key="tournament.id">
+        {{ tournament.name }}
+      </li>
+    </ul>
+  </ConfirmModal>
 </template>
