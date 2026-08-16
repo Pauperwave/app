@@ -9,6 +9,7 @@ If a component needs a specific domain's data/types/copy to make sense, it doesn
 ## Pieces here
 
 - **`AddButton`** — the "Nuovo X" trigger button (`label`, `icon`, `@click`) used to open every domain's Add modal. Check here before hand-rolling another primary add button.
+- **`EditIconButton`** — the icon-only "edit" button with a hover tooltip (`label`/`size` props, `@click`), used in list tables (rendered via `h()`) and grid cards wherever a row/card has an edit action. Check here before hand-rolling another bare `UButton :icon="ICONS.edit"`.
 - **`ConfirmModal`** — a destructive-confirmation dialog (`title`/`description`/`warning`, confirm+cancel with configurable icon/color, optional `#body` slot for item-specific context like a thumbnail+name). Not a generic modal shell — specifically for "are you sure you want to do X" flows.
 - **`CopyLinkButton`** — copies a shareable link (e.g. a row's detail-page URL) to the clipboard with a brief confirmation state.
 - **`CopyOpenLinkPair`** — the `CopyLinkButton` + "open in new tab" `UTooltip`/`UButton` pair used wherever a page links out to its own public counterpart (`url`/`copy-label`/`open-label` props). Check here before hand-rolling another copy+open link pair.
