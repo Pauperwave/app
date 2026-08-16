@@ -200,13 +200,17 @@ export interface Tournament {
   // friendlier name, resolving the old "just the name of the place" TODO.
   location: string | null
   locationAddress: string | null
+  // Precise Google Maps place link (locations.google_maps_url) — takes
+  // priority over the generic address-search fallback when set, see
+  // supabase/migrations/20260816120000_add_locations_google_maps_url.sql.
+  locationMapsUrl: string | null
   entryFee: number | null
   description: string | null
   prizes: string | null
   companionCode: string | null
   image: string | null
   participants: string[]
-  // Distinct from `organizer` (the running club/group, e.g. "PauperWave") —
+  // Distinct from `organizer` (the running club/group, e.g. "Pauperwave") —
   // the specific person to contact about this tournament. Both optional:
   // most tournaments have neither, only a real name implies a phone worth
   // showing (see the Hobbit draft seed, migration 20260815100500).
@@ -247,6 +251,46 @@ export interface Event {
   locationAddress: string | null
   image: string | null
   companionCode: string | null
+}
+
+export type DayOfWeek
+  = | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
+
+// null = closed that day; HH:mm strings otherwise. Always has all 7 keys
+// (OpeningHoursEditor.vue initializes every day, closed or not) rather than
+// only the open ones, so the editor never has to guess a day is unset vs.
+// deliberately closed.
+export type OpeningHours = Record<DayOfWeek, { open: string, close: string } | null>
+
+// A tournament/event venue — previously a read-only lookup for AddModal
+// dropdowns (useLocationsQuery.ts), now also the domain type behind the
+// /locations management page (2026-08-16).
+export interface Location {
+  id: number
+  uuid: string
+  name: string
+  address: string
+  city: string
+  province: string
+  postalCode: string
+  country: string
+  phone: string | null
+  email: string | null
+  website: string | null
+  // Precise Google Maps place link — takes priority over the generic
+  // address-search fallback (googleMapsUrl() util) when set, see
+  // supabase/migrations/20260816120000_add_locations_google_maps_url.sql.
+  googleMapsUrl: string | null
+  openingHours: OpeningHours | null
+  image: string | null
+  facebook: string | null
+  instagram: string | null
+  telegramChannel: string | null
+  whatsapp: string | null
+  // Simple boolean, not a date range — no reopening date is tracked, this
+  // only drives the "chiuso temporaneamente" badge/banner and disables (but
+  // doesn't clear) the opening-hours editor.
+  temporarilyClosed: boolean
 }
 
 // --- Campionato Cittadino -----------------------------------------------------

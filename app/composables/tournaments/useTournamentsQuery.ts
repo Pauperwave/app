@@ -19,7 +19,7 @@ export function useTournamentsQuery() {
         .from('tournaments')
         .select(`
           *,
-          location:locations(name, address, city, province, postal_code, country),
+          location:locations(name, address, city, province, postal_code, country, google_maps_url),
           organizer:organizations(name),
           format:mtg_formats(name),
           event:events(uuid, name),
@@ -53,6 +53,7 @@ export function useTournamentsQuery() {
         locationAddress: row.location
           ? `${row.location.address}, ${row.location.postal_code} ${row.location.city} ${row.location.province}, ${row.location.country}`
           : null,
+        locationMapsUrl: row.location?.google_maps_url ?? null,
         entryFee: row.entry_fee,
         description: row.description,
         prizes: row.prizes,

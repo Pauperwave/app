@@ -267,14 +267,22 @@ export type Database = {
           country: string
           created_at: string
           email: string | null
+          facebook_url: string | null
+          google_maps_url: string | null
           id: number
+          image_url: string | null
+          instagram_url: string | null
           name: string
+          opening_hours: Json | null
           phone: string | null
           postal_code: string
           province: string
+          telegram_url: string | null
+          temporarily_closed: boolean
           updated_at: string
           uuid: string
           website: string | null
+          whatsapp_url: string | null
         }
         Insert: {
           address: string
@@ -282,14 +290,22 @@ export type Database = {
           country?: string
           created_at?: string
           email?: string | null
+          facebook_url?: string | null
+          google_maps_url?: string | null
           id?: number
+          image_url?: string | null
+          instagram_url?: string | null
           name: string
+          opening_hours?: Json | null
           phone?: string | null
           postal_code: string
           province: string
+          telegram_url?: string | null
+          temporarily_closed?: boolean
           updated_at?: string
           uuid?: string
           website?: string | null
+          whatsapp_url?: string | null
         }
         Update: {
           address?: string
@@ -297,14 +313,22 @@ export type Database = {
           country?: string
           created_at?: string
           email?: string | null
+          facebook_url?: string | null
+          google_maps_url?: string | null
           id?: number
+          image_url?: string | null
+          instagram_url?: string | null
           name?: string
+          opening_hours?: Json | null
           phone?: string | null
           postal_code?: string
           province?: string
+          telegram_url?: string | null
+          temporarily_closed?: boolean
           updated_at?: string
           uuid?: string
           website?: string | null
+          whatsapp_url?: string | null
         }
         Relationships: []
       }

@@ -5,9 +5,12 @@
   source of truth" reasoning as FormatBadge.vue.
 -->
 <script setup lang="ts">
-const { location, locationAddress = null } = defineProps<{
+const { location, locationAddress = null, mapsUrl = null } = defineProps<{
   location: string
   locationAddress?: string | null
+  /** locations.google_maps_url — precise place link, takes priority over
+   *  the generic address-search fallback when set. */
+  mapsUrl?: string | null
 }>()
 
 // Venue names carry a " - <full address/room>" suffix (e.g. "Smart Lab -
@@ -18,7 +21,7 @@ const shortLocation = computed(() => location.split(' - ')[0])
 
 <template>
   <a
-    :href="googleMapsUrl(locationAddress ?? location)"
+    :href="mapsUrl ?? googleMapsUrl(locationAddress ?? location)"
     target="_blank"
     rel="noopener noreferrer"
     class="inline-flex w-fit"

@@ -92,6 +92,7 @@ function timePart(startDate: string) {
           v-if="tournament.location"
           :location="tournament.location"
           :location-address="tournament.locationAddress"
+          :maps-url="tournament.locationMapsUrl"
         />
       </div>
 
