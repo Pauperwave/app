@@ -28,6 +28,7 @@ function formatEventDate(date: string) {
 // its source for why: `meta.class.td` looked reactive but wasn't.
 export function useCittadinoTableColumns(events: Ref<CittadinoEvent[]>) {
   const { t } = useI18n()
+  const { formatColor, formatColorClass } = useFormatColor()
 
   // A pinned column is positioned by TanStack at the sum of the preceding `size`
   // values, but the browser lays the cell out from its own content and padding —

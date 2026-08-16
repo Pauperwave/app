@@ -23,10 +23,8 @@ const { format, icon } = defineProps<{
   icon?: string
 }>()
 
-// undefined for Commander (formatColors.ts has no entry for it on purpose —
-// it's already the app's primary colour) — no style override at all, so
-// UBadge's own default color="primary" applies, keeping --ui-primary's
-// light/dark-mode adaptiveness instead of pinning a fixed palette shade.
+const { formatColor } = useFormatColor()
+
 const colorStyle = computed(() => {
   const color = formatColor(format)
   return color ? { '--ui-primary': color } : undefined

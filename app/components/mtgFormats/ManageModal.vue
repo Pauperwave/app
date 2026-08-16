@@ -19,6 +19,7 @@ const { formatUsageCounts } = defineProps<{ formatUsageCounts: Map<string, numbe
 
 const { t } = useI18n()
 const toast = useToast()
+const undoable = useUndoableAction()
 const { data: formats } = useMtgFormatsQuery()
 const { createFormat, updateFormat, deleteFormat } = useMtgFormatsMutations()
 
@@ -26,9 +27,14 @@ function usageCount(uuid: string) {
   return formatUsageCounts.get(uuid) ?? 0
 }
 
+// Same neutral-500 shade as the legacy fallback in useFormatColor.ts — shown
+// (and saved on first pick) instead of an unset/placeholder state, so the
+// swatch button always has a real color to display.
+const DEFAULT_FORMAT_COLOR = '#71717A'
+
 const newName = ref('')
 
-const deletingId = ref<number | null>(null)
+const deletingFormat = ref<{ id: number, name: string } | null>(null)
 const confirmDeleteOpen = ref(false)
 
 function saveName(id: number, name: string) {
@@ -39,6 +45,46 @@ function saveName(id: number, name: string) {
       color: 'error'
     })
   })
+}
+
+// Sends the current name back unchanged alongside the new color — the BFF
+// endpoint updates both columns together (see [id]/update.post.ts), and this
+// row's `name` is always known client-side already. Uppercased here (not
+// just via the input's CSS `uppercase` class, which is display-only) so
+// what's stored/compared always matches UColorPicker's own ColorTranslator
+// output, whether the value came from dragging the picker or typing a
+// lowercase hex into the input.
+function saveColor(id: number, name: string, color: string | undefined) {
+  const edits = { name, color: color?.toUpperCase() ?? null }
+  updateFormat.mutateAsync({ id, edits }).catch((err) => {
+    toast.add({
+      title: t('mtgFormat.manageModal.errorToastTitle'),
+      description: toErrorMessage(err),
+      color: 'error'
+    })
+  })
+}
+
+// UColorPicker emits update:model-value on every throttled drag tick (every
+// ~50ms while dragging, per its own `throttle` prop) — v-model'ing it
+// straight to a mutation fired a request per tick, a burst of concurrent
+// writes to the same row that was surfacing as a wave of 500s. Staged in a
+// local draft instead and only persisted once, when the popover closes.
+const draftColors = reactive<Record<number, string>>({})
+
+function onColorPopoverOpenChange(
+  isOpen: boolean,
+  format: { id: number, name: string, color: string | null }
+) {
+  if (isOpen) {
+    draftColors[format.id] = format.color ?? DEFAULT_FORMAT_COLOR
+    return
+  }
+  const draft = draftColors[format.id]
+  const current = (format.color ?? DEFAULT_FORMAT_COLOR).toUpperCase()
+  if (draft !== undefined && draft.toUpperCase() !== current) {
+    saveColor(format.id, format.name, draft)
+  }
 }
 
 async function onAdd() {
@@ -55,25 +101,35 @@ async function onAdd() {
   }
 }
 
-function askDelete(id: number) {
-  deletingId.value = id
+function askDelete(id: number, name: string) {
+  deletingFormat.value = { id, name }
   confirmDeleteOpen.value = true
 }
 
-async function onConfirmDelete() {
-  if (deletingId.value === null) return
-  try {
-    await deleteFormat.mutateAsync(deletingId.value)
-  } catch (err) {
-    toast.add({
-      title: t('mtgFormat.manageModal.deleteErrorToastTitle'),
-      description: toErrorMessage(err),
-      color: 'error'
-    })
-  } finally {
-    confirmDeleteOpen.value = false
-    deletingId.value = null
-  }
+// Closes the modal immediately and defers the actual delete behind a
+// 10-second undo window (useUndoableAction.ts), same convention as
+// useWantedCardsRowActions.ts's confirmDelete — "loading" no longer applies
+// here, there is nothing to wait for at confirm time.
+function onConfirmDelete() {
+  if (!deletingFormat.value) return
+  const format = deletingFormat.value
+  confirmDeleteOpen.value = false
+  deletingFormat.value = null
+
+  undoable.run({
+    title: t('mtgFormat.manageModal.deleteUndoToast', { name: format.name }),
+    commit: async () => {
+      try {
+        await deleteFormat.mutateAsync(format.id)
+      } catch (err) {
+        toast.add({
+          title: t('mtgFormat.manageModal.deleteErrorToastTitle'),
+          description: toErrorMessage(err),
+          color: 'error'
+        })
+      }
+    }
+  })
 }
 </script>
 
@@ -91,6 +147,35 @@ async function onConfirmDelete() {
           :key="format.id"
           class="flex items-center gap-2"
         >
+          <UPopover @update:open="(isOpen) => onColorPopoverOpenChange(isOpen, format)">
+            <UButton
+              :label="(format.color ?? DEFAULT_FORMAT_COLOR).toUpperCase()"
+              color="neutral"
+              variant="outline"
+              class="shrink-0"
+              :ui="{ label: 'w-[7ch] font-mono tabular-nums' }"
+              :aria-label="$t('mtgFormat.manageModal.color')"
+            >
+              <template #leading>
+                <span
+                  :style="{ backgroundColor: format.color ?? DEFAULT_FORMAT_COLOR }"
+                  class="size-3 rounded-full"
+                />
+              </template>
+            </UButton>
+
+            <template #content>
+              <div class="p-3 space-y-3">
+                <UInput
+                  v-model="draftColors[format.id]"
+                  class="font-mono uppercase"
+                  :placeholder="DEFAULT_FORMAT_COLOR"
+                />
+                <UColorPicker v-model="draftColors[format.id]" />
+              </div>
+            </template>
+          </UPopover>
+
           <UInput
             :model-value="format.name"
             class="flex-1"
@@ -129,7 +214,7 @@ async function onConfirmDelete() {
             variant="ghost"
             size="sm"
             :aria-label="$t('mtgFormat.manageModal.delete')"
-            @click="askDelete(format.id)"
+            @click="askDelete(format.id, format.name)"
           />
         </div>
 
@@ -163,10 +248,9 @@ async function onConfirmDelete() {
   <ConfirmModal
     v-model:open="confirmDeleteOpen"
     :title="$t('mtgFormat.manageModal.deleteConfirmTitle')"
-    :description="$t('mtgFormat.manageModal.deleteConfirmDescription')"
+    :warning="$t('common.confirmDeleteWarning')"
     :confirm-label="$t('common.delete')"
     :confirm-icon="ICONS.delete"
-    :loading="deleteFormat.isLoading.value"
     @confirm="onConfirmDelete"
   />
 </template>
