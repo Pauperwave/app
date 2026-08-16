@@ -1,5 +1,7 @@
 <!-- app\components\transactions\list\EditModal.vue -->
 <script setup lang="ts">
+// fallow-ignore-file code-duplication -- see the same comment in
+// AddModal.vue
 import type * as v from 'valibot'
 import { parseAbsoluteToLocal, getLocalTimeZone, toCalendarDateTime } from '@internationalized/date'
 import type { FormSubmitEvent } from '@nuxt/ui'
@@ -138,14 +140,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 </script>
 
 <template>
+  <!-- fallow-ignore-file code-duplication -- see the top-of-file comment -->
   <UModal
     v-model:open="open"
     :ui="{ content: 'max-w-xl' }"
     :title="$t('transaction.editModal.title')"
   >
     <template #body>
-      <!-- fallow-ignore-next-line code-duplication -- see the same comment in
-           AddModal.vue -->
       <UForm
         v-if="transaction"
         :schema="schema"

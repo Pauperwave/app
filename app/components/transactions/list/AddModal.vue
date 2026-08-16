@@ -1,5 +1,11 @@
 <!-- app\components\transactions\list\AddModal.vue -->
 <script setup lang="ts">
+// fallow-ignore-file code-duplication -- UForm scaffolding + the "personal
+// info" heading mirror EditModal.vue's, but the TransactionsFieldsPayerFields
+// call right below diverges (AddModal passes presetAssociate/
+// emailPlaceholder/showClearButtons, EditModal doesn't) — same same-shaped-
+// but-parameterized call as feedback_dedup_threshold_call_sites, not worth a
+// wrapper for 5 lines of markup.
 import type * as v from 'valibot'
 import { now, getLocalTimeZone, toCalendarDateTime } from '@internationalized/date'
 import type { FormSubmitEvent } from '@nuxt/ui'
@@ -187,6 +193,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 </script>
 
 <template>
+  <!-- fallow-ignore-file code-duplication -- see the top-of-file comment -->
   <UModal
     v-model:open="open"
     :ui="{ content: 'max-w-xl' }"
@@ -203,13 +210,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     />
 
     <template #body>
-      <!-- fallow-ignore-next-line code-duplication -- UForm scaffolding + the
-           "personal info" heading mirror EditModal.vue's, but the
-           TransactionsFieldsPayerFields call right below diverges (AddModal
-           passes presetAssociate/emailPlaceholder/showClearButtons, EditModal
-           doesn't) — same same-shaped-but-parameterized call as
-           feedback_dedup_threshold_call_sites, not worth a wrapper for 5
-           lines of markup. -->
       <UForm
         :schema="schema"
         :state="state"

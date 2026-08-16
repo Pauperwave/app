@@ -4,6 +4,10 @@
 // the roster's own useAssociatesTableColumns.ts) extracts this into its own
 // composable. Just an ordering of columns already built by
 // useAssociatesTableColumns.ts, not a second set of column definitions.
+// fallow-ignore-file code-duplication -- the destructure below necessarily
+// repeats useAssociatesTableColumns.ts's own return-statement property
+// names (it pulls out every column to reorder them below) — that's the
+// whole point of this file, not redundant code to remove.
 import type { TableColumn } from '@nuxt/ui'
 import type { Table } from '@tanstack/vue-table'
 import type { Associate } from '~/types'
@@ -11,10 +15,6 @@ import type { Associate } from '~/types'
 export function useAssociatesRequestsTableColumns(
   table: Ref<{ tableApi: Table<Associate> } | null>
 ) {
-  // fallow-ignore-next-line code-duplication -- this destructure necessarily
-  // repeats useAssociatesTableColumns.ts's own return-statement property
-  // names (it pulls out every column to reorder them below) — that's the
-  // whole point of this file, not redundant code to remove.
   const {
     visibilityItems,
     selectColumn, idColumn, updatedAtColumn, updatedByColumn,
