@@ -70,13 +70,10 @@ function timePart(startDate: string) {
           />
         </div>
 
-        <UButton
-          :icon="ICONS.edit"
-          color="neutral"
-          variant="ghost"
+        <EditIconButton
+          :label="t('tournament.rowActions.edit')"
           size="xs"
           class="shrink-0"
-          :aria-label="t('tournament.rowActions.edit')"
           @click.stop="onEdit(tournament)"
         />
       </div>
