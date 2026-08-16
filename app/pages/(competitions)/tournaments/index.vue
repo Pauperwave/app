@@ -4,8 +4,8 @@
 // leagues/index.vue's mock-driven layout on purpose; expected to diverge
 // once real Supabase tables land
 import { add, sub } from 'date-fns'
-import type { TabsItem } from '@nuxt/ui'
-import type { Range } from '~/types'
+import type { DropdownMenuItem, TabsItem } from '@nuxt/ui'
+import type { Range, Tournament } from '~/types'
 
 const { isModalOpen } = useModalOpenFromQuery()
 
@@ -38,7 +38,9 @@ const formatUsageCounts = computed(() => {
 const {
   statusFilter, formatFilter, filteredTournaments, statusTabs, formatTabs
 } = useTournamentsFilters(data, range)
-const { rowContextMenuItems, onRowContextmenu, tableContextMenuItems } = useCopyLinkContextMenu('/tournaments')
+const {
+  rowContextMenuItems, onRowContextmenu, contextMenuRow
+} = useCopyLinkContextMenu<Tournament>('/tournaments')
 const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowActions()
 
 const selection = useSelection<number>()
@@ -47,6 +49,27 @@ const {
   pendingAction, confirmOpen: bulkConfirmOpen, requestStatusChange, requestDelete,
   confirmPendingAction
 } = useTournamentsBulkActions(selection)
+
+// Adds edit/delete to the shared copy-link/copy-id items — tournaments has
+// real CRUD (unlike events/leagues, still pre-CRUD), so this stays local to
+// this page rather than growing useCopyLinkContextMenu.ts a domain-specific
+// branch. Delete goes through requestDelete (confirm + undo toast), same as
+// the bulk-actions bar's delete, just fed a single-item array.
+function tournamentContextMenuItems(tournament: Tournament): DropdownMenuItem[] {
+  return [
+    ...rowContextMenuItems(tournament),
+    { label: t('tournament.rowActions.edit'), icon: ICONS.edit, onSelect: () => openEditModal(tournament) },
+    {
+      label: t('tournament.rowActions.delete'),
+      icon: ICONS.delete,
+      color: 'error',
+      onSelect: () => requestDelete([tournament])
+    }
+  ]
+}
+
+const tableContextMenuItems = computed<DropdownMenuItem[]>(() =>
+  contextMenuRow.value ? tournamentContextMenuItems(contextMenuRow.value) : [])
 
 // Selected tournaments resolved against the currently filtered set, not the
 // full unfiltered data — same reasoning as wanted-cards/index.vue's
@@ -187,7 +210,7 @@ const tour = useTournamentsTour()
         <TournamentsListGridView
           v-else
           :tournaments="filteredTournaments"
-          :context-menu-items="rowContextMenuItems"
+          :context-menu-items="tournamentContextMenuItems"
           :on-edit="openEditModal"
           :selection="selection"
         />
