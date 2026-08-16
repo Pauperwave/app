@@ -174,6 +174,14 @@ const mainNavGroups = [[{
   onSelect: () => {
     open.value = false
   }
+}, {
+  label: t('location.breadcrumb'),
+  icon: ICONS.mapPin,
+  to: '/locations',
+  devStatus: 'warning',
+  onSelect: () => {
+    open.value = false
+  }
 }], [{
   label: t('nav.standingsSection'),
   type: 'label'

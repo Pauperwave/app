@@ -22,6 +22,7 @@ export const useBreadcrumbs = (overrides: MaybeRefOrGetter<Record<string, string
     leagues: t('league.breadcrumb'),
     tournaments: t('tournament.breadcrumb'),
     events: t('event.breadcrumb'),
+    locations: t('location.breadcrumb'),
     statistics: t('statistic.breadcrumb'),
     commanders: t('commander.breadcrumb'),
     rulesets: t('ruleset.breadcrumb')

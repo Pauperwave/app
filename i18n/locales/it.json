@@ -10,9 +10,9 @@
     "statisticsSection": "Statistiche",
     "settingsSection": "Impostazioni",
     "feedback": "Feedback",
-    "feedbackSubject": "PauperWave - Feedback",
+    "feedbackSubject": "Pauperwave - Feedback",
     "helpSupport": "Help & Support",
-    "helpSupportSubject": "PauperWave - Richiesta di supporto",
+    "helpSupportSubject": "Pauperwave - Richiesta di supporto",
     "search": {
       "actions": "Actions",
       "createNew": "Create new",
@@ -404,8 +404,8 @@
     }
   },
   "tesseramento": {
-    "seoTitle": "Tesseramento PauperWave",
-    "seoDescription": "Richiedi il tesseramento all'associazione PauperWave.",
+    "seoTitle": "Tesseramento Pauperwave",
+    "seoDescription": "Richiedi il tesseramento all'associazione Pauperwave.",
     "title": "Richiesta di tesseramento",
     "stepIndicator": "Passo {current} di {total} — {title}",
     "steps": {
@@ -675,7 +675,7 @@
   },
   "event": {
     "breadcrumb": "Eventi",
-    "seoTitle": "Eventi PauperWave",
+    "seoTitle": "Eventi Pauperwave",
     "views": {
       "table": "Tabella",
       "grid": "Griglia"
@@ -842,6 +842,21 @@
     "tournamentDetail": {
       "navbarTitle": "Torneo",
       "body": "Partecipanti all'evento"
+    }
+  },
+  "mtgFormat": {
+    "manageModal": {
+      "title": "Gestisci formati",
+      "description": "Formati disponibili per i tornei",
+      "namePlaceholder": "Nome formato",
+      "descriptionPlaceholder": "Descrizione (opzionale)",
+      "empty": "Nessun formato",
+      "add": "Aggiungi formato",
+      "delete": "Elimina formato",
+      "deleteConfirmTitle": "Eliminare questo formato?",
+      "deleteConfirmDescription": "Fallisce se è ancora usato da qualche torneo.",
+      "errorToastTitle": "Impossibile salvare il formato",
+      "deleteErrorToastTitle": "Impossibile eliminare il formato"
     }
   },
   "tournament": {
@@ -1407,6 +1422,124 @@
     "overviewBreadcrumb": "Panoramica",
     "decksBreadcrumb": "Mazzi"
   },
+  "location": {
+    "breadcrumb": "Luoghi",
+    "views": {
+      "table": "Tabella",
+      "grid": "Griglia"
+    },
+    "grid": {
+      "empty": "Nessuna location trovata"
+    },
+    "columns": {
+      "name": "Nome",
+      "address": "Indirizzo",
+      "city": "Città",
+      "phone": "Telefono",
+      "website": "Sito web",
+      "actions": "Azioni"
+    },
+    "card": {
+      "website": "Sito web",
+      "openInMaps": "Apri in Maps",
+      "temporarilyClosed": "Chiuso temporaneamente"
+    },
+    "rowActions": {
+      "edit": "Modifica location"
+    },
+    "tour": {
+      "startButton": "Tour guidato",
+      "steps": {
+        "add": {
+          "title": "Nuova location",
+          "description": "Aggiungi una nuova location da qui — servirà per organizzare tornei ed eventi."
+        },
+        "viewMode": {
+          "title": "Griglia o Tabella",
+          "description": "Passa dalla vista a griglia a quella tabellare in qualsiasi momento."
+        },
+        "content": {
+          "title": "Elenco location",
+          "description": "Qui trovi tutte le location con indirizzo, contatti e link a Google Maps."
+        },
+        "done": {
+          "title": "Pronto!",
+          "description": "Ora sai come funziona questa pagina. Buon lavoro!"
+        }
+      }
+    },
+    "addModal": {
+      "title": "Nuova location",
+      "description": "Aggiungi una nuova location al database",
+      "openButton": "Nuova location",
+      "sections": {
+        "generalInfo": "Informazioni generali",
+        "contacts": "Contatti",
+        "position": "Posizione",
+        "openingHours": "Orari di apertura",
+        "social": "Social"
+      },
+      "fields": {
+        "name": "Nome",
+        "namePlaceholder": "Nome della location",
+        "address": "Indirizzo",
+        "addressPlaceholder": "Via e numero civico",
+        "city": "Città",
+        "province": "Provincia",
+        "postalCode": "CAP",
+        "country": "Paese",
+        "phone": "Telefono",
+        "email": "Email",
+        "website": "Sito web",
+        "googleMapsUrl": "Link Google Maps",
+        "googleMapsUrlHint": "Se presente, ha priorità sulla ricerca generica per indirizzo",
+        "googleMapsUrlPlaceholder": "https://www.google.com/maps/place/...",
+        "image": "Immagine",
+        "imagePlaceholder": "https://...",
+        "mapPreview": "Anteprima mappa",
+        "openingHours": "Orari di apertura",
+        "facebook": "Facebook",
+        "facebookPlaceholder": "https://facebook.com/...",
+        "instagram": "Instagram",
+        "instagramPlaceholder": "https://instagram.com/...",
+        "telegramChannel": "Canale Telegram",
+        "telegramChannelPlaceholder": "https://t.me/...",
+        "whatsapp": "Community WhatsApp",
+        "whatsappPlaceholder": "https://chat.whatsapp.com/...",
+        "temporarilyClosed": "Chiuso temporaneamente",
+        "temporarilyClosedHint": "Mostra un avviso sulla card; gli orari restano salvati per quando riapre"
+      },
+      "validation": {
+        "nameRequired": "Il nome è obbligatorio",
+        "addressRequired": "L'indirizzo è obbligatorio",
+        "cityRequired": "La città è obbligatoria",
+        "provinceRequired": "La provincia è obbligatoria",
+        "postalCodeRequired": "Il CAP è obbligatorio",
+        "countryRequired": "Il paese è obbligatorio"
+      },
+      "successToastTitle": "Success",
+      "successToastDescription": "Nuova location \"{name}\" aggiunta",
+      "errorToastTitle": "Impossibile creare la location",
+      "cancel": "Annulla",
+      "create": "Crea location"
+    },
+    "editModal": {
+      "title": "Modifica location",
+      "successToastTitle": "Location aggiornata",
+      "errorToastTitle": "Impossibile aggiornare la location",
+      "cancel": "Annulla",
+      "save": "Salva"
+    },
+    "days": {
+      "monday": "Lunedì",
+      "tuesday": "Martedì",
+      "wednesday": "Mercoledì",
+      "thursday": "Giovedì",
+      "friday": "Venerdì",
+      "saturday": "Sabato",
+      "sunday": "Domenica"
+    }
+  },
   "settings": {
     "layout": {
       "navbarTitle": "Impostazioni",
@@ -1604,12 +1737,12 @@
     "connectionErrorTitle": "Errore di connessione",
     "connectionErrorDescription": "Impossibile verificare l'email. Riprova più tardi.",
     "emailNotFoundTitle": "Email non trovata",
-    "emailNotFoundDescription": "L'indirizzo email non risulta associato a un account PauperWave.",
+    "emailNotFoundDescription": "L'indirizzo email non risulta associato a un account Pauperwave.",
     "errorTitle": "Errore",
     "linkSentTitle": "Link inviato",
     "linkSentDescription": "Controlla la tua casella email per accedere.",
     "welcomeBack": "Bentornato",
-    "description": "Utilizza l'email associata al tuo account PauperWave.",
+    "description": "Utilizza l'email associata al tuo account Pauperwave.",
     "submitButton": "Invia link per accedere",
     "callback": {
       "invalidLink": "Link non valido o scaduto. Richiedi un nuovo link di accesso.",

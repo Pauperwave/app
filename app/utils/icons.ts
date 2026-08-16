@@ -123,6 +123,7 @@ export const ICONS = {
   phone: 'i-lucide-phone',
   smartphone: 'i-lucide-smartphone',
   mapPin: 'i-lucide-map-pin',
+  mapPinPlus: 'i-lucide-map-pin-plus',
   heartHandshake: 'i-lucide-heart-handshake',
 
   // Misc UI
@@ -131,7 +132,13 @@ export const ICONS = {
   messageCircle: 'i-lucide-message-circle',
   alignLeft: 'i-lucide-align-left',
   externalLink: 'i-lucide-arrow-up-right',
-  github: 'i-simple-icons-github'
+  github: 'i-simple-icons-github',
+
+  // Social
+  facebook: 'i-simple-icons-facebook',
+  instagram: 'i-simple-icons-instagram',
+  telegram: 'i-simple-icons-telegram',
+  whatsapp: 'i-simple-icons-whatsapp'
 } as const
 
 export type IconName = (typeof ICONS)[keyof typeof ICONS]

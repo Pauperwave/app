@@ -1,4 +1,4 @@
-# PROGRESS — PauperWave Gestionale
+# PROGRESS — Pauperwave Gestionale
 
 <!-- docs/PROGRESS.md -->
 
@@ -10,7 +10,7 @@ Documento vivo per tracciare avanzamento, architettura e decisioni. Aggiornare q
 
 ## Obiettivo del progetto
 
-Gestionale per l'associazione **PauperWave**: organizzazione di tornei multi-formato — non solo Commander, ma anche Premodern, Draft, Pauper, ecc. — gestione tesseramenti/rinnovi, incassi, e creazione/gestione completa dei tornei.
+Gestionale per l'associazione **Pauperwave**: organizzazione di tornei multi-formato — non solo Commander, ma anche Premodern, Draft, Pauper, ecc. — gestione tesseramenti/rinnovi, incassi, e creazione/gestione completa dei tornei.
 
 Diverse tabelle nello schema attuale (`mtg_commanders`, `commander_decks`, `tournament_kills`, `tournament_pairings` a 4 posti fissi, `tournament_votes`, la famiglia `rulesets`) incorporano assunzioni specifiche di Commander a livello di schema, non solo di dati — vedi `docs/architecture/database.md` per l'inventario completo tabella-per-tabella. Prima di costruire i flussi Premodern/Draft/Pauper serve una decisione di design su queste tabelle: renderle format-aware, oppure tenerle esplicitamente Commander-only con un percorso parallelo/generico per gli altri formati.
 
@@ -142,7 +142,7 @@ Mappa decisa il 2026-08-09, **corretta il 2026-08-10** sulla colonna Auth delle 
 | `blog.pauperwave.org` | blog dell'associazione | no |
 | `league.pauperwave.org` | benchmark **temporaneo** per le leghe Commander (`MagicTheGathering/league`), da dismettere a migrazione completata | — |
 
-Sul nome del sottodominio di adesione: la prima idea era `associati.`, imperativo ("associati a PauperWave!"). Scartata proprio perché la rotta interna `/associates` ha breadcrumb "Associati" ed è il registro **privato** dei soci già tesserati — stessa parola, significato opposto, con il rischio concreto che qualcuno punti il sottodominio pubblico alla pagina sbagliata. `tesseramento` è invece il termine che l'app già usa per questo concetto (`membershipStatus` → "Stato tesseramento", `pauperwave_associate_number` → "no. tessera") e non collide con nulla. Scartata anche `iscriviti.`, che avrebbe spostato l'ambiguità altrove: nell'app "Iscritti" e "quota di iscrizione" riguardano l'iscrizione **a un torneo**.
+Sul nome del sottodominio di adesione: la prima idea era `associati.`, imperativo ("associati a Pauperwave!"). Scartata proprio perché la rotta interna `/associates` ha breadcrumb "Associati" ed è il registro **privato** dei soci già tesserati — stessa parola, significato opposto, con il rischio concreto che qualcuno punti il sottodominio pubblico alla pagina sbagliata. `tesseramento` è invece il termine che l'app già usa per questo concetto (`membershipStatus` → "Stato tesseramento", `pauperwave_associate_number` → "no. tessera") e non collide con nulla. Scartata anche `iscriviti.`, che avrebbe spostato l'ambiguità altrove: nell'app "Iscritti" e "quota di iscrizione" riguardano l'iscrizione **a un torneo**.
 
 **Correzione 2026-08-10 — le classifiche non sono "pubbliche" in senso stretto, restano dietro il magic-link esistente.** Le classifiche mostrano nome e cognome dei soci, dato personale ma non di categoria particolare (art. 9 GDPR) — pubblicarlo a chiunque, senza login, rientrerebbe nel consenso "Diffusione di immagini" dell'informativa soci, che è **facoltativo e non universale** (non tutti i soci lo danno). La stessa informativa autorizza però la comunicazione dei dati **agli altri soci** per l'organizzazione delle attività, già coperta dal consenso obbligatorio all'adesione — quindi una classifica visibile solo a chi ha fatto login (stesso magic-link OTP di `app.pauperwave.org`, non una utenza condivisa) è coperta senza bisogno di raccogliere altro. `eventi.` e `tesseramento.` restano genuinamente pubbliche perché devono per forza raggiungere chi socio non è ancora.
 
@@ -199,6 +199,14 @@ Implementato in `useCittadinoFilters.ts` come catena di comparatori dopo il tota
 **Decisione:** quando il match per `scryfall_id` fallisce su tutte le espansioni candidate, viene fatto un secondo tentativo per **nome esatto della carta** (recuperato da Scryfall con una singola chiamata) tra i blueprint già scaricati nel primo giro — nessuna chiamata aggiuntiva a CardTrader. Il blueprint trovato viene comunque salvato in cache (`pauperwave_cardtrader_blueprints`) con il nostro `scryfallId`, così le ricerche successive per la stessa carta restano immediate anche se CardTrader non collega mai lo `scryfall_id` sul proprio lato.
 
 **Conseguenze:** il match per nome è meno rigoroso di quello per id (in teoria un nome duplicato tra printing diverse della stessa espansione potrebbe produrre un falso positivo, ma non è mai stato osservato e lo scope per espansione lo rende improbabile). Se in futuro emergono falsi positivi, va aggiunto anche il collector number come secondo criterio di spareggio — oggi non salvato da nessuna parte nel flusso wanted-cards, richiederebbe di propagarlo lungo tutta la catena di chiamata.
+
+### ADR-015 — `organizations` resta senza UI di gestione finché l'app è single-tenant (2026-08-16)
+
+**Contesto:** aggiunta la pagina `/locations` (gestione completa dei luoghi), si è valutato se fare lo stesso per `organizations` — oggi usata solo come dropdown di sola lettura in `EventsListAddModal.vue`, con un'unica riga seed (`Pauperwave`/`Pauperwave`, `type: 'association'`).
+
+**Decisione:** nessuna pagina di gestione per `organizations` per ora — ha senso solo quando l'app diventerà multi-tenant (più organizzazioni reali, non solo Pauperwave). Fino ad allora resta un lookup a riga singola, gestibile via SQL se necessario.
+
+**Conseguenze:** quando l'app diventerà multi-tenant, `organizations` sarà probabilmente la prima entità da esporre con una UI dedicata (segue lo stesso pattern CRUD di `/locations`), dato che a quel punto smette di essere una singola riga fissa.
 
 ## Vedi anche
 
