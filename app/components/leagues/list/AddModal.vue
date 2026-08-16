@@ -37,15 +37,19 @@ const schema = v.object({
 
 type Schema = v.InferOutput<typeof schema>
 
-const state = reactive<Schema>({
-  name: '',
-  status: 'draft',
-  season: undefined,
-  startDate: todayString,
-  rulesetUuid: undefined
-})
+function createInitialState(): Schema {
+  return {
+    name: '',
+    status: 'draft',
+    season: undefined,
+    startDate: todayString,
+    rulesetUuid: undefined
+  }
+}
 
-const { startDate, formattedStartDate } = useStartDateField(state)
+const state = reactive<Schema>(createInitialState())
+
+const { startDate, formattedStartDate, reset: resetStartDate } = useStartDateField(state)
 
 // fallow-ignore-next-line code-duplication -- see the same comment in
 // events/list/AddModal.vue
@@ -69,6 +73,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       color: 'success'
     })
     open.value = false
+    Object.assign(state, createInitialState())
+    resetStartDate()
   } catch (err) {
     toast.add({
       title: t('league.addModal.errorToastTitle'),

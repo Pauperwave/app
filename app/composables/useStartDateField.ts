@@ -13,12 +13,13 @@ export function useStartDateField(
   options: { defaultToToday?: boolean } = {}
 ) {
   const { defaultToToday = true } = options
-  const today = new Date()
-  const startDate = shallowRef<DateValue | undefined>(
-    defaultToToday
+  const initialValue = () => {
+    const today = new Date()
+    return defaultToToday
       ? new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate())
       : undefined
-  )
+  }
+  const startDate = shallowRef<DateValue | undefined>(initialValue())
 
   watch(startDate, (newDate) => {
     if (newDate) {
@@ -32,5 +33,12 @@ export function useStartDateField(
     return date.toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' })
   })
 
-  return { startDate, formattedStartDate }
+  // Restores the field to its just-mounted value — used after a successful
+  // "Add" submit, since the modal instance stays alive (v-model:open) and
+  // would otherwise keep showing the just-submitted date on next open.
+  function reset() {
+    startDate.value = initialValue()
+  }
+
+  return { startDate, formattedStartDate, reset }
 }
