@@ -23,7 +23,7 @@ const timeRange = computed(() => {
   const start = format(new Date(tournament.startDate), 'HH:mm')
   if (!tournament.endDate) return start
   const end = format(new Date(tournament.endDate), 'HH:mm')
-  return `${start}–${end}`
+  return `${start}-${end}`
 })
 
 const selection = useCalendarDetail()
