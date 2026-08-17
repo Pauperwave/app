@@ -35,6 +35,37 @@ const user = ref({
 
 const handleLogout = useLogout()
 
+// "View as" (2026-08-17, docs/architecture/roles.md §1): UI-only preview,
+// super_admin-only. Gated on realIsSuperAdmin (not role/isSuperAdmin),
+// so the control that exits a preview stays visible and usable even while
+// actively previewing as a lower role — see useUserRole.ts's own comment.
+const {
+  realIsSuperAdmin, role, isPreviewing, setRolePreview
+} = useUserRole()
+
+const rolePreviewGroup = computed<DropdownMenuItem[]>(() => realIsSuperAdmin.value
+  ? [{
+    label: t('rolePreview.menuLabel'),
+    icon: ICONS.show,
+    children: (['player', 'organizer', 'admin'] as const).map(previewable => ({
+      label: t(`settings.members.roles.${previewable}`),
+      type: 'checkbox' as const,
+      checked: role.value === previewable && isPreviewing.value,
+      onSelect: (e: Event) => {
+        e.preventDefault()
+
+        setRolePreview(previewable)
+      }
+    }))
+  }, ...(isPreviewing.value
+    ? [{
+      label: t('rolePreview.exitMenuLabel'),
+      icon: ICONS.close,
+      onSelect: () => setRolePreview(null)
+    }]
+    : [])]
+  : [])
+
 const items = computed<DropdownMenuItem[][]>(() => ([[{
   type: 'label',
   label: user.value.name,
@@ -47,7 +78,7 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
   label: t('userMenu.settings'),
   icon: ICONS.settings,
   to: '/settings'
-}], [{
+}], ...(rolePreviewGroup.value.length ? [rolePreviewGroup.value] : []), [{
   label: t('userMenu.theme'),
   icon: ICONS.palette,
   children: [{

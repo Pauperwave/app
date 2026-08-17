@@ -127,6 +127,22 @@ What's still genuinely custom, on top of the query:
 
 **Resolved 2026-08-17.** `user_roles`'s schema previously allowed multiple rows per user — the app-level single-role rule wasn't enforced by the database. Fixed in the same migration as the enum recreation above: confirmed no user had more than one row in `user_roles` first, then changed the constraint from `UNIQUE(user_id, role)` to `UNIQUE(user_id)` (`uq_user_roles_user_id`), so the database itself now rejects a second role row for the same user instead of relying on `assign_role`/application code to remember the rule.
 
+### "View as" — production role preview (added 2026-08-17)
+
+For development *and* live-production use: a `super_admin` can preview the app as `player`/`organizer`/`admin` without any real role change, to sanity-check what a given tier actually sees. Checked `MagicTheGathering/league` first for prior art — it has no per-user role system at all (a single shared `SITE_PASSWORD` gate), nothing to borrow.
+
+**UI-only, never a real security boundary** — the same principle as `can()`/route gating generally (see "Enforcement" below): RLS and BFF checks still run against the real, unmodified `auth.uid()` regardless of this override, so a `super_admin` previewing as `player` could still technically succeed at an admin-only write if they went around the now-hidden UI. The persistent top banner (`RolePreviewBanner.vue`, `t('rolePreview.banner')`) says this explicitly, so nobody mistakes "what I currently see" for "what I can currently do."
+
+Implementation, in `useUserRole.ts`:
+- `previewRole` — `useState<AppRole | null>('role-preview', () => null)`, not a plain `ref` or `localStorage`: survives client-side navigation during a preview session (the point of it), but resets on a hard reload/new tab rather than persisting to disk, so a preview can never quietly outlive the session it was started in.
+- `role` (the composable's existing, already-consumed-everywhere export) becomes the *effective* role: `previewRole` if set and `ROLE_LEVEL[previewRole] <= ROLE_LEVEL[realRole]`, else `realRole`. Re-checked on every read, not cached at activation — if a `super_admin` gets demoted mid-session while previewing, the override stops applying the instant they no longer outrank it, rather than leaving a stale escalated-looking state around.
+- `setRolePreview(target)` hard-guards `realRole.value === 'super_admin'` itself — never trust the caller (the UI) already checked.
+- `realRole` / `realIsSuperAdmin` are exposed separately from the effective `role`/`isSuperAdmin`, specifically so the exit control stays visible and usable *while actively previewing as a lower role* — gating "View as" on effective `isSuperAdmin` would let a `super_admin` previewing as `player` lock themselves out of the very control that turns it off (`/settings/members`-style pages become inaccessible under the preview, but the always-visible `UserMenu` isn't route-gated).
+
+Because `authorization.global.ts` and `useMainNavGroups.ts` both read the same effective `role`/`can()`, the preview automatically covers both nav visibility *and* route-level redirects (typing a super_admin-only URL directly while previewing as player correctly bounces to `/403`) — no separate wiring needed for either.
+
+UI: `UserMenu.vue`'s "Visualizza come" submenu (`player`/`organizer`/`admin` as checkbox items, `super_admin` omitted since it's a no-op for the only role that can even see this menu), gated on `realIsSuperAdmin`; `RolePreviewBanner.vue` (`app/components/ui/`, per the `ui/` folder's no-prefix convention) renders a persistent top bar with an exit button whenever `isPreviewing`. Verified end-to-end in the browser (2026-08-17): activating "Giocatore" correctly hid Finanze/Associati/Giocatori/Transazioni/Luoghi/Regolamenti/Impostazioni from the sidebar and showed the banner; exiting restored the full `super_admin` sidebar; no console errors.
+
 **Bootstrap data for `assign_role` (step 3 below), recorded 2026-08-10, roles corrected and expanded 2026-08-11 so it isn't lost before the mechanism exists. Applied by hand via the SQL editor 2026-08-17** (`assign_role` still doesn't exist — see step 3), confirmed against `pauperwave_associates.email_address` and `auth.users`:
 
 | Person | Email (`pauperwave_associates.email_address`) | Role | Status |
