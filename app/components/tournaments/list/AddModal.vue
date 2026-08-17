@@ -23,6 +23,7 @@ const state = reactive<TournamentFormState>({
   status: 'draft',
   startDate: todayString,
   startTime: '20:00',
+  endTime: '23:00',
   roundCount: 2,
   formatUuid: undefined as unknown as string,
   description: undefined,
@@ -34,6 +35,10 @@ const state = reactive<TournamentFormState>({
 })
 
 const { startDate, formattedStartDate } = useStartDateField(state)
+
+// Kept out of `state`/the valibot schema (no format validation needed) —
+// same convention as LocationsListAddModal.vue's `image`.
+const image = ref<string | undefined>(undefined)
 
 const {
   schema, statusOptions, locationOptions, organizerOptions, formatOptions
@@ -54,10 +59,20 @@ watch(locationOptions, (options) => {
   state.locationUuid = options.find(option => option.label.startsWith('Smart Lab'))?.value
 }, { immediate: true })
 
+// Same defaulting convention as organizerUuid/locationUuid above — Commander
+// is the format almost every tournament created here actually is.
+watch(formatOptions, (options) => {
+  if (state.formatUuid) return
+  state.formatUuid = options.find(option => option.label === 'Commander')?.value ?? state.formatUuid
+}, { immediate: true })
+
 type Schema = v.InferOutput<typeof schema>
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   const startsAt = combineDateAndTime(startDate.value!, event.data.startTime)
+  const endsAt = event.data.endTime
+    ? combineEndDateAndTime(startsAt, startDate.value!, event.data.endTime)
+    : null
 
   const payload: NewTournamentPayload = {
     name: event.data.name ?? '',
@@ -68,12 +83,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     leagueUuid: null,
     eventUuid: null,
     startsAt: startsAt.toISOString(),
-    endsAt: null,
+    endsAt: endsAt ? endsAt.toISOString() : null,
     roundCount: event.data.roundCount,
     entryFee: event.data.entryFee,
     description: event.data.description || null,
     prizes: event.data.prizes || null,
-    companionCode: event.data.companionCode || null
+    companionCode: event.data.companionCode || null,
+    imageUrl: image.value ?? null
   }
 
   try {
@@ -84,6 +100,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       color: 'success'
     })
     open.value = false
+    image.value = undefined
   } catch (err) {
     toast.add({
       title: t('tournament.addModal.errorToastTitle'),
@@ -121,6 +138,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           </p>
 
           <TournamentsFieldsTournamentDataFields
+            v-model:image="image"
             :state="state"
             :status-options="statusOptions"
             :format-options="formatOptions"

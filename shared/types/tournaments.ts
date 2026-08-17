@@ -18,4 +18,5 @@ export interface NewTournamentPayload {
   description: string | null
   prizes: string | null
   companionCode: string | null
+  imageUrl: string | null
 }

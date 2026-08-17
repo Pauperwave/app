@@ -8,7 +8,9 @@
 -->
 <!-- eslint-disable vue/no-mutating-props -- see the comment above -->
 <script setup lang="ts">
+import { parseTime } from '@internationalized/date'
 import type { DateValue } from '@internationalized/date'
+import type { TimeValue } from 'reka-ui'
 import type { TournamentFormState } from '~/composables/tournaments/useTournamentFormFields'
 
 const { state, formattedStartDate } = defineProps<{
@@ -17,29 +19,46 @@ const { state, formattedStartDate } = defineProps<{
 }>()
 
 const startDate = defineModel<DateValue>('startDate')
+
+// TimeValue.toString() is "HH:mm:ss" — the form state only ever stores "HH:mm",
+// same convention as OpeningHoursEditor.vue's updateTime().
+function updateTime(key: 'startTime' | 'endTime', value: TimeValue | null | undefined) {
+  if (!value) return
+  state[key] = value.toString().slice(0, 5)
+}
 </script>
 
 <template>
   <!-- eslint-disable vue/no-mutating-props -- see the top-of-file comment -->
-  <div class="grid grid-cols-2 gap-4">
-    <div class="flex justify-between gap-2">
-      <StartDatePickerField
-        v-model:start-date="startDate"
-        class="flex-1"
-        :label="$t('tournament.addModal.fields.startDate')"
-        :formatted-start-date="formattedStartDate"
+  <div class="flex gap-4">
+    <StartDatePickerField
+      v-model:start-date="startDate"
+      class="flex-1"
+      :label="$t('tournament.addModal.fields.startDate')"
+      :formatted-start-date="formattedStartDate"
+    />
+
+    <UFormField :label="$t('tournament.addModal.fields.startTime')" name="startTime" class="w-28 shrink-0">
+      <UInputTime
+        :range="false"
+        :hour-cycle="24"
+        class="w-full"
+        :model-value="state.startTime ? parseTime(state.startTime) : undefined"
+        @update:model-value="updateTime('startTime', $event)"
       />
+    </UFormField>
 
-      <UFormField :label="$t('tournament.addModal.fields.startTime')" name="startTime">
-        <UTimePicker
-          v-model="state.startTime"
-          :placeholder="$t('tournament.addModal.fields.selectTime')"
-          :minute-step="15"
-        />
-      </UFormField>
-    </div>
+    <UFormField :label="$t('tournament.addModal.fields.endTime')" name="endTime" class="w-28 shrink-0">
+      <UInputTime
+        :range="false"
+        :hour-cycle="24"
+        class="w-full"
+        :model-value="state.endTime ? parseTime(state.endTime) : undefined"
+        @update:model-value="updateTime('endTime', $event)"
+      />
+    </UFormField>
 
-    <UFormField :label="$t('tournament.addModal.fields.roundCount')" name="roundCount">
+    <UFormField :label="$t('tournament.addModal.fields.roundCount')" name="roundCount" class="w-24 shrink-0">
       <UInputNumber
         v-model="state.roundCount"
         :min="1"
