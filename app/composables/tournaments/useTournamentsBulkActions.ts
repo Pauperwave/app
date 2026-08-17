@@ -14,21 +14,36 @@ import type { Selection } from '~/composables/useSelection'
 
 type PendingBulkAction
   = | { type: 'status', status: TournamentStatus, tournaments: Tournament[] }
+    | { type: 'image', imageUrl: string, tournaments: Tournament[] }
+    | { type: 'entryFee', entryFee: number, tournaments: Tournament[] }
     | { type: 'delete', tournaments: Tournament[] }
 
 export function useTournamentsBulkActions(selection: Selection<number>) {
   const { t } = useI18n()
   const toast = useToast()
-  const undoable = useUndoableAction()
-  const { setStatus, deleteTournament } = useTournamentsMutations()
 
-  // Both actions are destructive/state-changing enough to warrant a
+  const undoable = useUndoableAction()
+  const {
+    setStatus, setImage, setEntryFee, deleteTournament
+  } = useTournamentsMutations()
+
+  // Every action is destructive/state-changing enough to warrant a
   // confirmation step, same reasoning as useWantedCardsBulkActions.ts.
   const pendingAction = ref<PendingBulkAction | null>(null)
   const confirmOpen = ref(false)
 
   function requestStatusChange(status: TournamentStatus, tournaments: Tournament[]) {
     pendingAction.value = { type: 'status', status, tournaments }
+    confirmOpen.value = true
+  }
+
+  function requestImageChange(imageUrl: string, tournaments: Tournament[]) {
+    pendingAction.value = { type: 'image', imageUrl, tournaments }
+    confirmOpen.value = true
+  }
+
+  function requestEntryFeeChange(entryFee: number, tournaments: Tournament[]) {
+    pendingAction.value = { type: 'entryFee', entryFee, tournaments }
     confirmOpen.value = true
   }
 
@@ -57,34 +72,64 @@ export function useTournamentsBulkActions(selection: Selection<number>) {
     selection.clear()
 
     undoable.run({
-      title: action.type === 'delete'
-        ? t('tournament.bulkActions.deleteUndoToast', action.tournaments.length)
-        : t('tournament.bulkActions.statusUndoToast', {
-          status: t(`tournament.status.${action.status}`)
-        }, action.tournaments.length),
+      title: undoToastTitle(action),
       commit: async () => {
         const results = await Promise.allSettled(
-          action.tournaments.map(tournament => action.type === 'status'
-            ? setStatus.mutateAsync({ id: tournament.id, status: action.status })
-            : deleteTournament.mutateAsync(tournament.id))
+          action.tournaments.map((tournament) => {
+            if (action.type === 'status') {
+              return setStatus.mutateAsync({ id: tournament.id, status: action.status })
+            }
+            if (action.type === 'image') {
+              return setImage.mutateAsync({ id: tournament.id, imageUrl: action.imageUrl })
+            }
+            if (action.type === 'entryFee') {
+              return setEntryFee.mutateAsync({ id: tournament.id, entryFee: action.entryFee })
+            }
+            return deleteTournament.mutateAsync(tournament.id)
+          })
         )
         const failed = results.filter(result => result.status === 'rejected').length
+        const succeeded = results.length - failed
 
-        toastForFailures(
-          results.length - failed,
-          failed,
-          action.type === 'status'
-            ? t('tournament.bulkActions.statusSuccessToast', results.length - failed)
-            : t('tournament.bulkActions.deleteSuccessToast', results.length - failed)
-        )
+        toastForFailures(succeeded, failed, successToastTitle(action, succeeded))
       }
     })
+  }
+
+  function undoToastTitle(action: PendingBulkAction) {
+    if (action.type === 'delete') {
+      return t('tournament.bulkActions.deleteUndoToast', action.tournaments.length)
+    }
+    if (action.type === 'image') {
+      return t('tournament.bulkActions.imageUndoToast', action.tournaments.length)
+    }
+    if (action.type === 'entryFee') {
+      return t('tournament.bulkActions.entryFeeUndoToast', action.tournaments.length)
+    }
+    return t('tournament.bulkActions.statusUndoToast', {
+      status: t(`tournament.status.${action.status}`)
+    }, action.tournaments.length)
+  }
+
+  function successToastTitle(action: PendingBulkAction, count: number) {
+    if (action.type === 'delete') {
+      return t('tournament.bulkActions.deleteSuccessToast', count)
+    }
+    if (action.type === 'image') {
+      return t('tournament.bulkActions.imageSuccessToast', count)
+    }
+    if (action.type === 'entryFee') {
+      return t('tournament.bulkActions.entryFeeSuccessToast', count)
+    }
+    return t('tournament.bulkActions.statusSuccessToast', count)
   }
 
   return {
     pendingAction,
     confirmOpen,
     requestStatusChange,
+    requestImageChange,
+    requestEntryFeeChange,
     requestDelete,
     confirmPendingAction
   }

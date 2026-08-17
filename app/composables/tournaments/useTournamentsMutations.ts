@@ -27,11 +27,25 @@ export function useTournamentsMutations() {
     onSettled: invalidate
   })
 
+  const setImage = useMutation({
+    mutation: ({ id, imageUrl }: { id: number, imageUrl: string | null }) =>
+      $fetch(`/api/tournaments/${id}/image`, { method: 'POST', body: { imageUrl } }),
+    onSettled: invalidate
+  })
+
+  const setEntryFee = useMutation({
+    mutation: ({ id, entryFee }: { id: number, entryFee: number }) =>
+      $fetch(`/api/tournaments/${id}/entry-fee`, { method: 'POST', body: { entryFee } }),
+    onSettled: invalidate
+  })
+
   const deleteTournament = useMutation({
     mutation: (id: number) =>
       $fetch(`/api/tournaments/${id}/delete`, { method: 'POST' }),
     onSettled: invalidate
   })
 
-  return { createTournament, updateTournament, setStatus, deleteTournament }
+  return {
+    createTournament, updateTournament, setStatus, setImage, setEntryFee, deleteTournament
+  }
 }

@@ -4,6 +4,7 @@
 // leagues/index.vue's mock-driven layout on purpose; expected to diverge
 // once real Supabase tables land
 import { add, sub } from 'date-fns'
+import { getGroupedRowModel } from '@tanstack/vue-table'
 import type { DropdownMenuItem, TabsItem } from '@nuxt/ui'
 import type { Range, Tournament } from '~/types'
 
@@ -46,8 +47,8 @@ const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowAct
 const selection = useSelection<number>()
 const { columns } = useTournamentsTableColumns(selection, openEditModal)
 const {
-  pendingAction, confirmOpen: bulkConfirmOpen, requestStatusChange, requestDelete,
-  confirmPendingAction
+  pendingAction, confirmOpen: bulkConfirmOpen, requestStatusChange, requestImageChange,
+  requestEntryFeeChange, requestDelete, confirmPendingAction
 } = useTournamentsBulkActions(selection)
 
 // Adds edit/delete to the shared copy-link/copy-id items — tournaments has
@@ -86,7 +87,42 @@ const viewModeItems = computed<TabsItem[]>(() => [
 
 const sorting = ref([{ id: 'startDate', desc: false }])
 
+// Table-only (unlike wanted-cards, which also groups the grid into
+// sections) — grouping is only meaningful with the table's own columns.
+// One dimension at a time (not multi-level): league/format/location are
+// each already a single flat dimension, and stacking more than one adds
+// nesting complexity nobody asked for. Off by default.
+type GroupByOption = 'none' | 'league' | 'format' | 'location'
+const groupBy = ref<GroupByOption>('none')
+const grouping = computed(() => groupBy.value === 'none' ? [] : [groupBy.value])
+const groupByItems = computed(() => [
+  { label: t('tournament.filters.groupByNone'), value: 'none' as const },
+  { label: t('tournament.filters.groupByLeague'), value: 'league' as const },
+  { label: t('tournament.filters.groupByFormat'), value: 'format' as const },
+  { label: t('tournament.filters.groupByLocation'), value: 'location' as const }
+])
+
 const tour = useTournamentsTour()
+
+// Extracted out of the template (2026-08-17) once a 4th bulk-action type
+// (entryFee) would have made the inline ternary chain in ConfirmModal's
+// :title unreadable.
+const bulkConfirmTitle = computed(() => {
+  const action = pendingAction.value
+  if (!action) return ''
+  if (action.type === 'delete') {
+    return t('tournament.bulkActions.confirmDeleteTitle', action.tournaments.length)
+  }
+  if (action.type === 'image') {
+    return t('tournament.bulkActions.confirmImageTitle', action.tournaments.length)
+  }
+  if (action.type === 'entryFee') {
+    return t('tournament.bulkActions.confirmEntryFeeTitle', action.tournaments.length)
+  }
+  return t('tournament.bulkActions.confirmStatusTitle', {
+    status: t(`tournament.status.${action.status}`)
+  }, action.tournaments.length)
+})
 </script>
 
 <template>
@@ -160,11 +196,22 @@ const tour = useTournamentsTour()
             :count="selectedTournaments.length"
             @mark-status="requestedStatus =>
               requestStatusChange(requestedStatus, selectedTournaments)"
+            @set-image="imageUrl => requestImageChange(imageUrl, selectedTournaments)"
+            @set-entry-fee="entryFee => requestEntryFeeChange(entryFee, selectedTournaments)"
             @delete="requestDelete(selectedTournaments)"
           />
           <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->
-          <div v-else id="tour-tournaments-actions">
+          <div v-else id="tour-tournaments-actions" class="flex items-center gap-2">
             <HomeDateRangePicker v-model="range" class="-ms-1" />
+
+            <USelectMenu
+              v-if="viewMode === 'table'"
+              v-model="groupBy"
+              :items="groupByItems"
+              value-key="value"
+              :icon="ICONS.layers"
+              class="w-60"
+            />
           </div>
         </template>
       </UDashboardToolbar>
@@ -181,10 +228,16 @@ const tour = useTournamentsTour()
             v-model:sorting="sorting"
             :data="filteredTournaments"
             :columns="columns"
+            :grouping="grouping"
+            :grouping-options="{
+              getGroupedRowModel: getGroupedRowModel()
+            }"
             class="w-full"
             :ui="{ tr: 'cursor-pointer' }"
             @contextmenu="onRowContextmenu"
-            @select="(_e, row) => navigateTo(tournamentDetailUrl(row.original))"
+            @select="(_e, row) => {
+              if (!row.getIsGrouped()) navigateTo(tournamentDetailUrl(row.original))
+            }"
           />
         </UContextMenu>
 
@@ -207,11 +260,7 @@ const tour = useTournamentsTour()
 
   <ConfirmModal
     v-model:open="bulkConfirmOpen"
-    :title="pendingAction?.type === 'delete'
-      ? $t('tournament.bulkActions.confirmDeleteTitle', pendingAction.tournaments.length)
-      : $t('tournament.bulkActions.confirmStatusTitle', {
-        status: $t(`tournament.status.${pendingAction?.status}`)
-      }, pendingAction?.tournaments.length ?? 0)"
+    :title="bulkConfirmTitle"
     :warning="pendingAction?.type === 'delete' ? $t('common.confirmDeleteWarning') : undefined"
     :confirm-label="pendingAction?.type === 'delete'
       ? $t('tournament.rowActions.delete')
