@@ -1,6 +1,5 @@
 <!-- app\components\leagues\list\EditModal.vue -->
 <script setup lang="ts">
-import { CalendarDate } from '@internationalized/date'
 import type * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { League } from '~/types'
@@ -15,30 +14,28 @@ const { t } = useI18n()
 const { updateLeague } = useLeaguesMutations()
 
 // Same shape as AddModal.vue's initial state — same reasoning as
-// tournaments/list/EditModal.vue's own state literal.
+// tournaments/list/EditModal.vue's own state literal. No startDate here
+// (2026-08-16 ADR, docs/PROGRESS.md): a league's dates are derived from its
+// tournaments, not user-editable.
 const state = reactive<LeagueFormState>({
   name: undefined,
   status: 'draft',
-  startDate: undefined,
   rulesetUuid: undefined
 })
 
-const { startDate, formattedStartDate } = useStartDateField(state, { defaultToToday: false })
+// Kept out of `state`/the valibot schema (no format validation needed) —
+// same convention as TournamentsListEditModal.vue's `image`.
+const image = ref<string | undefined>(undefined)
 
 // Refills every time the modal opens on a (possibly new) league — same
 // convention as TournamentsListEditModal.vue's watch on its `tournament` prop.
 watch([open, () => league], ([isOpen, current]) => {
   if (!isOpen || !current) return
 
-  const startsAt = new Date(current.startDate)
-  startDate.value = new CalendarDate(
-    startsAt.getFullYear(), startsAt.getMonth() + 1, startsAt.getDate()
-  )
-
   state.name = current.name
   state.status = current.status
-  state.startDate = current.startDate.substring(0, 10)
   state.rulesetUuid = current.rulesetUuid ?? undefined
+  image.value = current.image ?? undefined
 }, { immediate: true })
 
 const { schema, statusOptions, rulesetOptions } = useLeagueFormFields()
@@ -50,14 +47,11 @@ const submitting = ref(false)
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   if (!league) return
 
-  const startsAt = dateValueToDate(startDate.value!)
-
   const payload: NewLeaguePayload = {
     name: event.data.name,
     status: event.data.status,
     rulesetUuid: event.data.rulesetUuid || null,
-    startsAt: startsAt.toISOString(),
-    endsAt: null
+    imageUrl: image.value ?? null
   }
 
   submitting.value = true
@@ -95,11 +89,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         @submit="onSubmit"
       >
         <LeaguesFieldsLeagueDataFields
-          v-model:start-date="startDate"
+          v-model:image="image"
           :state="state"
           :status-options="statusOptions"
           :ruleset-options="rulesetOptions"
-          :formatted-start-date="formattedStartDate"
         />
 
         <div class="flex justify-end gap-2 pt-4">

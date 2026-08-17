@@ -235,6 +235,7 @@ export interface League {
   // uuid, not by the human-readable name — same convention as Tournament's
   // formatUuid/leagueUuid/etc.
   rulesetUuid: string | null
+  image: string | null
   tournamentCount: number
   completedTournamentCount: number
 }

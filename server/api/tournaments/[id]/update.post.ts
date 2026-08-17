@@ -7,6 +7,15 @@ import type { NewTournamentPayload } from '#shared/types/tournaments'
 export default defineEventHandler(async (event) => {
   const { id, body, supabase } = await parseIdMutationRequest<NewTournamentPayload>(event)
 
+  // Read before write, so a tournament moved between leagues (or unlinked
+  // entirely) recomputes both the league it left and the one it joined —
+  // see recomputeLeagueDates.
+  const { data: existing } = await supabase
+    .from('tournaments')
+    .select('league_uuid')
+    .eq('id', id)
+    .single()
+
   const { data: tournament, error } = await supabase
     .from('tournaments')
     .update({
@@ -35,6 +44,11 @@ export default defineEventHandler(async (event) => {
       statusCode: 500,
       statusMessage: error?.message ?? 'Tournament update failed'
     })
+  }
+
+  await recomputeLeagueDates(supabase, tournament.league_uuid)
+  if (existing && existing.league_uuid !== tournament.league_uuid) {
+    await recomputeLeagueDates(supabase, existing.league_uuid)
   }
 
   return { tournament }

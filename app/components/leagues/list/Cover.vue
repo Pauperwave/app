@@ -2,11 +2,9 @@
 <!--
   Leagues' own version of TournamentsListCover.vue (2026-08-16, "make the
   leagues cards match the tournaments cards") — same image/date-chip/
-  checkbox layout, adapted to League's fields: no per-league image (leagues
-  have no `image` column), so it always falls back to the shared default
-  cover; "active" gets the pulsing dot tournaments give "in_progress" (the
-  closest equivalent — a league genuinely underway vs. still a draft/wrapped
-  up/cancelled).
+  checkbox layout, adapted to League's fields. `league.image` was added
+  2026-08-16 (see the ADR in docs/PROGRESS.md on the tournaments-cascade
+  behavior) — falls back to ImageOffPlaceholder.vue when unset.
 -->
 <script setup lang="ts">
 import type { League } from '~/types'
@@ -36,21 +34,17 @@ function monthPart(startDate: string) {
 <template>
   <div class="relative -m-3 mb-3">
     <img
-      :src="DEFAULT_CALENDAR_COVER_IMAGE"
+      v-if="league.image"
+      :src="league.image"
       :alt="league.name"
       class="w-full h-32 object-cover"
     >
+    <ImageOffPlaceholder v-else class="w-full h-32" icon-class="size-8" />
 
     <div class="absolute top-2 left-2 flex flex-col items-center justify-center rounded-lg bg-default/90 backdrop-blur-sm border border-default w-12 h-12 shrink-0">
       <span class="text-base font-bold leading-none">{{ dayPart(league.startDate) }}</span>
       <span class="text-[10px] uppercase text-muted">{{ monthPart(league.startDate) }}</span>
     </div>
-
-    <span
-      v-if="league.status === 'active'"
-      class="absolute top-3 right-11 size-2.5 rounded-full bg-warning shrink-0 animate-pulse motion-reduce:animate-none"
-      :title="t('league.status.active')"
-    />
 
     <UCheckbox
       :model-value="selection.isSelected(league.id)"

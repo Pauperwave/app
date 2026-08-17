@@ -216,6 +216,7 @@ export type Database = {
           deleted_at: string | null
           ends_at: string | null
           id: number
+          image_url: string | null
           name: string
           ruleset_uuid: string | null
           starts_at: string | null
@@ -228,6 +229,7 @@ export type Database = {
           deleted_at?: string | null
           ends_at?: string | null
           id?: number
+          image_url?: string | null
           name: string
           ruleset_uuid?: string | null
           starts_at?: string | null
@@ -240,6 +242,7 @@ export type Database = {
           deleted_at?: string | null
           ends_at?: string | null
           id?: number
+          image_url?: string | null
           name?: string
           ruleset_uuid?: string | null
           starts_at?: string | null

@@ -51,6 +51,7 @@ export function useLeaguesQuery() {
         startDate: row.starts_at ?? row.created_at,
         ruleset: row.ruleset?.name ?? null,
         rulesetUuid: row.ruleset_uuid,
+        image: row.image_url,
         tournamentCount: totals.get(row.uuid) ?? 0,
         completedTournamentCount: completed.get(row.uuid) ?? 0
       }))

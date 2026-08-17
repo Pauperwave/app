@@ -3,12 +3,12 @@
   Extracted out of AddModal.vue so EditModal.vue can share it (2026-08-16,
   same reasoning as tournaments/fields/TournamentDataFields.vue) — `state` is
   the SAME reactive object the parent binds to its own <UForm :state>,
-  mutated directly. `startDate` is a separate v-model (a DateValue, not a
-  plain schema field), same convention as SchedulingFields.vue.
+  mutated directly. No start-date field here (2026-08-16 ADR, docs/PROGRESS.md):
+  a league's dates are derived from its tournaments, not user-editable.
 -->
 <!-- eslint-disable vue/no-mutating-props -- see the comment above -->
 <script setup lang="ts">
-import type { DateValue } from '@internationalized/date'
+import type { StatusColor } from '~/types'
 import type { LeagueFormState } from '~/composables/leagues/useLeagueFormFields'
 
 interface SelectOption {
@@ -18,23 +18,28 @@ interface SelectOption {
 
 interface StatusOption extends SelectOption {
   icon: string
-  color: string
+  color: StatusColor
 }
 
 const {
-  state, statusOptions, rulesetOptions, formattedStartDate
+  state, statusOptions, rulesetOptions
 } = defineProps<{
   state: LeagueFormState
   statusOptions: StatusOption[]
   rulesetOptions: SelectOption[]
-  formattedStartDate: string
 }>()
 
-const startDate = defineModel<DateValue>('startDate')
+// Kept out of `state`/the valibot schema (no format validation needed) —
+// same convention as TournamentsFieldsTournamentDataFields.vue's `image`.
+const image = defineModel<string | undefined>('image')
 </script>
 
 <template>
   <!-- eslint-disable vue/no-mutating-props -- see the top-of-file comment -->
+  <UFormField :label="$t('league.addModal.fields.image')" name="image">
+    <MagicCardArtPicker v-model="image" />
+  </UFormField>
+
   <UStatusSelect
     v-model="state.status"
     :items="statusOptions"
@@ -53,22 +58,14 @@ const startDate = defineModel<DateValue>('startDate')
     />
   </UFormField>
 
-  <div class="grid grid-cols-2 gap-4">
-    <StartDatePickerField
-      v-model:start-date="startDate"
-      :label="$t('event.addModal.fields.startDate')"
-      :formatted-start-date="formattedStartDate"
+  <UFormField :label="$t('league.addModal.fields.ruleset')" name="rulesetUuid">
+    <USelectMenu
+      v-model="state.rulesetUuid"
+      class="w-full"
+      :items="rulesetOptions"
+      value-key="value"
+      :placeholder="$t('league.addModal.fields.selectRuleset')"
+      :icon="ICONS.bookOpen"
     />
-
-    <UFormField :label="$t('league.addModal.fields.ruleset')" name="rulesetUuid">
-      <USelectMenu
-        v-model="state.rulesetUuid"
-        class="w-full"
-        :items="rulesetOptions"
-        value-key="value"
-        :placeholder="$t('league.addModal.fields.selectRuleset')"
-        :icon="ICONS.bookOpen"
-      />
-    </UFormField>
-  </div>
+  </UFormField>
 </template>

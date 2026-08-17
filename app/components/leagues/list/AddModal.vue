@@ -11,20 +11,19 @@ const { t } = useI18n()
 
 const { createLeague } = useLeaguesMutations()
 
-const todayString = new Date().toISOString().substring(0, 10)
-
 function createInitialState(): LeagueFormState {
   return {
     name: '',
     status: 'draft',
-    startDate: todayString,
     rulesetUuid: undefined
   }
 }
 
 const state = reactive<LeagueFormState>(createInitialState())
 
-const { startDate, formattedStartDate, reset: resetStartDate } = useStartDateField(state)
+// Kept out of `state`/the valibot schema (no format validation needed) —
+// same convention as TournamentsListAddModal.vue's `image`.
+const image = ref<string | undefined>(undefined)
 
 const { schema, statusOptions, rulesetOptions } = useLeagueFormFields()
 
@@ -33,14 +32,11 @@ type Schema = v.InferOutput<typeof schema>
 // fallow-ignore-next-line code-duplication -- see the same comment in
 // events/list/AddModal.vue
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  const startsAt = dateValueToDate(startDate.value!)
-
   const payload: NewLeaguePayload = {
     name: event.data.name,
     status: event.data.status,
     rulesetUuid: event.data.rulesetUuid || null,
-    startsAt: startsAt.toISOString(),
-    endsAt: null
+    imageUrl: image.value ?? null
   }
 
   try {
@@ -52,7 +48,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     })
     open.value = false
     Object.assign(state, createInitialState())
-    resetStartDate()
+    image.value = undefined
   } catch (err) {
     toast.add({
       title: t('league.addModal.errorToastTitle'),
@@ -89,11 +85,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           </p>
 
           <LeaguesFieldsLeagueDataFields
-            v-model:start-date="startDate"
+            v-model:image="image"
             :state="state"
             :status-options="statusOptions"
             :ruleset-options="rulesetOptions"
-            :formatted-start-date="formattedStartDate"
           />
         </div>
 

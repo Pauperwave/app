@@ -67,7 +67,10 @@ const viewModeItems = computed<TabsItem[]>(() => [
   { label: t('league.views.table'), value: 'table', icon: 'i-lucide-table' }
 ])
 
-const sorting = ref([{ id: 'name', desc: false }])
+// Matches /tournaments' default sort and the grid view's own chronological
+// order (useLeaguesQuery.ts orders by starts_at) — the table view previously
+// defaulted to name, the only column it had a sort on at all.
+const sorting = ref([{ id: 'startDate', desc: false }])
 
 const tour = useLeaguesTour()
 </script>
