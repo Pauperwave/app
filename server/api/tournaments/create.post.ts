@@ -42,5 +42,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  await recomputeLeagueDates(supabase, tournament.league_uuid)
+
   return { tournament }
 })

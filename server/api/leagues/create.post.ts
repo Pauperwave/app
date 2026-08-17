@@ -6,6 +6,9 @@ import type { NewLeaguePayload } from '#shared/types/leagues'
 // leagues' RLS (management_full_access) already gates writes to management
 // users, but every write still goes through a BFF endpoint — same convention
 // as tournaments/events/transactions/wanted-cards.
+// No starts_at/ends_at here (2026-08-16 ADR, docs/PROGRESS.md): a new league
+// has no tournaments yet, so both stay null until recomputeLeagueDates runs
+// off the first tournament created under it.
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
   const body = await readBody<NewLeaguePayload>(event)
@@ -18,8 +21,7 @@ export default defineEventHandler(async (event) => {
       name: body.name,
       status: body.status,
       ruleset_uuid: body.rulesetUuid,
-      starts_at: body.startsAt,
-      ends_at: body.endsAt
+      image_url: body.imageUrl
     })
     .select()
     .single()

@@ -56,6 +56,7 @@ export function useLeaguesTableColumns(
   const columnHeaders: Record<string, string> = {
     status: t('league.columns.status'),
     name: t('league.columns.name'),
+    startDate: t('league.columns.startDate'),
     tournamentCount: t('league.columns.tournamentCount'),
     ruleset: t('league.columns.ruleset'),
     actions: t('league.columns.actions')
@@ -76,6 +77,19 @@ export function useLeaguesTableColumns(
       accessorKey: 'name',
       header: ({ column }) => sortableHeader(t('league.columns.name'), column),
       cell: ({ row }) => h('span', { class: 'font-medium' }, row.original.name)
+    },
+    {
+      accessorKey: 'startDate',
+      header: ({ column }) => sortableHeader(t('league.columns.startDate'), column),
+      // Derived from its tournaments (recomputeLeagueDates, 2026-08-16 ADR),
+      // so this is effectively "when does this league's activity start" —
+      // date-only, same rationale as useLeaguesQuery.ts falling back to
+      // created_at rather than showing a time-of-day that was never real.
+      cell: ({ row }) => new Date(row.original.startDate).toLocaleDateString('it-IT', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      })
     },
     {
       accessorKey: 'tournamentCount',

@@ -10,7 +10,6 @@ function buildSchema(t: ReturnType<typeof useI18n>['t']) {
   return v.object({
     status: v.picklist(LEAGUE_STATUSES),
     name: v.pipe(v.string(), v.minLength(1, t('league.addModal.validation.nameRequired'))),
-    startDate: v.string(),
     rulesetUuid: v.optional(v.string())
   })
 }
