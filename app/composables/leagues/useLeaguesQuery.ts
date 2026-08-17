@@ -25,15 +25,22 @@ export function useLeaguesQuery() {
           .from('tournaments')
           .select('league_uuid, status')
           .not('league_uuid', 'is', null)
+          .is('deleted_at', null)
       ])
 
       if (leaguesResult.error) throw leaguesResult.error
       if (tournamentsResult.error) throw tournamentsResult.error
 
+      // Cancelled tournaments are excluded from the denominator entirely
+      // (2026-08-16 user decision) — a cancelled tournament isn't "still to
+      // complete", so a league's progress reads e.g. 5/5 rather than a
+      // permanently-deflated 5/6. Un-cancelling one (status flipped back)
+      // re-enters the count automatically, since this reads live status on
+      // every query, not a stored snapshot.
       const totals = new Map<string, number>()
       const completed = new Map<string, number>()
       for (const row of tournamentsResult.data) {
-        if (!row.league_uuid) continue
+        if (!row.league_uuid || row.status === 'cancelled') continue
         totals.set(row.league_uuid, (totals.get(row.league_uuid) ?? 0) + 1)
         if (row.status === 'completed') {
           completed.set(row.league_uuid, (completed.get(row.league_uuid) ?? 0) + 1)
