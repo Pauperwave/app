@@ -2,6 +2,7 @@
 import type { AvatarProps } from '@nuxt/ui'
 import type { Database } from '#shared/utils/types/database'
 import type { PaymentMethod, PaymentType } from '#shared/types/transactions'
+import type { WantedCardLanguage } from '~/utils/wantedCards/wantedCardLanguages'
 
 export type UserStatus = 'subscribed' | 'unsubscribed' | 'bounced'
 export type SaleStatus = 'paid' | 'failed' | 'refunded'
@@ -150,7 +151,11 @@ export interface WantedCard {
   scryfallId: string | null
   setCode: string | null
   copies: number
-  language: string
+  // '' when the requester had no language preference (mapped from a `null`
+  // DB row, see useWantedCardsQuery.ts) — WantedCardLanguage itself never
+  // includes that case, so a stored row's real language can't be typo'd as
+  // the form-only 'any' sentinel (WantedCardLanguageFilter).
+  language: WantedCardLanguage | ''
   treatment: string[]
   manaCost: string
   colorIdentity: string[]
