@@ -231,7 +231,7 @@ export function useMainNavGroups(open: Ref<boolean>) {
     icon: ICONS.players,
     to: '/settings/members',
     devStatus: 'error',
-    permission: 'manage-roles',
+    permission: 'access-settings',
     onSelect: () => {
       open.value = false
     }
@@ -249,7 +249,7 @@ export function useMainNavGroups(open: Ref<boolean>) {
     icon: ICONS.globe,
     to: '/settings/domains',
     devStatus: 'warning',
-    permission: 'manage-domains',
+    permission: 'access-settings',
     onSelect: () => {
       open.value = false
     }

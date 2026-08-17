@@ -40,7 +40,6 @@ export type Permission
     | 'manage-locations'
     | 'manage-rulesets'
     | 'access-settings'
-    | 'manage-domains'
 
 export const PERMISSION_LEVEL = {
   'register-tournament': 'player',
@@ -61,8 +60,11 @@ export const PERMISSION_LEVEL = {
   'view-players': 'organizer',
   'manage-locations': 'organizer',
   'manage-rulesets': 'organizer', // deleting a ruleset stays delete-ruleset (super_admin)
-  'access-settings': 'organizer',
-  'manage-domains': 'admin'
+  // Whole /settings section, all four pages uniformly (2026-08-17, revised
+  // down from organizer): actually assigning a role is still enforced
+  // super_admin-only at the assign_role RPC itself regardless of this —
+  // this only gates whether the page/nav item is reachable at all.
+  'access-settings': 'admin'
 } as const satisfies Record<Permission, AppRole>
 
 export function can(role: AppRole | undefined, permission: Permission): boolean {

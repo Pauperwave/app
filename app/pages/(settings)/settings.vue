@@ -16,24 +16,34 @@ const wideBodyRoutes: Record<string, string> = {
 }
 const bodyMaxWidth = computed(() => wideBodyRoutes[route.path] ?? 'lg:max-w-2xl')
 
-const links = computed<NavigationMenuItem[][]>(() => [[{
-  label: t('settings.layout.links.general'),
-  icon: ICONS.player,
-  to: '/settings',
-  exact: true
-}, {
-  label: t('settings.layout.links.members'),
-  icon: ICONS.players,
-  to: '/settings/members'
-}, {
-  label: t('settings.layout.links.permissions'),
-  icon: ICONS.permissions,
-  to: '/settings/permissions'
-}, {
-  label: t('settings.layout.links.domains'),
-  icon: ICONS.globe,
-  to: '/settings/domains'
-}]])
+// Second, separate nav surface from useMainNavGroups.ts's sidebar — found
+// 2026-08-17 to be completely unfiltered, letting an organizer reach
+// /settings/members and /settings/domains just by clicking these tabs even
+// with the sidebar link hidden. All four settings pages are admin+ now
+// (access-settings), so this tabs bar only ever needs to omit itself
+// entirely for anyone below that, not filter individual links.
+const { can } = useUserRole()
+
+const links = computed<NavigationMenuItem[][]>(() => can('access-settings')
+  ? [[{
+    label: t('settings.layout.links.general'),
+    icon: ICONS.player,
+    to: '/settings',
+    exact: true
+  }, {
+    label: t('settings.layout.links.members'),
+    icon: ICONS.players,
+    to: '/settings/members'
+  }, {
+    label: t('settings.layout.links.permissions'),
+    icon: ICONS.permissions,
+    to: '/settings/permissions'
+  }, {
+    label: t('settings.layout.links.domains'),
+    icon: ICONS.globe,
+    to: '/settings/domains'
+  }]]
+  : [])
 </script>
 
 <template>
