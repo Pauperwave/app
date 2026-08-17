@@ -127,17 +127,17 @@ What's still genuinely custom, on top of the query:
 
 **Resolved 2026-08-17.** `user_roles`'s schema previously allowed multiple rows per user — the app-level single-role rule wasn't enforced by the database. Fixed in the same migration as the enum recreation above: confirmed no user had more than one row in `user_roles` first, then changed the constraint from `UNIQUE(user_id, role)` to `UNIQUE(user_id)` (`uq_user_roles_user_id`), so the database itself now rejects a second role row for the same user instead of relying on `assign_role`/application code to remember the rule.
 
-**Bootstrap data for `assign_role` (step 3 below), recorded 2026-08-10, roles corrected and expanded 2026-08-11 so it isn't lost before the mechanism exists:**
+**Bootstrap data for `assign_role` (step 3 below), recorded 2026-08-10, roles corrected and expanded 2026-08-11 so it isn't lost before the mechanism exists. Applied by hand via the SQL editor 2026-08-17** (`assign_role` still doesn't exist — see step 3), confirmed against `pauperwave_associates.email_address` and `auth.users`:
 
-| Person | Role |
-|---|---|
-| Emanuele Nardi | `super_admin` (**inferred, not stated explicitly** — earlier in this doc's history the user called themselves `admin`, before `super_admin`/role-management existed as a concept; since they're the one making role decisions here, `super_admin` fits, but confirm before applying) |
-| Marco Cazzola | `admin` |
-| Lorenzo Castelli | `admin` |
-| Nicola Cordeschi | `admin` |
-| Simone Marisa | `organizer` |
-| Gianluca Festi | `organizer` |
-| Riccardo Baldo | `organizer` |
+| Person | Email (`pauperwave_associates.email_address`) | Role | Status |
+|---|---|---|---|
+| Emanuele Nardi | `emanuelenardi.magic@gmail.com` | `super_admin` | ✅ applied 2026-08-17 — confirmed by the user (was `admin`, no longer "inferred") |
+| Marco Cazzola | `cazzola.marco@gmail.com` | `admin` | ✅ applied 2026-08-17 (was `organizer`) |
+| Lorenzo Castelli | `hegauj@gmail.com` | `admin` | ✅ already applied prior to 2026-08-17, confirmed matches this identity |
+| Nicola Cordeschi | `dnick88@yahoo.it` | `admin` | ✅ applied 2026-08-17 (was `organizer`) |
+| Simone Marisa | `simone.marisa95@gmail.com` | `organizer` | ⏳ **pending** — no `auth.users` row yet (never logged in). `user_roles.user_id` is a `NOT NULL` FK to `auth.users(id)`, so there's nothing to attach a role to until their first magic-link login creates one. |
+| Gianluca Festi | `gianlucafesti@yahoo.it` | `organizer` | ⏳ **pending**, same reason |
+| Riccardo Baldo | `riccardo.baldo@live.it` | `organizer` | ⏳ **pending**, same reason |
 
 Everyone else defaults to `player` (no row needed, per `get_user_role`'s `COALESCE`).
 
@@ -230,7 +230,7 @@ Same route for staff and players, `v-if` inside it:
 1. Decide and resolve the `pauperwave_associates` P1 policy (`docs/BACKLOG.md`) — not a hard blocker for starting the steps below, but "player can't see other members' PII" stays false until it's fixed.
 2. Confirm whether `public_read` was applied to `tournaments`/`tournament_standings`/`players` (audit §5.5) — changes what's already safe to read as a player vs. what still needs a BFF/RPC.
 3. Create `assign_role(uuid, app_role)` in Supabase (or document the existing mechanism, if promotion already happens some other way) — prerequisite for wiring `MembersList.vue`'s dropdown.
-4. **Partially done 2026-08-17.** DB migration for the 4-role model, confirmed 2026-08-10 (§1): recreated the `app_role` enum without `judge` and with `super_admin` added, tightened `user_roles` from `UNIQUE(user_id, role)` to `UNIQUE(user_id)` — both done, see §1. **Still outstanding:** applying the bootstrap role assignments (§1's table — Emanuele Nardi's `super_admin` is unconfirmed, see §1); still blocked on step 3 (`assign_role` doesn't exist yet) or doing it by hand via the SQL editor in the meantime.
+4. **Done 2026-08-17,** except 3 people. DB migration for the 4-role model, confirmed 2026-08-10 (§1): recreated the `app_role` enum without `judge` and with `super_admin` added, tightened `user_roles` from `UNIQUE(user_id, role)` to `UNIQUE(user_id)`. Bootstrap role assignments (§1's table) applied by hand via the SQL editor (`assign_role` from step 3 still doesn't exist) for the 4 people who'd already logged in; Simone Marisa, Gianluca Festi, and Riccardo Baldo remain pending — no `auth.users` row yet, see §1.
 5. `app/utils/permissions.ts` — `ROLE_LEVEL` + `PERMISSION_LEVEL` (§1) and the `Permission` type. Written first because everything else (the composable's `can()`, `definePageMeta({ permission })`, the middleware) reads from it.
 6. `colada.options.ts` — add the `filter` exclusion for the role query key. **Mandatory, strictly before step 7** (confirmed 2026-08-10) — not "alongside," not "whenever it's convenient": the risk this closes (a stale/wrong role sitting in `localStorage` on a shared device) exists the moment `useUserRole()` starts calling `useQuery`, and the gap stops being visible in normal testing once the composable works, which is exactly when it'd stop getting fixed.
 7. `app/composables/useUserRole.ts` — `useQuery`-backed on `get_user_role` (§1), `can`/`isOrganizer`/`isAdmin`/`isSuperAdmin`/`isStaff` on top of it.
