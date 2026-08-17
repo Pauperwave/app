@@ -10,10 +10,16 @@ export default defineEventHandler(async (event) => {
     config.supabase.secretKey
   )
 
+  // Only an approved membership application may receive a magic link — a
+  // 'pending' or 'rejected' /tesseramento submission already has a row here
+  // (public_apply's RLS policy inserts it as 'pending'), so checking mere
+  // row existence let anyone who ever submitted the form log in and see
+  // every player-tier nav item/action, approved or not (found 2026-08-17).
   const { data, error } = await client
     .from('pauperwave_associates')
     .select('email_address')
     .eq('email_address', body.email)
+    .eq('membership_request_status', 'approved')
     .single()
 
   if (error && error.code !== 'PGRST116') {
