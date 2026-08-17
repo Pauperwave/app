@@ -15,7 +15,7 @@ export function wantedCardFormFieldsSchema(t: (key: string) => string) {
       v.integer(t('wantedCard.addModal.validation.copiesInteger')),
       v.minValue(1, t('wantedCard.addModal.validation.copiesPositive'))
     ),
-    language: v.string(),
+    language: v.picklist(['any', ...WANTED_CARD_LANGUAGES]),
     foil: v.optional(v.boolean()),
     notes: v.optional(v.string()),
     player: v.pipe(

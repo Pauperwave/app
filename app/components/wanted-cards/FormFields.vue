@@ -18,11 +18,12 @@
 <!-- eslint-disable vue/no-mutating-props -- see the comment above -->
 <script setup lang="ts">
 import type { ScryfallPrinting } from '~/composables/useScryfallCardSearch'
+import type { WantedCardLanguageFilter } from '~/utils/wantedCards/wantedCardLanguages'
 
 interface FormFieldsState {
   printingId?: string
   copies?: number
-  language?: string
+  language?: WantedCardLanguageFilter
   foil?: boolean
   notes?: string
   player?: string

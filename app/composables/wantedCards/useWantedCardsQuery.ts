@@ -1,5 +1,6 @@
 // app\composables\wantedCards\useWantedCardsQuery.ts
 import type { WantedCard, WantedCardStatus } from '~/types'
+import type { WantedCardLanguage } from '~/utils/wantedCards/wantedCardLanguages'
 
 export const WANTED_CARDS_KEY = ['wanted-cards']
 
@@ -42,7 +43,7 @@ export function useWantedCardsQuery() {
         scryfallId: row.scryfall_id,
         setCode: row.set_code,
         copies: row.copies,
-        language: row.language ?? '',
+        language: (row.language ?? '') as WantedCardLanguage | '',
         treatment: row.treatment,
         manaCost: row.mana_cost ?? '',
         colorIdentity: row.color_identity,

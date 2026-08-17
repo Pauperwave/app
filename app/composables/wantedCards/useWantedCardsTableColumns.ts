@@ -114,8 +114,9 @@ export function useWantedCardsTableColumns(selection: Selection<number>) {
       cell: ({ row }) => {
         if (row.getIsGrouped()) return null
         const language = row.original.language || 'any'
+        const icon = language === 'any' ? 'i-lucide-languages' : WANTED_CARD_LANGUAGE_ICONS[language]
         return h('div', { class: 'flex items-center gap-1.5' }, [
-          h(UIcon, { name: WANTED_CARD_LANGUAGE_ICONS[language] ?? 'i-lucide-languages', class: 'size-4 shrink-0' }),
+          h(UIcon, { name: icon, class: 'size-4 shrink-0' }),
           t(`wantedCard.languages.${language}`)
         ])
       }
