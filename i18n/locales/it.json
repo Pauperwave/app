@@ -1823,6 +1823,13 @@
     "seoTitle": "Pagina non trovata",
     "seoDescription": "Siamo spiacenti, questa pagina non è stata trovata."
   },
+  "forbidden": {
+    "seoTitle": "Accesso non autorizzato",
+    "seoDescription": "Non hai i permessi necessari per accedere a questa pagina.",
+    "title": "Accesso non autorizzato",
+    "description": "Non hai i permessi necessari per visualizzare questa pagina. Se pensi sia un errore, contatta un amministratore.",
+    "backHome": "Torna alla dashboard"
+  },
   "notificationsSlideover": {
     "title": "Notifiche",
     "tabs": {
