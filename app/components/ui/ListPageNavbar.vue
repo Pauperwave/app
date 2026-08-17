@@ -25,7 +25,7 @@ const {
 } = defineProps<Props>()
 
 const emit = defineEmits<{
-  refresh: [],
+  refresh: []
   tourStart: []
 }>()
 </script>
