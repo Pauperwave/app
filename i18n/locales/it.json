@@ -78,11 +78,18 @@
     },
     "statusSelect": {
       "placeholder": "Seleziona stato"
-    },
-    "timePicker": {
-      "hoursLabel": "Ore",
-      "minutesLabel": "Minuti",
-      "placeholder": "HH:MM"
+    }
+  },
+  "magic": {
+    "cardArtPicker": {
+      "placeholder": "Nessuna immagine",
+      "select": "Seleziona immagine",
+      "change": "Cambia immagine",
+      "clear": "Rimuovi immagine",
+      "selectedAlt": "Immagine di copertina",
+      "searchPlaceholder": "Cerca una carta...",
+      "loading": "Caricamento...",
+      "noResults": "Nessuna illustrazione disponibile"
     }
   },
   "home": {
@@ -657,6 +664,7 @@
     "columns": {
       "status": "Stato",
       "name": "Nome",
+      "startDate": "Data di inizio",
       "tournamentCount": "Tornei",
       "ruleset": "Regolamento",
       "actions": "Azioni"
@@ -682,7 +690,8 @@
         "name": "Nome",
         "namePlaceholder": "Nome della lega",
         "ruleset": "Regolamento",
-        "selectRuleset": "Seleziona regolamento"
+        "selectRuleset": "Seleziona regolamento",
+        "image": "Immagine di copertina"
       },
       "successToastTitle": "Success",
       "successToastDescription": "Nuova lega {name} aggiunta",
@@ -906,6 +915,7 @@
     "contact": "Referente",
     "columns": {
       "select": "Seleziona",
+      "image": "Immagine",
       "id": "ID",
       "uuid": "UUID",
       "status": "Stato",
@@ -915,9 +925,11 @@
       "roundDuration": "Durata Turni",
       "registeredPlayers": "Iscritti",
       "league": "Lega",
+      "noLeague": "Nessuna lega",
       "format": "Formato",
       "organizer": "Organizzatore",
       "location": "Luogo",
+      "noLocation": "Nessun luogo",
       "entryFee": "Quota Iscrizione",
       "companionCode": "Codice Companion",
       "prizes": "Premi",
@@ -933,12 +945,22 @@
       "markAs": "Segna come",
       "confirm": "Conferma",
       "confirmStatusTitle": "Segna {count} torneo come {status}? | Segna {count} tornei come {status}?",
+      "confirmImageTitle": "Impostare l'immagine per {count} torneo? | Impostare l'immagine per {count} tornei?",
+      "confirmEntryFeeTitle": "Aggiornare la quota per {count} torneo? | Aggiornare la quota per {count} tornei?",
       "confirmDeleteTitle": "Eliminare {count} torneo? | Eliminare {count} tornei?",
       "statusUndoToast": "{count} torneo verrà segnato come {status} | {count} tornei verranno segnati come {status}",
+      "imageUndoToast": "L'immagine verrà impostata per {count} torneo | L'immagine verrà impostata per {count} tornei",
+      "entryFeeUndoToast": "La quota verrà aggiornata per {count} torneo | La quota verrà aggiornata per {count} tornei",
       "deleteUndoToast": "{count} torneo verrà eliminato | {count} tornei verranno eliminati",
       "statusSuccessToast": "{count} torneo aggiornato | {count} tornei aggiornati",
+      "imageSuccessToast": "{count} torneo aggiornato | {count} tornei aggiornati",
+      "entryFeeSuccessToast": "{count} torneo aggiornato | {count} tornei aggiornati",
       "deleteSuccessToast": "{count} torneo eliminato | {count} tornei eliminati",
-      "partialFailure": "{count} operazione non riuscita | {count} operazioni non riuscite"
+      "partialFailure": "{count} operazione non riuscita | {count} operazioni non riuscite",
+      "setImage": "Imposta immagine",
+      "setImageModalTitle": "Imposta immagine per {count} torneo | Imposta immagine per {count} tornei",
+      "setEntryFee": "Aggiorna quota",
+      "setEntryFeeModalTitle": "Aggiorna quota per {count} torneo | Aggiorna quota per {count} tornei"
     },
     "views": {
       "table": "Tabella",
@@ -985,7 +1007,11 @@
     },
     "filters": {
       "statusAll": "Tutti",
-      "formatPlaceholder": "Formato"
+      "formatPlaceholder": "Formato",
+      "groupByNone": "Nessun raggruppamento",
+      "groupByLeague": "Raggruppa per lega",
+      "groupByFormat": "Raggruppa per formato",
+      "groupByLocation": "Raggruppa per luogo"
     },
     "filterLabels": {
       "roundDuration": "Durata Partita"
@@ -1053,11 +1079,12 @@
         "selectFormat": "Seleziona formato",
         "ruleset": "Regolamento",
         "selectRuleset": "Seleziona regolamento",
+        "image": "Immagine di copertina",
         "startDate": "Data di inizio",
         "startTime": "Ora di inizio",
         "endTime": "Ora di fine",
         "selectTime": "Seleziona orario",
-        "roundCount": "Numero di round",
+        "roundCount": "# turni",
         "roundDuration": "Durata round",
         "organizer": "Organizzatore",
         "selectOrganizer": "Seleziona organizzatore",
