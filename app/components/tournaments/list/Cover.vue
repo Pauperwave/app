@@ -34,8 +34,8 @@ function monthPart(startDate: string) {
 
 <template>
   <!-- Luma-inspired cover, same convention as calendar/card/Base.vue: a real
-       or default image up top, with the day/month tear-off badge overlaid on
-       it instead of sitting beside the title — these cards are narrower
+       image or ImageOffPlaceholder.vue up top, with the day/month tear-off
+       badge overlaid on it instead of sitting beside the title — these cards are narrower
        (grid, not a full-width list), so a side-by-side date box would crowd
        the title at small widths. Negative margins (not UCard's #header
        slot): the outline variant's `ring ring-default` sits inset from the
@@ -45,27 +45,17 @@ function monthPart(startDate: string) {
        image's sides (confirmed 2026-08-16). -->
   <div class="relative -m-3 mb-3">
     <img
-      :src="tournament.image ?? DEFAULT_CALENDAR_COVER_IMAGE"
+      v-if="tournament.image"
+      :src="tournament.image"
       :alt="tournament.name"
       class="w-full h-32 object-cover"
     >
+    <ImageOffPlaceholder v-else class="w-full h-32" icon-class="size-8" />
 
     <div class="absolute top-2 left-2 flex flex-col items-center justify-center rounded-lg bg-default/90 backdrop-blur-sm border border-default w-12 h-12 shrink-0">
       <span class="text-base font-bold leading-none">{{ dayPart(tournament.startDate) }}</span>
       <span class="text-[10px] uppercase text-muted">{{ monthPart(tournament.startDate) }}</span>
     </div>
-
-    <!-- Status is shown through the card's own styling, not a badge (same
-         convention as calendar/card/Base.vue): completed cards recede via
-         opacity/saturation above, canceled is a strikethrough+error title
-         below, ongoing gets a pulsing dot. Scheduled is the default look.
-         Sits left of the checkbox at a fixed offset (not jumping) since
-         the checkbox's own position stays reserved even while hidden. -->
-    <span
-      v-if="tournament.status === 'in_progress'"
-      class="absolute top-3 right-11 size-2.5 rounded-full bg-warning shrink-0 animate-pulse motion-reduce:animate-none"
-      :title="t('tournament.status.in_progress')"
-    />
 
     <!-- Hidden until hover, except once selected — same convention as
          WantedCardsListGridView.vue's card checkbox. `group-hover` targets

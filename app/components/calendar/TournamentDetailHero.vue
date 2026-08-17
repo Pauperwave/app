@@ -11,12 +11,14 @@ defineProps<{
 </script>
 
 <template>
-  <div class="relative overflow-hidden rounded-t-lg w-full">
+  <div class="relative overflow-hidden rounded-t-lg w-full h-80 sm:h-96">
     <img
-      :src="tournament.image ?? DEFAULT_CALENDAR_COVER_IMAGE"
+      v-if="tournament.image"
+      :src="tournament.image"
       :alt="tournament.name"
-      class="w-full max-h-80 sm:max-h-96 object-cover"
+      class="w-full h-full object-cover"
     >
+    <ImageOffPlaceholder v-else class="w-full h-full" icon-class="size-12" />
 
     <div class="absolute inset-0 bg-linear-to-b from-transparent to-default" />
 
