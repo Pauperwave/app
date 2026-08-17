@@ -36,11 +36,26 @@ function tournamentTimeRange(tournament: Tournament): string {
   const start = format(new Date(tournament.startDate), 'HH:mm')
   if (!tournament.endDate) return start
   const end = format(new Date(tournament.endDate), 'HH:mm')
-  return `${start}–${end}`
+  return `${start}-${end}`
 }
 
-// No Event.participants field of its own — an event's pre-registration
-// count is the union of its tournaments' own lists (user request 2026-08-14).
+// Per-row status checks (a v-for row, so a single page-level `computed`
+// can't target one specific tournament) — same isMuted/isCancelled
+// extraction as tournaments/list/Card.vue and leagues/list/Card.vue.
+function isTournamentMuted(tournament: Tournament) {
+  return tournament.status === 'completed' || tournament.status === 'cancelled'
+}
+function isTournamentCancelled(tournament: Tournament) {
+  return tournament.status === 'cancelled'
+}
+
+// No Event.participants field of its own — an event's pre-registration count
+// is the union of its tournaments' own lists (user request 2026-08-14). This
+// undercounts once real event-level registration exists (RegisterButton.vue
+// is still a placeholder, docs/TODO.md): someone can plausibly pre-register
+// to the event without registering to any specific tournament inside it, and
+// that person won't show up here. Fine today only because no such path
+// exists yet — revisit when it does.
 const participants = computed(() => tournaments.flatMap(tournament => tournament.participants))
 </script>
 
@@ -62,14 +77,14 @@ const participants = computed(() => tournaments.flatMap(tournament => tournament
           :key="tournament.id"
           type="button"
           class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-left rounded-md px-1.5 py-1 -mx-1.5 hover:bg-elevated transition-colors"
-          :class="{ 'opacity-60 saturate-50': tournament.status === 'completed' }"
+          :class="{ 'opacity-60 saturate-50': isTournamentMuted(tournament) }"
           @click.stop="openTournamentDetail(tournament)"
         >
           <BadgesFormatBadge :format="tournament.format" />
 
           <span
             class="truncate flex-1 min-w-0"
-            :class="{ 'line-through text-error': tournament.status === 'cancelled' }"
+            :class="{ 'line-through text-error': isTournamentCancelled(tournament) }"
           >
             {{ tournament.name }}
           </span>

@@ -26,6 +26,9 @@ const {
 
 const { t } = useI18n()
 
+const isMuted = computed(() => tournament.status === 'completed' || tournament.status === 'cancelled')
+const isCancelled = computed(() => tournament.status === 'cancelled')
+
 // Ctrl/Cmd+click or shift+click anywhere on the card toggles/range-selects
 // instead of navigating — same modifier convention as a file manager, lets a
 // visitor select without having to land precisely on the (small,
@@ -49,7 +52,7 @@ function timePart(startDate: string) {
       class="overflow-hidden cursor-pointer group transition-all duration-300
         hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1
         hover:scale-[1.02] hover:ring-primary"
-      :class="{ 'opacity-60 saturate-50': tournament.status === 'completed' }"
+      :class="{ 'opacity-60 saturate-50': isMuted }"
       :ui="{ body: 'p-3 sm:p-3', footer: 'p-3 sm:p-3' }"
       @click="onCardClick"
     >
@@ -59,7 +62,7 @@ function timePart(startDate: string) {
         <div class="min-w-0">
           <h3
             class="font-semibold truncate"
-            :class="{ 'line-through text-error': tournament.status === 'cancelled' }"
+            :class="{ 'line-through text-error': isCancelled }"
           >
             {{ tournament.name }}
           </h3>

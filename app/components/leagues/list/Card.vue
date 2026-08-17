@@ -6,8 +6,11 @@
   instead of format/location, a tournament-progress bar instead of
   players/entry-fee (leagues have neither). Status shows through the card's
   own styling rather than a badge, same convention as Card.vue: completed
-  recedes via opacity, cancelled gets a strikethrough+error title, active
-  gets Cover.vue's pulsing dot.
+  and cancelled both recede via opacity/saturation (2026-08-16: cancelled
+  used to keep full brightness, only the strikethrough+error title signaled
+  it — too easy to miss at a glance in a grid), cancelled additionally gets
+  the strikethrough+error title to stay distinct from "finished
+  successfully".
 -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
@@ -26,6 +29,9 @@ const {
 }>()
 
 const { t } = useI18n()
+
+const isMuted = computed(() => league.status === 'completed' || league.status === 'cancelled')
+const isCancelled = computed(() => league.status === 'cancelled')
 
 // Same ctrl/cmd/shift-click convention as TournamentsListCard.vue.
 function onCardClick(event: MouseEvent) {
@@ -48,8 +54,11 @@ function progress(current: League) {
       class="overflow-hidden cursor-pointer group transition-all duration-300
         hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1
         hover:scale-[1.02] hover:ring-primary"
-      :class="{ 'opacity-60 saturate-50': league.status === 'completed' }"
-      :ui="{ body: 'p-3 sm:p-3', footer: 'p-3 sm:p-3' }"
+      :class="{ 'opacity-60 saturate-50': isMuted }"
+      :ui="{
+        body: 'p-3 sm:p-3',
+        footer: 'p-3 sm:p-3'
+      }"
       @click="onCardClick"
     >
       <LeaguesListCover :league="league" :selection="selection" :range="range" />
@@ -57,7 +66,7 @@ function progress(current: League) {
       <div class="flex items-start justify-between gap-2">
         <h3
           class="font-semibold truncate min-w-0"
-          :class="{ 'line-through text-error': league.status === 'cancelled' }"
+          :class="{ 'line-through text-error': isCancelled }"
         >
           {{ league.name }}
         </h3>
