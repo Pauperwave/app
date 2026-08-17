@@ -131,6 +131,8 @@ export const ICONS = {
   info: 'i-lucide-info',
   messageCircle: 'i-lucide-message-circle',
   alignLeft: 'i-lucide-align-left',
+  image: 'i-lucide-image',
+  imageOff: 'i-lucide-image-off',
   externalLink: 'i-lucide-arrow-up-right',
   github: 'i-simple-icons-github',
 

@@ -7,6 +7,7 @@
 -->
 <!-- eslint-disable vue/no-mutating-props -- see the comment above -->
 <script setup lang="ts">
+import type { StatusColor } from '~/types'
 import type { TournamentFormState } from '~/composables/tournaments/useTournamentFormFields'
 
 interface SelectOption {
@@ -16,7 +17,7 @@ interface SelectOption {
 
 interface StatusOption extends SelectOption {
   icon: string
-  color: string
+  color: StatusColor
 }
 
 const {
@@ -26,11 +27,31 @@ const {
   statusOptions: StatusOption[]
   formatOptions: SelectOption[]
 }>()
+
+// Kept out of the valibot schema in useTournamentFormFields.ts (no format
+// validation needed) — same convention as LocationsFieldsGeneralInfoFields.vue's
+// `image`.
+const image = defineModel<string | undefined>('image')
 </script>
 
 <template>
   <!-- eslint-disable vue/no-mutating-props -- see the top-of-file comment -->
+  <UFormField :label="$t('tournament.addModal.fields.image')" name="image">
+    <MagicCardArtPicker v-model="image" />
+  </UFormField>
+
   <div class="flex justify-between gap-2">
+    <UFormField :label="$t('tournament.addModal.fields.format')" name="formatUuid" class="flex-1">
+      <USelectMenu
+        v-model="state.formatUuid"
+        class="w-full"
+        :items="formatOptions"
+        value-key="value"
+        :placeholder="$t('tournament.addModal.fields.selectFormat')"
+        :icon="ICONS.layers"
+      />
+    </UFormField>
+
     <div class="flex-1">
       <UStatusSelect
         v-model="state.status"
@@ -40,6 +61,18 @@ const {
         class="w-full"
       />
     </div>
+  </div>
+
+  <div class="flex items-end gap-2">
+    <!-- eslint-disable-next-line -->
+    <UFormField :label="$t('tournament.addModal.fields.name')" name="name" class="flex-1" required>
+      <UInput
+        v-model="state.name"
+        class="w-full"
+        :placeholder="$t('tournament.addModal.fields.namePlaceholder')"
+        :icon="ICONS.standings"
+      />
+    </UFormField>
 
     <UFormField
       :label="$t('tournament.addModal.fields.companionCode')"
@@ -55,24 +88,24 @@ const {
     </UFormField>
   </div>
 
-  <div class="flex items-end gap-2">
-    <!-- eslint-disable-next-line -->
-    <UFormField :label="$t('tournament.addModal.fields.name')" name="name" class="flex-1" required>
-      <UInput
-        v-model="state.name"
-        class="w-full"
-        :placeholder="$t('tournament.addModal.fields.namePlaceholder')"
-        :icon="ICONS.standings"
-      />
-    </UFormField>
-
-    <UFormField :label="$t('tournament.addModal.fields.entryFee')" name="entryFee">
+  <div class="flex justify-between gap-2">
+    <UFormField :label="$t('tournament.addModal.fields.entryFee')" name="entryFee" class="flex-1">
       <UInputNumber
         v-model="state.entryFee"
         :min="0"
         :step="5"
-        class="w-42"
+        class="w-full"
         :icon="ICONS.euro"
+      />
+    </UFormField>
+
+    <UFormField :label="$t('tournament.addModal.fields.prizes')" name="prizes" class="flex-1">
+      <UInput
+        :model-value="state.prizes ?? ''"
+        class="w-full"
+        :placeholder="$t('tournament.addModal.fields.prizesPlaceholder')"
+        :icon="ICONS.euro"
+        @update:model-value="state.prizes = ($event as string) || undefined"
       />
     </UFormField>
   </div>
@@ -84,27 +117,6 @@ const {
       :placeholder="$t('tournament.addModal.fields.descriptionPlaceholder')"
       :icon="ICONS.alignLeft"
       @update:model-value="state.description = ($event as string) || undefined"
-    />
-  </UFormField>
-
-  <UFormField :label="$t('tournament.addModal.fields.prizes')" name="prizes">
-    <UInput
-      :model-value="state.prizes ?? ''"
-      class="w-full"
-      :placeholder="$t('tournament.addModal.fields.prizesPlaceholder')"
-      :icon="ICONS.euro"
-      @update:model-value="state.prizes = ($event as string) || undefined"
-    />
-  </UFormField>
-
-  <UFormField :label="$t('tournament.addModal.fields.format')" name="formatUuid">
-    <USelectMenu
-      v-model="state.formatUuid"
-      class="w-full"
-      :items="formatOptions"
-      value-key="value"
-      :placeholder="$t('tournament.addModal.fields.selectFormat')"
-      :icon="ICONS.layers"
     />
   </UFormField>
 </template>

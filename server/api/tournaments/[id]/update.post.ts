@@ -23,7 +23,8 @@ export default defineEventHandler(async (event) => {
       entry_fee: body.entryFee,
       description: body.description,
       prizes: body.prizes,
-      companion_code: body.companionCode
+      companion_code: body.companionCode,
+      image_url: body.imageUrl
     })
     .eq('id', id)
     .select()

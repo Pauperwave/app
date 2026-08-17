@@ -20,6 +20,9 @@ export interface ScryfallPrinting {
   collectorNumber: string
   typeLine: string
   imageUrl: string | null
+  // Cropped illustration only (no card frame/text) — used by CardArtPicker.vue
+  // for cover-image selection, where the full card frame would look wrong.
+  artCropUrl: string | null
   manaCost: string
   colorIdentity: string[]
   cmc: number
@@ -38,7 +41,7 @@ export interface ScryfallPrinting {
 }
 
 interface ScryfallApiCardFace {
-  image_uris?: { normal?: string, large?: string }
+  image_uris?: { normal?: string, large?: string, art_crop?: string }
   mana_cost?: string
 }
 
@@ -53,7 +56,7 @@ interface ScryfallApiCard {
   color_identity?: string[]
   cmc?: number
   scryfall_uri: string
-  image_uris?: { normal?: string, large?: string }
+  image_uris?: { normal?: string, large?: string, art_crop?: string }
   card_faces?: ScryfallApiCardFace[]
   finishes?: string[]
   prices?: { eur?: string | null }
@@ -87,6 +90,7 @@ function toPrinting(card: ScryfallApiCard): ScryfallPrinting {
     collectorNumber: card.collector_number,
     typeLine: card.type_line ?? '',
     imageUrl: frontFace?.image_uris?.normal ?? frontFace?.image_uris?.large ?? null,
+    artCropUrl: frontFace?.image_uris?.art_crop ?? null,
     manaCost: card.mana_cost ?? card.card_faces?.[0]?.mana_cost ?? '',
     colorIdentity: card.color_identity ?? [],
     cmc: card.cmc ?? 0,

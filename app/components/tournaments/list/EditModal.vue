@@ -34,10 +34,15 @@ const state = reactive<TournamentFormState>({
   organizerUuid: undefined,
   locationUuid: undefined,
   entryFee: undefined,
-  companionCode: undefined
+  companionCode: undefined,
+  endTime: undefined
 })
 
 const { startDate, formattedStartDate } = useStartDateField(state, { defaultToToday: false })
+
+// Kept out of `state`/the valibot schema (no format validation needed) —
+// same convention as LocationsListEditModal.vue's `image`.
+const image = ref<string | undefined>(undefined)
 
 // Refills every time the modal opens on a (possibly new) tournament — same
 // convention as TransactionsListEditModal.vue's watch on its `transaction` prop.
@@ -53,6 +58,9 @@ watch([open, () => tournament], ([isOpen, current]) => {
   state.status = current.status
   state.startDate = current.startDate.substring(0, 10)
   state.startTime = startsAt.toTimeString().substring(0, 5)
+  state.endTime = current.endDate
+    ? new Date(current.endDate).toTimeString().substring(0, 5)
+    : undefined
   state.roundCount = current.roundCount ?? 1
   state.formatUuid = current.formatUuid
   state.description = current.description ?? undefined
@@ -61,6 +69,7 @@ watch([open, () => tournament], ([isOpen, current]) => {
   state.locationUuid = current.locationUuid ?? undefined
   state.entryFee = current.entryFee ?? 0
   state.companionCode = current.companionCode ?? undefined
+  image.value = current.image ?? undefined
 }, { immediate: true })
 
 const {
@@ -75,6 +84,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   if (!tournament) return
 
   const startsAt = combineDateAndTime(startDate.value!, event.data.startTime)
+  const endsAt = event.data.endTime
+    ? combineEndDateAndTime(startsAt, startDate.value!, event.data.endTime)
+    : null
 
   const payload: NewTournamentPayload = {
     name: event.data.name ?? '',
@@ -85,12 +97,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     leagueUuid: tournament.leagueUuid,
     eventUuid: tournament.eventUuid,
     startsAt: startsAt.toISOString(),
-    endsAt: tournament.endDate,
+    endsAt: endsAt ? endsAt.toISOString() : null,
     roundCount: event.data.roundCount,
     entryFee: event.data.entryFee,
     description: event.data.description || null,
     prizes: event.data.prizes || null,
-    companionCode: event.data.companionCode || null
+    companionCode: event.data.companionCode || null,
+    imageUrl: image.value ?? null
   }
 
   submitting.value = true
@@ -129,17 +142,30 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         @submit="onSubmit"
       >
         <div class="space-y-4">
+          <p class="text-lg font-semibold text-primary">
+            {{ $t('tournament.addModal.tournamentData') }}
+          </p>
+
           <TournamentsFieldsTournamentDataFields
+            v-model:image="image"
             :state="state"
             :status-options="statusOptions"
             :format-options="formatOptions"
           />
+
+          <p class="text-lg font-semibold text-primary">
+            {{ $t('tournament.addModal.scheduling') }}
+          </p>
 
           <TournamentsFieldsSchedulingFields
             v-model:start-date="startDate"
             :state="state"
             :formatted-start-date="formattedStartDate"
           />
+
+          <p class="text-lg font-semibold text-primary">
+            {{ $t('tournament.addModal.organizerData') }}
+          </p>
 
           <TournamentsFieldsOrganizerDataFields
             :state="state"

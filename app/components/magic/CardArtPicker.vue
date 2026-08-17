@@ -1,0 +1,128 @@
+<!-- app\components\magic\CardArtPicker.vue -->
+<!--
+  Standalone cover-image picker sourcing artwork directly from Scryfall
+  (2026-08-16, user request) — reuses useScryfallCardSearch.ts's name
+  typeahead + printings query (same composable as WantedCardsListAddModal.vue),
+  but selects a printing's art_crop (cropped illustration, no card frame)
+  rather than the full card image, since the result becomes a banner/cover,
+  not a card reference.
+-->
+<script setup lang="ts">
+const model = defineModel<string | undefined>()
+
+const { t } = useI18n()
+
+const {
+  query, nameSuggestions, isSuggesting, printings, isLoadingPrintings, fetchPrintings
+} = useScryfallCardSearch()
+
+const selectedName = ref<string>()
+const open = ref(false)
+
+// value-key on the name: keeps selectedName a plain string even though the
+// items also carry the front-face image for the row preview.
+const nameItems = computed(() => nameSuggestions.value.map(suggestion => ({
+  label: suggestion.name,
+  imageUrl: suggestion.imageUrl,
+  value: suggestion.name
+})))
+
+watch(selectedName, name => fetchPrintings(name))
+
+// Not every printing has an art_crop (some promos/tokens don't) — only those
+// are offered as a cover choice.
+const artOptions = computed(() => printings.value.filter(printing => printing.artCropUrl))
+
+function selectArt(url: string) {
+  model.value = url
+  open.value = false
+  selectedName.value = undefined
+  query.value = ''
+}
+
+function clear() {
+  model.value = undefined
+}
+</script>
+
+<template>
+  <div>
+    <UPopover v-model:open="open">
+      <button
+        type="button"
+        class="relative w-full h-32 rounded-lg border border-default overflow-hidden group"
+      >
+        <img
+          v-if="model"
+          :src="model"
+          :alt="t('magic.cardArtPicker.selectedAlt')"
+          class="w-full h-full object-cover"
+        >
+        <div
+          v-else
+          class="w-full h-full flex flex-col items-center justify-center gap-1 text-muted bg-elevated"
+        >
+          <UIcon :name="ICONS.image" class="size-6" />
+          <span class="text-sm">{{ t('magic.cardArtPicker.placeholder') }}</span>
+        </div>
+
+        <div class="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
+          <span class="text-white text-sm font-medium">
+            {{ model ? t('magic.cardArtPicker.change') : t('magic.cardArtPicker.select') }}
+          </span>
+        </div>
+      </button>
+
+      <template #content>
+        <div class="p-3 w-80 space-y-3">
+          <USelectMenu
+            v-model="selectedName"
+            v-model:search-term="query"
+            :items="nameItems"
+            value-key="value"
+            :loading="isSuggesting"
+            ignore-filter
+            :placeholder="t('magic.cardArtPicker.searchPlaceholder')"
+            :icon="ICONS.cardSearch"
+            class="w-full"
+          />
+
+          <div v-if="isLoadingPrintings" class="text-sm text-muted text-center py-4">
+            {{ t('magic.cardArtPicker.loading') }}
+          </div>
+
+          <div v-else-if="selectedName && artOptions.length === 0" class="text-sm text-muted text-center py-4">
+            {{ t('magic.cardArtPicker.noResults') }}
+          </div>
+
+          <div v-else-if="artOptions.length" class="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+            <button
+              v-for="printing in artOptions"
+              :key="printing.id"
+              type="button"
+              class="aspect-video rounded overflow-hidden ring-2 ring-transparent hover:ring-primary transition-all"
+              :title="printing.setName"
+              @click="selectArt(printing.artCropUrl!)"
+            >
+              <img
+                :src="printing.artCropUrl!"
+                :alt="printing.name"
+                class="w-full h-full object-cover"
+              >
+            </button>
+          </div>
+        </div>
+      </template>
+    </UPopover>
+
+    <UButton
+      v-if="model"
+      :label="t('magic.cardArtPicker.clear')"
+      color="neutral"
+      variant="link"
+      size="xs"
+      class="mt-1 p-0"
+      @click="clear"
+    />
+  </div>
+</template>

@@ -20,6 +20,7 @@ function buildSchema(t: ReturnType<typeof useI18n>['t']) {
     formatUuid: v.string(),
     startDate: v.string(),
     startTime: v.string(),
+    endTime: v.optional(v.string()),
     roundCount: v.pipe(
       v.number(),
       v.integer(),
