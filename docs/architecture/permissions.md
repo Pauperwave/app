@@ -27,7 +27,7 @@ Ordinata per permessi crescenti — dall'alto (accessibile a `player`) verso il 
 | Creare una richiesta "Carta Cercata" | 🟡 (solo per sé stesso) | 🟢 | 🟢 | 🟢 |
 | Cambiare stato (trovata/abbandonata) della propria richiesta | 🟡 (solo la propria) | 🟢 | 🟢 | 🟢 |
 | Gestire i propri mazzi Commander | 🟢 | 🟢 | 🟢 | 🟢 |
-| Visualizzare il proprio stato di tesseramento/dati anagrafici | 🟡 (solo il proprio) | 🟡 (solo il proprio) | 🟢 (tutti i soci) | 🟢 (tutti i soci) |
+| Visualizzare il proprio stato di tesseramento/dati anagrafici | 🟡 (solo il proprio) | 🟢 (tutti i soci) | 🟢 (tutti i soci) | 🟢 (tutti i soci) |
 | Creare, modificare tornei/leghe/eventi (inclusa la gestione ordinaria dei round) | 🔴 | 🟢 | 🟢 | 🟢 |
 | Correggere/azzerare i dati di un singolo tavolo/pairing | 🔴 | 🟢 | 🟢 | 🟢 |
 | Gestire pagamenti di eventi/tornei | 🔴 | 🟢 | 🟢 | 🟢 |
@@ -43,7 +43,26 @@ Ordinata per permessi crescenti — dall'alto (accessibile a `player`) verso il 
 | **Eliminare** un regolamento (ruleset) | 🔴 | 🔴 | 🔴 | 🟢 |
 | Assegnare/modificare ruoli (`/settings/members`) | 🔴 | 🔴 | 🔴 | 🟢 |
 
+## Navigazione (visibilità pagina, non azione)
+
+Righe aggiunte 2026-08-17 mentre si decideva quali voci della sidebar (`app/composables/layout/useMainNavGroups.ts`) nascondere per `player`, step 12/13 di `docs/architecture/roles.md`. Distinte dalla tabella sopra: qui il permesso decide solo se la *pagina* compare in navigazione, non cosa ci si può fare una volta dentro — es. `/associates` è visibile a `organizer` (vede tutti i soci, riga sopra), ma modificare/eliminare un socio resta `manage-members` (`admin`, riga sopra).
+
+| Pagina | player | organizer | admin | super-admin |
+|---|:---:|:---:|:---:|:---:|
+| `/associates`, `/associates/requests` (`view-associates`) | 🔴 | 🟢 | 🟢 | 🟢 |
+| `/finance`, `/transactions` (`view-finance`) | 🔴 | 🟢 | 🟢 | 🟢 |
+| `/players` (`view-players`) | 🔴 | 🟢 | 🟢 | 🟢 |
+| `/locations` (`manage-locations`) | 🔴 | 🟢 | 🟢 | 🟢 |
+| `/rulesets` (`manage-rulesets`) | 🔴 | 🟢 | 🟢 | 🟢 |
+| `/settings`, `/settings/permissions` (`access-settings`) | 🔴 | 🟢 | 🟢 | 🟢 |
+| `/settings/domains` (`manage-domains`) | 🔴 | 🔴 | 🟢 | 🟢 |
+| `/settings/members` (`manage-roles`, riga sopra) | 🔴 | 🔴 | 🔴 | 🟢 |
+
+Non gated (visibili a tutti, incluso `player`): dashboard, calendario, `/tournaments`/`/leagues`/`/events`, `/wanted-cards`, `/standings/*`, `/statistics/*` — stessa logica della riga "Visualizzare tornei, leghe, eventi" sopra (🟢 ovunque): le azioni di scrittura restano gated separatamente, la pagina in sola lettura resta pubblica.
+
 ## Note
+
+**Corretto 2026-08-17: "Visualizzare... dati anagrafici" è 🟢 per `organizer`, non 🟡.** Errore nella revisione 2026-08-10 — un organizer deve poter vedere l'anagrafica di *tutti* i soci (non solo la propria), distinto dalla riga "Gestire l'anagrafica soci (/associates)" qui sotto, che resta `admin`-only: `organizer` vede tutti i soci ma non modifica/elimina i loro dati. Corretto mentre si decideva il gate di navigazione per `/associates` — la vecchia riga avrebbe reso quella pagina erroneamente inaccessibile a un organizer.
 
 **"Carte Cercate" oggi *non* rispetta ancora questa matrice — deciso 2026-08-10, da correggere nel codice.** `server/api/wanted-cards/create.post.ts` usa solo `requireUser` (corretto, chiunque loggato crea la propria richiesta); ma `[id]/status.post.ts` usa oggi `requireManagementPermission`, quindi anche segnare una **propria** richiesta come "trovata"/"abbandonata" richiede un ruolo di gestione — comportamento sbagliato, confermato dall'utente. Un giocatore deve avere pieno controllo sullo stato delle proprie richieste; l'unica cosa che deve restare riservata alla gestione è l'**eliminazione** della richiesta (`[id]/delete.post.ts`, invariato). Il fix è in `server/api/wanted-cards/[id]/status.post.ts`: accettare anche il creatore della richiesta (owner-check sul `player_associate_uuid`/creator, come `player_own_registration` nei backup docs), non solo `requireManagementPermission` — vedi `docs/BACKLOG.md` P2. `[id]/update.post.ts` e `[id]/refresh-prices.post.ts` non sono stati toccati da questa decisione, restano `requireManagementPermission`.
 

@@ -30,6 +30,17 @@ export type Permission
     | 'delete-commander-deck'
     | 'delete-ruleset'
     | 'manage-roles'
+    // Nav-visibility permissions (2026-08-17, step 12/13): gate whether a
+    // sidebar section/page is shown at all, distinct from action-level
+    // permissions above (e.g. view-associates vs. manage-members — an
+    // organizer can see every associate's data but not edit/delete it).
+    | 'view-associates'
+    | 'view-finance'
+    | 'view-players'
+    | 'manage-locations'
+    | 'manage-rulesets'
+    | 'access-settings'
+    | 'manage-domains'
 
 export const PERMISSION_LEVEL = {
   'register-tournament': 'player',
@@ -44,7 +55,14 @@ export const PERMISSION_LEVEL = {
   'cancel-round': 'super_admin', // ordinary round management stays 'organizer', via 'manage-tournaments'; also covers league's "turn back to registration" case
   'delete-commander-deck': 'super_admin', // deleting someone else's deck — distinct from 'manage-all-commander-decks' (edit/manage, admin)
   'delete-ruleset': 'super_admin',
-  'manage-roles': 'super_admin'
+  'manage-roles': 'super_admin',
+  'view-associates': 'organizer', // sees every associate's data; editing/deleting stays manage-members (admin)
+  'view-finance': 'organizer',
+  'view-players': 'organizer',
+  'manage-locations': 'organizer',
+  'manage-rulesets': 'organizer', // deleting a ruleset stays delete-ruleset (super_admin)
+  'access-settings': 'organizer',
+  'manage-domains': 'admin'
 } as const satisfies Record<Permission, AppRole>
 
 export function can(role: AppRole | undefined, permission: Permission): boolean {

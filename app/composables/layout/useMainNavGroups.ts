@@ -3,6 +3,14 @@
 // layout logic, was the single largest chunk of that file (~220 lines).
 import type { NavigationMenuItem } from '@nuxt/ui'
 
+// Nav-visibility gating added 2026-08-17 (docs/architecture/roles.md's
+// "Suggested order of work" steps 12/13, permission map decided in
+// docs/architecture/permissions.md's "Navigazione" section). `permission`
+// is stripped from every item before the final `satisfies
+// NavigationMenuItem[][]` below, so it never reaches the actual
+// UNavigationMenu component.
+type NavItem = NavigationMenuItem & { permission?: Permission }
+
 // Each section is its own sub-array (not one flat array with inline labels): the
 // spacing between groups (gap-1.5 on the UNavigationMenu root) stays visible even
 // with the sidebar collapsed, because it is structural between groups — unlike
@@ -19,8 +27,9 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 // rather than informing it).
 export function useMainNavGroups(open: Ref<boolean>) {
   const { t } = useI18n()
+  const { can } = useUserRole()
 
-  const mainNavGroups = [[{
+  const rawGroups: NavItem[][] = [[{
     label: t('nav.dashboardsSection'),
     type: 'label'
   }, {
@@ -44,6 +53,7 @@ export function useMainNavGroups(open: Ref<boolean>) {
     icon: ICONS.badgeEuro,
     to: '/finance',
     devStatus: 'error',
+    permission: 'view-finance',
     onSelect: () => {
       open.value = false
     }
@@ -55,6 +65,7 @@ export function useMainNavGroups(open: Ref<boolean>) {
     icon: ICONS.players,
     to: '/associates',
     devStatus: 'success',
+    permission: 'view-associates',
     onSelect: () => {
       open.value = false
     }
@@ -63,6 +74,7 @@ export function useMainNavGroups(open: Ref<boolean>) {
     icon: ICONS.inbox,
     to: '/associates/requests',
     devStatus: 'success',
+    permission: 'view-associates',
     onSelect: () => {
       open.value = false
     }
@@ -71,6 +83,7 @@ export function useMainNavGroups(open: Ref<boolean>) {
     icon: ICONS.gameplay,
     to: '/players',
     devStatus: 'error',
+    permission: 'view-players',
     onSelect: () => {
       open.value = false
     }
@@ -79,6 +92,7 @@ export function useMainNavGroups(open: Ref<boolean>) {
     icon: ICONS.wallet,
     to: '/transactions',
     devStatus: 'error',
+    permission: 'view-finance',
     onSelect: () => {
       open.value = false
     }
@@ -119,6 +133,7 @@ export function useMainNavGroups(open: Ref<boolean>) {
     icon: ICONS.mapPin,
     to: '/locations',
     devStatus: 'warning',
+    permission: 'manage-locations',
     onSelect: () => {
       open.value = false
     }
@@ -162,6 +177,7 @@ export function useMainNavGroups(open: Ref<boolean>) {
     icon: ICONS.rules,
     to: '/rulesets',
     devStatus: 'warning',
+    permission: 'manage-rulesets',
     onSelect: () => {
       open.value = false
     }
@@ -200,6 +216,7 @@ export function useMainNavGroups(open: Ref<boolean>) {
     icon: ICONS.player,
     to: '/settings',
     devStatus: 'error',
+    permission: 'access-settings',
     onSelect: () => {
       open.value = false
     }
@@ -208,6 +225,7 @@ export function useMainNavGroups(open: Ref<boolean>) {
     icon: ICONS.players,
     to: '/settings/members',
     devStatus: 'error',
+    permission: 'manage-roles',
     onSelect: () => {
       open.value = false
     }
@@ -216,6 +234,7 @@ export function useMainNavGroups(open: Ref<boolean>) {
     icon: ICONS.permissions,
     to: '/settings/permissions',
     devStatus: 'warning',
+    permission: 'access-settings',
     onSelect: () => {
       open.value = false
     }
@@ -224,10 +243,21 @@ export function useMainNavGroups(open: Ref<boolean>) {
     icon: ICONS.globe,
     to: '/settings/domains',
     devStatus: 'warning',
+    permission: 'manage-domains',
     onSelect: () => {
       open.value = false
     }
-  }]] satisfies NavigationMenuItem[][]
+  }]]
+
+  // A group whose every non-label item got filtered out (e.g. the whole
+  // "Impostazioni" section for a plain player) is dropped entirely, rather
+  // than showing a dangling section header with nothing underneath.
+  // `permission` isn't stripped from the surviving items — it's an extra
+  // property UNavigationMenu itself never reads, and NavItem's structural
+  // superset of NavigationMenuItem is assignable without a cast here.
+  const mainNavGroups = computed<NavigationMenuItem[][]>(() => rawGroups
+    .map(group => group.filter(item => !item.permission || can(item.permission)))
+    .filter(group => group.some(item => item.type !== 'label')))
 
   return mainNavGroups
 }

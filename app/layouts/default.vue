@@ -169,7 +169,7 @@ const groups = computed(() => [{
 }, {
   id: 'links',
   label: t('nav.search.goTo'),
-  items: flattenForSearch([...mainNavGroups, footerNavItems])
+  items: flattenForSearch([...mainNavGroups.value, footerNavItems])
 }, {
   id: 'associates',
   label: t('nav.search.associates'),
