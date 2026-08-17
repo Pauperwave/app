@@ -23,7 +23,11 @@ interface Props {
 const {
   title, tourLabel, loading, status, ui
 } = defineProps<Props>()
-const emit = defineEmits<{ refresh: [], tourStart: [] }>()
+
+const emit = defineEmits<{
+  refresh: [],
+  tourStart: []
+}>()
 </script>
 
 <template>

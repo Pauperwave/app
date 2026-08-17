@@ -11,11 +11,18 @@ interface Props {
 // defaults to a 12-hour AM/PM picker otherwise. Other UInputDate props
 // (class, disabled, size, ...) fall through automatically since this
 // component has a single root node.
-const { granularity = 'minute', hourCycle = 24 } = defineProps<Props>()
+const {
+  granularity = 'minute',
+  hourCycle = 24
+} = defineProps<Props>()
 
 const model = defineModel<CalendarDateTime>()
 </script>
 
 <template>
-  <UInputDate v-model="model" :granularity="granularity" :hour-cycle="hourCycle" />
+  <UInputDate
+    v-model="model"
+    :granularity="granularity"
+    :hour-cycle="hourCycle"
+  />
 </template>

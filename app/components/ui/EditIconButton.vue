@@ -10,12 +10,17 @@
   slots, just label/size/click passthrough.
 -->
 <script setup lang="ts">
+import type { ButtonProps } from '@nuxt/ui'
+
 interface Props {
   label: string
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+  size?: ButtonProps['size']
 }
 
-const { label, size = 'md' } = defineProps<Props>()
+const {
+  label,
+  size = 'md'
+} = defineProps<Props>()
 
 defineEmits<{ click: [event: MouseEvent] }>()
 </script>
