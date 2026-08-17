@@ -18,5 +18,9 @@ const { label, icon, id = undefined } = defineProps<Props>()
        primary md, and going through one component is what keeps it that way.
        @click falls through to the UButton, so call sites still open their own
        modal. -->
-  <UButton :id="id" :label="label" :icon="icon" />
+  <UButton
+    :id="id"
+    :label="label"
+    :icon="icon"
+  />
 </template>
