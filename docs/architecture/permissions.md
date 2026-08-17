@@ -54,11 +54,11 @@ Righe aggiunte 2026-08-17 mentre si decideva quali voci della sidebar (`app/comp
 | `/players` (`view-players`) | 🔴 | 🟢 | 🟢 | 🟢 |
 | `/locations` (`manage-locations`) | 🔴 | 🟢 | 🟢 | 🟢 |
 | `/rulesets` (`manage-rulesets`) | 🔴 | 🟢 | 🟢 | 🟢 |
-| `/settings`, `/settings/permissions` (`access-settings`) | 🔴 | 🟢 | 🟢 | 🟢 |
-| `/settings/domains` (`manage-domains`) | 🔴 | 🔴 | 🟢 | 🟢 |
-| `/settings/members` (`manage-roles`, riga sopra) | 🔴 | 🔴 | 🔴 | 🟢 |
+| `/settings`, `/settings/members`, `/settings/permissions`, `/settings/domains`, `/settings/notifications` (`access-settings`) | 🔴 | 🔴 | 🟢 | 🟢 |
 
 Non gated (visibili a tutti, incluso `player`): dashboard, calendario, `/tournaments`/`/leagues`/`/events`, `/wanted-cards`, `/standings/*`, `/statistics/*` — stessa logica della riga "Visualizzare tornei, leghe, eventi" sopra (🟢 ovunque): le azioni di scrittura restano gated separatamente, la pagina in sola lettura resta pubblica.
+
+**Revisionato 2026-08-17: l'intera sezione `/settings` è admin+, non più organizer per `/settings`/`/settings/permissions`.** Trovato mentre si verificava questa tabella: `settings.vue` ha una sua seconda barra di navigazione interna (i tab sopra il corpo della pagina), completamente separata da `useMainNavGroups.ts` e non filtrata da nessun permesso — un organizer poteva raggiungere `/settings/members`/`/settings/domains` cliccando quei tab anche con la voce nascosta in sidebar, perché **nessuna pagina sotto `/settings` dichiarava `definePageMeta({ permission })`**: nascondere il link in sidebar non bastava, mancava l'enforcement lato route in `authorization.global.ts`. Corretto uniformando tutte e cinque le pagine (incluso `/settings/notifications`, raggiungibile solo via URL diretto, mai linkata da nessuna delle due barre) su un unico permesso `access-settings: admin`, sia nel tab bar di `settings.vue` sia via `definePageMeta` su ciascuna pagina figlia. `manage-roles` (`super_admin`) resta invariato per l'azione di assegnazione ruolo vera e propria — invariato lato RPC (`assign_role`), non più usato per il gate della pagina.
 
 ## Note
 

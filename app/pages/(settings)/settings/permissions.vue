@@ -3,6 +3,8 @@
 import type { TableColumn } from '@nuxt/ui'
 import { UIcon, UTooltip } from '#components'
 
+definePageMeta({ permission: 'access-settings' })
+
 const { t, te } = useI18n()
 
 type Access = 'full' | 'partial' | 'none'

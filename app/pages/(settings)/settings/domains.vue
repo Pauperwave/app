@@ -4,6 +4,8 @@ import type { TableColumn } from '@nuxt/ui'
 import { UBadge, UIcon } from '#components'
 import { ICONS } from '~/utils/icons'
 
+definePageMeta({ permission: 'access-settings' })
+
 const { t } = useI18n()
 
 const NuxtLink = resolveComponent('NuxtLink')

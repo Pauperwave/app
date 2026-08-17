@@ -2,6 +2,8 @@
 <script setup lang="ts">
 import * as v from 'valibot'
 
+definePageMeta({ permission: 'access-settings' })
+
 const fileRef = ref<HTMLInputElement>()
 const { t } = useI18n()
 

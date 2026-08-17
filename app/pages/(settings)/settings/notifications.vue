@@ -1,5 +1,7 @@
 <!-- app\pages\(settings)\settings\notifications.vue -->
 <script setup lang="ts">
+definePageMeta({ permission: 'access-settings' })
+
 const { t } = useI18n()
 
 const state = reactive<{ [key: string]: boolean }>({
