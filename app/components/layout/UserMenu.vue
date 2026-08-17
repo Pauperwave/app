@@ -43,12 +43,22 @@ const {
   realIsSuperAdmin, role, isPreviewing, setRolePreview
 } = useUserRole()
 
+// Increasing-authority iconography: player (user) -> organizer (shield) ->
+// admin (crown) — super_admin omitted from the preview list entirely (a
+// no-op for the only role that can even see this menu), so it needs no icon.
+const ROLE_PREVIEW_ICON = {
+  player: ICONS.player,
+  organizer: ICONS.security,
+  admin: ICONS.crown
+} as const satisfies Record<'player' | 'organizer' | 'admin', string>
+
 const rolePreviewGroup = computed<DropdownMenuItem[]>(() => realIsSuperAdmin.value
   ? [{
     label: t('rolePreview.menuLabel'),
     icon: ICONS.show,
     children: (['player', 'organizer', 'admin'] as const).map(previewable => ({
       label: t(`settings.members.roles.${previewable}`),
+      icon: ROLE_PREVIEW_ICON[previewable],
       type: 'checkbox' as const,
       checked: role.value === previewable && isPreviewing.value,
       onSelect: (e: Event) => {
