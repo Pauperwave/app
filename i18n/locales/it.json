@@ -1823,6 +1823,12 @@
     "seoTitle": "Pagina non trovata",
     "seoDescription": "Siamo spiacenti, questa pagina non è stata trovata."
   },
+  "rolePreview": {
+    "banner": "Stai visualizzando l'app come {role}. Questo non limita cosa puoi effettivamente fare.",
+    "exit": "Esci dall'anteprima",
+    "menuLabel": "Visualizza come",
+    "exitMenuLabel": "Esci dall'anteprima ruolo"
+  },
   "forbidden": {
     "seoTitle": "Accesso non autorizzato",
     "seoDescription": "Non hai i permessi necessari per accedere a questa pagina.",

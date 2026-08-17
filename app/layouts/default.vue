@@ -279,6 +279,8 @@ const groups = computed(() => [{
 
     <UDashboardSearch :groups="groups" />
 
+    <RolePreviewBanner />
+
     <slot />
 
     <NotificationsSlideover />
