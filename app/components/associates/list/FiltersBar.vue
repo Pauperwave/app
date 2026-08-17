@@ -7,6 +7,8 @@
   in the page, only this "no selection" content moved out).
 -->
 <script setup lang="ts">
+import type { StatusColor } from '~/types'
+
 interface StatusTab {
   label: string
   value: string
@@ -17,7 +19,7 @@ interface ConsentSocialOption {
   label: string
   value: string
   icon: string
-  color: string
+  color: StatusColor
 }
 
 const { statusTabs, consentSocialOptions } = defineProps<{

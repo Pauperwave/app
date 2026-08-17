@@ -6,6 +6,13 @@ import type { PaymentMethod, PaymentType } from '#shared/types/transactions'
 export type UserStatus = 'subscribed' | 'unsubscribed' | 'bounced'
 export type SaleStatus = 'paid' | 'failed' | 'refunded'
 
+// The color a *StatusColor() util (app/utils/status/*.ts) maps a domain
+// status onto for its UBadge/UStatusSelect — each util only ever returns a
+// subset of this union (e.g. wantedCardStatusColor never returns 'error'),
+// so this is the superset every one of them, and every consumer expecting
+// one of their return values, can share instead of re-declaring `string`.
+export type StatusColor = 'neutral' | 'info' | 'warning' | 'success' | 'error'
+
 export type RequestStatus = 'approved' | 'pending' | 'rejected'
 // English DB values, not Italian — translated for display via
 // associate.types.* in it.json (see renderAssociateTypeBadge in
