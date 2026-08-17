@@ -1,6 +1,4 @@
 // scripts\backfill-tournaments.mjs
-// fallow-ignore-file dead-code -- invoked directly via the CLI (see Usage
-// below), never imported by app code, so it has no importers by design.
 // One-off batch job: insert a batch of tournaments for a league in one shot
 // (used 2026-08-16 to backfill Lega Invernale 2026's 5 "tappa" tournaments,
 // then Lega Estiva 2025's 6). Edit LEAGUE_UUID/FORMAT_UUID/LOCATION_UUID/
