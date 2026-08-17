@@ -224,6 +224,22 @@ Implementato in `useCittadinoFilters.ts` come catena di comparatori dopo il tota
 
 **Conseguenze:** nessuna riga viene più persa per errore da queste due tabelle; un "delete" da UI è sempre recuperabile via SQL diretto finché non si decide di aggiungere un flusso di purge/restore. Il bottone "elimina formato" di `ManageModal.vue` resta comunque disabilitato quando il formato è in uso (scelta esplicita dell'utente, non legata alla sicurezza del delete — vedi ADR-016).
 
+### ADR-018 — Immagine di copertina della lega si propaga ai tornei figli (2026-08-16)
+
+**Contesto:** dopo aver aggiunto un selettore di copertina Scryfall (`MagicCardArtPicker.vue`) a `tournaments.image_url`, richiesta utente: poter impostare un'immagine anche per le leghe (`leagues`, nessuna colonna immagine prima d'ora) e, quando la si imposta, sovrascrivere l'immagine di tutti i tornei collegati a quella lega.
+
+**Decisione:** aggiunta `leagues.image_url` (migration `20260816230000_add_leagues_image_url.sql`), stessa convenzione "solo URL, nessun upload" di `tournaments.image_url`/`locations.image_url`. La propagazione è a livello applicativo, non un trigger DB: `server/api/leagues/[id]/update.post.ts` rilegge `image_url` prima dell'update e, solo se il valore sta effettivamente cambiando, esegue `update tournaments set image_url = :nuovoValore where league_uuid = :legaUuid`, sovrascrivendo qualunque copertina i singoli tornei avessero impostato per conto proprio. Il controllo "solo se cambia" evita che un edit qualsiasi della lega (rinominarla, cambiare regolamento) ripropaghi silenziosamente lo stesso valore ad ogni salvataggio.
+
+**Conseguenze:** una volta che una lega ha un'immagine, i tornei al suo interno perdono la possibilità pratica di avere una copertina diversa dalla lega finché qualcuno non la cambia di nuovo manualmente sul singolo torneo (che però verrà ri-sovrascritta al prossimo cambio immagine della lega). Nessun trigger DB coinvolto: la cascata vive solo nell'endpoint di update, quindi un update fatto fuori dall'app (SQL diretto, altro client) non la innesca.
+
+### ADR-019 — Le date di una lega sono derivate dai suoi tornei, non editabili (2026-08-16)
+
+**Contesto:** salvare una lega da `EditModal.vue` resettava silenziosamente `starts_at` alla mezzanotte locale della data scelta (perso l'orario originale, mai catturato dal form — solo un date picker, nessun campo ora come nei tornei), il che spostava la posizione della card nell'ordinamento di `/leagues` (`useLeaguesQuery.ts` ordina per `starts_at`) ad ogni modifica, anche non correlata alla data. Richiesta utente: le date di inizio/fine di una lega dovrebbero essere calcolate dinamicamente dai tornei che contiene, non impostate a mano.
+
+**Decisione:** `leagues.starts_at`/`ends_at` non sono più scrivibili dal form (rimossi da `NewLeaguePayload`, dal picker in `LeagueDataFields.vue`, dallo schema valibot in `useLeagueFormFields.ts`). `server/utils/leagueDates.ts`'s `recomputeLeagueDates()` li ricalcola come minimo `starts_at` / massimo `ends_at` tra i tornei ancora attivi (`deleted_at is null`) collegati via `tournaments.league_uuid` — chiamata da `tournaments/create.post.ts`, `[id]/update.post.ts` (sia per la lega vecchia che per quella nuova, se un torneo cambia lega) e `[id]/delete.post.ts`. Una lega senza tornei ha entrambe le colonne `null` — `useLeaguesQuery.ts` già gestiva questo caso con un fallback a `created_at`.
+
+**Conseguenze:** una lega appena creata non ha date finché non le si collega almeno un torneo. Nessun trigger DB coinvolto: come per ADR-018, la cascata vive solo negli endpoint `tournaments/*`, quindi una scrittura fuori dall'app non la innesca. In `/leagues` la tabella ora ha anche una colonna "Data di inizio" ordinabile (prima assente — l'unico sort disponibile era per nome) e l'ordinamento di default è passato da nome a data, per coerenza con `/tournaments` e con l'ordine già usato dalla vista a griglia.
+
 ## Vedi anche
 
 - `docs/architecture/database.md` — schema, RLS, migrazioni
