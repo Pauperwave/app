@@ -2,7 +2,7 @@
 
 <!-- docs/architecture/database.md -->
 
-Supabase Postgres project `app` (`uggrolzdntoamclgnzrt`), 28 tables in the `public` schema (`pauperwave_wanted_cards` added 2026-08-07). Integration with `MagicTheGathering/league` is imminent (deadline 2026-08-30) — `app`'s schema is the destination, `league` gets absorbed here, not the other way around. See ADR-003 (corrected 2026-08-08) in `docs/PROGRESS.md`.
+Supabase Postgres project `app` (`uggrolzdntoamclgnzrt`), 31 tables in the `public` schema (recount 2026-08-17 against `shared/utils/types/database.ts`; earlier count of 28 was stale — `cittadino_editions`, `pauperwave_cardtrader_blueprints`, and `pauperwave_cardtrader_expansions` weren't reflected here yet, and `event_locations` had since been renamed to `locations`, see below). Integration with `MagicTheGathering/league` is imminent (deadline 2026-08-30) — `app`'s schema is the destination, `league` gets absorbed here, not the other way around. See ADR-003 (corrected 2026-08-08) in `docs/PROGRESS.md`.
 
 ## Migrations
 
@@ -88,12 +88,11 @@ An `admin` (elevated authorization) is very likely *also* a `players` row (they 
 | `tournament_registrations` | 🟢 Agnostic | |
 | `tournament_rounds` | 🟢 Agnostic | `round_number`/`status`/timestamps only |
 | `mtg_formats` | 🟢 Agnostic | the format registry itself — seeded (`Commander`, `Pauper`, `Draft`, ...) and user-editable via `mtgFormats/ManageModal.vue`, including a `color` column (ADR-016) |
-| `player_formats` | 🟢 Agnostic | player↔format junction via `format_uuid` |
 | `players` | 🟢 Agnostic | |
 | `leagues` | 🟢 Agnostic | |
 | `events` | 🟢 Agnostic | |
 | `event_attendees` | 🟢 Agnostic | |
-| `event_locations` | 🟢 Agnostic | |
+| `locations` | 🟢 Agnostic | renamed from `event_locations`; also grew social/contact columns (`facebook_url`, `google_maps_url`, `instagram_url`, `telegram_url`, `whatsapp_url`, `opening_hours` jsonb, `image_url`, `temporarily_closed`) — corrected 2026-08-17 |
 | `organizations` | 🟢 Agnostic | |
 | `pauperwave_associates` | 🟢 Agnostic | membership |
 | `pauperwave_associate_renewals` | 🟢 Agnostic | membership |
@@ -103,6 +102,11 @@ An `admin` (elevated authorization) is very likely *also* a `players` row (they 
 | `sync_metadata` | 🟢 Agnostic | infrastructure |
 | `pauperwave_wanted_cards` | 🟢 Agnostic | "Carte Cercate" feature — deliberately built format-agnostic from the start (2026-08-07), no Pauper/Commander-specific columns |
 | `pauperwave_associate_geocodes` | 🟢 Agnostic | cache for the associates map view, unrelated to tournament format |
+| `cittadino_editions` | 🟢 Agnostic | added, not previously listed here (2026-08-17) — yearly edition registry (`name`, `year`) |
+| `pauperwave_cardtrader_blueprints` | 🟢 Agnostic | added, not previously listed here (2026-08-17) — Cardtrader catalog cache, FK to `pauperwave_cardtrader_expansions` |
+| `pauperwave_cardtrader_expansions` | 🟢 Agnostic | added, not previously listed here (2026-08-17) — Cardtrader expansion catalog cache |
+
+**Note:** `player_formats` was previously listed in this table as an existing player↔format junction table — it does not exist in the live schema (confirmed 2026-08-17 against `shared/utils/types/database.ts`); removed from this inventory.
 
 **Takeaway:** before building out Premodern/Draft/Pauper tournament flows, `tournament_pairings` (4-seat assumption), `tournament_votes`/`tournament_kills` (Commander-pod-only mechanics), and the `rulesets` family need a design decision — either made format-aware, or explicitly scoped as Commander-only with a parallel/generic path for other formats.
 
