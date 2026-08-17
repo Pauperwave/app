@@ -40,7 +40,7 @@ const handleLogout = useLogout()
 // so the control that exits a preview stays visible and usable even while
 // actively previewing as a lower role — see useUserRole.ts's own comment.
 const {
-  realIsSuperAdmin, role, isPreviewing, setRolePreview
+  realIsSuperAdmin, isSuperAdmin, role, isPreviewing, setRolePreview
 } = useUserRole()
 
 // Increasing-authority iconography: player (user) -> organizer (shield) ->
@@ -166,12 +166,14 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
       colorMode.preference = 'system'
     }
   }]
-}], [{
-  label: t('userMenu.githubRepository'),
-  icon: ICONS.github,
-  to: 'https://github.com/Pauperwave/app',
-  target: '_blank'
-}, {
+}], [...(isSuperAdmin.value
+  ? [{
+    label: t('userMenu.githubRepository'),
+    icon: ICONS.github,
+    to: 'https://github.com/Pauperwave/app',
+    target: '_blank'
+  }]
+  : []), {
   label: t('userMenu.logout'),
   icon: ICONS.logout,
   onSelect: handleLogout
