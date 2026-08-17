@@ -49,3 +49,32 @@ export async function softDeleteById(
     })
   }
 }
+
+// Shared by /[id]/status.post.ts endpoints (fallow:dupes, 2026-08-17
+// flagged tournaments'/leagues' own status.post.ts as a byte-identical
+// 17-line clone) — same table-name-as-parameter shape as softDeleteById,
+// for the "update one column, 500 on failure, return the row" pattern
+// the bulk "mark as" action needs instead of the full *update.post.ts
+// payload shape.
+export async function updateStatusById(
+  supabase: SupabaseClient<Database>,
+  table: 'tournaments' | 'leagues',
+  id: number,
+  status: string
+) {
+  const { data, error } = await supabase
+    .from(table)
+    .update({ status })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error || !data) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error?.message ?? `${table} status update failed`
+    })
+  }
+
+  return data
+}
