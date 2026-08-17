@@ -1863,7 +1863,7 @@
     "light": "Chiaro",
     "dark": "Scuro",
     "automatic": "Automatico",
-    "githubRepository": "Repository GitHub",
+    "githubRepository": "Repository",
     "logout": "Disconnetti",
     "logoutErrorTitle": "Errore",
     "logoutErrorDescription": "Impossibile disconnettersi. Riprova.",
