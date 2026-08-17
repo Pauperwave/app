@@ -1953,6 +1953,13 @@ export type Database = {
       }
     }
     Functions: {
+      assign_role: {
+        Args: {
+          p_role: Database["public"]["Enums"]["app_role"]
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       get_user_role: {
         Args: { p_user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
