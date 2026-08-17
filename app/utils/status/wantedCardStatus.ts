@@ -1,11 +1,11 @@
 // app\utils\status\wantedCardStatus.ts
-import type { WantedCardStatus } from '~/types'
+import type { StatusColor, WantedCardStatus } from '~/types'
 
 export const WANTED_CARD_STATUSES: WantedCardStatus[] = ['searching', 'found', 'abandoned']
 
 /** searching=in progress (warning), found=resolved successfully (success),
  * abandoned=closed without an outcome (neutral — not an error, just "gave up"). */
-export function wantedCardStatusColor(status: WantedCardStatus): 'warning' | 'success' | 'neutral' {
+export function wantedCardStatusColor(status: WantedCardStatus): StatusColor {
   if (status === 'found') return 'success'
   if (status === 'abandoned') return 'neutral'
   return 'warning'

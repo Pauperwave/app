@@ -4,7 +4,7 @@ import type { TableColumn, TabsItem } from '@nuxt/ui'
 import { upperFirst } from 'scule'
 import { UBadge } from '#components'
 import type { Table } from '@tanstack/vue-table'
-import type { Associate } from '~/types'
+import type { Associate, StatusColor } from '~/types'
 
 const {
   data: associates, isLoading: loading, status, refetch
@@ -219,7 +219,7 @@ function renderNeutralBadge(value: string) {
   })
 }
 
-const consentSocialOptions = [
+const consentSocialOptions: { label: string, value: string, icon: string, color: StatusColor }[] = [
   { label: t('associate.consentSocialOptions.all'), value: 'all', icon: 'i-lucide-megaphone', color: 'neutral' },
   { label: t('associate.consentSocialOptions.yes'), value: 'yes', icon: ICONS.success, color: 'success' },
   { label: t('associate.consentSocialOptions.no'), value: 'no', icon: ICONS.clear, color: 'error' }

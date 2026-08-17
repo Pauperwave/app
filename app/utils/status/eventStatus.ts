@@ -1,9 +1,9 @@
 // app\utils\status\eventStatus.ts
-import type { EventStatus } from '~/types'
+import type { EventStatus, StatusColor } from '~/types'
 
 export const EVENT_STATUSES: EventStatus[] = ['draft', 'published', 'ongoing', 'completed', 'cancelled']
 
-export function eventStatusColor(status: EventStatus): 'neutral' | 'info' | 'warning' | 'success' | 'error' {
+export function eventStatusColor(status: EventStatus): StatusColor {
   if (status === 'draft') return 'neutral'
   if (status === 'ongoing') return 'warning'
   if (status === 'completed') return 'success'

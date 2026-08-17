@@ -1,10 +1,12 @@
 <!-- app\components\inputs\UStatusSelect.vue -->
 <script setup lang="ts">
+import type { StatusColor } from '~/types'
+
 interface StatusItem {
   label: string
   value: string
   icon: string
-  color?: string
+  color?: StatusColor
   disabled?: boolean
 }
 

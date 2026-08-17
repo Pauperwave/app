@@ -1,9 +1,9 @@
 // app\utils\status\leagueStatus.ts
-import type { LeagueStatus } from '~/types'
+import type { LeagueStatus, StatusColor } from '~/types'
 
 export const LEAGUE_STATUSES: LeagueStatus[] = ['draft', 'active', 'completed', 'cancelled']
 
-export function leagueStatusColor(status: LeagueStatus): 'neutral' | 'info' | 'success' | 'error' {
+export function leagueStatusColor(status: LeagueStatus): StatusColor {
   if (status === 'draft') return 'neutral'
   if (status === 'active') return 'info'
   if (status === 'completed') return 'success'
