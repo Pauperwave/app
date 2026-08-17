@@ -16,15 +16,17 @@
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import type { CalendarIcsItem } from '~/utils/events/eventIcs'
+import type { EventStatus, TournamentStatus } from '~/types'
 
 interface Props {
   name: string
   startDate: string
   // Shared between Event and Tournament cards, which have independently
-  // evolving status vocabularies (EventStatus vs. TournamentStatus, migration
-  // 20260815100000) — only the 'completed' literal common to both is ever
-  // compared here, so a plain string is looser but correct for both.
-  status: string
+  // evolving status vocabularies (migration 20260815100000) — only the
+  // 'completed' literal common to both is ever compared here, but the union
+  // (rather than a bare string) costs nothing: Tournament.vue/Event.vue's
+  // only two call sites already pass exactly these two types.
+  status: EventStatus | TournamentStatus
   // Nullable (2026-08-15): not every tournament has a location_uuid set yet.
   // locationAddress feeds the maps link when present (more precise than the
   // venue name alone); falls back to `location` when it isn't.
@@ -36,7 +38,14 @@ interface Props {
 }
 
 const {
-  name, startDate, status, location, locationAddress = null, image, icsItem, participants = []
+  name,
+  startDate,
+  status,
+  location,
+  locationAddress = null,
+  image,
+  icsItem,
+  participants = []
 } = defineProps<Props>()
 
 defineEmits<{ select: [] }>()
@@ -48,10 +57,6 @@ const { t } = useI18n()
 // dropped from the header corner (2026-08-14, replaced by the share button
 // there) — status is still visible in CalendarDetailSlideover.vue.
 const isPast = computed(() => status === 'completed')
-
-// Falls back to a shared default cover (2026-08-15) instead of the old
-// date-box placeholder — every card always has an image now.
-const coverImage = computed(() => image ?? DEFAULT_CALENDAR_COVER_IMAGE)
 </script>
 
 <template>
@@ -61,14 +66,18 @@ const coverImage = computed(() => image ?? DEFAULT_CALENDAR_COVER_IMAGE)
     @click="$emit('select')"
   >
     <div class="flex items-start gap-4">
-      <!-- Luma-inspired: a cover image (real or the shared default) takes the
+      <!-- Luma-inspired: a cover image (real or a placeholder icon) takes the
            date box's spot — the date moves into a text line below the title
            instead. -->
-      <img
-        :src="coverImage"
-        :alt="name"
-        class="size-20 rounded-xl object-cover shrink-0"
-      >
+      <div class="size-20 rounded-xl overflow-hidden shrink-0">
+        <img
+          v-if="image"
+          :src="image"
+          :alt="name"
+          class="size-full object-cover"
+        >
+        <ImageOffPlaceholder v-else class="size-full" icon-class="size-6" />
+      </div>
 
       <div class="flex-1 min-w-0">
         <div class="flex items-start justify-between gap-2">
