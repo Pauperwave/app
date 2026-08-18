@@ -14,6 +14,8 @@ const { data: geocodes, isLoading: geocodesLoading } = useAssociatesGeocodesQuer
 const { t } = useI18n()
 const { renderConsentBadge } = useAssociatesRenderers()
 
+useSeoMeta({ title: () => t('associate.breadcrumb') })
+
 // Roster = already-approved associates only. Pending/rejected requests moved
 // to /associates/requests entirely (2026-08-11 UX split) — this table used
 // to mix "people who are members" with "people asking to become one", which

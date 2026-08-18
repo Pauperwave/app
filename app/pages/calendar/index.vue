@@ -1,5 +1,9 @@
 <!-- app\pages\calendar\index.vue -->
 <script lang="ts" setup>
+const { t } = useI18n()
+
+useSeoMeta({ title: () => t('nav.calendar') })
+
 // Same convention as FormatPage.vue / associates/requests.vue's
 // tesseramentoLink: point at this deploy's own /calendario for now, until
 // the subdomain is wired up in DNS (settings/domains.vue).

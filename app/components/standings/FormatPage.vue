@@ -13,6 +13,9 @@ interface Props {
 
 const { format } = defineProps<Props>()
 
+const { t } = useI18n()
+useSeoMeta({ title: () => t(FORMAT_STANDINGS_BREADCRUMB_KEYS[format]) })
+
 // Panel id and breadcrumb i18n key both derive from `format` — the three
 // /standings/<format> pages (commander, pauper, premodern) were byte-identical
 // aside from these two strings and the `format` passed to

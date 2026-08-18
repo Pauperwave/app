@@ -7,6 +7,8 @@ definePageMeta({ permission: 'access-settings' })
 
 const { t, te } = useI18n()
 
+useSeoMeta({ title: () => t('settings.layout.links.permissions') })
+
 type Access = 'full' | 'partial' | 'none'
 type RoleKey = 'player' | 'organizer' | 'admin' | 'superAdmin'
 

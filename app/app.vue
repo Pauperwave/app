@@ -15,15 +15,19 @@ useHead({
   ],
   htmlAttrs: {
     lang: 'it'
-  }
+  },
+  // Every page-level useSeoMeta({ title }) now sets only its own short name
+  // (e.g. "Soci", "Eventi") — this template is what prefixes "Pauperwave | "
+  // uniformly, so the browser tab always shows which page it is instead of
+  // just the app name (previously every page fell back to the bare
+  // "Pauperwave" below, since none of them set a title of their own).
+  titleTemplate: title => title ? `Pauperwave | ${title}` : 'Pauperwave'
 })
 
-// Fallback for every page under default.vue's dashboard shell — none of them
-// call useSeoMeta themselves (login.vue/tesseramento/404 do, and set their
-// own full title). Without this, <head> has no <title> at all on any
-// dashboard route.
+// Fallback for every page under default.vue's dashboard shell that doesn't
+// (yet) set its own title — without this, <head> has no <title> at all on
+// those routes.
 useSeoMeta({
-  title: 'Pauperwave',
   description: 'Gestionale della lega Pauper Pauperwave: associati, tornei, leghe, eventi, carte cercate e classifiche.'
 })
 </script>

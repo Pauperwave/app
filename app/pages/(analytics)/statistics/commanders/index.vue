@@ -1,4 +1,10 @@
 <!-- app\pages\(analytics)\statistics\commanders\index.vue -->
+<script lang="ts" setup>
+const { t } = useI18n()
+
+useSeoMeta({ title: () => t('commander.breadcrumb') })
+</script>
+
 <template>
   <UDashboardPanel id="commanders">
     <template #header>

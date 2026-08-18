@@ -1,5 +1,9 @@
 <!-- app\pages\(competitions)\standings\cittadino\index.vue -->
 <script lang="ts" setup>
+const { t } = useI18n()
+
+useSeoMeta({ title: () => t('cittadino.breadcrumb') })
+
 const {
   formatItems, isFiltered, activeEdition, editionTabs, events, standings,
   columns, columnAccentColors, tableMeta, legendCountedSample, legendDroppedSample,

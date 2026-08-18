@@ -20,6 +20,12 @@ const { breadcrumbItems } = useBreadcrumbs()
 const associate = computed(() => (associates.value ?? [])
   .find(item => slugify(`${item.first_name} ${item.last_name}`) === route.params.slug))
 
+useSeoMeta({
+  title: () => associate.value
+    ? `${associate.value.first_name} ${associate.value.last_name}`
+    : t('associate.breadcrumb')
+})
+
 const editModalOpen = ref(false)
 
 // Emanuele Nardi gets his real GitHub avatar (same one hardcoded in

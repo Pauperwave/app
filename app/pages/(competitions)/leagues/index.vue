@@ -19,6 +19,8 @@ const range = shallowRef<Range>({
 
 const { t } = useI18n()
 
+useSeoMeta({ title: () => t('league.breadcrumb') })
+
 const {
   data: leaguesData, isLoading: loading, status, refetch
 } = useLeaguesQuery()

@@ -8,6 +8,8 @@ definePageMeta({ permission: 'access-settings' })
 
 const { t } = useI18n()
 
+useSeoMeta({ title: () => t('settings.layout.links.domains') })
+
 const NuxtLink = resolveComponent('NuxtLink')
 
 // Routes that actually exist as pages today — everything else in the `route`

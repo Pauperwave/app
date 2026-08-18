@@ -10,6 +10,8 @@ const { t } = useI18n()
 const toast = useToast()
 const { isModalOpen } = useModalOpenFromQuery()
 
+useSeoMeta({ title: () => t('associate.subNav.requestsShort') })
+
 // The other half of the 2026-08-11 UX split (see associates/index.vue) —
 // everyone NOT yet approved: the triage queue an admin actually needs to act
 // on, kept out of the roster entirely instead of buried in a status filter.

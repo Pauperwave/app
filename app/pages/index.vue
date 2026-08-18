@@ -3,6 +3,10 @@
 import { sub } from 'date-fns'
 import type { Period, Range } from '~/types'
 
+const { t } = useI18n()
+
+useSeoMeta({ title: () => t('nav.dashboard') })
+
 const range = shallowRef<Range>({
   start: sub(new Date(), { days: 14 }),
   end: new Date()

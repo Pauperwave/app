@@ -4,6 +4,8 @@ import type { TabsItem } from '@nuxt/ui'
 
 const { t } = useI18n()
 
+useSeoMeta({ title: () => t('ruleset.breadcrumb') })
+
 // Rules are rendered from the same constants the standings are scored with, so
 // the published regulation cannot drift from what /standings/cittadino actually
 // computes.
