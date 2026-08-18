@@ -4,6 +4,7 @@ import { EditIconButton, UBadge } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { League } from '~/types'
 import type { Selection } from '~/composables/useSelection'
+import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 
 // Same shape as useTournamentsTableColumns.ts — selection/onEdit threaded
 // through rather than read from a composable here, since that state
@@ -54,11 +55,8 @@ export function useLeaguesTableColumns(
       // so this is effectively "when does this league's activity start" —
       // date-only, same rationale as useLeaguesQuery.ts falling back to
       // created_at rather than showing a time-of-day that was never real.
-      cell: ({ row }) => new Date(row.original.startDate).toLocaleDateString('it-IT', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric'
-      })
+      cell: ({ row }) =>
+        h(DateWithRelativeTooltip, { isoString: row.original.startDate, time: false })
     },
     {
       accessorKey: 'tournamentCount',

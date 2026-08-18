@@ -4,9 +4,9 @@
 // tables land
 import { h } from 'vue'
 import { UBadge } from '#components'
-import { format } from 'date-fns'
 import type { TableColumn } from '@nuxt/ui'
 import type { Event } from '~/types'
+import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 
 export function useEventsTableColumns() {
   const { t } = useI18n()
@@ -38,7 +38,8 @@ export function useEventsTableColumns() {
     {
       accessorKey: 'startDate',
       header: ({ column }) => sortableHeader(t('event.columns.startDate'), column),
-      cell: ({ row }) => format(new Date(row.original.startDate), 'dd/MM/yyyy')
+      cell: ({ row }) =>
+        h(DateWithRelativeTooltip, { isoString: row.original.startDate, time: false })
     },
     {
       accessorKey: 'tournamentCount',
