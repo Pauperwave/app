@@ -102,32 +102,21 @@ All `SECURITY DEFINER`, reading `user_roles` — the implementation behind the t
 #### `find_or_create_commander_deck()` — designed, not deployed
 Does **not** exist in the live database (verified via `pg_proc`, 2026-08-18) despite being fully spec'd, with SQL, under "Helper Functions" further down in this doc — that spec (and the `commander_decks` RLS policies/indexes around it) describes a Commander tournament-results flow that was never built: no server route or composable anywhere in the app references `commander_decks` today. The table itself is real and matches its documented columns; only the function, its trigger, and the consuming flow are pending. Treat that later section as a design doc, not a description of current state, until this is reconciled.
 
-### Realtime Configuration
-
-For Supabase realtime to work correctly with UPDATE and DELETE events, the following tables require `REPLICA IDENTITY FULL` to receive full payloads:
-
-```sql
-ALTER TABLE tournament_rounds          REPLICA IDENTITY FULL;
-ALTER TABLE tournament_pairings        REPLICA IDENTITY FULL;
-ALTER TABLE tournament_round_results   REPLICA IDENTITY FULL;
-ALTER TABLE tournament_votes           REPLICA IDENTITY FULL;
-ALTER TABLE tournament_kills           REPLICA IDENTITY FULL;
-```
-
-Without this, `UPDATE` payloads only include new values, not previous state — fine for reactive syncing but problematic if you need to diff changes.
-
 ### Migration Notes
 
 When applying schema changes to an existing database:
 
-1. Create a new migration in Supabase
+1. Create a new migration file under `supabase/migrations/` (`YYYYMMDDHHMMSS_description.sql`)
 2. Use `ALTER TABLE` for column additions (non-breaking)
-3. Use `ALTER TABLE ... RENAME CONSTRAINT` for constraint renames
+3. Use `ALTER TABLE ... RENAME CONSTRAINT` for constraint renames — confirmed the actual technique used (`20260818090000_normalize_constraint_naming.sql`)
 4. For constraint changes that require recreation, use a transaction to drop and recreate
-5. Test with `supabase db reset` locally before deploying
-6. Back up production data before major structural changes
+5. `npx supabase db push --linked --dry-run`, then without `--dry-run` to actually apply — there is no local Postgres/Docker setup in this project (`supabase db reset` needs Docker Desktop, which isn't installed here; every migration this session was dry-run-then-applied directly against the linked remote instance, then spot-checked with `supabase db query` against the same remote)
+6. Regenerate `shared/utils/types/database.ts` via `pnpm supabase:types` after any schema change
+7. Back up production data before major structural changes
 
 ### Realtime Configuration
+
+Verified live 2026-08-18 (`pg_publication_tables`/`pg_class.relreplident`): all 8 tables below are genuinely in the `supabase_realtime` publication, and the 5 high-frequency ones genuinely have `REPLICA IDENTITY FULL` set — this section was accurate. Like `find_or_create_commander_deck()` above, though, no app code (`app/`, `server/`) subscribes to Realtime anywhere yet (`grep` for `.channel(`/`postgres_changes` turns up nothing) — this is the same not-yet-built Commander live-scoring flow, configured at the DB level ahead of the feature that will consume it.
 
 Tables enabled for Supabase Realtime (configured in Dashboard → Database → Replication):
 
