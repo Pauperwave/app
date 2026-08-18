@@ -188,7 +188,7 @@
       "membershipRequestStatus": "Stato",
       "membershipStatus": "Tesseramento",
       "requestDate": "Data richiesta",
-      "paymentDate": "Pagamento",
+      "lastRenewalDate": "Ultimo rinnovo",
       "associationDate": "Data di associazione",
       "associateType": "Tipo di associato",
       "pauperwaveAssociateNumber": "Tessera",
