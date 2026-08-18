@@ -118,7 +118,12 @@ export function useCittadinoTableColumns(events: Ref<CittadinoEvent[]>) {
           class: [
             'rounded px-1 py-1 text-[10px] leading-none tabular-nums',
             formatColorClass(event.format)
-          ]
+          ],
+          // formatColorClass alone only supplies bg-primary/15 text-primary —
+          // those utilities read from --ui-primary, which nothing here overrides
+          // without this, so every chip rendered the same ambient primary colour
+          // instead of its own format's. Same fix as FormatBadge.vue's colorStyle.
+          style: formatColor(event.format) ? { '--ui-primary': formatColor(event.format) } : undefined
         }, formatEventDate(event.date))
       ]),
       meta: { class: { th: EVENT_CLASS, td: `${EVENT_CLASS} tabular-nums` } },
