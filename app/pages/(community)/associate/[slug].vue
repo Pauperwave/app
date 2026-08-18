@@ -79,7 +79,7 @@ const tesseramentoFields = computed<DetailField[]>(() => !associate.value
     { icon: 'i-lucide-id-card', label: t('associate.columns.pauperwaveAssociateNumber'), value: associate.value.pauperwave_associate_number || '—' },
     { icon: 'i-lucide-tag', label: t('associate.columns.associateType'), value: associate.value.associate_type || '—' },
     { icon: ICONS.calendar, label: t('associate.columns.requestDate'), value: formatDate(associate.value.request_date) || '—' },
-    { icon: ICONS.creditCard, label: t('associate.columns.paymentDate'), value: formatDate(associate.value.payment_date) || '—' },
+    { icon: ICONS.creditCard, label: t('associate.columns.lastRenewalDate'), value: formatDate(associate.value.latest_renewal_date) || '—' },
     { icon: 'i-lucide-calendar-check', label: t('associate.columns.associationDate'), value: formatDate(associate.value.association_date) || '—' }
   ])
 

@@ -1933,6 +1933,7 @@ export type Database = {
           has_read_statute: boolean | null
           id: number | null
           last_name: string | null
+          latest_renewal_date: string | null
           latest_renewal_year: number | null
           membership_request_status: string | null
           membership_status: string | null

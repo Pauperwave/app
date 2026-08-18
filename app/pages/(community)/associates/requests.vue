@@ -159,7 +159,7 @@ const columnVisibility = ref({
   id: false,
   updated_at: false,
   updated_by: false,
-  payment_date: false,
+  latest_renewal_date: false,
   pauperwave_associate_number: false,
   // Mandatory to submit /tesseramento — always true, redundant on every row.
   consent_data: false,

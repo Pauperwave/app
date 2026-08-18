@@ -59,7 +59,7 @@ const {
 const {
   columnHeaders, visibilityItems,
   selectColumn, idColumn, createdAtColumn, updatedAtColumn, updatedByColumn,
-  paymentDateColumn, pauperwaveAssociateNumberColumn, membershipRequestStatusColumn,
+  lastRenewalDateColumn, pauperwaveAssociateNumberColumn, membershipRequestStatusColumn,
   associateTypeColumn, consentDataColumn, consentSocialColumn, hasReadStatuteColumn,
   firstNameColumn, lastNameColumn, emailAddressColumn, phoneNumberColumn, taxCodeColumn,
   bornDateColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
@@ -169,7 +169,7 @@ const columns: TableColumn<Associate>[] = [
       })
     }
   },
-  paymentDateColumn,
+  lastRenewalDateColumn,
   {
     accessorKey: 'association_date',
     header: ({ column }) => sortableHeader(columnHeaders.association_date, column),

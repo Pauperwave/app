@@ -14,7 +14,7 @@ import RowActionsMenu from '~/components/ui/RowActionsMenu.vue'
 // has_acknowledged_surveillance_notice) was byte-identical in both files
 // (fallow dupes, 2026-08-11), same root cause as useAssociatesRenderers.ts:
 // the two pages share one Associate table shape, not two. id/updated_at/
-// updated_by/payment_date/pauperwave_associate_number moved from roster-only
+// updated_by/latest_renewal_date/pauperwave_associate_number moved from roster-only
 // to shared 2026-08-13 (user request — requests.vue was showing fewer
 // columns than the roster for no real reason on these five).
 //
@@ -32,7 +32,7 @@ export const associatesColumnHeaders = (t: (key: string) => string) => ({
   membership_request_status: t('associate.columns.membershipRequestStatus'),
   membership_status: t('associate.columns.membershipStatus'),
   request_date: t('associate.columns.requestDate'),
-  payment_date: t('associate.columns.paymentDate'),
+  latest_renewal_date: t('associate.columns.lastRenewalDate'),
   association_date: t('associate.columns.associationDate'),
   associate_type: t('associate.columns.associateType'),
   pauperwave_associate_number: t('associate.columns.pauperwaveAssociateNumber'),
@@ -137,7 +137,7 @@ export function useAssociatesTableColumns(
 
   // Shared with associates/index.vue since 2026-08-13 (was inline there only) —
   // requests.vue shows these too now: id/updated_at/updated_by for traceability
-  // on a request under review, payment_date/pauperwave_associate_number to
+  // on a request under review, latest_renewal_date/pauperwave_associate_number to
   // preview what a pending request would get once approved (the number is
   // potential/unassigned until then, same shared "Tessera" label as the roster).
   const idColumn: TableColumn<Associate> = {
@@ -174,11 +174,17 @@ export function useAssociatesTableColumns(
     }
   }
 
-  const paymentDateColumn: TableColumn<Associate> = {
-    accessorKey: 'payment_date',
-    header: ({ column }) => sortableHeader(columnHeaders.payment_date, column),
+  // Latest renewal date (2026-08-18), not pauperwave_associates.payment_date — that
+  // column is a one-time snapshot from initial signup, never updated on renewal, so
+  // it silently went stale for anyone who has since renewed. This reads the view's
+  // aggregated pauperwave_associate_renewals date instead (migration
+  // 20260818120000_add_latest_renewal_date_to_associates_view.sql), same source as
+  // AssociateTag.vue's "Ultimo rinnovo" popover (which shows just the year).
+  const lastRenewalDateColumn: TableColumn<Associate> = {
+    accessorKey: 'latest_renewal_date',
+    header: ({ column }) => sortableHeader(columnHeaders.latest_renewal_date, column),
     meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
-    cell: ({ row }) => formatDate(row.original.payment_date)
+    cell: ({ row }) => formatDate(row.original.latest_renewal_date)
   }
 
   const pauperwaveAssociateNumberColumn: TableColumn<Associate> = {
@@ -372,7 +378,7 @@ export function useAssociatesTableColumns(
     createdAtColumn,
     updatedAtColumn,
     updatedByColumn,
-    paymentDateColumn,
+    lastRenewalDateColumn,
     pauperwaveAssociateNumberColumn,
     membershipRequestStatusColumn,
     requestDateColumn,

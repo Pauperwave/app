@@ -20,7 +20,7 @@ export function useAssociatesRequestsTableColumns(
   const {
     visibilityItems,
     selectColumn, idColumn, updatedAtColumn, updatedByColumn, actionsColumn,
-    paymentDateColumn, pauperwaveAssociateNumberColumn,
+    lastRenewalDateColumn, pauperwaveAssociateNumberColumn,
     membershipRequestStatusColumn, requestDateColumn,
     associateTypeColumn, consentDataColumn, consentSocialColumn, hasReadStatuteColumn,
     firstNameColumn, lastNameColumn, emailAddressColumn, phoneNumberColumn, taxCodeColumn,
@@ -34,7 +34,7 @@ export function useAssociatesRequestsTableColumns(
     idColumn,
     membershipRequestStatusColumn,
     requestDateColumn,
-    paymentDateColumn,
+    lastRenewalDateColumn,
     pauperwaveAssociateNumberColumn,
     firstNameColumn,
     lastNameColumn,

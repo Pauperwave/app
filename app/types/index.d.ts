@@ -45,6 +45,7 @@ export interface Associate extends Omit<AssociateRow, 'membership_request_status
   associate_type: AssociateType | null
   membership_status: MembershipStatus
   latest_renewal_year: number | null
+  latest_renewal_date: string | null
   avatar?: AvatarProps
 }
 
