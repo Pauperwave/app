@@ -177,7 +177,8 @@
       "pending": "In attesa",
       "rejected": "Rifiutate",
       "active": "Attivi",
-      "toRenew": "Da rinnovare"
+      "toRenew": "Da rinnovare",
+      "expired": "Scaduti"
     },
     "columns": {
       "id": "ID",
