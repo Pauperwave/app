@@ -5,13 +5,14 @@ import { upperFirst } from 'scule'
 import { UBadge } from '#components'
 import type { Table } from '@tanstack/vue-table'
 import type { Associate, StatusColor } from '~/types'
+import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 
 const {
   data: associates, isLoading: loading, status, refetch
 } = useAssociatesQuery()
 const { data: geocodes, isLoading: geocodesLoading } = useAssociatesGeocodesQuery()
 const { t } = useI18n()
-const { formatDate, renderConsentBadge } = useAssociatesRenderers()
+const { renderConsentBadge } = useAssociatesRenderers()
 
 // Roster = already-approved associates only. Pending/rejected requests moved
 // to /associates/requests entirely (2026-08-11 UX split) — this table used
@@ -174,7 +175,8 @@ const columns: TableColumn<Associate>[] = [
     accessorKey: 'association_date',
     header: ({ column }) => sortableHeader(columnHeaders.association_date, column),
     meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
-    cell: ({ row }) => formatDate(row.original.association_date)
+    cell: ({ row }) =>
+      h(DateWithRelativeTooltip, { isoString: row.original.association_date, time: false })
   },
   associateTypeColumn,
   pauperwaveAssociateNumberColumn,

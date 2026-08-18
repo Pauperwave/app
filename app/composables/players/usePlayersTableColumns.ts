@@ -1,9 +1,9 @@
 // app\composables\players\usePlayersTableColumns.ts
 import { h } from 'vue'
 import { AssociateTag } from '#components'
-import { format } from 'date-fns'
 import type { TableColumn } from '@nuxt/ui'
 import type { Player } from '~/types'
+import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 
 export function usePlayersTableColumns() {
   const { t } = useI18n()
@@ -45,7 +45,8 @@ export function usePlayersTableColumns() {
       accessorKey: 'created_at',
       header: ({ column }) => sortableHeader(t('player.columns.createdAt'), column),
       meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
-      cell: ({ row }) => (row.original.created_at ? format(new Date(row.original.created_at), 'dd/MM/yyyy') : '')
+      cell: ({ row }) =>
+        h(DateWithRelativeTooltip, { isoString: row.original.created_at, time: false })
     }
   ]
 

@@ -11,6 +11,7 @@ import {
 import type { TableColumn } from '@nuxt/ui'
 import type { Tournament } from '~/types'
 import type { Selection } from '~/composables/useSelection'
+import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 
 // Shared by the three groupable columns (league/format/location, 2026-08-17
 // user request) — a group-header row's cell: expand chevron, the group's
@@ -112,16 +113,9 @@ export function useTournamentsTableColumns(
     {
       accessorKey: 'startDate',
       header: ({ column }) => sortableHeader(t('tournament.columns.startDate'), column),
-      cell: ({ row }) => {
-        if (row.getIsGrouped()) return null
-        return new Date(row.original.startDate).toLocaleString('it-IT', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        })
-      }
+      cell: ({ row }) => row.getIsGrouped()
+        ? null
+        : h(DateWithRelativeTooltip, { isoString: row.original.startDate })
     },
     {
       accessorKey: 'format',

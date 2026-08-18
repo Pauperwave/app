@@ -44,9 +44,6 @@ export function useTransactionsTableColumns(
 
   const columnHeaders = transactionsColumnHeaders(t)
 
-  const dateFormatter = new Intl.DateTimeFormat('it-IT', {
-    day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-  })
   const amountFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
 
   const selectColumn = useGroupedSelectColumn<Transaction>(selection)
@@ -97,8 +94,9 @@ export function useTransactionsTableColumns(
       accessorKey: 'payment_date',
       header: ({ column }) => sortableHeader(columnHeaders.payment_date, column),
       meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
-      cell: ({ row }) =>
-        row.getIsGrouped() ? null : dateFormatter.format(new Date(row.original.payment_date))
+      cell: ({ row }) => row.getIsGrouped()
+        ? null
+        : h(DateWithRelativeTooltip, { isoString: row.original.payment_date })
     },
     {
       accessorKey: 'payment_type',

@@ -68,9 +68,7 @@ export function useAssociatesTableColumns(
   rowContextMenuItems: (associate: Associate) => DropdownMenuItem[]
 ) {
   const { t } = useI18n()
-  const {
-    formatDateTime, formatDate, renderAssociateTypeBadge, renderConsentBadge
-  } = useAssociatesRenderers()
+  const { renderAssociateTypeBadge, renderConsentBadge } = useAssociatesRenderers()
 
   const columnHeaders = associatesColumnHeaders(t)
 
@@ -184,7 +182,8 @@ export function useAssociatesTableColumns(
     accessorKey: 'latest_renewal_date',
     header: ({ column }) => sortableHeader(columnHeaders.latest_renewal_date, column),
     meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
-    cell: ({ row }) => formatDate(row.original.latest_renewal_date)
+    cell: ({ row }) =>
+      h(DateWithRelativeTooltip, { isoString: row.original.latest_renewal_date, time: false })
   }
 
   const pauperwaveAssociateNumberColumn: TableColumn<Associate> = {
@@ -225,7 +224,7 @@ export function useAssociatesTableColumns(
     accessorKey: 'request_date',
     header: ({ column }) => sortableHeader(columnHeaders.request_date, column),
     meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
-    cell: ({ row }) => formatDateTime(row.original.request_date)
+    cell: ({ row }) => h(DateWithRelativeTooltip, { isoString: row.original.request_date })
   }
 
   const associateTypeColumn: TableColumn<Associate> = {
@@ -292,7 +291,8 @@ export function useAssociatesTableColumns(
     accessorKey: 'born_date',
     header: ({ column }) => sortableHeader(columnHeaders.born_date, column),
     meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
-    cell: ({ row }) => formatDate(row.original.born_date)
+    cell: ({ row }) =>
+      h(DateWithRelativeTooltip, { isoString: row.original.born_date, time: false })
   }
 
   const bornLocationColumn: TableColumn<Associate> = {

@@ -1,5 +1,4 @@
 // app\composables\associates\useAssociatesRenderers.ts
-import { format, parseISO } from 'date-fns'
 import { UBadge } from '#components'
 import type { BadgeProps } from '@nuxt/ui'
 import type { Associate } from '~/types'
@@ -8,27 +7,11 @@ import type { Associate } from '~/types'
 // associates/requests.vue (pending/rejected queue) — extracted 2026-08-11
 // when the two pages split, so formatting/badge logic can't drift between
 // them. A composable, not a plain util: renderAssociateTypeBadge/
-// renderConsentBadge both need t() for their labels.
+// renderConsentBadge both need t() for their labels. formatDate/formatDateTime
+// used to live here too — every date cell in this table now goes through
+// DateWithRelativeTooltip.vue instead (2026-08-18).
 export function useAssociatesRenderers() {
   const { t } = useI18n()
-
-  function formatDateTime(isoString?: string): string {
-    if (!isoString) return ''
-    try {
-      return format(parseISO(isoString), 'dd/MM/yyyy HH:mm')
-    } catch {
-      return ''
-    }
-  }
-
-  function formatDate(dateString?: string | null): string {
-    if (!dateString) return ''
-    try {
-      return format(parseISO(dateString), 'dd/MM/yyyy')
-    } catch {
-      return ''
-    }
-  }
 
   function renderAssociateTypeBadge(type: Associate['associate_type']) {
     // No fallback for null: every associate should have a type in the DB (fixed
@@ -65,5 +48,5 @@ export function useAssociatesRenderers() {
     })
   }
 
-  return { formatDateTime, formatDate, renderAssociateTypeBadge, renderConsentBadge }
+  return { renderAssociateTypeBadge, renderConsentBadge }
 }
