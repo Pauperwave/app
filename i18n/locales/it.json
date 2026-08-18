@@ -1501,7 +1501,62 @@
   "statistic": {
     "breadcrumb": "Statistiche",
     "overviewBreadcrumb": "Panoramica",
-    "decksBreadcrumb": "Mazzi"
+    "decksBreadcrumb": "Mazzi",
+    "stats": {
+      "totalAssociates": "Associati totali",
+      "newSignupsThisYear": "Nuove iscrizioni quest'anno",
+      "notRenewedFromLastYear": "Non rinnovati dallo scorso anno",
+      "medianAge": "Età mediana",
+      "tournamentsThisYear": "Tornei ospitati quest'anno",
+      "totalWantedCards": "Richieste totali",
+      "totalRenewals": "Rinnovi registrati"
+    },
+    "charts": {
+      "growth": "Crescita dell'associazione",
+      "tournamentsPerYear": "Tornei ospitati per anno e formato",
+      "ageDistribution": "Distribuzione per età",
+      "wantedCardsStatus": "Carte cercate per stato",
+      "renewalTiming": "Rinnovi per mese"
+    },
+    "ageDistributionTooltip": "{age} anni ({year}): 1 associato | {age} anni ({year}): {count} associati",
+    "growthSeries": {
+      "new": "Nuovi",
+      "retained": "Rinnovati",
+      "notRenewed": "Non rinnovati"
+    },
+    "tour": {
+      "startButton": "Tour guidato",
+      "steps": {
+        "stats": {
+          "title": "Statistiche",
+          "description": "Un colpo d'occhio sui numeri chiave: associati, iscrizioni, rinnovi, età mediana e tornei ospitati."
+        },
+        "growth": {
+          "title": "Crescita dell'associazione",
+          "description": "L'andamento degli associati mese per mese, dalla fondazione a oggi — le linee tratteggiate segnano il passaggio da un anno all'altro."
+        },
+        "ageDistribution": {
+          "title": "Distribuzione per età",
+          "description": "Un istogramma per età, con una curva di densità sopra per leggere subito la fascia più rappresentata."
+        },
+        "renewalTiming": {
+          "title": "Rinnovi per mese",
+          "description": "In quale mese dell'anno si concentrano i rinnovi — utile per pianificare i promemoria."
+        },
+        "tournamentsPerYear": {
+          "title": "Tornei ospitati per anno e formato",
+          "description": "Quanti tornei sono stati ospitati ogni anno, suddivisi per formato."
+        },
+        "wantedCardsStatus": {
+          "title": "Carte cercate per stato",
+          "description": "L'evoluzione nel tempo delle richieste di carte cercate: quante sono ancora in cerca, trovate o abbandonate mese per mese."
+        },
+        "done": {
+          "title": "Pronto!",
+          "description": "Ora sai come leggere questa pagina. Buon lavoro!"
+        }
+      }
+    }
   },
   "location": {
     "breadcrumb": "Luoghi",

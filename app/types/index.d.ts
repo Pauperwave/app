@@ -105,6 +105,11 @@ export interface Stat {
   value: number | string
   variation: number
   formatter?: (value: number) => string
+  // Tints the icon's leading circle — defaults to primary when omitted (see
+  // AssociatesStatsCards.vue). Only 'success'/'error' are used so far, for
+  // stats that are inherently good/bad news (new signups vs. lapsed
+  // renewals) rather than neutral counts.
+  color?: 'primary' | 'success' | 'error'
 }
 
 export interface Sale {
