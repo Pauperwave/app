@@ -153,8 +153,9 @@ About database extensions — every extension actually installed (verified via `
 - The `pgcrypto` extension is used for generating UUIDs with `gen_random_uuid()` — the only UUID-generation function actually used anywhere in the schema.
 - The `pg_trgm` extension is used for fuzzy text search capabilities, particularly in the `pauperwave_associates` table.
 - The `unaccent` extension is used to create accent-insensitive text search indexes.
-- The `uuid-ossp` extension is installed but **unused** — `uuid_generate_v4()` (or any of its other functions) appears nowhere in any migration. Dead weight, not a second UUID strategy; `pgcrypto` is the only one actually wired up.
 - `pg_net`, `pg_stat_statements`, `hypopg`, `index_advisor`, `wrappers` are Supabase-platform defaults (query-stats tracking, the dashboard's Index Advisor tooling, foreign-data-wrapper framework) — not something this project's migrations enabled or use, listed here only for completeness.
+
+`uuid-ossp` was installed but unused (`uuid_generate_v4()` appeared nowhere in any migration) and was dropped 2026-08-18 (`20260818140000_drop_unused_uuid_ossp_extension.sql`) — verified via `pg_depend` beforehand that nothing depended on it. `pgcrypto`'s `gen_random_uuid()` remains the only UUID strategy in the schema.
 
 ```sql
 -- Enable necessary extensions
