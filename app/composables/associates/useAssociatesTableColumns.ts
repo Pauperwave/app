@@ -276,8 +276,8 @@ export function useAssociatesTableColumns(
   const phoneNumberColumn: TableColumn<Associate> = {
     accessorKey: 'phone_number',
     header: columnHeaders.phone_number,
-    meta: { class: { td: 'font-mono' } },
-    cell: ({ row }) => row.original.phone_number
+    meta: { class: { td: 'font-mono whitespace-nowrap' } },
+    cell: ({ row }) => formatPhoneNumber(row.original.phone_number)
   }
 
   const taxCodeColumn: TableColumn<Associate> = {
