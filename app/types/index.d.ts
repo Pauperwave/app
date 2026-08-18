@@ -54,7 +54,8 @@ type PaymentRow = Database['public']['Tables']['pauperwave_payments']['Row']
 // for the PaymentMethod/PaymentType value unions, shared with the create
 // endpoint/mutation) — `associate` is the joined payer when associate_uuid is
 // set, null for an external (non-associate) payer.
-export interface Transaction extends Omit<PaymentRow, 'payment_type' | 'payment_method'> {
+export interface Transaction
+  extends Omit<PaymentRow, 'payment_type' | 'payment_method' | 'created_by' | 'updated_by'> {
   payment_type: PaymentType
   payment_method: PaymentMethod
   associate: {
@@ -63,6 +64,10 @@ export interface Transaction extends Omit<PaymentRow, 'payment_type' | 'payment_
     last_name: string
     pauperwave_associate_number: string | null
   } | null
+  // Resolved names (audit trail, 2026-08-18) — raw created_by/updated_by uuids
+  // are joined server-side, same convention as WantedCard.createdBy/updatedBy.
+  createdBy: string
+  updatedBy: string
 }
 
 // players_full joins the players table (nickname, is_banned, user_id) with

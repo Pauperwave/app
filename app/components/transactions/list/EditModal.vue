@@ -26,7 +26,7 @@ const state = shallowReactive<TransactionFormState>({
 })
 
 const {
-  schema, associatesData, associateOptions, selectedAssociateAvatar, showEventField, payerTabItems
+  schema, associateOptions, selectedAssociateAvatar, showEventField, payerTabItems
 } = useTransactionFormFields(state)
 
 type Schema = v.InferOutput<typeof schema>
@@ -72,16 +72,9 @@ watch(showEventField, (visible) => {
 })
 
 // Traceability (user request, 2026-08-12): who created/last edited this
-// payment and when — resolved against the same associates cache already
-// loaded for the payer picker, no extra request. created_by/updated_by are
-// null for rows written before the audit columns existed
-// (migration 20260812150000_payments_audit_columns.sql).
-function associateName(uuid: string | null): string | undefined {
-  if (!uuid) return undefined
-  const associate = (associatesData.value ?? []).find(a => a.uuid === uuid)
-  return associate ? `${associate.first_name} ${associate.last_name}` : undefined
-}
-
+// payment and when — createdBy/updatedBy are already resolved names from
+// useTransactionsQuery.ts's join (2026-08-18), '' for rows written before the
+// audit columns existed (migration 20260812150000_payments_audit_columns.sql).
 const dateTimeFormatter = new Intl.DateTimeFormat('it-IT', {
   day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
 })
@@ -89,9 +82,9 @@ const dateTimeFormatter = new Intl.DateTimeFormat('it-IT', {
 const traceability = computed(() => {
   if (!transaction) return null
   return {
-    createdBy: associateName(transaction.created_by) ?? t('transaction.editModal.unknown'),
+    createdBy: transaction.createdBy || t('transaction.editModal.unknown'),
     createdAt: dateTimeFormatter.format(new Date(transaction.created_at)),
-    updatedBy: associateName(transaction.updated_by) ?? t('transaction.editModal.unknown'),
+    updatedBy: transaction.updatedBy || t('transaction.editModal.unknown'),
     updatedAt: dateTimeFormatter.format(new Date(transaction.updated_at))
   }
 })
