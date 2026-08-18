@@ -121,7 +121,7 @@ const table = useTemplateRef<TableRef>('table')
 // default, same "not needed at a glance" reasoning as associates' own
 // traceability columns.
 const columnVisibility = ref({
-  status: false, updatedAt: false, createdBy: false, updatedBy: false
+  status: false, createdAt: false, updatedAt: false, createdBy: false, updatedBy: false
 })
 
 const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, columnHeaders)

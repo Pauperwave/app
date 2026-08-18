@@ -181,6 +181,7 @@ export interface WantedCard {
   // useWantedCardsQuery.ts — PostgREST can't embed pauperwave_associates'
   // self-referencing FK, but created_by/updated_by here are wanted_cards ->
   // associates (a normal FK), so the join works directly.
+  createdAt: string
   updatedAt: string
   createdBy: string
   updatedBy: string
