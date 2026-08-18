@@ -5,6 +5,8 @@ import type { BadgeProps, DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { Column, Table } from '@tanstack/vue-table'
 import type { Associate } from '~/types'
 import AssociateTag from '~/components/ui/AssociateTag.vue'
+import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
+import RowActionsMenu from '~/components/ui/RowActionsMenu.vue'
 
 // Shared between associates/index.vue (roster) and associates/requests.vue
 // (pending/rejected queue) — every column except the roster-only ones
@@ -25,8 +27,8 @@ export const associatesColumnHeaders = (t: (key: string) => string) => ({
   id: t('associate.columns.id'),
   uuid: t('associate.columns.uuid'),
   created_at: t('associate.columns.createdAt'),
-  updated_at: t('associate.columns.updatedAt'),
   updated_by: t('associate.columns.updatedBy'),
+  updated_at: t('associate.columns.updatedAt'),
   membership_request_status: t('associate.columns.membershipRequestStatus'),
   membership_status: t('associate.columns.membershipStatus'),
   request_date: t('associate.columns.requestDate'),
@@ -53,7 +55,8 @@ export const associatesColumnHeaders = (t: (key: string) => string) => ({
   residency_province: t('associate.columns.residencyProvince'),
   residency_cap: t('associate.columns.residencyCap'),
   mtgo_nickname: t('associate.columns.mtgoNickname'),
-  mtga_nickname: t('associate.columns.mtgaNickname')
+  mtga_nickname: t('associate.columns.mtgaNickname'),
+  actions: t('associate.columns.actions')
 } as const)
 
 export type AssociatesColumnHeaders = ReturnType<typeof associatesColumnHeaders>
@@ -61,7 +64,8 @@ type AssociatesColumnHeaderKey = keyof AssociatesColumnHeaders
 
 export function useAssociatesTableColumns(
   table: Ref<{ tableApi: Table<Associate> } | null>,
-  associates: Ref<Associate[] | undefined>
+  associates: Ref<Associate[] | undefined>,
+  rowContextMenuItems: (associate: Associate) => DropdownMenuItem[]
 ) {
   const { t } = useI18n()
   const {
@@ -143,11 +147,21 @@ export function useAssociatesTableColumns(
     cell: ({ row }) => row.original.id
   }
 
+  // Formalized 2026-08-18 out of an inline literal in index.vue — same
+  // grouping as updatedAtColumn/updatedByColumn below (audit trail, hidden
+  // by default, moved to the end of both pages' column order).
+  const createdAtColumn: TableColumn<Associate> = {
+    accessorKey: 'created_at',
+    header: ({ column }) => sortableHeader(columnHeaders.created_at, column),
+    meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
+    cell: ({ row }) => h(DateWithRelativeTooltip, { isoString: row.original.created_at })
+  }
+
   const updatedAtColumn: TableColumn<Associate> = {
     accessorKey: 'updated_at',
     header: ({ column }) => sortableHeader(columnHeaders.updated_at, column),
     meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
-    cell: ({ row }) => formatDateTime(row.original.updated_at)
+    cell: ({ row }) => h(DateWithRelativeTooltip, { isoString: row.original.updated_at })
   }
 
   const updatedByColumn: TableColumn<Associate> = {
@@ -340,12 +354,22 @@ export function useAssociatesTableColumns(
     cell: ({ row }) => row.original.mtga_nickname
   }
 
+  // Visible actions column (2026-08-18), matching leagues/locations/tournaments'
+  // convention — same items the right-click context menu already shows
+  // (rowContextMenuItems), just also reachable without knowing to right-click.
+  const actionsColumn: TableColumn<Associate> = {
+    id: 'actions',
+    header: columnHeaders.actions,
+    cell: ({ row }) => h(RowActionsMenu, { items: rowContextMenuItems(row.original) })
+  }
+
   return {
     columnHeaders,
     getColumnLabel,
     visibilityItems,
     selectColumn,
     idColumn,
+    createdAtColumn,
     updatedAtColumn,
     updatedByColumn,
     paymentDateColumn,
@@ -371,6 +395,7 @@ export function useAssociatesTableColumns(
     residencyProvinceColumn,
     residencyCapColumn,
     mtgoNicknameColumn,
-    mtgaNicknameColumn
+    mtgaNicknameColumn,
+    actionsColumn
   }
 }
