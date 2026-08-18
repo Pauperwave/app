@@ -72,6 +72,45 @@ const pendingAssociatesCount = computed(() => (associates.value ?? []).filter(
   associate => associate.membership_request_status === 'pending'
 ).length)
 
+// Plain roster size on the "Associati" item itself — no color, just a count
+// (2026-08-18), same approved-only filter as /associates' own roster.
+const associatesCount = computed(() => (associates.value ?? []).filter(
+  associate => associate.membership_request_status === 'approved'
+).length)
+
+// "Needs renewal" count — approved associates whose membership itself (not the
+// request) is lapsing/lapsed, i.e. due for a follow-up. Distinct from
+// pendingAssociatesCount above, which is about brand-new membership requests.
+const associatesToRenewCount = computed(() => (associates.value ?? []).filter(
+  associate => associate.membership_status === 'to_renew' || associate.membership_status === 'expired'
+).length)
+
+// Same 'players' Pinia Colada key as players/index.vue.
+const { data: players } = usePlayersQuery()
+
+// Plain player count on the "Giocatori" item — no color, just a count, same
+// convention as associatesCount above.
+const playersCount = computed(() => (players.value ?? []).length)
+
+// Same 'wanted-cards' Pinia Colada key as wanted-cards/index.vue.
+const { data: wantedCards } = useWantedCardsQuery()
+
+// Plain open-requests count on the "Wanted Cards" item — no color, just a
+// count, same convention as associatesCount above (not "needs action": a
+// searching request isn't necessarily actionable by an admin).
+const wantedCardsSearchingCount = computed(() => (wantedCards.value ?? []).filter(
+  wantedCard => wantedCard.status === 'searching'
+).length)
+
+// Which nav items carry a warning-colored badge in the expanded sidebar —
+// reused below to swap in a plain warning UChip dot on the icon when the
+// sidebar is collapsed (the trailing UBadge itself has nowhere to render).
+const navItemHasWarning = (to: NavigationMenuItem['to']) => {
+  if (to === '/associates/requests') return pendingAssociatesCount.value > 0
+  if (to === '/associates') return associatesToRenewCount.value > 0
+  return false
+}
+
 const mainNavGroups = useMainNavGroups(open)
 
 // Opens Gmail's compose view directly instead of mailto:, which silently
@@ -227,6 +266,28 @@ const groups = computed(() => [{
             tooltip
             popover
           >
+            <template #item-leading="{ item, active, ui: itemUi }">
+              <!-- Collapsed sidebar has no room for the trailing UBadge below,
+                   so a warning UChip dot on the icon itself stands in for it. -->
+              <UChip
+                v-if="collapsed && navItemHasWarning(item.to)"
+                color="warning"
+                size="sm"
+                inset
+              >
+                <UIcon
+                  v-if="item.icon"
+                  :name="item.icon"
+                  :class="itemUi.linkLeadingIcon({ active, disabled: !!item.disabled })"
+                />
+              </UChip>
+              <UIcon
+                v-else-if="item.icon"
+                :name="item.icon"
+                :class="itemUi.linkLeadingIcon({ active, disabled: !!item.disabled })"
+              />
+            </template>
+
             <template #item-trailing="{ item }">
               <div class="flex items-center gap-1">
                 <template v-if="showChordHints">
@@ -245,6 +306,39 @@ const groups = computed(() => [{
                   v-if="item.to === '/associates/requests' && pendingAssociatesCount > 0"
                   :label="pendingAssociatesCount"
                   color="warning"
+                  variant="subtle"
+                  size="sm"
+                />
+                <!-- Plain roster size, no color — just a count. -->
+                <UBadge
+                  v-if="item.to === '/associates'"
+                  :label="associatesCount"
+                  color="neutral"
+                  variant="subtle"
+                  size="sm"
+                />
+                <!-- "Needs action" count — approved associates whose membership
+                     is lapsing/lapsed and due for a renewal follow-up. -->
+                <UBadge
+                  v-if="item.to === '/associates' && associatesToRenewCount > 0"
+                  :label="associatesToRenewCount"
+                  color="warning"
+                  variant="subtle"
+                  size="sm"
+                />
+                <!-- Plain open wanted-cards count, no color — just a count. -->
+                <UBadge
+                  v-if="item.to === '/wanted-cards' && wantedCardsSearchingCount > 0"
+                  :label="wantedCardsSearchingCount"
+                  color="neutral"
+                  variant="subtle"
+                  size="sm"
+                />
+                <!-- Plain player count, no color — just a count. -->
+                <UBadge
+                  v-if="item.to === '/players'"
+                  :label="playersCount"
+                  color="neutral"
                   variant="subtle"
                   size="sm"
                 />
