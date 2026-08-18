@@ -67,6 +67,8 @@ Exceptions:
 
 ### Functions
 
+Every function that exists in the live `public` schema, verified via `pg_proc` (2026-08-18) — not split across this doc and `docs/architecture/roles.md`, so this list is the single complete inventory.
+
 #### `set_updated_at()`
 Automatically updates the `updated_at` timestamp on row updates:
 
@@ -80,10 +82,25 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-Applied via triggers on all tables with `updated_at` columns.
+Applied via triggers on all 19 tables with an `updated_at` column (migration `20260818130000_updated_at_trigger_everywhere.sql` closed the gap — only 3 tables actually had it before that).
 
-#### `find_or_create_commander_deck()`
-Atomically finds or creates a commander deck based on player and commander names. Handles both single and partner commanders with per-player uniqueness constraints.
+#### `set_wanted_card_found_at()`
+Trigger on `pauperwave_wanted_cards`: sets `found_at` to `now()` the moment `status` transitions to `'found'`, and clears it back to `null` if `status` ever moves away from `'found'` again. Runs as a DB trigger rather than being set by the app (`server/api/wanted-cards/[id]/status.post.ts`) so it stays correct regardless of which code path touches `status`. Feeds the "average time to find a card" statistic (`date`/`foundAt` on the `WantedCard` type) — not yet surfaced in the UI.
+
+#### Role/permission functions
+All `SECURITY DEFINER`, reading `user_roles` — the implementation behind the three-layer role-awareness pattern documented in `docs/architecture/roles.md` (resolution → route/nav gating → in-page adaptation). See that doc for behavior/rationale; this is just the inventory:
+
+- `has_role(_user_id, _role)` — exact-role check.
+- `get_user_role(p_user_id)` — the user's single role, defaulting to `'player'` if `user_roles` has no row for them (roles are additive-free: `user_roles` has a `uq_user_roles_user_id` unique constraint, one row per user).
+- `get_user_roles(_user_id)` — same, as an array (vestigial from a pre-2026-08-17 multi-role model; every user has at most one role today).
+- `has_management_permissions(p_user_id)` — true for `admin`, `organizer`, or `super_admin`.
+- `is_admin(p_user_id)` — strictly `admin`, not a `super_admin` superset.
+- `is_super_admin(p_user_id)` — strictly `super_admin`.
+- `is_organizer(_user_id)` — strictly `organizer` (`has_role(_user_id, 'organizer')` under the hood).
+- `assign_role(p_user_id, p_role)` — the only function that writes to `user_roles`; `super_admin`-only (raises on any other caller), populates `created_by`/`updated_by` from the caller's own associate uuid (see Audit Trail Pattern above).
+
+#### `find_or_create_commander_deck()` — designed, not deployed
+Does **not** exist in the live database (verified via `pg_proc`, 2026-08-18) despite being fully spec'd, with SQL, under "Helper Functions" further down in this doc — that spec (and the `commander_decks` RLS policies/indexes around it) describes a Commander tournament-results flow that was never built: no server route or composable anywhere in the app references `commander_decks` today. The table itself is real and matches its documented columns; only the function, its trigger, and the consuming flow are pending. Treat that later section as a design doc, not a description of current state, until this is reconciled.
 
 ### Realtime Configuration
 
