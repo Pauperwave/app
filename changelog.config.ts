@@ -6,6 +6,12 @@ import type { ChangelogConfig } from 'changelogen'
 // This drives the root CHANGELOG.md (auto-generated, complete raw index) — the
 // curated docs/CHANGELOG.md stays hand-written and is not affected by this config.
 export default {
+  templates: {
+    // Default "chore(release): v{{newVersion}}" has no gitmoji, so the repo's own
+    // commit-msg hook (.githooks/commit-msg) rejects changelogen's own release
+    // commit — confirmed 2026-08-18 (`pnpm release` failing on its own commit).
+    commitMessage: 'chore(release): 🔖 v{{newVersion}}'
+  },
   types: {
     feat: { title: 'Enhancements', semver: 'minor' },
     perf: { title: 'Performance', semver: 'patch' },
