@@ -9,6 +9,9 @@ export const MEMBERSHIP_STATUS_BADGE_CONFIG: Record<string, { color: BadgeProps[
   active: { color: 'success', icon: ICONS.success },
   to_renew: { color: 'warning', icon: ICONS.refresh },
   expired: { color: 'error', icon: ICONS.banned },
+  // Approved but zero renewal rows ever — just submitted /tesseramento, not a
+  // lapsed membership (distinguished from 'expired' 2026-08-18).
+  unpaid: { color: 'neutral', icon: ICONS.creditCard },
   pending: { color: 'warning', icon: ICONS.pending },
   rejected: { color: 'error', icon: ICONS.statusRejected }
 }

@@ -549,7 +549,8 @@
       "membershipStatusAlert": {
         "active": "{name} ha già rinnovato per quest'anno.",
         "to_renew": "{name} deve ancora rinnovare il tesseramento per quest'anno.",
-        "expired": "{name} non rinnova da più di un anno."
+        "expired": "{name} non rinnova da più di un anno.",
+        "unpaid": "{name} non ha ancora nessun pagamento registrato."
       },
       "personalInfo": "Informazioni personali",
       "paymentInfo": "Informazioni sul pagamento",

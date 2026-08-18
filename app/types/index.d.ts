@@ -22,9 +22,12 @@ export type AssociateType = 'regular' | 'sustaining'
 
 // Membership status computed by the pauperwave_associates_with_status view (never
 // stored in the DB): 'active'/'to_renew'/'expired' derive from the latest renewal
-// year in pauperwave_associate_renewals; for requests not yet approved it matches
-// membership_request_status ('pending'/'rejected').
-export type MembershipStatus = RequestStatus | 'active' | 'to_renew' | 'expired'
+// year in pauperwave_associate_renewals; 'unpaid' is approved but with zero
+// renewal rows ever — just submitted /tesseramento, not a lapsed membership,
+// distinguished from 'expired' 2026-08-18 (was silently conflated before);
+// for requests not yet approved it matches membership_request_status
+// ('pending'/'rejected').
+export type MembershipStatus = RequestStatus | 'active' | 'to_renew' | 'expired' | 'unpaid'
 
 // Matches the DB check constraint (ck_tournaments_status) verbatim — adopted
 // directly instead of mapped to a UI-only vocabulary (2026-08-15 user request).
