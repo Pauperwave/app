@@ -4,6 +4,8 @@ const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 
+useSeoMeta({ title: () => t('player.breadcrumb') })
+
 const {
   data: playersData, isLoading: loading, status, refetch
 } = usePlayersQuery()

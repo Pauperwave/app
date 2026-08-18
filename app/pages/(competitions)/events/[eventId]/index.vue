@@ -3,7 +3,10 @@
 // fallow-ignore-file code-duplication -- the UDashboardPanel navbar/toolbar/breadcrumb
 // header skeleton mirrors other detail pages (leagues/tournaments/associates); these are
 // still mock-data pages, expected to change dramatically once real functionality lands
+const { t } = useI18n()
 const { breadcrumbItems } = useBreadcrumbs()
+
+useSeoMeta({ title: () => t('event.breadcrumb') })
 </script>
 
 <template>

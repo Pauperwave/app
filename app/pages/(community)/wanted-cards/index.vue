@@ -8,6 +8,8 @@ import type { WantedCardColorFilter } from '~/composables/wantedCards/useWantedC
 
 const { t } = useI18n()
 
+useSeoMeta({ title: () => t('wantedCard.breadcrumb') })
+
 // ---- Data & tour --------------------------------------------------------
 // isPending (not isLoading): isLoading is true for any fetch in flight, including
 // background refetches after invalidateQueries (e.g. changing a card's status) —

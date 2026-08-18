@@ -11,6 +11,8 @@ const { data: tournamentsData } = useTournamentsQuery()
 const tournament = computed(() =>
   tournamentsData.value?.find(item => item.uuid === tournamentUuid.value) ?? null)
 
+useSeoMeta({ title: () => tournament.value?.name ?? t('tournament.breadcrumb') })
+
 // Overrides the raw uuid path segment with the tournament's real name — same
 // mechanism as leagues/[leagueId]/index.vue's own breadcrumb override.
 const { breadcrumbItems } = useBreadcrumbs(

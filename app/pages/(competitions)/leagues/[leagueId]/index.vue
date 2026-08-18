@@ -5,12 +5,15 @@
 // TournamentsListGridView as-is: same cards, same edit/context-menu wiring
 // as /tournaments, just pre-filtered to this league's tournaments. No bulk
 // actions bar / table toggle here yet — this page is read+edit only for now.
+const { t } = useI18n()
 const route = useRoute()
 const leagueUuid = computed(() => route.params.leagueId as string)
 
 const { data: leaguesData, isLoading: leagueLoading } = useLeaguesQuery()
 const league = computed(() =>
   leaguesData.value?.find(item => item.uuid === leagueUuid.value) ?? null)
+
+useSeoMeta({ title: () => league.value?.name ?? t('league.breadcrumb') })
 
 // Overrides the raw uuid path segment with the league's real name — see
 // useBreadcrumbs.ts's own comment on why this can't be derived from the URL.

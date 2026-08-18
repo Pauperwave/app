@@ -10,6 +10,10 @@ const range = shallowRef<Range>({
   end: new Date()
 })
 
+const { t } = useI18n()
+
+useSeoMeta({ title: () => t('transaction.breadcrumb') })
+
 const route = useRoute()
 const router = useRouter()
 const isModalOpen = ref(false)

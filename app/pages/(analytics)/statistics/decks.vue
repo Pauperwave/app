@@ -1,4 +1,10 @@
 <!-- app\pages\(analytics)\statistics\decks.vue -->
+<script lang="ts" setup>
+const { t } = useI18n()
+
+useSeoMeta({ title: () => t('statistic.decksBreadcrumb') })
+</script>
+
 <template>
   <UDashboardPanel id="statistics">
     <template #header>

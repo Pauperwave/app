@@ -7,6 +7,8 @@ definePageMeta({ permission: 'access-settings' })
 const fileRef = ref<HTMLInputElement>()
 const { t } = useI18n()
 
+useSeoMeta({ title: () => t('settings.layout.links.general') })
+
 const profileSchema = v.object({
   name: v.pipe(
     v.string(t('settings.general.validation.nameRequired')),

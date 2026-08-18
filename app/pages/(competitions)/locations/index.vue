@@ -5,6 +5,8 @@ import type { TabsItem } from '@nuxt/ui'
 const { isModalOpen } = useModalOpenFromQuery()
 const { t } = useI18n()
 
+useSeoMeta({ title: () => t('location.breadcrumb') })
+
 const {
   data: locationsData, isLoading: loading, status, refetch
 } = useLocationsQuery()

@@ -8,6 +8,10 @@ import { getGroupedRowModel } from '@tanstack/vue-table'
 import type { DropdownMenuItem, TabsItem } from '@nuxt/ui'
 import type { Range, Tournament } from '~/types'
 
+const { t } = useI18n()
+
+useSeoMeta({ title: () => t('tournament.breadcrumb') })
+
 const { isModalOpen } = useModalOpenFromQuery()
 
 // Defaults to "Tutto" (matches HomeDateRangePicker's own "all time" range): the
@@ -17,8 +21,6 @@ const range = shallowRef<Range>({
   start: sub(new Date(), { years: 10 }),
   end: add(new Date(), { years: 10 })
 })
-
-const { t } = useI18n()
 
 const manageFormatsOpen = ref(false)
 

@@ -423,7 +423,7 @@
     }
   },
   "tesseramento": {
-    "seoTitle": "Tesseramento Pauperwave",
+    "seoTitle": "Tesseramento",
     "seoDescription": "Richiedi il tesseramento all'associazione Pauperwave.",
     "title": "Richiesta di tesseramento",
     "stepIndicator": "Passo {current} di {total} — {title}",
@@ -730,7 +730,7 @@
   },
   "event": {
     "breadcrumb": "Eventi",
-    "seoTitle": "Eventi Pauperwave",
+    "seoTitle": "Eventi",
     "views": {
       "table": "Tabella",
       "grid": "Griglia"
@@ -1628,7 +1628,8 @@
         "general": "Generali",
         "members": "Membri",
         "permissions": "Permessi",
-        "domains": "Domini"
+        "domains": "Domini",
+        "notifications": "Notifiche"
       }
     },
     "domains": {

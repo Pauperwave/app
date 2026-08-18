@@ -4,6 +4,8 @@ definePageMeta({ permission: 'access-settings' })
 
 const { t } = useI18n()
 
+useSeoMeta({ title: () => t('settings.layout.links.notifications') })
+
 const state = reactive<{ [key: string]: boolean }>({
   email: true,
   desktop: false,
