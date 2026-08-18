@@ -13,5 +13,11 @@ import { h, type VNode } from 'vue'
 // Extracted from useWantedCardsTableColumns.ts/useAssociatesTableColumns.ts
 // once both needed the identical fix for their selectColumn.
 export function centerTableCell(content: VNode) {
-  return h('div', { class: 'flex items-center justify-center py-1 px-2' }, [content])
+  return h('div', {
+    class: 'flex items-center justify-center py-1 px-2',
+    // Both current callers wrap a select-column checkbox — rows that also
+    // navigate on click (UTable's @select, e.g. associates/index.vue) would
+    // otherwise select AND navigate away from the same click.
+    onClick: (e: MouseEvent) => e.stopPropagation()
+  }, [content])
 }

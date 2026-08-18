@@ -21,6 +21,9 @@ const requestAssociates = computed(() => (associates.value ?? []).filter(
 const pendingCount = computed(() => (associates.value ?? []).filter(
   associate => associate.membership_request_status === 'pending'
 ).length)
+const associatesCount = computed(() => (associates.value ?? []).filter(
+  associate => associate.membership_request_status === 'approved'
+).length)
 
 const route = useRoute()
 const router = useRouter()
@@ -237,7 +240,7 @@ const tour = useAssociatesRequestsTour()
       <!-- Switcher shared with /associates (see AssociatesSubNav). -->
       <UDashboardToolbar>
         <div id="tour-requests-subnav" class="w-fit">
-          <AssociatesSubNav :pending-count="pendingCount" />
+          <AssociatesSubNav :pending-count="pendingCount" :associates-count="associatesCount" />
         </div>
       </UDashboardToolbar>
 
@@ -289,9 +292,13 @@ const tour = useAssociatesRequestsTour()
           :data="requestAssociates"
           :columns="columns"
           class="flex-1 h-80 shrink-0"
+          :ui="{ tr: 'cursor-pointer' }"
           :loading="loading"
           sticky="header"
           @contextmenu="onRowContextmenu"
+          @select="(_e, row) => navigateTo(
+            `/associate/${slugify(`${row.original.first_name} ${row.original.last_name}`)}`
+          )"
         />
       </UContextMenu>
 

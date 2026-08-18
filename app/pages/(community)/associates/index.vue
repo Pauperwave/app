@@ -273,7 +273,10 @@ watch(() => consentSocialFilter.value, (newVal) => {
            same sub-nav-row pattern as /settings. -->
       <UDashboardToolbar>
         <div id="tour-associates-subnav" class="w-fit">
-          <AssociatesSubNav :pending-count="pendingCount" />
+          <AssociatesSubNav
+            :pending-count="pendingCount"
+            :associates-count="rosterAssociates.length"
+          />
         </div>
       </UDashboardToolbar>
 
@@ -334,9 +337,13 @@ watch(() => consentSocialFilter.value, (newVal) => {
             :data="rosterAssociates"
             :columns="columns"
             class="flex-1 h-80 shrink-0"
+            :ui="{ tr: 'cursor-pointer' }"
             :loading="loading"
             sticky="header"
             @contextmenu="onRowContextmenu"
+            @select="(_e, row) => navigateTo(
+              `/associate/${slugify(`${row.original.first_name} ${row.original.last_name}`)}`
+            )"
           />
         </UContextMenu>
 
