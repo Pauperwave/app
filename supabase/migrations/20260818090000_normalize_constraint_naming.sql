@@ -1,0 +1,51 @@
+-- Renames every constraint still using Postgres's default auto-generated
+-- name to the project's stated pk_/uq_/fk_/ck_ convention
+-- (docs/supabase/2-database.md's "Conventions" section). Pure rename, no
+-- behavior change — constraint names aren't referenced by PostgREST embed
+-- hints (those use column names) or anywhere in app/server code (checked
+-- via grep before writing this migration).
+
+-- cittadino_editions
+ALTER TABLE public.cittadino_editions RENAME CONSTRAINT cittadino_editions_pkey TO pk_cittadino_editions;
+ALTER TABLE public.cittadino_editions RENAME CONSTRAINT cittadino_editions_uuid_key TO uq_cittadino_editions_uuid;
+ALTER TABLE public.cittadino_editions RENAME CONSTRAINT cittadino_editions_year_key TO uq_cittadino_editions_year;
+
+-- mtg_commanders
+ALTER TABLE public.mtg_commanders RENAME CONSTRAINT mtg_commanders_scryfall_id_key TO uq_mtg_commanders_scryfall_id;
+
+-- pauperwave_associate_geocodes
+ALTER TABLE public.pauperwave_associate_geocodes RENAME CONSTRAINT pauperwave_associate_geocodes_pkey TO pk_pauperwave_associate_geocodes;
+ALTER TABLE public.pauperwave_associate_geocodes RENAME CONSTRAINT pauperwave_associate_geocodes_associate_uuid_fkey TO fk_pauperwave_associate_geocodes_associate_uuid;
+
+-- pauperwave_associates
+ALTER TABLE public.pauperwave_associates RENAME CONSTRAINT pauperwave_associates_pkey TO pk_pauperwave_associates;
+ALTER TABLE public.pauperwave_associates RENAME CONSTRAINT pauperwave_associates_uuid_key TO uq_pauperwave_associates_uuid;
+ALTER TABLE public.pauperwave_associates RENAME CONSTRAINT pauperwave_associates_email_key TO uq_pauperwave_associates_email;
+ALTER TABLE public.pauperwave_associates RENAME CONSTRAINT pauperwave_associates_phone_number_key TO uq_pauperwave_associates_phone_number;
+ALTER TABLE public.pauperwave_associates RENAME CONSTRAINT pauperwave_associates_tax_code_key TO uq_pauperwave_associates_tax_code;
+ALTER TABLE public.pauperwave_associates RENAME CONSTRAINT pauperwave_associates_pauperwave_associate_number_key TO uq_pauperwave_associates_pauperwave_associate_number;
+
+-- pauperwave_cardtrader_blueprints
+ALTER TABLE public.pauperwave_cardtrader_blueprints RENAME CONSTRAINT pauperwave_cardtrader_blueprints_pkey TO pk_pauperwave_cardtrader_blueprints;
+ALTER TABLE public.pauperwave_cardtrader_blueprints RENAME CONSTRAINT pauperwave_cardtrader_blueprints_scryfall_id_key TO uq_pauperwave_cardtrader_blueprints_scryfall_id;
+ALTER TABLE public.pauperwave_cardtrader_blueprints RENAME CONSTRAINT pauperwave_cardtrader_blueprints_expansion_id_fkey TO fk_pauperwave_cardtrader_blueprints_expansion_id;
+
+-- pauperwave_cardtrader_expansions
+ALTER TABLE public.pauperwave_cardtrader_expansions RENAME CONSTRAINT pauperwave_cardtrader_expansions_pkey TO pk_pauperwave_cardtrader_expansions;
+
+-- pauperwave_payments
+ALTER TABLE public.pauperwave_payments RENAME CONSTRAINT pauperwave_payments_created_by_fkey TO fk_pauperwave_payments_created_by;
+ALTER TABLE public.pauperwave_payments RENAME CONSTRAINT pauperwave_payments_updated_by_fkey TO fk_pauperwave_payments_updated_by;
+
+-- pauperwave_wanted_cards
+ALTER TABLE public.pauperwave_wanted_cards RENAME CONSTRAINT pauperwave_wanted_cards_pkey TO pk_pauperwave_wanted_cards;
+ALTER TABLE public.pauperwave_wanted_cards RENAME CONSTRAINT pauperwave_wanted_cards_uuid_key TO uq_pauperwave_wanted_cards_uuid;
+ALTER TABLE public.pauperwave_wanted_cards RENAME CONSTRAINT pauperwave_wanted_cards_status_check TO ck_pauperwave_wanted_cards_status;
+ALTER TABLE public.pauperwave_wanted_cards RENAME CONSTRAINT pauperwave_wanted_cards_player_associate_uuid_fkey TO fk_pauperwave_wanted_cards_player_associate_uuid;
+ALTER TABLE public.pauperwave_wanted_cards RENAME CONSTRAINT pauperwave_wanted_cards_created_by_fkey TO fk_pauperwave_wanted_cards_created_by;
+ALTER TABLE public.pauperwave_wanted_cards RENAME CONSTRAINT pauperwave_wanted_cards_updated_by_fkey TO fk_pauperwave_wanted_cards_updated_by;
+
+-- tournaments (3 FKs added post-original-schema: cittadino edition link, direct location/organizer)
+ALTER TABLE public.tournaments RENAME CONSTRAINT tournaments_cittadino_edition_uuid_fkey TO fk_tournaments_cittadino_edition_uuid;
+ALTER TABLE public.tournaments RENAME CONSTRAINT tournaments_location_uuid_fkey TO fk_tournaments_location_uuid;
+ALTER TABLE public.tournaments RENAME CONSTRAINT tournaments_organizer_uuid_fkey TO fk_tournaments_organizer_uuid;

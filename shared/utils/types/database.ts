@@ -511,14 +511,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "pauperwave_associate_geocodes_associate_uuid_fkey"
+            foreignKeyName: "fk_pauperwave_associate_geocodes_associate_uuid"
             columns: ["associate_uuid"]
             isOneToOne: true
             referencedRelation: "pauperwave_associates"
             referencedColumns: ["uuid"]
           },
           {
-            foreignKeyName: "pauperwave_associate_geocodes_associate_uuid_fkey"
+            foreignKeyName: "fk_pauperwave_associate_geocodes_associate_uuid"
             columns: ["associate_uuid"]
             isOneToOne: true
             referencedRelation: "pauperwave_associates_with_status"
@@ -694,7 +694,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "pauperwave_cardtrader_blueprints_expansion_id_fkey"
+            foreignKeyName: "fk_pauperwave_cardtrader_blueprints_expansion_id"
             columns: ["expansion_id"]
             isOneToOne: false
             referencedRelation: "pauperwave_cardtrader_expansions"
@@ -812,6 +812,20 @@ export type Database = {
             referencedColumns: ["uuid"]
           },
           {
+            foreignKeyName: "fk_pauperwave_payments_created_by"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_pauperwave_payments_created_by"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
+          {
             foreignKeyName: "fk_pauperwave_payments_event_uuid_fkey"
             columns: ["event_uuid"]
             isOneToOne: false
@@ -826,28 +840,14 @@ export type Database = {
             referencedColumns: ["uuid"]
           },
           {
-            foreignKeyName: "pauperwave_payments_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "pauperwave_associates"
-            referencedColumns: ["uuid"]
-          },
-          {
-            foreignKeyName: "pauperwave_payments_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "pauperwave_associates_with_status"
-            referencedColumns: ["uuid"]
-          },
-          {
-            foreignKeyName: "pauperwave_payments_updated_by_fkey"
+            foreignKeyName: "fk_pauperwave_payments_updated_by"
             columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "pauperwave_associates"
             referencedColumns: ["uuid"]
           },
           {
-            foreignKeyName: "pauperwave_payments_updated_by_fkey"
+            foreignKeyName: "fk_pauperwave_payments_updated_by"
             columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "pauperwave_associates_with_status"
@@ -948,42 +948,42 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "pauperwave_wanted_cards_created_by_fkey"
+            foreignKeyName: "fk_pauperwave_wanted_cards_created_by"
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "pauperwave_associates"
             referencedColumns: ["uuid"]
           },
           {
-            foreignKeyName: "pauperwave_wanted_cards_created_by_fkey"
+            foreignKeyName: "fk_pauperwave_wanted_cards_created_by"
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "pauperwave_associates_with_status"
             referencedColumns: ["uuid"]
           },
           {
-            foreignKeyName: "pauperwave_wanted_cards_player_associate_uuid_fkey"
+            foreignKeyName: "fk_pauperwave_wanted_cards_player_associate_uuid"
             columns: ["player_associate_uuid"]
             isOneToOne: false
             referencedRelation: "pauperwave_associates"
             referencedColumns: ["uuid"]
           },
           {
-            foreignKeyName: "pauperwave_wanted_cards_player_associate_uuid_fkey"
+            foreignKeyName: "fk_pauperwave_wanted_cards_player_associate_uuid"
             columns: ["player_associate_uuid"]
             isOneToOne: false
             referencedRelation: "pauperwave_associates_with_status"
             referencedColumns: ["uuid"]
           },
           {
-            foreignKeyName: "pauperwave_wanted_cards_updated_by_fkey"
+            foreignKeyName: "fk_pauperwave_wanted_cards_updated_by"
             columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "pauperwave_associates"
             referencedColumns: ["uuid"]
           },
           {
-            foreignKeyName: "pauperwave_wanted_cards_updated_by_fkey"
+            foreignKeyName: "fk_pauperwave_wanted_cards_updated_by"
             columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "pauperwave_associates_with_status"
@@ -1785,6 +1785,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_tournaments_cittadino_edition_uuid"
+            columns: ["cittadino_edition_uuid"]
+            isOneToOne: false
+            referencedRelation: "cittadino_editions"
+            referencedColumns: ["uuid"]
+          },
+          {
             foreignKeyName: "fk_tournaments_event_uuid_fkey"
             columns: ["event_uuid"]
             isOneToOne: false
@@ -1806,21 +1813,14 @@ export type Database = {
             referencedColumns: ["uuid"]
           },
           {
-            foreignKeyName: "tournaments_cittadino_edition_uuid_fkey"
-            columns: ["cittadino_edition_uuid"]
-            isOneToOne: false
-            referencedRelation: "cittadino_editions"
-            referencedColumns: ["uuid"]
-          },
-          {
-            foreignKeyName: "tournaments_location_uuid_fkey"
+            foreignKeyName: "fk_tournaments_location_uuid"
             columns: ["location_uuid"]
             isOneToOne: false
             referencedRelation: "locations"
             referencedColumns: ["uuid"]
           },
           {
-            foreignKeyName: "tournaments_organizer_uuid_fkey"
+            foreignKeyName: "fk_tournaments_organizer_uuid"
             columns: ["organizer_uuid"]
             isOneToOne: false
             referencedRelation: "organizations"
