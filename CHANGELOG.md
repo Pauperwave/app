@@ -1,6 +1,31 @@
 # Changelog
 
 
+## v0.1.2
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.1.1...v0.1.2)
+
+### Fixes
+
+- **release:** 🔖 emoji-tag changelogen's own release commit message ([d38c5f7](https://github.com/Pauperwave/app/commit/d38c5f7))
+- **db:** 🐛 wire set_updated_at() to every table that has updated_at ([2568813](https://github.com/Pauperwave/app/commit/2568813))
+
+### Documentation
+
+- **testing:** 📝 sketch a tiered, concrete testing coverage plan ([5b7a2b2](https://github.com/Pauperwave/app/commit/5b7a2b2))
+- **supabase:** 📝 make the Functions section the single complete inventory ([1efb576](https://github.com/Pauperwave/app/commit/1efb576))
+- **supabase:** 📝 dedupe Realtime Configuration, fix Migration Notes drift ([68449c4](https://github.com/Pauperwave/app/commit/68449c4))
+- **supabase:** 📝 complete the extensions inventory, reword indexes example ([d4365c2](https://github.com/Pauperwave/app/commit/d4365c2))
+
+### Chore
+
+- **release:** 🔖 v0.1.1 ([a6a1daa](https://github.com/Pauperwave/app/commit/a6a1daa))
+- **db:** 🔥 drop the unused uuid-ossp extension ([8045881](https://github.com/Pauperwave/app/commit/8045881))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.1.1
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.1.0...v0.1.1)
