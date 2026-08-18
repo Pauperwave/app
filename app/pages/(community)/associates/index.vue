@@ -65,7 +65,7 @@ const {
   lastRenewalDateColumn, pauperwaveAssociateNumberColumn, membershipRequestStatusColumn,
   associateTypeColumn, consentDataColumn, consentSocialColumn, hasReadStatuteColumn,
   firstNameColumn, lastNameColumn, emailAddressColumn, phoneNumberColumn, taxCodeColumn,
-  bornDateColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
+  bornDateColumn, ageColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
   residencyAddressColumn, residencyHouseNumberColumn, residencyCityColumn,
   residencyProvinceColumn, residencyCapColumn, mtgoNicknameColumn, mtgaNicknameColumn,
   actionsColumn
@@ -199,6 +199,7 @@ const columns: TableColumn<Associate>[] = [
   phoneNumberColumn,
   taxCodeColumn,
   bornDateColumn,
+  ageColumn,
   bornLocationColumn,
   bornProvinceColumn,
   bornStateColumn,

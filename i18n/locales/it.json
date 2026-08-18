@@ -203,6 +203,7 @@
       "phoneNumber": "Cellulare",
       "taxCode": "Codice Fiscale",
       "bornDate": "Data di nascita",
+      "age": "Età",
       "bornLocation": "Luogo di nascita",
       "bornProvince": "Provincia di nascita",
       "bornState": "Nazione di nascita",

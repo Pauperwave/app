@@ -1917,6 +1917,7 @@ export type Database = {
     Views: {
       pauperwave_associates_with_status: {
         Row: {
+          age: number | null
           associate_type: string | null
           association_date: string | null
           born_date: string | null
