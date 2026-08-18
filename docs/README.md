@@ -27,6 +27,7 @@ Master index of all project documentation.
 | `audits/2026-08-12-fallow-health-review.md` | `fallow:health` score/hotspots/refactoring-target review — **historical, superseded by the 2026-08-16 audit** | Process (historical) |
 | `audits/2026-08-16-fallow-health-review.md` | Follow-up `fallow:health` review: what got fixed since 2026-08-12 (GridView.vue, DetailSlideover.vue, tesseramento/index.vue partially), fresh score/targets, and why the 4 remaining refactoring targets are false economy or deliberately deferred | Process |
 | `plans/2026-08-18-testing-coverage-plan.md` | Concrete, tiered list of what to unit/e2e test first, superseding `architecture/testing.md`'s own stale priority list | Test reference |
+| `audits/2026-08-18-associates-csv-reconciliation.md` | Categorized review of the 171 field conflicts between the DB and the historical Google Form roster — what's safe to fix, what's already correct, what needs asking the associate directly | Data model |
 
 ## Not yet documented
 
