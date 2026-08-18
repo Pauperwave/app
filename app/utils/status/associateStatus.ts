@@ -10,6 +10,7 @@ export const membershipStatusConfig: Record<
   active: { color: 'success', icon: ICONS.success },
   to_renew: { color: 'warning', icon: ICONS.refresh },
   expired: { color: 'error', icon: ICONS.banned },
+  unpaid: { color: 'neutral', icon: ICONS.creditCard },
   pending: { color: 'warning', icon: ICONS.pending },
   rejected: { color: 'error', icon: ICONS.statusRejected },
   approved: { color: 'success', icon: ICONS.success }
