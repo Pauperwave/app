@@ -46,6 +46,7 @@ export const associatesColumnHeaders = (t: (key: string) => string) => ({
   phone_number: t('associate.columns.phoneNumber'),
   tax_code: t('associate.columns.taxCode'),
   born_date: t('associate.columns.bornDate'),
+  age: t('associate.columns.age'),
   born_location: t('associate.columns.bornLocation'),
   born_province: t('associate.columns.bornProvince'),
   born_state: t('associate.columns.bornState'),
@@ -295,6 +296,20 @@ export function useAssociatesTableColumns(
       h(DateWithRelativeTooltip, { isoString: row.original.born_date, time: false })
   }
 
+  // Computed by pauperwave_associates_with_status (migration
+  // 20260818160000), not client-side anymore — same DB-level mechanism the
+  // birthday-notification backlog item (docs/BACKLOG.md) and /statistics'
+  // median-age stat both read. Plain number, no DateWithRelativeTooltip:
+  // that component's hover tooltip makes sense for an absolute date needing
+  // relative context, not for an age that's already the "how long ago" answer.
+  const ageColumn: TableColumn<Associate> = {
+    accessorKey: 'age',
+    header: ({ column }) => sortableHeader(columnHeaders.age, column),
+    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
+    cell: ({ row }) =>
+      row.original.age ?? ''
+  }
+
   const bornLocationColumn: TableColumn<Associate> = {
     accessorKey: 'born_location',
     header: columnHeaders.born_location,
@@ -392,6 +407,7 @@ export function useAssociatesTableColumns(
     phoneNumberColumn,
     taxCodeColumn,
     bornDateColumn,
+    ageColumn,
     bornLocationColumn,
     bornProvinceColumn,
     bornStateColumn,

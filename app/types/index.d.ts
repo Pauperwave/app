@@ -46,6 +46,9 @@ export interface Associate extends Omit<AssociateRow, 'membership_request_status
   membership_status: MembershipStatus
   latest_renewal_year: number | null
   latest_renewal_date: string | null
+  // Whole completed years, computed in pauperwave_associates_with_status
+  // (migration 20260818160000) — not derived client-side anymore.
+  age: number | null
   avatar?: AvatarProps
 }
 

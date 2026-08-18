@@ -43,3 +43,8 @@ Committed, ranked work items. P1 = urgent/blocking, P2 = important, P3 = nice to
   - Found: 2026-08-10, while building the role/permissions matrix (`docs/architecture/permissions.md`).
 
 - **Migrate magic-link auth from implicit flow to PKCE.** Current flow (`app/pages/auth/callback.vue`, `app/pages/login.vue`) relies on the implicit flow — the session token can briefly appear in the URL fragment/browser history. Given the app handles real associate PII, PKCE (customize email template with `{{ .TokenHash }}`, exchange via `verifyOtp({ token_hash, type: 'email' })` in the callback) is a worthwhile hardening step, though it requires callback-page and Supabase email-template changes.
+
+## P3
+
+- **Notify management of upcoming associate birthdays.** `age` is now computed DB-side in the `pauperwave_associates_with_status` view (migration `20260818160000_add_age_to_associates_view.sql`, `extract(year from age(current_date, born_date))`) and surfaced in the roster's "Età" column and `/statistics`' median-age stat — that's the display half. No notification exists yet for an associate's birthday approaching/arriving; would need a scheduled check (`born_date`'s month/day against today, independent of the `age` column itself) plugged into the same pipeline as `NotificationsBellButton`/`server/api/notifications.ts`.
+  - Found: 2026-08-18, while adding the age column. Moved from client-side (`date-fns`) to DB-side same day, so both `/statistics` and a future notification job can read one source of truth instead of recomputing it separately.
