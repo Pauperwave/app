@@ -144,14 +144,17 @@ ALTER TABLE tournament_kills           REPLICA IDENTITY FULL;
 ### About indexes
 
 - Postgres defaults to a btree index when you omit the index method; you do not have to specify it;
-- Use btree in almost all cases (range queries, ordering, equality, prefix searches). It's versatile and the recommended choice for columns like `associate_type`;
+- Use btree in almost all cases (range queries, ordering, equality, prefix searches). It's versatile and the recommended choice — if a low-cardinality text column like `associate_type` ever needed an index (none exists on it today, verified via `pg_indexes`), btree is still what you'd reach for;
 - Hash indexes are only for equality checks. They are less flexible, rarely necessary, and not recommended for general use.
-- The recommendation is: keep the current indexes as btrees (either implicit or explicit). Use hash only if you have a proven, narrow-case need for equality-only lookups and have tested performance.
+- The recommendation is: keep the current indexes as btrees (either implicit or explicit) — verified via `pg_am`/`pg_indexes` that zero hash indexes exist anywhere in the schema today. Use hash only if you have a proven, narrow-case need for equality-only lookups and have tested performance.
 
-About database extensions:
-- The `pgcrypto` extension is used for generating UUIDs with `gen_random_uuid()`;
-- The `pg_trgm` extension is used for fuzzy text search capabilities, particularly in the `pauperwave_associates` table;
+About database extensions — every extension actually installed (verified via `pg_extension`, 2026-08-18), not just the three the schema's own migrations enable:
+
+- The `pgcrypto` extension is used for generating UUIDs with `gen_random_uuid()` — the only UUID-generation function actually used anywhere in the schema.
+- The `pg_trgm` extension is used for fuzzy text search capabilities, particularly in the `pauperwave_associates` table.
 - The `unaccent` extension is used to create accent-insensitive text search indexes.
+- The `uuid-ossp` extension is installed but **unused** — `uuid_generate_v4()` (or any of its other functions) appears nowhere in any migration. Dead weight, not a second UUID strategy; `pgcrypto` is the only one actually wired up.
+- `pg_net`, `pg_stat_statements`, `hypopg`, `index_advisor`, `wrappers` are Supabase-platform defaults (query-stats tracking, the dashboard's Index Advisor tooling, foreign-data-wrapper framework) — not something this project's migrations enabled or use, listed here only for completeness.
 
 ```sql
 -- Enable necessary extensions
