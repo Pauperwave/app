@@ -55,6 +55,7 @@ export const ICONS = {
   player: 'i-lucide-user',
   addPlayer: 'i-lucide-user-plus',
   playerConfirmed: 'i-lucide-user-check',
+  playerLapsed: 'i-lucide-user-x',
 
   // Visibility
   show: 'i-lucide-eye',
@@ -87,6 +88,7 @@ export const ICONS = {
   timer: 'i-lucide-timer',
   pauseCircle: 'i-lucide-pause-circle',
   history: 'i-lucide-history',
+  cake: 'i-lucide-cake',
 
   // Theme
   lightMode: 'i-lucide-sun',
