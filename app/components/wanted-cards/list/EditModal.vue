@@ -37,9 +37,14 @@ const state = reactive<Partial<Schema>>({})
 
 // Refills the form state every time the modal opens on a different card — unlike
 // AddModal.vue there is no successful submit that clears it (this one always
-// reopens on an existing record). Printings reload on the card's fixed name, then
-// the already saved one is preselected by comparing scryfallUrl.
-watch([open, () => card], async ([isOpen, currentCard]) => {
+// reopens on an existing record). fetchPrintings() only sets the query key
+// (useScryfallCardSearch.ts) and returns immediately, it does NOT wait for the
+// fetch — `await`ing it here used to be a no-op, so `printings` was still empty
+// right after and the preselect below silently failed on the first open of any
+// given session (it worked the second time only because Pinia Colada had by then
+// cached that name from the first, now-resolved query). Preselecting now happens
+// in the printings watcher below, the same pattern AddModal.vue uses.
+watch([open, () => card], ([isOpen, currentCard]) => {
   if (!isOpen || !currentCard) return
   state.copies = currentCard.copies
   state.language = currentCard.language || 'any'
@@ -47,15 +52,22 @@ watch([open, () => card], async ([isOpen, currentCard]) => {
   state.notes = currentCard.notes || undefined
   state.player = currentCard.playerAssociateUuid
 
-  await fetchPrintings(currentCard.cardName)
-  // Compare only the base part of the URL (without the query string): the Scryfall
-  // API now always appends tracking params (?utm_source=...) to the scryfall_uri it
-  // returns, while some older requests (data migrated from the initial mock) have a
-  // "clean" scryfallUrl saved without them — an exact string comparison would never
-  // match.
-  const currentBaseUrl = currentCard.scryfallUrl.split('?')[0]
-  state.printingId = printings.value.find(p => p.scryfallUrl.split('?')[0] === currentBaseUrl)?.id
+  fetchPrintings(currentCard.cardName)
 }, { immediate: true })
+
+// Runs once `printings` actually loads for the card's name — matches by comparing
+// only the base part of the URL (without the query string): the Scryfall API now
+// always appends tracking params (?utm_source=...) to the scryfall_uri it returns,
+// while some older requests (data migrated from the initial mock) have a "clean"
+// scryfallUrl saved without them — an exact string comparison would never match.
+// Guarded on the modal still being open on the same card so a stale fetch
+// resolving after the modal moved on to another card (or closed) can't clobber
+// state.printingId.
+watch(printings, (list) => {
+  if (!open.value || !card) return
+  const currentBaseUrl = card.scryfallUrl.split('?')[0]
+  state.printingId = list.find(p => p.scryfallUrl.split('?')[0] === currentBaseUrl)?.id
+})
 
 const submitting = ref(false)
 
