@@ -31,11 +31,11 @@ const activeTypeTab = computed<'all' | PaymentType>({
 const { filteredTransactions, typeTabs } = useTransactionsFilters(data, range, activeTypeTab)
 const {
   editingTransaction, editModalOpen, deletingTransaction, deleteConfirmOpen, deleting,
-  confirmDelete, tableContextMenuItems, onRowContextmenu
+  confirmDelete, tableContextMenuItems, onRowContextmenu, rowContextMenuItems
 } = useTransactionsRowActions()
 
 const selection = useSelection<number>()
-const { columns } = useTransactionsTableColumns(selection)
+const { columns, columnHeaders } = useTransactionsTableColumns(selection, rowContextMenuItems)
 
 // No selection UI wired up here previously — no bulk actions at all despite
 // tournaments/wanted-cards having this exact delete-with-confirm pattern for
@@ -50,10 +50,42 @@ const {
 
 const sorting = ref([{ id: 'payment_date', desc: true }])
 
-// Hidden once a specific type tab is active: with the tab already saying
-// "Quote associative"/"Quote tornei"/etc., a "Tipologia" column repeating the
-// same value on every row is redundant. Reappears on "Tutte le transazioni".
-const columnVisibility = computed(() => ({ payment_type: activeTypeTab.value === 'all' }))
+interface TableColumnRef {
+  id: string
+  getCanHide: () => boolean
+  getIsVisible: () => boolean
+  toggleVisibility: (value: boolean) => void
+}
+
+interface TableRef {
+  tableApi: {
+    getColumn: (id: string) => TableColumnRef | undefined
+    getAllColumns: () => TableColumnRef[]
+  }
+}
+
+const table = useTemplateRef<TableRef>('table')
+
+// payment_type hidden once a specific type tab is active: with the tab already
+// saying "Quote associative"/"Quote tornei"/etc., a "Tipologia" column
+// repeating the same value on every row is redundant. Reappears on "Tutte le
+// transazioni" — kept in sync with the tab via the watcher below rather than
+// a computed, since createdAt/updatedAt/createdBy/updatedBy (audit trail,
+// 2026-08-18) also need to live in this same v-model ref for the "Mostra
+// colonne" menu to toggle them, same "not needed at a glance" reasoning as
+// associates'/wanted-cards' own hidden audit columns.
+const columnVisibility = ref({
+  payment_type: activeTypeTab.value === 'all',
+  createdAt: false,
+  updatedAt: false,
+  createdBy: false,
+  updatedBy: false
+})
+watch(activeTypeTab, (value) => {
+  columnVisibility.value.payment_type = value === 'all'
+})
+
+const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, columnHeaders)
 
 // Same "Group by player" convention as wanted-cards/index.vue: off by default,
 // a single toggle collapses repeated payer rows into an expandable group.
@@ -129,6 +161,15 @@ const tour = useTransactionsTour()
             />
 
             <HomeDateRangePicker v-model="range" class="-ms-1" />
+
+            <UDropdownMenu :items="columnVisibilityItems" :content="{ align: 'end' }">
+              <UButton
+                :label="$t('common.showColumns')"
+                color="neutral"
+                variant="outline"
+                :trailing-icon="ICONS.settingsColumns"
+              />
+            </UDropdownMenu>
           </div>
         </template>
       </UDashboardToolbar>
@@ -138,8 +179,9 @@ const tour = useTransactionsTour()
       <UContextMenu :items="tableContextMenuItems">
         <UTable
           id="tour-transactions-table"
+          ref="table"
           v-model:sorting="sorting"
-          :column-visibility="columnVisibility"
+          v-model:column-visibility="columnVisibility"
           :data="filteredTransactions"
           :columns="columns"
           :grouping="grouping"

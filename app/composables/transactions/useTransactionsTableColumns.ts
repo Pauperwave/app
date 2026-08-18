@@ -1,9 +1,11 @@
 // app\composables\transactions\useTransactionsTableColumns.ts
 import { AssociateTag, UBadge, UIcon } from '#components'
-import type { BadgeProps, TableColumn } from '@nuxt/ui'
+import type { BadgeProps, DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { PaymentType } from '#shared/types/transactions'
 import type { Transaction } from '~/types'
 import type { Selection } from '~/composables/useSelection'
+import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
+import RowActionsMenu from '~/components/ui/RowActionsMenu.vue'
 
 export const transactionsColumnHeaders = (t: (key: string) => string) => ({
   payer: t('transaction.columns.payer'),
@@ -13,7 +15,12 @@ export const transactionsColumnHeaders = (t: (key: string) => string) => ({
   payment_method: t('transaction.columns.paymentMethod'),
   received_by: t('transaction.columns.receivedBy'),
   event_name: t('transaction.columns.event'),
-  notes: t('transaction.columns.notes')
+  notes: t('transaction.columns.notes'),
+  createdBy: t('transaction.columns.createdBy'),
+  createdAt: t('transaction.columns.createdAt'),
+  updatedBy: t('transaction.columns.updatedBy'),
+  updatedAt: t('transaction.columns.updatedAt'),
+  actions: t('transaction.columns.actions')
 } as const)
 
 const PAYMENT_TYPE_BADGE_CONFIG: Record<PaymentType, { color: BadgeProps['color'], icon: string }> = {
@@ -29,7 +36,10 @@ const PAYMENT_TYPE_BADGE_CONFIG: Record<PaymentType, { color: BadgeProps['color'
 // on here, unlike tournaments, so the select column comes from
 // useGroupedSelectColumn.ts (a group's checkbox drives all its subRows),
 // not tournaments' simpler ungrouped one.
-export function useTransactionsTableColumns(selection: Selection<number>) {
+export function useTransactionsTableColumns(
+  selection: Selection<number>,
+  rowContextMenuItems: (transaction: Transaction) => DropdownMenuItem[]
+) {
   const { t } = useI18n()
 
   const columnHeaders = transactionsColumnHeaders(t)
@@ -134,6 +144,43 @@ export function useTransactionsTableColumns(selection: Selection<number>) {
       accessorKey: 'notes',
       header: columnHeaders.notes,
       cell: ({ row }) => row.getIsGrouped() ? null : row.original.notes
+    },
+    {
+      accessorKey: 'createdBy',
+      header: columnHeaders.createdBy,
+      cell: ({ row }) => row.getIsGrouped() || !row.original.createdBy
+        ? null
+        : h(AssociateTag, { name: row.original.createdBy })
+    },
+    {
+      accessorKey: 'createdAt',
+      header: ({ column }) => sortableHeader(columnHeaders.createdAt, column),
+      meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
+      cell: ({ row }) => row.getIsGrouped()
+        ? null
+        : h(DateWithRelativeTooltip, { isoString: row.original.created_at })
+    },
+    {
+      accessorKey: 'updatedBy',
+      header: columnHeaders.updatedBy,
+      cell: ({ row }) => row.getIsGrouped() || !row.original.updatedBy
+        ? null
+        : h(AssociateTag, { name: row.original.updatedBy })
+    },
+    {
+      accessorKey: 'updatedAt',
+      header: ({ column }) => sortableHeader(columnHeaders.updatedAt, column),
+      meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
+      cell: ({ row }) => row.getIsGrouped()
+        ? null
+        : h(DateWithRelativeTooltip, { isoString: row.original.updated_at })
+    },
+    {
+      id: 'actions',
+      header: columnHeaders.actions,
+      cell: ({ row }) => row.getIsGrouped()
+        ? null
+        : h(RowActionsMenu, { items: rowContextMenuItems(row.original) })
     }
   ]
 

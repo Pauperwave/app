@@ -506,7 +506,12 @@
       "paymentMethod": "Metodo",
       "receivedBy": "Ricevuto da",
       "event": "Evento",
-      "notes": "Note"
+      "notes": "Note",
+      "createdBy": "Creato da",
+      "createdAt": "Creato il",
+      "updatedBy": "Aggiornato da",
+      "updatedAt": "Aggiornato il",
+      "actions": "Azioni"
     },
     "empty": "Nessuna transazione trovata con questi filtri",
     "groupByPayer": "Raggruppa per giocatore",
