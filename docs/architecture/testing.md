@@ -15,12 +15,8 @@ Both must be clean per the zero-warning policy, but **neither catches logic or r
 
 ## What a first test pass should cover, in priority order
 
-1. **`wanted-cards` BFF endpoints** (`server/api/wanted-cards/*.post.ts`) — the most complex real write path in the app (auth checks, audit columns, status transitions); a regression here fails silently behind a toast unless someone's watching.
-2. **`server/api/check-associate.post.ts`** — the one pre-BFF real server route; a regression here breaks login.
-3. **`useWantedCardsFilters.ts`'s `filteredCards`** — the single predicate function both the table and grid views now depend on (unified 2026-08-08 specifically to kill a class of bug where the two views' filtering logic drifted apart); the highest-value target for a first unit test given that history.
-4. **Composables querying Supabase** (`useAssociates.ts` and any not-yet-migrated ones) — easiest to unit-test with a mocked Supabase client, and where the field-name-drift class of bug lives.
+See `docs/plans/2026-08-18-testing-coverage-plan.md` for the current, concrete, tiered list (this section's own priority list, written 2026-08-08, predates the transactions/roles/renewals domains and is superseded). Short version: unit-test pure `server/utils/*` and `app/utils/*` logic first (cheapest, highest blast radius — e.g. `associateRenewals.ts`'s year-boundary math), then filter composables, then Supabase-querying composables (blocked on hand-mocking `useSupabaseClient` per test, since `vitest.config.ts`'s auto-import mirror doesn't cover Nuxt runtime composables), then a small, fixed set of E2E flows once the magic-link-OTP auth-stub blocker (`test/e2e/README.md`) is solved.
 
 ## Not yet decided
 
-- Whether to add E2E coverage (Playwright, per `league`'s convention) given the app's current size doesn't yet justify the setup cost, even though the harness already exists
 - Whether writing the first tests belongs in `docs/BACKLOG.md` as a scoped item, or stays a `docs/TODO.md` observation until there's a concrete regression that motivates it — see the note in `docs/BACKLOG.md`/`TODO.md` about this being felt acutely on `/wanted-cards` specifically

@@ -26,10 +26,11 @@ Master index of all project documentation.
 | `audits/2026-08-09-backup-docs-vs-live-schema.md` | The `BACKUP CODICE APP/docs` design docs compared table-by-table against the live schema — what drifted, what was never built, what's undocumented | Data model |
 | `audits/2026-08-12-fallow-health-review.md` | `fallow:health` score/hotspots/refactoring-target review — **historical, superseded by the 2026-08-16 audit** | Process (historical) |
 | `audits/2026-08-16-fallow-health-review.md` | Follow-up `fallow:health` review: what got fixed since 2026-08-12 (GridView.vue, DetailSlideover.vue, tesseramento/index.vue partially), fresh score/targets, and why the 4 remaining refactoring targets are false economy or deliberately deferred | Process |
+| `plans/2026-08-18-testing-coverage-plan.md` | Concrete, tiered list of what to unit/e2e test first, superseding `architecture/testing.md`'s own stale priority list | Test reference |
 
 ## Not yet documented
 
-`plans/` and `specs/` exist as folders for future use (mirroring the taxonomy used in `MagicTheGathering/league`) but have no content yet. Add dated files (`YYYY-MM-DD-topic.md`) as real work in those categories happens — see the root `CLAUDE.md` for the date-prefix convention.
+`specs/` exists as a folder for future use (mirroring the taxonomy used in `MagicTheGathering/league`) but has no content yet. Add dated files (`YYYY-MM-DD-topic.md`) as real work in that category happens — see the root `CLAUDE.md` for the date-prefix convention.
 
 ## Reading order by task
 
