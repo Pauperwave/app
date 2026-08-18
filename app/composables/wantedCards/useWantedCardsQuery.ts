@@ -60,6 +60,7 @@ export function useWantedCardsQuery() {
         notes: row.notes ?? '',
         player: row.associate ? `${row.associate.first_name} ${row.associate.last_name}` : '',
         playerAssociateUuid: row.player_associate_uuid,
+        createdAt: row.created_at,
         updatedAt: row.updated_at,
         createdBy: row.created_by_associate ? `${row.created_by_associate.first_name} ${row.created_by_associate.last_name}` : '',
         updatedBy: row.updated_by_associate ? `${row.updated_by_associate.first_name} ${row.updated_by_associate.last_name}` : ''

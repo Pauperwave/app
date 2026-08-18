@@ -182,8 +182,8 @@
     "columns": {
       "id": "ID",
       "uuid": "UUID",
-      "createdAt": "Data di creazione",
-      "updatedAt": "Data di aggiornamento",
+      "createdAt": "Creato il",
+      "updatedAt": "Aggiornato il",
       "updatedBy": "Aggiornato da",
       "membershipRequestStatus": "Stato",
       "membershipStatus": "Tesseramento",
@@ -1356,6 +1356,7 @@
       "treatment": "Trattamento",
       "notes": "Note",
       "player": "Giocatore",
+      "createdAt": "Creato il",
       "updatedAt": "Aggiornato il",
       "createdBy": "Creato da",
       "updatedBy": "Aggiornato da"

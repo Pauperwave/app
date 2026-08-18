@@ -48,6 +48,7 @@ export function useWantedCardsTableColumns(selection: Selection<number>) {
     date: t('wantedCard.columns.date'),
     status: t('wantedCard.columns.status'),
     notes: t('wantedCard.columns.notes'),
+    createdAt: t('wantedCard.columns.createdAt'),
     updatedAt: t('wantedCard.columns.updatedAt'),
     createdBy: t('wantedCard.columns.createdBy'),
     updatedBy: t('wantedCard.columns.updatedBy')
@@ -165,6 +166,12 @@ export function useWantedCardsTableColumns(selection: Selection<number>) {
       header: t('wantedCard.columns.notes'),
       meta: { class: { td: 'text-muted max-w-64 whitespace-normal break-words' } },
       cell: ({ row }) => row.getIsGrouped() ? null : row.original.notes
+    },
+    {
+      accessorKey: 'createdAt',
+      header: ({ column }) => sortableHeader(t('wantedCard.columns.createdAt'), column),
+      meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
+      cell: ({ row }) => row.getIsGrouped() ? null : formatDateTime(row.original.createdAt)
     },
     {
       accessorKey: 'updatedAt',
