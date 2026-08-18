@@ -17,7 +17,7 @@
   can still sit edge-to-edge.
 
   Participant rows use UUser + generatePlayerAvatar() directly, not
-  PlayerTag.vue — that component always calls useAssociatesQuery()
+  AssociateTag.vue — that component always calls useAssociatesQuery()
   internally (even without an associateUuid prop), which queries
   pauperwave_associates_with_status with the anon Supabase client. On this
   public, unauthenticated page that's a real exposure risk given

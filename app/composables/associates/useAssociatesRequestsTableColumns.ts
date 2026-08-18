@@ -13,7 +13,8 @@ import type { Table } from '@tanstack/vue-table'
 import type { Associate } from '~/types'
 
 export function useAssociatesRequestsTableColumns(
-  table: Ref<{ tableApi: Table<Associate> } | null>
+  table: Ref<{ tableApi: Table<Associate> } | null>,
+  associates: Ref<Associate[] | undefined>
 ) {
   const {
     visibilityItems,
@@ -25,7 +26,7 @@ export function useAssociatesRequestsTableColumns(
     bornDateColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
     residencyAddressColumn, residencyHouseNumberColumn, residencyCityColumn,
     residencyProvinceColumn, residencyCapColumn, mtgoNicknameColumn, mtgaNicknameColumn
-  } = useAssociatesTableColumns(table)
+  } = useAssociatesTableColumns(table, associates)
 
   const columns: TableColumn<Associate>[] = [
     selectColumn,

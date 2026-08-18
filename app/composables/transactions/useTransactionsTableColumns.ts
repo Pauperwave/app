@@ -1,5 +1,5 @@
 // app\composables\transactions\useTransactionsTableColumns.ts
-import { PlayerTag, UBadge, UIcon } from '#components'
+import { AssociateTag, UBadge, UIcon } from '#components'
 import type { BadgeProps, TableColumn } from '@nuxt/ui'
 import type { PaymentType } from '#shared/types/transactions'
 import type { Transaction } from '~/types'
@@ -75,12 +75,12 @@ export function useTransactionsTableColumns(selection: Selection<number>) {
               name: row.getIsExpanded() ? ICONS.chevronDown : ICONS.chevronRight,
               class: 'size-4'
             }),
-            h(PlayerTag, { name: name || columnHeaders.payer, associateUuid }),
+            h(AssociateTag, { name: name || columnHeaders.payer, associateUuid }),
             h(UBadge, { color: 'neutral', variant: 'subtle', size: 'sm' }, () => String(row.subRows.length))
           ])
         }
         if (!name) return ''
-        return h(PlayerTag, { name, associateUuid })
+        return h(AssociateTag, { name, associateUuid })
       }
     },
     {
@@ -120,9 +120,9 @@ export function useTransactionsTableColumns(selection: Selection<number>) {
       meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap' } },
       // No associateUuid — staff members aren't reliably resolvable to an
       // associate record by name alone, so this is just name+avatar, no
-      // membership popover (see PlayerTag.vue).
+      // membership popover (see AssociateTag.vue).
       cell: ({ row }) =>
-        row.getIsGrouped() ? null : h(PlayerTag, { name: row.original.received_by })
+        row.getIsGrouped() ? null : h(AssociateTag, { name: row.original.received_by })
     },
     {
       accessorKey: 'event_name',

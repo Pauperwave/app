@@ -49,7 +49,7 @@ const lastClickShiftKey = ref(false)
   <div v-else class="flex flex-col gap-6">
     <div v-for="section in sections" :key="section.player ?? '__ungrouped'">
       <div v-if="section.player" class="flex items-center gap-1.5 mb-3">
-        <PlayerTag :name="section.player" />
+        <AssociateTag :name="section.player" />
         <UBadge color="neutral" variant="subtle" size="sm">
           {{ section.cards.length }}
         </UBadge>

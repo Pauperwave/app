@@ -117,7 +117,12 @@ interface TableRef {
 
 const table = useTemplateRef<TableRef>('table')
 // "Status" hidden by default: it is already implied by the active Found/Searching tab.
-const columnVisibility = ref({ status: false })
+// updatedAt/createdBy/updatedBy (audit trail, added 2026-08-18): hidden by
+// default, same "not needed at a glance" reasoning as associates' own
+// traceability columns.
+const columnVisibility = ref({
+  status: false, updatedAt: false, createdBy: false, updatedBy: false
+})
 
 const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, columnHeaders)
 

@@ -65,7 +65,7 @@ const {
   bornDateColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
   residencyAddressColumn, residencyHouseNumberColumn, residencyCityColumn,
   residencyProvinceColumn, residencyCapColumn, mtgoNicknameColumn, mtgaNicknameColumn
-} = useAssociatesTableColumns(table)
+} = useAssociatesTableColumns(table, associates)
 
 // Wires the sidebar links (/associates?status=pending|active|to_renew) to the
 // membership_status column filter, which can only be applied after UTable mounts.
@@ -118,8 +118,6 @@ const columnVisibility = ref({
   membership_request_status: false,
   uuid: false,
   created_at: false,
-  updated_at: false,
-  updated_by: false,
   association_date: false,
   associate_type: false,
   consent_data: false,

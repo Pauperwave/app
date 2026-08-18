@@ -91,7 +91,7 @@ function onCardClick(event: MouseEvent) {
       </div>
 
       <template #footer>
-        <!-- Single row when grouped by player: without PlayerTag (already
+        <!-- Single row when grouped by player: without AssociateTag (already
              in the section header) the first row would otherwise hold
              just the price, wasting space. Ungrouped, both rows are
              already full, so they stay separate. -->
@@ -124,7 +124,7 @@ function onCardClick(event: MouseEvent) {
             <div class="flex items-center gap-1.5 min-w-0">
               <!-- The player name is already in the section header when
                    grouped: it would be redundant here. -->
-              <PlayerTag v-if="!groupedByPlayer" :name="card.player" />
+              <AssociateTag v-if="!groupedByPlayer" :name="card.player" />
               <UTooltip v-if="card.notes" :text="card.notes">
                 <UIcon :name="ICONS.messageCircle" class="size-4 text-muted shrink-0" />
               </UTooltip>

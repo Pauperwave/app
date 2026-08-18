@@ -177,6 +177,13 @@ export interface WantedCard {
   notes: string
   player: string
   playerAssociateUuid: string
+  // Audit trail (docs/supabase/2-database.md), names resolved client-side in
+  // useWantedCardsQuery.ts — PostgREST can't embed pauperwave_associates'
+  // self-referencing FK, but created_by/updated_by here are wanted_cards ->
+  // associates (a normal FK), so the join works directly.
+  updatedAt: string
+  createdBy: string
+  updatedBy: string
 }
 
 // Backed by the real `tournaments` table (migration 20260815100000) — mapped

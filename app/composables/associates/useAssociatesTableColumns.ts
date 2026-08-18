@@ -4,6 +4,7 @@ import { UBadge, UCheckbox } from '#components'
 import type { BadgeProps, DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { Column, Table } from '@tanstack/vue-table'
 import type { Associate } from '~/types'
+import AssociateTag from '~/components/ui/AssociateTag.vue'
 
 // Shared between associates/index.vue (roster) and associates/requests.vue
 // (pending/rejected queue) — every column except the roster-only ones
@@ -58,13 +59,26 @@ export const associatesColumnHeaders = (t: (key: string) => string) => ({
 export type AssociatesColumnHeaders = ReturnType<typeof associatesColumnHeaders>
 type AssociatesColumnHeaderKey = keyof AssociatesColumnHeaders
 
-export function useAssociatesTableColumns(table: Ref<{ tableApi: Table<Associate> } | null>) {
+export function useAssociatesTableColumns(
+  table: Ref<{ tableApi: Table<Associate> } | null>,
+  associates: Ref<Associate[] | undefined>
+) {
   const { t } = useI18n()
   const {
     formatDateTime, formatDate, renderAssociateTypeBadge, renderConsentBadge
   } = useAssociatesRenderers()
 
   const columnHeaders = associatesColumnHeaders(t)
+
+  // updated_by/created_by are associate uuids (audit trail pattern,
+  // docs/supabase/2-database.md) — PostgREST can't embed a self-referencing
+  // FK (confirmed: pauperwave_associates!updated_by fails with "no
+  // relationship found" even with the constraint-name hint), so resolved
+  // client-side instead, against the full associates list already fetched
+  // on both pages that use these columns — no extra query needed.
+  const associateNameByUuid = computed(() => new Map(
+    (associates.value ?? []).map(associate => [associate.uuid, `${associate.first_name} ${associate.last_name}`])
+  ))
 
   function getColumnLabel(id: string): string {
     return id in columnHeaders ? columnHeaders[id as AssociatesColumnHeaderKey] : id
@@ -139,7 +153,11 @@ export function useAssociatesTableColumns(table: Ref<{ tableApi: Table<Associate
   const updatedByColumn: TableColumn<Associate> = {
     accessorKey: 'updated_by',
     header: columnHeaders.updated_by,
-    cell: ({ row }) => row.original.updated_by
+    cell: ({ row }) => {
+      if (!row.original.updated_by) return ''
+      const name = associateNameByUuid.value.get(row.original.updated_by)
+      return name ? h(AssociateTag, { name }) : row.original.updated_by
+    }
   }
 
   const paymentDateColumn: TableColumn<Associate> = {

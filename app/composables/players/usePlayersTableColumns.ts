@@ -1,6 +1,6 @@
 // app\composables\players\usePlayersTableColumns.ts
 import { h } from 'vue'
-import { PlayerTag } from '#components'
+import { AssociateTag } from '#components'
 import { format } from 'date-fns'
 import type { TableColumn } from '@nuxt/ui'
 import type { Player } from '~/types'
@@ -27,7 +27,7 @@ export function usePlayersTableColumns() {
       cell: ({ row }) => {
         const name = row.original.nickname
           || `${row.original.first_name} ${row.original.last_name}`
-        return h(PlayerTag, { name, associateUuid: row.original.associate_uuid })
+        return h(AssociateTag, { name, associateUuid: row.original.associate_uuid })
       }
     },
     {
