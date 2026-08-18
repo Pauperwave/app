@@ -86,7 +86,7 @@ watch(() => route.query.status, applyMembershipStatusFilterFromQuery)
 // old static sidebar links). No 'pending' here anymore — rosterAssociates never
 // contains pending requests in the first place.
 const associatesStatusCounts = computed(() => {
-  const counts = { active: 0, to_renew: 0 }
+  const counts = { active: 0, to_renew: 0, expired: 0 }
   for (const associate of rosterAssociates.value) {
     if (associate.membership_status in counts) {
       counts[associate.membership_status as keyof typeof counts]++
@@ -102,7 +102,8 @@ const associatesStatusCounts = computed(() => {
 const statusTabs = computed(() => [
   { label: t('associate.tabs.all'), value: 'all' as const, count: undefined },
   { label: t('associate.tabs.active'), value: 'active' as const, count: associatesStatusCounts.value.active },
-  { label: t('associate.tabs.toRenew'), value: 'to_renew' as const, count: associatesStatusCounts.value.to_renew }
+  { label: t('associate.tabs.toRenew'), value: 'to_renew' as const, count: associatesStatusCounts.value.to_renew },
+  { label: t('associate.tabs.expired'), value: 'expired' as const, count: associatesStatusCounts.value.expired }
 ])
 
 const activeStatusTab = computed({
