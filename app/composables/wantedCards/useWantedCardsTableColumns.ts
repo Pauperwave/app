@@ -1,12 +1,13 @@
 // app\composables\wantedCards\useWantedCardsTableColumns.ts
 import { h } from 'vue'
-import { format, parseISO } from 'date-fns'
 import { UBadge, UIcon } from '#components'
-import type { TableColumn } from '@nuxt/ui'
+import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { WantedCard } from '~/types'
 import ManaCost from '~/components/magic/ManaCost.vue'
 import CardPreviewTooltip from '~/components/magic/CardPreviewTooltip.vue'
 import AssociateTag from '~/components/ui/AssociateTag.vue'
+import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
+import RowActionsMenu from '~/components/ui/RowActionsMenu.vue'
 import type { Selection } from '~/composables/useSelection'
 
 // Pure config (depends only on t()) — extracted from the page to isolate the ~110
@@ -15,17 +16,11 @@ import type { Selection } from '~/composables/useSelection'
 // works reliably inside a .vue file's <script setup> block (where the compiler
 // rewrites it), not from a plain .ts file — used here it caused "Failed to resolve
 // component" at runtime.
-export function useWantedCardsTableColumns(selection: Selection<number>) {
+export function useWantedCardsTableColumns(
+  selection: Selection<number>,
+  rowContextMenuItems: (card: WantedCard) => DropdownMenuItem[]
+) {
   const { t } = useI18n()
-
-  function formatDateTime(isoString?: string): string {
-    if (!isoString) return ''
-    try {
-      return format(parseISO(isoString), 'dd/MM/yyyy HH:mm')
-    } catch {
-      return ''
-    }
-  }
 
   // Bound to the shared selectedIds Set (useSelection.ts), not UTable's own
   // row-selection state — grouping (rows with subRows) needs a group's checkbox
@@ -48,10 +43,11 @@ export function useWantedCardsTableColumns(selection: Selection<number>) {
     date: t('wantedCard.columns.date'),
     status: t('wantedCard.columns.status'),
     notes: t('wantedCard.columns.notes'),
-    createdAt: t('wantedCard.columns.createdAt'),
-    updatedAt: t('wantedCard.columns.updatedAt'),
     createdBy: t('wantedCard.columns.createdBy'),
-    updatedBy: t('wantedCard.columns.updatedBy')
+    createdAt: t('wantedCard.columns.createdAt'),
+    updatedBy: t('wantedCard.columns.updatedBy'),
+    updatedAt: t('wantedCard.columns.updatedAt'),
+    actions: t('wantedCard.columns.actions')
   }
 
   const columns: TableColumn<WantedCard>[] = [
@@ -148,7 +144,9 @@ export function useWantedCardsTableColumns(selection: Selection<number>) {
     {
       accessorKey: 'date',
       header: ({ column }) => sortableHeader(t('wantedCard.columns.date'), column),
-      cell: ({ row }) => row.getIsGrouped() ? null : row.original.date
+      cell: ({ row }) => row.getIsGrouped() || !row.original.date
+        ? null
+        : h(DateWithRelativeTooltip, { isoString: row.original.date, time: false })
     },
     {
       accessorKey: 'status',
@@ -168,18 +166,6 @@ export function useWantedCardsTableColumns(selection: Selection<number>) {
       cell: ({ row }) => row.getIsGrouped() ? null : row.original.notes
     },
     {
-      accessorKey: 'createdAt',
-      header: ({ column }) => sortableHeader(t('wantedCard.columns.createdAt'), column),
-      meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
-      cell: ({ row }) => row.getIsGrouped() ? null : formatDateTime(row.original.createdAt)
-    },
-    {
-      accessorKey: 'updatedAt',
-      header: ({ column }) => sortableHeader(t('wantedCard.columns.updatedAt'), column),
-      meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
-      cell: ({ row }) => row.getIsGrouped() ? null : formatDateTime(row.original.updatedAt)
-    },
-    {
       accessorKey: 'createdBy',
       header: t('wantedCard.columns.createdBy'),
       cell: ({ row }) => row.getIsGrouped() || !row.original.createdBy
@@ -187,11 +173,39 @@ export function useWantedCardsTableColumns(selection: Selection<number>) {
         : h(AssociateTag, { name: row.original.createdBy })
     },
     {
+      accessorKey: 'createdAt',
+      header: ({ column }) => sortableHeader(t('wantedCard.columns.createdAt'), column),
+      meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
+      cell: ({ row }) => row.getIsGrouped()
+        ? null
+        : h(DateWithRelativeTooltip, { isoString: row.original.createdAt })
+    },
+    {
       accessorKey: 'updatedBy',
       header: t('wantedCard.columns.updatedBy'),
       cell: ({ row }) => row.getIsGrouped() || !row.original.updatedBy
         ? null
         : h(AssociateTag, { name: row.original.updatedBy })
+    },
+    {
+      accessorKey: 'updatedAt',
+      header: ({ column }) => sortableHeader(t('wantedCard.columns.updatedAt'), column),
+      meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
+      cell: ({ row }) => row.getIsGrouped()
+        ? null
+        : h(DateWithRelativeTooltip, { isoString: row.original.updatedAt })
+    },
+    {
+      id: 'actions',
+      header: t('wantedCard.columns.actions'),
+      // Visible actions column (2026-08-18), matching leagues/locations/
+      // tournaments' convention — same items the right-click context menu
+      // already shows (rowContextMenuItems), just also reachable without
+      // knowing to right-click. null on a grouped (player-header) row, same
+      // as every other cell here — there's no single card to act on.
+      cell: ({ row }) => row.getIsGrouped()
+        ? null
+        : h(RowActionsMenu, { items: rowContextMenuItems(row.original) })
     }
   ]
 

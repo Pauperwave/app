@@ -11,7 +11,7 @@ const {
 } = useAssociatesQuery()
 const { data: geocodes, isLoading: geocodesLoading } = useAssociatesGeocodesQuery()
 const { t } = useI18n()
-const { formatDateTime, formatDate, renderConsentBadge } = useAssociatesRenderers()
+const { formatDate, renderConsentBadge } = useAssociatesRenderers()
 
 // Roster = already-approved associates only. Pending/rejected requests moved
 // to /associates/requests entirely (2026-08-11 UX split) — this table used
@@ -42,7 +42,7 @@ const table = useTemplateRef<{ tableApi: Table<Associate> }>('table')
 const {
   editingAssociate, editModalOpen,
   renewingAssociate, renewModalOpen,
-  tableContextMenuItems, onRowContextmenu
+  tableContextMenuItems, onRowContextmenu, rowContextMenuItems
 } = useAssociatesRowActions()
 
 // Row-selection existed here with nothing wired to it (2026-08-16) — bulk
@@ -58,14 +58,15 @@ const {
 // id and query semantics per page), not worth forcing into a shared helper
 const {
   columnHeaders, visibilityItems,
-  selectColumn, idColumn, updatedAtColumn, updatedByColumn,
+  selectColumn, idColumn, createdAtColumn, updatedAtColumn, updatedByColumn,
   paymentDateColumn, pauperwaveAssociateNumberColumn, membershipRequestStatusColumn,
   associateTypeColumn, consentDataColumn, consentSocialColumn, hasReadStatuteColumn,
   firstNameColumn, lastNameColumn, emailAddressColumn, phoneNumberColumn, taxCodeColumn,
   bornDateColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
   residencyAddressColumn, residencyHouseNumberColumn, residencyCityColumn,
-  residencyProvinceColumn, residencyCapColumn, mtgoNicknameColumn, mtgaNicknameColumn
-} = useAssociatesTableColumns(table, associates)
+  residencyProvinceColumn, residencyCapColumn, mtgoNicknameColumn, mtgaNicknameColumn,
+  actionsColumn
+} = useAssociatesTableColumns(table, associates, rowContextMenuItems)
 
 // Wires the sidebar links (/associates?status=pending|active|to_renew) to the
 // membership_status column filter, which can only be applied after UTable mounts.
@@ -117,7 +118,12 @@ const columnVisibility = ref({
   // own page (/associates/requests) — redundant on every row in the roster.
   membership_request_status: false,
   uuid: false,
+  // Audit trail (created_at/updated_at/updated_by), moved to the end of the
+  // column order 2026-08-18 — not needed at a glance, same "traceability"
+  // reasoning as requests.vue's own hidden columns and wanted-cards'.
   created_at: false,
+  updated_at: false,
+  updated_by: false,
   association_date: false,
   associate_type: false,
   consent_data: false,
@@ -145,14 +151,6 @@ const columns: TableColumn<Associate>[] = [
     header: columnHeaders.uuid,
     cell: ({ row }) => renderNeutralBadge(row.original.uuid)
   },
-  {
-    accessorKey: 'created_at',
-    header: ({ column }) => sortableHeader(columnHeaders.created_at, column),
-    meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
-    cell: ({ row }) => formatDateTime(row.original.created_at)
-  },
-  updatedAtColumn,
-  updatedByColumn,
   membershipRequestStatusColumn,
   {
     accessorKey: 'membership_status',
@@ -205,7 +203,11 @@ const columns: TableColumn<Associate>[] = [
   residencyProvinceColumn,
   residencyCapColumn,
   mtgoNicknameColumn,
-  mtgaNicknameColumn
+  mtgaNicknameColumn,
+  createdAtColumn,
+  updatedByColumn,
+  updatedAtColumn,
+  actionsColumn
 ]
 
 function renderNeutralBadge(value: string) {

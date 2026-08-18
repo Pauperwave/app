@@ -211,7 +211,8 @@
       "residencyProvince": "Provincia",
       "residencyCap": "CAP",
       "mtgoNickname": "Nickname MTGO",
-      "mtgaNickname": "Nickname MTGA"
+      "mtgaNickname": "Nickname MTGA",
+      "actions": "Azioni"
     },
     "consentSocialLabel": "Consenso Social",
     "consentSocialOptions": {
@@ -1345,7 +1346,7 @@
       "partialFailure": "{count} operazione non riuscita | {count} operazioni non riuscite"
     },
     "columns": {
-      "date": "Data",
+      "date": "Richiesta il",
       "status": "Stato",
       "manaCost": "Mana",
       "name": "Carta",
@@ -1359,7 +1360,8 @@
       "createdAt": "Creato il",
       "updatedAt": "Aggiornato il",
       "createdBy": "Creato da",
-      "updatedBy": "Aggiornato da"
+      "updatedBy": "Aggiornato da",
+      "actions": "Azioni"
     },
     "status": {
       "searching": "In cerca",

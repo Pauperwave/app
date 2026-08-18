@@ -27,7 +27,7 @@ const table = useTemplateRef<{ tableApi: Table<Associate> }>('table')
 const {
   editingAssociate, editModalOpen,
   renewingAssociate, renewModalOpen,
-  tableContextMenuItems, onRowContextmenu
+  tableContextMenuItems, onRowContextmenu, rowContextMenuItems
 } = useAssociatesRowActions()
 
 // Bulk "Rifiuta" next to the existing bulk "Approva" — same selected-rows
@@ -101,7 +101,8 @@ async function bulkRestore() {
 
 // fallow-ignore-next-line code-duplication -- see the same comment in
 // associates/index.vue
-const { columns, visibilityItems } = useAssociatesRequestsTableColumns(table, associates)
+const { columns, visibilityItems }
+  = useAssociatesRequestsTableColumns(table, associates, rowContextMenuItems)
 
 // fallow-ignore-next-line code-duplication -- see the same comment in
 // associates/index.vue
@@ -155,9 +156,9 @@ const columnFilters = ref([])
 const columnVisibility = ref({
   // Traceability/roster-preview columns (2026-08-13, matching the roster's
   // own set) — useful but not needed at a glance while triaging the queue.
-  // updated_at/updated_by shown by default since 2026-08-18 (audit trail
-  // pattern actually populated now — see docs/architecture/roles.md).
   id: false,
+  updated_at: false,
+  updated_by: false,
   payment_date: false,
   pauperwave_associate_number: false,
   // Mandatory to submit /tesseramento — always true, redundant on every row.

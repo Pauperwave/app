@@ -91,7 +91,7 @@ const selectedCards = computed(() =>
   filteredCards.value.filter(card => selection.isSelected(card.id)))
 
 // ---- Table configuration: columns, grouping, sorting, column visibility ---
-const { columns, columnHeaders } = useWantedCardsTableColumns(selection)
+const { columns, columnHeaders } = useWantedCardsTableColumns(selection, rowContextMenuItems)
 
 // Grouping by player on demand (off by default) — a player with 15 requests can
 // collapse into a single expandable row instead of 15 repeated rows with the same
