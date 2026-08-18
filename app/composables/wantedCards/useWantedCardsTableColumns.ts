@@ -1,11 +1,12 @@
 // app\composables\wantedCards\useWantedCardsTableColumns.ts
 import { h } from 'vue'
+import { format, parseISO } from 'date-fns'
 import { UBadge, UIcon } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { WantedCard } from '~/types'
 import ManaCost from '~/components/magic/ManaCost.vue'
 import CardPreviewTooltip from '~/components/magic/CardPreviewTooltip.vue'
-import PlayerTag from '~/components/ui/PlayerTag.vue'
+import AssociateTag from '~/components/ui/AssociateTag.vue'
 import type { Selection } from '~/composables/useSelection'
 
 // Pure config (depends only on t()) — extracted from the page to isolate the ~110
@@ -16,6 +17,15 @@ import type { Selection } from '~/composables/useSelection'
 // component" at runtime.
 export function useWantedCardsTableColumns(selection: Selection<number>) {
   const { t } = useI18n()
+
+  function formatDateTime(isoString?: string): string {
+    if (!isoString) return ''
+    try {
+      return format(parseISO(isoString), 'dd/MM/yyyy HH:mm')
+    } catch {
+      return ''
+    }
+  }
 
   // Bound to the shared selectedIds Set (useSelection.ts), not UTable's own
   // row-selection state — grouping (rows with subRows) needs a group's checkbox
@@ -37,7 +47,10 @@ export function useWantedCardsTableColumns(selection: Selection<number>) {
     treatment: t('wantedCard.columns.treatment'),
     date: t('wantedCard.columns.date'),
     status: t('wantedCard.columns.status'),
-    notes: t('wantedCard.columns.notes')
+    notes: t('wantedCard.columns.notes'),
+    updatedAt: t('wantedCard.columns.updatedAt'),
+    createdBy: t('wantedCard.columns.createdBy'),
+    updatedBy: t('wantedCard.columns.updatedBy')
   }
 
   const columns: TableColumn<WantedCard>[] = [
@@ -49,7 +62,7 @@ export function useWantedCardsTableColumns(selection: Selection<number>) {
       // that is what is actually useful when the table is grouped.
       sortingFn: (rowA, rowB) => (rowA.subRows?.length ?? 0) - (rowB.subRows?.length ?? 0),
       cell: ({ row, getValue }) => {
-        if (!row.getIsGrouped()) return h(PlayerTag, { name: getValue<string>() })
+        if (!row.getIsGrouped()) return h(AssociateTag, { name: getValue<string>() })
         return h('button', {
           type: 'button',
           class: 'flex items-center gap-1.5 font-medium cursor-pointer',
@@ -59,7 +72,7 @@ export function useWantedCardsTableColumns(selection: Selection<number>) {
             name: row.getIsExpanded() ? ICONS.chevronDown : ICONS.chevronRight,
             class: 'size-4'
           }),
-          h(PlayerTag, { name: getValue<string>() }),
+          h(AssociateTag, { name: getValue<string>() }),
           h(UBadge, { color: 'neutral', variant: 'subtle', size: 'sm' }, () => String(row.subRows.length))
         ])
       }
@@ -152,6 +165,26 @@ export function useWantedCardsTableColumns(selection: Selection<number>) {
       header: t('wantedCard.columns.notes'),
       meta: { class: { td: 'text-muted max-w-64 whitespace-normal break-words' } },
       cell: ({ row }) => row.getIsGrouped() ? null : row.original.notes
+    },
+    {
+      accessorKey: 'updatedAt',
+      header: ({ column }) => sortableHeader(t('wantedCard.columns.updatedAt'), column),
+      meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
+      cell: ({ row }) => row.getIsGrouped() ? null : formatDateTime(row.original.updatedAt)
+    },
+    {
+      accessorKey: 'createdBy',
+      header: t('wantedCard.columns.createdBy'),
+      cell: ({ row }) => row.getIsGrouped() || !row.original.createdBy
+        ? null
+        : h(AssociateTag, { name: row.original.createdBy })
+    },
+    {
+      accessorKey: 'updatedBy',
+      header: t('wantedCard.columns.updatedBy'),
+      cell: ({ row }) => row.getIsGrouped() || !row.original.updatedBy
+        ? null
+        : h(AssociateTag, { name: row.original.updatedBy })
     }
   ]
 

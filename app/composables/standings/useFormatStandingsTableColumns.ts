@@ -3,7 +3,7 @@ import { h } from 'vue'
 import type { Ref } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import type { FormatStandingEvent, FormatStandingRow } from '~/types'
-import PlayerTag from '~/components/ui/PlayerTag.vue'
+import AssociateTag from '~/components/ui/AssociateTag.vue'
 
 // Same pinned-column shape as useCittadinoTableColumns.ts (position/playerName
 // left, total right) — see the note there on why `size` and the w-[…] class are
@@ -46,7 +46,7 @@ export function useFormatStandingsTableColumns(
       size: PLAYER_WIDTH,
       header: () => h('span', { class: 'text-xs' }, t('standings.columns.player')),
       meta: { class: { th: PLAYER_CLASS, td: PLAYER_CLASS } },
-      cell: ({ row }) => h(PlayerTag, { name: row.original.playerName })
+      cell: ({ row }) => h(AssociateTag, { name: row.original.playerName })
     },
 
     ...events.value.map<TableColumn<FormatStandingRow>>(event => ({

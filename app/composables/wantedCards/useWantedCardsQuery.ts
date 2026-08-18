@@ -15,7 +15,10 @@ export function useWantedCardsQuery() {
         // Explicit hint on the FK column: since created_by/updated_by also
         // reference pauperwave_associates, PostgREST can no longer work out on its
         // own which of the three relations "associate" means.
-        .select('*, associate:pauperwave_associates!player_associate_uuid(first_name, last_name)')
+        .select(`*,
+          associate:pauperwave_associates!player_associate_uuid(first_name, last_name),
+          created_by_associate:pauperwave_associates!created_by(first_name, last_name),
+          updated_by_associate:pauperwave_associates!updated_by(first_name, last_name)`)
         .is('deleted_at', null)
         // `id` as a tiebreaker: without a fully deterministic ORDER BY, rows
         // with an equal (or null) requested_at have no guaranteed order across
@@ -56,7 +59,10 @@ export function useWantedCardsQuery() {
         cardtraderPriceSyncedAt: row.cardtrader_price_synced_at,
         notes: row.notes ?? '',
         player: row.associate ? `${row.associate.first_name} ${row.associate.last_name}` : '',
-        playerAssociateUuid: row.player_associate_uuid
+        playerAssociateUuid: row.player_associate_uuid,
+        updatedAt: row.updated_at,
+        createdBy: row.created_by_associate ? `${row.created_by_associate.first_name} ${row.created_by_associate.last_name}` : '',
+        updatedBy: row.updated_by_associate ? `${row.updated_by_associate.first_name} ${row.updated_by_associate.last_name}` : ''
       }))
     }
   })

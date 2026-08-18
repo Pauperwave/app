@@ -54,7 +54,7 @@
     "switchToLightMode": "Passa al tema chiaro",
     "switchToDarkMode": "Passa al tema scuro",
     "retry": "Riprova",
-    "playerTag": {
+    "associateTag": {
       "lastRenewal": "Ultimo rinnovo",
       "neverRenewed": "Mai rinnovato"
     },
@@ -1355,7 +1355,10 @@
       "language": "Lingua",
       "treatment": "Trattamento",
       "notes": "Note",
-      "player": "Giocatore"
+      "player": "Giocatore",
+      "updatedAt": "Aggiornato il",
+      "createdBy": "Creato da",
+      "updatedBy": "Aggiornato da"
     },
     "status": {
       "searching": "In cerca",

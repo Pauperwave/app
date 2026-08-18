@@ -3,7 +3,7 @@ import { h } from 'vue'
 import type { Ref } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import type { CittadinoEvent, CittadinoStanding } from '~/types'
-import PlayerTag from '~/components/ui/PlayerTag.vue'
+import AssociateTag from '~/components/ui/AssociateTag.vue'
 
 // Column widths are declared twice on purpose: `size` feeds TanStack's
 // getStart('left')/getAfter('right'), which is how UTable computes the offset of
@@ -66,7 +66,7 @@ export function useCittadinoTableColumns(events: Ref<CittadinoEvent[]>) {
       size: PLAYER_WIDTH,
       header: () => h('span', { class: 'text-xs' }, t('cittadino.columns.player')),
       meta: { class: { th: PLAYER_CLASS, td: PLAYER_CLASS } },
-      cell: ({ row }) => h(PlayerTag, { name: row.original.playerName })
+      cell: ({ row }) => h(AssociateTag, { name: row.original.playerName })
     },
     {
       accessorKey: 'eventsPlayed',

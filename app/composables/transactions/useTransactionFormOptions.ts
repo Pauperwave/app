@@ -58,10 +58,10 @@ export function useTransactionFormOptions() {
     { value: 'POS' as const, label: 'POS', icon: ICONS.creditCard }
   ])
 
-  // Same avatar convention as PlayerTag.vue (DiceBear, generated deterministically
+  // Same avatar convention as AssociateTag.vue (DiceBear, generated deterministically
   // from the name) — RECEIVER_OPTIONS has no associate_uuid to look up (it's a
   // hardcoded staff-name list, see the constant's own comment), so this can't
-  // reuse PlayerTag itself, only the avatar it'd produce.
+  // reuse AssociateTag itself, only the avatar it'd produce.
   const receiverOptions = computed(() => RECEIVER_OPTIONS.map(name => ({
     label: name,
     value: name,

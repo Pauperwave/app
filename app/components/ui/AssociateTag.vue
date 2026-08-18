@@ -1,7 +1,10 @@
-<!-- app\components\ui\PlayerTag.vue -->
+<!-- app\components\ui\AssociateTag.vue -->
 
 <!--
-  Nome giocatore con avatar, tramite UUser. L'avatar è generato
+  Renamed from PlayerTag 2026-08-18 — it's not player-specific at all (see
+  the "Ricevuto da"/external-payer note below, and it's about to render
+  staff members too via the audit-trail columns). Nome persona con avatar,
+  tramite UUser. L'avatar è generato
   deterministicamente con DiceBear (stesso pattern di generatePlayerAvatar()
   in MagicTheGathering/league, che però lo usa con UAvatar/PlayerNameTag —
   qui si usa UUser al suo posto).
@@ -53,8 +56,8 @@ const membershipBadge = computed(() => associate.value
           {{ upperFirst(associate.membership_status.replace('_', ' ')) }}
         </UBadge>
         <p class="text-muted">
-          {{ $t('common.playerTag.lastRenewal') }}:
-          {{ associate.latest_renewal_year ?? $t('common.playerTag.neverRenewed') }}
+          {{ $t('common.associateTag.lastRenewal') }}:
+          {{ associate.latest_renewal_year ?? $t('common.associateTag.neverRenewed') }}
         </p>
       </div>
     </template>
