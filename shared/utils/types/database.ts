@@ -668,7 +668,36 @@ export type Database = {
           updated_by?: string | null
           uuid?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_pauperwave_associates_created_by"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_pauperwave_associates_created_by"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_pauperwave_associates_updated_by"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_pauperwave_associates_updated_by"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
+        ]
       }
       pauperwave_cardtrader_blueprints: {
         Row: {
@@ -1831,23 +1860,58 @@ export type Database = {
       user_roles: {
         Row: {
           created_at: string | null
+          created_by: string | null
           id: string
           role: Database["public"]["Enums"]["app_role"]
+          updated_by: string | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
+          created_by?: string | null
           id?: string
           role: Database["public"]["Enums"]["app_role"]
+          updated_by?: string | null
           user_id: string
         }
         Update: {
           created_at?: string | null
+          created_by?: string | null
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          updated_by?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_user_roles_created_by"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_user_roles_created_by"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_user_roles_updated_by"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_user_roles_updated_by"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
+        ]
       }
     }
     Views: {
@@ -1888,7 +1952,36 @@ export type Database = {
           updated_by: string | null
           uuid: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_pauperwave_associates_created_by"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_pauperwave_associates_created_by"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_pauperwave_associates_updated_by"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_pauperwave_associates_updated_by"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
+        ]
       }
       players_full: {
         Row: {

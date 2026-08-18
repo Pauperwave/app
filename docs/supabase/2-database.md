@@ -23,10 +23,9 @@ The database is organized into several domains, each containing related tables:
 
 I respected a few naming conventions to keep things consistent:
 
-- Pluralization and singular/plural usage is consistent across entities and relationships (e.g., `tournament_participants` for multiple participants, `tournament_registration` for a single registration);
 - Table names are plural and use snake_case (e.g., `event_attendees`);
 - Sub-tables are double underscores (e.g., `ruleset__descriptions`);
-- Most tables have `uuid`, `created_at`, and `updated_at`. Exceptions: junction/enum-like tables (`player_formats`, `ruleset__points`, `ruleset__descriptions`, `mtg_color_combinations`) omit timestamps as they are managed reference data.
+- Most tables have `uuid`, `created_at`, and `updated_at`. Exceptions: junction/enum-like tables (`ruleset__points`, `ruleset__descriptions`) omit timestamps as they are managed reference data.
 - Constraint naming standardization with the following prefixes:
   - `pk_` (primary key)
   - `uq_` (unique)
@@ -41,13 +40,17 @@ I respected a few naming conventions to keep things consistent:
 
 For security-sensitive tables where admin actions matter, the schema uses an audit trail pattern:
 
-- `created_by uuid null` - FK to `auth.users(id)` tracking who created the record
-- `updated_by uuid null` - FK to `auth.users(id)` tracking who last modified the record
-- Both use `ON DELETE SET NULL` to preserve audit history even if the user is deleted
+- `created_by uuid null` - FK to `pauperwave_associates(uuid)` tracking which associate created the record
+- `updated_by uuid null` - FK to `pauperwave_associates(uuid)` tracking which associate last modified the record
+- Both use `ON DELETE SET NULL` to preserve audit history even if the associate is deleted
+
+FK target is `pauperwave_associates`, not `auth.users` — resolving "who" via `auth.users` would need the Supabase admin API to get a display name; going through `pauperwave_associates` instead means showing "who" in the UI is a direct join.
 
 This pattern is applied to:
-- `user_roles` (role assignments)
-- `pauperwave_associates` (membership changes)
+- `pauperwave_payments` (payment records)
+- `pauperwave_wanted_cards` ("Carte Cercate" requests)
+- `pauperwave_associates` (membership changes) — `updated_by` populated via `server/utils/auditColumns.ts` on every edit/approve/reject/restore; `created_by` stays null for the one insert path (`/tesseramento`'s public self-application), since the applicant has no associate record yet to attribute creation to at insert time
+- `user_roles` (role assignments) — populated inside `assign_role()` itself, resolving the calling `super_admin`'s own associate uuid via `players.user_id = auth.uid()`; `created_by` set once on first assignment, `updated_by` refreshed on every reassignment
 
 For general tables, `created_at` and `updated_at` timestamps provide basic change tracking.
 
