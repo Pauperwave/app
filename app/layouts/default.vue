@@ -255,7 +255,21 @@ const groups = computed(() => [{
       </template>
 
       <template #default="{ collapsed }">
-        <UDashboardSearchButton :collapsed="collapsed" class="bg-transparent ring-0" />
+        <!-- text-muted (user request, 2026-08-19): matched the nav items'
+             own muted icon color, which this didn't by default (UButton's
+             neutral/ghost coloring reads as full-strength, not muted).
+             tooltip: same collapsed-sidebar tooltip every UNavigationMenu
+             item already gets (via `tooltip popover` below) — wasn't passed
+             here at all, so this button silently had none.
+             label="Search" (user request, 2026-08-19): the component's own
+             default label/tooltip text is "Search..." (meant for the full
+             button with a kbd hint) — too noisy as a plain tooltip. -->
+        <UDashboardSearchButton
+          :collapsed="collapsed"
+          label="Search"
+          tooltip
+          class="bg-transparent ring-0 text-muted"
+        />
 
         <!-- id anchors the shortcuts tour's "navigation" step (useShortcutsTour) -->
         <div id="tour-shortcuts-nav">
@@ -268,7 +282,21 @@ const groups = computed(() => [{
           >
             <template #item-leading="{ item, active, ui: itemUi }">
               <!-- Collapsed sidebar has no room for the trailing UBadge below,
-                   so a warning UChip dot on the icon itself stands in for it. -->
+                   so a warning UChip dot on the icon itself stands in for it.
+                   size="sm" matches Nuxt UI's own built-in `item.chip` leading
+                   -icon-chip default (NavigationMenu.vue's linkLeadingChipSize
+                   theme key) — the bell's standalone UChip defaults to "md"
+                   because it's a different component context, not because
+                   "sm" here was wrong (reverted after briefly dropping it,
+                   2026-08-19).
+                   !mr-0: linkLeadingIcon's default mr-2 (spacing before the
+                   label) widens the chip's own bounding box, so its inset
+                   dot — positioned right-0 against that wider box — floats
+                   past the icon's actual corner instead of sitting flush on
+                   it like the bell's chip does. The label is hidden in this
+                   collapsed-only branch anyway, so the margin has no layout
+                   job left to do here (confirmed visually via claude-in
+                   -chrome, 2026-08-19). -->
               <UChip
                 v-if="collapsed && navItemHasWarning(item.to)"
                 color="warning"
@@ -278,7 +306,7 @@ const groups = computed(() => [{
                 <UIcon
                   v-if="item.icon"
                   :name="item.icon"
-                  :class="itemUi.linkLeadingIcon({ active, disabled: !!item.disabled })"
+                  :class="[itemUi.linkLeadingIcon({ active, disabled: !!item.disabled }), '!mr-0']"
                 />
               </UChip>
               <UIcon
@@ -364,7 +392,11 @@ const groups = computed(() => [{
              this is the sidebar footer, a reasonable general anchor for
              "these work anywhere" — n/b don't have dedicated UI in this
              exact spot, this is just a stable target near the bottom. -->
-        <div id="tour-shortcuts-global" class="flex items-center gap-2 w-full" :class="collapsed ? 'flex-col' : ''">
+        <div
+          id="tour-shortcuts-global"
+          class="flex items-center gap-2 w-full"
+          :class="collapsed ? 'flex-col' : ''"
+        >
           <LayoutUserMenu :collapsed="collapsed" class="flex-1" />
           <LayoutColorModeSwitch />
         </div>
