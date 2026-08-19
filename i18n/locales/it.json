@@ -396,6 +396,10 @@
       "approve": "Approva",
       "renew": "Rinnova",
       "restore": "Ripristina",
+      "copyPhone": "Copia telefono",
+      "phoneCopied": "Telefono copiato negli appunti",
+      "copyEmail": "Copia email",
+      "emailCopied": "Email copiata negli appunti",
       "edit": "Modifica"
     },
     "approveModal": {

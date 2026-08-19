@@ -70,6 +70,22 @@ export function useAssociatesRowActions() {
     }
   }
 
+  // Same clipboard pattern as useWantedCardsRowActions.ts's copyCardName —
+  // reuses the generic common.copyErrorTitle for the failure toast since
+  // there's nothing domain-specific to say there.
+  async function copyToClipboard(text: string, successTitle: string) {
+    try {
+      await navigator.clipboard.writeText(text)
+      toast.add({ title: successTitle, color: 'success' })
+    } catch (err) {
+      toast.add({
+        title: t('common.copyErrorTitle'),
+        description: toErrorMessage(err),
+        color: 'error'
+      })
+    }
+  }
+
   function rowContextMenuItems(associate: Associate): DropdownMenuItem[] {
     return [
       // Only on the requests queue's pending rows — the roster never contains
@@ -103,6 +119,19 @@ export function useAssociatesRowActions() {
           onSelect: () => openRenewModal(associate)
         }, { type: 'separator' as const }]
         : []),
+      {
+        label: t('associate.rowActions.copyPhone'),
+        icon: ICONS.phone,
+        disabled: !associate.phone_number,
+        onSelect: () => copyToClipboard(associate.phone_number!, t('associate.rowActions.phoneCopied'))
+      },
+      {
+        label: t('associate.rowActions.copyEmail'),
+        icon: ICONS.mail,
+        disabled: !associate.email_address,
+        onSelect: () => copyToClipboard(associate.email_address!, t('associate.rowActions.emailCopied'))
+      },
+      { type: 'separator' as const },
       {
         label: t('associate.rowActions.edit'),
         icon: ICONS.edit,
