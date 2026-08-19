@@ -139,35 +139,27 @@ const flattenForSearch = (items: NavigationMenuItem[][]): CommandPaletteItem[] =
 const handleLogout = useLogout()
 
 // "New …" items reuse the same "?action=create" convention as
-// HomeQuickCreateMenu.vue (associates/transactions) and the wanted-cards page
-// (just wired up to it above) — landing on the list page with its Add modal
-// already open, instead of a modal owned by the palette itself.
+// HomeQuickCreateMenu.vue — landing on the list page with its Add modal
+// already open, instead of a modal owned by the palette itself. Mapped from
+// useQuickCreateItems.ts, the single source both surfaces read from
+// (2026-08-19, user request) — the two had already drifted before that
+// existed (this list was missing tournament/league/event/location entirely).
 // Nested under a single "Create new" item's `children` array so the palette
 // drills into a submenu (CommandPalette.vue's native `navigate`/back
 // behavior) rather than listing every quick-create flat in the actions group.
+const quickCreateItems = useQuickCreateItems()
+
 const actionItems = computed<CommandPaletteItem[]>(() => [{
   id: 'create-new',
   label: t('nav.search.createNew'),
   icon: ICONS.add,
-  children: [{
-    id: 'create-associate',
-    label: t('home.quickCreate.newAssociate'),
-    icon: ICONS.addPlayer,
-    to: '/associates/requests?action=create',
+  children: quickCreateItems.map(item => ({
+    id: `create-${item.id}`,
+    label: item.label,
+    icon: item.icon,
+    to: item.to,
     onSelect: () => { open.value = false }
-  }, {
-    id: 'create-transaction',
-    label: t('home.quickCreate.newTransaction'),
-    icon: ICONS.coins,
-    to: '/transactions?action=create',
-    onSelect: () => { open.value = false }
-  }, {
-    id: 'create-wanted-card',
-    label: t('wantedCard.breadcrumb'),
-    icon: ICONS.cardSearch,
-    to: '/wanted-cards?action=create',
-    onSelect: () => { open.value = false }
-  }]
+  }))
 }, {
   id: 'sign-out',
   label: t('userMenu.logout'),

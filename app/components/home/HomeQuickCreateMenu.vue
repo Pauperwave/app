@@ -2,29 +2,15 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 
-const { t } = useI18n()
+const quickCreateItems = useQuickCreateItems()
 
-const items = computed<DropdownMenuItem[][]>(() => [[{
-  label: t('home.quickCreate.newAssociate'),
-  icon: ICONS.addPlayer,
-  to: '/associates/requests?action=create'
-}, {
-  label: t('home.quickCreate.newTransaction'),
-  icon: ICONS.coins,
-  to: '/transactions?action=create'
-}, {
-  label: t('home.quickCreate.newTournament'),
-  icon: ICONS.battle,
-  to: '/tournaments?action=create'
-}, {
-  label: t('home.quickCreate.newLeague'),
-  icon: ICONS.standings,
-  to: '/leagues?action=create'
-}, {
-  label: t('home.quickCreate.newEvent'),
-  icon: ICONS.calendarAdd,
-  to: '/events?action=create'
-}]])
+// Two groups (Community, Competitions — see useQuickCreateItems.ts's `group`
+// field), not one flat list: UDropdownMenu renders a divider between
+// sub-arrays, same domain split as the sidebar nav (2026-08-19 user request).
+const items = computed<DropdownMenuItem[][]>(() => [
+  quickCreateItems.filter(item => item.group === 'community'),
+  quickCreateItems.filter(item => item.group === 'competitions')
+])
 </script>
 
 <template>
