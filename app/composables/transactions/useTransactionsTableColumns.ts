@@ -41,23 +41,15 @@ export function useTransactionsTableColumns(
 
   const selectColumn = useGroupedSelectColumn<Transaction>(selection)
 
-  // Own accessorFn (not accessorKey) since the payer name isn't a single raw
-  // column on the row — it's derived from either the linked associate or the
-  // external payer_name/payer_surname pair. Needed as a real accessor (not just
-  // a synthetic cell) so grouping (getGroupedRowModel) has a value to group by —
-  // same reasoning as wanted-cards' player column.
-  function payerName(transaction: Transaction) {
-    const { associate, payer_name, payer_surname } = transaction
-    return associate
-      ? `${associate.first_name} ${associate.last_name}`
-      : (payer_name && payer_surname ? `${payer_name} ${payer_surname}` : '')
-  }
-
   const columns: TableColumn<Transaction>[] = [
     selectColumn,
     {
       id: 'payer',
-      accessorFn: payerName,
+      // Own accessorFn (not accessorKey) since the payer name isn't a single
+      // raw column on the row. Needed as a real accessor (not just a synthetic
+      // cell) so grouping (getGroupedRowModel) has a value to group by — same
+      // reasoning as wanted-cards' player column.
+      accessorFn: transactionPayerName,
       header: ({ column }) => sortableHeader(columnHeaders.payer, column),
       // Sorts groups by number of transactions (subRows), not alphabetically —
       // more useful once the table is grouped by payer.
