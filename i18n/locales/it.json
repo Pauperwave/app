@@ -99,7 +99,9 @@
       "newTransaction": "Registra transazione",
       "newLeague": "Nuova lega",
       "newEvent": "Nuovo evento",
-      "newTournament": "Nuovo torneo"
+      "newTournament": "Nuovo torneo",
+      "newLocation": "Nuova location",
+      "newWantedCard": "Nuova carta cercata"
     },
     "dateRanges": {
       "lastYear": "Ultimo anno",
@@ -158,7 +160,7 @@
       "steps": {
         "quickCreate": {
           "title": "Crea al volo",
-          "description": "Nuovo associato, transazione, torneo, lega o evento: da qui arrivi subito al modulo giusto, senza passare dalla pagina."
+          "description": "Nuovo associato, transazione, torneo, lega, evento, location o carta cercata: da qui arrivi subito al modulo giusto, senza passare dalla pagina."
         },
         "body": {
           "title": "La tua Home",
