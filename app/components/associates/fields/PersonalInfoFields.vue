@@ -20,9 +20,17 @@ interface PersonalInfoState {
   first_name?: string
   last_name?: string
   phone_number?: string
+  born_date?: Date
 }
 
 const { state } = defineProps<{ state: PersonalInfoState }>()
+
+// A minor may not have their own phone number (see isMinor.ts, shared with
+// associateFormSchema.ts's own cross-field validation) — defaults to
+// "required" when born_date isn't known yet (AddModal/EditModal render every
+// section on one page, so this can flip either way as the form is filled;
+// /tesseramento asks birthInfo after personalInfo, so it's always unset here).
+const isMinorAssociate = computed(() => isMinor(state.born_date))
 </script>
 
 <template>
@@ -33,7 +41,11 @@ const { state } = defineProps<{ state: PersonalInfoState }>()
   <UFormField :label="$t('associate.addModal.fields.lastName')" name="last_name" required>
     <UInput v-model="state.last_name" autocomplete="family-name" class="w-full" />
   </UFormField>
-  <UFormField :label="$t('associate.addModal.fields.phoneNumber')" name="phone_number" required>
+  <UFormField
+    :label="$t('associate.addModal.fields.phoneNumber')"
+    name="phone_number"
+    :required="!isMinorAssociate"
+  >
     <UPhoneInput
       :model-value="state.phone_number ?? ''"
       name="phone_number"

@@ -25,7 +25,7 @@ const toast = useToast()
 // Same shape as associates/list/AddModal.vue, sharing associateFormSchema —
 // see that file's schema comment for why v.string(msg) is used even where a
 // v.pipe() constraint also has one.
-const schema = v.object(associateFormSchema(t))
+const schema = associateFormObjectSchema(t)
 type Schema = v.InferOutput<typeof schema>
 
 const state = createAssociateFormState()
@@ -41,14 +41,20 @@ const steps = [
   { value: 'verify', title: t('tesseramento.steps.verify.title'), fields: [] },
   { value: 'associateType', title: t('associate.addModal.sections.associateType'), fields: ['associate_type'] },
   {
-    value: 'personalInfo',
-    title: t('associate.addModal.sections.personalInfo'),
-    fields: ['first_name', 'last_name', 'phone_number']
-  },
-  {
     value: 'birthInfo',
     title: t('associate.addModal.sections.birthInfo'),
     fields: ['born_location', 'born_date', 'born_province', 'born_state']
+  },
+  // After birthInfo, not before (2026-08-19): phone_number's required-ness
+  // depends on born_date (isMinor.ts — a minor may not have their own phone)
+  // — asking birth date first means that cross-field rule can actually apply
+  // when this step's "Avanti" validates phone_number, instead of always
+  // skipping it (born_date not yet known) and only catching a missing phone
+  // at the very final submit, on a step where the field isn't even visible.
+  {
+    value: 'personalInfo',
+    title: t('associate.addModal.sections.personalInfo'),
+    fields: ['first_name', 'last_name', 'phone_number']
   },
   { value: 'fiscalInfo', title: t('associate.addModal.sections.fiscalInfo'), fields: ['tax_code'] },
   {
@@ -252,18 +258,18 @@ async function onSubmit() {
           </UFormField>
         </template>
 
+        <template v-else-if="currentStep === 'birthInfo'">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <AssociatesFieldsBirthInfoFields :state="state" />
+          </div>
+        </template>
+
         <template v-else-if="currentStep === 'personalInfo'">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <AssociatesFieldsPersonalInfoFields :state="state" />
             <UFormField :label="$t('associate.addModal.fields.email')" name="email_address_display">
               <UInput :model-value="state.email_address" disabled class="w-full" />
             </UFormField>
-          </div>
-        </template>
-
-        <template v-else-if="currentStep === 'birthInfo'">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <AssociatesFieldsBirthInfoFields :state="state" />
           </div>
         </template>
 

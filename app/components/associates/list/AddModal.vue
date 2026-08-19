@@ -1,6 +1,6 @@
 <!-- app\components\associates\list\AddModal.vue -->
 <script setup lang="ts">
-import * as v from 'valibot'
+import type * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 
 // Define the model to accept open state from parent
@@ -10,7 +10,7 @@ const { t } = useI18n()
 
 // Shared with /tesseramento (the public self-service form) — see
 // associateFormSchema.ts.
-const schema = v.object(associateFormSchema(t))
+const schema = associateFormObjectSchema(t)
 
 type Schema = v.InferOutput<typeof schema>
 
