@@ -378,11 +378,8 @@
       },
       "consents": {
         "statuteLabel": "Ho letto lo statuto dell'associazione",
-        "statuteDescription": "Dichiaro di aver letto lo statuto dell'associazione.",
         "dataLabel": "Consenso al trattamento dei dati",
-        "dataDescription": "Dichiaro di aver preso visione dell'informativa sul trattamento dei dati.",
-        "socialLabel": "Consenso Social",
-        "socialDescription": "Dichiaro di aver preso visione dell'informativa sulla privacy."
+        "socialLabel": "Consenso Social"
       },
       "cancel": "Annulla",
       "create": "Crea"
@@ -469,6 +466,7 @@
       "consents": {
         "openStatuto": "Leggi lo statuto",
         "openData": "Leggi l'informativa sul trattamento dei dati",
+        "openPrivacy": "Leggi l'informativa sulla privacy",
         "submit": "Invia richiesta"
       }
     },
@@ -481,6 +479,9 @@
     "errorGenericDescription": "Qualcosa è andato storto: {message}",
     "informativaDati": {
       "title": "Informativa sul trattamento dei dati"
+    },
+    "informativaPrivacy": {
+      "title": "Informativa sulla privacy"
     },
     "backToForm": "Torna al modulo"
   },

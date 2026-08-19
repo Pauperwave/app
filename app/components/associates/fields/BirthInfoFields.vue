@@ -45,63 +45,76 @@ function formatDate(date: Date): string {
 
 <template>
   <!-- eslint-disable vue/no-mutating-props -- see the top-of-file comment -->
-  <UFormField :label="$t('associate.addModal.fields.birthLocation')" name="born_location" required>
-    <UInput
-      v-model="state.born_location"
-      :placeholder="$t('associate.addModal.placeholders.birthLocation')"
-      class="w-full"
-    />
-  </UFormField>
-
-  <UFormField :label="$t('associate.addModal.fields.birthDate')" name="born_date" required>
-    <!-- Hidden input for autofill and schema validation — the visible control
-         below is a UButton+UCalendar, not a native input browsers can
-         autofill on their own. -->
-    <input
-      v-model="state.born_date"
-      type="date"
-      name="born_date"
-      autocomplete="bday"
-      class="hidden"
+  <!-- Own nested grids (not just relying on the parent's), so each pair stays
+       side by side regardless of whether the parent lays this component out
+       in one column (AssociatesListFormFields.vue) or two (/tesseramento's
+       birthInfo step) — user request, 2026-08-19, same as
+       PersonalInfoFields.vue's first/last name pairing. -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+    <UFormField
+      :label="$t('associate.addModal.fields.birthLocation')"
+      name="born_location"
+      required
     >
-    <UPopover>
-      <UButton
-        color="neutral"
-        variant="outline"
-        class="w-full justify-start"
-        :icon="ICONS.calendar"
+      <UInput
+        v-model="state.born_location"
+        :placeholder="$t('associate.addModal.placeholders.birthLocation')"
+        class="w-full"
+      />
+    </UFormField>
+
+    <UFormField :label="$t('associate.addModal.fields.birthDate')" name="born_date" required>
+      <!-- Hidden input for autofill and schema validation — the visible control
+           below is a UButton+UCalendar, not a native input browsers can
+           autofill on their own. -->
+      <input
+        v-model="state.born_date"
+        type="date"
+        name="born_date"
+        autocomplete="bday"
+        class="hidden"
       >
-        {{ state.born_date
-          ? formatDate(state.born_date)
-          : $t('associate.addModal.fields.selectBirthDate') }}
-      </UButton>
+      <UPopover>
+        <UButton
+          color="neutral"
+          variant="outline"
+          class="w-full justify-start"
+          :icon="ICONS.calendar"
+        >
+          {{ state.born_date
+            ? formatDate(state.born_date)
+            : $t('associate.addModal.fields.selectBirthDate') }}
+        </UButton>
 
-      <template #content>
-        <UCalendar
-          v-model="calendarDate"
-          :default-value="new CalendarDate(1995, 1, 1)"
-          class="p-2"
-        />
-      </template>
-    </UPopover>
-  </UFormField>
+        <template #content>
+          <UCalendar
+            v-model="calendarDate"
+            :default-value="new CalendarDate(1995, 1, 1)"
+            class="p-2"
+          />
+        </template>
+      </UPopover>
+    </UFormField>
+  </div>
 
-  <UFormField :label="$t('associate.addModal.fields.birthState')" name="born_state" required>
-    <UInput
-      v-model="state.born_state"
-      :placeholder="$t('associate.addModal.placeholders.birthState')"
-      class="w-full"
-    />
-  </UFormField>
-  <UFormField
-    :label="$t('associate.addModal.fields.birthProvince')"
-    name="born_province"
-    :required="isItalianBirth"
-  >
-    <UInput
-      v-model="state.born_province"
-      :placeholder="$t('associate.addModal.placeholders.birthProvince')"
-      class="w-full"
-    />
-  </UFormField>
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+    <UFormField :label="$t('associate.addModal.fields.birthState')" name="born_state" required>
+      <UInput
+        v-model="state.born_state"
+        :placeholder="$t('associate.addModal.placeholders.birthState')"
+        class="w-full"
+      />
+    </UFormField>
+    <UFormField
+      :label="$t('associate.addModal.fields.birthProvince')"
+      name="born_province"
+      :required="isItalianBirth"
+    >
+      <UInput
+        v-model="state.born_province"
+        :placeholder="$t('associate.addModal.placeholders.birthProvince')"
+        class="w-full"
+      />
+    </UFormField>
+  </div>
 </template>

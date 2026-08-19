@@ -18,8 +18,6 @@ const schema = associateFormObjectSchema(t)
 
 type Schema = v.InferOutput<typeof schema>
 
-const associateTypeOptions = useAssociateTypeOptions()
-
 const state = createAssociateFormState()
 
 // Refills the form state every time the modal opens on a different associate —
@@ -42,8 +40,6 @@ watch([open, () => associate], ([isOpen, current]) => {
   state.residency_city = current.residency_city
   state.residency_province = current.residency_province
   state.residency_cap = current.residency_cap
-  state.mtgo_nickname = current.mtgo_nickname
-  state.mtga_nickname = current.mtga_nickname
   state.has_read_statute = current.has_read_statute
   state.consent_data = current.consent_data
   state.consent_social = current.consent_social
@@ -88,7 +84,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 <template>
   <UModal
     v-model:open="open"
-    :ui="{ content: 'max-w-2xl' }"
+    :ui="{ content: 'max-w-5xl' }"
     :title="$t('associate.editModal.title')"
     :description="associate ? `${associate.first_name} ${associate.last_name}` : ''"
   >
@@ -97,126 +93,15 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         v-if="associate"
         :schema="schema"
         :state="state"
-        class="space-y-2"
+        class="space-y-4"
         @submit="onSubmit"
       >
-        <!-- Associate type -->
-        <div>
-          <h3 class="text-lg font-semibold text-primary">
-            {{ $t('associate.addModal.sections.associateType') }}
-          </h3>
-          <div class="grid grid-cols-2 gap-2 mt-2">
-            <UFormField
-              :label="$t('associate.addModal.fields.associateType')"
-              name="associate_type"
-            >
-              <USelect
-                v-model="state.associate_type"
-                :items="associateTypeOptions"
-                value-key="value"
-                class="w-full"
-              />
-            </UFormField>
-          </div>
-        </div>
-
-        <!-- Personal information -->
-        <div>
-          <h3 class="text-lg font-semibold text-primary">
-            {{ $t('associate.addModal.sections.personalInfo') }}
-          </h3>
-          <div class="grid grid-cols-2 gap-2 mt-2">
-            <AssociatesFieldsPersonalInfoFields :state="state" />
-            <UFormField
-              :label="$t('associate.addModal.fields.email')"
-              name="email_address"
-              required
-            >
-              <UInput v-model="state.email_address" autocomplete="email" class="w-full" />
-            </UFormField>
-          </div>
-        </div>
-
-        <!-- Birth information -->
-        <div>
-          <h3 class="text-lg font-semibold text-primary">
-            {{ $t('associate.addModal.sections.birthInfo') }}
-          </h3>
-          <div class="grid grid-cols-2 gap-2 mt-2">
-            <AssociatesFieldsBirthInfoFields :state="state" />
-          </div>
-        </div>
-
-        <!-- Tax information -->
-        <div>
-          <h3 class="text-lg font-semibold text-primary">
-            {{ $t('associate.addModal.sections.fiscalInfo') }}
-          </h3>
-          <div class="grid grid-cols-2 gap-2 mt-2">
-            <AssociatesFieldsTaxCodeField :state="state" />
-          </div>
-        </div>
-
-        <!-- Residency -->
-        <div>
-          <h3 class="text-lg font-semibold text-primary">
-            {{ $t('associate.addModal.sections.residencyInfo') }}
-          </h3>
-          <div class="grid grid-cols-2 gap-2 mt-2">
-            <AssociatesFieldsResidencyFields :state="state" />
-          </div>
-        </div>
-
-        <!-- Nickname MTG -->
-        <div>
-          <h3 class="text-lg font-semibold text-primary">
-            {{ $t('associate.addModal.sections.mtgNicknames') }}
-          </h3>
-          <div class="grid grid-cols-2 gap-2 mt-2">
-            <AssociatesFieldsMtgNicknameFields :state="state" />
-          </div>
-        </div>
-
-        <!-- Consents -->
-        <div>
-          <h3 class="text-lg font-semibold text-primary">
-            {{ $t('associate.addModal.sections.consents') }}
-          </h3>
-          <!-- has_read_statute/consent_data are locked here, unlike AddModal: they are
-               the legal declarations the associate made when applying (statute read,
-               data processing consent) — staff editing the record afterwards shouldn't
-               be able to retroactively toggle them off. consent_social stays editable,
-               it's an ongoing marketing preference, not a one-time declaration. -->
-          <div class="mt-2 space-y-2">
-            <UFormField name="has_read_statute">
-              <UCheckbox
-                v-model="state.has_read_statute"
-                required
-                disabled
-                :label="$t('associate.addModal.consents.statuteLabel')"
-                size="lg"
-              >
-                <template #description>
-                  {{ $t('associate.addModal.consents.statuteDescription') }}
-                </template>
-              </UCheckbox>
-            </UFormField>
-            <UFormField name="consent_data">
-              <UCheckbox
-                v-model="state.consent_data"
-                required
-                disabled
-                :label="$t('associate.addModal.consents.dataLabel')"
-                size="lg"
-              >
-                <template #description>
-                  {{ $t('associate.addModal.consents.dataDescription') }}
-                </template>
-              </UCheckbox>
-            </UFormField>
-            <AssociatesFieldsConsentSocialField :state="state" />
-          </div>
-        </div>
+        <!-- has_read_statute/consent_data locked here, unlike AddModal: they are the
+             legal declarations the associate made when applying (statute read, data
+             processing consent) — staff editing the record afterwards shouldn't be
+             able to retroactively toggle them off. consent_social stays editable,
+             it's an ongoing marketing preference, not a one-time declaration. -->
+        <AssociatesListFormFields :state="state" disable-consents />
 
         <!-- Actions -->
         <div class="flex justify-end gap-2">
