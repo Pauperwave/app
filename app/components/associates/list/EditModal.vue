@@ -1,6 +1,6 @@
 <!-- app\components\associates\list\EditModal.vue -->
 <script setup lang="ts">
-import * as v from 'valibot'
+import type * as v from 'valibot'
 import { format, parseISO } from 'date-fns'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { Associate } from '~/types'
@@ -14,7 +14,7 @@ const { updateAssociate } = useAssociatesMutations()
 
 // Same fields/validation as AddModal.vue (shared schema) — see its own comment
 // for why born_date is widened to Date | undefined here.
-const schema = v.object(associateFormSchema(t))
+const schema = associateFormObjectSchema(t)
 
 type Schema = v.InferOutput<typeof schema>
 

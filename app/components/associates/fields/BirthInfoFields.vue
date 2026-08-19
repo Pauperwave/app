@@ -21,6 +21,12 @@ interface BirthInfoState {
 
 const { state } = defineProps<{ state: BirthInfoState }>()
 
+// A province code only makes sense for an Italian birthplace (see
+// isItalianBirthState.ts, shared with associateFormSchema.ts's own
+// cross-field validation) — the field stays visible either way (an admin may
+// still want to record it), just not mandatory for a foreign birth state.
+const isItalianBirth = computed(() => isItalianBirthState(state.born_state))
+
 const calendarDate = computed<CalendarDate | null>({
   get: () => state.born_date
     ? new CalendarDate(
@@ -80,17 +86,21 @@ function formatDate(date: Date): string {
     </UPopover>
   </UFormField>
 
-  <UFormField :label="$t('associate.addModal.fields.birthProvince')" name="born_province" required>
-    <UInput
-      v-model="state.born_province"
-      :placeholder="$t('associate.addModal.placeholders.birthProvince')"
-      class="w-full"
-    />
-  </UFormField>
   <UFormField :label="$t('associate.addModal.fields.birthState')" name="born_state" required>
     <UInput
       v-model="state.born_state"
       :placeholder="$t('associate.addModal.placeholders.birthState')"
+      class="w-full"
+    />
+  </UFormField>
+  <UFormField
+    :label="$t('associate.addModal.fields.birthProvince')"
+    name="born_province"
+    :required="isItalianBirth"
+  >
+    <UInput
+      v-model="state.born_province"
+      :placeholder="$t('associate.addModal.placeholders.birthProvince')"
       class="w-full"
     />
   </UFormField>
