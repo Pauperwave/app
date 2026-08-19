@@ -12,8 +12,9 @@
 // transaction in the batch needs one, so the confirm step asks for it instead
 // of guessing.
 import type { Associate } from '~/types'
+import type { Selection } from '~/composables/useSelection'
 
-export function useAssociatesBulkActions() {
+export function useAssociatesBulkActions(selection: Selection<number>) {
   const { t } = useI18n()
   const toast = useToast()
   const undoable = useUndoableAction()
@@ -44,6 +45,7 @@ export function useAssociatesBulkActions() {
 
     confirmOpen.value = false
     pendingRenewal.value = null
+    selection.clear()
 
     undoable.run({
       title: t('associate.bulkActions.renewUndoToast', associates.length),
