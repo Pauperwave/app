@@ -13,6 +13,14 @@ import type { OpeningHours } from '~/types'
 
 const { state } = defineProps<{ state: LocationFormState }>()
 const openingHours = defineModel<OpeningHours>('openingHours', { default: emptyOpeningHours })
+
+// Clears the hours instead of just disabling the editor (user request,
+// 2026-08-19 — previously left in place "for when it reopens", but that
+// meant stale hours could get silently saved/shown elsewhere while the
+// location is marked closed).
+watch(() => state.temporarilyClosed, (closed) => {
+  if (closed) openingHours.value = emptyOpeningHours()
+})
 </script>
 
 <template>

@@ -1655,7 +1655,7 @@
         "whatsapp": "Community WhatsApp",
         "whatsappPlaceholder": "https://chat.whatsapp.com/...",
         "temporarilyClosed": "Chiuso temporaneamente",
-        "temporarilyClosedHint": "Mostra un avviso sulla card; gli orari restano salvati per quando riapre"
+        "temporarilyClosedHint": "Mostra un avviso sulla card e azzera gli orari di apertura"
       },
       "validation": {
         "nameRequired": "Il nome è obbligatorio",

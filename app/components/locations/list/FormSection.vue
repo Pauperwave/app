@@ -14,7 +14,10 @@ defineProps<{ title: string }>()
     <h3 class="text-lg font-semibold text-primary">
       {{ title }}
     </h3>
-    <div class="space-y-4 mt-2">
+    <!-- space-y-2, not the -4 this started with (user request, 2026-08-19):
+         -4 read as too spacious once compared side by side with the
+         associates modal's own sections. -->
+    <div class="space-y-2 mt-2">
       <slot />
     </div>
   </div>
