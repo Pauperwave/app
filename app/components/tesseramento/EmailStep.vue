@@ -2,11 +2,11 @@
 <!--
   Extracted out of tesseramento/index.vue's `currentStep === 'email'` step
   (2026-08-16, fallow:health flagged the page's whole <template> as
-  high-complexity) — the other 5 mid-wizard steps (associateType,
-  personalInfo, birthInfo, fiscalInfo, residencyInfo, mtgNicknames) each
-  just wrap an existing AssociatesFields*.vue component in 1-4 lines, not
-  worth a second wrapper; this step and VerifyStep.vue/ConsentsStep.vue
-  carry real markup of their own.
+  high-complexity) — the other mid-wizard steps (associateType, personalInfo,
+  birthInfo, fiscalInfo, residencyInfo) each just wrap an existing
+  AssociatesFields*.vue component in 1-4 lines, not worth a second wrapper;
+  this step and VerifyStep.vue/ConsentsStep.vue carry real markup of their
+  own.
 
   `state` is the SAME reactive object the parent binds to its own
   <UForm :state>, mutated directly — same convention as

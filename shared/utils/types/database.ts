@@ -584,8 +584,6 @@ export type Database = {
           id: number
           last_name: string
           membership_request_status: string
-          mtga_nickname: string | null
-          mtgo_nickname: string | null
           pauperwave_associate_number: string | null
           payment_date: string | null
           phone_number: string | null
@@ -618,8 +616,6 @@ export type Database = {
           id?: number
           last_name: string
           membership_request_status: string
-          mtga_nickname?: string | null
-          mtgo_nickname?: string | null
           pauperwave_associate_number?: string | null
           payment_date?: string | null
           phone_number?: string | null
@@ -652,8 +648,6 @@ export type Database = {
           id?: number
           last_name?: string
           membership_request_status?: string
-          mtga_nickname?: string | null
-          mtgo_nickname?: string | null
           pauperwave_associate_number?: string | null
           payment_date?: string | null
           phone_number?: string | null
@@ -1980,8 +1974,6 @@ export type Database = {
           latest_renewal_year: number | null
           membership_request_status: string | null
           membership_status: string | null
-          mtga_nickname: string | null
-          mtgo_nickname: string | null
           pauperwave_associate_number: string | null
           payment_date: string | null
           phone_number: string | null
