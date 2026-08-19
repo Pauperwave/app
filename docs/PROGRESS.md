@@ -242,6 +242,14 @@ Implementato in `useCittadinoFilters.ts` come catena di comparatori dopo il tota
 
 **Conseguenze:** una lega appena creata non ha date finché non le si collega almeno un torneo. Nessun trigger DB coinvolto: come per ADR-018, la cascata vive solo negli endpoint `tournaments/*`, quindi una scrittura fuori dall'app non la innesca. In `/leagues` la tabella ora ha anche una colonna "Data di inizio" ordinabile (prima assente — l'unico sort disponibile era per nome) e l'ordinamento di default è passato da nome a data, per coerenza con `/tournaments` e con l'ordine già usato dalla vista a griglia.
 
+### ADR-020 — Quota associativa spostata da costante hardcoded a tabella `pauperwave_settings` (2026-08-19)
+
+**Contesto:** l'importo/metodo di pagamento della quota associativa (`MEMBERSHIP_FEE_AMOUNT`/`MEMBERSHIP_FEE_PAYMENT_METHOD`, `app/utils/associates/membershipFee.ts`) erano costanti hardcoded, estratte il 2026-08-12 proprio con l'idea di renderle in futuro modificabili da `/settings` (nota in `docs/TODO.md`, rimossa in questo ADR). Richiesta utente: renderle configurabili da un admin.
+
+**Decisione:** stessa forma di ADR-016 (valore hardcoded → colonna DB + UI admin). Nuova tabella singleton `pauperwave_settings` (una sola riga, `id` fissato a 1 via CHECK — non una tabella chiave-valore generica, non c'è ancora un secondo valore da generalizzare) con `membership_fee_amount`/`membership_fee_payment_method`, colonne di audit e trigger `set_updated_at()` (migrazione `20260819100000`). Lettura aperta a chiunque sia autenticato (RLS), scrittura riservata a `admin`/`super_admin` — non solo `organizer` come `has_management_permissions()` — tramite una nuova funzione `is_admin_or_above()` (mancante finora: nessuna delle funzioni esistenti esprimeva "admin o superiore") e il nuovo helper server-side `requireAdminPermission()` (`server/utils/serverAuth.ts`), che resta comunque il vero boundary — la RLS qui è solo difesa in profondità, come da convenzione BFF già in uso per `pauperwave_wanted_cards`. `useSettingsQuery`/`useSettingsMutations` seguono lo stesso pattern di `useWantedCardsQuery`/`Mutations`. Nuova sezione "Quota associativa" nella tab Generali di `/settings`, dietro il permesso `manage-membership-fees` (già riservato ad `admin` in `app/utils/permissions.ts`, mai collegato a una vera UI finora).
+
+**Conseguenze:** `AddModal.vue`/`EditModal.vue` (transazioni) e `useAssociatesBulkActions.ts` leggono ora il valore corrente da `useSettingsQuery()` invece di una costante — un rinnovo bulk resta bloccato (bottone disabilitato) finché la query non ha risolto, così come già avveniva per `receivedBy`. Il file `membershipFee.ts` è stato eliminato.
+
 ## Vedi anche
 
 - `docs/architecture/database.md` — schema, RLS, migrazioni

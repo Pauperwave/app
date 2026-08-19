@@ -51,6 +51,7 @@ This pattern is applied to:
 - `pauperwave_wanted_cards` ("Carte Cercate" requests)
 - `pauperwave_associates` (membership changes) — `updated_by` populated via `server/utils/auditColumns.ts` on every edit/approve/reject/restore; `created_by` stays null for the one insert path (`/tesseramento`'s public self-application), since the applicant has no associate record yet to attribute creation to at insert time
 - `user_roles` (role assignments) — populated inside `assign_role()` itself, resolving the calling `super_admin`'s own associate uuid via `players.user_id = auth.uid()`; `created_by` set once on first assignment, `updated_by` refreshed on every reassignment
+- `pauperwave_settings` (association-wide bylaw values — membership fee amount/method) — singleton table, `updated_by` only (no `created_by`: the single row is seeded by its own migration, never inserted by the app)
 
 For general tables, `created_at` and `updated_at` timestamps provide basic change tracking.
 
@@ -82,10 +83,13 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-Applied via triggers on all 19 tables with an `updated_at` column (migration `20260818130000_updated_at_trigger_everywhere.sql` closed the gap — only 3 tables actually had it before that).
+Applied via triggers on 20 tables with an `updated_at` column (migration `20260818130000_updated_at_trigger_everywhere.sql` closed the gap — only 3 tables actually had it before that; `pauperwave_settings` added its own trigger at creation, `20260819100000`).
 
 #### `set_wanted_card_found_at()`
 Trigger on `pauperwave_wanted_cards`: sets `found_at` to `now()` the moment `status` transitions to `'found'`, and clears it back to `null` if `status` ever moves away from `'found'` again. Runs as a DB trigger rather than being set by the app (`server/api/wanted-cards/[id]/status.post.ts`) so it stays correct regardless of which code path touches `status`. Feeds the "average time to find a card" statistic (`date`/`foundAt` on the `WantedCard` type) — not yet surfaced in the UI.
+
+#### `is_admin_or_above(p_user_id uuid)`
+Returns whether the user's role is `admin` or `super_admin`. Added `20260819100000` alongside `pauperwave_settings` — none of `is_admin()` (strictly `'admin'`, excludes `super_admin`), `is_super_admin()`, or `has_management_permissions()` (`organizer`/`admin`/`super_admin`) expressed "admin or higher" on its own. Used by `pauperwave_settings`' own update RLS policy and by `server/utils/serverAuth.ts`'s `requireAdminPermission()` (the real authorization boundary for `/api/settings/*`, same BFF convention as every other write endpoint).
 
 #### Role/permission functions
 All `SECURITY DEFINER`, reading `user_roles` — the implementation behind the three-layer role-awareness pattern documented in `docs/architecture/roles.md` (resolution → route/nav gating → in-page adaptation). See that doc for behavior/rationale; this is just the inventory:

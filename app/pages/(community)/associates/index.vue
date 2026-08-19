@@ -70,7 +70,7 @@ const selectedRosterAssociates = computed<Associate[]>(() =>
   (table.value?.tableApi?.getFilteredRowModel().rows.map(row => row.original) ?? [])
     .filter(associate => selection.isSelected(associate.id)))
 const {
-  pendingRenewal, confirmOpen: renewConfirmOpen, receivedBy, receiverOptions,
+  pendingRenewal, confirmOpen: renewConfirmOpen, receivedBy, receiverOptions, feeReady,
   requestBulkRenew, confirmBulkRenew
 } = useAssociatesBulkActions(selection)
 // fallow-ignore-next-line code-duplication -- the useAssociatesTableColumns destructure
@@ -394,7 +394,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
     :confirm-label="$t('associate.rowActions.renew')"
     :confirm-icon="ICONS.refresh"
     confirm-color="primary"
-    :confirm-disabled="!receivedBy"
+    :confirm-disabled="!receivedBy || !feeReady"
     @confirm="confirmBulkRenew"
   >
     <UFormField :label="$t('associate.bulkActions.renewModalReceivedByLabel')" class="mb-3">

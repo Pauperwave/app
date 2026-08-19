@@ -20,6 +20,9 @@ export function useAssociatesBulkActions(selection: Selection<number>) {
   const undoable = useUndoableAction()
   const { createTransaction } = useTransactionsMutations()
   const { receiverOptions } = useTransactionFormOptions()
+  // Admin-editable membership fee (/settings) — was a hardcoded constant
+  // until migration 20260819100000.
+  const settings = useSettingsQuery()
 
   // shallowRef, not ref — same reason as useAssociatesRowActions.ts's
   // contextMenuRow: Associate's optional AvatarProps field makes Vue's
@@ -41,7 +44,8 @@ export function useAssociatesBulkActions(selection: Selection<number>) {
   function confirmBulkRenew() {
     const associates = pendingRenewal.value
     const receiver = receivedBy.value
-    if (!associates || !receiver) return
+    const fee = settings.data.value
+    if (!associates || !receiver || !fee) return
 
     confirmOpen.value = false
     pendingRenewal.value = null
@@ -58,8 +62,8 @@ export function useAssociatesBulkActions(selection: Selection<number>) {
             payerEmail: null,
             payerTaxCode: null,
             paymentDate: new Date().toISOString(),
-            paymentAmount: MEMBERSHIP_FEE_AMOUNT,
-            paymentMethod: MEMBERSHIP_FEE_PAYMENT_METHOD,
+            paymentAmount: fee.membershipFeeAmount,
+            paymentMethod: fee.membershipFeePaymentMethod,
             paymentType: 'Association Fee',
             receivedBy: receiver,
             eventUuid: null,
@@ -77,7 +81,13 @@ export function useAssociatesBulkActions(selection: Selection<number>) {
     })
   }
 
+  // Top-level ref (not settings.data itself) so index.vue's template can bind
+  // it directly — a nested `.data` property on a plain returned object isn't
+  // auto-unwrapped by Vue's template compiler the way a top-level one is.
+  const feeReady = computed(() => !!settings.data.value)
+
   return {
-    pendingRenewal, confirmOpen, receivedBy, receiverOptions, requestBulkRenew, confirmBulkRenew
+    pendingRenewal, confirmOpen, receivedBy, receiverOptions, feeReady,
+    requestBulkRenew, confirmBulkRenew
   }
 }

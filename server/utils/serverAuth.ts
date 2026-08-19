@@ -44,3 +44,32 @@ export async function requireManagementPermission(event: H3Event) {
 
   return user
 }
+
+// Stricter than requireManagementPermission (organizer+): admin or above
+// only, via the is_admin_or_above RPC (migration 20260819100000) — for
+// financial/bylaw-level writes like membership fee settings, where
+// 'manage-membership-fees' is reserved to 'admin' (app/utils/permissions.ts).
+export async function requireAdminPermission(event: H3Event) {
+  const user = await requireUser(event)
+  const supabase = serverSupabaseServiceRole<Database>(event)
+
+  const { data: allowed, error } = await supabase.rpc('is_admin_or_above', {
+    p_user_id: user.sub
+  })
+
+  if (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message
+    })
+  }
+
+  if (!allowed) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Permessi di amministrazione richiesti'
+    })
+  }
+
+  return user
+}
