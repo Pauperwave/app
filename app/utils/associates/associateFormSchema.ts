@@ -88,9 +88,6 @@ export function associateFormSchema(t: (key: string) => string) {
       v.string(t('associate.addModal.validation.residencyCapInvalid')),
       v.regex(/^\d{5}$/, t('associate.addModal.validation.residencyCapInvalid'))
     ),
-    // Optional (skippable step on /tesseramento — see mtgNicknamesSkipped).
-    mtgo_nickname: v.nullable(v.string()),
-    mtga_nickname: v.nullable(v.string()),
     consent_data: v.pipe(
       v.boolean(),
       v.check(val => val === true, t('associate.addModal.validation.consentDataRequired'))

@@ -30,8 +30,6 @@ export function createAssociateFormState(bornDate: Date | undefined = undefined)
     residency_city: '',
     residency_province: '',
     residency_cap: '',
-    mtgo_nickname: null as string | null,
-    mtga_nickname: null as string | null,
     has_read_statute: false,
     consent_data: false,
     consent_social: false

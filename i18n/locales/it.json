@@ -221,8 +221,6 @@
       "residencyCity": "Città",
       "residencyProvince": "Provincia",
       "residencyCap": "CAP",
-      "mtgoNickname": "Nickname MTGO",
-      "mtgaNickname": "Nickname MTGA",
       "actions": "Azioni"
     },
     "consentSocialLabel": "Consenso Social",
@@ -304,7 +302,6 @@
         "contatti": "Contatti",
         "tesseramento": "Tesseramento",
         "consensi": "Consensi",
-        "mtg": "Magic Online",
         "transactions": "Transazioni"
       },
       "transactionsEmpty": "Nessuna transazione registrata per questo socio"
@@ -342,7 +339,6 @@
         "birthInfo": "Informazioni di nascita",
         "fiscalInfo": "Informazioni fiscali",
         "residencyInfo": "Informazioni sulla residenza",
-        "mtgNicknames": "Nickname MTG",
         "consents": "Consensi"
       },
       "fields": {
@@ -361,9 +357,7 @@
         "residencyHouseNumber": "Civico",
         "residencyCity": "Città",
         "residencyProvince": "Provincia",
-        "residencyCap": "CAP",
-        "mtgoNickname": "Nickname MTGO",
-        "mtgaNickname": "Nickname MTGA"
+        "residencyCap": "CAP"
       },
       "placeholders": {
         "birthLocation": "Trento",
@@ -459,9 +453,6 @@
         "description": "In attesa di conferma",
         "waiting": "Abbiamo inviato un link a {email}. Aprilo per continuare — puoi chiudere questa scheda, ci penserà il link a tornare qui.",
         "resend": "Non hai ricevuto nulla? Invia di nuovo"
-      },
-      "mtgNicknames": {
-        "skip": "Salta, non gioco su Arena/MTGO"
       },
       "consents": {
         "openStatuto": "Leggi lo statuto",

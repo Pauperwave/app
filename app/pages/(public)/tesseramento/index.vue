@@ -62,7 +62,6 @@ const steps = [
     title: t('associate.addModal.sections.residencyInfo'),
     fields: ['residency_address', 'residency_house_number', 'residency_city', 'residency_province', 'residency_cap']
   },
-  { value: 'mtgNicknames', title: t('associate.addModal.sections.mtgNicknames'), fields: [] },
   {
     value: 'consents',
     title: t('associate.addModal.sections.consents'),
@@ -155,11 +154,6 @@ async function goNext() {
 function goBack() {
   const prev = steps[stepIndex.value - 1]
   if (prev) currentStep.value = prev.value
-}
-
-function skipNicknames() {
-  const next = steps[stepIndex.value + 1]
-  if (next) currentStep.value = next.value
 }
 
 const submitting = ref(false)
@@ -283,12 +277,6 @@ async function onSubmit() {
           </div>
         </template>
 
-        <template v-else-if="currentStep === 'mtgNicknames'">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <AssociatesFieldsMtgNicknameFields :state="state" />
-          </div>
-        </template>
-
         <TesseramentoConsentsStep v-else-if="currentStep === 'consents'" :state="state" />
 
         <div class="flex justify-between gap-2 pt-2">
@@ -302,14 +290,6 @@ async function onSubmit() {
           <div v-else />
 
           <div class="flex gap-2">
-            <UButton
-              v-if="currentStep === 'mtgNicknames'"
-              :label="$t('tesseramento.steps.mtgNicknames.skip')"
-              color="neutral"
-              variant="ghost"
-              @click="skipNicknames"
-            />
-
             <UButton
               v-if="currentStep !== 'consents'"
               :label="$t('tesseramento.next')"

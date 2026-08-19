@@ -20,8 +20,6 @@ export interface AssociateEditsPayload {
   residency_city: string
   residency_province: string
   residency_cap: string
-  mtgo_nickname: string | null
-  mtga_nickname: string | null
   consent_data: boolean
   consent_social: boolean
   has_read_statute: boolean
