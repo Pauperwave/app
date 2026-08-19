@@ -39,7 +39,7 @@ Add a path comment as the first line of every source file under `app/`, `server/
 File-based routing under `app/pages`, grouped with Nuxt route groups (parens don't affect the URL):
 - `(analytics)/statistics` — stats & deck analytics
 - `(community)/associates`, `(community)/transactions` — members & finances
-- `(competitions)/tournaments`, `(competitions)/leagues`, `(competitions)/events` — nested: leagues and events both contain tournaments (`leagues/[leagueId]/tournaments/[tournamentId]`, `events/[eventId]/tournaments/[tournamentId]`)
+- `(competitions)/tournaments`, `(competitions)/leagues`, `(competitions)/events` — all flat (`tournaments/[tournamentId]`, not nested under leagues/events): a tournament's parent league/event is optional and polymorphic, so its canonical URL stays flat, with a `?from=league:<uuid>` query param (`app/utils/tournaments/tournamentOrigin.ts`) carrying "came from this league" for a back-link the route params alone can't express
 - `(settings)/settings` — general/members/notifications/security tabs
 - `auth/callback.vue`, `login.vue` — auth flow pages (use the `auth` layout, not `default`)
 
