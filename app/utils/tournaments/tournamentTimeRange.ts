@@ -1,4 +1,4 @@
-// app\utils\tournamentTimeRange.ts
+// app\utils\tournaments\tournamentTimeRange.ts
 import { format } from 'date-fns'
 
 // Shared by calendar/EventDetailContent.vue (nested tournaments list) and

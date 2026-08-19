@@ -1,4 +1,4 @@
-// app\utils\tournamentOrigin.ts
+// app\utils\tournaments\tournamentOrigin.ts
 // A tournament's detail page can be reached from several places (the flat
 // /tournaments grid, a league's own tournament grid, eventually an event's).
 // When it belongs to a league, its link always carries a `?from=league:<uuid>`

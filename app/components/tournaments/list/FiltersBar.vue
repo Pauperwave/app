@@ -36,7 +36,7 @@ const emit = defineEmits<{ openManageFormats: [] }>()
   <!-- Dropdown, not a StatusFilterGroup button row: format isn't a
      small fixed set like status (5 values) — it's whatever
      mtg_formats rows exist, up to the 8 the association actually
-     runs (see app/utils/cittadinoFormats.ts). A button per
+     runs (see app/utils/cittadino/cittadinoFormats.ts). A button per
      format alongside the status buttons would crowd/wrap the
      toolbar; a dropdown scales to that count the same way it
      already does for format selection in AddModal.vue.
