@@ -28,7 +28,7 @@ export function useAssociatesRequestsTableColumns(
     firstNameColumn, lastNameColumn, emailAddressColumn, phoneNumberColumn, taxCodeColumn,
     bornDateColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
     residencyAddressColumn, residencyHouseNumberColumn, residencyCityColumn,
-    residencyProvinceColumn, residencyCapColumn, mtgoNicknameColumn, mtgaNicknameColumn
+    residencyProvinceColumn, residencyCapColumn
   } = useAssociatesTableColumns(selection, table, associates, rowContextMenuItems)
 
   const columns: TableColumn<Associate>[] = [
@@ -38,15 +38,19 @@ export function useAssociatesRequestsTableColumns(
     requestDateColumn,
     lastRenewalDateColumn,
     pauperwaveAssociateNumberColumn,
+    // Consensi before personal data (user request, 2026-08-19) — matches the
+    // roster's own order (associates/index.vue), which already had this
+    // block ahead of firstNameColumn; requests.vue had it after, the
+    // inconsistency being fixed here.
+    associateTypeColumn,
+    consentDataColumn,
+    consentSocialColumn,
+    hasReadStatuteColumn,
     firstNameColumn,
     lastNameColumn,
     emailAddressColumn,
     phoneNumberColumn,
     taxCodeColumn,
-    associateTypeColumn,
-    consentDataColumn,
-    consentSocialColumn,
-    hasReadStatuteColumn,
     bornDateColumn,
     bornLocationColumn,
     bornProvinceColumn,
@@ -56,8 +60,6 @@ export function useAssociatesRequestsTableColumns(
     residencyCityColumn,
     residencyProvinceColumn,
     residencyCapColumn,
-    mtgoNicknameColumn,
-    mtgaNicknameColumn,
     updatedByColumn,
     updatedAtColumn,
     actionsColumn

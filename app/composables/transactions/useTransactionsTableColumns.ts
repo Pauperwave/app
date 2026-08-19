@@ -1,10 +1,10 @@
 // app\composables\transactions\useTransactionsTableColumns.ts
 import { AssociateTag, UBadge, UIcon } from '#components'
-import type { BadgeProps, DropdownMenuItem, TableColumn } from '@nuxt/ui'
-import type { PaymentType } from '#shared/types/transactions'
+import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { Transaction } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
+import PaymentTypeBadge from '~/components/ui/PaymentTypeBadge.vue'
 import RowActionsMenu from '~/components/ui/RowActionsMenu.vue'
 
 export const transactionsColumnHeaders = (t: (key: string) => string) => ({
@@ -22,13 +22,6 @@ export const transactionsColumnHeaders = (t: (key: string) => string) => ({
   updatedAt: t('transaction.columns.updatedAt'),
   actions: t('transaction.columns.actions')
 } as const)
-
-const PAYMENT_TYPE_BADGE_CONFIG: Record<PaymentType, { color: BadgeProps['color'], icon: string }> = {
-  'Association Fee': { color: 'primary', icon: ICONS.players },
-  'Tournament Fee': { color: 'success', icon: ICONS.standings },
-  'Event Fee': { color: 'warning', icon: ICONS.calendar },
-  'Donation': { color: 'neutral', icon: ICONS.heartHandshake }
-}
 
 // selection: threaded through rather than read from a composable here, same
 // reasoning as useTournamentsTableColumns.ts/useWantedCardsTableColumns.ts —
@@ -102,12 +95,8 @@ export function useTransactionsTableColumns(
       accessorKey: 'payment_type',
       header: ({ column }) => sortableHeader(columnHeaders.payment_type, column),
       meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap' } },
-      cell: ({ row }) => {
-        if (row.getIsGrouped()) return null
-        const type = row.original.payment_type
-        const { color, icon } = PAYMENT_TYPE_BADGE_CONFIG[type] ?? { color: 'neutral' as const, icon: ICONS.help }
-        return h(UBadge, { variant: 'subtle', icon, color, label: type })
-      }
+      cell: ({ row }) =>
+        row.getIsGrouped() ? null : h(PaymentTypeBadge, { type: row.original.payment_type })
     },
     {
       accessorKey: 'payment_amount',

@@ -176,7 +176,8 @@ const columnVisibility = ref({
   // Mandatory to submit /tesseramento — always true, redundant on every row.
   consent_data: false,
   has_read_statute: false,
-  born_date: false,
+  // Visible by default here too (2026-08-19), matching the roster — age has
+  // no entry here for the same reason (no entry = visible by default).
   born_location: false,
   born_province: false,
   born_state: false,
@@ -184,9 +185,7 @@ const columnVisibility = ref({
   residency_house_number: false,
   residency_city: false,
   residency_province: false,
-  residency_cap: false,
-  mtgo_nickname: false,
-  mtga_nickname: false
+  residency_cap: false
 })
 
 // Same convention as associates/index.vue: point at this deploy's own
