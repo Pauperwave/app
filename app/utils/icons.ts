@@ -89,6 +89,7 @@ export const ICONS = {
   pauseCircle: 'i-lucide-pause-circle',
   history: 'i-lucide-history',
   cake: 'i-lucide-cake',
+  trendingUp: 'i-lucide-trending-up',
 
   // Theme
   lightMode: 'i-lucide-sun',
@@ -118,6 +119,11 @@ export const ICONS = {
   coins: 'i-lucide-coins',
   creditCard: 'i-lucide-credit-card',
   shoppingCart: 'i-lucide-shopping-cart',
+  idCard: 'i-lucide-id-card',
+  // "No payment on record yet" (unpaid membership status) — distinct from
+  // creditCard (renewal date) and idCard (membership number), so the three
+  // don't visually collide on the same badge row.
+  receipt: 'i-lucide-receipt',
 
   // Contact / identity fields
   mail: 'i-lucide-mail',

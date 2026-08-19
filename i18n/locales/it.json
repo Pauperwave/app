@@ -180,6 +180,15 @@
       "toRenew": "Da rinnovare",
       "expired": "Scaduti"
     },
+    "statusLabels": {
+      "active": "Attivo",
+      "to_renew": "Da rinnovare",
+      "expired": "Scaduto",
+      "unpaid": "Non tesserato",
+      "pending": "In attesa",
+      "approved": "Approvato",
+      "rejected": "Rifiutato"
+    },
     "columns": {
       "id": "ID",
       "uuid": "UUID",

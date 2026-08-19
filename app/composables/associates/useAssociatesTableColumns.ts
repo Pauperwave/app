@@ -1,9 +1,10 @@
 // app\composables\associates\useAssociatesTableColumns.ts
-import { upperFirst } from 'scule'
-import { UBadge, UCheckbox } from '#components'
+import { UBadge } from '#components'
 import type { BadgeProps, DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { Column, Table } from '@tanstack/vue-table'
 import type { Associate } from '~/types'
+import type { Selection } from '~/composables/useSelection'
+import AssociateNumberBadge from '~/components/ui/AssociateNumberBadge.vue'
 import AssociateTag from '~/components/ui/AssociateTag.vue'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 import RowActionsMenu from '~/components/ui/RowActionsMenu.vue'
@@ -64,6 +65,7 @@ export type AssociatesColumnHeaders = ReturnType<typeof associatesColumnHeaders>
 type AssociatesColumnHeaderKey = keyof AssociatesColumnHeaders
 
 export function useAssociatesTableColumns(
+  selection: Selection<number>,
   table: Ref<{ tableApi: Table<Associate> } | null>,
   associates: Ref<Associate[] | undefined>,
   rowContextMenuItems: (associate: Associate) => DropdownMenuItem[]
@@ -112,27 +114,12 @@ export function useAssociatesTableColumns(
 
   const visibilityItems = computed(() => getVisibilityItems())
 
-  const selectColumn: TableColumn<Associate> = {
-    id: 'select',
-    enableSorting: false,
-    enableHiding: false,
-    meta: { class: { th: 'w-px p-0', td: 'w-px p-0' } },
-    header: ({ table: t2 }) =>
-      centerTableCell(h(UCheckbox, {
-        'modelValue': t2.getIsSomePageRowsSelected()
-          ? 'indeterminate'
-          : t2.getIsAllPageRowsSelected(),
-        'onUpdate:modelValue': (value: unknown) =>
-          t2.toggleAllPageRowsSelected(!!value),
-        'aria-label': t('common.selectAll')
-      })),
-    cell: ({ row }) =>
-      centerTableCell(h(UCheckbox, {
-        'modelValue': row.getIsSelected(),
-        'onUpdate:modelValue': (value: unknown) => row.toggleSelected(!!value),
-        'aria-label': t('common.selectRow')
-      }))
-  }
+  // Bound to the shared selectedIds Set (useSelection.ts), not UTable's own
+  // row-selection state — same migration as transactions'/wanted-cards' own
+  // table columns, for the same reasons (Escape-to-clear, shift-click range
+  // selection) plus grouping-readiness even though this table doesn't group
+  // today.
+  const selectColumn = useGroupedSelectColumn<Associate>(selection)
 
   // Shared with associates/index.vue since 2026-08-13 (was inline there only) —
   // requests.vue shows these too now: id/updated_at/updated_by for traceability
@@ -190,8 +177,8 @@ export function useAssociatesTableColumns(
   const pauperwaveAssociateNumberColumn: TableColumn<Associate> = {
     accessorKey: 'pauperwave_associate_number',
     header: ({ column }) => sortableHeader(columnHeaders.pauperwave_associate_number, column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => row.original.pauperwave_associate_number || ''
+    meta: { class: { th: 'text-center', td: 'text-center' } },
+    cell: ({ row }) => h(AssociateNumberBadge, { number: row.original.pauperwave_associate_number })
   }
 
   const membershipRequestStatusColumn: TableColumn<Associate> = {
@@ -212,7 +199,7 @@ export function useAssociatesTableColumns(
         variant: 'subtle',
         icon,
         color,
-        label: upperFirst(status),
+        label: t(`associate.statusLabels.${status}`),
         onClick: (e: Event) => {
           e.stopPropagation() // Prevent row click if you add onSelect later
           table.value?.tableApi?.getColumn('membership_request_status')?.setFilterValue(status)

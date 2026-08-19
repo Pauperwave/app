@@ -3,7 +3,6 @@
 // fallow-ignore-file code-duplication -- the UDashboardPanel navbar/toolbar/breadcrumb
 // header skeleton mirrors other detail pages (events/leagues/tournaments); these are
 // still mock-data pages, expected to change dramatically once real functionality lands
-import { upperFirst } from 'scule'
 import { format, parseISO } from 'date-fns'
 
 interface DetailField {
@@ -60,7 +59,7 @@ const anagraficaFields = computed<DetailField[]>(() => !associate.value
   : [
     { icon: ICONS.player, label: t('associate.columns.firstName'), value: associate.value.first_name },
     { icon: ICONS.player, label: t('associate.columns.lastName'), value: associate.value.last_name },
-    { icon: 'i-lucide-id-card', label: t('associate.columns.taxCode'), value: associate.value.tax_code || '—' },
+    { icon: ICONS.idCard, label: t('associate.columns.taxCode'), value: associate.value.tax_code || '—' },
     { icon: 'i-lucide-cake', label: t('associate.columns.bornDate'), value: formatDate(associate.value.born_date) || '—' },
     { icon: ICONS.mapPin, label: t('associate.columns.bornLocation'), value: associate.value.born_location || '—' },
     { icon: 'i-lucide-map', label: t('associate.columns.bornProvince'), value: associate.value.born_province || '—' },
@@ -82,7 +81,7 @@ const contattiFields = computed<DetailField[]>(() => !associate.value
 const tesseramentoFields = computed<DetailField[]>(() => !associate.value
   ? []
   : [
-    { icon: 'i-lucide-id-card', label: t('associate.columns.pauperwaveAssociateNumber'), value: associate.value.pauperwave_associate_number || '—' },
+    { icon: ICONS.idCard, label: t('associate.columns.pauperwaveAssociateNumber'), value: associate.value.pauperwave_associate_number || '—' },
     { icon: 'i-lucide-tag', label: t('associate.columns.associateType'), value: associate.value.associate_type || '—' },
     { icon: ICONS.calendar, label: t('associate.columns.requestDate'), value: formatDate(associate.value.request_date) || '—' },
     { icon: ICONS.creditCard, label: t('associate.columns.lastRenewalDate'), value: formatDate(associate.value.latest_renewal_date) || '—' },
@@ -170,16 +169,9 @@ const mtgFields = computed<DetailField[]>(() => !associate.value
                   class="capitalize gap-4"
                   v-bind="currentStatusBadge"
                 >
-                  {{ upperFirst(associate.membership_status.replace('_', ' ')) }}
+                  {{ t(`associate.statusLabels.${associate.membership_status}`) }}
                 </UBadge>
-                <UBadge
-                  v-if="associate.pauperwave_associate_number"
-                  color="neutral"
-                  variant="subtle"
-                  icon="i-lucide-id-card"
-                >
-                  {{ associate.pauperwave_associate_number }}
-                </UBadge>
+                <AssociateNumberBadge :number="associate.pauperwave_associate_number" />
                 <UBadge
                   v-if="associate.associate_type"
                   color="neutral"
@@ -219,7 +211,7 @@ const mtgFields = computed<DetailField[]>(() => !associate.value
                     class="capitalize gap-1.5"
                     v-bind="currentStatusBadge"
                   >
-                    {{ upperFirst(associate.membership_status.replace('_', ' ')) }}
+                    {{ t(`associate.statusLabels.${associate.membership_status}`) }}
                   </UBadge>
                 </dd>
               </div>

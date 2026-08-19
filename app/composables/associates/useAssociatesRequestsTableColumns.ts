@@ -11,8 +11,10 @@
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { Table } from '@tanstack/vue-table'
 import type { Associate } from '~/types'
+import type { Selection } from '~/composables/useSelection'
 
 export function useAssociatesRequestsTableColumns(
+  selection: Selection<number>,
   table: Ref<{ tableApi: Table<Associate> } | null>,
   associates: Ref<Associate[] | undefined>,
   rowContextMenuItems: (associate: Associate) => DropdownMenuItem[]
@@ -27,7 +29,7 @@ export function useAssociatesRequestsTableColumns(
     bornDateColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
     residencyAddressColumn, residencyHouseNumberColumn, residencyCityColumn,
     residencyProvinceColumn, residencyCapColumn, mtgoNicknameColumn, mtgaNicknameColumn
-  } = useAssociatesTableColumns(table, associates, rowContextMenuItems)
+  } = useAssociatesTableColumns(selection, table, associates, rowContextMenuItems)
 
   const columns: TableColumn<Associate>[] = [
     selectColumn,

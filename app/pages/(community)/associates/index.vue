@@ -1,11 +1,21 @@
 <!-- app\pages\(community)\associates\index.vue -->
 <script setup lang="ts">
 import type { TableColumn, TabsItem } from '@nuxt/ui'
-import { upperFirst } from 'scule'
 import { UBadge } from '#components'
 import type { Table } from '@tanstack/vue-table'
 import type { Associate, StatusColor } from '~/types'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
+
+// Lifecycle order, not alphabetical (TanStack's default) — matches the
+// existing status tabs (Tutti/Attivi/Da rinnovare/Scaduti) and
+// MEMBERSHIP_STATUS_BADGE_CONFIG's own key order, so "Tesseramento" sorts
+// the same way an admin already thinks about the roster.
+const MEMBERSHIP_STATUS_SORT_ORDER: Record<string, number> = {
+  active: 0,
+  to_renew: 1,
+  expired: 2,
+  unpaid: 3
+}
 
 const {
   data: associates, isLoading: loading, status, refetch
@@ -48,14 +58,21 @@ const {
   tableContextMenuItems, onRowContextmenu, rowContextMenuItems
 } = useAssociatesRowActions()
 
-// Row-selection existed here with nothing wired to it (2026-08-16) — bulk
-// "Rinnova" is the fix, same shape as tournaments'/wanted-cards' bulk bars.
+// Migrated off UTable's own row-selection state to the shared Set-based
+// useSelection.ts (2026-08-19) — same as transactions'/wanted-cards'/
+// tournaments'/leagues' tables, for Escape-to-clear and shift-click range
+// selection, which this table never had. Selected associates resolved
+// against the table's own filtered row model (not rosterAssociates), so a
+// selection hidden by the active status/email/consent filter isn't
+// actionable — same reasoning as wanted-cards' own selectedCards.
+const selection = useSelection<number>()
 const selectedRosterAssociates = computed<Associate[]>(() =>
-  table.value?.tableApi?.getFilteredSelectedRowModel().rows.map(row => row.original) ?? [])
+  (table.value?.tableApi?.getFilteredRowModel().rows.map(row => row.original) ?? [])
+    .filter(associate => selection.isSelected(associate.id)))
 const {
   pendingRenewal, confirmOpen: renewConfirmOpen, receivedBy, receiverOptions,
   requestBulkRenew, confirmBulkRenew
-} = useAssociatesBulkActions()
+} = useAssociatesBulkActions(selection)
 // fallow-ignore-next-line code-duplication -- the useAssociatesTableColumns destructure
 // and status-filter-from-query function mirror requests.vue's own (different column
 // id and query semantics per page), not worth forcing into a shared helper
@@ -69,7 +86,7 @@ const {
   residencyAddressColumn, residencyHouseNumberColumn, residencyCityColumn,
   residencyProvinceColumn, residencyCapColumn, mtgoNicknameColumn, mtgaNicknameColumn,
   actionsColumn
-} = useAssociatesTableColumns(table, associates, rowContextMenuItems)
+} = useAssociatesTableColumns(selection, table, associates, rowContextMenuItems)
 
 // Wires the sidebar links (/associates?status=pending|active|to_renew) to the
 // membership_status column filter, which can only be applied after UTable mounts.
@@ -145,8 +162,6 @@ const columnVisibility = ref({
   mtga_nickname: false
 })
 
-const rowSelection = ref({})
-
 const columns: TableColumn<Associate>[] = [
   selectColumn,
   idColumn,
@@ -160,6 +175,11 @@ const columns: TableColumn<Associate>[] = [
     accessorKey: 'membership_status',
     header: ({ column }) => sortableHeader(columnHeaders.membership_status, column),
     meta: { class: { th: 'text-center', td: 'text-center' } },
+    sortingFn: (rowA, rowB) => {
+      const a = MEMBERSHIP_STATUS_SORT_ORDER[rowA.original.membership_status] ?? 99
+      const b = MEMBERSHIP_STATUS_SORT_ORDER[rowB.original.membership_status] ?? 99
+      return a - b
+    },
     cell: ({ row }) => {
       const status = row.getValue('membership_status') as string
       const { color, icon } = MEMBERSHIP_STATUS_BADGE_CONFIG[status] || { color: 'neutral', icon: ICONS.help }
@@ -169,7 +189,7 @@ const columns: TableColumn<Associate>[] = [
         variant: 'subtle',
         icon,
         color,
-        label: upperFirst(status.replace('_', ' '))
+        label: t(`associate.statusLabels.${status}`)
       })
     }
   },
@@ -293,7 +313,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
             v-if="selectedRosterAssociates.length"
             side="left"
             :count="selectedRosterAssociates.length"
-            @clear="table?.tableApi?.resetRowSelection()"
+            @clear="selection.clear()"
           />
           <div v-else id="tour-associates-filters" class="flex items-center gap-4 flex-wrap">
             <AssociatesListFiltersBar
@@ -329,7 +349,6 @@ watch(() => consentSocialFilter.value, (newVal) => {
             ref="table"
             v-model:column-filters="columnFilters"
             v-model:column-visibility="columnVisibility"
-            v-model:row-selection="rowSelection"
             :virtualize="{
               estimateSize: 35,
               overscan: 12
@@ -348,7 +367,7 @@ watch(() => consentSocialFilter.value, (newVal) => {
         </UContextMenu>
 
         <TableSelectionFooter
-          :selected="table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0"
+          :selected="selectedRosterAssociates.length"
           :total="table?.tableApi?.getFilteredRowModel().rows.length || 0"
         />
       </template>

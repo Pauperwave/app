@@ -35,16 +35,19 @@ const {
   tableContextMenuItems, onRowContextmenu, rowContextMenuItems
 } = useAssociatesRowActions()
 
-// Bulk "Rifiuta" next to the existing bulk "Approva" — same selected-rows
-// source (UTable's own row-selection, via `table.tableApi`), through
-// ConfirmModal rather than a bespoke modal like ApproveModal.vue (that one
-// predates ConfirmModal.vue).
+// Bulk "Rifiuta" next to the existing bulk "Approva", through ConfirmModal
+// rather than a bespoke modal like ApproveModal.vue (that one predates
+// ConfirmModal.vue). Selection migrated off UTable's own row-selection state
+// to the shared Set-based useSelection.ts (2026-08-19), same as
+// associates/index.vue and every other bulk-actions table in the app.
 const { rejectAssociates, restoreAssociates } = useAssociatesMutations()
 const undoable = useUndoableAction()
 const rejectConfirmOpen = ref(false)
 const approveConfirmOpen = ref(false)
+const selection = useSelection<number>()
 const selectedRequestAssociates = computed<Associate[]>(() =>
-  table.value?.tableApi?.getFilteredSelectedRowModel().rows.map(row => row.original) ?? [])
+  (table.value?.tableApi?.getFilteredRowModel().rows.map(row => row.original) ?? [])
+    .filter(associate => selection.isSelected(associate.id)))
 const selectedRequestIds = computed(() =>
   selectedRequestAssociates.value.map(associate => associate.id))
 const selectedRejectedIds = computed(() => selectedRequestAssociates.value
@@ -58,6 +61,7 @@ function confirmReject() {
   const ids = selectedRequestIds.value
   if (!ids.length) return
   rejectConfirmOpen.value = false
+  selection.clear()
 
   undoable.run({
     title: t('associate.rejectModal.undoToast', ids.length),
@@ -88,6 +92,7 @@ function confirmReject() {
 async function bulkRestore() {
   const ids = selectedRejectedIds.value
   if (!ids.length) return
+  selection.clear()
   try {
     await restoreAssociates.mutateAsync(ids)
     toast.add({
@@ -107,7 +112,7 @@ async function bulkRestore() {
 // fallow-ignore-next-line code-duplication -- see the same comment in
 // associates/index.vue
 const { columns, visibilityItems }
-  = useAssociatesRequestsTableColumns(table, associates, rowContextMenuItems)
+  = useAssociatesRequestsTableColumns(selection, table, associates, rowContextMenuItems)
 
 // fallow-ignore-next-line code-duplication -- see the same comment in
 // associates/index.vue
@@ -161,11 +166,13 @@ const columnFilters = ref([])
 const columnVisibility = ref({
   // Traceability/roster-preview columns (2026-08-13, matching the roster's
   // own set) — useful but not needed at a glance while triaging the queue.
-  id: false,
+  // id stays visible by default here too (2026-08-18), matching the roster.
   updated_at: false,
   updated_by: false,
   latest_renewal_date: false,
   pauperwave_associate_number: false,
+  // Hidden by default here too (2026-08-18), matching the roster.
+  associate_type: false,
   // Mandatory to submit /tesseramento — always true, redundant on every row.
   consent_data: false,
   has_read_statute: false,
@@ -181,8 +188,6 @@ const columnVisibility = ref({
   mtgo_nickname: false,
   mtga_nickname: false
 })
-
-const rowSelection = ref({})
 
 // Same convention as associates/index.vue: point at this deploy's own
 // /tesseramento for now, until the subdomain is wired up in DNS (docs/TODO.md).
@@ -252,7 +257,7 @@ const tour = useAssociatesRequestsTour()
             v-if="selectedRequestAssociates.length"
             side="left"
             :count="selectedRequestAssociates.length"
-            @clear="table?.tableApi?.resetRowSelection()"
+            @clear="selection.clear()"
           />
           <div v-else id="tour-requests-filters">
             <StatusFilterGroup v-model="activeStatusTab" :items="statusTabs" />
@@ -284,7 +289,6 @@ const tour = useAssociatesRequestsTour()
           v-model:sorting="sorting"
           v-model:column-filters="columnFilters"
           v-model:column-visibility="columnVisibility"
-          v-model:row-selection="rowSelection"
           :virtualize="{
             estimateSize: 35,
             overscan: 12
@@ -303,7 +307,7 @@ const tour = useAssociatesRequestsTour()
       </UContextMenu>
 
       <TableSelectionFooter
-        :selected="table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0"
+        :selected="selectedRequestAssociates.length"
         :total="table?.tableApi?.getFilteredRowModel().rows.length || 0"
       />
     </template>
