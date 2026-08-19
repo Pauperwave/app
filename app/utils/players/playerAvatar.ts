@@ -1,4 +1,4 @@
-// app\utils\playerAvatar.ts
+// app\utils\players\playerAvatar.ts
 import { Style, Avatar } from '@dicebear/core'
 import adventurer from '@dicebear/styles/adventurer.json'
 

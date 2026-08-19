@@ -1,4 +1,4 @@
-// app\utils\cittadinoPoints.ts
+// app\utils\cittadino\cittadinoPoints.ts
 
 // Scoring rules from the "Regolamento Campionato Cittadino '26" — see the P1 entry
 // in docs/BACKLOG.md for the full regulation.

@@ -35,7 +35,7 @@ const EDITIONS = ['2022', '2023', '2024', '2025', '2026']
 // The calendar shape, roughly two events a month: the three league formats running
 // as numbered legs, interleaved with the one-off draft/sealed events the
 // regulation also counts. Month/day are fixed; the year comes from the edition.
-// Format strings must match the keys in app/utils/cittadinoFormats.ts — a typo
+// Format strings must match the keys in app/utils/cittadino/cittadinoFormats.ts — a typo
 // silently falls back to the neutral chip rather than failing.
 const CALENDAR: [monthDay: string, name: string, format: string][] = [
   ['01-10', 'Pauper #1', 'Pauper'],
