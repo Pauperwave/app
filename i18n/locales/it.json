@@ -1795,6 +1795,22 @@
         "manageRoles": { "feature": "**Assegnare**/**modificare** ruoli (/settings/members)" }
       }
     },
+    "membershipFee": {
+      "title": "Quota associativa",
+      "description": "Importo e metodo di pagamento predefiniti applicati a ogni tesseramento e rinnovo.",
+      "saveChanges": "Salva modifiche",
+      "fields": {
+        "amount": "Importo (€)",
+        "paymentMethod": "Metodo di pagamento"
+      },
+      "validation": {
+        "amountRequired": "Importo non valido",
+        "paymentMethodRequired": "Metodo di pagamento non valido"
+      },
+      "successToastTitle": "Quota associativa aggiornata",
+      "successToastDescription": "Il nuovo importo verrà applicato al prossimo tesseramento/rinnovo.",
+      "errorToastTitle": "Impossibile aggiornare la quota associativa"
+    },
     "general": {
       "validation": {
         "nameRequired": "Il nome è obbligatorio",

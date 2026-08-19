@@ -65,16 +65,22 @@ watch([open, () => presetAssociate], ([isOpen, associate]) => {
   state.payment_type = 'Association Fee'
 }, { immediate: true })
 
-// The membership fee is a fixed €5 via PayPal "Friends & Family", first payment
-// and every renewal alike (user decision, 2026-08-12) — not just a suggestion for
-// the Rinnova flow, so this also fires when staff pick "Quota associativa"
-// manually from the generic "Nuova transazione" form. The amount field is
-// disabled for this type in the template (2026-08-14 decision) since it's a
-// fixed bylaw value, not a per-transaction choice.
-watch(() => state.payment_type, (type) => {
-  if (type !== 'Association Fee') return
-  state.payment_amount = MEMBERSHIP_FEE_AMOUNT
-  state.payment_method = MEMBERSHIP_FEE_PAYMENT_METHOD
+// The membership fee is admin-editable (settings.membershipFeeAmount/
+// membershipFeePaymentMethod, /settings — migration 20260819100000, was a
+// hardcoded €5-via-PayPal constant until then), but always the same value
+// for every payment regardless of type (first payment and every renewal
+// alike, user decision 2026-08-12) — not just a suggestion for the Rinnova
+// flow, so this also fires when staff pick "Quota associativa" manually from
+// the generic "Nuova transazione" form. The amount field is disabled for
+// this type in the template (2026-08-14 decision) since it's a fixed bylaw
+// value, not a per-transaction choice. Watches settings.data too, not just
+// payment_type, so picking the type before the settings query resolves
+// still fills in correctly once it does.
+const settings = useSettingsQuery()
+watch([() => state.payment_type, settings.data], ([type, data]) => {
+  if (type !== 'Association Fee' || !data) return
+  state.payment_amount = data.membershipFeeAmount
+  state.payment_method = data.membershipFeePaymentMethod
 })
 
 // Clears any event picked before switching to a type whose field is hidden

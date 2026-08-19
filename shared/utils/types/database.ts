@@ -884,6 +884,48 @@ export type Database = {
           },
         ]
       }
+      pauperwave_settings: {
+        Row: {
+          created_at: string
+          id: number
+          membership_fee_amount: number
+          membership_fee_payment_method: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          membership_fee_amount?: number
+          membership_fee_payment_method?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          membership_fee_amount?: number
+          membership_fee_payment_method?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pauperwave_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "pauperwave_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
+        ]
+      }
       pauperwave_wanted_cards: {
         Row: {
           card_name: string
@@ -2075,6 +2117,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { p_user_id: string }; Returns: boolean }
+      is_admin_or_above: { Args: { p_user_id: string }; Returns: boolean }
       is_organizer: { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: { p_user_id: string }; Returns: boolean }
     }

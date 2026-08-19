@@ -55,13 +55,22 @@ const activeTab = computed({
   set: (value: string) => { state.payer_is_associate = value === 'associate' }
 })
 
-// The membership fee is a fixed €5 via PayPal "Friends & Family" — same rule as
-// AddModal.vue, applied here too since editing a payment into "Association Fee"
-// should follow it just as much as creating one.
+// The membership fee is admin-editable (settings.membershipFeeAmount/
+// membershipFeePaymentMethod, /settings) — same rule as AddModal.vue, applied
+// here too since editing a payment into "Association Fee" should follow it
+// just as much as creating one. Single-source watch (not settings.data too,
+// unlike AddModal.vue) is deliberate: `previous === undefined` guards the
+// initial [open, transaction] watch's fill (the transaction's own recorded
+// amount/method, which may differ from the current fee if it's changed since)
+// from being clobbered the moment settings.data resolves after the modal
+// opens — this should only ever re-apply on an actual type change by the user.
+const settings = useSettingsQuery()
 watch(() => state.payment_type, (type, previous) => {
   if (type !== 'Association Fee' || previous === undefined) return
-  state.payment_amount = MEMBERSHIP_FEE_AMOUNT
-  state.payment_method = MEMBERSHIP_FEE_PAYMENT_METHOD
+  const data = settings.data.value
+  if (!data) return
+  state.payment_amount = data.membershipFeeAmount
+  state.payment_method = data.membershipFeePaymentMethod
 })
 
 // Clears any event picked before switching to a type whose field is hidden
