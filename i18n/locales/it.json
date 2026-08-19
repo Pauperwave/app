@@ -203,7 +203,7 @@
       "associateType": "Tipo di associato",
       "pauperwaveAssociateNumber": "Tessera",
       "consentData": "Consenso dati",
-      "consentSocial": "Consenso social",
+      "consentSocial": "Social",
       "hasReadStatute": "Ha letto lo statuto",
       "hasAcknowledgedSurveillanceNotice": "Visione Privacy",
       "firstName": "Nome",
@@ -304,8 +304,10 @@
         "contatti": "Contatti",
         "tesseramento": "Tesseramento",
         "consensi": "Consensi",
-        "mtg": "Magic Online"
-      }
+        "mtg": "Magic Online",
+        "transactions": "Transazioni"
+      },
+      "transactionsEmpty": "Nessuna transazione registrata per questo socio"
     },
     "addModal": {
       "title": "Nuovo associato",
@@ -397,6 +399,7 @@
     "rowActions": {
       "approve": "Approva",
       "renew": "Rinnova",
+      "pay": "Paga quota",
       "restore": "Ripristina",
       "copyPhone": "Copia telefono",
       "phoneCopied": "Telefono copiato negli appunti",

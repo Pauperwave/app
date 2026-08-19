@@ -1,12 +1,14 @@
 // app\composables\associates\useAssociatesTableColumns.ts
-import { UBadge } from '#components'
-import type { BadgeProps, DropdownMenuItem, TableColumn } from '@nuxt/ui'
+import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { Column, Table } from '@tanstack/vue-table'
 import type { Associate } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 import AssociateNumberBadge from '~/components/ui/AssociateNumberBadge.vue'
 import AssociateTag from '~/components/ui/AssociateTag.vue'
+import AssociateTypeBadge from '~/components/ui/AssociateTypeBadge.vue'
+import ConsentBadge from '~/components/ui/ConsentBadge.vue'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
+import MembershipRequestStatusBadge from '~/components/ui/MembershipRequestStatusBadge.vue'
 import RowActionsMenu from '~/components/ui/RowActionsMenu.vue'
 
 // Shared between associates/index.vue (roster) and associates/requests.vue
@@ -56,8 +58,6 @@ export const associatesColumnHeaders = (t: (key: string) => string) => ({
   residency_city: t('associate.columns.residencyCity'),
   residency_province: t('associate.columns.residencyProvince'),
   residency_cap: t('associate.columns.residencyCap'),
-  mtgo_nickname: t('associate.columns.mtgoNickname'),
-  mtga_nickname: t('associate.columns.mtgaNickname'),
   actions: t('associate.columns.actions')
 } as const)
 
@@ -71,7 +71,6 @@ export function useAssociatesTableColumns(
   rowContextMenuItems: (associate: Associate) => DropdownMenuItem[]
 ) {
   const { t } = useI18n()
-  const { renderAssociateTypeBadge, renderConsentBadge } = useAssociatesRenderers()
 
   const columnHeaders = associatesColumnHeaders(t)
 
@@ -186,20 +185,10 @@ export function useAssociatesTableColumns(
     header: ({ column }) => sortableHeader(columnHeaders.membership_request_status, column),
     meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) => {
-      const status = row.getValue('membership_request_status') as string
-      const statusConfig: Record<string, { color: BadgeProps['color'], icon: string }> = {
-        approved: { color: 'success', icon: ICONS.success },
-        pending: { color: 'warning', icon: ICONS.pending },
-        rejected: { color: 'error', icon: ICONS.statusRejected }
-      }
-      const { color, icon } = statusConfig[status] || { color: 'neutral', icon: ICONS.help }
-
-      return h(UBadge, {
-        class: 'capitalize cursor-pointer hover:opacity-80 transition-opacity gap-2',
-        variant: 'subtle',
-        icon,
-        color,
-        label: t(`associate.statusLabels.${status}`),
+      const status = row.original.membership_request_status
+      return h(MembershipRequestStatusBadge, {
+        status,
+        clickable: true,
         onClick: (e: Event) => {
           e.stopPropagation() // Prevent row click if you add onSelect later
           table.value?.tableApi?.getColumn('membership_request_status')?.setFilterValue(status)
@@ -219,28 +208,28 @@ export function useAssociatesTableColumns(
     accessorKey: 'associate_type',
     header: ({ column }) => sortableHeader(columnHeaders.associate_type, column),
     meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }) => renderAssociateTypeBadge(row.original.associate_type)
+    cell: ({ row }) => h(AssociateTypeBadge, { type: row.original.associate_type })
   }
 
   const consentDataColumn: TableColumn<Associate> = {
     accessorKey: 'consent_data',
     header: ({ column }) => sortableHeader(columnHeaders.consent_data, column),
     meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }) => renderConsentBadge(row.original.consent_data)
+    cell: ({ row }) => h(ConsentBadge, { value: row.original.consent_data })
   }
 
   const consentSocialColumn: TableColumn<Associate> = {
     accessorKey: 'consent_social',
     header: ({ column }) => sortableHeader(columnHeaders.consent_social, column),
     meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }) => renderConsentBadge(row.original.consent_social)
+    cell: ({ row }) => h(ConsentBadge, { value: row.original.consent_social })
   }
 
   const hasReadStatuteColumn: TableColumn<Associate> = {
     accessorKey: 'has_read_statute',
     header: ({ column }) => sortableHeader(columnHeaders.has_read_statute, column),
     meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }) => renderConsentBadge(row.original.has_read_statute)
+    cell: ({ row }) => h(ConsentBadge, { value: row.original.has_read_statute })
   }
 
   const firstNameColumn: TableColumn<Associate> = {
@@ -350,18 +339,6 @@ export function useAssociatesTableColumns(
     cell: ({ row }) => row.original.residency_cap
   }
 
-  const mtgoNicknameColumn: TableColumn<Associate> = {
-    accessorKey: 'mtgo_nickname',
-    header: columnHeaders.mtgo_nickname,
-    cell: ({ row }) => row.original.mtgo_nickname
-  }
-
-  const mtgaNicknameColumn: TableColumn<Associate> = {
-    accessorKey: 'mtga_nickname',
-    header: columnHeaders.mtga_nickname,
-    cell: ({ row }) => row.original.mtga_nickname
-  }
-
   // Visible actions column (2026-08-18), matching leagues/locations/tournaments'
   // convention — same items the right-click context menu already shows
   // (rowContextMenuItems), just also reachable without knowing to right-click.
@@ -403,8 +380,6 @@ export function useAssociatesTableColumns(
     residencyCityColumn,
     residencyProvinceColumn,
     residencyCapColumn,
-    mtgoNicknameColumn,
-    mtgaNicknameColumn,
     actionsColumn
   }
 }

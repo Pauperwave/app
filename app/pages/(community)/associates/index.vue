@@ -4,7 +4,9 @@ import type { TableColumn, TabsItem } from '@nuxt/ui'
 import { UBadge } from '#components'
 import type { Table } from '@tanstack/vue-table'
 import type { Associate, StatusColor } from '~/types'
+import ConsentBadge from '~/components/ui/ConsentBadge.vue'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
+import MembershipStatusBadge from '~/components/ui/MembershipStatusBadge.vue'
 
 // Lifecycle order, not alphabetical (TanStack's default) — matches the
 // existing status tabs (Tutti/Attivi/Da rinnovare/Scaduti) and
@@ -22,7 +24,6 @@ const {
 } = useAssociatesQuery()
 const { data: geocodes, isLoading: geocodesLoading } = useAssociatesGeocodesQuery()
 const { t } = useI18n()
-const { renderConsentBadge } = useAssociatesRenderers()
 
 useSeoMeta({ title: () => t('associate.breadcrumb') })
 
@@ -84,7 +85,7 @@ const {
   firstNameColumn, lastNameColumn, emailAddressColumn, phoneNumberColumn, taxCodeColumn,
   bornDateColumn, ageColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
   residencyAddressColumn, residencyHouseNumberColumn, residencyCityColumn,
-  residencyProvinceColumn, residencyCapColumn, mtgoNicknameColumn, mtgaNicknameColumn,
+  residencyProvinceColumn, residencyCapColumn,
   actionsColumn
 } = useAssociatesTableColumns(selection, table, associates, rowContextMenuItems)
 
@@ -157,9 +158,7 @@ const columnVisibility = ref({
   residency_house_number: false,
   residency_city: false,
   residency_province: false,
-  residency_cap: false,
-  mtgo_nickname: false,
-  mtga_nickname: false
+  residency_cap: false
 })
 
 const columns: TableColumn<Associate>[] = [
@@ -180,18 +179,7 @@ const columns: TableColumn<Associate>[] = [
       const b = MEMBERSHIP_STATUS_SORT_ORDER[rowB.original.membership_status] ?? 99
       return a - b
     },
-    cell: ({ row }) => {
-      const status = row.getValue('membership_status') as string
-      const { color, icon } = MEMBERSHIP_STATUS_BADGE_CONFIG[status] || { color: 'neutral', icon: ICONS.help }
-
-      return h(UBadge, {
-        class: 'capitalize gap-2',
-        variant: 'subtle',
-        icon,
-        color,
-        label: t(`associate.statusLabels.${status}`)
-      })
-    }
+    cell: ({ row }) => h(MembershipStatusBadge, { status: row.original.membership_status })
   },
   lastRenewalDateColumn,
   {
@@ -211,7 +199,7 @@ const columns: TableColumn<Associate>[] = [
     header: ({ column }) =>
       sortableHeader(columnHeaders.has_acknowledged_surveillance_notice, column),
     meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }) => renderConsentBadge(row.original.has_acknowledged_surveillance_notice)
+    cell: ({ row }) => h(ConsentBadge, { value: row.original.has_acknowledged_surveillance_notice })
   },
   firstNameColumn,
   lastNameColumn,
@@ -228,8 +216,6 @@ const columns: TableColumn<Associate>[] = [
   residencyCityColumn,
   residencyProvinceColumn,
   residencyCapColumn,
-  mtgoNicknameColumn,
-  mtgaNicknameColumn,
   createdAtColumn,
   updatedByColumn,
   updatedAtColumn,

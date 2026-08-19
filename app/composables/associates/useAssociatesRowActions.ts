@@ -109,12 +109,19 @@ export function useAssociatesRowActions() {
           onSelect: () => restore(associate)
         }, { type: 'separator' as const }]
         : []),
-      // Only when there's actually something to renew: approved, and not already
-      // paid up for the current year (membership_status 'active').
+      // Only when there's actually something to pay for: approved, and not
+      // already paid up for the current year (membership_status 'active').
+      // Same handler either way (both just record an Association Fee
+      // payment) — only the label/icon change: "Rinnova" implies a lapsed
+      // membership (to_renew/expired), which is wrong wording for 'unpaid'
+      // (approved but never paid a single fee yet, see
+      // MEMBERSHIP_STATUS_BADGE_CONFIG's own comment on that status).
       ...(associate.membership_request_status === 'approved' && associate.membership_status !== 'active'
         ? [{
-          label: t('associate.rowActions.renew'),
-          icon: ICONS.refresh,
+          label: associate.membership_status === 'unpaid'
+            ? t('associate.rowActions.pay')
+            : t('associate.rowActions.renew'),
+          icon: associate.membership_status === 'unpaid' ? ICONS.receipt : ICONS.refresh,
           color: 'success' as const,
           onSelect: () => openRenewModal(associate)
         }, { type: 'separator' as const }]

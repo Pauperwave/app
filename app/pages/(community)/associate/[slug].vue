@@ -4,11 +4,22 @@
 // header skeleton mirrors other detail pages (events/leagues/tournaments); these are
 // still mock-data pages, expected to change dramatically once real functionality lands
 import { format, parseISO } from 'date-fns'
+import type { TableColumn } from '@nuxt/ui'
+import type { Transaction } from '~/types'
+import AssociateTag from '~/components/ui/AssociateTag.vue'
+import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
+import PaymentTypeBadge from '~/components/ui/PaymentTypeBadge.vue'
 
 interface DetailField {
   icon: string
   label: string
   value: string
+}
+
+interface ConsentField {
+  icon: string
+  label: string
+  value: boolean
 }
 
 const route = useRoute()
@@ -46,14 +57,6 @@ function formatDate(dateString?: string | null): string {
   }
 }
 
-function yesNo(value: boolean): string {
-  return value ? t('common.yes') : t('common.no')
-}
-
-const currentStatusBadge = computed(() => associate.value
-  ? MEMBERSHIP_STATUS_BADGE_CONFIG[associate.value.membership_status] ?? { color: 'neutral' as const, icon: ICONS.help }
-  : { color: 'neutral' as const, icon: ICONS.help })
-
 const anagraficaFields = computed<DetailField[]>(() => !associate.value
   ? []
   : [
@@ -70,7 +73,9 @@ const contattiFields = computed<DetailField[]>(() => !associate.value
   ? []
   : [
     { icon: ICONS.mail, label: t('associate.columns.emailAddress'), value: associate.value.email_address },
-    { icon: ICONS.phone, label: t('associate.columns.phoneNumber'), value: associate.value.phone_number || '—' },
+    // Same formatting as the table's phoneNumberColumn (formatPhoneNumber.ts)
+    // — the raw column stores E.164 ("+393203522674"), unreadable as-is.
+    { icon: ICONS.phone, label: t('associate.columns.phoneNumber'), value: formatPhoneNumber(associate.value.phone_number) || '—' },
     { icon: ICONS.mapPin, label: t('associate.columns.residencyAddress'), value: associate.value.residency_address },
     { icon: ICONS.hash, label: t('associate.columns.residencyHouseNumber'), value: associate.value.residency_house_number || '—' },
     { icon: 'i-lucide-building', label: t('associate.columns.residencyCity'), value: associate.value.residency_city },
@@ -78,31 +83,88 @@ const contattiFields = computed<DetailField[]>(() => !associate.value
     { icon: 'i-lucide-mailbox', label: t('associate.columns.residencyCap'), value: associate.value.residency_cap }
   ])
 
+// pauperwave_associate_number/membership_status don't go through this list —
+// both render as their real badge component (AssociateNumberBadge/
+// MembershipStatusBadge) in the card's #before slot instead of plain text,
+// same as the table.
 const tesseramentoFields = computed<DetailField[]>(() => !associate.value
   ? []
   : [
-    { icon: ICONS.idCard, label: t('associate.columns.pauperwaveAssociateNumber'), value: associate.value.pauperwave_associate_number || '—' },
-    { icon: 'i-lucide-tag', label: t('associate.columns.associateType'), value: associate.value.associate_type || '—' },
+    { icon: 'i-lucide-tag', label: t('associate.columns.associateType'), value: associate.value.associate_type ? t(`associate.types.${associate.value.associate_type}`) : '—' },
     { icon: ICONS.calendar, label: t('associate.columns.requestDate'), value: formatDate(associate.value.request_date) || '—' },
     { icon: ICONS.creditCard, label: t('associate.columns.lastRenewalDate'), value: formatDate(associate.value.latest_renewal_date) || '—' },
     { icon: 'i-lucide-calendar-check', label: t('associate.columns.associationDate'), value: formatDate(associate.value.association_date) || '—' }
   ])
 
-const consensiFields = computed<DetailField[]>(() => !associate.value
+// Boolean values, not yes/no strings — rendered via <ConsentBadge>, the same
+// component now used by the table's consent_data/consent_social/
+// has_read_statute/has_acknowledged_surveillance_notice columns
+// (useAssociatesTableColumns.ts, associates/index.vue).
+const consensiFields = computed<ConsentField[]>(() => !associate.value
   ? []
   : [
-    { icon: 'i-lucide-shield-check', label: t('associate.columns.consentData'), value: yesNo(associate.value.consent_data) },
-    { icon: 'i-lucide-share-2', label: t('associate.columns.consentSocial'), value: yesNo(associate.value.consent_social) },
-    { icon: ICONS.rules, label: t('associate.columns.hasReadStatute'), value: yesNo(associate.value.has_read_statute) },
-    { icon: ICONS.show, label: t('associate.columns.hasAcknowledgedSurveillanceNotice'), value: yesNo(associate.value.has_acknowledged_surveillance_notice) }
+    { icon: 'i-lucide-shield-check', label: t('associate.columns.consentData'), value: associate.value.consent_data },
+    { icon: 'i-lucide-share-2', label: t('associate.columns.consentSocial'), value: associate.value.consent_social },
+    { icon: ICONS.rules, label: t('associate.columns.hasReadStatute'), value: associate.value.has_read_statute },
+    { icon: ICONS.show, label: t('associate.columns.hasAcknowledgedSurveillanceNotice'), value: associate.value.has_acknowledged_surveillance_notice }
   ])
 
-const mtgFields = computed<DetailField[]>(() => !associate.value
-  ? []
-  : [
-    ...(associate.value.mtgo_nickname ? [{ icon: ICONS.gameplay, label: t('associate.columns.mtgoNickname'), value: associate.value.mtgo_nickname }] : []),
-    ...(associate.value.mtga_nickname ? [{ icon: ICONS.gameplay, label: t('associate.columns.mtgaNickname'), value: associate.value.mtga_nickname }] : [])
-  ])
+// Transactions history, filtered client-side out of the same cached query
+// /transactions itself uses — no dedicated per-associate endpoint, the whole
+// table is already fetched and small enough (same reasoning as
+// useAssociatesTableColumns.ts resolving updated_by/created_by client-side).
+const { data: transactions, isLoading: transactionsLoading } = useTransactionsQuery()
+const associateTransactions = computed(() => (transactions.value ?? [])
+  .filter(transaction => transaction.associate?.uuid === associate.value?.uuid))
+
+const amountFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
+
+// Read-only summary, not the full /transactions table columns
+// (useTransactionsTableColumns.ts) — no selection/grouping/row-actions here,
+// this is a per-associate history embedded in a bigger detail page, not a
+// management surface of its own.
+const associateTransactionsColumns: TableColumn<Transaction>[] = [
+  {
+    accessorKey: 'payment_date',
+    header: t('transaction.columns.paymentDate'),
+    meta: { class: { td: 'whitespace-nowrap font-mono' } },
+    cell: ({ row }) => h(DateWithRelativeTooltip, { isoString: row.original.payment_date })
+  },
+  {
+    accessorKey: 'payment_type',
+    header: t('transaction.columns.paymentType'),
+    meta: { class: { td: 'whitespace-nowrap' } },
+    cell: ({ row }) => h(PaymentTypeBadge, { type: row.original.payment_type })
+  },
+  {
+    accessorKey: 'payment_amount',
+    header: t('transaction.columns.paymentAmount'),
+    meta: { class: { td: 'whitespace-nowrap font-mono' } },
+    cell: ({ row }) => amountFormatter.format(row.original.payment_amount)
+  },
+  {
+    accessorKey: 'payment_method',
+    header: t('transaction.columns.paymentMethod'),
+    meta: { class: { td: 'whitespace-nowrap' } },
+    cell: ({ row }) => row.original.payment_method
+  },
+  {
+    accessorKey: 'received_by',
+    header: t('transaction.columns.receivedBy'),
+    meta: { class: { td: 'whitespace-nowrap' } },
+    cell: ({ row }) => h(AssociateTag, { name: row.original.received_by })
+  },
+  {
+    accessorKey: 'event_name',
+    header: t('transaction.columns.event'),
+    cell: ({ row }) => row.original.event_name ?? ''
+  },
+  {
+    accessorKey: 'notes',
+    header: t('transaction.columns.notes'),
+    cell: ({ row }) => row.original.notes
+  }
+]
 </script>
 
 <template>
@@ -164,22 +226,9 @@ const mtgFields = computed<DetailField[]>(() => !associate.value
                 {{ associate.first_name }} {{ associate.last_name }}
               </h2>
               <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
-                <UBadge
-                  variant="subtle"
-                  class="capitalize gap-4"
-                  v-bind="currentStatusBadge"
-                >
-                  {{ t(`associate.statusLabels.${associate.membership_status}`) }}
-                </UBadge>
+                <MembershipStatusBadge :status="associate.membership_status" />
                 <AssociateNumberBadge :number="associate.pauperwave_associate_number" />
-                <UBadge
-                  v-if="associate.associate_type"
-                  color="neutral"
-                  variant="subtle"
-                  class="capitalize"
-                >
-                  {{ associate.associate_type }}
-                </UBadge>
+                <AssociateTypeBadge :type="associate.associate_type" />
               </div>
             </div>
           </div>
@@ -206,13 +255,15 @@ const mtgFields = computed<DetailField[]>(() => !associate.value
                   <UIcon name="i-lucide-badge-check" class="size-4 shrink-0" /> {{ $t('associate.columns.membershipStatus') }}
                 </dt>
                 <dd>
-                  <UBadge
-                    variant="subtle"
-                    class="capitalize gap-1.5"
-                    v-bind="currentStatusBadge"
-                  >
-                    {{ t(`associate.statusLabels.${associate.membership_status}`) }}
-                  </UBadge>
+                  <MembershipStatusBadge :status="associate.membership_status" />
+                </dd>
+              </div>
+              <div class="flex justify-between items-center gap-4">
+                <dt class="flex items-center gap-1.5 text-muted">
+                  <UIcon :name="ICONS.idCard" class="size-4 shrink-0" /> {{ $t('associate.columns.pauperwaveAssociateNumber') }}
+                </dt>
+                <dd>
+                  <AssociateNumberBadge :number="associate.pauperwave_associate_number" />
                 </dd>
               </div>
             </template>
@@ -220,16 +271,36 @@ const mtgFields = computed<DetailField[]>(() => !associate.value
 
           <AssociatesDetailCard
             :title="$t('associate.detail.sections.consensi')"
-            :fields="consensiFields"
-          />
-
-          <AssociatesDetailCard
-            v-if="mtgFields.length"
-            :title="$t('associate.detail.sections.mtg')"
-            :fields="mtgFields"
-            value-class="font-mono"
-          />
+            :fields="[]"
+          >
+            <template #before>
+              <div v-for="field in consensiFields" :key="field.label" class="flex justify-between items-center gap-4">
+                <dt class="flex items-center gap-1.5 text-muted">
+                  <UIcon :name="field.icon" class="size-4 shrink-0" /> {{ field.label }}
+                </dt>
+                <dd>
+                  <ConsentBadge :value="field.value" />
+                </dd>
+              </div>
+            </template>
+          </AssociatesDetailCard>
         </div>
+
+        <UCard :ui="{ header: 'font-semibold' }">
+          <template #header>
+            {{ $t('associate.detail.sections.transactions') }}
+          </template>
+
+          <p v-if="!transactionsLoading && !associateTransactions.length" class="text-sm text-muted py-4 text-center">
+            {{ $t('associate.detail.transactionsEmpty') }}
+          </p>
+          <UTable
+            v-else
+            :data="associateTransactions"
+            :columns="associateTransactionsColumns"
+            :loading="transactionsLoading"
+          />
+        </UCard>
       </div>
     </template>
   </UDashboardPanel>
