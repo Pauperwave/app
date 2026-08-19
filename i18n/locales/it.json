@@ -93,7 +93,6 @@
     }
   },
   "home": {
-    "revenue": "Revenue",
     "pickDate": "Seleziona data",
     "quickCreate": {
       "newAssociate": "Nuovo associato",
@@ -113,20 +112,46 @@
       "nextYear": "Prossimo anno",
       "all": "Tutto"
     },
-    "sales": {
-      "columns": {
-        "id": "ID",
-        "date": "Data",
-        "status": "Stato",
-        "email": "Email",
-        "amount": "Importo"
+    "staff": {
+      "stats": {
+        "activeAssociates": "Soci attivi",
+        "upcomingTournaments": "Tornei in programma",
+        "upcomingEvents": "Prossimi eventi"
+      },
+      "pendingActions": {
+        "title": "Azioni pendenti",
+        "requests": "Richieste di tesseramento",
+        "renewals": "Tesseramenti in scadenza"
+      },
+      "roleManagement": {
+        "title": "Gestione ruoli",
+        "description": "Assegna o modifica il ruolo di un membro."
+      },
+      "upcoming": {
+        "title": "Prossimi tornei",
+        "empty": "Nessun torneo in programma."
+      },
+      "recentTransactions": {
+        "title": "Ultime transazioni",
+        "empty": "Nessuna transazione registrata."
       }
     },
-    "stats": {
-      "associates": "Associati",
-      "conversions": "Conversioni",
-      "revenue": "Revenue",
-      "orders": "Ordini"
+    "player": {
+      "membership": {
+        "title": "Il tuo tesseramento",
+        "noAssociate": "Nessun tesseramento collegato a questo account."
+      },
+      "payments": {
+        "title": "I tuoi pagamenti",
+        "empty": "Nessun pagamento registrato."
+      },
+      "upcoming": {
+        "title": "Prossimi tornei",
+        "empty": "Nessun torneo in programma."
+      },
+      "rankings": {
+        "title": "Classifiche"
+      }
     },
     "tour": {
       "startButton": "Tour guidato",
@@ -135,21 +160,10 @@
           "title": "Crea al volo",
           "description": "Nuovo associato, transazione, torneo, lega o evento: da qui arrivi subito al modulo giusto, senza passare dalla pagina."
         },
-        "filters": {
-          "title": "Periodo",
-          "description": "L'intervallo di date e il raggruppamento (giornaliero, settimanale, mensile) filtrano tutta la dashboard qui sotto: statistiche, grafico e vendite."
-        },
-        "stats": {
-          "title": "Statistiche",
-          "description": "Un colpo d'occhio su associati, conversioni, revenue e ordini nel periodo selezionato."
-        },
-        "chart": {
-          "title": "Andamento",
-          "description": "Lo stesso periodo, in un grafico: utile per notare picchi o cali a occhio prima di guardare i numeri."
-        },
-        "sales": {
-          "title": "Ultime vendite",
-          "description": "Le transazioni più recenti nel periodo selezionato, con stato e importo."
+        "body": {
+          "title": "La tua Home",
+          "descriptionStaff": "Azioni pendenti, prossimi tornei e ultime transazioni: un cruscotto operativo per il tuo lavoro di gestione.",
+          "descriptionPlayer": "Il tuo tesseramento, i tuoi pagamenti e i prossimi tornei a cui puoi iscriverti."
         },
         "done": {
           "title": "Pronto!",

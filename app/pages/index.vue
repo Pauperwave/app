@@ -1,19 +1,23 @@
 <!-- app\pages\index.vue -->
+<!--
+  Role-differentiated Home (docs/PROGRESS.md ADR pending, 2026-08-19 "Home"
+  conversation): a thin entry point that decides *which* dashboard to render
+  (HomeStaff vs HomePlayer), owning none of the content itself. Shared chrome
+  (navbar, quick-create, notifications bell, tour) stays here rather than
+  duplicated into both dashboards.
+-->
 <script setup lang="ts">
-import { sub } from 'date-fns'
-import type { Period, Range } from '~/types'
-
 const { t } = useI18n()
 
 useSeoMeta({ title: () => t('nav.dashboard') })
 
-const range = shallowRef<Range>({
-  start: sub(new Date(), { days: 14 }),
-  end: new Date()
-})
-const period = ref<Period>('daily')
+const { isStaff, status } = useUserRole()
 
-const tour = useHomeTour()
+// Role not resolved yet (still fetching, or no session) — render neither
+// dashboard rather than guessing, to avoid a flash of the wrong one.
+const roleReady = computed(() => status.value === 'success')
+
+const tour = useHomeTour(isStaff)
 </script>
 
 <template>
@@ -33,39 +37,25 @@ const tour = useHomeTour()
             @click="tour.start()"
           />
 
-          <USeparator orientation="vertical" class="h-4" />
+          <template v-if="isStaff">
+            <USeparator orientation="vertical" class="h-4" />
 
-          <div id="tour-home-quick-create">
-            <HomeQuickCreateMenu />
-          </div>
+            <div id="tour-home-quick-create">
+              <HomeQuickCreateMenu />
+            </div>
+          </template>
 
           <USeparator orientation="vertical" class="h-4" />
 
           <NotificationsBellButton />
         </template>
       </UDashboardNavbar>
-
-      <UDashboardToolbar>
-        <template #left>
-          <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->
-          <div id="tour-home-filters" class="flex items-center gap-2 -ms-1">
-            <HomeDateRangePicker v-model="range" />
-
-            <HomePeriodSelect v-model="period" :range="range" />
-          </div>
-        </template>
-      </UDashboardToolbar>
     </template>
 
     <template #body>
-      <div id="tour-home-stats">
-        <HomeStats :period="period" :range="range" />
-      </div>
-      <div id="tour-home-chart">
-        <HomeChart :period="period" :range="range" />
-      </div>
-      <div id="tour-home-sales">
-        <HomeSales :period="period" :range="range" />
+      <div id="tour-home-body">
+        <HomeStaff v-if="roleReady && isStaff" />
+        <HomePlayer v-else-if="roleReady" />
       </div>
     </template>
   </UDashboardPanel>
