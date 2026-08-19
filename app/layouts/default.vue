@@ -61,29 +61,16 @@ watch(() => shortcutsTour.current.value?.id, (id) => {
   showChordHints.value = id === 'navigation'
 })
 
-// Same 'associates' Pinia Colada key as associates/index.vue — reuses that
-// page's cached fetch instead of re-querying Supabase from the layout.
+// Feeds the "Associati"/"Richieste"/"Wanted Cards" nav badges below (see
+// #item-trailing) — same counts HomeStaff.vue's dashboard sections use,
+// shared via this composable rather than duplicated (2026-08-19).
+const {
+  pendingAssociatesCount, associatesCount, associatesToRenewCount, wantedCardsSearchingCount
+} = useHomeActionCounts()
+
+// Same 'associates' Pinia Colada key as useHomeActionCounts.ts's own — feeds
+// the command palette's "associates" search group below, no extra fetch.
 const { data: associates } = useAssociatesQuery()
-
-// Feeds the "Associati" nav item's badge below (see #item-trailing) — same
-// count backing the SubNav badge on /associates/requests itself, so an admin
-// sees "there's something to do" before ever opening the page.
-const pendingAssociatesCount = computed(() => (associates.value ?? []).filter(
-  associate => associate.membership_request_status === 'pending'
-).length)
-
-// Plain roster size on the "Associati" item itself — no color, just a count
-// (2026-08-18), same approved-only filter as /associates' own roster.
-const associatesCount = computed(() => (associates.value ?? []).filter(
-  associate => associate.membership_request_status === 'approved'
-).length)
-
-// "Needs renewal" count — approved associates whose membership itself (not the
-// request) is lapsing/lapsed, i.e. due for a follow-up. Distinct from
-// pendingAssociatesCount above, which is about brand-new membership requests.
-const associatesToRenewCount = computed(() => (associates.value ?? []).filter(
-  associate => associate.membership_status === 'to_renew' || associate.membership_status === 'expired'
-).length)
 
 // Same 'players' Pinia Colada key as players/index.vue.
 const { data: players } = usePlayersQuery()
@@ -91,16 +78,6 @@ const { data: players } = usePlayersQuery()
 // Plain player count on the "Giocatori" item — no color, just a count, same
 // convention as associatesCount above.
 const playersCount = computed(() => (players.value ?? []).length)
-
-// Same 'wanted-cards' Pinia Colada key as wanted-cards/index.vue.
-const { data: wantedCards } = useWantedCardsQuery()
-
-// Plain open-requests count on the "Wanted Cards" item — no color, just a
-// count, same convention as associatesCount above (not "needs action": a
-// searching request isn't necessarily actionable by an admin).
-const wantedCardsSearchingCount = computed(() => (wantedCards.value ?? []).filter(
-  wantedCard => wantedCard.status === 'searching'
-).length)
 
 // Which nav items carry a warning-colored badge in the expanded sidebar —
 // reused below to swap in a plain warning UChip dot on the icon when the
