@@ -1642,7 +1642,8 @@
       "navbarTitle": "Location",
       "notFound": "Location non trovata.",
       "hostedTournaments": "Tornei ospitati qui",
-      "hostedTournamentsEmpty": "Nessun torneo ospitato qui finora."
+      "hostedTournamentsEmpty": "Nessun torneo ospitato qui finora.",
+      "tournamentActivity": "Attività tornei"
     },
     "tour": {
       "startButton": "Tour guidato",
