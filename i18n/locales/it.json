@@ -912,11 +912,11 @@
     },
     "detail": {
       "navbarTitle": "Evento",
-      "body": {
-        "specificEvent": "Evento specifico",
-        "eventDetails": "Contiene i dettagli dell'evento selezionato",
-        "participantsList": "Lista dei partecipanti all'evento",
-        "linkedTournaments": "Elenco dei tornei associati all'evento"
+      "notFound": "Evento non trovato.",
+      "tournamentActivity": "Attività tornei",
+      "dateRange": {
+        "from": "Dal",
+        "to": "al"
       }
     },
     "participants": {
