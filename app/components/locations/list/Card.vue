@@ -14,6 +14,13 @@ const { t } = useI18n()
 const addressLine = computed(() =>
   `${location.address}, ${location.postalCode} ${location.city} ${location.province}`)
 
+// Same "whole card navigates, interactive children stop propagation"
+// convention as LeaguesListCard.vue/TournamentsListCard.vue — the location
+// detail page (2026-08-19) is the first place to land on from this grid.
+function onCardClick() {
+  navigateTo(`/locations/${location.uuid}`)
+}
+
 // The precise Google Maps place link takes priority over the generic
 // address-search fallback when set (see the googleMapsUrl column added
 // 2026-08-16 specifically because the address-search link isn't always
@@ -23,7 +30,7 @@ const mapsLink = computed(() => location.googleMapsUrl ?? googleMapsUrl(location
 
 <template>
   <UCard
-    class="relative flex flex-col h-full transition-all duration-300 hover:shadow-xl
+    class="relative flex flex-col h-full cursor-pointer transition-all duration-300 hover:shadow-xl
       hover:shadow-primary/10 hover:-translate-y-1"
     :ui="{
       // Always 0 now (user request, 2026-08-19): the cover area is no
@@ -41,6 +48,7 @@ const mapsLink = computed(() => location.googleMapsUrl ?? googleMapsUrl(location
       // breakpoint instead of just dropping it.
       footer: 'flex items-center gap-2 overflow-x-auto px-4 py-2 sm:px-4'
     }"
+    @click="onCardClick"
   >
     <!-- Not inside the opacity-60 wrapper below: CSS opacity applies to a
          whole subtree, a descendant can't opt back out of an ancestor's
@@ -76,7 +84,7 @@ const mapsLink = computed(() => location.googleMapsUrl ?? googleMapsUrl(location
             size="xs"
             class="shrink-0"
             :aria-label="t('location.rowActions.edit')"
-            @click="onEdit(location)"
+            @click.stop="onEdit(location)"
           />
         </div>
 
@@ -85,7 +93,7 @@ const mapsLink = computed(() => location.googleMapsUrl ?? googleMapsUrl(location
           <span class="truncate">{{ addressLine }}</span>
         </p>
 
-        <LocationsListSocialLinks :location="location" />
+        <LocationsListSocialLinks :location="location" @click.stop />
       </div>
     </div>
 
@@ -107,6 +115,7 @@ const mapsLink = computed(() => location.googleMapsUrl ?? googleMapsUrl(location
         rel="noopener noreferrer"
         class="shrink-0"
         :class="{ 'opacity-60 saturate-50': location.temporarilyClosed }"
+        @click.stop
       >
         <UBadge color="neutral" variant="subtle" :icon="ICONS.mapPin">
           {{ t('location.card.openInMaps') }}

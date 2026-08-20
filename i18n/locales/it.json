@@ -1611,6 +1611,12 @@
     "rowActions": {
       "edit": "Modifica location"
     },
+    "detail": {
+      "navbarTitle": "Location",
+      "notFound": "Location non trovata.",
+      "hostedTournaments": "Tornei ospitati qui",
+      "hostedTournamentsEmpty": "Nessun torneo ospitato qui finora."
+    },
     "tour": {
       "startButton": "Tour guidato",
       "steps": {
