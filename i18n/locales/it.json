@@ -64,7 +64,17 @@
     "idCopied": "ID copiato negli appunti",
     "copyErrorTitle": "Impossibile copiare",
     "clearSearch": "Cancella ricerca",
-    "pageInDevelopment": "Questa pagina è ancora in sviluppo."
+    "pageInDevelopment": "Questa pagina è ancora in sviluppo.",
+    "calendarHeatmap": {
+      "less": "Meno",
+      "more": "Più",
+      "none": "Nessun accesso",
+      "low": "Pochi accessi",
+      "mediumLow": "Alcuni accessi",
+      "mediumHigh": "Molti accessi",
+      "high": "Moltissimi accessi",
+      "accessCount": "{count} accesso | {count} accessi"
+    }
   },
   "tour": {
     "back": "Indietro",

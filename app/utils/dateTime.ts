@@ -17,6 +17,20 @@ export function dateValueToDate(date: DateValue): Date {
   return new CalendarDate(date.year, date.month, date.day).toDate(getLocalTimeZone())
 }
 
+// Local calendar day, not toISOString().slice(0, 10) (which converts to
+// UTC) — a timestamp keyed by its UTC date can land on the wrong day/weekday
+// for anyone in a positive UTC-offset zone (e.g. Italy), since a UTC-day
+// boundary doesn't line up with the viewer's own midnight. Shared by
+// CalendarHeatmap.vue and any caller building a matching per-day lookup
+// (e.g. leagues/[leagueId]/index.vue's status-colored tournament activity)
+// so both sides derive the same key from the same instant.
+export function toLocalDateKey(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 // Tournaments' AddModal.vue/EditModal.vue: the end time is entered as a plain
 // "HH:mm" on the same calendar day as the start (no separate end-date field,
 // same reasoning as OpeningHoursEditor.vue's two independent pickers). Rolls

@@ -14,7 +14,7 @@ import type { Tournament } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 
 const {
-  tournament, contextMenuItems, onEdit, selection, range
+  tournament, contextMenuItems, onEdit, selection, range, highlighted = false, onHoverChange
 } = defineProps<{
   tournament: Tournament
   contextMenuItems: (tournament: Tournament) => DropdownMenuItem[]
@@ -22,6 +22,20 @@ const {
   selection: Selection<number>
   /** The ordered list a shift-click range resolves against — see GridView.vue. */
   range: number[]
+  /**
+   * Mirrors the card's own hover treatment without actually being hovered —
+   * driven by GridView.vue's highlightedTournamentId, itself driven by
+   * hovering the matching day in a CalendarHeatmap elsewhere on the page
+   * (leagues/[leagueId]/index.vue, locations/[slug]/index.vue). @default false
+   */
+  highlighted?: boolean
+  /**
+   * The reverse direction — reports this card's own hover state upward so a
+   * CalendarHeatmap elsewhere on the page can ring the matching day (user
+   * request, 2026-08-20, "the other way around"). Called with the tournament
+   * on hover-in, null on hover-out.
+   */
+  onHoverChange?: (tournament: Tournament | null) => void
 }>()
 
 const { t } = useI18n()
@@ -52,9 +66,14 @@ function timePart(startDate: string) {
       class="overflow-hidden cursor-pointer group transition-all duration-300
         hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1
         hover:scale-[1.02] hover:ring-primary"
-      :class="{ 'opacity-60 saturate-50': isMuted }"
+      :class="{
+        'opacity-60 saturate-50': isMuted,
+        'shadow-xl shadow-primary/10 -translate-y-1 scale-[1.02] ring-primary': highlighted
+      }"
       :ui="{ body: 'p-3 sm:p-3', footer: 'p-3 sm:p-3' }"
       @click="onCardClick"
+      @mouseenter="onHoverChange?.(tournament)"
+      @mouseleave="onHoverChange?.(null)"
     >
       <TournamentsListCover :tournament="tournament" :selection="selection" :range="range" />
 

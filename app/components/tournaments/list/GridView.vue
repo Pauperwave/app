@@ -5,12 +5,16 @@ import type { Tournament } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 
 const {
-  tournaments, contextMenuItems, onEdit, selection
+  tournaments, contextMenuItems, onEdit, selection, highlightedTournamentId = null, onHoverChange
 } = defineProps<{
   tournaments: Tournament[]
   contextMenuItems: (tournament: Tournament) => DropdownMenuItem[]
   onEdit: (tournament: Tournament) => void
   selection: Selection<number>
+  /** Forwarded to the matching card's own `highlighted` prop — see Card.vue. */
+  highlightedTournamentId?: number | null
+  /** Forwarded to every card's own `onHoverChange` prop — see Card.vue. */
+  onHoverChange?: (tournament: Tournament | null) => void
 }>()
 
 // The ordered list a shift-click range resolves against — the currently
@@ -34,6 +38,8 @@ const range = computed(() => tournaments.map(tournament => tournament.id))
       :on-edit="onEdit"
       :selection="selection"
       :range="range"
+      :highlighted="tournament.id === highlightedTournamentId"
+      :on-hover-change="onHoverChange"
     />
   </div>
 </template>
