@@ -3,7 +3,7 @@
 import type { TableColumn, TabsItem } from '@nuxt/ui'
 import { UBadge } from '#components'
 import type { Table } from '@tanstack/vue-table'
-import type { Associate, StatusColor } from '~/types'
+import type { Associate } from '~/types'
 import ConsentBadge from '~/components/ui/ConsentBadge.vue'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 import MembershipStatusBadge from '~/components/ui/MembershipStatusBadge.vue'
@@ -74,6 +74,14 @@ const {
   pendingRenewal, confirmOpen: renewConfirmOpen, receivedBy, receiverOptions, feeReady,
   requestBulkRenew, confirmBulkRenew
 } = useAssociatesBulkActions(selection)
+// Single search box matching name/email/phone/tax code, not a per-column
+// filter (user feedback, 2026-08-19 — replaced the email-only column filter
+// and the separate consent-social dropdown, removed the same day). UTable's
+// own globalFilter/globalFilterOptions, not a hand-rolled ref+watch pair —
+// see associatesGlobalFilterFn.ts. Declared before the columns destructure
+// below since useAssociatesTableColumns needs it to highlight matches.
+const search = ref('')
+
 // fallow-ignore-next-line code-duplication -- the useAssociatesTableColumns destructure
 // and status-filter-from-query function mirror requests.vue's own (different column
 // id and query semantics per page), not worth forcing into a shared helper
@@ -87,7 +95,7 @@ const {
   residencyAddressColumn, residencyHouseNumberColumn, residencyCityColumn,
   residencyProvinceColumn, residencyCapColumn,
   actionsColumn
-} = useAssociatesTableColumns(selection, table, associates, rowContextMenuItems)
+} = useAssociatesTableColumns(selection, table, associates, rowContextMenuItems, search)
 
 // Wires the sidebar links (/associates?status=pending|active|to_renew) to the
 // membership_status column filter, which can only be applied after UTable mounts.
@@ -230,28 +238,6 @@ function renderNeutralBadge(value: string) {
     label: String(value)
   })
 }
-
-const consentSocialOptions: { label: string, value: string, icon: string, color: StatusColor }[] = [
-  { label: t('associate.consentSocialOptions.all'), value: 'all', icon: 'i-lucide-megaphone', color: 'neutral' },
-  { label: t('associate.consentSocialOptions.yes'), value: 'yes', icon: ICONS.success, color: 'success' },
-  { label: t('associate.consentSocialOptions.no'), value: 'no', icon: ICONS.clear, color: 'error' }
-]
-
-const emailFilter = computed({
-  get: () => (table.value?.tableApi?.getColumn('email_address')?.getFilterValue() as string) ?? '',
-  set: (value: string) => table.value?.tableApi?.getColumn('email_address')?.setFilterValue(value)
-})
-
-const consentSocialFilter = ref('all')
-
-watch(() => consentSocialFilter.value, (newVal) => {
-  if (!table?.value?.tableApi) return
-
-  const consentColumn = table.value.tableApi.getColumn('consent_social')
-  if (!consentColumn) return
-
-  consentColumn.setFilterValue(newVal === 'all' ? undefined : newVal === 'yes')
-})
 </script>
 
 <template>
@@ -304,10 +290,8 @@ watch(() => consentSocialFilter.value, (newVal) => {
           <div v-else id="tour-associates-filters" class="flex items-center gap-4 flex-wrap">
             <AssociatesListFiltersBar
               v-model:active-status-tab="activeStatusTab"
-              v-model:email-filter="emailFilter"
-              v-model:consent-social-filter="consentSocialFilter"
+              v-model:search="search"
               :status-tabs="statusTabs"
-              :consent-social-options="consentSocialOptions"
             />
           </div>
         </template>
@@ -335,6 +319,8 @@ watch(() => consentSocialFilter.value, (newVal) => {
             ref="table"
             v-model:column-filters="columnFilters"
             v-model:column-visibility="columnVisibility"
+            v-model:global-filter="search"
+            :global-filter-options="{ globalFilterFn: associatesGlobalFilterFn }"
             :virtualize="{
               estimateSize: 35,
               overscan: 12

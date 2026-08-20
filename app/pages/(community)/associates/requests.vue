@@ -109,10 +109,16 @@ async function bulkRestore() {
   }
 }
 
+// Same single search box as associates/index.vue, added here 2026-08-19
+// (user request) — same associatesGlobalFilterFn.ts, matching name/email
+// /phone/tax-code. Declared before the columns destructure below since
+// useAssociatesRequestsTableColumns needs it to highlight matches.
+const search = ref('')
+
 // fallow-ignore-next-line code-duplication -- see the same comment in
 // associates/index.vue
 const { columns, visibilityItems }
-  = useAssociatesRequestsTableColumns(selection, table, associates, rowContextMenuItems)
+  = useAssociatesRequestsTableColumns(selection, table, associates, rowContextMenuItems, search)
 
 // fallow-ignore-next-line code-duplication -- see the same comment in
 // associates/index.vue
@@ -258,8 +264,12 @@ const tour = useAssociatesRequestsTour()
             :count="selectedRequestAssociates.length"
             @clear="selection.clear()"
           />
-          <div v-else id="tour-requests-filters">
-            <StatusFilterGroup v-model="activeStatusTab" :items="statusTabs" />
+          <div v-else id="tour-requests-filters" class="flex items-center gap-4 flex-wrap">
+            <AssociatesListFiltersBar
+              v-model:active-status-tab="activeStatusTab"
+              v-model:search="search"
+              :status-tabs="statusTabs"
+            />
           </div>
         </template>
 
@@ -288,6 +298,8 @@ const tour = useAssociatesRequestsTour()
           v-model:sorting="sorting"
           v-model:column-filters="columnFilters"
           v-model:column-visibility="columnVisibility"
+          v-model:global-filter="search"
+          :global-filter-options="{ globalFilterFn: associatesGlobalFilterFn }"
           :virtualize="{
             estimateSize: 35,
             overscan: 12

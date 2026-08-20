@@ -17,7 +17,8 @@ export function useAssociatesRequestsTableColumns(
   selection: Selection<number>,
   table: Ref<{ tableApi: Table<Associate> } | null>,
   associates: Ref<Associate[] | undefined>,
-  rowContextMenuItems: (associate: Associate) => DropdownMenuItem[]
+  rowContextMenuItems: (associate: Associate) => DropdownMenuItem[],
+  search?: Ref<string>
 ) {
   const {
     visibilityItems,
@@ -29,7 +30,7 @@ export function useAssociatesRequestsTableColumns(
     bornDateColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
     residencyAddressColumn, residencyHouseNumberColumn, residencyCityColumn,
     residencyProvinceColumn, residencyCapColumn
-  } = useAssociatesTableColumns(selection, table, associates, rowContextMenuItems)
+  } = useAssociatesTableColumns(selection, table, associates, rowContextMenuItems, search)
 
   const columns: TableColumn<Associate>[] = [
     selectColumn,

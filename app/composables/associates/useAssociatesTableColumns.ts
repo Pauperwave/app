@@ -8,6 +8,7 @@ import AssociateTag from '~/components/ui/AssociateTag.vue'
 import AssociateTypeBadge from '~/components/ui/AssociateTypeBadge.vue'
 import ConsentBadge from '~/components/ui/ConsentBadge.vue'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
+import HighlightMatch from '~/components/ui/HighlightMatch.vue'
 import MembershipRequestStatusBadge from '~/components/ui/MembershipRequestStatusBadge.vue'
 import RowActionsMenu from '~/components/ui/RowActionsMenu.vue'
 
@@ -68,11 +69,20 @@ export function useAssociatesTableColumns(
   selection: Selection<number>,
   table: Ref<{ tableApi: Table<Associate> } | null>,
   associates: Ref<Associate[] | undefined>,
-  rowContextMenuItems: (associate: Associate) => DropdownMenuItem[]
+  rowContextMenuItems: (associate: Associate) => DropdownMenuItem[],
+  // Highlights the search box's own match in the columns it actually
+  // searches (2026-08-19, user request) — optional since not every page
+  // using these columns has a search box (none did until associatesGlobal
+  // FilterFn.ts existed).
+  search?: Ref<string>
 ) {
   const { t } = useI18n()
 
   const columnHeaders = associatesColumnHeaders(t)
+
+  const highlight = (text: string | null) => (text && search?.value
+    ? h(HighlightMatch, { text, query: search.value })
+    : text)
 
   // updated_by/created_by are associate uuids (audit trail pattern,
   // docs/supabase/2-database.md) — PostgREST can't embed a self-referencing
@@ -235,33 +245,39 @@ export function useAssociatesTableColumns(
   const firstNameColumn: TableColumn<Associate> = {
     accessorKey: 'first_name',
     header: ({ column }) => sortableHeader(columnHeaders.first_name, column),
-    cell: ({ row }) => row.original.first_name
+    cell: ({ row }) => highlight(row.original.first_name)
   }
 
   const lastNameColumn: TableColumn<Associate> = {
     accessorKey: 'last_name',
     header: ({ column }) => sortableHeader(columnHeaders.last_name, column),
-    cell: ({ row }) => row.original.last_name
+    cell: ({ row }) => highlight(row.original.last_name)
   }
 
   const emailAddressColumn: TableColumn<Associate> = {
     accessorKey: 'email_address',
     header: columnHeaders.email_address,
-    cell: ({ row }) => row.original.email_address
+    cell: ({ row }) => highlight(row.original.email_address)
   }
 
   const phoneNumberColumn: TableColumn<Associate> = {
     accessorKey: 'phone_number',
     header: columnHeaders.phone_number,
     meta: { class: { td: 'font-mono whitespace-nowrap' } },
-    cell: ({ row }) => formatPhoneNumber(row.original.phone_number)
+    // Highlighted against the formatted display string, not the raw digits
+    // the search actually matched against — formatPhoneNumber() inserts
+    // spacing, so a query that matched the raw field can legitimately fail
+    // to find itself in the formatted one and just render unhighlighted
+    // (HighlightMatch.vue's own not-found fallback), same as a fuzzy-only
+    // name match.
+    cell: ({ row }) => highlight(formatPhoneNumber(row.original.phone_number))
   }
 
   const taxCodeColumn: TableColumn<Associate> = {
     accessorKey: 'tax_code',
     header: columnHeaders.tax_code,
     meta: { class: { td: 'font-mono' } },
-    cell: ({ row }) => row.original.tax_code
+    cell: ({ row }) => highlight(row.original.tax_code)
   }
 
   const bornDateColumn: TableColumn<Associate> = {
