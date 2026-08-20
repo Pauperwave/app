@@ -50,7 +50,6 @@
     "showColumns": "Mostra colonne",
     "yes": "Yes",
     "no": "No",
-    "filterEmailsPlaceholder": "Filter emails...",
     "switchToLightMode": "Passa al tema chiaro",
     "switchToDarkMode": "Passa al tema scuro",
     "retry": "Riprova",
@@ -250,12 +249,7 @@
       "residencyCap": "CAP",
       "actions": "Azioni"
     },
-    "consentSocialLabel": "Consenso Social",
-    "consentSocialOptions": {
-      "all": "Tutti",
-      "yes": "Concesso",
-      "no": "Negato"
-    },
+    "searchPlaceholder": "Cerca per nome, email, telefono o CF",
     "selectedRows": "{selected} di {total} associati selezionati.",
     "views": {
       "table": "Tabella",
