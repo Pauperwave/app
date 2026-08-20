@@ -2,6 +2,13 @@
 import type { TournamentStatus } from '~/types'
 import type { NewTournamentPayload } from '#shared/types/tournaments'
 
+interface SetTournamentImageParams {
+  id: number
+  imageUrl: string | null
+  imageCardName: string | null
+  imageCardArtist: string | null
+}
+
 export function useTournamentsMutations() {
   const queryCache = useQueryCache()
   const invalidate = () => queryCache.invalidateQueries({ key: TOURNAMENTS_KEY })
@@ -28,8 +35,8 @@ export function useTournamentsMutations() {
   })
 
   const setImage = useMutation({
-    mutation: ({ id, imageUrl }: { id: number, imageUrl: string | null }) =>
-      $fetch(`/api/tournaments/${id}/image`, { method: 'POST', body: { imageUrl } }),
+    mutation: ({ id, ...body }: SetTournamentImageParams) =>
+      $fetch(`/api/tournaments/${id}/image`, { method: 'POST', body }),
     onSettled: invalidate
   })
 

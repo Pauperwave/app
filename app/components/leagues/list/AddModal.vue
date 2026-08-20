@@ -22,8 +22,11 @@ function createInitialState(): LeagueFormState {
 const state = reactive<LeagueFormState>(createInitialState())
 
 // Kept out of `state`/the valibot schema (no format validation needed) —
-// same convention as TournamentsListAddModal.vue's `image`.
+// same convention as TournamentsListAddModal.vue's `image`. imageCardName/
+// imageCardArtist ride along for the same reason — see CardArtPicker.vue.
 const image = ref<string | undefined>(undefined)
+const imageCardName = ref<string | undefined>(undefined)
+const imageCardArtist = ref<string | undefined>(undefined)
 
 const { schema, statusOptions, rulesetOptions } = useLeagueFormFields()
 
@@ -36,6 +39,8 @@ type Schema = v.InferOutput<typeof schema>
 function resetForm() {
   Object.assign(state, createInitialState())
   image.value = undefined
+  imageCardName.value = undefined
+  imageCardArtist.value = undefined
 }
 
 // fallow-ignore-next-line code-duplication -- see the same comment in
@@ -45,7 +50,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     name: event.data.name,
     status: event.data.status,
     rulesetUuid: event.data.rulesetUuid || null,
-    imageUrl: image.value ?? null
+    imageUrl: image.value ?? null,
+    imageCardName: imageCardName.value ?? null,
+    imageCardArtist: imageCardArtist.value ?? null
   }
 
   try {
@@ -94,6 +101,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
           <LeaguesFieldsLeagueDataFields
             v-model:image="image"
+            v-model:image-card-name="imageCardName"
+            v-model:image-card-artist="imageCardArtist"
             :state="state"
             :status-options="statusOptions"
             :ruleset-options="rulesetOptions"

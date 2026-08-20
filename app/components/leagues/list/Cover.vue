@@ -46,6 +46,21 @@ function monthPart(startDate: string) {
       <span class="text-[10px] uppercase text-muted">{{ monthPart(league.startDate) }}</span>
     </div>
 
+    <!-- Same attribution overlay as TournamentsListCover.vue — required
+         alongside any art_crop use, see CardArtPicker.vue's own comment. -->
+    <UTooltip
+      v-if="league.image && league.imageCardName"
+      :text="league.imageCardArtist
+        ? t('magic.cardArtPicker.attribution', {
+          cardName: league.imageCardName, artist: league.imageCardArtist
+        })
+        : t('magic.cardArtPicker.attributionNoArtist', { cardName: league.imageCardName })"
+    >
+      <span class="absolute bottom-2 right-2 max-w-[75%] truncate rounded bg-default/90 backdrop-blur-sm px-1.5 py-0.5 text-[10px] text-muted">
+        {{ league.imageCardName }}
+      </span>
+    </UTooltip>
+
     <UCheckbox
       :model-value="selection.isSelected(league.id)"
       size="xl"

@@ -4,6 +4,8 @@ import type { Database } from '#shared/utils/types/database'
 
 interface SetTournamentImageBody {
   imageUrl: string | null
+  imageCardName: string | null
+  imageCardArtist: string | null
 }
 
 // Dedicated partial-update endpoint (mirrors [id]/status.post.ts) for the
@@ -13,13 +15,15 @@ export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 
   const id = Number(getRouterParam(event, 'id'))
-  const { imageUrl } = await readBody<SetTournamentImageBody>(event)
+  const { imageUrl, imageCardName, imageCardArtist } = await readBody<SetTournamentImageBody>(event)
 
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   const { data: tournament, error } = await supabase
     .from('tournaments')
-    .update({ image_url: imageUrl })
+    .update({
+      image_url: imageUrl, image_card_name: imageCardName, image_card_artist: imageCardArtist
+    })
     .eq('id', id)
     .select()
     .single()

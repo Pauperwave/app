@@ -28,7 +28,9 @@ export default defineEventHandler(async (event) => {
       name: body.name,
       status: body.status,
       ruleset_uuid: body.rulesetUuid,
-      image_url: body.imageUrl
+      image_url: body.imageUrl,
+      image_card_name: body.imageCardName,
+      image_card_artist: body.imageCardArtist
     })
     .eq('id', id)
     .select()
@@ -44,11 +46,17 @@ export default defineEventHandler(async (event) => {
   // ADR (docs/PROGRESS.md): a league's cover image is the source of truth for
   // every tournament inside it — changing it cascades onto every tournament
   // currently linked via tournaments.league_uuid, overwriting whatever
-  // image_url those tournaments had set individually.
+  // image_url those tournaments had set individually. The attribution pair
+  // rides along with image_url unconditionally here (no separate dirty-check)
+  // since they only ever change together, from the same CardArtPicker pick.
   if (existing && existing.image_url !== body.imageUrl) {
     await supabase
       .from('tournaments')
-      .update({ image_url: body.imageUrl })
+      .update({
+        image_url: body.imageUrl,
+        image_card_name: body.imageCardName,
+        image_card_artist: body.imageCardArtist
+      })
       .eq('league_uuid', league.uuid)
   }
 

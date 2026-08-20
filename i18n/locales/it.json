@@ -99,7 +99,9 @@
       "selectedAlt": "Immagine di copertina",
       "searchPlaceholder": "Cerca una carta...",
       "loading": "Caricamento...",
-      "noResults": "Nessuna illustrazione disponibile"
+      "noResults": "Nessuna illustrazione disponibile",
+      "attribution": "{cardName} — illustrazione di {artist}, © Wizards of the Coast",
+      "attributionNoArtist": "{cardName} — © Wizards of the Coast"
     }
   },
   "home": {

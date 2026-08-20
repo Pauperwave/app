@@ -14,7 +14,7 @@ const { count, side } = defineProps<{ count: number, side: 'left' | 'right' }>()
 const emit = defineEmits<{
   clear: []
   markStatus: [status: TournamentStatus]
-  setImage: [imageUrl: string]
+  setImage: [imageUrl: string, imageCardName: string | null, imageCardArtist: string | null]
   setEntryFee: [entryFee: number]
   delete: []
 }>()
@@ -33,12 +33,20 @@ const statusItems = computed(() => TOURNAMENT_STATUSES.map(status => ({
 // this modal's own "Applica" button is that step, not the picker itself.
 const imageModalOpen = ref(false)
 const pickedImage = ref<string | undefined>(undefined)
+const pickedImageCardName = ref<string | undefined>(undefined)
+const pickedImageCardArtist = ref<string | undefined>(undefined)
 
 function confirmImage() {
   if (!pickedImage.value) return
-  emit('setImage', pickedImage.value)
+  emit('setImage', pickedImage.value, pickedImageCardName.value ?? null, pickedImageCardArtist.value ?? null)
+  closeImageModal()
+}
+
+function closeImageModal() {
   imageModalOpen.value = false
   pickedImage.value = undefined
+  pickedImageCardName.value = undefined
+  pickedImageCardArtist.value = undefined
 }
 
 // Same "own modal + explicit confirm" shape as the image action above.
@@ -115,14 +123,18 @@ function confirmEntryFee() {
   >
     <template #body>
       <div class="space-y-4">
-        <MagicCardArtPicker v-model="pickedImage" />
+        <MagicCardArtPicker
+          v-model="pickedImage"
+          v-model:card-name="pickedImageCardName"
+          v-model:artist="pickedImageCardArtist"
+        />
 
         <div class="flex justify-end gap-2">
           <UButton
             :label="t('common.cancel')"
             color="neutral"
             variant="ghost"
-            @click="imageModalOpen = false; pickedImage = undefined"
+            @click="closeImageModal"
           />
           <UButton
             :label="t('tournament.bulkActions.confirm')"

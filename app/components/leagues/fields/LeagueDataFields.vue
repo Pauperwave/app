@@ -30,14 +30,22 @@ const {
 }>()
 
 // Kept out of `state`/the valibot schema (no format validation needed) —
-// same convention as TournamentsFieldsTournamentDataFields.vue's `image`.
+// same convention as TournamentsFieldsTournamentDataFields.vue's `image`,
+// including the imageCardName/imageCardArtist attribution pair — see
+// CardArtPicker.vue.
 const image = defineModel<string | undefined>('image')
+const imageCardName = defineModel<string | undefined>('imageCardName')
+const imageCardArtist = defineModel<string | undefined>('imageCardArtist')
 </script>
 
 <template>
   <!-- eslint-disable vue/no-mutating-props -- see the top-of-file comment -->
   <UFormField :label="$t('league.addModal.fields.image')" name="image">
-    <MagicCardArtPicker v-model="image" />
+    <MagicCardArtPicker
+      v-model="image"
+      v-model:card-name="imageCardName"
+      v-model:artist="imageCardArtist"
+    />
   </UFormField>
 
   <UStatusSelect

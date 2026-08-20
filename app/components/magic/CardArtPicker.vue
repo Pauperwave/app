@@ -5,10 +5,19 @@
   typeahead + printings query (same composable as WantedCardsListAddModal.vue),
   but selects a printing's art_crop (cropped illustration, no card frame)
   rather than the full card image, since the result becomes a banner/cover,
-  not a card reference.
+  not a card reference. Also tracks the card name/artist alongside the URL
+  (2026-08-20, migration 20260820120000) — Scryfall's API usage guidelines
+  require the artist name and copyright to be shown next to any art_crop use,
+  since the crop itself has no in-image credit (unlike the full card). Shown
+  below the picker here, and again wherever the cover ends up rendered
+  (TournamentsListCover.vue/LeaguesListCover.vue).
 -->
 <script setup lang="ts">
+import type { ScryfallPrinting } from '~/composables/useScryfallCardSearch'
+
 const model = defineModel<string | undefined>()
+const cardName = defineModel<string | undefined>('cardName')
+const artist = defineModel<string | undefined>('artist')
 
 const { t } = useI18n()
 
@@ -33,8 +42,10 @@ watch(selectedName, name => fetchPrintings(name))
 // are offered as a cover choice.
 const artOptions = computed(() => printings.value.filter(printing => printing.artCropUrl))
 
-function selectArt(url: string) {
-  model.value = url
+function selectArt(printing: ScryfallPrinting) {
+  model.value = printing.artCropUrl!
+  cardName.value = printing.name
+  artist.value = printing.artist ?? undefined
   open.value = false
   selectedName.value = undefined
   query.value = ''
@@ -42,6 +53,8 @@ function selectArt(url: string) {
 
 function clear() {
   model.value = undefined
+  cardName.value = undefined
+  artist.value = undefined
 }
 </script>
 
@@ -102,7 +115,7 @@ function clear() {
               type="button"
               class="aspect-video rounded overflow-hidden ring-2 ring-transparent hover:ring-primary transition-all"
               :title="printing.setName"
-              @click="selectArt(printing.artCropUrl!)"
+              @click="selectArt(printing)"
             >
               <img
                 :src="printing.artCropUrl!"
@@ -114,6 +127,14 @@ function clear() {
         </div>
       </template>
     </UPopover>
+
+    <!-- Required alongside any art_crop use per Scryfall's API usage
+         guidelines — see the top-of-file comment. -->
+    <p v-if="model && cardName" class="mt-1 text-xs text-muted truncate">
+      {{ artist
+        ? t('magic.cardArtPicker.attribution', { cardName, artist })
+        : t('magic.cardArtPicker.attributionNoArtist', { cardName }) }}
+    </p>
 
     <UButton
       v-if="model"

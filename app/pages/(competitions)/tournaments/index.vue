@@ -198,7 +198,9 @@ const bulkConfirmTitle = computed(() => {
             :count="selectedTournaments.length"
             @mark-status="requestedStatus =>
               requestStatusChange(requestedStatus, selectedTournaments)"
-            @set-image="imageUrl => requestImageChange(imageUrl, selectedTournaments)"
+            @set-image="(imageUrl, imageCardName, imageCardArtist) => requestImageChange(
+              { imageUrl, imageCardName, imageCardArtist }, selectedTournaments
+            )"
             @set-entry-fee="entryFee => requestEntryFeeChange(entryFee, selectedTournaments)"
             @delete="requestDelete(selectedTournaments)"
           />

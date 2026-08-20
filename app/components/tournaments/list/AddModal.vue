@@ -41,8 +41,11 @@ const state = reactive<TournamentFormState>(createInitialState())
 const { startDate, formattedStartDate, reset: resetStartDate } = useStartDateField(state)
 
 // Kept out of `state`/the valibot schema (no format validation needed) —
-// same convention as LocationsListAddModal.vue's `image`.
+// same convention as LocationsListAddModal.vue's `image`. imageCardName/
+// imageCardArtist ride along for the same reason — see CardArtPicker.vue.
 const image = ref<string | undefined>(undefined)
+const imageCardName = ref<string | undefined>(undefined)
+const imageCardArtist = ref<string | undefined>(undefined)
 
 const {
   schema, statusOptions, locationOptions, organizerOptions, formatOptions
@@ -82,6 +85,8 @@ function resetForm() {
   Object.assign(state, createInitialState())
   resetStartDate()
   image.value = undefined
+  imageCardName.value = undefined
+  imageCardArtist.value = undefined
   state.organizerUuid = organizerOptions.value.find(option => option.label === 'Pauperwave')?.value
   state.locationUuid = locationOptions.value.find(option => option.label.startsWith('Smart Lab'))?.value
   state.formatUuid = formatOptions.value.find(option => option.label === 'Commander')?.value ?? state.formatUuid
@@ -108,7 +113,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     description: event.data.description || null,
     prizes: event.data.prizes || null,
     companionCode: event.data.companionCode || null,
-    imageUrl: image.value ?? null
+    imageUrl: image.value ?? null,
+    imageCardName: imageCardName.value ?? null,
+    imageCardArtist: imageCardArtist.value ?? null
   }
 
   try {
@@ -158,6 +165,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
           <TournamentsFieldsTournamentDataFields
             v-model:image="image"
+            v-model:image-card-name="imageCardName"
+            v-model:image-card-artist="imageCardArtist"
             :state="state"
             :status-options="statusOptions"
             :format-options="formatOptions"

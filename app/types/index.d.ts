@@ -246,6 +246,12 @@ export interface Tournament {
   prizes: string | null
   companionCode: string | null
   image: string | null
+  // Attribution for `image` when it's a Scryfall art_crop (MagicCardArtPicker.vue,
+  // migration 20260820120000) — required alongside the crop per Scryfall's API
+  // usage guidelines. Both null whenever `image` is unset or wasn't picked
+  // through the card-art picker.
+  imageCardName: string | null
+  imageCardArtist: string | null
   participants: string[]
   // Distinct from `organizer` (the running club/group, e.g. "Pauperwave") —
   // the specific person to contact about this tournament. Both optional:
@@ -273,6 +279,11 @@ export interface League {
   // formatUuid/leagueUuid/etc.
   rulesetUuid: string | null
   image: string | null
+  // Same attribution pair as Tournament.imageCardName/imageCardArtist above —
+  // cascades onto every linked tournament's own pair alongside `image` (see
+  // server/api/leagues/[id]/update.post.ts).
+  imageCardName: string | null
+  imageCardArtist: string | null
   tournamentCount: number
   completedTournamentCount: number
 }

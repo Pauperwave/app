@@ -41,8 +41,11 @@ const state = reactive<TournamentFormState>({
 const { startDate, formattedStartDate } = useStartDateField(state, { defaultToToday: false })
 
 // Kept out of `state`/the valibot schema (no format validation needed) —
-// same convention as LocationsListEditModal.vue's `image`.
+// same convention as LocationsListEditModal.vue's `image`. imageCardName/
+// imageCardArtist ride along for the same reason — see CardArtPicker.vue.
 const image = ref<string | undefined>(undefined)
+const imageCardName = ref<string | undefined>(undefined)
+const imageCardArtist = ref<string | undefined>(undefined)
 
 // Refills every time the modal opens on a (possibly new) tournament — same
 // convention as TransactionsListEditModal.vue's watch on its `transaction` prop.
@@ -70,6 +73,8 @@ watch([open, () => tournament], ([isOpen, current]) => {
   state.entryFee = current.entryFee ?? 0
   state.companionCode = current.companionCode ?? undefined
   image.value = current.image ?? undefined
+  imageCardName.value = current.imageCardName ?? undefined
+  imageCardArtist.value = current.imageCardArtist ?? undefined
 }, { immediate: true })
 
 const {
@@ -103,7 +108,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     description: event.data.description || null,
     prizes: event.data.prizes || null,
     companionCode: event.data.companionCode || null,
-    imageUrl: image.value ?? null
+    imageUrl: image.value ?? null,
+    imageCardName: imageCardName.value ?? null,
+    imageCardArtist: imageCardArtist.value ?? null
   }
 
   submitting.value = true
@@ -148,6 +155,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
           <TournamentsFieldsTournamentDataFields
             v-model:image="image"
+            v-model:image-card-name="imageCardName"
+            v-model:image-card-artist="imageCardArtist"
             :state="state"
             :status-options="statusOptions"
             :format-options="formatOptions"

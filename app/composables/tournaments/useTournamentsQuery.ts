@@ -59,6 +59,8 @@ export function useTournamentsQuery() {
         prizes: row.prizes,
         companionCode: row.companion_code,
         image: row.image_url,
+        imageCardName: row.image_card_name,
+        imageCardArtist: row.image_card_artist,
         participants: row.participant_names ?? [],
         contactName: row.contact_name,
         contactPhone: row.contact_phone

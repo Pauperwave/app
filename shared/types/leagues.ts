@@ -11,4 +11,8 @@ export interface NewLeaguePayload {
   status: string
   rulesetUuid: string | null
   imageUrl: string | null
+  // Scryfall art_crop attribution, see migration 20260820120000 — both null
+  // whenever imageUrl is unset or wasn't picked via MagicCardArtPicker.vue.
+  imageCardName: string | null
+  imageCardArtist: string | null
 }
