@@ -45,9 +45,17 @@ const filteredPlayers = computed(() => data.value.filter(
 // — see playersGlobalFilterFn.ts.
 const search = ref('')
 
+// Own query, own cache key — last_sign_in_at lives in auth.users, not
+// players_full, so it can't ride along with usePlayersQuery.ts's own fetch
+// (server/api/players/last-logins.get.ts, 2026-08-20 user request).
+const { data: lastLoginsData } = usePlayersLastLoginsQuery()
+const lastLogins = computed(() => new Map(
+  (lastLoginsData.value ?? []).map(entry => [entry.playerUuid, entry.lastSignInAt])
+))
+
 const tour = usePlayersTour()
 
-const { columns, columnHeaders } = usePlayersTableColumns(search)
+const { columns, columnHeaders } = usePlayersTableColumns(search, lastLogins)
 const sorting = ref([{ id: 'name', desc: false }])
 
 // Same "Mostra colonne" pattern as wanted-cards/index.vue: rebuilt every time
@@ -125,8 +133,12 @@ const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, 
         :data="filteredPlayers"
         :columns="columns"
         class="flex-1 h-80 shrink-0"
+        :ui="{ tr: 'cursor-pointer' }"
         :loading="loading"
         sticky="header"
+        @select="(_e, row) => navigateTo(
+          `/players/${slugify(`${row.original.first_name} ${row.original.last_name}`)}`
+        )"
       >
         <template #empty>
           <div class="py-12 text-center text-muted">
