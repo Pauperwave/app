@@ -4,11 +4,24 @@ const { t } = useI18n()
 
 useSeoMeta({ title: () => t('cittadino.breadcrumb') })
 
+// Own local search state, not part of the shared composable — PublicCittadinoPage.vue
+// has its own equivalent ref rather than sharing this one (both pages call
+// useCittadinoStandingsPage independently). Declared before that call below
+// since it threads through to useCittadinoTableColumns.ts for match
+// highlighting.
+const search = ref('')
+
 const {
   formatItems, isFiltered, activeEdition, editionTabs, events, standings,
   columns, columnAccentColors, tableMeta, legendCountedSample, legendDroppedSample,
   isInitialLoad, loading, error
-} = useCittadinoStandingsPage()
+} = useCittadinoStandingsPage(search)
+
+const filteredStandings = computed(() => {
+  const query = search.value.trim().toLowerCase()
+  if (!query) return standings.value
+  return standings.value.filter(row => row.playerName.toLowerCase().includes(query))
+})
 
 // Same convention as associates/requests.vue's tesseramentoLink: point at
 // this deploy's own /rankings/cittadino for now, until the subdomain is
@@ -71,12 +84,18 @@ const tour = useCittadinoTour()
 
       <UDashboardToolbar :ui="{ root: 'flex-wrap h-auto py-2 gap-4', left: 'gap-4 flex-wrap' }">
         <template #left>
-          <div id="tour-cittadino-filters">
+          <div id="tour-cittadino-filters" class="flex items-center gap-4 flex-wrap">
             <CittadinoFiltersDropdown
               :format-items="formatItems"
               :is-filtered="isFiltered"
               :player-count="standings.length"
               :event-count="events.length"
+            />
+
+            <SearchInput
+              v-model="search"
+              class="w-56 sm:w-64 lg:w-72"
+              :placeholder="$t('standings.searchPlaceholder')"
             />
           </div>
         </template>
@@ -102,7 +121,7 @@ const tour = useCittadinoTour()
         <CittadinoStandingsBody
           :error="error"
           :is-initial-load="isInitialLoad"
-          :standings="standings"
+          :standings="filteredStandings"
           :columns="columns"
           :loading="loading"
           :table-meta="tableMeta"

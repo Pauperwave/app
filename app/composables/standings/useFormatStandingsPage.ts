@@ -14,7 +14,7 @@ export const FORMAT_STANDINGS_BREADCRUMB_KEYS: Record<StandingsFormat, string> =
   premodern: 'standings.premodernBreadcrumb'
 }
 
-export function useFormatStandingsPage(format: StandingsFormat) {
+export function useFormatStandingsPage(format: StandingsFormat, search?: Ref<string>) {
   const { t } = useI18n()
 
   // null, not '': the endpoint resolves a missing/unknown league to the current
@@ -35,7 +35,7 @@ export function useFormatStandingsPage(format: StandingsFormat) {
   const leagueTabs = computed<TabsItem[]>(() =>
     leagues.value.map(item => ({ label: item.name, value: item.uuid })))
 
-  const { columns } = useFormatStandingsTableColumns(events, topCutoff)
+  const { columns } = useFormatStandingsTableColumns(events, topCutoff, search)
 
   useSeoMeta({
     title: () => t('standings.tabTitle', { format: t(FORMAT_STANDINGS_BREADCRUMB_KEYS[format]) })

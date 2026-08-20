@@ -22,10 +22,23 @@ useSeoMeta({ title: () => t(FORMAT_STANDINGS_BREADCRUMB_KEYS[format]) })
 // useFormatStandingsQuery, so this replaces all three page bodies.
 // /standings/cittadino is NOT one of these: it has its own edition-picker logic
 // and isn't just a format variant of this page.
+// Own local search state, not part of the shared composable — PublicFormatPage.vue
+// has its own equivalent ref rather than sharing this one (both pages call
+// useFormatStandingsPage independently). Declared before that call below
+// since it threads through to useFormatStandingsTableColumns.ts for match
+// highlighting.
+const search = ref('')
+
 const {
   activeLeague, leagueTabs, events, standings, columns, participationPoints,
   isInitialLoad, tableMeta, loading
-} = useFormatStandingsPage(format)
+} = useFormatStandingsPage(format, search)
+
+const filteredStandings = computed(() => {
+  const query = search.value.trim().toLowerCase()
+  if (!query) return standings.value
+  return standings.value.filter(row => row.playerName.toLowerCase().includes(query))
+})
 
 // Same convention as associates/requests.vue's tesseramentoLink: point at
 // this deploy's own /rankings/<format> for now, until each subdomain is
@@ -92,9 +105,17 @@ const tour = useStandingsFormatTour()
 
       <UDashboardToolbar>
         <template #left>
-          <p class="text-sm text-muted">
-            {{ $t('standings.summary', { players: standings.length, events: events.length }) }}
-          </p>
+          <div class="flex items-center gap-4 flex-wrap">
+            <p class="text-sm text-muted">
+              {{ $t('standings.summary', { players: standings.length, events: events.length }) }}
+            </p>
+
+            <SearchInput
+              v-model="search"
+              class="w-56 sm:w-64 lg:w-72"
+              :placeholder="$t('standings.searchPlaceholder')"
+            />
+          </div>
         </template>
 
         <template #right>
@@ -122,7 +143,7 @@ const tour = useStandingsFormatTour()
       <div id="tour-standings-content">
         <StandingsFormatBody
           :is-initial-load="isInitialLoad"
-          :standings="standings"
+          :standings="filteredStandings"
           :columns="columns"
           :loading="loading"
           :table-meta="tableMeta"

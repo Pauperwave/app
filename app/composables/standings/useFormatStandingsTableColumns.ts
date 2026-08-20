@@ -20,7 +20,8 @@ function formatEventDate(date: string) {
 
 export function useFormatStandingsTableColumns(
   events: Ref<FormatStandingEvent[]>,
-  topCutoff: Ref<number>
+  topCutoff: Ref<number>,
+  search?: Ref<string>
 ) {
   const { t } = useI18n()
 
@@ -46,7 +47,9 @@ export function useFormatStandingsTableColumns(
       size: PLAYER_WIDTH,
       header: () => h('span', { class: 'text-xs' }, t('standings.columns.player')),
       meta: { class: { th: PLAYER_CLASS, td: PLAYER_CLASS } },
-      cell: ({ row }) => h(AssociateTag, { name: row.original.playerName })
+      cell: ({ row }) => h(AssociateTag, {
+        name: row.original.playerName, highlightQuery: search?.value
+      })
     },
 
     ...events.value.map<TableColumn<FormatStandingRow>>(event => ({

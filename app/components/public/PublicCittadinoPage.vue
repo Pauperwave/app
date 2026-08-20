@@ -9,11 +9,25 @@
   is untouched.
 -->
 <script lang="ts" setup>
+// Declared before the useCittadinoStandingsPage call below since it threads
+// through to useCittadinoTableColumns.ts for match highlighting — same
+// search standings/cittadino/index.vue's internal counterpart got, extended
+// here 2026-08-20 (user request: no reason to withhold it from public
+// visitors, who are if anything more likely to be scanning for their own
+// name).
+const search = ref('')
+
 const {
   formatItems, isFiltered, activeEdition, editionTabs, events, standings,
   columns, columnAccentColors, tableMeta, legendCountedSample, legendDroppedSample,
   isInitialLoad, loading, error
-} = useCittadinoStandingsPage()
+} = useCittadinoStandingsPage(search)
+
+const filteredStandings = computed(() => {
+  const query = search.value.trim().toLowerCase()
+  if (!query) return standings.value
+  return standings.value.filter(row => row.playerName.toLowerCase().includes(query))
+})
 </script>
 
 <template>
@@ -33,12 +47,20 @@ const {
     </div>
 
     <div class="flex items-center justify-between gap-4 flex-wrap">
-      <CittadinoFiltersDropdown
-        :format-items="formatItems"
-        :is-filtered="isFiltered"
-        :player-count="standings.length"
-        :event-count="events.length"
-      />
+      <div class="flex items-center gap-4 flex-wrap">
+        <CittadinoFiltersDropdown
+          :format-items="formatItems"
+          :is-filtered="isFiltered"
+          :player-count="standings.length"
+          :event-count="events.length"
+        />
+
+        <SearchInput
+          v-model="search"
+          class="w-56 sm:w-64 lg:w-72"
+          :placeholder="$t('standings.searchPlaceholder')"
+        />
+      </div>
 
       <StandingsLegend :items="[
         { sample: legendCountedSample, labelKey: 'cittadino.legend.counted' },
@@ -50,7 +72,7 @@ const {
     <CittadinoStandingsBody
       :error="error"
       :is-initial-load="isInitialLoad"
-      :standings="standings"
+      :standings="filteredStandings"
       :columns="columns"
       :loading="loading"
       :table-meta="tableMeta"

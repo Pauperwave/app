@@ -1180,6 +1180,7 @@
     "pauperBreadcrumb": "Pauper",
     "placeholder": "Classifica non ancora disponibile",
     "summary": "{players} giocatori · {events} eventi",
+    "searchPlaceholder": "Cerca giocatore",
     "columns": {
       "position": "#",
       "player": "Giocatore",

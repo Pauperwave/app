@@ -18,10 +18,23 @@ interface Props {
 
 const { format } = defineProps<Props>()
 
+// Declared before the useFormatStandingsPage call below since it threads
+// through to useFormatStandingsTableColumns.ts for match highlighting —
+// same search FormatPage.vue's internal counterpart got, extended here
+// 2026-08-20 (user request: no reason to withhold it from public visitors,
+// who are if anything more likely to be scanning for their own name).
+const search = ref('')
+
 const {
   activeLeague, leagueTabs, events, standings, columns, participationPoints,
   isInitialLoad, tableMeta, loading
-} = useFormatStandingsPage(format)
+} = useFormatStandingsPage(format, search)
+
+const filteredStandings = computed(() => {
+  const query = search.value.trim().toLowerCase()
+  if (!query) return standings.value
+  return standings.value.filter(row => row.playerName.toLowerCase().includes(query))
+})
 </script>
 
 <template>
@@ -41,9 +54,17 @@ const {
     </div>
 
     <div class="flex items-center justify-between gap-4 flex-wrap">
-      <p class="text-sm text-muted">
-        {{ $t('standings.summary', { players: standings.length, events: events.length }) }}
-      </p>
+      <div class="flex items-center gap-4 flex-wrap">
+        <p class="text-sm text-muted">
+          {{ $t('standings.summary', { players: standings.length, events: events.length }) }}
+        </p>
+
+        <SearchInput
+          v-model="search"
+          class="w-56 sm:w-64 lg:w-72"
+          :placeholder="$t('standings.searchPlaceholder')"
+        />
+      </div>
 
       <StandingsLegend :items="[
         { sample: FORMAT_STANDINGS_MAX_POINTS, labelKey: 'standings.legend.counted' },
@@ -55,7 +76,7 @@ const {
 
     <StandingsFormatBody
       :is-initial-load="isInitialLoad"
-      :standings="standings"
+      :standings="filteredStandings"
       :columns="columns"
       :loading="loading"
       :table-meta="tableMeta"
