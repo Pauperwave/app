@@ -35,16 +35,29 @@ const schema = v.object({
 
 type Schema = v.InferOutput<typeof schema>
 
-const state = reactive<Schema>({
-  name: '',
-  status: 'draft',
-  startDate: todayString,
-  organizerUuid: undefined as unknown as string,
-  locationUuid: undefined,
-  companionCode: undefined
-})
+function createInitialState(): Schema {
+  return {
+    name: '',
+    status: 'draft',
+    startDate: todayString,
+    organizerUuid: undefined as unknown as string,
+    locationUuid: undefined,
+    companionCode: undefined
+  }
+}
 
-const { startDate, formattedStartDate } = useStartDateField(state)
+const state = reactive<Schema>(createInitialState())
+
+const { startDate, formattedStartDate, reset: resetStartDate } = useStartDateField(state)
+
+// UModal only hides/shows, it does not unmount the form, so the state has to
+// be cleared explicitly — called on successful submit and on explicit
+// "Annulla", but deliberately NOT on the X button or an outside click, which
+// should preserve whatever the user typed (user decision 2026-08-20).
+function resetForm() {
+  Object.assign(state, createInitialState())
+  resetStartDate()
+}
 
 // fallow-ignore-next-line code-duplication -- the state literal + onSubmit
 // scaffolding mirror leagues/list/AddModal.vue's, but the payload type/fields
@@ -71,6 +84,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       color: 'success'
     })
     open.value = false
+    resetForm()
   } catch (err) {
     toast.add({
       title: t('event.addModal.errorToastTitle'),
@@ -186,7 +200,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             :label="$t('event.addModal.cancel')"
             color="neutral"
             variant="ghost"
-            @click="open = false"
+            @click="open = false; resetForm()"
           />
           <UButton
             :label="$t('event.addModal.create')"

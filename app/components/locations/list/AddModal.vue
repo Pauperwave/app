@@ -14,31 +14,45 @@ const { schema } = useLocationFormFields()
 
 type Schema = v.InferOutput<typeof schema>
 
-const state = reactive<LocationFormState>({
-  name: undefined,
-  address: undefined,
-  postalCode: undefined,
-  city: undefined,
-  province: undefined,
-  // Every location seeded/entered so far is Italian (Smart Lab et al.) — a
-  // default here saves re-typing it every time, not a hard assumption.
-  country: 'Italy',
-  phone: undefined,
-  email: undefined,
-  website: undefined,
-  googleMapsUrl: undefined,
-  facebook: undefined,
-  instagram: undefined,
-  telegramChannel: undefined,
-  whatsapp: undefined,
-  temporarilyClosed: false
-})
+function createInitialState(): LocationFormState {
+  return {
+    name: undefined,
+    address: undefined,
+    postalCode: undefined,
+    city: undefined,
+    province: undefined,
+    // Every location seeded/entered so far is Italian (Smart Lab et al.) — a
+    // default here saves re-typing it every time, not a hard assumption.
+    country: 'Italy',
+    phone: undefined,
+    email: undefined,
+    website: undefined,
+    googleMapsUrl: undefined,
+    facebook: undefined,
+    instagram: undefined,
+    telegramChannel: undefined,
+    whatsapp: undefined,
+    temporarilyClosed: false
+  }
+}
+
+const state = reactive<LocationFormState>(createInitialState())
 
 // Kept out of the valibot schema (see useLocationFormFields.ts) — neither
 // needs per-field required/format validation, just merged into the payload
 // on submit.
 const openingHours = ref<OpeningHours>(emptyOpeningHours())
 const image = ref<string | undefined>(undefined)
+
+// UModal only hides/shows, it does not unmount the form, so the state has to
+// be cleared explicitly — called on successful submit and on explicit
+// "Annulla", but deliberately NOT on the X button or an outside click, which
+// should preserve whatever the user typed (user decision 2026-08-20).
+function resetForm() {
+  Object.assign(state, createInitialState())
+  openingHours.value = emptyOpeningHours()
+  image.value = undefined
+}
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   const payload = buildLocationPayload(event.data, openingHours.value, image.value)
@@ -51,6 +65,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       color: 'success'
     })
     open.value = false
+    resetForm()
   } catch (err) {
     toast.add({
       title: t('location.addModal.errorToastTitle'),
@@ -92,7 +107,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             :label="$t('location.addModal.cancel')"
             color="neutral"
             variant="ghost"
-            @click="open = false"
+            @click="open = false; resetForm()"
           />
           <UButton
             :label="$t('location.addModal.create')"
