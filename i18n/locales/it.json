@@ -653,6 +653,9 @@
   "league": {
     "breadcrumb": "Leghe",
     "singleLeaderboard": "Classifica singola lega",
+    "singleLeaderboardMock": {
+      "stagesCounted": "{counted}/{total} tappe contate"
+    },
     "rowActions": {
       "edit": "Modifica lega",
       "delete": "Elimina"
@@ -762,6 +765,11 @@
       "body": {
         "leaderboard": "Classifica lega specifica",
         "participants": "Partecipanti alla lega specifica"
+      },
+      "tournamentActivity": "Attività tornei",
+      "dateRange": {
+        "from": "Dal",
+        "to": "al"
       }
     },
     "tournamentsList": {
