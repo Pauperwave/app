@@ -30,7 +30,9 @@ export default defineEventHandler(async (event) => {
       description: body.description,
       prizes: body.prizes,
       companion_code: body.companionCode,
-      image_url: body.imageUrl
+      image_url: body.imageUrl,
+      image_card_name: body.imageCardName,
+      image_card_artist: body.imageCardArtist
     })
     .select()
     .single()

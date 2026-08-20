@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -216,6 +216,8 @@ export type Database = {
           deleted_at: string | null
           ends_at: string | null
           id: number
+          image_card_artist: string | null
+          image_card_name: string | null
           image_url: string | null
           name: string
           ruleset_uuid: string | null
@@ -229,6 +231,8 @@ export type Database = {
           deleted_at?: string | null
           ends_at?: string | null
           id?: number
+          image_card_artist?: string | null
+          image_card_name?: string | null
           image_url?: string | null
           name: string
           ruleset_uuid?: string | null
@@ -242,6 +246,8 @@ export type Database = {
           deleted_at?: string | null
           ends_at?: string | null
           id?: number
+          image_card_artist?: string | null
+          image_card_name?: string | null
           image_url?: string | null
           name?: string
           ruleset_uuid?: string | null
@@ -1798,6 +1804,8 @@ export type Database = {
           event_uuid: string | null
           format_uuid: string
           id: number
+          image_card_artist: string | null
+          image_card_name: string | null
           image_url: string | null
           league_uuid: string | null
           location_uuid: string | null
@@ -1826,6 +1834,8 @@ export type Database = {
           event_uuid?: string | null
           format_uuid: string
           id?: number
+          image_card_artist?: string | null
+          image_card_name?: string | null
           image_url?: string | null
           league_uuid?: string | null
           location_uuid?: string | null
@@ -1854,6 +1864,8 @@ export type Database = {
           event_uuid?: string | null
           format_uuid?: string
           id?: number
+          image_card_artist?: string | null
+          image_card_name?: string | null
           image_url?: string | null
           league_uuid?: string | null
           location_uuid?: string | null

@@ -21,7 +21,9 @@ export default defineEventHandler(async (event) => {
       name: body.name,
       status: body.status,
       ruleset_uuid: body.rulesetUuid,
-      image_url: body.imageUrl
+      image_url: body.imageUrl,
+      image_card_name: body.imageCardName,
+      image_card_artist: body.imageCardArtist
     })
     .select()
     .single()

@@ -59,6 +59,8 @@ export function useLeaguesQuery() {
         ruleset: row.ruleset?.name ?? null,
         rulesetUuid: row.ruleset_uuid,
         image: row.image_url,
+        imageCardName: row.image_card_name,
+        imageCardArtist: row.image_card_artist,
         tournamentCount: totals.get(row.uuid) ?? 0,
         completedTournamentCount: completed.get(row.uuid) ?? 0
       }))

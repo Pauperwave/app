@@ -57,6 +57,22 @@ function monthPart(startDate: string) {
       <span class="text-[10px] uppercase text-muted">{{ monthPart(tournament.startDate) }}</span>
     </div>
 
+    <!-- Card name + artist/copyright attribution, required alongside any
+         art_crop use per Scryfall's API usage guidelines — see
+         CardArtPicker.vue's own comment. -->
+    <UTooltip
+      v-if="tournament.image && tournament.imageCardName"
+      :text="tournament.imageCardArtist
+        ? t('magic.cardArtPicker.attribution', {
+          cardName: tournament.imageCardName, artist: tournament.imageCardArtist
+        })
+        : t('magic.cardArtPicker.attributionNoArtist', { cardName: tournament.imageCardName })"
+    >
+      <span class="absolute bottom-2 right-2 max-w-[75%] truncate rounded bg-default/90 backdrop-blur-sm px-1.5 py-0.5 text-[10px] text-muted">
+        {{ tournament.imageCardName }}
+      </span>
+    </UTooltip>
+
     <!-- Hidden until hover, except once selected — same convention as
          WantedCardsListGridView.vue's card checkbox. `group-hover` targets
          the ancestor `.group` class on Card.vue's UCard, unaffected by this

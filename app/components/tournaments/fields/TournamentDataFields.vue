@@ -30,14 +30,22 @@ const {
 
 // Kept out of the valibot schema in useTournamentFormFields.ts (no format
 // validation needed) — same convention as LocationsFieldsGeneralInfoFields.vue's
-// `image`.
+// `image`. imageCardName/imageCardArtist ride along for the same reason,
+// required attribution for image when it's a Scryfall art_crop — see
+// CardArtPicker.vue.
 const image = defineModel<string | undefined>('image')
+const imageCardName = defineModel<string | undefined>('imageCardName')
+const imageCardArtist = defineModel<string | undefined>('imageCardArtist')
 </script>
 
 <template>
   <!-- eslint-disable vue/no-mutating-props -- see the top-of-file comment -->
   <UFormField :label="$t('tournament.addModal.fields.image')" name="image">
-    <MagicCardArtPicker v-model="image" />
+    <MagicCardArtPicker
+      v-model="image"
+      v-model:card-name="imageCardName"
+      v-model:artist="imageCardArtist"
+    />
   </UFormField>
 
   <div class="flex justify-between gap-2">

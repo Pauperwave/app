@@ -12,9 +12,15 @@
 import type { Tournament, TournamentStatus } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 
+interface ImageChange {
+  imageUrl: string
+  imageCardName: string | null
+  imageCardArtist: string | null
+}
+
 type PendingBulkAction
   = | { type: 'status', status: TournamentStatus, tournaments: Tournament[] }
-    | { type: 'image', imageUrl: string, tournaments: Tournament[] }
+    | ({ type: 'image', tournaments: Tournament[] } & ImageChange)
     | { type: 'entryFee', entryFee: number, tournaments: Tournament[] }
     | { type: 'delete', tournaments: Tournament[] }
 
@@ -37,8 +43,8 @@ export function useTournamentsBulkActions(selection: Selection<number>) {
     confirmOpen.value = true
   }
 
-  function requestImageChange(imageUrl: string, tournaments: Tournament[]) {
-    pendingAction.value = { type: 'image', imageUrl, tournaments }
+  function requestImageChange(change: ImageChange, tournaments: Tournament[]) {
+    pendingAction.value = { type: 'image', ...change, tournaments }
     confirmOpen.value = true
   }
 
@@ -80,7 +86,12 @@ export function useTournamentsBulkActions(selection: Selection<number>) {
               return setStatus.mutateAsync({ id: tournament.id, status: action.status })
             }
             if (action.type === 'image') {
-              return setImage.mutateAsync({ id: tournament.id, imageUrl: action.imageUrl })
+              return setImage.mutateAsync({
+                id: tournament.id,
+                imageUrl: action.imageUrl,
+                imageCardName: action.imageCardName,
+                imageCardArtist: action.imageCardArtist
+              })
             }
             if (action.type === 'entryFee') {
               return setEntryFee.mutateAsync({ id: tournament.id, entryFee: action.entryFee })
