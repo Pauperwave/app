@@ -328,6 +328,7 @@
     },
     "detail": {
       "notFound": "Associato non trovato",
+      "viewPlayerProfile": "Vedi il profilo giocatore",
       "sections": {
         "anagrafica": "Anagrafica",
         "contatti": "Contatti",
@@ -1305,7 +1306,20 @@
       "name": "Nome",
       "pauperwaveAssociateNumber": "Tessera",
       "emailAddress": "Email",
-      "createdAt": "Registrato il"
+      "createdAt": "Registrato il",
+      "lastLogin": "Ultimo accesso",
+      "nickname": "Nickname"
+    },
+    "neverLoggedIn": "Mai effettuato l'accesso",
+    "detail": {
+      "navbarTitle": "Giocatore",
+      "notFound": "Giocatore non trovato.",
+      "viewAssociateProfile": "Vedi la scheda associato",
+      "loginHistory": "Cronologia accessi",
+      "loginHistoryEmpty": "Nessun accesso registrato.",
+      "sections": {
+        "info": "Informazioni"
+      }
     },
     "tour": {
       "startButton": "Tour guidato",

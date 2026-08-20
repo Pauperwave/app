@@ -30,6 +30,14 @@ const { breadcrumbItems } = useBreadcrumbs()
 const associate = computed(() => (associates.value ?? [])
   .find(item => slugify(`${item.first_name} ${item.last_name}`) === route.params.slug))
 
+// Reverse direction of players/[playerId]/index.vue's own "Vedi la scheda
+// associato" link (2026-08-20 user request) — not every associate has a
+// linked player row (players are created on first tesseramento-adjacent
+// login, not at signup), so this can legitimately be null.
+const { data: players } = usePlayersQuery()
+const player = computed(() => players.value?.find(
+  item => item.associate_uuid === associate.value?.uuid) ?? null)
+
 useSeoMeta({
   title: () => associate.value
     ? `${associate.value.first_name} ${associate.value.last_name}`
@@ -230,22 +238,31 @@ const associateTransactionsColumns: TableColumn<Transaction>[] = [
                 <AssociateNumberBadge :number="associate.pauperwave_associate_number" />
                 <AssociateTypeBadge :type="associate.associate_type" />
               </div>
+
+              <NuxtLink
+                v-if="player?.first_name && player?.last_name"
+                :to="`/players/${slugify(`${player.first_name} ${player.last_name}`)}`"
+                class="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-1.5"
+              >
+                <UIcon :name="ICONS.gameplay" class="size-4" />
+                {{ $t('associate.detail.viewPlayerProfile') }}
+              </NuxtLink>
             </div>
           </div>
         </UCard>
 
         <div class="grid gap-4 sm:grid-cols-2">
-          <AssociatesDetailCard
+          <DetailCard
             :title="$t('associate.detail.sections.anagrafica')"
             :fields="anagraficaFields"
           />
 
-          <AssociatesDetailCard
+          <DetailCard
             :title="$t('associate.detail.sections.contatti')"
             :fields="contattiFields"
           />
 
-          <AssociatesDetailCard
+          <DetailCard
             :title="$t('associate.detail.sections.tesseramento')"
             :fields="tesseramentoFields"
           >
@@ -267,9 +284,9 @@ const associateTransactionsColumns: TableColumn<Transaction>[] = [
                 </dd>
               </div>
             </template>
-          </AssociatesDetailCard>
+          </DetailCard>
 
-          <AssociatesDetailCard
+          <DetailCard
             :title="$t('associate.detail.sections.consensi')"
             :fields="[]"
           >
@@ -283,7 +300,7 @@ const associateTransactionsColumns: TableColumn<Transaction>[] = [
                 </dd>
               </div>
             </template>
-          </AssociatesDetailCard>
+          </DetailCard>
         </div>
 
         <UCard :ui="{ header: 'font-semibold' }">
