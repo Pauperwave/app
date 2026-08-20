@@ -1,11 +1,11 @@
 // app\composables\players\usePlayersTableColumns.ts
 import { h } from 'vue'
-import { AssociateTag } from '#components'
+import { AssociateTag, HighlightMatch } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { Player } from '~/types'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 
-export function usePlayersTableColumns() {
+export function usePlayersTableColumns(search?: Ref<string>) {
   const { t } = useI18n()
 
   // No "Stato" column: the page only offers "Attivi"/"Non attivi" tabs (no
@@ -27,7 +27,9 @@ export function usePlayersTableColumns() {
       cell: ({ row }) => {
         const name = row.original.nickname
           || `${row.original.first_name} ${row.original.last_name}`
-        return h(AssociateTag, { name, associateUuid: row.original.associate_uuid })
+        return h(AssociateTag, {
+          name, associateUuid: row.original.associate_uuid, highlightQuery: search?.value
+        })
       }
     },
     {
@@ -39,7 +41,9 @@ export function usePlayersTableColumns() {
     {
       accessorKey: 'email_address',
       header: t('player.columns.emailAddress'),
-      cell: ({ row }) => row.original.email_address
+      cell: ({ row }) => (row.original.email_address && search?.value
+        ? h(HighlightMatch, { text: row.original.email_address, query: search.value })
+        : row.original.email_address)
     },
     {
       accessorKey: 'created_at',

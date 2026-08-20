@@ -41,9 +41,13 @@ const filteredPlayers = computed(() => data.value.filter(
   player => (activeStatusTab.value === 'active' ? player.is_active : !player.is_active)
 ))
 
+// Same single search box as associates/index.vue (user request, 2026-08-19)
+// — see playersGlobalFilterFn.ts.
+const search = ref('')
+
 const tour = usePlayersTour()
 
-const { columns, columnHeaders } = usePlayersTableColumns()
+const { columns, columnHeaders } = usePlayersTableColumns(search)
 const sorting = ref([{ id: 'name', desc: false }])
 
 // Same "Mostra colonne" pattern as wanted-cards/index.vue: rebuilt every time
@@ -85,8 +89,14 @@ const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, 
            wanted-cards/index.vue for their StatusFilterGroup. -->
       <UDashboardToolbar>
         <template #left>
-          <div id="tour-players-filters">
+          <div id="tour-players-filters" class="flex items-center gap-4 flex-wrap">
             <StatusFilterGroup v-model="activeStatusTab" :items="statusTabs" />
+
+            <SearchInput
+              v-model="search"
+              class="w-56 sm:w-64 lg:w-72"
+              :placeholder="$t('player.searchPlaceholder')"
+            />
           </div>
         </template>
 
@@ -110,6 +120,8 @@ const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, 
         ref="table"
         v-model:sorting="sorting"
         v-model:column-visibility="columnVisibility"
+        v-model:global-filter="search"
+        :global-filter-options="{ globalFilterFn: playersGlobalFilterFn }"
         :data="filteredPlayers"
         :columns="columns"
         class="flex-1 h-80 shrink-0"
