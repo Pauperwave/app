@@ -19,9 +19,14 @@
 <script setup lang="ts">
 import { upperFirst } from 'scule'
 
-const { name, associateUuid } = defineProps<{
+const { name, associateUuid, highlightQuery } = defineProps<{
   name: string
   associateUuid?: string | null
+  // Opt-in (2026-08-19, user request): highlights the search box's own
+  // match in the displayed name, same HighlightMatch.vue every other
+  // search result column uses. Every existing call site omits this and
+  // keeps rendering the plain name.
+  highlightQuery?: string
 }>()
 
 const avatar = computed(() => ({ src: generatePlayerAvatar(name), alt: name }))
@@ -44,7 +49,11 @@ const membershipBadge = computed(() => associate.value
       :avatar="avatar"
       size="sm"
       class="cursor-default"
-    />
+    >
+      <template v-if="highlightQuery" #name>
+        <HighlightMatch :text="name" :query="highlightQuery" />
+      </template>
+    </UUser>
 
     <template #content>
       <div class="p-3 space-y-1.5 text-sm min-w-48">
@@ -68,5 +77,9 @@ const membershipBadge = computed(() => associate.value
     :name="name"
     :avatar="avatar"
     size="sm"
-  />
+  >
+    <template v-if="highlightQuery" #name>
+      <HighlightMatch :text="name" :query="highlightQuery" />
+    </template>
+  </UUser>
 </template>
