@@ -66,6 +66,7 @@ const tour = useLocationsTour()
           :data="locations"
           :columns="columns"
           class="w-full"
+          @select="(_e, row) => navigateTo(`/locations/${row.original.uuid}`)"
         />
 
         <LocationsListGridView
