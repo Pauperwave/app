@@ -29,6 +29,15 @@ const { schema, statusOptions, rulesetOptions } = useLeagueFormFields()
 
 type Schema = v.InferOutput<typeof schema>
 
+// UModal only hides/shows, it does not unmount the form, so the state has to
+// be cleared explicitly — called on successful submit and on explicit
+// "Annulla", but deliberately NOT on the X button or an outside click, which
+// should preserve whatever the user typed (user decision 2026-08-20).
+function resetForm() {
+  Object.assign(state, createInitialState())
+  image.value = undefined
+}
+
 // fallow-ignore-next-line code-duplication -- see the same comment in
 // events/list/AddModal.vue
 async function onSubmit(event: FormSubmitEvent<Schema>) {
@@ -47,8 +56,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       color: 'success'
     })
     open.value = false
-    Object.assign(state, createInitialState())
-    image.value = undefined
+    resetForm()
   } catch (err) {
     toast.add({
       title: t('league.addModal.errorToastTitle'),
@@ -97,7 +105,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             :label="$t('league.addModal.cancel')"
             color="neutral"
             variant="ghost"
-            @click="open = false"
+            @click="open = false; resetForm()"
           />
           <UButton
             :label="$t('league.addModal.create')"

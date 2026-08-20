@@ -18,23 +18,27 @@ const { createTournament } = useTournamentsMutations()
 
 const todayString = new Date().toISOString().substring(0, 10)
 
-const state = reactive<TournamentFormState>({
-  name: undefined,
-  status: 'draft',
-  startDate: todayString,
-  startTime: '20:00',
-  endTime: '23:00',
-  roundCount: 2,
-  formatUuid: undefined as unknown as string,
-  description: undefined,
-  prizes: undefined,
-  organizerUuid: undefined,
-  locationUuid: undefined,
-  entryFee: 5,
-  companionCode: undefined
-})
+function createInitialState(): TournamentFormState {
+  return {
+    name: undefined,
+    status: 'draft',
+    startDate: todayString,
+    startTime: '20:00',
+    endTime: '23:00',
+    roundCount: 2,
+    formatUuid: undefined as unknown as string,
+    description: undefined,
+    prizes: undefined,
+    organizerUuid: undefined,
+    locationUuid: undefined,
+    entryFee: 5,
+    companionCode: undefined
+  }
+}
 
-const { startDate, formattedStartDate } = useStartDateField(state)
+const state = reactive<TournamentFormState>(createInitialState())
+
+const { startDate, formattedStartDate, reset: resetStartDate } = useStartDateField(state)
 
 // Kept out of `state`/the valibot schema (no format validation needed) —
 // same convention as LocationsListAddModal.vue's `image`.
@@ -68,6 +72,21 @@ watch(formatOptions, (options) => {
 
 type Schema = v.InferOutput<typeof schema>
 
+// UModal only hides/shows, it does not unmount the form, so the state has to
+// be cleared explicitly — called on successful submit and on explicit
+// "Annulla", but deliberately NOT on the X button or an outside click, which
+// should preserve whatever the user typed (user decision 2026-08-20). Reapplies
+// the same organizer/location/format defaults as the watches above, since
+// those only fire once their respective options list changes, not on reset.
+function resetForm() {
+  Object.assign(state, createInitialState())
+  resetStartDate()
+  image.value = undefined
+  state.organizerUuid = organizerOptions.value.find(option => option.label === 'Pauperwave')?.value
+  state.locationUuid = locationOptions.value.find(option => option.label.startsWith('Smart Lab'))?.value
+  state.formatUuid = formatOptions.value.find(option => option.label === 'Commander')?.value ?? state.formatUuid
+}
+
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   const startsAt = combineDateAndTime(startDate.value!, event.data.startTime)
   const endsAt = event.data.endTime
@@ -100,7 +119,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       color: 'success'
     })
     open.value = false
-    image.value = undefined
+    resetForm()
   } catch (err) {
     toast.add({
       title: t('tournament.addModal.errorToastTitle'),
@@ -170,7 +189,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             :label="$t('tournament.addModal.cancel')"
             color="neutral"
             variant="ghost"
-            @click="open = false"
+            @click="open = false; resetForm()"
           />
           <UButton
             :label="$t('tournament.addModal.create')"

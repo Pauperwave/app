@@ -31,24 +31,35 @@ const toast = useToast()
 const { t } = useI18n()
 const { createTransaction } = useTransactionsMutations()
 
-const state = shallowReactive<TransactionFormState>({
-  payment_method: 'Cash',
-  payment_type: 'Tournament Fee',
-  payer_is_associate: true,
-  // Local time, not UTC: a UTC-based default shifts the displayed date/time by
-  // the browser's offset (same class of bug fixed in
-  // AssociatesListEditModal.vue's born_date serialization).
-  payment_datetime: toCalendarDateTime(now(getLocalTimeZone())),
-  // Present (as undefined) rather than omitted: valibot's v.object() treats a
-  // genuinely absent key differently from a key whose value is undefined —
-  // absent raises its own generic "Invalid key: Expected ... but received
-  // undefined" issue instead of running the field's actual v.number()/
-  // v.string() check, which is where our custom validation messages
-  // (amountRequired/receivedByRequired) actually live. Every other required
-  // field above already has a real default value, so it never hit this.
-  payment_amount: 5,
-  received_by: undefined
-})
+function createInitialState(): TransactionFormState {
+  return {
+    payment_method: 'Cash',
+    payment_type: 'Tournament Fee',
+    payer_is_associate: true,
+    // Local time, not UTC: a UTC-based default shifts the displayed date/time by
+    // the browser's offset (same class of bug fixed in
+    // AssociatesListEditModal.vue's born_date serialization).
+    payment_datetime: toCalendarDateTime(now(getLocalTimeZone())),
+    // Present (as undefined) rather than omitted: valibot's v.object() treats a
+    // genuinely absent key differently from a key whose value is undefined —
+    // absent raises its own generic "Invalid key: Expected ... but received
+    // undefined" issue instead of running the field's actual v.number()/
+    // v.string() check, which is where our custom validation messages
+    // (amountRequired/receivedByRequired) actually live. Every other required
+    // field above already has a real default value, so it never hit this.
+    payment_amount: 5,
+    received_by: undefined,
+    associate_uuid: undefined,
+    payer_name: undefined,
+    payer_surname: undefined,
+    payer_email: undefined,
+    payer_tax_code: undefined,
+    event_name: undefined,
+    notes: undefined
+  }
+}
+
+const state = shallowReactive<TransactionFormState>(createInitialState())
 
 const {
   schema, associatesData, associateOptions, selectedAssociateAvatar, showEventField, payerTabItems
@@ -150,6 +161,17 @@ const modalDescription = computed(() => presetAssociate
 
 const submitting = ref(false)
 
+// UModal only hides/shows, it does not unmount the form, so the state has to
+// be cleared explicitly — called on successful submit and on explicit
+// "Annulla", but deliberately NOT on the X button or an outside click, which
+// should preserve whatever the user typed (user decision 2026-08-20). The
+// [open, presetAssociate] watch above independently refills the Rinnova case
+// on next open, so this only matters for the generic "Nuova transazione" flow.
+function resetForm() {
+  Object.assign(state, createInitialState())
+  activeTab.value = 'associate'
+}
+
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   submitting.value = true
   try {
@@ -186,6 +208,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       toast.add({ title: t('transaction.addModal.renewedToastTitle'), color: 'success' })
     }
     open.value = false
+    resetForm()
   } catch (err) {
     toast.add({
       title: t('transaction.addModal.errorToastTitle'),
@@ -248,7 +271,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             color="neutral"
             variant="subtle"
             :disabled="submitting"
-            @click="() => { open = false }"
+            @click="() => { open = false; resetForm() }"
           />
           <UButton
             :label="$t('transaction.addModal.create')"

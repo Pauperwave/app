@@ -21,6 +21,14 @@ type Schema = v.InferOutput<typeof schema>
 // missing date at submit time, same as it already does on /tesseramento.
 const state = createAssociateFormState(new Date('1990-01-01'))
 
+// UModal only hides/shows, it does not unmount the form, so the state has to
+// be cleared explicitly — called on successful submit and on explicit
+// "Annulla", but deliberately NOT on the X button or an outside click, which
+// should preserve whatever the user typed (user decision 2026-08-20).
+function resetForm() {
+  Object.assign(state, createAssociateFormState(new Date('1990-01-01')))
+}
+
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
     toast.add({
@@ -31,6 +39,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       color: 'success'
     })
     open.value = false
+    resetForm()
   } catch (err) {
     toast.add({
       title: t('associate.addModal.errorToastTitle'),
@@ -71,7 +80,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             :label="$t('associate.addModal.cancel')"
             color="neutral"
             variant="subtle"
-            @click="open = false"
+            @click="open = false; resetForm()"
           />
           <UButton
             :label="$t('associate.addModal.create')"
