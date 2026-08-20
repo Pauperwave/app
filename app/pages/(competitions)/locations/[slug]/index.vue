@@ -1,4 +1,4 @@
-<!-- app\pages\(competitions)\locations\[locationId]\index.vue -->
+<!-- app\pages\(competitions)\locations\[slug]\index.vue -->
 <script lang="ts" setup>
 // First detail page for locations (2026-08-19 user request) — same shape as
 // leagues/[leagueId]/index.vue (the first real, non-mock single page among
@@ -8,17 +8,19 @@
 // that component's whole click behavior is "navigate to this detail page",
 // which makes no sense as the detail page's own header (caught in review,
 // 2026-08-19). Its smaller pieces (status badge, social links, placeholder)
-// are reused directly instead.
+// are reused directly instead. Slug-based, not uuid (2026-08-20, matching
+// associate/[slug].vue and players/[slug]/index.vue) — location names are
+// as stable as a person's name for this purpose (edited rarely, and only by
+// staff), so there's no reason for this route to be the odd one out either.
 import { add, sub } from 'date-fns'
-import type { Range } from '~/types'
+import type { Range, Tournament } from '~/types'
 
 const { t } = useI18n()
 const route = useRoute()
-const locationUuid = computed(() => route.params.locationId as string)
 
 const { data: locationsData, isLoading: locationLoading } = useLocationsQuery()
-const location = computed(() =>
-  locationsData.value?.find(item => item.uuid === locationUuid.value) ?? null)
+const location = computed(() => locationsData.value?.find(
+  item => slugify(item.name) === route.params.slug) ?? null)
 
 useSeoMeta({ title: () => location.value?.name ?? t('location.breadcrumb') })
 
@@ -31,17 +33,43 @@ const addressLine = computed(() => location.value
   ? `${location.value.address}, ${location.value.postalCode} ${location.value.city} ${location.value.province}`
   : '')
 
-// Overrides the raw uuid path segment with the location's real name — see
-// useBreadcrumbs.ts's own comment on why this can't be derived from the URL.
+// Overrides the raw slug path segment with the location's real name —
+// location names can be multi-word/punctuated ("Smart Lab - Centro Giovani
+// Rovereto"), which useBreadcrumbs.ts's generic hyphen-split+title-case
+// fallback wouldn't round-trip cleanly (unlike a plain "First Last" person's
+// name), so this override still earns its keep even slug-based.
 const { breadcrumbItems } = useBreadcrumbs(
-  computed(() => (location.value ? { [locationUuid.value]: location.value.name } : {}))
+  computed(() => (location.value ? { [route.params.slug as string]: location.value.name } : {}))
 )
 
 const {
   data: tournamentsData, isLoading: tournamentsLoading, status, refetch
 } = useTournamentsQuery()
 const hostedTournaments = computed(() => (tournamentsData.value ?? [])
-  .filter(tournament => tournament.locationUuid === locationUuid.value))
+  .filter(tournament => tournament.locationUuid === location.value?.uuid))
+
+// Independent of the range picker below — the heatmap spans its own dates
+// (spanDates, same as leagues/[leagueId]/index.vue's own heatmap) rather
+// than following the range picker, so it always shows the location's full
+// hosting history regardless of what the grid underneath is filtered to.
+const hostedTournamentDates = computed(() =>
+  hostedTournaments.value.map(tournament => tournament.startDate))
+
+// Same reasoning as leagues/[leagueId]/index.vue's own heatmap (user
+// feedback, 2026-08-20): count-based intensity doesn't mean anything for
+// tournaments — a location rarely hosts more than one a day — status does.
+const hostedTournamentVariantByDate = computed(() => {
+  const entries = hostedTournaments.value.map(tournament => [
+    toLocalDateKey(new Date(tournament.startDate)),
+    { class: tournamentStatusBgClass(tournament.status), labelKey: `tournament.status.${tournament.status}` }
+  ] as const)
+  return Object.fromEntries(entries)
+})
+
+const hostedTournamentLegendItems = TOURNAMENT_STATUSES.map(status => ({
+  class: tournamentStatusBgClass(status),
+  labelKey: `tournament.status.${status}`
+}))
 
 // Defaults to "Tutto" (matches HomeDateRangePicker's own "all time" range),
 // same reasoning as tournaments/index.vue's own default — a location that's
@@ -55,6 +83,25 @@ const range = shallowRef<Range>({
 const {
   filteredTournaments: filteredHostedTournaments
 } = useTournamentsFilters(hostedTournaments, range)
+
+// Hovering/focusing a heatmap day highlights that day's tournament card
+// below (same as leagues/[leagueId]/index.vue). Matched against the
+// currently-filtered set, not the full history — a highlight for a card
+// that isn't actually rendered (filtered out by the range picker) would be
+// silently inert.
+const hoveredTournamentDate = ref<string | null>(null)
+const highlightedTournamentId = computed(() => filteredHostedTournaments.value.find(tournament =>
+  toLocalDateKey(new Date(tournament.startDate)) === hoveredTournamentDate.value)?.id ?? null)
+
+// The reverse direction (user request, 2026-08-20, "the other way around") —
+// hovering a tournament card rings its matching heatmap day.
+const hoveredCardTournament = shallowRef<Tournament | null>(null)
+function handleCardHoverChange(tournament: Tournament | null) {
+  hoveredCardTournament.value = tournament
+}
+const highlightedHeatmapDate = computed(() => hoveredCardTournament.value
+  ? toLocalDateKey(new Date(hoveredCardTournament.value.startDate))
+  : null)
 
 const loading = computed(() => locationLoading.value || tournamentsLoading.value)
 
@@ -109,81 +156,31 @@ const {
       </div>
 
       <div v-else-if="location" class="flex flex-col gap-6">
-        <UCard :ui="{ body: 'p-0 sm:p-0' }" class="overflow-hidden">
-          <div class="flex flex-col sm:flex-row">
-            <!-- Sibling of the dimmed img/placeholder, not a descendant: CSS
-                 opacity applies to a whole subtree, so the badge has to sit
-                 outside it to render at full strength on top (same fix as
-                 the grid card's own LocationsListLocationStatus). -->
-            <div class="relative shrink-0 w-full sm:w-64">
-              <img
-                v-if="location.image"
-                :src="location.image"
-                :alt="location.name"
-                class="w-full h-48 sm:h-full object-cover"
-                :class="{ 'opacity-60 saturate-50': location.temporarilyClosed }"
-              >
-              <ImageOffPlaceholder
-                v-else
-                class="w-full h-48 sm:h-full"
-                :class="{ 'opacity-60 saturate-50': location.temporarilyClosed }"
-                icon-class="size-10"
+        <div class="grid gap-6 sm:grid-cols-2 sm:items-start">
+          <LocationsSinglePresentationCard
+            :location="location"
+            :maps-link="mapsLink"
+            :address-line="addressLine"
+            :on-edit="openLocationEditModal"
+          />
+
+          <UCard v-if="hostedTournamentDates.length" :ui="{ header: 'font-semibold' }">
+            <template #header>
+              {{ t('location.detail.tournamentActivity') }}
+            </template>
+
+            <div class="flex justify-center">
+              <CalendarHeatmap
+                v-model:hovered-date="hoveredTournamentDate"
+                :dates="hostedTournamentDates"
+                span-dates
+                :variant-by-date="hostedTournamentVariantByDate"
+                :legend-items="hostedTournamentLegendItems"
+                :highlighted-date="highlightedHeatmapDate"
               />
-
-              <UBadge
-                v-if="location.temporarilyClosed"
-                color="warning"
-                variant="subtle"
-                :icon="ICONS.warning"
-                class="absolute top-2 left-2 z-10"
-              >
-                {{ t('location.card.temporarilyClosed') }}
-              </UBadge>
             </div>
-
-            <div
-              class="p-6 flex-1 min-w-0"
-              :class="{ 'opacity-60 saturate-50': location.temporarilyClosed }"
-            >
-              <div class="flex items-start justify-between gap-3">
-                <h2 class="text-xl font-semibold truncate">
-                  {{ location.name }}
-                </h2>
-
-                <UButton
-                  :label="t('location.rowActions.edit')"
-                  :icon="ICONS.edit"
-                  color="neutral"
-                  variant="subtle"
-                  size="sm"
-                  class="shrink-0"
-                  @click="openLocationEditModal(location)"
-                />
-              </div>
-
-              <p class="flex items-center gap-1.5 text-sm text-muted mt-2">
-                <UIcon :name="ICONS.mapPin" class="size-4 shrink-0" />
-                <span>{{ addressLine }}</span>
-                <a
-                  v-if="mapsLink"
-                  :href="mapsLink"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="text-primary hover:underline"
-                >
-                  {{ t('location.card.openInMaps') }}
-                </a>
-              </p>
-
-              <p v-if="location.phone" class="flex items-center gap-1.5 text-sm text-muted mt-1">
-                <UIcon :name="ICONS.phone" class="size-4 shrink-0" />
-                {{ location.phone }}
-              </p>
-
-              <LocationsListSocialLinks :location="location" />
-            </div>
-          </div>
-        </UCard>
+          </UCard>
+        </div>
 
         <div>
           <h3 class="font-semibold mb-3">
@@ -200,6 +197,8 @@ const {
             :context-menu-items="rowContextMenuItems"
             :on-edit="openTournamentEditModal"
             :selection="selection"
+            :highlighted-tournament-id="highlightedTournamentId"
+            :on-hover-change="handleCardHoverChange"
           />
         </div>
       </div>

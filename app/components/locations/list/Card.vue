@@ -18,7 +18,7 @@ const addressLine = computed(() =>
 // convention as LeaguesListCard.vue/TournamentsListCard.vue — the location
 // detail page (2026-08-19) is the first place to land on from this grid.
 function onCardClick() {
-  navigateTo(`/locations/${location.uuid}`)
+  navigateTo(`/locations/${slugify(location.name)}`)
 }
 
 // The precise Google Maps place link takes priority over the generic
