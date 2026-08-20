@@ -1281,6 +1281,7 @@
       "inactive": "Non attivi"
     },
     "empty": "Nessun giocatore trovato",
+    "searchPlaceholder": "Cerca per nickname, nome o email",
     "columns": {
       "name": "Nome",
       "pauperwaveAssociateNumber": "Tessera",
