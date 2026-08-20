@@ -118,16 +118,14 @@
       "stats": {
         "activeAssociates": "Soci attivi",
         "upcomingTournaments": "Tornei in programma",
-        "upcomingEvents": "Prossimi eventi"
+        "upcomingEvents": "Prossimi eventi",
+        "openWantedCards": "Carte cercate aperte",
+        "locations": "Location"
       },
       "pendingActions": {
         "title": "Azioni pendenti",
         "requests": "Richieste di tesseramento",
         "renewals": "Tesseramenti in scadenza"
-      },
-      "roleManagement": {
-        "title": "Gestione ruoli",
-        "description": "Assegna o modifica il ruolo di un membro."
       },
       "upcoming": {
         "title": "Prossimi tornei",
@@ -136,6 +134,18 @@
       "recentTransactions": {
         "title": "Ultime transazioni",
         "empty": "Nessuna transazione registrata."
+      },
+      "recentAssociates": {
+        "title": "Ultimi soci approvati",
+        "empty": "Nessun socio approvato di recente."
+      },
+      "nextLocation": {
+        "title": "Prossima sede",
+        "empty": "Nessun torneo in programma con una sede assegnata."
+      },
+      "activeLeagues": {
+        "title": "Leghe attive",
+        "empty": "Nessuna lega attiva."
       }
     },
     "player": {
@@ -642,6 +652,7 @@
       "edit": "Modifica lega",
       "delete": "Elimina"
     },
+    "statusChangeErrorTitle": "Impossibile aggiornare lo stato della lega",
     "bulkActions": {
       "selectedCount": "{count} selezionata | {count} selezionate",
       "clearSelection": "Deseleziona",
@@ -974,6 +985,7 @@
       "edit": "Modifica torneo",
       "delete": "Elimina"
     },
+    "statusChangeErrorTitle": "Impossibile aggiornare lo stato del torneo",
     "bulkActions": {
       "selectedCount": "{count} selezionato | {count} selezionati",
       "clearSelection": "Deseleziona",
