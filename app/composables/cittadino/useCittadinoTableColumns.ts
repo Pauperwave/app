@@ -26,7 +26,7 @@ function formatEventDate(date: string) {
 // The hover crosshair (both row and column) is PublicMatrixTable's own
 // responsibility now — DOM event delegation there, not per-cell state here. See
 // its source for why: `meta.class.td` looked reactive but wasn't.
-export function useCittadinoTableColumns(events: Ref<CittadinoEvent[]>) {
+export function useCittadinoTableColumns(events: Ref<CittadinoEvent[]>, search?: Ref<string>) {
   const { t } = useI18n()
   const { formatColor, formatColorClass } = useFormatColor()
 
@@ -66,7 +66,9 @@ export function useCittadinoTableColumns(events: Ref<CittadinoEvent[]>) {
       size: PLAYER_WIDTH,
       header: () => h('span', { class: 'text-xs' }, t('cittadino.columns.player')),
       meta: { class: { th: PLAYER_CLASS, td: PLAYER_CLASS } },
-      cell: ({ row }) => h(AssociateTag, { name: row.original.playerName })
+      cell: ({ row }) => h(AssociateTag, {
+        name: row.original.playerName, highlightQuery: search?.value
+      })
     },
     {
       accessorKey: 'eventsPlayed',
