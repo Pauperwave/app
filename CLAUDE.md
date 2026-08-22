@@ -61,7 +61,7 @@ Supabase magic-link (OTP) auth via `@nuxtjs/supabase`:
 ### Data fetching
 Two patterns coexist during the migration to Pinia Colada + BFF (ADR-007, `docs/PROGRESS.md`):
 - **New/migrated domains** (e.g. `wanted-cards`, `associates`, `events`, `leagues`, `tournaments`): `use<Domain>Query.ts` (`useQuery` from Pinia Colada, reads Supabase directly with the anon client) + `use<Domain>Mutations.ts` (`useMutation`, calls a `server/api/<domain>/*.post.ts` BFF endpoint via `$fetch`, never Supabase directly from the client). Use `app/composables/wantedCards/useWantedCards{Query,Mutations}.ts` as the template for new domains.
-- **Not yet migrated** (`cittadino`, `standings`): still backed by mock data — `server/api/cittadino.ts` and `server/api/standings/[format].get.ts` return static placements, no `tournament_standings`-equivalent table exists yet (P1 entry, `docs/BACKLOG.md`). Their composables fetch from these endpoints rather than reading Supabase directly.
+- **Not yet migrated** (`cittadino`, `standings`): still backed by mock data — `server/api/cittadino.ts` and `server/api/standings/[format].get.ts` return static placements, no `tournament_standings`-equivalent table exists yet ([issue #2](https://github.com/Pauperwave/app/issues/2)). Their composables fetch from these endpoints rather than reading Supabase directly.
 
 `server/api/members.ts` and `server/api/notifications.ts` also still return mock/static data (roster/notification scaffolding, no backing table) — check an endpoint's implementation before assuming it's backed by the database.
 
