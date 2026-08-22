@@ -33,6 +33,8 @@ const state = reactive<TournamentFormState>({
   prizes: undefined,
   organizerUuid: undefined,
   locationUuid: undefined,
+  leagueUuid: undefined,
+  eventUuid: undefined,
   entryFee: undefined,
   companionCode: undefined,
   endTime: undefined
@@ -70,6 +72,8 @@ watch([open, () => tournament], ([isOpen, current]) => {
   state.prizes = current.prizes ?? undefined
   state.organizerUuid = current.organizerUuid ?? undefined
   state.locationUuid = current.locationUuid ?? undefined
+  state.leagueUuid = current.leagueUuid ?? undefined
+  state.eventUuid = current.eventUuid ?? undefined
   state.entryFee = current.entryFee ?? 0
   state.companionCode = current.companionCode ?? undefined
   image.value = current.image ?? undefined
@@ -78,7 +82,8 @@ watch([open, () => tournament], ([isOpen, current]) => {
 }, { immediate: true })
 
 const {
-  schema, statusOptions, locationOptions, organizerOptions, formatOptions
+  schema, statusOptions, locationOptions, organizerOptions, formatOptions,
+  leagueOptions, eventOptions
 } = useTournamentFormFields()
 
 type Schema = v.InferOutput<typeof schema>
@@ -99,8 +104,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     formatUuid: event.data.formatUuid,
     locationUuid: event.data.locationUuid || null,
     organizerUuid: event.data.organizerUuid || null,
-    leagueUuid: tournament.leagueUuid,
-    eventUuid: tournament.eventUuid,
+    leagueUuid: event.data.leagueUuid || null,
+    eventUuid: event.data.eventUuid || null,
     startsAt: startsAt.toISOString(),
     endsAt: endsAt ? endsAt.toISOString() : null,
     roundCount: event.data.roundCount,
@@ -180,6 +185,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             :state="state"
             :organizer-options="organizerOptions"
             :location-options="locationOptions"
+            :league-options="leagueOptions"
+            :event-options="eventOptions"
           />
         </div>
 

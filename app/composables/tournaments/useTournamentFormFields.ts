@@ -27,7 +27,16 @@ function buildSchema(t: ReturnType<typeof useI18n>['t']) {
       v.minValue(1, t('tournament.addModal.validation.roundCountPositive'))
     ),
     organizerUuid: v.optional(v.string()),
-    locationUuid: v.optional(v.string())
+    locationUuid: v.optional(v.string()),
+    // Both optional and mutually independent (CLAUDE.md: "a tournament's
+    // parent league/event is optional and polymorphic") — nothing stops a
+    // tournament from having neither, or in principle both, though the UI
+    // doesn't currently offer a reason to pick both at once. Same
+    // optional-string shape as organizerUuid/locationUuid above, not
+    // nullable — EditModal.vue's watch already normalizes a null
+    // tournament.leagueUuid/eventUuid to undefined before it reaches state.
+    leagueUuid: v.optional(v.string()),
+    eventUuid: v.optional(v.string())
   })
 }
 
@@ -38,6 +47,8 @@ export function useTournamentFormFields() {
 
   const { data: formats } = useMtgFormatsQuery()
   const { locationOptions, organizerOptions } = useLocationOrganizerOptions()
+  const { data: leagues } = useLeaguesQuery()
+  const { data: events } = useEventsQuery()
 
   const schema = buildSchema(t)
 
@@ -52,7 +63,15 @@ export function useTournamentFormFields() {
     value: format.uuid, label: format.name
   })))
 
+  const leagueOptions = computed(() => (leagues.value ?? []).map(league => ({
+    value: league.uuid, label: league.name
+  })))
+  const eventOptions = computed(() => (events.value ?? []).map(event => ({
+    value: event.uuid, label: event.name
+  })))
+
   return {
-    schema, statusOptions, locationOptions, organizerOptions, formatOptions
+    schema, statusOptions, locationOptions, organizerOptions, formatOptions,
+    leagueOptions, eventOptions
   }
 }

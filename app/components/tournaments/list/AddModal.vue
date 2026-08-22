@@ -31,6 +31,8 @@ function createInitialState(): TournamentFormState {
     prizes: undefined,
     organizerUuid: undefined,
     locationUuid: undefined,
+    leagueUuid: undefined,
+    eventUuid: undefined,
     entryFee: 5,
     companionCode: undefined
   }
@@ -48,7 +50,8 @@ const imageCardName = ref<string | undefined>(undefined)
 const imageCardArtist = ref<string | undefined>(undefined)
 
 const {
-  schema, statusOptions, locationOptions, organizerOptions, formatOptions
+  schema, statusOptions, locationOptions, organizerOptions, formatOptions,
+  leagueOptions, eventOptions
 } = useTournamentFormFields()
 
 // Nearly every tournament created here is organized by Pauperwave at Smart
@@ -104,8 +107,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     formatUuid: event.data.formatUuid,
     locationUuid: event.data.locationUuid || null,
     organizerUuid: event.data.organizerUuid || null,
-    leagueUuid: null,
-    eventUuid: null,
+    leagueUuid: event.data.leagueUuid || null,
+    eventUuid: event.data.eventUuid || null,
     startsAt: startsAt.toISOString(),
     endsAt: endsAt ? endsAt.toISOString() : null,
     roundCount: event.data.roundCount,
@@ -190,6 +193,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             :state="state"
             :organizer-options="organizerOptions"
             :location-options="locationOptions"
+            :league-options="leagueOptions"
+            :event-options="eventOptions"
           />
         </div>
 
