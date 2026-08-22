@@ -24,7 +24,8 @@ const { breadcrumbItems } = useBreadcrumbs(
 )
 
 const {
-  data: tournamentsData, isLoading: tournamentsLoading, status, refetch
+  data: tournamentsData, isLoading: tournamentsLoading, isPending: tournamentsPending,
+  status, refetch
 } = useTournamentsQuery()
 const tournaments = computed(() => (tournamentsData.value ?? [])
   .filter(tournament => tournament.leagueUuid === leagueUuid.value))
@@ -79,7 +80,14 @@ const leagueEndDate = computed(() => tournamentDates.value.length
   ? [...tournamentDates.value].sort().at(-1)!
   : null)
 
-const loading = computed(() => leagueLoading.value || tournamentsLoading.value)
+// The tournaments grid renders its own per-card skeleton (loading prop
+// below) instead of being gated behind the page-level spinner too — only
+// the league-dependent top row (presentation card/heatmap/leaderboard)
+// still waits on leagueLoading, since none of those have a skeleton yet.
+// Same isPending-vs-isLoading reasoning as tournaments/index.vue: undefined
+// (GridView's own default count) only on a genuine first load.
+const skeletonCount = computed(() =>
+  (tournamentsPending.value ? undefined : tournaments.value.length))
 
 // Only rowContextMenuItems is needed here — tableContextMenuItems/
 // onRowContextmenu are for the table view, which this league-scoped page
@@ -148,7 +156,7 @@ const leaderboardMaxHeight = computed(() => isSideBySide.value && leftColumnHeig
     </template>
 
     <template #body>
-      <div v-if="loading" class="flex items-center justify-center py-12">
+      <div v-if="leagueLoading" class="flex items-center justify-center py-12">
         <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
       </div>
 
@@ -208,6 +216,8 @@ const leaderboardMaxHeight = computed(() => isSideBySide.value && leftColumnHeig
           :selection="selection"
           :highlighted-tournament-id="highlightedTournamentId"
           :on-hover-change="handleCardHoverChange"
+          :loading="tournamentsLoading"
+          :loading-count="skeletonCount"
         />
       </div>
     </template>

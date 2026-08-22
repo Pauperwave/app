@@ -43,7 +43,8 @@ const { breadcrumbItems } = useBreadcrumbs(
 )
 
 const {
-  data: tournamentsData, isLoading: tournamentsLoading, status, refetch
+  data: tournamentsData, isLoading: tournamentsLoading, isPending: tournamentsPending,
+  status, refetch
 } = useTournamentsQuery()
 const hostedTournaments = computed(() => (tournamentsData.value ?? [])
   .filter(tournament => tournament.locationUuid === location.value?.uuid))
@@ -103,7 +104,14 @@ const highlightedHeatmapDate = computed(() => hoveredCardTournament.value
   ? toLocalDateKey(new Date(hoveredCardTournament.value.startDate))
   : null)
 
-const loading = computed(() => locationLoading.value || tournamentsLoading.value)
+// The tournaments grid renders its own per-card skeleton (loading prop
+// below) instead of being gated behind the page-level spinner too — only
+// the location-dependent shell (presentation card/heatmap/notFound) still
+// waits on locationLoading. Same isPending-vs-isLoading reasoning as
+// tournaments/index.vue: undefined (GridView's own default count) only on a
+// genuine first load.
+const skeletonCount = computed(() =>
+  (tournamentsPending.value ? undefined : filteredHostedTournaments.value.length))
 
 const { rowContextMenuItems } = useCopyLinkContextMenu('/tournaments')
 const {
@@ -151,7 +159,7 @@ const {
     </template>
 
     <template #body>
-      <div v-if="loading" class="flex items-center justify-center py-12">
+      <div v-if="locationLoading" class="flex items-center justify-center py-12">
         <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
       </div>
 
@@ -187,7 +195,10 @@ const {
             {{ t('location.detail.hostedTournaments') }}
           </h3>
 
-          <div v-if="!filteredHostedTournaments.length" class="text-center py-12 text-muted">
+          <div
+            v-if="!tournamentsLoading && !filteredHostedTournaments.length"
+            class="text-center py-12 text-muted"
+          >
             {{ t('location.detail.hostedTournamentsEmpty') }}
           </div>
 
@@ -199,6 +210,8 @@ const {
             :selection="selection"
             :highlighted-tournament-id="highlightedTournamentId"
             :on-hover-change="handleCardHoverChange"
+            :loading="tournamentsLoading"
+            :loading-count="skeletonCount"
           />
         </div>
       </div>
