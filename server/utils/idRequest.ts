@@ -34,7 +34,9 @@ export async function parseIdRequest(event: H3Event) {
 // note in each domain's own useQuery.ts.
 export async function softDeleteById(
   supabase: SupabaseClient<Database>,
-  table: 'mtg_formats' | 'tournaments' | 'leagues' | 'pauperwave_payments' | 'pauperwave_wanted_cards',
+  table:
+    | 'mtg_formats' | 'tournaments' | 'leagues' | 'events'
+    | 'pauperwave_payments' | 'pauperwave_wanted_cards',
   id: number
 ) {
   const { error } = await supabase
@@ -58,7 +60,7 @@ export async function softDeleteById(
 // payload shape.
 export async function updateStatusById(
   supabase: SupabaseClient<Database>,
-  table: 'tournaments' | 'leagues',
+  table: 'tournaments' | 'leagues' | 'events',
   id: number,
   status: string
 ) {

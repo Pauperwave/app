@@ -13,4 +13,10 @@ export interface NewEventPayload {
   startsAt: string
   endsAt: string | null
   companionCode: string | null
+  // Added 2026-08-22 alongside Card.vue/Cover.vue (issue #45) — events had
+  // no way to set a cover image at all before (AddModal.vue never
+  // collected one, `image` on the Event type stayed permanently null). No
+  // Scryfall art_crop attribution pair (unlike tournaments/leagues): the
+  // `events` table has no image_card_name/image_card_artist columns.
+  imageUrl: string | null
 }
