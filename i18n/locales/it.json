@@ -2016,6 +2016,7 @@
     "manageTeams": "Gestisci team"
   },
   "userMenu": {
+    "fallbackName": "Utente",
     "profile": "Profilo",
     "settings": "Impostazioni",
     "theme": "Tema",

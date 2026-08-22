@@ -25,13 +25,27 @@ const profileLink = computed(() => currentAssociate.value
   ? `/associate/${slugify(`${currentAssociate.value.first_name} ${currentAssociate.value.last_name}`)}`
   : undefined)
 
-const user = ref({
-  name: 'Emanuele Nardi',
-  avatar: {
-    src: 'https://github.com/emanuelenardi.png',
-    alt: 'Emanuele Nardi'
+// Was hardcoded to a single developer's name/avatar (found 2026-08-22, issue
+// #54) — now derived from the logged-in user's own associate record, same
+// source as profileLink above. Falls back to the raw auth email (or a
+// generic label, if even that is unavailable) while currentAssociate is
+// still resolving or genuinely has no match, same convention as
+// AssociateTag.vue's own generatePlayerAvatar() for the avatar.
+const authUser = useSupabaseUser()
+const userDisplayName = computed(() => {
+  if (currentAssociate.value) {
+    return `${currentAssociate.value.first_name} ${currentAssociate.value.last_name}`
   }
+  return authUser.value?.email ?? t('userMenu.fallbackName')
 })
+
+const user = computed(() => ({
+  name: userDisplayName.value,
+  avatar: {
+    src: generatePlayerAvatar(userDisplayName.value),
+    alt: userDisplayName.value
+  }
+}))
 
 const handleLogout = useLogout()
 
