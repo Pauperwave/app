@@ -56,16 +56,21 @@ const cols = computed(() => Array.from({ length: columns }))
         <USkeleton class="w-full h-32 rounded-none" />
       </div>
 
-      <!-- No gap between the two skeleton lines below (not space-y-*): the
-           real markup stacks <h3> and TournamentsListLeagueLink.vue directly
-           with no gap class between them. LeagueLink's own wrapper is a
-           fixed h-4 (not h-3) — it explicitly reserves that height even for
-           a tournament with no league, so real cards in the same grid row
-           stay equal height; the skeleton needs the same reserved height to
-           actually match (14px card-height gap found via live measurement,
-           2026-08-22). -->
+      <!-- space-y-1, not space-y-1.5: the real markup has no explicit gap
+           class between <h3> and TournamentsListLeagueLink.vue, but real
+           *text* always has some natural line-height breathing room between
+           stacked lines even at zero margin — two solid skeleton bars with
+           truly zero gap between them touch directly and look wrong
+           (user feedback, 2026-08-22, after first removing the gap
+           entirely). A small gap approximates that line-height space
+           without overcorrecting back to the original 6px. LeagueLink's own
+           wrapper is a fixed h-4 (not h-3) — it explicitly reserves that
+           height even for a tournament with no league, so real cards in the
+           same grid row stay equal height; the skeleton needs the same
+           reserved height to actually match (14px card-height gap found via
+           live measurement, 2026-08-22). -->
       <div class="flex items-start justify-between gap-2">
-        <div class="min-w-0 flex-1">
+        <div class="min-w-0 flex-1 space-y-1">
           <USkeleton class="h-4 w-3/4" />
           <USkeleton class="h-4 w-1/3" />
         </div>
