@@ -25,7 +25,7 @@ const range = shallowRef<Range>({
 const manageFormatsOpen = ref(false)
 
 const {
-  data: tournamentsData, isLoading: loading, status, refetch
+  data: tournamentsData, isLoading: loading, isPending, status, refetch
 } = useTournamentsQuery()
 const data = computed(() => tournamentsData.value ?? [])
 // Passed to MtgFormatsManageModal so it can disable deleting a format still
@@ -41,6 +41,15 @@ const formatUsageCounts = computed(() => {
 const {
   statusFilter, formatFilter, filteredTournaments, statusTabs, formatTabs
 } = useTournamentsFilters(data, range)
+
+// undefined (ListSkeleton's own default count) only on a genuine first
+// load — isPending, unlike isLoading, is false once stale data exists to
+// show a real count from, even mid-refetch (e.g. the manual refresh
+// button). User request 2026-08-22: the skeleton should render as many
+// cards as the view is actually about to show, not a fixed guess, whenever
+// that's knowable.
+const skeletonCount = computed(() =>
+  (isPending.value ? undefined : filteredTournaments.value.length))
 const {
   rowContextMenuItems, onRowContextmenu, contextMenuRow
 } = useCopyLinkContextMenu<Tournament>('/tournaments')
@@ -229,6 +238,7 @@ const bulkConfirmTitle = computed(() => {
       <ListSkeleton
         v-if="loading"
         :variant="viewMode === 'table' ? 'table' : 'grid'"
+        :count="skeletonCount"
         :columns="columns.length"
       />
 
