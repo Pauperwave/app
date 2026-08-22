@@ -61,13 +61,20 @@ const tour = useLocationsTour()
     <template #body>
       <div id="tour-locations-content">
         <template v-if="viewMode === 'table'">
-          <ListSkeleton v-if="loading" :count="skeletonCount" :columns="columns.length" />
+          <!-- ListSkeleton only for a genuine first load (isPending, no
+             cached rows yet) — a background refetch (e.g. the manual
+             refresh button) keeps the existing rows and uses UTable's own
+             :loading bar instead, same convention as associates/index.vue.
+             Swapping the whole table out on every refresh (the previous
+             behavior here) was flagged as worse UX than associates' -->
+          <ListSkeleton v-if="isPending" :count="skeletonCount" :columns="columns.length" />
 
           <UTable
             v-else
             v-model:sorting="sorting"
             :data="locations"
             :columns="columns"
+            :loading="loading"
             class="w-full"
             @select="(_e, row) => navigateTo(`/locations/${slugify(row.original.name)}`)"
           />

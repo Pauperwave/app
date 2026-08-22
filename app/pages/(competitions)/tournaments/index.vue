@@ -237,7 +237,11 @@ const bulkConfirmTitle = computed(() => {
     <template #body>
       <div id="tour-tournaments-content">
         <template v-if="viewMode === 'table'">
-          <ListSkeleton v-if="loading" :count="skeletonCount" :columns="columns.length" />
+          <!-- ListSkeleton only for a genuine first load (isPending, no
+               cached rows yet) — a background refetch keeps the existing
+               rows and uses UTable's own :loading bar instead, same
+               convention as associates/index.vue. -->
+          <ListSkeleton v-if="isPending" :count="skeletonCount" :columns="columns.length" />
 
           <UContextMenu v-else :items="tableContextMenuItems">
             <UTable
@@ -248,6 +252,7 @@ const bulkConfirmTitle = computed(() => {
               :grouping-options="{
                 getGroupedRowModel: getGroupedRowModel()
               }"
+              :loading="loading"
               class="w-full"
               :ui="{ tr: 'cursor-pointer' }"
               @contextmenu="onRowContextmenu"
