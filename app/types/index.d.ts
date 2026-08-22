@@ -322,8 +322,20 @@ export interface Event {
   endDate: string | null
   tournamentCount: number
   organizer: string | null
+  // FK uuids alongside their resolved display names above (2026-08-22,
+  // EventsListEditModal.vue) — needed to prefill the edit form's
+  // organizer/location selects, which bind by uuid, not by the
+  // human-readable name — same convention as Tournament's own
+  // organizerUuid/locationUuid.
+  organizerUuid: string
+  locationUuid: string | null
   location: string | null
   locationAddress: string | null
+  // Precise Google Maps place link (locations.google_maps_url), see
+  // Tournament's own locationMapsUrl for why this takes priority over the
+  // generic address-search fallback — added 2026-08-22 alongside
+  // Card.vue/Cover.vue (issue #45).
+  locationMapsUrl: string | null
   image: string | null
   companionCode: string | null
 }
