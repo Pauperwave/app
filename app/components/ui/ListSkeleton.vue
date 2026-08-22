@@ -41,7 +41,15 @@ const cols = computed(() => Array.from({ length: columns }))
       :key="index"
       :ui="{ body: 'p-3 sm:p-3', footer: 'p-3 sm:p-3' }"
     >
-      <USkeleton class="w-full h-32 -m-3 mb-3 rounded-none" />
+      <!-- Two elements, not one: TournamentsListCover.vue's own bleed is an
+           outer `-m-3 mb-3` wrapper around an inner `w-full h-32` image —
+           collapsing both onto a single USkeleton put the width sizing and
+           the negative margin on the same box, which doesn't bleed
+           symmetrically (the right edge came out wrong, user feedback
+           2026-08-22). Mirroring the real two-element shape fixes it. -->
+      <div class="relative -m-3 mb-3">
+        <USkeleton class="w-full h-32 rounded-none" />
+      </div>
 
       <div class="flex items-start justify-between gap-2">
         <div class="min-w-0 flex-1 space-y-1.5">
