@@ -272,6 +272,7 @@ export type Database = {
           city: string
           country: string
           created_at: string
+          deleted_at: string | null
           email: string | null
           facebook_url: string | null
           google_maps_url: string | null
@@ -295,6 +296,7 @@ export type Database = {
           city: string
           country?: string
           created_at?: string
+          deleted_at?: string | null
           email?: string | null
           facebook_url?: string | null
           google_maps_url?: string | null
@@ -318,6 +320,7 @@ export type Database = {
           city?: string
           country?: string
           created_at?: string
+          deleted_at?: string | null
           email?: string | null
           facebook_url?: string | null
           google_maps_url?: string | null

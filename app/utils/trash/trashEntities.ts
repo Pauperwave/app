@@ -12,7 +12,8 @@ export const TRASH_ENTITY_TABLES: Record<TrashEntity, string> = {
   event: 'events',
   transaction: 'pauperwave_payments',
   wantedCard: 'pauperwave_wanted_cards',
-  mtgFormat: 'mtg_formats'
+  mtgFormat: 'mtg_formats',
+  location: 'locations'
 }
 
 export const TRASH_ENTITY_ICONS: Record<TrashEntity, IconName> = {
@@ -21,5 +22,6 @@ export const TRASH_ENTITY_ICONS: Record<TrashEntity, IconName> = {
   event: ICONS.calendar,
   transaction: ICONS.wallet,
   wantedCard: ICONS.cardSearch,
-  mtgFormat: ICONS.rules
+  mtgFormat: ICONS.rules,
+  location: ICONS.mapPin
 }

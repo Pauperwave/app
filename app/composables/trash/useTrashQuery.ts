@@ -22,7 +22,7 @@ export function useTrashQuery() {
     key: TRASH_KEY,
     query: async (): Promise<TrashItem[]> => {
       const [
-        tournaments, leagues, events, transactions, wantedCards, mtgFormats
+        tournaments, leagues, events, transactions, wantedCards, mtgFormats, locations
       ] = await Promise.all([
         supabase.from('tournaments').select('id, uuid, name, deleted_at').not('deleted_at', 'is', null),
         supabase.from('leagues').select('id, uuid, name, deleted_at').not('deleted_at', 'is', null),
@@ -32,10 +32,14 @@ export function useTrashQuery() {
           .select('id, uuid, payer_name, payer_surname, event_name, deleted_at')
           .not('deleted_at', 'is', null),
         supabase.from('pauperwave_wanted_cards').select('id, uuid, card_name, deleted_at').not('deleted_at', 'is', null),
-        supabase.from('mtg_formats').select('id, uuid, name, deleted_at').not('deleted_at', 'is', null)
+        supabase.from('mtg_formats').select('id, uuid, name, deleted_at').not('deleted_at', 'is', null),
+        supabase.from('locations').select('id, uuid, name, deleted_at').not('deleted_at', 'is', null)
       ])
 
-      for (const result of [tournaments, leagues, events, transactions, wantedCards, mtgFormats]) {
+      const results = [
+        tournaments, leagues, events, transactions, wantedCards, mtgFormats, locations
+      ]
+      for (const result of results) {
         if (result.error) throw result.error
       }
 
@@ -51,7 +55,8 @@ export function useTrashQuery() {
           row.deleted_at
         )),
         ...wantedCards.data!.map(row => toTrashItem('wantedCard', row.id, row.uuid, row.card_name, row.deleted_at)),
-        ...mtgFormats.data!.map(row => toTrashItem('mtgFormat', row.id, row.uuid, row.name, row.deleted_at))
+        ...mtgFormats.data!.map(row => toTrashItem('mtgFormat', row.id, row.uuid, row.name, row.deleted_at)),
+        ...locations.data!.map(row => toTrashItem('location', row.id, row.uuid, row.name, row.deleted_at))
       ]
 
       return items.sort((a, b) => b.deletedAt.localeCompare(a.deletedAt))

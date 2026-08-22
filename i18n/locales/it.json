@@ -1852,7 +1852,7 @@
     "empty": "Il cestino è vuoto.",
     "info": {
       "title": "Non tutte le tabelle hanno un cestino",
-      "enabled": "Tornei, leghe, eventi, transazioni, carte cercate e formati hanno il soft delete abilitato: eliminarli non cancella la riga, la nasconde finché non viene ripristinata da qui.",
+      "enabled": "Tornei, leghe, eventi, transazioni, carte cercate, formati e luoghi hanno il soft delete abilitato: eliminarli non cancella la riga, la nasconde finché non viene ripristinata da qui.",
       "disabled": "I soci non vengono mai eliminati: lo stato di tesseramento è calcolato dai rinnovi, non è un'azione disponibile su quella tabella. Nessun'altra tabella dell'app supporta ancora il soft delete."
     },
     "restore": "Ripristina",
@@ -1869,7 +1869,8 @@
       "event": "Evento",
       "transaction": "Transazione",
       "wantedCard": "Carta Cercata",
-      "mtgFormat": "Formato"
+      "mtgFormat": "Formato",
+      "location": "Luogo"
     }
   },
   "settings": {

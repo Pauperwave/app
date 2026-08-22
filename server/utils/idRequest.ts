@@ -33,7 +33,7 @@ export async function parseIdRequest(event: H3Event) {
 // this same set, mapped 1:1 in app/utils/trash/trashEntities.ts).
 export type SoftDeletableTable
   = | 'mtg_formats' | 'tournaments' | 'leagues' | 'events'
-    | 'pauperwave_payments' | 'pauperwave_wanted_cards'
+    | 'pauperwave_payments' | 'pauperwave_wanted_cards' | 'locations'
 
 // Shared body for /[id]/delete.post.ts endpoints that soft-delete (2026-08-16
 // fallow:dupes flagged mtg-formats/tournaments/wanted-cards' delete handlers
