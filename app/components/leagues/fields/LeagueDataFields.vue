@@ -48,23 +48,30 @@ const imageCardArtist = defineModel<string | undefined>('imageCardArtist')
     />
   </UFormField>
 
-  <UStatusSelect
-    v-model="state.status"
-    :items="statusOptions"
-    name="status"
-    :label="$t('league.addModal.fields.status')"
-    class="w-full"
-  />
-
-  <!-- eslint-disable-next-line -->
-  <UFormField :label="$t('league.addModal.fields.name')" name="name" required>
-    <UInput
-      v-model="state.name"
+  <!-- Same row (user request, 2026-08-22): status is a single select and
+       name a short text input, neither needs the full modal width on its
+       own — pairing them cuts a row (and the space-y gap that comes with
+       it) out of the modal, same "grid grid-cols-2" pattern already used by
+       OrganizerDataFields.vue for its own paired fields. -->
+  <div class="grid grid-cols-2 gap-2">
+    <UStatusSelect
+      v-model="state.status"
+      :items="statusOptions"
+      name="status"
+      :label="$t('league.addModal.fields.status')"
       class="w-full"
-      :placeholder="$t('league.addModal.fields.namePlaceholder')"
-      :icon="ICONS.standings"
     />
-  </UFormField>
+
+    <!-- eslint-disable-next-line -->
+    <UFormField :label="$t('league.addModal.fields.name')" name="name" required>
+      <UInput
+        v-model="state.name"
+        class="w-full"
+        :placeholder="$t('league.addModal.fields.namePlaceholder')"
+        :icon="ICONS.standings"
+      />
+    </UFormField>
+  </div>
 
   <UFormField :label="$t('league.addModal.fields.ruleset')" name="rulesetUuid">
     <USelectMenu

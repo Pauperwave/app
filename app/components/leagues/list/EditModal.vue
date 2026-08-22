@@ -92,7 +92,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         v-if="league"
         :schema="schema"
         :state="state"
-        class="space-y-6"
+        class="space-y-2"
         @submit="onSubmit"
       >
         <LeaguesFieldsLeagueDataFields
@@ -104,7 +104,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           :ruleset-options="rulesetOptions"
         />
 
-        <div class="flex justify-end gap-2 pt-4">
+        <div class="flex justify-end gap-2">
           <UButton
             :label="$t('league.editModal.cancel')"
             color="neutral"

@@ -155,10 +155,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       <UForm
         :schema="schema"
         :state="state"
-        class="space-y-6"
+        class="space-y-4"
         @submit="onSubmit"
       >
-        <div class="space-y-4">
+        <div class="space-y-2">
           <p class="text-lg font-semibold text-primary">
             {{ $t('tournament.addModal.tournamentData') }}
           </p>
@@ -193,7 +193,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           />
         </div>
 
-        <div class="flex justify-end gap-2 pt-4">
+        <div class="flex justify-end gap-2">
           <UButton
             :label="$t('tournament.addModal.cancel')"
             color="neutral"

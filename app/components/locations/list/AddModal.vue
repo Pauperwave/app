@@ -93,7 +93,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       <UForm
         :schema="schema"
         :state="state"
-        class="space-y-4"
+        class="space-y-2"
         @submit="onSubmit"
       >
         <LocationsListFormFields
@@ -102,7 +102,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           :state="state"
         />
 
-        <div class="flex justify-end gap-2 pt-4">
+        <div class="flex justify-end gap-2">
           <UButton
             :label="$t('location.addModal.cancel')"
             color="neutral"
