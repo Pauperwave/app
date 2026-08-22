@@ -22,7 +22,8 @@ export default defineEventHandler(async (event) => {
       organizer_uuid: body.organizerUuid,
       starts_at: body.startsAt,
       ends_at: body.endsAt,
-      companion_app_code: body.companionCode
+      companion_app_code: body.companionCode,
+      image_url: body.imageUrl
     })
     .select()
     .single()
