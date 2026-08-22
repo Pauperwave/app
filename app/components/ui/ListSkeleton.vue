@@ -56,10 +56,18 @@ const cols = computed(() => Array.from({ length: columns }))
         <USkeleton class="w-full h-32 rounded-none" />
       </div>
 
+      <!-- No gap between the two skeleton lines below (not space-y-*): the
+           real markup stacks <h3> and TournamentsListLeagueLink.vue directly
+           with no gap class between them. LeagueLink's own wrapper is a
+           fixed h-4 (not h-3) — it explicitly reserves that height even for
+           a tournament with no league, so real cards in the same grid row
+           stay equal height; the skeleton needs the same reserved height to
+           actually match (14px card-height gap found via live measurement,
+           2026-08-22). -->
       <div class="flex items-start justify-between gap-2">
-        <div class="min-w-0 flex-1 space-y-1.5">
+        <div class="min-w-0 flex-1">
           <USkeleton class="h-4 w-3/4" />
-          <USkeleton class="h-3 w-1/3" />
+          <USkeleton class="h-4 w-1/3" />
         </div>
         <USkeleton class="size-6 shrink-0" />
       </div>
@@ -71,15 +79,19 @@ const cols = computed(() => Array.from({ length: columns }))
            over a conflicting plain `class` — it merges through the same
            tv() slot the theme's own base class does, so it reliably wins
            without needing `!important`. -->
+      <!-- h-6, not h-5: a real UBadge with an icon at the default "md" size
+           is size-4 icon (16px) + py-1 padding (4px top/bottom) = 24px tall
+           (.nuxt/ui/badge.ts), not 20px — found alongside the other height
+           mismatches, live-measurement gap 2026-08-22. -->
       <div class="flex items-center gap-2 mt-1.5">
-        <USkeleton class="h-5 w-16" />
-        <USkeleton class="h-5 w-14" />
-        <USkeleton class="h-5 w-20" />
+        <USkeleton class="h-6 w-16" />
+        <USkeleton class="h-6 w-14" />
+        <USkeleton class="h-6 w-20" />
       </div>
 
       <template #footer>
         <div class="flex items-center justify-between gap-2">
-          <USkeleton class="h-5 w-10" />
+          <USkeleton class="h-6 w-10" />
           <USkeleton class="h-4 w-12" />
         </div>
       </template>
