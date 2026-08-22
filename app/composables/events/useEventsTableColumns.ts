@@ -1,15 +1,23 @@
 // app\composables\events\useEventsTableColumns.ts
-// fallow-ignore-file code-duplication -- mirrors useTournamentsTableColumns.ts's
-// status-badge column shape on purpose; expected to diverge once real Supabase
-// tables land
+// fallow-ignore-file code-duplication -- mirrors useLeaguesTableColumns.ts's
+// status-badge/select/actions column shape on purpose
 import { h } from 'vue'
-import { UBadge } from '#components'
+import { EditIconButton, UBadge } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { Event } from '~/types'
+import type { Selection } from '~/composables/useSelection'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 
-export function useEventsTableColumns() {
+// selection/onEdit threaded through rather than read from a composable here,
+// since that state (useSelection.ts/useEventsRowActions.ts) is owned by the
+// page, not this file — same convention as useLeaguesTableColumns.ts.
+export function useEventsTableColumns(
+  selection: Selection<number>,
+  onEdit: (event: Event) => void
+) {
   const { t } = useI18n()
+
+  const selectColumn = useGroupedSelectColumn<Event>(selection)
 
   const columnHeaders: Record<string, string> = {
     status: t('event.columns.status'),
@@ -17,10 +25,12 @@ export function useEventsTableColumns() {
     startDate: t('event.columns.startDate'),
     tournamentCount: t('event.columns.tournamentCount'),
     organizer: t('event.columns.organizer'),
-    location: t('event.columns.location')
+    location: t('event.columns.location'),
+    actions: t('event.columns.actions')
   }
 
   const columns: TableColumn<Event>[] = [
+    selectColumn,
     {
       accessorKey: 'status',
       header: ({ column }) => sortableHeader(t('event.columns.status'), column),
@@ -53,6 +63,21 @@ export function useEventsTableColumns() {
     {
       accessorKey: 'location',
       header: t('event.columns.location')
+    },
+    {
+      id: 'actions',
+      header: t('event.columns.actions'),
+      // stopPropagation: the row itself also navigates on click (UTable's
+      // @select, see events/index.vue) — without this, clicking the edit
+      // button would open the edit modal AND navigate away underneath it.
+      cell: ({ row }) => h(EditIconButton, {
+        label: t('event.rowActions.edit'),
+        size: 'xs',
+        onClick: (e: MouseEvent) => {
+          e.stopPropagation()
+          onEdit(row.original)
+        }
+      })
     }
   ]
 
