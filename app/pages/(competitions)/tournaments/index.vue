@@ -265,14 +265,17 @@ const bulkConfirmTitle = computed(() => {
 
         <!-- Grid mode's own loading state lives in GridView.vue/Card.vue
              now (2026-08-22) — no separate ListSkeleton grid variant, see
-             their own comments for why. -->
+             their own comments for why. :loading is isPending, not isLoading
+             (2026-08-22) — same fix as the table view above: a background
+             refresh keeps the real cards, only a genuine first load shows
+             the skeleton grid. -->
         <TournamentsListGridView
           v-else
           :tournaments="filteredTournaments"
           :context-menu-items="tournamentContextMenuItems"
           :on-edit="openEditModal"
           :selection="selection"
-          :loading="loading"
+          :loading="isPending"
           :loading-count="skeletonCount"
         />
       </div>

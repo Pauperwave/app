@@ -81,12 +81,15 @@ const tour = useLocationsTour()
         </template>
 
         <!-- Grid mode's own loading state lives in GridView.vue/Card.vue —
-             no separate ListSkeleton grid variant, see their own comments. -->
+             no separate ListSkeleton grid variant, see their own comments.
+             :loading is isPending, not isLoading (2026-08-22) — same fix as
+             the table view above: a background refresh keeps the real
+             cards, only a genuine first load shows the skeleton grid. -->
         <LocationsListGridView
           v-else
           :locations="locations"
           :on-edit="openEditModal"
-          :loading="loading"
+          :loading="isPending"
           :loading-count="skeletonCount"
         />
       </div>
