@@ -954,6 +954,8 @@
         "companionCode": "Codice Companion",
         "companionCodePlaceholder": "Codice (opzionale)",
         "startDate": "Data di inizio",
+        "startTime": "Ora di inizio",
+        "endTime": "Ora di fine",
         "organizer": "Organizzatore",
         "selectOrganizer": "Seleziona organizzatore",
         "location": "Luogo",
@@ -964,6 +966,33 @@
       "errorToastTitle": "Impossibile creare l'evento",
       "cancel": "Annulla",
       "create": "Crea evento"
+    },
+    "editModal": {
+      "title": "Modifica evento",
+      "successToastTitle": "Evento aggiornato",
+      "errorToastTitle": "Impossibile aggiornare l'evento",
+      "cancel": "Annulla",
+      "save": "Salva"
+    },
+    "rowActions": {
+      "edit": "Modifica evento",
+      "delete": "Elimina"
+    },
+    "bulkActions": {
+      "selectedCount": "{count} selezionato | {count} selezionati",
+      "clearSelection": "Deseleziona",
+      "markAs": "Segna come",
+      "confirm": "Conferma",
+      "confirmStatusTitle": "Segna {count} evento come {status}? | Segna {count} eventi come {status}?",
+      "confirmDeleteTitle": "Eliminare {count} evento? | Eliminare {count} eventi?",
+      "statusUndoToast": "{count} evento verrà segnato come {status} | {count} eventi verranno segnati come {status}",
+      "deleteUndoToast": "{count} evento verrà eliminato | {count} eventi verranno eliminati",
+      "statusSuccessToast": "{count} evento aggiornato | {count} eventi aggiornati",
+      "deleteSuccessToast": "{count} evento eliminato | {count} eventi eliminati",
+      "partialFailure": "{count} operazione non riuscita | {count} operazioni non riuscite"
+    },
+    "card": {
+      "openInMaps": "Apri in Maps"
     },
     "detail": {
       "navbarTitle": "Evento",

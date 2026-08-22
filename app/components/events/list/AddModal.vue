@@ -1,8 +1,9 @@
 <!-- app\components\events\list\AddModal.vue -->
 <script setup lang="ts">
-import * as v from 'valibot'
+import type * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { NewEventPayload } from '#shared/types/events'
+import type { EventFormState } from '~/composables/events/useEventFormFields'
 
 const open = defineModel<boolean>({ default: false })
 const toast = useToast()
@@ -13,42 +14,36 @@ const { t } = useI18n()
 // useLocationsQuery.ts/useOrganizationsQuery.ts (shared with tournaments'
 // AddModal.vue).
 const { createEvent } = useEventsMutations()
-const { locationOptions, organizerOptions } = useLocationOrganizerOptions()
-
-const statusOptions = computed(() => EVENT_STATUSES.map(status => ({
-  value: status,
-  label: t(`event.addModal.statusOptions.${status}`),
-  icon: EVENT_STATUS_ICONS[status],
-  color: eventStatusColor(status)
-})))
+const {
+  schema, statusOptions, locationOptions, organizerOptions
+} = useEventFormFields()
 
 const todayString = new Date().toISOString().substring(0, 10)
 
-const schema = v.object({
-  status: v.picklist(EVENT_STATUSES),
-  companionCode: v.optional(v.nullable(v.string())),
-  name: v.pipe(v.string(), v.minLength(1, t('event.addModal.validation.nameRequired'))),
-  startDate: v.string(),
-  organizerUuid: v.string(t('event.addModal.validation.nameRequired')),
-  locationUuid: v.optional(v.string())
-})
-
-type Schema = v.InferOutput<typeof schema>
-
-function createInitialState(): Schema {
+function createInitialState(): EventFormState {
   return {
-    name: '',
+    name: undefined,
     status: 'draft',
     startDate: todayString,
+    startTime: '20:00',
+    endTime: undefined,
     organizerUuid: undefined as unknown as string,
     locationUuid: undefined,
     companionCode: undefined
   }
 }
 
-const state = reactive<Schema>(createInitialState())
+const state = reactive<EventFormState>(createInitialState())
 
 const { startDate, formattedStartDate, reset: resetStartDate } = useStartDateField(state)
+
+// Kept out of `state`/the valibot schema (no format validation needed) —
+// same convention as TournamentsListAddModal.vue's `image`. No card-name/
+// artist attribution pair here (unlike tournaments/leagues): the `events`
+// table has no image_card_name/image_card_artist columns.
+const image = ref<string | undefined>(undefined)
+
+type Schema = v.InferOutput<typeof schema>
 
 // UModal only hides/shows, it does not unmount the form, so the state has to
 // be cleared explicitly — called on successful submit and on explicit
@@ -57,6 +52,7 @@ const { startDate, formattedStartDate, reset: resetStartDate } = useStartDateFie
 function resetForm() {
   Object.assign(state, createInitialState())
   resetStartDate()
+  image.value = undefined
 }
 
 // fallow-ignore-next-line code-duplication -- the state literal + onSubmit
@@ -64,16 +60,20 @@ function resetForm() {
 // (NewEventPayload vs NewLeaguePayload) and mutation differ per domain — same
 // same-shaped-but-parameterized call as feedback_dedup_threshold_call_sites.
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  const startsAt = dateValueToDate(startDate.value!)
+  const startsAt = combineDateAndTime(startDate.value!, event.data.startTime)
+  const endsAt = event.data.endTime
+    ? combineEndDateAndTime(startsAt, startDate.value!, event.data.endTime)
+    : null
 
   const payload: NewEventPayload = {
-    name: event.data.name,
+    name: event.data.name ?? '',
     status: event.data.status,
     locationUuid: event.data.locationUuid || null,
-    organizerUuid: event.data.organizerUuid,
+    organizerUuid: event.data.organizerUuid ?? '',
     startsAt: startsAt.toISOString(),
-    endsAt: null,
-    companionCode: event.data.companionCode || null
+    endsAt: endsAt ? endsAt.toISOString() : null,
+    companionCode: event.data.companionCode || null,
+    imageUrl: image.value ?? null
   }
 
   try {
@@ -120,6 +120,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             {{ $t('event.addModal.eventData') }}
           </p>
 
+          <UFormField :label="$t('league.addModal.fields.image')" name="image">
+            <MagicCardArtPicker v-model="image" />
+          </UFormField>
+
           <div class="flex justify-between gap-2">
             <div class="flex-1">
               <UStatusSelect
@@ -159,9 +163,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             {{ $t('event.addModal.scheduling') }}
           </p>
 
-          <StartDatePickerField
+          <EventsFieldsSchedulingFields
             v-model:start-date="startDate"
-            :label="$t('event.addModal.fields.startDate')"
+            :state="state"
             :formatted-start-date="formattedStartDate"
           />
 
@@ -169,7 +173,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             {{ $t('event.addModal.organizerData') }}
           </p>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-2 gap-2">
             <!-- eslint-disable-next-line -->
             <UFormField
               :label="$t('event.addModal.fields.organizer')"
