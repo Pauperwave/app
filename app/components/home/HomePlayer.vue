@@ -47,7 +47,11 @@ const upcomingTournaments = computed(() => (tournaments.value ?? [])
 
 <template>
   <div class="flex flex-col gap-6">
-    <UPageCard :title="t('home.player.membership.title')" variant="subtle">
+    <UPageCard
+      id="tour-home-membership"
+      :title="t('home.player.membership.title')"
+      variant="subtle"
+    >
       <div v-if="!currentAssociate" class="text-sm text-muted py-2">
         {{ t('home.player.membership.noAssociate') }}
       </div>
@@ -73,7 +77,7 @@ const upcomingTournaments = computed(() => (tournaments.value ?? [])
     </UPageCard>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-      <UPageCard :title="t('home.player.payments.title')" variant="subtle">
+      <UPageCard id="tour-home-payments" :title="t('home.player.payments.title')" variant="subtle">
         <div v-if="!currentAssociate" class="text-sm text-muted py-4 text-center">
           {{ t('home.player.membership.noAssociate') }}
         </div>
@@ -105,7 +109,7 @@ const upcomingTournaments = computed(() => (tournaments.value ?? [])
         </template>
       </UPageCard>
 
-      <UPageCard :title="t('home.player.upcoming.title')" variant="subtle">
+      <UPageCard id="tour-home-upcoming" :title="t('home.player.upcoming.title')" variant="subtle">
         <div v-if="!upcomingTournaments.length" class="text-sm text-muted py-4 text-center">
           {{ t('home.player.upcoming.empty') }}
         </div>
@@ -131,7 +135,12 @@ const upcomingTournaments = computed(() => (tournaments.value ?? [])
       </UPageCard>
     </div>
 
-    <UPageCard :title="t('home.player.rankings.title')" variant="subtle" to="/standings/cittadino">
+    <UPageCard
+      id="tour-home-rankings"
+      :title="t('home.player.rankings.title')"
+      variant="subtle"
+      to="/standings/cittadino"
+    >
       <div class="text-sm text-muted py-4 text-center">
         {{ t('common.pageInDevelopment') }}
       </div>

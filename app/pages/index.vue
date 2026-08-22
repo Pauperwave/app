@@ -53,10 +53,8 @@ const tour = useHomeTour(isStaff)
     </template>
 
     <template #body>
-      <div id="tour-home-body">
-        <HomeStaff v-if="roleReady && isStaff" />
-        <HomePlayer v-else-if="roleReady" />
-      </div>
+      <HomeStaff v-if="roleReady && isStaff" />
+      <HomePlayer v-else-if="roleReady" />
     </template>
   </UDashboardPanel>
 
