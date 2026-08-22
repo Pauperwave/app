@@ -108,6 +108,12 @@ const mapsLink = computed(() => location
         <USkeleton v-else class="h-4 w-44 mt-1" />
 
         <LocationsListSocialLinks v-if="!loading && location" :location="location" @click.stop />
+        <!-- Optional on a real card (0-5 icons, none shown at all if unset)
+             — same guess tradeoff as the footer's phone badge below: a
+             typical-looking row rather than a pixel-exact one. -->
+        <div v-else class="flex items-center gap-3 mt-2">
+          <USkeleton v-for="n in 3" :key="n" class="size-4 rounded-full" />
+        </div>
       </div>
     </div>
 

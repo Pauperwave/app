@@ -159,25 +159,34 @@ const {
     </template>
 
     <template #body>
-      <div v-if="locationLoading" class="flex items-center justify-center py-12">
-        <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
+      <div v-if="!locationLoading && !location" class="text-center py-12 text-muted">
+        {{ t('location.detail.notFound') }}
       </div>
 
-      <div v-else-if="location" class="flex flex-col gap-6">
+      <div v-else class="flex flex-col gap-6">
         <div class="grid gap-6 sm:grid-cols-2 sm:items-start">
           <LocationsSinglePresentationCard
             :location="location"
             :maps-link="mapsLink"
             :address-line="addressLine"
             :on-edit="openLocationEditModal"
+            :loading="locationLoading"
           />
 
-          <UCard v-if="hostedTournamentDates.length" :ui="{ header: 'font-semibold' }">
+          <UCard
+            v-if="locationLoading || hostedTournamentDates.length"
+            :ui="{ header: 'font-semibold' }"
+          >
             <template #header>
               {{ t('location.detail.tournamentActivity') }}
             </template>
 
-            <div class="flex justify-center">
+            <!-- Generic placeholder, not a per-cell skeleton — CalendarHeatmap
+                 has no loading prop of its own (out of scope here), so this
+                 just reserves its rendered footprint. -->
+            <USkeleton v-if="locationLoading" class="h-40 w-full max-w-md mx-auto" />
+
+            <div v-else class="flex justify-center">
               <CalendarHeatmap
                 v-model:hovered-date="hoveredTournamentDate"
                 :dates="hostedTournamentDates"
@@ -214,10 +223,6 @@ const {
             :loading-count="skeletonCount"
           />
         </div>
-      </div>
-
-      <div v-else class="text-center py-12 text-muted">
-        {{ t('location.detail.notFound') }}
       </div>
     </template>
   </UDashboardPanel>
