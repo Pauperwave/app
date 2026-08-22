@@ -1,4 +1,5 @@
 // app\composables\events\useEventsMutations.ts
+import type { EventStatus } from '~/types'
 import type { NewEventPayload } from '#shared/types/events'
 
 export function useEventsMutations() {
@@ -14,5 +15,25 @@ export function useEventsMutations() {
     onSettled: invalidate
   })
 
-  return { createEvent }
+  const updateEvent = useMutation({
+    mutation: ({ id, edits }: { id: number, edits: NewEventPayload }) =>
+      $fetch(`/api/events/${id}/update`, { method: 'POST', body: edits }),
+    onSettled: invalidate
+  })
+
+  const setStatus = useMutation({
+    mutation: ({ id, status }: { id: number, status: EventStatus }) =>
+      $fetch(`/api/events/${id}/status`, { method: 'POST', body: { status } }),
+    onSettled: invalidate
+  })
+
+  const deleteEvent = useMutation({
+    mutation: (id: number) =>
+      $fetch(`/api/events/${id}/delete`, { method: 'POST' }),
+    onSettled: invalidate
+  })
+
+  return {
+    createEvent, updateEvent, setStatus, deleteEvent
+  }
 }
