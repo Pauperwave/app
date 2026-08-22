@@ -20,7 +20,7 @@ export function useEventsQuery() {
           .from('events')
           .select(`
             *,
-            location:locations(name, address, city, province, postal_code, country),
+            location:locations(name, address, city, province, postal_code, country, google_maps_url),
             organizer:organizations(name)
           `)
           .is('deleted_at', null)
@@ -50,10 +50,13 @@ export function useEventsQuery() {
         endDate: row.ends_at,
         tournamentCount: tournamentCounts.get(row.uuid) ?? 0,
         organizer: row.organizer?.name ?? null,
+        organizerUuid: row.organizer_uuid,
+        locationUuid: row.location_uuid,
         location: row.location?.name ?? null,
         locationAddress: row.location
           ? `${row.location.address}, ${row.location.postal_code} ${row.location.city} ${row.location.province}, ${row.location.country}`
           : null,
+        locationMapsUrl: row.location?.google_maps_url ?? null,
         image: row.image_url,
         companionCode: row.companion_app_code
       }))
