@@ -1805,7 +1805,7 @@
         "player": "Giocatore",
         "organizer": "Organizzatore",
         "admin": "Amministratore",
-        "superAdmin": "Super amministratore"
+        "superAdmin": "Sviluppatore"
       },
       "access": {
         "full": "Completo",
@@ -1911,7 +1911,7 @@
         "player": "Giocatore",
         "organizer": "Organizzatore",
         "admin": "Amministratore",
-        "super_admin": "Super amministratore"
+        "super_admin": "Sviluppatore"
       },
       "permissionsAlert": {
         "title": "Cosa può fare ogni ruolo?",
