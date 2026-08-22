@@ -66,7 +66,10 @@ const emit = defineEmits<{ openTournament: [tournament: Tournament] }>()
         @click="emit('openTournament', tournament)"
       >
         <BadgesFormatBadge :format="tournament.format" />
-        <span class="truncate flex-1 min-w-0">{{ tournament.name }}</span>
+        <span class="truncate flex-1 min-w-0">
+          {{ tournament.name }}
+          <TournamentsStageLabel v-if="tournament.stageNumber" :number="tournament.stageNumber" />
+        </span>
         <span class="text-muted text-xs shrink-0">
           {{ tournamentTimeRange(tournament.startDate, tournament.endDate) }}
         </span>

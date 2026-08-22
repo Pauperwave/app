@@ -105,6 +105,10 @@ function timePart(startDate: string) {
               :class="{ 'line-through text-error': isCancelled }"
             >
               {{ tournament.name }}
+              <TournamentsStageLabel
+                v-if="tournament.stageNumber"
+                :number="tournament.stageNumber"
+              />
             </h3>
 
             <TournamentsListLeagueLink

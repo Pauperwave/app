@@ -66,7 +66,7 @@ const timeRange = computed(() => tournamentTimeRange(tournament.startDate, tourn
 
     <div class="flex flex-wrap gap-2 mb-4">
       <CalendarButtonShareButton
-        :name="tournament.name"
+        :name="`${tournament.name}${tournamentStageText(tournament)}`"
         :start-date="tournament.startDate"
       />
       <CalendarButtonAddToCalendarButton :item="tournament" />

@@ -259,6 +259,14 @@ export interface Tournament {
   // showing (see the Hobbit draft seed, migration 20260815100500).
   contactName: string | null
   contactPhone: string | null
+  // Derived by useTournamentsQuery.ts (user request, 2026-08-22, issue #52)
+  // — this tournament's 1-based position within its own league, ordered by
+  // startDate; null when it has no league. Independent of whether `name`
+  // repeats — every tournament in a league gets one. Rendered as a muted
+  // superscript suffix by TournamentsStageLabel.vue in styled contexts, or
+  // via tournamentStageText() as plain text (tournamentStageLabel.ts)
+  // wherever styled markup isn't possible (select options, breadcrumbs).
+  stageNumber: number | null
 }
 
 // Backed by the real `leagues` table — mapped from its snake_case rows, with

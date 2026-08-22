@@ -26,8 +26,8 @@ const tournamentOptions = computed(() => (tournamentsData.value ?? [])
   .map(tournament => ({
     value: tournament.id,
     label: tournament.league
-      ? `${tournament.name} (${t('league.detail.addTournaments.alreadyInLeague', { league: tournament.league })})`
-      : tournament.name
+      ? `${tournament.name}${tournamentStageText(tournament)} (${t('league.detail.addTournaments.alreadyInLeague', { league: tournament.league })})`
+      : `${tournament.name}${tournamentStageText(tournament)}`
   })))
 
 const pickedIds = ref<number[]>([])

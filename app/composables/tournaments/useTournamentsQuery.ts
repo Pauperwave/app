@@ -31,7 +31,7 @@ export function useTournamentsQuery() {
 
       if (error) throw error
 
-      return data.map(row => ({
+      const tournaments: Tournament[] = data.map(row => ({
         id: row.id,
         uuid: row.uuid,
         event: row.event?.name ?? null,
@@ -42,6 +42,7 @@ export function useTournamentsQuery() {
         organizerUuid: row.organizer_uuid,
         locationUuid: row.location_uuid,
         name: row.name,
+        stageNumber: null,
         startDate: row.starts_at ?? row.created_at,
         endDate: row.ends_at,
         roundCount: row.round_count,
@@ -65,6 +66,9 @@ export function useTournamentsQuery() {
         contactName: row.contact_name,
         contactPhone: row.contact_phone
       }))
+
+      assignTournamentStageNumbers(tournaments)
+      return tournaments
     }
   })
 }

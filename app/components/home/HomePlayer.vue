@@ -123,6 +123,10 @@ const upcomingTournaments = computed(() => (tournaments.value ?? [])
             <div class="min-w-0">
               <NuxtLink :to="tournamentDetailUrl(tournament)" class="text-sm font-medium truncate hover:underline">
                 {{ tournament.name }}
+                <TournamentsStageLabel
+                  v-if="tournament.stageNumber"
+                  :number="tournament.stageNumber"
+                />
               </NuxtLink>
               <p class="text-xs text-muted">
                 {{ tournament.format }} ·

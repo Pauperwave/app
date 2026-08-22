@@ -6,7 +6,7 @@ import { h } from 'vue'
 import type { Row } from '@tanstack/vue-table'
 import {
   BadgesFormatBadge, BadgesLeagueBadge, BadgesLocationBadge,
-  EditIconButton, ImageOffPlaceholder, UBadge, UIcon
+  EditIconButton, ImageOffPlaceholder, TournamentsStageLabel, UBadge, UIcon
 } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { Tournament } from '~/types'
@@ -96,7 +96,14 @@ export function useTournamentsTableColumns(
     {
       accessorKey: 'name',
       header: ({ column }) => sortableHeader(t('tournament.columns.name'), column),
-      cell: ({ row }) => row.getIsGrouped() ? null : h('span', { class: 'font-medium' }, row.original.name)
+      cell: ({ row }) => row.getIsGrouped()
+        ? null
+        : h('span', { class: 'font-medium' }, [
+          row.original.name,
+          row.original.stageNumber
+            ? h(TournamentsStageLabel, { number: row.original.stageNumber, class: 'ms-1.5' })
+            : null
+        ])
     },
     {
       accessorKey: 'status',

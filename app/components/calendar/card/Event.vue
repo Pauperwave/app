@@ -87,6 +87,7 @@ const participants = computed(() => tournaments.flatMap(tournament => tournament
             :class="{ 'line-through text-error': isTournamentCancelled(tournament) }"
           >
             {{ tournament.name }}
+            <TournamentsStageLabel v-if="tournament.stageNumber" :number="tournament.stageNumber" />
           </span>
 
           <span

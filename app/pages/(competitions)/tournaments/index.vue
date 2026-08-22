@@ -309,6 +309,7 @@ const bulkConfirmTitle = computed(() => {
     <ul v-if="pendingAction" class="max-h-40 overflow-y-auto text-sm space-y-1">
       <li v-for="tournament in pendingAction.tournaments" :key="tournament.id">
         {{ tournament.name }}
+        <TournamentsStageLabel v-if="tournament.stageNumber" :number="tournament.stageNumber" />
       </li>
     </ul>
   </ConfirmModal>

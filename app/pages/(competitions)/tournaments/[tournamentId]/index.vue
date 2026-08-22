@@ -11,12 +11,21 @@ const { data: tournamentsData } = useTournamentsQuery()
 const tournament = computed(() =>
   tournamentsData.value?.find(item => item.uuid === tournamentUuid.value) ?? null)
 
-useSeoMeta({ title: () => tournament.value?.name ?? t('tournament.breadcrumb') })
+useSeoMeta({
+  title: () => tournament.value
+    ? `${tournament.value.name}${tournamentStageText(tournament.value)}`
+    : t('tournament.breadcrumb')
+})
 
 // Overrides the raw uuid path segment with the tournament's real name — same
-// mechanism as leagues/[leagueId]/index.vue's own breadcrumb override.
+// mechanism as leagues/[leagueId]/index.vue's own breadcrumb override. Stage
+// number appended (tournamentStageText): a league's own same-named
+// tournaments (e.g. "Premodern&Birrino" x8) would otherwise be
+// indistinguishable in the breadcrumb/tab title.
 const { breadcrumbItems } = useBreadcrumbs(
-  computed(() => (tournament.value ? { [tournamentUuid.value]: tournament.value.name } : {}))
+  computed(() => (tournament.value
+    ? { [tournamentUuid.value]: `${tournament.value.name}${tournamentStageText(tournament.value)}` }
+    : {}))
 )
 
 // "Back to league" link — see app/utils/tournaments/tournamentOrigin.ts for why this is
