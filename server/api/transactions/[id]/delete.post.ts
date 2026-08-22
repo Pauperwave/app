@@ -5,7 +5,7 @@
 // and removeStaleRenewal's own count query below does too, so a soft-deleted
 // payment stops counting as backing a renewal.
 export default defineEventHandler(async (event) => {
-  const { id, supabase } = await parseIdRequest(event)
+  const { id, user, supabase } = await parseIdRequest(event)
 
   // Needed to reconcile pauperwave_associate_renewals below — once the row is
   // gone there's no way to know what it used to back.
@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  await softDeleteById(supabase, 'pauperwave_payments', id)
+  await softDeleteById(event, user, supabase, 'pauperwave_payments', id)
 
   // Deleting an "Association Fee" payment for a known associate must not
   // leave a renewal row with nothing backing it — otherwise the associate

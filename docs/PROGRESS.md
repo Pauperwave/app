@@ -305,6 +305,14 @@ Lato UI: `LeaguesListCard.vue` mostra fino a 2 badge formato (`BadgesFormatBadge
 
 **Fuori scope, rimandato:** un audit trail completo (`deleted_by` dedicato, non `updated_by` riciclato — vedi discussione in questa stessa sessione) per tutte le tabelle soft-deletabili resta un pass separato, non ancora pianificato con una data.
 
+### ADR-027 — `deleted_by` dedicato su tutte le tabelle soft-eliminabili (2026-08-23)
+
+**Contesto:** ADR-025/026 avevano rimandato l'audit trail sull'azione di eliminazione a un pass separato. Discutendone: riusare `updated_by` per sapere "chi ha eliminato" sembrava gratis (colonna già esistente su `pauperwave_payments`/`pauperwave_wanted_cards`), ma si rompe non appena una riga viene ripristinata da `/trash` — `updated_by` continuerebbe a dire "eliminato da X" per sempre, confondendo la vera cronologia di modifica con l'evento di cancellazione/ripristino. In più, 4 delle 7 tabelle soft-eliminabili (`tournaments`, `leagues`, `events`, `mtg_formats`) non hanno mai avuto `created_by`/`updated_by` — riusarli non sarebbe comunque stato praticabile ovunque.
+
+**Decisione:** migrazione `20260823110000_add_deleted_by_to_soft_deletable_tables.sql` — colonna `deleted_by uuid null` + FK verso `pauperwave_associates(uuid)` (`ON DELETE SET NULL`, stessa convenzione di `created_by`/`updated_by`) su tutte e 7 le tabelle di `SoftDeletableTable`. `softDeleteById` (`server/utils/idRequest.ts`) ora richiede anche `event`/`user` e stampa `deleted_by` tramite lo stesso `resolveAuditAssociateUuid` già usato da `auditColumnsForInsert`/`auditColumnsForUpdate`; tutti e 7 gli endpoint `[id]/delete.post.ts` sono stati aggiornati per passarli. `restoreById` ripulisce `deleted_by` insieme a `deleted_at` — nessuna colonna "restored_by" (fuori scope, si traccia solo chi ha eliminato). `/trash` mostra una colonna "Eliminato da" (`useTrashQuery.ts` fa il join `pauperwave_associates!deleted_by`, stessa risoluzione nome di `Transaction.createdBy`/`updatedBy`), vuota (`—`) per le righe eliminate prima di questa migrazione.
+
+**Conseguenze:** ogni chiamata a `softDeleteById` in futuro deve passare `event`/`user` (firma cambiata, non più solo `supabase, table, id`) — un dimenticato fallirebbe a compile-time, non silenziosamente. Nessun cambio ai permessi: usa la stessa risoluzione via `pauperwave_associates`, non un nuovo controllo.
+
 ## Vedi anche
 
 - `docs/architecture/database.md` — schema, RLS, migrazioni

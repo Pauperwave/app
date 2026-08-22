@@ -6,7 +6,7 @@
 // request — see useLocationsRowActions.ts's own comment); this endpoint just
 // makes the table Trash-restorable whenever a delete action is added.
 export default defineEventHandler(async (event) => {
-  const { id, supabase } = await parseIdRequest(event)
-  await softDeleteById(supabase, 'locations', id)
+  const { id, user, supabase } = await parseIdRequest(event)
+  await softDeleteById(event, user, supabase, 'locations', id)
   return { deleted: true }
 })

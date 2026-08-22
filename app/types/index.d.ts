@@ -478,4 +478,8 @@ export interface TrashItem {
   uuid: string
   name: string
   deletedAt: string
+  // '' when unknown (row soft-deleted before the deleted_by column existed,
+  // migration 20260823110000) — same convention as Transaction's own
+  // createdBy/updatedBy.
+  deletedBy: string
 }
