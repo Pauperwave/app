@@ -5,12 +5,29 @@
 // (null here vs. the existing tournament's values there) — extracting a
 // helper would need an overrides param for exactly the fields that differ,
 // not worth it for 9 shared lines.
+import { CalendarDate } from '@internationalized/date'
 import type * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { NewTournamentPayload } from '#shared/types/tournaments'
 import type { TournamentFormState } from '~/composables/tournaments/useTournamentFormFields'
 
 const open = defineModel<boolean>({ default: false })
+
+// All three seed the form when opened from somewhere other than this
+// component's own trigger — EventsSingleDaySchedule.vue clicking an empty
+// time slot, in particular (user request, 2026-08-22, "click and create a
+// tournament in that day" like Google Calendar). hideTrigger drops the
+// bare AddButton in that case, since the day-schedule is the trigger
+// instead — same v-model:open control either way.
+const {
+  initialDate, initialTime, initialEventUuid, hideTrigger = false
+} = defineProps<{
+  initialDate?: string
+  initialTime?: string
+  initialEventUuid?: string
+  hideTrigger?: boolean
+}>()
+
 const toast = useToast()
 const { t } = useI18n()
 
@@ -22,8 +39,8 @@ function createInitialState(): TournamentFormState {
   return {
     name: undefined,
     status: 'draft',
-    startDate: todayString,
-    startTime: '20:00',
+    startDate: initialDate ?? todayString,
+    startTime: initialTime ?? '20:00',
     endTime: '23:00',
     roundCount: 2,
     formatUuid: undefined as unknown as string,
@@ -32,7 +49,7 @@ function createInitialState(): TournamentFormState {
     organizerUuid: undefined,
     locationUuid: undefined,
     leagueUuid: undefined,
-    eventUuid: undefined,
+    eventUuid: initialEventUuid,
     entryFee: 5,
     companionCode: undefined
   }
@@ -41,6 +58,21 @@ function createInitialState(): TournamentFormState {
 const state = reactive<TournamentFormState>(createInitialState())
 
 const { startDate, formattedStartDate, reset: resetStartDate } = useStartDateField(state)
+
+// Re-applies initialDate/initialTime/initialEventUuid every time the modal
+// opens, not just on mount — EventsSingleDaySchedule.vue reuses one modal
+// instance across many slot clicks, each with a different time, so a
+// one-shot default in createInitialState() alone wouldn't update on a
+// second click while the instance stays alive.
+watch(open, (isOpen) => {
+  if (!isOpen) return
+  if (initialDate) {
+    const [year, month, day] = initialDate.split('-').map(Number)
+    startDate.value = new CalendarDate(year!, month!, day!)
+  }
+  if (initialTime) state.startTime = initialTime
+  if (initialEventUuid) state.eventUuid = initialEventUuid
+})
 
 // Kept out of `state`/the valibot schema (no format validation needed) —
 // same convention as LocationsListAddModal.vue's `image`. imageCardName/
@@ -149,6 +181,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     :description="$t('tournament.addModal.description')"
   >
     <AddButton
+      v-if="!hideTrigger"
       :label="$t('tournament.addModal.openButton')"
       :icon="ICONS.battle"
       @click="open = true"
