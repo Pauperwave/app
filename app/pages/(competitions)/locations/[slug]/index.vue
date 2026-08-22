@@ -18,7 +18,9 @@ import type { Range, Tournament } from '~/types'
 const { t } = useI18n()
 const route = useRoute()
 
-const { data: locationsData, isLoading: locationLoading } = useLocationsQuery()
+const {
+  data: locationsData, isLoading: locationLoading, isPending: locationPending
+} = useLocationsQuery()
 const location = computed(() => locationsData.value?.find(
   item => slugify(item.name) === route.params.slug) ?? null)
 
@@ -170,11 +172,11 @@ const {
             :maps-link="mapsLink"
             :address-line="addressLine"
             :on-edit="openLocationEditModal"
-            :loading="locationLoading"
+            :loading="locationPending"
           />
 
           <UCard
-            v-if="locationLoading || hostedTournamentDates.length"
+            v-if="locationPending || hostedTournamentDates.length"
             :ui="{ header: 'font-semibold' }"
           >
             <template #header>
@@ -183,8 +185,11 @@ const {
 
             <!-- Generic placeholder, not a per-cell skeleton — CalendarHeatmap
                  has no loading prop of its own (out of scope here), so this
-                 just reserves its rendered footprint. -->
-            <USkeleton v-if="locationLoading" class="h-40 w-full max-w-md mx-auto" />
+                 just reserves its rendered footprint. isPending, not
+                 isLoading (2026-08-22) — same fix as the table/grid views:
+                 a background refresh keeps the real heatmap, only a
+                 genuine first load shows the placeholder. -->
+            <USkeleton v-if="locationPending" class="h-40 w-full max-w-md mx-auto" />
 
             <div v-else class="flex justify-center">
               <CalendarHeatmap
@@ -205,7 +210,7 @@ const {
           </h3>
 
           <div
-            v-if="!tournamentsLoading && !filteredHostedTournaments.length"
+            v-if="!tournamentsPending && !filteredHostedTournaments.length"
             class="text-center py-12 text-muted"
           >
             {{ t('location.detail.hostedTournamentsEmpty') }}
@@ -219,7 +224,7 @@ const {
             :selection="selection"
             :highlighted-tournament-id="highlightedTournamentId"
             :on-hover-change="handleCardHoverChange"
-            :loading="tournamentsLoading"
+            :loading="tournamentsPending"
             :loading-count="skeletonCount"
           />
         </div>

@@ -209,6 +209,9 @@ const leaderboardMaxHeight = computed(() => isSideBySide.value && leftColumnHeig
           </UCard>
         </div>
 
+        <!-- :loading is isPending, not isLoading (2026-08-22) — same fix as
+             the table/grid list pages: a background refresh keeps the real
+             cards, only a genuine first load shows the skeleton grid. -->
         <TournamentsListGridView
           :tournaments="tournaments"
           :context-menu-items="rowContextMenuItems"
@@ -216,7 +219,7 @@ const leaderboardMaxHeight = computed(() => isSideBySide.value && leftColumnHeig
           :selection="selection"
           :highlighted-tournament-id="highlightedTournamentId"
           :on-hover-change="handleCardHoverChange"
-          :loading="tournamentsLoading"
+          :loading="tournamentsPending"
           :loading-count="skeletonCount"
         />
       </div>
