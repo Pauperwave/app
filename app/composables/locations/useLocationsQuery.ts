@@ -17,6 +17,7 @@ export function useLocationsQuery() {
       const { data, error } = await supabase
         .from('locations')
         .select('*')
+        .is('deleted_at', null)
         .order('name', { ascending: true })
 
       if (error) throw error

@@ -466,7 +466,8 @@ export interface FormatStandingRow {
 // The domains that support soft delete (deleted_at) today — mirrors
 // server/utils/idRequest.ts's SoftDeletableTable union, one entry per table
 // name mapped in app/utils/trash/trashEntities.ts.
-export type TrashEntity = 'tournament' | 'league' | 'event' | 'transaction' | 'wantedCard' | 'mtgFormat'
+export type TrashEntity
+  = 'tournament' | 'league' | 'event' | 'transaction' | 'wantedCard' | 'mtgFormat' | 'location'
 
 // One row across any soft-deleted table, merged into a single shape by
 // useTrashQuery.ts — same "combine several reads into one derived list"

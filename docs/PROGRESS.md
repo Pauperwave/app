@@ -295,6 +295,16 @@ Lato UI: `LeaguesListCard.vue` mostra fino a 2 badge formato (`BadgesFormatBadge
 
 **Conseguenze:** nessuna azione di purga fisica è stata costruita — `/trash` offre solo ripristino, la cancellazione definitiva riga per riga resta un gap noto (già segnalato in `permissions.md` per `delete-tournaments`). `pauperwave_associates` non compare mai in questa lista, non avendo `deleted_at` (lo stato di tesseramento è calcolato, non uno stato di riga — ADR-001). Il ripristino invalida sia `TRASH_KEY` sia la query key del dominio d'origine (`useTrashMutations.ts`), così la lista sorgente (es. `/tournaments`) si aggiorna senza refresh manuale. Scorciatoia `g-x` aggiunta a `NAV_SHORTCUTS` (`docs/architecture/shortcuts.md`) senza mnemonico di lettera disponibile. Un tentativo di colorare di rosso l'icona della voce sidebar (`ui: { linkLeadingIcon: 'text-error!' }`) è stato scartato 2026-08-23: il colore restava invisibile (la classe dello stato "inactive" del tema `navigation-menu` continuava a vincere anche forzando `!important`) e non si è ritenuto il caso di insistere per un dettaglio puramente estetico.
 
+### ADR-026 — Soft delete per `locations` (2026-08-23)
+
+**Contesto:** durante la discussione su quali altre tabelle avrebbero beneficiato del soft delete (ADR-025), `locations` è emersa come la candidata più concreta: ha già `create`/`update` e una pagina di gestione (`/locations`, `manage-locations`), ma nessun delete endpoint. Una location può essere referenziata da tornei/eventi passati (`location_uuid`), quindi un hard delete verrebbe o rifiutato dalla FK finché la storia esiste, o la distruggerebbe se la FK fosse `ON DELETE SET NULL` — stesso ragionamento già seguito per `mtg_formats` (ADR-016).
+
+**Decisione:** migrazione `20260823100000_add_locations_deleted_at.sql` (colonna `deleted_at`, applicata al DB remoto e types rigenerati via `pnpm supabase:types`). `locations` è stata aggiunta a `SoftDeletableTable` (`server/utils/idRequest.ts`), ha un nuovo `server/api/locations/[id]/delete.post.ts` (soft delete via `softDeleteById`), `useLocationsQuery.ts` filtra `is('deleted_at', null)`, ed è stata aggiunta a `/trash` (`TrashEntity`, `TRASH_ENTITY_TABLES`/`TRASH_ENTITY_ICONS`, `useTrashQuery.ts`, invalidazione in `useTrashMutations.ts`).
+
+**Deliberatamente non toccato:** `locations/index.vue` resta create+edit only (nessun bottone/azione "elimina" in UI) — decisione utente pre-esistente, documentata nel commento di `useLocationsRowActions.ts`. Questo pass rende la tabella *pronta* per un'azione di eliminazione futura (già Trash-restorable), senza riaprire quella decisione: oggi nessun percorso dell'app può ancora produrre una riga `locations` con `deleted_at` valorizzato.
+
+**Fuori scope, rimandato:** un audit trail completo (`deleted_by` dedicato, non `updated_by` riciclato — vedi discussione in questa stessa sessione) per tutte le tabelle soft-deletabili resta un pass separato, non ancora pianificato con una data.
+
 ## Vedi anche
 
 - `docs/architecture/database.md` — schema, RLS, migrazioni
