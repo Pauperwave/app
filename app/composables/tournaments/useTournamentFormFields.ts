@@ -31,12 +31,14 @@ function buildSchema(t: ReturnType<typeof useI18n>['t']) {
     // Both optional and mutually independent (CLAUDE.md: "a tournament's
     // parent league/event is optional and polymorphic") — nothing stops a
     // tournament from having neither, or in principle both, though the UI
-    // doesn't currently offer a reason to pick both at once. Same
-    // optional-string shape as organizerUuid/locationUuid above, not
-    // nullable — EditModal.vue's watch already normalizes a null
-    // tournament.leagueUuid/eventUuid to undefined before it reaches state.
-    leagueUuid: v.optional(v.string()),
-    eventUuid: v.optional(v.string())
+    // doesn't currently offer a reason to pick both at once. Nullable (not
+    // just optional, unlike organizerUuid/locationUuid above): USelectMenu's
+    // `clear` button sets the model value to null, not undefined, and the
+    // whole point of that button is letting a tournament be unlinked from
+    // its league/event again — validation has to accept the value the UI
+    // actually produces.
+    leagueUuid: v.optional(v.nullable(v.string())),
+    eventUuid: v.optional(v.nullable(v.string()))
   })
 }
 

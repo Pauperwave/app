@@ -123,6 +123,12 @@ useResizeObserver(leftColumnRef, ([entry]) => {
 const leaderboardMaxHeight = computed(() => isSideBySide.value && leftColumnHeight.value
   ? `${leftColumnHeight.value}px`
   : MOBILE_LEADERBOARD_MAX_HEIGHT)
+
+// Reverse direction of the tournaments-side "assign to league" bulk action
+// (LeaguesSingleAddTournamentsModal.vue's own comment) — only meaningful
+// once the league itself is known, same reasoning as the modal needing a
+// real `league` prop rather than the nullable computed directly.
+const addTournamentsModalOpen = ref(false)
 </script>
 
 <template>
@@ -151,6 +157,17 @@ const leaderboardMaxHeight = computed(() => isSideBySide.value && leftColumnHeig
       <UDashboardToolbar>
         <template #left>
           <UBreadcrumb :items="breadcrumbItems" class="ms-2" />
+        </template>
+
+        <template #right>
+          <UButton
+            v-if="league"
+            :label="$t('league.detail.addTournaments.button')"
+            :icon="ICONS.battle"
+            color="neutral"
+            variant="subtle"
+            @click="addTournamentsModalOpen = true"
+          />
         </template>
       </UDashboardToolbar>
     </template>
@@ -228,4 +245,9 @@ const leaderboardMaxHeight = computed(() => isSideBySide.value && leftColumnHeig
 
   <TournamentsListEditModal v-model="editModalOpen" :tournament="editingTournament" />
   <LeaguesListEditModal v-model="leagueEditModalOpen" :league="editingLeague" />
+  <LeaguesSingleAddTournamentsModal
+    v-if="league"
+    v-model="addTournamentsModalOpen"
+    :league="league"
+  />
 </template>

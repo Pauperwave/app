@@ -46,6 +46,19 @@ export function useTournamentsMutations() {
     onSettled: invalidate
   })
 
+  // Also invalidates leagues (not just tournaments) — recomputeLeagueDates
+  // on the server changes the affected league(s)' starts_at/ends_at, which
+  // LEAGUES_KEY-scoped queries (the leagues list/detail pages) need to pick
+  // up too, unlike setStatus/setImage/setEntryFee above.
+  const setLeague = useMutation({
+    mutation: ({ id, leagueUuid }: { id: number, leagueUuid: string | null }) =>
+      $fetch(`/api/tournaments/${id}/league`, { method: 'POST', body: { leagueUuid } }),
+    onSettled: () => {
+      invalidate()
+      queryCache.invalidateQueries({ key: LEAGUES_KEY })
+    }
+  })
+
   const deleteTournament = useMutation({
     mutation: (id: number) =>
       $fetch(`/api/tournaments/${id}/delete`, { method: 'POST' }),
@@ -53,6 +66,7 @@ export function useTournamentsMutations() {
   })
 
   return {
-    createTournament, updateTournament, setStatus, setImage, setEntryFee, deleteTournament
+    createTournament, updateTournament, setStatus, setImage, setEntryFee,
+    setLeague, deleteTournament
   }
 }
