@@ -19,12 +19,6 @@ type NavItem = NavigationMenuItem & { permission?: Permission }
 // Static array (not computed): UNavigationMenu highlights the active entry itself
 // by comparing `to` with the current route, and no item here depends on `route`
 // for its own state anymore.
-//
-// `devStatus` still tags each nav item's build status (success = done,
-// warning = in progress, error = stub or backed by mock data only) — kept as
-// metadata (docs/PROGRESS.md ADR-007), just no longer rendered as a trailing
-// UChip dot in the sidebar itself (removed 2026-08-11, was cluttering the nav
-// rather than informing it).
 export function useMainNavGroups(open: Ref<boolean>) {
   const { t } = useI18n()
   const { can } = useUserRole()
@@ -36,7 +30,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('nav.dashboard'),
     icon: ICONS.home,
     to: '/',
-    devStatus: 'success',
     onSelect: () => {
       open.value = false
     }
@@ -44,7 +37,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('nav.calendar'),
     icon: ICONS.calendarView,
     to: '/calendar',
-    devStatus: 'error',
     onSelect: () => {
       open.value = false
     }
@@ -52,7 +44,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('nav.finance'),
     icon: ICONS.badgeEuro,
     to: '/finance',
-    devStatus: 'error',
     permission: 'view-finance',
     onSelect: () => {
       open.value = false
@@ -64,7 +55,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('associate.breadcrumb'),
     icon: ICONS.players,
     to: '/associates',
-    devStatus: 'success',
     permission: 'view-associates',
     onSelect: () => {
       open.value = false
@@ -73,7 +63,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('associate.subNav.requestsShort'),
     icon: ICONS.inbox,
     to: '/associates/requests',
-    devStatus: 'success',
     permission: 'view-associates',
     onSelect: () => {
       open.value = false
@@ -82,7 +71,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('player.breadcrumb'),
     icon: ICONS.gameplay,
     to: '/players',
-    devStatus: 'error',
     permission: 'view-players',
     onSelect: () => {
       open.value = false
@@ -91,7 +79,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('transaction.breadcrumb'),
     icon: ICONS.wallet,
     to: '/transactions',
-    devStatus: 'error',
     permission: 'view-finance',
     onSelect: () => {
       open.value = false
@@ -100,7 +87,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('wantedCard.breadcrumb'),
     icon: ICONS.cardSearch,
     to: '/wanted-cards',
-    devStatus: 'success',
     onSelect: () => {
       open.value = false
     }
@@ -110,13 +96,11 @@ export function useMainNavGroups(open: Ref<boolean>) {
   }, {
     label: t('tournament.breadcrumb'),
     icon: ICONS.battle,
-    to: '/tournaments',
-    devStatus: 'warning'
+    to: '/tournaments'
   }, {
     label: t('league.breadcrumb'),
     icon: ICONS.standings,
     to: '/leagues',
-    devStatus: 'warning',
     onSelect: () => {
       open.value = false
     }
@@ -124,7 +108,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('event.breadcrumb'),
     icon: ICONS.calendar,
     to: '/events',
-    devStatus: 'warning',
     onSelect: () => {
       open.value = false
     }
@@ -132,7 +115,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('location.breadcrumb'),
     icon: ICONS.mapPin,
     to: '/locations',
-    devStatus: 'warning',
     permission: 'manage-locations',
     onSelect: () => {
       open.value = false
@@ -144,7 +126,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('cittadino.breadcrumb'),
     icon: ICONS.medal,
     to: '/standings/cittadino',
-    devStatus: 'warning',
     onSelect: () => {
       open.value = false
     }
@@ -152,7 +133,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('standings.commanderBreadcrumb'),
     icon: ICONS.medal,
     to: '/standings/commander',
-    devStatus: 'warning',
     onSelect: () => {
       open.value = false
     }
@@ -160,7 +140,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('standings.premodernBreadcrumb'),
     icon: ICONS.medal,
     to: '/standings/premodern',
-    devStatus: 'warning',
     onSelect: () => {
       open.value = false
     }
@@ -168,7 +147,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('standings.pauperBreadcrumb'),
     icon: ICONS.medal,
     to: '/standings/pauper',
-    devStatus: 'warning',
     onSelect: () => {
       open.value = false
     }
@@ -176,7 +154,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('ruleset.breadcrumb'),
     icon: ICONS.rules,
     to: '/rulesets',
-    devStatus: 'warning',
     permission: 'manage-rulesets',
     onSelect: () => {
       open.value = false
@@ -188,7 +165,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('statistic.overviewBreadcrumb'),
     icon: ICONS.chartPie,
     to: '/statistics',
-    devStatus: 'error',
     onSelect: () => {
       open.value = false
     }
@@ -196,7 +172,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('statistic.decksBreadcrumb'),
     icon: ICONS.layers,
     to: '/statistics/decks',
-    devStatus: 'error',
     onSelect: () => {
       open.value = false
     }
@@ -204,7 +179,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('commander.breadcrumb'),
     icon: ICONS.crown,
     to: '/statistics/commanders',
-    devStatus: 'error',
     onSelect: () => {
       open.value = false
     }
@@ -221,7 +195,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     // UNavigationMenu's default active-matching follows the route record
     // hierarchy, so this item stayed highlighted on every settings sub-page.
     exact: true,
-    devStatus: 'error',
     permission: 'access-settings',
     onSelect: () => {
       open.value = false
@@ -230,7 +203,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('settings.layout.links.members'),
     icon: ICONS.players,
     to: '/settings/members',
-    devStatus: 'error',
     permission: 'access-settings',
     onSelect: () => {
       open.value = false
@@ -239,7 +211,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('settings.layout.links.permissions'),
     icon: ICONS.permissions,
     to: '/settings/permissions',
-    devStatus: 'warning',
     permission: 'access-settings',
     onSelect: () => {
       open.value = false
@@ -248,7 +219,6 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('settings.layout.links.domains'),
     icon: ICONS.globe,
     to: '/settings/domains',
-    devStatus: 'warning',
     permission: 'access-settings',
     onSelect: () => {
       open.value = false
