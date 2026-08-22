@@ -4,23 +4,30 @@
   block of the card (image, day/month chip, status dot, selection checkbox
   with its own shift-click capture), isolated from the rest of the card's
   layout for SRP.
+
+  `loading` (2026-08-22): renders a skeleton placeholder for every piece
+  instead of a separate ListSkeleton.vue duplicating this markup by hand —
+  that duplication was the actual root cause of a long back-and-forth
+  getting a standalone skeleton to pixel-match this component (missed
+  chips, wrong badge shape, wrong reserved heights). One shell, content
+  swapped per element, so nothing can structurally drift again.
 -->
 <script setup lang="ts">
 import type { Tournament } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 
-const { tournament, selection, range } = defineProps<{
-  tournament: Tournament
-  selection: Selection<number>
-  /** The ordered list a shift-click range resolves against — see GridView.vue. */
-  range: number[]
+const {
+  tournament = null, selection, range = [], loading = false
+} = defineProps<{
+  tournament?: Tournament | null
+  selection?: Selection<number>
+  range?: number[]
+  loading?: boolean
 }>()
 
 const { t } = useI18n()
 
-// Captured from the checkbox's own native `click` (fires synchronously
-// before the `update:modelValue` it triggers) so a shift-click can be told
-// apart from a plain one — same convention as useTournamentsTableColumns.ts.
+// Same shift-click capture convention as TournamentsListCover.vue.
 const lastClickShiftKey = ref(false)
 
 function dayPart(startDate: string) {
@@ -33,35 +40,34 @@ function monthPart(startDate: string) {
 </script>
 
 <template>
-  <!-- Luma-inspired cover, same convention as calendar/card/Base.vue: a real
-       image or ImageOffPlaceholder.vue up top, with the day/month tear-off
-       badge overlaid on it instead of sitting beside the title — these cards are narrower
-       (grid, not a full-width list), so a side-by-side date box would crowd
-       the title at small widths. Negative margins (not UCard's #header
-       slot): the outline variant's `ring ring-default` sits inset from the
-       card's outer edge regardless of slot padding, and only the body
-       slot's own negative margin — bleeding past its padding but staying
-       inside the ring — avoids the ring reading as dark bars down the
-       image's sides (confirmed 2026-08-16). -->
   <div class="relative -m-3 mb-3">
-    <img
-      v-if="tournament.image"
-      :src="tournament.image"
-      :alt="tournament.name"
-      class="w-full h-32 object-cover"
-    >
-    <ImageOffPlaceholder v-else class="w-full h-32" icon-class="size-8" />
+    <template v-if="!loading && tournament">
+      <img
+        v-if="tournament.image"
+        :src="tournament.image"
+        :alt="tournament.name"
+        class="w-full h-32 object-cover"
+      >
+      <ImageOffPlaceholder v-else class="w-full h-32" icon-class="size-8" />
+    </template>
+    <USkeleton v-else class="w-full h-32 rounded-none" />
 
-    <div class="absolute top-2 left-2 flex flex-col items-center justify-center rounded-lg bg-default/90 backdrop-blur-sm border border-default w-12 h-12 shrink-0">
+    <div
+      v-if="!loading && tournament"
+      class="absolute top-2 left-2 flex flex-col items-center justify-center rounded-lg bg-default/90 backdrop-blur-sm border border-default w-12 h-12 shrink-0"
+    >
       <span class="text-base font-bold leading-none">{{ dayPart(tournament.startDate) }}</span>
       <span class="text-[10px] uppercase text-muted">{{ monthPart(tournament.startDate) }}</span>
     </div>
+    <!-- Solid black (not the default pulsing theme color) so it reads as a
+         distinct chip sitting on the cover skeleton behind it. -->
+    <USkeleton v-else class="absolute top-2 left-2 w-12 h-12 rounded-lg" :ui="{ base: 'bg-black' }" />
 
-    <!-- Card name + artist/copyright attribution, required alongside any
-         art_crop use per Scryfall's API usage guidelines — see
-         CardArtPicker.vue's own comment. -->
+    <!-- Card-art attribution chip (required alongside any Scryfall art_crop
+         use, see CardArtPicker.vue) — only when set, so no v-else pair with
+         the skeleton branch: a real card with no attribution shows neither. -->
     <UTooltip
-      v-if="tournament.image && tournament.imageCardName"
+      v-if="!loading && tournament && tournament.image && tournament.imageCardName"
       :text="tournament.imageCardArtist
         ? t('magic.cardArtPicker.attribution', {
           cardName: tournament.imageCardName, artist: tournament.imageCardArtist
@@ -72,19 +78,22 @@ function monthPart(startDate: string) {
         {{ tournament.imageCardName }}
       </span>
     </UTooltip>
+    <USkeleton v-else-if="loading" class="absolute bottom-2 right-2 w-24 h-4 rounded" :ui="{ base: 'bg-black' }" />
 
     <!-- Hidden until hover, except once selected — same convention as
          WantedCardsListGridView.vue's card checkbox. `group-hover` targets
          the ancestor `.group` class on Card.vue's UCard, unaffected by this
-         component boundary. -->
+         component boundary. No loading counterpart: it's opacity-0 by
+         default anyway, so there's nothing to reserve space for. -->
     <UCheckbox
+      v-if="!loading && tournament && selection"
       :model-value="selection.isSelected(tournament.id)"
       size="xl"
       class="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
       :class="{ 'opacity-100!': selection.isSelected(tournament.id) }"
       :ui="{ base: 'bg-default/90 rounded' }"
       :aria-label="t('common.selectRow')"
-      @update:model-value="() => selection.toggle(
+      @update:model-value="() => selection!.toggle(
         tournament.id, { shiftKey: lastClickShiftKey, range }
       )"
       @click.stop="lastClickShiftKey = $event.shiftKey"

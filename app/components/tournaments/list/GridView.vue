@@ -5,7 +5,8 @@ import type { Tournament } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 
 const {
-  tournaments, contextMenuItems, onEdit, selection, highlightedTournamentId = null, onHoverChange
+  tournaments, contextMenuItems, onEdit, selection, highlightedTournamentId = null, onHoverChange,
+  loading = false, loadingCount = 6
 } = defineProps<{
   tournaments: Tournament[]
   contextMenuItems: (tournament: Tournament) => DropdownMenuItem[]
@@ -15,6 +16,10 @@ const {
   highlightedTournamentId?: number | null
   /** Forwarded to every card's own `onHoverChange` prop — see Card.vue. */
   onHoverChange?: (tournament: Tournament | null) => void
+  /** Renders `loadingCount` skeleton cards instead of `tournaments` — see
+   * Card.vue's own `loading` prop. @default false */
+  loading?: boolean
+  loadingCount?: number
 }>()
 
 // The ordered list a shift-click range resolves against — the currently
@@ -25,7 +30,11 @@ const range = computed(() => tournaments.map(tournament => tournament.id))
 </script>
 
 <template>
-  <div v-if="!tournaments.length" class="text-center py-12 text-muted">
+  <div v-if="loading" class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(280px,90vw),1fr))]">
+    <TournamentsListCard v-for="n in loadingCount" :key="n" loading />
+  </div>
+
+  <div v-else-if="!tournaments.length" class="text-center py-12 text-muted">
     {{ $t('tournament.grid.empty') }}
   </div>
 

@@ -235,38 +235,40 @@ const bulkConfirmTitle = computed(() => {
     </template>
 
     <template #body>
-      <ListSkeleton
-        v-if="loading"
-        :variant="viewMode === 'table' ? 'table' : 'grid'"
-        :count="skeletonCount"
-        :columns="columns.length"
-      />
+      <div id="tour-tournaments-content">
+        <template v-if="viewMode === 'table'">
+          <ListSkeleton v-if="loading" :count="skeletonCount" :columns="columns.length" />
 
-      <div v-else id="tour-tournaments-content">
-        <UContextMenu v-if="viewMode === 'table'" :items="tableContextMenuItems">
-          <UTable
-            v-model:sorting="sorting"
-            :data="filteredTournaments"
-            :columns="columns"
-            :grouping="grouping"
-            :grouping-options="{
-              getGroupedRowModel: getGroupedRowModel()
-            }"
-            class="w-full"
-            :ui="{ tr: 'cursor-pointer' }"
-            @contextmenu="onRowContextmenu"
-            @select="(_e, row) => {
-              if (!row.getIsGrouped()) navigateTo(tournamentDetailUrl(row.original))
-            }"
-          />
-        </UContextMenu>
+          <UContextMenu v-else :items="tableContextMenuItems">
+            <UTable
+              v-model:sorting="sorting"
+              :data="filteredTournaments"
+              :columns="columns"
+              :grouping="grouping"
+              :grouping-options="{
+                getGroupedRowModel: getGroupedRowModel()
+              }"
+              class="w-full"
+              :ui="{ tr: 'cursor-pointer' }"
+              @contextmenu="onRowContextmenu"
+              @select="(_e, row) => {
+                if (!row.getIsGrouped()) navigateTo(tournamentDetailUrl(row.original))
+              }"
+            />
+          </UContextMenu>
+        </template>
 
+        <!-- Grid mode's own loading state lives in GridView.vue/Card.vue
+             now (2026-08-22) — no separate ListSkeleton grid variant, see
+             their own comments for why. -->
         <TournamentsListGridView
           v-else
           :tournaments="filteredTournaments"
           :context-menu-items="tournamentContextMenuItems"
           :on-edit="openEditModal"
           :selection="selection"
+          :loading="loading"
+          :loading-count="skeletonCount"
         />
       </div>
     </template>
