@@ -27,13 +27,38 @@ const cols = computed(() => Array.from({ length: columns }))
 
 <template>
   <div v-if="variant === 'grid'" class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(280px,90vw),1fr))]">
-    <div v-for="(_, index) in items" :key="index" class="rounded-lg border border-default overflow-hidden">
-      <USkeleton class="w-full h-32 rounded-none" />
-      <div class="p-3 space-y-2">
-        <USkeleton class="h-4 w-3/4" />
-        <USkeleton class="h-3 w-1/2" />
+    <!-- Mirrors TournamentsListCard.vue's own shape exactly (same UCard,
+         cover height, title/badges/footer rows) — a generic placeholder
+         card here just looked like a different, smaller component instead
+         of "this card, loading" (user feedback, 2026-08-22). -->
+    <UCard
+      v-for="(_, index) in items"
+      :key="index"
+      :ui="{ body: 'p-3 sm:p-3', footer: 'p-3 sm:p-3' }"
+    >
+      <USkeleton class="w-full h-32 -m-3 mb-3 rounded-none" />
+
+      <div class="flex items-start justify-between gap-2">
+        <div class="min-w-0 flex-1 space-y-1.5">
+          <USkeleton class="h-4 w-3/4" />
+          <USkeleton class="h-3 w-1/3" />
+        </div>
+        <USkeleton class="size-6 rounded-md shrink-0" />
       </div>
-    </div>
+
+      <div class="flex items-center gap-2 mt-1.5">
+        <USkeleton class="h-5 w-16 rounded-full" />
+        <USkeleton class="h-5 w-14 rounded-full" />
+        <USkeleton class="h-5 w-20 rounded-full" />
+      </div>
+
+      <template #footer>
+        <div class="flex items-center justify-between gap-2">
+          <USkeleton class="h-5 w-10 rounded-full" />
+          <USkeleton class="h-4 w-12" />
+        </div>
+      </template>
+    </UCard>
   </div>
 
   <div v-else class="rounded-lg border border-default divide-y divide-default overflow-hidden">
