@@ -34,6 +34,7 @@ defineProps<{
 
     <h2 class="absolute bottom-0 left-0 right-0 p-4 text-xl font-bold text-white truncate">
       {{ tournament.name }}
+      <TournamentsStageLabel v-if="tournament.stageNumber" :number="tournament.stageNumber" />
     </h2>
   </div>
 </template>

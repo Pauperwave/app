@@ -163,7 +163,13 @@ const stats = computed(() => [{
               rounded-md hover:bg-elevated/50 hover:text-highlighted"
           >
             <div class="min-w-0">
-              <p class="text-sm font-medium truncate">{{ tournament.name }}</p>
+              <p class="text-sm font-medium truncate">
+                {{ tournament.name }}
+                <TournamentsStageLabel
+                  v-if="tournament.stageNumber"
+                  :number="tournament.stageNumber"
+                />
+              </p>
               <p class="text-sm text-muted">
                 {{ tournament.format }} ·
                 <DateWithRelativeTooltip :iso-string="tournament.startDate" :time="false" />
