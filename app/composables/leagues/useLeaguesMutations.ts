@@ -26,6 +26,12 @@ export function useLeaguesMutations() {
     onSettled: invalidate
   })
 
+  const setRuleset = useMutation({
+    mutation: ({ id, rulesetUuid }: { id: number, rulesetUuid: string | null }) =>
+      $fetch(`/api/leagues/${id}/ruleset`, { method: 'POST', body: { rulesetUuid } }),
+    onSettled: invalidate
+  })
+
   const deleteLeague = useMutation({
     mutation: (id: number) =>
       $fetch(`/api/leagues/${id}/delete`, { method: 'POST' }),
@@ -33,6 +39,6 @@ export function useLeaguesMutations() {
   })
 
   return {
-    createLeague, updateLeague, setStatus, deleteLeague
+    createLeague, updateLeague, setStatus, setRuleset, deleteLeague
   }
 }
