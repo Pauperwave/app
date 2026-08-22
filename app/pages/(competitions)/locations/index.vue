@@ -8,9 +8,13 @@ const { t } = useI18n()
 useSeoMeta({ title: () => t('location.breadcrumb') })
 
 const {
-  data: locationsData, isLoading: loading, status, refetch
+  data: locationsData, isLoading: loading, isPending, status, refetch
 } = useLocationsQuery()
 const locations = computed(() => locationsData.value ?? [])
+
+// undefined (ListSkeleton's/GridView's own default count) only on a genuine
+// first load — same isPending-vs-isLoading reasoning as tournaments/index.vue.
+const skeletonCount = computed(() => (isPending.value ? undefined : locations.value.length))
 
 const { editingLocation, editModalOpen, openEditModal } = useLocationsRowActions()
 const { columns } = useLocationsTableColumns(openEditModal)
@@ -55,24 +59,28 @@ const tour = useLocationsTour()
     </template>
 
     <template #body>
-      <div v-if="loading" class="flex items-center justify-center py-12">
-        <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
-      </div>
+      <div id="tour-locations-content">
+        <template v-if="viewMode === 'table'">
+          <ListSkeleton v-if="loading" :count="skeletonCount" :columns="columns.length" />
 
-      <div v-else id="tour-locations-content">
-        <UTable
-          v-if="viewMode === 'table'"
-          v-model:sorting="sorting"
-          :data="locations"
-          :columns="columns"
-          class="w-full"
-          @select="(_e, row) => navigateTo(`/locations/${slugify(row.original.name)}`)"
-        />
+          <UTable
+            v-else
+            v-model:sorting="sorting"
+            :data="locations"
+            :columns="columns"
+            class="w-full"
+            @select="(_e, row) => navigateTo(`/locations/${slugify(row.original.name)}`)"
+          />
+        </template>
 
+        <!-- Grid mode's own loading state lives in GridView.vue/Card.vue —
+             no separate ListSkeleton grid variant, see their own comments. -->
         <LocationsListGridView
           v-else
           :locations="locations"
           :on-edit="openEditModal"
+          :loading="loading"
+          :loading-count="skeletonCount"
         />
       </div>
     </template>
