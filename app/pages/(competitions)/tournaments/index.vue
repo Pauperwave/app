@@ -59,7 +59,7 @@ const selection = useSelection<number>()
 const { columns } = useTournamentsTableColumns(selection, openEditModal)
 const {
   pendingAction, confirmOpen: bulkConfirmOpen, requestStatusChange, requestImageChange,
-  requestEntryFeeChange, requestDelete, confirmPendingAction
+  requestEntryFeeChange, requestLeagueChange, requestDelete, confirmPendingAction
 } = useTournamentsBulkActions(selection)
 
 // Adds edit/delete to the shared copy-link/copy-id items — tournaments has
@@ -133,6 +133,11 @@ const bulkConfirmTitle = computed(() => {
   }
   if (action.type === 'entryFee') {
     return t('tournament.bulkActions.confirmEntryFeeTitle', action.tournaments.length)
+  }
+  if (action.type === 'league') {
+    return t('tournament.bulkActions.confirmLeagueTitle', {
+      league: action.leagueName
+    }, action.tournaments.length)
   }
   return t('tournament.bulkActions.confirmStatusTitle', {
     status: t(`tournament.status.${action.status}`)
@@ -215,6 +220,8 @@ const bulkConfirmTitle = computed(() => {
               { imageUrl, imageCardName, imageCardArtist }, selectedTournaments
             )"
             @set-entry-fee="entryFee => requestEntryFeeChange(entryFee, selectedTournaments)"
+            @set-league="(leagueUuid, leagueName) =>
+              requestLeagueChange(leagueUuid, leagueName, selectedTournaments)"
             @delete="requestDelete(selectedTournaments)"
           />
           <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->

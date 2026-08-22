@@ -22,6 +22,7 @@ type PendingBulkAction
   = | { type: 'status', status: TournamentStatus, tournaments: Tournament[] }
     | ({ type: 'image', tournaments: Tournament[] } & ImageChange)
     | { type: 'entryFee', entryFee: number, tournaments: Tournament[] }
+    | { type: 'league', leagueUuid: string | null, leagueName: string, tournaments: Tournament[] }
     | { type: 'delete', tournaments: Tournament[] }
 
 export function useTournamentsBulkActions(selection: Selection<number>) {
@@ -30,7 +31,7 @@ export function useTournamentsBulkActions(selection: Selection<number>) {
 
   const undoable = useUndoableAction()
   const {
-    setStatus, setImage, setEntryFee, deleteTournament
+    setStatus, setImage, setEntryFee, setLeague, deleteTournament
   } = useTournamentsMutations()
 
   // Every action is destructive/state-changing enough to warrant a
@@ -50,6 +51,13 @@ export function useTournamentsBulkActions(selection: Selection<number>) {
 
   function requestEntryFeeChange(entryFee: number, tournaments: Tournament[]) {
     pendingAction.value = { type: 'entryFee', entryFee, tournaments }
+    confirmOpen.value = true
+  }
+
+  function requestLeagueChange(
+    leagueUuid: string | null, leagueName: string, tournaments: Tournament[]
+  ) {
+    pendingAction.value = { type: 'league', leagueUuid, leagueName, tournaments }
     confirmOpen.value = true
   }
 
@@ -96,6 +104,9 @@ export function useTournamentsBulkActions(selection: Selection<number>) {
             if (action.type === 'entryFee') {
               return setEntryFee.mutateAsync({ id: tournament.id, entryFee: action.entryFee })
             }
+            if (action.type === 'league') {
+              return setLeague.mutateAsync({ id: tournament.id, leagueUuid: action.leagueUuid })
+            }
             return deleteTournament.mutateAsync(tournament.id)
           })
         )
@@ -117,6 +128,11 @@ export function useTournamentsBulkActions(selection: Selection<number>) {
     if (action.type === 'entryFee') {
       return t('tournament.bulkActions.entryFeeUndoToast', action.tournaments.length)
     }
+    if (action.type === 'league') {
+      return t('tournament.bulkActions.leagueUndoToast', {
+        league: action.leagueName
+      }, action.tournaments.length)
+    }
     return t('tournament.bulkActions.statusUndoToast', {
       status: t(`tournament.status.${action.status}`)
     }, action.tournaments.length)
@@ -132,6 +148,9 @@ export function useTournamentsBulkActions(selection: Selection<number>) {
     if (action.type === 'entryFee') {
       return t('tournament.bulkActions.entryFeeSuccessToast', count)
     }
+    if (action.type === 'league') {
+      return t('tournament.bulkActions.leagueSuccessToast', count)
+    }
     return t('tournament.bulkActions.statusSuccessToast', count)
   }
 
@@ -141,6 +160,7 @@ export function useTournamentsBulkActions(selection: Selection<number>) {
     requestStatusChange,
     requestImageChange,
     requestEntryFeeChange,
+    requestLeagueChange,
     requestDelete,
     confirmPendingAction
   }

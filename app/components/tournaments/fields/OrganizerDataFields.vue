@@ -64,6 +64,7 @@ const {
         class="w-full"
         :items="leagueOptions"
         value-key="value"
+        clear
         :placeholder="$t('tournament.addModal.fields.linkLeague')"
         :icon="ICONS.standings"
       />
@@ -75,6 +76,7 @@ const {
         class="w-full"
         :items="eventOptions"
         value-key="value"
+        clear
         :placeholder="$t('tournament.addModal.fields.linkEvent')"
         :icon="ICONS.calendar"
       />

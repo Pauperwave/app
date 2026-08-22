@@ -814,6 +814,17 @@
         "from": "Dal",
         "to": "al",
         "tooltip": "Dal {start} al {end}"
+      },
+      "addTournaments": {
+        "button": "Aggiungi tornei",
+        "modalTitle": "Aggiungi tornei a \"{league}\"",
+        "placeholder": "Seleziona tornei",
+        "alreadyInLeague": "già in \"{league}\"",
+        "confirm": "Aggiungi",
+        "cancel": "Annulla",
+        "successToast": "{count} torneo aggiunto alla lega | {count} tornei aggiunti alla lega",
+        "errorToastTitle": "Impossibile aggiungere i tornei alla lega",
+        "empty": "Nessun altro torneo disponibile"
       }
     },
     "tournamentsList": {
@@ -1051,20 +1062,27 @@
       "confirmStatusTitle": "Segna {count} torneo come {status}? | Segna {count} tornei come {status}?",
       "confirmImageTitle": "Impostare l'immagine per {count} torneo? | Impostare l'immagine per {count} tornei?",
       "confirmEntryFeeTitle": "Aggiornare la quota per {count} torneo? | Aggiornare la quota per {count} tornei?",
+      "confirmLeagueTitle": "Assegnare {count} torneo alla lega \"{league}\"? | Assegnare {count} tornei alla lega \"{league}\"?",
       "confirmDeleteTitle": "Eliminare {count} torneo? | Eliminare {count} tornei?",
       "statusUndoToast": "{count} torneo verrà segnato come {status} | {count} tornei verranno segnati come {status}",
       "imageUndoToast": "L'immagine verrà impostata per {count} torneo | L'immagine verrà impostata per {count} tornei",
       "entryFeeUndoToast": "La quota verrà aggiornata per {count} torneo | La quota verrà aggiornata per {count} tornei",
+      "leagueUndoToast": "{count} torneo verrà assegnato alla lega \"{league}\" | {count} tornei verranno assegnati alla lega \"{league}\"",
       "deleteUndoToast": "{count} torneo verrà eliminato | {count} tornei verranno eliminati",
       "statusSuccessToast": "{count} torneo aggiornato | {count} tornei aggiornati",
       "imageSuccessToast": "{count} torneo aggiornato | {count} tornei aggiornati",
       "entryFeeSuccessToast": "{count} torneo aggiornato | {count} tornei aggiornati",
+      "leagueSuccessToast": "{count} torneo aggiornato | {count} tornei aggiornati",
       "deleteSuccessToast": "{count} torneo eliminato | {count} tornei eliminati",
       "partialFailure": "{count} operazione non riuscita | {count} operazioni non riuscite",
       "setImage": "Imposta immagine",
       "setImageModalTitle": "Imposta immagine per {count} torneo | Imposta immagine per {count} tornei",
       "setEntryFee": "Aggiorna quota",
-      "setEntryFeeModalTitle": "Aggiorna quota per {count} torneo | Aggiorna quota per {count} tornei"
+      "setEntryFeeModalTitle": "Aggiorna quota per {count} torneo | Aggiorna quota per {count} tornei",
+      "setLeague": "Assegna a lega",
+      "setLeagueModalTitle": "Assegna {count} torneo a una lega | Assegna {count} tornei a una lega",
+      "setLeagueHint": "Scegli una lega esistente, oppure scrivi un nome nuovo per crearne una al volo",
+      "createLeagueOption": "Crea \"{name}\""
     },
     "views": {
       "table": "Tabella",
