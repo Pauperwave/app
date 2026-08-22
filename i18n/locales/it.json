@@ -184,10 +184,49 @@
           "title": "Crea al volo",
           "description": "Nuovo associato, transazione, torneo, lega, evento, location o carta cercata: da qui arrivi subito al modulo giusto, senza passare dalla pagina."
         },
-        "body": {
-          "title": "La tua Home",
-          "descriptionStaff": "Azioni pendenti, prossimi tornei e ultime transazioni: un cruscotto operativo per il tuo lavoro di gestione.",
-          "descriptionPlayer": "Il tuo tesseramento, i tuoi pagamenti e i prossimi tornei a cui puoi iscriverti."
+        "stats": {
+          "title": "I tuoi numeri",
+          "description": "Un colpo d'occhio su soci attivi, carte cercate aperte, tornei ed eventi in programma, e location."
+        },
+        "pendingActions": {
+          "title": "Azioni pendenti",
+          "description": "Richieste di tesseramento e rinnovi in scadenza: quello che aspetta un'azione da te."
+        },
+        "upcomingStaff": {
+          "title": "Prossimi tornei",
+          "description": "I prossimi tornei in programma, in ordine di data."
+        },
+        "recentTransactions": {
+          "title": "Ultime transazioni",
+          "description": "Le transazioni più recenti registrate in cassa."
+        },
+        "recentAssociates": {
+          "title": "Ultimi soci approvati",
+          "description": "Chi si è tesserato più di recente."
+        },
+        "nextLocation": {
+          "title": "Prossima sede",
+          "description": "Dove si svolge il prossimo torneo in programma."
+        },
+        "activeLeagues": {
+          "title": "Leghe attive",
+          "description": "Le leghe attualmente in corso."
+        },
+        "membership": {
+          "title": "Il tuo tesseramento",
+          "description": "Lo stato del tuo tesseramento e, se serve rinnovarlo, il pulsante per farlo."
+        },
+        "payments": {
+          "title": "I tuoi pagamenti",
+          "description": "Il totale versato e gli ultimi pagamenti registrati."
+        },
+        "upcomingPlayer": {
+          "title": "Prossimi tornei",
+          "description": "I prossimi tornei a cui puoi iscriverti."
+        },
+        "rankings": {
+          "title": "Classifiche",
+          "description": "Le classifiche a cui partecipi (in arrivo)."
         },
         "done": {
           "title": "Pronto!",

@@ -104,7 +104,7 @@ const stats = computed(() => [{
 
 <template>
   <div class="flex flex-col gap-6">
-    <UPageGrid class="sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-px">
+    <UPageGrid id="tour-home-stats" class="sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-px">
       <UPageCard
         v-for="stat in stats"
         :key="stat.title"
@@ -125,7 +125,11 @@ const stats = computed(() => [{
     </UPageGrid>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 items-start gap-4 sm:gap-6">
-      <UPageCard :title="t('home.staff.pendingActions.title')" variant="subtle">
+      <UPageCard
+        id="tour-home-pending-actions"
+        :title="t('home.staff.pendingActions.title')"
+        variant="subtle"
+      >
         <div class="flex flex-col divide-y divide-default">
           <NuxtLink
             v-for="action in pendingActions"
@@ -145,7 +149,7 @@ const stats = computed(() => [{
         </div>
       </UPageCard>
 
-      <UPageCard :title="t('home.staff.upcoming.title')" variant="subtle">
+      <UPageCard id="tour-home-upcoming" :title="t('home.staff.upcoming.title')" variant="subtle">
         <div v-if="!upcomingTournaments.length" class="text-sm text-muted py-4 text-center">
           {{ t('home.staff.upcoming.empty') }}
         </div>
@@ -170,7 +174,11 @@ const stats = computed(() => [{
         </div>
       </UPageCard>
 
-      <UPageCard :title="t('home.staff.recentTransactions.title')" variant="subtle">
+      <UPageCard
+        id="tour-home-recent-transactions"
+        :title="t('home.staff.recentTransactions.title')"
+        variant="subtle"
+      >
         <div v-if="!recentTransactions.length" class="text-sm text-muted py-4 text-center">
           {{ t('home.staff.recentTransactions.empty') }}
         </div>
@@ -198,7 +206,11 @@ const stats = computed(() => [{
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 items-start gap-4 sm:gap-6">
-      <UPageCard :title="t('home.staff.recentAssociates.title')" variant="subtle">
+      <UPageCard
+        id="tour-home-recent-associates"
+        :title="t('home.staff.recentAssociates.title')"
+        variant="subtle"
+      >
         <div v-if="!recentAssociates.length" class="text-sm text-muted py-4 text-center">
           {{ t('home.staff.recentAssociates.empty') }}
         </div>
@@ -224,7 +236,11 @@ const stats = computed(() => [{
         </div>
       </UPageCard>
 
-      <UPageCard :title="t('home.staff.nextLocation.title')" variant="subtle">
+      <UPageCard
+        id="tour-home-next-location"
+        :title="t('home.staff.nextLocation.title')"
+        variant="subtle"
+      >
         <div v-if="!nextTournamentLocation?.location" class="text-sm text-muted py-4 text-center">
           {{ t('home.staff.nextLocation.empty') }}
         </div>
@@ -251,7 +267,11 @@ const stats = computed(() => [{
         </div>
       </UPageCard>
 
-      <UPageCard :title="t('home.staff.activeLeagues.title')" variant="subtle">
+      <UPageCard
+        id="tour-home-active-leagues"
+        :title="t('home.staff.activeLeagues.title')"
+        variant="subtle"
+      >
         <div v-if="!activeLeagues.length" class="text-sm text-muted py-4 text-center">
           {{ t('home.staff.activeLeagues.empty') }}
         </div>
