@@ -171,7 +171,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
           <div class="grid grid-cols-2 gap-4">
             <!-- eslint-disable-next-line -->
-            <UFormField :label="$t('event.addModal.fields.organizer')" name="organizerUuid" required>
+            <UFormField
+              :label="$t('event.addModal.fields.organizer')"
+              name="organizerUuid"
+              required
+            >
               <USelectMenu
                 v-model="state.organizerUuid"
                 class="w-full"
@@ -182,7 +186,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               />
             </UFormField>
 
-            <UFormField :label="$t('event.addModal.fields.location')" name="locationUuid">
+            <UFormField
+              :label="$t('event.addModal.fields.location')"
+              name="locationUuid"
+            >
               <USelectMenu
                 v-model="state.locationUuid"
                 class="w-full"

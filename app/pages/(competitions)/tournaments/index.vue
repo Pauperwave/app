@@ -61,7 +61,11 @@ const {
 function tournamentContextMenuItems(tournament: Tournament): DropdownMenuItem[] {
   return [
     ...rowContextMenuItems(tournament),
-    { label: t('tournament.rowActions.edit'), icon: ICONS.edit, onSelect: () => openEditModal(tournament) },
+    {
+      label: t('tournament.rowActions.edit'),
+      icon: ICONS.edit,
+      onSelect: () => openEditModal(tournament)
+    },
     {
       label: t('tournament.rowActions.delete'),
       icon: ICONS.delete,

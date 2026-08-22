@@ -38,7 +38,11 @@ function updateTime(key: 'startTime' | 'endTime', value: TimeValue | null | unde
       :formatted-start-date="formattedStartDate"
     />
 
-    <UFormField :label="$t('tournament.addModal.fields.startTime')" name="startTime" class="w-28 shrink-0">
+    <UFormField
+      :label="$t('tournament.addModal.fields.startTime')"
+      name="startTime"
+      class="w-28 shrink-0"
+    >
       <UInputTime
         :range="false"
         :hour-cycle="24"
@@ -48,7 +52,11 @@ function updateTime(key: 'startTime' | 'endTime', value: TimeValue | null | unde
       />
     </UFormField>
 
-    <UFormField :label="$t('tournament.addModal.fields.endTime')" name="endTime" class="w-28 shrink-0">
+    <UFormField
+      :label="$t('tournament.addModal.fields.endTime')"
+      name="endTime"
+      class="w-28 shrink-0"
+    >
       <UInputTime
         :range="false"
         :hour-cycle="24"
@@ -58,7 +66,11 @@ function updateTime(key: 'startTime' | 'endTime', value: TimeValue | null | unde
       />
     </UFormField>
 
-    <UFormField :label="$t('tournament.addModal.fields.roundCount')" name="roundCount" class="w-24 shrink-0">
+    <UFormField
+      :label="$t('tournament.addModal.fields.roundCount')"
+      name="roundCount"
+      class="w-24 shrink-0"
+    >
       <UInputNumber
         v-model="state.roundCount"
         :min="1"
