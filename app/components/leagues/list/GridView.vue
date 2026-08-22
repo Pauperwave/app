@@ -5,12 +5,17 @@ import type { League } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 
 const {
-  leagues, contextMenuItems, onEdit, selection
+  leagues, contextMenuItems, onEdit, selection,
+  loading = false, loadingCount = 6
 } = defineProps<{
   leagues: League[]
   contextMenuItems: (league: League) => DropdownMenuItem[]
   onEdit: (league: League) => void
   selection: Selection<number>
+  /** Renders `loadingCount` skeleton cards instead of `leagues` — see
+   * Card.vue's own `loading` prop. @default false */
+  loading?: boolean
+  loadingCount?: number
 }>()
 
 // The ordered list a shift-click range resolves against — same reasoning as
@@ -19,7 +24,11 @@ const range = computed(() => leagues.map(league => league.id))
 </script>
 
 <template>
-  <div v-if="!leagues.length" class="text-center py-12 text-muted">
+  <div v-if="loading" class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(280px,90vw),1fr))]">
+    <LeaguesListCard v-for="n in loadingCount" :key="n" loading />
+  </div>
+
+  <div v-else-if="!leagues.length" class="text-center py-12 text-muted">
     {{ $t('league.grid.empty') }}
   </div>
 

@@ -22,10 +22,14 @@ const { t } = useI18n()
 useSeoMeta({ title: () => t('league.breadcrumb') })
 
 const {
-  data: leaguesData, isLoading: loading, status, refetch
+  data: leaguesData, isLoading: loading, isPending, status, refetch
 } = useLeaguesQuery()
 const data = computed(() => leaguesData.value ?? [])
 const { statusFilter, filteredLeagues, statusTabs } = useLeaguesFilters(data)
+
+// undefined (ListSkeleton's/GridView's own default count) only on a genuine
+// first load — same isPending-vs-isLoading reasoning as tournaments/index.vue.
+const skeletonCount = computed(() => (isPending.value ? undefined : filteredLeagues.value.length))
 const {
   rowContextMenuItems, onRowContextmenu, contextMenuRow
 } = useCopyLinkContextMenu<League>('/leagues')
@@ -151,29 +155,33 @@ const tour = useLeaguesTour()
     </template>
 
     <template #body>
-      <div v-if="loading" class="flex items-center justify-center py-12">
-        <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
-      </div>
+      <div id="tour-leagues-content">
+        <template v-if="viewMode === 'table'">
+          <ListSkeleton v-if="loading" :count="skeletonCount" :columns="columns.length" />
 
-      <div v-else id="tour-leagues-content">
-        <UContextMenu v-if="viewMode === 'table'" :items="tableContextMenuItems">
-          <UTable
-            v-model:sorting="sorting"
-            :data="filteredLeagues"
-            :columns="columns"
-            class="w-full"
-            :ui="{ tr: 'cursor-pointer' }"
-            @contextmenu="onRowContextmenu"
-            @select="(_e, row) => navigateTo(`/leagues/${row.original.uuid}`)"
-          />
-        </UContextMenu>
+          <UContextMenu v-else :items="tableContextMenuItems">
+            <UTable
+              v-model:sorting="sorting"
+              :data="filteredLeagues"
+              :columns="columns"
+              class="w-full"
+              :ui="{ tr: 'cursor-pointer' }"
+              @contextmenu="onRowContextmenu"
+              @select="(_e, row) => navigateTo(`/leagues/${row.original.uuid}`)"
+            />
+          </UContextMenu>
+        </template>
 
+        <!-- Grid mode's own loading state lives in GridView.vue/Card.vue —
+             no separate ListSkeleton grid variant, see their own comments. -->
         <LeaguesListGridView
           v-else
           :leagues="filteredLeagues"
           :context-menu-items="leagueContextMenuItems"
           :on-edit="openEditModal"
           :selection="selection"
+          :loading="loading"
+          :loading-count="skeletonCount"
         />
       </div>
     </template>

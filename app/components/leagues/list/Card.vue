@@ -11,6 +11,10 @@
   it — too easy to miss at a glance in a grid), cancelled additionally gets
   the strikethrough+error title to stay distinct from "finished
   successfully".
+
+  `loading` (2026-08-22): same per-element real-vs-USkeleton branching as
+  TournamentsListCard.vue — see that file's own comment for why this
+  replaces a separate hand-duplicated skeleton.
 -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
@@ -18,25 +22,28 @@ import type { League } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 
 const {
-  league, contextMenuItems, onEdit, selection, range
+  league = null, contextMenuItems, onEdit, selection, range = [], loading = false
 } = defineProps<{
-  league: League
-  contextMenuItems: (league: League) => DropdownMenuItem[]
-  onEdit: (league: League) => void
-  selection: Selection<number>
+  league?: League | null
+  contextMenuItems?: (league: League) => DropdownMenuItem[]
+  onEdit?: (league: League) => void
+  selection?: Selection<number>
   /** The ordered list a shift-click range resolves against — see GridView.vue. */
-  range: number[]
+  range?: number[]
+  loading?: boolean
 }>()
 
 const { t } = useI18n()
 
-const isMuted = computed(() => league.status === 'completed' || league.status === 'cancelled')
-const isCancelled = computed(() => league.status === 'cancelled')
+const isMuted = computed(() => !!league && (league.status === 'completed' || league.status === 'cancelled'))
+const isCancelled = computed(() => league?.status === 'cancelled')
 
-// Same ctrl/cmd/shift-click convention as TournamentsListCard.vue.
+// Same ctrl/cmd/shift-click convention as TournamentsListCard.vue. No-ops
+// while loading/without a real league — nothing to click through to yet.
 function onCardClick(event: MouseEvent) {
+  if (!league) return
   if (event.ctrlKey || event.metaKey || event.shiftKey) {
-    selection.toggle(league.id, { shiftKey: event.shiftKey, range })
+    selection?.toggle(league.id, { shiftKey: event.shiftKey, range })
     return
   }
   navigateTo(`/leagues/${league.uuid}`)
@@ -49,7 +56,7 @@ function progress(current: League) {
 </script>
 
 <template>
-  <UContextMenu :items="contextMenuItems(league)">
+  <UContextMenu :items="!loading && league ? contextMenuItems!(league) : []">
     <UCard
       class="overflow-hidden cursor-pointer group transition-all duration-300
         hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1
@@ -61,37 +68,47 @@ function progress(current: League) {
       }"
       @click="onCardClick"
     >
-      <LeaguesListCover :league="league" :selection="selection" :range="range" />
+      <LeaguesListCover
+        :league="league"
+        :selection="selection"
+        :range="range"
+        :loading="loading"
+      />
 
       <div class="flex items-start justify-between gap-2">
         <h3
+          v-if="!loading && league"
           class="font-semibold truncate min-w-0"
           :class="{ 'line-through text-error': isCancelled }"
         >
           {{ league.name }}
         </h3>
+        <!-- Width matches "Lega Invernale 2026" — see TournamentsListCard.vue's
+             own comment for why these are sized to real content, not
+             arbitrary bars. -->
+        <USkeleton v-else class="h-5 w-32 min-w-0" />
 
         <EditIconButton
+          v-if="!loading && league"
           :label="t('league.rowActions.edit')"
           size="xs"
           class="shrink-0"
-          @click.stop="onEdit(league)"
+          @click.stop="onEdit?.(league)"
         />
+        <USkeleton v-else class="size-6 shrink-0" />
       </div>
 
-      <div v-if="league.ruleset" class="flex items-center gap-2 mt-1.5 flex-nowrap overflow-hidden">
-        <UBadge
-          color="neutral"
-          variant="subtle"
-          :icon="ICONS.bookOpen"
-          class="shrink-0"
-        >
-          {{ league.ruleset }}
-        </UBadge>
+      <div class="flex items-center gap-2 mt-1.5 flex-nowrap overflow-hidden">
+        <LeaguesRulesetBadge v-if="!loading && league" :league="league" />
+        <!-- Width matches "Pauper" — a typical ruleset name. Always shown
+             while loading (not conditional on a real ruleset) since
+             LeaguesRulesetBadge itself always renders now too — see its
+             own comment for why the badge row can't collapse. -->
+        <USkeleton v-else class="h-6 w-20" />
       </div>
 
       <template #footer>
-        <div class="flex flex-col gap-1.5">
+        <div v-if="!loading && league" class="flex flex-col gap-1.5">
           <div class="flex items-center justify-between text-sm text-muted">
             <span>{{ t('league.tournamentsLabel') }}</span>
             <span>{{ t('league.progress', {
@@ -99,6 +116,13 @@ function progress(current: League) {
             }) }}</span>
           </div>
           <UProgress :model-value="progress(league)" size="sm" />
+        </div>
+        <div v-else class="flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <USkeleton class="h-4 w-24" />
+            <USkeleton class="h-4 w-12" />
+          </div>
+          <USkeleton class="h-2 w-full" />
         </div>
       </template>
     </UCard>

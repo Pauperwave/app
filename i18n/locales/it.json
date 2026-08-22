@@ -703,6 +703,7 @@
       "delete": "Elimina"
     },
     "statusChangeErrorTitle": "Impossibile aggiornare lo stato della lega",
+    "rulesetChangeErrorTitle": "Impossibile aggiornare il regolamento della lega",
     "bulkActions": {
       "selectedCount": "{count} selezionata | {count} selezionate",
       "clearSelection": "Deseleziona",
