@@ -118,10 +118,11 @@ function timePart(startDate: string) {
                directly — both found via live pixel measurement against
                this exact card, 2026-08-22. LeagueLink's own wrapper is a
                real fixed h-4, matched exactly since it isn't free-flowing
-               text. -->
+               text. Widths sized to roughly match "Premodern&Birrino"
+               (title) and "Lega Invernale 2026" (subtitle). -->
           <div v-else class="space-y-1">
-            <USkeleton class="h-5 w-3/4" />
-            <USkeleton class="h-4 w-1/3" />
+            <USkeleton class="h-5 w-32" />
+            <USkeleton class="h-4 w-28" />
           </div>
         </div>
 
@@ -158,10 +159,13 @@ function timePart(startDate: string) {
         </template>
         <!-- h-6, not h-5: a real UBadge with an icon at the default "md"
              size is size-4 icon + py-1 padding = 24px tall
-             (.nuxt/ui/badge.ts), not 20px — same live-measurement find. -->
+             (.nuxt/ui/badge.ts), not 20px — same live-measurement find.
+             Widths sized to roughly match real badge content instead of
+             arbitrary bars: "Commander" (format), "20:00" (time),
+             "Fàntasia" (location). -->
         <template v-else>
+          <USkeleton class="h-6 w-24" />
           <USkeleton class="h-6 w-16" />
-          <USkeleton class="h-6 w-14" />
           <USkeleton class="h-6 w-20" />
         </template>
       </div>
