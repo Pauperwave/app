@@ -49,29 +49,40 @@ const items = computed<DropdownMenuItem[]>(() => [
 </script>
 
 <template>
-  <UDropdownMenu
-    v-if="can('manage-tournaments')"
-    :items="items"
-    :content="{ align: 'end' }"
-    @click.stop.prevent
-  >
+  <!-- Wrapping native span, not relying on UDropdownMenu/UBadge's own attrs
+       fallthrough for @click.stop (confirmed unreliable — the click still
+       bubbled to the card's own onCardClick and navigated) — same "wrap in
+       a plain element with click.stop" fix LocationsListCard.vue's own
+       "Apri in Maps" link already uses for the same reason. `contents`:
+       a plain inline span's own line box was 3px taller than the badge
+       itself, misaligning it against its BadgesFormatBadge sibling in
+       Card.vue's row — display:contents removes the wrapper from the box
+       model entirely (it still fires/stops the click) so only the badge's
+       own box remains. -->
+  <span class="contents" @click.stop>
+    <UDropdownMenu
+      v-if="can('manage-tournaments')"
+      :items="items"
+      :content="{ align: 'end' }"
+    >
+      <UBadge
+        color="neutral"
+        variant="subtle"
+        :icon="ICONS.bookOpen"
+        class="shrink-0 cursor-pointer"
+      >
+        {{ league.ruleset ?? t('league.addModal.fields.selectRuleset') }}
+      </UBadge>
+    </UDropdownMenu>
+
     <UBadge
+      v-else
       color="neutral"
       variant="subtle"
       :icon="ICONS.bookOpen"
-      class="shrink-0 cursor-pointer"
+      class="shrink-0"
     >
       {{ league.ruleset ?? t('league.addModal.fields.selectRuleset') }}
     </UBadge>
-  </UDropdownMenu>
-
-  <UBadge
-    v-else
-    color="neutral"
-    variant="subtle"
-    :icon="ICONS.bookOpen"
-    class="shrink-0"
-  >
-    {{ league.ruleset ?? t('league.addModal.fields.selectRuleset') }}
-  </UBadge>
+  </span>
 </template>

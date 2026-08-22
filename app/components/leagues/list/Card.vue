@@ -53,6 +53,15 @@ function progress(current: League) {
   if (!current.tournamentCount) return 0
   return Math.round((current.completedTournamentCount / current.tournamentCount) * 100)
 }
+
+// Capped at 2 badges + a "+N" overflow one (ADR, docs/PROGRESS.md,
+// 2026-08-22) — a league can span several formats over its lifetime, and
+// this row already shares space with the ruleset badge, unlike tournaments'
+// own single-format badge.
+const MAX_VISIBLE_FORMATS = 2
+const visibleFormats = computed(() => league?.tournamentFormats.slice(0, MAX_VISIBLE_FORMATS) ?? [])
+const extraFormatCount = computed(() =>
+  Math.max(0, (league?.tournamentFormats.length ?? 0) - MAX_VISIBLE_FORMATS))
 </script>
 
 <template>
@@ -99,12 +108,32 @@ function progress(current: League) {
       </div>
 
       <div class="flex items-center gap-2 mt-1.5 flex-nowrap overflow-hidden">
-        <LeaguesRulesetBadge v-if="!loading && league" :league="league" />
-        <!-- Width matches "Pauper" — a typical ruleset name. Always shown
-             while loading (not conditional on a real ruleset) since
+        <template v-if="!loading && league">
+          <BadgesFormatBadge
+            v-for="format in visibleFormats"
+            :key="format"
+            :format="format"
+            :icon="ICONS.gameplay"
+            class="shrink-0"
+          />
+          <UBadge
+            v-if="extraFormatCount"
+            color="neutral"
+            variant="subtle"
+            class="shrink-0"
+          >
+            +{{ extraFormatCount }}
+          </UBadge>
+          <LeaguesRulesetBadge :league="league" />
+        </template>
+        <!-- Widths match "Commander" (format) + "Pauper" (ruleset). Always
+             shown while loading (not conditional on real data) since
              LeaguesRulesetBadge itself always renders now too — see its
              own comment for why the badge row can't collapse. -->
-        <USkeleton v-else class="h-6 w-20" />
+        <template v-else>
+          <USkeleton class="h-6 w-24" />
+          <USkeleton class="h-6 w-20" />
+        </template>
       </div>
 
       <template #footer>

@@ -35,6 +35,24 @@ function dayPart(startDate: string) {
 function monthPart(startDate: string) {
   return new Date(startDate).toLocaleDateString('it-IT', { month: 'short' }).replace('.', '')
 }
+
+// The chip shows the earliest contained tournament's date, not the league's
+// own (scheduled-at-creation) startDate, when that's known — same
+// tournaments-are-the-source-of-truth reasoning as the ADR in
+// docs/PROGRESS.md. Falls back to the league's own startDate for a league
+// with no tournaments yet.
+const chipDate = computed(() => league?.tournamentDateRange?.start ?? league?.startDate ?? null)
+
+// Only worth a tooltip once there's an actual range to show — a single-day
+// (or dateless) league would just repeat the chip's own day/month.
+const dateRangeTooltip = computed(() => {
+  const range = league?.tournamentDateRange
+  if (!range || range.start === range.end) return null
+  return t('league.detail.dateRange.tooltip', {
+    start: dayPart(range.start) + ' ' + monthPart(range.start),
+    end: dayPart(range.end) + ' ' + monthPart(range.end)
+  })
+})
 </script>
 
 <template>
@@ -50,14 +68,17 @@ function monthPart(startDate: string) {
     </template>
     <USkeleton v-else class="w-full h-32 rounded-none" />
 
-    <div
-      v-if="!loading && league"
-      class="absolute top-2 left-2 flex flex-col items-center justify-center rounded-lg bg-default/90 backdrop-blur-sm border border-default w-12 h-12 shrink-0"
+    <UTooltip
+      v-if="!loading && league && chipDate"
+      :text="dateRangeTooltip ?? undefined"
+      :disabled="!dateRangeTooltip"
     >
-      <span class="text-base font-bold leading-none">{{ dayPart(league.startDate) }}</span>
-      <span class="text-[10px] uppercase text-muted">{{ monthPart(league.startDate) }}</span>
-    </div>
-    <USkeleton v-else class="absolute top-2 left-2 w-12 h-12 rounded-lg" :ui="{ base: 'bg-black' }" />
+      <div class="absolute top-2 left-2 flex flex-col items-center justify-center rounded-lg bg-default/90 backdrop-blur-sm border border-default w-12 h-12 shrink-0">
+        <span class="text-base font-bold leading-none">{{ dayPart(chipDate) }}</span>
+        <span class="text-[10px] uppercase text-muted">{{ monthPart(chipDate) }}</span>
+      </div>
+    </UTooltip>
+    <USkeleton v-else-if="loading" class="absolute top-2 left-2 w-12 h-12 rounded-lg" :ui="{ base: 'bg-black' }" />
 
     <!-- Same attribution overlay as TournamentsListCover.vue — required
          alongside any art_crop use, see CardArtPicker.vue's own comment. -->
