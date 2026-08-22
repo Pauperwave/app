@@ -33,6 +33,11 @@ export function useTrashTableColumns(onRestore: (item: TrashItem) => void) {
         h(DateWithRelativeTooltip, { isoString: row.original.deletedAt, time: true })
     },
     {
+      accessorKey: 'deletedBy',
+      header: ({ column }) => sortableHeader(t('trash.columns.deletedBy'), column),
+      cell: ({ row }) => row.original.deletedBy || '—'
+    },
+    {
       id: 'actions',
       header: t('trash.columns.actions'),
       // Labeled + outline, same style already used for every other

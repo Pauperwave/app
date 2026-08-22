@@ -1,7 +1,7 @@
 // server\utils\idRequest.ts
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { H3Event } from 'h3'
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { JwtPayload, SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '#shared/utils/types/database'
 
 // Shared request-parsing prologue for /[id]/update.post.ts endpoints
@@ -39,15 +39,23 @@ export type SoftDeletableTable
 // fallow:dupes flagged mtg-formats/tournaments/wanted-cards' delete handlers
 // as identical once parseIdRequest already covered the prologue — every one
 // of these now differs only by table name) — see the deleted_at convention
-// note in each domain's own useQuery.ts.
+// note in each domain's own useQuery.ts. Also stamps deleted_by (2026-08-23,
+// migration 20260823110000) via the same resolveAuditAssociateUuid helper
+// created_by/updated_by already use — a dedicated column, not a reused
+// updated_by, so restoring a row later doesn't leave a stale "deleted by"
+// value sitting in what's supposed to be the edit-history column.
 export async function softDeleteById(
+  event: H3Event,
+  user: JwtPayload,
   supabase: SupabaseClient<Database>,
   table: SoftDeletableTable,
   id: number
 ) {
+  const deletedBy = await resolveAuditAssociateUuid(event, user)
+
   const { error } = await supabase
     .from(table)
-    .update({ deleted_at: new Date().toISOString() })
+    .update({ deleted_at: new Date().toISOString(), deleted_by: deletedBy })
     .eq('id', id)
 
   if (error) {
@@ -58,8 +66,9 @@ export async function softDeleteById(
   }
 }
 
-// Mirror of softDeleteById (clears deleted_at instead of setting it) — the
-// Trash page's restore action, server/api/trash/restore.post.ts.
+// Mirror of softDeleteById (clears deleted_at/deleted_by instead of setting
+// them) — the Trash page's restore action, server/api/trash/restore.post.ts.
+// No "restored_by" column: out of scope, only who deleted is tracked.
 export async function restoreById(
   supabase: SupabaseClient<Database>,
   table: SoftDeletableTable,
@@ -67,7 +76,7 @@ export async function restoreById(
 ) {
   const { error } = await supabase
     .from(table)
-    .update({ deleted_at: null })
+    .update({ deleted_at: null, deleted_by: null })
     .eq('id', id)
 
   if (error) {

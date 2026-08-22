@@ -152,6 +152,7 @@ export type Database = {
           companion_app_code: string | null
           created_at: string
           deleted_at: string | null
+          deleted_by: string | null
           ends_at: string | null
           id: number
           image_url: string | null
@@ -167,6 +168,7 @@ export type Database = {
           companion_app_code?: string | null
           created_at?: string
           deleted_at?: string | null
+          deleted_by?: string | null
           ends_at?: string | null
           id?: number
           image_url?: string | null
@@ -182,6 +184,7 @@ export type Database = {
           companion_app_code?: string | null
           created_at?: string
           deleted_at?: string | null
+          deleted_by?: string | null
           ends_at?: string | null
           id?: number
           image_url?: string | null
@@ -194,6 +197,20 @@ export type Database = {
           uuid?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_events_deleted_by"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_events_deleted_by"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
           {
             foreignKeyName: "fk_events_location_uuid_fkey"
             columns: ["location_uuid"]
@@ -214,6 +231,7 @@ export type Database = {
         Row: {
           created_at: string
           deleted_at: string | null
+          deleted_by: string | null
           ends_at: string | null
           id: number
           image_card_artist: string | null
@@ -229,6 +247,7 @@ export type Database = {
         Insert: {
           created_at?: string
           deleted_at?: string | null
+          deleted_by?: string | null
           ends_at?: string | null
           id?: number
           image_card_artist?: string | null
@@ -244,6 +263,7 @@ export type Database = {
         Update: {
           created_at?: string
           deleted_at?: string | null
+          deleted_by?: string | null
           ends_at?: string | null
           id?: number
           image_card_artist?: string | null
@@ -257,6 +277,20 @@ export type Database = {
           uuid?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_leagues_deleted_by"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_leagues_deleted_by"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
           {
             foreignKeyName: "fk_leagues_ruleset_uuid_fkey"
             columns: ["ruleset_uuid"]
@@ -273,6 +307,7 @@ export type Database = {
           country: string
           created_at: string
           deleted_at: string | null
+          deleted_by: string | null
           email: string | null
           facebook_url: string | null
           google_maps_url: string | null
@@ -297,6 +332,7 @@ export type Database = {
           country?: string
           created_at?: string
           deleted_at?: string | null
+          deleted_by?: string | null
           email?: string | null
           facebook_url?: string | null
           google_maps_url?: string | null
@@ -321,6 +357,7 @@ export type Database = {
           country?: string
           created_at?: string
           deleted_at?: string | null
+          deleted_by?: string | null
           email?: string | null
           facebook_url?: string | null
           google_maps_url?: string | null
@@ -339,7 +376,22 @@ export type Database = {
           website?: string | null
           whatsapp_url?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_locations_deleted_by"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_locations_deleted_by"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
+        ]
       }
       mtg_commanders: {
         Row: {
@@ -420,6 +472,7 @@ export type Database = {
           color: string | null
           created_at: string
           deleted_at: string | null
+          deleted_by: string | null
           description: string | null
           id: number
           name: string
@@ -430,6 +483,7 @@ export type Database = {
           color?: string | null
           created_at?: string
           deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           id?: number
           name: string
@@ -440,13 +494,29 @@ export type Database = {
           color?: string | null
           created_at?: string
           deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           id?: number
           name?: string
           updated_at?: string
           uuid?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_mtg_formats_deleted_by"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_mtg_formats_deleted_by"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
+        ]
       }
       organizations: {
         Row: {
@@ -764,6 +834,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          deleted_by: string | null
           event_name: string | null
           event_uuid: string | null
           id: number
@@ -787,6 +858,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           event_name?: string | null
           event_uuid?: string | null
           id?: number
@@ -810,6 +882,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           event_name?: string | null
           event_uuid?: string | null
           id?: number
@@ -853,6 +926,20 @@ export type Database = {
           {
             foreignKeyName: "fk_pauperwave_payments_created_by"
             columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_pauperwave_payments_deleted_by"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_pauperwave_payments_deleted_by"
+            columns: ["deleted_by"]
             isOneToOne: false
             referencedRelation: "pauperwave_associates_with_status"
             referencedColumns: ["uuid"]
@@ -942,6 +1029,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          deleted_by: string | null
           found_at: string | null
           id: number
           image_url: string | null
@@ -972,6 +1060,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           found_at?: string | null
           id?: never
           image_url?: string | null
@@ -1002,6 +1091,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           found_at?: string | null
           id?: never
           image_url?: string | null
@@ -1031,6 +1121,20 @@ export type Database = {
           {
             foreignKeyName: "fk_pauperwave_wanted_cards_created_by"
             columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_pauperwave_wanted_cards_deleted_by"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_pauperwave_wanted_cards_deleted_by"
+            columns: ["deleted_by"]
             isOneToOne: false
             referencedRelation: "pauperwave_associates_with_status"
             referencedColumns: ["uuid"]
@@ -1801,6 +1905,7 @@ export type Database = {
           contact_phone: string | null
           created_at: string
           deleted_at: string | null
+          deleted_by: string | null
           description: string | null
           ends_at: string | null
           entry_fee: number | null
@@ -1831,6 +1936,7 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string
           deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           ends_at?: string | null
           entry_fee?: number | null
@@ -1861,6 +1967,7 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string
           deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           ends_at?: string | null
           entry_fee?: number | null
@@ -1890,6 +1997,20 @@ export type Database = {
             columns: ["cittadino_edition_uuid"]
             isOneToOne: false
             referencedRelation: "cittadino_editions"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_tournaments_deleted_by"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_tournaments_deleted_by"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
             referencedColumns: ["uuid"]
           },
           {

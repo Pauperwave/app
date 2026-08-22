@@ -1861,6 +1861,7 @@
       "entity": "Tipo",
       "name": "Nome",
       "deletedAt": "Eliminato il",
+      "deletedBy": "Eliminato da",
       "actions": "Azioni"
     },
     "entities": {

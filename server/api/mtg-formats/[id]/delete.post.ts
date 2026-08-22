@@ -7,7 +7,7 @@
 // convention as tournaments/[id]/delete.post.ts —
 // mtgFormats/useMtgFormatsQuery.ts already filters `is('deleted_at', null)`.
 export default defineEventHandler(async (event) => {
-  const { id, supabase } = await parseIdRequest(event)
-  await softDeleteById(supabase, 'mtg_formats', id)
+  const { id, user, supabase } = await parseIdRequest(event)
+  await softDeleteById(event, user, supabase, 'mtg_formats', id)
   return { deleted: true }
 })
