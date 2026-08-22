@@ -30,18 +30,17 @@ const cols = computed(() => Array.from({ length: columns }))
     <!-- Mirrors TournamentsListCard.vue's own shape exactly (same UCard,
          cover height, title/badges/footer rows) — a generic placeholder
          card here just looked like a different, smaller component instead
-         of "this card, loading" (user feedback, 2026-08-22). -->
+         of "this card, loading" (user feedback, 2026-08-22). Reuses the real
+         UCard itself rather than a hand-rolled div: its `root` slot already
+         ships `rounded-lg overflow-hidden` (.nuxt/ui/card.ts), which is what
+         actually clips the cover's -m-3 bleed below — no need to duplicate
+         overflow-hidden by hand, and both states (loading/loaded) stay in
+         sync automatically if the Card theme ever changes. -->
     <UCard
       v-for="(_, index) in items"
       :key="index"
-      class="overflow-hidden"
       :ui="{ body: 'p-3 sm:p-3', footer: 'p-3 sm:p-3' }"
     >
-      <!-- overflow-hidden above matters here specifically: the cover's
-           negative margin (same -m-3/mb-3 bleed as the real Cover.vue) has
-           nothing to clip it to without it, so it bled outside the card's
-           own box and overlapped neighboring grid cells — only the first
-           couple of cards ever showed correctly (user feedback, 2026-08-22). -->
       <USkeleton class="w-full h-32 -m-3 mb-3 rounded-none" />
 
       <div class="flex items-start justify-between gap-2">
@@ -49,14 +48,16 @@ const cols = computed(() => Array.from({ length: columns }))
           <USkeleton class="h-4 w-3/4" />
           <USkeleton class="h-3 w-1/3" />
         </div>
-        <USkeleton class="size-6 !rounded-md shrink-0" />
+        <USkeleton class="size-6 shrink-0" />
       </div>
 
       <!-- rounded-md, not a pill: UBadge's own default (md) size is
-           "rounded-md" (.nuxt/ui/badge.ts), not full-rounded — checked
-           2026-08-22 after wrongly assuming pill-shaped badges the first
-           time. Matches USkeleton's own theme default already, no override
-           needed. -->
+           "rounded-md" (.nuxt/ui/badge.ts), matching USkeleton's own theme
+           default already — no override needed. When a real override *is*
+           needed (a genuinely different shape), prefer `:ui="{ base: '...' }"`
+           over a conflicting plain `class` — it merges through the same
+           tv() slot the theme's own base class does, so it reliably wins
+           without needing `!important`. -->
       <div class="flex items-center gap-2 mt-1.5">
         <USkeleton class="h-5 w-16" />
         <USkeleton class="h-5 w-14" />
