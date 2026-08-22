@@ -1,51 +1,46 @@
 <!-- app\components\events\list\GridView.vue -->
 <script setup lang="ts">
-import { format } from 'date-fns'
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Event } from '~/types'
+import type { Selection } from '~/composables/useSelection'
 
-const { events, contextMenuItems } = defineProps<{
+const {
+  events, contextMenuItems, onEdit, selection,
+  loading = false, loadingCount = 6
+} = defineProps<{
   events: Event[]
   contextMenuItems: (event: Event) => DropdownMenuItem[]
+  onEdit: (event: Event) => void
+  selection: Selection<number>
+  /** Renders `loadingCount` skeleton cards instead of `events` — see
+   * Card.vue's own `loading` prop. @default false */
+  loading?: boolean
+  loadingCount?: number
 }>()
 
-const { t } = useI18n()
+// The ordered list a shift-click range resolves against — same reasoning as
+// TournamentsListGridView.vue's own range.
+const range = computed(() => events.map(event => event.id))
 </script>
 
 <template>
-  <div v-if="!events.length" class="text-center py-12 text-muted">
+  <div v-if="loading" class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(280px,90vw),1fr))]">
+    <EventsListCard v-for="n in loadingCount" :key="n" loading />
+  </div>
+
+  <div v-else-if="!events.length" class="text-center py-12 text-muted">
     {{ $t('event.grid.empty') }}
   </div>
 
   <div v-else class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(280px,90vw),1fr))]">
-    <UContextMenu
+    <EventsListCard
       v-for="event in events"
       :key="event.id"
-      :items="contextMenuItems(event)"
-    >
-      <UCard
-        class="cursor-pointer hover:ring-primary transition-colors"
-        @click="navigateTo(`/events/${event.uuid}`)"
-      >
-        <div class="flex items-start justify-between gap-2 mb-4">
-          <h3 class="font-semibold truncate">
-            {{ event.name }}
-          </h3>
-          <UBadge
-            :color="eventStatusColor(event.status)"
-            variant="subtle"
-            :icon="EVENT_STATUS_ICONS[event.status]"
-            class="shrink-0"
-          >
-            {{ t(`event.status.${event.status}`) }}
-          </UBadge>
-        </div>
-
-        <div class="flex items-center justify-between text-sm text-muted">
-          <span>{{ format(new Date(event.startDate), 'dd/MM/yyyy') }}</span>
-          <span>{{ t('event.tournamentsLabel', event.tournamentCount) }}</span>
-        </div>
-      </UCard>
-    </UContextMenu>
+      :event="event"
+      :context-menu-items="contextMenuItems"
+      :on-edit="onEdit"
+      :selection="selection"
+      :range="range"
+    />
   </div>
 </template>
