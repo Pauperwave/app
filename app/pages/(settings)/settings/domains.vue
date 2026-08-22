@@ -54,13 +54,13 @@ interface DomainRow {
 // this same Nuxt project.
 const domains = computed<DomainRow[]>(() => [
   { host: 'pauperwave.org', purpose: t('settings.domains.rows.root'), status: 'planned', route: null },
-  { host: 'app.pauperwave.org', purpose: t('settings.domains.rows.app'), status: 'planned', route: '/' },
-  { host: 'cittadino.pauperwave.org', purpose: t('settings.domains.rows.cittadino'), status: 'planned', route: '/rankings/cittadino' },
-  { host: 'commander.pauperwave.org', purpose: t('settings.domains.rows.commander'), status: 'planned', route: '/rankings/commander' },
-  { host: 'premodern.pauperwave.org', purpose: t('settings.domains.rows.premodern'), status: 'planned', route: '/rankings/premodern' },
-  { host: 'pauper.pauperwave.org', purpose: t('settings.domains.rows.pauper'), status: 'planned', route: '/rankings/pauper' },
-  { host: 'calendario.pauperwave.org', purpose: t('settings.domains.rows.calendario'), status: 'planned', route: '/calendario' },
-  { host: 'tesseramento.pauperwave.org', purpose: t('settings.domains.rows.tesseramento'), status: 'planned', route: '/tesseramento' },
+  { host: 'app.pauperwave.org', purpose: t('settings.domains.rows.app'), status: 'live', route: '/' },
+  { host: 'cittadino.pauperwave.org', purpose: t('settings.domains.rows.cittadino'), status: 'live', route: '/rankings/cittadino' },
+  { host: 'commander.pauperwave.org', purpose: t('settings.domains.rows.commander'), status: 'live', route: '/rankings/commander' },
+  { host: 'premodern.pauperwave.org', purpose: t('settings.domains.rows.premodern'), status: 'live', route: '/rankings/premodern' },
+  { host: 'pauper.pauperwave.org', purpose: t('settings.domains.rows.pauper'), status: 'live', route: '/rankings/pauper' },
+  { host: 'calendario.pauperwave.org', purpose: t('settings.domains.rows.calendario'), status: 'live', route: '/calendario' },
+  { host: 'tesseramento.pauperwave.org', purpose: t('settings.domains.rows.tesseramento'), status: 'live', route: '/tesseramento' },
   { host: 'blog.pauperwave.org', purpose: t('settings.domains.rows.blog'), status: 'live', route: null },
   { host: 'league.pauperwave.org', purpose: t('settings.domains.rows.league'), status: 'live', route: null }
 ])
