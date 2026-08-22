@@ -1,11 +1,13 @@
 <!-- app\components\locations\list\GridView.vue -->
 <script setup lang="ts">
+import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Location } from '~/types'
 
 const {
-  locations, onEdit, loading = false, loadingCount = 6
+  locations, contextMenuItems, onEdit, loading = false, loadingCount = 6
 } = defineProps<{
   locations: Location[]
+  contextMenuItems: (location: Location) => DropdownMenuItem[]
   onEdit: (location: Location) => void
   /** Renders `loadingCount` skeleton cards instead of `locations` — see
    * Card.vue's own `loading` prop. @default false */
@@ -28,6 +30,7 @@ const {
       v-for="location in locations"
       :key="location.id"
       :location="location"
+      :context-menu-items="contextMenuItems"
       :on-edit="onEdit"
     />
   </div>

@@ -1,6 +1,7 @@
 <!-- app\pages\(competitions)\locations\index.vue -->
 <script lang="ts" setup>
-import type { TabsItem } from '@nuxt/ui'
+import type { DropdownMenuItem, TabsItem } from '@nuxt/ui'
+import type { Location } from '~/types'
 
 const { isModalOpen } = useModalOpenFromQuery()
 const { t } = useI18n()
@@ -18,6 +19,22 @@ const skeletonCount = computed(() => (isPending.value ? undefined : locations.va
 
 const { editingLocation, editModalOpen, openEditModal } = useLocationsRowActions()
 const { columns } = useLocationsTableColumns(openEditModal)
+
+// Slug-based link (not the uuid default) since /locations/[slug] is this
+// domain's detail route — see useCopyLinkContextMenu.ts's own comment.
+const {
+  rowContextMenuItems, onRowContextmenu, tableContextMenuItems
+} = useCopyLinkContextMenu<Location>('/locations', location => `/locations/${slugify(location.name)}`)
+
+// Adds edit to the shared copy-link/copy-id items — same reasoning as
+// events/index.vue's own eventContextMenuItems(). No delete item: locations
+// stays create+edit only (see useLocationsRowActions.ts's own comment).
+function locationContextMenuItems(location: Location): DropdownMenuItem[] {
+  return [
+    ...rowContextMenuItems(location),
+    { label: t('location.rowActions.edit'), icon: ICONS.edit, onSelect: () => openEditModal(location) }
+  ]
+}
 
 const viewMode = ref<'table' | 'grid'>('grid')
 const viewModeItems = computed<TabsItem[]>(() => [
@@ -69,15 +86,18 @@ const tour = useLocationsTour()
              behavior here) was flagged as worse UX than associates' -->
           <ListSkeleton v-if="isPending" :count="skeletonCount" :columns="columns.length" />
 
-          <UTable
-            v-else
-            v-model:sorting="sorting"
-            :data="locations"
-            :columns="columns"
-            :loading="loading"
-            class="w-full"
-            @select="(_e, row) => navigateTo(`/locations/${slugify(row.original.name)}`)"
-          />
+          <UContextMenu v-else :items="tableContextMenuItems">
+            <UTable
+              v-model:sorting="sorting"
+              :data="locations"
+              :columns="columns"
+              :loading="loading"
+              class="w-full"
+              :ui="{ tr: 'cursor-pointer' }"
+              @contextmenu="onRowContextmenu"
+              @select="(_e, row) => navigateTo(`/locations/${slugify(row.original.name)}`)"
+            />
+          </UContextMenu>
         </template>
 
         <!-- Grid mode's own loading state lives in GridView.vue/Card.vue —
@@ -88,6 +108,7 @@ const tour = useLocationsTour()
         <LocationsListGridView
           v-else
           :locations="locations"
+          :context-menu-items="locationContextMenuItems"
           :on-edit="openEditModal"
           :loading="isPending"
           :loading-count="skeletonCount"
