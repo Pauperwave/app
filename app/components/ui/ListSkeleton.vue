@@ -52,20 +52,20 @@ const cols = computed(() => Array.from({ length: columns }))
         <USkeleton class="size-6 !rounded-md shrink-0" />
       </div>
 
-      <!-- !rounded-full (not plain rounded-full) below: USkeleton's own
-           theme already ships a `rounded-md` base class, and relying on
-           class-merge order to override it was inconsistent — badges
-           weren't rendering as full pills (same user feedback). The
-           `!` forces it regardless of merge/definition order. -->
+      <!-- rounded-md, not a pill: UBadge's own default (md) size is
+           "rounded-md" (.nuxt/ui/badge.ts), not full-rounded — checked
+           2026-08-22 after wrongly assuming pill-shaped badges the first
+           time. Matches USkeleton's own theme default already, no override
+           needed. -->
       <div class="flex items-center gap-2 mt-1.5">
-        <USkeleton class="h-5 w-16 !rounded-full" />
-        <USkeleton class="h-5 w-14 !rounded-full" />
-        <USkeleton class="h-5 w-20 !rounded-full" />
+        <USkeleton class="h-5 w-16" />
+        <USkeleton class="h-5 w-14" />
+        <USkeleton class="h-5 w-20" />
       </div>
 
       <template #footer>
         <div class="flex items-center justify-between gap-2">
-          <USkeleton class="h-5 w-10 !rounded-full" />
+          <USkeleton class="h-5 w-10" />
           <USkeleton class="h-4 w-12" />
         </div>
       </template>
