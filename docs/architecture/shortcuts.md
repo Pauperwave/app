@@ -28,12 +28,13 @@ Two-key chords, not bare letters — same convention as GitHub's own shortcuts. 
 | `g` `m` | Membri | `/settings/members` |
 | `g` `p` | Permessi | `/settings/permissions` |
 | `g` `d` | Domini | `/settings/domains` |
+| `g` `x` | Cestino | `/trash` |
 
 No chord for Mazzi (`/statistics/decks`), Classifica Cittadino (`/standings/cittadino`), or Impostazioni → Generali (`/settings`). Mazzi/Cittadino: reassigned 2026-08-11 at the user's request — "m"/"c" now point at Membri/Calendario instead, and no replacement letter was picked for the pages that lost them. Impostazioni → Generali: its only intuitive letter was "g" itself — but `g-g` is never assignable to anything, on purpose (see below), and no other letter was free, so it stays chord-less too. "Home" was "Panoramica" until 2026-08-11 — renamed so `g-h` reads naturally; the *other* "Panoramica" (the lone item in the Statistiche section, `/statistics`) is a different page and keeps its original name, now on `g-s`.
 
 Calendario and Finanze were pure stubs with no route at all until 2026-08-11, when minimal placeholder pages (`app/pages/calendar/index.vue`, `app/pages/finance/index.vue` — just a navbar title and an "in development" notice, matching `common.pageInDevelopment`) were added specifically so `g-c`/`g-f` had somewhere to go.
 
-Several of these are deliberately not the item's own first letter, because the obvious letter was already taken by a more established chord: Giocatori/Transazioni collide with Generali/Tornei ("g"/"t" already spoken for), so they use their second-most-recognizable letter instead ("gIocatori", "traNsazioni").
+Several of these are deliberately not the item's own first letter, because the obvious letter was already taken by a more established chord: Giocatori/Transazioni collide with Generali/Tornei ("g"/"t" already spoken for), so they use their second-most-recognizable letter instead ("gIocatori", "traNsazioni"). Cestino (`g-x`, 2026-08-23) has no letter-based mnemonic at all — "c" was already Calendario's and no other letter in the word was free either, so "x" was picked arbitrarily (a common "remove/close" association in other apps, close enough to stand in for a mnemonic).
 
 **`g-g` is permanently reserved as unassignable.** OS key-repeat sends multiple `keydown g` events while the key is held; `defineShortcuts` reads the last two keystrokes as a chord, so holding "g" a beat too long reads as the chord "g-g" by itself — no second key press needed. Any destination mapped there would fire just from holding the prefix, which defeats the whole point of a chord as an accidental-trigger safety margin. Don't reuse it later, even if a letter shortage makes it tempting.
 
