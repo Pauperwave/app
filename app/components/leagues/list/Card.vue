@@ -54,6 +54,29 @@ function progress(current: League) {
   return Math.round((current.completedTournamentCount / current.tournamentCount) * 100)
 }
 
+function shortDate(isoString: string) {
+  const date = new Date(isoString)
+  return date.toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }).replace('.', '')
+}
+
+// User request, 2026-08-22: the card should show both ends of the league's
+// span, not just the start (previously only discoverable via the cover
+// chip's hover tooltip — see LeaguesListCover.vue). Falls back to the
+// league's own startDate with no end half when it has no tournaments yet,
+// same "Dal X al Y" phrasing already used by LeaguesSinglePresentationCard.vue,
+// just compacted to day+month (no year) to fit a grid card.
+const dateRangeLabel = computed(() => {
+  if (!league) return ''
+  const range = league.tournamentDateRange
+  if (!range || range.start === range.end) {
+    const singleDate = range?.start ?? league.startDate
+    return `${t('league.detail.dateRange.from')} ${shortDate(singleDate)}`
+  }
+  return t('league.detail.dateRange.tooltip', {
+    start: shortDate(range.start), end: shortDate(range.end)
+  })
+})
+
 // Capped at 2 badges + a "+N" overflow one (ADR, docs/PROGRESS.md,
 // 2026-08-22) — a league can span several formats over its lifetime, and
 // this row already shares space with the ruleset badge, unlike tournaments'
@@ -106,6 +129,12 @@ const extraFormatCount = computed(() =>
         />
         <USkeleton v-else class="size-6 shrink-0" />
       </div>
+
+      <p v-if="!loading && league" class="text-sm text-muted truncate mt-0.5">
+        {{ dateRangeLabel }}
+      </p>
+      <!-- Width matches "Dal 01 ago al 22 mag". -->
+      <USkeleton v-else class="h-4 w-32 mt-0.5" />
 
       <div class="flex items-center gap-2 mt-1.5 flex-nowrap overflow-hidden">
         <template v-if="!loading && league">
