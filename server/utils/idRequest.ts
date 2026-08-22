@@ -27,6 +27,14 @@ export async function parseIdRequest(event: H3Event) {
   return { user, id, supabase }
 }
 
+// Every table that supports soft delete today — shared by softDeleteById and
+// restoreById below, and by server/api/trash/restore.post.ts's whitelist
+// check (app/types/index.d.ts's TrashEntity is the client-side mirror of
+// this same set, mapped 1:1 in app/utils/trash/trashEntities.ts).
+export type SoftDeletableTable
+  = | 'mtg_formats' | 'tournaments' | 'leagues' | 'events'
+    | 'pauperwave_payments' | 'pauperwave_wanted_cards'
+
 // Shared body for /[id]/delete.post.ts endpoints that soft-delete (2026-08-16
 // fallow:dupes flagged mtg-formats/tournaments/wanted-cards' delete handlers
 // as identical once parseIdRequest already covered the prologue — every one
@@ -34,14 +42,32 @@ export async function parseIdRequest(event: H3Event) {
 // note in each domain's own useQuery.ts.
 export async function softDeleteById(
   supabase: SupabaseClient<Database>,
-  table:
-    | 'mtg_formats' | 'tournaments' | 'leagues' | 'events'
-    | 'pauperwave_payments' | 'pauperwave_wanted_cards',
+  table: SoftDeletableTable,
   id: number
 ) {
   const { error } = await supabase
     .from(table)
     .update({ deleted_at: new Date().toISOString() })
+    .eq('id', id)
+
+  if (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message
+    })
+  }
+}
+
+// Mirror of softDeleteById (clears deleted_at instead of setting it) — the
+// Trash page's restore action, server/api/trash/restore.post.ts.
+export async function restoreById(
+  supabase: SupabaseClient<Database>,
+  table: SoftDeletableTable,
+  id: number
+) {
+  const { error } = await supabase
+    .from(table)
+    .update({ deleted_at: null })
     .eq('id', id)
 
   if (error) {

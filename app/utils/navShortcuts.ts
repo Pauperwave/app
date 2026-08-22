@@ -32,5 +32,8 @@ export const NAV_SHORTCUTS: Record<string, string> = {
   '/statistics': 'g-s',
   '/settings/members': 'g-m',
   '/settings/permissions': 'g-p',
-  '/settings/domains': 'g-d'
+  '/settings/domains': 'g-d',
+  // "c" (Cestino's own first letter) is already Calendario's — "x" picked
+  // instead, no obvious second letter fit either (see shortcuts.md).
+  '/trash': 'g-x'
 }

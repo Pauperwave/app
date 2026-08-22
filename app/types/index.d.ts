@@ -461,3 +461,20 @@ export interface FormatStandingRow {
   total: number
   resultsByEvent: Record<string, FormatStandingResult>
 }
+
+// --- Trash --------------------------------------------------------------
+// The domains that support soft delete (deleted_at) today — mirrors
+// server/utils/idRequest.ts's SoftDeletableTable union, one entry per table
+// name mapped in app/utils/trash/trashEntities.ts.
+export type TrashEntity = 'tournament' | 'league' | 'event' | 'transaction' | 'wantedCard' | 'mtgFormat'
+
+// One row across any soft-deleted table, merged into a single shape by
+// useTrashQuery.ts — same "combine several reads into one derived list"
+// convention as Event's tournamentCount join.
+export interface TrashItem {
+  entity: TrashEntity
+  id: number
+  uuid: string
+  name: string
+  deletedAt: string
+}

@@ -253,6 +253,14 @@ export function useMainNavGroups(open: Ref<boolean>) {
     onSelect: () => {
       open.value = false
     }
+  }, {
+    label: t('trash.breadcrumb'),
+    icon: ICONS.delete,
+    to: '/trash',
+    permission: 'view-trash',
+    onSelect: () => {
+      open.value = false
+    }
   }]]
 
   // A group whose every non-label item got filtered out (e.g. the whole

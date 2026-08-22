@@ -40,6 +40,11 @@ export type Permission
     | 'manage-locations'
     | 'manage-rulesets'
     | 'access-settings'
+    // Whole /trash page (2026-08-22): viewing soft-deleted rows and restoring
+    // them, both admin-only — see docs/architecture/permissions.md's "Note"
+    // section on the soft-delete-vs-purge open question this resolves for
+    // restore specifically (soft-deleting itself stays organizer+, unchanged).
+    | 'view-trash'
 
 export const PERMISSION_LEVEL = {
   'register-tournament': 'player',
@@ -64,7 +69,8 @@ export const PERMISSION_LEVEL = {
   // down from organizer): actually assigning a role is still enforced
   // super_admin-only at the assign_role RPC itself regardless of this —
   // this only gates whether the page/nav item is reachable at all.
-  'access-settings': 'admin'
+  'access-settings': 'admin',
+  'view-trash': 'admin'
 } as const satisfies Record<Permission, AppRole>
 
 export function can(role: AppRole | undefined, permission: Permission): boolean {
