@@ -93,7 +93,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         v-if="associate"
         :schema="schema"
         :state="state"
-        class="space-y-4"
+        class="space-y-2"
         @submit="onSubmit"
       >
         <!-- has_read_statute/consent_data locked here, unlike AddModal: they are the
