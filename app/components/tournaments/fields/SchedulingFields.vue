@@ -30,7 +30,7 @@ function updateTime(key: 'startTime' | 'endTime', value: TimeValue | null | unde
 
 <template>
   <!-- eslint-disable vue/no-mutating-props -- see the top-of-file comment -->
-  <div class="flex gap-4">
+  <div class="flex gap-2">
     <StartDatePickerField
       v-model:start-date="startDate"
       class="flex-1"

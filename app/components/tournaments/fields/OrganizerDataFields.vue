@@ -22,7 +22,7 @@ const { state, organizerOptions, locationOptions } = defineProps<{
 
 <template>
   <!-- eslint-disable vue/no-mutating-props -- see the top-of-file comment -->
-  <div class="grid grid-cols-2 gap-4">
+  <div class="grid grid-cols-2 gap-2">
     <UFormField :label="$t('tournament.addModal.fields.organizer')" name="organizerUuid">
       <USelectMenu
         v-model="state.organizerUuid"
