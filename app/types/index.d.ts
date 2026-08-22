@@ -286,6 +286,19 @@ export interface League {
   imageCardArtist: string | null
   tournamentCount: number
   completedTournamentCount: number
+  // Derived from the same lightweight tournaments read as
+  // tournamentCount/completedTournamentCount above (ADR, docs/PROGRESS.md,
+  // 2026-08-22) — distinct format names among this league's tournaments
+  // (any status; a cancelled tournament's format is still informative),
+  // sorted alphabetically. Empty when the league has none yet.
+  tournamentFormats: string[]
+  // Earliest/latest tournament starts_at in this league — null when it has
+  // no tournaments yet (falls back to `startDate` above for display in that
+  // case). Same "tournaments are the source of truth for a league's real
+  // date span" reasoning already used ad hoc by leagues/[leagueId]/index.vue
+  // and locations/[slug]/index.vue's own heatmaps, now available wherever a
+  // League is read instead of recomputed per page.
+  tournamentDateRange: { start: string, end: string } | null
 }
 
 // Backed by the real `events` table — mapped from its snake_case rows, with

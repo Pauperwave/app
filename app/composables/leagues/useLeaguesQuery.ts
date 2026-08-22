@@ -23,7 +23,7 @@ export function useLeaguesQuery() {
           .order('id', { ascending: true }),
         supabase
           .from('tournaments')
-          .select('league_uuid, status')
+          .select('league_uuid, status, starts_at, format:mtg_formats(name)')
           .not('league_uuid', 'is', null)
           .is('deleted_at', null)
       ])
@@ -39,11 +39,32 @@ export function useLeaguesQuery() {
       // every query, not a stored snapshot.
       const totals = new Map<string, number>()
       const completed = new Map<string, number>()
+      // Formats/date range include every tournament regardless of status
+      // (ADR, docs/PROGRESS.md, 2026-08-22) — unlike the progress counters
+      // above, a cancelled tournament's format/date is still real history.
+      const formats = new Map<string, Set<string>>()
+      const dateRanges = new Map<string, { start: string, end: string }>()
       for (const row of tournamentsResult.data) {
-        if (!row.league_uuid || row.status === 'cancelled') continue
-        totals.set(row.league_uuid, (totals.get(row.league_uuid) ?? 0) + 1)
-        if (row.status === 'completed') {
-          completed.set(row.league_uuid, (completed.get(row.league_uuid) ?? 0) + 1)
+        if (!row.league_uuid) continue
+        if (row.status !== 'cancelled') {
+          totals.set(row.league_uuid, (totals.get(row.league_uuid) ?? 0) + 1)
+          if (row.status === 'completed') {
+            completed.set(row.league_uuid, (completed.get(row.league_uuid) ?? 0) + 1)
+          }
+        }
+
+        if (row.format?.name) {
+          const leagueFormats = formats.get(row.league_uuid) ?? new Set<string>()
+          leagueFormats.add(row.format.name)
+          formats.set(row.league_uuid, leagueFormats)
+        }
+
+        if (row.starts_at) {
+          const range = dateRanges.get(row.league_uuid)
+          dateRanges.set(row.league_uuid, {
+            start: !range || row.starts_at < range.start ? row.starts_at : range.start,
+            end: !range || row.starts_at > range.end ? row.starts_at : range.end
+          })
         }
       }
 
@@ -62,7 +83,9 @@ export function useLeaguesQuery() {
         imageCardName: row.image_card_name,
         imageCardArtist: row.image_card_artist,
         tournamentCount: totals.get(row.uuid) ?? 0,
-        completedTournamentCount: completed.get(row.uuid) ?? 0
+        completedTournamentCount: completed.get(row.uuid) ?? 0,
+        tournamentFormats: [...(formats.get(row.uuid) ?? [])].sort(),
+        tournamentDateRange: dateRanges.get(row.uuid) ?? null
       }))
     }
   })

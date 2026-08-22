@@ -812,7 +812,8 @@
       "tournamentActivity": "Attività tornei",
       "dateRange": {
         "from": "Dal",
-        "to": "al"
+        "to": "al",
+        "tooltip": "Dal {start} al {end}"
       }
     },
     "tournamentsList": {
