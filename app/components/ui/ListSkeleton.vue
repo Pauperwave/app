@@ -34,8 +34,14 @@ const cols = computed(() => Array.from({ length: columns }))
     <UCard
       v-for="(_, index) in items"
       :key="index"
+      class="overflow-hidden"
       :ui="{ body: 'p-3 sm:p-3', footer: 'p-3 sm:p-3' }"
     >
+      <!-- overflow-hidden above matters here specifically: the cover's
+           negative margin (same -m-3/mb-3 bleed as the real Cover.vue) has
+           nothing to clip it to without it, so it bled outside the card's
+           own box and overlapped neighboring grid cells — only the first
+           couple of cards ever showed correctly (user feedback, 2026-08-22). -->
       <USkeleton class="w-full h-32 -m-3 mb-3 rounded-none" />
 
       <div class="flex items-start justify-between gap-2">
@@ -43,18 +49,23 @@ const cols = computed(() => Array.from({ length: columns }))
           <USkeleton class="h-4 w-3/4" />
           <USkeleton class="h-3 w-1/3" />
         </div>
-        <USkeleton class="size-6 rounded-md shrink-0" />
+        <USkeleton class="size-6 !rounded-md shrink-0" />
       </div>
 
+      <!-- !rounded-full (not plain rounded-full) below: USkeleton's own
+           theme already ships a `rounded-md` base class, and relying on
+           class-merge order to override it was inconsistent — badges
+           weren't rendering as full pills (same user feedback). The
+           `!` forces it regardless of merge/definition order. -->
       <div class="flex items-center gap-2 mt-1.5">
-        <USkeleton class="h-5 w-16 rounded-full" />
-        <USkeleton class="h-5 w-14 rounded-full" />
-        <USkeleton class="h-5 w-20 rounded-full" />
+        <USkeleton class="h-5 w-16 !rounded-full" />
+        <USkeleton class="h-5 w-14 !rounded-full" />
+        <USkeleton class="h-5 w-20 !rounded-full" />
       </div>
 
       <template #footer>
         <div class="flex items-center justify-between gap-2">
-          <USkeleton class="h-5 w-10 rounded-full" />
+          <USkeleton class="h-5 w-10 !rounded-full" />
           <USkeleton class="h-4 w-12" />
         </div>
       </template>
