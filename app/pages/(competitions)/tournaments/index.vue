@@ -226,9 +226,11 @@ const bulkConfirmTitle = computed(() => {
     </template>
 
     <template #body>
-      <div v-if="loading" class="flex items-center justify-center py-12">
-        <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
-      </div>
+      <ListSkeleton
+        v-if="loading"
+        :variant="viewMode === 'table' ? 'table' : 'grid'"
+        :columns="columns.length"
+      />
 
       <div v-else id="tour-tournaments-content">
         <UContextMenu v-if="viewMode === 'table'" :items="tableContextMenuItems">
