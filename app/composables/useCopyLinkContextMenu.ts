@@ -16,7 +16,15 @@ import type { DropdownMenuItem } from '@nuxt/ui'
 
 type LinkableItem = { id: number | string, uuid: string }
 
-export function useCopyLinkContextMenu<T extends LinkableItem>(routeBase: string) {
+// `toPath` (2026-08-23, locations/index.vue) overrides the default
+// `${routeBase}/${item.uuid}` link shape — locations is the one domain whose
+// detail route is slug-based (`/locations/[slug]`, see LocationsListCard.vue),
+// not uuid-based like tournaments/leagues/events. Optional and defaulted, so
+// every existing uuid-routed caller is unaffected.
+export function useCopyLinkContextMenu<T extends LinkableItem>(
+  routeBase: string,
+  toPath: (item: T) => string = item => `${routeBase}/${item.uuid}`
+) {
   const { t } = useI18n()
   const toast = useToast()
 
@@ -38,7 +46,7 @@ export function useCopyLinkContextMenu<T extends LinkableItem>(routeBase: string
       {
         label: t('common.copyLink'),
         icon: ICONS.link,
-        onSelect: () => copyText(`${window.location.origin}${routeBase}/${item.uuid}`, t('common.linkCopied'))
+        onSelect: () => copyText(`${window.location.origin}${toPath(item)}`, t('common.linkCopied'))
       },
       {
         label: t('common.copyId'),
