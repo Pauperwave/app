@@ -54,27 +54,33 @@ function progress(current: League) {
   return Math.round((current.completedTournamentCount / current.tournamentCount) * 100)
 }
 
-function longDate(isoString: string) {
+// `includeYear` only matters when the two ends of the range fall in
+// different years (e.g. "Lega Estiva 2026" runs 30 luglio 2026 → 20
+// gennaio 2027) — showing the year on the end date alone would otherwise
+// misleadingly suggest the start date is also 2027.
+function longDate(isoString: string, includeYear: boolean) {
   const date = new Date(isoString)
-  return date.toLocaleDateString('it-IT', { day: '2-digit', month: 'long' })
+  return date.toLocaleDateString('it-IT', includeYear
+    ? { day: '2-digit', month: 'long', year: 'numeric' }
+    : { day: '2-digit', month: 'long' })
 }
 
 // User request, 2026-08-22: the card should show both ends of the league's
 // span, not just the start (previously only discoverable via the cover
-// chip's hover tooltip — see LeaguesListCover.vue), with months spelled
-// out in full rather than abbreviated. Falls back to the league's own
+// chip's hover tooltip — see LeaguesListCover.vue), with months spelled out
+// in full and the year appended at the end. Falls back to the league's own
 // startDate with no end half when it has no tournaments yet, same
-// "Dal X al Y" phrasing already used by LeaguesSinglePresentationCard.vue,
-// just without the year to keep it to one line on a grid card.
+// "Dal X al Y" phrasing already used by LeaguesSinglePresentationCard.vue.
 const dateRangeLabel = computed(() => {
   if (!league) return ''
   const range = league.tournamentDateRange
   if (!range || range.start === range.end) {
     const singleDate = range?.start ?? league.startDate
-    return `${t('league.detail.dateRange.from')} ${longDate(singleDate)}`
+    return `${t('league.detail.dateRange.from')} ${longDate(singleDate, true)}`
   }
+  const sameYear = new Date(range.start).getFullYear() === new Date(range.end).getFullYear()
   return t('league.detail.dateRange.tooltip', {
-    start: longDate(range.start), end: longDate(range.end)
+    start: longDate(range.start, !sameYear), end: longDate(range.end, true)
   })
 })
 
@@ -134,8 +140,8 @@ const extraFormatCount = computed(() =>
       <p v-if="!loading && league" class="text-sm text-muted truncate mt-0.5">
         {{ dateRangeLabel }}
       </p>
-      <!-- Width matches "Dal 01 agosto al 22 maggio". -->
-      <USkeleton v-else class="h-4 w-40 mt-0.5" />
+      <!-- Width matches "Dal 01 agosto al 22 maggio 2026". -->
+      <USkeleton v-else class="h-4 w-48 mt-0.5" />
 
       <div class="flex items-center gap-2 mt-1.5 flex-nowrap overflow-hidden">
         <template v-if="!loading && league">
