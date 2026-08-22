@@ -266,7 +266,18 @@ Implementato in `useCittadinoFilters.ts` come catena di comparatori dopo il tota
 
 **Conseguenze:** dipendenza su un dettaglio implementativo interno di Supabase Auth (`auth.audit_log_entries`, la sua tassonomia `payload->>'action'`) non coperto da garanzie di API pubblica esplicite — da rivedere se una versione futura di Supabase (self-hosted) cambia questo schema. Il trigger è comunque il meccanismo più robusto tra quelli considerati: lato server, non dipende dal completamento di una richiesta client dopo il redirect. Nessun backfill automatico per gli utenti eliminati prima di questa migrazione.
 
+### ADR-023 — Tracking del lavoro: da BACKLOG.md/TODO.md a GitHub Issues + Project (2026-08-22)
+
+**Contesto:** `docs/BACKLOG.md` (item prioritizzati P1-P3) e `docs/TODO.md` (osservazioni non ancora committate) richiedevano una modifica manuale del markdown ogni volta che lo stato di un item cambiava — overhead non giustificato per un progetto solo. L'utente ha aperto un GitHub Project ("App", https://github.com/orgs/Pauperwave/projects/2) scoped su questo repo e ha chiesto di spostarci il tracking.
+
+**Decisione:** ogni item di `BACKLOG.md`/`TODO.md` è stato migrato a una issue GitHub (verificando prima, contro il codice/DB live, quali fossero ancora aperti — alcuni erano nel frattempo già risolti e non sono stati migrati, es. i bulk-actions di leagues, la pagina `/players` reale, i contenuti di `/tesseramento`). Entrambi i file sono ora stub di redirect. Convenzioni adottate per il Project:
+- **Status** (Backlog / Ready / In progress / In review / Done, nessun limite WIP su Backlog/Ready, limite 3 su In progress, limite 5 su In review): la pipeline dell'item, non la sua importanza.
+- **Priority** (P0-P3, single-select del Project, non un campo dello schema): P0 = rotto/sicurezza/alto impatto oggi, P1 = valore reale ma non urgente, P2 = tutto il resto (cosmetico, rimandato, speculativo), P3 = bloccato da una dipendenza esterna (non semplicemente "meno prioritario di P2" — es. l'upgrade di `@tanstack/vue-table` a v9, bloccato finché `@nuxt/ui` non lo supporta: nessuna priorità sposta la data in cui diventa lavorabile). Deliberatamente solo 4 livelli: la vera decisione operativa su un progetto solo è "ora / presto / eventualmente", più livelli avrebbero prodotto falsa precisione senza cambiare nulla nel comportamento (non si possono lavorare 5 priorità in parallelo con una sola persona).
+- **Label di tipo** (UX enhancement / UI enhancement / bug / database / feature / task / story — mutuamente esclusive, una per issue): sostituiscono le label generiche `enhancement`/`bug` usate inizialmente. `database` ha priorità su `bug` quando un problema è fondamentalmente di schema/RLS anche se osservabile come bug (es. la policy RLS troppo permissiva su `pauperwave_associates`, database non bug). `story` è riservata a iniziative grandi e non ancora scomposte in task (es. il ranking Campionato Cittadino, il sistema di notifiche); `feature` a capacità nuove ma già ben scoped.
+
+**Conseguenze:** `docs/PROGRESS.md` resta l'unico posto per le ADR — le issue GitHub non sono adatte a motivazioni di design a lungo termine (si chiudono e si perdono di vista). I numerosi commenti nel codice che puntano a `docs/BACKLOG.md P1`/`docs/TODO.md` per contesto restano validi grazie ai due file-stub, ma nuovi commenti dovrebbero puntare direttamente al numero della issue (es. `issue #3`) invece che al vecchio markdown.
+
 ## Vedi anche
 
 - `docs/architecture/database.md` — schema, RLS, migrazioni
-- `docs/BACKLOG.md` / `docs/TODO.md` — lavoro pianificato e osservazioni aperte
+- [GitHub Issues + il Project "App"](https://github.com/orgs/Pauperwave/projects/2) — lavoro pianificato e osservazioni aperte (`docs/BACKLOG.md`/`docs/TODO.md` sono ora solo stub di redirect, vedi ADR-023)
