@@ -1001,6 +1001,10 @@
       "dateRange": {
         "from": "Dal",
         "to": "al"
+      },
+      "schedule": {
+        "title": "Agenda del giorno",
+        "addAt": "Crea torneo alle {time}"
       }
     },
     "participants": {

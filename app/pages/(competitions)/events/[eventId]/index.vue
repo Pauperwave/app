@@ -1,15 +1,16 @@
 <!-- app\pages\(competitions)\events\[eventId]\index.vue -->
 <script lang="ts" setup>
-// First real (non-mock) detail page for events (2026-08-20) — same shape as
-// leagues/[leagueId]/index.vue and locations/[slug]/index.vue: an info card
-// + a status-colored "Attività tornei" heatmap (bidirectionally linked to
-// the tournament cards below, same as those two pages), read-only for now.
-// No edit button/modal here — unlike League/Location, events have no
-// EditModal.vue yet (only AddModal.vue exists), so this stays display-only
-// rather than inventing that CRUD surface unprompted. Uuid-based, not
-// slug-based — matches events/list/GridView.vue's own `/events/${uuid}` link,
-// not migrated to a slug like locations/leagues were.
-import type { Tournament } from '~/types'
+// First real (non-mock) detail page for events (2026-08-20). Uuid-based,
+// not slug-based — matches events/list/GridView.vue's own `/events/${uuid}`
+// link, not migrated to a slug like locations/leagues were.
+//
+// The left card's own status-colored heatmap (bidirectionally linked to the
+// tournament cards below, same as leagues/[leagueId]/index.vue's own) was
+// replaced 2026-08-22 by EventsSingleDaySchedule.vue's hour grid (user
+// request, "a custom calendar view of that specific day... like Google
+// Calendar I can click and create a tournament") — a day-schedule for one
+// specific day has no use for a multi-month heatmap's own hover-linking, so
+// that machinery was removed along with it rather than kept dead.
 
 const { t } = useI18n()
 const route = useRoute()
@@ -31,44 +32,22 @@ const {
 const tournaments = computed(() => (tournamentsData.value ?? [])
   .filter(tournament => tournament.eventUuid === eventUuid.value))
 
-const tournamentDates = computed(() => tournaments.value.map(tournament => tournament.startDate))
-
-// Same reasoning as leagues/[leagueId]/index.vue's own heatmap (user
-// feedback, 2026-08-20): count-based intensity doesn't mean anything for
-// tournaments — status does.
-const tournamentVariantByDate = computed(() => {
-  const entries = tournaments.value.map(tournament => [
-    toLocalDateKey(new Date(tournament.startDate)),
-    { class: tournamentStatusBgClass(tournament.status), labelKey: `tournament.status.${tournament.status}` }
-  ] as const)
-  return Object.fromEntries(entries)
-})
-
-const tournamentLegendItems = TOURNAMENT_STATUSES.map(status => ({
-  class: tournamentStatusBgClass(status),
-  labelKey: `tournament.status.${status}`
-}))
-
-// Hovering/focusing a heatmap day highlights that day's tournament card
-// below, and vice versa — same bidirectional linking as leagues/locations'
-// own heatmaps.
-const hoveredTournamentDate = ref<string | null>(null)
-const highlightedTournamentId = computed(() => tournaments.value.find(tournament =>
-  toLocalDateKey(new Date(tournament.startDate)) === hoveredTournamentDate.value)?.id ?? null)
-
-const hoveredCardTournament = shallowRef<Tournament | null>(null)
-function handleCardHoverChange(tournament: Tournament | null) {
-  hoveredCardTournament.value = tournament
-}
-const highlightedHeatmapDate = computed(() => hoveredCardTournament.value
-  ? toLocalDateKey(new Date(hoveredCardTournament.value.startDate))
-  : null)
-
 const loading = computed(() => eventLoading.value || tournamentsLoading.value)
 
 const { rowContextMenuItems } = useCopyLinkContextMenu('/tournaments')
 const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowActions()
 const selection = useSelection<number>()
+
+// DaySchedule.vue's own click-to-create (user request, 2026-08-22, "like
+// Google Calendar") — one AddModal instance reused across every slot click,
+// re-seeded each time via its initialTime prop (see that component's own
+// watch(open, ...)).
+const addModalOpen = ref(false)
+const addModalInitialTime = ref('20:00')
+function openAddModalAt(time: string) {
+  addModalInitialTime.value = time
+  addModalOpen.value = true
+}
 </script>
 
 <template>
@@ -151,21 +130,17 @@ const selection = useSelection<number>()
             </div>
           </UCard>
 
-          <UCard v-if="tournamentDates.length" :ui="{ header: 'font-semibold' }">
+          <UCard :ui="{ header: 'font-semibold' }">
             <template #header>
-              {{ t('event.detail.tournamentActivity') }}
+              {{ t('event.detail.schedule.title') }}
             </template>
 
-            <div class="flex justify-center">
-              <CalendarHeatmap
-                v-model:hovered-date="hoveredTournamentDate"
-                :dates="tournamentDates"
-                span-dates
-                :variant-by-date="tournamentVariantByDate"
-                :legend-items="tournamentLegendItems"
-                :highlighted-date="highlightedHeatmapDate"
-              />
-            </div>
+            <EventsSingleDaySchedule
+              :date="event.startDate"
+              :tournaments="tournaments"
+              @create-tournament="openAddModalAt"
+              @open-tournament="openEditModal"
+            />
           </UCard>
         </div>
 
@@ -174,8 +149,6 @@ const selection = useSelection<number>()
           :context-menu-items="rowContextMenuItems"
           :on-edit="openEditModal"
           :selection="selection"
-          :highlighted-tournament-id="highlightedTournamentId"
-          :on-hover-change="handleCardHoverChange"
         />
       </div>
 
@@ -186,4 +159,12 @@ const selection = useSelection<number>()
   </UDashboardPanel>
 
   <TournamentsListEditModal v-model="editModalOpen" :tournament="editingTournament" />
+  <TournamentsListAddModal
+    v-if="event"
+    v-model="addModalOpen"
+    hide-trigger
+    :initial-date="event.startDate.substring(0, 10)"
+    :initial-time="addModalInitialTime"
+    :initial-event-uuid="event.uuid"
+  />
 </template>
