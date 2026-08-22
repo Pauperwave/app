@@ -113,6 +113,17 @@ const weeks = computed<HeatmapDay[][]>(() => {
     start = sub(end, { months })
   }
 
+  // Normalized to local midnight — `start`/`end` above keep whatever exact
+  // time-of-day their source ISO string had (e.g. a tournament's starts_at).
+  // The loop below only cares about calendar days, so comparing full
+  // timestamps was an off-by-one waiting to happen: if the *last* day's
+  // source time was earlier in the day than the *first* day's (which
+  // `cursor` inherits via setDate(), see gridStart below), `cursor` on the
+  // final iteration ended up later than `end` and got excluded. Confirmed
+  // 2026-08-22, issue #42.
+  start.setHours(0, 0, 0, 0)
+  end.setHours(0, 0, 0, 0)
+
   // Grid columns are full weeks (Monday-first) — back up `start` to the
   // most recent Monday on/before it so the first column isn't partial.
   const mondayOffset = (start.getDay() + 6) % 7
