@@ -7,10 +7,15 @@
   `:loading` spinner (QueryRefreshControl.vue, kept as-is per user decision)
   — this is about the content area, not the button.
 
-  Rolled out to /tournaments first as the proof of the pattern; other
-  Pinia Colada-backed list pages (associates, leagues, events, locations,
-  transactions, wanted-cards, players) can adopt it the same way once this
-  shape is confirmed to fit.
+  Rolled out to /tournaments first as the proof of the pattern. The grid
+  variant's card shape (cover + title + 3 badges + footer) is deliberately
+  hardcoded to TournamentsListCard.vue's own layout, not made generic/
+  configurable yet — same "don't build for a hypothetical second consumer"
+  call as issue #21 (user decision, 2026-08-22). A domain whose real card
+  layout differs meaningfully (e.g. LeaguesListCard.vue's progress-bar
+  footer instead of price+players) would currently get a mismatched-height
+  skeleton — worth a `cardHeight`/slot-based prop *when* that domain
+  actually adopts this, not speculatively now.
 -->
 <script setup lang="ts">
 const { variant, count = 6, columns = 5 } = defineProps<{
