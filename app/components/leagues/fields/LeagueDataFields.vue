@@ -62,25 +62,25 @@ const imageCardArtist = defineModel<string | undefined>('imageCardArtist')
       class="w-full"
     />
 
-    <!-- eslint-disable-next-line -->
-    <UFormField :label="$t('league.addModal.fields.name')" name="name" required>
-      <UInput
-        v-model="state.name"
+    <UFormField :label="$t('league.addModal.fields.ruleset')" name="rulesetUuid">
+      <USelectMenu
+        v-model="state.rulesetUuid"
         class="w-full"
-        :placeholder="$t('league.addModal.fields.namePlaceholder')"
-        :icon="ICONS.standings"
+        :items="rulesetOptions"
+        value-key="value"
+        :placeholder="$t('league.addModal.fields.selectRuleset')"
+        :icon="ICONS.bookOpen"
       />
     </UFormField>
   </div>
 
-  <UFormField :label="$t('league.addModal.fields.ruleset')" name="rulesetUuid">
-    <USelectMenu
-      v-model="state.rulesetUuid"
+  <!-- eslint-disable-next-line -->
+  <UFormField :label="$t('league.addModal.fields.name')" name="name" required>
+    <UInput
+      v-model="state.name"
       class="w-full"
-      :items="rulesetOptions"
-      value-key="value"
-      :placeholder="$t('league.addModal.fields.selectRuleset')"
-      :icon="ICONS.bookOpen"
+      :placeholder="$t('league.addModal.fields.namePlaceholder')"
+      :icon="ICONS.standings"
     />
   </UFormField>
 </template>
