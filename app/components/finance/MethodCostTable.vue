@@ -69,7 +69,7 @@ const columns: TableColumn<FinanceMethodCostRow>[] = [
     // to flag red — only a real fee gets the error color.
     cell: ({ row }) => row.original.fee
       ? h('span', { class: 'text-error' }, `-${amountFormatter.format(row.original.fee)}`)
-      : h('span', { class: 'text-muted' }, amountFormatter.format(0)),
+      : h('span', { class: 'text-dimmed' }, amountFormatter.format(0)),
     footer: () => h('span', { class: 'font-mono font-semibold text-error' }, `-${amountFormatter.format(totalFee.value)}`)
   },
   {
