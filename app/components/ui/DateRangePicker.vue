@@ -4,31 +4,17 @@ import {
   DateFormatter, getLocalTimeZone, CalendarDate, today
 } from '@internationalized/date'
 import type { DateValue } from '@internationalized/date'
-import type { Range, StatusColor } from '~/types'
+import type { CalendarHighlightedDate, Range } from '~/types'
 
 const df = new DateFormatter('it-IT', {
   dateStyle: 'long'
 })
 
-// One entry per date to dot with a UChip (issue #37) — `color` is the
-// domain's own status color (e.g. tournamentStatusColor()), not a flat
-// constant, so the dot itself hints at the day's status rather than just
-// "something's here" (user request, 2026-08-23: top-right + status color,
-// not the docs example's bottom-right/single-color chip). `label` is the
-// caller's own pre-formatted string (e.g. "Draft \"Lo Hobbit\" —
-// Registrazioni aperte") shown in a UTooltip on hover — kept as a plain
-// string rather than structured fields so this component stays generic
-// across domains instead of knowing about Tournament/Event/League shapes.
-interface HighlightedDate {
-  date: Date
-  color: StatusColor
-  label: string
-}
-
 interface Props {
-  /** Omitted entirely (not just empty) by every caller that hasn't opted in
-   * yet, so this stays a no-op for them. */
-  highlightedDates?: HighlightedDate[]
+  /** Dots specific days with a status-colored UChip + hover tooltip (issue
+   * #37) — see CalendarHighlightedDate. Omitted entirely (not just empty)
+   * by every caller that hasn't opted in yet, so this stays a no-op. */
+  highlightedDates?: CalendarHighlightedDate[]
 }
 
 const { highlightedDates = [] } = defineProps<Props>()
@@ -134,7 +120,7 @@ const isRangeSelected = (range: RangeSpec) => {
 // more than one, even though the dot itself can only show one color (the
 // last entry's, same as before).
 const highlightedDatesByDay = computed(() => {
-  const map = new Map<string, HighlightedDate[]>()
+  const map = new Map<string, CalendarHighlightedDate[]>()
   for (const entry of highlightedDates) {
     const key = toCalendarDate(entry.date).toString()
     map.set(key, [...(map.get(key) ?? []), entry])
@@ -142,19 +128,19 @@ const highlightedDatesByDay = computed(() => {
   return map
 })
 
-function eventsFor(day: DateValue): HighlightedDate[] {
+function eventsFor(day: DateValue): CalendarHighlightedDate[] {
   return highlightedDatesByDay.value.get(day.toString()) ?? []
 }
 
-// UTooltip's own pointerenter-based auto-open never fires here: reka-ui's
-// Calendar cell (the #day slot's parent, a range-mode `div[role=button]`,
-// not a plain element) attaches its own pointer listeners for the
-// range-preview highlight, and the repeated re-render/attribute churn that
-// causes keeps resetting the Tooltip's delayDuration timer before it fires.
-// Controlling `open` ourselves off native @mouseenter/@mouseleave on the
-// UChip (not the cell) sidesteps that conflict entirely — bubbling doesn't
-// stop the child from receiving its own listener regardless of what the
-// parent cell does internally.
+// UTooltip's own pointerenter-based auto-open never fires here — not a
+// reka-ui range-mode pointer conflict as first suspected, but UChip itself:
+// it declares inheritAttrs:false and forwards $attrs into its default
+// slot's content (asChild Slot), which is bare text (day.day) here, not an
+// element, so a listener put directly on <UChip> silently attaches to
+// nothing (see node_modules/@nuxt/ui/dist/runtime/components/Chip.vue).
+// Controlling `open` ourselves off native @mouseenter/@mouseleave on a
+// wrapping `span.contents` (in the template below, not on UChip) sidesteps
+// that entirely.
 const hoveredDayKey = ref<string | null>(null)
 
 const selectRange = (range: RangeSpec) => {

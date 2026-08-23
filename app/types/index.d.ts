@@ -483,3 +483,17 @@ export interface TrashItem {
   // createdBy/updatedBy.
   deletedBy: string
 }
+
+// --- Calendar day-dot hints ----------------------------------------------
+// Shared by DateRangePicker.vue's `highlightedDates` (issue #37) and
+// StartDatePickerField.vue's own (issue #37 follow-up, 2026-08-23) — one
+// entry per date to dot with a status-colored UChip + hover tooltip.
+// `color` is the domain's own status color (e.g. tournamentStatusColor()),
+// `label` is the caller's own pre-formatted hover text — both components
+// stay generic across domains rather than knowing about
+// Tournament/Event/League shapes themselves.
+export interface CalendarHighlightedDate {
+  date: Date
+  color: StatusColor
+  label: string
+}
