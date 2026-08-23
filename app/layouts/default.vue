@@ -306,48 +306,55 @@ const groups = computed(() => [{
                     {{ key }}
                   </UKbd>
                 </template>
-                <!-- "Something needs action" count — pending tesseramento
-                     requests waiting on /associates/requests. -->
-                <UBadge
-                  v-if="item.to === '/associates/requests' && pendingAssociatesCount > 0"
-                  :label="pendingAssociatesCount"
-                  color="warning"
-                  variant="subtle"
-                  size="sm"
-                />
-                <!-- Plain roster size, no color — just a count. -->
-                <UBadge
-                  v-if="item.to === '/associates'"
-                  :label="associatesCount"
-                  color="neutral"
-                  variant="subtle"
-                  size="sm"
-                />
-                <!-- "Needs action" count — approved associates whose membership
-                     is lapsing/lapsed and due for a renewal follow-up. -->
-                <UBadge
-                  v-if="item.to === '/associates' && associatesToRenewCount > 0"
-                  :label="associatesToRenewCount"
-                  color="warning"
-                  variant="subtle"
-                  size="sm"
-                />
-                <!-- Plain open wanted-cards count, no color — just a count. -->
-                <UBadge
-                  v-if="item.to === '/wanted-cards' && wantedCardsSearchingCount > 0"
-                  :label="wantedCardsSearchingCount"
-                  color="neutral"
-                  variant="subtle"
-                  size="sm"
-                />
-                <!-- Plain player count, no color — just a count. -->
-                <UBadge
-                  v-if="item.to === '/players'"
-                  :label="playersCount"
-                  color="neutral"
-                  variant="subtle"
-                  size="sm"
-                />
+                <!-- Badges hidden while the "g" hint is showing (user
+                     request, 2026-08-23) — both together crowded the same
+                     trailing area, and the kbd hint is what "g" was pressed
+                     to see. -->
+                <template v-else>
+                  <!-- "Something needs action" count — pending tesseramento
+                       requests waiting on /associates/requests. -->
+                  <UBadge
+                    v-if="item.to === '/associates/requests' && pendingAssociatesCount > 0"
+                    :label="pendingAssociatesCount"
+                    color="warning"
+                    variant="subtle"
+                    size="sm"
+                  />
+                  <!-- Plain roster size, no color — just a count. -->
+                  <UBadge
+                    v-if="item.to === '/associates'"
+                    :label="associatesCount"
+                    color="neutral"
+                    variant="subtle"
+                    size="sm"
+                  />
+                  <!-- "Needs action" count — approved associates whose
+                       membership is lapsing/lapsed and due for a renewal
+                       follow-up. -->
+                  <UBadge
+                    v-if="item.to === '/associates' && associatesToRenewCount > 0"
+                    :label="associatesToRenewCount"
+                    color="warning"
+                    variant="subtle"
+                    size="sm"
+                  />
+                  <!-- Plain open wanted-cards count, no color — just a count. -->
+                  <UBadge
+                    v-if="item.to === '/wanted-cards' && wantedCardsSearchingCount > 0"
+                    :label="wantedCardsSearchingCount"
+                    color="neutral"
+                    variant="subtle"
+                    size="sm"
+                  />
+                  <!-- Plain player count, no color — just a count. -->
+                  <UBadge
+                    v-if="item.to === '/players'"
+                    :label="playersCount"
+                    color="neutral"
+                    variant="subtle"
+                    size="sm"
+                  />
+                </template>
               </div>
             </template>
           </UNavigationMenu>
