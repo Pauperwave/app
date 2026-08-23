@@ -51,7 +51,7 @@ const emit = defineEmits<{ openManageFormats: [] }>()
       :items="formatTabs"
       value-key="value"
       :placeholder="$t('tournament.filters.formatPlaceholder')"
-      :icon="ICONS.layers"
+      :icon="ICONS.gameplay"
       class="w-40"
     />
 

@@ -56,7 +56,7 @@ const imageCardArtist = defineModel<string | undefined>('imageCardArtist')
         :items="formatOptions"
         value-key="value"
         :placeholder="$t('tournament.addModal.fields.selectFormat')"
-        :icon="ICONS.layers"
+        :icon="ICONS.gameplay"
       />
     </UFormField>
 
