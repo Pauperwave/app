@@ -1,6 +1,100 @@
 # Changelog
 
 
+## v0.1.4
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.1.3...v0.1.4)
+
+### Enhancements
+
+- **tournaments:** ✨ replace the loading spinner with a content skeleton ([bdb7c42](https://github.com/Pauperwave/app/commit/bdb7c42))
+- **tournaments:** ✨ size the skeleton to the real known card count ([f31d77f](https://github.com/Pauperwave/app/commit/f31d77f))
+- **tournaments:** ✨ show per-card skeletons on detail-page grids ([d377c12](https://github.com/Pauperwave/app/commit/d377c12))
+- **leagues:** ✨ per-card grid skeleton + inline ruleset picker ([0b95a6b](https://github.com/Pauperwave/app/commit/0b95a6b))
+- **locations:** ✨ per-card grid skeleton for the locations grid ([e66b73e](https://github.com/Pauperwave/app/commit/e66b73e))
+- **leagues:** ✨ show contained tournaments' formats and date range (ADR-024) ([d4dd25f](https://github.com/Pauperwave/app/commit/d4dd25f))
+- **tournaments:** ✨ add league/event picker to the Add/Edit forms ([c75b923](https://github.com/Pauperwave/app/commit/c75b923))
+- **tournaments:** ✨ more ways to link tournaments to a league ([125ae42](https://github.com/Pauperwave/app/commit/125ae42))
+- **leagues:** ✨ show the full date range on the grid card ([c3215b2](https://github.com/Pauperwave/app/commit/c3215b2))
+- **tournaments:** ✨ always show each tournament's stage number within its league ([#52](https://github.com/Pauperwave/app/pull/52))
+- **events:** ✨ add update/status/delete endpoints, imageUrl support ([3471e0b](https://github.com/Pauperwave/app/commit/3471e0b))
+- **events:** ✨ expose organizerUuid/locationUuid/locationMapsUrl on Event ([0cdecbc](https://github.com/Pauperwave/app/commit/0cdecbc))
+- **events:** ✨ add update/status/delete mutations, bulk/row actions composables ([1c787c1](https://github.com/Pauperwave/app/commit/1c787c1))
+- **events:** ✨ split inline card into Card.vue/Cover.vue with loading skeleton ([#45](https://github.com/Pauperwave/app/pull/45))
+- **events:** ✨ add EditModal/BulkActionsBar, image picker, explicit start/end time ([746bd00](https://github.com/Pauperwave/app/commit/746bd00))
+- **events:** ✨ wire selection/bulk-actions/edit-modal into events/index.vue ([77cb822](https://github.com/Pauperwave/app/commit/77cb822))
+- **tournaments:** ✨ let AddModal.vue be pre-seeded and driven externally ([3f9151b](https://github.com/Pauperwave/app/commit/3f9151b))
+- **events:** ✨ Google Calendar-style day schedule with click-to-create ([223ec5b](https://github.com/Pauperwave/app/commit/223ec5b))
+- **trash:** ✨ add admin-only Trash page with cross-domain soft-delete restore ([86f1c73](https://github.com/Pauperwave/app/commit/86f1c73))
+- **locations:** ✨ add soft delete support ([0f37fa8](https://github.com/Pauperwave/app/commit/0f37fa8))
+- **trash:** ✨ add deleted_by audit trail to soft-deletable tables ([b717079](https://github.com/Pauperwave/app/commit/b717079))
+- **list-pages:** ✨ default DateRangePicker to next-year instead of all-time ([2701ca9](https://github.com/Pauperwave/app/commit/2701ca9))
+- **tournaments:** ✨ dot existing tournament dates in the scheduling picker ([e450dc2](https://github.com/Pauperwave/app/commit/e450dc2))
+- **nav:** ✨ turn Classifiche into a dropdown, move Regolamenti out ([#65](https://github.com/Pauperwave/app/pull/65))
+- **nav:** ✨ hide sidebar badges while the "g" shortcut hint is showing ([#66](https://github.com/Pauperwave/app/pull/66))
+- **rulesets:** ✨ add Draft and Sealed tabs to Regolamenti ([5952e80](https://github.com/Pauperwave/app/commit/5952e80))
+- **trash:** ✨ 60-day retention countdown, permanent purge, AssociateTag ([757f380](https://github.com/Pauperwave/app/commit/757f380))
+- **settings:** ✨ split profile into its own tab ([a821c5c](https://github.com/Pauperwave/app/commit/a821c5c))
+- **permissions:** ⬆️ admin gains every power except permanent deletion ([2ef7081](https://github.com/Pauperwave/app/commit/2ef7081))
+- **roles:** 🔒️ admin can assign roles but never touch super_admin ([fc7ca8e](https://github.com/Pauperwave/app/commit/fc7ca8e))
+- **events:** ✨ default new-event time/organizer/location ([7d018b1](https://github.com/Pauperwave/app/commit/7d018b1))
+- **payments:** ✨ add "Comped" method and "Token Purchase" (gettoni) type ([c9467c9](https://github.com/Pauperwave/app/commit/c9467c9))
+- **transactions:** ✨ bulk change payment type, calendar-year range presets ([5140bee](https://github.com/Pauperwave/app/commit/5140bee))
+- **nav:** ✨ add sidebar count badges for transactions/tournaments/leagues/events/locations ([2da0d69](https://github.com/Pauperwave/app/commit/2da0d69))
+- **finance:** ✨ add /finance dashboard ([28d1a0f](https://github.com/Pauperwave/app/commit/28d1a0f))
+
+### Fixes
+
+- **ui:** 🐛 CalendarHeatmap spanDates could drop the last day ([102d799](https://github.com/Pauperwave/app/commit/102d799))
+- **ui:** 🐛 make ListSkeleton's grid card mirror the real card's shape ([77e5869](https://github.com/Pauperwave/app/commit/77e5869))
+- **ui:** 🐛 ListSkeleton: clip the bleeding cover, force full-pill badges ([138ec42](https://github.com/Pauperwave/app/commit/138ec42))
+- **ui:** 🐛 ListSkeleton badges should be rounded-md, not pill-shaped ([da1760f](https://github.com/Pauperwave/app/commit/da1760f))
+- **ui:** 🐛 ListSkeleton cover: mirror Cover.vue's two-element bleed shape ([f0e12ac](https://github.com/Pauperwave/app/commit/f0e12ac))
+- **ui:** 🐛 ListSkeleton: fix three more height mismatches vs the real card ([8712905](https://github.com/Pauperwave/app/commit/8712905))
+- **ui:** 🐛 ListSkeleton: restore a small gap between title/subtitle lines ([353e753](https://github.com/Pauperwave/app/commit/353e753))
+- **locations:** 🐛 reserve social-links space + skeleton the detail header ([8febb99](https://github.com/Pauperwave/app/commit/8febb99))
+- **tables:** 🐛 use UTable's own loading bar on refresh, not a full skeleton swap ([1ff53ee](https://github.com/Pauperwave/app/commit/1ff53ee))
+- **grids:** 🐛 extend the isPending-vs-isLoading refresh fix to grid views ([3303a0d](https://github.com/Pauperwave/app/commit/3303a0d))
+- **tables:** 🐛 shift-click checkbox range ignored the active sort ([2396339](https://github.com/Pauperwave/app/commit/2396339))
+- **tournaments:** 🐛 exclude cancelled tournaments from stage numbering, show year in league date range ([fc71772](https://github.com/Pauperwave/app/commit/fc71772))
+- **locations:** 🐛 add missing right-click context menu ([6d529f3](https://github.com/Pauperwave/app/commit/6d529f3))
+- **calendar:** 🐛 fix HomeDateRangePicker event-dot tooltip and hover label ([f4b1d4c](https://github.com/Pauperwave/app/commit/f4b1d4c))
+- **i18n:** 🐛 set Nuxt UI's own locale to Italian ([4b91a3e](https://github.com/Pauperwave/app/commit/4b91a3e))
+- **settings:** 🐛 fix mismatched Importo/Metodo di pagamento picker widths ([ae74780](https://github.com/Pauperwave/app/commit/ae74780))
+- **nav:** 🐛 use ICONS.commander (shield-half) for Comandanti, not crown ([#44](https://github.com/Pauperwave/app/pull/44))
+- **icons:** 🐛 use ICONS.gameplay for format pickers, not layers ([#43](https://github.com/Pauperwave/app/pull/43))
+- **nav:** 🐛 drop g-h shortcut, move g-r to Richieste di tesseramento ([2605ad2](https://github.com/Pauperwave/app/commit/2605ad2))
+- **home:** 🐛 reorder guided tour steps to match new card layout ([7f7729e](https://github.com/Pauperwave/app/commit/7f7729e))
+- **icons:** 🐛 add gameplay icon to FormatBadge in calendar and tournaments table ([ad473bb](https://github.com/Pauperwave/app/commit/ad473bb))
+
+### Refactors
+
+- **ui:** ♻️ ListSkeleton: rely on UCard's own overflow-hidden and USkeleton defaults ([beb4b8e](https://github.com/Pauperwave/app/commit/beb4b8e))
+- **tournaments:** ♻️ merge grid skeleton into card components ([5ce61fb](https://github.com/Pauperwave/app/commit/5ce61fb))
+- **nav:** ♻️ remove dead devStatus metadata field ([4be6fd2](https://github.com/Pauperwave/app/commit/4be6fd2))
+- **home:** ♻️ drop redundant Home prefix from component filenames ([94f3385](https://github.com/Pauperwave/app/commit/94f3385))
+- **components:** ♻️ move DateRangePicker to ui/ ([#23](https://github.com/Pauperwave/app/pull/23))
+- **leagues:** ♻️ swap Nome and Regolamento field positions ([922f631](https://github.com/Pauperwave/app/commit/922f631))
+- **home:** ♻️ regroup staff cards, equal heights, top-aligned content ([c5b6684](https://github.com/Pauperwave/app/commit/c5b6684))
+
+### Documentation
+
+- **ui:** 📝 note ListSkeleton's card shape is deliberately tournament-specific ([6e779c6](https://github.com/Pauperwave/app/commit/6e779c6))
+
+### Chore
+
+- **db:** ♻️ regenerate Supabase types ([c66760c](https://github.com/Pauperwave/app/commit/c66760c))
+
+### Styles
+
+- **tournaments:** 💄 size skeleton bars to match real content lengths ([754ea21](https://github.com/Pauperwave/app/commit/754ea21))
+- **modals:** 💄 tighten and unify Add/Edit modal vertical spacing ([7530d92](https://github.com/Pauperwave/app/commit/7530d92))
+- **leagues:** 💄 spell out full month names in the card's date range line ([bc1e82f](https://github.com/Pauperwave/app/commit/bc1e82f))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.1.3
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.1.2...v0.1.3)
