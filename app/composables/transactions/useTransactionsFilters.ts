@@ -41,7 +41,8 @@ export function useTransactionsFilters(
     { label: t('transaction.tabs.associationFee'), value: 'Association Fee', count: typeCounts.value['Association Fee'] },
     { label: t('transaction.tabs.tournamentFee'), value: 'Tournament Fee', count: typeCounts.value['Tournament Fee'] },
     { label: t('transaction.tabs.eventFee'), value: 'Event Fee', count: typeCounts.value['Event Fee'] },
-    { label: t('transaction.tabs.donations'), value: 'Donation', count: typeCounts.value.Donation }
+    { label: t('transaction.tabs.donations'), value: 'Donation', count: typeCounts.value.Donation },
+    { label: t('transaction.tabs.tokenPurchase'), value: 'Token Purchase', count: typeCounts.value['Token Purchase'] }
   ])
 
   return { filteredTransactions, typeTabs }

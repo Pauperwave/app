@@ -75,6 +75,11 @@ export interface Transaction
   // are joined server-side, same convention as WantedCard.createdBy/updatedBy.
   createdBy: string
   updatedBy: string
+  // Joined from tournament_uuid/event_uuid (2026-08-23) so the "Evento" column
+  // can link to the tournament/event's own detail page — leagueUuid is what
+  // tournamentDetailUrl needs to build the right link (see its own comment).
+  tournament: { uuid: string, name: string, leagueUuid: string | null } | null
+  event: { uuid: string } | null
 }
 
 // players_full joins the players table (nickname, is_banned, user_id) with

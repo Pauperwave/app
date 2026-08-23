@@ -2,10 +2,12 @@
 
 // Mirrors pauperwave_payments' own CHECK constraints (ck_payment_method,
 // ck_payment_type) — not free text, the DB rejects anything else.
-export const PAYMENT_METHODS = ['Cash', 'PayPal', 'POS'] as const
+export const PAYMENT_METHODS = ['Cash', 'PayPal', 'POS', 'Comped'] as const
 export type PaymentMethod = typeof PAYMENT_METHODS[number]
 
-export const PAYMENT_TYPES = ['Association Fee', 'Donation', 'Event Fee', 'Tournament Fee'] as const
+export const PAYMENT_TYPES = [
+  'Association Fee', 'Donation', 'Event Fee', 'Tournament Fee', 'Token Purchase'
+] as const
 export type PaymentType = typeof PAYMENT_TYPES[number]
 
 // Shared by app/components/transactions/list/AddModal.vue and

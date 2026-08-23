@@ -1,13 +1,18 @@
 // app\composables\transactions\useTransactionsTableColumns.ts
-import { AssociateTag, UBadge, UIcon } from '#components'
+import {
+  AssociateTag, UBadge, UButton, UIcon, UTooltip
+} from '#components'
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { Transaction } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 import PaymentTypeBadge from '~/components/ui/PaymentTypeBadge.vue'
+import PaymentMethodBadge from '~/components/ui/PaymentMethodBadge.vue'
 import RowActionsMenu from '~/components/ui/RowActionsMenu.vue'
+import TournamentsStageLabel from '~/components/tournaments/StageLabel.vue'
 
 export const transactionsColumnHeaders = (t: (key: string) => string) => ({
+  id: t('transaction.columns.id'),
   payer: t('transaction.columns.payer'),
   payment_date: t('transaction.columns.paymentDate'),
   payment_type: t('transaction.columns.paymentType'),
@@ -15,6 +20,8 @@ export const transactionsColumnHeaders = (t: (key: string) => string) => ({
   payment_method: t('transaction.columns.paymentMethod'),
   received_by: t('transaction.columns.receivedBy'),
   event_name: t('transaction.columns.event'),
+  gettoni: t('transaction.columns.gettoni'),
+  receipt: t('transaction.columns.receipt'),
   notes: t('transaction.columns.notes'),
   createdBy: t('transaction.columns.createdBy'),
   createdAt: t('transaction.columns.createdAt'),
@@ -39,10 +46,24 @@ export function useTransactionsTableColumns(
 
   const amountFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
 
+  // Reuses the exact same league-relative stage numbering the /tournaments
+  // page itself shows (assignTournamentStageNumbers, computed once over the
+  // whole league) instead of re-deriving it here — Pinia Colada dedupes the
+  // fetch against the 'tournaments' key if that page is already open.
+  const { data: allTournaments } = useTournamentsQuery()
+  const tournamentsByUuid = computed(() =>
+    new Map((allTournaments.value ?? []).map(tournament => [tournament.uuid, tournament])))
+
   const selectColumn = useGroupedSelectColumn<Transaction>(selection)
 
   const columns: TableColumn<Transaction>[] = [
     selectColumn,
+    {
+      accessorKey: 'id',
+      header: ({ column }) => sortableHeader(columnHeaders.id, column),
+      meta: { class: { th: 'whitespace-nowrap text-right', td: 'whitespace-nowrap font-mono text-dimmed text-right' } },
+      cell: ({ row }) => row.getIsGrouped() ? null : row.original.id
+    },
     {
       id: 'payer',
       // Own accessorFn (not accessorKey) since the payer name isn't a single
@@ -86,22 +107,24 @@ export function useTransactionsTableColumns(
     {
       accessorKey: 'payment_type',
       header: ({ column }) => sortableHeader(columnHeaders.payment_type, column),
-      meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap' } },
+      meta: { class: { th: 'whitespace-nowrap text-center', td: 'whitespace-nowrap text-center' } },
       cell: ({ row }) =>
         row.getIsGrouped() ? null : h(PaymentTypeBadge, { type: row.original.payment_type })
     },
     {
       accessorKey: 'payment_amount',
       header: ({ column }) => sortableHeader(columnHeaders.payment_amount, column),
-      meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap font-mono' } },
+      meta: { class: { th: 'whitespace-nowrap text-right', td: 'whitespace-nowrap font-mono text-right' } },
       cell: ({ row }) =>
         row.getIsGrouped() ? null : amountFormatter.format(row.original.payment_amount)
     },
     {
       accessorKey: 'payment_method',
       header: columnHeaders.payment_method,
-      meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap' } },
-      cell: ({ row }) => row.getIsGrouped() ? null : row.original.payment_method
+      meta: { class: { th: 'whitespace-nowrap text-center', td: 'whitespace-nowrap text-center' } },
+      cell: ({ row }) => row.getIsGrouped()
+        ? null
+        : h(PaymentMethodBadge, { method: row.original.payment_method })
     },
     {
       accessorKey: 'received_by',
@@ -117,12 +140,94 @@ export function useTransactionsTableColumns(
       accessorKey: 'event_name',
       header: columnHeaders.event_name,
       meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap' } },
-      cell: ({ row }) => row.getIsGrouped() ? null : (row.original.event_name ?? '')
+      cell: ({ row }) => {
+        if (row.getIsGrouped()) return null
+        const eventName = row.original.event_name
+        // Not a real event name for these rows — see transactionGettoni.ts —
+        // shown in its own "Gettoni" column instead.
+        if (parseGettoniCount(eventName) !== null) return ''
+        if (!eventName) return ''
+
+        // Links to the tournament/event's own detail page when the payment
+        // resolved to one at import/creation time (tournament_uuid/event_uuid)
+        // — plain text otherwise (e.g. a guest payer row where FK matching
+        // found no confident match, see .scratch/import-transactions.mjs).
+        // Same UButton for both — a plain NuxtLink+icon for the event case
+        // read as a visually different affordance than the tournament one
+        // even though both do the same thing (user request, 2026-08-23).
+        const { tournament, event } = row.original
+        if (tournament) {
+          // Real tournament.name, not the historical import's event_name text
+          // (e.g. "PAUPER TAPPA 6" vs the tournament's actual "Pauper"), plus
+          // its league-relative stage number — the same "Nª tappa" label the
+          // /tournaments page itself shows (user request, 2026-08-22/23).
+          const stageNumber = tournamentsByUuid.value.get(tournament.uuid)?.stageNumber
+          return h(UButton, {
+            to: tournamentDetailUrl(tournament),
+            icon: PAYMENT_TYPE_BADGE_CONFIG['Tournament Fee'].icon,
+            size: 'xs',
+            color: 'neutral',
+            variant: 'subtle'
+          }, () => [
+            tournament.name,
+            stageNumber ? h(TournamentsStageLabel, { number: stageNumber, class: '!text-xs' }) : null
+          ])
+        }
+        if (event) {
+          return h(UButton, {
+            to: `/events/${event.uuid}`,
+            label: eventName,
+            icon: PAYMENT_TYPE_BADGE_CONFIG['Event Fee'].icon,
+            size: 'xs',
+            color: 'neutral',
+            variant: 'subtle'
+          })
+        }
+        return eventName
+      }
+    },
+    {
+      id: 'gettoni',
+      accessorFn: row => parseGettoniCount(row.event_name),
+      header: columnHeaders.gettoni,
+      meta: { class: { th: 'whitespace-nowrap text-center', td: 'whitespace-nowrap text-center' } },
+      cell: ({ row, getValue }) => {
+        if (row.getIsGrouped()) return null
+        const count = getValue<number | null>()
+        if (count === null) return null
+        return h(UBadge, { variant: 'subtle', color: 'warning', icon: ICONS.coins, label: String(count) })
+      }
+    },
+    {
+      id: 'receipt',
+      // Own accessorFn, not a raw DB column — parsed out of `notes` (see
+      // parseTransactionNotes.ts's own comment for why this data lives there
+      // instead of a dedicated column at the DB level).
+      accessorFn: row => parseTransactionNotes(row.notes).receiptRef,
+      header: columnHeaders.receipt,
+      meta: { class: { th: 'whitespace-nowrap text-center', td: 'whitespace-nowrap text-center' } },
+      cell: ({ row, getValue }) => {
+        if (row.getIsGrouped()) return null
+        const receiptRef = getValue<string | null>()
+        if (!receiptRef) return null
+        return h(UBadge, { variant: 'subtle', color: 'neutral', icon: ICONS.receipt, label: receiptRef })
+      }
     },
     {
       accessorKey: 'notes',
       header: columnHeaders.notes,
-      cell: ({ row }) => row.getIsGrouped() ? null : row.original.notes
+      cell: ({ row }) => {
+        if (row.getIsGrouped()) return null
+        const { hasUnknownEmail, cleanNotes } = parseTransactionNotes(row.original.notes)
+        if (!hasUnknownEmail) return cleanNotes
+        return h('div', { class: 'flex items-center gap-1.5' }, [
+          h(UTooltip, { text: t('transaction.columns.unknownEmailTooltip') }, () => h(UIcon, {
+            name: ICONS.incognito,
+            class: 'size-4 text-dimmed shrink-0'
+          })),
+          cleanNotes
+        ])
+      }
     },
     {
       accessorKey: 'createdBy',
