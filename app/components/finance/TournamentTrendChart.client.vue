@@ -14,7 +14,7 @@ prop entirely (confirmed live via devtools: all 5 <VisLine>s rendered the
 identical container-wide path, just stacked in different colors). Leaving
 the container's data unset lets each component fall through to its own
 `:data` below — <VisLine> gets its own per-format, date-sorted subset,
-<VisScatter>/<VisCrosshair> get the full sorted set.
+<VisScatter> gets the full sorted set.
 
 An earlier attempt fed all 5 lines the same shared full dataset with a
 per-format y accessor returning `undefined` for other formats' rows (relying
@@ -29,7 +29,8 @@ already-filtered array (only that format's rows, already contiguous)
 sidesteps the gap-optimizer entirely. -->
 <script setup lang="ts">
 import { eachMonthOfInterval, endOfYear, format as formatDate, startOfYear } from 'date-fns'
-import { VisXYContainer, VisLine, VisScatter, VisAxis, VisCrosshair, VisTooltip } from '@unovis/vue'
+import { VisXYContainer, VisLine, VisScatter, VisAxis, VisTooltip } from '@unovis/vue'
+import { Scatter } from '@unovis/ts'
 import type { FinanceTournamentSummaryRow } from '~/composables/finance/useFinanceSummary'
 
 const { rows, year } = defineProps<{
@@ -98,6 +99,18 @@ const template = (row: FinanceTournamentSummaryRow) => [
   amountFormatter.format(row.total)
 ].join('<br>')
 
+// VisCrosshair never picked up a valid position on this chart despite
+// explicit x/y accessors (confirmed live via devtools: hovering never
+// rendered a tooltip). VisTooltip's own `triggers` config, keyed by
+// Scatter's own point selector, fires directly off the point elements
+// instead — same fix as FormatChart.client.vue/TypeChart.client.vue, and
+// the pattern unovis' own docs recommend. Scatter binds each point's own
+// row object directly (augmented with an internal `_point` field, not
+// wrapped like StackedBar's bars), so no unwrapping is needed here.
+const triggers = {
+  [Scatter.selectors.point]: (row: FinanceTournamentSummaryRow) => template(row)
+}
+
 // Same reactivity gap as FormatChart.client.vue/TypeChart.client.vue's own
 // documented fix — a manual render nudge on mount avoids the scale getting
 // stuck at its default/stale domain.
@@ -148,15 +161,7 @@ onMounted(() => {
         />
         <VisAxis type="y" />
 
-        <VisCrosshair
-          :data="chartRows"
-          :x="x"
-          :y="y"
-          :color="color"
-          :template="template"
-        />
-
-        <VisTooltip />
+        <VisTooltip :triggers="triggers" />
       </VisXYContainer>
     </template>
   </StatisticsStatChartCard>

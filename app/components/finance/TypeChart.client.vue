@@ -3,8 +3,8 @@
 byFormat — a handful of payment-type categories compared by total incassato
 (user request, 2026-08-24, following the byFormat chart). -->
 <script setup lang="ts">
-import { VisXYContainer, VisStackedBar, VisAxis, VisCrosshair, VisTooltip } from '@unovis/vue'
-import { Orientation } from '@unovis/ts'
+import { VisXYContainer, VisStackedBar, VisAxis, VisTooltip } from '@unovis/vue'
+import { Orientation, StackedBar } from '@unovis/ts'
 import type { FinanceTypeSummaryRow } from '~/composables/finance/useFinanceSummary'
 
 const { rows } = defineProps<{
@@ -51,6 +51,19 @@ const xTicks = (value: number) => amountFormatter.format(value)
 const template = (d: FinanceTypeSummaryRow) =>
   `<strong>${t(PAYMENT_TYPE_LABEL_KEYS[d.type])}</strong><br>${amountFormatter.format(d.total)}`
 
+// VisCrosshair never picked up a valid position on this chart (it has no
+// x/y accessors of its own and unovis doesn't reliably inherit them from
+// sibling components on a horizontal bar) — confirmed live via devtools:
+// hovering never rendered a tooltip. VisTooltip's own `triggers` config,
+// keyed by StackedBar's own bar selector, fires directly off the bar
+// elements instead — the pattern unovis' own docs recommend for bar charts.
+// The trigger's datum is StackedBar's internal per-bar wrapper (see
+// components/stacked-bar/index.js's `bars` data join), not the row itself —
+// `.datum` unwraps it.
+const triggers = {
+  [StackedBar.selectors.bar]: (d: { datum: FinanceTypeSummaryRow }) => template(d.datum)
+}
+
 // Same reactivity gap as FormatChart.client.vue/MonthlyTrendChart.client.vue's
 // own documented fix: without a manual render nudge on mount, the
 // value-scale (xScale here, since orientation is horizontal) stayed stuck at
@@ -96,9 +109,7 @@ onMounted(() => {
         />
         <VisAxis type="x" :tick-format="xTicks" />
 
-        <VisCrosshair color="var(--ui-primary)" :template="template" />
-
-        <VisTooltip />
+        <VisTooltip :triggers="triggers" />
       </VisXYContainer>
     </template>
   </StatisticsStatChartCard>
