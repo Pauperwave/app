@@ -1901,6 +1901,7 @@
       "navbarTitle": "Impostazioni",
       "links": {
         "general": "Generali",
+        "profile": "Profilo",
         "members": "Membri",
         "permissions": "Permessi",
         "domains": "Domini",
