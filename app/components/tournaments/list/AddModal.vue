@@ -59,6 +59,17 @@ const state = reactive<TournamentFormState>(createInitialState())
 
 const { startDate, formattedStartDate, reset: resetStartDate } = useStartDateField(state)
 
+// Existing tournament dates as a collision/density hint on the scheduling
+// field's own calendar (issue #37 follow-up, 2026-08-23) — same query
+// tournaments/index.vue already reads, Pinia Colada caches it so this is
+// never a second network request.
+const { data: existingTournamentsData } = useTournamentsQuery()
+const highlightedDates = computed(() => (existingTournamentsData.value ?? []).map(existing => ({
+  date: new Date(existing.startDate),
+  color: tournamentStatusColor(existing.status),
+  label: `${existing.name}${tournamentStageText(existing)}`
+})))
+
 // Re-applies initialDate/initialTime/initialEventUuid every time the modal
 // opens, not just on mount — EventsSingleDaySchedule.vue reuses one modal
 // instance across many slot clicks, each with a different time, so a
@@ -216,6 +227,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             v-model:start-date="startDate"
             :state="state"
             :formatted-start-date="formattedStartDate"
+            :highlighted-dates="highlightedDates"
           />
 
           <p class="text-lg font-semibold text-primary">

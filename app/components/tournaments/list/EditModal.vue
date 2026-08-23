@@ -42,6 +42,18 @@ const state = reactive<TournamentFormState>({
 
 const { startDate, formattedStartDate } = useStartDateField(state, { defaultToToday: false })
 
+// Same collision/density hint as AddModal.vue (issue #37 follow-up,
+// 2026-08-23) — excludes the tournament being edited itself, since its own
+// current date isn't a collision, it's the row this form already represents.
+const { data: existingTournamentsData } = useTournamentsQuery()
+const highlightedDates = computed(() => (existingTournamentsData.value ?? [])
+  .filter(existing => existing.id !== tournament?.id)
+  .map(existing => ({
+    date: new Date(existing.startDate),
+    color: tournamentStatusColor(existing.status),
+    label: `${existing.name}${tournamentStageText(existing)}`
+  })))
+
 // Kept out of `state`/the valibot schema (no format validation needed) —
 // same convention as LocationsListEditModal.vue's `image`. imageCardName/
 // imageCardArtist ride along for the same reason — see CardArtPicker.vue.
@@ -175,6 +187,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             v-model:start-date="startDate"
             :state="state"
             :formatted-start-date="formattedStartDate"
+            :highlighted-dates="highlightedDates"
           />
 
           <p class="text-lg font-semibold text-primary">

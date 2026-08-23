@@ -12,10 +12,12 @@ import { parseTime } from '@internationalized/date'
 import type { DateValue } from '@internationalized/date'
 import type { TimeValue } from 'reka-ui'
 import type { TournamentFormState } from '~/composables/tournaments/useTournamentFormFields'
+import type { CalendarHighlightedDate } from '~/types'
 
-const { state, formattedStartDate } = defineProps<{
+const { state, formattedStartDate, highlightedDates = [] } = defineProps<{
   state: TournamentFormState
   formattedStartDate: string
+  highlightedDates?: CalendarHighlightedDate[]
 }>()
 
 const startDate = defineModel<DateValue>('startDate')
@@ -36,6 +38,7 @@ function updateTime(key: 'startTime' | 'endTime', value: TimeValue | null | unde
       class="flex-1"
       :label="$t('tournament.addModal.fields.startDate')"
       :formatted-start-date="formattedStartDate"
+      :highlighted-dates="highlightedDates"
     />
 
     <UFormField
