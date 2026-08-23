@@ -206,7 +206,7 @@ export function useMainNavGroups(open: Ref<boolean>) {
     type: 'label'
   }, {
     label: t('settings.layout.links.general'),
-    icon: ICONS.player,
+    icon: ICONS.settingsGear,
     to: '/settings',
     // app/pages/(settings)/settings.vue is a real parent layout route for
     // members/permissions/domains/notifications (Nuxt nested-routing
@@ -214,6 +214,14 @@ export function useMainNavGroups(open: Ref<boolean>) {
     // UNavigationMenu's default active-matching follows the route record
     // hierarchy, so this item stayed highlighted on every settings sub-page.
     exact: true,
+    permission: 'access-settings',
+    onSelect: () => {
+      open.value = false
+    }
+  }, {
+    label: t('settings.layout.links.profile'),
+    icon: ICONS.player,
+    to: '/settings/profile',
     permission: 'access-settings',
     onSelect: () => {
       open.value = false

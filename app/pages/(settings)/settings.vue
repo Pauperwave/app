@@ -27,9 +27,13 @@ const { can } = useUserRole()
 const links = computed<NavigationMenuItem[][]>(() => can('access-settings')
   ? [[{
     label: t('settings.layout.links.general'),
-    icon: ICONS.player,
+    icon: ICONS.settingsGear,
     to: '/settings',
     exact: true
+  }, {
+    label: t('settings.layout.links.profile'),
+    icon: ICONS.player,
+    to: '/settings/profile'
   }, {
     label: t('settings.layout.links.members'),
     icon: ICONS.players,
