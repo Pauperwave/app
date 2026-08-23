@@ -482,6 +482,10 @@ export interface TrashItem {
   // migration 20260823110000) — same convention as Transaction's own
   // createdBy/updatedBy.
   deletedBy: string
+  // The deleted_by column's raw uuid value (null under the same "unknown"
+  // condition as deletedBy) — feeds AssociateTag's associateUuid prop for
+  // the membership-status hover popover, deletedBy alone is just the label.
+  deletedByUuid: string | null
 }
 
 // --- Calendar day-dot hints ----------------------------------------------

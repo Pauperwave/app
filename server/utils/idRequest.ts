@@ -87,6 +87,32 @@ export async function restoreById(
   }
 }
 
+// Hard delete, restricted to rows already soft-deleted (guards against a
+// stray call purging a live row) — the "permanently delete" tier above
+// restoreById, server/api/trash/purge.post.ts. Also used by
+// scripts/purge-expired-trash.mjs's own 60-day retention job, which
+// duplicates this WHERE shape directly since Nitro auto-imports don't
+// resolve from a standalone Node script (same reason as every other
+// scripts/*.mjs, see refresh-wanted-cards-prices.mjs's file header).
+export async function purgeById(
+  supabase: SupabaseClient<Database>,
+  table: SoftDeletableTable,
+  id: number
+) {
+  const { error } = await supabase
+    .from(table)
+    .delete()
+    .eq('id', id)
+    .not('deleted_at', 'is', null)
+
+  if (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message
+    })
+  }
+}
+
 // Shared by /[id]/status.post.ts endpoints (fallow:dupes, 2026-08-17
 // flagged tournaments'/leagues' own status.post.ts as a byte-identical
 // 17-line clone) — same table-name-as-parameter shape as softDeleteById,
