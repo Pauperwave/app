@@ -94,12 +94,14 @@ const tour = useFinanceTour()
             :icon="ICONS.creditCard"
             :title="$t('finance.summary.totalFees')"
             :value="amountFormatter.format(totalFees)"
+            color="error"
           />
           <StatCard
             id="tour-finance-card-net"
             :icon="ICONS.badgeEuro"
             :title="$t('finance.summary.grandNet')"
             :value="amountFormatter.format(grandNet)"
+            color="success"
           />
           <StatCard
             id="tour-finance-card-count"
