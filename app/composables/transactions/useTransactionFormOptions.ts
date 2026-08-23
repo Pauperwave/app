@@ -49,13 +49,15 @@ export function useTransactionFormOptions() {
     { value: 'Tournament Fee' as const, label: t('transaction.addModal.paymentTypeOptions.entryFee'), icon: ICONS.standings },
     { value: 'Event Fee' as const, label: t('transaction.addModal.paymentTypeOptions.eventFee'), icon: ICONS.calendar },
     { value: 'Association Fee' as const, label: t('transaction.addModal.paymentTypeOptions.membership'), icon: ICONS.players },
-    { value: 'Donation' as const, label: t('transaction.addModal.paymentTypeOptions.donation'), icon: ICONS.heartHandshake }
+    { value: 'Donation' as const, label: t('transaction.addModal.paymentTypeOptions.donation'), icon: ICONS.heartHandshake },
+    { value: 'Token Purchase' as const, label: t('transaction.addModal.paymentTypeOptions.tokenPurchase'), icon: ICONS.coins }
   ])
 
   const paymentMethodOptions = computed(() => [
     { value: 'Cash' as const, label: t('transaction.addModal.paymentMethodOptions.cash'), icon: ICONS.wallet },
     { value: 'PayPal' as const, label: 'PayPal', icon: 'i-simple-icons-paypal' },
-    { value: 'POS' as const, label: 'POS', icon: ICONS.creditCard }
+    { value: 'POS' as const, label: 'POS', icon: ICONS.creditCard },
+    { value: 'Comped' as const, label: t('transaction.addModal.paymentMethodOptions.comped'), icon: ICONS.heartHandshake }
   ])
 
   // Same avatar convention as AssociateTag.vue (DiceBear, generated deterministically

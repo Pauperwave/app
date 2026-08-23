@@ -9,6 +9,7 @@ import type { Transaction } from '~/types'
 import AssociateTag from '~/components/ui/AssociateTag.vue'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 import PaymentTypeBadge from '~/components/ui/PaymentTypeBadge.vue'
+import PaymentMethodBadge from '~/components/ui/PaymentMethodBadge.vue'
 
 interface DetailField {
   icon: string
@@ -154,7 +155,7 @@ const associateTransactionsColumns: TableColumn<Transaction>[] = [
     accessorKey: 'payment_method',
     header: t('transaction.columns.paymentMethod'),
     meta: { class: { td: 'whitespace-nowrap' } },
-    cell: ({ row }) => row.original.payment_method
+    cell: ({ row }) => h(PaymentMethodBadge, { method: row.original.payment_method })
   },
   {
     accessorKey: 'received_by',

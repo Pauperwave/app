@@ -124,6 +124,8 @@ export const ICONS = {
   // creditCard (renewal date) and idCard (membership number), so the three
   // don't visually collide on the same badge row.
   receipt: 'i-lucide-receipt',
+  // Flags a payer's email as unknown/placeholder (historical import backfill)
+  incognito: 'i-lucide-hat-glasses',
 
   // Contact / identity fields
   mail: 'i-lucide-mail',
