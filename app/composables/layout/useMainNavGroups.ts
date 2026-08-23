@@ -62,10 +62,10 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('nav.community'),
     type: 'label'
   }, {
-    label: t('associate.breadcrumb'),
-    icon: ICONS.players,
-    to: '/associates',
-    permission: 'view-associates',
+    label: t('transaction.breadcrumb'),
+    icon: ICONS.wallet,
+    to: '/transactions',
+    permission: 'view-finance',
     onSelect: () => {
       open.value = false
     }
@@ -78,18 +78,18 @@ export function useMainNavGroups(open: Ref<boolean>) {
       open.value = false
     }
   }, {
-    label: t('player.breadcrumb'),
-    icon: ICONS.gameplay,
-    to: '/players',
-    permission: 'view-players',
+    label: t('associate.breadcrumb'),
+    icon: ICONS.players,
+    to: '/associates',
+    permission: 'view-associates',
     onSelect: () => {
       open.value = false
     }
   }, {
-    label: t('transaction.breadcrumb'),
-    icon: ICONS.wallet,
-    to: '/transactions',
-    permission: 'view-finance',
+    label: t('player.breadcrumb'),
+    icon: ICONS.gameplay,
+    to: '/players',
+    permission: 'view-players',
     onSelect: () => {
       open.value = false
     }
