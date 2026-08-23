@@ -1868,15 +1868,22 @@
     "info": {
       "title": "Non tutte le tabelle hanno un cestino",
       "enabled": "Tornei, leghe, eventi, transazioni, carte cercate, formati e luoghi hanno il soft delete abilitato: eliminarli non cancella la riga, la nasconde finché non viene ripristinata da qui.",
-      "disabled": "I soci non vengono mai eliminati: lo stato di tesseramento è calcolato dai rinnovi, non è un'azione disponibile su quella tabella. Nessun'altra tabella dell'app supporta ancora il soft delete."
+      "disabled": "I soci non vengono mai eliminati: lo stato di tesseramento è calcolato dai rinnovi, non è un'azione disponibile su quella tabella. Nessun'altra tabella dell'app supporta ancora il soft delete.",
+      "retention": "Dopo {days} giorni una riga viene eliminata definitivamente in automatico, salvo ripristino."
     },
     "restore": "Ripristina",
     "restoreSuccess": "\"{name}\" ripristinato.",
+    "purge": "Elimina permanentemente",
+    "purgeConfirmTitle": "Eliminare \"{name}\" in modo permanente?",
+    "purgeSuccess": "\"{name}\" eliminato permanentemente.",
+    "daysRemaining": "{count} giorno | {count} giorni",
+    "expired": "In attesa di eliminazione automatica",
     "columns": {
       "entity": "Tipo",
       "name": "Nome",
       "deletedAt": "Eliminato il",
       "deletedBy": "Eliminato da",
+      "daysRemaining": "Cancellazione automatica",
       "actions": "Azioni"
     },
     "entities": {
@@ -2006,6 +2013,21 @@
       "successToastTitle": "Quota associativa aggiornata",
       "successToastDescription": "Il nuovo importo verrà applicato al prossimo tesseramento/rinnovo.",
       "errorToastTitle": "Impossibile aggiornare la quota associativa"
+    },
+    "trashRetention": {
+      "title": "Conservazione cestino",
+      "description": "Giorni di permanenza nel cestino prima che una riga eliminata venga cancellata definitivamente in automatico.",
+      "saveChanges": "Salva modifiche",
+      "fields": {
+        "days": "Giorni",
+        "daysDescription": "Applicato ogni notte alle 03:00 dal job di pulizia automatica."
+      },
+      "validation": {
+        "daysRequired": "Numero di giorni non valido"
+      },
+      "successToastTitle": "Conservazione cestino aggiornata",
+      "successToastDescription": "Il nuovo periodo verrà applicato dalla prossima esecuzione del job di pulizia.",
+      "errorToastTitle": "Impossibile aggiornare la conservazione del cestino"
     },
     "general": {
       "validation": {

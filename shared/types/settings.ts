@@ -9,3 +9,9 @@ export interface UpdateMembershipFeePayload {
   membershipFeeAmount: number
   membershipFeePaymentMethod: PaymentMethod
 }
+
+// Shared by useSettingsMutations.ts and update-trash-retention.post.ts —
+// same thin pass-through shape as UpdateMembershipFeePayload above.
+export interface UpdateTrashRetentionPayload {
+  trashRetentionDays: number
+}

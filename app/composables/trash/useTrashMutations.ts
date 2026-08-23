@@ -28,5 +28,16 @@ export function useTrashMutations() {
     onSettled: invalidate
   })
 
-  return { restoreItem }
+  // Same invalidation fan-out as restoreItem — a purged row also disappears
+  // from its origin domain's own list query, not just TRASH_KEY.
+  const purgeItem = useMutation({
+    mutation: ({ entity, id }: { entity: TrashEntity, id: number }) =>
+      $fetch('/api/trash/purge', {
+        method: 'POST',
+        body: { table: TRASH_ENTITY_TABLES[entity], id }
+      }),
+    onSettled: invalidate
+  })
+
+  return { restoreItem, purgeItem }
 }

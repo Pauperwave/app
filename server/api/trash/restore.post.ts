@@ -9,7 +9,8 @@ interface RestoreBody {
 }
 
 const RESTORABLE_TABLES: SoftDeletableTable[] = [
-  'mtg_formats', 'tournaments', 'leagues', 'events', 'pauperwave_payments', 'pauperwave_wanted_cards'
+  'mtg_formats', 'tournaments', 'leagues', 'events',
+  'pauperwave_payments', 'pauperwave_wanted_cards', 'locations'
 ]
 
 // Admin-only (requireAdminPermission) — stricter than the organizer+ gate on

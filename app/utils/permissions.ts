@@ -45,6 +45,10 @@ export type Permission
     // section on the soft-delete-vs-purge open question this resolves for
     // restore specifically (soft-deleting itself stays organizer+, unchanged).
     | 'view-trash'
+    // Permanent deletion from /trash (2026-08-23) — one tier above
+    // view-trash's restore, matching the existing "Eliminare
+    // definitivamente" = super_admin rows in the permissions matrix.
+    | 'purge-trash'
 
 export const PERMISSION_LEVEL = {
   'register-tournament': 'player',
@@ -70,7 +74,8 @@ export const PERMISSION_LEVEL = {
   // super_admin-only at the assign_role RPC itself regardless of this —
   // this only gates whether the page/nav item is reachable at all.
   'access-settings': 'admin',
-  'view-trash': 'admin'
+  'view-trash': 'admin',
+  'purge-trash': 'super_admin'
 } as const satisfies Record<Permission, AppRole>
 
 export function can(role: AppRole | undefined, permission: Permission): boolean {

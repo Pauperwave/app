@@ -14,7 +14,7 @@ const {
 const data = computed(() => trashData.value ?? [])
 const skeletonCount = computed(() => (isPending.value ? undefined : data.value.length))
 
-const { restoreItem } = useTrashMutations()
+const { restoreItem, purgeItem } = useTrashMutations()
 const toast = useToast()
 
 async function onRestore(item: TrashItem) {
@@ -26,7 +26,43 @@ async function onRestore(item: TrashItem) {
   })
 }
 
-const { columns } = useTrashTableColumns(onRestore)
+const { can } = useUserRole()
+const { data: settingsData } = useSettingsQuery()
+const retentionDays = computed(() =>
+  settingsData.value?.trashRetentionDays ?? DEFAULT_TRASH_RETENTION_DAYS)
+
+// One row at a time (no bulk purge, same YAGNI reasoning as restore) —
+// pendingPurge holds the row awaiting confirmation, cleared on cancel/confirm.
+const pendingPurge = ref<TrashItem | null>(null)
+const purgeConfirmOpen = ref(false)
+
+function onPurgeRequest(item: TrashItem) {
+  pendingPurge.value = item
+  purgeConfirmOpen.value = true
+}
+
+async function onConfirmPurge() {
+  const item = pendingPurge.value
+  if (!item) return
+
+  await purgeItem.mutateAsync({ entity: item.entity, id: item.id })
+  purgeConfirmOpen.value = false
+  toast.add({
+    title: t('trash.purgeSuccess', { name: item.name }),
+    color: 'success',
+    icon: ICONS.success
+  })
+}
+
+const infoDescription = computed(() => [
+  t('trash.info.enabled'),
+  t('trash.info.disabled'),
+  t('trash.info.retention', { days: retentionDays.value })
+].join(' '))
+
+const { columns } = useTrashTableColumns(
+  onRestore, onPurgeRequest, () => can('purge-trash'), () => retentionDays.value
+)
 
 const sorting = ref([{ id: 'deletedAt', desc: true }])
 </script>
@@ -58,7 +94,7 @@ const sorting = ref([{ id: 'deletedAt', desc: true }])
           variant="subtle"
           :icon="ICONS.info"
           :title="$t('trash.info.title')"
-          :description="`${$t('trash.info.enabled')} ${$t('trash.info.disabled')}`"
+          :description="infoDescription"
         />
 
         <ListSkeleton v-if="isPending" :count="skeletonCount" :columns="columns.length" />
@@ -79,4 +115,14 @@ const sorting = ref([{ id: 'deletedAt', desc: true }])
       </div>
     </template>
   </UDashboardPanel>
+
+  <ConfirmModal
+    v-model:open="purgeConfirmOpen"
+    :title="pendingPurge ? $t('trash.purgeConfirmTitle', { name: pendingPurge.name }) : ''"
+    :warning="$t('common.confirmDeleteWarning')"
+    :confirm-label="$t('trash.purge')"
+    :confirm-icon="ICONS.delete"
+    :loading="purgeItem.isLoading.value"
+    @confirm="onConfirmPurge"
+  />
 </template>

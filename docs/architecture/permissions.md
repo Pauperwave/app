@@ -37,10 +37,11 @@ Ordinata per permessi crescenti — dall'alto (accessibile a `player`) verso il 
 | Gestire i mazzi Commander di tutti i giocatori | 🔴 | 🔴 | 🟢 | 🟢 |
 | Gestire l'anagrafica soci (`/associates`) | 🔴 | 🔴 | 🟢 | 🟢 |
 | Gestire le quote associative | 🔴 | 🔴 | 🟢 | 🟢 |
-| **Eliminare definitivamente** tornei/leghe/eventi | 🔴 | 🔴 | 🔴 | 🟢 |
 | **Annullare un round** (incl. riportare l'intero torneo in registrazione) | 🔴 | 🔴 | 🔴 | 🟢 |
 | **Eliminare** un mazzo Commander altrui | 🔴 | 🔴 | 🔴 | 🟢 |
 | **Eliminare** un regolamento (ruleset) | 🔴 | 🔴 | 🔴 | 🟢 |
+| **Eliminare definitivamente** tornei/leghe/eventi | 🔴 | 🔴 | 🔴 | 🟢 |
+| **Eliminare definitivamente** una riga da `/trash` (`purge-trash`), incl. configurarne la conservazione in `/settings` | 🔴 | 🔴 | 🔴 | 🟢 |
 | Assegnare/modificare ruoli (`/settings/members`) | 🔴 | 🔴 | 🔴 | 🟢 |
 
 ## Navigazione (visibilità pagina, non azione)
@@ -80,7 +81,7 @@ Non gated (visibili a tutti, incluso `player`): dashboard, calendario, `/tournam
 
 **Risolto anche lato audit trail, 2026-08-23:** `deleted_by` (colonna dedicata, non `updated_by` riciclato — vedi ADR-027 in `docs/PROGRESS.md`) è stata aggiunta a tutte e 7 le tabelle soft-eliminabili, popolata da `softDeleteById` e ripulita da `restoreById`. Non è un permesso a sé — usa lo stesso `resolveAuditAssociateUuid` di `created_by`/`updated_by`, quindi nessuna riga in questa matrice cambia.
 
-**Risolto parzialmente 2026-08-22 con `/trash` (`view-trash`, `admin`):** l'atto di soft-eliminare una riga (i sei bottoni "elimina" già esistenti) resta invariato a `manage-tournaments`/organizer+ (`requireManagementPermission`) — non toccato da questa feature. Ripristinare una riga soft-eliminata è invece una capacità **nuova**, introdotta direttamente ad `admin` (`requireAdminPermission`, `server/api/trash/restore.post.ts`) anziché allo stesso livello organizer del delete che la genera — coerente con "annullare un'azione distruttiva è più delicato del compierla" già applicato altrove in questa matrice (es. "Annullare un round"). La purga fisica (eliminazione definitiva riga da riga) resta non implementata: `/trash` offre solo ripristino, non un bottone di cancellazione permanente — quella resta la `delete-tournaments`-equivalente futura, ancora da costruire per tornei/leghe/eventi/pagamenti/carte/formati.
+**Risolto 2026-08-22/23 con `/trash` (`view-trash` ad `admin`, `purge-trash` a `super_admin`):** l'atto di soft-eliminare una riga (i sei bottoni "elimina" già esistenti) resta invariato a `manage-tournaments`/organizer+ (`requireManagementPermission`) — non toccato da questa feature. Ripristinare una riga soft-eliminata è una capacità introdotta ad `admin` (`requireAdminPermission`, `server/api/trash/restore.post.ts`) anziché allo stesso livello organizer del delete che la genera — coerente con "annullare un'azione distruttiva è più delicato del compierla" già applicato altrove in questa matrice (es. "Annullare un round"). La purga fisica (eliminazione definitiva riga da riga, `server/api/trash/purge.post.ts`) è stata aggiunta il 2026-08-23 un livello sopra, a `super_admin` (`requireSuperAdminPermission`, nuovo helper in `server/utils/serverAuth.ts`) — coerente con la riga "Eliminare definitivamente" già `super_admin`-only per tornei/leghe/eventi. Un job `pg_cron` (`purge_expired_trash()`, migrazione `20260823120000`) applica la stessa purga automaticamente dopo `pauperwave_settings.trash_retention_days` giorni (60 di default, configurabile da `/settings` dietro lo stesso permesso `purge-trash`) — vedi ADR-028 in `docs/PROGRESS.md`.
 
 **`organizer`, `admin` e `super-admin` sono oggi indistinguibili per tutto ciò che passa da `has_management_permissions`.** Quella funzione Postgres è un controllo binario ("è staff o no"), non a livelli — per "Carte Cercate" (l'unico dominio con scritture BFF già costruite) i tre hanno esattamente gli stessi permessi. La distinzione a più livelli di questa matrice riguarda solo le funzionalità **non ancora costruite** (`/associates`, quote, pagamenti eventi, gestione ruoli, mazzi altrui, eliminazione definitiva) — è lì che serve il nuovo modello `ROLE_LEVEL`/`can()` di `roles.md`, non `has_management_permissions`. Se in futuro anche le scritture di "Carte Cercate" devono distinguere fra i tre, `has_management_permissions` stessa andrebbe rivista, non solo la UI.
 

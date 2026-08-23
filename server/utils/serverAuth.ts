@@ -73,3 +73,32 @@ export async function requireAdminPermission(event: H3Event) {
 
   return user
 }
+
+// Stricter still: super_admin only, via the is_super_admin RPC
+// (migration 20260817090000) — for the "permanently delete" tier of
+// destructive action (docs/architecture/permissions.md's "Eliminare
+// definitivamente" row), one level above requireAdminPermission's restore.
+export async function requireSuperAdminPermission(event: H3Event) {
+  const user = await requireUser(event)
+  const supabase = serverSupabaseServiceRole<Database>(event)
+
+  const { data: allowed, error } = await supabase.rpc('is_super_admin', {
+    p_user_id: user.sub
+  })
+
+  if (error) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message
+    })
+  }
+
+  if (!allowed) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Permessi di super amministrazione richiesti'
+    })
+  }
+
+  return user
+}
