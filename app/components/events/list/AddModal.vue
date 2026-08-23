@@ -25,8 +25,8 @@ function createInitialState(): EventFormState {
     name: undefined,
     status: 'draft',
     startDate: todayString,
-    startTime: '20:00',
-    endTime: undefined,
+    startTime: '08:00',
+    endTime: '00:00',
     organizerUuid: undefined as unknown as string,
     locationUuid: undefined,
     companionCode: undefined
@@ -34,6 +34,22 @@ function createInitialState(): EventFormState {
 }
 
 const state = reactive<EventFormState>(createInitialState())
+
+// Nearly every event created here is organized by Pauperwave at Smart Lab —
+// same defaulting convention as TournamentsListAddModal.vue's own (user
+// request, 2026-08-23), defaulted once each list resolves (async, off
+// useOrganizationsQuery/useLocationsQuery) and only if the field is still
+// empty so it never overrides a manual choice made before the lists finished
+// loading. `startsWith` for the location: its full display name is
+// "Smart Lab - Centro Giovani Rovereto" (see the locations seed migration).
+watch(organizerOptions, (options) => {
+  if (state.organizerUuid) return
+  state.organizerUuid = options.find(option => option.label === 'Pauperwave')?.value
+}, { immediate: true })
+watch(locationOptions, (options) => {
+  if (state.locationUuid) return
+  state.locationUuid = options.find(option => option.label.startsWith('Smart Lab'))?.value
+}, { immediate: true })
 
 const { startDate, formattedStartDate, reset: resetStartDate } = useStartDateField(state)
 
@@ -53,6 +69,9 @@ function resetForm() {
   Object.assign(state, createInitialState())
   resetStartDate()
   image.value = undefined
+  state.organizerUuid = organizerOptions.value.find(option => option.label === 'Pauperwave')?.value
+    ?? state.organizerUuid
+  state.locationUuid = locationOptions.value.find(option => option.label.startsWith('Smart Lab'))?.value
 }
 
 // fallow-ignore-next-line code-duplication -- the state literal + onSubmit
