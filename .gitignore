@@ -28,3 +28,4 @@ logs
 
 # VSC
 .history
+.mcp.json
