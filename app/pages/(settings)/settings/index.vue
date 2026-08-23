@@ -153,6 +153,7 @@ function onFileClick() {
           :min="0"
           :step="0.5"
           :format-options="{ minimumFractionDigits: 2, maximumFractionDigits: 2 }"
+          class="w-48"
         />
       </UFormField>
       <USeparator />
@@ -166,6 +167,7 @@ function onFileClick() {
           v-model="membershipFeeState.membershipFeePaymentMethod"
           :items="paymentMethodOptions"
           value-key="value"
+          class="w-48"
         />
       </UFormField>
     </UPageCard>
