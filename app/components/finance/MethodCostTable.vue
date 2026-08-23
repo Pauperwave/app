@@ -45,7 +45,7 @@ const columns: TableColumn<FinanceMethodCostRow>[] = [
     accessorKey: 'total',
     header: ({ column }) => sortableHeader(t('finance.summary.total'), column),
     meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => amountFormatter.format(row.original.total),
+    cell: ({ row }) => amountCell(row.original.total, amountFormatter),
     footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalAmount.value))
   },
   {
@@ -76,7 +76,7 @@ const columns: TableColumn<FinanceMethodCostRow>[] = [
     accessorKey: 'net',
     header: ({ column }) => sortableHeader(t('finance.summary.net'), column),
     meta: { class: { th: 'text-right', td: 'text-right font-mono font-semibold' } },
-    cell: ({ row }) => amountFormatter.format(row.original.net),
+    cell: ({ row }) => amountCell(row.original.net, amountFormatter),
     footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalNet.value))
   }
 ]

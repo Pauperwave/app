@@ -582,7 +582,8 @@
       "net": "Netto",
       "totalFees": "Costi commissioni",
       "grandNet": "Netto",
-      "grandAverage": "Media a transazione"
+      "grandAverage": "Media a transazione",
+      "cumulative": "Cumulativo"
     },
     "charts": {
       "monthlyTrend": "Andamento mensile",

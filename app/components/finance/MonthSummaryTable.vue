@@ -23,6 +23,21 @@ const totalByType = computed(() => Object.fromEntries(
 ) as Record<PaymentType, number>)
 const grandTotal = computed(() => rows.reduce((sum, row) => sum + row.grandTotal, 0))
 
+// Running total through each month, keyed by month regardless of the
+// table's current sort — chronological order always drives the running sum
+// even if the visible rows are sorted by a different column (user request,
+// 2026-08-24).
+const cumulativeByMonth = computed(() => {
+  const chronological = [...rows].sort((a, b) => a.month.localeCompare(b.month))
+  const byMonth = new Map<string, number>()
+  let running = 0
+  for (const row of chronological) {
+    running += row.grandTotal
+    byMonth.set(row.month, running)
+  }
+  return byMonth
+})
+
 // One column per payment type plus month/grand-total — same
 // PAYMENT_TYPE_LABEL_KEYS i18n keys the transactions table's own tabs/badges
 // use, so a category reads the same everywhere.
@@ -43,14 +58,23 @@ const columns: TableColumn<FinanceMonthSummaryRow>[] = [
     accessorFn: row => row.totals[type],
     header: ({ column }) => sortableHeader(t(PAYMENT_TYPE_LABEL_KEYS[type]), column),
     meta: { class: { th: 'text-right whitespace-nowrap', td: 'text-right font-mono' } },
-    cell: ({ row }) => amountFormatter.format(row.original.totals[type]),
+    cell: ({ row }) => amountCell(row.original.totals[type], amountFormatter),
     footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalByType.value[type]))
   })),
   {
     accessorKey: 'grandTotal',
     header: ({ column }) => sortableHeader(t('finance.summary.total'), column),
     meta: { class: { th: 'text-right whitespace-nowrap font-semibold', td: 'text-right font-mono font-semibold' } },
-    cell: ({ row }) => amountFormatter.format(row.original.grandTotal),
+    cell: ({ row }) => amountCell(row.original.grandTotal, amountFormatter),
+    footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(grandTotal.value))
+  },
+  {
+    id: 'cumulative',
+    accessorFn: row => cumulativeByMonth.value.get(row.month) ?? 0,
+    header: ({ column }) => sortableHeader(t('finance.summary.cumulative'), column),
+    meta: { class: { th: 'text-right whitespace-nowrap', td: 'text-right font-mono' } },
+    cell: ({ row }) =>
+      amountCell(cumulativeByMonth.value.get(row.original.month) ?? 0, amountFormatter),
     footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(grandTotal.value))
   }
 ]

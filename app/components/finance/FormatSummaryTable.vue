@@ -45,14 +45,14 @@ const columns: TableColumn<FinanceFormatSummaryRow>[] = [
     accessorKey: 'total',
     header: ({ column }) => sortableHeader(t('finance.summary.total'), column),
     meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => amountFormatter.format(row.original.total),
+    cell: ({ row }) => amountCell(row.original.total, amountFormatter),
     footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalAmount.value))
   },
   {
     accessorKey: 'average',
     header: ({ column }) => sortableHeader(t('finance.summary.average'), column),
     meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => amountFormatter.format(row.original.average)
+    cell: ({ row }) => amountCell(row.original.average, amountFormatter)
   },
   {
     accessorKey: 'share',
