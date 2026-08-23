@@ -5,7 +5,7 @@ import type { Ref } from 'vue'
 // single coarse step covering the whole dashboard body, too shallow to
 // actually explain anything. Same convention as useStatisticsTour.ts:
 // step order = the page's own reading order (top-left -> bottom-right),
-// targets are CSS ids on real elements of HomeStaff.vue/HomePlayer.vue.
+// targets are CSS ids on real elements of home/Staff.vue/home/Player.vue.
 // `steps` stays a computed (not a plain array) since useTour's own `steps`
 // param accepts a getter (toValue-unwrapped internally) — the quick-create
 // step and the staff/player section split only exist for the resolved role,

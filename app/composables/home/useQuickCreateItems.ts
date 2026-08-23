@@ -5,13 +5,13 @@ export interface QuickCreateItem {
   icon: string
   to: string
   // Matches useMainNavGroups.ts's own section order (Community before
-  // Competitions) — HomeQuickCreateMenu.vue uses this to render a divider
+  // Competitions) — home/QuickCreateMenu.vue uses this to render a divider
   // between domains instead of one flat list.
   group: 'community' | 'competitions'
 }
 
 // Single source for every "new X" quick-create shortcut (2026-08-19, user
-// request) — HomeQuickCreateMenu.vue's dropdown and default.vue's Cmd+K
+// request) — home/QuickCreateMenu.vue's dropdown and default.vue's Cmd+K
 // palette both map this into their own item shape instead of hand-duplicating
 // the list, so adding/reordering/removing an entry here updates both surfaces
 // at once. Found the two had already drifted before this existed: the
