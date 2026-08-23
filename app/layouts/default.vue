@@ -285,8 +285,17 @@ const groups = computed(() => [{
               />
             </template>
 
-            <template #item-trailing="{ item }">
+            <template #item-trailing="{ item, active, ui: trailingUi }">
               <div class="flex items-center gap-1">
+                <!-- Nuxt UI's own fallback trailing content (chevron for an
+                     item with children) — lost by overriding this slot for
+                     the chord-hint/badge content below, so reproduced here
+                     for Classifiche's own dropdown trigger (2026-08-23). -->
+                <UIcon
+                  v-if="item.children?.length"
+                  :name="ICONS.chevronDown"
+                  :class="trailingUi.linkTrailingIcon({ active })"
+                />
                 <template v-if="showChordHints">
                   <UKbd
                     v-for="key in navChordKeys(item.to)"
