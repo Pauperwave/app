@@ -2002,7 +2002,7 @@
         "purgeTrash": { "feature": "**Eliminare** **definitivamente** una riga da /trash" },
         "manageRoles": {
           "feature": "**Assegnare**/**modificare** ruoli (/settings/members)",
-          "statusNote": "Il menu ruoli in /settings/members non è ancora collegato a nessuna RPC: oggi è solo decorativo, nessuna chiamata reale."
+          "statusNote": "L'RPC assign_role esiste e applica già le regole (admin non può toccare il livello super_admin, l'account dello sviluppatore è protetto), ma il menu ruoli in /settings/members non è ancora collegato: oggi è solo decorativo, nessuna chiamata reale."
         }
       }
     },

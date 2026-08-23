@@ -131,7 +131,7 @@ const rows = computed<PermissionRow[]>(() => {
 
     row('purgeTrash', 'implemented', ['none', 'none', 'none', 'full']),
 
-    row('manageRoles', 'partial', ['none', 'none', 'none', 'full'])
+    row('manageRoles', 'partial', ['none', 'none', 'full', 'full'])
   ]
 })
 

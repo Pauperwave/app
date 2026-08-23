@@ -42,7 +42,7 @@ Raggruppata per dominio, riordinata 2026-08-23 (era ordinata per solo permessi c
 | Inviare email di ricevuta (quote eventi/tornei, quote associative) | 🔴 | 🔴 | 🟢 | 🟢 |
 | **Eliminare** un regolamento (ruleset) | 🔴 | 🔴 | 🟢 | 🟢 |
 | **Eliminare definitivamente** una riga da `/trash` (`purge-trash`) | 🔴 | 🔴 | 🔴 | 🟢 |
-| Assegnare/modificare ruoli (`/settings/members`) | 🔴 | 🔴 | 🔴 | 🟢 |
+| Assegnare/modificare ruoli (`/settings/members`) | 🔴 | 🔴 | 🟡 (mai a/da `super_admin`, mai sull'account protetto) | 🟢 |
 
 ## Navigazione (visibilità pagina, non azione)
 
@@ -86,6 +86,8 @@ Non gated (visibili a tutti, incluso `player`): dashboard, calendario, `/tournam
 **`organizer`, `admin` e `super-admin` sono oggi indistinguibili per tutto ciò che passa da `has_management_permissions`.** Quella funzione Postgres è un controllo binario ("è staff o no"), non a livelli — per "Carte Cercate" (l'unico dominio con scritture BFF già costruite) i tre hanno esattamente gli stessi permessi. La distinzione a più livelli di questa matrice riguarda solo le funzionalità **non ancora costruite** (`/associates`, quote, pagamenti eventi, gestione ruoli, mazzi altrui, eliminazione definitiva) — è lì che serve il nuovo modello `ROLE_LEVEL`/`can()` di `roles.md`, non `has_management_permissions`. Se in futuro anche le scritture di "Carte Cercate" devono distinguere fra i tre, `has_management_permissions` stessa andrebbe rivista, non solo la UI.
 
 **Mazzi Commander, ora due righe separate** (prima era un'unica riga 🟡 per tutti — corretto 2026-08-10): gestire i **propri** mazzi è 🟢 per chiunque, sempre (stesso `player_own_decks` ownership-check dei backup docs, indipendente dal ruolo); gestire i mazzi **di chiunque altro** è una capacità a parte, riservata ad admin e super-admin.
+
+**"Assegnare/modificare ruoli" aperta ad `admin`, 2026-08-23 (2nd pass, richiesta utente) — con due eccezioni enforced a livello di RPC, non solo di permesso.** Prima di questo pass era `super_admin`-only. La richiesta iniziale ("blocca solo l'auto-promozione") è stata scartata perché aggirabile in due mosse (un `admin` promuove un secondo account ad `admin`, poi con quello promuove il primo a `super_admin`): la vera regola è "un `admin` non può mai toccare il livello `super_admin`", non "non può toccare il proprio ruolo". `assign_role` (migrazione `20260823130000`) rifiuta la chiamata se il ruolo richiesto è `super_admin` **o** se il ruolo attuale del bersaglio è già `super_admin`, a meno che il chiamante stesso non sia `super_admin`. In più, un secondo controllo indipendente e incondizionato protegge l'account dello sviluppatore/proprietario dell'app (Emanuele Nardi): un flag `role_locked` su `user_roles` (colonna, non un `uuid` hardcoded nella funzione — rivisto lo stesso giorno in migrazione `20260823140000` dopo che l'utente ha fatto notare i rischi di un valore magico dentro il codice: fragilità se l'account viene ricreato, opacità, rigidità nel proteggerne un secondo in futuro), che nessuno — nemmeno un altro `super_admin` — può riassegnare o rimuovere tramite `assign_role`. Nota bene: il menu ruoli in `/settings/members` (`MembersList.vue`) resta oggi puramente decorativo, non ancora collegato a `assign_role` — questa regola vive nel database, pronta per quando quel collegamento verrà fatto.
 
 ## Aggiornare questa matrice
 
