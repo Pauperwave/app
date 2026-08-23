@@ -70,16 +70,26 @@ export const PERMISSION_LEVEL = {
   'delete-commander-deck': 'admin',
   // Revised down to 'admin' 2026-08-23, same request.
   'delete-ruleset': 'admin',
-  'manage-roles': 'super_admin',
+  // Revised down to 'admin' 2026-08-23, second pass, same day as the three
+  // above (user request: admin AND super_admin can assign roles — not
+  // super_admin only). This only gates whether the page/nav item is
+  // reachable at all, same caveat as 'access-settings' below — the real,
+  // finer-grained boundary ("admin can grant player/organizer/admin, never
+  // super_admin, and can never touch an existing super_admin or the
+  // hardcoded protected developer account") lives in the assign_role RPC
+  // itself (migration 20260823130000), not here. A client-side `can()`
+  // check was never going to be enough to express "except this one tier"
+  // safely — this constant only decides whether the UI shows the control.
+  'manage-roles': 'admin',
   'view-associates': 'organizer', // sees every associate's data; editing/deleting stays manage-members (admin)
   'view-finance': 'organizer',
   'view-players': 'organizer',
   'manage-locations': 'organizer',
   'manage-rulesets': 'organizer', // deleting a ruleset stays delete-ruleset (admin)
   // Whole /settings section, all four pages uniformly (2026-08-17, revised
-  // down from organizer): actually assigning a role is still enforced
-  // super_admin-only at the assign_role RPC itself regardless of this —
-  // this only gates whether the page/nav item is reachable at all.
+  // down from organizer): actually assigning a role has its own finer-grained
+  // rules enforced at the assign_role RPC itself regardless of this — this
+  // only gates whether the page/nav item is reachable at all.
   'access-settings': 'admin',
   'view-trash': 'admin',
   'purge-trash': 'super_admin'
