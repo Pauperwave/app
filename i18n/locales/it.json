@@ -1945,6 +1945,7 @@
       "description": "Chi può fare cosa, per le quattro fasce di ruolo. Riferimento leggibile — vedi docs/architecture/roles.md e permissions.md per l'implementazione.",
       "columns": {
         "feature": "Funzionalità",
+        "status": "Stato",
         "player": "Giocatore",
         "organizer": "Organizzatore",
         "admin": "Amministratore",
@@ -1955,9 +1956,10 @@
         "partial": "Parziale",
         "none": "Nessuno"
       },
-      "warning": {
-        "title": "Questa tabella non è ancora applicata dal codice",
-        "description": "È il piano concordato (docs/architecture/roles.md), non lo stato reale: oggi ogni utente autenticato vede l'intero gestionale, e le uniche scritture protette da un ruolo (\"Carte Cercate\") non distinguono ancora organizer da admin/super-admin."
+      "status": {
+        "implemented": "Implementato",
+        "partial": "Parziale",
+        "notImplemented": "Non implementato"
       },
       "rows": {
         "viewStandings": { "feature": "**Visualizzare** classifiche (Cittadino, Commander, Premodern, Pauper)" },
@@ -1973,7 +1975,8 @@
         },
         "updateOwnWantedCardStatus": {
           "feature": "**Cambiare** stato (trovata/abbandonata) della propria richiesta",
-          "playerNote": "Un player può cambiare stato solo alle proprie richieste, non a quelle altrui."
+          "playerNote": "Un player può cambiare stato solo alle proprie richieste, non a quelle altrui.",
+          "statusNote": "Oggi l'endpoint richiede un ruolo di gestione (organizer+): un player non può ancora cambiare lo stato della propria richiesta, contrariamente a quanto mostrato in tabella."
         },
         "manageOwnDecks": { "feature": "**Gestire** i propri mazzi Commander" },
         "viewOwnMembership": {
@@ -1986,17 +1989,21 @@
         "manageTournaments": { "feature": "**Creare**, **modificare** tornei/leghe/eventi (inclusa la gestione ordinaria dei round)" },
         "resetPairing": { "feature": "**Correggere**/**azzerare** i dati di un singolo tavolo/pairing" },
         "manageEventPayments": { "feature": "**Gestire** pagamenti di eventi/tornei" },
-        "deleteOwnWantedCard": { "feature": "**Eliminare** la propria richiesta" },
-        "manageOthersWantedCards": { "feature": "**Modificare**/**eliminare**/**cambiare** stato di una richiesta altrui" },
+        "deleteOwnWantedCard": { "feature": "**Eliminare** la propria richiesta \"Carta Cercata\"" },
+        "manageOthersWantedCards": { "feature": "**Modificare**/**eliminare**/**cambiare** stato di una richiesta \"Carta Cercata\" altrui" },
         "sendPaymentReceipts": { "feature": "**Inviare** email di ricevuta (quote eventi/tornei, quote associative)" },
         "manageAllDecks": { "feature": "**Gestire** i mazzi Commander di tutti i giocatori" },
         "manageMembers": { "feature": "**Gestire** l'anagrafica soci (/associates)" },
         "manageMembershipFees": { "feature": "**Gestire** le quote associative" },
-        "deleteTournaments": { "feature": "**Eliminare** definitivamente tornei/leghe/eventi" },
         "cancelRound": { "feature": "**Annullare** un round (incl. riportare l'intero torneo in registrazione)" },
         "deleteCommanderDeck": { "feature": "**Eliminare** un mazzo Commander altrui" },
         "deleteRuleset": { "feature": "**Eliminare** un regolamento (ruleset)" },
-        "manageRoles": { "feature": "**Assegnare**/**modificare** ruoli (/settings/members)" }
+        "deleteTournaments": { "feature": "**Eliminare** **definitivamente** tornei/leghe/eventi" },
+        "purgeTrash": { "feature": "**Eliminare** **definitivamente** una riga da /trash" },
+        "manageRoles": {
+          "feature": "**Assegnare**/**modificare** ruoli (/settings/members)",
+          "statusNote": "Il menu ruoli in /settings/members non è ancora collegato a nessuna RPC: oggi è solo decorativo, nessuna chiamata reale."
+        }
       }
     },
     "membershipFee": {

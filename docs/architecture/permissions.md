@@ -16,32 +16,32 @@ Human-readable companion to `docs/architecture/roles.md` — that doc has the im
 
 **Rivista 2026-08-10: 4 livelli, non più 3** — `super_admin` aggiunto sopra `admin`, e la parte finanziaria è stata spezzata in due (quote associative vs. pagamenti eventi/tornei — categorie già distinte in `pauperwave_payments.payment_type`: `'Association Fee'` vs `'Event'`).
 
-Ordinata per permessi crescenti — dall'alto (accessibile a `player`) verso il basso (`super_admin` soltanto), riordinata 2026-08-10.
+Raggruppata per dominio, riordinata 2026-08-23 (era ordinata per solo permessi crescenti, riordinata la prima volta 2026-08-10 — l'ordine puramente per livello sparpagliava le righe di uno stesso dominio, es. le quattro righe "Carte Cercate" non erano più consecutive). Dentro ogni dominio l'ordine resta comunque per permessi crescenti — dall'alto (accessibile a `player`) verso il basso (`super_admin` soltanto).
 
 | Funzionalità | player | organizer | admin | super-admin |
 |---|:---:|:---:|:---:|:---:|
 | Visualizzare classifiche (Cittadino, Commander, Premodern, Pauper) | 🟢 | 🟢 | 🟢 | 🟢 |
 | Visualizzare tornei, leghe, eventi | 🟢 | 🟢 | 🟢 | 🟢 |
 | Iscriversi a un torneo/evento | 🟡 (solo per sé stesso) | 🟢 | 🟢 | 🟢 |
-| Visualizzare "Carte Cercate" | 🟢 | 🟢 | 🟢 | 🟢 |
-| Creare una richiesta "Carta Cercata" | 🟡 (solo per sé stesso) | 🟢 | 🟢 | 🟢 |
-| Cambiare stato (trovata/abbandonata) della propria richiesta | 🟡 (solo la propria) | 🟢 | 🟢 | 🟢 |
-| Gestire i propri mazzi Commander | 🟢 | 🟢 | 🟢 | 🟢 |
-| Visualizzare il proprio stato di tesseramento/dati anagrafici | 🟡 (solo il proprio) | 🟢 (tutti i soci) | 🟢 (tutti i soci) | 🟢 (tutti i soci) |
 | Creare, modificare tornei/leghe/eventi (inclusa la gestione ordinaria dei round) | 🔴 | 🟢 | 🟢 | 🟢 |
 | Correggere/azzerare i dati di un singolo tavolo/pairing | 🔴 | 🟢 | 🟢 | 🟢 |
+| **Annullare un round** (incl. riportare l'intero torneo in registrazione) | 🔴 | 🔴 | 🟢 | 🟢 |
 | Gestire pagamenti di eventi/tornei | 🔴 | 🟢 | 🟢 | 🟢 |
-| Eliminare la propria richiesta | 🔴 | 🟢 | 🟢 | 🟢 |
-| Modificare/eliminare/cambiare stato di una richiesta altrui | 🔴 | 🟢 | 🟢 | 🟢 |
-| Inviare email di ricevuta (quote eventi/tornei, quote associative) | 🔴 | 🔴 | 🟢 | 🟢 |
+| **Eliminare definitivamente** tornei/leghe/eventi | 🔴 | 🔴 | 🔴 | 🟢 |
+| Visualizzare "Carte Cercate" | 🟢 | 🟢 | 🟢 | 🟢 |
+| Creare una richiesta "Carta Cercata" | 🟡 (solo per sé stesso) | 🟢 | 🟢 | 🟢 |
+| Cambiare stato (trovata/abbandonata) della propria richiesta "Carta Cercata" | 🟡 (solo la propria) | 🟢 | 🟢 | 🟢 |
+| Eliminare la propria richiesta "Carta Cercata" | 🔴 | 🟢 | 🟢 | 🟢 |
+| Modificare/eliminare/cambiare stato di una richiesta "Carta Cercata" altrui | 🔴 | 🟢 | 🟢 | 🟢 |
+| Gestire i propri mazzi Commander | 🟢 | 🟢 | 🟢 | 🟢 |
 | Gestire i mazzi Commander di tutti i giocatori | 🔴 | 🔴 | 🟢 | 🟢 |
+| **Eliminare** un mazzo Commander altrui | 🔴 | 🔴 | 🟢 | 🟢 |
+| Visualizzare il proprio stato di tesseramento/dati anagrafici | 🟡 (solo il proprio) | 🟢 (tutti i soci) | 🟢 (tutti i soci) | 🟢 (tutti i soci) |
 | Gestire l'anagrafica soci (`/associates`) | 🔴 | 🔴 | 🟢 | 🟢 |
 | Gestire le quote associative | 🔴 | 🔴 | 🟢 | 🟢 |
-| **Annullare un round** (incl. riportare l'intero torneo in registrazione) | 🔴 | 🔴 | 🔴 | 🟢 |
-| **Eliminare** un mazzo Commander altrui | 🔴 | 🔴 | 🔴 | 🟢 |
-| **Eliminare** un regolamento (ruleset) | 🔴 | 🔴 | 🔴 | 🟢 |
-| **Eliminare definitivamente** tornei/leghe/eventi | 🔴 | 🔴 | 🔴 | 🟢 |
-| **Eliminare definitivamente** una riga da `/trash` (`purge-trash`), incl. configurarne la conservazione in `/settings` | 🔴 | 🔴 | 🔴 | 🟢 |
+| Inviare email di ricevuta (quote eventi/tornei, quote associative) | 🔴 | 🔴 | 🟢 | 🟢 |
+| **Eliminare** un regolamento (ruleset) | 🔴 | 🔴 | 🟢 | 🟢 |
+| **Eliminare definitivamente** una riga da `/trash` (`purge-trash`) | 🔴 | 🔴 | 🔴 | 🟢 |
 | Assegnare/modificare ruoli (`/settings/members`) | 🔴 | 🔴 | 🔴 | 🟢 |
 
 ## Navigazione (visibilità pagina, non azione)
@@ -70,7 +70,7 @@ Non gated (visibili a tutti, incluso `player`): dashboard, calendario, `/tournam
 
 **Inviare ricevute è separato da "gestire pagamenti," confermato 2026-08-10.** Un organizer registra/gestisce i pagamenti di eventi e tornei (già in matrice), ma l'invio della ricevuta via email — sia per quote eventi/tornei sia per quote associative — sale ad `admin`. Comunicazione ufficiale verso soci/partecipanti trattata più cautamente della semplice registrazione interna del pagamento.
 
-**"Annullare un round" è un'eccezione ritagliata dalla gestione ordinaria dei tornei, confermata 2026-08-10.** Un organizer gestisce un torneo dall'inizio alla fine — inclusi i round, normalmente — ma annullare un round già avviato è trattato come l'eliminazione definitiva: un'azione distruttiva/irreversibile che va oltre l'amministrazione ordinaria, riservata a `super_admin` anche se il torneo nel suo complesso resta gestibile da `organizer`.
+**"Annullare un round" è un'eccezione ritagliata dalla gestione ordinaria dei tornei, confermata 2026-08-10.** Un organizer gestisce un torneo dall'inizio alla fine — inclusi i round, normalmente — ma annullare un round già avviato è trattato come un'azione distruttiva/irreversibile che va oltre l'amministrazione ordinaria, riservata ad `admin`+ anche se il torneo nel suo complesso resta gestibile da `organizer`. **Rivista 2026-08-23** (insieme a "Eliminare un mazzo Commander altrui" ed "Eliminare un regolamento" sotto): non più `super_admin`-only — richiesta utente "amministratore con tutti i poteri tranne l'eliminazione definitiva," scesa ad `admin` insieme alle altre due. Restano `super_admin`-only solo le eliminazioni **definitive** vere e proprie (tornei/leghe/eventi, `/trash`) e l'assegnazione ruoli, l'unica capacità che potrebbe permettere a un `admin` di auto-promuoversi.
 
 **Righe aggiunte 2026-08-10 esaminando il progetto gemello `MagicTheGathering/league`** (nessun sistema di ruoli per utente lì — solo una password condivisa — quindi niente da riusare su *chi* può fare cosa, solo sulle azioni distruttive che esistono nel dominio):
 - `league` ha un endpoint "torna indietro di un round" che, dal round 1, riporta l'intero torneo in fase di registrazione cancellando pairing/standings — trattato come la stessa azione di "annullare un round" sopra, non una riga a parte.

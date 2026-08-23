@@ -60,15 +60,22 @@ export const PERMISSION_LEVEL = {
   'manage-membership-fees': 'admin',
   'manage-all-commander-decks': 'admin',
   'delete-tournaments': 'super_admin', // permanent deletion only — create/edit stays 'organizer' above
-  'cancel-round': 'super_admin', // ordinary round management stays 'organizer', via 'manage-tournaments'; also covers league's "turn back to registration" case
-  'delete-commander-deck': 'super_admin', // deleting someone else's deck — distinct from 'manage-all-commander-decks' (edit/manage, admin)
-  'delete-ruleset': 'super_admin',
+  // Revised down to 'admin' 2026-08-23 (user request: admin gets every
+  // power except "Eliminare definitivamente") — ordinary round management
+  // stays 'organizer', via 'manage-tournaments'; also covers league's "turn
+  // back to registration" case.
+  'cancel-round': 'admin',
+  // Revised down to 'admin' 2026-08-23, same request — distinct from
+  // 'manage-all-commander-decks' (edit/manage, already 'admin' above).
+  'delete-commander-deck': 'admin',
+  // Revised down to 'admin' 2026-08-23, same request.
+  'delete-ruleset': 'admin',
   'manage-roles': 'super_admin',
   'view-associates': 'organizer', // sees every associate's data; editing/deleting stays manage-members (admin)
   'view-finance': 'organizer',
   'view-players': 'organizer',
   'manage-locations': 'organizer',
-  'manage-rulesets': 'organizer', // deleting a ruleset stays delete-ruleset (super_admin)
+  'manage-rulesets': 'organizer', // deleting a ruleset stays delete-ruleset (admin)
   // Whole /settings section, all four pages uniformly (2026-08-17, revised
   // down from organizer): actually assigning a role is still enforced
   // super_admin-only at the assign_role RPC itself regardless of this —

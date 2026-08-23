@@ -1,7 +1,7 @@
 <!-- app\pages\(settings)\settings\permissions.vue -->
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
-import { UIcon, UTooltip } from '#components'
+import { UBadge, UIcon, UTooltip } from '#components'
 
 definePageMeta({ permission: 'access-settings' })
 
@@ -11,6 +11,14 @@ useSeoMeta({ title: () => t('settings.layout.links.permissions') })
 
 type Access = 'full' | 'partial' | 'none'
 type RoleKey = 'player' | 'organizer' | 'admin' | 'superAdmin'
+
+// Whether the row describes real, working code today — separate from the
+// role grid itself (which is the *intended* policy, docs/architecture/
+// roles.md/permissions.md). Verified by hand against server/api/* and
+// app/pages/* 2026-08-23 (user request), not derived automatically — keep
+// in sync the same way the role columns already are, re-check whenever a
+// row's underlying feature actually gets built/changed.
+type ImplementationStatus = 'implemented' | 'partial' | 'notImplemented'
 
 interface RoleCell {
   access: Access
@@ -22,25 +30,44 @@ interface RoleCell {
 
 interface PermissionRow {
   feature: string
+  status: ImplementationStatus
+  /** Detail shown on hover for 'partial'/'notImplemented' rows — what's
+   * missing or wrong today. Absent for 'implemented' rows. */
+  statusNote?: string
   player: RoleCell
   organizer: RoleCell
   admin: RoleCell
   superAdmin: RoleCell
 }
 
-// Ordered by increasing required role, same order as docs/architecture/permissions.md
-// — that file is the source of truth (with the full "why" behind each row); this
-// table is its in-app rendering, not a second decision. Keep both in sync by hand
-// until PERMISSION_LEVEL (docs/architecture/roles.md) actually exists in code and
-// this can compute itself from it instead.
+// Grouped by domain, same order as docs/architecture/permissions.md (reordered
+// 2026-08-23 — was purely by increasing role, which scattered same-domain rows,
+// e.g. the four Carte Cercate rows weren't consecutive; within each domain group
+// below, still lowest-to-highest role). That file is the source of truth (with
+// the full "why" behind each row); this table is its in-app rendering, not a
+// second decision. Keep both in sync by hand until PERMISSION_LEVEL
+// (docs/architecture/roles.md) actually exists in code and this can compute
+// itself from it instead.
 const rows = computed<PermissionRow[]>(() => {
   type RowKey
-    = | 'viewStandings' | 'viewTournaments' | 'registerTournament' | 'viewWantedCards'
-      | 'createWantedCard' | 'updateOwnWantedCardStatus' | 'manageOwnDecks' | 'viewOwnMembership'
-      | 'manageTournaments' | 'resetPairing' | 'manageEventPayments' | 'deleteOwnWantedCard'
-      | 'manageOthersWantedCards' | 'sendPaymentReceipts' | 'manageAllDecks' | 'manageMembers'
-      | 'manageMembershipFees' | 'deleteTournaments' | 'cancelRound' | 'deleteCommanderDeck'
-      | 'deleteRuleset' | 'manageRoles'
+    // Standings
+    = | 'viewStandings'
+      // Tournaments / leagues / events
+      | 'viewTournaments' | 'registerTournament' | 'manageTournaments' | 'resetPairing'
+      | 'cancelRound' | 'manageEventPayments' | 'deleteTournaments'
+      // Carte Cercate
+      | 'viewWantedCards' | 'createWantedCard' | 'updateOwnWantedCardStatus'
+      | 'deleteOwnWantedCard' | 'manageOthersWantedCards'
+      // Mazzi Commander
+      | 'manageOwnDecks' | 'manageAllDecks' | 'deleteCommanderDeck'
+      // Anagrafica / quote associative
+      | 'viewOwnMembership' | 'manageMembers' | 'manageMembershipFees' | 'sendPaymentReceipts'
+      // Regolamenti
+      | 'deleteRuleset'
+      // Cestino
+      | 'purgeTrash'
+      // Ruoli
+      | 'manageRoles'
   type NoteKey = 'playerNote' | 'organizerNote' | 'adminNote' | 'superAdminNote'
 
   // 'full'/'none' shorthand for the common case (no note); pass [key, noteKey] for
@@ -54,10 +81,17 @@ const rows = computed<PermissionRow[]>(() => {
     return { access, note: te(path) ? t(path) : undefined }
   }
 
-  const row = (key: RowKey, access: [CellSpec, CellSpec, CellSpec, CellSpec]): PermissionRow => {
+  const row = (
+    key: RowKey,
+    status: ImplementationStatus,
+    access: [CellSpec, CellSpec, CellSpec, CellSpec]
+  ): PermissionRow => {
     const [player, organizer, admin, superAdmin] = access
+    const statusNotePath = `settings.permissions.rows.${key}.statusNote`
     return {
       feature: t(`settings.permissions.rows.${key}.feature`),
+      status,
+      statusNote: te(statusNotePath) ? t(statusNotePath) : undefined,
       player: cell(key, player),
       organizer: cell(key, organizer),
       admin: cell(key, admin),
@@ -66,30 +100,38 @@ const rows = computed<PermissionRow[]>(() => {
   }
 
   return [
-    row('viewStandings', ['full', 'full', 'full', 'full']),
-    row('viewTournaments', ['full', 'full', 'full', 'full']),
-    row('registerTournament', [['partial', 'playerNote'], 'full', 'full', 'full']),
-    row('viewWantedCards', ['full', 'full', 'full', 'full']),
-    row('createWantedCard', [['partial', 'playerNote'], 'full', 'full', 'full']),
-    row('updateOwnWantedCardStatus', [['partial', 'playerNote'], 'full', 'full', 'full']),
-    row('manageOwnDecks', ['full', 'full', 'full', 'full']),
-    row('viewOwnMembership', [
+    row('viewStandings', 'implemented', ['full', 'full', 'full', 'full']),
+
+    row('viewTournaments', 'implemented', ['full', 'full', 'full', 'full']),
+    row('registerTournament', 'notImplemented', [['partial', 'playerNote'], 'full', 'full', 'full']),
+    row('manageTournaments', 'implemented', ['none', 'full', 'full', 'full']),
+    row('resetPairing', 'notImplemented', ['none', 'full', 'full', 'full']),
+    row('cancelRound', 'notImplemented', ['none', 'none', 'full', 'full']),
+    row('manageEventPayments', 'implemented', ['none', 'full', 'full', 'full']),
+    row('deleteTournaments', 'notImplemented', ['none', 'none', 'none', 'full']),
+
+    row('viewWantedCards', 'implemented', ['full', 'full', 'full', 'full']),
+    row('createWantedCard', 'implemented', [['partial', 'playerNote'], 'full', 'full', 'full']),
+    row('updateOwnWantedCardStatus', 'partial', [['partial', 'playerNote'], 'full', 'full', 'full']),
+    row('deleteOwnWantedCard', 'implemented', ['none', 'full', 'full', 'full']),
+    row('manageOthersWantedCards', 'implemented', ['none', 'full', 'full', 'full']),
+
+    row('manageOwnDecks', 'notImplemented', ['full', 'full', 'full', 'full']),
+    row('manageAllDecks', 'notImplemented', ['none', 'none', 'full', 'full']),
+    row('deleteCommanderDeck', 'notImplemented', ['none', 'none', 'full', 'full']),
+
+    row('viewOwnMembership', 'implemented', [
       ['partial', 'playerNote'], ['partial', 'organizerNote'], ['full', 'adminNote'], ['full', 'superAdminNote']
     ]),
-    row('manageTournaments', ['none', 'full', 'full', 'full']),
-    row('resetPairing', ['none', 'full', 'full', 'full']),
-    row('manageEventPayments', ['none', 'full', 'full', 'full']),
-    row('deleteOwnWantedCard', ['none', 'full', 'full', 'full']),
-    row('manageOthersWantedCards', ['none', 'full', 'full', 'full']),
-    row('sendPaymentReceipts', ['none', 'none', 'full', 'full']),
-    row('manageAllDecks', ['none', 'none', 'full', 'full']),
-    row('manageMembers', ['none', 'none', 'full', 'full']),
-    row('manageMembershipFees', ['none', 'none', 'full', 'full']),
-    row('deleteTournaments', ['none', 'none', 'none', 'full']),
-    row('cancelRound', ['none', 'none', 'none', 'full']),
-    row('deleteCommanderDeck', ['none', 'none', 'none', 'full']),
-    row('deleteRuleset', ['none', 'none', 'none', 'full']),
-    row('manageRoles', ['none', 'none', 'none', 'full'])
+    row('manageMembers', 'implemented', ['none', 'none', 'full', 'full']),
+    row('manageMembershipFees', 'implemented', ['none', 'none', 'full', 'full']),
+    row('sendPaymentReceipts', 'notImplemented', ['none', 'none', 'full', 'full']),
+
+    row('deleteRuleset', 'notImplemented', ['none', 'none', 'full', 'full']),
+
+    row('purgeTrash', 'implemented', ['none', 'none', 'none', 'full']),
+
+    row('manageRoles', 'partial', ['none', 'none', 'none', 'full'])
   ]
 })
 
@@ -108,6 +150,15 @@ const legend = computed(() => (['full', 'partial'] as const).map(access => ({
   access,
   label: t(`settings.permissions.access.${access}`)
 })))
+
+// Badge, not a bare icon like ACCESS_META — this column reads left-to-right as
+// its own sentence ("Implementato" / "Parziale" / "Non implementato"), unlike
+// the role grid where the column header already supplies the missing word.
+const STATUS_META: Record<ImplementationStatus, { color: 'success' | 'warning' | 'error' }> = {
+  implemented: { color: 'success' },
+  partial: { color: 'warning' },
+  notImplemented: { color: 'error' }
+}
 
 // Two things to highlight inline in a feature description, matched together
 // so overlapping matches can't fight each other:
@@ -164,6 +215,19 @@ const columns: TableColumn<PermissionRow>[] = [
     meta: { class: { th: 'whitespace-nowrap w-px', td: 'whitespace-nowrap w-px' } },
     cell: ({ row }) => renderFeature(row.original.feature)
   },
+  {
+    accessorKey: 'status',
+    header: () => h('span', { class: 'text-sm' }, t('settings.permissions.columns.status')),
+    meta: { class: { th: 'whitespace-nowrap w-px text-center', td: 'whitespace-nowrap w-px text-center' } },
+    cell: ({ row }) => {
+      const { status, statusNote } = row.original
+      const badge = h(UBadge, {
+        color: STATUS_META[status].color,
+        variant: 'subtle'
+      }, () => t(`settings.permissions.status.${status}`))
+      return statusNote ? h(UTooltip, { text: statusNote }, () => badge) : badge
+    }
+  },
   roleColumn('player'),
   roleColumn('organizer'),
   roleColumn('admin'),
@@ -172,47 +236,37 @@ const columns: TableColumn<PermissionRow>[] = [
 </script>
 
 <template>
-  <div class="flex flex-col gap-6">
-    <UAlert
-      color="warning"
-      variant="subtle"
-      icon="i-lucide-triangle-alert"
-      :title="$t('settings.permissions.warning.title')"
-      :description="$t('settings.permissions.warning.description')"
+  <UPageCard
+    :title="$t('settings.permissions.title')"
+    :description="$t('settings.permissions.description')"
+    :ui="{ container: 'gap-2' }"
+  >
+    <template #header>
+      <div class="flex items-center gap-4 text-sm text-muted">
+        <span v-for="item in legend" :key="item.access" class="flex items-center gap-1.5">
+          <UIcon :name="ACCESS_META[item.access].icon" :class="['size-4', ACCESS_META[item.access].color]" />
+          {{ item.label }}
+        </span>
+      </div>
+    </template>
+
+    <UTable
+      :data="rows"
+      :columns="columns"
+      class="w-full"
+      :ui="{
+        td: 'py-1.5 px-3 text-sm group-hover:bg-(--ui-bg-elevated)',
+        th: 'py-1.5 px-3',
+        // Row hover via the public `ui` slot API instead of a scoped :deep()
+        // selector: no wrapper div needed, and it doesn't assume UTable's
+        // internal DOM shape (tbody > tr > td) stays the same across versions —
+        // `tr`/`td` here are UTable's own documented slot names, not a guess.
+        // Standard Tailwind group/group-hover, not an arbitrary variant: `tr`
+        // marked as the group, `td` reacts to its hover state. Plain :hover, no
+        // transition — same reasoning as PublicMatrixTable.vue for why that
+        // stays cheap at this table size.
+        tr: 'group divide-x divide-default'
+      }"
     />
-
-    <UPageCard
-      :title="$t('settings.permissions.title')"
-      :description="$t('settings.permissions.description')"
-      :ui="{ container: 'gap-4' }"
-    >
-      <template #header>
-        <div class="flex items-center gap-4 text-sm text-muted">
-          <span v-for="item in legend" :key="item.access" class="flex items-center gap-1.5">
-            <UIcon :name="ACCESS_META[item.access].icon" :class="['size-4', ACCESS_META[item.access].color]" />
-            {{ item.label }}
-          </span>
-        </div>
-      </template>
-
-      <UTable
-        :data="rows"
-        :columns="columns"
-        class="w-full"
-        :ui="{
-          td: 'py-1.5 px-3 text-sm group-hover:bg-(--ui-bg-elevated)',
-          th: 'py-1.5 px-3',
-          // Row hover via the public `ui` slot API instead of a scoped :deep()
-          // selector: no wrapper div needed, and it doesn't assume UTable's
-          // internal DOM shape (tbody > tr > td) stays the same across versions —
-          // `tr`/`td` here are UTable's own documented slot names, not a guess.
-          // Standard Tailwind group/group-hover, not an arbitrary variant: `tr`
-          // marked as the group, `td` reacts to its hover state. Plain :hover, no
-          // transition — same reasoning as PublicMatrixTable.vue for why that
-          // stays cheap at this table size.
-          tr: 'group divide-x divide-default'
-        }"
-      />
-    </UPageCard>
-  </div>
+  </UPageCard>
 </template>
