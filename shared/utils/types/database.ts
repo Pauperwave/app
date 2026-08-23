@@ -980,6 +980,7 @@ export type Database = {
           id: number
           membership_fee_amount: number
           membership_fee_payment_method: string
+          trash_retention_days: number
           updated_at: string
           updated_by: string | null
         }
@@ -988,6 +989,7 @@ export type Database = {
           id?: number
           membership_fee_amount?: number
           membership_fee_payment_method?: string
+          trash_retention_days?: number
           updated_at?: string
           updated_by?: string | null
         }
@@ -996,6 +998,7 @@ export type Database = {
           id?: number
           membership_fee_amount?: number
           membership_fee_payment_method?: string
+          trash_retention_days?: number
           updated_at?: string
           updated_by?: string | null
         }
@@ -2056,6 +2059,7 @@ export type Database = {
           created_by: string | null
           id: string
           role: Database["public"]["Enums"]["app_role"]
+          role_locked: boolean
           updated_by: string | null
           user_id: string
         }
@@ -2064,6 +2068,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           role: Database["public"]["Enums"]["app_role"]
+          role_locked?: boolean
           updated_by?: string | null
           user_id: string
         }
@@ -2072,6 +2077,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          role_locked?: boolean
           updated_by?: string | null
           user_id?: string
         }
@@ -2269,6 +2275,7 @@ export type Database = {
       is_admin_or_above: { Args: { p_user_id: string }; Returns: boolean }
       is_organizer: { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: { p_user_id: string }; Returns: boolean }
+      purge_expired_trash: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "player" | "organizer" | "admin" | "super_admin"
