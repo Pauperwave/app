@@ -9,7 +9,17 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 // is stripped from every item before the final `satisfies
 // NavigationMenuItem[][]` below, so it never reaches the actual
 // UNavigationMenu component.
-type NavItem = NavigationMenuItem & { permission?: Permission }
+// `children` redefined (not just extended) so a nested item's own
+// `permission` is typed, not just structurally allowed via
+// NavigationMenuChildItem's catch-all index signature — see the Classifiche
+// group below (2026-08-23), the first nav item with children instead of a
+// flat list. UNavigationMenu already turns `children` into an accordion
+// (expanded sidebar) or a popover flyout (collapsed sidebar, `popover`
+// prop already set in default.vue) with no extra wiring needed here.
+type NavItem = Omit<NavigationMenuItem, 'children'> & {
+  permission?: Permission
+  children?: NavItem[]
+}
 
 // Each section is its own sub-array (not one flat array with inline labels): the
 // spacing between groups (gap-1.5 on the UNavigationMenu root) stays visible even
@@ -119,38 +129,10 @@ export function useMainNavGroups(open: Ref<boolean>) {
     onSelect: () => {
       open.value = false
     }
-  }], [{
-    label: t('nav.standingsSection'),
-    type: 'label'
   }, {
-    label: t('cittadino.breadcrumb'),
-    icon: ICONS.medal,
-    to: '/standings/cittadino',
-    onSelect: () => {
-      open.value = false
-    }
-  }, {
-    label: t('standings.commanderBreadcrumb'),
-    icon: ICONS.medal,
-    to: '/standings/commander',
-    onSelect: () => {
-      open.value = false
-    }
-  }, {
-    label: t('standings.premodernBreadcrumb'),
-    icon: ICONS.medal,
-    to: '/standings/premodern',
-    onSelect: () => {
-      open.value = false
-    }
-  }, {
-    label: t('standings.pauperBreadcrumb'),
-    icon: ICONS.medal,
-    to: '/standings/pauper',
-    onSelect: () => {
-      open.value = false
-    }
-  }, {
+    // Moved out of Classifiche (2026-08-23, same request as the dropdown
+    // change below) — a ruleset isn't a standings page, it belongs with the
+    // other competition-setup items in this section.
     label: t('ruleset.breadcrumb'),
     icon: ICONS.rules,
     to: '/rulesets',
@@ -158,6 +140,43 @@ export function useMainNavGroups(open: Ref<boolean>) {
     onSelect: () => {
       open.value = false
     }
+  }], [{
+    // Dropdown, not a flat label+list (user request, 2026-08-23) — four
+    // items permanently expanded took more vertical space than any other
+    // section for a set of pages used less often than tournaments/events.
+    // No standalone label item needed above it: the trigger's own label
+    // already reads "Classifiche", a separate header would be redundant.
+    label: t('nav.standingsSection'),
+    icon: ICONS.medal,
+    children: [{
+      label: t('cittadino.breadcrumb'),
+      icon: ICONS.medal,
+      to: '/standings/cittadino',
+      onSelect: () => {
+        open.value = false
+      }
+    }, {
+      label: t('standings.commanderBreadcrumb'),
+      icon: ICONS.medal,
+      to: '/standings/commander',
+      onSelect: () => {
+        open.value = false
+      }
+    }, {
+      label: t('standings.premodernBreadcrumb'),
+      icon: ICONS.medal,
+      to: '/standings/premodern',
+      onSelect: () => {
+        open.value = false
+      }
+    }, {
+      label: t('standings.pauperBreadcrumb'),
+      icon: ICONS.medal,
+      to: '/standings/pauper',
+      onSelect: () => {
+        open.value = false
+      }
+    }]
   }], [{
     label: t('nav.statisticsSection'),
     type: 'label'
@@ -239,8 +258,18 @@ export function useMainNavGroups(open: Ref<boolean>) {
   // `permission` isn't stripped from the surviving items — it's an extra
   // property UNavigationMenu itself never reads, and NavItem's structural
   // superset of NavigationMenuItem is assignable without a cast here.
+  // Children get the same permission filter as top-level items (2026-08-23,
+  // Classifiche's own Regolamenti child) — the top-level filter alone never
+  // reaches inside a `children` array.
   const mainNavGroups = computed<NavigationMenuItem[][]>(() => rawGroups
-    .map(group => group.filter(item => !item.permission || can(item.permission)))
+    .map(group => group
+      .filter(item => !item.permission || can(item.permission))
+      .map(item => (item.children
+        ? {
+          ...item,
+          children: item.children.filter(child => !child.permission || can(child.permission))
+        }
+        : item)))
     .filter(group => group.some(item => item.type !== 'label')))
 
   return mainNavGroups
