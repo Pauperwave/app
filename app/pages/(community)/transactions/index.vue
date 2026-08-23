@@ -1,14 +1,20 @@
 <!-- app\pages\(community)\transactions\index.vue -->
 <script lang="ts" setup>
-import { sub } from 'date-fns'
+import { startOfYear, endOfYear } from 'date-fns'
 import { getGroupedRowModel } from '@tanstack/vue-table'
 import type { Range } from '~/types'
 import type { PaymentType } from '#shared/types/transactions'
 
 const range = shallowRef<Range>({
-  start: sub(new Date(), { days: 14 }),
-  end: new Date()
+  start: startOfYear(new Date()),
+  end: endOfYear(new Date())
 })
+
+// Transactions are naturally year-bucketed (membership fees, event history) —
+// offer the current + 2 previous years as one-click presets, unlike the
+// relative "last N months" ranges DateRangePicker otherwise offers.
+const currentYear = new Date().getFullYear()
+const calendarYears = [currentYear, currentYear - 1, currentYear - 2]
 
 const { t } = useI18n()
 
@@ -48,11 +54,11 @@ const { columns, columnHeaders } = useTransactionsTableColumns(selection, rowCon
 const selectedTransactions = computed(() =>
   filteredTransactions.value.filter(transaction => selection.isSelected(transaction.id)))
 const {
-  pendingDelete, confirmOpen: bulkDeleteConfirmOpen, deleting: bulkDeleting,
-  requestBulkDelete, confirmBulkDelete
+  pendingAction, confirmOpen: bulkConfirmOpen, processing: bulkProcessing,
+  requestBulkDelete, requestBulkTypeChange, confirmPendingAction
 } = useTransactionsBulkActions()
 
-const sorting = ref([{ id: 'payment_date', desc: true }])
+const sorting = ref([{ id: 'id', desc: true }])
 
 interface TableColumnRef {
   id: string
@@ -78,8 +84,14 @@ const table = useTemplateRef<TableRef>('table')
 // 2026-08-18) also need to live in this same v-model ref for the "Mostra
 // colonne" menu to toggle them, same "not needed at a glance" reasoning as
 // associates'/wanted-cards' own hidden audit columns.
+// Same reasoning as payment_type: "Gettoni" is only ever populated for Token
+// Purchase rows, so it's redundant clutter on every other tab (user request,
+// 2026-08-23) — shown on "Tutte" and "Acquisto gettoni" only.
+const gettoniVisible = (tab: 'all' | PaymentType) => tab === 'all' || tab === 'Token Purchase'
+
 const columnVisibility = ref({
   payment_type: activeTypeTab.value === 'all',
+  gettoni: gettoniVisible(activeTypeTab.value),
   createdAt: false,
   updatedAt: false,
   createdBy: false,
@@ -87,6 +99,7 @@ const columnVisibility = ref({
 })
 watch(activeTypeTab, (value) => {
   columnVisibility.value.payment_type = value === 'all'
+  columnVisibility.value.gettoni = gettoniVisible(value)
 })
 
 const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, columnHeaders)
@@ -153,6 +166,7 @@ const tour = useTransactionsTour()
             v-if="selectedTransactions.length"
             side="right"
             :count="selectedTransactions.length"
+            @change-type="paymentType => requestBulkTypeChange(paymentType, selectedTransactions)"
             @delete="requestBulkDelete(selectedTransactions)"
           />
           <div v-else id="tour-transactions-actions" class="flex items-center gap-4 flex-wrap">
@@ -164,7 +178,7 @@ const tour = useTransactionsTour()
               @click="toggleGrouping"
             />
 
-            <DateRangePicker v-model="range" class="-ms-1" />
+            <DateRangePicker v-model="range" :calendar-years="calendarYears" class="-ms-1" />
 
             <UDropdownMenu :items="columnVisibilityItems" :content="{ align: 'end' }">
               <UButton
@@ -191,6 +205,10 @@ const tour = useTransactionsTour()
           :grouping="grouping"
           :grouping-options="{
             getGroupedRowModel: getGroupedRowModel()
+          }"
+          :virtualize="{
+            estimateSize: 35,
+            overscan: 12
           }"
           class="flex-1 h-80 shrink-0"
           :loading="loading"
@@ -230,16 +248,22 @@ const tour = useTransactionsTour()
   </ConfirmModal>
 
   <ConfirmModal
-    v-model:open="bulkDeleteConfirmOpen"
-    :title="$t('transaction.bulkActions.deleteConfirmTitle', pendingDelete?.length ?? 0)"
-    :warning="$t('common.confirmDeleteWarning')"
-    :confirm-label="$t('transaction.rowActions.delete')"
-    :confirm-icon="ICONS.delete"
-    :loading="bulkDeleting"
-    @confirm="confirmBulkDelete"
+    v-if="pendingAction"
+    v-model:open="bulkConfirmOpen"
+    :title="pendingAction.type === 'delete'
+      ? $t('transaction.bulkActions.deleteConfirmTitle', pendingAction.transactions.length)
+      : $t('transaction.bulkActions.typeChangeConfirmTitle', pendingAction.transactions.length)"
+    :warning="pendingAction.type === 'delete' ? $t('common.confirmDeleteWarning') : undefined"
+    :confirm-label="pendingAction.type === 'delete'
+      ? $t('transaction.rowActions.delete')
+      : $t('transaction.bulkActions.confirm')"
+    :confirm-icon="pendingAction.type === 'delete' ? ICONS.delete : undefined"
+    :confirm-color="pendingAction.type === 'delete' ? 'error' : 'primary'"
+    :loading="bulkProcessing"
+    @confirm="confirmPendingAction"
   >
-    <ul v-if="pendingDelete" class="max-h-40 overflow-y-auto text-sm space-y-1">
-      <li v-for="transaction in pendingDelete" :key="transaction.id">
+    <ul class="max-h-40 overflow-y-auto text-sm space-y-1">
+      <li v-for="transaction in pendingAction.transactions" :key="transaction.id">
         {{ transaction.payment_amount }}€
         —
         {{ transaction.associate

@@ -15,14 +15,21 @@ interface Props {
    * #37) — see CalendarHighlightedDate. Omitted entirely (not just empty)
    * by every caller that hasn't opted in yet, so this stays a no-op. */
   highlightedDates?: CalendarHighlightedDate[]
+  /** Absolute calendar-year presets (Jan 1 - Dec 31 of that year), prepended
+   * above the relative "last/next N" ones. Opt-in per caller (transactions,
+   * whose data is naturally year-bucketed) — omitted entirely by every other
+   * page, same convention as highlightedDates. */
+  calendarYears?: number[]
 }
 
-const { highlightedDates = [] } = defineProps<Props>()
+const { highlightedDates = [], calendarYears = [] } = defineProps<Props>()
 
 const selected = defineModel<Range>({ required: true })
 const { t } = useI18n()
 
 const ranges = computed(() => [
+  ...calendarYears.map(year => ({ label: String(year), year, type: undefined })),
+  ...(calendarYears.length ? [{ type: 'divider' as const }] : []),
   { label: t('home.dateRanges.lastYear'), years: 1, direction: 'past' as const },
   { label: t('home.dateRanges.last6Months'), months: 6, direction: 'past' as const },
   { label: t('home.dateRanges.last3Months'), months: 3, direction: 'past' as const },
@@ -63,6 +70,13 @@ interface RangeSpec {
   years?: number
   direction?: 'past' | 'future'
   type?: 'all'
+  /** Absolute calendar year (Jan 1 - Dec 31), unrelated to `years`/`direction`
+   * which are both relative to today. */
+  year?: number
+}
+
+function calendarYearRange(year: number): { startDate: CalendarDate, endDate: CalendarDate } {
+  return { startDate: new CalendarDate(year, 1, 1), endDate: new CalendarDate(year, 12, 31) }
 }
 
 // isRangeSelected/selectRange both need "what CalendarDate span does this preset
@@ -106,7 +120,9 @@ const isRangeSelected = (range: RangeSpec) => {
     return diffYears >= 10
   }
 
-  const { startDate, endDate } = rangeDatesFromToday(range)
+  const { startDate, endDate } = range.year !== undefined
+    ? calendarYearRange(range.year)
+    : rangeDatesFromToday(range)
   const selectedStart = toCalendarDate(selected.value.start)
   const selectedEnd = toCalendarDate(selected.value.end)
 
@@ -156,7 +172,9 @@ const selectRange = (range: RangeSpec) => {
     return
   }
 
-  const { startDate, endDate } = rangeDatesFromToday(range)
+  const { startDate, endDate } = range.year !== undefined
+    ? calendarYearRange(range.year)
+    : rangeDatesFromToday(range)
   selected.value = {
     start: startDate.toDate(getLocalTimeZone()),
     end: endDate.toDate(getLocalTimeZone())
