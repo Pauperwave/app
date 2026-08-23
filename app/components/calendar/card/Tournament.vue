@@ -53,7 +53,7 @@ function openDetail() {
 
     <template #body>
       <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mt-2 text-sm">
-        <BadgesFormatBadge :format="tournament.format" />
+        <BadgesFormatBadge :format="tournament.format" :icon="ICONS.gameplay" />
       </div>
     </template>
   </CalendarCardBase>

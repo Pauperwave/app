@@ -131,7 +131,7 @@ export function useTournamentsTableColumns(
       cell: ({ row, getValue }) => {
         const format = getValue<string>()
         if (row.getIsGrouped()) return groupHeaderCell(row, format)
-        return h(BadgesFormatBadge, { format })
+        return h(BadgesFormatBadge, { format, icon: ICONS.gameplay })
       }
     },
     {
