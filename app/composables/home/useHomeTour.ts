@@ -32,16 +32,6 @@ export function useHomeTour(isStaff: Ref<boolean>) {
       description: t('home.tour.steps.upcomingStaff.description')
     },
     {
-      target: '#tour-home-recent-transactions',
-      title: t('home.tour.steps.recentTransactions.title'),
-      description: t('home.tour.steps.recentTransactions.description')
-    },
-    {
-      target: '#tour-home-recent-associates',
-      title: t('home.tour.steps.recentAssociates.title'),
-      description: t('home.tour.steps.recentAssociates.description')
-    },
-    {
       target: '#tour-home-next-location',
       title: t('home.tour.steps.nextLocation.title'),
       description: t('home.tour.steps.nextLocation.description')
@@ -50,6 +40,16 @@ export function useHomeTour(isStaff: Ref<boolean>) {
       target: '#tour-home-active-leagues',
       title: t('home.tour.steps.activeLeagues.title'),
       description: t('home.tour.steps.activeLeagues.description')
+    },
+    {
+      target: '#tour-home-recent-transactions',
+      title: t('home.tour.steps.recentTransactions.title'),
+      description: t('home.tour.steps.recentTransactions.description')
+    },
+    {
+      target: '#tour-home-recent-associates',
+      title: t('home.tour.steps.recentAssociates.title'),
+      description: t('home.tour.steps.recentAssociates.description')
     }
   ]
 
