@@ -79,6 +79,30 @@ const { data: players } = usePlayersQuery()
 // convention as associatesCount above.
 const playersCount = computed(() => (players.value ?? []).length)
 
+// Same 'transactions' Pinia Colada key as transactions/index.vue.
+const { data: transactions } = useTransactionsQuery()
+
+// Plain transaction count on the "Transazioni" item — no color, just a
+// count, same convention as associatesCount/playersCount above.
+const transactionsCount = computed(() => (transactions.value ?? []).length)
+
+// Same Pinia Colada keys as each domain's own index.vue — plain totals, same
+// convention as associatesCount/playersCount/transactionsCount above.
+// statistics/decks.vue and statistics/commanders/index.vue have no query of
+// their own yet (both still empty placeholder pages), so those two nav items
+// don't get a badge.
+const { data: tournaments } = useTournamentsQuery()
+const tournamentsCount = computed(() => (tournaments.value ?? []).length)
+
+const { data: leagues } = useLeaguesQuery()
+const leaguesCount = computed(() => (leagues.value ?? []).length)
+
+const { data: events } = useEventsQuery()
+const eventsCount = computed(() => (events.value ?? []).length)
+
+const { data: locations } = useLocationsQuery()
+const locationsCount = computed(() => (locations.value ?? []).length)
+
 // Which nav items carry a warning-colored badge in the expanded sidebar —
 // reused below to swap in a plain warning UChip dot on the icon when the
 // sidebar is collapsed (the trailing UBadge itself has nowhere to render).
@@ -350,6 +374,46 @@ const groups = computed(() => [{
                   <UBadge
                     v-if="item.to === '/players'"
                     :label="playersCount"
+                    color="neutral"
+                    variant="subtle"
+                    size="sm"
+                  />
+                  <!-- Plain transaction count, no color — just a count. -->
+                  <UBadge
+                    v-if="item.to === '/transactions'"
+                    :label="transactionsCount"
+                    color="neutral"
+                    variant="subtle"
+                    size="sm"
+                  />
+                  <!-- Plain tournament count, no color — just a count. -->
+                  <UBadge
+                    v-if="item.to === '/tournaments'"
+                    :label="tournamentsCount"
+                    color="neutral"
+                    variant="subtle"
+                    size="sm"
+                  />
+                  <!-- Plain league count, no color — just a count. -->
+                  <UBadge
+                    v-if="item.to === '/leagues'"
+                    :label="leaguesCount"
+                    color="neutral"
+                    variant="subtle"
+                    size="sm"
+                  />
+                  <!-- Plain event count, no color — just a count. -->
+                  <UBadge
+                    v-if="item.to === '/events'"
+                    :label="eventsCount"
+                    color="neutral"
+                    variant="subtle"
+                    size="sm"
+                  />
+                  <!-- Plain location count, no color — just a count. -->
+                  <UBadge
+                    v-if="item.to === '/locations'"
+                    :label="locationsCount"
                     color="neutral"
                     variant="subtle"
                     size="sm"
