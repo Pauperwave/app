@@ -1,11 +1,37 @@
 <!-- app\components\home\HomeDateRangePicker.vue -->
 <script setup lang="ts">
-import { DateFormatter, getLocalTimeZone, CalendarDate, today } from '@internationalized/date'
-import type { Range } from '~/types'
+import {
+  DateFormatter, getLocalTimeZone, CalendarDate, today
+} from '@internationalized/date'
+import type { DateValue } from '@internationalized/date'
+import type { Range, StatusColor } from '~/types'
 
 const df = new DateFormatter('it-IT', {
   dateStyle: 'long'
 })
+
+// One entry per date to dot with a UChip (issue #37) — `color` is the
+// domain's own status color (e.g. tournamentStatusColor()), not a flat
+// constant, so the dot itself hints at the day's status rather than just
+// "something's here" (user request, 2026-08-23: top-right + status color,
+// not the docs example's bottom-right/single-color chip). `label` is the
+// caller's own pre-formatted string (e.g. "Draft \"Lo Hobbit\" —
+// Registrazioni aperte") shown in a UTooltip on hover — kept as a plain
+// string rather than structured fields so this component stays generic
+// across domains instead of knowing about Tournament/Event/League shapes.
+interface HighlightedDate {
+  date: Date
+  color: StatusColor
+  label: string
+}
+
+interface Props {
+  /** Omitted entirely (not just empty) by every caller that hasn't opted in
+   * yet, so this stays a no-op for them. */
+  highlightedDates?: HighlightedDate[]
+}
+
+const { highlightedDates = [] } = defineProps<Props>()
 
 const selected = defineModel<Range>({ required: true })
 const { t } = useI18n()
@@ -101,6 +127,36 @@ const isRangeSelected = (range: RangeSpec) => {
   return selectedStart.compare(startDate) === 0 && selectedEnd.compare(endDate) === 0
 }
 
+// CalendarDate#toString() is already a "YYYY-MM-DD" key, same format the
+// #day slot's own `day` param produces — cheaper than a per-day .some() scan
+// once highlightedDates gets into the dozens (all of a domain's tournaments).
+// Grouped (not deduped) per day: the tooltip lists every event on a day with
+// more than one, even though the dot itself can only show one color (the
+// last entry's, same as before).
+const highlightedDatesByDay = computed(() => {
+  const map = new Map<string, HighlightedDate[]>()
+  for (const entry of highlightedDates) {
+    const key = toCalendarDate(entry.date).toString()
+    map.set(key, [...(map.get(key) ?? []), entry])
+  }
+  return map
+})
+
+function eventsFor(day: DateValue): HighlightedDate[] {
+  return highlightedDatesByDay.value.get(day.toString()) ?? []
+}
+
+// UTooltip's own pointerenter-based auto-open never fires here: reka-ui's
+// Calendar cell (the #day slot's parent, a range-mode `div[role=button]`,
+// not a plain element) attaches its own pointer listeners for the
+// range-preview highlight, and the repeated re-render/attribute churn that
+// causes keeps resetting the Tooltip's delayDuration timer before it fires.
+// Controlling `open` ourselves off native @mouseenter/@mouseleave on the
+// UChip (not the cell) sidesteps that conflict entirely — bubbling doesn't
+// stop the child from receiving its own listener regardless of what the
+// parent cell does internally.
+const hoveredDayKey = ref<string | null>(null)
+
 const selectRange = (range: RangeSpec) => {
   const currentDate = today(getLocalTimeZone())
 
@@ -175,7 +231,41 @@ const selectRange = (range: RangeSpec) => {
           class="p-2"
           :number-of-months="3"
           range
-        />
+        >
+          <template #day="{ day }">
+            <!-- The hover listeners live on this plain `contents` span, not
+                 on UChip: UChip declares `inheritAttrs: false` and forwards
+                 its own $attrs into the default slot's content (reka-ui's
+                 asChild `Slot`) — since that content here is bare text
+                 (`day.day`), not an element, any listener put directly on
+                 `<UChip>` silently attaches to nothing. `display: contents`
+                 keeps this span out of the cell's layout/sizing. -->
+            <span
+              class="contents"
+              @mouseenter="hoveredDayKey = eventsFor(day).length ? day.toString() : null"
+              @mouseleave="hoveredDayKey = null"
+            >
+              <UTooltip
+                v-if="eventsFor(day).length"
+                :text="eventsFor(day).map(event => event.label).join('\n')"
+                :ui="{ text: 'whitespace-pre-line' }"
+                :open="hoveredDayKey === day.toString()"
+              >
+                <UChip :color="eventsFor(day).at(-1)!.color" size="xs" position="top-right">
+                  {{ day.day }}
+                </UChip>
+              </UTooltip>
+              <UChip
+                v-else
+                :show="false"
+                size="xs"
+                position="top-right"
+              >
+                {{ day.day }}
+              </UChip>
+            </span>
+          </template>
+        </UCalendar>
       </div>
     </template>
   </UPopover>

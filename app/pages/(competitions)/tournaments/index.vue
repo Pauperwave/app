@@ -42,6 +42,19 @@ const {
   statusFilter, formatFilter, filteredTournaments, statusTabs, formatTabs
 } = useTournamentsFilters(data, range)
 
+// Every known tournament's date + status color + hover label (unfiltered by
+// range/status/format) — issue #37, HomeDateRangePicker.vue's own UChip
+// density hint (and its tooltip, 2026-08-23 follow-up) while picking a
+// range, not just the currently-filtered subset. Label is name + stage
+// (tournamentStageText(), "Commander Casual — 1ª tappa") rather than
+// name + status — the dot's own color already encodes status, no need to
+// repeat it (user request, 2026-08-23).
+const tournamentDates = computed(() => data.value.map(tournament => ({
+  date: new Date(tournament.startDate),
+  color: tournamentStatusColor(tournament.status),
+  label: `${tournament.name}${tournamentStageText(tournament)}`
+})))
+
 // undefined (ListSkeleton's own default count) only on a genuine first
 // load — isPending, unlike isLoading, is false once stale data exists to
 // show a real count from, even mid-refetch (e.g. the manual refresh
@@ -226,7 +239,11 @@ const bulkConfirmTitle = computed(() => {
           />
           <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->
           <div v-else id="tour-tournaments-actions" class="flex items-center gap-2">
-            <HomeDateRangePicker v-model="range" class="-ms-1" />
+            <HomeDateRangePicker
+              v-model="range"
+              :highlighted-dates="tournamentDates"
+              class="-ms-1"
+            />
 
             <USelectMenu
               v-if="viewMode === 'table'"
