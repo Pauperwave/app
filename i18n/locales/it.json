@@ -127,6 +127,10 @@
       "all": "Tutto"
     },
     "staff": {
+      "sections": {
+        "upcoming": "In arrivo",
+        "recentActivity": "Attività recente"
+      },
       "stats": {
         "activeAssociates": "Soci attivi",
         "upcomingTournaments": "Tornei in programma",
