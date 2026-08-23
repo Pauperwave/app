@@ -63,6 +63,24 @@ export default defineAppConfig({
         base: 'cursor-pointer'
       }
     },
+    pageCard: {
+      slots: {
+        // Root cause of the "short-content cards look vertically centered"
+        // bug (Home's equal-height card rows, 2026-08-23): at the lg
+        // breakpoint the container switches to `display: grid` with two
+        // implicit auto-sized rows (header, body); CSS Grid's default
+        // `align-content: normal` behaves as `stretch` for auto-sized
+        // tracks, so a card stretched taller than its own content (to match
+        // its row's tallest sibling) distributes the extra height onto BOTH
+        // rows instead of leaving it after the body — visually pushing
+        // everything down/apart rather than pinning it to the top.
+        // `content-start` stops that redistribution; verified via
+        // getComputedStyle(container).gridTemplateRows collapsing to each
+        // row's natural content height instead of splitting the stretched
+        // total.
+        container: 'relative flex flex-col flex-1 lg:grid content-start gap-x-8 gap-y-4 p-4 sm:p-6'
+      }
+    },
     navigationMenu: {
       slots: {
         // Was gap-4/pt-4 — with 6 sidebar sections now (Classifiche added

@@ -124,177 +124,189 @@ const stats = computed(() => [{
       </UPageCard>
     </UPageGrid>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 items-start gap-4 sm:gap-6">
-      <UPageCard
-        id="tour-home-pending-actions"
-        :title="t('home.staff.pendingActions.title')"
-        variant="subtle"
-      >
-        <div class="flex flex-col divide-y divide-default">
-          <NuxtLink
-            v-for="action in pendingActions"
-            :key="action.label"
-            :to="action.to"
-            class="flex items-center justify-between gap-3 -mx-2 px-2 py-3 first:pt-0 last:pb-0
-              rounded-md hover:bg-elevated/50 hover:text-highlighted"
-          >
-            <span class="flex items-center gap-2 text-sm">
-              <UIcon :name="action.icon" class="size-4 text-muted shrink-0" />
-              {{ action.label }}
-            </span>
-            <UBadge :color="action.count > 0 ? 'warning' : 'neutral'" variant="subtle" class="shrink-0">
-              {{ action.count }}
-            </UBadge>
-          </NuxtLink>
-        </div>
-      </UPageCard>
+    <div>
+      <h3 class="font-semibold mb-3">
+        {{ t('home.staff.sections.upcoming') }}
+      </h3>
 
-      <UPageCard id="tour-home-upcoming" :title="t('home.staff.upcoming.title')" variant="subtle">
-        <div v-if="!upcomingTournaments.length" class="text-sm text-muted py-4 text-center">
-          {{ t('home.staff.upcoming.empty') }}
-        </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 items-stretch gap-4 sm:gap-6">
+        <UPageCard
+          id="tour-home-pending-actions"
+          :title="t('home.staff.pendingActions.title')"
+          variant="subtle"
+        >
+          <div class="flex flex-col divide-y divide-default">
+            <NuxtLink
+              v-for="action in pendingActions"
+              :key="action.label"
+              :to="action.to"
+              class="flex items-center justify-between gap-3 -mx-2 px-2 py-3 first:pt-0 last:pb-0
+                rounded-md hover:bg-elevated/50 hover:text-highlighted"
+            >
+              <span class="flex items-center gap-2 text-sm">
+                <UIcon :name="action.icon" class="size-4 text-muted shrink-0" />
+                {{ action.label }}
+              </span>
+              <UBadge :color="action.count > 0 ? 'warning' : 'neutral'" variant="subtle" class="shrink-0">
+                {{ action.count }}
+              </UBadge>
+            </NuxtLink>
+          </div>
+        </UPageCard>
 
-        <div v-else class="flex flex-col divide-y divide-default">
-          <NuxtLink
-            v-for="tournament in upcomingTournaments"
-            :key="tournament.uuid"
-            :to="tournamentDetailUrl(tournament)"
-            class="flex items-center justify-between gap-3 -mx-2 px-2 py-3 first:pt-0 last:pb-0
-              rounded-md hover:bg-elevated/50 hover:text-highlighted"
-          >
+        <UPageCard id="tour-home-upcoming" :title="t('home.staff.upcoming.title')" variant="subtle">
+          <div v-if="!upcomingTournaments.length" class="text-sm text-muted py-4 text-center">
+            {{ t('home.staff.upcoming.empty') }}
+          </div>
+
+          <div v-else class="flex flex-col divide-y divide-default">
+            <NuxtLink
+              v-for="tournament in upcomingTournaments"
+              :key="tournament.uuid"
+              :to="tournamentDetailUrl(tournament)"
+              class="flex items-center justify-between gap-3 -mx-2 px-2 py-3 first:pt-0 last:pb-0
+                rounded-md hover:bg-elevated/50 hover:text-highlighted"
+            >
+              <div class="min-w-0">
+                <p class="text-sm font-medium truncate">
+                  {{ tournament.name }}
+                  <TournamentsStageLabel
+                    v-if="tournament.stageNumber"
+                    :number="tournament.stageNumber"
+                  />
+                </p>
+                <p class="text-sm text-muted">
+                  {{ tournament.format }} ·
+                  <DateWithRelativeTooltip :iso-string="tournament.startDate" :time="false" />
+                </p>
+              </div>
+              <TournamentsStatusBadge :tournament="tournament" />
+            </NuxtLink>
+          </div>
+        </UPageCard>
+
+        <UPageCard
+          id="tour-home-next-location"
+          :title="t('home.staff.nextLocation.title')"
+          variant="subtle"
+        >
+          <div v-if="!nextTournamentLocation?.location" class="text-sm text-muted py-4 text-center">
+            {{ t('home.staff.nextLocation.empty') }}
+          </div>
+
+          <div v-else class="flex items-start gap-3">
+            <UIcon :name="ICONS.mapPin" class="size-5 text-muted shrink-0 mt-0.5" />
             <div class="min-w-0">
-              <p class="text-sm font-medium truncate">
-                {{ tournament.name }}
-                <TournamentsStageLabel
-                  v-if="tournament.stageNumber"
-                  :number="tournament.stageNumber"
-                />
+              <p class="text-sm font-medium">
+                {{ nextTournamentLocation.location }}
               </p>
               <p class="text-sm text-muted">
-                {{ tournament.format }} ·
-                <DateWithRelativeTooltip :iso-string="tournament.startDate" :time="false" />
+                {{ nextTournamentLocation.locationAddress }}
               </p>
+              <a
+                v-if="nextTournamentLocation.locationMapsUrl"
+                :href="nextTournamentLocation.locationMapsUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-sm text-primary hover:underline"
+              >
+                {{ t('location.card.openInMaps') }}
+              </a>
             </div>
-            <TournamentsStatusBadge :tournament="tournament" />
-          </NuxtLink>
-        </div>
-      </UPageCard>
-
-      <UPageCard
-        id="tour-home-recent-transactions"
-        :title="t('home.staff.recentTransactions.title')"
-        variant="subtle"
-      >
-        <div v-if="!recentTransactions.length" class="text-sm text-muted py-4 text-center">
-          {{ t('home.staff.recentTransactions.empty') }}
-        </div>
-
-        <div v-else class="flex flex-col divide-y divide-default">
-          <NuxtLink
-            v-for="transaction in recentTransactions"
-            :key="transaction.id"
-            to="/transactions"
-            class="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0 hover:text-highlighted"
-          >
-            <AssociateTag
-              :name="transactionPayerName(transaction)"
-              :associate-uuid="transaction.associate?.uuid"
-            />
-            <div class="flex items-center gap-2 shrink-0">
-              <PaymentTypeBadge :type="transaction.payment_type" />
-              <span class="text-sm font-medium">
-                {{ amountFormatter.format(transaction.payment_amount) }}
-              </span>
-            </div>
-          </NuxtLink>
-        </div>
-      </UPageCard>
+          </div>
+        </UPageCard>
+      </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 items-start gap-4 sm:gap-6">
-      <UPageCard
-        id="tour-home-recent-associates"
-        :title="t('home.staff.recentAssociates.title')"
-        variant="subtle"
-      >
-        <div v-if="!recentAssociates.length" class="text-sm text-muted py-4 text-center">
-          {{ t('home.staff.recentAssociates.empty') }}
-        </div>
+    <div>
+      <h3 class="font-semibold mb-3">
+        {{ t('home.staff.sections.recentActivity') }}
+      </h3>
 
-        <div v-else class="flex flex-col divide-y divide-default">
-          <NuxtLink
-            v-for="associate in recentAssociates"
-            :key="associate.uuid"
-            :to="`/associate/${slugify(`${associate.first_name} ${associate.last_name}`)}`"
-            class="flex items-center justify-between gap-3 -mx-2 px-2 py-3 first:pt-0 last:pb-0
-              rounded-md hover:bg-elevated/50 hover:text-highlighted"
-          >
-            <AssociateTag
-              :name="`${associate.first_name} ${associate.last_name}`"
-              :associate-uuid="associate.uuid"
-            />
-            <DateWithRelativeTooltip
-              :iso-string="associate.association_date"
-              :time="false"
-              class="text-sm text-muted shrink-0"
-            />
-          </NuxtLink>
-        </div>
-      </UPageCard>
-
-      <UPageCard
-        id="tour-home-next-location"
-        :title="t('home.staff.nextLocation.title')"
-        variant="subtle"
-      >
-        <div v-if="!nextTournamentLocation?.location" class="text-sm text-muted py-4 text-center">
-          {{ t('home.staff.nextLocation.empty') }}
-        </div>
-
-        <div v-else class="flex items-start gap-3">
-          <UIcon :name="ICONS.mapPin" class="size-5 text-muted shrink-0 mt-0.5" />
-          <div class="min-w-0">
-            <p class="text-sm font-medium">
-              {{ nextTournamentLocation.location }}
-            </p>
-            <p class="text-sm text-muted">
-              {{ nextTournamentLocation.locationAddress }}
-            </p>
-            <a
-              v-if="nextTournamentLocation.locationMapsUrl"
-              :href="nextTournamentLocation.locationMapsUrl"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-sm text-primary hover:underline"
-            >
-              {{ t('location.card.openInMaps') }}
-            </a>
+      <div class="grid grid-cols-1 lg:grid-cols-3 items-stretch gap-4 sm:gap-6">
+        <UPageCard
+          id="tour-home-active-leagues"
+          :title="t('home.staff.activeLeagues.title')"
+          variant="subtle"
+        >
+          <div v-if="!activeLeagues.length" class="text-sm text-muted py-4 text-center">
+            {{ t('home.staff.activeLeagues.empty') }}
           </div>
-        </div>
-      </UPageCard>
 
-      <UPageCard
-        id="tour-home-active-leagues"
-        :title="t('home.staff.activeLeagues.title')"
-        variant="subtle"
-      >
-        <div v-if="!activeLeagues.length" class="text-sm text-muted py-4 text-center">
-          {{ t('home.staff.activeLeagues.empty') }}
-        </div>
+          <div v-else class="flex flex-col divide-y divide-default">
+            <NuxtLink
+              v-for="league in activeLeagues"
+              :key="league.uuid"
+              :to="`/leagues/${league.uuid}`"
+              class="flex items-center justify-between gap-3 -mx-2 px-2 py-3 first:pt-0 last:pb-0
+                rounded-md hover:bg-elevated/50 hover:text-highlighted"
+            >
+              <span class="text-sm font-medium truncate">{{ league.name }}</span>
+              <LeaguesStatusBadge :league="league" />
+            </NuxtLink>
+          </div>
+        </UPageCard>
 
-        <div v-else class="flex flex-col divide-y divide-default">
-          <NuxtLink
-            v-for="league in activeLeagues"
-            :key="league.uuid"
-            :to="`/leagues/${league.uuid}`"
-            class="flex items-center justify-between gap-3 -mx-2 px-2 py-3 first:pt-0 last:pb-0
-              rounded-md hover:bg-elevated/50 hover:text-highlighted"
-          >
-            <span class="text-sm font-medium truncate">{{ league.name }}</span>
-            <LeaguesStatusBadge :league="league" />
-          </NuxtLink>
-        </div>
-      </UPageCard>
+        <UPageCard
+          id="tour-home-recent-transactions"
+          :title="t('home.staff.recentTransactions.title')"
+          variant="subtle"
+        >
+          <div v-if="!recentTransactions.length" class="text-sm text-muted py-4 text-center">
+            {{ t('home.staff.recentTransactions.empty') }}
+          </div>
+
+          <div v-else class="flex flex-col divide-y divide-default">
+            <NuxtLink
+              v-for="transaction in recentTransactions"
+              :key="transaction.id"
+              to="/transactions"
+              class="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0 hover:text-highlighted"
+            >
+              <AssociateTag
+                :name="transactionPayerName(transaction)"
+                :associate-uuid="transaction.associate?.uuid"
+              />
+              <div class="flex items-center gap-2 shrink-0">
+                <PaymentTypeBadge :type="transaction.payment_type" />
+                <span class="text-sm font-medium">
+                  {{ amountFormatter.format(transaction.payment_amount) }}
+                </span>
+              </div>
+            </NuxtLink>
+          </div>
+        </UPageCard>
+
+        <UPageCard
+          id="tour-home-recent-associates"
+          :title="t('home.staff.recentAssociates.title')"
+          variant="subtle"
+        >
+          <div v-if="!recentAssociates.length" class="text-sm text-muted py-4 text-center">
+            {{ t('home.staff.recentAssociates.empty') }}
+          </div>
+
+          <div v-else class="flex flex-col divide-y divide-default">
+            <NuxtLink
+              v-for="associate in recentAssociates"
+              :key="associate.uuid"
+              :to="`/associate/${slugify(`${associate.first_name} ${associate.last_name}`)}`"
+              class="flex items-center justify-between gap-3 -mx-2 px-2 py-3 first:pt-0 last:pb-0
+                rounded-md hover:bg-elevated/50 hover:text-highlighted"
+            >
+              <AssociateTag
+                :name="`${associate.first_name} ${associate.last_name}`"
+                :associate-uuid="associate.uuid"
+              />
+              <DateWithRelativeTooltip
+                :iso-string="associate.association_date"
+                :time="false"
+                class="text-sm text-muted shrink-0"
+              />
+            </NuxtLink>
+          </div>
+        </UPageCard>
+      </div>
     </div>
   </div>
 </template>
