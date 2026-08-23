@@ -3,18 +3,19 @@
 // fallow-ignore-file code-duplication -- mirrors events/index.vue and
 // tournaments/index.vue's mock-driven layout on purpose; expected to diverge
 // once real Supabase tables land
-import { add, sub } from 'date-fns'
+import { add } from 'date-fns'
 import type { DropdownMenuItem, TabsItem } from '@nuxt/ui'
 import type { League, Range } from '~/types'
 
 const { isModalOpen } = useModalOpenFromQuery()
 
 // Not wired to a filter yet: leagues have no per-item date to filter by (only
-// tournaments do). Kept here for visual/toolbar consistency with the tournaments
-// page — defaults to "Tutto" (matches DateRangePicker's own "all time" range).
+// tournaments do). Kept here for visual/toolbar consistency with the
+// tournaments page — defaults to "Prossimo anno" (matches DateRangePicker's
+// own next-year preset, 2026-08-23 — was "Tutto").
 const range = shallowRef<Range>({
-  start: sub(new Date(), { years: 10 }),
-  end: add(new Date(), { years: 10 })
+  start: new Date(),
+  end: add(new Date(), { years: 1 })
 })
 
 const { t } = useI18n()

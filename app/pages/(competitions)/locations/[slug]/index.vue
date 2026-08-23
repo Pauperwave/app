@@ -12,7 +12,7 @@
 // associate/[slug].vue and players/[slug]/index.vue) — location names are
 // as stable as a person's name for this purpose (edited rarely, and only by
 // staff), so there's no reason for this route to be the odd one out either.
-import { add, sub } from 'date-fns'
+import { add } from 'date-fns'
 import type { Range, Tournament } from '~/types'
 
 const { t } = useI18n()
@@ -74,14 +74,16 @@ const hostedTournamentLegendItems = TOURNAMENT_STATUSES.map(status => ({
   labelKey: `tournament.status.${status}`
 }))
 
-// Defaults to "Tutto" (matches DateRangePicker's own "all time" range),
-// same reasoning as tournaments/index.vue's own default — a location that's
-// hosted tournaments for years shouldn't start on an empty grid. Only the
+// Defaults to "Prossimo anno" (matches DateRangePicker's own next-year
+// preset, 2026-08-23 — was "Tutto", same as tournaments/index.vue's own
+// default change). A location with no upcoming tournaments now starts on an
+// empty grid — a deliberate tradeoff for consistency with the other list
+// pages, confirmed by user request over keeping "Tutto" here. Only the
 // range is exposed here (not status/format, useTournamentsFilters.ts's other
 // two) — this page only asked for a temporal filter, 2026-08-19.
 const range = shallowRef<Range>({
-  start: sub(new Date(), { years: 10 }),
-  end: add(new Date(), { years: 10 })
+  start: new Date(),
+  end: add(new Date(), { years: 1 })
 })
 const {
   filteredTournaments: filteredHostedTournaments
