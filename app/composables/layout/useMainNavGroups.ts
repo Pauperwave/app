@@ -177,7 +177,7 @@ export function useMainNavGroups(open: Ref<boolean>) {
     }
   }, {
     label: t('commander.breadcrumb'),
-    icon: ICONS.crown,
+    icon: ICONS.commander,
     to: '/statistics/commanders',
     onSelect: () => {
       open.value = false
