@@ -1,4 +1,4 @@
-<!-- app\components\home\HomeStaff.vue -->
+<!-- app\components\home\Staff.vue -->
 <!--
   Home body for organizer/admin/super_admin (docs/PROGRESS.md ADR pending —
   see the 2026-08-19 "Home" conversation): a single shared dashboard, not one

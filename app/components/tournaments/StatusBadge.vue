@@ -1,6 +1,6 @@
 <!-- app\components\tournaments\StatusBadge.vue -->
 <!--
-  Extracted out of HomeStaff.vue (2026-08-19) the moment "just a status
+  Extracted out of home/Staff.vue (2026-08-19) the moment "just a status
   badge" needed a permission-gated quick-change dropdown behind it — nothing
   about that is Home-specific, so it belongs at the tournament-domain level
   instead of trapped in one page's component. Read-only badge (no dropdown)

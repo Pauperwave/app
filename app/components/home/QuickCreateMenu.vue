@@ -1,4 +1,4 @@
-<!-- app\components\home\HomeQuickCreateMenu.vue -->
+<!-- app\components\home\QuickCreateMenu.vue -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 

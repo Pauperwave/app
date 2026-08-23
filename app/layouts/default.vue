@@ -62,7 +62,7 @@ watch(() => shortcutsTour.current.value?.id, (id) => {
 })
 
 // Feeds the "Associati"/"Richieste"/"Wanted Cards" nav badges below (see
-// #item-trailing) — same counts HomeStaff.vue's dashboard sections use,
+// #item-trailing) — same counts home/Staff.vue's dashboard sections use,
 // shared via this composable rather than duplicated (2026-08-19).
 const {
   pendingAssociatesCount, associatesCount, associatesToRenewCount, wantedCardsSearchingCount
@@ -139,7 +139,7 @@ const flattenForSearch = (items: NavigationMenuItem[][]): CommandPaletteItem[] =
 const handleLogout = useLogout()
 
 // "New …" items reuse the same "?action=create" convention as
-// HomeQuickCreateMenu.vue — landing on the list page with its Add modal
+// home/QuickCreateMenu.vue — landing on the list page with its Add modal
 // already open, instead of a modal owned by the palette itself. Mapped from
 // useQuickCreateItems.ts, the single source both surfaces read from
 // (2026-08-19, user request) — the two had already drifted before that

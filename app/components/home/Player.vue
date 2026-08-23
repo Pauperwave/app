@@ -1,8 +1,8 @@
-<!-- app\components\home\HomePlayer.vue -->
+<!-- app\components\home\Player.vue -->
 <!--
   Home body for the 'player' role (docs/PROGRESS.md ADR pending — see the
   2026-08-19 "Home" conversation): personal status, not an operational
-  dashboard — radically different content from HomeStaff.vue, not just a
+  dashboard — radically different content from Staff.vue, not just a
   permission-gated subset of it, hence the separate component.
 -->
 <script setup lang="ts">
