@@ -553,6 +553,106 @@
     },
     "backToForm": "Torna al modulo"
   },
+  "finance": {
+    "summary": {
+      "grandTotal": "Incassato",
+      "grandCount": "Transazioni",
+      "byTypeTitle": "Riepilogo per tipologia",
+      "byMonthTitle": "Riepilogo mensile",
+      "byTournamentTitle": "Riepilogo per torneo",
+      "byEventTitle": "Riepilogo per evento",
+      "byFormatTitle": "Riepilogo per formato",
+      "costsTitle": "Costi per metodo di pagamento",
+      "type": "Tipologia",
+      "count": "N. transazioni",
+      "total": "Totale",
+      "average": "Media",
+      "share": "% sul totale",
+      "tournamentCount": "N. tornei",
+      "compedCount": "Omaggio",
+      "month": "Mese",
+      "date": "Data",
+      "tournament": "Torneo",
+      "event": "Evento",
+      "format": "Formato",
+      "league": "Lega",
+      "method": "Metodo",
+      "feeRate": "Commissione",
+      "fee": "Costo",
+      "net": "Netto",
+      "totalFees": "Costi commissioni",
+      "grandNet": "Netto",
+      "grandAverage": "Media a transazione"
+    },
+    "charts": {
+      "monthlyTrend": "Andamento mensile",
+      "byFormat": "Incassato per formato",
+      "byType": "Incassato per tipologia",
+      "tournamentTrend": "Andamento tornei per formato",
+      "today": "Oggi"
+    },
+    "views": {
+      "chart": "Grafico",
+      "table": "Tabella"
+    },
+    "tour": {
+      "startButton": "Tour guidato",
+      "steps": {
+        "year": {
+          "title": "Anno",
+          "description": "Cambia l'anno per vedere le finanze di stagioni precedenti — tutta la pagina si aggiorna di conseguenza."
+        },
+        "cardTotal": {
+          "title": "Incassato",
+          "description": "Totale di tutte le transazioni registrate, di ogni tipologia e metodo di pagamento."
+        },
+        "cardFees": {
+          "title": "Costi commissioni",
+          "description": "Quanto trattengono i metodi di pagamento a pagamento (es. POS) sul totale incassato."
+        },
+        "cardNet": {
+          "title": "Netto",
+          "description": "Incassato meno costi commissioni — quello che resta davvero in cassa."
+        },
+        "cardCount": {
+          "title": "Transazioni",
+          "description": "Numero totale di transazioni registrate."
+        },
+        "cardAverage": {
+          "title": "Media a transazione",
+          "description": "Incassato diviso numero di transazioni — l'importo medio per pagamento."
+        },
+        "tableType": {
+          "title": "Riepilogo per tipologia",
+          "description": "Incassato per tipologia di pagamento — quota associativa, torneo, evento, donazione. Passa da grafico a tabella con l'interruttore in alto a destra."
+        },
+        "tableFormat": {
+          "title": "Riepilogo per formato",
+          "description": "Incassato per formato di gioco, con il numero di tornei disputati per ciascuno. Passa da grafico a tabella con l'interruttore in alto a destra."
+        },
+        "tableMonth": {
+          "title": "Andamento mensile",
+          "description": "Incassato mese per mese, diviso per tipologia. Passa da grafico a tabella con l'interruttore in alto a destra."
+        },
+        "tableTournament": {
+          "title": "Riepilogo per torneo",
+          "description": "Un grafico con l'andamento nel tempo per formato, seguito dalla tabella con data, lega di appartenenza e ingressi omaggio di ogni torneo."
+        },
+        "tableEvent": {
+          "title": "Riepilogo per evento",
+          "description": "Incassato evento per evento."
+        },
+        "costs": {
+          "title": "Costi per metodo di pagamento",
+          "description": "Solo il POS applica una commissione modellata oggi — gli altri metodi mostrano 0,00 € di costo, non un errore."
+        },
+        "done": {
+          "title": "Pronto!",
+          "description": "Ora sai come leggere questa pagina. Buon lavoro!"
+        }
+      }
+    }
+  },
   "transaction": {
     "breadcrumb": "Transazioni",
     "tour": {
@@ -581,13 +681,15 @@
       }
     },
     "tabs": {
-      "all": "Tutte le transazioni",
+      "all": "Tutte",
       "associationFee": "Quote associative",
-      "tournamentFee": "Quote tornei",
-      "eventFee": "Quote eventi",
-      "donations": "Donazioni"
+      "tournamentFee": "Tornei",
+      "eventFee": "Eventi",
+      "donations": "Donazioni",
+      "tokenPurchase": "Acquisto gettoni"
     },
     "columns": {
+      "id": "ID",
       "paymentDate": "Data",
       "payer": "Da",
       "paymentAmount": "Importo",
@@ -595,12 +697,15 @@
       "paymentMethod": "Metodo",
       "receivedBy": "Ricevuto da",
       "event": "Evento",
+      "gettoni": "Gettoni",
+      "receipt": "Ricevuta",
       "notes": "Note",
       "createdBy": "Creato da",
       "createdAt": "Creato il",
       "updatedBy": "Aggiornato da",
       "updatedAt": "Aggiornato il",
-      "actions": "Azioni"
+      "actions": "Azioni",
+      "unknownEmailTooltip": "Email sconosciuta, generata per import storico"
     },
     "empty": "Nessuna transazione trovata con questi filtri",
     "groupByPayer": "Raggruppa per giocatore",
@@ -613,8 +718,12 @@
     "bulkActions": {
       "selectedCount": "{count} selezionata | {count} selezionate",
       "clearSelection": "Deseleziona",
+      "changeType": "Cambia tipologia",
+      "confirm": "Conferma",
       "deleteConfirmTitle": "Eliminare {count} transazione? | Eliminare {count} transazioni?",
       "deleteSuccessToast": "{count} transazione eliminata | {count} transazioni eliminate",
+      "typeChangeConfirmTitle": "Cambiare la tipologia di {count} transazione? | Cambiare la tipologia di {count} transazioni?",
+      "typeChangeSuccessToast": "Tipologia aggiornata per {count} transazione | Tipologia aggiornata per {count} transazioni",
       "partialFailure": "{count} operazione non riuscita | {count} operazioni non riuscite"
     },
     "editModal": {
@@ -665,10 +774,12 @@
         "entryFee": "Torneo",
         "membership": "Quota associativa",
         "eventFee": "Evento",
-        "donation": "Donazione"
+        "donation": "Donazione",
+        "tokenPurchase": "Gettoni"
       },
       "paymentMethodOptions": {
-        "cash": "Contanti"
+        "cash": "Contanti",
+        "comped": "Omaggio"
       },
       "validation": {
         "payerFirstNameTooShort": "Nome troppo corto",
