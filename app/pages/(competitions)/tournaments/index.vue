@@ -3,7 +3,7 @@
 // fallow-ignore-file code-duplication -- mirrors events/index.vue and
 // leagues/index.vue's mock-driven layout on purpose; expected to diverge
 // once real Supabase tables land
-import { add, sub } from 'date-fns'
+import { add } from 'date-fns'
 import { getGroupedRowModel } from '@tanstack/vue-table'
 import type { DropdownMenuItem, TabsItem } from '@nuxt/ui'
 import type { Range, Tournament } from '~/types'
@@ -14,12 +14,12 @@ useSeoMeta({ title: () => t('tournament.breadcrumb') })
 
 const { isModalOpen } = useModalOpenFromQuery()
 
-// Defaults to "Tutto" (matches DateRangePicker's own "all time" range): the
-// mock tournaments span several months in the past relative to "today", so a
-// narrower default (e.g. last 14 days) would start the page on an empty grid.
+// Defaults to "Prossimo anno" (matches DateRangePicker's own next-year
+// preset, 2026-08-23 — was "Tutto") — upcoming tournaments are the common
+// case to land on, not the full history back to the mock-era fixtures.
 const range = shallowRef<Range>({
-  start: sub(new Date(), { years: 10 }),
-  end: add(new Date(), { years: 10 })
+  start: new Date(),
+  end: add(new Date(), { years: 1 })
 })
 
 const manageFormatsOpen = ref(false)
