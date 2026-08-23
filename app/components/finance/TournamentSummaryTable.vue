@@ -47,7 +47,14 @@ const columns: TableColumn<FinanceTournamentSummaryRow>[] = [
     sortingFn: (rowA, rowB) => {
       const nameCompare = rowA.original.name.localeCompare(rowB.original.name)
       if (nameCompare !== 0) return nameCompare
-      return (rowA.original.stageNumber ?? 0) - (rowB.original.stageNumber ?? 0)
+      const stageCompare = (rowA.original.stageNumber ?? 0) - (rowB.original.stageNumber ?? 0)
+      if (stageCompare !== 0) return stageCompare
+      // Same name AND same stage number can still be two different
+      // tournaments — e.g. "Commander Casual 1ª tappa" exists once in "Lega
+      // Invernale 2026" and once in "Lega Estiva 2026" (user request,
+      // 2026-08-24). League breaks the tie; standalone tournaments (no
+      // league) sort last.
+      return (rowA.original.league ?? '').localeCompare(rowB.original.league ?? '')
     },
     footer: () => t('finance.summary.total'),
     cell: ({ row }) => h(UButton, {
@@ -112,14 +119,14 @@ const columns: TableColumn<FinanceTournamentSummaryRow>[] = [
     accessorKey: 'total',
     header: ({ column }) => sortableHeader(t('finance.summary.total'), column),
     meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => amountFormatter.format(row.original.total),
+    cell: ({ row }) => amountCell(row.original.total, amountFormatter),
     footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalAmount.value))
   },
   {
     accessorKey: 'average',
     header: ({ column }) => sortableHeader(t('finance.summary.average'), column),
     meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => amountFormatter.format(row.original.average),
+    cell: ({ row }) => amountCell(row.original.average, amountFormatter),
     footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(averageOfAverages.value))
   }
 ]
