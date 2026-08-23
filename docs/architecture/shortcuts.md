@@ -13,7 +13,6 @@ Two-key chords, not bare letters — same convention as GitHub's own shortcuts. 
 
 | Chord | Destination | Route |
 |---|---|---|
-| `g` `h` | Home | `/` |
 | `g` `a` | Associati | `/associates` |
 | `g` `i` | Giocatori | `/players` |
 | `g` `n` | Transazioni | `/transactions` |
@@ -23,14 +22,14 @@ Two-key chords, not bare letters — same convention as GitHub's own shortcuts. 
 | `g` `e` | Eventi | `/events` |
 | `g` `c` | Calendario | `/calendar` |
 | `g` `f` | Finanze | `/finance` |
-| `g` `r` | Regolamenti | `/rulesets` |
+| `g` `r` | Richieste di tesseramento | `/associates/requests` |
 | `g` `s` | Statistiche → Panoramica | `/statistics` |
 | `g` `m` | Membri | `/settings/members` |
 | `g` `p` | Permessi | `/settings/permissions` |
 | `g` `d` | Domini | `/settings/domains` |
 | `g` `x` | Cestino | `/trash` |
 
-No chord for Mazzi (`/statistics/decks`), Classifica Cittadino (`/standings/cittadino`), or Impostazioni → Generali (`/settings`). Mazzi/Cittadino: reassigned 2026-08-11 at the user's request — "m"/"c" now point at Membri/Calendario instead, and no replacement letter was picked for the pages that lost them. Impostazioni → Generali: its only intuitive letter was "g" itself — but `g-g` is never assignable to anything, on purpose (see below), and no other letter was free, so it stays chord-less too. "Home" was "Panoramica" until 2026-08-11 — renamed so `g-h` reads naturally; the *other* "Panoramica" (the lone item in the Statistiche section, `/statistics`) is a different page and keeps its original name, now on `g-s`.
+No chord for Home (`/`), Regolamenti (`/rulesets`), Mazzi (`/statistics/decks`), Classifica Cittadino (`/standings/cittadino`), or Impostazioni → Generali (`/settings`). `g-h` removed 2026-08-23 at the user's request (Home no longer gets a chord). `g-r` moved the same day from Regolamenti to Richieste di tesseramento — "requests," the second-most-recognizable letter fits like Giocatori/Transazioni's own "g"/"t"-collision picks below ("Regolamenti" itself has no obvious replacement letter free, so it goes chord-less rather than picking an arbitrary one — same treatment Mazzi/Cittadino already got). Mazzi/Cittadino: reassigned 2026-08-11 at the user's request — "m"/"c" now point at Membri/Calendario instead, and no replacement letter was picked for the pages that lost them. Impostazioni → Generali: its only intuitive letter was "g" itself — but `g-g` is never assignable to anything, on purpose (see below), and no other letter was free, so it stays chord-less too.
 
 Calendario and Finanze were pure stubs with no route at all until 2026-08-11, when minimal placeholder pages (`app/pages/calendar/index.vue`, `app/pages/finance/index.vue` — just a navbar title and an "in development" notice, matching `common.pageInDevelopment`) were added specifically so `g-c`/`g-f` had somewhere to go.
 
@@ -58,7 +57,7 @@ Deliberately not part of the `g-x` navigation set — these aren't "go to a plac
 | `b` | Toggle sidebar collapsed/expanded | `default.vue` (see below) |
 | `h` | Start/restart the current page's guided tour | `TourGuide.vue` (see below) |
 
-Doesn't collide with the `g-h` chord (Home) — `defineShortcuts` treats a bare `h` and the two-key chord `g` then `h` as distinct bindings, the same way bare `n` already coexists with `g-n` (Transazioni).
+`defineShortcuts` treats a bare `h` and any two-key chord starting with `g` as distinct bindings regardless — the same way bare `n` already coexists with `g-n` (Transazioni) — so bare `h` was never actually at risk of colliding with the now-removed `g-h` chord.
 
 There used to be a `t` shortcut for the light/dark theme toggle, removed 2026-08-11. It also would have needed to bypass `LayoutColorModeSwitch.vue`'s own click handler (`useThemeTransition().toggleTheme` takes a `MouseEvent` to anchor its circular reveal animation at the click position, which a keyboard press doesn't have), so nothing else was affected by dropping it.
 

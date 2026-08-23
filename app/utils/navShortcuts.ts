@@ -18,7 +18,6 @@
 // as the chord "g-g" on its own. Any destination mapped there would fire
 // just from holding the prefix key, not from a real two-key press.
 export const NAV_SHORTCUTS: Record<string, string> = {
-  '/': 'g-h',
   '/associates': 'g-a',
   '/players': 'g-i',
   '/transactions': 'g-n',
@@ -28,7 +27,7 @@ export const NAV_SHORTCUTS: Record<string, string> = {
   '/events': 'g-e',
   '/calendar': 'g-c',
   '/finance': 'g-f',
-  '/rulesets': 'g-r',
+  '/associates/requests': 'g-r',
   '/statistics': 'g-s',
   '/settings/members': 'g-m',
   '/settings/permissions': 'g-p',
