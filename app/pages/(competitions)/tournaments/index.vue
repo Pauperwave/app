@@ -14,7 +14,7 @@ useSeoMeta({ title: () => t('tournament.breadcrumb') })
 
 const { isModalOpen } = useModalOpenFromQuery()
 
-// Defaults to "Tutto" (matches HomeDateRangePicker's own "all time" range): the
+// Defaults to "Tutto" (matches DateRangePicker's own "all time" range): the
 // mock tournaments span several months in the past relative to "today", so a
 // narrower default (e.g. last 14 days) would start the page on an empty grid.
 const range = shallowRef<Range>({
@@ -43,7 +43,7 @@ const {
 } = useTournamentsFilters(data, range)
 
 // Every known tournament's date + status color + hover label (unfiltered by
-// range/status/format) — issue #37, HomeDateRangePicker.vue's own UChip
+// range/status/format) — issue #37, DateRangePicker.vue's own UChip
 // density hint (and its tooltip, 2026-08-23 follow-up) while picking a
 // range, not just the currently-filtered subset. Label is name + stage
 // (tournamentStageText(), "Commander Casual — 1ª tappa") rather than
@@ -239,7 +239,7 @@ const bulkConfirmTitle = computed(() => {
           />
           <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->
           <div v-else id="tour-tournaments-actions" class="flex items-center gap-2">
-            <HomeDateRangePicker
+            <DateRangePicker
               v-model="range"
               :highlighted-dates="tournamentDates"
               class="-ms-1"

@@ -74,7 +74,7 @@ const hostedTournamentLegendItems = TOURNAMENT_STATUSES.map(status => ({
   labelKey: `tournament.status.${status}`
 }))
 
-// Defaults to "Tutto" (matches HomeDateRangePicker's own "all time" range),
+// Defaults to "Tutto" (matches DateRangePicker's own "all time" range),
 // same reasoning as tournaments/index.vue's own default — a location that's
 // hosted tournaments for years shouldn't start on an empty grid. Only the
 // range is exposed here (not status/format, useTournamentsFilters.ts's other
@@ -155,7 +155,7 @@ const {
         </template>
 
         <template #right>
-          <HomeDateRangePicker v-model="range" />
+          <DateRangePicker v-model="range" />
         </template>
       </UDashboardToolbar>
     </template>

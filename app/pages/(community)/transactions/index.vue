@@ -24,7 +24,7 @@ const {
 const data = computed(() => transactionsData.value ?? [])
 
 // Same StatusFilterGroup used by tournaments/leagues/events (#left) with
-// HomeDateRangePicker in #right, not UTabs.
+// DateRangePicker in #right, not UTabs.
 const activeTypeTab = computed<'all' | PaymentType>({
   get: () => (typeof route.query.type === 'string' ? route.query.type as 'all' | PaymentType : 'all'),
   set: (value: string | number) => {
@@ -164,7 +164,7 @@ const tour = useTransactionsTour()
               @click="toggleGrouping"
             />
 
-            <HomeDateRangePicker v-model="range" class="-ms-1" />
+            <DateRangePicker v-model="range" class="-ms-1" />
 
             <UDropdownMenu :items="columnVisibilityItems" :content="{ align: 'end' }">
               <UButton

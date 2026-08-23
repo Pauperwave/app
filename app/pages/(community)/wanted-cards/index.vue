@@ -235,7 +235,7 @@ const gridSections = computed<GridSection[]>(() => {
         </template>
       </UDashboardNavbar>
 
-      <!-- UDashboardToolbar in #header, like HomeDateRangePicker in
+      <!-- UDashboardToolbar in #header, like DateRangePicker in
            transactions/index.vue — #left/#right are the official filters/view
            split (flex justify-between). Status and Treatment share the same
            visual language (a UFieldGroup of toggle buttons) instead of mixing

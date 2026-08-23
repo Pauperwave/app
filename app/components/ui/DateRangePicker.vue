@@ -1,4 +1,4 @@
-<!-- app\components\home\HomeDateRangePicker.vue -->
+<!-- app\components\ui\DateRangePicker.vue -->
 <script setup lang="ts">
 import {
   DateFormatter, getLocalTimeZone, CalendarDate, today
