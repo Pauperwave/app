@@ -1615,7 +1615,9 @@
       "cittadino": "Cittadino",
       "commander": "Commander",
       "premodern": "Premodern",
-      "pauper": "Pauper"
+      "pauper": "Pauper",
+      "draft": "Draft",
+      "sealed": "Sealed"
     },
     "tour": {
       "startButton": "Tour guidato",
@@ -1659,6 +1661,19 @@
       "leaguesTitle": "Leghe",
       "leagueSummary": "{events} eventi in calendario · contano i migliori {counted} risultati · i primi {top} sono evidenziati in classifica",
       "placeholderNotice": "Regolamento non ancora confermato per {format}: i numeri di questa pagina sono presi in prestito da Commander solo per mostrare come sarà la sezione, in attesa dei dati reali."
+    },
+    "draft": {
+      "title": "Draft",
+      "description": "Come si struttura un torneo di tipo Draft.",
+      "structureTitle": "Struttura del torneo",
+      "structure": "A differenza dei formati Constructed, il mazzo non viene portato da casa: ogni giocatore apre delle buste e costruisce il proprio mazzo (minimo 40 carte) usando solo le carte ottenute durante il draft, più eventuali terre base.",
+      "boosters": "Ogni partecipante apre solitamente 3 buste, scegliendo una carta a turno e passando il resto al vicino, finché non sono esaurite.",
+      "pods": "I giocatori vengono divisi in pod (tavoli) per il draft vero e proprio: con meno di 12 iscritti si gioca in un unico pod; da 12 in su, il numero di pod è calcolato per tenerli equilibrati. L'assegnazione ai pod è casuale e non influisce sugli abbinamenti né sulla classifica dei turni successivi, che restano su tutti i partecipanti."
+    },
+    "sealed": {
+      "title": "Sealed",
+      "description": "Regolamento del formato Sealed.",
+      "placeholderNotice": "Regolamento non ancora definito per questo formato."
     }
   },
   "statistic": {

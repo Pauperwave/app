@@ -27,7 +27,9 @@ const tabs = computed<TabsItem[]>(() => [
   { label: t('ruleset.tabs.cittadino'), value: 'cittadino' },
   { label: t('ruleset.tabs.commander'), value: 'commander' },
   { label: t('ruleset.tabs.premodern'), value: 'premodern' },
-  { label: t('ruleset.tabs.pauper'), value: 'pauper' }
+  { label: t('ruleset.tabs.pauper'), value: 'pauper' },
+  { label: t('ruleset.tabs.draft'), value: 'draft' },
+  { label: t('ruleset.tabs.sealed'), value: 'sealed' }
 ])
 
 const activeTab = ref('cittadino')
@@ -140,6 +142,57 @@ const tour = useRulesetsTour()
           <RulesetsFormatRulesCard v-else-if="activeTab === 'commander'" format="commander" />
           <RulesetsFormatRulesCard v-else-if="activeTab === 'premodern'" format="premodern" />
           <RulesetsFormatRulesCard v-else-if="activeTab === 'pauper'" format="pauper" />
+
+          <!-- Draft/Sealed have no points-based championship (only
+               Cittadino/Commander/Premodern/Pauper do, via
+               RulesetsFormatRulesCard), so they don't share that component
+               — Draft gets its own lighter structure-only card, Sealed a
+               plain placeholder until its own rules exist (user request,
+               2026-08-23). -->
+          <UPageCard
+            v-else-if="activeTab === 'draft'"
+            :title="$t('ruleset.draft.title')"
+            :description="$t('ruleset.draft.description')"
+            :icon="ICONS.gameplay"
+          >
+            <div class="flex flex-col gap-6">
+              <div>
+                <p class="mb-1 text-sm font-medium text-highlighted">
+                  {{ $t('ruleset.draft.structureTitle') }}
+                </p>
+                <p class="text-sm text-muted">
+                  {{ $t('ruleset.draft.structure') }}
+                </p>
+              </div>
+
+              <USeparator />
+
+              <ul class="flex flex-col gap-3 text-sm text-muted">
+                <li class="flex gap-2">
+                  <UIcon name="i-lucide-package" class="mt-0.5 size-4 shrink-0 text-primary" />
+                  <span>{{ $t('ruleset.draft.boosters') }}</span>
+                </li>
+                <li class="flex gap-2">
+                  <UIcon name="i-lucide-users" class="mt-0.5 size-4 shrink-0 text-primary" />
+                  <span>{{ $t('ruleset.draft.pods') }}</span>
+                </li>
+              </ul>
+            </div>
+          </UPageCard>
+
+          <UPageCard
+            v-else-if="activeTab === 'sealed'"
+            :title="$t('ruleset.sealed.title')"
+            :description="$t('ruleset.sealed.description')"
+            :icon="ICONS.gameplay"
+          >
+            <UAlert
+              color="warning"
+              variant="subtle"
+              icon="i-lucide-triangle-alert"
+              :description="$t('ruleset.sealed.placeholderNotice')"
+            />
+          </UPageCard>
         </div>
       </div>
     </template>
