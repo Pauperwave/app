@@ -65,7 +65,7 @@ const emit = defineEmits<{ openTournament: [tournament: Tournament] }>()
         class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-left hover:underline"
         @click="emit('openTournament', tournament)"
       >
-        <BadgesFormatBadge :format="tournament.format" />
+        <BadgesFormatBadge :format="tournament.format" :icon="ICONS.gameplay" />
         <span class="truncate flex-1 min-w-0">
           {{ tournament.name }}
           <TournamentsStageLabel v-if="tournament.stageNumber" :number="tournament.stageNumber" />
