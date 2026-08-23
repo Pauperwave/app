@@ -11,7 +11,7 @@ const { isModalOpen } = useModalOpenFromQuery()
 
 // Not wired to a filter yet: leagues have no per-item date to filter by (only
 // tournaments do). Kept here for visual/toolbar consistency with the tournaments
-// page — defaults to "Tutto" (matches HomeDateRangePicker's own "all time" range).
+// page — defaults to "Tutto" (matches DateRangePicker's own "all time" range).
 const range = shallowRef<Range>({
   start: sub(new Date(), { years: 10 }),
   end: add(new Date(), { years: 10 })
@@ -149,7 +149,7 @@ const tour = useLeaguesTour()
             @delete="requestDelete(selectedLeagues)"
           />
           <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->
-          <HomeDateRangePicker v-else v-model="range" class="-ms-1" />
+          <DateRangePicker v-else v-model="range" class="-ms-1" />
         </template>
       </UDashboardToolbar>
     </template>

@@ -39,7 +39,7 @@ useSeoMeta({
        Nuxt UI has its own locale system for component-internal strings
        (UCalendar month/weekday names, etc.), defaulting to English if
        :locale isn't set here regardless of the rest of the app's language
-       (2026-08-23, HomeDateRangePicker.vue's calendar was rendering
+       (2026-08-23, DateRangePicker.vue's calendar was rendering
        "August" instead of "Agosto"). -->
   <UApp :locale="it">
     <NuxtLoadingIndicator />

@@ -35,7 +35,7 @@ useSeoMeta({
 // Scoped to a single month at a time, per user request 2026-08-13 — unlike
 // the dashboard grid (events/index.vue), which defaults to "all time". Starts
 // on the current month; the picker below (UCalendar type="month", same
-// @internationalized/date bridge as HomeDateRangePicker.vue) jumps to another.
+// @internationalized/date bridge as DateRangePicker.vue) jumps to another.
 const selectedMonth = shallowRef(startOfMonth(new Date()))
 
 const range = computed(() => ({

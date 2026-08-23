@@ -9,7 +9,7 @@ import type { Event, Range } from '~/types'
 
 const { isModalOpen } = useModalOpenFromQuery()
 
-// Defaults to "Tutto" (matches HomeDateRangePicker's own "all time" range): the
+// Defaults to "Tutto" (matches DateRangePicker's own "all time" range): the
 // mock events span several months in the past relative to "today", same reasoning
 // as tournaments/index.vue — a narrower default would start the page on an empty grid.
 const range = shallowRef<Range>({
@@ -154,7 +154,7 @@ const bulkConfirmTitle = computed(() => {
           />
           <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->
           <div v-else id="tour-events-actions">
-            <HomeDateRangePicker v-model="range" class="-ms-1" />
+            <DateRangePicker v-model="range" class="-ms-1" />
           </div>
         </template>
       </UDashboardToolbar>
