@@ -144,10 +144,22 @@ const requestStatusCounts = computed(() => {
 
 // Default tab is 'pending', not 'all' — this page opens straight on the
 // queue that actually needs action, not a mixed pending+rejected list.
+// Icons reused from MEMBERSHIP_STATUS_BADGE_CONFIG, same as associates/index.vue's
+// own statusTabs — collapse to icon-only below `lg` (user request, 2026-08-24).
 const statusTabs = computed(() => [
   { label: t('associate.tabs.all'), value: 'all' as const, count: undefined },
-  { label: t('associate.tabs.pending'), value: 'pending' as const, count: requestStatusCounts.value.pending },
-  { label: t('associate.tabs.rejected'), value: 'rejected' as const, count: requestStatusCounts.value.rejected }
+  {
+    label: t('associate.tabs.pending'),
+    value: 'pending' as const,
+    count: requestStatusCounts.value.pending,
+    icon: MEMBERSHIP_STATUS_BADGE_CONFIG.pending.icon
+  },
+  {
+    label: t('associate.tabs.rejected'),
+    value: 'rejected' as const,
+    count: requestStatusCounts.value.rejected,
+    icon: MEMBERSHIP_STATUS_BADGE_CONFIG.rejected.icon
+  }
 ])
 
 const activeStatusTab = computed({

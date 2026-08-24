@@ -127,11 +127,30 @@ const associatesStatusCounts = computed(() => {
 // UTabs: toggle buttons filter the table below rather than switching between
 // separate views. `count` is optional per item — StatusFilterGroup only shows
 // the nested UBadge when it's set.
+// Icons reused from MEMBERSHIP_STATUS_BADGE_CONFIG (same "single source of
+// truth for which icon represents which status" as transactions' typeTabs) —
+// collapse to icon-only below `lg` via StatusFilterGroup's own icon prop
+// (user request, 2026-08-24).
 const statusTabs = computed(() => [
   { label: t('associate.tabs.all'), value: 'all' as const, count: undefined },
-  { label: t('associate.tabs.active'), value: 'active' as const, count: associatesStatusCounts.value.active },
-  { label: t('associate.tabs.toRenew'), value: 'to_renew' as const, count: associatesStatusCounts.value.to_renew },
-  { label: t('associate.tabs.expired'), value: 'expired' as const, count: associatesStatusCounts.value.expired }
+  {
+    label: t('associate.tabs.active'),
+    value: 'active' as const,
+    count: associatesStatusCounts.value.active,
+    icon: MEMBERSHIP_STATUS_BADGE_CONFIG.active.icon
+  },
+  {
+    label: t('associate.tabs.toRenew'),
+    value: 'to_renew' as const,
+    count: associatesStatusCounts.value.to_renew,
+    icon: MEMBERSHIP_STATUS_BADGE_CONFIG.to_renew.icon
+  },
+  {
+    label: t('associate.tabs.expired'),
+    value: 'expired' as const,
+    count: associatesStatusCounts.value.expired,
+    icon: MEMBERSHIP_STATUS_BADGE_CONFIG.expired.icon
+  }
 ])
 
 const activeStatusTab = computed({

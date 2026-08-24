@@ -24,10 +24,13 @@ const playersStatusCounts = computed(() => {
 })
 
 // Same StatusFilterGroup used by associates/index.vue and wanted-cards/index.vue
-// (a UFieldGroup of toggle buttons), not UTabs.
+// (a UFieldGroup of toggle buttons), not UTabs. Icons reused from
+// MEMBERSHIP_STATUS_BADGE_CONFIG's own active/expired (success/banned) — same
+// active-vs-not semantics as membership status — collapsing to icon-only
+// below `lg` via StatusFilterGroup's own icon prop (user request, 2026-08-24).
 const statusTabs = computed(() => [
-  { label: t('player.tabs.active'), value: 'active', count: playersStatusCounts.value.active },
-  { label: t('player.tabs.inactive'), value: 'inactive', count: playersStatusCounts.value.inactive }
+  { label: t('player.tabs.active'), value: 'active', count: playersStatusCounts.value.active, icon: ICONS.success },
+  { label: t('player.tabs.inactive'), value: 'inactive', count: playersStatusCounts.value.inactive, icon: ICONS.banned }
 ])
 
 const activeStatusTab = computed({
