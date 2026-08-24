@@ -48,16 +48,5 @@ const emit = defineEmits<{ toggleGrouping: [] }>()
     @click="emit('toggleGrouping')"
   />
 
-  <UDropdownMenu
-    v-if="viewMode === 'table'"
-    :items="viewItems"
-    :content="{ align: 'end' }"
-  >
-    <UButton
-      :label="$t('common.showColumns')"
-      color="neutral"
-      variant="outline"
-      :trailing-icon="ICONS.settingsColumns"
-    />
-  </UDropdownMenu>
+  <ColumnVisibilityMenu v-if="viewMode === 'table'" :items="viewItems" />
 </template>
