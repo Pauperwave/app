@@ -110,14 +110,7 @@ const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, 
 
         <template #right>
           <div id="tour-players-actions">
-            <UDropdownMenu :items="columnVisibilityItems" :content="{ align: 'end' }">
-              <UButton
-                :label="$t('common.showColumns')"
-                color="neutral"
-                variant="outline"
-                :trailing-icon="ICONS.settingsColumns"
-              />
-            </UDropdownMenu>
+            <ColumnVisibilityMenu :items="columnVisibilityItems" />
           </div>
         </template>
       </UDashboardToolbar>
