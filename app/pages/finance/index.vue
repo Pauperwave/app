@@ -39,6 +39,7 @@ const {
   byTournament,
   byEvent,
   byFormat,
+  byCategory,
   byMethodCost,
   grandTotal,
   grandCount,
@@ -116,6 +117,8 @@ const tour = useFinanceTour()
             :value="amountFormatter.format(grandAverage)"
           />
         </UPageGrid>
+
+        <FinanceCategorySummaryTable :rows="byCategory" :loading="loading" />
 
         <FinanceMonthlyOverview
           id="tour-finance-table-month"
