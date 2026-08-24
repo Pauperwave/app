@@ -20,6 +20,8 @@ const sorting = ref([{ id: 'total', desc: true }])
 // of a bare blank cell.
 const totalTournamentCount = computed(() => rows.reduce((sum, row) => sum + row.tournamentCount, 0))
 const totalCount = computed(() => rows.reduce((sum, row) => sum + row.count, 0))
+const totalCash = computed(() => rows.reduce((sum, row) => sum + row.cashTotal, 0))
+const totalPos = computed(() => rows.reduce((sum, row) => sum + row.posTotal, 0))
 const totalAmount = computed(() => rows.reduce((sum, row) => sum + row.total, 0))
 
 const columns: TableColumn<FinanceFormatSummaryRow>[] = [
@@ -40,6 +42,20 @@ const columns: TableColumn<FinanceFormatSummaryRow>[] = [
     header: ({ column }) => sortableHeader(t('finance.summary.count'), column),
     meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
     footer: () => h('span', { class: 'font-mono font-semibold' }, String(totalCount.value))
+  },
+  {
+    accessorKey: 'cashTotal',
+    header: ({ column }) => sortableHeader(t('finance.summary.cashTotal'), column),
+    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
+    cell: ({ row }) => amountCell(row.original.cashTotal, amountFormatter),
+    footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalCash.value))
+  },
+  {
+    accessorKey: 'posTotal',
+    header: ({ column }) => sortableHeader(t('finance.summary.posTotal'), column),
+    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
+    cell: ({ row }) => amountCell(row.original.posTotal, amountFormatter),
+    footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalPos.value))
   },
   {
     accessorKey: 'total',

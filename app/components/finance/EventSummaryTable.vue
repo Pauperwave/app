@@ -14,12 +14,14 @@ const { t } = useI18n()
 
 const amountFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
 
-const sorting = ref([{ id: 'total', desc: true }])
+const sorting = ref([{ id: 'combinedTotal', desc: true }])
 
 // Grand total per numeric column, own `footer` on the leftmost column instead
 // of a bare blank cell.
 const totalCount = computed(() => rows.reduce((sum, row) => sum + row.count, 0))
-const totalAmount = computed(() => rows.reduce((sum, row) => sum + row.total, 0))
+const totalGettoniCount = computed(() => rows.reduce((sum, row) => sum + row.gettoniCount, 0))
+const totalGettoniAmount = computed(() => rows.reduce((sum, row) => sum + row.gettoniTotal, 0))
+const totalCombinedAmount = computed(() => rows.reduce((sum, row) => sum + row.combinedTotal, 0))
 
 // Same shape as TournamentSummaryTable.vue, minus format/stage — an event
 // has neither (Event, app/types/index.d.ts).
@@ -49,11 +51,24 @@ const columns: TableColumn<FinanceEventSummaryRow>[] = [
     footer: () => h('span', { class: 'font-mono font-semibold' }, String(totalCount.value))
   },
   {
-    accessorKey: 'total',
+    accessorKey: 'gettoniCount',
+    header: ({ column }) => sortableHeader(t('finance.summary.gettoniCount'), column),
+    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
+    footer: () => h('span', { class: 'font-mono font-semibold' }, String(totalGettoniCount.value))
+  },
+  {
+    accessorKey: 'gettoniTotal',
+    header: ({ column }) => sortableHeader(t('finance.summary.gettoniTotal'), column),
+    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
+    cell: ({ row }) => amountCell(row.original.gettoniTotal, amountFormatter),
+    footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalGettoniAmount.value))
+  },
+  {
+    accessorKey: 'combinedTotal',
     header: ({ column }) => sortableHeader(t('finance.summary.total'), column),
     meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => amountCell(row.original.total, amountFormatter),
-    footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalAmount.value))
+    cell: ({ row }) => amountCell(row.original.combinedTotal, amountFormatter),
+    footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalCombinedAmount.value))
   },
   {
     accessorKey: 'average',
