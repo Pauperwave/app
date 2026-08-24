@@ -697,7 +697,7 @@
       "tournamentFee": "Tornei",
       "eventFee": "Eventi",
       "donations": "Donazioni",
-      "tokenPurchase": "Acquisto gettoni"
+      "tokenPurchase": "Gettoni"
     },
     "columns": {
       "id": "ID",
@@ -720,6 +720,7 @@
     },
     "empty": "Nessuna transazione trovata con questi filtri",
     "groupByPayer": "Raggruppa per giocatore",
+    "searchPlaceholder": "Cerca per ID, nome, cognome o ricevuta",
     "rowActions": {
       "edit": "Modifica",
       "delete": "Elimina",
