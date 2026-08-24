@@ -13,7 +13,7 @@ import type { Associate } from '~/types'
 const { status } = defineProps<{ status: Associate['membership_status'] }>()
 const { t } = useI18n()
 
-const badge = computed(() => MEMBERSHIP_STATUS_BADGE_CONFIG[status] ?? { color: 'neutral' as const, icon: ICONS.help })
+const badge = computed(() => MEMBERSHIP_STATUS_BADGE_CONFIG[status])
 </script>
 
 <template>
