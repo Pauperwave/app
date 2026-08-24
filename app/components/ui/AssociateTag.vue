@@ -38,7 +38,7 @@ const associate = computed(() => associateUuid
   : null)
 
 const membershipBadge = computed(() => associate.value
-  ? MEMBERSHIP_STATUS_BADGE_CONFIG[associate.value.membership_status] ?? { color: 'neutral' as const, icon: ICONS.help }
+  ? MEMBERSHIP_STATUS_BADGE_CONFIG[associate.value.membership_status]
   : null)
 </script>
 
