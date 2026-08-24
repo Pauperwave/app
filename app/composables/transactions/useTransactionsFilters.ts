@@ -36,13 +36,42 @@ export function useTransactionsFilters(
     return counts
   })
 
-  const typeTabs = computed<{ label: string, value: 'all' | PaymentType, count?: number }[]>(() => [
+  // Icons reused from PAYMENT_TYPE_BADGE_CONFIG (single source of truth for
+  // "which icon represents which payment type", also used by PaymentTypeBadge
+  // and the payment_type table column) — collapse to icon-only below `lg` via
+  // StatusFilterGroup's own icon prop (user request, 2026-08-24).
+  const typeTabs = computed<{ label: string, value: 'all' | PaymentType, count?: number, icon?: string }[]>(() => [
     { label: t('transaction.tabs.all'), value: 'all', count: undefined },
-    { label: t('transaction.tabs.associationFee'), value: 'Association Fee', count: typeCounts.value['Association Fee'] },
-    { label: t('transaction.tabs.tournamentFee'), value: 'Tournament Fee', count: typeCounts.value['Tournament Fee'] },
-    { label: t('transaction.tabs.eventFee'), value: 'Event Fee', count: typeCounts.value['Event Fee'] },
-    { label: t('transaction.tabs.donations'), value: 'Donation', count: typeCounts.value.Donation },
-    { label: t('transaction.tabs.tokenPurchase'), value: 'Token Purchase', count: typeCounts.value['Token Purchase'] }
+    {
+      label: t('transaction.tabs.associationFee'),
+      value: 'Association Fee',
+      count: typeCounts.value['Association Fee'],
+      icon: PAYMENT_TYPE_BADGE_CONFIG['Association Fee'].icon
+    },
+    {
+      label: t('transaction.tabs.tournamentFee'),
+      value: 'Tournament Fee',
+      count: typeCounts.value['Tournament Fee'],
+      icon: PAYMENT_TYPE_BADGE_CONFIG['Tournament Fee'].icon
+    },
+    {
+      label: t('transaction.tabs.eventFee'),
+      value: 'Event Fee',
+      count: typeCounts.value['Event Fee'],
+      icon: PAYMENT_TYPE_BADGE_CONFIG['Event Fee'].icon
+    },
+    {
+      label: t('transaction.tabs.donations'),
+      value: 'Donation',
+      count: typeCounts.value.Donation,
+      icon: PAYMENT_TYPE_BADGE_CONFIG.Donation.icon
+    },
+    {
+      label: t('transaction.tabs.tokenPurchase'),
+      value: 'Token Purchase',
+      count: typeCounts.value['Token Purchase'],
+      icon: PAYMENT_TYPE_BADGE_CONFIG['Token Purchase'].icon
+    }
   ])
 
   return { filteredTransactions, typeTabs }

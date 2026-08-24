@@ -11,6 +11,7 @@ interface StatusTab {
   label: string
   value: string
   count?: number
+  icon?: string
 }
 
 interface FormatTab {

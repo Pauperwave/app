@@ -14,6 +14,7 @@ interface StatusTab {
   label: string
   value: string
   count?: number
+  icon?: string
 }
 
 const { statusTabs } = defineProps<{

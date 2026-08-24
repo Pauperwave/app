@@ -31,12 +31,17 @@ export function useEventsFilters(data: Ref<Event[]>, range: Ref<Range>) {
     return counts
   })
 
-  const statusTabs = computed<{ label: string, value: 'all' | EventStatus, count?: number }[]>(() => [
+  // Icons reused from EVENT_STATUS_ICONS — collapse to icon-only below `lg`
+  // via StatusFilterGroup's own icon prop (user request, 2026-08-24).
+  const statusTabs = computed<
+    { label: string, value: 'all' | EventStatus, count?: number, icon?: string }[]
+  >(() => [
     { label: t('event.filters.statusAll'), value: 'all', count: undefined },
     ...EVENT_STATUSES.map(status => ({
       label: t(`event.status.${status}`),
       value: status,
-      count: statusCounts.value[status]
+      count: statusCounts.value[status],
+      icon: EVENT_STATUS_ICONS[status]
     }))
   ])
 

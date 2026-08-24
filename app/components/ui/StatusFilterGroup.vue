@@ -4,6 +4,12 @@ interface StatusFilterItem<T extends string> {
   label: string
   value: T
   count?: number
+  // Optional per-item icon — when set, the label collapses to icon-only
+  // below `lg` (user request, 2026-08-24: transactions' type tabs running
+  // out of room before the toolbar itself wraps). Items with no icon always
+  // show their label — collapsing to a bare, unlabeled button would leave
+  // no affordance at all.
+  icon?: string
 }
 
 const { items } = defineProps<{ items: StatusFilterItem<T>[] }>()
@@ -15,11 +21,14 @@ const modelValue = defineModel<T>()
     <UButton
       v-for="option in items"
       :key="option.value"
-      :label="option.label"
+      :icon="option.icon"
       color="neutral"
       :variant="modelValue === option.value ? 'solid' : 'outline'"
+      :aria-label="option.icon ? option.label : undefined"
       @click="modelValue = option.value"
     >
+      <span :class="option.icon ? 'hidden lg:inline' : undefined">{{ option.label }}</span>
+
       <template v-if="option.count !== undefined" #trailing>
         <UBadge
           :label="option.count"

@@ -38,12 +38,17 @@ export function useTournamentsFilters(data: Ref<Tournament[]>, range: Ref<Range>
     return counts
   })
 
-  const statusTabs = computed<{ label: string, value: 'all' | TournamentStatus, count?: number }[]>(() => [
+  // Icons reused from TOURNAMENT_STATUS_ICONS — collapse to icon-only below
+  // `lg` via StatusFilterGroup's own icon prop (user request, 2026-08-24).
+  const statusTabs = computed<
+    { label: string, value: 'all' | TournamentStatus, count?: number, icon?: string }[]
+  >(() => [
     { label: t('tournament.filters.statusAll'), value: 'all', count: undefined },
     ...TOURNAMENT_STATUSES.map(status => ({
       label: t(`tournament.status.${status}`),
       value: status,
-      count: statusCounts.value[status]
+      count: statusCounts.value[status],
+      icon: TOURNAMENT_STATUS_ICONS[status]
     }))
   ])
 

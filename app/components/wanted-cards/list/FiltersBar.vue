@@ -16,7 +16,7 @@ const {
   isColorTabActive,
   currentAssociate
 } = defineProps<{
-  statusTabs: { label: string, value: string, count?: number }[]
+  statusTabs: { label: string, value: string, count?: number, icon?: string }[]
   colorTabs: ColorTab[]
   isColorTabActive: (value: WantedCardColorFilter) => boolean
   currentAssociate: Associate | null
@@ -41,11 +41,10 @@ const emit = defineEmits<{ toggleColor: [value: WantedCardColorFilter] }>()
        use case for search by name) — see the TODO in docs/TODO.md. -->
 
   <!-- Replaces the old language select + foil toggle (2026-08-15 user
-       request) — mana-symbol tabs instead of StatusFilterGroup's plain
-       text labels, "Tutte" aside, since that component has no
-       icon/leading-content slot for the others. Multi-select
-       (2026-08-15 follow-up): several tabs stay active together
-       (toggleColorFilter), "Tutte" resets back to none. -->
+       request) — mana-symbol tabs instead of StatusFilterGroup, since a
+       mana symbol isn't an icon name StatusFilterGroup's icon prop can
+       take. Multi-select (2026-08-15 follow-up): several tabs stay active
+       together (toggleColorFilter), "Tutte" resets back to none. -->
   <UFieldGroup>
     <UButton
       v-for="option in colorTabs"

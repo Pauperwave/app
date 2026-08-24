@@ -105,11 +105,30 @@ export function useWantedCardsFilters(data: Ref<WantedCard[]>) {
     return counts
   })
 
-  const statusTabs = computed<{ label: string, value: 'all' | WantedCardStatus, count?: number }[]>(() => [
+  // Icons reused from WANTED_CARD_STATUS_ICONS — collapse to icon-only below
+  // `lg` via StatusFilterGroup's own icon prop (user request, 2026-08-24).
+  const statusTabs = computed<
+    { label: string, value: 'all' | WantedCardStatus, count?: number, icon?: string }[]
+  >(() => [
     { label: t('wantedCard.filters.statusAll'), value: 'all', count: undefined },
-    { label: t('wantedCard.status.searching'), value: 'searching', count: statusCounts.value.searching },
-    { label: t('wantedCard.status.found'), value: 'found', count: statusCounts.value.found },
-    { label: t('wantedCard.status.abandoned'), value: 'abandoned', count: statusCounts.value.abandoned }
+    {
+      label: t('wantedCard.status.searching'),
+      value: 'searching',
+      count: statusCounts.value.searching,
+      icon: WANTED_CARD_STATUS_ICONS.searching
+    },
+    {
+      label: t('wantedCard.status.found'),
+      value: 'found',
+      count: statusCounts.value.found,
+      icon: WANTED_CARD_STATUS_ICONS.found
+    },
+    {
+      label: t('wantedCard.status.abandoned'),
+      value: 'abandoned',
+      count: statusCounts.value.abandoned,
+      icon: WANTED_CARD_STATUS_ICONS.abandoned
+    }
   ])
 
   // manaCost feeds MagicManaCost (mana-font) directly — "land" has no real mana
