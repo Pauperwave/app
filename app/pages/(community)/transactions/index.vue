@@ -47,6 +47,12 @@ const {
 const selection = useSelection<number>()
 const { columns, columnHeaders } = useTransactionsTableColumns(selection, rowContextMenuItems)
 
+// Single search box matching payer name/surname, transaction id, and receipt
+// number — same "one search box" pattern as /associates (user request,
+// 2026-08-24). UTable's own globalFilter/globalFilterOptions, not a
+// hand-rolled ref+watch pair — see transactionsGlobalFilterFn.ts.
+const search = ref('')
+
 // No selection UI wired up here previously — no bulk actions at all despite
 // tournaments/wanted-cards having this exact delete-with-confirm pattern for
 // a similarly-shaped record (2026-08-16). Same selectedX-filtered-by-selection
@@ -144,9 +150,9 @@ const tour = useTransactionsTour()
 
       <UDashboardToolbar
         :ui="{
-          root: 'flex-wrap h-auto py-2 gap-4',
-          left: 'gap-4 flex-wrap',
-          right: 'gap-4 flex-wrap'
+          root: 'flex-wrap h-auto py-2 gap-2',
+          left: 'gap-2 flex-wrap',
+          right: 'gap-2 flex-wrap'
         }"
       >
         <template #left>
@@ -156,8 +162,24 @@ const tour = useTransactionsTour()
             :count="selectedTransactions.length"
             @clear="selection.clear()"
           />
-          <div v-else id="tour-transactions-filters">
+          <div v-else id="tour-transactions-filters" class="flex items-center gap-2 flex-wrap">
             <StatusFilterGroup v-model="activeTypeTab" :items="typeTabs" />
+            <SearchInput
+              v-model="search"
+              class="w-56 sm:w-64 lg:w-72"
+              :placeholder="$t('transaction.searchPlaceholder')"
+            />
+            <UTooltip :text="$t('transaction.groupByPayer')">
+              <UButton
+                :icon="ICONS.players"
+                color="neutral"
+                :variant="isGrouped ? 'solid' : 'outline'"
+                :aria-label="$t('transaction.groupByPayer')"
+                @click="toggleGrouping"
+              >
+                <span class="hidden lg:inline">{{ $t('transaction.groupByPayer') }}</span>
+              </UButton>
+            </UTooltip>
           </div>
         </template>
 
@@ -169,25 +191,10 @@ const tour = useTransactionsTour()
             @change-type="paymentType => requestBulkTypeChange(paymentType, selectedTransactions)"
             @delete="requestBulkDelete(selectedTransactions)"
           />
-          <div v-else id="tour-transactions-actions" class="flex items-center gap-4 flex-wrap">
-            <UButton
-              :label="$t('transaction.groupByPayer')"
-              :icon="ICONS.players"
-              color="neutral"
-              :variant="isGrouped ? 'solid' : 'outline'"
-              @click="toggleGrouping"
-            />
-
+          <div v-else id="tour-transactions-actions" class="flex items-center gap-2 flex-wrap">
             <DateRangePicker v-model="range" :calendar-years="calendarYears" class="-ms-1" />
 
-            <UDropdownMenu :items="columnVisibilityItems" :content="{ align: 'end' }">
-              <UButton
-                :label="$t('common.showColumns')"
-                color="neutral"
-                variant="outline"
-                :trailing-icon="ICONS.settingsColumns"
-              />
-            </UDropdownMenu>
+            <ColumnVisibilityMenu :items="columnVisibilityItems" />
           </div>
         </template>
       </UDashboardToolbar>
@@ -200,6 +207,8 @@ const tour = useTransactionsTour()
           ref="table"
           v-model:sorting="sorting"
           v-model:column-visibility="columnVisibility"
+          v-model:global-filter="search"
+          :global-filter-options="{ globalFilterFn: transactionsGlobalFilterFn }"
           :data="filteredTransactions"
           :columns="columns"
           :grouping="grouping"
