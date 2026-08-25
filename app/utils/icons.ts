@@ -105,6 +105,7 @@ export const ICONS = {
   crown: 'i-lucide-crown',
   terminal: 'i-lucide-terminal',
   shieldUser: 'i-lucide-shield-user',
+  shieldPlus: 'i-lucide-shield-plus',
   userRoundCog: 'i-lucide-user-round-cog',
   rules: 'i-lucide-scroll-text',
   battle: 'i-lucide-swords',
