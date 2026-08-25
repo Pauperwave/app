@@ -4,7 +4,7 @@ import type { Table } from '@tanstack/vue-table'
 import type { Associate } from '~/types'
 
 const {
-  data: associates, isLoading: loading, status, refetch
+  data: associates, isLoading: loading, isPending, status, refetch
 } = useAssociatesQuery()
 const { t } = useI18n()
 const toast = useToast()
@@ -24,6 +24,12 @@ const pendingCount = computed(() => (associates.value ?? []).filter(
 const associatesCount = computed(() => (associates.value ?? []).filter(
   associate => associate.membership_request_status === 'approved'
 ).length)
+
+// undefined (ListSkeleton's own default count) only on a genuine first load
+// — isPending, unlike isLoading, is false once stale data exists to show a
+// real count from, even mid-refetch (e.g. the manual refresh button), same
+// convention as tournaments/locations' own list pages.
+const skeletonCount = computed(() => (isPending.value ? undefined : requestAssociates.value.length))
 
 const route = useRoute()
 const router = useRouter()
@@ -303,7 +309,13 @@ const tour = useAssociatesRequestsTour()
     </template>
 
     <template #body>
-      <UContextMenu :items="tableContextMenuItems">
+      <!-- ListSkeleton only for a genuine first load (isPending, no cached
+           rows yet) — a background refetch keeps the existing rows and
+           uses UTable's own :loading bar instead, same convention as
+           tournaments/locations' own list pages. -->
+      <ListSkeleton v-if="isPending" :count="skeletonCount" :columns="columns.length" />
+
+      <UContextMenu v-else :items="tableContextMenuItems">
         <UTable
           id="tour-requests-table"
           ref="table"

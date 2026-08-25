@@ -20,7 +20,7 @@ const MEMBERSHIP_STATUS_SORT_ORDER: Record<string, number> = {
 }
 
 const {
-  data: associates, isLoading: loading, status, refetch
+  data: associates, isLoading: loading, isPending, status, refetch
 } = useAssociatesQuery()
 const { data: geocodes, isLoading: geocodesLoading } = useAssociatesGeocodesQuery()
 const { t } = useI18n()
@@ -40,6 +40,12 @@ const rosterAssociates = computed(() => (associates.value ?? []).filter(
 const pendingCount = computed(() => (associates.value ?? []).filter(
   associate => associate.membership_request_status === 'pending'
 ).length)
+
+// undefined (ListSkeleton's own default count) only on a genuine first load
+// — isPending, unlike isLoading, is false once stale data exists to show a
+// real count from, even mid-refetch (e.g. the manual refresh button), same
+// convention as tournaments/locations' own list pages.
+const skeletonCount = computed(() => (isPending.value ? undefined : rosterAssociates.value.length))
 
 const tour = useAssociatesTour()
 
@@ -332,7 +338,13 @@ function renderNeutralBadge(value: string) {
 
     <template #body>
       <template v-if="viewMode === 'table'">
-        <UContextMenu :items="tableContextMenuItems">
+        <!-- ListSkeleton only for a genuine first load (isPending, no
+             cached rows yet) — a background refetch keeps the existing
+             rows and uses UTable's own :loading bar instead, same
+             convention as tournaments/locations' own list pages. -->
+        <ListSkeleton v-if="isPending" :count="skeletonCount" :columns="columns.length" />
+
+        <UContextMenu v-else :items="tableContextMenuItems">
           <UTable
             id="tour-associates-table"
             ref="table"
