@@ -103,6 +103,9 @@ export const ICONS = {
   // Commander / MTG domain
   commander: 'i-lucide-shield-half',
   crown: 'i-lucide-crown',
+  terminal: 'i-lucide-terminal',
+  shieldUser: 'i-lucide-shield-user',
+  userRoundCog: 'i-lucide-user-round-cog',
   rules: 'i-lucide-scroll-text',
   battle: 'i-lucide-swords',
   layers: 'i-lucide-layers',
