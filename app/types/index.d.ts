@@ -82,11 +82,11 @@ export interface Transaction
   event: { uuid: string } | null
 }
 
-// players_full joins the players table (nickname, is_banned, user_id) with
-// its associate (name, email, pauperwave_associate_number, is_active) —
-// nullable throughout since a view row's FK-joined columns are all optional
-// in the generated type, even though every one of these is NOT NULL in
-// practice (a player row always has an associate_uuid FK).
+// players_full joins the players table (user_id) with its associate (name,
+// email, pauperwave_associate_number, is_active) — nullable throughout since
+// a view row's FK-joined columns are all optional in the generated type,
+// even though every one of these is NOT NULL in practice (a player row
+// always has an associate_uuid FK).
 export type Player = Database['public']['Views']['players_full']['Row']
 
 export interface Mail {

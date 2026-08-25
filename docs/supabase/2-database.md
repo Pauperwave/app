@@ -1231,11 +1231,6 @@ CREATE TABLE public.players (
   -- optional: linked to Supabase Auth only when logging in
   user_id        uuid null,
 
-  -- optional nickname for the player
-  nickname   text null,
-  -- flag for manual deactivation
-  is_banned  boolean not null default false,
-
   CONSTRAINT pk_players primary key (id),
   CONSTRAINT uq_players_uuid_key unique (uuid),
   CONSTRAINT uq_players_associate_uuid_key unique (associate_uuid),
@@ -1273,8 +1268,6 @@ SELECT
   p.id,
   p.uuid,
   p.user_id,
-  p.nickname,
-  p.is_banned,
   p.created_at,
   p.associate_uuid,
   a.first_name,

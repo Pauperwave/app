@@ -1583,14 +1583,13 @@
       "inactive": "Non attivi"
     },
     "empty": "Nessun giocatore trovato",
-    "searchPlaceholder": "Cerca per nickname, nome o email",
+    "searchPlaceholder": "Cerca per nome o email",
     "columns": {
       "name": "Nome",
       "pauperwaveAssociateNumber": "Tessera",
       "emailAddress": "Email",
       "createdAt": "Registrato il",
-      "lastLogin": "Ultimo accesso",
-      "nickname": "Nickname"
+      "lastLogin": "Ultimo accesso"
     },
     "neverLoggedIn": "Mai effettuato l'accesso",
     "detail": {

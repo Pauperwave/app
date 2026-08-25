@@ -22,7 +22,6 @@ export function usePlayersTableColumns(
   // a single type tab is active, just permanent here since there's no "all".
   const columnHeaders: Record<string, string> = {
     name: t('player.columns.name'),
-    nickname: t('player.columns.nickname'),
     pauperwave_associate_number: t('player.columns.pauperwaveAssociateNumber'),
     email_address: t('player.columns.emailAddress'),
     created_at: t('player.columns.createdAt'),
@@ -33,21 +32,13 @@ export function usePlayersTableColumns(
     {
       accessorKey: 'name',
       header: ({ column }) => sortableHeader(t('player.columns.name'), column),
-      // first_name + last_name, not nickname — same display name as the
-      // associate this player is derived from (user request, 2026-08-20).
-      // Nickname stays a separate, plain-text column below.
+      // first_name + last_name — same display name as the associate this
+      // player is derived from (user request, 2026-08-20).
       cell: ({ row }) => h(AssociateTag, {
         name: `${row.original.first_name} ${row.original.last_name}`,
         associateUuid: row.original.associate_uuid,
         highlightQuery: search?.value
       })
-    },
-    {
-      accessorKey: 'nickname',
-      header: columnHeaders.nickname,
-      cell: ({ row }) => (row.original.nickname && search?.value
-        ? h(HighlightMatch, { text: row.original.nickname, query: search.value })
-        : row.original.nickname || '')
     },
     {
       accessorKey: 'pauperwave_associate_number',

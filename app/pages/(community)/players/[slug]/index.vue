@@ -5,10 +5,9 @@
 // DetailCard grid) instead of the ad-hoc <dl> this started as. No edit
 // action here: players have no editing UI anywhere in the app today, they're
 // derived from their associate record. Slug-based, not uuid (also
-// 2026-08-20, reversing the original uuid choice) — now that the display
-// name is first_name+last_name (not the mutable, non-unique nickname), it's
-// exactly as stable as associate/[slug].vue's own slug, so there's no reason
-// for this one route pair to be the odd one out.
+// 2026-08-20, reversing the original uuid choice) — the display name is
+// first_name+last_name, exactly as stable as associate/[slug].vue's own
+// slug, so there's no reason for this one route pair to be the odd one out.
 interface DetailField {
   icon: string
   label: string
@@ -22,9 +21,8 @@ const { data: playersData, isLoading: playerLoading } = usePlayersQuery()
 const player = computed(() => playersData.value?.find(
   item => slugify(`${item.first_name} ${item.last_name}`) === route.params.slug) ?? null)
 
-// first_name + last_name, not nickname — same display name as the associate
-// this player is derived from (user request, 2026-08-20). Nickname shows as
-// its own field below instead.
+// first_name + last_name — same display name as the associate this player is
+// derived from (user request, 2026-08-20).
 const displayName = computed(() => player.value
   ? `${player.value.first_name} ${player.value.last_name}`
   : '')
@@ -52,9 +50,6 @@ const lastSignInAt = computed(() => lastLoginsData.value
 const infoFields = computed<DetailField[]>(() => !player.value
   ? []
   : [
-    ...(player.value.nickname
-      ? [{ icon: ICONS.player, label: t('player.columns.nickname'), value: player.value.nickname }]
-      : []),
     ...(player.value.pauperwave_associate_number
       ? [{
         icon: ICONS.idCard,
