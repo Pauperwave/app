@@ -7,7 +7,7 @@ const { t } = useI18n()
 useSeoMeta({ title: () => t('player.breadcrumb') })
 
 const {
-  data: playersData, isLoading: loading, status, refetch
+  data: playersData, isLoading: loading, isPending, status, refetch
 } = usePlayersQuery()
 const data = computed(() => playersData.value ?? [])
 
@@ -92,6 +92,8 @@ const table = useTemplateRef<TableRef>('table')
 const columnVisibility = ref({})
 
 const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, columnHeaders)
+
+const skeletonCount = computed(() => (isPending.value ? undefined : filteredPlayers.value.length))
 </script>
 
 <template>
@@ -132,7 +134,8 @@ const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, 
     </template>
 
     <template #body>
-      <UContextMenu :items="tableContextMenuItems">
+      <ListSkeleton v-if="isPending" :count="skeletonCount" :columns="columns.length" />
+      <UContextMenu v-else :items="tableContextMenuItems">
         <UTable
           ref="table"
           v-model:sorting="sorting"
