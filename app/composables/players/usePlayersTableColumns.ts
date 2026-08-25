@@ -3,6 +3,7 @@ import { h } from 'vue'
 import { AssociateTag, HighlightMatch } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { Player } from '~/types'
+import AssociateNumberBadge from '~/components/ui/AssociateNumberBadge.vue'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 
 export function usePlayersTableColumns(
@@ -21,6 +22,7 @@ export function usePlayersTableColumns(
   // reasoning as transactions/index.vue hiding its payment_type column while
   // a single type tab is active, just permanent here since there's no "all".
   const columnHeaders: Record<string, string> = {
+    id: t('player.columns.id'),
     name: t('player.columns.name'),
     pauperwave_associate_number: t('player.columns.pauperwaveAssociateNumber'),
     email_address: t('player.columns.emailAddress'),
@@ -29,6 +31,17 @@ export function usePlayersTableColumns(
   }
 
   const columns: TableColumn<Player>[] = [
+    {
+      accessorKey: 'id',
+      header: ({ column }) => sortableHeader(t('player.columns.id'), column),
+      meta: {
+        class: {
+          th: 'whitespace-nowrap text-right',
+          td: 'whitespace-nowrap font-mono text-dimmed text-right'
+        }
+      },
+      cell: ({ row }) => row.original.id
+    },
     {
       accessorKey: 'name',
       header: ({ column }) => sortableHeader(t('player.columns.name'), column),
@@ -43,8 +56,9 @@ export function usePlayersTableColumns(
     {
       accessorKey: 'pauperwave_associate_number',
       header: ({ column }) => sortableHeader(t('player.columns.pauperwaveAssociateNumber'), column),
-      meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-      cell: ({ row }) => row.original.pauperwave_associate_number || ''
+      meta: { class: { th: 'text-center', td: 'text-center' } },
+      cell: ({ row }) =>
+        h(AssociateNumberBadge, { number: row.original.pauperwave_associate_number })
     },
     {
       accessorKey: 'email_address',
