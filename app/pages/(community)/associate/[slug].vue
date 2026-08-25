@@ -124,7 +124,9 @@ const consensiFields = computed<ConsentField[]>(() => !associate.value
 // /transactions itself uses — no dedicated per-associate endpoint, the whole
 // table is already fetched and small enough (same reasoning as
 // useAssociatesTableColumns.ts resolving updated_by/created_by client-side).
-const { data: transactions, isLoading: transactionsLoading } = useTransactionsQuery()
+const {
+  data: transactions, isLoading: transactionsLoading, isPending: transactionsPending
+} = useTransactionsQuery()
 const associateTransactions = computed(() => (transactions.value ?? [])
   .filter(transaction => transaction.associate?.uuid === associate.value?.uuid))
 
@@ -398,7 +400,8 @@ const associateTransactionsColumns: TableColumn<Transaction>[] = [
             {{ $t('associate.detail.sections.transactions') }}
           </template>
 
-          <p v-if="!transactionsLoading && !associateTransactions.length" class="text-sm text-muted py-4 text-center">
+          <ListSkeleton v-if="transactionsPending" :columns="associateTransactionsColumns.length" />
+          <p v-else-if="!associateTransactions.length" class="text-sm text-muted py-4 text-center">
             {{ $t('associate.detail.transactionsEmpty') }}
           </p>
           <UTable
