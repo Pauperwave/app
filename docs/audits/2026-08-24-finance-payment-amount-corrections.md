@@ -12,13 +12,15 @@ Checked for a same-day Commander tournament that these might have actually belon
 
 **Fix applied:** `UPDATE pauperwave_payments SET payment_amount = 10.00 WHERE id IN (579, 581, 583, 584)`.
 
-## Sealed — 2 transactions at 2,50€ instead of 30,00€
+## Sealed — 2 transactions at 2,50€ instead of 30,00€ (later reverted — see below)
 
 Category `sealed` (Tournament Fee, tournament format = Sealed) has only one tournament all year — **"Sealed Lorwyn Eclipsed"**, 2026-02-12 19:00. 6 of its 8 transactions were 30,00€ (4 Cash + 2 POS); 2 Cash transactions were 2,50€: ids **114, 118**, receipts 28/T and 32/T.
 
-A 30,00€ → 2,50€ drop (12×) on the same tournament reads as a transcription slip in the historical import, not a legitimate discount. User confirmed and asked to correct.
+A 30,00€ → 2,50€ drop (12×) on the same tournament initially read as a transcription slip in the historical import, not a legitimate discount. User confirmed and asked to correct at the time.
 
-**Fix applied:** `UPDATE pauperwave_payments SET payment_amount = 30.00 WHERE id IN (114, 118)`.
+**Fix applied (2026-08-24, later reverted):** `UPDATE pauperwave_payments SET payment_amount = 30.00 WHERE id IN (114, 118)`.
+
+**Reverted (2026-08-24, same day):** re-reviewing the audit, the user confirmed these 2 payments were in fact a valid discount off the 30,00€ full price, not an import error. `payment_amount` was restored to 2,50€ for both, and `notes` was extended (not replaced — the original "Importato da foglio storico ricevute 2026 (ricevuta n° 28/T or 32/T)" provenance stays) to record the discount context, rather than adding a dedicated discount column for two historical rows: `UPDATE pauperwave_payments SET payment_amount = 2.50, notes = notes || ' — Sconto applicato rispetto alla quota intera di 30,00€ (pagamento confermato valido)' WHERE id IN (114, 118)`.
 
 ## Also corrected in the same session: an earlier misreport, not a data bug
 
@@ -51,7 +53,9 @@ User pasted a snapshot of the (pre-scalable-refactor) category table and asked w
 
 Every column also cross-footed correctly (Paypal 910,00 / Contanti 1.789,00 / Pos 1.257,50 / Totale 3.956,50 all match the row-by-row sums), so the mismatch is isolated to the Sealed row alone.
 
-A €55,00 gap at a 30,00€ sticker price is exactly 2 transactions short (2 × 27,50€ = 55,00€) — this is the same "Sealed — 2 transactions at 2,50€ instead of 30,00€" issue already found and fixed earlier in this doc (ids 114, 118). The pasted snapshot was taken before that fix landed in the DB (it already reflects the Pauper fix, going by its 920,00€ total, but not yet the Sealed one) — nothing further to do, the live data is already correct.
+A €55,00 gap at a 30,00€ sticker price is exactly 2 transactions short (2 × 27,50€ = 55,00€) — at the time this matched the "Sealed — 2 transactions at 2,50€ instead of 30,00€" fix earlier in this doc (ids 114, 118), and the pasted snapshot's 185,00€ total looked like it predated that fix.
+
+**Superseded by the revert above:** the Sealed fix was later undone (ids 114, 118 confirmed as a genuine 2,50€ discount, not an error), so this snapshot's 185,00€ total was actually already correct as-pasted — the "gap" was an artifact of comparing against the wrong assumption (a uniform 30,00€ across all 8 transactions), not a real discrepancy.
 
 ## Follow-up: category table made scalable (no hardcoded names)
 
