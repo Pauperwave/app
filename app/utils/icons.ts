@@ -58,6 +58,7 @@ export const ICONS = {
   addPlayer: 'i-lucide-user-plus',
   playerConfirmed: 'i-lucide-user-check',
   playerLapsed: 'i-lucide-user-x',
+  noShow: 'i-lucide-user-x',
 
   // Visibility
   show: 'i-lucide-eye',
@@ -121,6 +122,7 @@ export const ICONS = {
   coins: 'i-lucide-coins',
   creditCard: 'i-lucide-credit-card',
   shoppingCart: 'i-lucide-shopping-cart',
+  ticket: 'i-lucide-ticket',
   idCard: 'i-lucide-id-card',
   // "No payment on record yet" (unpaid membership status) — distinct from
   // creditCard (renewal date) and idCard (membership number), so the three
