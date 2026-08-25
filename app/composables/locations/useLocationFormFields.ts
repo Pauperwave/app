@@ -9,22 +9,22 @@ import type { OpeningHours } from '~/types'
 
 function buildSchema(t: ReturnType<typeof useI18n>['t']) {
   return v.object({
-    name: v.pipe(v.string(), v.minLength(1, t('location.addModal.validation.nameRequired'))),
-    address: v.pipe(v.string(), v.minLength(1, t('location.addModal.validation.addressRequired'))),
-    city: v.pipe(v.string(), v.minLength(1, t('location.addModal.validation.cityRequired'))),
-    province: v.pipe(v.string(), v.minLength(1, t('location.addModal.validation.provinceRequired'))),
+    name: v.pipe(v.string(), v.trim(), v.minLength(1, t('location.addModal.validation.nameRequired'))),
+    address: v.pipe(v.string(), v.trim(), v.minLength(1, t('location.addModal.validation.addressRequired'))),
+    city: v.pipe(v.string(), v.trim(), v.minLength(1, t('location.addModal.validation.cityRequired'))),
+    province: v.pipe(v.string(), v.trim(), v.minLength(1, t('location.addModal.validation.provinceRequired'))),
     postalCode: v.pipe(
-      v.string(), v.minLength(1, t('location.addModal.validation.postalCodeRequired'))
+      v.string(), v.trim(), v.minLength(1, t('location.addModal.validation.postalCodeRequired'))
     ),
-    country: v.pipe(v.string(), v.minLength(1, t('location.addModal.validation.countryRequired'))),
-    phone: v.optional(v.nullable(v.string())),
-    email: v.optional(v.nullable(v.string())),
-    website: v.optional(v.nullable(v.string())),
-    googleMapsUrl: v.optional(v.nullable(v.string())),
-    facebook: v.optional(v.nullable(v.string())),
-    instagram: v.optional(v.nullable(v.string())),
-    telegramChannel: v.optional(v.nullable(v.string())),
-    whatsapp: v.optional(v.nullable(v.string())),
+    country: v.pipe(v.string(), v.trim(), v.minLength(1, t('location.addModal.validation.countryRequired'))),
+    phone: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
+    email: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
+    website: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
+    googleMapsUrl: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
+    facebook: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
+    instagram: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
+    telegramChannel: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
+    whatsapp: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
     temporarilyClosed: v.optional(v.boolean())
   })
 }

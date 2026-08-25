@@ -17,9 +17,10 @@ export function wantedCardFormFieldsSchema(t: (key: string) => string) {
     ),
     language: v.picklist(['any', ...WANTED_CARD_LANGUAGES]),
     foil: v.optional(v.boolean()),
-    notes: v.optional(v.string()),
+    notes: v.optional(v.pipe(v.string(), v.trim())),
     player: v.pipe(
       v.string(t('wantedCard.addModal.validation.playerRequired')),
+      v.trim(),
       v.minLength(1, t('wantedCard.addModal.validation.playerRequired'))
     )
   }

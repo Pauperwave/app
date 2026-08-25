@@ -9,14 +9,14 @@ import type { InferOutput } from 'valibot'
 function buildSchema(t: ReturnType<typeof useI18n>['t']) {
   return v.object({
     status: v.picklist(TOURNAMENT_STATUSES),
-    companionCode: v.optional(v.nullable(v.string())),
+    companionCode: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
     // .optional() here mirrors the pre-migration schema: "name" shows as
     // "required" in the UI (see UFormField required) but the validation
     // schema does not enforce it — a pre-existing inconsistency, left as is.
-    name: v.optional(v.string(t('tournament.addModal.validation.nameRequired'))),
-    description: v.optional(v.nullable(v.string())),
+    name: v.optional(v.pipe(v.string(t('tournament.addModal.validation.nameRequired')), v.trim())),
+    description: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
     entryFee: v.pipe(v.number(), v.minValue(0, t('tournament.addModal.validation.entryFeeNegative'))),
-    prizes: v.optional(v.nullable(v.string())),
+    prizes: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
     formatUuid: v.string(),
     startDate: v.string(),
     startTime: v.string(),
