@@ -17,9 +17,9 @@ import type { TransactionFormState } from '~/composables/transactions/useTransac
 const state = defineModel<TransactionFormState>('state', { required: true })
 
 const {
-  paymentTypeOptions, paymentMethodOptions, receiverOptions,
+  paymentTypeOptions, paymentMethodOptions, receiverOptions, tournamentOptions, eventOptions,
   selectedPaymentTypeIcon, selectedPaymentMethodIcon, selectedReceiverAvatar,
-  showEventField, isAssociationFee
+  showTournamentField, showEventField, isAssociationFee
 } = useTransactionFormFields(state.value)
 </script>
 
@@ -91,13 +91,29 @@ const {
     </UFormField>
 
     <UFormField
-      v-if="showEventField"
-      :label="$t('transaction.addModal.fields.event')"
-      name="event_name"
+      v-if="showTournamentField"
+      :label="$t('transaction.addModal.fields.tournament')"
+      name="tournament_uuid"
     >
       <USelectMenu
-        v-model="state.event_name"
-        :items="EVENT_OPTIONS"
+        v-model="state.tournament_uuid"
+        value-key="value"
+        :items="tournamentOptions"
+        :placeholder="$t('transaction.addModal.fields.selectTournament')"
+        class="w-full"
+      />
+    </UFormField>
+
+    <UFormField
+      v-if="showEventField"
+      :label="$t('transaction.addModal.fields.event')"
+      name="event_uuid"
+    >
+      <USelectMenu
+        v-model="state.event_uuid"
+        value-key="value"
+        :items="eventOptions"
+        :placeholder="$t('transaction.addModal.fields.selectEvent')"
         class="w-full"
       />
     </UFormField>

@@ -66,6 +66,7 @@ export function useAssociatesBulkActions(selection: Selection<number>) {
             paymentMethod: fee.membershipFeePaymentMethod,
             paymentType: 'Association Fee',
             receivedBy: receiver,
+            tournamentUuid: null,
             eventUuid: null,
             eventName: null,
             notes: ''

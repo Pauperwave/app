@@ -16,7 +16,8 @@ export function useTransactionFormFields(state: TransactionFormState) {
   const { data: associatesData } = useAssociatesQuery()
 
   const {
-    schema, paymentTypeOptions, paymentMethodOptions, receiverOptions, payerTabItems
+    schema, paymentTypeOptions, paymentMethodOptions, receiverOptions, payerTabItems,
+    tournamentOptions, eventOptions
   } = useTransactionFormOptions()
 
   // Only approved associates can be a payment's payer — pending/rejected requests
@@ -48,11 +49,13 @@ export function useTransactionFormFields(state: TransactionFormState) {
   const selectedReceiverAvatar = computed(() =>
     receiverOptions.value.find(option => option.value === state.received_by)?.avatar)
 
-  // The event field only makes sense for a tournament/event-linked payment —
-  // hidden for "Quota associativa" (a membership fee, not tied to any event)
-  // and "Donazione" (a free-standing gift, same reasoning).
+  // Tournament Fee links to a real tournament, Event Fee/Token Purchase to a
+  // real event (ck_payment_type_event_link, migration 20260825220000) —
+  // "Quota associativa" (a membership fee) and "Donazione" (a free-standing
+  // gift) link to neither.
+  const showTournamentField = computed(() => state.payment_type === 'Tournament Fee')
   const showEventField = computed(() =>
-    state.payment_type !== 'Association Fee' && state.payment_type !== 'Donation')
+    state.payment_type === 'Event Fee' || state.payment_type === 'Token Purchase')
 
   // The membership fee is a fixed €5 via PayPal "Friends & Family" (see each
   // caller's own watch on payment_type) — both fields are disabled for this
@@ -66,11 +69,14 @@ export function useTransactionFormFields(state: TransactionFormState) {
     paymentMethodOptions,
     receiverOptions,
     payerTabItems,
+    tournamentOptions,
+    eventOptions,
     associateOptions,
     selectedPaymentTypeIcon,
     selectedPaymentMethodIcon,
     selectedAssociateAvatar,
     selectedReceiverAvatar,
+    showTournamentField,
     showEventField,
     isAssociationFee
   }

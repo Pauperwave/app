@@ -31,6 +31,7 @@ function transactionToPayload(
     paymentMethod: transaction.payment_method,
     paymentType: transaction.payment_type,
     receivedBy: transaction.received_by,
+    tournamentUuid: transaction.tournament_uuid,
     eventUuid: transaction.event_uuid,
     eventName: transaction.event_name,
     notes: transaction.notes,

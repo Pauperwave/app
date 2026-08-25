@@ -54,7 +54,8 @@ function createInitialState(): TransactionFormState {
     payer_surname: undefined,
     payer_email: undefined,
     payer_tax_code: undefined,
-    event_name: undefined,
+    tournament_uuid: undefined,
+    event_uuid: undefined,
     notes: undefined
   }
 }
@@ -62,7 +63,8 @@ function createInitialState(): TransactionFormState {
 const state = shallowReactive<TransactionFormState>(createInitialState())
 
 const {
-  schema, associatesData, associateOptions, selectedAssociateAvatar, showEventField, payerTabItems
+  schema, associatesData, associateOptions, selectedAssociateAvatar,
+  showTournamentField, showEventField, payerTabItems
 } = useTransactionFormFields(state)
 
 type Schema = v.InferOutput<typeof schema>
@@ -94,11 +96,15 @@ watch([() => state.payment_type, settings.data], ([type, data]) => {
   state.payment_method = data.membershipFeePaymentMethod
 })
 
-// Clears any event picked before switching to a type whose field is hidden
-// (see showEventField) — separate from the watch above since this also
-// covers "Donazione", which doesn't force the amount/method.
+// Clears any tournament/event picked before switching to a type whose field
+// is hidden (see showTournamentField/showEventField) — separate from the
+// watch above since this also covers "Donazione", which doesn't force the
+// amount/method.
+watch(showTournamentField, (visible) => {
+  if (!visible) state.tournament_uuid = undefined
+})
 watch(showEventField, (visible) => {
-  if (!visible) state.event_name = undefined
+  if (!visible) state.event_uuid = undefined
 })
 
 // String, not a numeric index: UTabs' v-model always emits the item's `value` as
@@ -186,8 +192,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       paymentMethod: event.data.payment_method,
       paymentType: event.data.payment_type,
       receivedBy: event.data.received_by,
-      eventUuid: null,
-      eventName: event.data.event_name ?? null,
+      tournamentUuid: event.data.tournament_uuid ?? null,
+      eventUuid: event.data.event_uuid ?? null,
+      // A brand-new transaction has no historical-import provenance text to
+      // preserve, unlike EditModal.vue's own onSubmit.
+      eventName: null,
       notes: event.data.notes ?? ''
     })
 
