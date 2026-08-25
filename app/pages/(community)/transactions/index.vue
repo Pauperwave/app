@@ -25,9 +25,15 @@ const router = useRouter()
 const isModalOpen = ref(false)
 
 const {
-  data: transactionsData, isLoading: loading, status, refetch
+  data: transactionsData, isLoading: loading, isPending, status, refetch
 } = useTransactionsQuery()
 const data = computed(() => transactionsData.value ?? [])
+
+// undefined (ListSkeleton's own default count) only on a genuine first load
+// — isPending, unlike isLoading, is false once stale data exists to show a
+// real count from, even mid-refetch (e.g. the manual refresh button), same
+// convention as tournaments/locations' own list pages.
+const skeletonCount = computed(() => (isPending.value ? undefined : data.value.length))
 
 // Same StatusFilterGroup used by tournaments/leagues/events (#left) with
 // DateRangePicker in #right, not UTabs.
@@ -201,7 +207,13 @@ const tour = useTransactionsTour()
     </template>
 
     <template #body>
-      <UContextMenu :items="tableContextMenuItems">
+      <!-- ListSkeleton only for a genuine first load (isPending, no cached
+           rows yet) — a background refetch keeps the existing rows and uses
+           UTable's own :loading bar instead, same convention as
+           tournaments/locations' own list pages. -->
+      <ListSkeleton v-if="isPending" :count="skeletonCount" :columns="columns.length" />
+
+      <UContextMenu v-else :items="tableContextMenuItems">
         <UTable
           id="tour-transactions-table"
           ref="table"
