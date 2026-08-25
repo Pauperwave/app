@@ -18,8 +18,11 @@
 -->
 <script setup lang="ts">
 import { upperFirst } from 'scule'
+import type { UserProps } from '@nuxt/ui'
 
-const { name, associateUuid, highlightQuery } = defineProps<{
+const {
+  name, associateUuid, highlightQuery, size = 'sm', strikethrough = false
+} = defineProps<{
   name: string
   associateUuid?: string | null
   // Opt-in (2026-08-19, user request): highlights the search box's own
@@ -27,6 +30,15 @@ const { name, associateUuid, highlightQuery } = defineProps<{
   // search result column uses. Every existing call site omits this and
   // keeps rendering the plain name.
   highlightQuery?: string
+  // Forwarded to UUser — defaults to 'sm' (every existing call site's
+  // implicit size before this prop existed). Added for AcceptancePicker's
+  // own listbox rows, which read too small at the default (user request,
+  // 2026-08-24).
+  size?: UserProps['size']
+  // Strikes through the name — no-show indicator in AcceptancePicker's
+  // "Pre-registrati" table (user request, 2026-08-24), generic enough for
+  // any other "this person is marked as not participating" use later.
+  strikethrough?: boolean
 }>()
 
 const avatar = computed(() => ({ src: generatePlayerAvatar(name), alt: name }))
@@ -47,11 +59,14 @@ const membershipBadge = computed(() => associate.value
     <UUser
       :name="name"
       :avatar="avatar"
-      size="sm"
+      :size="size"
       class="cursor-default"
     >
-      <template v-if="highlightQuery" #name>
-        <HighlightMatch :text="name" :query="highlightQuery" />
+      <template v-if="highlightQuery || strikethrough" #name>
+        <span :class="{ 'line-through text-dimmed': strikethrough }">
+          <HighlightMatch v-if="highlightQuery" :text="name" :query="highlightQuery" />
+          <template v-else>{{ name }}</template>
+        </span>
       </template>
     </UUser>
 
@@ -76,10 +91,13 @@ const membershipBadge = computed(() => associate.value
     v-else
     :name="name"
     :avatar="avatar"
-    size="sm"
+    :size="size"
   >
-    <template v-if="highlightQuery" #name>
-      <HighlightMatch :text="name" :query="highlightQuery" />
+    <template v-if="highlightQuery || strikethrough" #name>
+      <span :class="{ 'line-through text-dimmed': strikethrough }">
+        <HighlightMatch v-if="highlightQuery" :text="name" :query="highlightQuery" />
+        <template v-else>{{ name }}</template>
+      </span>
     </template>
   </UUser>
 </template>

@@ -21,5 +21,7 @@ export const PAYMENT_METHOD_BADGE_CONFIG: Record<PaymentMethod, PaymentMethodBad
   Cash: { color: 'success', icon: ICONS.wallet },
   PayPal: { color: 'info', icon: 'i-simple-icons-paypal' },
   POS: { color: 'primary', icon: ICONS.creditCard },
-  Comped: { color: 'neutral', icon: ICONS.heartHandshake }
+  // Distinct from Donation's own heartHandshake icon — the two used to
+  // collide visually (user request, 2026-08-24).
+  Comped: { color: 'neutral', icon: ICONS.ticket }
 }
