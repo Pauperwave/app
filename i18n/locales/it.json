@@ -2265,8 +2265,18 @@
     },
     "members": {
       "title": "Membri",
-      "description": "Invita nuovi membri via indirizzo email.",
-      "invitePeople": "Invita persone",
+      "description": "Chi ha accesso allo staff e con quale ruolo.",
+      "assignRole": "Assegna ruolo",
+      "assignRoleModal": {
+        "title": "Assegna ruolo",
+        "description": "Cerca un associato che ha già effettuato l'accesso all'app e assegnagli un ruolo.",
+        "associateLabel": "Associato",
+        "associatePlaceholder": "Seleziona un associato",
+        "associateSearchPlaceholder": "Cerca per nome o email...",
+        "roleLabel": "Ruolo",
+        "rolePlaceholder": "Seleziona un ruolo",
+        "submit": "Assegna"
+      },
       "roles": {
         "player": "Giocatore",
         "organizer": "Organizzatore",

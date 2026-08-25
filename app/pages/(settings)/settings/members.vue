@@ -8,6 +8,8 @@ useSeoMeta({ title: () => t('settings.layout.links.members') })
 
 const { data: membersData } = useMembersQuery()
 const members = computed(() => membersData.value ?? [])
+
+const assignRoleModalOpen = ref(false)
 </script>
 
 <template>
@@ -33,9 +35,11 @@ const members = computed(() => membersData.value ?? [])
       orientation="horizontal"
     >
       <UButton
-        :label="$t('settings.members.invitePeople')"
+        :label="$t('settings.members.assignRole')"
+        :icon="ICONS.addPlayer"
         color="neutral"
         class="w-fit lg:ms-auto"
+        @click="assignRoleModalOpen = true"
       />
     </UPageCard>
 
@@ -46,4 +50,6 @@ const members = computed(() => membersData.value ?? [])
       <SettingsMembersList :members="members" />
     </UPageCard>
   </div>
+
+  <SettingsAssignRoleModal v-model:open="assignRoleModalOpen" />
 </template>
