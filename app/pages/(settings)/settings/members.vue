@@ -1,21 +1,13 @@
 <!-- app\pages\(settings)\settings\members.vue -->
 <script setup lang="ts">
-import type { Member } from '~/types'
-
 definePageMeta({ permission: 'access-settings' })
 
 const { t } = useI18n()
 
 useSeoMeta({ title: () => t('settings.layout.links.members') })
 
-const { data: members } = await useFetch<Member[]>('/api/members', { default: () => [] })
-
-const q = ref('')
-
-const filteredMembers = computed(() => {
-  const query = q.value.toLowerCase()
-  return members.value.filter(member => member.name.toLowerCase().includes(query))
-})
+const { data: membersData } = useMembersQuery()
+const members = computed(() => membersData.value ?? [])
 </script>
 
 <template>
@@ -49,23 +41,9 @@ const filteredMembers = computed(() => {
 
     <UPageCard
       variant="subtle"
-      :ui="{
-        container: 'p-0 sm:p-0 gap-y-0',
-        wrapper: 'items-stretch',
-        header: 'p-4 mb-0 border-b border-default'
-      }"
+      :ui="{ container: 'p-0 sm:p-0 gap-y-0', wrapper: 'items-stretch' }"
     >
-      <template #header>
-        <UInput
-          v-model="q"
-          :icon="ICONS.search"
-          :placeholder="$t('settings.members.searchPlaceholder')"
-          autofocus
-          class="w-full"
-        />
-      </template>
-
-      <SettingsMembersList :members="filteredMembers" />
+      <SettingsMembersList :members="members" />
     </UPageCard>
   </div>
 </template>

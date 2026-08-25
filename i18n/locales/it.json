@@ -2189,8 +2189,7 @@
         "deleteTournaments": { "feature": "**Eliminare** **definitivamente** tornei/leghe/eventi" },
         "purgeTrash": { "feature": "**Eliminare** **definitivamente** una riga da /trash" },
         "manageRoles": {
-          "feature": "**Assegnare**/**modificare** ruoli (/settings/members)",
-          "statusNote": "L'RPC assign_role esiste e applica già le regole (admin non può toccare il livello super_admin, l'account dello sviluppatore è protetto), ma il menu ruoli in /settings/members non è ancora collegato: oggi è solo decorativo, nessuna chiamata reale."
+          "feature": "**Assegnare**/**modificare** ruoli (/settings/members)"
         }
       }
     },
@@ -2259,7 +2258,6 @@
       "title": "Membri",
       "description": "Invita nuovi membri via indirizzo email.",
       "invitePeople": "Invita persone",
-      "searchPlaceholder": "Cerca membri",
       "roles": {
         "player": "Giocatore",
         "organizer": "Organizzatore",
@@ -2271,10 +2269,7 @@
         "description": "Questa lista mostra chi ha quale ruolo, non cosa può fare. Per il dettaglio completo dei permessi per ruolo vai nella tab \"Permessi\".",
         "action": "Vedi permessi"
       },
-      "list": {
-        "editMember": "Modifica membro",
-        "removeMember": "Rimuovi membro"
-      }
+      "roleChangeErrorTitle": "Modifica ruolo non riuscita"
     },
     "notifications": {
       "sections": {

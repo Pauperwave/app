@@ -99,16 +99,10 @@ export interface Mail {
 }
 
 // The 4-tier app-level role model decided in docs/architecture/roles.md
-// (2026-08-10): player < organizer < admin < super_admin. Not yet the live DB
-// enum (shared/utils/types/database.ts's app_role is still the pre-migration
-// admin|organizer|judge|player) — this is the target shape everything client-side
-// should already be built against, per that doc's "Suggested order of work".
+// (2026-08-10): player < organizer < admin < super_admin — now also the live
+// DB enum (shared/utils/types/database.ts's app_role, migration
+// 20260817090000).
 export type AppRole = 'player' | 'organizer' | 'admin' | 'super_admin'
-
-export interface Member {
-  name: string
-  role: AppRole
-}
 
 export interface Stat {
   title: string
