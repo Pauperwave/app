@@ -1245,7 +1245,6 @@ export type Database = {
           associate_uuid: string
           created_at: string
           id: number
-          nickname: string | null
           updated_at: string
           user_id: string | null
           uuid: string
@@ -1254,7 +1253,6 @@ export type Database = {
           associate_uuid: string
           created_at?: string
           id?: number
-          nickname?: string | null
           updated_at?: string
           user_id?: string | null
           uuid?: string
@@ -1263,7 +1261,6 @@ export type Database = {
           associate_uuid?: string
           created_at?: string
           id?: number
-          nickname?: string | null
           updated_at?: string
           user_id?: string | null
           uuid?: string
@@ -2191,7 +2188,6 @@ export type Database = {
           id: number | null
           is_active: boolean | null
           last_name: string | null
-          nickname: string | null
           pauperwave_associate_number: string | null
           user_id: string | null
           uuid: string | null
