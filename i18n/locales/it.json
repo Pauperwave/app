@@ -1320,6 +1320,8 @@
     "stepper": {
       "acceptance": "Accettazione",
       "acceptanceDescription": "Iscrizioni aperte",
+      "pods": "Tavoli",
+      "podsDescription": "Formazione tavoli",
       "round": "Round {n}",
       "roundPending": "In attesa",
       "awards": "Premi",
@@ -1397,9 +1399,21 @@
       "save": "Salva"
     },
     "single": {
+      "presentationCard": {
+        "edit": "Modifica torneo"
+      },
       "acceptancePicker": {
         "preRegistered": "Pre-registrati",
         "registeredPaid": "Iscritti (Pagato)"
+      },
+      "podsManager": {
+        "summary": "{count} tavoli",
+        "open": "Formazione tavoli",
+        "shuffle": "Rimescola",
+        "invalidCount": "Numero di giocatori non valido per formare i tavoli",
+        "podTitle": "Tavolo {n}",
+        "modalTitle": "Formazione tavoli",
+        "modalDescription": "Trascina i giocatori per spostarli tra i tavoli"
       },
       "awardsPlaceholder": "Componente premi che mostrerà la classifica finale",
       "leaderboardTitle": "Classifica torneo specifico",
