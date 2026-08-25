@@ -1593,6 +1593,15 @@
       "lastLogin": "Ultimo accesso"
     },
     "neverLoggedIn": "Mai effettuato l'accesso",
+    "rowActions": {
+      "copyEmail": "Copia email",
+      "emailCopied": "Email copiata negli appunti",
+      "promoteTo": "Promuovi a",
+      "delete": "Elimina",
+      "deleteConfirmTitle": "Eliminare questo giocatore?",
+      "deleteErrorTitle": "Eliminazione non riuscita",
+      "deleteConflictDescription": "Il giocatore ha dati collegati (tornei, decks, ...) e non può essere eliminato."
+    },
     "detail": {
       "navbarTitle": "Giocatore",
       "notFound": "Giocatore non trovato.",
@@ -2269,7 +2278,8 @@
         "description": "Questa lista mostra chi ha quale ruolo, non cosa può fare. Per il dettaglio completo dei permessi per ruolo vai nella tab \"Permessi\".",
         "action": "Vedi permessi"
       },
-      "roleChangeErrorTitle": "Modifica ruolo non riuscita"
+      "roleChangeErrorTitle": "Modifica ruolo non riuscita",
+      "noAccountYet": "Deve prima effettuare l'accesso all'app almeno una volta"
     },
     "notifications": {
       "sections": {
