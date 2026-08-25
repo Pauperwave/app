@@ -6,7 +6,7 @@
 import { format, parseISO } from 'date-fns'
 import type { TableColumn } from '@nuxt/ui'
 import type { Transaction } from '~/types'
-import { UBadge, UButton } from '#components'
+import { UBadge, UButton, UIcon, UTooltip } from '#components'
 import AssociateTag from '~/components/ui/AssociateTag.vue'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 import PaymentTypeBadge from '~/components/ui/PaymentTypeBadge.vue'
@@ -235,9 +235,32 @@ const associateTransactionsColumns: TableColumn<Transaction>[] = [
     }
   },
   {
+    accessorKey: 'receipt_ref',
+    header: t('transaction.columns.receipt'),
+    meta: { class: { th: 'text-center', td: 'text-center' } },
+    cell: ({ row }) => {
+      const receiptRef = row.original.receipt_ref
+      if (!receiptRef) return null
+      return h(UBadge, { variant: 'subtle', color: 'neutral', icon: ICONS.receipt, label: receiptRef })
+    }
+  },
+  {
     accessorKey: 'notes',
     header: t('transaction.columns.notes'),
-    cell: ({ row }) => row.original.notes
+    // parseTransactionNotes() only handles the unknown-email marker now —
+    // the receipt number moved to its own receipt_ref column (migration
+    // 20260825230000), read directly above instead of parsed out of notes.
+    cell: ({ row }) => {
+      const { hasUnknownEmail, cleanNotes } = parseTransactionNotes(row.original.notes)
+      if (!hasUnknownEmail) return cleanNotes
+      return h('div', { class: 'flex items-center gap-1.5' }, [
+        h(UTooltip, { text: t('transaction.columns.unknownEmailTooltip') }, () => h(UIcon, {
+          name: ICONS.incognito,
+          class: 'size-4 text-dimmed shrink-0'
+        })),
+        cleanNotes
+      ])
+    }
   }
 ]
 </script>
