@@ -39,7 +39,12 @@ const tour = useStatisticsTour()
       column — its year labels/dashed lines need the extra room more than
       any other chart on this page. -->
       <div id="tour-statistics-growth">
-        <StatisticsAssociatesGrowthChart class="mt-4" />
+        <ClientOnly>
+          <StatisticsAssociatesGrowthChart class="mt-4" />
+          <template #fallback>
+            <StatisticsStatChartCardSkeleton class="mt-4" />
+          </template>
+        </ClientOnly>
       </div>
 
       <!-- Grouped by domain (associates, then tournaments, then wanted
@@ -48,16 +53,36 @@ const tour = useStatisticsTour()
       the tour can step through them one at a time. -->
       <div class="grid gap-4 lg:grid-cols-2 mt-4">
         <div id="tour-statistics-age-distribution">
-          <StatisticsAgeDistributionChart />
+          <ClientOnly>
+            <StatisticsAgeDistributionChart />
+            <template #fallback>
+              <StatisticsStatChartCardSkeleton />
+            </template>
+          </ClientOnly>
         </div>
         <div id="tour-statistics-renewal-timing">
-          <StatisticsRenewalTimingChart />
+          <ClientOnly>
+            <StatisticsRenewalTimingChart />
+            <template #fallback>
+              <StatisticsStatChartCardSkeleton />
+            </template>
+          </ClientOnly>
         </div>
         <div id="tour-statistics-tournaments-per-year">
-          <StatisticsTournamentsPerYearChart />
+          <ClientOnly>
+            <StatisticsTournamentsPerYearChart />
+            <template #fallback>
+              <StatisticsStatChartCardSkeleton />
+            </template>
+          </ClientOnly>
         </div>
         <div id="tour-statistics-wanted-cards-status">
-          <StatisticsWantedCardsStatusChart />
+          <ClientOnly>
+            <StatisticsWantedCardsStatusChart />
+            <template #fallback>
+              <StatisticsStatChartCardSkeleton />
+            </template>
+          </ClientOnly>
         </div>
       </div>
     </template>

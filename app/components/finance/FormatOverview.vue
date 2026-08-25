@@ -7,9 +7,10 @@ page-wide shared switch was rejected. -->
 import type { TabsItem } from '@nuxt/ui'
 import type { FinanceFormatSummaryRow } from '~/composables/finance/useFinanceSummary'
 
-const { rows, loading } = defineProps<{
+const { rows, loading, pending = false } = defineProps<{
   rows: FinanceFormatSummaryRow[]
   loading: boolean
+  pending?: boolean
 }>()
 
 const { t } = useI18n()
@@ -27,7 +28,17 @@ const viewModeItems = computed<TabsItem[]>(() => [
       <ViewModeTabs v-model="viewMode" :items="viewModeItems" />
     </div>
 
-    <FinanceFormatChart v-if="viewMode === 'chart'" :rows="rows" />
-    <FinanceFormatSummaryTable v-else :rows="rows" :loading="loading" />
+    <ClientOnly v-if="viewMode === 'chart'">
+      <FinanceFormatChart :rows="rows" :loading="loading" />
+      <template #fallback>
+        <StatisticsStatChartCardSkeleton />
+      </template>
+    </ClientOnly>
+    <FinanceFormatSummaryTable
+      v-else
+      :rows="rows"
+      :loading="loading"
+      :pending="pending"
+    />
   </div>
 </template>

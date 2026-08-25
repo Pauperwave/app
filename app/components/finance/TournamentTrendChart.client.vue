@@ -33,9 +33,10 @@ import { VisXYContainer, VisLine, VisScatter, VisAxis, VisTooltip } from '@unovi
 import { Scatter } from '@unovis/ts'
 import type { FinanceTournamentSummaryRow } from '~/composables/finance/useFinanceSummary'
 
-const { rows, year } = defineProps<{
+const { rows, year, loading = false } = defineProps<{
   rows: FinanceTournamentSummaryRow[]
   year: number
+  loading?: boolean
 }>()
 
 const { t } = useI18n()
@@ -114,10 +115,14 @@ const triggers = {
 // Same reactivity gap as FormatChart.client.vue/TypeChart.client.vue's own
 // documented fix — a manual render nudge on mount avoids the scale getting
 // stuck at its default/stale domain.
+// watch on `loading`, not onMounted — see FormatChart.client.vue's own
+// comment for why (the container is hidden behind the loading skeleton
+// until then, so waiting for mount alone would miss the real chart's
+// first render).
 const containerRef = useTemplateRef('containerRef')
-onMounted(() => {
-  nextTick(() => containerRef.value?.component?.render(0))
-})
+watch(() => loading, (isLoading) => {
+  if (!isLoading) nextTick(() => containerRef.value?.component?.render(0))
+}, { immediate: true })
 </script>
 
 <template>
@@ -126,6 +131,7 @@ onMounted(() => {
     :value="amountFormatter.format(grandTotal)"
     :caption="t('finance.summary.grandTotal')"
     :legend-items="legendItems"
+    :loading="loading"
   >
     <template #default="{ width }">
       <VisXYContainer

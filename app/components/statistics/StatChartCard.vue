@@ -23,10 +23,21 @@ interface Props {
   // defaults.
   legendBulletSize?: string
   legendLabelFontSize?: string
+  // Skeletons the value + chart body instead of rendering the default slot
+  // (user request, 2026-08-26) — every chart here computes `value`/passes
+  // `rows` synchronously off whatever the parent query currently has, so
+  // before that query resolves they briefly render with empty/zeroed data
+  // (an empty VisXYContainer, or a "0 €" value) and then pop to the real
+  // chart the instant it arrives — a jarring flash rather than a loading
+  // state. Every /finance and /statistics chart passes this now, wired to
+  // its own query's isLoading. Still optional (defaults false) since this
+  // component's contract shouldn't force a loading concept on some future
+  // chart that never has one.
+  loading?: boolean
 }
 
 const {
-  title, value, caption, legendItems = [], legendBulletSize, legendLabelFontSize
+  title, value, caption, legendItems = [], legendBulletSize, legendLabelFontSize, loading = false
 } = defineProps<Props>()
 
 const cardRef = useTemplateRef<HTMLElement | null>('cardRef')
@@ -41,7 +52,8 @@ const { width } = useElementSize(cardRef)
           <p class="text-xs text-muted uppercase mb-1.5 whitespace-nowrap">
             {{ title }}
           </p>
-          <p class="text-3xl text-highlighted font-semibold">
+          <USkeleton v-if="loading" class="h-9 w-28 my-0.5" />
+          <p v-else class="text-3xl text-highlighted font-semibold">
             {{ value }}
           </p>
           <p class="text-xs text-muted">
@@ -50,7 +62,7 @@ const { width } = useElementSize(cardRef)
         </div>
 
         <VisBulletLegend
-          v-if="legendItems.length"
+          v-if="legendItems.length && !loading"
           :items="legendItems"
           :bullet-size="legendBulletSize"
           :label-font-size="legendLabelFontSize"
@@ -58,7 +70,8 @@ const { width } = useElementSize(cardRef)
       </div>
     </template>
 
-    <slot :width="width" />
+    <USkeleton v-if="loading" class="h-96 w-full" />
+    <slot v-else :width="width" />
   </UCard>
 </template>
 
