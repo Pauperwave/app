@@ -7,8 +7,9 @@ import { VisXYContainer, VisStackedBar, VisAxis, VisTooltip } from '@unovis/vue'
 import { Orientation, StackedBar } from '@unovis/ts'
 import type { FinanceTypeSummaryRow } from '~/composables/finance/useFinanceSummary'
 
-const { rows } = defineProps<{
+const { rows, loading = false } = defineProps<{
   rows: FinanceTypeSummaryRow[]
+  loading?: boolean
 }>()
 
 const { t } = useI18n()
@@ -70,10 +71,14 @@ const triggers = {
 // its stale/default domain — bars rendered with correct color and position
 // but near-zero length. `:duration="0"` avoids that render fighting Vue's
 // own reactive re-renders over the bars' width transition.
+// watch on `loading`, not onMounted — see FormatChart.client.vue's own
+// comment for why (the container is hidden behind the loading skeleton
+// until then, so waiting for mount alone would miss the real chart's
+// first render).
 const containerRef = useTemplateRef('containerRef')
-onMounted(() => {
-  nextTick(() => containerRef.value?.component?.render(0))
-})
+watch(() => loading, (isLoading) => {
+  if (!isLoading) nextTick(() => containerRef.value?.component?.render(0))
+}, { immediate: true })
 </script>
 
 <template>
@@ -81,6 +86,7 @@ onMounted(() => {
     :title="t('finance.charts.byType')"
     :value="amountFormatter.format(grandTotal)"
     :caption="t('finance.summary.grandTotal')"
+    :loading="loading"
   >
     <template #default="{ width }">
       <VisXYContainer

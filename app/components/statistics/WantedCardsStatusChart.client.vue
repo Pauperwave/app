@@ -7,7 +7,7 @@ import type { WantedCardStatus } from '~/types'
 
 const { t } = useI18n()
 
-const { statusOverTimeSeries, statusBreakdown } = useWantedCardsStatistics()
+const { statusOverTimeSeries, statusBreakdown, isLoading } = useWantedCardsStatistics()
 const { chartColor } = useChartPalette()
 
 const totalWantedCards = computed(() => statusBreakdown.value
@@ -70,6 +70,7 @@ const template = (d: WantedCardsStatusOverTimePoint) => [
     :value="totalWantedCards"
     :caption="t('statistic.stats.totalWantedCards')"
     :legend-items="legendItems"
+    :loading="isLoading"
   >
     <template #default="{ width }">
       <VisXYContainer

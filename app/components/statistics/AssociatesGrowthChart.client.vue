@@ -6,7 +6,7 @@ import type { AssociatesGrowthPoint } from '~/composables/statistics/useAssociat
 
 const { t } = useI18n()
 
-const { growthSeries, totalAssociates } = useAssociatesStatistics()
+const { growthSeries, totalAssociates, isLoading } = useAssociatesStatistics()
 
 // Nuovi (joined this month) / Rinnovati (renewed for this month's year,
 // reconstructed from the full renewal history) / Non rinnovati (didn't) —
@@ -60,6 +60,7 @@ const xTicks = (i: number) => growthSeries.value[i]?.date.getFullYear().toString
     :legend-items="legendItems"
     legend-bullet-size="18px"
     legend-label-font-size="18px"
+    :loading="isLoading"
   >
     <template #default="{ width }">
       <VisXYContainer

@@ -14,8 +14,9 @@ import { PAYMENT_TYPES } from '#shared/types/transactions'
 import type { PaymentType } from '#shared/types/transactions'
 import type { FinanceMonthSummaryRow } from '~/composables/finance/useFinanceSummary'
 
-const { rows } = defineProps<{
+const { rows, loading = false } = defineProps<{
   rows: FinanceMonthSummaryRow[]
+  loading?: boolean
 }>()
 
 const { t } = useI18n()
@@ -122,10 +123,14 @@ const template = (d: FinanceMonthSummaryRow) => [
 // Same "reactivity gap" class of bug AgeDistributionChart.client.vue's own
 // comment already flagged elsewhere in this library, here hitting the scale
 // and the transition instead of the data path.
+// watch on `loading`, not onMounted — see FormatChart.client.vue's own
+// comment for why (the container is hidden behind the loading skeleton
+// until then, so waiting for mount alone would miss the real chart's
+// first render).
 const containerRef = useTemplateRef('containerRef')
-onMounted(() => {
-  nextTick(() => containerRef.value?.component?.render(0))
-})
+watch(() => loading, (isLoading) => {
+  if (!isLoading) nextTick(() => containerRef.value?.component?.render(0))
+}, { immediate: true })
 </script>
 
 <template>
@@ -134,6 +139,7 @@ onMounted(() => {
     :value="amountFormatter.format(grandTotal)"
     :caption="t('finance.summary.grandTotal')"
     :legend-items="legendItems"
+    :loading="loading"
   >
     <template #default="{ width }">
       <VisXYContainer

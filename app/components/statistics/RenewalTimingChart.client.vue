@@ -7,7 +7,7 @@ import type { RenewalMonthPoint } from '~/composables/statistics/useAssociatesSt
 
 const { t } = useI18n()
 
-const { renewalTimingSeries } = useAssociatesStatistics()
+const { renewalTimingSeries, isLoading } = useAssociatesStatistics()
 
 const totalRenewals = computed(() => renewalTimingSeries.value
   .reduce((sum, point) => sum + point.count, 0))
@@ -37,6 +37,7 @@ const template = (d: RenewalMonthPoint) => `${monthLabel(d.month, 'MMMM')}: ${d.
     :title="t('statistic.charts.renewalTiming')"
     :value="totalRenewals"
     :caption="t('statistic.stats.totalRenewals')"
+    :loading="isLoading"
   >
     <template #default="{ width }">
       <VisXYContainer

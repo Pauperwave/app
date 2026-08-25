@@ -12,8 +12,9 @@ import { VisXYContainer, VisStackedBar, VisAxis, VisTooltip } from '@unovis/vue'
 import { Orientation, StackedBar } from '@unovis/ts'
 import type { FinanceFormatSummaryRow } from '~/composables/finance/useFinanceSummary'
 
-const { rows } = defineProps<{
+const { rows, loading = false } = defineProps<{
   rows: FinanceFormatSummaryRow[]
+  loading?: boolean
 }>()
 
 const { t } = useI18n()
@@ -83,10 +84,15 @@ const triggers = {
 // — bars rendered with correct color and position but near-zero length.
 // `:duration="0"` avoids that render fighting Vue's own reactive re-renders
 // over the bars' width transition.
+// watch on `loading`, not onMounted — the container is hidden behind
+// StatisticsStatChartCard's loading skeleton until `loading` goes false, so
+// waiting for mount alone would fire this nudge while containerRef is still
+// null (the skeleton, not VisXYContainer, is what actually mounted) and
+// never re-fire once the real chart appears (2026-08-26 fix).
 const containerRef = useTemplateRef('containerRef')
-onMounted(() => {
-  nextTick(() => containerRef.value?.component?.render(0))
-})
+watch(() => loading, (isLoading) => {
+  if (!isLoading) nextTick(() => containerRef.value?.component?.render(0))
+}, { immediate: true })
 </script>
 
 <template>
@@ -94,6 +100,7 @@ onMounted(() => {
     :title="t('finance.charts.byFormat')"
     :value="amountFormatter.format(grandTotal)"
     :caption="t('finance.summary.grandTotal')"
+    :loading="loading"
   >
     <template #default="{ width }">
       <VisXYContainer

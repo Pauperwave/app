@@ -5,7 +5,9 @@ import type { TournamentsPerYearByFormatPoint } from '~/composables/statistics/u
 
 const { t } = useI18n()
 
-const { perYearByFormatSeries, byFormatSeries, tournamentsThisYear } = useTournamentsStatistics()
+const {
+  perYearByFormatSeries, byFormatSeries, tournamentsThisYear, isLoading
+} = useTournamentsStatistics()
 const { chartColor } = useChartPalette()
 
 // byFormatSeries is already sorted by total count desc (see
@@ -53,6 +55,7 @@ const template = (d: TournamentsPerYearByFormatPoint) => [
     :value="tournamentsThisYear"
     :caption="t('statistic.stats.tournamentsThisYear')"
     :legend-items="legendItems"
+    :loading="isLoading"
   >
     <template #default="{ width }">
       <VisXYContainer

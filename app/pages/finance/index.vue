@@ -7,6 +7,7 @@ useSeoMeta({ title: () => t('nav.finance') })
 const {
   data: transactionsData,
   isLoading: loading,
+  isPending: pending,
   status,
   refetch
 } = useTransactionsQuery()
@@ -118,12 +119,13 @@ const tour = useFinanceTour()
           />
         </UPageGrid>
 
-        <FinanceCategorySummaryTable :rows="byCategory" :loading="loading" />
+        <FinanceCategorySummaryTable :rows="byCategory" :loading="loading" :pending="pending" />
 
         <FinanceMonthlyOverview
           id="tour-finance-table-month"
           :rows="byMonth"
           :loading="loading"
+          :pending="pending"
         />
 
         <div class="flex flex-col gap-6">
@@ -131,25 +133,41 @@ const tour = useFinanceTour()
             id="tour-finance-table-type"
             :rows="byType"
             :loading="loading"
+            :pending="pending"
           />
           <FinanceFormatOverview
             id="tour-finance-table-format"
             :rows="byFormat"
             :loading="loading"
+            :pending="pending"
           />
           <div id="tour-finance-table-tournament" class="flex flex-col gap-6">
-            <FinanceTournamentTrendChart :rows="byTournament" :year="selectedYear" />
-            <FinanceTournamentSummaryTable :rows="byTournament" :loading="loading" />
+            <ClientOnly>
+              <FinanceTournamentTrendChart
+                :rows="byTournament"
+                :year="selectedYear"
+                :loading="loading"
+              />
+              <template #fallback>
+                <StatisticsStatChartCardSkeleton />
+              </template>
+            </ClientOnly>
+            <FinanceTournamentSummaryTable
+              :rows="byTournament"
+              :loading="loading"
+              :pending="pending"
+            />
           </div>
           <FinanceEventSummaryTable
             id="tour-finance-table-event"
             :rows="byEvent"
             :loading="loading"
+            :pending="pending"
           />
         </div>
 
         <div id="tour-finance-costs">
-          <FinanceMethodCostTable :rows="byMethodCost" :loading="loading" />
+          <FinanceMethodCostTable :rows="byMethodCost" :loading="loading" :pending="pending" />
         </div>
       </div>
     </template>

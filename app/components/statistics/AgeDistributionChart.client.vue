@@ -11,7 +11,7 @@ interface AgeChartPoint extends AgePoint {
 
 const { t } = useI18n()
 
-const { ageDistribution, medianAge } = useAssociatesStatistics()
+const { ageDistribution, medianAge, isLoading } = useAssociatesStatistics()
 
 function gaussianKernel(u: number): number {
   return Math.exp(-0.5 * u * u) / Math.sqrt(2 * Math.PI)
@@ -82,6 +82,7 @@ const template = (d: AgeChartPoint) => t(
     :title="t('statistic.charts.ageDistribution')"
     :value="medianAge ?? '—'"
     :caption="t('statistic.stats.medianAge')"
+    :loading="isLoading"
   >
     <template #default="{ width }">
       <VisXYContainer

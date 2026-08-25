@@ -10,9 +10,10 @@ chart and another as exact numbers in a table. -->
 import type { TabsItem } from '@nuxt/ui'
 import type { FinanceMonthSummaryRow } from '~/composables/finance/useFinanceSummary'
 
-const { rows, loading } = defineProps<{
+const { rows, loading, pending = false } = defineProps<{
   rows: FinanceMonthSummaryRow[]
   loading: boolean
+  pending?: boolean
 }>()
 
 const { t } = useI18n()
@@ -30,7 +31,17 @@ const viewModeItems = computed<TabsItem[]>(() => [
       <ViewModeTabs v-model="viewMode" :items="viewModeItems" />
     </div>
 
-    <FinanceMonthlyTrendChart v-if="viewMode === 'chart'" :rows="rows" />
-    <FinanceMonthSummaryTable v-else :rows="rows" :loading="loading" />
+    <ClientOnly v-if="viewMode === 'chart'">
+      <FinanceMonthlyTrendChart :rows="rows" :loading="loading" />
+      <template #fallback>
+        <StatisticsStatChartCardSkeleton />
+      </template>
+    </ClientOnly>
+    <FinanceMonthSummaryTable
+      v-else
+      :rows="rows"
+      :loading="loading"
+      :pending="pending"
+    />
   </div>
 </template>
