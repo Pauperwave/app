@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import { UBadge, UIcon, UTooltip } from '#components'
+import type { AppRole } from '~/types'
 
 definePageMeta({ permission: 'access-settings' })
 
@@ -188,10 +189,20 @@ function renderFeature(text: string) {
   return parts
 }
 
+// RoleKey is camelCase ('superAdmin'), ROLE_ICON (app/utils/roles.ts) is
+// keyed by the live AppRole union ('super_admin') — this is the one place
+// the two need bridging, everywhere else already uses one or the other.
+const ROLE_KEY_TO_APP_ROLE = {
+  player: 'player', organizer: 'organizer', admin: 'admin', superAdmin: 'super_admin'
+} as const satisfies Record<RoleKey, AppRole>
+
 function roleColumn(role: RoleKey): TableColumn<PermissionRow> {
   return {
     accessorKey: role,
-    header: () => h('span', { class: 'text-sm' }, t(`settings.permissions.columns.${role}`)),
+    header: () => h('span', { class: 'flex items-center justify-center gap-1.5 text-sm' }, [
+      h(UIcon, { name: ROLE_ICON[ROLE_KEY_TO_APP_ROLE[role]], class: 'size-4' }),
+      t(`settings.permissions.columns.${role}`)
+    ]),
     meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) => {
       const { access, note } = row.original[role]
