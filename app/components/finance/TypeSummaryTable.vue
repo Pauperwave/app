@@ -4,9 +4,10 @@ import type { TableColumn } from '@nuxt/ui'
 import type { FinanceTypeSummaryRow } from '~/composables/finance/useFinanceSummary'
 import PaymentTypeBadge from '~/components/ui/PaymentTypeBadge.vue'
 
-const { rows, loading } = defineProps<{
+const { rows, loading, pending = false } = defineProps<{
   rows: FinanceTypeSummaryRow[]
   loading: boolean
+  pending?: boolean
 }>()
 
 const { t } = useI18n()
@@ -62,7 +63,9 @@ const columns: TableColumn<FinanceTypeSummaryRow>[] = [
     <template #header>
       {{ $t('finance.summary.byTypeTitle') }}
     </template>
+    <ListSkeleton v-if="pending" :columns="columns.length" />
     <UTable
+      v-else
       v-model:sorting="sorting"
       :data="rows"
       :columns="columns"

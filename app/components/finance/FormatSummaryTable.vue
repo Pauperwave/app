@@ -4,9 +4,10 @@ import type { TableColumn } from '@nuxt/ui'
 import type { FinanceFormatSummaryRow } from '~/composables/finance/useFinanceSummary'
 import FormatBadge from '~/components/badges/FormatBadge.vue'
 
-const { rows, loading } = defineProps<{
+const { rows, loading, pending = false } = defineProps<{
   rows: FinanceFormatSummaryRow[]
   loading: boolean
+  pending?: boolean
 }>()
 
 const { t } = useI18n()
@@ -85,7 +86,9 @@ const columns: TableColumn<FinanceFormatSummaryRow>[] = [
     <template #header>
       {{ $t('finance.summary.byFormatTitle') }}
     </template>
+    <ListSkeleton v-if="pending" :columns="columns.length" />
     <UTable
+      v-else
       v-model:sorting="sorting"
       :data="rows"
       :columns="columns"
