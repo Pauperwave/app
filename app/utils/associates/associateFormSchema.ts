@@ -16,10 +16,12 @@ export function associateFormSchema(t: (key: string) => string) {
     associate_type: v.picklist(['regular', 'sustaining']),
     first_name: v.pipe(
       v.string(t('associate.addModal.validation.firstNameTooShort')),
+      v.trim(),
       v.minLength(2, t('associate.addModal.validation.firstNameTooShort'))
     ),
     last_name: v.pipe(
       v.string(t('associate.addModal.validation.lastNameTooShort')),
+      v.trim(),
       v.minLength(2, t('associate.addModal.validation.lastNameTooShort'))
     ),
     email_address: v.pipe(
@@ -45,6 +47,7 @@ export function associateFormSchema(t: (key: string) => string) {
     ),
     tax_code: v.pipe(
       v.string(t('associate.addModal.validation.invalidTaxCode')),
+      v.trim(),
       v.regex(/^[A-Z0-9]{16}$/i, t('associate.addModal.validation.invalidTaxCode')),
       // Shape alone (16 alphanumeric chars) lets a typo'd/transposed code
       // through silently — see isValidTaxCodeChecksum.ts.
@@ -52,6 +55,7 @@ export function associateFormSchema(t: (key: string) => string) {
     ),
     born_location: v.pipe(
       v.string(t('associate.addModal.validation.birthLocationRequired')),
+      v.trim(),
       v.minLength(2, t('associate.addModal.validation.birthLocationRequired'))
     ),
     born_date: v.pipe(
@@ -61,13 +65,15 @@ export function associateFormSchema(t: (key: string) => string) {
     // Length/required enforced conditionally below (v.forward), not here —
     // a non-Italian birth state has no Italian province, see
     // isItalianBirthState.ts.
-    born_province: v.string(),
+    born_province: v.pipe(v.string(), v.trim()),
     born_state: v.pipe(
       v.string(t('associate.addModal.validation.birthStateRequired')),
+      v.trim(),
       v.minLength(2, t('associate.addModal.validation.birthStateRequired'))
     ),
     residency_address: v.pipe(
       v.string(t('associate.addModal.validation.residencyAddressRequired')),
+      v.trim(),
       v.minLength(5, t('associate.addModal.validation.residencyAddressRequired'))
     ),
     // Optional — separate field from residency_address rather than parsed out
@@ -75,17 +81,20 @@ export function associateFormSchema(t: (key: string) => string) {
     // "snc" for no number — to split reliably), matching how Italian official
     // forms already separate "Indirizzo" and "Civico". Some real addresses
     // genuinely have no house number ("snc"), hence optional like the DB column.
-    residency_house_number: v.nullable(v.string()),
+    residency_house_number: v.nullable(v.pipe(v.string(), v.trim())),
     residency_city: v.pipe(
       v.string(t('associate.addModal.validation.residencyCityRequired')),
+      v.trim(),
       v.minLength(2, t('associate.addModal.validation.residencyCityRequired'))
     ),
     residency_province: v.pipe(
       v.string(t('associate.addModal.validation.residencyProvinceInvalid')),
+      v.trim(),
       v.length(2, t('associate.addModal.validation.residencyProvinceInvalid'))
     ),
     residency_cap: v.pipe(
       v.string(t('associate.addModal.validation.residencyCapInvalid')),
+      v.trim(),
       v.regex(/^\d{5}$/, t('associate.addModal.validation.residencyCapInvalid'))
     ),
     consent_data: v.pipe(

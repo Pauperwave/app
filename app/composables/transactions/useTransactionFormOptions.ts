@@ -88,10 +88,10 @@ export function useTransactionFormOptions() {
       associate_uuid: v.optional(v.string()),
       payer_is_associate: v.optional(v.boolean(), true),
       payer_name: v.optional(v.pipe(
-        v.string(), v.minLength(2, t('transaction.addModal.validation.payerFirstNameTooShort'))
+        v.string(), v.trim(), v.minLength(2, t('transaction.addModal.validation.payerFirstNameTooShort'))
       )),
       payer_surname: v.optional(v.pipe(
-        v.string(), v.minLength(2, t('transaction.addModal.validation.payerLastNameTooShort'))
+        v.string(), v.trim(), v.minLength(2, t('transaction.addModal.validation.payerLastNameTooShort'))
       )),
       payer_email: v.optional(v.pipe(
         v.string(), v.trim(), v.email(t('transaction.addModal.validation.payerEmailInvalid')), v.toLowerCase()
@@ -108,8 +108,8 @@ export function useTransactionFormOptions() {
         v.string(t('transaction.addModal.validation.receivedByRequired')),
         v.minLength(1, t('transaction.addModal.validation.receivedByRequired'))
       ),
-      event_name: v.optional(v.string()),
-      notes: v.optional(v.string())
+      event_name: v.optional(v.pipe(v.string(), v.trim())),
+      notes: v.optional(v.pipe(v.string(), v.trim()))
     }),
     v.forward(
       v.partialCheck(

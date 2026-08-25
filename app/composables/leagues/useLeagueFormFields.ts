@@ -9,7 +9,7 @@ import type { InferOutput } from 'valibot'
 function buildSchema(t: ReturnType<typeof useI18n>['t']) {
   return v.object({
     status: v.picklist(LEAGUE_STATUSES),
-    name: v.pipe(v.string(), v.minLength(1, t('league.addModal.validation.nameRequired'))),
+    name: v.pipe(v.string(), v.trim(), v.minLength(1, t('league.addModal.validation.nameRequired'))),
     rulesetUuid: v.optional(v.string())
   })
 }

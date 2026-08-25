@@ -9,8 +9,8 @@ import type { InferOutput } from 'valibot'
 function buildSchema(t: ReturnType<typeof useI18n>['t']) {
   return v.object({
     status: v.picklist(EVENT_STATUSES),
-    companionCode: v.optional(v.nullable(v.string())),
-    name: v.pipe(v.string(), v.minLength(1, t('event.addModal.validation.nameRequired'))),
+    companionCode: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
+    name: v.pipe(v.string(), v.trim(), v.minLength(1, t('event.addModal.validation.nameRequired'))),
     startDate: v.string(),
     startTime: v.string(),
     endTime: v.optional(v.string()),
