@@ -5,18 +5,26 @@ import type { FinanceCategoryRow } from '~/composables/finance/useFinanceSummary
 import FormatBadge from '~/components/badges/FormatBadge.vue'
 import PaymentTypeBadge from '~/components/ui/PaymentTypeBadge.vue'
 
-const { rows, loading } = defineProps<{
+const { rows, loading, pending = false } = defineProps<{
   rows: FinanceCategoryRow[]
   loading: boolean
+  // Genuine first load (no cached rows yet at all) vs. a background refetch
+  // keeping stale rows on screen — same isPending/isLoading split as
+  // tournaments/locations' own list pages (user request, 2026-08-26).
+  // Optional/defaulted since finance/index.vue is this component's only
+  // caller today and always passes it, but nothing structurally requires it.
+  pending?: boolean
 }>()
 
 const { t } = useI18n()
 
 const amountFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
 
-// Fixed row order (associationFee, byFormat's own rows, eventFee,
-// tokenPurchase, donation — see useFinanceSummary.ts's byCategory) — no
-// user-facing sort here, unlike the page's other summary tables.
+// Sortable like every other summary table on this page (user request,
+// 2026-08-26) — the fixed associationFee/byFormat/eventFee/tokenPurchase/
+// donation order from useFinanceSummary.ts's byCategory is still the
+// default, just no longer the only order.
+const sorting = ref([{ id: 'category', desc: false }])
 
 // Grand total per numeric column, own `footer` on the leftmost column instead
 // of a bare blank cell. No footer for `cost` — a unit price isn't a summable
@@ -34,7 +42,7 @@ const columns: TableColumn<FinanceCategoryRow>[] = [
     // the same `type`, so accessorFn falls back to `format` itself, unique
     // among those.
     accessorFn: row => row.format ?? row.type,
-    header: () => t('finance.summary.category'),
+    header: ({ column }) => sortableHeader(t('finance.summary.category'), column),
     footer: () => t('finance.summary.total'),
     cell: ({ row }) => row.original.type === 'format'
       ? h(FormatBadge, { format: row.original.format!, icon: ICONS.battle })
@@ -42,46 +50,46 @@ const columns: TableColumn<FinanceCategoryRow>[] = [
   },
   {
     accessorKey: 'cost',
-    header: () => t('finance.summary.cost'),
+    header: ({ column }) => sortableHeader(t('finance.summary.cost'), column),
     meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
     cell: ({ row }) => row.original.cost === null ? '' : amountCell(row.original.cost, amountFormatter)
   },
   {
     accessorKey: 'count',
-    header: () => t('finance.summary.instances'),
+    header: ({ column }) => sortableHeader(t('finance.summary.instances'), column),
     meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
     footer: () => h('span', { class: 'font-mono font-semibold' }, String(totalCount.value))
   },
   {
     accessorKey: 'quantity',
-    header: () => t('finance.summary.quantity'),
+    header: ({ column }) => sortableHeader(t('finance.summary.quantity'), column),
     meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
     cell: ({ row }) => row.original.quantity === null ? '' : String(row.original.quantity)
   },
   {
     accessorKey: 'paypalTotal',
-    header: () => t('finance.summary.paypalTotal'),
+    header: ({ column }) => sortableHeader(t('finance.summary.paypalTotal'), column),
     meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
     cell: ({ row }) => amountCell(row.original.paypalTotal, amountFormatter),
     footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalPaypal.value))
   },
   {
     accessorKey: 'cashTotal',
-    header: () => t('finance.summary.cashTotal'),
+    header: ({ column }) => sortableHeader(t('finance.summary.cashTotal'), column),
     meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
     cell: ({ row }) => amountCell(row.original.cashTotal, amountFormatter),
     footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalCash.value))
   },
   {
     accessorKey: 'posTotal',
-    header: () => t('finance.summary.posTotal'),
+    header: ({ column }) => sortableHeader(t('finance.summary.posTotal'), column),
     meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
     cell: ({ row }) => amountCell(row.original.posTotal, amountFormatter),
     footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalPos.value))
   },
   {
     accessorKey: 'total',
-    header: () => t('finance.summary.total'),
+    header: ({ column }) => sortableHeader(t('finance.summary.total'), column),
     meta: { class: { th: 'text-right', td: 'text-right font-mono font-semibold' } },
     cell: ({ row }) => amountCell(row.original.total, amountFormatter),
     footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalAmount.value))
@@ -94,7 +102,10 @@ const columns: TableColumn<FinanceCategoryRow>[] = [
     <template #header>
       {{ $t('finance.summary.byCategoryTitle') }}
     </template>
+    <ListSkeleton v-if="pending" :columns="columns.length" />
     <UTable
+      v-else
+      v-model:sorting="sorting"
       :data="rows"
       :columns="columns"
       :loading="loading"

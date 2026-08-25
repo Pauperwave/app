@@ -5,9 +5,10 @@ import { PAYMENT_TYPES } from '#shared/types/transactions'
 import type { PaymentType } from '#shared/types/transactions'
 import type { FinanceMonthSummaryRow } from '~/composables/finance/useFinanceSummary'
 
-const { rows, loading } = defineProps<{
+const { rows, loading, pending = false } = defineProps<{
   rows: FinanceMonthSummaryRow[]
   loading: boolean
+  pending?: boolean
 }>()
 
 const { t } = useI18n()
@@ -85,7 +86,9 @@ const columns: TableColumn<FinanceMonthSummaryRow>[] = [
     <template #header>
       {{ $t('finance.summary.byMonthTitle') }}
     </template>
+    <ListSkeleton v-if="pending" :columns="columns.length" />
     <UTable
+      v-else
       v-model:sorting="sorting"
       :data="rows"
       :columns="columns"

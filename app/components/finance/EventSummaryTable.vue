@@ -5,9 +5,10 @@ import type { TableColumn } from '@nuxt/ui'
 import type { FinanceEventSummaryRow } from '~/composables/finance/useFinanceSummary'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 
-const { rows, loading } = defineProps<{
+const { rows, loading, pending = false } = defineProps<{
   rows: FinanceEventSummaryRow[]
   loading: boolean
+  pending?: boolean
 }>()
 
 const { t } = useI18n()
@@ -84,7 +85,9 @@ const columns: TableColumn<FinanceEventSummaryRow>[] = [
     <template #header>
       {{ $t('finance.summary.byEventTitle') }}
     </template>
+    <ListSkeleton v-if="pending" :columns="columns.length" />
     <UTable
+      v-else
       v-model:sorting="sorting"
       :data="rows"
       :columns="columns"

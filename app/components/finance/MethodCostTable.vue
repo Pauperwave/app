@@ -4,9 +4,10 @@ import type { TableColumn } from '@nuxt/ui'
 import type { FinanceMethodCostRow } from '~/composables/finance/useFinanceSummary'
 import PaymentMethodBadge from '~/components/ui/PaymentMethodBadge.vue'
 
-const { rows, loading } = defineProps<{
+const { rows, loading, pending = false } = defineProps<{
   rows: FinanceMethodCostRow[]
   loading: boolean
+  pending?: boolean
 }>()
 
 const { t } = useI18n()
@@ -87,7 +88,9 @@ const columns: TableColumn<FinanceMethodCostRow>[] = [
     <template #header>
       {{ $t('finance.summary.costsTitle') }}
     </template>
+    <ListSkeleton v-if="pending" :columns="columns.length" />
     <UTable
+      v-else
       v-model:sorting="sorting"
       :data="rows"
       :columns="columns"

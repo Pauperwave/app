@@ -7,9 +7,10 @@ import TournamentsStageLabel from '~/components/tournaments/StageLabel.vue'
 import FormatBadge from '~/components/badges/FormatBadge.vue'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 
-const { rows, loading } = defineProps<{
+const { rows, loading, pending = false } = defineProps<{
   rows: FinanceTournamentSummaryRow[]
   loading: boolean
+  pending?: boolean
 }>()
 
 const { t } = useI18n()
@@ -137,7 +138,9 @@ const columns: TableColumn<FinanceTournamentSummaryRow>[] = [
     <template #header>
       {{ $t('finance.summary.byTournamentTitle') }}
     </template>
+    <ListSkeleton v-if="pending" :columns="columns.length" />
     <UTable
+      v-else
       v-model:sorting="sorting"
       :data="rows"
       :columns="columns"
