@@ -122,6 +122,7 @@ const imageCardArtist = defineModel<string | undefined>('imageCardArtist')
     <UTextarea
       :model-value="state.description ?? ''"
       class="w-full"
+      :rows="6"
       :placeholder="$t('tournament.addModal.fields.descriptionPlaceholder')"
       :icon="ICONS.alignLeft"
       @update:model-value="state.description = ($event as string) || undefined"
