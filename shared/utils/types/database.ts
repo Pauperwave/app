@@ -2276,6 +2276,20 @@ export type Database = {
       is_organizer: { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: { p_user_id: string }; Returns: boolean }
       purge_expired_trash: { Args: never; Returns: undefined }
+      register_tournament_players: {
+        Args: {
+          p_associate_uuids: string[]
+          p_status?: string
+          p_tournament_uuid: string
+        }
+        Returns: {
+          associate_uuid: string
+          checked_in_at: string
+          created_at: string
+          registration_uuid: string
+          status: string
+        }[]
+      }
     }
     Enums: {
       app_role: "player" | "organizer" | "admin" | "super_admin"
