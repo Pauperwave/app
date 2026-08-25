@@ -148,10 +148,12 @@ export function useTransactionsTableColumns(
         if (parseGettoniCount(eventName) !== null) return ''
         if (!eventName) return ''
 
-        // Links to the tournament/event's own detail page when the payment
-        // resolved to one at import/creation time (tournament_uuid/event_uuid)
-        // — plain text otherwise (e.g. a guest payer row where FK matching
-        // found no confident match, see .scratch/import-transactions.mjs).
+        // Links to the tournament/event's own detail page — ck_payment_type_event_link
+        // (migration 20260825220000) guarantees exactly one of tournament_uuid/
+        // event_uuid is set whenever payment_type is Tournament Fee/Event Fee/
+        // Token Purchase, which is the only way event_name is non-null in the
+        // first place (Association Fee/Donation never set it) — no raw-text
+        // fallback needed, tournament/event here can't both be unresolved.
         // Same UButton for both — a plain NuxtLink+icon for the event case
         // read as a visually different affordance than the tournament one
         // even though both do the same thing (user request, 2026-08-23).
@@ -173,6 +175,9 @@ export function useTransactionsTableColumns(
             stageNumber ? h(TournamentsStageLabel, { number: stageNumber, class: '!text-xs' }) : null
           ])
         }
+        // event is guaranteed set here by ck_payment_type_event_link whenever
+        // tournament isn't — this `if` is TS narrowing, not a real fallback
+        // branch (the constraint rules out neither being set).
         if (event) {
           return h(UButton, {
             to: `/events/${event.uuid}`,
@@ -183,7 +188,7 @@ export function useTransactionsTableColumns(
             variant: 'subtle'
           })
         }
-        return eventName
+        return null
       }
     },
     {

@@ -6,10 +6,12 @@
 import { format, parseISO } from 'date-fns'
 import type { TableColumn } from '@nuxt/ui'
 import type { Transaction } from '~/types'
+import { UBadge, UButton } from '#components'
 import AssociateTag from '~/components/ui/AssociateTag.vue'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 import PaymentTypeBadge from '~/components/ui/PaymentTypeBadge.vue'
 import PaymentMethodBadge from '~/components/ui/PaymentMethodBadge.vue'
+import TournamentsStageLabel from '~/components/tournaments/StageLabel.vue'
 
 interface DetailField {
   icon: string
@@ -128,10 +130,23 @@ const associateTransactions = computed(() => (transactions.value ?? [])
 
 const amountFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
 
+// Same league-relative stage numbering /transactions and /tournaments show
+// (assignTournamentStageNumbers) — reused here rather than re-derived, and
+// deduped against the 'tournaments' key by Pinia Colada if either page is
+// already open.
+const { data: allTournaments } = useTournamentsQuery()
+const tournamentsByUuid = computed(() =>
+  new Map((allTournaments.value ?? []).map(tournament => [tournament.uuid, tournament])))
+
 // Read-only summary, not the full /transactions table columns
 // (useTransactionsTableColumns.ts) — no selection/grouping/row-actions here,
 // this is a per-associate history embedded in a bigger detail page, not a
-// management surface of its own.
+// management surface of its own. event_name/gettoni cells DO reuse that
+// table's own rendering logic though (2026-08-25 fix) — this had drifted
+// into just dumping row.original.event_name as raw text, which for
+// historical imports meant literally showing strings like "PAUPER TAPPA 6"
+// instead of the resolved tournament + stage number, and never splitting
+// out gettoni-encoded rows into their own badge at all.
 const associateTransactionsColumns: TableColumn<Transaction>[] = [
   {
     accessorKey: 'payment_date',
@@ -166,7 +181,58 @@ const associateTransactionsColumns: TableColumn<Transaction>[] = [
   {
     accessorKey: 'event_name',
     header: t('transaction.columns.event'),
-    cell: ({ row }) => row.original.event_name ?? ''
+    cell: ({ row }) => {
+      const eventName = row.original.event_name
+      // Not a real event name for these rows — see transactionGettoni.ts —
+      // shown in its own "Gettoni" column instead.
+      if (parseGettoniCount(eventName) !== null) return ''
+      if (!eventName) return ''
+
+      // Links to the tournament/event's own detail page when the payment
+      // resolved to one at import/creation time — plain text otherwise
+      // (e.g. a guest payer row where FK matching found no confident match).
+      const { tournament, event } = row.original
+      if (tournament) {
+        // Real tournament.name + its league-relative stage number, not the
+        // historical import's raw event_name text (e.g. "PAUPER TAPPA 6").
+        const stageNumber = tournamentsByUuid.value.get(tournament.uuid)?.stageNumber
+        return h(UButton, {
+          to: tournamentDetailUrl(tournament),
+          icon: PAYMENT_TYPE_BADGE_CONFIG['Tournament Fee'].icon,
+          size: 'xs',
+          color: 'neutral',
+          variant: 'subtle'
+        }, () => [
+          tournament.name,
+          stageNumber ? h(TournamentsStageLabel, { number: stageNumber, class: '!text-xs' }) : null
+        ])
+      }
+      // event is guaranteed set here by ck_payment_type_event_link whenever
+      // tournament isn't — this `if` is TS narrowing, not a real fallback
+      // branch (the constraint rules out neither being set).
+      if (event) {
+        return h(UButton, {
+          to: `/events/${event.uuid}`,
+          label: eventName,
+          icon: PAYMENT_TYPE_BADGE_CONFIG['Event Fee'].icon,
+          size: 'xs',
+          color: 'neutral',
+          variant: 'subtle'
+        })
+      }
+      return null
+    }
+  },
+  {
+    id: 'gettoni',
+    accessorFn: row => parseGettoniCount(row.event_name),
+    header: t('transaction.columns.gettoni'),
+    meta: { class: { th: 'text-center', td: 'text-center' } },
+    cell: ({ getValue }) => {
+      const count = getValue<number | null>()
+      if (count === null) return null
+      return h(UBadge, { variant: 'subtle', color: 'warning', icon: ICONS.coins, label: String(count) })
+    }
   },
   {
     accessorKey: 'notes',
