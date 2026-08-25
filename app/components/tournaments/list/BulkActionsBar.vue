@@ -25,6 +25,7 @@ const { t } = useI18n()
 const statusItems = computed(() => TOURNAMENT_STATUSES.map(status => ({
   label: t(`tournament.status.${status}`),
   icon: TOURNAMENT_STATUS_ICONS[status],
+  color: tournamentStatusColor(status),
   value: status
 })))
 
@@ -145,6 +146,7 @@ function closeLeagueModal() {
       :items="statusItems.map(item => ({
         label: item.label,
         icon: item.icon,
+        color: item.color,
         onSelect: () => $emit('markStatus', item.value)
       }))"
     >
