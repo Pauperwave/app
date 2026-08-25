@@ -132,7 +132,7 @@ export function usePlayersRowActions() {
       player.user_id
         ? {
           label: t('player.rowActions.promoteTo'),
-          icon: ICONS.security,
+          icon: ICONS.shieldPlus,
           children: (['player', 'organizer', 'admin', 'super_admin'] as const)
             .filter(role => role !== 'super_admin' || isSuperAdmin.value)
             .map(role => ({
@@ -145,7 +145,7 @@ export function usePlayersRowActions() {
         }
         : {
           label: t('player.rowActions.promoteTo'),
-          icon: ICONS.security,
+          icon: ICONS.shieldPlus,
           disabled: true,
           description: t('settings.members.noAccountYet')
         },
