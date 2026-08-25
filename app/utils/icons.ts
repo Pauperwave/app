@@ -25,6 +25,8 @@ export const ICONS = {
   statusRejected: 'i-lucide-x-circle',
   clear: 'i-lucide-circle-x',
   refresh: 'i-lucide-refresh-cw',
+  shuffle: 'i-lucide-shuffle',
+  dragHandle: 'i-lucide-grip-vertical',
   undo: 'i-lucide-undo-2',
   search: 'i-lucide-search',
   filter: 'i-lucide-filter',

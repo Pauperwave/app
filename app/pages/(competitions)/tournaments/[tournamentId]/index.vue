@@ -3,6 +3,8 @@
 // fallow-ignore-file code-duplication -- the UDashboardPanel navbar/toolbar/breadcrumb
 // header skeleton mirrors other detail pages (events/leagues/associates); these are
 // still mock-data pages, expected to change dramatically once real functionality lands
+import type { AcceptancePickerItem } from '~/components/tournaments/single/AcceptancePicker.vue'
+
 const { t } = useI18n()
 const route = useRoute()
 const tournamentUuid = computed(() => route.params.tournamentId as string)
@@ -36,8 +38,18 @@ const originLeague = computed(() => origin.value
   ? leaguesData.value?.find(league => league.uuid === origin.value?.uuid) ?? null
   : null)
 
-// This could be dynamic based on tournament settings
-const numberOfRounds = 2
+// Accepted ("Iscritti / Pagato") players from AcceptancePicker — the real
+// player pool the Pods step and round-count logic both read from, not
+// tournament.registeredPlayers (a separate, currently-unwired legacy
+// snapshot column) — user request, 2026-08-24.
+const acceptedPlayers = ref<AcceptancePickerItem[]>([])
+
+const isDraft = computed(() => tournament.value?.format === 'Draft')
+
+const { calculateRoundCount } = useSwissRoundCount()
+const numberOfRounds = computed(() =>
+  calculateRoundCount(acceptedPlayers.value.length, tournament.value?.roundCount))
+
 const currentStep = ref(0)
 
 // Titles pair with a static description for now (e.g. "In attesa") — real
@@ -51,7 +63,18 @@ const items = computed(() => [
     description: t('tournament.stepper.acceptanceDescription'),
     icon: ICONS.players
   },
-  ...Array.from({ length: numberOfRounds }, (_, i) => ({
+  // Draft-only: pod formation happens once, before round 1 — Commander's
+  // pod-every-round shape is a different flow entirely, deliberately not
+  // modeled here (out of scope, see the plan for this change).
+  ...(isDraft.value
+    ? [{
+      slot: 'pods',
+      title: t('tournament.stepper.pods'),
+      description: t('tournament.stepper.podsDescription'),
+      icon: ICONS.layers
+    }]
+    : []),
+  ...Array.from({ length: numberOfRounds.value }, (_, i) => ({
     slot: `round-${i + 1}`,
     title: t('tournament.stepper.round', { n: i + 1 }),
     description: t('tournament.stepper.roundPending'),
@@ -111,9 +134,23 @@ const items = computed(() => [
     </template>
 
     <template #body>
+      <TournamentsSinglePresentationCard
+        v-if="tournament"
+        :tournament="tournament"
+        class="max-w-md mb-6"
+      />
+
       <UStepper v-model="currentStep" :items="items" class="space-y-6">
         <template #acceptance>
-          <TournamentsSingleAcceptancePicker />
+          <TournamentsSingleAcceptancePicker
+            v-model:accepted="acceptedPlayers"
+            :tournament-uuid="tournamentUuid"
+            :is-draft="isDraft"
+          />
+        </template>
+
+        <template v-if="isDraft" #pods>
+          <TournamentsSinglePodsManager :players="acceptedPlayers" />
         </template>
 
         <template v-for="i in numberOfRounds" :key="`round-${i}`" #[`round-${i}`]>
