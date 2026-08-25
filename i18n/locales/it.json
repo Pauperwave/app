@@ -779,7 +779,10 @@
         "paymentType": "Tipologia di pagamento",
         "paymentMethod": "Metodo di Pagamento",
         "receivedBy": "Ricevuto da",
+        "tournament": "Torneo",
+        "selectTournament": "Seleziona un torneo",
         "event": "Evento",
+        "selectEvent": "Seleziona un evento",
         "notes": "Note"
       },
       "paymentTypeOptions": {
@@ -807,7 +810,9 @@
         "payerEmailInvalid": "Email non valida",
         "payerTaxCodeRequired": "Codice Fiscale richiesto",
         "associateRequired": "Seleziona un associato",
-        "receivedByRequired": "Seleziona chi ha ricevuto il pagamento"
+        "receivedByRequired": "Seleziona chi ha ricevuto il pagamento",
+        "tournamentRequired": "Seleziona un torneo",
+        "eventRequired": "Seleziona un evento"
       },
       "successToastTitle": "Successo",
       "successToastDescriptionAssociate": "Nuova transazione di {amount}€ per {name} aggiunta",

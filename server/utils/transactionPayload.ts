@@ -29,6 +29,7 @@ export function buildTransactionFields(body: NewTransactionPayload) {
     payment_method: body.paymentMethod,
     payment_type: body.paymentType,
     received_by: body.receivedBy,
+    tournament_uuid: body.tournamentUuid,
     event_uuid: body.eventUuid,
     event_name: body.eventName,
     notes: body.notes

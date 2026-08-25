@@ -27,7 +27,16 @@ export interface NewTransactionPayload {
   paymentMethod: PaymentMethod
   paymentType: PaymentType
   receivedBy: string
+  // Real FK links (2026-08-25 fix) — ck_payment_type_event_link (migration
+  // 20260825220000) requires exactly one of these set for Tournament Fee/
+  // Event Fee/Token Purchase, neither for Association Fee/Donation.
+  tournamentUuid: string | null
   eventUuid: string | null
+  // Historical-import free text (Importato... rows) — no longer editable via
+  // the form (AddModal.vue/EditModal.vue), the real link is tournamentUuid/
+  // eventUuid above. Passed through unchanged on edit rather than cleared,
+  // so it doesn't wipe e.g. gettoni-encoded historical rows
+  // (transactionGettoni.ts) that have no other record of that data.
   eventName: string | null
   notes: string
 }

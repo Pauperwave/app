@@ -26,7 +26,8 @@ const state = shallowReactive<TransactionFormState>({
 })
 
 const {
-  schema, associateOptions, selectedAssociateAvatar, showEventField, payerTabItems
+  schema, associateOptions, selectedAssociateAvatar,
+  showTournamentField, showEventField, payerTabItems
 } = useTransactionFormFields(state)
 
 type Schema = v.InferOutput<typeof schema>
@@ -46,7 +47,8 @@ watch([open, () => transaction], ([isOpen, current]) => {
   state.payment_method = current.payment_method
   state.payment_type = current.payment_type
   state.received_by = current.received_by
-  state.event_name = current.event_name ?? undefined
+  state.tournament_uuid = current.tournament?.uuid
+  state.event_uuid = current.event?.uuid
   state.notes = current.notes
 }, { immediate: true })
 
@@ -73,11 +75,15 @@ watch(() => state.payment_type, (type, previous) => {
   state.payment_method = data.membershipFeePaymentMethod
 })
 
-// Clears any event picked before switching to a type whose field is hidden
-// (see showEventField) — separate from the watch above since this also
-// covers "Donazione", which doesn't force the amount/method.
+// Clears any tournament/event picked before switching to a type whose field
+// is hidden (see showTournamentField/showEventField) — separate from the
+// watch above since this also covers "Donazione", which doesn't force the
+// amount/method.
+watch(showTournamentField, (visible) => {
+  if (!visible) state.tournament_uuid = undefined
+})
 watch(showEventField, (visible) => {
-  if (!visible) state.event_name = undefined
+  if (!visible) state.event_uuid = undefined
 })
 
 // Traceability (user request, 2026-08-12): who created/last edited this
@@ -118,8 +124,14 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         paymentMethod: event.data.payment_method,
         paymentType: event.data.payment_type,
         receivedBy: event.data.received_by,
-        eventUuid: null,
-        eventName: event.data.event_name ?? null,
+        tournamentUuid: event.data.tournament_uuid ?? null,
+        eventUuid: event.data.event_uuid ?? null,
+        // No longer editable via this form (tournamentUuid/eventUuid above
+        // are the real link now) — passed through unchanged rather than
+        // cleared, so an edit doesn't wipe historical-import provenance text
+        // still needed elsewhere (e.g. gettoni-encoded rows,
+        // transactionGettoni.ts).
+        eventName: transaction.event_name,
         notes: event.data.notes ?? ''
       }
     })

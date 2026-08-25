@@ -29,21 +29,41 @@ export const RECEIVER_OPTIONS = [
   'Pietropoli Carlo'
 ]
 
-export const EVENT_OPTIONS = [
-  'Torneo Commander',
-  'Torneo Pauper',
-  'Torneo Multiformato',
-  'Quota associativa 2025',
-  'Draft',
-  'Grande evento',
-  'Chaos Draft di Natale',
-  'Torneo One Piece',
-  'Premodern&Birrino',
-  'Commanderwave Fest'
-]
-
 export function useTransactionFormOptions() {
   const { t } = useI18n()
+
+  // Real tournaments/events to link a Tournament Fee/Event Fee/Token
+  // Purchase payment to (2026-08-25 fix) — replaces EVENT_OPTIONS, a
+  // hardcoded list of free-text strings never actually tied to
+  // tournament_uuid/event_uuid, which is how "PREMODERN TAPPA 1" (raw
+  // historical event_name) ended up shown as if it were a real selection.
+  const dateFormatter = new Intl.DateTimeFormat('it-IT', {
+    day: '2-digit', month: '2-digit', year: 'numeric'
+  })
+
+  const { data: tournamentsData } = useTournamentsQuery()
+  // Same name recurs across every stage of a league (e.g. "Pauper" x N) —
+  // without the stage number + date as a description (USelectMenu renders it
+  // muted, under the label) same-named tournaments are indistinguishable in
+  // this dropdown (user request, 2026-08-25).
+  const tournamentOptions = computed(() => (tournamentsData.value ?? []).map((tournament) => {
+    // Cancelled tournaments never get a stageNumber (assignTournamentStageNumbers
+    // skips them entirely) — say so explicitly instead of just omitting it,
+    // otherwise a cancelled stage looks identical to an un-leagued tournament.
+    const stageText = tournament.status === 'cancelled'
+      ? t('tournament.status.cancelled')
+      : tournament.stageNumber ? `${tournament.stageNumber}ª tappa` : null
+    const dateText = dateFormatter.format(new Date(tournament.startDate))
+    return {
+      value: tournament.uuid,
+      label: tournament.name,
+      description: stageText ? `${stageText} · ${dateText}` : dateText
+    }
+  }))
+  const { data: eventsData } = useEventsQuery()
+  const eventOptions = computed(() => (eventsData.value ?? []).map(event => ({
+    value: event.uuid, label: event.name
+  })))
 
   const paymentTypeOptions = computed(() => [
     { value: 'Tournament Fee' as const, label: t('transaction.addModal.paymentTypeOptions.entryFee'), icon: ICONS.standings },
@@ -108,6 +128,8 @@ export function useTransactionFormOptions() {
         v.string(t('transaction.addModal.validation.receivedByRequired')),
         v.minLength(1, t('transaction.addModal.validation.receivedByRequired'))
       ),
+      tournament_uuid: v.optional(v.string()),
+      event_uuid: v.optional(v.string()),
       event_name: v.optional(v.pipe(v.string(), v.trim())),
       notes: v.optional(v.pipe(v.string(), v.trim()))
     }),
@@ -150,10 +172,36 @@ export function useTransactionFormOptions() {
         t('transaction.addModal.validation.associateRequired')
       ),
       ['associate_uuid']
+    ),
+    // Mirrors ck_payment_type_event_link (migration 20260825220000) —
+    // Tournament Fee needs tournament_uuid, Event Fee/Token Purchase need
+    // event_uuid, Association Fee/Donation need neither.
+    v.forward(
+      v.partialCheck(
+        [['payment_type'], ['tournament_uuid']],
+        input => input.payment_type !== 'Tournament Fee' || !!input.tournament_uuid,
+        t('transaction.addModal.validation.tournamentRequired')
+      ),
+      ['tournament_uuid']
+    ),
+    v.forward(
+      v.partialCheck(
+        [['payment_type'], ['event_uuid']],
+        input => (input.payment_type !== 'Event Fee' && input.payment_type !== 'Token Purchase')
+          || !!input.event_uuid,
+        t('transaction.addModal.validation.eventRequired')
+      ),
+      ['event_uuid']
     )
   )
 
   return {
-    schema, paymentTypeOptions, paymentMethodOptions, receiverOptions, payerTabItems
+    schema,
+    paymentTypeOptions,
+    paymentMethodOptions,
+    receiverOptions,
+    payerTabItems,
+    tournamentOptions,
+    eventOptions
   }
 }
