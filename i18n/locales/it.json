@@ -1588,6 +1588,7 @@
       "id": "ID",
       "name": "Nome",
       "pauperwaveAssociateNumber": "Tessera",
+      "role": "Ruolo",
       "emailAddress": "Email",
       "createdAt": "Registrato il",
       "lastLogin": "Ultimo accesso"

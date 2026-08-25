@@ -3,8 +3,10 @@ import { h } from 'vue'
 import { AssociateTag, HighlightMatch } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { Player } from '~/types'
+import type { MemberRole } from '#shared/types/settings'
 import AssociateNumberBadge from '~/components/ui/AssociateNumberBadge.vue'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
+import RoleBadge from '~/components/ui/RoleBadge.vue'
 
 export function usePlayersTableColumns(
   search?: Ref<string>,
@@ -12,7 +14,14 @@ export function usePlayersTableColumns(
   // timestamp or null (never signed in, or no linked auth user). Optional,
   // same reasoning as `search` — a plain column-def function shouldn't force
   // every caller to also fetch usePlayersLastLoginsQuery.ts.
-  lastLogins?: Ref<Map<string, string | null>>
+  lastLogins?: Ref<Map<string, string | null>>,
+  // associate_uuid -> role, from useMembersQuery.ts (which only returns rows
+  // for organizer/admin/super_admin — assign_role deletes the user_roles row
+  // entirely for 'player', see that composable's own comment). Missing from
+  // the map means 'player', same default useMembersQuery.get.ts's server
+  // endpoint would apply if this player had a row there at all (user
+  // request, 2026-08-25).
+  roleByAssociateUuid?: Ref<Map<string, MemberRole>>
 ) {
   const { t } = useI18n()
 
@@ -25,6 +34,7 @@ export function usePlayersTableColumns(
     id: t('player.columns.id'),
     name: t('player.columns.name'),
     pauperwave_associate_number: t('player.columns.pauperwaveAssociateNumber'),
+    role: t('player.columns.role'),
     email_address: t('player.columns.emailAddress'),
     created_at: t('player.columns.createdAt'),
     last_login: t('player.columns.lastLogin')
@@ -59,6 +69,17 @@ export function usePlayersTableColumns(
       meta: { class: { th: 'text-center', td: 'text-center' } },
       cell: ({ row }) =>
         h(AssociateNumberBadge, { number: row.original.pauperwave_associate_number })
+    },
+    {
+      id: 'role',
+      header: columnHeaders.role,
+      meta: { class: { th: 'text-center', td: 'text-center' } },
+      cell: ({ row }) => {
+        const role: MemberRole = row.original.associate_uuid
+          ? roleByAssociateUuid?.value.get(row.original.associate_uuid) ?? 'player'
+          : 'player'
+        return h(RoleBadge, { role })
+      }
     },
     {
       accessorKey: 'email_address',

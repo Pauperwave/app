@@ -63,7 +63,14 @@ const {
   deletingPlayer, deleteConfirmOpen, deleting, confirmDelete
 } = usePlayersRowActions()
 
-const { columns, columnHeaders } = usePlayersTableColumns(search, lastLogins)
+// Same data useMembersMutations.ts/usePlayersRowActions.ts already read for
+// the "Promuovi a" submenu — reused here for the "Ruolo" column instead of a
+// second query (user request, 2026-08-25).
+const { data: membersData } = useMembersQuery()
+const roleByAssociateUuid = computed(() =>
+  new Map((membersData.value ?? []).map(member => [member.associateUuid, member.role])))
+
+const { columns, columnHeaders } = usePlayersTableColumns(search, lastLogins, roleByAssociateUuid)
 const sorting = ref([{ id: 'id', desc: false }])
 
 // Same "Mostra colonne" pattern as wanted-cards/index.vue: rebuilt every time
