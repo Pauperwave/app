@@ -59,7 +59,7 @@ const lastLogins = computed(() => new Map(
 const tour = usePlayersTour()
 
 const { columns, columnHeaders } = usePlayersTableColumns(search, lastLogins)
-const sorting = ref([{ id: 'name', desc: false }])
+const sorting = ref([{ id: 'id', desc: false }])
 
 // Same "Mostra colonne" pattern as wanted-cards/index.vue: rebuilt every time
 // the menu opens (via :items"), getAllColumns() + getCanHide() +

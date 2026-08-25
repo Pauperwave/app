@@ -1585,6 +1585,7 @@
     "empty": "Nessun giocatore trovato",
     "searchPlaceholder": "Cerca per nome o email",
     "columns": {
+      "id": "ID",
       "name": "Nome",
       "pauperwaveAssociateNumber": "Tessera",
       "emailAddress": "Email",
