@@ -11,8 +11,13 @@ export function useSelection<TId = number>() {
 
   // Tracks the last id toggled by a plain (non-shift) click — the anchor a
   // subsequent shift-click range selects against, same convention as
-  // Explorer/Gmail. Reset to null on `clear()`/`setAll` so a stale anchor
-  // from a previous, now-cleared selection can't silently reappear.
+  // Explorer/Gmail. Only a plain click moves this anchor (user request,
+  // 2026-08-24) — a shift-click range-selects against it but doesn't itself
+  // become the new anchor, so repeated shift-clicks (e.g. select 0,
+  // shift-click 4, then shift-click 2) keep resolving against the original
+  // click rather than sliding onto whatever was last shift-clicked. Reset to
+  // null on `clear()`/`setAll` so a stale anchor from a previous, now-cleared
+  // selection can't silently reappear.
   const lastToggledId = ref<TId | null>(null) as Ref<TId | null>
 
   function isSelected(id: TId) {
@@ -33,7 +38,6 @@ export function useSelection<TId = number>() {
       if (fromIndex !== -1 && toIndex !== -1) {
         const [start, end] = fromIndex < toIndex ? [fromIndex, toIndex] : [toIndex, fromIndex]
         setAll(options.range.slice(start, end + 1), true)
-        lastToggledId.value = id
         return
       }
     }
