@@ -58,6 +58,11 @@ const lastLogins = computed(() => new Map(
 
 const tour = usePlayersTour()
 
+const {
+  onRowContextmenu, tableContextMenuItems,
+  deletingPlayer, deleteConfirmOpen, deleting, confirmDelete
+} = usePlayersRowActions()
+
 const { columns, columnHeaders } = usePlayersTableColumns(search, lastLogins)
 const sorting = ref([{ id: 'id', desc: false }])
 
@@ -120,30 +125,47 @@ const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, 
     </template>
 
     <template #body>
-      <UTable
-        ref="table"
-        v-model:sorting="sorting"
-        v-model:column-visibility="columnVisibility"
-        v-model:global-filter="search"
-        :global-filter-options="{ globalFilterFn: playersGlobalFilterFn }"
-        :data="filteredPlayers"
-        :columns="columns"
-        class="flex-1 h-80 shrink-0"
-        :ui="{ tr: 'cursor-pointer' }"
-        :loading="loading"
-        sticky="header"
-        @select="(_e, row) => navigateTo(
-          `/players/${slugify(`${row.original.first_name} ${row.original.last_name}`)}`
-        )"
-      >
-        <template #empty>
-          <div class="py-12 text-center text-muted">
-            {{ $t('player.empty') }}
-          </div>
-        </template>
-      </UTable>
+      <UContextMenu :items="tableContextMenuItems">
+        <UTable
+          ref="table"
+          v-model:sorting="sorting"
+          v-model:column-visibility="columnVisibility"
+          v-model:global-filter="search"
+          :global-filter-options="{ globalFilterFn: playersGlobalFilterFn }"
+          :data="filteredPlayers"
+          :columns="columns"
+          class="flex-1 h-80 shrink-0"
+          :ui="{ tr: 'cursor-pointer' }"
+          :loading="loading"
+          sticky="header"
+          @select="(_e, row) => navigateTo(
+            `/players/${slugify(`${row.original.first_name} ${row.original.last_name}`)}`
+          )"
+          @contextmenu="onRowContextmenu"
+        >
+          <template #empty>
+            <div class="py-12 text-center text-muted">
+              {{ $t('player.empty') }}
+            </div>
+          </template>
+        </UTable>
+      </UContextMenu>
     </template>
   </UDashboardPanel>
 
   <TourGuide :tour="tour" />
+
+  <ConfirmModal
+    v-model:open="deleteConfirmOpen"
+    :title="$t('player.rowActions.deleteConfirmTitle')"
+    :warning="$t('common.confirmDeleteWarning')"
+    :confirm-label="$t('player.rowActions.delete')"
+    :confirm-icon="ICONS.delete"
+    :loading="deleting"
+    @confirm="confirmDelete"
+  >
+    <p v-if="deletingPlayer" class="text-sm text-muted">
+      {{ deletingPlayer.first_name }} {{ deletingPlayer.last_name }}
+    </p>
+  </ConfirmModal>
 </template>
