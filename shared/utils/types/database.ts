@@ -847,6 +847,7 @@ export type Database = {
           payment_date: string
           payment_method: string
           payment_type: string
+          receipt_ref: string | null
           received_by: string
           tournament_uuid: string | null
           updated_at: string
@@ -871,6 +872,7 @@ export type Database = {
           payment_date?: string
           payment_method?: string
           payment_type?: string
+          receipt_ref?: string | null
           received_by: string
           tournament_uuid?: string | null
           updated_at?: string
@@ -895,6 +897,7 @@ export type Database = {
           payment_date?: string
           payment_method?: string
           payment_type?: string
+          receipt_ref?: string | null
           received_by?: string
           tournament_uuid?: string | null
           updated_at?: string

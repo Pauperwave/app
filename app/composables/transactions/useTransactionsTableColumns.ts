@@ -204,16 +204,12 @@ export function useTransactionsTableColumns(
       }
     },
     {
-      id: 'receipt',
-      // Own accessorFn, not a raw DB column — parsed out of `notes` (see
-      // parseTransactionNotes.ts's own comment for why this data lives there
-      // instead of a dedicated column at the DB level).
-      accessorFn: row => parseTransactionNotes(row.notes).receiptRef,
+      accessorKey: 'receipt_ref',
       header: columnHeaders.receipt,
       meta: { class: { th: 'whitespace-nowrap text-center', td: 'whitespace-nowrap text-center' } },
-      cell: ({ row, getValue }) => {
+      cell: ({ row }) => {
         if (row.getIsGrouped()) return null
-        const receiptRef = getValue<string | null>()
+        const receiptRef = row.original.receipt_ref
         if (!receiptRef) return null
         return h(UBadge, { variant: 'subtle', color: 'neutral', icon: ICONS.receipt, label: receiptRef })
       }
