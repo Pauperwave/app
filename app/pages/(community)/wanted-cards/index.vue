@@ -306,9 +306,8 @@ const gridSections = computed<GridSection[]>(() => {
     </template>
 
     <template #body>
-      <div v-if="loading" class="flex items-center justify-center py-12">
-        <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
-      </div>
+      <ListSkeleton v-if="loading && viewMode === 'table'" :columns="columns.length" />
+      <WantedCardsListGridSkeleton v-else-if="loading" />
 
       <template v-else>
         <UContextMenu v-if="viewMode === 'table'" :items="tableContextMenuItems">
