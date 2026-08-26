@@ -220,6 +220,19 @@ const sourceRowSelectionOptions = {
 // same reasoning as sourceRowSelection just above.
 const acceptedRowSelection = ref<Record<string, boolean>>({})
 
+// Escape clears whichever of the two tables' selections is active — same
+// guard useSelection.ts uses, shared via useEscapeToClear since these two
+// are plain row-selection refs (UTable's own shape), not a useSelection()
+// instance (user request, 2026-08-27).
+useEscapeToClear(
+  () => Object.keys(sourceRowSelection.value).length > 0
+    || Object.keys(acceptedRowSelection.value).length > 0,
+  () => {
+    sourceRowSelection.value = {}
+    acceptedRowSelection.value = {}
+  }
+)
+
 // Per-table search — the "identical lists" refactor above dropped
 // UListbox's built-in `filter`, so both tables get their own global-filter
 // search box back via SearchInput + acceptancePickerGlobalFilterFn (user
