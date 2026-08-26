@@ -27,7 +27,7 @@ export function useAssociatesRequestsTableColumns(
     membershipRequestStatusColumn, requestDateColumn,
     associateTypeColumn, consentDataColumn, consentSocialColumn, hasReadStatuteColumn,
     firstNameColumn, lastNameColumn, emailAddressColumn, phoneNumberColumn, taxCodeColumn,
-    bornDateColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
+    bornDateColumn, ageColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
     residencyAddressColumn, residencyHouseNumberColumn, residencyCityColumn,
     residencyProvinceColumn, residencyCapColumn
   } = useAssociatesTableColumns(selection, table, associates, rowContextMenuItems, search)
@@ -53,6 +53,7 @@ export function useAssociatesRequestsTableColumns(
     phoneNumberColumn,
     taxCodeColumn,
     bornDateColumn,
+    ageColumn,
     bornLocationColumn,
     bornProvinceColumn,
     bornStateColumn,
