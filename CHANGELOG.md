@@ -1,6 +1,24 @@
 # Changelog
 
 
+## v0.1.6
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.1.5...v0.1.6)
+
+### Enhancements
+
+- **statistics:** ✨ add year selector and manual refresh to the dashboard ([e4ba38d](https://github.com/Pauperwave/app/commit/e4ba38d))
+- **associates:** ✨ show Età column in /associates/requests ([93d621c](https://github.com/Pauperwave/app/commit/93d621c))
+
+### Fixes
+
+- **query:** 🐛 page past PostgREST's silent 250-row cap ([4828b16](https://github.com/Pauperwave/app/commit/4828b16))
+- **statistics:** 🐛 always render chart legend on its own row ([7429436](https://github.com/Pauperwave/app/commit/7429436))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.1.5
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.1.4...v0.1.5)
