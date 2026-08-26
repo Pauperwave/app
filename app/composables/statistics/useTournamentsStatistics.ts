@@ -16,7 +16,12 @@ export interface TournamentsPerYearByFormatPoint {
 // yet) — only tournaments that were or are actually running count.
 const HOSTED_STATUSES = ['registration_open', 'in_progress', 'completed'] as const
 
-export function useTournamentsStatistics() {
+// selectedYear drives only tournamentsThisYear — perYearByFormatSeries below
+// is a historical series and intentionally stays unaffected by it (same
+// decision as useAssociatesStatistics.ts's growthSeries).
+export function useTournamentsStatistics(
+  selectedYear: Ref<number> = ref(new Date().getFullYear())
+) {
   const { data: tournaments, isLoading } = useTournamentsQuery()
 
   const hostedTournaments = computed(() => (tournaments.value ?? [])
@@ -25,7 +30,9 @@ export function useTournamentsStatistics() {
   const currentYear = new Date().getFullYear()
 
   const tournamentsThisYear = computed(() => hostedTournaments.value
-    .filter(tournament => new Date(tournament.startDate).getFullYear() === currentYear).length)
+    .filter(
+      tournament => new Date(tournament.startDate).getFullYear() === selectedYear.value
+    ).length)
 
   // Sorted by count desc — a format bar chart reads better as a ranking than
   // alphabetically, unlike perYearByFormatSeries below which has a natural

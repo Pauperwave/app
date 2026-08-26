@@ -5,9 +5,11 @@ import { it } from 'date-fns/locale'
 import { VisXYContainer, VisGroupedBar, VisAxis, VisCrosshair, VisTooltip } from '@unovis/vue'
 import type { RenewalMonthPoint } from '~/composables/statistics/useAssociatesStatistics'
 
+const { selectedYear } = defineProps<{ selectedYear: number }>()
+
 const { t } = useI18n()
 
-const { renewalTimingSeries, isLoading } = useAssociatesStatistics()
+const { renewalTimingSeries, isLoading } = useAssociatesStatistics(toRef(() => selectedYear))
 
 const totalRenewals = computed(() => renewalTimingSeries.value
   .reduce((sum, point) => sum + point.count, 0))

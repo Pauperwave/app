@@ -2,11 +2,14 @@
 <script setup lang="ts">
 import type { Stat } from '~/types'
 
+const { selectedYear } = defineProps<{ selectedYear: number }>()
+
 const { t } = useI18n()
+const yearRef = toRef(() => selectedYear)
 const {
   totalAssociates, newSignupsThisYear, notRenewedFromLastYear, medianAge
-} = useAssociatesStatistics()
-const { tournamentsThisYear } = useTournamentsStatistics()
+} = useAssociatesStatistics(yearRef)
+const { tournamentsThisYear } = useTournamentsStatistics(yearRef)
 
 const stats = computed<Stat[]>(() => [{
   title: t('statistic.stats.totalAssociates'),
