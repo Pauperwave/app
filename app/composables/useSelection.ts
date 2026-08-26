@@ -66,21 +66,11 @@ export function useSelection<TId = number>() {
     lastToggledId.value = null
   }
 
-  // Escape always exits a selection (user request, 2026-08-16) — same
-  // usingInput/modifier-key guard as TourGuide.vue's arrow-key listener, so
-  // this doesn't fire while typing in a form field. Only acts while
-  // something is actually selected, so it doesn't fight a modal's own
+  // Escape always exits a selection (user request, 2026-08-16). Only acts
+  // while something is actually selected, so it doesn't fight a modal's own
   // Escape-to-close handling (e.g. the bulk-actions confirm dialog) when
   // there's nothing to clear.
-  useEventListener('keydown', (event: KeyboardEvent) => {
-    if (event.key !== 'Escape' || selectedIds.value.size === 0) return
-
-    const target = event.target as HTMLElement | null
-    const usingInput = target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable
-    if (usingInput || event.metaKey || event.ctrlKey || event.altKey) return
-
-    clear()
-  })
+  useEscapeToClear(() => selectedIds.value.size > 0, clear)
 
   return { selectedIds, isSelected, toggle, setAll, clear }
 }
