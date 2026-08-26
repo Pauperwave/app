@@ -103,11 +103,17 @@ const gettoniVisible = (tab: 'all' | PaymentType) => tab === 'all' || tab === 'T
 // Same reasoning as gettoniVisible: only ever populated for Association Fee
 // rows, so it's redundant clutter on every other tab (user request, 2026-08-27).
 const renewalKindVisible = (tab: 'all' | PaymentType) => tab === 'all' || tab === 'Association Fee'
+// event_name (ck_payment_type_event_link) is only ever set for Tournament
+// Fee/Event Fee/Token Purchase rows — always blank on Association
+// Fee/Donation, hidden there for the same "redundant clutter" reason as
+// gettoniVisible/renewalKindVisible (user request, 2026-08-27).
+const eventVisible = (tab: 'all' | PaymentType) => tab !== 'Association Fee' && tab !== 'Donation'
 
 const columnVisibility = ref({
   payment_type: activeTypeTab.value === 'all',
   gettoni: gettoniVisible(activeTypeTab.value),
   renewalKind: renewalKindVisible(activeTypeTab.value),
+  event_name: eventVisible(activeTypeTab.value),
   createdAt: false,
   updatedAt: false,
   createdBy: false,
@@ -117,6 +123,7 @@ watch(activeTypeTab, (value) => {
   columnVisibility.value.payment_type = value === 'all'
   columnVisibility.value.gettoni = gettoniVisible(value)
   columnVisibility.value.renewalKind = renewalKindVisible(value)
+  columnVisibility.value.event_name = eventVisible(value)
 })
 
 const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, columnHeaders)
