@@ -47,7 +47,7 @@ const { width } = useElementSize(cardRef)
 <template>
   <UCard ref="cardRef" :ui="{ root: 'overflow-visible', body: '!px-0 !pt-0 !pb-3' }">
     <template #header>
-      <div class="flex items-start flex-wrap justify-between gap-x-8 gap-y-2">
+      <div class="flex flex-col gap-2">
         <div>
           <p class="text-xs text-muted uppercase mb-1.5 whitespace-nowrap">
             {{ title }}
