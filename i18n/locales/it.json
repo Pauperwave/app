@@ -693,17 +693,20 @@
     },
     "tabs": {
       "all": "Tutte",
-      "associationFee": "Quote associative",
+      "associationFee": "Quote",
       "tournamentFee": "Tornei",
       "eventFee": "Eventi",
       "donations": "Donazioni",
-      "tokenPurchase": "Gettoni"
+      "tokenPurchase": "Gettoni",
+      "errors": "Da sistemare"
     },
     "renewalKind": {
       "renewal": "Rinnovo",
       "new": "Nuovo tesseramento",
       "unlinked": "Associato mancante",
-      "unlinkedTooltip": "Quota associativa senza associato collegato — impossibile determinare se sia un rinnovo o un nuovo tesseramento senza sapere chi ha pagato"
+      "unlinkedTooltip": "Quota associativa senza associato collegato — impossibile determinare se sia un rinnovo o un nuovo tesseramento senza sapere chi ha pagato",
+      "guest": "Ospite",
+      "guestTooltip": "Pagamento senza associato collegato per un torneo/evento — nessuno può partecipare senza essere associato, verificare chi è questa persona"
     },
     "columns": {
       "id": "ID",
