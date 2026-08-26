@@ -20,12 +20,23 @@ interface Props {
    * whose data is naturally year-bucketed) — omitted entirely by every other
    * page, same convention as highlightedDates. */
   calendarYears?: number[]
+  /** Always icon-only regardless of viewport, instead of showing the
+   * formatted range as the button's own label — opt-in for pages crowded
+   * enough that the range text itself doesn't fit (transactions/index.vue,
+   * user request, 2026-08-27). The range is still readable via tooltip. */
+  iconOnly?: boolean
 }
 
-const { highlightedDates = [], calendarYears = [] } = defineProps<Props>()
+const { highlightedDates = [], calendarYears = [], iconOnly = false } = defineProps<Props>()
 
 const selected = defineModel<Range>({ required: true })
 const { t } = useI18n()
+
+const rangeLabel = computed(() => {
+  if (!selected.value.start) return t('home.pickDate')
+  if (!selected.value.end) return df.format(selected.value.start)
+  return `${df.format(selected.value.start)} - ${df.format(selected.value.end)}`
+})
 
 const ranges = computed(() => [
   ...calendarYears.map(year => ({ label: String(year), year, type: undefined })),
@@ -184,25 +195,23 @@ const selectRange = (range: RangeSpec) => {
 
 <template>
   <UPopover :content="{ align: 'start' }" :modal="true">
+    <UTooltip v-if="iconOnly" :text="rangeLabel">
+      <UButton
+        color="neutral"
+        variant="ghost"
+        :icon="ICONS.calendar"
+        :aria-label="rangeLabel"
+        class="data-[state=open]:bg-elevated"
+      />
+    </UTooltip>
     <UButton
+      v-else
       color="neutral"
       variant="ghost"
       :icon="ICONS.calendar"
       class="data-[state=open]:bg-elevated group"
     >
-      <span class="truncate">
-        <template v-if="selected.start">
-          <template v-if="selected.end">
-            {{ df.format(selected.start) }} - {{ df.format(selected.end) }}
-          </template>
-          <template v-else>
-            {{ df.format(selected.start) }}
-          </template>
-        </template>
-        <template v-else>
-          {{ t('home.pickDate') }}
-        </template>
-      </span>
+      <span class="truncate">{{ rangeLabel }}</span>
 
       <template #trailing>
         <UIcon :name="ICONS.chevronDown" class="shrink-0 text-dimmed size-5 group-data-[state=open]:rotate-180 transition-transform duration-200" />
