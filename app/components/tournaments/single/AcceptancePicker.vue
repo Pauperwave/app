@@ -37,7 +37,7 @@ const { data: registrationsData, isLoading: isRegistrationsLoading }
 const { data: paymentsData } = useTournamentPaymentsQuery(() => tournamentUuid)
 const { data: associatesData, isLoading: isAssociatesLoading } = useAssociatesQuery()
 const {
-  registerAssociates, setRegistrationStatus, deleteRegistrations, setPayment
+  registerAssociates, setRegistrationStatus, setPayment
 } = useTournamentRegistrationsMutations(() => tournamentUuid)
 
 // Both tables draw from registrations + associates — either still loading
@@ -46,13 +46,12 @@ const {
 const isPickerLoading = computed(() => isRegistrationsLoading.value || isAssociatesLoading.value)
 
 // Double-click guard for the accepted table's row buttons (no-show/payment/
-// remove) — any of the three per-row mutations in flight disables all of
-// them, since e.g. a delete resolving mid-payment-click would race the
-// optimistic caches against each other (user request, 2026-08-25).
+// remove) — any of the two per-row mutations in flight disables all of
+// them, since e.g. a status change resolving mid-payment-click would race
+// the optimistic caches against each other (user request, 2026-08-25).
 const isMutating = computed(() =>
   registerAssociates.isLoading.value
   || setRegistrationStatus.isLoading.value
-  || deleteRegistrations.isLoading.value
   || setPayment.isLoading.value)
 
 const associateByUuid = computed(() =>
@@ -420,11 +419,18 @@ function addSelectedToPreRegistered() {
   addableSourcePlayerIds.value = []
 }
 
+// checked_in -> registered, same status-only transition setNoShow above uses
+// for registered <-> no_show — NOT deleteRegistrations. tournament_registrations
+// has no separate "Pre-registrati"/"Iscritti (Pagato)" tables, just the one
+// row's status; hard-deleting it removed the player from both views instead
+// of just "Iscritti (Pagato)" (bug fix, user request 2026-08-27).
 function removeAcceptedItems(itemsToRemove: AcceptancePickerItem[]) {
   const registrationUuids = itemsToRemove
     .map(item => registrationByAssociate.value.get(item.value)?.uuid)
     .filter((uuid): uuid is string => !!uuid)
-  if (registrationUuids.length) deleteRegistrations.mutate(registrationUuids)
+  if (registrationUuids.length) {
+    setRegistrationStatus.mutate({ registrationUuids, status: 'registered' })
+  }
   for (const item of itemsToRemove) Reflect.deleteProperty(acceptedRowSelection.value, item.value)
 }
 
