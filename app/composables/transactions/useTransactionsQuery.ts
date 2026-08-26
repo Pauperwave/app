@@ -14,12 +14,6 @@ export function useTransactionsQuery() {
   return useQuery({
     key: TRANSACTIONS_KEY,
     query: async (): Promise<Transaction[]> => {
-      // This project's PostgREST caps every request at 250 rows (db.max_rows)
-      // regardless of an explicit .range() width — a plain unranged select
-      // silently truncates to the newest 250 payments instead of erroring,
-      // which hid every payment older than ~250 rows back once the 2026
-      // historical import pushed the table past that (confirmed 2026-08-23).
-      // Page through explicitly so the query always returns everything.
       const fetchPage = (from: number, to: number) => supabase
         .from('pauperwave_payments')
         // Explicit hint on each FK column: created_by/updated_by also reference
@@ -44,17 +38,7 @@ export function useTransactionsQuery() {
         .order('id', { ascending: false })
         .range(from, to)
 
-      const pageSize = 250
-      let allRows: NonNullable<Awaited<ReturnType<typeof fetchPage>>['data']> = []
-      let from = 0
-      while (true) {
-        const { data, error } = await fetchPage(from, from + pageSize - 1)
-        if (error) throw error
-        if (!data || data.length === 0) break
-        allRows = allRows.concat(data)
-        if (data.length < pageSize) break
-        from += pageSize
-      }
+      const allRows = await fetchAllRows(fetchPage)
 
       return allRows.map((row): Transaction => {
         // created_by/updated_by dropped from `rest` on purpose: Transaction omits the raw

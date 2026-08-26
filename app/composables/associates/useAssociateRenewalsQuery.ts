@@ -8,6 +8,7 @@
 export interface AssociateRenewal {
   associateUuid: string
   renewalYear: number
+  renewalDate: string
 }
 
 export const ASSOCIATE_RENEWALS_KEY = ['associate-renewals']
@@ -26,15 +27,17 @@ export function useAssociateRenewalsQuery() {
     key: ASSOCIATE_RENEWALS_KEY,
     enabled: () => isStaff.value,
     query: async (): Promise<AssociateRenewal[]> => {
-      const { data, error } = await supabase
+      const fetchPage = (from: number, to: number) => supabase
         .from('pauperwave_associate_renewals')
-        .select('associate_uuid, renewal_year')
+        .select('associate_uuid, renewal_year, renewal_date')
+        .range(from, to)
 
-      if (error) throw error
+      const data = await fetchAllRows(fetchPage)
 
-      return (data ?? []).map(row => ({
+      return data.map(row => ({
         associateUuid: row.associate_uuid,
-        renewalYear: row.renewal_year
+        renewalYear: row.renewal_year,
+        renewalDate: row.renewal_date
       }))
     }
   })
