@@ -132,12 +132,11 @@ export function useTransactionsTableColumns(
     },
     {
       id: 'renewalKind',
-      // Own accessorFn: not a raw column on the row. Blank for every
-      // payment_type other than Association Fee; 'unlinked' flags a real
-      // data gap (see renewalKindBadge.ts) rather than rendering blank like
-      // every other non-applicable payment_type would.
+      // Own accessorFn: not a raw column on the row. 'unlinked'/'guest' flag
+      // real data gaps (see renewalKindBadge.ts) rather than rendering blank
+      // like every other applicable/non-applicable combination would.
       accessorFn: (row): RenewalKind | null => {
-        if (row.payment_type !== 'Association Fee') return null
+        if (row.payment_type !== 'Association Fee') return isUnregisteredParticipant(row) ? 'guest' : null
         if (!row.associate) return 'unlinked'
         const earliestYear = earliestRenewalYearByAssociate.value.get(row.associate.uuid)
         if (earliestYear === undefined) return null

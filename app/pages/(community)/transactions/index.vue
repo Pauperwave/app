@@ -3,7 +3,7 @@
 import { startOfYear, endOfYear } from 'date-fns'
 import { getGroupedRowModel } from '@tanstack/vue-table'
 import type { Range } from '~/types'
-import type { PaymentType } from '#shared/types/transactions'
+import type { TransactionTypeFilter } from '~/composables/transactions/useTransactionsFilters'
 
 const range = shallowRef<Range>({
   start: startOfYear(new Date()),
@@ -37,8 +37,8 @@ const skeletonCount = computed(() => (isPending.value ? undefined : data.value.l
 
 // Same StatusFilterGroup used by tournaments/leagues/events (#left) with
 // DateRangePicker in #right, not UTabs.
-const activeTypeTab = computed<'all' | PaymentType>({
-  get: () => (typeof route.query.type === 'string' ? route.query.type as 'all' | PaymentType : 'all'),
+const activeTypeTab = computed<TransactionTypeFilter>({
+  get: () => (typeof route.query.type === 'string' ? route.query.type as TransactionTypeFilter : 'all'),
   set: (value: string | number) => {
     router.replace({ query: { ...route.query, type: value === 'all' ? undefined : value } })
   }
@@ -98,16 +98,28 @@ const table = useTemplateRef<TableRef>('table')
 // associates'/wanted-cards' own hidden audit columns.
 // Same reasoning as payment_type: "Gettoni" is only ever populated for Token
 // Purchase rows, so it's redundant clutter on every other tab (user request,
-// 2026-08-23) — shown on "Tutte" and "Acquisto gettoni" only.
-const gettoniVisible = (tab: 'all' | PaymentType) => tab === 'all' || tab === 'Token Purchase'
-// Same reasoning as gettoniVisible: only ever populated for Association Fee
-// rows, so it's redundant clutter on every other tab (user request, 2026-08-27).
-const renewalKindVisible = (tab: 'all' | PaymentType) => tab === 'all' || tab === 'Association Fee'
+// 2026-08-23) — shown on "Tutte", "Acquisto gettoni" AND "Da sistemare", since
+// the latter can include Token Purchase rows too (any payment_type can have
+// the "email sconosciuta" flag, not just Association Fee — fixed 2026-08-27
+// alongside eventVisible below, same bug).
+const gettoniVisible = (tab: TransactionTypeFilter) =>
+  tab === 'all' || tab === 'Token Purchase' || tab === 'errors'
+// Blank on Donation only now (renewalKind's own accessorFn never returns a
+// badge for that type — see isUnregisteredParticipant, renewalKindBadge.ts)
+// — every other tab can show either the new/renewal/unlinked badges
+// (Association Fee) or the guest one (Tournament Fee/Event Fee/Token
+// Purchase), so it stays visible there too (user request, 2026-08-27).
+const renewalKindVisible = (tab: TransactionTypeFilter) => tab !== 'Donation'
 // event_name (ck_payment_type_event_link) is only ever set for Tournament
 // Fee/Event Fee/Token Purchase rows — always blank on Association
 // Fee/Donation, hidden there for the same "redundant clutter" reason as
-// gettoniVisible/renewalKindVisible (user request, 2026-08-27).
-const eventVisible = (tab: 'all' | PaymentType) => tab !== 'Association Fee' && tab !== 'Donation'
+// gettoniVisible/renewalKindVisible. NOT hidden on "errors" (unlike those
+// two): that tab can include Tournament/Event/Token Purchase rows too (any
+// payment_type can have the "email sconosciuta" flag), where Evento is
+// exactly the useful context — wrongly hidden there until now (user
+// feedback, 2026-08-27).
+const eventVisible = (tab: TransactionTypeFilter) =>
+  tab !== 'Association Fee' && tab !== 'Donation'
 
 const columnVisibility = ref({
   payment_type: activeTypeTab.value === 'all',

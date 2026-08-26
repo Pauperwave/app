@@ -10,10 +10,11 @@ const { t } = useI18n()
 
 const badge = computed(() => RENEWAL_KIND_BADGE_CONFIG[kind])
 const label = computed(() => t(`transaction.renewalKind.${kind}`))
+const hasTooltip = computed(() => kind === 'unlinked' || kind === 'guest')
 </script>
 
 <template>
-  <UTooltip v-if="kind === 'unlinked'" :text="t('transaction.renewalKind.unlinkedTooltip')">
+  <UTooltip v-if="hasTooltip" :text="t(`transaction.renewalKind.${kind}Tooltip`)">
     <UBadge
       variant="subtle"
       v-bind="badge"
