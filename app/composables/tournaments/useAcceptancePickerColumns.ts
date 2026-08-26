@@ -259,7 +259,7 @@ export function useAcceptancePickerColumns(options: UseAcceptancePickerColumnsOp
       cell: ({ row }) => {
         const item = row.original
         const method = paymentMethodByPlayer[item.value] ?? null
-        return h(UFieldGroup, { size: 'xs' }, () => PAYMENT_METHOD_OPTIONS.map((option) => {
+        return h(UFieldGroup, { size: 'sm' }, () => PAYMENT_METHOD_OPTIONS.map((option) => {
           const badge = PAYMENT_METHOD_BADGE_CONFIG[option]
           const label = paymentMethodLabel(option)
           return h(UButton, {
