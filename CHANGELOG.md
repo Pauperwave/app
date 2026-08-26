@@ -1,6 +1,77 @@
 # Changelog
 
 
+## v0.1.5
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.1.4...v0.1.5)
+
+### Enhancements
+
+- **ui:** ✨ add icons to status/type filter tabs, collapse to icon-only below lg ([296b777](https://github.com/Pauperwave/app/commit/296b777))
+- **finance:** ✨ add Contanti/Pos/Paypal breakdowns, gettoni revenue rollup, and scalable Riepilogo per categoria ([9479b5d](https://github.com/Pauperwave/app/commit/9479b5d))
+- **transactions:** ✨ add search bar, collapse group-by-payer to icon-only, rename Gettoni tab ([13b7684](https://github.com/Pauperwave/app/commit/13b7684))
+- **tournaments:** ✨ add useDraftPods for Draft format pod-size distribution ([cb41fc8](https://github.com/Pauperwave/app/commit/cb41fc8))
+- **tournaments:** ✨ add useCommanderPods, ported from MagicTheGathering/league ([60f8c4b](https://github.com/Pauperwave/app/commit/60f8c4b))
+- **tournaments:** ✨ add useSwissRoundCount composable ([b5695da](https://github.com/Pauperwave/app/commit/b5695da))
+- **tournaments:** ✨ add PresentationCard and pod formation to tournament detail page ([2526123](https://github.com/Pauperwave/app/commit/2526123))
+- **tournaments:** ✨ drop 'dropped' registration status ([322ca18](https://github.com/Pauperwave/app/commit/322ca18))
+- **tournaments:** ✨ add register_tournament_players RPC ([fe9e658](https://github.com/Pauperwave/app/commit/fe9e658))
+- **tournaments:** ✨ add tournament-registrations BFF endpoints ([45073f1](https://github.com/Pauperwave/app/commit/45073f1))
+- **tournaments:** ✨ add registrations/payments query composables ([f7483f8](https://github.com/Pauperwave/app/commit/f7483f8))
+- **tournaments:** ✨ add registrations mutations composable ([122cabd](https://github.com/Pauperwave/app/commit/122cabd))
+- **tournaments:** ✨ wire AcceptancePicker UI to real persistence ([d03016c](https://github.com/Pauperwave/app/commit/d03016c))
+- **players:** ✨ drop nickname column app-wide ([809f2b8](https://github.com/Pauperwave/app/commit/809f2b8))
+- **players:** ✨ show id column and Tessera badge, default sort by id ([619a72e](https://github.com/Pauperwave/app/commit/619a72e))
+- **roles:** ✨ add shared ROLE_ICON map, roll out to view-as menu and permissions matrix ([e87370f](https://github.com/Pauperwave/app/commit/e87370f))
+- **settings:** ✨ wire /settings/members to the real role system ([b1c5dc8](https://github.com/Pauperwave/app/commit/b1c5dc8))
+- **players:** ✨ add delete and promote-to-role actions to context menu ([ef5c021](https://github.com/Pauperwave/app/commit/ef5c021))
+- **roles:** ✨ use shield-plus icon for the "Promuovi a" menu item ([e39c55e](https://github.com/Pauperwave/app/commit/e39c55e))
+- **settings:** ✨ repurpose "Invita persone" into an assign-role modal ([6c1af75](https://github.com/Pauperwave/app/commit/6c1af75))
+- **players:** ✨ show a Ruolo column ([632a763](https://github.com/Pauperwave/app/commit/632a763))
+- **transactions:** ✨ add receipt_ref column, stop parsing it out of notes ([90f4b15](https://github.com/Pauperwave/app/commit/90f4b15))
+
+### Fixes
+
+- **finance:** 🐛 fix missing hover tooltips on the byType/byFormat/tournament charts ([1fcd294](https://github.com/Pauperwave/app/commit/1fcd294))
+- **finance:** 🐛 use text-dimmed, not text-muted, for zero-amount table cells ([f8dc049](https://github.com/Pauperwave/app/commit/f8dc049))
+- **associates:** 🐛 make MEMBERSHIP_STATUS_BADGE_CONFIG exhaustive over MembershipStatus ([e432430](https://github.com/Pauperwave/app/commit/e432430))
+- **tournaments:** 🐛 make description textarea taller ([f5f13e9](https://github.com/Pauperwave/app/commit/f5f13e9))
+- **selection:** 🐛 keep shift-click anchor fixed across repeated shift-clicks ([3e1cdfc](https://github.com/Pauperwave/app/commit/3e1cdfc))
+- **forms:** 🐛 trim whitespace on free-text form fields ([505b646](https://github.com/Pauperwave/app/commit/505b646))
+- **tournaments:** 🐛 add status colors to bulk "Segna come" menu ([b15a728](https://github.com/Pauperwave/app/commit/b15a728))
+- **transactions:** 🐛 resolve tournament/event links instead of raw historical text ([040f7c1](https://github.com/Pauperwave/app/commit/040f7c1))
+- **transactions:** 🐛 wire Add/Edit transaction forms to real tournament/event FKs ([1984421](https://github.com/Pauperwave/app/commit/1984421))
+- **charts:** 🐛 eliminate flash-of-empty-chart on load with skeleton placeholders ([f4b20a6](https://github.com/Pauperwave/app/commit/f4b20a6))
+- **finance:** 🐛 show ListSkeleton on first load for summary tables ([68f5ffc](https://github.com/Pauperwave/app/commit/68f5ffc))
+- **community:** 🐛 show ListSkeleton on first load for transactions/associates tables ([3caf22f](https://github.com/Pauperwave/app/commit/3caf22f))
+- **players:** 🐛 close remaining ListSkeleton gaps found in loading-state audit ([24f1525](https://github.com/Pauperwave/app/commit/24f1525))
+- **wanted-cards:** 🐛 replace generic spinner with view-mode-aware skeleton ([73228e7](https://github.com/Pauperwave/app/commit/73228e7))
+
+### Refactors
+
+- **nav:** 🎨 reorder sidebar community section and associates sub-nav tabs ([c9e99b0](https://github.com/Pauperwave/app/commit/c9e99b0))
+- **ui:** ♻️ extract ColumnVisibilityMenu, collapse to icon-only below lg ([295973f](https://github.com/Pauperwave/app/commit/295973f))
+
+### Documentation
+
+- **finance:** 📝 audit payment_amount corrections found while building category table ([0ea30a6](https://github.com/Pauperwave/app/commit/0ea30a6))
+- **finance:** 📝 revert Sealed discount correction, confirmed as valid ([789a846](https://github.com/Pauperwave/app/commit/789a846))
+- **architecture:** 📝 document all current Postgres functions ([7b9c8cc](https://github.com/Pauperwave/app/commit/7b9c8cc))
+
+### Chore
+
+- **git:** 🙈 ignore local .mcp.json ([b0d4a4d](https://github.com/Pauperwave/app/commit/b0d4a4d))
+- **supabase:** 🔧 regenerate database types for register_tournament_players ([1f6735f](https://github.com/Pauperwave/app/commit/1f6735f))
+
+### Styles
+
+- **finance:** 🎨 color the Costi commissioni/Netto card icons red/green ([70dc1fc](https://github.com/Pauperwave/app/commit/70dc1fc))
+- **finance:** 🎨 mute 0,00 € everywhere, add cumulative column to Riepilogo mensile ([ad127b8](https://github.com/Pauperwave/app/commit/ad127b8))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.1.4
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.1.3...v0.1.4)
