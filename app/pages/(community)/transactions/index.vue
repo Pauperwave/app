@@ -194,9 +194,7 @@ const tour = useTransactionsTour()
                 :variant="isGrouped ? 'solid' : 'outline'"
                 :aria-label="$t('transaction.groupByPayer')"
                 @click="toggleGrouping"
-              >
-                <span class="hidden lg:inline">{{ $t('transaction.groupByPayer') }}</span>
-              </UButton>
+              />
             </UTooltip>
           </div>
         </template>
@@ -210,9 +208,14 @@ const tour = useTransactionsTour()
             @delete="requestBulkDelete(selectedTransactions)"
           />
           <div v-else id="tour-transactions-actions" class="flex items-center gap-2 flex-wrap">
-            <DateRangePicker v-model="range" :calendar-years="calendarYears" class="-ms-1" />
+            <DateRangePicker
+              v-model="range"
+              :calendar-years="calendarYears"
+              icon-only
+              class="-ms-1"
+            />
 
-            <ColumnVisibilityMenu :items="columnVisibilityItems" />
+            <ColumnVisibilityMenu :items="columnVisibilityItems" icon-only />
           </div>
         </template>
       </UDashboardToolbar>

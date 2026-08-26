@@ -10,17 +10,32 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 
-defineProps<{ items: DropdownMenuItem[] }>()
+// iconOnly: always icon-only regardless of viewport, instead of the default
+// "collapses below lg" — opt-in for pages crowded enough that even the lg
+// breakpoint isn't enough room (transactions/index.vue, user request,
+// 2026-08-27, alongside DateRangePicker's own iconOnly).
+const { items, iconOnly = false } = defineProps<{ items: DropdownMenuItem[], iconOnly?: boolean }>()
+const { t } = useI18n()
 </script>
 
 <template>
-  <UDropdownMenu :items="items" :content="{ align: 'end' }">
+  <UTooltip v-if="iconOnly" :text="t('common.showColumns')">
+    <UDropdownMenu :items="items" :content="{ align: 'end' }">
+      <UButton
+        color="neutral"
+        variant="outline"
+        :icon="ICONS.settingsColumns"
+        :aria-label="t('common.showColumns')"
+      />
+    </UDropdownMenu>
+  </UTooltip>
+  <UDropdownMenu v-else :items="items" :content="{ align: 'end' }">
     <UButton
       color="neutral"
       variant="outline"
       :trailing-icon="ICONS.settingsColumns"
     >
-      <span class="hidden lg:inline">{{ $t('common.showColumns') }}</span>
+      <span class="hidden lg:inline">{{ t('common.showColumns') }}</span>
     </UButton>
   </UDropdownMenu>
 </template>
