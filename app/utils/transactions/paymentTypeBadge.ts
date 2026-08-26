@@ -8,7 +8,10 @@ import type { PaymentType } from '#shared/types/transactions'
 // MEMBERSHIP_STATUS_BADGE_CONFIG, membershipStatusBadge.ts).
 export const PAYMENT_TYPE_BADGE_CONFIG: Record<PaymentType, { color: BadgeProps['color'], icon: string }> = {
   'Association Fee': { color: 'primary', icon: ICONS.players },
-  'Tournament Fee': { color: 'success', icon: ICONS.battle },
+  // Was 'success' — freed up so RenewalKindBadge.vue's "Nuovo tesseramento"
+  // can use it without colliding on meaning across two different columns
+  // (user request, 2026-08-27).
+  'Tournament Fee': { color: 'secondary', icon: ICONS.battle },
   'Event Fee': { color: 'warning', icon: ICONS.calendar },
   'Donation': { color: 'neutral', icon: ICONS.heartHandshake },
   // Buying tokens to spend inside an event (Commanderwave Fest today), not a

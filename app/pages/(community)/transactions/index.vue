@@ -100,10 +100,14 @@ const table = useTemplateRef<TableRef>('table')
 // Purchase rows, so it's redundant clutter on every other tab (user request,
 // 2026-08-23) — shown on "Tutte" and "Acquisto gettoni" only.
 const gettoniVisible = (tab: 'all' | PaymentType) => tab === 'all' || tab === 'Token Purchase'
+// Same reasoning as gettoniVisible: only ever populated for Association Fee
+// rows, so it's redundant clutter on every other tab (user request, 2026-08-27).
+const renewalKindVisible = (tab: 'all' | PaymentType) => tab === 'all' || tab === 'Association Fee'
 
 const columnVisibility = ref({
   payment_type: activeTypeTab.value === 'all',
   gettoni: gettoniVisible(activeTypeTab.value),
+  renewalKind: renewalKindVisible(activeTypeTab.value),
   createdAt: false,
   updatedAt: false,
   createdBy: false,
@@ -112,6 +116,7 @@ const columnVisibility = ref({
 watch(activeTypeTab, (value) => {
   columnVisibility.value.payment_type = value === 'all'
   columnVisibility.value.gettoni = gettoniVisible(value)
+  columnVisibility.value.renewalKind = renewalKindVisible(value)
 })
 
 const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, columnHeaders)

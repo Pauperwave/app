@@ -5,9 +5,11 @@ import {
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { Transaction } from '~/types'
 import type { Selection } from '~/composables/useSelection'
+import type { RenewalKind } from '~/utils/transactions/renewalKindBadge'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 import PaymentTypeBadge from '~/components/ui/PaymentTypeBadge.vue'
 import PaymentMethodBadge from '~/components/ui/PaymentMethodBadge.vue'
+import RenewalKindBadge from '~/components/ui/RenewalKindBadge.vue'
 import RowActionsMenu from '~/components/ui/RowActionsMenu.vue'
 import TournamentsStageLabel from '~/components/tournaments/StageLabel.vue'
 
@@ -16,6 +18,7 @@ export const transactionsColumnHeaders = (t: (key: string) => string) => ({
   payer: t('transaction.columns.payer'),
   payment_date: t('transaction.columns.paymentDate'),
   payment_type: t('transaction.columns.paymentType'),
+  renewalKind: t('transaction.columns.renewalKind'),
   payment_amount: t('transaction.columns.paymentAmount'),
   payment_method: t('transaction.columns.paymentMethod'),
   received_by: t('transaction.columns.receivedBy'),
@@ -53,6 +56,22 @@ export function useTransactionsTableColumns(
   const { data: allTournaments } = useTournamentsQuery()
   const tournamentsByUuid = computed(() =>
     new Map((allTournaments.value ?? []).map(tournament => [tournament.uuid, tournament])))
+
+  // Earliest renewal_year on record per associate — an Association Fee
+  // payment is a "Nuovo tesseramento" if its own year is that associate's
+  // earliest, a "Rinnovo" otherwise. Full history (not just latest_renewal_year),
+  // same source useAssociatesStatistics.ts's growthSeries reads.
+  const { data: associateRenewals } = useAssociateRenewalsQuery()
+  const earliestRenewalYearByAssociate = computed(() => {
+    const map = new Map<string, number>()
+    for (const renewal of associateRenewals.value ?? []) {
+      const earliest = map.get(renewal.associateUuid)
+      if (earliest === undefined || renewal.renewalYear < earliest) {
+        map.set(renewal.associateUuid, renewal.renewalYear)
+      }
+    }
+    return map
+  })
 
   const selectColumn = useGroupedSelectColumn<Transaction>(selection)
 
@@ -110,6 +129,27 @@ export function useTransactionsTableColumns(
       meta: { class: { th: 'whitespace-nowrap text-center', td: 'whitespace-nowrap text-center' } },
       cell: ({ row }) =>
         row.getIsGrouped() ? null : h(PaymentTypeBadge, { type: row.original.payment_type })
+    },
+    {
+      id: 'renewalKind',
+      // Own accessorFn: not a raw column on the row. Blank for every
+      // payment_type other than Association Fee; 'unlinked' flags a real
+      // data gap (see renewalKindBadge.ts) rather than rendering blank like
+      // every other non-applicable payment_type would.
+      accessorFn: (row): RenewalKind | null => {
+        if (row.payment_type !== 'Association Fee') return null
+        if (!row.associate) return 'unlinked'
+        const earliestYear = earliestRenewalYearByAssociate.value.get(row.associate.uuid)
+        if (earliestYear === undefined) return null
+        return new Date(row.payment_date).getFullYear() === earliestYear ? 'new' : 'renewal'
+      },
+      header: columnHeaders.renewalKind,
+      meta: { class: { th: 'whitespace-nowrap text-center', td: 'whitespace-nowrap text-center' } },
+      cell: ({ row, getValue }) => {
+        if (row.getIsGrouped()) return null
+        const kind = getValue<RenewalKind | null>()
+        return kind ? h(RenewalKindBadge, { kind }) : null
+      }
     },
     {
       accessorKey: 'payment_amount',

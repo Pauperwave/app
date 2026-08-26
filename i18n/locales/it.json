@@ -699,12 +699,19 @@
       "donations": "Donazioni",
       "tokenPurchase": "Gettoni"
     },
+    "renewalKind": {
+      "renewal": "Rinnovo",
+      "new": "Nuovo tesseramento",
+      "unlinked": "Associato mancante",
+      "unlinkedTooltip": "Quota associativa senza associato collegato — impossibile determinare se sia un rinnovo o un nuovo tesseramento senza sapere chi ha pagato"
+    },
     "columns": {
       "id": "ID",
       "paymentDate": "Data",
       "payer": "Da",
       "paymentAmount": "Importo",
       "paymentType": "Tipologia",
+      "renewalKind": "Tesseramento",
       "paymentMethod": "Metodo",
       "receivedBy": "Ricevuto da",
       "event": "Evento",
