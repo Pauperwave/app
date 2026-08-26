@@ -101,7 +101,18 @@ const {
   residencyAddressColumn, residencyHouseNumberColumn, residencyCityColumn,
   residencyProvinceColumn, residencyCapColumn,
   actionsColumn
-} = useAssociatesTableColumns(selection, table, associates, rowContextMenuItems, search)
+} = useAssociatesTableColumns(
+  selection, table, associates, rowContextMenuItems, search,
+  // "Mostra colonne" section dividers: ID/UUID, Stato/Tesseramento,
+  // Consensi, Anagrafica, Nascita, Residenza, Trail (see
+  // columnVisibilityGroups.ts, user request 2026-08-27) — this page's own
+  // column order differs from requests.vue's, so the boundary ids aren't
+  // identical either.
+  [
+    'membership_request_status', 'consent_data', 'first_name',
+    'born_date', 'residency_address', 'created_at'
+  ]
+)
 
 // Wires the sidebar links (/associates?status=pending|active|to_renew) to the
 // membership_status column filter, which can only be applied after UTable mounts.

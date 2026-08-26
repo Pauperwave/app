@@ -193,7 +193,6 @@ const columnVisibility = ref({
   // id stays visible by default here too (2026-08-18), matching the roster.
   updated_at: false,
   updated_by: false,
-  latest_renewal_date: false,
   pauperwave_associate_number: false,
   // Hidden by default here too (2026-08-18), matching the roster.
   associate_type: false,

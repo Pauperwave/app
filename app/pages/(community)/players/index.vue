@@ -91,7 +91,11 @@ interface TableRef {
 const table = useTemplateRef<TableRef>('table')
 const columnVisibility = ref({})
 
-const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, columnHeaders)
+// "Mostra colonne" section divider: identity/status columns vs. activity
+// trail (see columnVisibilityGroups.ts, user request 2026-08-27).
+const columnVisibilityItems = useColumnVisibilityItems(
+  table, columnVisibility, columnHeaders, ['created_at']
+)
 
 const skeletonCount = computed(() => (isPending.value ? undefined : filteredPlayers.value.length))
 </script>

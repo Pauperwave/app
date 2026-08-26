@@ -74,7 +74,12 @@ export function useAssociatesTableColumns(
   // searches (2026-08-19, user request) — optional since not every page
   // using these columns has a search box (none did until associatesGlobal
   // FilterFn.ts existed).
-  search?: Ref<string>
+  search?: Ref<string>,
+  // "Mostra colonne" section dividers (Consensi/Anagrafica/Residenza/Trail,
+  // see columnVisibilityGroups.ts) — opt-in, each caller passes its own
+  // column-id boundaries since associates/index.vue and requests.vue don't
+  // order these columns identically (user request, 2026-08-27).
+  visibilitySeparatorBeforeIds?: string[]
 ) {
   const { t } = useI18n()
 
@@ -116,9 +121,9 @@ export function useAssociatesTableColumns(
     const allColumns = table.value?.tableApi?.getAllColumns()
     if (!allColumns) return []
 
-    return allColumns
-      .filter((column: Column<Associate>) => column.getCanHide())
-      .map(createVisibilityItem)
+    const hideableColumns = allColumns.filter((column: Column<Associate>) => column.getCanHide())
+    return insertGroupSeparators(hideableColumns, visibilitySeparatorBeforeIds)
+      .map(entry => ('type' in entry ? entry : createVisibilityItem(entry)))
   }
 
   const visibilityItems = computed(() => getVisibilityItems())

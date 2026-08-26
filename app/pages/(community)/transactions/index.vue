@@ -138,7 +138,16 @@ watch(activeTypeTab, (value) => {
   columnVisibility.value.event_name = eventVisible(value)
 })
 
-const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, columnHeaders)
+// "Mostra colonne" section dividers (user request, 2026-08-27): ID | Da/Data
+// | Tipologia/Tesseramento | Importo/Metodo/Ricevuto da | Evento/Gettoni |
+// Ricevuta/Note | Trail | Azioni (see columnVisibilityGroups.ts).
+const columnVisibilityItems = useColumnVisibilityItems(
+  table, columnVisibility, columnHeaders,
+  [
+    'payer', 'payment_type', 'payment_amount',
+    'event_name', 'receipt_ref', 'createdBy', 'actions'
+  ]
+)
 
 // Same "Group by player" convention as wanted-cards/index.vue: off by default,
 // a single toggle collapses repeated payer rows into an expandable group.

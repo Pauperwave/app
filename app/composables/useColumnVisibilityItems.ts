@@ -21,13 +21,20 @@ interface VisibilityTableRef {
 export function useColumnVisibilityItems(
   table: Ref<VisibilityTableRef | null>,
   columnVisibility: Ref<Record<string, boolean>>,
-  columnHeaders: Record<string, string>
+  columnHeaders: Record<string, string>,
+  // Column ids to drop a `{ type: 'separator' }` in front of — opt-in,
+  // see columnVisibilityGroups.ts.
+  separatorBeforeIds?: string[]
 ) {
   return computed(() => {
     void columnVisibility.value
-    return (table.value?.tableApi?.getAllColumns() ?? [])
+    const columns = (table.value?.tableApi?.getAllColumns() ?? [])
       .filter(column => column.getCanHide())
-      .map(column => ({
+
+    return insertGroupSeparators(columns, separatorBeforeIds).map((entry) => {
+      if ('type' in entry) return entry
+      const column = entry
+      return {
         label: columnHeaders[column.id] ?? column.id,
         type: 'checkbox' as const,
         checked: column.getIsVisible(),
@@ -37,6 +44,7 @@ export function useColumnVisibilityItems(
         onSelect(e: Event) {
           e.preventDefault()
         }
-      }))
+      }
+    })
   })
 }
