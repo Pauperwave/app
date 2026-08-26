@@ -79,7 +79,7 @@ export interface Transaction
   // can link to the tournament/event's own detail page — leagueUuid is what
   // tournamentDetailUrl needs to build the right link (see its own comment).
   tournament: { uuid: string, name: string, leagueUuid: string | null } | null
-  event: { uuid: string } | null
+  event: { uuid: string, name: string } | null
 }
 
 // players_full joins the players table (user_id) with its associate (name,

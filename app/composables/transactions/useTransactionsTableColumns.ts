@@ -182,21 +182,22 @@ export function useTransactionsTableColumns(
       meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap' } },
       cell: ({ row }) => {
         if (row.getIsGrouped()) return null
-        const eventName = row.original.event_name
-        // Not a real event name for these rows — see transactionGettoni.ts —
-        // shown in its own "Gettoni" column instead.
-        if (parseGettoniCount(eventName) !== null) return ''
-        if (!eventName) return ''
 
-        // Links to the tournament/event's own detail page — ck_payment_type_event_link
-        // (migration 20260825220000) guarantees exactly one of tournament_uuid/
-        // event_uuid is set whenever payment_type is Tournament Fee/Event Fee/
-        // Token Purchase, which is the only way event_name is non-null in the
-        // first place (Association Fee/Donation never set it) — no raw-text
-        // fallback needed, tournament/event here can't both be unresolved.
-        // Same UButton for both — a plain NuxtLink+icon for the event case
-        // read as a visually different affordance than the tournament one
-        // even though both do the same thing (user request, 2026-08-23).
+        // tournament/event checked first, ahead of event_name's own raw text:
+        // for Token Purchase rows event_name is just "8 gettoni" (see
+        // transactionGettoni.ts), never a real name, but tournament/event.name
+        // is always the real linked entity regardless of payment_type — a
+        // Gettoni purchase has a real event behind it and should link to it
+        // like Event Fee does (user request, 2026-08-27), not blank out just
+        // because its own event_name text isn't a name at all.
+        // ck_payment_type_event_link (migration 20260825220000) guarantees
+        // exactly one of tournament_uuid/event_uuid is set whenever
+        // payment_type is Tournament Fee/Event Fee/Token Purchase — no
+        // raw-text fallback needed, tournament/event here can't both be
+        // unresolved. Same UButton for both — a plain NuxtLink+icon for the
+        // event case read as a visually different affordance than the
+        // tournament one even though both do the same thing (user request,
+        // 2026-08-23).
         const { tournament, event } = row.original
         if (tournament) {
           // Real tournament.name, not the historical import's event_name text
@@ -221,7 +222,7 @@ export function useTransactionsTableColumns(
         if (event) {
           return h(UButton, {
             to: `/events/${event.uuid}`,
-            label: eventName,
+            label: event.name,
             icon: PAYMENT_TYPE_BADGE_CONFIG['Event Fee'].icon,
             size: 'xs',
             color: 'neutral',
