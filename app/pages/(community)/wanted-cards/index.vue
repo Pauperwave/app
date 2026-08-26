@@ -126,7 +126,11 @@ const columnVisibility = ref({
   status: false, createdAt: false, updatedAt: false, createdBy: false, updatedBy: false
 })
 
-const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, columnHeaders)
+// "Mostra colonne" section divider: card/request details vs. audit trail
+// (see columnVisibilityGroups.ts, user request 2026-08-27).
+const columnVisibilityItems = useColumnVisibilityItems(
+  table, columnVisibility, columnHeaders, ['createdBy']
+)
 
 const viewItems = computed(() => columnVisibilityItems.value)
 

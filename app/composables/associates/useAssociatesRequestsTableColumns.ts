@@ -13,6 +13,16 @@ import type { Table } from '@tanstack/vue-table'
 import type { Associate } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 
+// "Mostra colonne" section dividers — ID, Stato/Richiesta/Tesseramento,
+// Consensi, Anagrafica, Nascita, Residenza, Trail (see
+// columnVisibilityGroups.ts, user request 2026-08-27). No uuid column here
+// (associates/index.vue-only), so "ID" ends up a one-item group — kept
+// anyway for the same boundary as that page.
+const REQUESTS_VISIBILITY_SEPARATOR_BEFORE_IDS = [
+  'membership_request_status', 'consent_data', 'first_name',
+  'born_date', 'residency_address', 'updated_by'
+]
+
 export function useAssociatesRequestsTableColumns(
   selection: Selection<number>,
   table: Ref<{ tableApi: Table<Associate> } | null>,
@@ -30,7 +40,10 @@ export function useAssociatesRequestsTableColumns(
     bornDateColumn, ageColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
     residencyAddressColumn, residencyHouseNumberColumn, residencyCityColumn,
     residencyProvinceColumn, residencyCapColumn
-  } = useAssociatesTableColumns(selection, table, associates, rowContextMenuItems, search)
+  } = useAssociatesTableColumns(
+    selection, table, associates, rowContextMenuItems, search,
+    REQUESTS_VISIBILITY_SEPARATOR_BEFORE_IDS
+  )
 
   const columns: TableColumn<Associate>[] = [
     selectColumn,

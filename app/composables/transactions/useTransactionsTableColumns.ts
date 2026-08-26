@@ -24,7 +24,7 @@ export const transactionsColumnHeaders = (t: (key: string) => string) => ({
   received_by: t('transaction.columns.receivedBy'),
   event_name: t('transaction.columns.event'),
   gettoni: t('transaction.columns.gettoni'),
-  receipt: t('transaction.columns.receipt'),
+  receipt_ref: t('transaction.columns.receipt'),
   notes: t('transaction.columns.notes'),
   createdBy: t('transaction.columns.createdBy'),
   createdAt: t('transaction.columns.createdAt'),
@@ -245,7 +245,7 @@ export function useTransactionsTableColumns(
     },
     {
       accessorKey: 'receipt_ref',
-      header: columnHeaders.receipt,
+      header: columnHeaders.receipt_ref,
       meta: { class: { th: 'whitespace-nowrap text-center', td: 'whitespace-nowrap text-center' } },
       cell: ({ row }) => {
         if (row.getIsGrouped()) return null
