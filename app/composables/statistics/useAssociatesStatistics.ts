@@ -28,29 +28,68 @@ export interface RenewalMonthPoint {
 // Derives everything from useAssociatesQuery's already-cached list — no
 // dedicated stats endpoint, same "compute from data already fetched"
 // approach as associates/index.vue's own associatesStatusCounts.
-export function useAssociatesStatistics() {
+// selectedYear drives only the point-in-time cards/charts (new signups,
+// not-renewed, renewal timing, median/distribution of age) — the multi-year
+// growthSeries below is a historical series and intentionally stays
+// unaffected by it (user decision, 2026-08-26: filtering it to one year
+// would defeat its purpose).
+export function useAssociatesStatistics(selectedYear: Ref<number> = ref(new Date().getFullYear())) {
   const { data: associates, isLoading } = useAssociatesQuery()
   const { data: associateRenewals } = useAssociateRenewalsQuery()
 
   const approvedAssociates = computed(() => (associates.value ?? [])
     .filter(associate => associate.membership_request_status === 'approved'))
 
-  const currentYear = new Date().getFullYear()
-
   const totalAssociates = computed(() => approvedAssociates.value.length)
 
   const newSignupsThisYear = computed(() => approvedAssociates.value
     .filter(associate => associate.association_date
-      && new Date(associate.association_date).getFullYear() === currentYear).length)
+      && new Date(associate.association_date).getFullYear() === selectedYear.value).length)
 
-  // Renewed last year but not yet this year — exactly membership_status
-  // 'to_renew' (see pauperwave_associates_with_status view).
+  // Reused by notRenewedFromLastYear and growthSeries — one associate's full
+  // renewal-year history, not just the view's latest_renewal_year.
+  const renewalYearsByAssociate = computed(() => {
+    const map = new Map<string, number[]>()
+    for (const renewal of associateRenewals.value ?? []) {
+      const years = map.get(renewal.associateUuid) ?? []
+      years.push(renewal.renewalYear)
+      map.set(renewal.associateUuid, years)
+    }
+    return map
+  })
+
+  // Renewed the year before the selected one but not (yet) for the selected
+  // year itself — reconstructed from the full renewal history so it can
+  // answer "as of year Y", not just today (unlike membership_status
+  // 'to_renew', which only ever reflects the current moment).
   const notRenewedFromLastYear = computed(() => approvedAssociates.value
-    .filter(associate => associate.membership_status === 'to_renew').length)
+    .filter((associate) => {
+      const years = renewalYearsByAssociate.value.get(associate.uuid) ?? []
+      return years.includes(selectedYear.value - 1) && !years.includes(selectedYear.value)
+    }).length)
 
-  const medianAge = computed(() => median(approvedAssociates.value
-    .map(associate => associate.age)
-    .filter((age): age is number => age !== null)))
+  // Only associates who actually renewed for the selected year — someone
+  // approved today but who joined/renewed in a later year shouldn't show up
+  // in year Y's age distribution just because they're a member now (user
+  // decision, 2026-08-26: this chart is "who was a member in year Y", not
+  // "who is a member today").
+  const membersInSelectedYear = computed(() => approvedAssociates.value
+    .filter(associate => (renewalYearsByAssociate.value.get(associate.uuid) ?? [])
+      .includes(selectedYear.value)))
+
+  // Age as of Dec 31 of the selected year, not associate.age (always "age
+  // today", from the view's CURRENT_DATE-based computation) — computed from
+  // born_date directly so medianAge/ageDistribution can answer "as of year
+  // Y" like the other point-in-time cards (user decision, 2026-08-26).
+  // Day/month precision doesn't matter here: everyone has already had their
+  // birthday by Dec 31 of any given year.
+  const agesAsOfSelectedYear = computed(() => membersInSelectedYear.value
+    .map(associate => (associate.born_date
+      ? selectedYear.value - new Date(associate.born_date).getFullYear()
+      : null))
+    .filter((age): age is number => age !== null))
+
+  const medianAge = computed(() => median(agesAsOfSelectedYear.value))
 
   // Cumulative member count by month, split into new/retained/not-renewed
   // — from the association's actual founding year (PAUPERWAVE_FOUNDING_YEAR)
@@ -71,13 +110,6 @@ export function useAssociatesStatistics() {
 
     if (!withDates.length) return []
 
-    const renewalYearsByAssociate = new Map<string, number[]>()
-    for (const renewal of associateRenewals.value ?? []) {
-      const years = renewalYearsByAssociate.get(renewal.associateUuid) ?? []
-      years.push(renewal.renewalYear)
-      renewalYearsByAssociate.set(renewal.associateUuid, years)
-    }
-
     // "Latest renewal year <= Y" only depends on the year, not the specific
     // month within it — cached per (associate, year) instead of recomputed
     // for all 12 months of that year, since growthSeries is monthly.
@@ -87,7 +119,7 @@ export function useAssociatesStatistics() {
       const cached = latestRenewalYearCache.get(cacheKey)
       if (cached !== undefined) return cached
 
-      const yearsUpToNow = (renewalYearsByAssociate.get(uuid) ?? [])
+      const yearsUpToNow = (renewalYearsByAssociate.value.get(uuid) ?? [])
         .filter(renewalYear => renewalYear <= year)
       const latest = yearsUpToNow.length ? Math.max(...yearsUpToNow) : null
       latestRenewalYearCache.set(cacheKey, latest)
@@ -127,9 +159,7 @@ export function useAssociatesStatistics() {
   // whole [min, max] range actually present, same "no silently-cropped
   // gaps" reasoning as growthSeries/perYearSeries above.
   const ageDistribution = computed<AgePoint[]>(() => {
-    const ages = approvedAssociates.value
-      .map(associate => associate.age)
-      .filter((age): age is number => age !== null)
+    const ages = agesAsOfSelectedYear.value
 
     if (!ages.length) return []
 
@@ -143,16 +173,16 @@ export function useAssociatesStatistics() {
     return points
   })
 
-  // Renewals bucketed by calendar month, across every year — not "renewals
-  // per month over time" like growthSeries, but "which month of the year do
-  // renewals cluster in", to plan reminder campaigns around. Only approved
-  // associates with at least one renewal on record (latest_renewal_date null
-  // means never renewed — see 'unpaid' in MembershipStatus).
+  // Renewals bucketed by calendar month, for the selected year only — "which
+  // month of the year do renewals cluster in", to plan reminder campaigns
+  // around. Reads renewal_date directly off the full renewal history (not
+  // latest_renewal_date, which only ever holds one — the most recent — date
+  // per associate and can't answer "renewals in year Y" for a past year).
   const renewalTimingSeries = computed<RenewalMonthPoint[]>(() => {
     const counts = new Array(12).fill(0)
-    for (const associate of approvedAssociates.value) {
-      if (!associate.latest_renewal_date) continue
-      counts[new Date(associate.latest_renewal_date).getMonth()]++
+    for (const renewal of associateRenewals.value ?? []) {
+      if (renewal.renewalYear !== selectedYear.value) continue
+      counts[new Date(renewal.renewalDate).getMonth()]++
     }
     return counts.map((count, month) => ({ month, count }))
   })

@@ -9,9 +9,11 @@ interface AgeChartPoint extends AgePoint {
   density: number
 }
 
+const { selectedYear } = defineProps<{ selectedYear: number }>()
+
 const { t } = useI18n()
 
-const { ageDistribution, medianAge, isLoading } = useAssociatesStatistics()
+const { ageDistribution, medianAge, isLoading } = useAssociatesStatistics(toRef(() => selectedYear))
 
 function gaussianKernel(u: number): number {
   return Math.exp(-0.5 * u * u) / Math.sqrt(2 * Math.PI)
@@ -65,14 +67,14 @@ const xTickValues = computed(() => chartData.value
     return indices
   }, []))
 
-const currentYear = new Date().getFullYear()
-
 // e.g. "35 anni (1991): 14 associati" — birth year is approximate (age is
 // whole completed years, not an exact birthdate), but explicit enough to
-// place the bar in time without a separate lookup.
+// place the bar in time without a separate lookup. Relative to selectedYear,
+// not "today" — age itself is now computed as of that year (see
+// useAssociatesStatistics.ts's agesAsOfSelectedYear).
 const template = (d: AgeChartPoint) => t(
   'statistic.ageDistributionTooltip',
-  { age: d.age, year: currentYear - d.age, count: d.count },
+  { age: d.age, year: selectedYear - d.age, count: d.count },
   d.count
 )
 </script>
