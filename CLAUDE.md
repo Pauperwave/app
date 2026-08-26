@@ -65,6 +65,13 @@ Two patterns coexist during the migration to Pinia Colada + BFF (ADR-007, `docs/
 
 `server/api/members.ts` and `server/api/notifications.ts` also still return mock/static data (roster/notification scaffolding, no backing table) — check an endpoint's implementation before assuming it's backed by the database.
 
+### PostgREST silently caps every unranged query at 250 rows
+This project's PostgREST (`db.max_rows`) truncates any `.select()` without an explicit `.range()` to 250 rows — it returns HTTP 206 (Partial Content) with the truncated data, not an error, so nothing in the app surfaces it. A `use<Domain>Query.ts` written as a plain unranged select works fine while the table is small, then silently starts dropping rows once it crosses 250 — no code change, no deploy, just organic data growth.
+
+Confirmed twice: `pauperwave_payments` (2026-08-23, the 2026 historical import pushed it past 250) and `pauperwave_associates`/`pauperwave_associate_renewals` (2026-08-26, the latter tipped over during a routine renewal-data backfill mid-session — a `/statistics` chart started showing numbers that didn't match direct SQL, with `data.length` silently 250 short of the real Postgres row count).
+
+Fix: use the shared `fetchAllRows` helper (`app/utils/query/fetchAllRows.ts`) instead of a bare `.select()` in any `use<Domain>Query.ts` — pass it a `(from, to) => ...range(from, to)` page-fetcher and it pages through until a page comes back short. Already applied in `useTransactionsQuery.ts`, `useAssociatesQuery.ts`, `useAssociateRenewalsQuery.ts`. When adding a new `use<Domain>Query.ts` or reviewing an existing one, use this helper by default rather than a bare `.select()` — don't wait for a table to cross 250 rows to find out the hard way.
+
 ### Render functions (`h()`) in composables, not just `.vue` files
 `resolveComponent('UButton')` only resolves reliably inside a `.vue` file's `<script setup>` — the compiler rewrites it there. Called from a plain `.ts` composable (e.g. a `use<Domain>TableColumns.ts` building `TableColumn` defs with `h()`), it silently fails ("Failed to resolve component" warnings) and can hang the page instead of just rendering broken markup. Import the component directly from `#components` instead: `import { UButton } from '#components'`. Confirmed 2026-08-08 while extracting `useWantedCardsTableColumns.ts` out of `wanted-cards/index.vue`.
 
