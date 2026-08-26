@@ -126,20 +126,33 @@ export function useAcceptancePickerColumns(options: UseAcceptancePickerColumnsOp
     cell: ({ row }) => registrationOrderByValue.value.get(row.original.value)
   }
 
-  const playerColumn: TableColumn<AcceptancePickerItem> = {
-    accessorKey: 'label',
-    header: t('tournament.single.acceptancePicker.playerColumn'),
-    meta: { class: { td: 'truncate' } },
-    // sourceRowStatus() always resolves to 'accepted' for accepted-table
-    // rows (they're only ever rendered from targetItems, which is exactly
-    // what it checks first), so reusing it here never strikes through a
-    // name on the "Iscritti (Pagato)" side — only a "Pre-registrati"
-    // no-show does.
-    cell: ({ row }) => h(AssociateTag, {
+  // sourceRowStatus() always resolves to 'accepted' for accepted-table rows
+  // (they're only ever rendered from targetItems, which is exactly what it
+  // checks first), so reusing it here never strikes through a name on the
+  // "Iscritti (Pagato)" side — only a "Pre-registrati" no-show does.
+  const playerColumnCell: TableColumn<AcceptancePickerItem>['cell'] = ({ row }) =>
+    h(AssociateTag, {
       name: row.original.label,
       size: 'md',
       strikethrough: sourceRowStatus(row.original) === 'noShow'
     })
+
+  const playerColumn: TableColumn<AcceptancePickerItem> = {
+    accessorKey: 'label',
+    header: t('tournament.single.acceptancePicker.playerColumn'),
+    meta: { class: { td: 'truncate' } },
+    cell: playerColumnCell
+  }
+
+  // "Iscritti (Pagato)"-only variant of playerColumn above — sortable, since
+  // that table (unlike "Pre-registrati", already sortable by registration
+  // time) had no way to reorder by name (user request, 2026-08-27).
+  const acceptedPlayerColumn: TableColumn<AcceptancePickerItem> = {
+    accessorKey: 'label',
+    header: ({ column }) =>
+      sortableHeader(t('tournament.single.acceptancePicker.playerColumn'), column),
+    meta: { class: { td: 'truncate' } },
+    cell: playerColumnCell
   }
 
   // Overrides app.config.ts's app-wide table look for just these two
@@ -238,7 +251,7 @@ export function useAcceptancePickerColumns(options: UseAcceptancePickerColumnsOp
       meta: { class: { th: 'text-center w-20', td: 'text-center font-mono' } },
       cell: ({ row }) => formatTime(acceptedAt[row.original.value])
     },
-    playerColumn,
+    acceptedPlayerColumn,
     {
       id: 'paymentMethod',
       header: t('tournament.single.acceptancePicker.paymentColumn'),
