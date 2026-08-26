@@ -32,8 +32,10 @@ export interface AcceptancePickerItem {
 // 'registered'/'checked_in'/'no_show') + pauperwave_payments (Tournament
 // Fee) — see docs/PROGRESS.md for why player_uuid, not associate_uuid
 // directly (players is the tournament-identity table decks/stats hang off).
-const { data: registrationsData, isLoading: isRegistrationsLoading }
-  = useTournamentRegistrationsQuery(() => tournamentUuid)
+const {
+  data: registrationsData,
+  isLoading: isRegistrationsLoading
+} = useTournamentRegistrationsQuery(() => tournamentUuid)
 const { data: paymentsData } = useTournamentPaymentsQuery(() => tournamentUuid)
 const { data: associatesData, isLoading: isAssociatesLoading } = useAssociatesQuery()
 const {
@@ -119,15 +121,20 @@ function setNoShow(itemsToUpdate: AcceptancePickerItem[], noShow: boolean) {
   const registrationUuids = itemsToUpdate
     .map(item => registrationByAssociate.value.get(item.value)?.uuid)
     .filter((uuid): uuid is string => !!uuid)
-  if (registrationUuids.length) {
-    setRegistrationStatus.mutate({ registrationUuids, status: noShow ? 'no_show' : 'registered' })
-  }
+
+  if (registrationUuids.length)
+    setRegistrationStatus.mutate({
+      registrationUuids,
+      status: noShow ? 'no_show' : 'registered'
+    })
+
   if (noShow) {
     // A no-show row becomes unselectable (sourceRowSelectionOptions
     // below), but that only blocks *future* selection — an existing
     // checked row needs its own explicit deselect (user request,
     // 2026-08-24).
-    for (const item of itemsToUpdate) Reflect.deleteProperty(sourceRowSelection.value, item.value)
+    for (const item of itemsToUpdate)
+      Reflect.deleteProperty(sourceRowSelection.value, item.value)
   }
 }
 
@@ -198,8 +205,11 @@ const sourceContextMenuRow = ref<AcceptancePickerItem | null>(null)
 function onSourceRowContextmenu(_event: Event, row: { original: AcceptancePickerItem }) {
   sourceContextMenuRow.value = row.original
 }
-const sourceTableContextMenuItems = computed<DropdownMenuItem[]>(() =>
-  sourceContextMenuRow.value ? sourceRowContextMenuItems(sourceContextMenuRow.value) : [])
+const sourceTableContextMenuItems = computed<DropdownMenuItem[]>(
+  () => sourceContextMenuRow.value
+    ? sourceRowContextMenuItems(sourceContextMenuRow.value)
+    : []
+)
 
 // "Pre-registrati" as a table, not a UListbox — mirrors "Iscritti (Pagato)"'s
 // own table (select / # / time / player), plus its own no-show action (user
@@ -364,10 +374,12 @@ function transferToAccepted(itemsToTransfer: AcceptancePickerItem[]) {
   const registrationUuids = itemsToTransfer
     .map(item => registrationByAssociate.value.get(item.value)?.uuid)
     .filter((uuid): uuid is string => !!uuid)
+
   if (registrationUuids.length) {
     setRegistrationStatus.mutate({ registrationUuids, status: 'checked_in' })
   }
-  for (const item of itemsToTransfer) Reflect.deleteProperty(sourceRowSelection.value, item.value)
+  for (const item of itemsToTransfer)
+    Reflect.deleteProperty(sourceRowSelection.value, item.value)
 }
 
 function transferSelected() {
@@ -428,10 +440,12 @@ function removeAcceptedItems(itemsToRemove: AcceptancePickerItem[]) {
   const registrationUuids = itemsToRemove
     .map(item => registrationByAssociate.value.get(item.value)?.uuid)
     .filter((uuid): uuid is string => !!uuid)
-  if (registrationUuids.length) {
+
+  if (registrationUuids.length)
     setRegistrationStatus.mutate({ registrationUuids, status: 'registered' })
-  }
-  for (const item of itemsToRemove) Reflect.deleteProperty(acceptedRowSelection.value, item.value)
+
+  for (const item of itemsToRemove)
+    Reflect.deleteProperty(acceptedRowSelection.value, item.value)
 }
 
 // Confirm before removing an accepted player, single or batch (user
@@ -449,7 +463,8 @@ function requestRemoveAccepted(item: AcceptancePickerItem) {
 }
 
 function requestRemoveSelected() {
-  if (selectedAccepted.value.length) pendingRemovals.value = selectedAccepted.value
+  if (selectedAccepted.value.length)
+    pendingRemovals.value = selectedAccepted.value
 }
 
 function confirmRemoveAccepted() {
@@ -505,7 +520,11 @@ function setPaymentMethod(item: AcceptancePickerItem, method: PaymentMethod | nu
     })
     return
   }
-  setPayment.mutate({ associateUuid: item.value, method, receivedBy: receivedBy.value })
+  setPayment.mutate({
+    associateUuid: item.value,
+    method, receivedBy:
+    receivedBy.value
+  })
 }
 
 function togglePaymentMethod(item: AcceptancePickerItem, method: PaymentMethod) {
@@ -571,13 +590,16 @@ const acceptedContextMenuRow = ref<AcceptancePickerItem | null>(null)
 function onAcceptedRowContextmenu(_event: Event, row: { original: AcceptancePickerItem }) {
   acceptedContextMenuRow.value = row.original
 }
-const acceptedTableContextMenuItems = computed<DropdownMenuItem[]>(() =>
-  acceptedContextMenuRow.value ? acceptedRowContextMenuItems(acceptedContextMenuRow.value) : [])
+const acceptedTableContextMenuItems = computed<DropdownMenuItem[]>(
+  () => acceptedContextMenuRow.value
+    ? acceptedRowContextMenuItems(acceptedContextMenuRow.value)
+    : []
+)
 </script>
 
 <template>
   <div class="flex items-start gap-2 w-full">
-    <div class="flex flex-col gap-1 w-[34rem] shrink-0">
+    <div class="flex flex-col gap-1 w-136 shrink-0">
       <div class="flex items-center justify-between gap-2 min-h-8">
         <h2 class="font-medium text-highlighted">
           {{ t('tournament.single.acceptancePicker.preRegistered') }}
