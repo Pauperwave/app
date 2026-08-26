@@ -1,13 +1,14 @@
-<!-- app\components\tournaments\single\AcceptedToolbarRow.vue -->
+<!-- app\components\tournaments\single\AcceptancePickerToolbarRow.vue -->
 <!--
-  "Iscritti (Pagato)" own toolbar row — swaps between the bulk-selection bar
-  (just "Rimuovi selezionati", once at least one row is selected) and
-  AcceptanceSearchAddRow (search + "Aggiungi giocatori"), extracted out of
-  AcceptancePicker.vue once the whole toggle block was asked to become its
-  own component (user request, 2026-08-24). Same toolbar-swap pattern as
-  associates/index.vue's BulkActionsBar/FiltersBar. "Pre-registrati" has no
-  bulk bar of its own (no per-row action needing a bulk counterpart there),
-  so it uses AcceptanceSearchAddRow directly instead of this wrapper.
+  Shared toolbar row for both "Pre-registrati" and "Iscritti (Pagato)" —
+  swaps between the bulk-selection bar (just "Rimuovi selezionati", once at
+  least one row is selected) and AcceptanceSearchAddRow (search + "Aggiungi
+  giocatori"). Extracted out of AcceptancePicker.vue for "Iscritti (Pagato)"
+  first (user request, 2026-08-24), then reused as-is for "Pre-registrati"
+  once that side got its own bulk-remove action too (user request,
+  2026-08-27) — same toolbar-swap pattern as associates/index.vue's
+  BulkActionsBar/FiltersBar either way, nothing accepted-specific in its
+  props/emits.
 
   No bulk payment action (removed 2026-08-25, user request) — payment only
   ever applies to a single row now, one real pauperwave_payments write per

@@ -39,7 +39,7 @@ const {
 const { data: paymentsData } = useTournamentPaymentsQuery(() => tournamentUuid)
 const { data: associatesData, isLoading: isAssociatesLoading } = useAssociatesQuery()
 const {
-  registerAssociates, setRegistrationStatus, setPayment
+  registerAssociates, setRegistrationStatus, deleteRegistrations, setPayment
 } = useTournamentRegistrationsMutations(() => tournamentUuid)
 
 // Both tables draw from registrations + associates — either still loading
@@ -47,13 +47,18 @@ const {
 // combined loading flag rather than each guessing from a partial source.
 const isPickerLoading = computed(() => isRegistrationsLoading.value || isAssociatesLoading.value)
 
-// Double-click guard for the accepted table's row buttons (no-show/payment/
-// remove) — any of the two per-row mutations in flight disables all of
-// them, since e.g. a status change resolving mid-payment-click would race
-// the optimistic caches against each other (user request, 2026-08-25).
+// Double-click guard for both tables' row buttons (no-show/payment/remove)
+// — any of the per-row mutations in flight disables all of them, since e.g.
+// a status change resolving mid-payment-click would race the optimistic
+// caches against each other (user request, 2026-08-25). deleteRegistrations
+// re-added 2026-08-27 for "Pre-registrati"'s own bulk-remove — unlike
+// "Iscritti (Pagato)"'s remove (a checked_in -> registered status revert), a
+// pre-registration has no further status to revert to, so removing one here
+// really does mean deleting the row.
 const isMutating = computed(() =>
   registerAssociates.isLoading.value
   || setRegistrationStatus.isLoading.value
+  || deleteRegistrations.isLoading.value
   || setPayment.isLoading.value)
 
 const associateByUuid = computed(() =>
@@ -431,6 +436,22 @@ function addSelectedToPreRegistered() {
   addableSourcePlayerIds.value = []
 }
 
+// "Pre-registrati"'s own bulk-remove (user request, 2026-08-27) — unlike
+// removeAcceptedItems below, there's no earlier status to revert to here, so
+// this really does delete the tournament_registrations row via
+// deleteRegistrations, same hard delete "Iscritti (Pagato)" used to
+// (mistakenly) do before the 2026-08-27 fix.
+function removeSourceItems(itemsToRemove: AcceptancePickerItem[]) {
+  const registrationUuids = itemsToRemove
+    .map(item => registrationByAssociate.value.get(item.value)?.uuid)
+    .filter((uuid): uuid is string => !!uuid)
+
+  if (registrationUuids.length) deleteRegistrations.mutate(registrationUuids)
+
+  for (const item of itemsToRemove)
+    Reflect.deleteProperty(sourceRowSelection.value, item.value)
+}
+
 // checked_in -> registered, same status-only transition setNoShow above uses
 // for registered <-> no_show — NOT deleteRegistrations. tournament_registrations
 // has no separate "Pre-registrati"/"Iscritti (Pagato)" tables, just the one
@@ -482,6 +503,41 @@ const removeConfirmDescription = computed(() => {
   if (pendingRemovals.value.length > 1) {
     return t('tournament.single.acceptancePicker.removeConfirmDescriptionBatch', {
       count: pendingRemovals.value.length
+    })
+  }
+  return undefined
+})
+
+// Same confirm-before-destructive-action flow as pendingRemovals above, kept
+// as its own separate ref rather than merged with it — same "parallel state
+// per side" convention as sourceRowSelection/acceptedRowSelection etc.
+// throughout this file, and the two sides really do run different mutations
+// on confirm (hard delete vs status revert), not just different labels.
+const pendingSourceRemovals = ref<AcceptancePickerItem[]>([])
+const sourceRemoveConfirmOpen = computed({
+  get: () => pendingSourceRemovals.value.length > 0,
+  set: (value) => { if (!value) pendingSourceRemovals.value = [] }
+})
+
+function requestRemoveSourceSelected() {
+  if (sourceSelection.value.length)
+    pendingSourceRemovals.value = sourceSelection.value
+}
+
+function confirmRemoveSource() {
+  removeSourceItems(pendingSourceRemovals.value)
+  pendingSourceRemovals.value = []
+}
+
+const sourceRemoveConfirmDescription = computed(() => {
+  if (pendingSourceRemovals.value.length === 1) {
+    return t('tournament.single.acceptancePicker.removePreRegisteredConfirmDescription', {
+      name: pendingSourceRemovals.value[0]!.label
+    })
+  }
+  if (pendingSourceRemovals.value.length > 1) {
+    return t('tournament.single.acceptancePicker.removePreRegisteredConfirmDescriptionBatch', {
+      count: pendingSourceRemovals.value.length
     })
   }
   return undefined
@@ -604,20 +660,16 @@ const acceptedTableContextMenuItems = computed<DropdownMenuItem[]>(
         <h2 class="font-medium text-highlighted">
           {{ t('tournament.single.acceptancePicker.preRegistered') }}
         </h2>
-        <div v-if="sourceSelection.length" class="flex items-center gap-2">
-          <span class="text-sm text-muted">
-            {{ t(
-              'tournament.single.acceptancePicker.selectedCount', { count: sourceSelection.length }
-            ) }}
-          </span>
-        </div>
       </div>
 
-      <TournamentsSingleAcceptanceSearchAddRow
+      <TournamentsSingleAcceptancePickerToolbarRow
         v-model:search="sourceSearch"
         v-model:selected-ids="addableSourcePlayerIds"
+        :selected-count="sourceSelection.length"
         :options="addableAssociateOptions"
+        :is-mutating="isMutating"
         @add="addSelectedToPreRegistered"
+        @remove-selected="requestRemoveSourceSelected"
       />
 
       <UContextMenu :items="sourceTableContextMenuItems">
@@ -670,7 +722,7 @@ const acceptedTableContextMenuItems = computed<DropdownMenuItem[]>(
         />
       </div>
 
-      <TournamentsSingleAcceptedToolbarRow
+      <TournamentsSingleAcceptancePickerToolbarRow
         v-model:search="acceptedSearch"
         v-model:selected-ids="addablePlayerIds"
         :selected-count="selectedAccepted.length"
@@ -713,5 +765,15 @@ const acceptedTableContextMenuItems = computed<DropdownMenuItem[]>(
     :confirm-label="t('tournament.single.acceptancePicker.removeAction')"
     :confirm-icon="ICONS.delete"
     @confirm="confirmRemoveAccepted"
+  />
+
+  <ConfirmModal
+    v-model:open="sourceRemoveConfirmOpen"
+    :title="t('tournament.single.acceptancePicker.removePreRegisteredConfirmTitle')"
+    :description="sourceRemoveConfirmDescription"
+    :warning="t('common.confirmDeleteWarning')"
+    :confirm-label="t('tournament.single.acceptancePicker.removeAction')"
+    :confirm-icon="ICONS.delete"
+    @confirm="confirmRemoveSource"
   />
 </template>
