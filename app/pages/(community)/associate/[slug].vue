@@ -184,15 +184,10 @@ const associateTransactionsColumns: TableColumn<Transaction>[] = [
     accessorKey: 'event_name',
     header: t('transaction.columns.event'),
     cell: ({ row }) => {
-      const eventName = row.original.event_name
-      // Not a real event name for these rows — see transactionGettoni.ts —
-      // shown in its own "Gettoni" column instead.
-      if (parseGettoniCount(eventName) !== null) return ''
-      if (!eventName) return ''
-
-      // Links to the tournament/event's own detail page when the payment
-      // resolved to one at import/creation time — plain text otherwise
-      // (e.g. a guest payer row where FK matching found no confident match).
+      // tournament/event checked first, ahead of event_name's own raw text:
+      // for Token Purchase rows event_name is just "8 gettoni" (see
+      // transactionGettoni.ts), never a real name — same fix as
+      // useTransactionsTableColumns.ts's own event_name cell (2026-08-27).
       const { tournament, event } = row.original
       if (tournament) {
         // Real tournament.name + its league-relative stage number, not the
@@ -215,7 +210,7 @@ const associateTransactionsColumns: TableColumn<Transaction>[] = [
       if (event) {
         return h(UButton, {
           to: `/events/${event.uuid}`,
-          label: eventName,
+          label: event.name,
           icon: PAYMENT_TYPE_BADGE_CONFIG['Event Fee'].icon,
           size: 'xs',
           color: 'neutral',

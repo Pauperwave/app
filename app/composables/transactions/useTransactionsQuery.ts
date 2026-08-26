@@ -27,7 +27,7 @@ export function useTransactionsQuery() {
           created_by_associate:pauperwave_associates!created_by(first_name, last_name),
           updated_by_associate:pauperwave_associates!updated_by(first_name, last_name),
           tournament:tournaments(uuid, name, league_uuid),
-          event:events(uuid)
+          event:events(uuid, name)
         `)
         .is('deleted_at', null)
         // id (unique, unlike payment_date which has plenty of ties) is both
@@ -57,7 +57,7 @@ export function useTransactionsQuery() {
           tournament: tournament
             ? { uuid: tournament.uuid, name: tournament.name, leagueUuid: tournament.league_uuid }
             : null,
-          event: event ? { uuid: event.uuid } : null
+          event: event ? { uuid: event.uuid, name: event.name } : null
         }
       })
     }
