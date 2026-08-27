@@ -18,12 +18,15 @@ export default defineEventHandler(async (event) => {
 
   const supabase = serverSupabaseServiceRole<Database>(event)
 
+  // request_date is NOT touched here — it pins the moment the person first
+  // ever requested tesseramento, and staff relies on it staying put to tell
+  // a renewal (old request_date, populated "Ultimo rinnovo") apart from a
+  // genuinely new application (fresh request_date, empty "Ultimo rinnovo")
+  // in /associates/requests (user request, 2026-08-27). Only the status
+  // flips; updated_at still moves via the table's own trigger.
   const { data, error } = await supabase
     .from('pauperwave_associates')
-    .update({
-      membership_request_status: 'pending',
-      request_date: new Date().toISOString()
-    })
+    .update({ membership_request_status: 'pending' })
     .eq('email_address', user.email)
     .eq('membership_request_status', 'approved')
     .select()
