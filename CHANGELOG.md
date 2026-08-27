@@ -1,6 +1,39 @@
 # Changelog
 
 
+## v0.1.7
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.1.6...v0.1.7)
+
+### Enhancements
+
+- **transactions:** ✨ add Tesseramento column (new/renewal/missing-associate) ([b5386b5](https://github.com/Pauperwave/app/commit/b5386b5))
+- **transactions:** ✨ hide Evento column on Quote associative/Donazioni tabs ([e34af0f](https://github.com/Pauperwave/app/commit/e34af0f))
+- **transactions:** ✨ collapse toolbar controls to icon-only ([dc415dc](https://github.com/Pauperwave/app/commit/dc415dc))
+- **transactions:** ✨ add "Da sistemare" tab flagging real data gaps ([cff35b2](https://github.com/Pauperwave/app/commit/cff35b2))
+- ✨ add section dividers to every "Mostra colonne" menu ([2bd1ef3](https://github.com/Pauperwave/app/commit/2bd1ef3))
+- **tournaments:** ✨ make "Giocatore" sortable on "Iscritti (Pagato)" ([1f0e921](https://github.com/Pauperwave/app/commit/1f0e921))
+- **tournaments:** ✨ add bulk-remove to "Pre-registrati" ([c3ba98e](https://github.com/Pauperwave/app/commit/c3ba98e))
+
+### Fixes
+
+- **transactions:** 🐛 resolve real event link ahead of raw event_name text ([d617768](https://github.com/Pauperwave/app/commit/d617768))
+- **tournaments:** 🐛 stop hard-deleting registration on "Rimuovi" ([2cde4c5](https://github.com/Pauperwave/app/commit/2cde4c5))
+- **tournaments:** 🐛 resolve ambiguous column in register_tournament_players ([f8dc113](https://github.com/Pauperwave/app/commit/f8dc113))
+
+### Refactors
+
+- **tournaments:** ♻️ extract Escape-to-clear into useEscapeToClear ([73988ba](https://github.com/Pauperwave/app/commit/73988ba))
+- **tournaments:** ♻️ extract row-selection and remove-confirm composables ([b2ba011](https://github.com/Pauperwave/app/commit/b2ba011))
+
+### Styles
+
+- **tournaments:** 🎨 reformat AcceptancePicker.vue, tune payment button size ([1dcbbb4](https://github.com/Pauperwave/app/commit/1dcbbb4))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.1.6
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.1.5...v0.1.6)
