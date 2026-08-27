@@ -23,6 +23,11 @@ const {
   data: associates, isLoading: loading, isPending, status, refetch
 } = useAssociatesQuery()
 const { data: geocodes, isLoading: geocodesLoading } = useAssociatesGeocodesQuery()
+// "Richieste (di rinnovo)" tab (user request, 2026-08-27) — a Set, not
+// baked into the Associate type, since it's derived from a separate table
+// (pauperwave_associate_membership_events) rather than a real column on
+// pauperwave_associates itself.
+const { data: pendingRenewalUuids } = usePendingRenewalRequestsQuery()
 const { t } = useI18n()
 
 useSeoMeta({ title: () => t('associate.breadcrumb') })
@@ -80,6 +85,32 @@ const {
   pendingRenewal, confirmOpen: renewConfirmOpen, receivedBy, receiverOptions, feeReady,
   requestBulkRenew, confirmBulkRenew
 } = useAssociatesBulkActions(selection)
+
+// "Approva rinnovo" on the "Richieste (di rinnovo)" tab (user request,
+// 2026-08-27) — acknowledging the request, not recording the payment (that
+// stays the existing "Rinnova" flow above), so no undo-window/confirm
+// modal: same directness as requests.vue's own bulkRestore, since approving
+// isn't destructive.
+const { approveRenewals } = useAssociatesMutations()
+const toast = useToast()
+async function confirmApproveRenewals() {
+  const ids = selectedRosterAssociates.value.map(associate => associate.id)
+  if (!ids.length) return
+  selection.clear()
+  try {
+    await approveRenewals.mutateAsync(ids)
+    toast.add({
+      title: t('associate.bulkActions.approveRenewalSuccessToast', ids.length),
+      color: 'success'
+    })
+  } catch (err) {
+    toast.add({
+      title: t('associate.bulkActions.approveRenewalErrorToast'),
+      description: toErrorMessage(err),
+      color: 'error'
+    })
+  }
+}
 // Single search box matching name/email/phone/tax code, not a per-column
 // filter (user feedback, 2026-08-19 — replaced the email-only column filter
 // and the separate consent-social dropdown, removed the same day). UTable's
@@ -116,12 +147,24 @@ const {
 
 // Wires the sidebar links (/associates?status=pending|active|to_renew) to the
 // membership_status column filter, which can only be applied after UTable mounts.
+// "pending_renewal" (2026-08-27) filters a different column entirely — it's
+// not a membership_status value, it's derived from
+// pauperwave_associate_membership_events (see has_pending_renewal column
+// below) — so the two filters are mutually exclusive, not combined.
 // fallow-ignore-next-line code-duplication -- see the destructure comment above
 function applyMembershipStatusFilterFromQuery() {
   const statusColumn = table.value?.tableApi?.getColumn('membership_status')
-  if (!statusColumn) return
+  const pendingRenewalColumn = table.value?.tableApi?.getColumn('has_pending_renewal')
+  if (!statusColumn || !pendingRenewalColumn) return
+
   const status = route.query.status
-  statusColumn.setFilterValue(typeof status === 'string' ? status : undefined)
+  if (status === 'pending_renewal') {
+    statusColumn.setFilterValue(undefined)
+    pendingRenewalColumn.setFilterValue(true)
+  } else {
+    pendingRenewalColumn.setFilterValue(undefined)
+    statusColumn.setFilterValue(typeof status === 'string' ? status : undefined)
+  }
 }
 
 onMounted(() => nextTick(applyMembershipStatusFilterFromQuery))
@@ -155,6 +198,12 @@ const statusTabs = computed(() => [
     value: 'active' as const,
     count: associatesStatusCounts.value.active,
     icon: MEMBERSHIP_STATUS_BADGE_CONFIG.active.icon
+  },
+  {
+    label: t('associate.tabs.pendingRenewal'),
+    value: 'pending_renewal' as const,
+    count: pendingRenewalUuids.value?.size,
+    icon: ICONS.calendarRenew
   },
   {
     label: t('associate.tabs.toRenew'),
@@ -224,6 +273,24 @@ const columns: TableColumn<Associate>[] = [
       return a - b
     },
     cell: ({ row }) => h(MembershipStatusBadge, { status: row.original.membership_status })
+  },
+  // Purely accessorFn-derived (no real pauperwave_associates column) —
+  // backs the "Richieste (di rinnovo)" tab's own column filter
+  // (applyMembershipStatusFilterFromQuery above), and doubles as a visible
+  // at-a-glance badge on every other tab too (user request, 2026-08-27).
+  {
+    id: 'has_pending_renewal',
+    accessorFn: (row: Associate) => pendingRenewalUuids.value?.has(row.uuid) ?? false,
+    header: t('associate.columns.hasPendingRenewal'),
+    meta: { class: { th: 'text-center', td: 'text-center' } },
+    cell: ({ row }) => (pendingRenewalUuids.value?.has(row.original.uuid)
+      ? h(UBadge, {
+        label: t('associate.badges.renewalRequested'),
+        icon: ICONS.calendarRenew,
+        color: 'primary',
+        variant: 'subtle'
+      })
+      : null)
   },
   lastRenewalDateColumn,
   {
@@ -338,7 +405,9 @@ function renderNeutralBadge(value: string) {
             side="right"
             :count="selectedRosterAssociates.length"
             show-renew
+            :show-approve-renewal="activeStatusTab === 'pending_renewal'"
             @renew="requestBulkRenew(selectedRosterAssociates)"
+            @approve-renewal="confirmApproveRenewals"
           />
           <div v-else id="tour-associates-actions">
             <AssociatesTableToolbarActions :visibility-items="visibilityItems" />

@@ -9,7 +9,7 @@ import type { Associate } from '~/types'
 export function useAssociatesRowActions() {
   const { t } = useI18n()
   const toast = useToast()
-  const { approveAssociates, restoreAssociates } = useAssociatesMutations()
+  const { approveAssociates, rejectAssociates, restoreAssociates } = useAssociatesMutations()
 
   const editingAssociate = ref<Associate | null>(null)
   const editModalOpen = ref(false)
@@ -44,6 +44,27 @@ export function useAssociatesRowActions() {
     } catch (err) {
       toast.add({
         title: t('associate.approveModal.errorToastTitle'),
+        description: toErrorMessage(err),
+        color: 'error'
+      })
+    }
+  }
+
+  // No confirm modal, unlike requests.vue's own bulk reject (10s undo toast)
+  // — same directness as approve()/restore() in this file; a single-row
+  // context-menu action was missing entirely until now (bug, user report
+  // 2026-08-27), the bulk toolbar button was the only way to reject.
+  async function reject(associate: Associate) {
+    try {
+      await rejectAssociates.mutateAsync([associate.id])
+      toast.add({
+        title: t('associate.rejectModal.successToastTitle'),
+        description: t('associate.rejectModal.successToastDescription', 1),
+        color: 'success'
+      })
+    } catch (err) {
+      toast.add({
+        title: t('associate.rejectModal.errorToastTitle'),
         description: toErrorMessage(err),
         color: 'error'
       })
@@ -105,6 +126,11 @@ export function useAssociatesRowActions() {
           icon: ICONS.confirm,
           color: 'success' as const,
           onSelect: () => approve(associate)
+        }, {
+          label: t('associate.rowActions.reject'),
+          icon: ICONS.statusRejected,
+          color: 'error' as const,
+          onSelect: () => reject(associate)
         }, { type: 'separator' as const }]
         : []),
       // Only on rejected rows — undoes a reject that has already committed

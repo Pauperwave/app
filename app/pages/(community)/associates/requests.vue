@@ -132,7 +132,14 @@ function applyRequestStatusFilterFromQuery() {
   const statusColumn = table.value?.tableApi?.getColumn('membership_request_status')
   if (!statusColumn) return
   const status = route.query.status
-  statusColumn.setFilterValue(typeof status === 'string' ? status : undefined)
+  // 'all' means "no filter" here (see activeStatusTab's own setter below,
+  // which writes it as a literal ?status=all rather than clearing the query
+  // param the way 'pending' does) — passed straight to setFilterValue it
+  // filtered the column for the literal string "all", which no row ever
+  // matches, silently emptying the whole table (bug, user report 2026-08-27).
+  statusColumn.setFilterValue(
+    typeof status === 'string' && status !== 'all' ? status : undefined
+  )
 }
 
 onMounted(() => nextTick(applyRequestStatusFilterFromQuery))

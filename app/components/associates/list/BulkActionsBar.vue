@@ -6,14 +6,16 @@
   with nothing wired to it). Same "dumb component, page owns the state" shape
   as TournamentsListBulkActionsBar.vue/WantedCardsListBulkActionsBar.vue, but
   one component covers two pages here since the action *set* differs (roster:
-  renew only; requests: approve/reject/restore) rather than needing two
+  renew, plus approveRenewal on its own "Richieste (di rinnovo)" tab
+  (2026-08-27); requests: approve/reject/restore) rather than needing two
   near-identical bars — each page just sets the `show*` prop for the actions
   that apply to it.
 -->
 <script setup lang="ts">
 const {
   count, side,
-  showApprove = false, showReject = false, showRestore = false, showRenew = false
+  showApprove = false, showReject = false, showRestore = false, showRenew = false,
+  showApproveRenewal = false
 } = defineProps<{
   count: number
   side: 'left' | 'right'
@@ -21,6 +23,7 @@ const {
   showReject?: boolean
   showRestore?: boolean
   showRenew?: boolean
+  showApproveRenewal?: boolean
 }>()
 
 defineEmits<{
@@ -29,6 +32,7 @@ defineEmits<{
   reject: []
   restore: []
   renew: []
+  approveRenewal: []
 }>()
 
 const { t } = useI18n()
@@ -83,6 +87,15 @@ const { t } = useI18n()
       color="success"
       variant="subtle"
       @click="$emit('renew')"
+    />
+
+    <UButton
+      v-if="showApproveRenewal"
+      :label="t('associate.bulkActions.approveRenewal')"
+      :icon="ICONS.calendarRenew"
+      color="success"
+      variant="subtle"
+      @click="$emit('approveRenewal')"
     />
   </div>
 </template>
