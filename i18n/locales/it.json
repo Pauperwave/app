@@ -258,8 +258,12 @@
       "pending": "In attesa",
       "rejected": "Rifiutate",
       "active": "Attivi",
+      "pendingRenewal": "Richieste (di rinnovo)",
       "toRenew": "Da rinnovare",
       "expired": "Scaduti"
+    },
+    "badges": {
+      "renewalRequested": "Rinnovo richiesto"
     },
     "statusLabels": {
       "active": "Attivo",
@@ -278,6 +282,7 @@
       "updatedBy": "Aggiornato da",
       "membershipRequestStatus": "Stato",
       "membershipStatus": "Tesseramento",
+      "hasPendingRenewal": "Rinnovo in corso",
       "requestDate": "Data richiesta",
       "lastRenewalDate": "Ultimo rinnovo",
       "associationDate": "Data di associazione",
@@ -474,6 +479,7 @@
     },
     "rowActions": {
       "approve": "Approva",
+      "reject": "Rifiuta",
       "renew": "Rinnova",
       "pay": "Paga quota",
       "restore": "Ripristina",
@@ -514,6 +520,9 @@
       "renewModalReceivedByPlaceholder": "Seleziona chi ha ricevuto il pagamento",
       "renewUndoToast": "{count} rinnovo verrà creato | {count} rinnovi verranno creati",
       "renewSuccessToast": "Rinnovo creato per {count} associato | Rinnovi creati per {count} associati",
+      "approveRenewal": "Approva rinnovo",
+      "approveRenewalSuccessToast": "Rinnovo approvato per {count} associato | Rinnovi approvati per {count} associati",
+      "approveRenewalErrorToast": "Approvazione rinnovo fallita",
       "partialFailure": "{count} operazione non riuscita | {count} operazioni non riuscite"
     }
   },

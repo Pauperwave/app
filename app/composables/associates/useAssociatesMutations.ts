@@ -21,6 +21,16 @@ export function useAssociatesMutations() {
     onSettled: invalidate
   })
 
+  // Doesn't touch pauperwave_associates (see approve-renewal.post.ts), so it
+  // invalidates PENDING_RENEWAL_REQUESTS_KEY instead of ASSOCIATES_KEY —
+  // the "Richieste (di rinnovo)" tab's own membership_events-derived set,
+  // not the roster's own cached rows (user request, 2026-08-27).
+  const approveRenewals = useMutation({
+    mutation: (ids: number[]) =>
+      $fetch('/api/associates/approve-renewal', { method: 'POST', body: { ids } }),
+    onSettled: () => queryCache.invalidateQueries({ key: PENDING_RENEWAL_REQUESTS_KEY })
+  })
+
   const restoreAssociates = useMutation({
     mutation: (ids: number[]) =>
       $fetch('/api/associates/restore', { method: 'POST', body: { ids } }),
@@ -34,6 +44,6 @@ export function useAssociatesMutations() {
   })
 
   return {
-    approveAssociates, rejectAssociates, restoreAssociates, updateAssociate
+    approveAssociates, rejectAssociates, restoreAssociates, updateAssociate, approveRenewals
   }
 }
