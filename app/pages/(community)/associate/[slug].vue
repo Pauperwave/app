@@ -97,14 +97,15 @@ const contattiFields = computed<DetailField[]>(() => !associate.value
     { icon: 'i-lucide-mailbox', label: t('associate.columns.residencyCap'), value: associate.value.residency_cap }
   ])
 
-// pauperwave_associate_number/membership_status don't go through this list —
-// both render as their real badge component (AssociateNumberBadge/
-// MembershipStatusBadge) in the card's #before slot instead of plain text,
-// same as the table.
+// pauperwave_associate_number/membership_status/associate_type don't go
+// through this list — all three render as their real badge component
+// (AssociateNumberBadge/MembershipStatusBadge/AssociateTypeBadge) in the
+// card's #before slot instead of plain translated text, same as the table
+// (bug, user report 2026-08-27: associate_type was the odd one out, still
+// plain text here despite the other two already being badges).
 const tesseramentoFields = computed<DetailField[]>(() => !associate.value
   ? []
   : [
-    { icon: 'i-lucide-tag', label: t('associate.columns.associateType'), value: associate.value.associate_type ? t(`associate.types.${associate.value.associate_type}`) : '—' },
     { icon: ICONS.calendar, label: t('associate.columns.requestDate'), value: formatDate(associate.value.request_date) || '—' },
     { icon: ICONS.creditCard, label: t('associate.columns.lastRenewalDate'), value: formatDate(associate.value.latest_renewal_date) || '—' },
     { icon: 'i-lucide-calendar-check', label: t('associate.columns.associationDate'), value: formatDate(associate.value.association_date) || '—' }
@@ -371,6 +372,14 @@ const associateTransactionsColumns: TableColumn<Transaction>[] = [
                 </dt>
                 <dd>
                   <AssociateNumberBadge :number="associate.pauperwave_associate_number" />
+                </dd>
+              </div>
+              <div class="flex justify-between items-center gap-4">
+                <dt class="flex items-center gap-1.5 text-muted">
+                  <UIcon name="i-lucide-tag" class="size-4 shrink-0" /> {{ $t('associate.columns.associateType') }}
+                </dt>
+                <dd>
+                  <AssociateTypeBadge :type="associate.associate_type" />
                 </dd>
               </div>
             </template>
