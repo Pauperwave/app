@@ -605,6 +605,42 @@ export type Database = {
           },
         ]
       }
+      pauperwave_associate_membership_events: {
+        Row: {
+          associate_uuid: string
+          event_type: string
+          id: number
+          occurred_at: string
+        }
+        Insert: {
+          associate_uuid: string
+          event_type: string
+          id?: never
+          occurred_at?: string
+        }
+        Update: {
+          associate_uuid?: string
+          event_type?: string
+          id?: never
+          occurred_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pauperwave_associate_membership_events_associate_uuid_fkey"
+            columns: ["associate_uuid"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "pauperwave_associate_membership_events_associate_uuid_fkey"
+            columns: ["associate_uuid"]
+            isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
+        ]
+      }
       pauperwave_associate_renewals: {
         Row: {
           associate_uuid: string
@@ -2274,6 +2310,7 @@ export type Database = {
       is_admin_or_above: { Args: { p_user_id: string }; Returns: boolean }
       is_organizer: { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: { p_user_id: string }; Returns: boolean }
+      next_pauperwave_associate_number: { Args: never; Returns: string }
       purge_expired_trash: { Args: never; Returns: undefined }
       register_tournament_players: {
         Args: {
@@ -2282,9 +2319,9 @@ export type Database = {
           p_tournament_uuid: string
         }
         Returns: {
-          associate_uuid: string
           checked_in_at: string
           created_at: string
+          player_associate_uuid: string
           registration_uuid: string
           status: string
         }[]
