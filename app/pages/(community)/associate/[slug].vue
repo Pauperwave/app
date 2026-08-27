@@ -41,6 +41,9 @@ const { data: players } = usePlayersQuery()
 const player = computed(() => players.value?.find(
   item => item.associate_uuid === associate.value?.uuid) ?? null)
 
+const { data: membershipEvents, isLoading: membershipEventsLoading }
+  = useAssociateMembershipEventsQuery(() => associate.value?.uuid)
+
 useSeoMeta({
   title: () => associate.value
     ? `${associate.value.first_name} ${associate.value.last_name}`
@@ -389,6 +392,15 @@ const associateTransactionsColumns: TableColumn<Transaction>[] = [
             </template>
           </DetailCard>
         </div>
+
+        <UCard :ui="{ header: 'font-semibold' }">
+          <template #header>
+            {{ $t('associate.detail.sections.membershipHistory') }}
+          </template>
+
+          <USkeleton v-if="membershipEventsLoading" class="h-24 w-full" />
+          <AssociatesSingleMembershipTimeline v-else :events="membershipEvents ?? []" />
+        </UCard>
 
         <UCard :ui="{ header: 'font-semibold' }">
           <template #header>

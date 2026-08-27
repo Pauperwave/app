@@ -379,7 +379,15 @@
         "contatti": "Contatti",
         "tesseramento": "Tesseramento",
         "consensi": "Consensi",
+        "membershipHistory": "Storico tesseramento",
         "transactions": "Transazioni"
+      },
+      "membershipHistory": {
+        "requested": "Richiesta di tesseramento",
+        "approved": "Tesseramento approvato",
+        "renewalRequested": "Richiesta di rinnovo",
+        "renewalApproved": "Rinnovo approvato",
+        "empty": "Nessun evento registrato"
       },
       "transactionsEmpty": "Nessuna transazione registrata per questo socio"
     },
