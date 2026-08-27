@@ -1,7 +1,7 @@
 <!-- app\components\tournaments\single\AcceptancePicker.vue -->
 <script lang="ts" setup>
 import type { DropdownMenuItem } from '@nuxt/ui'
-import type { Row, Table } from '@tanstack/vue-table'
+import type { Row } from '@tanstack/vue-table'
 import type { PaymentMethod } from '#shared/types/transactions'
 
 interface Props {
@@ -138,8 +138,7 @@ function setNoShow(itemsToUpdate: AcceptancePickerItem[], noShow: boolean) {
     // below), but that only blocks *future* selection — an existing
     // checked row needs its own explicit deselect (user request,
     // 2026-08-24).
-    for (const item of itemsToUpdate)
-      Reflect.deleteProperty(sourceRowSelection.value, item.value)
+    sourceSelectionState.deselect(itemsToUpdate)
   }
 }
 
@@ -222,17 +221,29 @@ const sourceTableContextMenuItems = computed<DropdownMenuItem[]>(
 // Accepted/no-show rows are read-only (enableRowSelection below) — once a
 // player has a status, that status is managed from its own side (acceptance
 // from "Iscritti (Pagato)", no-show via the action here), not re-selected.
-const sourceRowSelection = ref<Record<string, boolean>>({})
-const sourceSelection = computed(() =>
-  sourceItems.value.filter(item => sourceRowSelection.value[item.value]))
+//
+// Both sides' row-selection (checkbox state + shift-click range-select +
+// row-click-to-select) is byte-identical — factored into useTableRowSelection
+// once "Pre-registrati" grew its own bulk-remove and needed a second copy
+// (user request, 2026-08-27).
+const sourceSelectionState = useTableRowSelection(
+  sourceItems, item => item.value, 'sourceTable'
+)
+const sourceRowSelection = sourceSelectionState.rowSelection
+const sourceSelection = sourceSelectionState.selectedItems
+const sourceRowHandler = sourceSelectionState
+const handleSourceRowSelect = sourceSelectionState.handleRowSelect
 const sourceRowSelectionOptions = {
   enableRowSelection: (row: Row<AcceptancePickerItem>) => sourceRowStatus(row.original) === 'pending'
 }
 
-// Declared here (not lower, next to selectedAccepted) so
-// createRowSelectionHandler(acceptedRowSelection) below has it in scope —
-// same reasoning as sourceRowSelection just above.
-const acceptedRowSelection = ref<Record<string, boolean>>({})
+const acceptedSelectionState = useTableRowSelection(
+  targetItems, item => item.value, 'acceptedTable'
+)
+const acceptedRowSelection = acceptedSelectionState.rowSelection
+const selectedAccepted = acceptedSelectionState.selectedItems
+const acceptedRowHandler = acceptedSelectionState
+const handleAcceptedRowSelect = acceptedSelectionState.handleRowSelect
 
 // Escape clears whichever of the two tables' selections is active — same
 // guard useSelection.ts uses, shared via useEscapeToClear since these two
@@ -242,8 +253,8 @@ useEscapeToClear(
   () => Object.keys(sourceRowSelection.value).length > 0
     || Object.keys(acceptedRowSelection.value).length > 0,
   () => {
-    sourceRowSelection.value = {}
-    acceptedRowSelection.value = {}
+    sourceSelectionState.clear()
+    acceptedSelectionState.clear()
   }
 )
 
@@ -253,97 +264,6 @@ useEscapeToClear(
 // request, 2026-08-24: "vorrei poter ancora cercare in entrambe le liste").
 const sourceSearch = ref('')
 const acceptedSearch = ref('')
-
-// Row-selection + shift-click range select, shared shape between the
-// "Pre-registrati" and "Iscritti (Pagato)" tables — same
-// checkbox-header-with-indeterminate-state pattern as league's own
-// WaitingListTable, factored once since both sides need it identically.
-function createRowSelectionHandler(rowSelection: Ref<Record<string, boolean>>) {
-  let lastIndex: number | null = null
-  // Only needed for the checkbox path — its `update:modelValue` reports the
-  // new boolean, not the click event, so the shiftKey has to be captured
-  // separately from the checkbox's own `click` (fires first). The row-click
-  // path gets the real Event and reads `.shiftKey` off it directly (fixed
-  // 2026-08-24: shift-click only ever worked when the tiny checkbox itself
-  // was clicked, never the rest of the row, since toggleRowSelection used to
-  // read this same flag for both paths but nothing ever set it for a
-  // row-body click).
-  let checkboxShiftKey = false
-
-  function handleCheckboxClick(event: MouseEvent) {
-    event.stopPropagation()
-    checkboxShiftKey = event.shiftKey
-  }
-
-  // A shift-click range builds the next selection object directly off our
-  // own `rowSelection` ref and assigns it once — NOT a loop of
-  // `row.toggleSelected()` calls. UTable's row-selection is bound via
-  // v-model (defineModel inside Nuxt UI's Table.vue), and TanStack's
-  // internal table only re-syncs its state.rowSelection from that ref on
-  // the next reactive flush, not synchronously mid-function. So N
-  // synchronous toggleSelected() calls in a loop each compute their patch
-  // against the same pre-loop snapshot — every iteration overwrites the
-  // last, and only the final call's write survives (confirmed via debug
-  // trace, 2026-08-24: only the first-clicked and last-in-range rows ever
-  // ended up selected). Building the whole object from `rowSelection.value`
-  // — always current, since it's our own ref — sidesteps that entirely.
-  function toggleRowSelection<T>(table: Table<T>, row: Row<T>, value: boolean, shiftKey: boolean) {
-    if (shiftKey && lastIndex !== null) {
-      const rows = table.getRowModel().rows
-      const [start, end] = lastIndex < row.index ? [lastIndex, row.index] : [row.index, lastIndex]
-      const next = { ...rowSelection.value }
-      for (let i = start; i <= end; i++) {
-        const targetRow = rows[i]
-        if (!targetRow || !targetRow.getCanSelect()) continue
-        if (value) next[targetRow.id] = true
-        else Reflect.deleteProperty(next, targetRow.id)
-      }
-      rowSelection.value = next
-      // Anchor stays put on a shift-click (classic Explorer/Sheets
-      // behavior, user request, 2026-08-24) — only a plain click below
-      // moves it. Deliberately diverges from useSelection.ts's
-      // lastToggledId, which slides on every click including shift-clicks;
-      // kept separate here rather than unifying, since this fixed-anchor
-      // behavior is what was asked for specifically for these two tables.
-    } else {
-      row.toggleSelected(value)
-      lastIndex = row.index
-    }
-  }
-
-  function toggleFromCheckbox<T>(table: Table<T>, row: Row<T>, value: boolean) {
-    toggleRowSelection(table, row, value, checkboxShiftKey)
-    checkboxShiftKey = false
-  }
-
-  return { handleCheckboxClick, toggleRowSelection, toggleFromCheckbox }
-}
-
-const sourceRowHandler = createRowSelectionHandler(sourceRowSelection)
-const acceptedRowHandler = createRowSelectionHandler(acceptedRowSelection)
-
-// Clicking anywhere on a row toggles its own checkbox (user request,
-// 2026-08-24), not just the checkbox itself — UTable's own `onSelect` prop
-// already skips clicks inside a <button>/<a> (see Nuxt UI's Table.vue), so
-// this doesn't fight the checkbox's own click handling or the payment/
-// actions buttons on the accepted table.
-const sourceTableRef = useTemplateRef<{ tableApi: Table<AcceptancePickerItem> }>('sourceTable')
-const acceptedTableRef = useTemplateRef<{ tableApi: Table<AcceptancePickerItem> }>('acceptedTable')
-
-function createRowClickSelectHandler(
-  handler: ReturnType<typeof createRowSelectionHandler>,
-  tableRef: Readonly<Ref<{ tableApi: Table<AcceptancePickerItem> } | null>>
-) {
-  return (event: Event, row: Row<AcceptancePickerItem>) => {
-    const table = tableRef.value?.tableApi
-    if (table) {
-      handler.toggleRowSelection(table, row, !row.getIsSelected(), (event as MouseEvent).shiftKey)
-    }
-  }
-}
-
-const handleSourceRowSelect = createRowClickSelectHandler(sourceRowHandler, sourceTableRef)
-const handleAcceptedRowSelect = createRowClickSelectHandler(acceptedRowHandler, acceptedTableRef)
 
 // Per-registration check-in time + payment method — keyed by item.value
 // (the associate uuid), synced from the two queries above rather than
@@ -383,8 +303,7 @@ function transferToAccepted(itemsToTransfer: AcceptancePickerItem[]) {
   if (registrationUuids.length) {
     setRegistrationStatus.mutate({ registrationUuids, status: 'checked_in' })
   }
-  for (const item of itemsToTransfer)
-    Reflect.deleteProperty(sourceRowSelection.value, item.value)
+  sourceSelectionState.deselect(itemsToTransfer)
 }
 
 function transferSelected() {
@@ -436,120 +355,74 @@ function addSelectedToPreRegistered() {
   addableSourcePlayerIds.value = []
 }
 
-// "Pre-registrati"'s own bulk-remove (user request, 2026-08-27) — unlike
-// removeAcceptedItems below, there's no earlier status to revert to here, so
-// this really does delete the tournament_registrations row via
-// deleteRegistrations, same hard delete "Iscritti (Pagato)" used to
-// (mistakenly) do before the 2026-08-27 fix.
-function removeSourceItems(itemsToRemove: AcceptancePickerItem[]) {
-  const registrationUuids = itemsToRemove
-    .map(item => registrationByAssociate.value.get(item.value)?.uuid)
-    .filter((uuid): uuid is string => !!uuid)
-
-  if (registrationUuids.length) deleteRegistrations.mutate(registrationUuids)
-
-  for (const item of itemsToRemove)
-    Reflect.deleteProperty(sourceRowSelection.value, item.value)
-}
-
-// checked_in -> registered, same status-only transition setNoShow above uses
-// for registered <-> no_show — NOT deleteRegistrations. tournament_registrations
-// has no separate "Pre-registrati"/"Iscritti (Pagato)" tables, just the one
-// row's status; hard-deleting it removed the player from both views instead
-// of just "Iscritti (Pagato)" (bug fix, user request 2026-08-27).
-function removeAcceptedItems(itemsToRemove: AcceptancePickerItem[]) {
-  const registrationUuids = itemsToRemove
-    .map(item => registrationByAssociate.value.get(item.value)?.uuid)
-    .filter((uuid): uuid is string => !!uuid)
-
-  if (registrationUuids.length)
-    setRegistrationStatus.mutate({ registrationUuids, status: 'registered' })
-
-  for (const item of itemsToRemove)
-    Reflect.deleteProperty(acceptedRowSelection.value, item.value)
-}
-
-// Confirm before removing an accepted player, single or batch (user
-// request, 2026-08-24) — same ConfirmModal every other destructive action in
-// this app uses, not a one-off dialog. An array even for the single-row
-// case, so both flows share one confirm/description path.
-const pendingRemovals = ref<AcceptancePickerItem[]>([])
-const removeConfirmOpen = computed({
-  get: () => pendingRemovals.value.length > 0,
-  set: (value) => { if (!value) pendingRemovals.value = [] }
-})
-
-function requestRemoveAccepted(item: AcceptancePickerItem) {
-  pendingRemovals.value = [item]
-}
-
-function requestRemoveSelected() {
-  if (selectedAccepted.value.length)
-    pendingRemovals.value = selectedAccepted.value
-}
-
-function confirmRemoveAccepted() {
-  removeAcceptedItems(pendingRemovals.value)
-  pendingRemovals.value = []
-  acceptedRowSelection.value = {}
-}
-
-const removeConfirmDescription = computed(() => {
-  if (pendingRemovals.value.length === 1) {
-    return t('tournament.single.acceptancePicker.removeConfirmDescription', {
-      name: pendingRemovals.value[0]!.label
-    })
+// Confirm-before-destructive-action flow, one instance per side — extracted
+// into useRemoveConfirmFlow once both sides grew a byte-identical copy of it
+// (user request, 2026-08-27). The actual removal differs on purpose:
+// "Pre-registrati" hard-deletes via deleteRegistrations (no earlier status
+// to fall back to for a pre-registration); "Iscritti (Pagato)" reverts
+// status to 'registered' via setRegistrationStatus — NOT deleteRegistrations,
+// which used to (mistakenly) also remove the player from "Pre-registrati"
+// (bug fix, user request 2026-08-27) — kept as each side's own onConfirm
+// callback rather than a mode flag, so that bug can't resurface by
+// mis-parameterizing a shared branch.
+const sourceRemove = useRemoveConfirmFlow<AcceptancePickerItem>({
+  getLabel: item => item.label,
+  titleKey: 'tournament.single.acceptancePicker.removePreRegisteredConfirmTitle',
+  descriptionKey: 'tournament.single.acceptancePicker.removePreRegisteredConfirmDescription',
+  descriptionBatchKey: 'tournament.single.acceptancePicker.removePreRegisteredConfirmDescriptionBatch',
+  onConfirm: (itemsToRemove) => {
+    const registrationUuids = itemsToRemove
+      .map(item => registrationByAssociate.value.get(item.value)?.uuid)
+      .filter((uuid): uuid is string => !!uuid)
+    if (registrationUuids.length) deleteRegistrations.mutate(registrationUuids)
+    sourceSelectionState.deselect(itemsToRemove)
   }
-  if (pendingRemovals.value.length > 1) {
-    return t('tournament.single.acceptancePicker.removeConfirmDescriptionBatch', {
-      count: pendingRemovals.value.length
-    })
-  }
-  return undefined
-})
-
-// Same confirm-before-destructive-action flow as pendingRemovals above, kept
-// as its own separate ref rather than merged with it — same "parallel state
-// per side" convention as sourceRowSelection/acceptedRowSelection etc.
-// throughout this file, and the two sides really do run different mutations
-// on confirm (hard delete vs status revert), not just different labels.
-const pendingSourceRemovals = ref<AcceptancePickerItem[]>([])
-const sourceRemoveConfirmOpen = computed({
-  get: () => pendingSourceRemovals.value.length > 0,
-  set: (value) => { if (!value) pendingSourceRemovals.value = [] }
 })
 
 function requestRemoveSourceSelected() {
-  if (sourceSelection.value.length)
-    pendingSourceRemovals.value = sourceSelection.value
+  sourceRemove.request(sourceSelection.value)
 }
 
-function confirmRemoveSource() {
-  removeSourceItems(pendingSourceRemovals.value)
-  pendingSourceRemovals.value = []
-}
-
-const sourceRemoveConfirmDescription = computed(() => {
-  if (pendingSourceRemovals.value.length === 1) {
-    return t('tournament.single.acceptancePicker.removePreRegisteredConfirmDescription', {
-      name: pendingSourceRemovals.value[0]!.label
-    })
+const acceptedRemove = useRemoveConfirmFlow<AcceptancePickerItem>({
+  getLabel: item => item.label,
+  titleKey: 'tournament.single.acceptancePicker.removeConfirmTitle',
+  descriptionKey: 'tournament.single.acceptancePicker.removeConfirmDescription',
+  descriptionBatchKey: 'tournament.single.acceptancePicker.removeConfirmDescriptionBatch',
+  onConfirm: (itemsToRemove) => {
+    const registrationUuids = itemsToRemove
+      .map(item => registrationByAssociate.value.get(item.value)?.uuid)
+      .filter((uuid): uuid is string => !!uuid)
+    if (registrationUuids.length)
+      setRegistrationStatus.mutate({ registrationUuids, status: 'registered' })
+    acceptedSelectionState.deselect(itemsToRemove)
   }
-  if (pendingSourceRemovals.value.length > 1) {
-    return t('tournament.single.acceptancePicker.removePreRegisteredConfirmDescriptionBatch', {
-      count: pendingSourceRemovals.value.length
-    })
-  }
-  return undefined
 })
 
-// Row-selection checkboxes for "Iscritti (Pagato)" (user request,
-// 2026-08-24: "mancano delle checkbox da ambo i lati") — same
-// checkbox-header-with-indeterminate-state + per-row shape as league's own
-// WaitingListTable. Shift-click range select comes from acceptedRowHandler
-// (see createRowSelectionHandler above), shared with the source table.
-const selectedAccepted = computed(() =>
-  targetItems.value.filter(item => acceptedRowSelection.value[item.value]))
+function requestRemoveAccepted(item: AcceptancePickerItem) {
+  acceptedRemove.request([item])
+}
+
+function requestRemoveSelected() {
+  acceptedRemove.request(selectedAccepted.value)
+}
+
+// Both flows are mutually exclusive (only one side's row actions can be
+// mid-confirm at once), so they share one <ConfirmModal> rather than
+// rendering two — whichever side has a pending removal drives it.
+const activeRemove = computed(() => {
+  if (sourceRemove.isOpen.value) return sourceRemove
+  if (acceptedRemove.isOpen.value) return acceptedRemove
+  return null
+})
+const removeModalOpen = computed({
+  get: () => activeRemove.value !== null,
+  set: (value) => {
+    if (!value) {
+      sourceRemove.isOpen.value = false
+      acceptedRemove.isOpen.value = false
+    }
+  }
+})
 
 // Who's running the check-in desk right now — required to record a *new*
 // pauperwave_payments row (received_by is NOT NULL, and there's no
@@ -637,7 +510,7 @@ function acceptedRowContextMenuItems(item: AcceptancePickerItem): DropdownMenuIt
         : t('tournament.single.acceptancePicker.removeAction'),
       icon: ICONS.delete,
       color: 'error' as const,
-      onSelect: () => { pendingRemovals.value = targets }
+      onSelect: () => acceptedRemove.request(targets)
     }
   ]
 }
@@ -758,22 +631,12 @@ const acceptedTableContextMenuItems = computed<DropdownMenuItem[]>(
   </div>
 
   <ConfirmModal
-    v-model:open="removeConfirmOpen"
-    :title="t('tournament.single.acceptancePicker.removeConfirmTitle')"
-    :description="removeConfirmDescription"
+    v-model:open="removeModalOpen"
+    :title="activeRemove?.title.value ?? ''"
+    :description="activeRemove?.description.value"
     :warning="t('common.confirmDeleteWarning')"
     :confirm-label="t('tournament.single.acceptancePicker.removeAction')"
     :confirm-icon="ICONS.delete"
-    @confirm="confirmRemoveAccepted"
-  />
-
-  <ConfirmModal
-    v-model:open="sourceRemoveConfirmOpen"
-    :title="t('tournament.single.acceptancePicker.removePreRegisteredConfirmTitle')"
-    :description="sourceRemoveConfirmDescription"
-    :warning="t('common.confirmDeleteWarning')"
-    :confirm-label="t('tournament.single.acceptancePicker.removeAction')"
-    :confirm-icon="ICONS.delete"
-    @confirm="confirmRemoveSource"
+    @confirm="activeRemove?.confirm()"
   />
 </template>
