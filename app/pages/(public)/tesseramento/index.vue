@@ -72,6 +72,18 @@ const steps = [
 const currentStep = ref('email')
 const stepIndex = computed(() => steps.findIndex(s => s.value === currentStep.value))
 
+// Once the email's verified, checks whether this is a brand-new applicant
+// or an already-approved associate renewing — apply.post.ts's insert-only
+// contract otherwise 409s any existing row regardless of status, which used
+// to be the only signal a returning member got back, after filling out the
+// whole 9-step form again (user request, 2026-08-27). 'renewal'/'blocked'
+// short-circuit past the step wizard entirely (see template); 'new' behaves
+// exactly as before.
+type TesseramentoKind = 'new' | 'renewal' | 'blocked'
+const checkingStatus = ref(false)
+const kind = ref<TesseramentoKind>('new')
+const renewalName = ref({ firstName: '', lastName: '' })
+
 // A session already existing on load (back from the magic-link redirect, or
 // a page refresh mid-flow) skips straight past email/verify — email is
 // already proven at that point. state.email_address is only in-memory,
@@ -81,13 +93,41 @@ const stepIndex = computed(() => steps.findIndex(s => s.value === currentStep.va
 // survive the round trip. Watches both session and authUser (not just
 // session) since authUser can resolve a beat later — ||= so it's never
 // overwritten once set, from whichever of the two settles it first.
-watch([session, authUser], ([sessionValue, user]) => {
+watch([session, authUser], async ([sessionValue, user]) => {
   if (!sessionValue) return
   if (user?.email) state.email_address ||= user.email
-  if (currentStep.value === 'email' || currentStep.value === 'verify') {
-    currentStep.value = 'associateType'
+  if (currentStep.value !== 'email' && currentStep.value !== 'verify') return
+
+  checkingStatus.value = true
+  try {
+    const status = await $fetch('/api/associates/tesseramento-status')
+    kind.value = status.kind
+    if (status.kind === 'renewal') {
+      renewalName.value = { firstName: status.firstName, lastName: status.lastName }
+    }
+  } finally {
+    checkingStatus.value = false
   }
+
+  if (kind.value === 'new') currentStep.value = 'associateType'
 }, { immediate: true })
+
+const confirmingRenewal = ref(false)
+async function confirmRenewal() {
+  confirmingRenewal.value = true
+  try {
+    await $fetch('/api/associates/renew', { method: 'POST' })
+    submitted.value = true
+  } catch (err) {
+    toast.add({
+      title: t('tesseramento.errorTitle'),
+      description: t('tesseramento.errorGenericDescription', { message: toErrorMessage(err) }),
+      color: 'error'
+    })
+  } finally {
+    confirmingRenewal.value = false
+  }
+}
 
 const form = useTemplateRef('form')
 
@@ -192,6 +232,21 @@ async function onSubmit() {
   <UPageCard v-if="submitted" :title="$t('tesseramento.successTitle')">
     <p class="text-muted">
       {{ $t('tesseramento.successDescription') }}
+    </p>
+  </UPageCard>
+
+  <UPageCard v-else-if="kind === 'renewal'" :title="$t('tesseramento.renewal.title')">
+    <TesseramentoRenewalStep
+      :first-name="renewalName.firstName"
+      :last-name="renewalName.lastName"
+      :confirming="confirmingRenewal"
+      @confirm="confirmRenewal"
+    />
+  </UPageCard>
+
+  <UPageCard v-else-if="kind === 'blocked'" :title="$t('tesseramento.blockedTitle')">
+    <p class="text-muted">
+      {{ $t('tesseramento.blockedDescription') }}
     </p>
   </UPageCard>
 
