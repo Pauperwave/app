@@ -318,7 +318,7 @@ function cellAriaLabel(day: HeatmapDay): string {
                 tabindex="0"
                 role="img"
                 :aria-label="cellAriaLabel(day)"
-                class="size-3 rounded-sm cursor-default focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                class="size-3 rounded-sm cursor-default focus-visible:outline focus-visible:outline-primary"
                 :class="[cellClass(day), { 'ring-2 ring-primary': day.date === highlightedDate }]"
                 @pointerenter="handlePointerEnter(day, $event)"
                 @pointerleave="handlePointerLeave"
