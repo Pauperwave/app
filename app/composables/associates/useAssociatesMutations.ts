@@ -43,7 +43,20 @@ export function useAssociatesMutations() {
     onSettled: invalidate
   })
 
+  // Separate from updateAssociate — pauperwave_associate_number isn't part
+  // of the shared application-form schema (user request, 2026-08-27; see
+  // update-number.post.ts).
+  const updateAssociateNumber = useMutation({
+    mutation: ({ id, number }: { id: number, number: string | null }) =>
+      $fetch(`/api/associates/${id}/update-number`, {
+        method: 'POST',
+        body: { pauperwave_associate_number: number }
+      }),
+    onSettled: invalidate
+  })
+
   return {
-    approveAssociates, rejectAssociates, restoreAssociates, updateAssociate, approveRenewals
+    approveAssociates, rejectAssociates, restoreAssociates, updateAssociate,
+    updateAssociateNumber, approveRenewals
   }
 }

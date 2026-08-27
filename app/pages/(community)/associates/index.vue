@@ -66,6 +66,7 @@ const router = useRouter()
 const table = useTemplateRef<{ tableApi: Table<Associate> }>('table')
 const {
   editingAssociate, editModalOpen,
+  editingNumberAssociate, numberModalOpen,
   renewingAssociate, renewModalOpen,
   tableContextMenuItems, onRowContextmenu, rowContextMenuItems
 } = useAssociatesRowActions()
@@ -465,6 +466,7 @@ function renderNeutralBadge(value: string) {
   </UDashboardPanel>
 
   <AssociatesListEditModal v-model="editModalOpen" :associate="editingAssociate" />
+  <AssociatesListNumberModal v-model="numberModalOpen" :associate="editingNumberAssociate" />
   <TransactionsListAddModal
     v-model="renewModalOpen"
     :preset-associate="renewingAssociate"
