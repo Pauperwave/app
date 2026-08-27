@@ -1664,6 +1664,28 @@
         "info": "Informazioni"
       }
     },
+    "commander": {
+      "matchHistoryTitle": "Storico Partite",
+      "matchHistoryEmpty": "Nessuna partita registrata",
+      "decksTitle": "Mazzi Commander",
+      "decksEmpty": "Nessun mazzo registrato",
+      "columns": {
+        "date": "Data",
+        "tournament": "Torneo",
+        "round": "Round",
+        "table": "Tavolo",
+        "commander": "Commander",
+        "position": "Posizione",
+        "kills": "Uccisioni"
+      },
+      "decksColumns": {
+        "commander": "Commander",
+        "companion": "Companion",
+        "createdAt": "Creato il",
+        "decklist": "Decklist",
+        "openDecklist": "Apri decklist"
+      }
+    },
     "tour": {
       "startButton": "Tour guidato",
       "steps": {
