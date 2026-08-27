@@ -751,6 +751,7 @@
       "paymentMethod": "Metodo",
       "receivedBy": "Ricevuto da",
       "event": "Evento",
+      "league": "Lega",
       "gettoni": "Gettoni",
       "receipt": "Ricevuta",
       "notes": "Note",

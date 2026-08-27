@@ -225,6 +225,33 @@ const associateTransactionsColumns: TableColumn<Transaction>[] = [
     }
   },
   {
+    id: 'league',
+    // Only ever set for a Tournament Fee row whose tournament belongs to a
+    // league (a tournament's league is optional/polymorphic, see the
+    // project's own routing convention) — resolved the same way stageNumber
+    // above is, off tournamentsByUuid rather than the transaction's own
+    // embedded tournament sub-object, which only carries leagueUuid, not
+    // the resolved name (user request, 2026-08-27).
+    accessorFn: (row) => {
+      const uuid = row.tournament?.uuid
+      return uuid ? tournamentsByUuid.value.get(uuid)?.league ?? null : null
+    },
+    header: t('transaction.columns.league'),
+    cell: ({ row }) => {
+      const tournament = row.original.tournament
+      if (!tournament) return null
+      const fullTournament = tournamentsByUuid.value.get(tournament.uuid)
+      if (!fullTournament?.leagueUuid) return null
+      return h(UButton, {
+        to: `/leagues/${fullTournament.leagueUuid}`,
+        label: fullTournament.league ?? undefined,
+        size: 'xs',
+        color: 'neutral',
+        variant: 'subtle'
+      })
+    }
+  },
+  {
     id: 'gettoni',
     accessorFn: row => parseGettoniCount(row.event_name),
     header: t('transaction.columns.gettoni'),
