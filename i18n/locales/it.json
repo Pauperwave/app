@@ -545,6 +545,14 @@
     "errorTitle": "Invio fallito",
     "errorDuplicateDescription": "Esiste già una richiesta con questa email.",
     "errorGenericDescription": "Qualcosa è andato storto: {message}",
+    "renewal": {
+      "title": "Rinnovo tesseramento",
+      "greeting": "Ciao {name}!",
+      "description": "La tua email risulta già associata a un tesseramento approvato. Vuoi rinnovare la tua iscrizione per la stagione corrente?",
+      "confirm": "Conferma rinnovo"
+    },
+    "blockedTitle": "Richiesta già presente",
+    "blockedDescription": "Esiste già una richiesta di tesseramento associata a questa email, in attesa di revisione da parte dello staff. Se pensi si tratti di un errore, contattaci.",
     "informativaDati": {
       "title": "Informativa sul trattamento dei dati"
     },
