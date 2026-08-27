@@ -54,5 +54,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  await recordMembershipEvent(supabase, data.uuid, 'requested')
+
   return { associate: data }
 })

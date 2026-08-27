@@ -1,5 +1,11 @@
 // shared\types\associates.ts
 
+// Rows in pauperwave_associate_membership_events (migration
+// 20260827100000) — the 4 membership-lifecycle moments that would
+// otherwise get silently overwritten on pauperwave_associates' own single
+// mutable row (user request, 2026-08-27).
+export type MembershipEventType = 'requested' | 'approved' | 'renewal_requested' | 'renewal_approved'
+
 // Shared by app/components/associates/list/EditModal.vue,
 // server/api/associates/[id]/update.post.ts, and apply.post.ts — same shape
 // as associateFormSchema's output (snake_case, matching the DB columns 1:1),
