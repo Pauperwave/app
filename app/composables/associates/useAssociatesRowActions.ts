@@ -18,6 +18,15 @@ export function useAssociatesRowActions() {
     editModalOpen.value = true
   }
 
+  // Own modal, not part of the edit form (user request, 2026-08-27) — see
+  // NumberModal.vue's own header comment for why.
+  const editingNumberAssociate = ref<Associate | null>(null)
+  const numberModalOpen = ref(false)
+  function openNumberModal(associate: Associate) {
+    editingNumberAssociate.value = associate
+    numberModalOpen.value = true
+  }
+
   // "Rinnova" opens TransactionsListAddModal preset to this associate (payload
   // decision, 2026-08-12: renewal is recorded as an Association Fee payment, not
   // a bare renewals-table insert) rather than mutating anything itself — the
@@ -117,6 +126,15 @@ export function useAssociatesRowActions() {
         icon: ICONS.edit,
         onSelect: () => openEditModal(associate)
       },
+      // Only for approved associates — a pending/rejected request doesn't
+      // have a tesseramento number to speak of yet.
+      ...(associate.membership_request_status === 'approved'
+        ? [{
+          label: t('associate.rowActions.editNumber'),
+          icon: ICONS.idCard,
+          onSelect: () => openNumberModal(associate)
+        }]
+        : []),
       { type: 'separator' as const },
       // Only on the requests queue's pending rows — the roster never contains
       // pending associates, so this simply never shows there.
@@ -196,6 +214,9 @@ export function useAssociatesRowActions() {
     editingAssociate,
     editModalOpen,
     openEditModal,
+    editingNumberAssociate,
+    numberModalOpen,
+    openNumberModal,
     renewingAssociate,
     renewModalOpen,
     openRenewModal,

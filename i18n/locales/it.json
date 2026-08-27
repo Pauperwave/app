@@ -477,9 +477,17 @@
       "cancel": "Annulla",
       "save": "Salva"
     },
+    "numberModal": {
+      "title": "Modifica numero tessera",
+      "duplicateError": "Numero già assegnato a un altro associato",
+      "successToastTitle": "Numero tessera aggiornato",
+      "successToastDescription": "Numero tessera aggiornato per \"{name}\"",
+      "errorToastTitle": "Aggiornamento fallito"
+    },
     "rowActions": {
       "approve": "Approva",
       "reject": "Rifiuta",
+      "editNumber": "Modifica numero tessera",
       "renew": "Rinnova",
       "pay": "Paga quota",
       "restore": "Ripristina",
