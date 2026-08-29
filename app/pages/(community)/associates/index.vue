@@ -123,7 +123,6 @@ const search = ref('')
 // fallow-ignore-next-line code-duplication -- the useAssociatesTableColumns destructure
 // and status-filter-from-query function mirror requests.vue's own (different column
 // id and query semantics per page), not worth forcing into a shared helper
-// TODO "this page's own column order differs from requests.vue's" they shouldn't
 const {
   columnHeaders, visibilityItems,
   selectColumn, idColumn, createdAtColumn, updatedAtColumn, updatedByColumn,
@@ -138,9 +137,10 @@ const {
   selection, table, associates, rowContextMenuItems, search,
   // "Mostra colonne" section dividers: ID/UUID, Stato/Tesseramento,
   // Consensi, Anagrafica, Nascita, Residenza, Trail (see
-  // columnVisibilityGroups.ts, user request 2026-08-27) — this page's own
-  // column order differs from requests.vue's, so the boundary ids aren't
-  // identical either.
+  // columnVisibilityGroups.ts, user request 2026-08-27) — this page has a
+  // createdAtColumn requests.vue doesn't (association requests have no
+  // "created" moment distinct from the request itself), so the Trail
+  // group's own boundary id differs (created_at here vs updated_by there).
   [
     'membership_request_status', 'consent_data', 'first_name',
     'born_date', 'residency_address', 'created_at'

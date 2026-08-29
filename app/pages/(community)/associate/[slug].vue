@@ -4,23 +4,6 @@
 // header skeleton mirrors other detail pages (events/leagues/tournaments); these are
 // still mock-data pages, expected to change dramatically once real functionality lands
 import { format, parseISO } from 'date-fns'
-import type { TableColumn } from '@nuxt/ui'
-import type { Transaction } from '~/types'
-// Explicit imports required: these are used inside h() calls in computed
-// TableColumn defs below, not as <template> tags — auto-import only resolves
-// components referenced as template tags (see CLAUDE.md's h()-in-composables
-// note; the same limitation applies to h() calls in a .vue script setup).
-import {
-  AssociateTag,
-  DateWithRelativeTooltip,
-  PaymentMethodBadge,
-  PaymentTypeBadge,
-  TournamentsStageLabel,
-  UBadge,
-  UButton,
-  UIcon,
-  UTooltip
-} from '#components'
 
 interface DetailField {
   icon: string
@@ -61,16 +44,9 @@ useSeoMeta({
 
 const editModalOpen = ref(false)
 
-// Emanuele Nardi gets his real GitHub avatar (same one hardcoded in
-// UserMenu.vue) instead of the generated placeholder.
-const avatar = computed(() => {
-  if (!associate.value) return undefined
-  // TODO rimuovere questa eccezione, sia qui che in UserMenu.vue
-  if (associate.value.first_name === 'Emanuele' && associate.value.last_name === 'Nardi') {
-    return 'https://github.com/emanuelenardi.png'
-  }
-  return generatePlayerAvatar(associate.value.id)
-})
+const avatar = computed(() => associate.value
+  ? generatePlayerAvatar(associate.value.id)
+  : undefined)
 
 function formatDate(dateString?: string | null): string {
   if (!dateString) return ''
@@ -81,7 +57,6 @@ function formatDate(dateString?: string | null): string {
   }
 }
 
-// TODO file di configurazione?
 const anagraficaFields = computed<DetailField[]>(() => !associate.value
   ? []
   : [
@@ -94,7 +69,6 @@ const anagraficaFields = computed<DetailField[]>(() => !associate.value
     { icon: ICONS.flag, label: t('associate.columns.bornState'), value: associate.value.born_state || '—' }
   ])
 
-// TODO file di configurazione?
 const contattiFields = computed<DetailField[]>(() => !associate.value
   ? []
   : [
@@ -115,7 +89,6 @@ const contattiFields = computed<DetailField[]>(() => !associate.value
 // card's #before slot instead of plain translated text, same as the table
 // (bug, user report 2026-08-27: associate_type was the odd one out, still
 // plain text here despite the other two already being badges).
-// TODO file di configurazione?
 const tesseramentoFields = computed<DetailField[]>(() => !associate.value
   ? []
   : [
@@ -162,151 +135,10 @@ const tournamentsByUuid = computed(() =>
 // Read-only summary, not the full /transactions table columns
 // (useTransactionsTableColumns.ts) — no selection/grouping/row-actions here,
 // this is a per-associate history embedded in a bigger detail page, not a
-// management surface of its own. event_name/gettoni cells DO reuse that
-// table's own rendering logic though (2026-08-25 fix) — this had drifted
-// into just dumping row.original.event_name as raw text, which for
-// historical imports meant literally showing strings like "PAUPER TAPPA 6"
-// instead of the resolved tournament + stage number, and never splitting
-// out gettoni-encoded rows into their own badge at all.
-// TODO se non ricordo male in altre tabelle le colonne sono in un file di configurazione a parte
-const associateTransactionsColumns: TableColumn<Transaction>[] = [
-  {
-    accessorKey: 'payment_date',
-    header: t('transaction.columns.paymentDate'),
-    meta: { class: { td: 'whitespace-nowrap font-mono' } },
-    cell: ({ row }) => h(DateWithRelativeTooltip, { isoString: row.original.payment_date })
-  },
-  {
-    accessorKey: 'payment_type',
-    header: t('transaction.columns.paymentType'),
-    meta: { class: { td: 'whitespace-nowrap' } },
-    cell: ({ row }) => h(PaymentTypeBadge, { type: row.original.payment_type })
-  },
-  {
-    accessorKey: 'payment_amount',
-    header: t('transaction.columns.paymentAmount'),
-    meta: { class: { td: 'whitespace-nowrap font-mono' } },
-    cell: ({ row }) => amountFormatter.format(row.original.payment_amount)
-  },
-  {
-    accessorKey: 'payment_method',
-    header: t('transaction.columns.paymentMethod'),
-    meta: { class: { td: 'whitespace-nowrap' } },
-    cell: ({ row }) => h(PaymentMethodBadge, { method: row.original.payment_method })
-  },
-  {
-    accessorKey: 'received_by',
-    header: t('transaction.columns.receivedBy'),
-    meta: { class: { td: 'whitespace-nowrap' } },
-    cell: ({ row }) => h(AssociateTag, { name: row.original.received_by })
-  },
-  {
-    accessorKey: 'event_name',
-    header: t('transaction.columns.event'),
-    cell: ({ row }) => {
-      // tournament/event checked first, ahead of event_name's own raw text:
-      // for Token Purchase rows event_name is just "8 gettoni" (see
-      // transactionGettoni.ts), never a real name — same fix as
-      // useTransactionsTableColumns.ts's own event_name cell (2026-08-27).
-      const { tournament, event } = row.original
-      if (tournament) {
-        // Real tournament.name + its league-relative stage number, not the
-        // historical import's raw event_name text (e.g. "PAUPER TAPPA 6").
-        const stageNumber = tournamentsByUuid.value.get(tournament.uuid)?.stageNumber
-        return h(UButton, {
-          to: tournamentDetailUrl(tournament),
-          icon: PAYMENT_TYPE_BADGE_CONFIG['Tournament Fee'].icon,
-          size: 'xs',
-          color: 'neutral',
-          variant: 'subtle'
-        }, () => [
-          tournament.name,
-          stageNumber ? h(TournamentsStageLabel, { number: stageNumber, class: '!text-xs' }) : null
-        ])
-      }
-      // event is guaranteed set here by ck_payment_type_event_link whenever
-      // tournament isn't — this `if` is TS narrowing, not a real fallback
-      // branch (the constraint rules out neither being set).
-      if (event) {
-        return h(UButton, {
-          to: `/events/${event.uuid}`,
-          label: event.name,
-          icon: PAYMENT_TYPE_BADGE_CONFIG['Event Fee'].icon,
-          size: 'xs',
-          color: 'neutral',
-          variant: 'subtle'
-        })
-      }
-      return null
-    }
-  },
-  {
-    id: 'league',
-    // Only ever set for a Tournament Fee row whose tournament belongs to a
-    // league (a tournament's league is optional/polymorphic, see the
-    // project's own routing convention) — resolved the same way stageNumber
-    // above is, off tournamentsByUuid rather than the transaction's own
-    // embedded tournament sub-object, which only carries leagueUuid, not
-    // the resolved name (user request, 2026-08-27).
-    accessorFn: (row) => {
-      const uuid = row.tournament?.uuid
-      return uuid ? tournamentsByUuid.value.get(uuid)?.league ?? null : null
-    },
-    header: t('transaction.columns.league'),
-    cell: ({ row }) => {
-      const tournament = row.original.tournament
-      if (!tournament) return null
-      const fullTournament = tournamentsByUuid.value.get(tournament.uuid)
-      if (!fullTournament?.leagueUuid) return null
-      return h(UButton, {
-        to: `/leagues/${fullTournament.leagueUuid}`,
-        label: fullTournament.league ?? undefined,
-        size: 'xs',
-        color: 'neutral',
-        variant: 'subtle'
-      })
-    }
-  },
-  {
-    id: 'gettoni',
-    accessorFn: row => parseGettoniCount(row.event_name),
-    header: t('transaction.columns.gettoni'),
-    meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ getValue }) => {
-      const count = getValue<number | null>()
-      if (count === null) return null
-      return h(UBadge, { variant: 'subtle', color: 'warning', icon: ICONS.coins, label: String(count) })
-    }
-  },
-  {
-    accessorKey: 'receipt_ref',
-    header: t('transaction.columns.receipt'),
-    meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }) => {
-      const receiptRef = row.original.receipt_ref
-      if (!receiptRef) return null
-      return h(UBadge, { variant: 'subtle', color: 'neutral', icon: ICONS.receipt, label: receiptRef })
-    }
-  },
-  {
-    accessorKey: 'notes',
-    header: t('transaction.columns.notes'),
-    // parseTransactionNotes() only handles the unknown-email marker now —
-    // the receipt number moved to its own receipt_ref column (migration
-    // 20260825230000), read directly above instead of parsed out of notes.
-    cell: ({ row }) => {
-      const { hasUnknownEmail, cleanNotes } = parseTransactionNotes(row.original.notes)
-      if (!hasUnknownEmail) return cleanNotes
-      return h('div', { class: 'flex items-center gap-1.5' }, [
-        h(UTooltip, { text: t('transaction.columns.unknownEmailTooltip') }, () => h(UIcon, {
-          name: ICONS.incognito,
-          class: 'size-4 text-dimmed shrink-0'
-        })),
-        cleanNotes
-      ])
-    }
-  }
-]
+// management surface of its own.
+const { columns: associateTransactionsColumns } = useAssociateTransactionsTableColumns(
+  tournamentsByUuid, amountFormatter
+)
 </script>
 
 <template>
