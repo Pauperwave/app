@@ -60,20 +60,7 @@ const { t } = useI18n()
         </span>
       </div>
 
-      <div class="flex flex-col gap-1.5">
-        <div class="flex items-center justify-between text-sm text-muted">
-          <span>{{ t('league.tournamentsLabel') }}</span>
-          <span>{{ t('league.progress', {
-            completed: league.completedTournamentCount, total: league.tournamentCount
-          }) }}</span>
-        </div>
-        <UProgress
-          :model-value="league.tournamentCount
-            ? Math.round((league.completedTournamentCount / league.tournamentCount) * 100)
-            : 0"
-          size="sm"
-        />
-      </div>
+      <LeaguesLeagueTournamentsProgress :league="league" />
     </div>
   </UCard>
 </template>
