@@ -10,12 +10,6 @@
 // 2026-08-20, reversing the original uuid choice) — the display name is
 // first_name+last_name, exactly as stable as associate/[slug].vue's own
 // slug, so there's no reason for this one route pair to be the odd one out.
-import { format, parseISO } from 'date-fns'
-import { DateWithRelativeTooltip, NuxtLink } from '#components'
-import type { TableColumn } from '@nuxt/ui'
-import type { CommanderMatchHistoryRow } from '~/composables/players/useCommanderMatchHistoryQuery'
-import type { CommanderDeck } from '~/composables/players/useCommanderDecksQuery'
-
 interface DetailField {
   icon: string
   label: string
@@ -87,90 +81,6 @@ const { data: matchHistory, isLoading: matchHistoryLoading }
   = useCommanderMatchHistoryQuery(playerUuid)
 const { data: commanderDecks, isLoading: commanderDecksLoading }
   = useCommanderDecksQuery(playerUuid)
-
-function formatMatchDate(startsAt: string | null): string {
-  if (!startsAt) return '—'
-  return format(parseISO(startsAt), 'dd/MM/yyyy')
-}
-
-const matchHistoryColumns: TableColumn<CommanderMatchHistoryRow>[] = [
-  {
-    accessorKey: 'startsAt',
-    header: t('player.commander.columns.date'),
-    meta: { class: { td: 'whitespace-nowrap font-mono' } },
-    cell: ({ row }) => formatMatchDate(row.original.startsAt)
-  },
-  {
-    accessorKey: 'tournamentName',
-    header: t('player.commander.columns.tournament'),
-    cell: ({ row }) => h(NuxtLink, {
-      to: `/tournaments/${row.original.tournamentUuid}`,
-      class: 'text-primary hover:underline'
-    }, () => row.original.tournamentName)
-  },
-  {
-    accessorKey: 'roundNumber',
-    header: t('player.commander.columns.round'),
-    meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }) => row.original.roundNumber ?? '—'
-  },
-  {
-    accessorKey: 'tableNumber',
-    header: t('player.commander.columns.table'),
-    meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }) => row.original.tableNumber ?? '—'
-  },
-  {
-    accessorKey: 'commanderName',
-    header: t('player.commander.columns.commander'),
-    cell: ({ row }) => row.original.commanderName ?? '—'
-  },
-  {
-    accessorKey: 'position',
-    header: t('player.commander.columns.position'),
-    meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }) => row.original.position ?? '—'
-  },
-  {
-    accessorKey: 'kills',
-    header: t('player.commander.columns.kills'),
-    meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }) => row.original.kills
-  }
-]
-
-const commanderDecksColumns: TableColumn<CommanderDeck>[] = [
-  {
-    accessorKey: 'commander1Name',
-    header: t('player.commander.decksColumns.commander'),
-    cell: ({ row }) => [row.original.commander1Name, row.original.commander2Name]
-      .filter(Boolean).join(' / ')
-  },
-  {
-    accessorKey: 'companionName',
-    header: t('player.commander.decksColumns.companion'),
-    cell: ({ row }) => row.original.companionName ?? '—'
-  },
-  {
-    accessorKey: 'createdAt',
-    header: t('player.commander.decksColumns.createdAt'),
-    meta: { class: { td: 'whitespace-nowrap font-mono' } },
-    cell: ({ row }) =>
-      h(DateWithRelativeTooltip, { isoString: row.original.createdAt, time: false })
-  },
-  {
-    id: 'decklist',
-    header: t('player.commander.decksColumns.decklist'),
-    cell: ({ row }) => (row.original.decklistUrl
-      ? h('a', {
-        href: row.original.decklistUrl,
-        target: '_blank',
-        rel: 'noopener noreferrer',
-        class: 'text-primary hover:underline'
-      }, t('player.commander.decksColumns.openDecklist'))
-      : '—')
-  }
-]
 </script>
 
 <template>
@@ -259,59 +169,18 @@ const commanderDecksColumns: TableColumn<CommanderDeck>[] = [
           </DetailCard>
         </div>
 
-        <UCard v-if="player.user_id" :ui="{ header: 'font-semibold' }">
-          <template #header>
-            {{ t('player.detail.loginHistory') }}
-          </template>
+        <PlayersSingleLoginHistoryCard
+          v-if="player.user_id"
+          :loading="loginHistoryLoading"
+          :dates="loginHistory"
+        />
 
-          <div v-if="loginHistoryLoading" class="flex items-center justify-center py-8">
-            <UIcon name="i-lucide-loader-circle" class="animate-spin text-2xl text-muted" />
-          </div>
+        <PlayersSingleCommanderMatchHistoryCard
+          :loading="matchHistoryLoading"
+          :matches="matchHistory"
+        />
 
-          <template v-else-if="!loginHistory?.length">
-            <div class="text-center py-8 text-muted">
-              {{ t('player.detail.loginHistoryEmpty') }}
-            </div>
-          </template>
-
-          <template v-else>
-            <div class="flex justify-center">
-              <CalendarHeatmap :dates="loginHistory" />
-            </div>
-          </template>
-        </UCard>
-
-        <UCard :ui="{ header: 'font-semibold' }">
-          <template #header>
-            {{ t('player.commander.matchHistoryTitle') }}
-          </template>
-
-          <ListSkeleton v-if="matchHistoryLoading" :columns="matchHistoryColumns.length" />
-          <p v-else-if="!matchHistory?.length" class="text-sm text-muted py-4 text-center">
-            {{ t('player.commander.matchHistoryEmpty') }}
-          </p>
-          <UTable
-            v-else
-            :data="matchHistory"
-            :columns="matchHistoryColumns"
-          />
-        </UCard>
-
-        <UCard :ui="{ header: 'font-semibold' }">
-          <template #header>
-            {{ t('player.commander.decksTitle') }}
-          </template>
-
-          <ListSkeleton v-if="commanderDecksLoading" :columns="commanderDecksColumns.length" />
-          <p v-else-if="!commanderDecks?.length" class="text-sm text-muted py-4 text-center">
-            {{ t('player.commander.decksEmpty') }}
-          </p>
-          <UTable
-            v-else
-            :data="commanderDecks"
-            :columns="commanderDecksColumns"
-          />
-        </UCard>
+        <PlayersSingleCommanderDecksCard :loading="commanderDecksLoading" :decks="commanderDecks" />
       </div>
     </template>
   </UDashboardPanel>
