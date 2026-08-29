@@ -10,10 +10,7 @@ interface SetTournamentLeagueBody {
 // shape update.post.ts requires. Same recompute cascade as update.post.ts:
 // a tournament moved between leagues (or unlinked) recomputes both the
 // league it left and the one it joined.
-// fallow-ignore-next-line code-duplication -- read-existing-league-then-
-// update-and-recompute shape mirrors update.post.ts, but the update payload
-// itself (one field vs. the full NewTournamentPayload) genuinely differs —
-// see the top-of-file comment.
+// fallow-ignore-next-line code-duplication -- see the top-of-file comment
 export default defineEventHandler(async (event) => {
   const { id, body, supabase } = await parseIdMutationRequest<SetTournamentLeagueBody>(event)
 

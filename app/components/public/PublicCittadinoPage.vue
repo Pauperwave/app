@@ -15,11 +15,7 @@
 // here 2026-08-20 (user request: no reason to withhold it from public
 // visitors, who are if anything more likely to be scanning for their own
 // name).
-// fallow-ignore-next-line code-duplication -- the search ref + filteredStandings
-// computed mirrors standings/cittadino/index.vue's own internal counterpart;
-// both already share the real logic via useCittadinoStandingsPage, this is
-// just the thin per-shell (public vs. authenticated UDashboardPanel) wiring
-// around it.
+// fallow-ignore-next-line code-duplication -- mirrors standings/cittadino/index.vue's own shell wiring around useCittadinoStandingsPage
 const search = ref('')
 
 const {
@@ -28,11 +24,7 @@ const {
   isInitialLoad, loading, error
 } = useCittadinoStandingsPage(search)
 
-const filteredStandings = computed(() => {
-  const query = search.value.trim().toLowerCase()
-  if (!query) return standings.value
-  return standings.value.filter(row => row.playerName.toLowerCase().includes(query))
-})
+const filteredStandings = computed(() => filterStandingsBySearch(standings.value, search.value))
 </script>
 
 <template>

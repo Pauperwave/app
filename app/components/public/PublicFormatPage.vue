@@ -23,10 +23,7 @@ const { format } = defineProps<Props>()
 // same search FormatPage.vue's internal counterpart got, extended here
 // 2026-08-20 (user request: no reason to withhold it from public visitors,
 // who are if anything more likely to be scanning for their own name).
-// fallow-ignore-next-line code-duplication -- the search ref + filteredStandings
-// computed mirrors FormatPage.vue's own internal counterpart; both already
-// share the real logic via useFormatStandingsPage, this is just the thin
-// per-shell (public vs. authenticated UDashboardPanel) wiring around it.
+// fallow-ignore-next-line code-duplication -- mirrors FormatPage.vue's own shell wiring around useFormatStandingsPage
 const search = ref('')
 
 const {
@@ -34,11 +31,7 @@ const {
   isInitialLoad, tableMeta, loading
 } = useFormatStandingsPage(format, search)
 
-const filteredStandings = computed(() => {
-  const query = search.value.trim().toLowerCase()
-  if (!query) return standings.value
-  return standings.value.filter(row => row.playerName.toLowerCase().includes(query))
-})
+const filteredStandings = computed(() => filterStandingsBySearch(standings.value, search.value))
 </script>
 
 <template>
@@ -57,11 +50,7 @@ const filteredStandings = computed(() => {
       />
     </div>
 
-    <!-- fallow-ignore-next-line code-duplication -- summary/search/legend
-         row mirrors FormatPage.vue's own internal counterpart; this public
-         shell deliberately re-renders the same markup outside
-         UDashboardPanel rather than sharing a component across the auth
-         boundary (see the top-of-file comment). -->
+    <!-- fallow-ignore-next-line code-duplication -- summary/search/legend row mirrors FormatPage.vue's own -->
     <div class="flex items-center justify-between gap-4 flex-wrap">
       <div class="flex items-center gap-4 flex-wrap">
         <p class="text-sm text-muted">

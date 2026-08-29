@@ -10,12 +10,8 @@
 import type { Event } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 
-// fallow-ignore-next-line code-duplication -- selection/range/loading props
-// + shift-click/day-month parsing scaffolding mirrors leagues/tournaments'
-// own Cover.vue verbatim; the entity prop type (event/league/tournament) and
-// per-domain attribution chip differ enough that a shared component would
-// need as many conditionals as it saves lines.
 const {
+  // fallow-ignore-next-line code-duplication -- mirrors leagues/tournaments' own Cover.vue
   event = null, selection, range = [], loading = false
 } = defineProps<{
   event?: Event | null

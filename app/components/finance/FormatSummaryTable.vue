@@ -4,10 +4,7 @@ import type { TableColumn } from '@nuxt/ui'
 import type { FinanceFormatSummaryRow } from '~/composables/finance/useFinanceSummary'
 import FormatBadge from '~/components/badges/FormatBadge.vue'
 
-// fallow-ignore-next-line code-duplication -- props/formatter/sorting
-// scaffolding mirrors every other *SummaryTable.vue; row type, sort column
-// and percent precision differ per table, so there's nothing generic left
-// to factor out beyond what columnTotal/summaryXColumn already cover.
+// fallow-ignore-next-line code-duplication -- props/formatter/sorting scaffolding mirrors every *SummaryTable.vue
 const { rows, loading, pending = false } = defineProps<{
   rows: FinanceFormatSummaryRow[]
   loading: boolean
@@ -25,6 +22,7 @@ const sorting = ref([{ id: 'total', desc: true }])
 // of a bare blank cell.
 const totalTournamentCount = computed(() => columnTotal(rows, 'tournamentCount'))
 const totalCount = computed(() => columnTotal(rows, 'count'))
+// fallow-ignore-next-line code-duplication -- see the same comment in CategorySummaryTable.vue
 const totalCash = computed(() => columnTotal(rows, 'cashTotal'))
 const totalPos = computed(() => columnTotal(rows, 'posTotal'))
 const totalAmount = computed(() => columnTotal(rows, 'total'))

@@ -4,8 +4,7 @@ import type { TableColumn } from '@nuxt/ui'
 import type { FinanceMethodCostRow } from '~/composables/finance/useFinanceSummary'
 import PaymentMethodBadge from '~/components/ui/PaymentMethodBadge.vue'
 
-// fallow-ignore-next-line code-duplication -- see the same comment in
-// FormatSummaryTable.vue
+// fallow-ignore-next-line code-duplication -- see the same comment in FormatSummaryTable.vue
 const { rows, loading, pending = false } = defineProps<{
   rows: FinanceMethodCostRow[]
   loading: boolean
@@ -23,6 +22,7 @@ const sorting = ref([{ id: 'total', desc: true }])
 // of a bare blank cell. feeRate has no footer at all — a rate isn't a
 // summable quantity, and a blended-rate footer was tried and rejected (user
 // request, 2026-08-23): not what "totale" means for a rate column.
+// fallow-ignore-next-line code-duplication -- see the same comment in TypeSummaryTable.vue
 const totalCount = computed(() => columnTotal(rows, 'count'))
 const totalAmount = computed(() => columnTotal(rows, 'total'))
 const totalFee = computed(() => columnTotal(rows, 'fee'))

@@ -221,10 +221,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           </p>
 
           <div class="grid grid-cols-2 gap-2">
-            <!-- fallow-ignore-next-line code-duplication -- organizer/location
-                 UFormField pair mirrors EditModal.vue's own; same field
-                 names/options, genuinely nothing left to parameterize out. -->
             <!-- eslint-disable-next-line -->
+            <!-- fallow-ignore-next-line code-duplication -- see EditModal.vue -->
             <UFormField
               :label="$t('event.addModal.fields.organizer')"
               name="organizerUuid"

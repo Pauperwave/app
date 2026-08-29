@@ -9,8 +9,7 @@ useSeoMeta({ title: () => t('cittadino.breadcrumb') })
 // useCittadinoStandingsPage independently). Declared before that call below
 // since it threads through to useCittadinoTableColumns.ts for match
 // highlighting.
-// fallow-ignore-next-line code-duplication -- see the same comment in
-// PublicCittadinoPage.vue
+// fallow-ignore-next-line code-duplication -- see the same comment in PublicCittadinoPage.vue
 const search = ref('')
 
 const {
@@ -19,11 +18,7 @@ const {
   isInitialLoad, loading, error
 } = useCittadinoStandingsPage(search)
 
-const filteredStandings = computed(() => {
-  const query = search.value.trim().toLowerCase()
-  if (!query) return standings.value
-  return standings.value.filter(row => row.playerName.toLowerCase().includes(query))
-})
+const filteredStandings = computed(() => filterStandingsBySearch(standings.value, search.value))
 
 // Same convention as associates/requests.vue's tesseramentoLink: point at
 // this deploy's own /rankings/cittadino for now, until the subdomain is
