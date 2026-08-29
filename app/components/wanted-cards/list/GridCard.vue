@@ -66,29 +66,12 @@ function onCardClick(event: MouseEvent) {
         class="absolute inset-x-0 top-0 h-20 z-10 bg-linear-to-b from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
         :class="{ 'opacity-100!': selection.isSelected(card.id) }"
       />
-      <UCheckbox
-        :model-value="selection.isSelected(card.id)"
-        size="xl"
-        class="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
-        :class="{ 'opacity-100!': selection.isSelected(card.id) }"
-        :ui="{ base: 'bg-default/90 rounded' }"
-        :aria-label="$t('common.selectRow')"
-        @update:model-value="() => selection.toggle(
-          card.id, { shiftKey: lastClickShiftKey, range }
-        )"
-        @click.stop="lastClickShiftKey = $event.shiftKey"
+      <WantedCardsListSelectableImage
+        v-model:last-click-shift-key="lastClickShiftKey"
+        :card="card"
+        :selection="selection"
+        :range="range"
       />
-
-      <img
-        v-if="card.imageUrl"
-        :src="card.imageUrl"
-        :alt="card.cardName"
-        class="w-full aspect-5/7 object-cover"
-        loading="lazy"
-      >
-      <div v-else class="w-full aspect-5/7 bg-elevated flex items-center justify-center">
-        <UIcon name="i-lucide-image-off" class="size-8 text-muted" />
-      </div>
 
       <template #footer>
         <!-- Single row when grouped by player: without AssociateTag (already

@@ -41,12 +41,23 @@ const { isOverDropZone } = useScryfallDragDrop(() => document.body, (card) => {
 })
 
 // ---- View mode (grid/table toggle) ---------------------------------------
-const viewMode = ref<'table' | 'grid' | 'dense'>('grid')
+// Default to dense (user request, 2026-08-29) — was 'grid' until the third
+// "Compatta" mode landed, now the tighter view is the expected default.
+const viewMode = ref<'table' | 'grid' | 'dense'>('dense')
 const viewModeItems = computed<TabsItem[]>(() => [
   { label: t('wantedCard.views.grid'), value: 'grid', icon: ICONS.grid },
   { label: t('wantedCard.views.dense'), value: 'dense', icon: ICONS.gridDense },
   { label: t('wantedCard.views.table'), value: 'table', icon: ICONS.table }
 ])
+
+// A tour step can declare `requiresCardView: true` (see
+// useWantedCardsTour.ts's own comment) when its target only exists in grid/
+// dense — table has no per-card anchor at all. Switches away from 'table'
+// before that step becomes current, rather than the popover silently
+// failing to find its target (user request, 2026-08-29).
+watch(() => tour.current.value, (step) => {
+  if (step?.requiresCardView && viewMode.value === 'table') viewMode.value = 'dense'
+})
 
 // ---- Filters --------------------------------------------------------------
 const {
@@ -262,7 +273,9 @@ const gridSections = computed<GridSection[]>(() => {
               :color-tabs="colorTabs"
               :is-color-tab-active="isColorTabActive"
               :current-associate="currentAssociate"
+              :is-grouped="isGrouped"
               @toggle-color="toggleColorFilter"
+              @toggle-grouping="toggleGrouping"
             />
           </div>
         </template>
@@ -286,9 +299,7 @@ const gridSections = computed<GridSection[]>(() => {
               v-model:grid-sort-desc="gridSortDesc"
               :view-mode="viewMode"
               :grid-sort-items="gridSortItems"
-              :is-grouped="isGrouped"
               :view-items="viewItems"
-              @toggle-grouping="toggleGrouping"
             />
           </div>
         </template>

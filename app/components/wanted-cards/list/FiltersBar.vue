@@ -14,18 +14,26 @@ const {
   statusTabs,
   colorTabs,
   isColorTabActive,
-  currentAssociate
+  currentAssociate,
+  isGrouped
 } = defineProps<{
   statusTabs: { label: string, value: string, count?: number, icon?: string }[]
   colorTabs: ColorTab[]
   isColorTabActive: (value: WantedCardColorFilter) => boolean
   currentAssociate: Associate | null
+  isGrouped: boolean
 }>()
 
 const statusFilter = defineModel<string>('statusFilter', { required: true })
+// "Le mie richieste" + "Raggruppa per giocatore" sit together here, not
+// split across the filters/view-controls halves (user request, 2026-08-29)
+// — both are genuinely filters (which rows show / how they're clustered),
+// same left-side convention "Le mie richieste" already had before briefly
+// moving to the right alongside grouping ("Ma il filtri non dovrebbero
+// essere a sinistra?").
 const onlyMine = defineModel<boolean>('onlyMine', { required: true })
 
-const emit = defineEmits<{ toggleColor: [value: WantedCardColorFilter] }>()
+const emit = defineEmits<{ toggleColor: [value: WantedCardColorFilter], toggleGrouping: [] }>()
 </script>
 
 <template>
@@ -58,16 +66,24 @@ const emit = defineEmits<{ toggleColor: [value: WantedCardColorFilter] }>()
     </UButton>
   </UFieldGroup>
 
-  <UTooltip
-    :text="!currentAssociate ? $t('wantedCard.filters.onlyMineUnavailable') : undefined"
-  >
-    <UButton
-      :label="$t('wantedCard.filters.onlyMine')"
-      icon="i-lucide-user-round"
-      color="neutral"
-      :variant="onlyMine ? 'solid' : 'outline'"
-      :disabled="!currentAssociate"
-      @click="onlyMine = !onlyMine"
+  <span class="flex items-center gap-2">
+    <UTooltip
+      :text="!currentAssociate ? $t('wantedCard.filters.onlyMineUnavailable') : undefined"
+    >
+      <UButton
+        :label="$t('wantedCard.filters.onlyMine')"
+        icon="i-lucide-user-round"
+        color="neutral"
+        :variant="onlyMine ? 'solid' : 'outline'"
+        :disabled="!currentAssociate"
+        @click="onlyMine = !onlyMine"
+      />
+    </UTooltip>
+
+    <GroupByToggleButton
+      :label="$t('wantedCard.filters.groupByPlayer')"
+      :grouped="isGrouped"
+      @toggle="emit('toggleGrouping')"
     />
-  </UTooltip>
+  </span>
 </template>
