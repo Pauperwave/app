@@ -7,15 +7,6 @@
 
 <template>
   <div class="min-h-screen flex flex-col items-center px-4 py-12">
-    <UButton
-      :icon="ICONS.chevronLeft"
-      to="/"
-      size="xl"
-      color="neutral"
-      variant="subtle"
-      class="absolute left-8 top-8 rounded-full z-10"
-    />
-
     <div class="max-w-2xl w-full">
       <slot />
     </div>
