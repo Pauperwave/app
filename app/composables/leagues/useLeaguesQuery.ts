@@ -3,6 +3,62 @@ import type { League, LeagueStatus } from '~/types'
 
 export const LEAGUES_KEY = ['leagues']
 
+interface LeagueTournamentRow {
+  league_uuid: string | null
+  status: string
+  starts_at: string | null
+  format: { name: string } | null
+}
+
+// Cancelled tournaments are excluded from the denominator entirely
+// (2026-08-16 user decision) — a cancelled tournament isn't "still to
+// complete", so a league's progress reads e.g. 5/5 rather than a
+// permanently-deflated 5/6. Un-cancelling one (status flipped back)
+// re-enters the count automatically, since this reads live status on every
+// query, not a stored snapshot.
+function tournamentProgressByLeague(tournaments: LeagueTournamentRow[]) {
+  const totals = new Map<string, number>()
+  const completed = new Map<string, number>()
+  for (const row of tournaments) {
+    if (!row.league_uuid || row.status === 'cancelled') continue
+    totals.set(row.league_uuid, (totals.get(row.league_uuid) ?? 0) + 1)
+    if (row.status === 'completed') {
+      completed.set(row.league_uuid, (completed.get(row.league_uuid) ?? 0) + 1)
+    }
+  }
+  return { totals, completed }
+}
+
+// Formats include every tournament regardless of status (ADR,
+// docs/PROGRESS.md, 2026-08-22) — unlike the progress counters above, a
+// cancelled tournament's format is still real history.
+function tournamentFormatsByLeague(tournaments: LeagueTournamentRow[]) {
+  const formats = new Map<string, Set<string>>()
+  for (const row of tournaments) {
+    if (!row.league_uuid || !row.format?.name) continue
+    const leagueFormats = formats.get(row.league_uuid) ?? new Set<string>()
+    leagueFormats.add(row.format.name)
+    formats.set(row.league_uuid, leagueFormats)
+  }
+  return formats
+}
+
+// Same "every tournament regardless of status" reasoning as
+// tournamentFormatsByLeague above — a cancelled tournament's date is still
+// real history for the league's own date-range display.
+function tournamentDateRangesByLeague(tournaments: LeagueTournamentRow[]) {
+  const dateRanges = new Map<string, { start: string, end: string }>()
+  for (const row of tournaments) {
+    if (!row.league_uuid || !row.starts_at) continue
+    const range = dateRanges.get(row.league_uuid)
+    dateRanges.set(row.league_uuid, {
+      start: !range || row.starts_at < range.start ? row.starts_at : range.start,
+      end: !range || row.starts_at > range.end ? row.starts_at : range.end
+    })
+  }
+  return dateRanges
+}
+
 // Migrated off mock data (server/api/leagues.ts, removed) onto the real
 // `leagues` table — direct Supabase read + join, same pattern as
 // useEventsQuery.ts. tournamentCount/completedTournamentCount are derived
@@ -31,42 +87,9 @@ export function useLeaguesQuery() {
       if (leaguesResult.error) throw leaguesResult.error
       if (tournamentsResult.error) throw tournamentsResult.error
 
-      // Cancelled tournaments are excluded from the denominator entirely
-      // (2026-08-16 user decision) — a cancelled tournament isn't "still to
-      // complete", so a league's progress reads e.g. 5/5 rather than a
-      // permanently-deflated 5/6. Un-cancelling one (status flipped back)
-      // re-enters the count automatically, since this reads live status on
-      // every query, not a stored snapshot.
-      const totals = new Map<string, number>()
-      const completed = new Map<string, number>()
-      // Formats/date range include every tournament regardless of status
-      // (ADR, docs/PROGRESS.md, 2026-08-22) — unlike the progress counters
-      // above, a cancelled tournament's format/date is still real history.
-      const formats = new Map<string, Set<string>>()
-      const dateRanges = new Map<string, { start: string, end: string }>()
-      for (const row of tournamentsResult.data) {
-        if (!row.league_uuid) continue
-        if (row.status !== 'cancelled') {
-          totals.set(row.league_uuid, (totals.get(row.league_uuid) ?? 0) + 1)
-          if (row.status === 'completed') {
-            completed.set(row.league_uuid, (completed.get(row.league_uuid) ?? 0) + 1)
-          }
-        }
-
-        if (row.format?.name) {
-          const leagueFormats = formats.get(row.league_uuid) ?? new Set<string>()
-          leagueFormats.add(row.format.name)
-          formats.set(row.league_uuid, leagueFormats)
-        }
-
-        if (row.starts_at) {
-          const range = dateRanges.get(row.league_uuid)
-          dateRanges.set(row.league_uuid, {
-            start: !range || row.starts_at < range.start ? row.starts_at : range.start,
-            end: !range || row.starts_at > range.end ? row.starts_at : range.end
-          })
-        }
-      }
+      const { totals, completed } = tournamentProgressByLeague(tournamentsResult.data)
+      const formats = tournamentFormatsByLeague(tournamentsResult.data)
+      const dateRanges = tournamentDateRangesByLeague(tournamentsResult.data)
 
       return leaguesResult.data.map(row => ({
         id: row.id,
