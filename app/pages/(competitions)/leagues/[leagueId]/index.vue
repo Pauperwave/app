@@ -2,9 +2,11 @@
 <script lang="ts" setup>
 // First real (non-mock) detail page among tournaments/leagues/events singles
 // (2026-08-16) — clicking a tournament card's league link lands here. Reuses
-// TournamentsListGridView as-is: same cards, same edit/context-menu wiring
-// as /tournaments, just pre-filtered to this league's tournaments. No bulk
-// actions bar / table toggle here yet — this page is read+edit only for now.
+// TournamentsListGridView as-is: same cards, and (2026-08-29) the same
+// edit/copy/delete context menu as /tournaments itself, just pre-filtered to
+// this league's tournaments. No bulk-selection actions bar / table toggle
+// here yet — delete/copy act on a single tournament at a time.
+import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Tournament } from '~/types'
 
 const { t } = useI18n()
@@ -89,12 +91,51 @@ const leagueEndDate = computed(() => tournamentDates.value.length
 const skeletonCount = computed(() =>
   (tournamentsPending.value ? undefined : tournaments.value.length))
 
-// Only rowContextMenuItems is needed here — tableContextMenuItems/
-// onRowContextmenu are for the table view, which this league-scoped page
-// doesn't have (grid only, at least for now).
-const { rowContextMenuItems } = useCopyLinkContextMenu('/tournaments')
+// tableContextMenuItems/onRowContextmenu aren't needed here — this
+// league-scoped page has no table view (grid only, at least for now).
+const { rowContextMenuItems } = useCopyLinkContextMenu<Tournament>('/tournaments')
 const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowActions()
 const selection = useSelection<number>()
+const {
+  requestDelete, pendingAction, confirmOpen: bulkConfirmOpen, confirmPendingAction
+} = useTournamentsBulkActions(selection)
+
+// "Copia torneo" (user request, 2026-08-29) — same reusable-instance
+// convention as tournaments/index.vue's own copy action.
+const copyModalOpen = ref(false)
+const copySourceTournament = shallowRef<Tournament | null>(null)
+function openCopyModal(tournament: Tournament) {
+  copySourceTournament.value = tournament
+  copyModalOpen.value = true
+}
+
+// Same edit/copy/delete additions as tournaments/index.vue's own
+// tournamentContextMenuItems() (user request, 2026-08-29, "same
+// functionality as /tournaments' context menu") — this page previously only
+// had the shared copy-link/copy-id items.
+function tournamentContextMenuItems(tournament: Tournament): DropdownMenuItem[] {
+  return [
+    ...rowContextMenuItems(tournament),
+    { type: 'separator' },
+    {
+      label: t('tournament.rowActions.edit'),
+      icon: ICONS.edit,
+      onSelect: () => openEditModal(tournament)
+    },
+    {
+      label: t('tournament.rowActions.copy'),
+      icon: ICONS.copy,
+      onSelect: () => openCopyModal(tournament)
+    },
+    { type: 'separator' },
+    {
+      label: t('tournament.rowActions.delete'),
+      icon: ICONS.delete,
+      color: 'error',
+      onSelect: () => requestDelete([tournament])
+    }
+  ]
+}
 
 const {
   editingLeague, editModalOpen: leagueEditModalOpen, openEditModal: openLeagueEditModal
@@ -244,7 +285,7 @@ const addTournamentModalOpen = ref(false)
              cards, only a genuine first load shows the skeleton grid. -->
         <TournamentsListGridView
           :tournaments="tournaments"
-          :context-menu-items="rowContextMenuItems"
+          :context-menu-items="tournamentContextMenuItems"
           :on-edit="openEditModal"
           :selection="selection"
           :highlighted-tournament-id="highlightedTournamentId"
@@ -269,4 +310,26 @@ const addTournamentModalOpen = ref(false)
     hide-trigger
     :initial-league-uuid="league.uuid"
   />
+  <TournamentsListAddModal
+    v-model="copyModalOpen"
+    hide-trigger
+    :source-tournament="copySourceTournament"
+  />
+
+  <ConfirmModal
+    v-model:open="bulkConfirmOpen"
+    :title="t('tournament.bulkActions.confirmDeleteTitle', pendingAction?.tournaments.length ?? 0)"
+    :warning="t('common.confirmDeleteWarning')"
+    :confirm-label="t('tournament.rowActions.delete')"
+    confirm-color="error"
+    :confirm-icon="ICONS.delete"
+    @confirm="confirmPendingAction"
+  >
+    <ul v-if="pendingAction" class="max-h-40 overflow-y-auto text-sm space-y-1">
+      <li v-for="tournament in pendingAction.tournaments" :key="tournament.id">
+        {{ tournament.name }}
+        <TournamentsStageLabel v-if="tournament.stageNumber" :number="tournament.stageNumber" />
+      </li>
+    </ul>
+  </ConfirmModal>
 </template>
