@@ -49,11 +49,6 @@ function onCardClick(event: MouseEvent) {
   navigateTo(`/leagues/${league.uuid}`)
 }
 
-function progress(current: League) {
-  if (!current.tournamentCount) return 0
-  return Math.round((current.completedTournamentCount / current.tournamentCount) * 100)
-}
-
 // `includeYear` only matters when the two ends of the range fall in
 // different years (e.g. "Lega Estiva 2026" runs 30 luglio 2026 → 20
 // gennaio 2027) — showing the year on the end date alone would otherwise
@@ -173,15 +168,7 @@ const extraFormatCount = computed(() =>
       </div>
 
       <template #footer>
-        <div v-if="!loading && league" class="flex flex-col gap-1.5">
-          <div class="flex items-center justify-between text-sm text-muted">
-            <span>{{ t('league.tournamentsLabel') }}</span>
-            <span>{{ t('league.progress', {
-              completed: league.completedTournamentCount, total: league.tournamentCount
-            }) }}</span>
-          </div>
-          <UProgress :model-value="progress(league)" size="sm" />
-        </div>
+        <LeaguesLeagueTournamentsProgress v-if="!loading && league" :league="league" />
         <div v-else class="flex flex-col gap-1.5">
           <div class="flex items-center justify-between">
             <USkeleton class="h-4 w-24" />
