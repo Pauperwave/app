@@ -11,17 +11,14 @@ import type { Database } from '#shared/utils/types/database'
 // renewal_requested), surfaced as its own tab on /associates rather than a
 // status flip on the row.
 export default defineEventHandler(async (event) => {
-  const user = await requireUser(event)
-  if (!user.email) {
-    throw createError({ statusCode: 401, statusMessage: 'Email non presente nella sessione' })
-  }
+  const email = await requireUserEmail(event)
 
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   const { data: associate, error } = await supabase
     .from('pauperwave_associates')
     .select('uuid')
-    .eq('email_address', user.email)
+    .eq('email_address', email)
     .eq('membership_request_status', 'approved')
     .maybeSingle()
 
