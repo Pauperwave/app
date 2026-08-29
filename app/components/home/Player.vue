@@ -6,8 +6,6 @@
   permission-gated subset of it, hence the separate component.
 -->
 <script setup lang="ts">
-import { isFuture, isToday } from 'date-fns'
-
 const { t } = useI18n()
 
 const currentAssociate = useCurrentAssociate()
@@ -39,10 +37,7 @@ const recentTransactions = computed(() => myTransactions.value.slice(0, 3))
 const amountFormatter = AMOUNT_FORMATTER
 
 const { data: tournaments } = useTournamentsQuery()
-const upcomingTournaments = computed(() => (tournaments.value ?? [])
-  .filter(tournament => tournament.status !== 'completed' && tournament.status !== 'cancelled'
-    && (isToday(new Date(tournament.startDate)) || isFuture(new Date(tournament.startDate))))
-  .slice(0, 5))
+const upcomingTournamentsList = computed(() => upcomingTournaments(tournaments.value ?? []))
 </script>
 
 <template>
@@ -110,13 +105,13 @@ const upcomingTournaments = computed(() => (tournaments.value ?? [])
       </UPageCard>
 
       <UPageCard id="tour-home-upcoming" :title="t('home.player.upcoming.title')" variant="subtle">
-        <div v-if="!upcomingTournaments.length" class="text-sm text-muted py-4 text-center">
+        <div v-if="!upcomingTournamentsList.length" class="text-sm text-muted py-4 text-center">
           {{ t('home.player.upcoming.empty') }}
         </div>
 
         <div v-else class="flex flex-col divide-y divide-default">
           <div
-            v-for="tournament in upcomingTournaments"
+            v-for="tournament in upcomingTournamentsList"
             :key="tournament.uuid"
             class="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
           >
