@@ -6,7 +6,8 @@
 // (it has no grouping). Each caller wraps its own guard around these.
 import { h } from 'vue'
 import type { Transaction, Tournament } from '~/types'
-import { TournamentsStageLabel, UBadge, UButton } from '#components'
+import { TournamentsStageLabel, UBadge, UButton, UIcon, UTooltip } from '#components'
+import { parseTransactionNotes } from '~/utils/transactions/transactionNotes'
 
 // tournament/event checked first, ahead of event_name's own raw text: for
 // Token Purchase rows event_name is just "8 gettoni" (see
@@ -59,4 +60,19 @@ export function transactionEventNameCell(
 export function transactionGettoniCell(count: number | null) {
   if (count === null) return null
   return h(UBadge, { variant: 'subtle', color: 'warning', icon: ICONS.coins, label: String(count) })
+}
+
+// unknownEmailTooltip passed in rather than a useI18n() call here — a plain
+// util, not a composable, since useTransactionsTableColumns.ts's caller
+// already has its own `t` in scope.
+export function transactionNotesCell(notes: string, unknownEmailTooltip: string) {
+  const { hasUnknownEmail, cleanNotes } = parseTransactionNotes(notes)
+  if (!hasUnknownEmail) return cleanNotes
+  return h('div', { class: 'flex items-center gap-1.5' }, [
+    h(UTooltip, { text: unknownEmailTooltip }, () => h(UIcon, {
+      name: ICONS.incognito,
+      class: 'size-4 text-dimmed shrink-0'
+    })),
+    cleanNotes
+  ])
 }
