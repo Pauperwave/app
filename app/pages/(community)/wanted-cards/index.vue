@@ -42,8 +42,8 @@ const { isOverDropZone } = useScryfallDragDrop(() => document.body, (card) => {
 // ---- View mode (grid/table toggle) ---------------------------------------
 const viewMode = ref<'table' | 'grid'>('grid')
 const viewModeItems = computed<TabsItem[]>(() => [
-  { label: t('wantedCard.views.grid'), value: 'grid', icon: 'i-lucide-layout-grid' },
-  { label: t('wantedCard.views.table'), value: 'table', icon: 'i-lucide-table' }
+  { label: t('wantedCard.views.grid'), value: 'grid', icon: ICONS.grid },
+  { label: t('wantedCard.views.table'), value: 'table', icon: ICONS.table }
 ])
 
 // ---- Filters --------------------------------------------------------------

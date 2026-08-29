@@ -82,6 +82,8 @@ Confirmed 2026-08-09 in `app/utils/cittadino/cittadinoPoints.ts`: `CITTADINO_MIN
 
 Workaround: declare scalar exports before array-literal ones, or import the symbol explicitly. Worth checking with `grep "export {" .nuxt/imports.d.ts` when adding constants to a utils file that also exports an array — and this is one concrete reason `pnpm typecheck` must actually be run rather than assumed.
 
+Related failure mode confirmed 2026-08-29 in `app/utils/wantedCards/wantedCardLanguages.ts`: the file itself (which exports an array-literal `WANTED_CARD_LANGUAGES = [...] as const`) failed to resolve the *incoming* auto-import of `ICONS` (from `app/utils/icons.ts`) when referenced inside its own `WANTED_CARD_LANGUAGE_ICONS` object — `TS2304: Cannot find name 'ICONS'`, reproducible across repeated `pnpm typecheck` runs. So the array-literal-export fragility can affect a file's own *inbound* auto-imports too, not just its outbound exports. Fix: add an explicit `import { ICONS } from '~/utils/icons'` rather than relying on auto-import.
+
 ### Types
 Shared domain types (`Associate`, `Tournament`, `Transaction`, status unions, etc.) live in `app/types/index.d.ts`. Add new domain interfaces there rather than colocating them in components.
 

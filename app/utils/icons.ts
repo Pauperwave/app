@@ -4,12 +4,7 @@
  * Single source of truth for every icon used in the app. Check here before
  * picking an icon for a new usage — reuse an existing constant if the
  * concept already exists, rather than introducing a second icon for the
- * same idea. Mirrors the pattern established in MagicTheGathering/league.
- *
- * Not yet adopted everywhere: populated from icons already used across the
- * app, migrated in app/layouts/default.vue as the first consumer. Other
- * files should switch to ICONS.* the next time they're touched, rather
- * than a single big-bang replacement (see docs/TODO.md).
+ * same idea.
  */
 export const ICONS = {
   // Actions
@@ -22,7 +17,7 @@ export const ICONS = {
   share: 'i-lucide-share-2',
   link: 'i-lucide-link',
   close: 'i-lucide-x',
-  statusRejected: 'i-lucide-x-circle',
+  statusRejected: 'i-lucide-circle-x',
   clear: 'i-lucide-circle-x',
   refresh: 'i-lucide-refresh-cw',
   shuffle: 'i-lucide-shuffle',
@@ -39,17 +34,28 @@ export const ICONS = {
   security: 'i-lucide-shield',
   permissions: 'i-lucide-key-round',
   globe: 'i-lucide-globe',
+  table: 'i-lucide-table',
+  grid: 'i-lucide-layout-grid',
+  chartArea: 'i-lucide-chart-area',
+  languages: 'i-lucide-languages',
 
   // Status / feedback
-  success: 'i-lucide-check-circle',
+  success: 'i-lucide-circle-check',
   successFilled: 'i-lucide-circle-check',
   successFilledBig: 'i-lucide-circle-check-big',
-  help: 'i-lucide-help-circle',
-  loading: 'i-lucide-loader-2',
+  help: 'i-lucide-circle-question-mark',
+  loading: 'i-lucide-loader-circle',
   pending: 'i-lucide-circle-dot-dashed',
   banned: 'i-lucide-ban',
-  warning: 'i-lucide-alert-triangle',
+  warning: 'i-lucide-triangle-alert',
   list: 'i-lucide-list',
+  listOrdered: 'i-lucide-list-ordered',
+  circleDot: 'i-lucide-circle-dot',
+  badgeCheck: 'i-lucide-badge-check',
+  shieldCheck: 'i-lucide-shield-check',
+  tag: 'i-lucide-tag',
+  rotateBack: 'i-lucide-rotate-ccw',
+  userStar: 'i-lucide-user-star',
 
   // People
   players: 'i-lucide-users',
@@ -87,9 +93,10 @@ export const ICONS = {
   calendarAdd: 'i-lucide-calendar-plus',
   calendarRenew: 'i-lucide-calendar-sync',
   calendarView: 'i-lucide-calendar-days',
+  calendarCheck: 'i-lucide-calendar-check',
   clock: 'i-lucide-clock',
   timer: 'i-lucide-timer',
-  pauseCircle: 'i-lucide-pause-circle',
+  pauseCircle: 'i-lucide-circle-pause',
   history: 'i-lucide-history',
   cake: 'i-lucide-cake',
   trendingUp: 'i-lucide-trending-up',
@@ -128,11 +135,7 @@ export const ICONS = {
   shoppingCart: 'i-lucide-shopping-cart',
   ticket: 'i-lucide-ticket',
   idCard: 'i-lucide-id-card',
-  // "No payment on record yet" (unpaid membership status) — distinct from
-  // creditCard (renewal date) and idCard (membership number), so the three
-  // don't visually collide on the same badge row.
   receipt: 'i-lucide-receipt',
-  // Flags a payer's email as unknown/placeholder (historical import backfill)
   incognito: 'i-lucide-hat-glasses',
 
   // Contact / identity fields
@@ -142,7 +145,11 @@ export const ICONS = {
   smartphone: 'i-lucide-smartphone',
   mapPin: 'i-lucide-map-pin',
   mapPinPlus: 'i-lucide-map-pin-plus',
+  map: 'i-lucide-map',
   heartHandshake: 'i-lucide-heart-handshake',
+  flag: 'i-lucide-flag',
+  building: 'i-lucide-building',
+  mailbox: 'i-lucide-mailbox',
 
   // Misc UI
   bell: 'i-lucide-bell',
@@ -155,10 +162,19 @@ export const ICONS = {
   github: 'i-simple-icons-github',
 
   // Social
+  paypal: 'i-simple-icons-paypal',
   facebook: 'i-simple-icons-facebook',
   instagram: 'i-simple-icons-instagram',
   telegram: 'i-simple-icons-telegram',
-  whatsapp: 'i-simple-icons-whatsapp'
+  whatsapp: 'i-simple-icons-whatsapp',
+
+  // Wanted card print languages (circle-flags set)
+  flagEn: 'i-circle-flags-gb',
+  flagIt: 'i-circle-flags-it',
+  flagEs: 'i-circle-flags-es',
+  flagFr: 'i-circle-flags-fr',
+  flagDe: 'i-circle-flags-de',
+  flagJa: 'i-circle-flags-jp'
 } as const
 
 export type IconName = (typeof ICONS)[keyof typeof ICONS]

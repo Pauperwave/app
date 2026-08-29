@@ -65,8 +65,8 @@ const selectedEvents = computed(() =>
 
 const viewMode = ref<'table' | 'grid'>('grid')
 const viewModeItems = computed<TabsItem[]>(() => [
-  { label: t('event.views.grid'), value: 'grid', icon: 'i-lucide-layout-grid' },
-  { label: t('event.views.table'), value: 'table', icon: 'i-lucide-table' }
+  { label: t('event.views.grid'), value: 'grid', icon: ICONS.grid },
+  { label: t('event.views.table'), value: 'table', icon: ICONS.table }
 ])
 
 const sorting = ref([{ id: 'startDate', desc: false }])

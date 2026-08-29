@@ -72,7 +72,7 @@ export function useWantedCardsRowActions() {
   }
 
   const STATUS_MENU_ICONS: Record<WantedCardStatus, string> = {
-    searching: 'i-lucide-rotate-ccw',
+    searching: ICONS.rotateBack,
     found: ICONS.confirm,
     abandoned: ICONS.clear
   }
@@ -172,7 +172,7 @@ export function useWantedCardsRowActions() {
       },
       {
         label: t('wantedCard.contextMenu.viewOnScryfall'),
-        icon: 'i-lucide-external-link',
+        icon: ICONS.externalLink,
         disabled: !card.scryfallUrl,
         onSelect: () => window.open(card.scryfallUrl, '_blank', 'noopener')
       },
@@ -195,7 +195,7 @@ export function useWantedCardsRowActions() {
       { type: 'separator' },
       {
         label: t('wantedCard.contextMenu.edit'),
-        icon: 'i-lucide-pencil',
+        icon: ICONS.edit,
         onSelect: () => openEditModal(card)
       },
       { type: 'separator' },

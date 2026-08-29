@@ -1,4 +1,5 @@
 // app\utils\wantedCards\wantedCardLanguages.ts
+import { ICONS } from '~/utils/icons'
 // Previously duplicated in wanted-cards/index.vue and GridView.vue — single source
 // of truth for the language icons on wanted cards.
 //
@@ -21,10 +22,10 @@ export type WantedCardLanguage = (typeof WANTED_CARD_LANGUAGES)[number]
 export type WantedCardLanguageFilter = 'any' | WantedCardLanguage
 
 export const WANTED_CARD_LANGUAGE_ICONS: Record<WantedCardLanguage, string> = {
-  en: 'i-circle-flags-gb',
-  it: 'i-circle-flags-it',
-  es: 'i-circle-flags-es',
-  fr: 'i-circle-flags-fr',
-  de: 'i-circle-flags-de',
-  ja: 'i-circle-flags-jp'
+  en: ICONS.flagEn,
+  it: ICONS.flagIt,
+  es: ICONS.flagEs,
+  fr: ICONS.flagFr,
+  de: ICONS.flagDe,
+  ja: ICONS.flagJa
 }

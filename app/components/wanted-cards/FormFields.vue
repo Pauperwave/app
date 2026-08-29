@@ -19,6 +19,7 @@
 <script setup lang="ts">
 import type { ScryfallPrinting } from '~/composables/useScryfallCardSearch'
 import type { WantedCardLanguageFilter } from '~/utils/wantedCards/wantedCardLanguages'
+import { WANTED_CARD_LANGUAGE_ICONS } from '~/utils/wantedCards/wantedCardLanguages'
 
 interface FormFieldsState {
   printingId?: string
@@ -59,13 +60,13 @@ const playerOptions = computed(() => (associates.value ?? [])
 // Portuguese/Simplified Chinese in 2024). Flags from the circle-flags set, same
 // pattern as korallo.pizza's language selector.
 const languageOptions = computed(() => [
-  { label: t('wantedCard.languages.any'), value: 'any', icon: 'i-lucide-languages' },
-  { label: t('wantedCard.languages.en'), value: 'en', icon: 'i-circle-flags-gb' },
-  { label: t('wantedCard.languages.it'), value: 'it', icon: 'i-circle-flags-it' },
-  { label: t('wantedCard.languages.es'), value: 'es', icon: 'i-circle-flags-es' },
-  { label: t('wantedCard.languages.fr'), value: 'fr', icon: 'i-circle-flags-fr' },
-  { label: t('wantedCard.languages.de'), value: 'de', icon: 'i-circle-flags-de' },
-  { label: t('wantedCard.languages.ja'), value: 'ja', icon: 'i-circle-flags-jp' }
+  { label: t('wantedCard.languages.any'), value: 'any', icon: ICONS.languages },
+  { label: t('wantedCard.languages.en'), value: 'en', icon: WANTED_CARD_LANGUAGE_ICONS.en },
+  { label: t('wantedCard.languages.it'), value: 'it', icon: WANTED_CARD_LANGUAGE_ICONS.it },
+  { label: t('wantedCard.languages.es'), value: 'es', icon: WANTED_CARD_LANGUAGE_ICONS.es },
+  { label: t('wantedCard.languages.fr'), value: 'fr', icon: WANTED_CARD_LANGUAGE_ICONS.fr },
+  { label: t('wantedCard.languages.de'), value: 'de', icon: WANTED_CARD_LANGUAGE_ICONS.de },
+  { label: t('wantedCard.languages.ja'), value: 'ja', icon: WANTED_CARD_LANGUAGE_ICONS.ja }
 ])
 
 const currentLanguage = computed(() => languageOptions.value.find(l => l.value === state.language))

@@ -70,8 +70,8 @@ const selectedLeagues = computed(() =>
 
 const viewMode = ref<'table' | 'grid'>('grid')
 const viewModeItems = computed<TabsItem[]>(() => [
-  { label: t('league.views.grid'), value: 'grid', icon: 'i-lucide-layout-grid' },
-  { label: t('league.views.table'), value: 'table', icon: 'i-lucide-table' }
+  { label: t('league.views.grid'), value: 'grid', icon: ICONS.grid },
+  { label: t('league.views.table'), value: 'table', icon: ICONS.table }
 ])
 
 // Matches /tournaments' default sort and the grid view's own chronological

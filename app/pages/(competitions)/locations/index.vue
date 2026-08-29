@@ -36,10 +36,12 @@ function locationContextMenuItems(location: Location): DropdownMenuItem[] {
   ]
 }
 
+// TODO non è il caso di estrarre una piccola utility dato che uso lo stesso pattern in più punti?
+// mi riferisco alla grid/table buttons
 const viewMode = ref<'table' | 'grid'>('grid')
 const viewModeItems = computed<TabsItem[]>(() => [
-  { label: t('location.views.grid'), value: 'grid', icon: 'i-lucide-layout-grid' },
-  { label: t('location.views.table'), value: 'table', icon: 'i-lucide-table' }
+  { label: t('location.views.grid'), value: 'grid', icon: ICONS.grid },
+  { label: t('location.views.table'), value: 'table', icon: ICONS.table }
 ])
 
 const sorting = ref([{ id: 'name', desc: false }])

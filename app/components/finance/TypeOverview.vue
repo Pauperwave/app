@@ -17,8 +17,8 @@ const { t } = useI18n()
 
 const viewMode = ref<'chart' | 'table'>('chart')
 const viewModeItems = computed<TabsItem[]>(() => [
-  { label: t('finance.views.chart'), value: 'chart', icon: 'i-lucide-chart-area' },
-  { label: t('finance.views.table'), value: 'table', icon: 'i-lucide-table' }
+  { label: t('finance.views.chart'), value: 'chart', icon: ICONS.chartArea },
+  { label: t('finance.views.table'), value: 'table', icon: ICONS.table }
 ])
 </script>
 
