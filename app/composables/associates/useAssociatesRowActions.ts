@@ -100,21 +100,7 @@ export function useAssociatesRowActions() {
     }
   }
 
-  // Same clipboard pattern as useWantedCardsRowActions.ts's copyCardName —
-  // reuses the generic common.copyErrorTitle for the failure toast since
-  // there's nothing domain-specific to say there.
-  async function copyToClipboard(text: string, successTitle: string) {
-    try {
-      await navigator.clipboard.writeText(text)
-      toast.add({ title: successTitle, color: 'success' })
-    } catch (err) {
-      toast.add({
-        title: t('common.copyErrorTitle'),
-        description: toErrorMessage(err),
-        color: 'error'
-      })
-    }
-  }
+  const { copyToClipboard } = useCopyToClipboard()
 
   function rowContextMenuItems(associate: Associate): DropdownMenuItem[] {
     return [
@@ -194,21 +180,7 @@ export function useAssociatesRowActions() {
     ]
   }
 
-  // Populated by UTable's `@contextmenu` on right-click over a row — the
-  // UContextMenu wrapping the table has no way of knowing which row was clicked,
-  // so it is set here and its `:items` recompute accordingly (same pattern as
-  // useWantedCardsRowActions.ts).
-  // shallowRef, not ref: Associate carries an optional Nuxt UI AvatarProps field
-  // whose deeply generic/recursive type makes Vue's UnwrapRef<Associate> blow up
-  // TS with "Type instantiation is excessively deep" (TS2589) — shallowRef skips
-  // that recursive unwrap, which is fine here since this ref is only ever
-  // replaced wholesale, never mutated through a nested property.
-  const contextMenuRow = shallowRef<Associate | null>(null)
-  function onRowContextmenu(_e: Event, row: { original: Associate }) {
-    contextMenuRow.value = row.original
-  }
-  const tableContextMenuItems = computed<DropdownMenuItem[]>(() =>
-    contextMenuRow.value ? rowContextMenuItems(contextMenuRow.value) : [])
+  const { onRowContextmenu, tableContextMenuItems } = useRowContextMenu(rowContextMenuItems)
 
   return {
     editingAssociate,

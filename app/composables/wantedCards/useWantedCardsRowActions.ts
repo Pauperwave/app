@@ -208,15 +208,7 @@ export function useWantedCardsRowActions() {
     ]
   }
 
-  // Populated by UTable's `@contextmenu` on right-click over a row — the
-  // UContextMenu wrapping the table has no way of knowing which row was clicked,
-  // so it is set here and its `:items` recompute accordingly.
-  const contextMenuRow = ref<WantedCard | null>(null)
-  function onRowContextmenu(_e: Event, row: { original: WantedCard }) {
-    contextMenuRow.value = row.original
-  }
-  const tableContextMenuItems = computed(() =>
-    contextMenuRow.value ? rowContextMenuItems(contextMenuRow.value) : [])
+  const { onRowContextmenu, tableContextMenuItems } = useRowContextMenu(rowContextMenuItems)
 
   return {
     rowContextMenuItems,
