@@ -27,6 +27,8 @@ useSeoMeta({ title: () => t(FORMAT_STANDINGS_BREADCRUMB_KEYS[format]) })
 // useFormatStandingsPage independently). Declared before that call below
 // since it threads through to useFormatStandingsTableColumns.ts for match
 // highlighting.
+// fallow-ignore-next-line code-duplication -- see the same comment in
+// PublicFormatPage.vue
 const search = ref('')
 
 const {
@@ -104,6 +106,8 @@ const tour = useStandingsFormatTour()
       </UDashboardNavbar>
 
       <UDashboardToolbar>
+        <!-- fallow-ignore-next-line code-duplication -- see the same
+             comment in PublicFormatPage.vue -->
         <template #left>
           <div class="flex items-center gap-4 flex-wrap">
             <p class="text-sm text-muted">
