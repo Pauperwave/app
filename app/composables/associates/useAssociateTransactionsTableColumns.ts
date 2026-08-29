@@ -8,7 +8,7 @@ import type { TableColumn } from '@nuxt/ui'
 import type { Transaction, Tournament } from '~/types'
 import {
   AssociateTag, DateWithRelativeTooltip, PaymentMethodBadge, PaymentTypeBadge,
-  UBadge, UButton, UIcon, UTooltip
+  UBadge, UButton
 } from '#components'
 
 // Read-only summary, not the full /transactions table columns
@@ -112,17 +112,7 @@ export function useAssociateTransactionsTableColumns(
       // parseTransactionNotes() only handles the unknown-email marker now —
       // the receipt number moved to its own receipt_ref column (migration
       // 20260825230000), read directly above instead of parsed out of notes.
-      cell: ({ row }) => {
-        const { hasUnknownEmail, cleanNotes } = parseTransactionNotes(row.original.notes)
-        if (!hasUnknownEmail) return cleanNotes
-        return h('div', { class: 'flex items-center gap-1.5' }, [
-          h(UTooltip, { text: t('transaction.columns.unknownEmailTooltip') }, () => h(UIcon, {
-            name: ICONS.incognito,
-            class: 'size-4 text-dimmed shrink-0'
-          })),
-          cleanNotes
-        ])
-      }
+      cell: ({ row }) => transactionNotesCell(row.original.notes, t('transaction.columns.unknownEmailTooltip'))
     }
   ]
 

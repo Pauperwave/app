@@ -1,6 +1,6 @@
 // app\composables\transactions\useTransactionsTableColumns.ts
 import {
-  AssociateTag, UBadge, UIcon, UTooltip
+  AssociateTag, UBadge, UIcon
 } from '#components'
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { Transaction } from '~/types'
@@ -210,18 +210,9 @@ export function useTransactionsTableColumns(
     {
       accessorKey: 'notes',
       header: columnHeaders.notes,
-      cell: ({ row }) => {
-        if (row.getIsGrouped()) return null
-        const { hasUnknownEmail, cleanNotes } = parseTransactionNotes(row.original.notes)
-        if (!hasUnknownEmail) return cleanNotes
-        return h('div', { class: 'flex items-center gap-1.5' }, [
-          h(UTooltip, { text: t('transaction.columns.unknownEmailTooltip') }, () => h(UIcon, {
-            name: ICONS.incognito,
-            class: 'size-4 text-dimmed shrink-0'
-          })),
-          cleanNotes
-        ])
-      }
+      cell: ({ row }) => row.getIsGrouped()
+        ? null
+        : transactionNotesCell(row.original.notes, t('transaction.columns.unknownEmailTooltip'))
     },
     {
       accessorKey: 'createdBy',
