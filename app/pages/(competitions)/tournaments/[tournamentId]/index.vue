@@ -90,7 +90,7 @@ const items = computed(() => [
     slot: 'leaderboard',
     title: t('tournament.stepper.leaderboard'),
     description: t('tournament.stepper.leaderboardDescription'),
-    icon: 'i-lucide-list-ordered'
+    icon: ICONS.listOrdered
   }
 ])
 </script>

@@ -56,8 +56,8 @@ const tour = useAssociatesTour()
 
 const viewMode = ref<'table' | 'map'>('table')
 const viewModeItems = computed<TabsItem[]>(() => [
-  { label: t('associate.views.table'), value: 'table', icon: 'i-lucide-table' },
-  { label: t('associate.views.map'), value: 'map', icon: 'i-lucide-map' }
+  { label: t('associate.views.table'), value: 'table', icon: ICONS.table },
+  { label: t('associate.views.map'), value: 'map', icon: ICONS.map }
 ])
 
 const route = useRoute()
@@ -123,6 +123,7 @@ const search = ref('')
 // fallow-ignore-next-line code-duplication -- the useAssociatesTableColumns destructure
 // and status-filter-from-query function mirror requests.vue's own (different column
 // id and query semantics per page), not worth forcing into a shared helper
+// TODO "this page's own column order differs from requests.vue's" they shouldn't
 const {
   columnHeaders, visibilityItems,
   selectColumn, idColumn, createdAtColumn, updatedAtColumn, updatedByColumn,

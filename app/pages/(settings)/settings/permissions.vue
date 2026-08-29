@@ -142,7 +142,7 @@ const rows = computed<PermissionRow[]>(() => {
 // full of "no access" icons was pure noise, the blank space already reads as "no."
 const ACCESS_META: Record<'full' | 'partial', { icon: string, color: string }> = {
   full: { icon: ICONS.successFilled, color: 'text-success' },
-  partial: { icon: 'i-lucide-circle-dot', color: 'text-warning' }
+  partial: { icon: ICONS.circleDot, color: 'text-warning' }
 }
 
 // Legend only covers the two states that actually render something — 'none' is

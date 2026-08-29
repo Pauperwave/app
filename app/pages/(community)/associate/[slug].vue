@@ -6,12 +6,21 @@
 import { format, parseISO } from 'date-fns'
 import type { TableColumn } from '@nuxt/ui'
 import type { Transaction } from '~/types'
-import { UBadge, UButton, UIcon, UTooltip } from '#components'
-import AssociateTag from '~/components/ui/AssociateTag.vue'
-import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
-import PaymentTypeBadge from '~/components/ui/PaymentTypeBadge.vue'
-import PaymentMethodBadge from '~/components/ui/PaymentMethodBadge.vue'
-import TournamentsStageLabel from '~/components/tournaments/StageLabel.vue'
+// Explicit imports required: these are used inside h() calls in computed
+// TableColumn defs below, not as <template> tags — auto-import only resolves
+// components referenced as template tags (see CLAUDE.md's h()-in-composables
+// note; the same limitation applies to h() calls in a .vue script setup).
+import {
+  AssociateTag,
+  DateWithRelativeTooltip,
+  PaymentMethodBadge,
+  PaymentTypeBadge,
+  TournamentsStageLabel,
+  UBadge,
+  UButton,
+  UIcon,
+  UTooltip
+} from '#components'
 
 interface DetailField {
   icon: string
@@ -56,6 +65,7 @@ const editModalOpen = ref(false)
 // UserMenu.vue) instead of the generated placeholder.
 const avatar = computed(() => {
   if (!associate.value) return undefined
+  // TODO rimuovere questa eccezione, sia qui che in UserMenu.vue
   if (associate.value.first_name === 'Emanuele' && associate.value.last_name === 'Nardi') {
     return 'https://github.com/emanuelenardi.png'
   }
@@ -71,18 +81,20 @@ function formatDate(dateString?: string | null): string {
   }
 }
 
+// TODO file di configurazione?
 const anagraficaFields = computed<DetailField[]>(() => !associate.value
   ? []
   : [
     { icon: ICONS.player, label: t('associate.columns.firstName'), value: associate.value.first_name },
     { icon: ICONS.player, label: t('associate.columns.lastName'), value: associate.value.last_name },
     { icon: ICONS.idCard, label: t('associate.columns.taxCode'), value: associate.value.tax_code || '—' },
-    { icon: 'i-lucide-cake', label: t('associate.columns.bornDate'), value: formatDate(associate.value.born_date) || '—' },
+    { icon: ICONS.cake, label: t('associate.columns.bornDate'), value: formatDate(associate.value.born_date) || '—' },
     { icon: ICONS.mapPin, label: t('associate.columns.bornLocation'), value: associate.value.born_location || '—' },
-    { icon: 'i-lucide-map', label: t('associate.columns.bornProvince'), value: associate.value.born_province || '—' },
-    { icon: 'i-lucide-flag', label: t('associate.columns.bornState'), value: associate.value.born_state || '—' }
+    { icon: ICONS.map, label: t('associate.columns.bornProvince'), value: associate.value.born_province || '—' },
+    { icon: ICONS.flag, label: t('associate.columns.bornState'), value: associate.value.born_state || '—' }
   ])
 
+// TODO file di configurazione?
 const contattiFields = computed<DetailField[]>(() => !associate.value
   ? []
   : [
@@ -92,9 +104,9 @@ const contattiFields = computed<DetailField[]>(() => !associate.value
     { icon: ICONS.phone, label: t('associate.columns.phoneNumber'), value: formatPhoneNumber(associate.value.phone_number) || '—' },
     { icon: ICONS.mapPin, label: t('associate.columns.residencyAddress'), value: associate.value.residency_address },
     { icon: ICONS.hash, label: t('associate.columns.residencyHouseNumber'), value: associate.value.residency_house_number || '—' },
-    { icon: 'i-lucide-building', label: t('associate.columns.residencyCity'), value: associate.value.residency_city },
-    { icon: 'i-lucide-map', label: t('associate.columns.residencyProvince'), value: associate.value.residency_province },
-    { icon: 'i-lucide-mailbox', label: t('associate.columns.residencyCap'), value: associate.value.residency_cap }
+    { icon: ICONS.building, label: t('associate.columns.residencyCity'), value: associate.value.residency_city },
+    { icon: ICONS.map, label: t('associate.columns.residencyProvince'), value: associate.value.residency_province },
+    { icon: ICONS.mailbox, label: t('associate.columns.residencyCap'), value: associate.value.residency_cap }
   ])
 
 // pauperwave_associate_number/membership_status/associate_type don't go
@@ -103,11 +115,12 @@ const contattiFields = computed<DetailField[]>(() => !associate.value
 // card's #before slot instead of plain translated text, same as the table
 // (bug, user report 2026-08-27: associate_type was the odd one out, still
 // plain text here despite the other two already being badges).
+// TODO file di configurazione?
 const tesseramentoFields = computed<DetailField[]>(() => !associate.value
   ? []
   : [
     { icon: ICONS.calendar, label: t('associate.columns.requestDate'), value: formatDate(associate.value.request_date) || '—' },
-    { icon: 'i-lucide-calendar-check', label: t('associate.columns.associationDate'), value: formatDate(associate.value.association_date) || '—' },
+    { icon: ICONS.calendarCheck, label: t('associate.columns.associationDate'), value: formatDate(associate.value.association_date) || '—' },
     { icon: ICONS.creditCard, label: t('associate.columns.lastRenewalDate'), value: formatDate(associate.value.latest_renewal_date) || '—' }
   ])
 
@@ -118,8 +131,8 @@ const tesseramentoFields = computed<DetailField[]>(() => !associate.value
 const consensiFields = computed<ConsentField[]>(() => !associate.value
   ? []
   : [
-    { icon: 'i-lucide-shield-check', label: t('associate.columns.consentData'), value: associate.value.consent_data },
-    { icon: 'i-lucide-share-2', label: t('associate.columns.consentSocial'), value: associate.value.consent_social },
+    { icon: ICONS.shieldCheck, label: t('associate.columns.consentData'), value: associate.value.consent_data },
+    { icon: ICONS.share, label: t('associate.columns.consentSocial'), value: associate.value.consent_social },
     { icon: ICONS.rules, label: t('associate.columns.hasReadStatute'), value: associate.value.has_read_statute },
     { icon: ICONS.show, label: t('associate.columns.hasAcknowledgedSurveillanceNotice'), value: associate.value.has_acknowledged_surveillance_notice }
   ])
@@ -129,7 +142,9 @@ const consensiFields = computed<ConsentField[]>(() => !associate.value
 // table is already fetched and small enough (same reasoning as
 // useAssociatesTableColumns.ts resolving updated_by/created_by client-side).
 const {
-  data: transactions, isLoading: transactionsLoading, isPending: transactionsPending
+  data: transactions,
+  isLoading: transactionsLoading,
+  isPending: transactionsPending
 } = useTransactionsQuery()
 const associateTransactions = computed(() => (transactions.value ?? [])
   .filter(transaction => transaction.associate?.uuid === associate.value?.uuid))
@@ -153,6 +168,7 @@ const tournamentsByUuid = computed(() =>
 // historical imports meant literally showing strings like "PAUPER TAPPA 6"
 // instead of the resolved tournament + stage number, and never splitting
 // out gettoni-encoded rows into their own badge at all.
+// TODO se non ricordo male in altre tabelle le colonne sono in un file di configurazione a parte
 const associateTransactionsColumns: TableColumn<Transaction>[] = [
   {
     accessorKey: 'payment_date',
@@ -387,7 +403,7 @@ const associateTransactionsColumns: TableColumn<Transaction>[] = [
             <template #before>
               <div class="flex justify-between items-center gap-4">
                 <dt class="flex items-center gap-1.5 text-muted">
-                  <UIcon name="i-lucide-badge-check" class="size-4 shrink-0" /> {{ $t('associate.columns.membershipStatus') }}
+                  <UIcon :name="ICONS.badgeCheck" class="size-4 shrink-0" /> {{ $t('associate.columns.membershipStatus') }}
                 </dt>
                 <dd>
                   <MembershipStatusBadge :status="associate.membership_status" />
@@ -403,7 +419,7 @@ const associateTransactionsColumns: TableColumn<Transaction>[] = [
               </div>
               <div class="flex justify-between items-center gap-4">
                 <dt class="flex items-center gap-1.5 text-muted">
-                  <UIcon name="i-lucide-tag" class="size-4 shrink-0" /> {{ $t('associate.columns.associateType') }}
+                  <UIcon :name="ICONS.tag" class="size-4 shrink-0" /> {{ $t('associate.columns.associateType') }}
                 </dt>
                 <dd>
                   <AssociateTypeBadge :type="associate.associate_type" />

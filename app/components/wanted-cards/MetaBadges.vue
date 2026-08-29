@@ -13,7 +13,7 @@ const { t } = useI18n()
   <UBadge
     color="neutral"
     variant="subtle"
-    :icon="card.language ? WANTED_CARD_LANGUAGE_ICONS[card.language] : 'i-lucide-languages'"
+    :icon="card.language ? WANTED_CARD_LANGUAGE_ICONS[card.language] : ICONS.languages"
     class="gap-2"
   >
     {{ t(`wantedCard.languages.${card.language || 'any'}`) }}

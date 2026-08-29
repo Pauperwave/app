@@ -75,7 +75,7 @@ export function useTransactionFormOptions() {
 
   const paymentMethodOptions = computed(() => [
     { value: 'Cash' as const, label: t('transaction.addModal.paymentMethodOptions.cash'), icon: ICONS.wallet },
-    { value: 'PayPal' as const, label: 'PayPal', icon: 'i-simple-icons-paypal' },
+    { value: 'PayPal' as const, label: 'PayPal', icon: ICONS.paypal },
     { value: 'POS' as const, label: 'POS', icon: ICONS.creditCard },
     { value: 'Comped' as const, label: t('transaction.addModal.paymentMethodOptions.comped'), icon: ICONS.heartHandshake }
   ])

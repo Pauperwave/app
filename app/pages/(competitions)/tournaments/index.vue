@@ -109,8 +109,8 @@ const selectedTournaments = computed(() =>
 
 const viewMode = ref<'table' | 'grid'>('grid')
 const viewModeItems = computed<TabsItem[]>(() => [
-  { label: t('tournament.views.grid'), value: 'grid', icon: 'i-lucide-layout-grid' },
-  { label: t('tournament.views.table'), value: 'table', icon: 'i-lucide-table' }
+  { label: t('tournament.views.grid'), value: 'grid', icon: ICONS.grid },
+  { label: t('tournament.views.table'), value: 'table', icon: ICONS.table }
 ])
 
 const sorting = ref([{ id: 'startDate', desc: false }])

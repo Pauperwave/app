@@ -122,7 +122,7 @@ const tour = useRulesetsTour()
                   </span>
                 </li>
                 <li class="flex gap-2">
-                  <UIcon name="i-lucide-calendar-check" class="mt-0.5 size-4 shrink-0 text-primary" />
+                  <UIcon :name="ICONS.calendarCheck" class="mt-0.5 size-4 shrink-0 text-primary" />
                   <span>{{ $t('ruleset.cittadino.eligibility') }}</span>
                 </li>
                 <li class="flex gap-2">
