@@ -30,22 +30,28 @@ const gradientStyle = computed(() => {
     :style="{ background: gradientStyle }"
   >
     <div class="w-64 aspect-5/7">
-      <img
+      <NuxtImg
         v-if="printing?.imageUrl"
         :src="printing.imageUrl"
         :alt="printing.name"
+        format="webp"
+        width="256"
+        height="358"
         class="size-full rounded-lg shadow-xl object-cover"
         loading="lazy"
-      >
+      />
     </div>
     <div v-if="printing?.isDoubleFaced" class="w-64 aspect-5/7">
-      <img
+      <NuxtImg
         v-if="printing.backImageUrl"
         :src="printing.backImageUrl"
         :alt="`${printing.name} (retro)`"
+        format="webp"
+        width="256"
+        height="358"
         class="size-full rounded-lg shadow-xl object-cover"
         loading="lazy"
-      >
+      />
     </div>
   </div>
 </template>

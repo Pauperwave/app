@@ -59,12 +59,15 @@ const dateRangeTooltip = computed(() => {
 <template>
   <div class="relative -m-3 mb-3">
     <template v-if="!loading && league">
-      <img
+      <NuxtImg
         v-if="league.image"
         :src="league.image"
         :alt="league.name"
+        format="webp"
+        width="640"
+        height="128"
         class="w-full h-32 object-cover"
-      >
+      />
       <ImageOffPlaceholder v-else class="w-full h-32" icon-class="size-8" />
     </template>
     <USkeleton v-else class="w-full h-32 rounded-none" />

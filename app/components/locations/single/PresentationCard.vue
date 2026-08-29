@@ -35,13 +35,16 @@ const { t } = useI18n()
            the grid card's own LocationsListLocationStatus). -->
       <div class="relative shrink-0 w-full sm:w-64">
         <template v-if="!loading && location">
-          <img
+          <NuxtImg
             v-if="location.image"
             :src="location.image"
             :alt="location.name"
+            format="webp"
+            width="256"
+            height="192"
             class="w-full h-48 sm:h-full object-cover"
             :class="{ 'opacity-60 saturate-50': location.temporarilyClosed }"
-          >
+          />
           <ImageOffPlaceholder
             v-else
             class="w-full h-48 sm:h-full"

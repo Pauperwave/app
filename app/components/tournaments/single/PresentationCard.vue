@@ -31,12 +31,15 @@ const formattedStartDate = computed(() => {
   <div>
     <UCard :ui="{ body: 'flex items-center gap-4 p-3 sm:p-3' }">
       <div class="relative w-20 h-20 rounded-lg overflow-hidden shrink-0">
-        <img
+        <NuxtImg
           v-if="tournament.image"
           :src="tournament.image"
           :alt="tournament.name"
+          format="webp"
+          width="80"
+          height="80"
           class="w-full h-full object-cover"
-        >
+        />
         <ImageOffPlaceholder v-else class="w-full h-full" icon-class="size-6" />
       </div>
 

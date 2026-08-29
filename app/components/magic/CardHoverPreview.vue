@@ -83,11 +83,14 @@ function handleClick() {
     </span>
 
     <template v-if="imageUrl" #content>
-      <img
+      <NuxtImg
         :src="imageUrl"
         :alt="alt"
+        format="webp"
+        width="280"
+        height="392"
         class="w-70 h-auto rounded-xl shadow-2xl"
-      >
+      />
     </template>
   </UTooltip>
 
@@ -99,12 +102,15 @@ function handleClick() {
   >
     <template #content>
       <div class="flex items-center justify-center p-4">
-        <img
+        <NuxtImg
           v-if="imageUrl"
           :src="imageUrl"
           :alt="alt"
+          format="webp"
+          width="488"
+          height="680"
           class="block max-w-full max-h-[75vh] rounded-xl shadow-2xl"
-        >
+        />
       </div>
     </template>
   </UModal>

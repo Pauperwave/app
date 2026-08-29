@@ -70,12 +70,15 @@ const isPast = computed(() => status === 'completed')
            date box's spot — the date moves into a text line below the title
            instead. -->
       <div class="size-20 rounded-xl overflow-hidden shrink-0">
-        <img
+        <NuxtImg
           v-if="image"
           :src="image"
           :alt="name"
+          format="webp"
+          width="80"
+          height="80"
           class="size-full object-cover"
-        >
+        />
         <ImageOffPlaceholder v-else class="size-full" icon-class="size-6" />
       </div>
 

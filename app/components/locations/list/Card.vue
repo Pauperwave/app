@@ -72,12 +72,15 @@ const mapsLink = computed(() => location
 
       <div :class="{ 'opacity-60 saturate-50': !loading && location && location.temporarilyClosed }">
         <template v-if="!loading && location">
-          <img
+          <NuxtImg
             v-if="location.image"
             :src="location.image"
             :alt="location.name"
+            format="webp"
+            width="640"
+            height="128"
             class="w-full h-32 object-cover rounded-t-[calc(var(--ui-radius)*2)]"
-          >
+          />
           <ImageOffPlaceholder
             v-else
             class="w-full h-32 rounded-t-[calc(var(--ui-radius)*2)]"
