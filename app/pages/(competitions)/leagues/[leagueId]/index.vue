@@ -1,5 +1,11 @@
 <!-- app\pages\(competitions)\leagues\[leagueId]\index.vue -->
 <script lang="ts" setup>
+// fallow-ignore-file code-duplication -- the UDashboardPanel/Navbar/Toolbar/
+// breadcrumb header shell (and its route-param/useBreadcrumbs/refetch wiring)
+// mirrors every other detail page (locations/[slug], events/[eventId],
+// players/[slug]); each page's #right toolbar content and body differ
+// entirely per domain, so a shared header component would need as many
+// slots/conditionals as it saves lines.
 // First real (non-mock) detail page among tournaments/leagues/events singles
 // (2026-08-16) — clicking a tournament card's league link lands here. Reuses
 // TournamentsListGridView as-is: same cards, and (2026-08-29) the same

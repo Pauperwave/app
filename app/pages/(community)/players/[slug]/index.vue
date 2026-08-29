@@ -1,5 +1,7 @@
 <!-- app\pages\(community)\players\[slug]\index.vue -->
 <script lang="ts" setup>
+// fallow-ignore-file code-duplication -- see the same comment in
+// leagues/[leagueId]/index.vue
 // Detail page for players (2026-08-20 user request) — restructured the same
 // day to match associate/[slug].vue's own shape (avatar header card +
 // DetailCard grid) instead of the ad-hoc <dl> this started as. No edit

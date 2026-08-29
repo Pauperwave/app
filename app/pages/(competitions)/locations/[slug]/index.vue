@@ -1,5 +1,7 @@
 <!-- app\pages\(competitions)\locations\[slug]\index.vue -->
 <script lang="ts" setup>
+// fallow-ignore-file code-duplication -- see the same comment in
+// leagues/[leagueId]/index.vue
 // First detail page for locations (2026-08-19 user request) — same shape as
 // leagues/[leagueId]/index.vue (the first real, non-mock single page among
 // tournaments/leagues/events): a header plus a filtered
