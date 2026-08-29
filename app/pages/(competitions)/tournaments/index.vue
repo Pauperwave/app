@@ -68,6 +68,16 @@ const {
 } = useCopyLinkContextMenu<Tournament>('/tournaments')
 const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowActions()
 
+// "Copia torneo" (user request, 2026-08-29) — one AddModal instance reused
+// across every copy click, re-seeded via its sourceTournament prop, same
+// convention as events/[eventId]/index.vue's own click-to-create AddModal.
+const copyModalOpen = ref(false)
+const copySourceTournament = shallowRef<Tournament | null>(null)
+function openCopyModal(tournament: Tournament) {
+  copySourceTournament.value = tournament
+  copyModalOpen.value = true
+}
+
 const selection = useSelection<number>()
 const { columns } = useTournamentsTableColumns(selection, openEditModal)
 const {
@@ -87,6 +97,11 @@ function tournamentContextMenuItems(tournament: Tournament): DropdownMenuItem[] 
       label: t('tournament.rowActions.edit'),
       icon: ICONS.edit,
       onSelect: () => openEditModal(tournament)
+    },
+    {
+      label: t('tournament.rowActions.copy'),
+      icon: ICONS.copy,
+      onSelect: () => openCopyModal(tournament)
     },
     {
       label: t('tournament.rowActions.delete'),
@@ -309,6 +324,12 @@ const bulkConfirmTitle = computed(() => {
   <TourGuide :tour="tour" />
 
   <TournamentsListEditModal v-model="editModalOpen" :tournament="editingTournament" />
+
+  <TournamentsListAddModal
+    v-model="copyModalOpen"
+    hide-trigger
+    :source-tournament="copySourceTournament"
+  />
 
   <MtgFormatsManageModal v-model="manageFormatsOpen" :format-usage-counts="formatUsageCounts" />
 

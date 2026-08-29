@@ -1152,6 +1152,7 @@
     },
     "rowActions": {
       "edit": "Modifica evento",
+      "copy": "Copia evento",
       "delete": "Elimina"
     },
     "bulkActions": {
@@ -1260,6 +1261,7 @@
     },
     "rowActions": {
       "edit": "Modifica torneo",
+      "copy": "Copia torneo",
       "delete": "Elimina"
     },
     "statusChangeErrorTitle": "Impossibile aggiornare lo stato del torneo",

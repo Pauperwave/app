@@ -33,6 +33,15 @@ const skeletonCount = computed(() => (isPending.value ? undefined : filteredEven
 const { rowContextMenuItems, onRowContextmenu, contextMenuRow } = useCopyLinkContextMenu<Event>('/events')
 const { editingEvent, editModalOpen, openEditModal } = useEventsRowActions()
 
+// "Copia evento" (user request, 2026-08-29) — same reusable-instance
+// convention as tournaments/index.vue's own copy action.
+const copyModalOpen = ref(false)
+const copySourceEvent = shallowRef<Event | null>(null)
+function openCopyModal(event: Event) {
+  copySourceEvent.value = event
+  copyModalOpen.value = true
+}
+
 const selection = useSelection<number>()
 const { columns } = useEventsTableColumns(selection, openEditModal)
 const {
@@ -46,6 +55,7 @@ function eventContextMenuItems(event: Event): DropdownMenuItem[] {
   return [
     ...rowContextMenuItems(event),
     { label: t('event.rowActions.edit'), icon: ICONS.edit, onSelect: () => openEditModal(event) },
+    { label: t('event.rowActions.copy'), icon: ICONS.copy, onSelect: () => openCopyModal(event) },
     {
       label: t('event.rowActions.delete'),
       icon: ICONS.delete,
@@ -203,6 +213,8 @@ const bulkConfirmTitle = computed(() => {
   <TourGuide :tour="tour" />
 
   <EventsListEditModal v-model="editModalOpen" :event="editingEvent" />
+
+  <EventsListAddModal v-model="copyModalOpen" hide-trigger :source-event="copySourceEvent" />
 
   <ConfirmModal
     v-model:open="bulkConfirmOpen"
