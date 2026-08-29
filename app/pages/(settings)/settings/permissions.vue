@@ -20,9 +20,11 @@ type GroupKey
 // Whether the row describes real, working code today — separate from the
 // role grid itself (which is the *intended* policy, docs/architecture/
 // roles.md/permissions.md). Verified by hand against server/api/* and
-// app/pages/* 2026-08-23 (user request), not derived automatically — keep
-// in sync the same way the role columns already are, re-check whenever a
-// row's underlying feature actually gets built/changed.
+// app/pages/* (2026-08-23, re-verified 2026-08-29 — five rows had drifted
+// out of sync with a route-guard fix made earlier the same session), not
+// derived automatically — keep in sync the same way the role columns
+// already are, re-check whenever a row's underlying feature actually gets
+// built/changed.
 type ImplementationStatus = 'implemented' | 'partial' | 'notImplemented'
 
 interface RoleCell {
@@ -150,18 +152,18 @@ const rows = computed<PermissionRow[]>(() => {
   //
   // viewFinance/viewAssociates/viewPlayers/manageLocations/manageRulesets
   // (2026-08-29, user request — cross-referenced against the full
-  // Permission union in app/utils/permissions.ts) are all notImplemented:
-  // none of their pages declare `definePageMeta({ permission: ... })`, only
-  // the sidebar hides the link — any authenticated user can still open them
-  // directly by URL. viewTrash is the one exception (trash.vue does have
-  // the guard), included here anyway to keep the Cestino section complete.
+  // Permission union in app/utils/permissions.ts) were briefly notImplemented:
+  // none of their pages declared `definePageMeta({ permission: ... })`, only
+  // the sidebar hid the link, so any authenticated user could open them
+  // directly by URL. Fixed the same session — all five (plus viewTrash,
+  // already guarded) are implemented now.
   return [
     ...group('finance', [
-      row('viewFinance', 'notImplemented', ['none', 'full', 'full', 'full'])
+      row('viewFinance', 'implemented', ['none', 'full', 'full', 'full'])
     ]),
 
     ...group('membership', [
-      row('viewAssociates', 'notImplemented', ['none', 'full', 'full', 'full']),
+      row('viewAssociates', 'implemented', ['none', 'full', 'full', 'full']),
       row('viewOwnMembership', 'implemented', [
         ['partial', 'playerNote'], ['partial', 'organizerNote'], ['full', 'adminNote'], ['full', 'superAdminNote']
       ]),
@@ -171,7 +173,7 @@ const rows = computed<PermissionRow[]>(() => {
     ]),
 
     ...group('players', [
-      row('viewPlayers', 'notImplemented', ['none', 'full', 'full', 'full'])
+      row('viewPlayers', 'implemented', ['none', 'full', 'full', 'full'])
     ]),
 
     ...group('wantedCards', [
@@ -193,11 +195,11 @@ const rows = computed<PermissionRow[]>(() => {
     ]),
 
     ...group('locations', [
-      row('manageLocations', 'notImplemented', ['none', 'full', 'full', 'full'])
+      row('manageLocations', 'implemented', ['none', 'full', 'full', 'full'])
     ]),
 
     ...group('rulesets', [
-      row('manageRulesets', 'notImplemented', ['none', 'full', 'full', 'full']),
+      row('manageRulesets', 'implemented', ['none', 'full', 'full', 'full']),
       row('deleteRuleset', 'notImplemented', ['none', 'none', 'full', 'full'])
     ]),
 

@@ -2298,24 +2298,19 @@
           "feature": "**Assegnare**/**modificare** ruoli (/settings/members)"
         },
         "viewFinance": {
-          "feature": "**Visualizzare** transazioni e finanze (/finance, /transactions)",
-          "statusNote": "La pagina non ha un controllo di permesso proprio (definePageMeta): chiunque sia autenticato può visualizzarla direttamente via URL, anche se il link è nascosto dalla sidebar per chi non ha questo permesso."
+          "feature": "**Visualizzare** transazioni e finanze (/finance, /transactions)"
         },
         "viewAssociates": {
-          "feature": "**Visualizzare** l'elenco soci (/associates)",
-          "statusNote": "La pagina non ha un controllo di permesso proprio (definePageMeta): chiunque sia autenticato può visualizzarla direttamente via URL, anche se il link è nascosto dalla sidebar per chi non ha questo permesso."
+          "feature": "**Visualizzare** l'elenco soci (/associates)"
         },
         "viewPlayers": {
-          "feature": "**Visualizzare** l'elenco giocatori (/players)",
-          "statusNote": "La pagina non ha un controllo di permesso proprio (definePageMeta): chiunque sia autenticato può visualizzarla direttamente via URL, anche se il link è nascosto dalla sidebar per chi non ha questo permesso."
+          "feature": "**Visualizzare** l'elenco giocatori (/players)"
         },
         "manageLocations": {
-          "feature": "**Gestire** i luoghi di gioco (/locations)",
-          "statusNote": "La pagina non ha un controllo di permesso proprio (definePageMeta): chiunque sia autenticato può visualizzarla direttamente via URL, anche se il link è nascosto dalla sidebar per chi non ha questo permesso."
+          "feature": "**Gestire** i luoghi di gioco (/locations)"
         },
         "manageRulesets": {
-          "feature": "**Creare**, **modificare** regolamenti (/rulesets)",
-          "statusNote": "La pagina non ha un controllo di permesso proprio (definePageMeta): chiunque sia autenticato può visualizzarla direttamente via URL, anche se il link è nascosto dalla sidebar per chi non ha questo permesso."
+          "feature": "**Creare**, **modificare** regolamenti (/rulesets)"
         },
         "viewTrash": {
           "feature": "**Visualizzare** e **ripristinare** righe dal cestino (/trash)"
