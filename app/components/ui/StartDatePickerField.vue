@@ -10,7 +10,6 @@
   same no-op-by-omission convention as DateRangePicker.vue's own prop.
 -->
 <script setup lang="ts">
-import { CalendarDate } from '@internationalized/date'
 import type { DateValue } from '@internationalized/date'
 import type { CalendarHighlightedDate } from '~/types'
 
@@ -27,31 +26,7 @@ const { label, highlightedDates = [] } = defineProps<{
 
 const startDate = defineModel<DateValue>('startDate')
 
-const toCalendarDate = (date: Date) => new CalendarDate(
-  date.getFullYear(),
-  date.getMonth() + 1,
-  date.getDate()
-)
-
-// Same grouping/hover-control pattern as DateRangePicker.vue's own
-// highlightedDates — see that file's comment for why the hover listener
-// sits on a wrapping `span.contents` rather than directly on `UChip`
-// (UChip's inheritAttrs:false silently drops listeners on text-only slot
-// content).
-const highlightedDatesByDay = computed(() => {
-  const map = new Map<string, CalendarHighlightedDate[]>()
-  for (const entry of highlightedDates) {
-    const key = toCalendarDate(entry.date).toString()
-    map.set(key, [...(map.get(key) ?? []), entry])
-  }
-  return map
-})
-
-function eventsFor(day: DateValue): CalendarHighlightedDate[] {
-  return highlightedDatesByDay.value.get(day.toString()) ?? []
-}
-
-const hoveredDayKey = ref<string | null>(null)
+const { eventsFor, hoveredDayKey } = useCalendarDayHighlights(() => highlightedDates)
 </script>
 
 <template>
@@ -67,30 +42,12 @@ const hoveredDayKey = ref<string | null>(null)
       <template #content>
         <UCalendar v-model="startDate" class="p-2">
           <template #day="{ day }">
-            <span
-              class="contents"
-              @mouseenter="hoveredDayKey = eventsFor(day).length ? day.toString() : null"
-              @mouseleave="hoveredDayKey = null"
-            >
-              <UTooltip
-                v-if="eventsFor(day).length"
-                :text="eventsFor(day).map(event => event.label).join('\n')"
-                :ui="{ text: 'whitespace-pre-line' }"
-                :open="hoveredDayKey === day.toString()"
-              >
-                <UChip :color="eventsFor(day).at(-1)!.color" size="xs" position="top-right">
-                  {{ day.day }}
-                </UChip>
-              </UTooltip>
-              <UChip
-                v-else
-                :show="false"
-                size="xs"
-                position="top-right"
-              >
-                {{ day.day }}
-              </UChip>
-            </span>
+            <CalendarDayChip
+              :day="day"
+              :events="eventsFor(day)"
+              :hovered="hoveredDayKey === day.toString()"
+              @hover="isHovered => hoveredDayKey = isHovered ? day.toString() : null"
+            />
           </template>
         </UCalendar>
       </template>

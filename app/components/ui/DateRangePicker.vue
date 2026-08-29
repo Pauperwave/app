@@ -1,9 +1,7 @@
 <!-- app\components\ui\DateRangePicker.vue -->
 <script setup lang="ts">
-import {
-  DateFormatter, getLocalTimeZone, CalendarDate, today
-} from '@internationalized/date'
-import type { DateValue } from '@internationalized/date'
+import { DateFormatter, getLocalTimeZone, today } from '@internationalized/date'
+import type { CalendarDate } from '@internationalized/date'
 import type { CalendarHighlightedDate, Range } from '~/types'
 
 const df = new DateFormatter('it-IT', {
@@ -15,11 +13,6 @@ interface Props {
    * #37) — see CalendarHighlightedDate. Omitted entirely (not just empty)
    * by every caller that hasn't opted in yet, so this stays a no-op. */
   highlightedDates?: CalendarHighlightedDate[]
-  /** Absolute calendar-year presets (Jan 1 - Dec 31 of that year), prepended
-   * above the relative "last/next N" ones. Opt-in per caller (transactions,
-   * whose data is naturally year-bucketed) — omitted entirely by every other
-   * page, same convention as highlightedDates. */
-  calendarYears?: number[]
   /** Always icon-only regardless of viewport, instead of showing the
    * formatted range as the button's own label — opt-in for pages crowded
    * enough that the range text itself doesn't fit (transactions/index.vue,
@@ -27,7 +20,7 @@ interface Props {
   iconOnly?: boolean
 }
 
-const { highlightedDates = [], calendarYears = [], iconOnly = false } = defineProps<Props>()
+const { highlightedDates = [], iconOnly = false } = defineProps<Props>()
 
 const selected = defineModel<Range>({ required: true })
 const { t } = useI18n()
@@ -39,8 +32,6 @@ const rangeLabel = computed(() => {
 })
 
 const ranges = computed(() => [
-  ...calendarYears.map(year => ({ label: String(year), year, type: undefined })),
-  ...(calendarYears.length ? [{ type: 'divider' as const }] : []),
   { label: t('home.dateRanges.lastYear'), years: 1, direction: 'past' as const },
   { label: t('home.dateRanges.last6Months'), months: 6, direction: 'past' as const },
   { label: t('home.dateRanges.last3Months'), months: 3, direction: 'past' as const },
@@ -54,13 +45,9 @@ const ranges = computed(() => [
   { label: t('home.dateRanges.all'), type: 'all' as const }
 ])
 
-const toCalendarDate = (date: Date) => {
-  return new CalendarDate(
-    date.getFullYear(),
-    date.getMonth() + 1,
-    date.getDate()
-  )
-}
+const {
+  toCalendarDate, eventsFor, hoveredDayKey
+} = useCalendarDayHighlights(() => highlightedDates)
 
 const calendarRange = computed({
   get: () => ({
@@ -81,13 +68,6 @@ interface RangeSpec {
   years?: number
   direction?: 'past' | 'future'
   type?: 'all'
-  /** Absolute calendar year (Jan 1 - Dec 31), unrelated to `years`/`direction`
-   * which are both relative to today. */
-  year?: number
-}
-
-function calendarYearRange(year: number): { startDate: CalendarDate, endDate: CalendarDate } {
-  return { startDate: new CalendarDate(year, 1, 1), endDate: new CalendarDate(year, 12, 31) }
 }
 
 // isRangeSelected/selectRange both need "what CalendarDate span does this preset
@@ -131,44 +111,12 @@ const isRangeSelected = (range: RangeSpec) => {
     return diffYears >= 10
   }
 
-  const { startDate, endDate } = range.year !== undefined
-    ? calendarYearRange(range.year)
-    : rangeDatesFromToday(range)
+  const { startDate, endDate } = rangeDatesFromToday(range)
   const selectedStart = toCalendarDate(selected.value.start)
   const selectedEnd = toCalendarDate(selected.value.end)
 
   return selectedStart.compare(startDate) === 0 && selectedEnd.compare(endDate) === 0
 }
-
-// CalendarDate#toString() is already a "YYYY-MM-DD" key, same format the
-// #day slot's own `day` param produces — cheaper than a per-day .some() scan
-// once highlightedDates gets into the dozens (all of a domain's tournaments).
-// Grouped (not deduped) per day: the tooltip lists every event on a day with
-// more than one, even though the dot itself can only show one color (the
-// last entry's, same as before).
-const highlightedDatesByDay = computed(() => {
-  const map = new Map<string, CalendarHighlightedDate[]>()
-  for (const entry of highlightedDates) {
-    const key = toCalendarDate(entry.date).toString()
-    map.set(key, [...(map.get(key) ?? []), entry])
-  }
-  return map
-})
-
-function eventsFor(day: DateValue): CalendarHighlightedDate[] {
-  return highlightedDatesByDay.value.get(day.toString()) ?? []
-}
-
-// UTooltip's own pointerenter-based auto-open never fires here — not a
-// reka-ui range-mode pointer conflict as first suspected, but UChip itself:
-// it declares inheritAttrs:false and forwards $attrs into its default
-// slot's content (asChild Slot), which is bare text (day.day) here, not an
-// element, so a listener put directly on <UChip> silently attaches to
-// nothing (see node_modules/@nuxt/ui/dist/runtime/components/Chip.vue).
-// Controlling `open` ourselves off native @mouseenter/@mouseleave on a
-// wrapping `span.contents` (in the template below, not on UChip) sidesteps
-// that entirely.
-const hoveredDayKey = ref<string | null>(null)
 
 const selectRange = (range: RangeSpec) => {
   const currentDate = today(getLocalTimeZone())
@@ -183,9 +131,7 @@ const selectRange = (range: RangeSpec) => {
     return
   }
 
-  const { startDate, endDate } = range.year !== undefined
-    ? calendarYearRange(range.year)
-    : rangeDatesFromToday(range)
+  const { startDate, endDate } = rangeDatesFromToday(range)
   selected.value = {
     start: startDate.toDate(getLocalTimeZone()),
     end: endDate.toDate(getLocalTimeZone())
@@ -246,37 +192,12 @@ const selectRange = (range: RangeSpec) => {
           range
         >
           <template #day="{ day }">
-            <!-- The hover listeners live on this plain `contents` span, not
-                 on UChip: UChip declares `inheritAttrs: false` and forwards
-                 its own $attrs into the default slot's content (reka-ui's
-                 asChild `Slot`) — since that content here is bare text
-                 (`day.day`), not an element, any listener put directly on
-                 `<UChip>` silently attaches to nothing. `display: contents`
-                 keeps this span out of the cell's layout/sizing. -->
-            <span
-              class="contents"
-              @mouseenter="hoveredDayKey = eventsFor(day).length ? day.toString() : null"
-              @mouseleave="hoveredDayKey = null"
-            >
-              <UTooltip
-                v-if="eventsFor(day).length"
-                :text="eventsFor(day).map(event => event.label).join('\n')"
-                :ui="{ text: 'whitespace-pre-line' }"
-                :open="hoveredDayKey === day.toString()"
-              >
-                <UChip :color="eventsFor(day).at(-1)!.color" size="xs" position="top-right">
-                  {{ day.day }}
-                </UChip>
-              </UTooltip>
-              <UChip
-                v-else
-                :show="false"
-                size="xs"
-                position="top-right"
-              >
-                {{ day.day }}
-              </UChip>
-            </span>
+            <CalendarDayChip
+              :day="day"
+              :events="eventsFor(day)"
+              :hovered="hoveredDayKey === day.toString()"
+              @hover="isHovered => hoveredDayKey = isHovered ? day.toString() : null"
+            />
           </template>
         </UCalendar>
       </div>
