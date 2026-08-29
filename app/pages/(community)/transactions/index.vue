@@ -45,15 +45,8 @@ const transactionDates = computed(() => data.value.map(transaction => ({
 // least one transaction, plus the real current year even if it's still
 // empty, sorted newest first — same reasoning as finance/index.vue's
 // availableYears.
-const availableYears = computed(() => {
-  const years = new Set(data.value.map(
-    transaction => new Date(transaction.payment_date).getFullYear()
-  ))
-  years.add(new Date().getFullYear())
-  return [...years].sort((a, b) => b - a)
-})
-const yearItems = computed(() =>
-  availableYears.value.map(year => ({ label: String(year), value: year })))
+const availableYears = computed(() => availableTransactionYears(data.value))
+const yearItems = computed(() => yearSelectItems(availableYears.value))
 
 // Two-way with `range`, not a separate source of truth — reads back a year
 // only when `range` currently matches that exact calendar-year span (blank

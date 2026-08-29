@@ -16,16 +16,9 @@ const transactions = computed(() => transactionsData.value ?? [])
 // Every year with at least one transaction, plus the real current year even
 // if it's still empty — sorted newest first (user request, 2026-08-24: "a
 // way to switch the data from 2020/2021/2022...").
-const availableYears = computed(() => {
-  const years = new Set(transactions.value.map(
-    transaction => new Date(transaction.payment_date).getFullYear()
-  ))
-  years.add(new Date().getFullYear())
-  return [...years].sort((a, b) => b - a)
-})
+const availableYears = computed(() => availableTransactionYears(transactions.value))
 const selectedYear = ref(new Date().getFullYear())
-const yearItems = computed(() =>
-  availableYears.value.map(year => ({ label: String(year), value: year })))
+const yearItems = computed(() => yearSelectItems(availableYears.value))
 
 // Everything downstream (cards, byMonth/byType/.../byMethodCost, the
 // tournament trend chart) only ever sees this one year's transactions —

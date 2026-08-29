@@ -21,12 +21,7 @@ const availableYears = computed(() => {
   return years.reverse()
 })
 const selectedYear = ref(new Date().getFullYear())
-const yearItems = computed(() =>
-  availableYears.value.map(year => ({
-    label: String(year),
-    value: year
-  }))
-)
+const yearItems = computed(() => yearSelectItems(availableYears.value))
 
 // The page has no query of its own — every chart pulls from one of these
 // three underlying queries (useAssociatesStatistics.ts/useTournamentsStatistics.ts/
