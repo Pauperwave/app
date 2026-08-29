@@ -54,8 +54,10 @@ const {
 function eventContextMenuItems(event: Event): DropdownMenuItem[] {
   return [
     ...rowContextMenuItems(event),
+    { type: 'separator' },
     { label: t('event.rowActions.edit'), icon: ICONS.edit, onSelect: () => openEditModal(event) },
     { label: t('event.rowActions.copy'), icon: ICONS.copy, onSelect: () => openCopyModal(event) },
+    { type: 'separator' },
     {
       label: t('event.rowActions.delete'),
       icon: ICONS.delete,
