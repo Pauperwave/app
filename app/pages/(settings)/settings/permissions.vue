@@ -13,8 +13,8 @@ useSeoMeta({ title: () => t('settings.layout.links.permissions') })
 type Access = 'full' | 'partial' | 'none'
 type RoleKey = 'player' | 'organizer' | 'admin' | 'superAdmin'
 type GroupKey
-  = 'standings' | 'tournaments' | 'wantedCards' | 'commanderDecks'
-    | 'membership' | 'rulesets' | 'trash' | 'roles'
+  = 'finance' | 'standings' | 'tournaments' | 'locations' | 'wantedCards' | 'players'
+    | 'commanderDecks' | 'membership' | 'rulesets' | 'trash' | 'roles'
 
 // Whether the row describes real, working code today — separate from the
 // role grid itself (which is the *intended* policy, docs/architecture/
@@ -61,22 +61,28 @@ interface PermissionRow {
 // itself from it instead.
 const rows = computed<PermissionRow[]>(() => {
   type RowKey
-    // Standings
-    = | 'viewStandings'
+    // Finanze e transazioni
+    = | 'viewFinance'
+      // Standings
+      | 'viewStandings'
       // Tournaments / leagues / events
       | 'viewTournaments' | 'registerTournament' | 'manageTournaments' | 'resetPairing'
       | 'cancelRound' | 'manageEventPayments' | 'deleteTournaments'
+      // Luoghi
+      | 'manageLocations'
       // Carte Cercate
       | 'viewWantedCards' | 'createWantedCard' | 'updateOwnWantedCardStatus'
       | 'deleteOwnWantedCard' | 'manageOthersWantedCards'
+      // Giocatori
+      | 'viewPlayers'
       // Mazzi Commander
       | 'manageOwnDecks' | 'manageAllDecks' | 'deleteCommanderDeck'
       // Anagrafica / quote associative
-      | 'viewOwnMembership' | 'manageMembers' | 'manageMembershipFees' | 'sendPaymentReceipts'
+      | 'viewAssociates' | 'viewOwnMembership' | 'manageMembers' | 'manageMembershipFees' | 'sendPaymentReceipts'
       // Regolamenti
-      | 'deleteRuleset'
+      | 'manageRulesets' | 'deleteRuleset'
       // Cestino
-      | 'purgeTrash'
+      | 'viewTrash' | 'purgeTrash'
       // Ruoli
       | 'manageRoles'
   type NoteKey = 'playerNote' | 'organizerNote' | 'adminNote' | 'superAdminNote'
@@ -125,17 +131,35 @@ const rows = computed<PermissionRow[]>(() => {
 
   // Section order follows the sidebar nav (useMainNavGroups.ts), not
   // docs/architecture/permissions.md's own order (user request, 2026-08-29):
-  // Community (Associati/Richieste, then Carte Cercate) → Competizioni
-  // (Tornei/Leghe/Eventi, then Regolamenti last) → Classifiche → Commander
-  // (Mazzi Commander) → Impostazioni (Membri → roles, Cestino last).
+  // Dashboards (Finanze) → Community (Associati/Richieste, Giocatori, then
+  // Carte Cercate) → Competizioni (Tornei/Leghe/Eventi, Luoghi, Regolamenti
+  // last) → Classifiche → Commander (Mazzi Commander) → Impostazioni
+  // (Membri → roles, Cestino last).
+  //
+  // viewFinance/viewAssociates/viewPlayers/manageLocations/manageRulesets
+  // (2026-08-29, user request — cross-referenced against the full
+  // Permission union in app/utils/permissions.ts) are all notImplemented:
+  // none of their pages declare `definePageMeta({ permission: ... })`, only
+  // the sidebar hides the link — any authenticated user can still open them
+  // directly by URL. viewTrash is the one exception (trash.vue does have
+  // the guard), included here anyway to keep the Cestino section complete.
   return [
+    ...group('finance', [
+      row('viewFinance', 'notImplemented', ['none', 'full', 'full', 'full'])
+    ]),
+
     ...group('membership', [
+      row('viewAssociates', 'notImplemented', ['none', 'full', 'full', 'full']),
       row('viewOwnMembership', 'implemented', [
         ['partial', 'playerNote'], ['partial', 'organizerNote'], ['full', 'adminNote'], ['full', 'superAdminNote']
       ]),
       row('manageMembers', 'implemented', ['none', 'none', 'full', 'full']),
       row('manageMembershipFees', 'implemented', ['none', 'none', 'full', 'full']),
       row('sendPaymentReceipts', 'notImplemented', ['none', 'none', 'full', 'full'])
+    ]),
+
+    ...group('players', [
+      row('viewPlayers', 'notImplemented', ['none', 'full', 'full', 'full'])
     ]),
 
     ...group('wantedCards', [
@@ -156,7 +180,12 @@ const rows = computed<PermissionRow[]>(() => {
       row('deleteTournaments', 'notImplemented', ['none', 'none', 'none', 'full'])
     ]),
 
+    ...group('locations', [
+      row('manageLocations', 'notImplemented', ['none', 'full', 'full', 'full'])
+    ]),
+
     ...group('rulesets', [
+      row('manageRulesets', 'notImplemented', ['none', 'full', 'full', 'full']),
       row('deleteRuleset', 'notImplemented', ['none', 'none', 'full', 'full'])
     ]),
 
@@ -175,6 +204,7 @@ const rows = computed<PermissionRow[]>(() => {
     ]),
 
     ...group('trash', [
+      row('viewTrash', 'implemented', ['none', 'none', 'full', 'full']),
       row('purgeTrash', 'implemented', ['none', 'none', 'none', 'full'])
     ])
   ]
