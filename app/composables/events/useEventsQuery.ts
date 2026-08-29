@@ -56,6 +56,7 @@ export function useEventsQuery() {
         locationAddress: row.location
           ? `${row.location.address}, ${row.location.postal_code} ${row.location.city} ${row.location.province}, ${row.location.country}`
           : null,
+        locationCity: row.location?.city ?? null,
         locationMapsUrl: row.location?.google_maps_url ?? null,
         image: row.image_url,
         companionCode: row.companion_app_code

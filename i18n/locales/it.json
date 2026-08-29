@@ -1053,6 +1053,8 @@
     },
     "copyPublicLink": "Copia il link al calendario pubblico",
     "openPublicLink": "Apri il calendario pubblico",
+    "calendarAllCities": "Tutte",
+    "calendarToday": "Oggi",
     "calendarTour": {
       "startButton": "Tour guidato",
       "steps": {
