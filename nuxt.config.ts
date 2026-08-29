@@ -136,6 +136,31 @@ export default defineNuxtConfig({
       scan: { globInclude: ['**/*.{vue,jsx,tsx,md,mdc,mdx,yml,yaml,ts}'] }
     }
   },
+  // Every card/tournament/event image in the app is a Scryfall CDN URL
+  // (image_url columns populated from ScryfallApiCard.image_uris.normal, see
+  // useScryfallCardSearch.ts) rendered as a plain <img> at whatever size —
+  // the same 488×680 "normal" file downloads whether it's a 190px dense
+  // tile or a full-width hero (user request, 2026-08-29, "parliamo del
+  // caching delle immagini"). Allow-listing the domain here lets <NuxtImg>
+  // request an actually-sized/format-converted variant via the built-in ipx
+  // provider instead. Swap call sites over incrementally — SelectableImage
+  // .vue (wanted-cards grid/dense) is the first, not a repo-wide rewrite.
+  image: {
+    domains: ['cards.scryfall.io'],
+    // Scryfall's CDN rejects requests with a generic/default User-Agent
+    // ("Your User-Agent header is currently set to default or generic
+    // value.", 400) — Node's fetch (used by ipx's server-side http storage)
+    // doesn't set one, unlike a browser, so every /_ipx/ proxy request to
+    // Scryfall failed until this was set explicitly (confirmed 2026-08-30
+    // via direct Node fetch reproduction).
+    ipx: {
+      http: {
+        fetchOptions: {
+          headers: { 'User-Agent': 'Pauperwave (https://app.pauperwave.org)' }
+        }
+      }
+    }
+  },
   robots: {
     disallow: ['/']
   },
