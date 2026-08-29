@@ -32,6 +32,12 @@ useSeoMeta({
   title: () => t('event.seoTitle')
 })
 
+// Today/month-picker/city-filter row collapses to compact controls below sm
+// (user request, 2026-08-30: "today month select and tabs of calendar are
+// split in two lines" on mobile) — same breakpoint/composable as
+// leagues/[leagueId]/index.vue's own isSideBySide.
+const isCompact = useMediaQuery('(max-width: 639px)')
+
 // Scoped to a single month at a time, per user request 2026-08-13 — unlike
 // the dashboard grid (events/index.vue), which defaults to "all time". Starts
 // on the current month; the picker below (UCalendar type="month", same
@@ -179,9 +185,11 @@ const filteredCards = computed(() => selectedCity.value === 'all'
       </div>
     </div>
 
-    <div class="flex flex-wrap items-center justify-center gap-3">
+    <div class="flex items-center justify-center gap-3">
       <UButton
-        :label="t('event.calendarToday')"
+        :icon="isCompact ? ICONS.calendarCheck : undefined"
+        :label="isCompact ? undefined : t('event.calendarToday')"
+        :aria-label="isCompact ? t('event.calendarToday') : undefined"
         color="neutral"
         variant="outline"
         @click="selectedMonth = startOfMonth(new Date())"
@@ -190,7 +198,7 @@ const filteredCards = computed(() => selectedCity.value === 'all'
       <div id="tour-calendar-month-picker">
         <UPopover>
           <UButton
-            :label="format(selectedMonth, 'MMMM yyyy', { locale: it })"
+            :label="format(selectedMonth, isCompact ? 'MMM yyyy' : 'MMMM yyyy', { locale: it })"
             class="capitalize"
             color="neutral"
             variant="outline"
@@ -209,9 +217,21 @@ const filteredCards = computed(() => selectedCity.value === 'all'
 
       <!-- Only shown once there's an actual choice to make (Tutte + 2+ real
            cities) — a single-city month would just show a redundant "Tutte"
-           button next to the only real option. -->
+           button next to the only real option. Collapses to a compact
+           select below sm instead of StatusFilterGroup's button row, which
+           doesn't wrap internally and would push the whole row to two
+           lines. -->
       <div v-if="cityItems.length > 2" id="tour-calendar-city-filter">
-        <StatusFilterGroup v-model="selectedCity" :items="cityItems" />
+        <USelectMenu
+          v-if="isCompact"
+          :model-value="selectedCity"
+          :items="cityItems"
+          value-key="value"
+          label-key="label"
+          class="w-32"
+          @update:model-value="selectedCity = $event ?? 'all'"
+        />
+        <StatusFilterGroup v-else v-model="selectedCity" :items="cityItems" />
       </div>
     </div>
 
