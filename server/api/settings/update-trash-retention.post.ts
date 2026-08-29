@@ -19,22 +19,9 @@ export default defineEventHandler(async (event) => {
 
   const supabase = serverSupabaseServiceRole<Database>(event)
 
-  const { data: settings, error } = await supabase
-    .from('pauperwave_settings')
-    .update({
-      trash_retention_days: body.trashRetentionDays,
-      ...await auditColumnsForUpdate(event, user)
-    })
-    .eq('id', 1)
-    .select()
-    .single()
-
-  if (error || !settings) {
-    throw createError({
-      statusCode: 500,
-      statusMessage: error?.message ?? 'Settings update failed'
-    })
-  }
+  const settings = await updatePauperwaveSettings(supabase, event, user, {
+    trash_retention_days: body.trashRetentionDays
+  })
 
   return { settings }
 })
