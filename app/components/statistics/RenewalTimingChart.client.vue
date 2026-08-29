@@ -59,8 +59,7 @@ const template = (d: RenewalMonthPoint) => `${monthLabel(d.month, 'MMMM')}: ${d.
           :tick-values="xTickValues"
         />
 
-        <!-- fallow-ignore-next-line code-duplication -- see the same
-             comment in AgeDistributionChart.client.vue -->
+        <!-- fallow-ignore-next-line code-duplication -- see AgeDistributionChart.client.vue -->
         <VisCrosshair color="var(--ui-primary)" :template="template" />
 
         <VisTooltip />
