@@ -79,9 +79,7 @@ const {
 // selection hidden by the active status/email/consent filter isn't
 // actionable — same reasoning as wanted-cards' own selectedCards.
 const selection = useSelection<number>()
-const selectedRosterAssociates = computed<Associate[]>(() =>
-  (table.value?.tableApi?.getFilteredRowModel().rows.map(row => row.original) ?? [])
-    .filter(associate => selection.isSelected(associate.id)))
+const selectedRosterAssociates = useSelectedTableRows(table, selection)
 const {
   pendingRenewal, confirmOpen: renewConfirmOpen, receivedBy, receiverOptions, feeReady,
   requestBulkRenew, confirmBulkRenew
