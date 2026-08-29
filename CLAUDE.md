@@ -91,6 +91,17 @@ Workaround: declare scalar exports before array-literal ones, or import the symb
 
 Related failure mode confirmed 2026-08-29 in `app/utils/wantedCards/wantedCardLanguages.ts`: the file itself (which exports an array-literal `WANTED_CARD_LANGUAGES = [...] as const`) failed to resolve the *incoming* auto-import of `ICONS` (from `app/utils/icons.ts`) when referenced inside its own `WANTED_CARD_LANGUAGE_ICONS` object — `TS2304: Cannot find name 'ICONS'`, reproducible across repeated `pnpm typecheck` runs. So the array-literal-export fragility can affect a file's own *inbound* auto-imports too, not just its outbound exports. Fix: add an explicit `import { ICONS } from '~/utils/icons'` rather than relying on auto-import.
 
+### Icons
+`app/utils/icons.ts`'s `ICONS` constant is the single source of truth for *every* icon string literal used anywhere in the app (`i-lucide-*`, `i-simple-icons-*`, `i-circle-flags-*`), including single-use ones — not just duplicated icons. Before adding a raw `'i-lucide-...'` string anywhere, check `ICONS` for an existing entry to reuse, and add a new one there rather than leaving the literal inline. Enforced repo-wide as of 2026-08-29 (a sweep centralized every remaining raw literal, including a project convention that this applies even to icons used exactly once — dedup-identical-only doesn't apply to this file).
+
+### Shared row-actions composables
+Table/grid "right-click context menu" wiring has three small shared composables in `app/composables/`, extracted after the same code was independently duplicated across multiple `use<Domain>RowActions.ts`/`use<Domain>ContextMenu.ts` files:
+- **`useRowContextMenu.ts`** — tracks the right-clicked row (`contextMenuRow`/`onRowContextmenu`) and recomputes `tableContextMenuItems` from a domain's own `rowContextMenuItems(item)` builder function.
+- **`useCopyToClipboard.ts`** — clipboard-write-with-toast helper (generic `common.copyErrorTitle` on failure).
+- **`useSelectedTableRows.ts`** — resolves the current selection against a table's *filtered* row model (not the raw data array), so a selection hidden by an active column filter isn't actionable.
+
+Use these instead of hand-rolling the same trio again in a new `use<Domain>RowActions.ts`.
+
 ### Types
 Shared domain types (`Associate`, `Tournament`, `Transaction`, status unions, etc.) live in `app/types/index.d.ts`. Add new domain interfaces there rather than colocating them in components.
 
