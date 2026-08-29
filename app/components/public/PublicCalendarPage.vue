@@ -74,6 +74,10 @@ function cardDate(card: CalendarCardEntry): Date {
   return new Date(card.kind === 'event' ? card.event.startDate : card.tournament.startDate)
 }
 
+function cardCity(card: CalendarCardEntry): string | null {
+  return card.kind === 'event' ? card.event.locationCity : card.tournament.locationCity
+}
+
 function cardKey(card: CalendarCardEntry): string {
   const id = card.kind === 'event' ? card.event.id : card.tournament.id
   return `${card.kind}-${id}`
@@ -111,10 +115,41 @@ const cards = computed<CalendarCardEntry[]>(() => {
     .sort((a, b) => cardDate(a).getTime() - cardDate(b).getTime())
 })
 
-const filteredCards = computed(() => cards.value.filter((card) => {
+const monthCards = computed(() => cards.value.filter((card) => {
   const date = cardDate(card)
   return date >= range.value.start && date <= range.value.end
 }))
+
+// City filter (user request, 2026-08-29, "filter by Trento / Rovereto") —
+// 'all' sentinel, not null, same convention as useTournamentsFilters.ts's
+// own statusFilter/formatFilter. The option *list* is built from every known
+// card (cards, not monthCards) so it doesn't flicker in and out as the user
+// changes month — a month with only one active city would otherwise hide
+// the control entirely. Counts stay scoped to monthCards so the badges match
+// what's actually on screen; the "Tutte" tab gets no count badge
+// (undefined), same as every other 'all' tab in the app.
+const selectedCity = ref<'all' | string>('all')
+const cityItems = computed(() => {
+  const allCities = new Set<string>()
+  for (const card of cards.value) {
+    const city = cardCity(card)
+    if (city) allCities.add(city)
+  }
+  const monthCounts = new Map<string, number>()
+  for (const card of monthCards.value) {
+    const city = cardCity(card)
+    if (city) monthCounts.set(city, (monthCounts.get(city) ?? 0) + 1)
+  }
+  return [
+    { label: t('event.calendarAllCities'), value: 'all' as const, count: undefined },
+    ...[...allCities].sort((a, b) => a.localeCompare(b))
+      .map(city => ({ label: city, value: city, count: monthCounts.get(city) ?? 0 }))
+  ]
+})
+
+const filteredCards = computed(() => selectedCity.value === 'all'
+  ? monthCards.value
+  : monthCards.value.filter(card => cardCity(card) === selectedCity.value))
 </script>
 
 <template>
@@ -144,24 +179,40 @@ const filteredCards = computed(() => cards.value.filter((card) => {
       </div>
     </div>
 
-    <div id="tour-calendar-month-picker" class="flex justify-center">
-      <UPopover>
-        <UButton
-          :label="format(selectedMonth, 'MMMM yyyy', { locale: it })"
-          class="capitalize"
-          color="neutral"
-          variant="ghost"
-          :trailing-icon="ICONS.chevronDown"
-        />
+    <div class="flex flex-wrap items-center justify-center gap-3">
+      <UButton
+        :label="t('event.calendarToday')"
+        color="neutral"
+        variant="outline"
+        @click="selectedMonth = startOfMonth(new Date())"
+      />
 
-        <template #content>
-          <UCalendar
-            v-model="calendarMonthValue"
-            type="month"
-            class="p-2"
+      <div id="tour-calendar-month-picker">
+        <UPopover>
+          <UButton
+            :label="format(selectedMonth, 'MMMM yyyy', { locale: it })"
+            class="capitalize"
+            color="neutral"
+            variant="outline"
+            :trailing-icon="ICONS.chevronDown"
           />
-        </template>
-      </UPopover>
+
+          <template #content>
+            <UCalendar
+              v-model="calendarMonthValue"
+              type="month"
+              class="p-2"
+            />
+          </template>
+        </UPopover>
+      </div>
+
+      <!-- Only shown once there's an actual choice to make (Tutte + 2+ real
+           cities) — a single-city month would just show a redundant "Tutte"
+           button next to the only real option. -->
+      <div v-if="cityItems.length > 2" id="tour-calendar-city-filter">
+        <StatusFilterGroup v-model="selectedCity" :items="cityItems" />
+      </div>
     </div>
 
     <div v-if="loading" class="flex items-center justify-center py-12">

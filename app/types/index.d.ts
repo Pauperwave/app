@@ -236,6 +236,10 @@ export interface Tournament {
   // friendlier name, resolving the old "just the name of the place" TODO.
   location: string | null
   locationAddress: string | null
+  // Split out of locationAddress (2026-08-29, PublicCalendarPage.vue's own
+  // "filter by city" — Trento/Rovereto/etc.) rather than parsed back out of
+  // that formatted string, which would be fragile.
+  locationCity: string | null
   // Precise Google Maps place link (locations.google_maps_url) — takes
   // priority over the generic address-search fallback when set, see
   // supabase/migrations/20260816120000_add_locations_google_maps_url.sql.
@@ -330,6 +334,8 @@ export interface Event {
   locationUuid: string | null
   location: string | null
   locationAddress: string | null
+  // Same reasoning as Tournament's own locationCity.
+  locationCity: string | null
   // Precise Google Maps place link (locations.google_maps_url), see
   // Tournament's own locationMapsUrl for why this takes priority over the
   // generic address-search fallback — added 2026-08-22 alongside

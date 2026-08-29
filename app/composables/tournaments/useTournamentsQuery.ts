@@ -54,6 +54,7 @@ export function useTournamentsQuery() {
         locationAddress: row.location
           ? `${row.location.address}, ${row.location.postal_code} ${row.location.city} ${row.location.province}, ${row.location.country}`
           : null,
+        locationCity: row.location?.city ?? null,
         locationMapsUrl: row.location?.google_maps_url ?? null,
         entryFee: row.entry_fee,
         description: row.description,
