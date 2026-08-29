@@ -76,7 +76,7 @@ const missingCount = computed(() => associates.length - markers.value.length)
                 <UBadge
                   variant="subtle"
                   class="capitalize gap-4 w-fit"
-                  v-bind="getMembershipStatusBadge(marker.associate.membership_status)"
+                  v-bind="MEMBERSHIP_STATUS_BADGE_CONFIG[marker.associate.membership_status]"
                 >
                   {{ marker.associate.membership_status.replace('_', ' ') }}
                 </UBadge>
