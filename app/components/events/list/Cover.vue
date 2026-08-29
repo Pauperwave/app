@@ -38,12 +38,15 @@ function monthPart(startDate: string) {
 <template>
   <div class="relative -m-3 mb-3">
     <template v-if="!loading && event">
-      <img
+      <NuxtImg
         v-if="event.image"
         :src="event.image"
         :alt="event.name"
+        format="webp"
+        width="640"
+        height="128"
         class="w-full h-32 object-cover"
-      >
+      />
       <ImageOffPlaceholder v-else class="w-full h-32" icon-class="size-8" />
     </template>
     <USkeleton v-else class="w-full h-32 rounded-none" />

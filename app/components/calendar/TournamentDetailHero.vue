@@ -12,12 +12,15 @@ defineProps<{
 
 <template>
   <div class="relative overflow-hidden rounded-t-lg w-full h-80 sm:h-96">
-    <img
+    <NuxtImg
       v-if="tournament.image"
       :src="tournament.image"
       :alt="tournament.name"
+      format="webp"
+      width="768"
+      height="384"
       class="w-full h-full object-cover"
-    >
+    />
     <ImageOffPlaceholder v-else class="w-full h-full" icon-class="size-12" />
 
     <div class="absolute inset-0 bg-linear-to-b from-transparent to-default" />

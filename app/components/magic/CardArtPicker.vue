@@ -65,12 +65,15 @@ function clear() {
         type="button"
         class="relative w-full h-32 rounded-lg border border-default overflow-hidden group"
       >
-        <img
+        <NuxtImg
           v-if="model"
           :src="model"
           :alt="t('magic.cardArtPicker.selectedAlt')"
+          format="webp"
+          width="640"
+          height="128"
           class="w-full h-full object-cover"
-        >
+        />
         <div
           v-else
           class="w-full h-full flex flex-col items-center justify-center gap-1 text-muted bg-elevated"
@@ -117,11 +120,14 @@ function clear() {
               :title="printing.setName"
               @click="selectArt(printing)"
             >
-              <img
+              <NuxtImg
                 :src="printing.artCropUrl!"
                 :alt="printing.name"
+                format="webp"
+                width="120"
+                height="68"
                 class="w-full h-full object-cover"
-              >
+              />
             </button>
           </div>
         </div>
