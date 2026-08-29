@@ -2223,6 +2223,7 @@
       "columns": {
         "feature": "Funzionalità",
         "status": "Stato",
+        "public": "Pubblico",
         "player": "Giocatore",
         "organizer": "Organizzatore",
         "admin": "Amministratore",
@@ -2253,7 +2254,10 @@
       },
       "rows": {
         "viewStandings": { "feature": "**Visualizzare** classifiche (Cittadino, Commander, Premodern, Pauper)" },
-        "viewTournaments": { "feature": "**Visualizzare** tornei, leghe, eventi" },
+        "viewTournaments": {
+          "feature": "**Visualizzare** tornei, leghe, eventi",
+          "publicNote": "Solo tornei ed eventi tramite il calendario pubblico (/calendario), non leghe come sezione a sé né il dettaglio completo delle pagine interne."
+        },
         "registerTournament": {
           "feature": "**Iscriversi** a un torneo/evento",
           "playerNote": "Un player può iscrivere solo sé stesso, non altri giocatori."
