@@ -21,7 +21,7 @@ const { rows, loading = false } = defineProps<{
 
 const { t } = useI18n()
 
-const amountFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
+const amountFormatter = AMOUNT_FORMATTER
 
 const { chartColor } = useChartPalette()
 

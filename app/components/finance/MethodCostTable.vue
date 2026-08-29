@@ -12,7 +12,7 @@ const { rows, loading, pending = false } = defineProps<{
 
 const { t } = useI18n()
 
-const amountFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
+const amountFormatter = AMOUNT_FORMATTER
 const percentFormatter = new Intl.NumberFormat('it-IT', { style: 'percent', minimumFractionDigits: 2 })
 
 const sorting = ref([{ id: 'total', desc: true }])
@@ -36,26 +36,9 @@ const columns: TableColumn<FinanceMethodCostRow>[] = [
     footer: () => t('finance.summary.total'),
     cell: ({ row }) => h(PaymentMethodBadge, { method: row.original.method })
   },
-  {
-    accessorKey: 'count',
-    header: ({ column }) => sortableHeader(t('finance.summary.count'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    footer: () => h('span', { class: 'font-mono font-semibold' }, String(totalCount.value))
-  },
-  {
-    accessorKey: 'total',
-    header: ({ column }) => sortableHeader(t('finance.summary.total'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => amountCell(row.original.total, amountFormatter),
-    footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalAmount.value))
-  },
-  {
-    accessorKey: 'share',
-    header: ({ column }) => sortableHeader(t('finance.summary.share'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => percentFormatter.format(row.original.share),
-    footer: () => h('span', { class: 'font-mono font-semibold' }, percentFormatter.format(1))
-  },
+  summaryCountColumn('count', t('finance.summary.count'), totalCount),
+  summaryAmountColumn('total', t('finance.summary.total'), amountFormatter, totalAmount),
+  summaryShareColumn('share', t('finance.summary.share'), percentFormatter),
   {
     accessorKey: 'feeRate',
     header: ({ column }) => sortableHeader(t('finance.summary.feeRate'), column),
@@ -84,18 +67,17 @@ const columns: TableColumn<FinanceMethodCostRow>[] = [
 </script>
 
 <template>
-  <UCard :ui="{ header: 'font-semibold' }">
-    <template #header>
-      {{ $t('finance.summary.costsTitle') }}
-    </template>
-    <ListSkeleton v-if="pending" :columns="columns.length" />
+  <FinanceSummaryCard
+    :title="$t('finance.summary.costsTitle')"
+    :pending="pending"
+    :columns-count="columns.length"
+  >
     <UTable
-      v-else
       v-model:sorting="sorting"
       :data="rows"
       :columns="columns"
       :loading="loading"
       :ui="{ base: 'overflow-clip' }"
     />
-  </UCard>
+  </FinanceSummaryCard>
 </template>

@@ -13,7 +13,7 @@ const { rows, loading, pending = false } = defineProps<{
 
 const { t } = useI18n()
 
-const amountFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
+const amountFormatter = AMOUNT_FORMATTER
 
 const sorting = ref([{ id: 'label', desc: false }])
 
@@ -82,17 +82,16 @@ const columns: TableColumn<FinanceMonthSummaryRow>[] = [
 </script>
 
 <template>
-  <UCard :ui="{ header: 'font-semibold' }">
-    <template #header>
-      {{ $t('finance.summary.byMonthTitle') }}
-    </template>
-    <ListSkeleton v-if="pending" :columns="columns.length" />
+  <FinanceSummaryCard
+    :title="$t('finance.summary.byMonthTitle')"
+    :pending="pending"
+    :columns-count="columns.length"
+  >
     <UTable
-      v-else
       v-model:sorting="sorting"
       :data="rows"
       :columns="columns"
       :loading="loading"
     />
-  </UCard>
+  </FinanceSummaryCard>
 </template>

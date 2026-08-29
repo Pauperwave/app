@@ -12,7 +12,7 @@ const { rows, loading, pending = false } = defineProps<{
 
 const { t } = useI18n()
 
-const amountFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
+const amountFormatter = AMOUNT_FORMATTER
 const percentFormatter = new Intl.NumberFormat('it-IT', { style: 'percent', minimumFractionDigits: 1 })
 
 const sorting = ref([{ id: 'total', desc: true }])
@@ -32,68 +32,28 @@ const columns: TableColumn<FinanceFormatSummaryRow>[] = [
     footer: () => t('finance.summary.total'),
     cell: ({ row }) => h(FormatBadge, { format: row.original.format, icon: ICONS.gameplay })
   },
-  {
-    accessorKey: 'tournamentCount',
-    header: ({ column }) => sortableHeader(t('finance.summary.tournamentCount'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    footer: () => h('span', { class: 'font-mono font-semibold' }, String(totalTournamentCount.value))
-  },
-  {
-    accessorKey: 'count',
-    header: ({ column }) => sortableHeader(t('finance.summary.count'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    footer: () => h('span', { class: 'font-mono font-semibold' }, String(totalCount.value))
-  },
-  {
-    accessorKey: 'cashTotal',
-    header: ({ column }) => sortableHeader(t('finance.summary.cashTotal'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => amountCell(row.original.cashTotal, amountFormatter),
-    footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalCash.value))
-  },
-  {
-    accessorKey: 'posTotal',
-    header: ({ column }) => sortableHeader(t('finance.summary.posTotal'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => amountCell(row.original.posTotal, amountFormatter),
-    footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalPos.value))
-  },
-  {
-    accessorKey: 'total',
-    header: ({ column }) => sortableHeader(t('finance.summary.total'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => amountCell(row.original.total, amountFormatter),
-    footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalAmount.value))
-  },
-  {
-    accessorKey: 'average',
-    header: ({ column }) => sortableHeader(t('finance.summary.average'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => amountCell(row.original.average, amountFormatter)
-  },
-  {
-    accessorKey: 'share',
-    header: ({ column }) => sortableHeader(t('finance.summary.share'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => percentFormatter.format(row.original.share),
-    footer: () => h('span', { class: 'font-mono font-semibold' }, percentFormatter.format(1))
-  }
+  summaryCountColumn('tournamentCount', t('finance.summary.tournamentCount'), totalTournamentCount),
+  summaryCountColumn('count', t('finance.summary.count'), totalCount),
+  summaryAmountColumn('cashTotal', t('finance.summary.cashTotal'), amountFormatter, totalCash),
+  summaryAmountColumn('posTotal', t('finance.summary.posTotal'), amountFormatter, totalPos),
+  summaryAmountColumn('total', t('finance.summary.total'), amountFormatter, totalAmount),
+  summaryAverageColumn('average', t('finance.summary.average'), amountFormatter),
+  summaryShareColumn('share', t('finance.summary.share'), percentFormatter)
 ]
 </script>
 
 <template>
-  <UCard :ui="{ header: 'font-semibold' }">
-    <template #header>
-      {{ $t('finance.summary.byFormatTitle') }}
-    </template>
-    <ListSkeleton v-if="pending" :columns="columns.length" />
+  <FinanceSummaryCard
+    :title="$t('finance.summary.byFormatTitle')"
+    :pending="pending"
+    :columns-count="columns.length"
+  >
     <UTable
-      v-else
       v-model:sorting="sorting"
       :data="rows"
       :columns="columns"
       :loading="loading"
       :ui="{ base: 'overflow-clip' }"
     />
-  </UCard>
+  </FinanceSummaryCard>
 </template>

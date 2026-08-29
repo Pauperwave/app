@@ -47,7 +47,7 @@ export function useTransactionsTableColumns(
 
   const columnHeaders = transactionsColumnHeaders(t)
 
-  const amountFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
+  const amountFormatter = AMOUNT_FORMATTER
 
   // Reuses the exact same league-relative stage numbering the /tournaments
   // page itself shows (assignTournamentStageNumbers, computed once over the

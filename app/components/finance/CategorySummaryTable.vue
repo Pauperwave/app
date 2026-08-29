@@ -18,7 +18,7 @@ const { rows, loading, pending = false } = defineProps<{
 
 const { t } = useI18n()
 
-const amountFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
+const amountFormatter = AMOUNT_FORMATTER
 
 // Sortable like every other summary table on this page (user request,
 // 2026-08-26) — the fixed associationFee/byFormat/eventFee/tokenPurchase/
@@ -54,39 +54,16 @@ const columns: TableColumn<FinanceCategoryRow>[] = [
     meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
     cell: ({ row }) => row.original.cost === null ? '' : amountCell(row.original.cost, amountFormatter)
   },
-  {
-    accessorKey: 'count',
-    header: ({ column }) => sortableHeader(t('finance.summary.instances'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    footer: () => h('span', { class: 'font-mono font-semibold' }, String(totalCount.value))
-  },
+  summaryCountColumn('count', t('finance.summary.instances'), totalCount),
   {
     accessorKey: 'quantity',
     header: ({ column }) => sortableHeader(t('finance.summary.quantity'), column),
     meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
     cell: ({ row }) => row.original.quantity === null ? '' : String(row.original.quantity)
   },
-  {
-    accessorKey: 'paypalTotal',
-    header: ({ column }) => sortableHeader(t('finance.summary.paypalTotal'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => amountCell(row.original.paypalTotal, amountFormatter),
-    footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalPaypal.value))
-  },
-  {
-    accessorKey: 'cashTotal',
-    header: ({ column }) => sortableHeader(t('finance.summary.cashTotal'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => amountCell(row.original.cashTotal, amountFormatter),
-    footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalCash.value))
-  },
-  {
-    accessorKey: 'posTotal',
-    header: ({ column }) => sortableHeader(t('finance.summary.posTotal'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => amountCell(row.original.posTotal, amountFormatter),
-    footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalPos.value))
-  },
+  summaryAmountColumn('paypalTotal', t('finance.summary.paypalTotal'), amountFormatter, totalPaypal),
+  summaryAmountColumn('cashTotal', t('finance.summary.cashTotal'), amountFormatter, totalCash),
+  summaryAmountColumn('posTotal', t('finance.summary.posTotal'), amountFormatter, totalPos),
   {
     accessorKey: 'total',
     header: ({ column }) => sortableHeader(t('finance.summary.total'), column),
@@ -98,18 +75,17 @@ const columns: TableColumn<FinanceCategoryRow>[] = [
 </script>
 
 <template>
-  <UCard :ui="{ header: 'font-semibold' }">
-    <template #header>
-      {{ $t('finance.summary.byCategoryTitle') }}
-    </template>
-    <ListSkeleton v-if="pending" :columns="columns.length" />
+  <FinanceSummaryCard
+    :title="$t('finance.summary.byCategoryTitle')"
+    :pending="pending"
+    :columns-count="columns.length"
+  >
     <UTable
-      v-else
       v-model:sorting="sorting"
       :data="rows"
       :columns="columns"
       :loading="loading"
       :ui="{ base: 'overflow-clip' }"
     />
-  </UCard>
+  </FinanceSummaryCard>
 </template>

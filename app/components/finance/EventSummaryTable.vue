@@ -13,7 +13,7 @@ const { rows, loading, pending = false } = defineProps<{
 
 const { t } = useI18n()
 
-const amountFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
+const amountFormatter = AMOUNT_FORMATTER
 
 const sorting = ref([{ id: 'combinedTotal', desc: true }])
 
@@ -45,54 +45,26 @@ const columns: TableColumn<FinanceEventSummaryRow>[] = [
     meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap' } },
     cell: ({ row }) => h(DateWithRelativeTooltip, { isoString: row.original.startDate })
   },
-  {
-    accessorKey: 'count',
-    header: ({ column }) => sortableHeader(t('finance.summary.count'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    footer: () => h('span', { class: 'font-mono font-semibold' }, String(totalCount.value))
-  },
-  {
-    accessorKey: 'gettoniCount',
-    header: ({ column }) => sortableHeader(t('finance.summary.gettoniCount'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    footer: () => h('span', { class: 'font-mono font-semibold' }, String(totalGettoniCount.value))
-  },
-  {
-    accessorKey: 'gettoniTotal',
-    header: ({ column }) => sortableHeader(t('finance.summary.gettoniTotal'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => amountCell(row.original.gettoniTotal, amountFormatter),
-    footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalGettoniAmount.value))
-  },
-  {
-    accessorKey: 'combinedTotal',
-    header: ({ column }) => sortableHeader(t('finance.summary.total'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => amountCell(row.original.combinedTotal, amountFormatter),
-    footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalCombinedAmount.value))
-  },
-  {
-    accessorKey: 'average',
-    header: ({ column }) => sortableHeader(t('finance.summary.average'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => amountCell(row.original.average, amountFormatter)
-  }
+  summaryCountColumn('count', t('finance.summary.count'), totalCount),
+  summaryCountColumn('gettoniCount', t('finance.summary.gettoniCount'), totalGettoniCount),
+  summaryAmountColumn('gettoniTotal', t('finance.summary.gettoniTotal'), amountFormatter, totalGettoniAmount),
+  summaryAmountColumn('combinedTotal', t('finance.summary.total'), amountFormatter, totalCombinedAmount),
+  summaryAverageColumn('average', t('finance.summary.average'), amountFormatter)
 ]
 </script>
 
 <template>
-  <UCard :ui="{ header: 'font-semibold' }">
-    <template #header>
-      {{ $t('finance.summary.byEventTitle') }}
-    </template>
-    <ListSkeleton v-if="pending" :columns="columns.length" />
+  <FinanceSummaryCard
+    :title="$t('finance.summary.byEventTitle')"
+    :pending="pending"
+    :columns-count="columns.length"
+  >
     <UTable
-      v-else
       v-model:sorting="sorting"
       :data="rows"
       :columns="columns"
       :loading="loading"
       :ui="{ base: 'overflow-clip' }"
     />
-  </UCard>
+  </FinanceSummaryCard>
 </template>

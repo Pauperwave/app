@@ -122,7 +122,7 @@ const {
 const associateTransactions = computed(() => (transactions.value ?? [])
   .filter(transaction => transaction.associate?.uuid === associate.value?.uuid))
 
-const amountFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
+const amountFormatter = AMOUNT_FORMATTER
 
 // Same league-relative stage numbering /transactions and /tournaments show
 // (assignTournamentStageNumbers) — reused here rather than re-derived, and
