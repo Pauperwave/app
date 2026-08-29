@@ -173,6 +173,20 @@ function resolveTournament(
   return { uuid, tournament }
 }
 
+interface PaymentMethodTotals {
+  paypalTotal: number
+  cashTotal: number
+  posTotal: number
+}
+
+// Shared by aggregateCategoryTransactions/byFormat — both accumulate the
+// same three payment-method sub-totals per transaction.
+function addPaymentMethodTotal(totals: PaymentMethodTotals, transaction: Transaction) {
+  if (transaction.payment_method === 'PayPal') totals.paypalTotal += transaction.payment_amount
+  if (transaction.payment_method === 'Cash') totals.cashTotal += transaction.payment_amount
+  if (transaction.payment_method === 'POS') totals.posTotal += transaction.payment_amount
+}
+
 interface CategoryAggregate {
   count: number
   cost: number | null
@@ -191,18 +205,14 @@ function aggregateCategoryTransactions(
   categoryTransactions: Transaction[], computeCost = true
 ): CategoryAggregate {
   let count = 0
-  let paypalTotal = 0
-  let cashTotal = 0
-  let posTotal = 0
   let total = 0
+  const totals: PaymentMethodTotals = { paypalTotal: 0, cashTotal: 0, posTotal: 0 }
   const amountCounts = new Map<number, number>()
 
   for (const transaction of categoryTransactions) {
     count += 1
     total += transaction.payment_amount
-    if (transaction.payment_method === 'PayPal') paypalTotal += transaction.payment_amount
-    if (transaction.payment_method === 'Cash') cashTotal += transaction.payment_amount
-    if (transaction.payment_method === 'POS') posTotal += transaction.payment_amount
+    addPaymentMethodTotal(totals, transaction)
     if (computeCost && transaction.payment_method !== 'Comped') {
       const amount = transaction.payment_amount
       amountCounts.set(amount, (amountCounts.get(amount) ?? 0) + 1)
@@ -210,7 +220,7 @@ function aggregateCategoryTransactions(
   }
 
   return {
-    count, paypalTotal, cashTotal, posTotal, total,
+    count, ...totals, total,
     cost: computeCost ? resolveCost(amountCounts, count) : null
   }
 }
@@ -359,9 +369,7 @@ export function useFinanceSummary(transactions: Ref<Transaction[]>, year: Ref<nu
       const row = rows.get(format)!
       row.count += 1
       row.total += transaction.payment_amount
-      if (transaction.payment_method === 'PayPal') row.paypalTotal += transaction.payment_amount
-      if (transaction.payment_method === 'Cash') row.cashTotal += transaction.payment_amount
-      if (transaction.payment_method === 'POS') row.posTotal += transaction.payment_amount
+      addPaymentMethodTotal(row, transaction)
 
       if (!tournamentUuidsByFormat.has(format)) tournamentUuidsByFormat.set(format, new Set())
       tournamentUuidsByFormat.get(format)!.add(uuid)
