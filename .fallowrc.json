@@ -28,5 +28,23 @@
     "ignore": [
       "shared/utils/types/database.ts"
     ]
+  },
+  "health": {
+    "thresholdOverrides": [
+      {
+        "files": ["app/pages/(public)/tesseramento/index.vue"],
+        "maxCognitive": 40,
+        "reason": "9-step wizard switch; each step already delegates to its own component (2026-08-29 review) — the complexity is the irreducible step selector itself."
+      },
+      {
+        "files": [
+          "app/components/locations/list/Card.vue",
+          "app/components/locations/single/PresentationCard.vue"
+        ],
+        "maxCyclomatic": 25,
+        "maxCognitive": 32,
+        "reason": "Per-element loading-skeleton branching (deliberate pattern, see tournaments/list/Cover.vue's own comment on why: pixel-matching skeletons live inline instead of in a separate component that can drift)."
+      }
+    ]
   }
 }
