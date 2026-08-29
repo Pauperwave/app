@@ -12,6 +12,9 @@ import { VisXYContainer, VisStackedBar, VisAxis, VisTooltip } from '@unovis/vue'
 import { Orientation, StackedBar } from '@unovis/ts'
 import type { FinanceFormatSummaryRow } from '~/composables/finance/useFinanceSummary'
 
+// fallow-ignore-next-line code-duplication -- props/formatter/chartColor/
+// grandTotal scaffolding mirrors every other finance chart; row type and
+// per-chart sort/axis reasoning genuinely differ (see the comments below).
 const { rows, loading = false } = defineProps<{
   rows: FinanceFormatSummaryRow[]
   loading?: boolean
@@ -21,7 +24,7 @@ const { t } = useI18n()
 const amountFormatter = AMOUNT_FORMATTER
 const { chartColor } = useChartPalette()
 
-const grandTotal = computed(() => rows.reduce((sum, row) => sum + row.total, 0))
+const grandTotal = computed(() => columnTotal(rows, 'total'))
 
 // rows arrives sorted by total desc (useFinanceSummary.ts). unovis' category
 // axis renders index 0 at the bottom, so feeding it in that order put the
@@ -103,6 +106,10 @@ watch(() => loading, (isLoading) => {
     :loading="loading"
   >
     <template #default="{ width }">
+      <!-- fallow-ignore-next-line code-duplication -- StatisticsStatChartCard
+           + VisXYContainer shell mirrors TypeChart.client.vue's own; the x/y/
+           color bindings and axis tick formatters passed into it (defined
+           above) are what actually differ per chart, not this wiring. -->
       <VisXYContainer
         v-if="chartRows.length"
         ref="containerRef"
