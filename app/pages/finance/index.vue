@@ -49,7 +49,7 @@ const {
   grandAverage
 } = useFinanceSummary(yearTransactions, selectedYear)
 
-const amountFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
+const amountFormatter = AMOUNT_FORMATTER
 
 const tour = useFinanceTour()
 </script>

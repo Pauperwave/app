@@ -51,7 +51,7 @@ const upcomingEventsCount = computed(() => (events.value ?? [])
 const { data: transactions } = useTransactionsQuery()
 const recentTransactions = computed(() => (transactions.value ?? []).slice(0, 5))
 
-const amountFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
+const amountFormatter = AMOUNT_FORMATTER
 
 const { data: locations } = useLocationsQuery()
 

@@ -36,7 +36,7 @@ const myTotalPaid = computed(() => myTransactions.value
   .reduce((sum, transaction) => sum + transaction.payment_amount, 0))
 const recentTransactions = computed(() => myTransactions.value.slice(0, 3))
 
-const amountFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
+const amountFormatter = AMOUNT_FORMATTER
 
 const { data: tournaments } = useTournamentsQuery()
 const upcomingTournaments = computed(() => (tournaments.value ?? [])

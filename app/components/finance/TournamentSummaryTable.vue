@@ -15,7 +15,7 @@ const { rows, loading, pending = false } = defineProps<{
 
 const { t } = useI18n()
 
-const amountFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
+const amountFormatter = AMOUNT_FORMATTER
 
 // Chronological, not by amount (user request, 2026-08-23) — 'startDate'
 // column id, so ties within the same date still fall back to whatever
@@ -100,29 +100,17 @@ const columns: TableColumn<FinanceTournamentSummaryRow>[] = [
     meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap' } },
     cell: ({ row }) => h(DateWithRelativeTooltip, { isoString: row.original.startDate })
   },
+  summaryCountColumn('count', t('finance.summary.count'), totalCount),
   {
-    accessorKey: 'count',
-    header: ({ column }) => sortableHeader(t('finance.summary.count'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    footer: () => h('span', { class: 'font-mono font-semibold' }, String(totalCount.value))
-  },
-  {
-    accessorKey: 'compedCount',
-    header: ({ column }) => sortableHeader(t('finance.summary.compedCount'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
+    ...summaryCountColumn<FinanceTournamentSummaryRow>(
+      'compedCount', t('finance.summary.compedCount'), totalCompedCount
+    ),
     // Blank instead of "0" for tournaments with no comped entries — a
     // column mostly full of zeros reads worse than blank space (same
     // convention as e.g. AssociatesGrowthChart's own zero-handling).
-    cell: ({ row }) => row.original.compedCount || null,
-    footer: () => h('span', { class: 'font-mono font-semibold' }, String(totalCompedCount.value))
+    cell: ({ row }) => row.original.compedCount || null
   },
-  {
-    accessorKey: 'total',
-    header: ({ column }) => sortableHeader(t('finance.summary.total'), column),
-    meta: { class: { th: 'text-right', td: 'text-right font-mono' } },
-    cell: ({ row }) => amountCell(row.original.total, amountFormatter),
-    footer: () => h('span', { class: 'font-mono font-semibold' }, amountFormatter.format(totalAmount.value))
-  },
+  summaryAmountColumn('total', t('finance.summary.total'), amountFormatter, totalAmount),
   {
     accessorKey: 'average',
     header: ({ column }) => sortableHeader(t('finance.summary.average'), column),
@@ -134,17 +122,16 @@ const columns: TableColumn<FinanceTournamentSummaryRow>[] = [
 </script>
 
 <template>
-  <UCard :ui="{ header: 'font-semibold' }">
-    <template #header>
-      {{ $t('finance.summary.byTournamentTitle') }}
-    </template>
-    <ListSkeleton v-if="pending" :columns="columns.length" />
+  <FinanceSummaryCard
+    :title="$t('finance.summary.byTournamentTitle')"
+    :pending="pending"
+    :columns-count="columns.length"
+  >
     <UTable
-      v-else
       v-model:sorting="sorting"
       :data="rows"
       :columns="columns"
       :loading="loading"
     />
-  </UCard>
+  </FinanceSummaryCard>
 </template>
