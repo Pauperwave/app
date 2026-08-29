@@ -2,7 +2,6 @@
 <script setup lang="ts">
 import type { TableColumn, TabsItem } from '@nuxt/ui'
 import { UBadge } from '#components'
-import type { Table } from '@tanstack/vue-table'
 import type { Associate } from '~/types'
 import ConsentBadge from '~/components/ui/ConsentBadge.vue'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
@@ -60,16 +59,13 @@ const viewModeItems = computed<TabsItem[]>(() => [
   { label: t('associate.views.map'), value: 'map', icon: ICONS.map }
 ])
 
-const route = useRoute()
-const router = useRouter()
-
-const table = useTemplateRef<{ tableApi: Table<Associate> }>('table')
 const {
+  route, router, table,
   editingAssociate, editModalOpen,
   editingNumberAssociate, numberModalOpen,
   renewingAssociate, renewModalOpen,
   tableContextMenuItems, onRowContextmenu, rowContextMenuItems
-} = useAssociatesRowActions()
+} = useAssociatesTableSetup()
 
 // Migrated off UTable's own row-selection state to the shared Set-based
 // useSelection.ts (2026-08-19) — same as transactions'/wanted-cards'/

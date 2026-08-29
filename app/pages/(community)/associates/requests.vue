@@ -1,8 +1,5 @@
 <!-- app\pages\(community)\associates\requests.vue -->
 <script setup lang="ts">
-import type { Table } from '@tanstack/vue-table'
-import type { Associate } from '~/types'
-
 const {
   data: associates, isLoading: loading, isPending, status, refetch
 } = useAssociatesQuery()
@@ -31,16 +28,13 @@ const associatesCount = computed(() => (associates.value ?? []).filter(
 // convention as tournaments/locations' own list pages.
 const skeletonCount = computed(() => (isPending.value ? undefined : requestAssociates.value.length))
 
-const route = useRoute()
-const router = useRouter()
-
-const table = useTemplateRef<{ tableApi: Table<Associate> }>('table')
 const {
+  route, router, table,
   editingAssociate, editModalOpen,
   editingNumberAssociate, numberModalOpen,
   renewingAssociate, renewModalOpen,
   tableContextMenuItems, onRowContextmenu, rowContextMenuItems
-} = useAssociatesRowActions()
+} = useAssociatesTableSetup()
 
 // Bulk "Rifiuta" next to the existing bulk "Approva", through ConfirmModal
 // rather than a bespoke modal like ApproveModal.vue (that one predates
