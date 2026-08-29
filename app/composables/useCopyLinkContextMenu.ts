@@ -26,32 +26,19 @@ export function useCopyLinkContextMenu<T extends LinkableItem>(
   toPath: (item: T) => string = item => `${routeBase}/${item.uuid}`
 ) {
   const { t } = useI18n()
-  const toast = useToast()
-
-  async function copyText(text: string, successTitle: string) {
-    try {
-      await navigator.clipboard.writeText(text)
-      toast.add({ title: successTitle, color: 'success' })
-    } catch (err) {
-      toast.add({
-        title: t('common.copyErrorTitle'),
-        description: toErrorMessage(err),
-        color: 'error'
-      })
-    }
-  }
+  const { copyToClipboard } = useCopyToClipboard()
 
   function rowContextMenuItems(item: T): DropdownMenuItem[] {
     return [
       {
         label: t('common.copyLink'),
         icon: ICONS.link,
-        onSelect: () => copyText(`${window.location.origin}${toPath(item)}`, t('common.linkCopied'))
+        onSelect: () => copyToClipboard(`${window.location.origin}${toPath(item)}`, t('common.linkCopied'))
       },
       {
         label: t('common.copyId'),
         icon: ICONS.copy,
-        onSelect: () => copyText(String(item.id), t('common.idCopied'))
+        onSelect: () => copyToClipboard(String(item.id), t('common.idCopied'))
       }
     ]
   }
