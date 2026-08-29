@@ -6,7 +6,6 @@
 // edit/copy/delete context menu as /tournaments itself, just pre-filtered to
 // this league's tournaments. No bulk-selection actions bar / table toggle
 // here yet — delete/copy act on a single tournament at a time.
-import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Tournament } from '~/types'
 
 const { t } = useI18n()
@@ -102,40 +101,15 @@ const {
 
 // "Copia torneo" (user request, 2026-08-29) — same reusable-instance
 // convention as tournaments/index.vue's own copy action.
-const copyModalOpen = ref(false)
-const copySourceTournament = shallowRef<Tournament | null>(null)
-function openCopyModal(tournament: Tournament) {
-  copySourceTournament.value = tournament
-  copyModalOpen.value = true
-}
+const { copyModalOpen, copySourceTournament, openCopyModal } = useTournamentCopyModal()
 
-// Same edit/copy/delete additions as tournaments/index.vue's own
-// tournamentContextMenuItems() (user request, 2026-08-29, "same
-// functionality as /tournaments' context menu") — this page previously only
-// had the shared copy-link/copy-id items.
-function tournamentContextMenuItems(tournament: Tournament): DropdownMenuItem[] {
-  return [
-    ...rowContextMenuItems(tournament),
-    { type: 'separator' },
-    {
-      label: t('tournament.rowActions.edit'),
-      icon: ICONS.edit,
-      onSelect: () => openEditModal(tournament)
-    },
-    {
-      label: t('tournament.rowActions.copy'),
-      icon: ICONS.copy,
-      onSelect: () => openCopyModal(tournament)
-    },
-    { type: 'separator' },
-    {
-      label: t('tournament.rowActions.delete'),
-      icon: ICONS.delete,
-      color: 'error',
-      onSelect: () => requestDelete([tournament])
-    }
-  ]
-}
+// Same edit/copy/delete additions as tournaments/index.vue's own — shared
+// via useTournamentContextMenuItems.ts (user request, 2026-08-29, "same
+// functionality as /tournaments' context menu"; extracted the same day
+// after it was first copy-pasted here byte-identical to the other page).
+const { tournamentContextMenuItems } = useTournamentContextMenuItems(
+  rowContextMenuItems, openEditModal, openCopyModal, requestDelete
+)
 
 const {
   editingLeague, editModalOpen: leagueEditModalOpen, openEditModal: openLeagueEditModal
