@@ -19,8 +19,8 @@ const sorting = ref([{ id: 'total', desc: true }])
 
 // Grand total per numeric column, own `footer` on the leftmost column instead
 // of a bare blank cell.
-const totalCount = computed(() => rows.reduce((sum, row) => sum + row.count, 0))
-const totalAmount = computed(() => rows.reduce((sum, row) => sum + row.total, 0))
+const totalCount = computed(() => columnTotal(rows, 'count'))
+const totalAmount = computed(() => columnTotal(rows, 'total'))
 
 const columns: TableColumn<FinanceTypeSummaryRow>[] = [
   {

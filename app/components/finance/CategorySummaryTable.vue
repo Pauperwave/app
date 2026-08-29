@@ -29,11 +29,11 @@ const sorting = ref([{ id: 'category', desc: false }])
 // Grand total per numeric column, own `footer` on the leftmost column instead
 // of a bare blank cell. No footer for `cost` — a unit price isn't a summable
 // quantity, same reasoning as MethodCostTable.vue's feeRate column.
-const totalCount = computed(() => rows.reduce((sum, row) => sum + row.count, 0))
-const totalPaypal = computed(() => rows.reduce((sum, row) => sum + row.paypalTotal, 0))
-const totalCash = computed(() => rows.reduce((sum, row) => sum + row.cashTotal, 0))
-const totalPos = computed(() => rows.reduce((sum, row) => sum + row.posTotal, 0))
-const totalAmount = computed(() => rows.reduce((sum, row) => sum + row.total, 0))
+const totalCount = computed(() => columnTotal(rows, 'count'))
+const totalPaypal = computed(() => columnTotal(rows, 'paypalTotal'))
+const totalCash = computed(() => columnTotal(rows, 'cashTotal'))
+const totalPos = computed(() => columnTotal(rows, 'posTotal'))
+const totalAmount = computed(() => columnTotal(rows, 'total'))
 
 const columns: TableColumn<FinanceCategoryRow>[] = [
   {

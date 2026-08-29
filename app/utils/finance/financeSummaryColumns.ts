@@ -12,6 +12,13 @@ import type { TableColumn } from '@nuxt/ui'
 
 const RIGHT_ALIGN_META = { class: { th: 'text-right', td: 'text-right font-mono' } } as const
 
+// Every summary table sums one or more of its own numeric columns for a
+// footer total (totalCount/totalAmount/totalCash/...) — same reduce,
+// differing only in which key.
+export function columnTotal<T>(rows: T[], key: Extract<keyof T, string>): number {
+  return rows.reduce((sum, row) => sum + (row[key] as number), 0)
+}
+
 function totalSpan(text: string) {
   return h('span', { class: 'font-mono font-semibold' }, text)
 }
