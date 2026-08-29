@@ -1,5 +1,7 @@
 <!-- app\pages\(community)\players\index.vue -->
 <script lang="ts" setup>
+import type { VisibilityTableRef } from '~/composables/useColumnVisibilityItems'
+
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
@@ -77,18 +79,7 @@ const sorting = ref([{ id: 'id', desc: false }])
 // the menu opens (via :items"), getAllColumns() + getCanHide() +
 // toggleVisibility(), not a direct v-model on the individual items (official
 // Nuxt UI convention, UTable docs "Column visibility" section).
-interface TableColumnRef {
-  id: string
-  getCanHide: () => boolean
-  getIsVisible: () => boolean
-}
-interface TableRef {
-  tableApi: {
-    getAllColumns: () => TableColumnRef[]
-    getColumn: (id: string) => { toggleVisibility: (value: boolean) => void } | undefined
-  }
-}
-const table = useTemplateRef<TableRef>('table')
+const table = useTemplateRef<VisibilityTableRef>('table')
 const columnVisibility = ref({})
 
 // "Mostra colonne" section divider: identity/status columns vs. activity

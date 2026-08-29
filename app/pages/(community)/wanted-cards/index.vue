@@ -5,6 +5,7 @@ import type { TabsItem } from '@nuxt/ui'
 import type { WantedCard } from '~/types'
 import type { DroppedCardInfo } from '~/composables/wantedCards/useScryfallDragDrop'
 import type { WantedCardColorFilter } from '~/composables/wantedCards/useWantedCardsFilters'
+import type { VisibilityTableRef } from '~/composables/useColumnVisibilityItems'
 
 const { t } = useI18n()
 
@@ -101,23 +102,7 @@ const { columns, columnHeaders } = useWantedCardsTableColumns(selection, rowCont
 const grouping = ref<string[]>([])
 const sorting = ref([{ id: 'player', desc: true }])
 
-interface TableColumnRef {
-  id: string
-  getFilterValue: () => unknown
-  getFacetedUniqueValues: () => Map<unknown, number>
-  getCanHide: () => boolean
-  getIsVisible: () => boolean
-  toggleVisibility: (value: boolean) => void
-}
-
-interface TableRef {
-  tableApi: {
-    getColumn: (id: string) => TableColumnRef | undefined
-    getAllColumns: () => TableColumnRef[]
-  }
-}
-
-const table = useTemplateRef<TableRef>('table')
+const table = useTemplateRef<VisibilityTableRef>('table')
 // "Status" hidden by default: it is already implied by the active Found/Searching tab.
 // updatedAt/createdBy/updatedBy (audit trail, added 2026-08-18): hidden by
 // default, same "not needed at a glance" reasoning as associates' own

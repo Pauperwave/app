@@ -11,7 +11,12 @@ interface VisibilityColumn {
   getIsVisible: () => boolean
 }
 
-interface VisibilityTableRef {
+// Exported: this is the actual full shape the `table` template ref needs
+// everywhere it's typed just for this composable — players/index.vue,
+// transactions/index.vue and wanted-cards/index.vue all hand-rolled their
+// own byte-identical (or near-identical, with unused extra members) copy of
+// this interface before being pointed at this one (fallow:dupes, 2026-08-29).
+export interface VisibilityTableRef {
   tableApi?: {
     getAllColumns: () => VisibilityColumn[]
     getColumn: (id: string) => { toggleVisibility: (value: boolean) => void } | undefined
