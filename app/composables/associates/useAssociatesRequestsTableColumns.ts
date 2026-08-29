@@ -51,12 +51,15 @@ export function useAssociatesRequestsTableColumns(
     membershipRequestStatusColumn,
     requestDateColumn,
     lastRenewalDateColumn,
+    // associateType before pauperwaveAssociateNumber (2026-08-29) — matches
+    // the roster's own order (associates/index.vue); this file had them
+    // swapped, the inconsistency being fixed here (user report).
+    associateTypeColumn,
     pauperwaveAssociateNumberColumn,
     // Consensi before personal data (user request, 2026-08-19) — matches the
     // roster's own order (associates/index.vue), which already had this
     // block ahead of firstNameColumn; requests.vue had it after, the
     // inconsistency being fixed here.
-    associateTypeColumn,
     consentDataColumn,
     consentSocialColumn,
     hasReadStatuteColumn,
