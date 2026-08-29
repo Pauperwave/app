@@ -122,10 +122,17 @@ watch(acceptedItems, (value) => {
   targetItems.value = value
 }, { immediate: true })
 
-function setNoShow(itemsToUpdate: AcceptancePickerItem[], noShow: boolean) {
-  const registrationUuids = itemsToUpdate
+// Shared by setNoShow/transferToAccepted/both useRemoveConfirmFlow instances
+// below — each turns a list of picker items into their underlying
+// tournament_registrations uuids before calling a mutation.
+function resolveRegistrationUuids(itemsList: AcceptancePickerItem[]): string[] {
+  return itemsList
     .map(item => registrationByAssociate.value.get(item.value)?.uuid)
     .filter((uuid): uuid is string => !!uuid)
+}
+
+function setNoShow(itemsToUpdate: AcceptancePickerItem[], noShow: boolean) {
+  const registrationUuids = resolveRegistrationUuids(itemsToUpdate)
 
   if (registrationUuids.length)
     setRegistrationStatus.mutate({
@@ -296,9 +303,7 @@ watch(paymentsData, (payments) => {
 // request, 2026-08-24), which passes just the right-clicked row or
 // resolveContextMenuTargets()'s wider selection.
 function transferToAccepted(itemsToTransfer: AcceptancePickerItem[]) {
-  const registrationUuids = itemsToTransfer
-    .map(item => registrationByAssociate.value.get(item.value)?.uuid)
-    .filter((uuid): uuid is string => !!uuid)
+  const registrationUuids = resolveRegistrationUuids(itemsToTransfer)
 
   if (registrationUuids.length) {
     setRegistrationStatus.mutate({ registrationUuids, status: 'checked_in' })
@@ -371,9 +376,7 @@ const sourceRemove = useRemoveConfirmFlow<AcceptancePickerItem>({
   descriptionKey: 'tournament.single.acceptancePicker.removePreRegisteredConfirmDescription',
   descriptionBatchKey: 'tournament.single.acceptancePicker.removePreRegisteredConfirmDescriptionBatch',
   onConfirm: (itemsToRemove) => {
-    const registrationUuids = itemsToRemove
-      .map(item => registrationByAssociate.value.get(item.value)?.uuid)
-      .filter((uuid): uuid is string => !!uuid)
+    const registrationUuids = resolveRegistrationUuids(itemsToRemove)
     if (registrationUuids.length) deleteRegistrations.mutate(registrationUuids)
     sourceSelectionState.deselect(itemsToRemove)
   }
@@ -389,9 +392,7 @@ const acceptedRemove = useRemoveConfirmFlow<AcceptancePickerItem>({
   descriptionKey: 'tournament.single.acceptancePicker.removeConfirmDescription',
   descriptionBatchKey: 'tournament.single.acceptancePicker.removeConfirmDescriptionBatch',
   onConfirm: (itemsToRemove) => {
-    const registrationUuids = itemsToRemove
-      .map(item => registrationByAssociate.value.get(item.value)?.uuid)
-      .filter((uuid): uuid is string => !!uuid)
+    const registrationUuids = resolveRegistrationUuids(itemsToRemove)
     if (registrationUuids.length)
       setRegistrationStatus.mutate({ registrationUuids, status: 'registered' })
     acceptedSelectionState.deselect(itemsToRemove)
