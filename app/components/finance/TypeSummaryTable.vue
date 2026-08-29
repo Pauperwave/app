@@ -4,6 +4,8 @@ import type { TableColumn } from '@nuxt/ui'
 import type { FinanceTypeSummaryRow } from '~/composables/finance/useFinanceSummary'
 import PaymentTypeBadge from '~/components/ui/PaymentTypeBadge.vue'
 
+// fallow-ignore-next-line code-duplication -- see the same comment in
+// FormatSummaryTable.vue
 const { rows, loading, pending = false } = defineProps<{
   rows: FinanceTypeSummaryRow[]
   loading: boolean
