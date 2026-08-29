@@ -6,7 +6,7 @@ import { eachMonthOfInterval, endOfYear, format, startOfYear } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { PAYMENT_METHODS, PAYMENT_TYPES } from '#shared/types/transactions'
 import type { PaymentMethod, PaymentType } from '#shared/types/transactions'
-import type { Transaction } from '~/types'
+import type { Tournament, Transaction } from '~/types'
 
 export interface FinanceTypeSummaryRow {
   type: PaymentType
@@ -154,6 +154,25 @@ function resolveCost(amountCounts: Map<number, number>, count: number): number |
   return null
 }
 
+// Shared by byFormat/byType/byMethodCost — each builds a Map of rows keyed
+// by a fixed dimension (format/type/method), then needs the sum of every
+// row's own total to compute a share-of-grand-total percentage.
+function computeGrandTotal(rows: Iterable<{ total: number }>): number {
+  return [...rows].reduce((sum, row) => sum + row.total, 0)
+}
+
+// Shared by byTournament/byFormat — both only count transactions with a
+// resolved tournament_uuid FK (see byTournament's own comment on why).
+function resolveTournament(
+  transaction: Transaction, tournamentsByUuid: Map<string, Tournament>
+) {
+  const uuid = transaction.tournament?.uuid
+  if (!uuid) return null
+  const tournament = tournamentsByUuid.get(uuid)
+  if (!tournament) return null
+  return { uuid, tournament }
+}
+
 interface CategoryAggregate {
   count: number
   cost: number | null
@@ -233,10 +252,9 @@ export function useFinanceSummary(transactions: Ref<Transaction[]>, year: Ref<nu
   const byTournament = computed<FinanceTournamentSummaryRow[]>(() => {
     const rows = new Map<string, FinanceTournamentSummaryRow>()
     for (const transaction of transactions.value) {
-      const uuid = transaction.tournament?.uuid
-      if (!uuid) continue
-      const tournament = tournamentsByUuid.value.get(uuid)
-      if (!tournament) continue
+      const resolved = resolveTournament(transaction, tournamentsByUuid.value)
+      if (!resolved) continue
+      const { uuid, tournament } = resolved
       if (!rows.has(uuid)) {
         rows.set(uuid, {
           uuid,
@@ -319,10 +337,9 @@ export function useFinanceSummary(transactions: Ref<Transaction[]>, year: Ref<nu
     const amountCountsByFormat = new Map<string, Map<number, number>>()
 
     for (const transaction of transactions.value) {
-      const uuid = transaction.tournament?.uuid
-      if (!uuid) continue
-      const tournament = tournamentsByUuid.value.get(uuid)
-      if (!tournament) continue
+      const resolved = resolveTournament(transaction, tournamentsByUuid.value)
+      if (!resolved) continue
+      const { uuid, tournament } = resolved
       const { format } = tournament
 
       if (!rows.has(format)) {
@@ -357,7 +374,7 @@ export function useFinanceSummary(transactions: Ref<Transaction[]>, year: Ref<nu
       }
     }
 
-    const grandTotal = [...rows.values()].reduce((sum, row) => sum + row.total, 0)
+    const grandTotal = computeGrandTotal(rows.values())
     for (const row of rows.values()) {
       row.tournamentCount = tournamentUuidsByFormat.get(row.format)?.size ?? 0
       row.average = row.count ? row.total / row.count : 0
@@ -432,7 +449,7 @@ export function useFinanceSummary(transactions: Ref<Transaction[]>, year: Ref<nu
       row.count += 1
       row.total += transaction.payment_amount
     }
-    const grandTotal = [...rows.values()].reduce((sum, row) => sum + row.total, 0)
+    const grandTotal = computeGrandTotal(rows.values())
     for (const row of rows.values()) {
       row.average = row.count ? row.total / row.count : 0
       row.share = grandTotal ? row.total / grandTotal : 0
@@ -461,7 +478,7 @@ export function useFinanceSummary(transactions: Ref<Transaction[]>, year: Ref<nu
       row.count += 1
       row.total += transaction.payment_amount
     }
-    const grandTotal = [...rows.values()].reduce((sum, row) => sum + row.total, 0)
+    const grandTotal = computeGrandTotal(rows.values())
     for (const row of rows.values()) {
       row.share = grandTotal ? row.total / grandTotal : 0
       row.fee = row.total * row.feeRate
