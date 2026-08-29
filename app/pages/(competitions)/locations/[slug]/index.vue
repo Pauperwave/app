@@ -17,6 +17,9 @@
 import { add } from 'date-fns'
 import type { Range, Tournament } from '~/types'
 
+// Was nav-hidden only — see locations/index.vue's own comment.
+definePageMeta({ permission: 'manage-locations' })
+
 const { t } = useI18n()
 const route = useRoute()
 

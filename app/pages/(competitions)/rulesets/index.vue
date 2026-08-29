@@ -2,6 +2,11 @@
 <script lang="ts" setup>
 import type { TabsItem } from '@nuxt/ui'
 
+// Was nav-hidden only (sidebar gated on manage-rulesets, the route itself
+// wide open to any authenticated user) — closed 2026-08-29, see the
+// permissions.vue table's own statusNote on why this was flagged.
+definePageMeta({ permission: 'manage-rulesets' })
+
 const { t } = useI18n()
 
 useSeoMeta({ title: () => t('ruleset.breadcrumb') })
