@@ -13,6 +13,8 @@
 import type { League } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 
+// fallow-ignore-next-line code-duplication -- see the same comment in
+// events/list/Cover.vue
 const {
   league = null, selection, range = [], loading = false
 } = defineProps<{

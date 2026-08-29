@@ -1,5 +1,7 @@
 <!-- app\pages\(competitions)\events\[eventId]\index.vue -->
 <script lang="ts" setup>
+// fallow-ignore-file code-duplication -- see the same comment in
+// leagues/[leagueId]/index.vue
 // First real (non-mock) detail page for events (2026-08-20). Uuid-based,
 // not slug-based — matches events/list/GridView.vue's own `/events/${uuid}`
 // link, not migrated to a slug like locations/leagues were.
