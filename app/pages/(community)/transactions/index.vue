@@ -4,6 +4,7 @@ import { startOfYear, endOfYear } from 'date-fns'
 import { getGroupedRowModel } from '@tanstack/vue-table'
 import type { Range } from '~/types'
 import type { TransactionTypeFilter } from '~/composables/transactions/useTransactionsFilters'
+import type { VisibilityTableRef } from '~/composables/useColumnVisibilityItems'
 
 const range = shallowRef<Range>({
   start: startOfYear(new Date()),
@@ -106,21 +107,7 @@ const {
 
 const sorting = ref([{ id: 'id', desc: true }])
 
-interface TableColumnRef {
-  id: string
-  getCanHide: () => boolean
-  getIsVisible: () => boolean
-  toggleVisibility: (value: boolean) => void
-}
-
-interface TableRef {
-  tableApi: {
-    getColumn: (id: string) => TableColumnRef | undefined
-    getAllColumns: () => TableColumnRef[]
-  }
-}
-
-const table = useTemplateRef<TableRef>('table')
+const table = useTemplateRef<VisibilityTableRef>('table')
 
 // payment_type hidden once a specific type tab is active: with the tab already
 // saying "Quote associative"/"Quote tornei"/etc., a "Tipologia" column
