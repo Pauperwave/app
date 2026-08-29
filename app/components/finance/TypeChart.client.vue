@@ -7,6 +7,8 @@ import { VisXYContainer, VisStackedBar, VisAxis, VisTooltip } from '@unovis/vue'
 import { Orientation, StackedBar } from '@unovis/ts'
 import type { FinanceTypeSummaryRow } from '~/composables/finance/useFinanceSummary'
 
+// fallow-ignore-next-line code-duplication -- see the same comment in
+// FormatChart.client.vue
 const { rows, loading = false } = defineProps<{
   rows: FinanceTypeSummaryRow[]
   loading?: boolean
@@ -16,7 +18,7 @@ const { t } = useI18n()
 const amountFormatter = AMOUNT_FORMATTER
 const { chartColor } = useChartPalette()
 
-const grandTotal = computed(() => rows.reduce((sum, row) => sum + row.total, 0))
+const grandTotal = computed(() => columnTotal(rows, 'total'))
 
 // Unlike byFormat, byType arrives in PAYMENT_TYPES' fixed order, not sorted
 // by total — sorted ascending here so unovis' category axis (index 0 at the
@@ -89,6 +91,8 @@ watch(() => loading, (isLoading) => {
     :loading="loading"
   >
     <template #default="{ width }">
+      <!-- fallow-ignore-next-line code-duplication -- see the same comment
+           in FormatChart.client.vue -->
       <VisXYContainer
         v-if="chartRows.length"
         ref="containerRef"

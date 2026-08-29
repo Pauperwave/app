@@ -33,6 +33,8 @@ import { VisXYContainer, VisLine, VisScatter, VisAxis, VisTooltip } from '@unovi
 import { Scatter } from '@unovis/ts'
 import type { FinanceTournamentSummaryRow } from '~/composables/finance/useFinanceSummary'
 
+// fallow-ignore-next-line code-duplication -- see the same comment in
+// FormatChart.client.vue
 const { rows, year, loading = false } = defineProps<{
   rows: FinanceTournamentSummaryRow[]
   year: number
@@ -43,7 +45,7 @@ const { t } = useI18n()
 const amountFormatter = AMOUNT_FORMATTER
 const { chartColor } = useChartPalette()
 
-const grandTotal = computed(() => rows.reduce((sum, row) => sum + row.total, 0))
+const grandTotal = computed(() => columnTotal(rows, 'total'))
 
 const chartRows = computed(() =>
   [...rows].sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()))

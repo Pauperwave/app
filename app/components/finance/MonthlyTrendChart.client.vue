@@ -14,6 +14,8 @@ import { PAYMENT_TYPES } from '#shared/types/transactions'
 import type { PaymentType } from '#shared/types/transactions'
 import type { FinanceMonthSummaryRow } from '~/composables/finance/useFinanceSummary'
 
+// fallow-ignore-next-line code-duplication -- see the same comment in
+// FormatChart.client.vue
 const { rows, loading = false } = defineProps<{
   rows: FinanceMonthSummaryRow[]
   loading?: boolean
@@ -25,7 +27,7 @@ const amountFormatter = AMOUNT_FORMATTER
 
 const { chartColor } = useChartPalette()
 
-const grandTotal = computed(() => rows.reduce((sum, row) => sum + row.grandTotal, 0))
+const grandTotal = computed(() => columnTotal(rows, 'grandTotal'))
 
 // Running total per type, not each month's own amount (user request,
 // 2026-08-23: "curves should be cumulative, not point-in-time") — the table
