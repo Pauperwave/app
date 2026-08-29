@@ -12,6 +12,9 @@ useSeoMeta({ title: () => t('settings.layout.links.permissions') })
 
 type Access = 'full' | 'partial' | 'none'
 type RoleKey = 'player' | 'organizer' | 'admin' | 'superAdmin'
+type GroupKey
+  = 'standings' | 'tournaments' | 'wantedCards' | 'commanderDecks'
+    | 'membership' | 'rulesets' | 'trash' | 'roles'
 
 // Whether the row describes real, working code today — separate from the
 // role grid itself (which is the *intended* policy, docs/architecture/
@@ -30,23 +33,30 @@ interface RoleCell {
 }
 
 interface PermissionRow {
+  /** A section-header pseudo-row (one per theme, e.g. "Carte Cercate") rather
+   * than a real permission — every column but `feature` is blank for these,
+   * see the column cell functions below. */
+  isSection?: boolean
+  group: GroupKey
   feature: string
-  status: ImplementationStatus
+  status?: ImplementationStatus
   /** Detail shown on hover for 'partial'/'notImplemented' rows — what's
    * missing or wrong today. Absent for 'implemented' rows. */
   statusNote?: string
-  player: RoleCell
-  organizer: RoleCell
-  admin: RoleCell
-  superAdmin: RoleCell
+  player?: RoleCell
+  organizer?: RoleCell
+  admin?: RoleCell
+  superAdmin?: RoleCell
 }
 
-// Grouped by domain, same order as docs/architecture/permissions.md (reordered
-// 2026-08-23 — was purely by increasing role, which scattered same-domain rows,
-// e.g. the four Carte Cercate rows weren't consecutive; within each domain group
-// below, still lowest-to-highest role). That file is the source of truth (with
-// the full "why" behind each row); this table is its in-app rendering, not a
-// second decision. Keep both in sync by hand until PERMISSION_LEVEL
+// Grouped by domain (reordered 2026-08-23 — was purely by increasing role,
+// which scattered same-domain rows, e.g. the four Carte Cercate rows weren't
+// consecutive; within each domain group below, still lowest-to-highest
+// role). Section order follows the sidebar nav, not docs/architecture/
+// permissions.md's own order (see the `return` below) — that file is still
+// the source of truth for the full "why" behind each row, this table is
+// just its in-app rendering, not a second decision. Keep both in sync by
+// hand until PERMISSION_LEVEL
 // (docs/architecture/roles.md) actually exists in code and this can compute
 // itself from it instead.
 const rows = computed<PermissionRow[]>(() => {
@@ -86,7 +96,7 @@ const rows = computed<PermissionRow[]>(() => {
     key: RowKey,
     status: ImplementationStatus,
     access: [CellSpec, CellSpec, CellSpec, CellSpec]
-  ): PermissionRow => {
+  ): Omit<PermissionRow, 'group'> => {
     const [player, organizer, admin, superAdmin] = access
     const statusNotePath = `settings.permissions.rows.${key}.statusNote`
     return {
@@ -100,39 +110,73 @@ const rows = computed<PermissionRow[]>(() => {
     }
   }
 
+  // A section-header pseudo-row (bold feature text, every other column
+  // blank — see the column cell functions below) plus tagging every row in
+  // the block that follows with its theme (user request, 2026-08-29: divide
+  // the table into sections by theme, e.g. "Carte Cercate"). One table, not
+  // one per section — a separate <table> per section wouldn't share a single
+  // <colgroup>, so the "feature" column's shrink-to-fit width (see its own
+  // comment below) would independently reflow per section instead of lining
+  // up down the page.
+  const group = (key: GroupKey, items: Omit<PermissionRow, 'group'>[]): PermissionRow[] => [
+    { isSection: true, group: key, feature: t(`settings.permissions.groups.${key}`) },
+    ...items.map(item => ({ ...item, group: key }))
+  ]
+
+  // Section order follows the sidebar nav (useMainNavGroups.ts), not
+  // docs/architecture/permissions.md's own order (user request, 2026-08-29):
+  // Community (Associati/Richieste, then Carte Cercate) → Competizioni
+  // (Tornei/Leghe/Eventi, then Regolamenti last) → Classifiche → Commander
+  // (Mazzi Commander) → Impostazioni (Membri → roles, Cestino last).
   return [
-    row('viewStandings', 'implemented', ['full', 'full', 'full', 'full']),
-
-    row('viewTournaments', 'implemented', ['full', 'full', 'full', 'full']),
-    row('registerTournament', 'notImplemented', [['partial', 'playerNote'], 'full', 'full', 'full']),
-    row('manageTournaments', 'implemented', ['none', 'full', 'full', 'full']),
-    row('resetPairing', 'notImplemented', ['none', 'full', 'full', 'full']),
-    row('cancelRound', 'notImplemented', ['none', 'none', 'full', 'full']),
-    row('manageEventPayments', 'implemented', ['none', 'full', 'full', 'full']),
-    row('deleteTournaments', 'notImplemented', ['none', 'none', 'none', 'full']),
-
-    row('viewWantedCards', 'implemented', ['full', 'full', 'full', 'full']),
-    row('createWantedCard', 'implemented', [['partial', 'playerNote'], 'full', 'full', 'full']),
-    row('updateOwnWantedCardStatus', 'partial', [['partial', 'playerNote'], 'full', 'full', 'full']),
-    row('deleteOwnWantedCard', 'implemented', ['none', 'full', 'full', 'full']),
-    row('manageOthersWantedCards', 'implemented', ['none', 'full', 'full', 'full']),
-
-    row('manageOwnDecks', 'notImplemented', ['full', 'full', 'full', 'full']),
-    row('manageAllDecks', 'notImplemented', ['none', 'none', 'full', 'full']),
-    row('deleteCommanderDeck', 'notImplemented', ['none', 'none', 'full', 'full']),
-
-    row('viewOwnMembership', 'implemented', [
-      ['partial', 'playerNote'], ['partial', 'organizerNote'], ['full', 'adminNote'], ['full', 'superAdminNote']
+    ...group('membership', [
+      row('viewOwnMembership', 'implemented', [
+        ['partial', 'playerNote'], ['partial', 'organizerNote'], ['full', 'adminNote'], ['full', 'superAdminNote']
+      ]),
+      row('manageMembers', 'implemented', ['none', 'none', 'full', 'full']),
+      row('manageMembershipFees', 'implemented', ['none', 'none', 'full', 'full']),
+      row('sendPaymentReceipts', 'notImplemented', ['none', 'none', 'full', 'full'])
     ]),
-    row('manageMembers', 'implemented', ['none', 'none', 'full', 'full']),
-    row('manageMembershipFees', 'implemented', ['none', 'none', 'full', 'full']),
-    row('sendPaymentReceipts', 'notImplemented', ['none', 'none', 'full', 'full']),
 
-    row('deleteRuleset', 'notImplemented', ['none', 'none', 'full', 'full']),
+    ...group('wantedCards', [
+      row('viewWantedCards', 'implemented', ['full', 'full', 'full', 'full']),
+      row('createWantedCard', 'implemented', [['partial', 'playerNote'], 'full', 'full', 'full']),
+      row('updateOwnWantedCardStatus', 'partial', [['partial', 'playerNote'], 'full', 'full', 'full']),
+      row('deleteOwnWantedCard', 'implemented', ['none', 'full', 'full', 'full']),
+      row('manageOthersWantedCards', 'implemented', ['none', 'full', 'full', 'full'])
+    ]),
 
-    row('purgeTrash', 'implemented', ['none', 'none', 'none', 'full']),
+    ...group('tournaments', [
+      row('viewTournaments', 'implemented', ['full', 'full', 'full', 'full']),
+      row('registerTournament', 'notImplemented', [['partial', 'playerNote'], 'full', 'full', 'full']),
+      row('manageTournaments', 'implemented', ['none', 'full', 'full', 'full']),
+      row('resetPairing', 'notImplemented', ['none', 'full', 'full', 'full']),
+      row('cancelRound', 'notImplemented', ['none', 'none', 'full', 'full']),
+      row('manageEventPayments', 'implemented', ['none', 'full', 'full', 'full']),
+      row('deleteTournaments', 'notImplemented', ['none', 'none', 'none', 'full'])
+    ]),
 
-    row('manageRoles', 'implemented', ['none', 'none', 'full', 'full'])
+    ...group('rulesets', [
+      row('deleteRuleset', 'notImplemented', ['none', 'none', 'full', 'full'])
+    ]),
+
+    ...group('standings', [
+      row('viewStandings', 'implemented', ['full', 'full', 'full', 'full'])
+    ]),
+
+    ...group('commanderDecks', [
+      row('manageOwnDecks', 'notImplemented', ['full', 'full', 'full', 'full']),
+      row('manageAllDecks', 'notImplemented', ['none', 'none', 'full', 'full']),
+      row('deleteCommanderDeck', 'notImplemented', ['none', 'none', 'full', 'full'])
+    ]),
+
+    ...group('roles', [
+      row('manageRoles', 'implemented', ['none', 'none', 'full', 'full'])
+    ]),
+
+    ...group('trash', [
+      row('purgeTrash', 'implemented', ['none', 'none', 'none', 'full'])
+    ])
   ]
 })
 
@@ -205,7 +249,9 @@ function roleColumn(role: RoleKey): TableColumn<PermissionRow> {
     ]),
     meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) => {
-      const { access, note } = row.original[role]
+      const roleCell = row.original[role]
+      if (!roleCell) return null
+      const { access, note } = roleCell
       if (access === 'none') return null
 
       const icon = h(UIcon, { name: ACCESS_META[access].icon, class: ['size-5', ACCESS_META[access].color] })
@@ -224,7 +270,9 @@ const columns: TableColumn<PermissionRow>[] = [
     // instead of the icon columns doing that. Deliberately no whitespace-normal
     // wrapping either, unlike domains.vue: every row stays on one line.
     meta: { class: { th: 'whitespace-nowrap w-px', td: 'whitespace-nowrap w-px' } },
-    cell: ({ row }) => renderFeature(row.original.feature)
+    cell: ({ row }) => row.original.isSection
+      ? h('span', { class: 'font-semibold text-highlighted block mt-3' }, row.original.feature)
+      : renderFeature(row.original.feature)
   },
   {
     accessorKey: 'status',
@@ -232,6 +280,7 @@ const columns: TableColumn<PermissionRow>[] = [
     meta: { class: { th: 'whitespace-nowrap w-px text-center', td: 'whitespace-nowrap w-px text-center' } },
     cell: ({ row }) => {
       const { status, statusNote } = row.original
+      if (!status) return null
       const badge = h(UBadge, {
         color: STATUS_META[status].color,
         variant: 'subtle'

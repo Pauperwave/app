@@ -2238,6 +2238,16 @@
         "partial": "Parziale",
         "notImplemented": "Non implementato"
       },
+      "groups": {
+        "standings": "Classifiche",
+        "tournaments": "Tornei, leghe ed eventi",
+        "wantedCards": "Carte Cercate",
+        "commanderDecks": "Mazzi Commander",
+        "membership": "Anagrafica e quote associative",
+        "rulesets": "Regolamenti",
+        "trash": "Cestino",
+        "roles": "Ruoli"
+      },
       "rows": {
         "viewStandings": { "feature": "**Visualizzare** classifiche (Cittadino, Commander, Premodern, Pauper)" },
         "viewTournaments": { "feature": "**Visualizzare** tornei, leghe, eventi" },
