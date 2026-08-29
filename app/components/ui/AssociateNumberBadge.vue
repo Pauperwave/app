@@ -13,6 +13,7 @@ const { number } = defineProps<{ number: string | null }>()
     color="neutral"
     variant="subtle"
     :icon="ICONS.idCard"
+    class="tabular-nums"
   >
     {{ number }}
   </UBadge>
