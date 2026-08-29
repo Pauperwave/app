@@ -8,7 +8,7 @@ import type { TableColumn } from '@nuxt/ui'
 import type { Transaction, Tournament } from '~/types'
 import {
   AssociateTag, DateWithRelativeTooltip, PaymentMethodBadge, PaymentTypeBadge,
-  TournamentsStageLabel, UBadge, UButton, UIcon, UTooltip
+  UBadge, UButton, UIcon, UTooltip
 } from '#components'
 
 // Read-only summary, not the full /transactions table columns
@@ -60,42 +60,7 @@ export function useAssociateTransactionsTableColumns(
     {
       accessorKey: 'event_name',
       header: t('transaction.columns.event'),
-      cell: ({ row }) => {
-        // tournament/event checked first, ahead of event_name's own raw text:
-        // for Token Purchase rows event_name is just "8 gettoni" (see
-        // transactionGettoni.ts), never a real name — same fix as
-        // useTransactionsTableColumns.ts's own event_name cell (2026-08-27).
-        const { tournament, event } = row.original
-        if (tournament) {
-          // Real tournament.name + its league-relative stage number, not the
-          // historical import's raw event_name text (e.g. "PAUPER TAPPA 6").
-          const stageNumber = tournamentsByUuid.value.get(tournament.uuid)?.stageNumber
-          return h(UButton, {
-            to: tournamentDetailUrl(tournament),
-            icon: PAYMENT_TYPE_BADGE_CONFIG['Tournament Fee'].icon,
-            size: 'xs',
-            color: 'neutral',
-            variant: 'subtle'
-          }, () => [
-            tournament.name,
-            stageNumber ? h(TournamentsStageLabel, { number: stageNumber, class: '!text-xs' }) : null
-          ])
-        }
-        // event is guaranteed set here by ck_payment_type_event_link whenever
-        // tournament isn't — this `if` is TS narrowing, not a real fallback
-        // branch (the constraint rules out neither being set).
-        if (event) {
-          return h(UButton, {
-            to: `/events/${event.uuid}`,
-            label: event.name,
-            icon: PAYMENT_TYPE_BADGE_CONFIG['Event Fee'].icon,
-            size: 'xs',
-            color: 'neutral',
-            variant: 'subtle'
-          })
-        }
-        return null
-      }
+      cell: ({ row }) => transactionEventNameCell(row.original, tournamentsByUuid)
     },
     {
       id: 'league',
@@ -129,11 +94,7 @@ export function useAssociateTransactionsTableColumns(
       accessorFn: row => parseGettoniCount(row.event_name),
       header: t('transaction.columns.gettoni'),
       meta: { class: { th: 'text-center', td: 'text-center' } },
-      cell: ({ getValue }) => {
-        const count = getValue<number | null>()
-        if (count === null) return null
-        return h(UBadge, { variant: 'subtle', color: 'warning', icon: ICONS.coins, label: String(count) })
-      }
+      cell: ({ getValue }) => transactionGettoniCell(getValue<number | null>())
     },
     {
       accessorKey: 'receipt_ref',
