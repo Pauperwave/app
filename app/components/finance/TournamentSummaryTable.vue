@@ -83,6 +83,8 @@ const columns: TableColumn<FinanceTournamentSummaryRow>[] = [
     // Not every tournament belongs to a league (standalone tournaments have
     // league/leagueUuid both null) — empty cell for those, not a '—'
     // placeholder (user request, 2026-08-23).
+    // fallow-ignore-next-line code-duplication -- see the same comment in
+    // EventSummaryTable.vue
     cell: ({ row }) => row.original.leagueUuid
       ? h(UButton, {
         to: `/leagues/${row.original.leagueUuid}`,

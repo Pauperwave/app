@@ -4,6 +4,8 @@ import type { NewTournamentPayload } from '#shared/types/tournaments'
 // Same convention as create.post.ts: tournaments' RLS (management_full_access)
 // already gates writes to management users, but every write still goes
 // through a BFF endpoint rather than relying on RLS evaluated from the client.
+// fallow-ignore-next-line code-duplication -- see the same comment in
+// league.post.ts
 export default defineEventHandler(async (event) => {
   const { id, body, supabase } = await parseIdMutationRequest<NewTournamentPayload>(event)
 
