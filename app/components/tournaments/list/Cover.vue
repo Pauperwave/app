@@ -16,9 +16,8 @@
 import type { Tournament } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 
-// fallow-ignore-next-line code-duplication -- see the same comment in
-// events/list/Cover.vue
 const {
+  // fallow-ignore-next-line code-duplication -- see events/list/Cover.vue
   tournament = null, selection, range = [], loading = false
 } = defineProps<{
   tournament?: Tournament | null

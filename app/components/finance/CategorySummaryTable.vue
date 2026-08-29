@@ -33,6 +33,7 @@ const sorting = ref([{ id: 'category', desc: false }])
 // quantity, same reasoning as MethodCostTable.vue's feeRate column.
 const totalCount = computed(() => columnTotal(rows, 'count'))
 const totalPaypal = computed(() => columnTotal(rows, 'paypalTotal'))
+// fallow-ignore-next-line code-duplication -- totalCash/Pos/Amount + columns array mirrors FormatSummaryTable.vue's own
 const totalCash = computed(() => columnTotal(rows, 'cashTotal'))
 const totalPos = computed(() => columnTotal(rows, 'posTotal'))
 const totalAmount = computed(() => columnTotal(rows, 'total'))

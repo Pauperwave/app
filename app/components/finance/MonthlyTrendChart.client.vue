@@ -14,8 +14,7 @@ import { PAYMENT_TYPES } from '#shared/types/transactions'
 import type { PaymentType } from '#shared/types/transactions'
 import type { FinanceMonthSummaryRow } from '~/composables/finance/useFinanceSummary'
 
-// fallow-ignore-next-line code-duplication -- see the same comment in
-// FormatChart.client.vue
+// fallow-ignore-next-line code-duplication -- see the same comment in FormatChart.client.vue
 const { rows, loading = false } = defineProps<{
   rows: FinanceMonthSummaryRow[]
   loading?: boolean

@@ -7,8 +7,7 @@ import { VisXYContainer, VisStackedBar, VisAxis, VisTooltip } from '@unovis/vue'
 import { Orientation, StackedBar } from '@unovis/ts'
 import type { FinanceTypeSummaryRow } from '~/composables/finance/useFinanceSummary'
 
-// fallow-ignore-next-line code-duplication -- see the same comment in
-// FormatChart.client.vue
+// fallow-ignore-next-line code-duplication -- see the same comment in FormatChart.client.vue
 const { rows, loading = false } = defineProps<{
   rows: FinanceTypeSummaryRow[]
   loading?: boolean
@@ -46,6 +45,7 @@ const yTickValues = computed(() => chartRows.value.map((_, i) => i))
 
 // 10% headroom past the longest bar — without it the top type's bar runs
 // straight into the card's right edge, unreadable.
+// fallow-ignore-next-line code-duplication -- see the same comment in FormatChart.client.vue
 const maxTotal = computed(() => Math.max(...rows.map(row => row.total), 0))
 const xDomain = computed<[number, number]>(() => [0, maxTotal.value * 1.1])
 
@@ -91,8 +91,7 @@ watch(() => loading, (isLoading) => {
     :loading="loading"
   >
     <template #default="{ width }">
-      <!-- fallow-ignore-next-line code-duplication -- see the same comment
-           in FormatChart.client.vue -->
+      <!-- fallow-ignore-next-line code-duplication -- see FormatChart.client.vue -->
       <VisXYContainer
         v-if="chartRows.length"
         ref="containerRef"

@@ -27,8 +27,7 @@ useSeoMeta({ title: () => t(FORMAT_STANDINGS_BREADCRUMB_KEYS[format]) })
 // useFormatStandingsPage independently). Declared before that call below
 // since it threads through to useFormatStandingsTableColumns.ts for match
 // highlighting.
-// fallow-ignore-next-line code-duplication -- see the same comment in
-// PublicFormatPage.vue
+// fallow-ignore-next-line code-duplication -- see the same comment in PublicFormatPage.vue
 const search = ref('')
 
 const {
@@ -36,11 +35,7 @@ const {
   isInitialLoad, tableMeta, loading
 } = useFormatStandingsPage(format, search)
 
-const filteredStandings = computed(() => {
-  const query = search.value.trim().toLowerCase()
-  if (!query) return standings.value
-  return standings.value.filter(row => row.playerName.toLowerCase().includes(query))
-})
+const filteredStandings = computed(() => filterStandingsBySearch(standings.value, search.value))
 
 // Same convention as associates/requests.vue's tesseramentoLink: point at
 // this deploy's own /rankings/<format> for now, until each subdomain is
@@ -106,8 +101,7 @@ const tour = useStandingsFormatTour()
       </UDashboardNavbar>
 
       <UDashboardToolbar>
-        <!-- fallow-ignore-next-line code-duplication -- see the same
-             comment in PublicFormatPage.vue -->
+        <!-- fallow-ignore-next-line code-duplication -- see PublicFormatPage.vue -->
         <template #left>
           <div class="flex items-center gap-4 flex-wrap">
             <p class="text-sm text-muted">

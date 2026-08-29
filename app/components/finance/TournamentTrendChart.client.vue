@@ -33,8 +33,7 @@ import { VisXYContainer, VisLine, VisScatter, VisAxis, VisTooltip } from '@unovi
 import { Scatter } from '@unovis/ts'
 import type { FinanceTournamentSummaryRow } from '~/composables/finance/useFinanceSummary'
 
-// fallow-ignore-next-line code-duplication -- see the same comment in
-// FormatChart.client.vue
+// fallow-ignore-next-line code-duplication -- see the same comment in FormatChart.client.vue
 const { rows, year, loading = false } = defineProps<{
   rows: FinanceTournamentSummaryRow[]
   year: number

@@ -4,8 +4,7 @@ import type { TableColumn } from '@nuxt/ui'
 import type { FinanceTypeSummaryRow } from '~/composables/finance/useFinanceSummary'
 import PaymentTypeBadge from '~/components/ui/PaymentTypeBadge.vue'
 
-// fallow-ignore-next-line code-duplication -- see the same comment in
-// FormatSummaryTable.vue
+// fallow-ignore-next-line code-duplication -- see the same comment in FormatSummaryTable.vue
 const { rows, loading, pending = false } = defineProps<{
   rows: FinanceTypeSummaryRow[]
   loading: boolean
@@ -21,6 +20,7 @@ const sorting = ref([{ id: 'total', desc: true }])
 
 // Grand total per numeric column, own `footer` on the leftmost column instead
 // of a bare blank cell.
+// fallow-ignore-next-line code-duplication -- totals + columns array shape mirrors MethodCostTable.vue's own
 const totalCount = computed(() => columnTotal(rows, 'count'))
 const totalAmount = computed(() => columnTotal(rows, 'total'))
 

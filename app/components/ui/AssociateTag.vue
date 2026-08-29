@@ -87,16 +87,13 @@ const membershipBadge = computed(() => associate.value
     </template>
   </UPopover>
 
-  <!-- fallow-ignore-next-line code-duplication -- the #name slot content
-       mirrors the popover branch above verbatim; Vue templates have no
-       lightweight way to share a named-slot fragment across two UUser
-       instances without a wrapper component, not worth it for 6 lines. -->
   <UUser
     v-else
     :name="name"
     :avatar="avatar"
     :size="size"
   >
+    <!-- fallow-ignore-next-line code-duplication -- mirrors the popover branch above -->
     <template v-if="highlightQuery || strikethrough" #name>
       <span :class="{ 'line-through text-dimmed': strikethrough }">
         <HighlightMatch v-if="highlightQuery" :text="name" :query="highlightQuery" />

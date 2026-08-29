@@ -12,9 +12,7 @@ import { VisXYContainer, VisStackedBar, VisAxis, VisTooltip } from '@unovis/vue'
 import { Orientation, StackedBar } from '@unovis/ts'
 import type { FinanceFormatSummaryRow } from '~/composables/finance/useFinanceSummary'
 
-// fallow-ignore-next-line code-duplication -- props/formatter/chartColor/
-// grandTotal scaffolding mirrors every other finance chart; row type and
-// per-chart sort/axis reasoning genuinely differ (see the comments below).
+// fallow-ignore-next-line code-duplication -- props/formatter/chartColor/grandTotal scaffolding mirrors every finance chart
 const { rows, loading = false } = defineProps<{
   rows: FinanceFormatSummaryRow[]
   loading?: boolean
@@ -57,6 +55,7 @@ const yTickValues = computed(() => chartRows.value.map((_, i) => i))
 // 10% headroom past the longest bar — without it the top format's bar runs
 // straight into the card's right edge, unreadable (user request,
 // 2026-08-23).
+// fallow-ignore-next-line code-duplication -- maxTotal/xDomain/xTicks mirrors TypeChart.client.vue's own
 const maxTotal = computed(() => Math.max(...rows.map(row => row.total), 0))
 const xDomain = computed<[number, number]>(() => [0, maxTotal.value * 1.1])
 
@@ -106,10 +105,7 @@ watch(() => loading, (isLoading) => {
     :loading="loading"
   >
     <template #default="{ width }">
-      <!-- fallow-ignore-next-line code-duplication -- StatisticsStatChartCard
-           + VisXYContainer shell mirrors TypeChart.client.vue's own; the x/y/
-           color bindings and axis tick formatters passed into it (defined
-           above) are what actually differ per chart, not this wiring. -->
+      <!-- fallow-ignore-next-line code-duplication -- mirrors TypeChart.client.vue's own -->
       <VisXYContainer
         v-if="chartRows.length"
         ref="containerRef"

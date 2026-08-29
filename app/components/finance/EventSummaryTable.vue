@@ -31,10 +31,7 @@ const columns: TableColumn<FinanceEventSummaryRow>[] = [
     accessorKey: 'name',
     header: ({ column }) => sortableHeader(t('finance.summary.event'), column),
     footer: () => t('finance.summary.total'),
-    // fallow-ignore-next-line code-duplication -- the startDate column +
-    // trailing summaryXColumn calls mirror TournamentSummaryTable.vue's
-    // own, but this cell's link target/icon (an event) genuinely differs
-    // from a tournament's.
+    // fallow-ignore-next-line code-duplication -- mirrors TournamentSummaryTable.vue's own; link target differs
     cell: ({ row }) => h(UButton, {
       to: `/events/${row.original.uuid}`,
       icon: PAYMENT_TYPE_BADGE_CONFIG['Event Fee'].icon,
