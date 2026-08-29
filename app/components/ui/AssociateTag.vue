@@ -87,6 +87,10 @@ const membershipBadge = computed(() => associate.value
     </template>
   </UPopover>
 
+  <!-- fallow-ignore-next-line code-duplication -- the #name slot content
+       mirrors the popover branch above verbatim; Vue templates have no
+       lightweight way to share a named-slot fragment across two UUser
+       instances without a wrapper component, not worth it for 6 lines. -->
   <UUser
     v-else
     :name="name"

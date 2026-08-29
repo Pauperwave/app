@@ -161,9 +161,9 @@ async function onSubmit(formEvent: FormSubmitEvent<Schema>) {
           :formatted-start-date="formattedStartDate"
         />
 
-        <!-- fallow-ignore-next-line code-duplication -- see the same comment
-             in AddModal.vue -->
         <div class="grid grid-cols-2 gap-2">
+          <!-- fallow-ignore-next-line code-duplication -- see the same
+               comment in AddModal.vue -->
           <!-- eslint-disable-next-line -->
           <UFormField :label="$t('event.addModal.fields.organizer')" name="organizerUuid" required>
             <USelectMenu
