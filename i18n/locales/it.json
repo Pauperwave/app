@@ -876,6 +876,7 @@
     },
     "rowActions": {
       "edit": "Modifica lega",
+      "copy": "Copia lega",
       "delete": "Elimina"
     },
     "statusChangeErrorTitle": "Impossibile aggiornare lo stato della lega",
