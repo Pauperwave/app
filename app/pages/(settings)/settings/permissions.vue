@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import { UBadge, UIcon, UTooltip } from '#components'
+import type { Row } from '@tanstack/vue-table'
 import type { AppRole } from '~/types'
 
 definePageMeta({ permission: 'access-settings' })
@@ -43,6 +44,13 @@ interface PermissionRow {
   /** Detail shown on hover for 'partial'/'notImplemented' rows — what's
    * missing or wrong today. Absent for 'implemented' rows. */
   statusNote?: string
+  /** Unauthenticated access — the public/no-login-required equivalent of a
+   * feature, e.g. viewing standings via /rankings/<format> (ADR-011,
+   * docs/PROGRESS.md). Kept separate from `player` (the lowest *logged-in*
+   * role) since the two aren't the same access boundary — most rows have no
+   * public equivalent at all, hence optional/defaulting to 'none' like the
+   * others. */
+  publicAccess?: RoleCell
   player?: RoleCell
   organizer?: RoleCell
   admin?: RoleCell
@@ -85,7 +93,7 @@ const rows = computed<PermissionRow[]>(() => {
       | 'viewTrash' | 'purgeTrash'
       // Ruoli
       | 'manageRoles'
-  type NoteKey = 'playerNote' | 'organizerNote' | 'adminNote' | 'superAdminNote'
+  type NoteKey = 'publicNote' | 'playerNote' | 'organizerNote' | 'adminNote' | 'superAdminNote'
 
   // 'full'/'none' shorthand for the common case (no note); pass [key, noteKey] for
   // a cell that needs one — te() checks the key exists first, since most rows don't
@@ -101,7 +109,10 @@ const rows = computed<PermissionRow[]>(() => {
   const row = (
     key: RowKey,
     status: ImplementationStatus,
-    access: [CellSpec, CellSpec, CellSpec, CellSpec]
+    access: [CellSpec, CellSpec, CellSpec, CellSpec],
+    // Defaults to 'none' — most rows have no unauthenticated equivalent at
+    // all, only pass this for the handful that do (e.g. viewStandings).
+    publicAccess: CellSpec = 'none'
   ): Omit<PermissionRow, 'group'> => {
     const [player, organizer, admin, superAdmin] = access
     const statusNotePath = `settings.permissions.rows.${key}.statusNote`
@@ -109,6 +120,7 @@ const rows = computed<PermissionRow[]>(() => {
       feature: t(`settings.permissions.rows.${key}.feature`),
       status,
       statusNote: te(statusNotePath) ? t(statusNotePath) : undefined,
+      publicAccess: cell(key, publicAccess),
       player: cell(key, player),
       organizer: cell(key, organizer),
       admin: cell(key, admin),
@@ -171,7 +183,7 @@ const rows = computed<PermissionRow[]>(() => {
     ]),
 
     ...group('tournaments', [
-      row('viewTournaments', 'implemented', ['full', 'full', 'full', 'full']),
+      row('viewTournaments', 'implemented', ['full', 'full', 'full', 'full'], ['partial', 'publicNote']),
       row('registerTournament', 'notImplemented', [['partial', 'playerNote'], 'full', 'full', 'full']),
       row('manageTournaments', 'implemented', ['none', 'full', 'full', 'full']),
       row('resetPairing', 'notImplemented', ['none', 'full', 'full', 'full']),
@@ -190,7 +202,7 @@ const rows = computed<PermissionRow[]>(() => {
     ]),
 
     ...group('standings', [
-      row('viewStandings', 'implemented', ['full', 'full', 'full', 'full'])
+      row('viewStandings', 'implemented', ['full', 'full', 'full', 'full'], 'full')
     ]),
 
     ...group('commanderDecks', [
@@ -270,6 +282,17 @@ const ROLE_KEY_TO_APP_ROLE = {
   player: 'player', organizer: 'organizer', admin: 'admin', superAdmin: 'super_admin'
 } as const satisfies Record<RoleKey, AppRole>
 
+// Shared by publicColumn/roleColumn below — both render the same
+// full/partial icon (or nothing, for 'none'/blank) from a RoleCell.
+function accessCell(roleCell: RoleCell | undefined) {
+  if (!roleCell) return null
+  const { access, note } = roleCell
+  if (access === 'none') return null
+
+  const icon = h(UIcon, { name: ACCESS_META[access].icon, class: ['size-5', ACCESS_META[access].color] })
+  return note ? h(UTooltip, { text: note }, () => icon) : icon
+}
+
 function roleColumn(role: RoleKey): TableColumn<PermissionRow> {
   return {
     accessorKey: role,
@@ -278,15 +301,22 @@ function roleColumn(role: RoleKey): TableColumn<PermissionRow> {
       t(`settings.permissions.columns.${role}`)
     ]),
     meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }) => {
-      const roleCell = row.original[role]
-      if (!roleCell) return null
-      const { access, note } = roleCell
-      if (access === 'none') return null
+    cell: ({ row }) => accessCell(row.original[role])
+  }
+}
 
-      const icon = h(UIcon, { name: ACCESS_META[access].icon, class: ['size-5', ACCESS_META[access].color] })
-      return note ? h(UTooltip, { text: note }, () => icon) : icon
-    }
+// Unauthenticated access (user request, 2026-08-29) — same RoleCell shape
+// and icon set as the four role columns, just keyed off `publicAccess`
+// instead of a RoleKey and with no ROLE_ICON lookup (not a real AppRole).
+function publicColumn(): TableColumn<PermissionRow> {
+  return {
+    accessorKey: 'publicAccess',
+    header: () => h('span', { class: 'flex items-center justify-center gap-1.5 text-sm' }, [
+      h(UIcon, { name: ICONS.globe, class: 'size-4' }),
+      t('settings.permissions.columns.public')
+    ]),
+    meta: { class: { th: 'text-center', td: 'text-center' } },
+    cell: ({ row }) => accessCell(row.original.publicAccess)
   }
 }
 
@@ -318,6 +348,7 @@ const columns: TableColumn<PermissionRow>[] = [
       return statusNote ? h(UTooltip, { text: statusNote }, () => badge) : badge
     }
   },
+  publicColumn(),
   roleColumn('player'),
   roleColumn('organizer'),
   roleColumn('admin'),
@@ -344,6 +375,17 @@ const columns: TableColumn<PermissionRow>[] = [
       :data="rows"
       :columns="columns"
       class="w-full"
+      :meta="{
+        class: {
+          // Section rows have nothing in the other columns to divide from
+          // (blank cells either side) — divide-x-0 here overrides the ui.tr
+          // default below per-row (user request, 2026-08-29), same
+          // same-signature tailwind-merge rule as the :ui gotcha documented
+          // in CLAUDE.md, just without the responsive-variant wrinkle:
+          // divide-x/divide-x-0 are the same utility, so this cleanly wins.
+          tr: (row: Row<PermissionRow>) => (row.original.isSection ? 'divide-x-0' : '')
+        }
+      }"
       :ui="{
         td: 'py-1.5 px-3 text-sm group-hover:bg-(--ui-bg-elevated)',
         th: 'py-1.5 px-3',
