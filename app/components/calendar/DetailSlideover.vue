@@ -12,9 +12,14 @@
   scrolls underneath it (2026-08-16 user request — previously this hero was
   the first element of #body and scrolled away with the rest). :close="false"
   + a custom close button on the hero itself (tournament branch) replaces
-  USlideover's own; `header: 'p-0 min-h-0'` / `content: 'divide-y-0'` strip
-  the default header's padding and the header/body divider line so the image
-  can still sit edge-to-edge.
+  USlideover's own; `content: 'divide-y-0'` strips the header/body divider
+  line so the image can still sit edge-to-edge. `header: 'p-0 sm:px-0
+  min-h-0'` strips the default header's padding — both p-0 (unprefixed) AND
+  sm:px-0 are needed: SlideoverHeader's own default classes include a
+  sm:px-6 that p-0 alone doesn't cancel (different Tailwind variant
+  signature, so tailwind-merge doesn't collapse them), which left visible
+  gaps on both sides of the hero image at sm:+ (bug report, 2026-08-29,
+  "black bands") until sm:px-0 was added to match that exact signature.
 
   Participant rows use UUser + generatePlayerAvatar() directly, not
   AssociateTag.vue — that component always calls useAssociatesQuery()
@@ -80,7 +85,7 @@ function openTournament(tournament: Tournament) {
     inset
     :close="false"
     :ui="{
-      header: 'p-0 min-h-0',
+      header: 'p-0 sm:px-0 min-h-0',
       body: 'p-0 sm:p-0 flex-1 overflow-y-auto',
       content: 'divide-y-0 overflow-hidden'
     }"
