@@ -103,14 +103,44 @@ const eventsCount = computed(() => (events.value ?? []).length)
 const { data: locations } = useLocationsQuery()
 const locationsCount = computed(() => (locations.value ?? []).length)
 
+interface NavBadgeSource {
+  to: string
+  count: ComputedRef<number>
+  color: 'warning' | 'neutral'
+  // Most badges are a plain always-shown total; only the "needs action"
+  // ones (pending requests, lapsing memberships, open wanted cards) hide
+  // themselves at zero instead of showing an empty "0".
+  hideWhenZero?: boolean
+}
+
+// One entry per nav-item badge (some items, like /associates, carry two at
+// once: the plain roster count and a separate warning count) — collapses
+// what used to be nine near-identical <UBadge v-if="item.to === '/x'">
+// blocks in the template below into one v-for.
+const NAV_BADGE_SOURCES: NavBadgeSource[] = [
+  { to: '/associates/requests', count: pendingAssociatesCount, color: 'warning', hideWhenZero: true },
+  { to: '/associates', count: associatesCount, color: 'neutral' },
+  { to: '/associates', count: associatesToRenewCount, color: 'warning', hideWhenZero: true },
+  { to: '/wanted-cards', count: wantedCardsSearchingCount, color: 'neutral', hideWhenZero: true },
+  { to: '/players', count: playersCount, color: 'neutral' },
+  { to: '/transactions', count: transactionsCount, color: 'neutral' },
+  { to: '/tournaments', count: tournamentsCount, color: 'neutral' },
+  { to: '/leagues', count: leaguesCount, color: 'neutral' },
+  { to: '/events', count: eventsCount, color: 'neutral' },
+  { to: '/locations', count: locationsCount, color: 'neutral' }
+]
+
+function navItemBadges(to: NavigationMenuItem['to']) {
+  return NAV_BADGE_SOURCES
+    .filter(source => source.to === to && (!source.hideWhenZero || source.count.value > 0))
+    .map(source => ({ label: source.count.value, color: source.color }))
+}
+
 // Which nav items carry a warning-colored badge in the expanded sidebar —
 // reused below to swap in a plain warning UChip dot on the icon when the
 // sidebar is collapsed (the trailing UBadge itself has nowhere to render).
-const navItemHasWarning = (to: NavigationMenuItem['to']) => {
-  if (to === '/associates/requests') return pendingAssociatesCount.value > 0
-  if (to === '/associates') return associatesToRenewCount.value > 0
-  return false
-}
+const navItemHasWarning = (to: NavigationMenuItem['to']) =>
+  navItemBadges(to).some(badge => badge.color === 'warning')
 
 const mainNavGroups = useMainNavGroups(open)
 
@@ -333,88 +363,14 @@ const groups = computed(() => [{
                 <!-- Badges hidden while the "g" hint is showing (user
                      request, 2026-08-23) — both together crowded the same
                      trailing area, and the kbd hint is what "g" was pressed
-                     to see. -->
+                     to see. Driven by NAV_BADGE_SOURCES, not a per-route
+                     v-if chain — see its own comment for why. -->
                 <template v-else>
-                  <!-- "Something needs action" count — pending tesseramento
-                       requests waiting on /associates/requests. -->
                   <UBadge
-                    v-if="item.to === '/associates/requests' && pendingAssociatesCount > 0"
-                    :label="pendingAssociatesCount"
-                    color="warning"
-                    variant="subtle"
-                    size="sm"
-                  />
-                  <!-- Plain roster size, no color — just a count. -->
-                  <UBadge
-                    v-if="item.to === '/associates'"
-                    :label="associatesCount"
-                    color="neutral"
-                    variant="subtle"
-                    size="sm"
-                  />
-                  <!-- "Needs action" count — approved associates whose
-                       membership is lapsing/lapsed and due for a renewal
-                       follow-up. -->
-                  <UBadge
-                    v-if="item.to === '/associates' && associatesToRenewCount > 0"
-                    :label="associatesToRenewCount"
-                    color="warning"
-                    variant="subtle"
-                    size="sm"
-                  />
-                  <!-- Plain open wanted-cards count, no color — just a count. -->
-                  <UBadge
-                    v-if="item.to === '/wanted-cards' && wantedCardsSearchingCount > 0"
-                    :label="wantedCardsSearchingCount"
-                    color="neutral"
-                    variant="subtle"
-                    size="sm"
-                  />
-                  <!-- Plain player count, no color — just a count. -->
-                  <UBadge
-                    v-if="item.to === '/players'"
-                    :label="playersCount"
-                    color="neutral"
-                    variant="subtle"
-                    size="sm"
-                  />
-                  <!-- Plain transaction count, no color — just a count. -->
-                  <UBadge
-                    v-if="item.to === '/transactions'"
-                    :label="transactionsCount"
-                    color="neutral"
-                    variant="subtle"
-                    size="sm"
-                  />
-                  <!-- Plain tournament count, no color — just a count. -->
-                  <UBadge
-                    v-if="item.to === '/tournaments'"
-                    :label="tournamentsCount"
-                    color="neutral"
-                    variant="subtle"
-                    size="sm"
-                  />
-                  <!-- Plain league count, no color — just a count. -->
-                  <UBadge
-                    v-if="item.to === '/leagues'"
-                    :label="leaguesCount"
-                    color="neutral"
-                    variant="subtle"
-                    size="sm"
-                  />
-                  <!-- Plain event count, no color — just a count. -->
-                  <UBadge
-                    v-if="item.to === '/events'"
-                    :label="eventsCount"
-                    color="neutral"
-                    variant="subtle"
-                    size="sm"
-                  />
-                  <!-- Plain location count, no color — just a count. -->
-                  <UBadge
-                    v-if="item.to === '/locations'"
-                    :label="locationsCount"
-                    color="neutral"
+                    v-for="(badge, badgeIndex) in navItemBadges(item.to)"
+                    :key="badgeIndex"
+                    :label="badge.label"
+                    :color="badge.color"
                     variant="subtle"
                     size="sm"
                   />
