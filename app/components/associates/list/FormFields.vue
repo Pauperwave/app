@@ -60,50 +60,7 @@ const associateTypeOptions = useAssociateTypeOptions()
       </AssociatesListFormSection>
 
       <AssociatesListFormSection :title="$t('associate.addModal.sections.consents')">
-        <UFormField name="has_read_statute">
-          <UCheckbox
-            v-model="state.has_read_statute"
-            required
-            :disabled="disableConsents"
-            :label="$t('associate.addModal.consents.statuteLabel')"
-            size="lg"
-          >
-            <template #description>
-              <!-- Same link as /tesseramento's own consents step
-                   (ConsentsStep.vue) — user request, 2026-08-19: staff filling
-                   this out on someone's behalf should be able to open the same
-                   document the associate themselves would see. External, not
-                   /tesseramento/statuto: the statute is the association's own
-                   governance document, published on the blog independently of
-                   this app. -->
-              <a
-                href="https://blog.pauperwave.org/docs/statuto"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="underline inline-flex items-center gap-1"
-              >
-                {{ $t('tesseramento.steps.consents.openStatuto') }}
-                <UIcon :name="ICONS.externalLink" class="size-3.5" />
-              </a>
-            </template>
-          </UCheckbox>
-        </UFormField>
-        <UFormField name="consent_data">
-          <UCheckbox
-            v-model="state.consent_data"
-            required
-            :disabled="disableConsents"
-            :label="$t('associate.addModal.consents.dataLabel')"
-            size="lg"
-          >
-            <template #description>
-              <NuxtLink to="/tesseramento/informativa-dati" target="_blank" class="underline">
-                {{ $t('tesseramento.steps.consents.openData') }}
-              </NuxtLink>
-            </template>
-          </UCheckbox>
-        </UFormField>
-        <AssociatesFieldsConsentSocialField :state="state" />
+        <AssociatesFieldsConsentsFields :state="state" :disabled="disableConsents" />
       </AssociatesListFormSection>
     </div>
   </div>
