@@ -71,12 +71,7 @@ const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowAct
 // "Copia torneo" (user request, 2026-08-29) — one AddModal instance reused
 // across every copy click, re-seeded via its sourceTournament prop, same
 // convention as events/[eventId]/index.vue's own click-to-create AddModal.
-const copyModalOpen = ref(false)
-const copySourceTournament = shallowRef<Tournament | null>(null)
-function openCopyModal(tournament: Tournament) {
-  copySourceTournament.value = tournament
-  copyModalOpen.value = true
-}
+const { copyModalOpen, copySourceTournament, openCopyModal } = useTournamentCopyModal()
 
 const selection = useSelection<number>()
 const { columns } = useTournamentsTableColumns(selection, openEditModal)
@@ -85,34 +80,16 @@ const {
   requestEntryFeeChange, requestLeagueChange, requestDelete, confirmPendingAction
 } = useTournamentsBulkActions(selection)
 
-// Adds edit/delete to the shared copy-link/copy-id items — tournaments has
-// real CRUD (unlike events/leagues, still pre-CRUD), so this stays local to
-// this page rather than growing useCopyLinkContextMenu.ts a domain-specific
-// branch. Delete goes through requestDelete (confirm + undo toast), same as
-// the bulk-actions bar's delete, just fed a single-item array.
-function tournamentContextMenuItems(tournament: Tournament): DropdownMenuItem[] {
-  return [
-    ...rowContextMenuItems(tournament),
-    { type: 'separator' },
-    {
-      label: t('tournament.rowActions.edit'),
-      icon: ICONS.edit,
-      onSelect: () => openEditModal(tournament)
-    },
-    {
-      label: t('tournament.rowActions.copy'),
-      icon: ICONS.copy,
-      onSelect: () => openCopyModal(tournament)
-    },
-    { type: 'separator' },
-    {
-      label: t('tournament.rowActions.delete'),
-      icon: ICONS.delete,
-      color: 'error',
-      onSelect: () => requestDelete([tournament])
-    }
-  ]
-}
+// Adds edit/copy/delete to the shared copy-link/copy-id items — tournaments
+// has real CRUD (unlike events/leagues, still pre-CRUD), so this stays a
+// tournaments-specific composable rather than growing
+// useCopyLinkContextMenu.ts a domain-specific branch. Delete goes through
+// requestDelete (confirm + undo toast), same as the bulk-actions bar's
+// delete, just fed a single-item array. Shared with
+// leagues/[leagueId]/index.vue's own tournament cards (2026-08-29).
+const { tournamentContextMenuItems } = useTournamentContextMenuItems(
+  rowContextMenuItems, openEditModal, openCopyModal, requestDelete
+)
 
 const tableContextMenuItems = computed<DropdownMenuItem[]>(() =>
   contextMenuRow.value ? tournamentContextMenuItems(contextMenuRow.value) : [])
