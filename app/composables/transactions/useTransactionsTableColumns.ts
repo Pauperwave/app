@@ -1,6 +1,6 @@
 // app\composables\transactions\useTransactionsTableColumns.ts
 import {
-  AssociateTag, UBadge, UButton, UIcon, UTooltip
+  AssociateTag, UBadge, UIcon, UTooltip
 } from '#components'
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { Transaction } from '~/types'
@@ -11,7 +11,6 @@ import PaymentTypeBadge from '~/components/ui/PaymentTypeBadge.vue'
 import PaymentMethodBadge from '~/components/ui/PaymentMethodBadge.vue'
 import RenewalKindBadge from '~/components/ui/RenewalKindBadge.vue'
 import RowActionsMenu from '~/components/ui/RowActionsMenu.vue'
-import TournamentsStageLabel from '~/components/tournaments/StageLabel.vue'
 
 export const transactionsColumnHeaders = (t: (key: string) => string) => ({
   id: t('transaction.columns.id'),
@@ -179,69 +178,23 @@ export function useTransactionsTableColumns(
       accessorKey: 'event_name',
       header: columnHeaders.event_name,
       meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap' } },
-      cell: ({ row }) => {
-        if (row.getIsGrouped()) return null
-
-        // tournament/event checked first, ahead of event_name's own raw text:
-        // for Token Purchase rows event_name is just "8 gettoni" (see
-        // transactionGettoni.ts), never a real name, but tournament/event.name
-        // is always the real linked entity regardless of payment_type — a
-        // Gettoni purchase has a real event behind it and should link to it
-        // like Event Fee does (user request, 2026-08-27), not blank out just
-        // because its own event_name text isn't a name at all.
-        // ck_payment_type_event_link (migration 20260825220000) guarantees
-        // exactly one of tournament_uuid/event_uuid is set whenever
-        // payment_type is Tournament Fee/Event Fee/Token Purchase — no
-        // raw-text fallback needed, tournament/event here can't both be
-        // unresolved. Same UButton for both — a plain NuxtLink+icon for the
-        // event case read as a visually different affordance than the
-        // tournament one even though both do the same thing (user request,
-        // 2026-08-23).
-        const { tournament, event } = row.original
-        if (tournament) {
-          // Real tournament.name, not the historical import's event_name text
-          // (e.g. "PAUPER TAPPA 6" vs the tournament's actual "Pauper"), plus
-          // its league-relative stage number — the same "Nª tappa" label the
-          // /tournaments page itself shows (user request, 2026-08-22/23).
-          const stageNumber = tournamentsByUuid.value.get(tournament.uuid)?.stageNumber
-          return h(UButton, {
-            to: tournamentDetailUrl(tournament),
-            icon: PAYMENT_TYPE_BADGE_CONFIG['Tournament Fee'].icon,
-            size: 'xs',
-            color: 'neutral',
-            variant: 'subtle'
-          }, () => [
-            tournament.name,
-            stageNumber ? h(TournamentsStageLabel, { number: stageNumber, class: '!text-xs' }) : null
-          ])
-        }
-        // event is guaranteed set here by ck_payment_type_event_link whenever
-        // tournament isn't — this `if` is TS narrowing, not a real fallback
-        // branch (the constraint rules out neither being set).
-        if (event) {
-          return h(UButton, {
-            to: `/events/${event.uuid}`,
-            label: event.name,
-            icon: PAYMENT_TYPE_BADGE_CONFIG['Event Fee'].icon,
-            size: 'xs',
-            color: 'neutral',
-            variant: 'subtle'
-          })
-        }
-        return null
-      }
+      // Same UButton for tournament/event — a plain NuxtLink+icon for the
+      // event case read as a visually different affordance than the
+      // tournament one even though both do the same thing (user request,
+      // 2026-08-23). Shared with useAssociateTransactionsTableColumns.ts's
+      // own event_name cell (2026-08-25/29).
+      cell: ({ row }) => row.getIsGrouped()
+        ? null
+        : transactionEventNameCell(row.original, tournamentsByUuid)
     },
     {
       id: 'gettoni',
       accessorFn: row => parseGettoniCount(row.event_name),
       header: columnHeaders.gettoni,
       meta: { class: { th: 'whitespace-nowrap text-center', td: 'whitespace-nowrap text-center' } },
-      cell: ({ row, getValue }) => {
-        if (row.getIsGrouped()) return null
-        const count = getValue<number | null>()
-        if (count === null) return null
-        return h(UBadge, { variant: 'subtle', color: 'warning', icon: ICONS.coins, label: String(count) })
-      }
+      cell: ({ row, getValue }) => row.getIsGrouped()
+        ? null
+        : transactionGettoniCell(getValue<number | null>())
     },
     {
       accessorKey: 'receipt_ref',
