@@ -124,6 +124,7 @@ export const ICONS = {
   standings: 'i-lucide-trophy',
   medal: 'i-lucide-medal',
   chartPie: 'i-lucide-chart-pie',
+  chartColumn: 'i-lucide-chart-column-big',
   hash: 'i-lucide-hash',
 
   // Payments

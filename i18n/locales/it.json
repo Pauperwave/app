@@ -7,7 +7,7 @@
     "community": "Community",
     "competitions": "Competizioni",
     "standingsSection": "Classifiche",
-    "statisticsSection": "Statistiche",
+    "commanderSection": "Commander",
     "settingsSection": "Impostazioni",
     "feedback": "Feedback",
     "feedbackSubject": "Pauperwave - Feedback",
@@ -1953,7 +1953,7 @@
   },
   "statistic": {
     "breadcrumb": "Statistiche",
-    "overviewBreadcrumb": "Panoramica",
+    "overviewBreadcrumb": "Statistiche",
     "decksBreadcrumb": "Mazzi",
     "stats": {
       "totalAssociates": "Associati totali",

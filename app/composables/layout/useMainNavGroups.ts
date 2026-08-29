@@ -51,6 +51,16 @@ export function useMainNavGroups(open: Ref<boolean>) {
       open.value = false
     }
   }, {
+    // Moved out of the Statistiche section (2026-08-29, user request) — an
+    // overview page reads more like a dashboard than a report, so it sits
+    // right under Calendario instead.
+    label: t('statistic.overviewBreadcrumb'),
+    icon: ICONS.chartColumn,
+    to: '/statistics',
+    onSelect: () => {
+      open.value = false
+    }
+  }, {
     label: t('nav.finance'),
     icon: ICONS.badgeEuro,
     to: '/finance',
@@ -178,15 +188,8 @@ export function useMainNavGroups(open: Ref<boolean>) {
       }
     }]
   }], [{
-    label: t('nav.statisticsSection'),
+    label: t('nav.commanderSection'),
     type: 'label'
-  }, {
-    label: t('statistic.overviewBreadcrumb'),
-    icon: ICONS.chartPie,
-    to: '/statistics',
-    onSelect: () => {
-      open.value = false
-    }
   }, {
     label: t('statistic.decksBreadcrumb'),
     icon: ICONS.layers,
