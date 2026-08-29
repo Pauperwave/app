@@ -53,19 +53,7 @@ export function usePlayersRowActions() {
     }
   }
 
-  // Same clipboard pattern as useAssociatesRowActions.ts's copyToClipboard.
-  async function copyToClipboard(text: string, successTitle: string) {
-    try {
-      await navigator.clipboard.writeText(text)
-      toast.add({ title: successTitle, color: 'success' })
-    } catch (err) {
-      toast.add({
-        title: t('common.copyErrorTitle'),
-        description: toErrorMessage(err),
-        color: 'error'
-      })
-    }
-  }
+  const { copyToClipboard } = useCopyToClipboard()
 
   // No undo window here (unlike useWantedCardsRowActions.ts's confirmDelete)
   // — same reasoning as useTransactionsRowActions.ts: a player's tournament
@@ -159,15 +147,7 @@ export function usePlayersRowActions() {
     ]
   }
 
-  // shallowRef, not ref: Player carries the same recursive-type risk noted in
-  // useAssociatesRowActions.ts (AvatarProps-shaped fields), so this ref is
-  // only ever replaced wholesale, never mutated through a nested property.
-  const contextMenuRow = shallowRef<Player | null>(null)
-  function onRowContextmenu(_e: Event, row: { original: Player }) {
-    contextMenuRow.value = row.original
-  }
-  const tableContextMenuItems = computed<DropdownMenuItem[]>(() =>
-    contextMenuRow.value ? rowContextMenuItems(contextMenuRow.value) : [])
+  const { onRowContextmenu, tableContextMenuItems } = useRowContextMenu(rowContextMenuItems)
 
   return {
     rowContextMenuItems,

@@ -56,16 +56,9 @@ export function useCopyLinkContextMenu<T extends LinkableItem>(
     ]
   }
 
-  // Same pattern as useWantedCardsRowActions.ts/useTransactionsRowActions.ts:
-  // UTable's @contextmenu has no way of knowing which row was right-clicked on
-  // its own, so it's tracked here and the wrapping UContextMenu's :items
-  // recompute from it.
-  const contextMenuRow = ref<T | null>(null)
-  function onRowContextmenu(_e: Event, row: { original: T }) {
-    contextMenuRow.value = row.original
-  }
-  const tableContextMenuItems = computed<DropdownMenuItem[]>(() =>
-    contextMenuRow.value ? rowContextMenuItems(contextMenuRow.value) : [])
+  const {
+    contextMenuRow, onRowContextmenu, tableContextMenuItems
+  } = useRowContextMenu(rowContextMenuItems)
 
   return {
     rowContextMenuItems, onRowContextmenu, tableContextMenuItems, contextMenuRow

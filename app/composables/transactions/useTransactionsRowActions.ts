@@ -61,12 +61,7 @@ export function useTransactionsRowActions() {
     ]
   }
 
-  const contextMenuRow = shallowRef<Transaction | null>(null)
-  function onRowContextmenu(_e: Event, row: { original: Transaction }) {
-    contextMenuRow.value = row.original
-  }
-  const tableContextMenuItems = computed<DropdownMenuItem[]>(() =>
-    contextMenuRow.value ? rowContextMenuItems(contextMenuRow.value) : [])
+  const { onRowContextmenu, tableContextMenuItems } = useRowContextMenu(rowContextMenuItems)
 
   return {
     editingTransaction,
