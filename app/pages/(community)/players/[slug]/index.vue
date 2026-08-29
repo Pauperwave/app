@@ -10,6 +10,9 @@
 // 2026-08-20, reversing the original uuid choice) — the display name is
 // first_name+last_name, exactly as stable as associate/[slug].vue's own
 // slug, so there's no reason for this one route pair to be the odd one out.
+// Was nav-hidden only — see players/index.vue's own comment.
+definePageMeta({ permission: 'view-players' })
+
 interface DetailField {
   icon: string
   label: string

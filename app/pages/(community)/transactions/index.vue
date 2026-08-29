@@ -6,6 +6,9 @@ import type { Range } from '~/types'
 import type { TransactionTypeFilter } from '~/composables/transactions/useTransactionsFilters'
 import type { VisibilityTableRef } from '~/composables/useColumnVisibilityItems'
 
+// Was nav-hidden only — see finance/index.vue's own comment.
+definePageMeta({ permission: 'view-finance' })
+
 const range = shallowRef<Range>({
   start: startOfYear(new Date()),
   end: endOfYear(new Date())

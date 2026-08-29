@@ -2,6 +2,11 @@
 <script lang="ts" setup>
 import type { VisibilityTableRef } from '~/composables/useColumnVisibilityItems'
 
+// Was nav-hidden only (sidebar gated on view-players, the route itself wide
+// open to any authenticated user) — closed 2026-08-29, see the
+// permissions.vue table's own statusNote on why this was flagged.
+definePageMeta({ permission: 'view-players' })
+
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()

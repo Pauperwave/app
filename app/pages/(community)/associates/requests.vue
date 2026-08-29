@@ -1,5 +1,8 @@
 <!-- app\pages\(community)\associates\requests.vue -->
 <script setup lang="ts">
+// Was nav-hidden only — see associates/index.vue's own comment.
+definePageMeta({ permission: 'view-associates' })
+
 const {
   data: associates, isLoading: loading, isPending, status, refetch
 } = useAssociatesQuery()

@@ -1,5 +1,10 @@
 <!-- app\pages\finance\index.vue -->
 <script lang="ts" setup>
+// Was nav-hidden only (sidebar gated on view-finance, the route itself wide
+// open to any authenticated user) — closed 2026-08-29, see the
+// permissions.vue table's own statusNote on why this was flagged.
+definePageMeta({ permission: 'view-finance' })
+
 const { t } = useI18n()
 
 useSeoMeta({ title: () => t('nav.finance') })

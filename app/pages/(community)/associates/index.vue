@@ -7,6 +7,11 @@ import ConsentBadge from '~/components/ui/ConsentBadge.vue'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 import MembershipStatusBadge from '~/components/ui/MembershipStatusBadge.vue'
 
+// Was nav-hidden only (sidebar gated on view-associates, the route itself
+// wide open to any authenticated user) — closed 2026-08-29, see the
+// permissions.vue table's own statusNote on why this was flagged.
+definePageMeta({ permission: 'view-associates' })
+
 // Lifecycle order, not alphabetical (TanStack's default) — matches the
 // existing status tabs (Tutti/Attivi/Da rinnovare/Scaduti) and
 // MEMBERSHIP_STATUS_BADGE_CONFIG's own key order, so "Tesseramento" sorts
