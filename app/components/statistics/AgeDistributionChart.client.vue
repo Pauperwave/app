@@ -117,10 +117,7 @@ const template = (d: AgeChartPoint) => t(
           :tick-values="xTickValues"
         />
 
-        <!-- fallow-ignore-next-line code-duplication -- VisCrosshair/
-             VisTooltip scaffolding mirrors RenewalTimingChart.client.vue's
-             own; every unovis chart needs this exact pairing, nothing
-             domain-specific to extract. -->
+        <!-- fallow-ignore-next-line code-duplication -- mirrors RenewalTimingChart's own -->
         <VisCrosshair color="var(--ui-primary)" :template="template" />
 
         <VisTooltip />

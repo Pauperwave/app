@@ -68,8 +68,7 @@ function resetForm() {
   imageCardArtist.value = undefined
 }
 
-// fallow-ignore-next-line code-duplication -- see the same comment in
-// events/list/AddModal.vue
+// fallow-ignore-next-line code-duplication -- see events/list/AddModal.vue
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   const payload: NewLeaguePayload = {
     name: event.data.name,

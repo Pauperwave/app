@@ -5,8 +5,7 @@ import type { FinanceCategoryRow } from '~/composables/finance/useFinanceSummary
 import FormatBadge from '~/components/badges/FormatBadge.vue'
 import PaymentTypeBadge from '~/components/ui/PaymentTypeBadge.vue'
 
-// fallow-ignore-next-line code-duplication -- see the same comment in
-// FormatSummaryTable.vue
+// fallow-ignore-next-line code-duplication -- see FormatSummaryTable.vue
 const { rows, loading, pending = false } = defineProps<{
   rows: FinanceCategoryRow[]
   loading: boolean

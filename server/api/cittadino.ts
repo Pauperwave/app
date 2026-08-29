@@ -90,9 +90,7 @@ function buildEdition(edition: string) {
   const players = buildMockPlayers(size.players, 'ply-', FIRST_NAMES, LAST_NAMES, rng, [0.2, 0.75])
 
   // For each event, draw the attendees and shuffle them into a final placement.
-  // fallow-ignore-next-line code-duplication -- residual similarity is just the
-  // shared buildMockPlayers/buildEventPlacements call site, same shape in
-  // standings/[format].get.ts
+  // fallow-ignore-next-line code-duplication -- shared call site, see standings/[format].get.ts
   const results = events.flatMap(event => buildEventPlacements(players, event.uuid, rng))
 
   return { events, results }

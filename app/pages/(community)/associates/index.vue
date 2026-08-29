@@ -114,9 +114,7 @@ async function confirmApproveRenewals() {
 // below since useAssociatesTableColumns needs it to highlight matches.
 const search = ref('')
 
-// fallow-ignore-next-line code-duplication -- the useAssociatesTableColumns destructure
-// and status-filter-from-query function mirror requests.vue's own (different column
-// id and query semantics per page), not worth forcing into a shared helper
+// fallow-ignore-next-line code-duplication -- mirrors requests.vue's own (different column/query semantics per page)
 const {
   columnHeaders, visibilityItems,
   selectColumn, idColumn, createdAtColumn, updatedAtColumn, updatedByColumn,

@@ -22,6 +22,7 @@
     "fallow:dead-code": "fallow dead-code",
     "fallow:dupes": "fallow dupes",
     "fallow:dupes:report": "node scripts/fallow-dupes-report.mjs",
+    "fallow:dupes:markers": "node scripts/fallow-dupes-markers-check.mjs",
     "fallow:audit": "fallow audit",
     "fallow:health": "fallow health --score --hotspots --targets",
     "fallow:health:report": "node scripts/fallow-health-report.mjs",

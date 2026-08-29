@@ -75,10 +75,7 @@ const template = (d: TournamentsPerYearByFormatPoint) => [
           :tick-values="xTickValues"
         />
 
-        <!-- fallow-ignore-next-line code-duplication -- VisCrosshair/
-             VisTooltip scaffolding mirrors WantedCardsStatusChart.client.vue's
-             own; see AgeDistributionChart.client.vue's own comment on why
-             every unovis chart needs this exact pairing. -->
+        <!-- fallow-ignore-next-line code-duplication -- mirrors WantedCardsStatusChart's own -->
         <VisCrosshair :color="colors" :template="template" />
 
         <VisTooltip />

@@ -109,13 +109,11 @@ async function bulkRestore() {
 // useAssociatesRequestsTableColumns needs it to highlight matches.
 const search = ref('')
 
-// fallow-ignore-next-line code-duplication -- see the same comment in
-// associates/index.vue
+// fallow-ignore-next-line code-duplication -- see associates/index.vue
 const { columns, visibilityItems }
   = useAssociatesRequestsTableColumns(selection, table, associates, rowContextMenuItems, search)
 
-// fallow-ignore-next-line code-duplication -- see the same comment in
-// associates/index.vue
+// fallow-ignore-next-line code-duplication -- see associates/index.vue
 function applyRequestStatusFilterFromQuery() {
   const statusColumn = table.value?.tableApi?.getColumn('membership_request_status')
   if (!statusColumn) return

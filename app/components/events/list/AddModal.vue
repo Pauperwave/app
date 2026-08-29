@@ -101,10 +101,7 @@ function resetForm() {
   state.locationUuid = locationOptions.value.find(option => option.label.startsWith('Smart Lab'))?.value
 }
 
-// fallow-ignore-next-line code-duplication -- the state literal + onSubmit
-// scaffolding mirror leagues/list/AddModal.vue's, but the payload type/fields
-// (NewEventPayload vs NewLeaguePayload) and mutation differ per domain — same
-// same-shaped-but-parameterized call as feedback_dedup_threshold_call_sites.
+// fallow-ignore-next-line code-duplication -- see the same comment in leagues/list/AddModal.vue
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   const startsAt = combineDateAndTime(startDate.value!, event.data.startTime)
   const endsAt = event.data.endTime
