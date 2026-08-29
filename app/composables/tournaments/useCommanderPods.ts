@@ -42,19 +42,8 @@ export function useCommanderPods() {
     return { canPlay: true, tableCount: tableSizes.length, tableSizes }
   }
 
-  // Slices an ordered (e.g. pre-shuffled/seeded) list of player ids into
-  // pods of the sizes calculatePods() decided on.
   function buildPreviewPods(playerIds: string[]): string[][] {
-    const { tableSizes } = calculatePods(playerIds.length)
-    if (!tableSizes.length) return []
-
-    const pods: string[][] = []
-    let cursor = 0
-    for (const size of tableSizes) {
-      pods.push(playerIds.slice(cursor, cursor + size))
-      cursor += size
-    }
-    return pods
+    return buildPodsFromSizes(playerIds, calculatePods(playerIds.length).tableSizes)
   }
 
   return { calculatePods, buildPreviewPods }
