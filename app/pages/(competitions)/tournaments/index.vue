@@ -93,6 +93,7 @@ const {
 function tournamentContextMenuItems(tournament: Tournament): DropdownMenuItem[] {
   return [
     ...rowContextMenuItems(tournament),
+    { type: 'separator' },
     {
       label: t('tournament.rowActions.edit'),
       icon: ICONS.edit,
@@ -103,6 +104,7 @@ function tournamentContextMenuItems(tournament: Tournament): DropdownMenuItem[] 
       icon: ICONS.copy,
       onSelect: () => openCopyModal(tournament)
     },
+    { type: 'separator' },
     {
       label: t('tournament.rowActions.delete'),
       icon: ICONS.delete,
