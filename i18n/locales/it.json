@@ -993,7 +993,7 @@
         "tooltip": "Dal {start} al {end}"
       },
       "addTournaments": {
-        "button": "Aggiungi tornei",
+        "button": "Aggiungi tornei esistenti",
         "modalTitle": "Aggiungi tornei a \"{league}\"",
         "placeholder": "Seleziona tornei",
         "alreadyInLeague": "già in \"{league}\"",
