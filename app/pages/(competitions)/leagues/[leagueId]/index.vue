@@ -129,6 +129,13 @@ const leaderboardMaxHeight = computed(() => isSideBySide.value && leftColumnHeig
 // once the league itself is known, same reasoning as the modal needing a
 // real `league` prop rather than the nullable computed directly.
 const addTournamentsModalOpen = ref(false)
+
+// "Nuovo torneo" (user request, 2026-08-29) — distinct from the button
+// above: that one assigns *existing* tournaments to this league, this one
+// creates a brand new one already linked to it via
+// TournamentsListAddModal's own initialLeagueUuid prop (same pattern as
+// events/[eventId]/index.vue's own click-to-create AddModal).
+const addTournamentModalOpen = ref(false)
 </script>
 
 <template>
@@ -160,14 +167,20 @@ const addTournamentsModalOpen = ref(false)
         </template>
 
         <template #right>
-          <UButton
-            v-if="league"
-            :label="$t('league.detail.addTournaments.button')"
-            :icon="ICONS.battle"
-            color="neutral"
-            variant="subtle"
-            @click="addTournamentsModalOpen = true"
-          />
+          <template v-if="league">
+            <UButton
+              :label="$t('league.detail.addTournaments.button')"
+              :icon="ICONS.battle"
+              color="neutral"
+              variant="subtle"
+              @click="addTournamentsModalOpen = true"
+            />
+            <UButton
+              :label="$t('tournament.addModal.openButton')"
+              :icon="ICONS.add"
+              @click="addTournamentModalOpen = true"
+            />
+          </template>
         </template>
       </UDashboardToolbar>
     </template>
@@ -249,5 +262,11 @@ const addTournamentsModalOpen = ref(false)
     v-if="league"
     v-model="addTournamentsModalOpen"
     :league="league"
+  />
+  <TournamentsListAddModal
+    v-if="league"
+    v-model="addTournamentModalOpen"
+    hide-trigger
+    :initial-league-uuid="league.uuid"
   />
 </template>

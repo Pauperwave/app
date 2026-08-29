@@ -14,23 +14,26 @@ import type { Tournament } from '~/types'
 
 const open = defineModel<boolean>({ default: false })
 
-// All three seed the form when opened from somewhere other than this
+// All four seed the form when opened from somewhere other than this
 // component's own trigger — EventsSingleDaySchedule.vue clicking an empty
 // time slot, in particular (user request, 2026-08-22, "click and create a
-// tournament in that day" like Google Calendar). hideTrigger drops the
-// bare AddButton in that case, since the day-schedule is the trigger
-// instead — same v-model:open control either way. sourceTournament is the
-// "Copia torneo" context-menu action (user request, 2026-08-29) — copies
-// every field except status (reset to draft, a copy isn't already
-// completed/cancelled) and startDate (defaults to today, like a brand new
-// tournament — the source's original date is almost never what a
-// duplicate should land on).
+// tournament in that day" like Google Calendar); initialLeagueUuid is the
+// same idea for leagues/[leagueId]/index.vue's own "Nuovo torneo" button
+// (user request, 2026-08-29). hideTrigger drops the bare AddButton in that
+// case, since the calling page is the trigger instead — same v-model:open
+// control either way. sourceTournament is the "Copia torneo" context-menu
+// action (user request, 2026-08-29) — copies every field except status
+// (reset to draft, a copy isn't already completed/cancelled) and startDate
+// (defaults to today, like a brand new tournament — the source's original
+// date is almost never what a duplicate should land on).
 const {
-  initialDate, initialTime, initialEventUuid, sourceTournament, hideTrigger = false
+  initialDate, initialTime, initialEventUuid, initialLeagueUuid, sourceTournament,
+  hideTrigger = false
 } = defineProps<{
   initialDate?: string
   initialTime?: string
   initialEventUuid?: string
+  initialLeagueUuid?: string
   sourceTournament?: Tournament | null
   hideTrigger?: boolean
 }>()
@@ -59,7 +62,7 @@ function createInitialState(): TournamentFormState {
     prizes: source?.prizes ?? undefined,
     organizerUuid: source?.organizerUuid ?? undefined,
     locationUuid: source?.locationUuid ?? undefined,
-    leagueUuid: source?.leagueUuid ?? undefined,
+    leagueUuid: initialLeagueUuid ?? source?.leagueUuid ?? undefined,
     eventUuid: initialEventUuid ?? source?.eventUuid ?? undefined,
     entryFee: source?.entryFee ?? 5,
     companionCode: source?.companionCode ?? undefined
@@ -109,6 +112,7 @@ watch(open, (isOpen) => {
   }
   if (initialTime) state.startTime = initialTime
   if (initialEventUuid) state.eventUuid = initialEventUuid
+  if (initialLeagueUuid) state.leagueUuid = initialLeagueUuid
 })
 
 const {
