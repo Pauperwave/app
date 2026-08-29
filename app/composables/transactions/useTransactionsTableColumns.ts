@@ -217,9 +217,7 @@ export function useTransactionsTableColumns(
     {
       accessorKey: 'createdBy',
       header: columnHeaders.createdBy,
-      cell: ({ row }) => row.getIsGrouped() || !row.original.createdBy
-        ? null
-        : h(AssociateTag, { name: row.original.createdBy })
+      cell: ({ row }) => auditAssociateCell(row.getIsGrouped(), row.original.createdBy)
     },
     {
       accessorKey: 'createdAt',
@@ -232,9 +230,7 @@ export function useTransactionsTableColumns(
     {
       accessorKey: 'updatedBy',
       header: columnHeaders.updatedBy,
-      cell: ({ row }) => row.getIsGrouped() || !row.original.updatedBy
-        ? null
-        : h(AssociateTag, { name: row.original.updatedBy })
+      cell: ({ row }) => auditAssociateCell(row.getIsGrouped(), row.original.updatedBy)
     },
     {
       accessorKey: 'updatedAt',
