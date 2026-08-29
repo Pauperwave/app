@@ -10,12 +10,6 @@ const range = shallowRef<Range>({
   end: endOfYear(new Date())
 })
 
-// Transactions are naturally year-bucketed (membership fees, event history) —
-// offer the current + 2 previous years as one-click presets, unlike the
-// relative "last N months" ranges DateRangePicker otherwise offers.
-const currentYear = new Date().getFullYear()
-const calendarYears = [currentYear, currentYear - 1, currentYear - 2]
-
 const { t } = useI18n()
 
 useSeoMeta({ title: () => t('transaction.breadcrumb') })
@@ -28,6 +22,46 @@ const {
   data: transactionsData, isLoading: loading, isPending, status, refetch
 } = useTransactionsQuery()
 const data = computed(() => transactionsData.value ?? [])
+
+// Quick year-jump next to DateRangePicker, same USelectMenu pattern as
+// /finance's own year selector (user request, 2026-08-29) — replaces the
+// calendarYears preset buttons DateRangePicker used to render inside its own
+// popover just for this page, which made that component need per-page
+// customization instead of being the same everywhere. Every year with at
+// least one transaction, plus the real current year even if it's still
+// empty, sorted newest first — same reasoning as finance/index.vue's
+// availableYears.
+const availableYears = computed(() => {
+  const years = new Set(data.value.map(
+    transaction => new Date(transaction.payment_date).getFullYear()
+  ))
+  years.add(new Date().getFullYear())
+  return [...years].sort((a, b) => b - a)
+})
+const yearItems = computed(() =>
+  availableYears.value.map(year => ({ label: String(year), value: year })))
+
+// Two-way with `range`, not a separate source of truth — reads back a year
+// only when `range` currently matches that exact calendar-year span (blank
+// otherwise, e.g. after picking an arbitrary range from DateRangePicker
+// itself), and writing it sets `range` to that year's Jan 1 - Dec 31.
+const selectedYear = computed<number | undefined>({
+  get: () => {
+    const { start, end } = range.value
+    if (!start || !end) return undefined
+    const year = start.getFullYear()
+    const matchesYear = start.getTime() === startOfYear(new Date(year, 0, 1)).getTime()
+      && end.getTime() === endOfYear(new Date(year, 0, 1)).getTime()
+    return matchesYear ? year : undefined
+  },
+  set: (year) => {
+    if (year === undefined) return
+    range.value = {
+      start: startOfYear(new Date(year, 0, 1)),
+      end: endOfYear(new Date(year, 0, 1))
+    }
+  }
+})
 
 // undefined (ListSkeleton's own default count) only on a genuine first load
 // — isPending, unlike isLoading, is false once stale data exists to show a
@@ -229,11 +263,18 @@ const tour = useTransactionsTour()
             @delete="requestBulkDelete(selectedTransactions)"
           />
           <div v-else id="tour-transactions-actions" class="flex items-center gap-2 flex-wrap">
+            <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->
+            <USelectMenu
+              v-model="selectedYear"
+              :items="yearItems"
+              value-key="value"
+              :icon="ICONS.calendar"
+              class="w-30 -ms-1"
+            />
+
             <DateRangePicker
               v-model="range"
-              :calendar-years="calendarYears"
               icon-only
-              class="-ms-1"
             />
 
             <ColumnVisibilityMenu :items="columnVisibilityItems" icon-only />
