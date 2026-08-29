@@ -35,19 +35,7 @@ const tapToOpen = computed(() => mobileModal && isMobile)
 
 const tooltipOpen = ref(false)
 const showModal = ref(false)
-const anchor = ref({ x: 0, y: 0 })
-
-const reference = computed(() => ({
-  getBoundingClientRect: () => ({
-    width: 0,
-    height: 0,
-    left: anchor.value.x,
-    right: anchor.value.x,
-    top: anchor.value.y,
-    bottom: anchor.value.y,
-    ...anchor.value
-  } as DOMRect)
-}))
+const { anchor, reference } = usePointerReference()
 
 function handlePointerEnter(ev: PointerEvent) {
   if (!imageUrl || tapToOpen.value) return

@@ -220,7 +220,7 @@ const dayLabels = [0, 1, 2, 3, 4, 5, 6].map((offset) => {
 // visibly janky. A single tooltip anchored to the pointer position, with its
 // content swapped on hover, costs nothing per cell.
 const tooltipOpen = ref(false)
-const anchor = ref({ x: 0, y: 0 })
+const { anchor, reference } = usePointerReference()
 const hoveredDay = ref<HeatmapDay | null>(null)
 
 // Exposes which day is currently hovered/focused, keyed the same way as
@@ -229,18 +229,6 @@ const hoveredDay = ref<HeatmapDay | null>(null)
 // this component needing to know what that something else is.
 const hoveredDate = defineModel<string | null>('hoveredDate', { default: null })
 watch(hoveredDay, day => (hoveredDate.value = day?.date ?? null))
-
-const reference = computed(() => ({
-  getBoundingClientRect: () => ({
-    width: 0,
-    height: 0,
-    left: anchor.value.x,
-    right: anchor.value.x,
-    top: anchor.value.y,
-    bottom: anchor.value.y,
-    ...anchor.value
-  } as DOMRect)
-}))
 
 function handlePointerEnter(day: HeatmapDay, ev: PointerEvent) {
   hoveredDay.value = day
