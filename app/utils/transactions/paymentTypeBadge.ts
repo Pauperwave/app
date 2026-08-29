@@ -8,15 +8,11 @@ import type { PaymentType } from '#shared/types/transactions'
 // MEMBERSHIP_STATUS_BADGE_CONFIG, membershipStatusBadge.ts).
 export const PAYMENT_TYPE_BADGE_CONFIG: Record<PaymentType, { color: BadgeProps['color'], icon: string }> = {
   'Association Fee': { color: 'primary', icon: ICONS.players },
-  // Was 'success' — freed up so RenewalKindBadge.vue's "Nuovo tesseramento"
-  // can use it without colliding on meaning across two different columns
-  // (user request, 2026-08-27).
   'Tournament Fee': { color: 'secondary', icon: ICONS.battle },
   'Event Fee': { color: 'warning', icon: ICONS.calendar },
   'Donation': { color: 'neutral', icon: ICONS.heartHandshake },
   // Buying tokens to spend inside an event (Commanderwave Fest today), not a
-  // fee for the event itself — distinct enough from Event Fee to warrant its
-  // own type (user request, 2026-08-23). Same icon as the per-row "Gettoni"
+  // fee for the event itself. Same icon as the per-row "Gettoni"
   // count column (transactionGettoni.ts).
   'Token Purchase': { color: 'info', icon: ICONS.coins }
 }
