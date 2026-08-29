@@ -168,9 +168,7 @@ export function useWantedCardsTableColumns(
     {
       accessorKey: 'createdBy',
       header: t('wantedCard.columns.createdBy'),
-      cell: ({ row }) => row.getIsGrouped() || !row.original.createdBy
-        ? null
-        : h(AssociateTag, { name: row.original.createdBy })
+      cell: ({ row }) => auditAssociateCell(row.getIsGrouped(), row.original.createdBy)
     },
     {
       accessorKey: 'createdAt',
@@ -183,9 +181,7 @@ export function useWantedCardsTableColumns(
     {
       accessorKey: 'updatedBy',
       header: t('wantedCard.columns.updatedBy'),
-      cell: ({ row }) => row.getIsGrouped() || !row.original.updatedBy
-        ? null
-        : h(AssociateTag, { name: row.original.updatedBy })
+      cell: ({ row }) => auditAssociateCell(row.getIsGrouped(), row.original.updatedBy)
     },
     {
       accessorKey: 'updatedAt',
