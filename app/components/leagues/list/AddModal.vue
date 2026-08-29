@@ -4,18 +4,31 @@ import type * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { NewLeaguePayload } from '#shared/types/leagues'
 import type { LeagueFormState } from '~/composables/leagues/useLeagueFormFields'
+import type { League } from '~/types'
 
 const open = defineModel<boolean>({ default: false })
+
+// sourceLeague is the "Copia lega" context-menu action (user request,
+// 2026-08-29), same convention as TournamentsListAddModal.vue's own
+// sourceTournament — copies every field except status (reset to draft).
+// hideTrigger mirrors that component too: this instance is opened
+// programmatically by the copy action, not its own AddButton.
+const { sourceLeague, hideTrigger = false } = defineProps<{
+  sourceLeague?: League | null
+  hideTrigger?: boolean
+}>()
+
 const toast = useToast()
 const { t } = useI18n()
 
 const { createLeague } = useLeaguesMutations()
 
 function createInitialState(): LeagueFormState {
+  const source = sourceLeague
   return {
-    name: '',
+    name: source?.name ?? '',
     status: 'draft',
-    rulesetUuid: undefined
+    rulesetUuid: source?.rulesetUuid ?? undefined
   }
 }
 
@@ -27,6 +40,18 @@ const state = reactive<LeagueFormState>(createInitialState())
 const image = ref<string | undefined>(undefined)
 const imageCardName = ref<string | undefined>(undefined)
 const imageCardArtist = ref<string | undefined>(undefined)
+
+// Re-applies sourceLeague every time the modal opens, not just on mount —
+// same reasoning as TournamentsListAddModal.vue's own watch(open, ...): this
+// instance is reused across different "Copia lega" clicks while it stays
+// alive.
+watch(open, (isOpen) => {
+  if (!isOpen || !sourceLeague) return
+  Object.assign(state, createInitialState())
+  image.value = sourceLeague.image ?? undefined
+  imageCardName.value = sourceLeague.imageCardName ?? undefined
+  imageCardArtist.value = sourceLeague.imageCardArtist ?? undefined
+})
 
 const { schema, statusOptions, rulesetOptions } = useLeagueFormFields()
 
@@ -82,6 +107,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     :description="$t('league.addModal.description')"
   >
     <AddButton
+      v-if="!hideTrigger"
       :label="$t('league.addModal.openButton')"
       :icon="ICONS.standings"
       @click="open = true"

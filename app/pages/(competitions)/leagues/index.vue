@@ -36,6 +36,15 @@ const {
 } = useCopyLinkContextMenu<League>('/leagues')
 const { editingLeague, editModalOpen, openEditModal } = useLeaguesRowActions()
 
+// "Copia lega" (user request, 2026-08-29) — same reusable-instance
+// convention as tournaments/index.vue's own copy action.
+const copyModalOpen = ref(false)
+const copySourceLeague = shallowRef<League | null>(null)
+function openCopyModal(league: League) {
+  copySourceLeague.value = league
+  copyModalOpen.value = true
+}
+
 const selection = useSelection<number>()
 const { columns } = useLeaguesTableColumns(selection, openEditModal)
 const {
@@ -49,7 +58,10 @@ const {
 function leagueContextMenuItems(league: League): DropdownMenuItem[] {
   return [
     ...rowContextMenuItems(league),
+    { type: 'separator' },
     { label: t('league.rowActions.edit'), icon: ICONS.edit, onSelect: () => openEditModal(league) },
+    { label: t('league.rowActions.copy'), icon: ICONS.copy, onSelect: () => openCopyModal(league) },
+    { type: 'separator' },
     {
       label: t('league.rowActions.delete'),
       icon: ICONS.delete,
@@ -199,6 +211,8 @@ const tour = useLeaguesTour()
   <TourGuide :tour="tour" />
 
   <LeaguesListEditModal v-model="editModalOpen" :league="editingLeague" />
+
+  <LeaguesListAddModal v-model="copyModalOpen" hide-trigger :source-league="copySourceLeague" />
 
   <ConfirmModal
     v-model:open="bulkConfirmOpen"
