@@ -15,12 +15,7 @@ useSeoMeta({ title: () => t('associate.subNav.requestsShort') })
 const requestAssociates = computed(() => (associates.value ?? []).filter(
   associate => associate.membership_request_status !== 'approved'
 ))
-const pendingCount = computed(() => (associates.value ?? []).filter(
-  associate => associate.membership_request_status === 'pending'
-).length)
-const associatesCount = computed(() => (associates.value ?? []).filter(
-  associate => associate.membership_request_status === 'approved'
-).length)
+const { pendingAssociatesCount: pendingCount, associatesCount } = useHomeActionCounts()
 
 // undefined (ListSkeleton's own default count) only on a genuine first load
 // — isPending, unlike isLoading, is false once stale data exists to show a
