@@ -38,10 +38,7 @@ const { data: events } = useEventsQuery()
 
 // "Upcoming" = today or later, not already wrapped up — same status set a
 // tournament/event never goes back to once reached.
-const upcomingTournaments = computed(() => (tournaments.value ?? [])
-  .filter(tournament => tournament.status !== 'completed' && tournament.status !== 'cancelled'
-    && (isToday(new Date(tournament.startDate)) || isFuture(new Date(tournament.startDate))))
-  .slice(0, 5))
+const upcomingTournamentsList = computed(() => upcomingTournaments(tournaments.value ?? []))
 
 const upcomingEventsCount = computed(() => (events.value ?? [])
   .filter(event => event.status !== 'completed' && event.status !== 'cancelled'
@@ -67,7 +64,7 @@ const recentAssociates = computed(() => (associates.value ?? [])
 // Venue of the very next upcoming tournament — upcomingTournaments is
 // already sorted ascending by starts_at (useTournamentsQuery.ts's own
 // ordering), so [0] is the soonest one, not an arbitrary pick.
-const nextTournamentLocation = computed(() => upcomingTournaments.value[0] ?? null)
+const nextTournamentLocation = computed(() => upcomingTournamentsList.value[0] ?? null)
 
 const { data: leagues } = useLeaguesQuery()
 const activeLeagues = computed(() => (leagues.value ?? [])
@@ -87,7 +84,7 @@ const stats = computed(() => [{
 }, {
   title: t('home.staff.stats.upcomingTournaments'),
   icon: ICONS.battle,
-  value: upcomingTournaments.value.length,
+  value: upcomingTournamentsList.value.length,
   to: '/tournaments'
 }, {
   title: t('home.staff.stats.upcomingEvents'),
@@ -155,13 +152,13 @@ const stats = computed(() => [{
         </UPageCard>
 
         <UPageCard id="tour-home-upcoming" :title="t('home.staff.upcoming.title')" variant="subtle">
-          <div v-if="!upcomingTournaments.length" class="text-sm text-muted py-4 text-center">
+          <div v-if="!upcomingTournamentsList.length" class="text-sm text-muted py-4 text-center">
             {{ t('home.staff.upcoming.empty') }}
           </div>
 
           <div v-else class="flex flex-col divide-y divide-default">
             <NuxtLink
-              v-for="tournament in upcomingTournaments"
+              v-for="tournament in upcomingTournamentsList"
               :key="tournament.uuid"
               :to="tournamentDetailUrl(tournament)"
               class="flex items-center justify-between gap-3 -mx-2 px-2 py-3 first:pt-0 last:pb-0
