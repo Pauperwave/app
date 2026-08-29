@@ -4,8 +4,21 @@ import type * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { NewEventPayload } from '#shared/types/events'
 import type { EventFormState } from '~/composables/events/useEventFormFields'
+import type { Event } from '~/types'
 
 const open = defineModel<boolean>({ default: false })
+
+// sourceEvent is the "Copia evento" context-menu action (user request,
+// 2026-08-29), same convention as TournamentsListAddModal.vue's own
+// sourceTournament — copies every field except status (reset to draft) and
+// startDate (defaults to today, not the source's original date).
+// hideTrigger mirrors that component too, for the same reason: this instance
+// is opened programmatically by the copy action, not its own AddButton.
+const { sourceEvent, hideTrigger = false } = defineProps<{
+  sourceEvent?: Event | null
+  hideTrigger?: boolean
+}>()
+
 const toast = useToast()
 const { t } = useI18n()
 
@@ -21,15 +34,18 @@ const {
 const todayString = new Date().toISOString().substring(0, 10)
 
 function createInitialState(): EventFormState {
+  const source = sourceEvent
   return {
-    name: undefined,
+    name: source?.name,
     status: 'draft',
     startDate: todayString,
-    startTime: '08:00',
-    endTime: '00:00',
-    organizerUuid: undefined as unknown as string,
-    locationUuid: undefined,
-    companionCode: undefined
+    startTime: source ? new Date(source.startDate).toTimeString().substring(0, 5) : '20:00',
+    endTime: source?.endDate
+      ? new Date(source.endDate).toTimeString().substring(0, 5)
+      : '00:00',
+    organizerUuid: source?.organizerUuid ?? undefined as unknown as string,
+    locationUuid: source?.locationUuid ?? undefined,
+    companionCode: source?.companionCode ?? undefined
   }
 }
 
@@ -58,6 +74,17 @@ const { startDate, formattedStartDate, reset: resetStartDate } = useStartDateFie
 // artist attribution pair here (unlike tournaments/leagues): the `events`
 // table has no image_card_name/image_card_artist columns.
 const image = ref<string | undefined>(undefined)
+
+// Re-applies sourceEvent every time the modal opens, not just on mount —
+// same reasoning as TournamentsListAddModal.vue's own watch(open, ...): this
+// instance is reused across different "Copia evento" clicks while it stays
+// alive.
+watch(open, (isOpen) => {
+  if (!isOpen || !sourceEvent) return
+  Object.assign(state, createInitialState())
+  resetStartDate()
+  image.value = sourceEvent.image ?? undefined
+})
 
 type Schema = v.InferOutput<typeof schema>
 
@@ -122,6 +149,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     :description="$t('event.addModal.description')"
   >
     <AddButton
+      v-if="!hideTrigger"
       :label="$t('event.addModal.openButton')"
       :icon="ICONS.calendarAdd"
       @click="open = true"

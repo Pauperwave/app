@@ -10,6 +10,7 @@ import type * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { NewTournamentPayload } from '#shared/types/tournaments'
 import type { TournamentFormState } from '~/composables/tournaments/useTournamentFormFields'
+import type { Tournament } from '~/types'
 
 const open = defineModel<boolean>({ default: false })
 
@@ -18,13 +19,19 @@ const open = defineModel<boolean>({ default: false })
 // time slot, in particular (user request, 2026-08-22, "click and create a
 // tournament in that day" like Google Calendar). hideTrigger drops the
 // bare AddButton in that case, since the day-schedule is the trigger
-// instead — same v-model:open control either way.
+// instead — same v-model:open control either way. sourceTournament is the
+// "Copia torneo" context-menu action (user request, 2026-08-29) — copies
+// every field except status (reset to draft, a copy isn't already
+// completed/cancelled) and startDate (defaults to today, like a brand new
+// tournament — the source's original date is almost never what a
+// duplicate should land on).
 const {
-  initialDate, initialTime, initialEventUuid, hideTrigger = false
+  initialDate, initialTime, initialEventUuid, sourceTournament, hideTrigger = false
 } = defineProps<{
   initialDate?: string
   initialTime?: string
   initialEventUuid?: string
+  sourceTournament?: Tournament | null
   hideTrigger?: boolean
 }>()
 
@@ -36,22 +43,26 @@ const { createTournament } = useTournamentsMutations()
 const todayString = new Date().toISOString().substring(0, 10)
 
 function createInitialState(): TournamentFormState {
+  const source = sourceTournament
   return {
-    name: undefined,
+    name: source?.name,
     status: 'draft',
     startDate: initialDate ?? todayString,
-    startTime: initialTime ?? '20:00',
-    endTime: '23:00',
-    roundCount: 2,
-    formatUuid: undefined as unknown as string,
-    description: undefined,
-    prizes: undefined,
-    organizerUuid: undefined,
-    locationUuid: undefined,
-    leagueUuid: undefined,
-    eventUuid: initialEventUuid,
-    entryFee: 5,
-    companionCode: undefined
+    startTime: initialTime
+      ?? (source ? new Date(source.startDate).toTimeString().substring(0, 5) : '20:00'),
+    endTime: source?.endDate
+      ? new Date(source.endDate).toTimeString().substring(0, 5)
+      : '00:00',
+    roundCount: source?.roundCount ?? 2,
+    formatUuid: source?.formatUuid ?? undefined as unknown as string,
+    description: source?.description ?? undefined,
+    prizes: source?.prizes ?? undefined,
+    organizerUuid: source?.organizerUuid ?? undefined,
+    locationUuid: source?.locationUuid ?? undefined,
+    leagueUuid: source?.leagueUuid ?? undefined,
+    eventUuid: initialEventUuid ?? source?.eventUuid ?? undefined,
+    entryFee: source?.entryFee ?? 5,
+    companionCode: source?.companionCode ?? undefined
   }
 }
 
@@ -70,13 +81,28 @@ const highlightedDates = computed(() => (existingTournamentsData.value ?? []).ma
   label: `${existing.name}${tournamentStageText(existing)}`
 })))
 
-// Re-applies initialDate/initialTime/initialEventUuid every time the modal
-// opens, not just on mount — EventsSingleDaySchedule.vue reuses one modal
-// instance across many slot clicks, each with a different time, so a
-// one-shot default in createInitialState() alone wouldn't update on a
-// second click while the instance stays alive.
+// Kept out of `state`/the valibot schema (no format validation needed) —
+// same convention as LocationsListAddModal.vue's `image`. imageCardName/
+// imageCardArtist ride along for the same reason — see CardArtPicker.vue.
+const image = ref<string | undefined>(undefined)
+const imageCardName = ref<string | undefined>(undefined)
+const imageCardArtist = ref<string | undefined>(undefined)
+
+// Re-applies initialDate/initialTime/initialEventUuid/sourceTournament every
+// time the modal opens, not just on mount — EventsSingleDaySchedule.vue
+// reuses one modal instance across many slot clicks (each with a different
+// time), and "Copia torneo" likewise reuses one instance across different
+// source tournaments, so a one-shot default in createInitialState() alone
+// wouldn't update on a second click while the instance stays alive.
 watch(open, (isOpen) => {
   if (!isOpen) return
+  if (sourceTournament) {
+    Object.assign(state, createInitialState())
+    resetStartDate()
+    image.value = sourceTournament.image ?? undefined
+    imageCardName.value = sourceTournament.imageCardName ?? undefined
+    imageCardArtist.value = sourceTournament.imageCardArtist ?? undefined
+  }
   if (initialDate) {
     const [year, month, day] = initialDate.split('-').map(Number)
     startDate.value = new CalendarDate(year!, month!, day!)
@@ -84,13 +110,6 @@ watch(open, (isOpen) => {
   if (initialTime) state.startTime = initialTime
   if (initialEventUuid) state.eventUuid = initialEventUuid
 })
-
-// Kept out of `state`/the valibot schema (no format validation needed) —
-// same convention as LocationsListAddModal.vue's `image`. imageCardName/
-// imageCardArtist ride along for the same reason — see CardArtPicker.vue.
-const image = ref<string | undefined>(undefined)
-const imageCardName = ref<string | undefined>(undefined)
-const imageCardArtist = ref<string | undefined>(undefined)
 
 const {
   schema, statusOptions, locationOptions, organizerOptions, formatOptions,
