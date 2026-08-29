@@ -4,6 +4,10 @@ import type { TableColumn } from '@nuxt/ui'
 import type { FinanceFormatSummaryRow } from '~/composables/finance/useFinanceSummary'
 import FormatBadge from '~/components/badges/FormatBadge.vue'
 
+// fallow-ignore-next-line code-duplication -- props/formatter/sorting
+// scaffolding mirrors every other *SummaryTable.vue; row type, sort column
+// and percent precision differ per table, so there's nothing generic left
+// to factor out beyond what columnTotal/summaryXColumn already cover.
 const { rows, loading, pending = false } = defineProps<{
   rows: FinanceFormatSummaryRow[]
   loading: boolean

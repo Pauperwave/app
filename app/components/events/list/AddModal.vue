@@ -220,6 +220,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             {{ $t('event.addModal.organizerData') }}
           </p>
 
+          <!-- fallow-ignore-next-line code-duplication -- organizer/location
+               UFormField pair mirrors EditModal.vue's own; same field names/
+               options, genuinely nothing left to parameterize out. -->
           <div class="grid grid-cols-2 gap-2">
             <!-- eslint-disable-next-line -->
             <UFormField
