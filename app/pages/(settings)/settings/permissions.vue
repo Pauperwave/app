@@ -378,12 +378,14 @@ const columns: TableColumn<PermissionRow>[] = [
       :meta="{
         class: {
           // Section rows have nothing in the other columns to divide from
-          // (blank cells either side) — divide-x-0 here overrides the ui.tr
-          // default below per-row (user request, 2026-08-29), same
-          // same-signature tailwind-merge rule as the :ui gotcha documented
-          // in CLAUDE.md, just without the responsive-variant wrinkle:
-          // divide-x/divide-x-0 are the same utility, so this cleanly wins.
-          tr: (row: Row<PermissionRow>) => (row.original.isSection ? 'divide-x-0' : '')
+          // (blank cells either side) — meant to override the ui.tr default
+          // below per-row (user request, 2026-08-29). Nuxt UI's tv() slots
+          // concatenate meta.class.tr with :ui's own tr class rather than
+          // tailwind-merging them (confirmed via devtools: both divide-x and
+          // divide-x-0 end up in the class list at once), so plain
+          // divide-x-0 lost to divide-x on stylesheet order, not HTML class
+          // order — trailing `!` (Tailwind v4 important syntax) forces it.
+          tr: (row: Row<PermissionRow>) => (row.original.isSection ? 'divide-x-0!' : '')
         }
       }"
       :ui="{
