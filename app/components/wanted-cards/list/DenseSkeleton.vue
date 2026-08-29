@@ -11,7 +11,7 @@ const { count = 24 } = defineProps<{
 </script>
 
 <template>
-  <div class="grid gap-2 grid-cols-[repeat(auto-fill,minmax(min(140px,40vw),1fr))]">
+  <div class="grid gap-2 grid-cols-[repeat(auto-fill,minmax(min(190px,40vw),1fr))]">
     <UCard
       v-for="n in count"
       :key="n"
@@ -21,6 +21,7 @@ const { count = 24 } = defineProps<{
       <USkeleton class="w-full aspect-5/7" />
       <template #footer>
         <USkeleton class="h-3 w-16" />
+        <USkeleton class="h-3 w-20 mt-1" />
       </template>
     </UCard>
   </div>

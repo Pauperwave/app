@@ -35,7 +35,14 @@ export function useWantedCardsTour() {
       target: '#tour-wanted-cards-first-card',
       title: t('wantedCard.tour.steps.cardAnatomy.title'),
       description: t('wantedCard.tour.steps.cardAnatomy.description'),
-      side: 'right'
+      side: 'right',
+      // Only grid/dense render a card at all (table has no equivalent
+      // anchor) — wanted-cards/index.vue watches this field and switches
+      // viewMode away from 'table' before this step becomes current, so
+      // the popover always has something real to point at (user request,
+      // 2026-08-29: "dovrebbe prima accertarsi di essere su quella vista e
+      // spostartici").
+      requiresCardView: true
     },
     {
       target: null,

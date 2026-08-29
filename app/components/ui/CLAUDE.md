@@ -10,6 +10,7 @@ If a component needs a specific domain's data/types/copy to make sense, it doesn
 
 - **`AddButton`** — the "Nuovo X" trigger button (`label`, `icon`, `@click`) used to open every domain's Add modal. Check here before hand-rolling another primary add button.
 - **`EditIconButton`** — the icon-only "edit" button with a hover tooltip (`label`/`size` props, `@click`), used in list tables (rendered via `h()`) and grid cards wherever a row/card has an edit action. Check here before hand-rolling another bare `UButton :icon="ICONS.edit"`.
+- **`GroupByToggleButton`** — the icon-only "group by X" toggle (`label`, `grouped` props, `@toggle` emit) shared by transactions'/wanted-cards' own list toolbars. Just the button + tooltip; each caller owns its own grouping state/toggle logic (different data, not shareable). Check here before hand-rolling another grouping toggle.
 - **`ConfirmModal`** — a destructive-confirmation dialog (`title`/`description`/`warning`, confirm+cancel with configurable icon/color, optional `#body` slot for item-specific context like a thumbnail+name). Not a generic modal shell — specifically for "are you sure you want to do X" flows.
 - **`ColumnVisibilityMenu`** — the "Mostra colonne" `UDropdownMenu` trigger (`items: DropdownMenuItem[]`, from `useColumnVisibilityItems`), label collapses to icon-only below `lg`. Check here before hand-rolling another column-visibility dropdown.
 - **`CopyLinkButton`** — copies a shareable link (e.g. a row's detail-page URL) to the clipboard with a brief confirmation state.

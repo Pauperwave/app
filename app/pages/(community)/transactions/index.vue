@@ -238,15 +238,11 @@ const tour = useTransactionsTour()
               class="w-56 sm:w-64 lg:w-72"
               :placeholder="$t('transaction.searchPlaceholder')"
             />
-            <UTooltip :text="$t('transaction.groupByPayer')">
-              <UButton
-                :icon="ICONS.players"
-                color="neutral"
-                :variant="isGrouped ? 'solid' : 'outline'"
-                :aria-label="$t('transaction.groupByPayer')"
-                @click="toggleGrouping"
-              />
-            </UTooltip>
+            <GroupByToggleButton
+              :label="$t('transaction.groupByPayer')"
+              :grouped="isGrouped"
+              @toggle="toggleGrouping"
+            />
           </div>
         </template>
 

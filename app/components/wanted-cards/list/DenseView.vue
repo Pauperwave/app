@@ -29,6 +29,12 @@ const {
 
 const hasCards = computed(() => sections.some(section => section.cards.length))
 
+// Anchors the guided tour's "anatomy of a card" step (see GridView.vue's
+// own comment) on the first rendered card, whatever the active
+// section/grouping is — dense is the default view now, so this needs the
+// same anchor GridView.vue's own cards carry.
+const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]?.id)
+
 // Same shift-click range convention as GridView.vue's own — every currently
 // rendered card, flattened across sections in the same order they're drawn.
 const range = computed(() => sections.flatMap(section => section.cards).map(card => card.id))
@@ -52,7 +58,7 @@ const lastClickShiftKey = ref(false)
 
       <!-- Same auto-fill technique as GridView.vue's own grid, just a much
            smaller minimum tile width for real density. -->
-      <div class="grid gap-2 grid-cols-[repeat(auto-fill,minmax(min(140px,40vw),1fr))]">
+      <div class="grid gap-2 grid-cols-[repeat(auto-fill,minmax(min(190px,40vw),1fr))]">
         <WantedCardsListDenseCard
           v-for="card in section.cards"
           :key="card.id"
@@ -61,6 +67,7 @@ const lastClickShiftKey = ref(false)
           :context-menu-items="contextMenuItems(card)"
           :selection="selection"
           :range="range"
+          :is-first-card="card.id === firstCardId"
           :grouped-by-player="!!section.player"
         />
       </div>
