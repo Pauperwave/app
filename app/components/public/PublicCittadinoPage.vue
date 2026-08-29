@@ -15,6 +15,11 @@
 // here 2026-08-20 (user request: no reason to withhold it from public
 // visitors, who are if anything more likely to be scanning for their own
 // name).
+// fallow-ignore-next-line code-duplication -- the search ref + filteredStandings
+// computed mirrors standings/cittadino/index.vue's own internal counterpart;
+// both already share the real logic via useCittadinoStandingsPage, this is
+// just the thin per-shell (public vs. authenticated UDashboardPanel) wiring
+// around it.
 const search = ref('')
 
 const {

@@ -9,6 +9,8 @@ useSeoMeta({ title: () => t('cittadino.breadcrumb') })
 // useCittadinoStandingsPage independently). Declared before that call below
 // since it threads through to useCittadinoTableColumns.ts for match
 // highlighting.
+// fallow-ignore-next-line code-duplication -- see the same comment in
+// PublicCittadinoPage.vue
 const search = ref('')
 
 const {

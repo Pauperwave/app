@@ -90,6 +90,8 @@ const template = (d: WantedCardsStatusOverTimePoint) => [
           :tick-values="xTickValues"
         />
 
+        <!-- fallow-ignore-next-line code-duplication -- see the same
+             comment in TournamentsPerYearChart.client.vue -->
         <VisCrosshair :color="colors" :template="template" />
 
         <VisTooltip />

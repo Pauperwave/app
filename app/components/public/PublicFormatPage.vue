@@ -23,6 +23,10 @@ const { format } = defineProps<Props>()
 // same search FormatPage.vue's internal counterpart got, extended here
 // 2026-08-20 (user request: no reason to withhold it from public visitors,
 // who are if anything more likely to be scanning for their own name).
+// fallow-ignore-next-line code-duplication -- the search ref + filteredStandings
+// computed mirrors FormatPage.vue's own internal counterpart; both already
+// share the real logic via useFormatStandingsPage, this is just the thin
+// per-shell (public vs. authenticated UDashboardPanel) wiring around it.
 const search = ref('')
 
 const {
@@ -53,6 +57,11 @@ const filteredStandings = computed(() => {
       />
     </div>
 
+    <!-- fallow-ignore-next-line code-duplication -- summary/search/legend
+         row mirrors FormatPage.vue's own internal counterpart; this public
+         shell deliberately re-renders the same markup outside
+         UDashboardPanel rather than sharing a component across the auth
+         boundary (see the top-of-file comment). -->
     <div class="flex items-center justify-between gap-4 flex-wrap">
       <div class="flex items-center gap-4 flex-wrap">
         <p class="text-sm text-muted">
