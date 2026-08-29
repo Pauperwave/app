@@ -52,9 +52,7 @@ const undoable = useUndoableAction()
 const rejectConfirmOpen = ref(false)
 const approveConfirmOpen = ref(false)
 const selection = useSelection<number>()
-const selectedRequestAssociates = computed<Associate[]>(() =>
-  (table.value?.tableApi?.getFilteredRowModel().rows.map(row => row.original) ?? [])
-    .filter(associate => selection.isSelected(associate.id)))
+const selectedRequestAssociates = useSelectedTableRows(table, selection)
 const selectedRequestIds = computed(() =>
   selectedRequestAssociates.value.map(associate => associate.id))
 const selectedRejectedIds = computed(() => selectedRequestAssociates.value
