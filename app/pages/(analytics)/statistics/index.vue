@@ -14,35 +14,56 @@ const tour = useStatisticsTour()
 const availableYears = computed(() => {
   const years: number[] = []
   const currentYear = new Date().getFullYear()
-  for (let year = PAUPERWAVE_FOUNDING_YEAR; year <= currentYear; year++) years.push(year)
+
+  for (let year = PAUPERWAVE_FOUNDING_YEAR; year <= currentYear; year++)
+    years.push(year)
+
   return years.reverse()
 })
 const selectedYear = ref(new Date().getFullYear())
 const yearItems = computed(() =>
-  availableYears.value.map(year => ({ label: String(year), value: year })))
+  availableYears.value.map(year => ({
+    label: String(year),
+    value: year
+  }))
+)
 
 // The page has no query of its own — every chart pulls from one of these
 // three underlying queries (useAssociatesStatistics.ts/useTournamentsStatistics.ts/
 // useWantedCardsStatistics.ts), deduped by Pinia Colada's own cache key. Called again
 // here just to read/drive their status, not to trigger a second fetch.
 const {
-  isLoading: associatesLoading, status: associatesStatus, refetch: refetchAssociates
+  isLoading: associatesLoading,
+  status: associatesStatus,
+  refetch: refetchAssociates
 } = useAssociatesQuery()
 const {
-  isLoading: renewalsLoading, status: renewalsStatus, refetch: refetchRenewals
+  isLoading: renewalsLoading,
+  status: renewalsStatus,
+  refetch: refetchRenewals
 } = useAssociateRenewalsQuery()
 const {
-  isLoading: tournamentsLoading, status: tournamentsStatus, refetch: refetchTournaments
+  isLoading: tournamentsLoading,
+  status: tournamentsStatus,
+  refetch: refetchTournaments
 } = useTournamentsQuery()
 const {
-  isLoading: wantedCardsLoading, status: wantedCardsStatus, refetch: refetchWantedCards
+  isLoading: wantedCardsLoading,
+  status: wantedCardsStatus,
+  refetch: refetchWantedCards
 } = useWantedCardsQuery()
 
-const loading = computed(() => associatesLoading.value || renewalsLoading.value
-  || tournamentsLoading.value || wantedCardsLoading.value)
+const loading = computed(() => associatesLoading.value
+  || renewalsLoading.value
+  || tournamentsLoading.value
+  || wantedCardsLoading.value
+)
 
 const statuses = computed(() => [
-  associatesStatus.value, renewalsStatus.value, tournamentsStatus.value, wantedCardsStatus.value
+  associatesStatus.value,
+  renewalsStatus.value,
+  tournamentsStatus.value,
+  wantedCardsStatus.value
 ])
 const status = computed(() => {
   if (statuses.value.includes('error')) return 'error'
@@ -119,8 +140,8 @@ function refresh() {
         </ClientOnly>
       </div>
 
-      <!-- Grouped by domain (associates, then tournaments, then wanted
-      cards) rather than interleaved — the eye moves through one topic at a
+      <!-- Grouped by domain (associates, then tournaments, then wanted cards)
+      rather than interleaved — the eye moves through one topic at a
       time instead of bouncing between them. Each chart gets its own id so
       the tour can step through them one at a time. -->
       <div class="grid gap-4 lg:grid-cols-2 mt-4">
