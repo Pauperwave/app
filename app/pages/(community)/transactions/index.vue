@@ -24,6 +24,19 @@ const {
 } = useTransactionsQuery()
 const data = computed(() => transactionsData.value ?? [])
 
+// Every known transaction's date + payer + amount (unfiltered by range/type)
+// — same "density hint on DateRangePicker's own popover" pattern as
+// tournaments/index.vue's own tournamentDates (user request, 2026-08-29).
+// Single color: unlike a tournament's status, a transaction has no
+// meaningful per-item state to encode in the dot — the tooltip listing
+// every payer+amount for a day already carries the useful information.
+const transactionDates = computed(() => data.value.map(transaction => ({
+  date: new Date(transaction.payment_date),
+  color: 'success' as const,
+  label: `${transactionPayerName(transaction) || t('transaction.columns.payer')} — ${
+    AMOUNT_FORMATTER.format(transaction.payment_amount)}`
+})))
+
 // Quick year-jump next to DateRangePicker, same USelectMenu pattern as
 // /finance's own year selector (user request, 2026-08-29) — replaces the
 // calendarYears preset buttons DateRangePicker used to render inside its own
@@ -261,6 +274,7 @@ const tour = useTransactionsTour()
 
             <DateRangePicker
               v-model="range"
+              :highlighted-dates="transactionDates"
               icon-only
             />
 
