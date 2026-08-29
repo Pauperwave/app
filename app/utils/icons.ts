@@ -36,6 +36,7 @@ export const ICONS = {
   globe: 'i-lucide-globe',
   table: 'i-lucide-table',
   grid: 'i-lucide-layout-grid',
+  gridDense: 'i-lucide-grid-3x3',
   chartArea: 'i-lucide-chart-area',
   languages: 'i-lucide-languages',
 

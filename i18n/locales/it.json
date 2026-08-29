@@ -1714,7 +1714,8 @@
     "breadcrumb": "Carte Cercate",
     "views": {
       "table": "Tabella",
-      "grid": "Griglia"
+      "grid": "Griglia",
+      "dense": "Compatta"
     },
     "grid": {
       "empty": "Nessuna carta trovata con questi filtri",

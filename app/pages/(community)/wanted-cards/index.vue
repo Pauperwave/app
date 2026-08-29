@@ -41,9 +41,10 @@ const { isOverDropZone } = useScryfallDragDrop(() => document.body, (card) => {
 })
 
 // ---- View mode (grid/table toggle) ---------------------------------------
-const viewMode = ref<'table' | 'grid'>('grid')
+const viewMode = ref<'table' | 'grid' | 'dense'>('grid')
 const viewModeItems = computed<TabsItem[]>(() => [
   { label: t('wantedCard.views.grid'), value: 'grid', icon: ICONS.grid },
+  { label: t('wantedCard.views.dense'), value: 'dense', icon: ICONS.gridDense },
   { label: t('wantedCard.views.table'), value: 'table', icon: ICONS.table }
 ])
 
@@ -296,6 +297,7 @@ const gridSections = computed<GridSection[]>(() => {
 
     <template #body>
       <ListSkeleton v-if="loading && viewMode === 'table'" :columns="columns.length" />
+      <WantedCardsListDenseSkeleton v-else-if="loading && viewMode === 'dense'" />
       <WantedCardsListGridSkeleton v-else-if="loading" />
 
       <template v-else>
@@ -315,6 +317,13 @@ const gridSections = computed<GridSection[]>(() => {
             @contextmenu="onRowContextmenu"
           />
         </UContextMenu>
+
+        <WantedCardsListDenseView
+          v-else-if="viewMode === 'dense'"
+          :sections="gridSections"
+          :context-menu-items="rowContextMenuItems"
+          :selection="selection"
+        />
 
         <WantedCardsListGridView
           v-else
