@@ -7,6 +7,8 @@
   ],
   "ignoreDependencies": [
     "@formkit/auto-animate",
+    "@iconify-json/circle-flags",
+    "@iconify-json/lucide",
     "@iconify-json/simple-icons",
     "@pinia/colada-plugin-cache-persister",
     "@vue-flow/background",
