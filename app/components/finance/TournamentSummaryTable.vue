@@ -27,9 +27,9 @@ const sorting = ref([{ id: 'startDate', desc: false }])
 // average — not totalAmount / totalCount (the average of all transactions
 // pooled together, which would weight tournaments with more transactions
 // more heavily) — user request, 2026-08-23.
-const totalCount = computed(() => rows.reduce((sum, row) => sum + row.count, 0))
-const totalCompedCount = computed(() => rows.reduce((sum, row) => sum + row.compedCount, 0))
-const totalAmount = computed(() => rows.reduce((sum, row) => sum + row.total, 0))
+const totalCount = computed(() => columnTotal(rows, 'count'))
+const totalCompedCount = computed(() => columnTotal(rows, 'compedCount'))
+const totalAmount = computed(() => columnTotal(rows, 'total'))
 const averageOfAverages = computed(() =>
   rows.length ? rows.reduce((sum, row) => sum + row.average, 0) / rows.length : 0)
 

@@ -19,11 +19,11 @@ const sorting = ref([{ id: 'total', desc: true }])
 
 // Grand total per numeric column, own `footer` on the leftmost column instead
 // of a bare blank cell.
-const totalTournamentCount = computed(() => rows.reduce((sum, row) => sum + row.tournamentCount, 0))
-const totalCount = computed(() => rows.reduce((sum, row) => sum + row.count, 0))
-const totalCash = computed(() => rows.reduce((sum, row) => sum + row.cashTotal, 0))
-const totalPos = computed(() => rows.reduce((sum, row) => sum + row.posTotal, 0))
-const totalAmount = computed(() => rows.reduce((sum, row) => sum + row.total, 0))
+const totalTournamentCount = computed(() => columnTotal(rows, 'tournamentCount'))
+const totalCount = computed(() => columnTotal(rows, 'count'))
+const totalCash = computed(() => columnTotal(rows, 'cashTotal'))
+const totalPos = computed(() => columnTotal(rows, 'posTotal'))
+const totalAmount = computed(() => columnTotal(rows, 'total'))
 
 const columns: TableColumn<FinanceFormatSummaryRow>[] = [
   {

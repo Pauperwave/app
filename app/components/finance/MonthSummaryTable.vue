@@ -22,7 +22,7 @@ const sorting = ref([{ id: 'label', desc: false }])
 const totalByType = computed(() => Object.fromEntries(
   PAYMENT_TYPES.map(type => [type, rows.reduce((sum, row) => sum + row.totals[type], 0)])
 ) as Record<PaymentType, number>)
-const grandTotal = computed(() => rows.reduce((sum, row) => sum + row.grandTotal, 0))
+const grandTotal = computed(() => columnTotal(rows, 'grandTotal'))
 
 // Running total through each month, keyed by month regardless of the
 // table's current sort — chronological order always drives the running sum

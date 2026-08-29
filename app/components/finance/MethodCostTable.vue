@@ -21,10 +21,10 @@ const sorting = ref([{ id: 'total', desc: true }])
 // of a bare blank cell. feeRate has no footer at all — a rate isn't a
 // summable quantity, and a blended-rate footer was tried and rejected (user
 // request, 2026-08-23): not what "totale" means for a rate column.
-const totalCount = computed(() => rows.reduce((sum, row) => sum + row.count, 0))
-const totalAmount = computed(() => rows.reduce((sum, row) => sum + row.total, 0))
-const totalFee = computed(() => rows.reduce((sum, row) => sum + row.fee, 0))
-const totalNet = computed(() => rows.reduce((sum, row) => sum + row.net, 0))
+const totalCount = computed(() => columnTotal(rows, 'count'))
+const totalAmount = computed(() => columnTotal(rows, 'total'))
+const totalFee = computed(() => columnTotal(rows, 'fee'))
+const totalNet = computed(() => columnTotal(rows, 'net'))
 
 // Only POS carries a modeled fee today (see paymentMethodFees.ts) — the
 // other methods' feeRate/fee are always 0, still shown for a full apples-to-

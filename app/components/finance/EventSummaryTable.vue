@@ -19,10 +19,10 @@ const sorting = ref([{ id: 'combinedTotal', desc: true }])
 
 // Grand total per numeric column, own `footer` on the leftmost column instead
 // of a bare blank cell.
-const totalCount = computed(() => rows.reduce((sum, row) => sum + row.count, 0))
-const totalGettoniCount = computed(() => rows.reduce((sum, row) => sum + row.gettoniCount, 0))
-const totalGettoniAmount = computed(() => rows.reduce((sum, row) => sum + row.gettoniTotal, 0))
-const totalCombinedAmount = computed(() => rows.reduce((sum, row) => sum + row.combinedTotal, 0))
+const totalCount = computed(() => columnTotal(rows, 'count'))
+const totalGettoniCount = computed(() => columnTotal(rows, 'gettoniCount'))
+const totalGettoniAmount = computed(() => columnTotal(rows, 'gettoniTotal'))
+const totalCombinedAmount = computed(() => columnTotal(rows, 'combinedTotal'))
 
 // Same shape as TournamentSummaryTable.vue, minus format/stage — an event
 // has neither (Event, app/types/index.d.ts).
