@@ -9,9 +9,9 @@ import type { LeagueFormState } from '~/composables/leagues/useLeagueFormFields'
 const open = defineModel<boolean>({ default: false })
 const { league } = defineProps<{ league: League | null }>()
 
-const toast = useToast()
 const { t } = useI18n()
 const { updateLeague } = useLeaguesMutations()
+const { submitting, submitWithToast } = useSubmitWithToast()
 
 // Same shape as AddModal.vue's initial state — same reasoning as
 // tournaments/list/EditModal.vue's own state literal. No startDate here
@@ -47,8 +47,6 @@ const { schema, statusOptions, rulesetOptions } = useLeagueFormFields()
 
 type Schema = v.InferOutput<typeof schema>
 
-const submitting = ref(false)
-
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   if (!league) return
 
@@ -61,23 +59,14 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     imageCardArtist: imageCardArtist.value ?? null
   }
 
-  submitting.value = true
-  try {
-    await updateLeague.mutateAsync({ id: league.id, edits: payload })
-    toast.add({
-      title: t('league.editModal.successToastTitle'),
-      color: 'success'
-    })
-    open.value = false
-  } catch (err) {
-    toast.add({
-      title: t('league.editModal.errorToastTitle'),
-      description: toErrorMessage(err),
-      color: 'error'
-    })
-  } finally {
-    submitting.value = false
-  }
+  await submitWithToast(
+    () => updateLeague.mutateAsync({ id: league.id, edits: payload }),
+    {
+      successTitle: t('league.editModal.successToastTitle'),
+      errorTitle: t('league.editModal.errorToastTitle'),
+      onSuccess: () => { open.value = false }
+    }
+  )
 }
 </script>
 

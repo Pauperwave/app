@@ -12,9 +12,9 @@ import type { TournamentFormState } from '~/composables/tournaments/useTournamen
 const open = defineModel<boolean>({ default: false })
 const { tournament } = defineProps<{ tournament: Tournament | null }>()
 
-const toast = useToast()
 const { t } = useI18n()
 const { updateTournament } = useTournamentsMutations()
+const { submitting, submitWithToast } = useSubmitWithToast()
 
 // Same shape as AddModal.vue's initial state — formatUuid/organizerUuid/
 // locationUuid must be present (even as undefined) or valibot's v.object()
@@ -100,8 +100,6 @@ const {
 
 type Schema = v.InferOutput<typeof schema>
 
-const submitting = ref(false)
-
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   if (!tournament) return
 
@@ -130,23 +128,14 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     imageCardArtist: imageCardArtist.value ?? null
   }
 
-  submitting.value = true
-  try {
-    await updateTournament.mutateAsync({ id: tournament.id, edits: payload })
-    toast.add({
-      title: t('tournament.editModal.successToastTitle'),
-      color: 'success'
-    })
-    open.value = false
-  } catch (err) {
-    toast.add({
-      title: t('tournament.editModal.errorToastTitle'),
-      description: toErrorMessage(err),
-      color: 'error'
-    })
-  } finally {
-    submitting.value = false
-  }
+  await submitWithToast(
+    () => updateTournament.mutateAsync({ id: tournament.id, edits: payload }),
+    {
+      successTitle: t('tournament.editModal.successToastTitle'),
+      errorTitle: t('tournament.editModal.errorToastTitle'),
+      onSuccess: () => { open.value = false }
+    }
+  )
 }
 </script>
 

@@ -8,9 +8,9 @@ import type { Associate } from '~/types'
 const open = defineModel<boolean>({ default: false })
 const { associate } = defineProps<{ associate: Associate | null }>()
 
-const toast = useToast()
 const { t } = useI18n()
 const { updateAssociate } = useAssociatesMutations()
+const { submitting, submitWithToast } = useSubmitWithToast()
 
 // Same fields/validation as AddModal.vue (shared schema) — see its own comment
 // for why born_date is widened to Date | undefined here.
@@ -45,39 +45,26 @@ watch([open, () => associate], ([isOpen, current]) => {
   state.consent_social = current.consent_social
 }, { immediate: true })
 
-const submitting = ref(false)
-
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   if (!associate) return
 
-  submitting.value = true
-  try {
-    await updateAssociate.mutateAsync({
-      id: associate.id,
-      edits: {
-        ...event.data,
-        born_date: format(event.data.born_date, 'yyyy-MM-dd'),
-        consent_social: event.data.consent_social ?? false
-      }
-    })
+  const edits = {
+    ...event.data,
+    born_date: format(event.data.born_date, 'yyyy-MM-dd'),
+    consent_social: event.data.consent_social ?? false
+  }
 
-    toast.add({
-      title: t('associate.editModal.successToastTitle'),
-      description: t('associate.editModal.successToastDescription', {
+  await submitWithToast(
+    () => updateAssociate.mutateAsync({ id: associate.id, edits }),
+    {
+      successTitle: t('associate.editModal.successToastTitle'),
+      successDescription: t('associate.editModal.successToastDescription', {
         name: `${event.data.first_name} ${event.data.last_name}`
       }),
-      color: 'success'
-    })
-    open.value = false
-  } catch (err) {
-    toast.add({
-      title: t('associate.editModal.errorToastTitle'),
-      description: toErrorMessage(err),
-      color: 'error'
-    })
-  } finally {
-    submitting.value = false
-  }
+      errorTitle: t('associate.editModal.errorToastTitle'),
+      onSuccess: () => { open.value = false }
+    }
+  )
 }
 </script>
 
