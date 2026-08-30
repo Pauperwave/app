@@ -1,7 +1,9 @@
 // app\composables\tournaments\useSwissRoundCount.ts
-// Swiss round-count rule for tournament.stepper's round steps — reverse-
-// engineered from the legacy Pauperwave Manager's official rule
-// (.scratch/2026-08-22-pauperwave-manager-functional-spec.md §4.1), same
+// Swiss round-count rule for tournament.stepper's round steps — the
+// official minimum-rounds-by-player-count table (user-provided, 2026-08-31,
+// extending the 4-64 range this file already had, reverse-engineered from
+// the legacy Pauperwave Manager's own rule at
+// .scratch/2026-08-22-pauperwave-manager-functional-spec.md §4.1), same
 // "pure function wrapped in use*()" shape as its siblings useDraftPods.ts/
 // useCommanderPods.ts in this directory (user request, 2026-08-24).
 export function useSwissRoundCount() {
@@ -15,7 +17,10 @@ export function useSwissRoundCount() {
     if (registeredPlayers <= 16) return 4
     if (registeredPlayers <= 32) return 5
     if (registeredPlayers <= 64) return 6
-    return 7
+    if (registeredPlayers <= 128) return 7
+    if (registeredPlayers <= 226) return 8
+    if (registeredPlayers <= 409) return 9
+    return 10
   }
 
   return { calculateRoundCount }
