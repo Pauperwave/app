@@ -58,8 +58,6 @@ const xTicks = (i: number) => growthSeries.value[i]?.date.getFullYear().toString
     :value="totalAssociates"
     :caption="t('statistic.stats.totalAssociates')"
     :legend-items="legendItems"
-    legend-bullet-size="18px"
-    legend-label-font-size="18px"
     :loading="isLoading"
   >
     <template #default="{ width }">

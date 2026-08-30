@@ -128,9 +128,9 @@ function refresh() {
       any other chart on this page. -->
       <div id="tour-statistics-growth">
         <ClientOnly>
-          <StatisticsAssociatesGrowthChart class="mt-4" />
+          <StatisticsAssociatesGrowthChart />
           <template #fallback>
-            <StatisticsStatChartCardSkeleton class="mt-4" />
+            <StatisticsStatChartCardSkeleton />
           </template>
         </ClientOnly>
       </div>
@@ -139,7 +139,7 @@ function refresh() {
       rather than interleaved — the eye moves through one topic at a
       time instead of bouncing between them. Each chart gets its own id so
       the tour can step through them one at a time. -->
-      <div class="grid gap-4 lg:grid-cols-2 mt-4">
+      <div class="grid gap-4 lg:grid-cols-2">
         <div id="tour-statistics-age-distribution">
           <ClientOnly>
             <StatisticsAgeDistributionChart :selected-year="selectedYear" />
