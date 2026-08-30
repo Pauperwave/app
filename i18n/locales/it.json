@@ -731,7 +731,8 @@
       "eventFee": "Eventi",
       "donations": "Donazioni",
       "tokenPurchase": "Gettoni",
-      "errors": "Da sistemare"
+      "comped": "Omaggio",
+      "errors": "Errori"
     },
     "renewalKind": {
       "renewal": "Rinnovo",

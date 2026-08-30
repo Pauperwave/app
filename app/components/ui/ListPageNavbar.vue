@@ -39,6 +39,11 @@ const emit = defineEmits<{
     <template #trailing>
       <USeparator orientation="vertical" class="h-4" />
 
+      <!-- Optional, next to the title on the left, before QueryRefreshControl
+           (unlike the default slot, rendered on the navbar's right) — used by
+           transactions/index.vue's search box (user request, 2026-08-30). -->
+      <slot name="search" />
+
       <QueryRefreshControl :is-loading="loading" :status="status" @refresh="emit('refresh')" />
     </template>
 
