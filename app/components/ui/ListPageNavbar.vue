@@ -48,13 +48,7 @@ const emit = defineEmits<{
     </template>
 
     <template #right>
-      <UButton
-        :label="tourLabel"
-        icon="i-lucide-circle-help"
-        color="neutral"
-        variant="ghost"
-        @click="emit('tourStart')"
-      />
+      <TourStartButton :label="tourLabel" @start="emit('tourStart')" />
 
       <USeparator orientation="vertical" class="h-4" />
 

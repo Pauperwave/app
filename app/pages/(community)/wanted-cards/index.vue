@@ -210,13 +210,7 @@ const gridSections = computed<GridSection[]>(() => {
         </template>
 
         <template #right>
-          <UButton
-            :label="$t('wantedCard.tour.startButton')"
-            icon="i-lucide-circle-help"
-            color="neutral"
-            variant="ghost"
-            @click="tour.start()"
-          />
+          <TourStartButton :label="$t('wantedCard.tour.startButton')" @start="tour.start()" />
 
           <USeparator orientation="vertical" class="h-4" />
 

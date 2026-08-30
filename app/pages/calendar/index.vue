@@ -15,13 +15,7 @@ const tour = useCalendarPageTour()
 <template>
   <PageInDevelopment panel-id="calendar" :title="$t('nav.calendar')">
     <template #actions>
-      <UButton
-        :label="$t('event.calendarTour.startButton')"
-        icon="i-lucide-circle-help"
-        color="neutral"
-        variant="ghost"
-        @click="tour.start()"
-      />
+      <TourStartButton :label="$t('event.calendarTour.startButton')" @start="tour.start()" />
 
       <USeparator orientation="vertical" class="h-4" />
 

@@ -37,13 +37,7 @@ const tour = useCittadinoTour()
         </template>
 
         <template #right>
-          <UButton
-            :label="$t('cittadino.tour.startButton')"
-            icon="i-lucide-circle-help"
-            color="neutral"
-            variant="ghost"
-            @click="tour.start()"
-          />
+          <TourStartButton :label="$t('cittadino.tour.startButton')" @start="tour.start()" />
 
           <USeparator orientation="vertical" class="h-4" />
 
