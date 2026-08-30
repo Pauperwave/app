@@ -191,7 +191,7 @@ const rows = computed<PermissionRow[]>(() => {
       row('resetPairing', 'notImplemented', ['none', 'full', 'full', 'full']),
       row('cancelRound', 'notImplemented', ['none', 'none', 'full', 'full']),
       row('manageEventPayments', 'implemented', ['none', 'full', 'full', 'full']),
-      row('deleteTournaments', 'notImplemented', ['none', 'none', 'none', 'full'])
+      row('deleteTournaments', 'implemented', ['none', 'none', 'none', 'full'])
     ]),
 
     ...group('locations', [
