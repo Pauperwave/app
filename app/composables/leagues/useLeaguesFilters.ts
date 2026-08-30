@@ -2,13 +2,17 @@
 import type { Ref } from 'vue'
 import type { League, LeagueStatus } from '~/types'
 
-export function useLeaguesFilters(data: Ref<League[]>) {
+export function useLeaguesFilters(data: Ref<League[]>, search: Ref<string>) {
   const { t } = useI18n()
 
   const statusFilter = ref<'all' | LeagueStatus>('all')
 
+  // Search is name-only, applied here (not a UTable globalFilterFn) so it
+  // also filters the grid view, same reasoning as useTournamentsFilters.ts.
   const filteredLeagues = computed(() => data.value.filter((league) => {
     if (statusFilter.value !== 'all' && league.status !== statusFilter.value) return false
+    const query = search.value.trim().toLowerCase()
+    if (query && !league.name.toLowerCase().includes(query)) return false
     return true
   }))
 

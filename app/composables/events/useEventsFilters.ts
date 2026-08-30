@@ -5,17 +5,21 @@
 import type { Ref } from 'vue'
 import type { Event, EventStatus, Range } from '~/types'
 
-export function useEventsFilters(data: Ref<Event[]>, range: Ref<Range>) {
+export function useEventsFilters(data: Ref<Event[]>, range: Ref<Range>, search: Ref<string>) {
   const { t } = useI18n()
 
   const statusFilter = ref<'all' | EventStatus>('all')
 
   // Single source of truth for filtering, shared by both UTable :data and
-  // GridView :events — same reasoning as useTournamentsFilters.ts.
+  // GridView :events — same reasoning as useTournamentsFilters.ts. Search is
+  // name-only, applied here (not a UTable globalFilterFn) so it also filters
+  // the grid view.
   const filteredEvents = computed(() => data.value.filter((event) => {
     if (statusFilter.value !== 'all' && event.status !== statusFilter.value) return false
     const startDate = new Date(event.startDate)
     if (startDate < range.value.start || startDate > range.value.end) return false
+    const query = search.value.trim().toLowerCase()
+    if (query && !event.name.toLowerCase().includes(query)) return false
     return true
   }))
 

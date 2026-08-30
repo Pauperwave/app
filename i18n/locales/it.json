@@ -871,6 +871,7 @@
   },
   "league": {
     "breadcrumb": "Leghe",
+    "searchPlaceholder": "Cerca per nome",
     "singleLeaderboard": "Classifica singola lega",
     "singleLeaderboardMock": {
       "stagesCounted": "{counted}/{total} tappe contate"
@@ -1016,6 +1017,7 @@
   "event": {
     "breadcrumb": "Eventi",
     "seoTitle": "Eventi",
+    "searchPlaceholder": "Cerca per nome",
     "views": {
       "table": "Tabella",
       "grid": "Griglia"
@@ -1247,6 +1249,7 @@
     "breadcrumb": "Tornei",
     "participants": "Preiscritti",
     "contact": "Referente",
+    "searchPlaceholder": "Cerca per nome",
     "columns": {
       "select": "Seleziona",
       "image": "Immagine",

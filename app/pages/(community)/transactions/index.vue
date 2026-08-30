@@ -211,7 +211,7 @@ const tour = useTransactionsTour()
         <template #search>
           <SearchInput
             v-model="search"
-            class="w-56 sm:w-64"
+            class="w-64 sm:w-80"
             :placeholder="$t('transaction.searchPlaceholder')"
           />
           <USeparator orientation="vertical" class="h-4" />

@@ -24,7 +24,12 @@ const {
   data: eventsData, isLoading: loading, isPending, status, refetch
 } = useEventsQuery()
 const data = computed(() => eventsData.value ?? [])
-const { statusFilter, filteredEvents, statusTabs } = useEventsFilters(data, range)
+// Single search box matching event name — same "next to the title, before
+// the refresh control" navbar placement as transactions/index.vue's own
+// search box (user request, 2026-08-30).
+const search = ref('')
+
+const { statusFilter, filteredEvents, statusTabs } = useEventsFilters(data, range, search)
 
 // undefined (ListSkeleton's/GridView's own default count) only on a genuine
 // first load — same isPending-vs-isLoading reasoning as tournaments/index.vue.
@@ -106,6 +111,14 @@ const bulkConfirmTitle = computed(() => {
         </template>
 
         <template #trailing>
+          <USeparator orientation="vertical" class="h-4" />
+
+          <SearchInput
+            v-model="search"
+            class="w-56 sm:w-64"
+            :placeholder="$t('event.searchPlaceholder')"
+          />
+
           <USeparator orientation="vertical" class="h-4" />
 
           <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refetch" />
