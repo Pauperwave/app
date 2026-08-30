@@ -16,7 +16,13 @@ describe('useSwissRoundCount', () => {
     [33, 6],
     [64, 6],
     [65, 7],
-    [128, 7]
+    [128, 7],
+    [129, 8],
+    [226, 8],
+    [227, 9],
+    [409, 9],
+    [410, 10],
+    [1000, 10]
   ])('gives %i players %i rounds', (registeredPlayers, rounds) => {
     expect(calculateRoundCount(registeredPlayers)).toBe(rounds)
   })
