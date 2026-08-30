@@ -154,9 +154,9 @@ const skeletonCount = computed(() => (isPending.value ? undefined : filteredPlay
           @contextmenu="onRowContextmenu"
         >
           <template #empty>
-            <div class="py-12 text-center text-muted">
-              {{ $t('player.empty') }}
-            </div>
+            <EmptyState
+              :message="$t('player.empty')"
+            />
           </template>
         </UTable>
       </UContextMenu>

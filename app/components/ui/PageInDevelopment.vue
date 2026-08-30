@@ -33,9 +33,9 @@ const { panelId, title } = defineProps<Props>()
 
     <template #body>
       <slot name="body">
-        <div class="text-center py-12 text-muted">
-          {{ $t('common.pageInDevelopment') }}
-        </div>
+        <EmptyState
+          :message="$t('common.pageInDevelopment')"
+        />
       </slot>
     </template>
   </UDashboardPanel>

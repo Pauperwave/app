@@ -168,9 +168,10 @@ const {
     </template>
 
     <template #body>
-      <div v-if="!locationLoading && !location" class="text-center py-12 text-muted">
-        {{ t('location.detail.notFound') }}
-      </div>
+      <EmptyState
+        v-if="!locationLoading && !location"
+        :message="t('location.detail.notFound')"
+      />
 
       <div v-else class="flex flex-col gap-6">
         <div class="grid gap-6 sm:grid-cols-2 sm:items-start">
@@ -216,12 +217,10 @@ const {
             {{ t('location.detail.hostedTournaments') }}
           </h3>
 
-          <div
+          <EmptyState
             v-if="!tournamentsPending && !filteredHostedTournaments.length"
-            class="text-center py-12 text-muted"
-          >
-            {{ t('location.detail.hostedTournamentsEmpty') }}
-          </div>
+            :message="t('location.detail.hostedTournamentsEmpty')"
+          />
 
           <TournamentsListGridView
             v-else

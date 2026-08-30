@@ -28,9 +28,10 @@ const range = computed(() => leagues.map(league => league.id))
     <LeaguesListCard v-for="n in loadingCount" :key="n" loading />
   </div>
 
-  <div v-else-if="!leagues.length" class="text-center py-12 text-muted">
-    {{ $t('league.grid.empty') }}
-  </div>
+  <EmptyState
+    v-else-if="!leagues.length"
+    :message="$t('league.grid.empty')"
+  />
 
   <div v-else class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(280px,90vw),1fr))]">
     <LeaguesListCard

@@ -21,9 +21,10 @@ const {
     <LocationsListCard v-for="n in loadingCount" :key="n" loading />
   </div>
 
-  <div v-else-if="!locations.length" class="text-center py-12 text-muted">
-    {{ $t('location.grid.empty') }}
-  </div>
+  <EmptyState
+    v-else-if="!locations.length"
+    :message="$t('location.grid.empty')"
+  />
 
   <div v-else class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(280px,90vw),1fr))]">
     <LocationsListCard
