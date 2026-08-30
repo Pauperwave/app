@@ -84,7 +84,11 @@ const payerTaxCodeInput = computed({
     />
   </div>
 
-  <UTabs v-else v-model="activeTab" :items="payerTabItems">
+  <UTabs
+    v-else
+    v-model="activeTab"
+    :items="payerTabItems"
+  >
     <template #associate>
       <div class="mt-2 space-y-2">
         <UFormField

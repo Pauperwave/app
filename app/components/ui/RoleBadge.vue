@@ -16,7 +16,11 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <UBadge :color="ROLE_COLOR[role]" variant="subtle" :icon="ROLE_ICON[role]">
+  <UBadge
+    :color="ROLE_COLOR[role]"
+    variant="subtle"
+    :icon="ROLE_ICON[role]"
+  >
     {{ t(`settings.members.roles.${role}`) }}
   </UBadge>
 </template>

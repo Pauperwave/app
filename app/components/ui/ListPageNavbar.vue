@@ -44,7 +44,11 @@ const emit = defineEmits<{
            transactions/index.vue's search box (user request, 2026-08-30). -->
       <slot name="search" />
 
-      <QueryRefreshControl :is-loading="loading" :status="status" @refresh="emit('refresh')" />
+      <QueryRefreshControl
+        :is-loading="loading"
+        :status="status"
+        @refresh="emit('refresh')"
+      />
     </template>
 
     <template #right>

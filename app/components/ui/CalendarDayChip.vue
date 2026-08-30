@@ -36,7 +36,11 @@ const emit = defineEmits<{ hover: [isHovered: boolean] }>()
       :ui="{ text: 'whitespace-pre-line' }"
       :open="hovered"
     >
-      <UChip :color="events.at(-1)!.color" size="xs" position="top-right">
+      <UChip
+        :color="events.at(-1)!.color"
+        size="xs"
+        position="top-right"
+      >
         {{ day.day }}
       </UChip>
     </UTooltip>

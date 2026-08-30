@@ -28,7 +28,11 @@ defineEmits<{ sendOtp: [] }>()
 
 <template>
   <!-- eslint-disable vue/no-mutating-props -- see the top-of-file comment -->
-  <UFormField :label="$t('tesseramento.steps.email.label')" name="email_address" required>
+  <UFormField
+    :label="$t('tesseramento.steps.email.label')"
+    name="email_address"
+    required
+  >
     <UInput
       v-model="state.email_address"
       type="email"

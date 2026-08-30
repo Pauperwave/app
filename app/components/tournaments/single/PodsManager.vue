@@ -82,7 +82,11 @@ const canPlay = computed(() => calculatePods(players.length).canPlay)
                   <span class="font-medium">
                     {{ t('tournament.single.podsManager.podTitle', { n: podIndex + 1 }) }}
                   </span>
-                  <UBadge :label="pod.length" color="neutral" variant="subtle" />
+                  <UBadge
+                    :label="pod.length"
+                    color="neutral"
+                    variant="subtle"
+                  />
                 </div>
               </template>
 

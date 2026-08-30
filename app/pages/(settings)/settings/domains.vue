@@ -144,7 +144,11 @@ const columns: TableColumn<DomainRow>[] = [
       :description="$t('settings.domains.description')"
       :ui="{ container: 'gap-4' }"
     >
-      <UTable :data="domains" :columns="columns" class="w-full" />
+      <UTable
+        :data="domains"
+        :columns="columns"
+        class="w-full"
+      />
     </UPageCard>
   </div>
 </template>

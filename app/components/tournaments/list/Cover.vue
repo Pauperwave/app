@@ -52,7 +52,11 @@ function monthPart(startDate: string) {
         height="128"
         class="w-full h-32 object-cover"
       />
-      <ImageOffPlaceholder v-else class="w-full h-32" icon-class="size-8" />
+      <ImageOffPlaceholder
+        v-else
+        class="w-full h-32"
+        icon-class="size-8"
+      />
     </template>
     <USkeleton v-else class="w-full h-32 rounded-none" />
 
@@ -65,7 +69,11 @@ function monthPart(startDate: string) {
     </div>
     <!-- Solid black (not the default pulsing theme color) so it reads as a
          distinct chip sitting on the cover skeleton behind it. -->
-    <USkeleton v-else class="absolute top-2 left-2 w-12 h-12 rounded-lg" :ui="{ base: 'bg-black' }" />
+    <USkeleton
+      v-else
+      class="absolute top-2 left-2 w-12 h-12 rounded-lg"
+      :ui="{ base: 'bg-black' }"
+    />
 
     <!-- Card-art attribution chip (required alongside any Scryfall art_crop
          use, see CardArtPicker.vue) — only when set, so no v-else pair with
@@ -82,7 +90,11 @@ function monthPart(startDate: string) {
         {{ tournament.imageCardName }}
       </span>
     </UTooltip>
-    <USkeleton v-else-if="loading" class="absolute bottom-2 right-2 w-24 h-4 rounded" :ui="{ base: 'bg-black' }" />
+    <USkeleton
+      v-else-if="loading"
+      class="absolute bottom-2 right-2 w-24 h-4 rounded"
+      :ui="{ base: 'bg-black' }"
+    />
 
     <!-- Hidden until hover, except once selected — same convention as
          WantedCardsListGridView.vue's card checkbox. `group-hover` targets

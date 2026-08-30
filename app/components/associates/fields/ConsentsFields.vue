@@ -59,7 +59,11 @@ const { state, disabled = false } = defineProps<{
       size="lg"
     >
       <template #description>
-        <NuxtLink to="/tesseramento/informativa-dati" target="_blank" class="underline">
+        <NuxtLink
+          to="/tesseramento/informativa-dati"
+          target="_blank"
+          class="underline"
+        >
           {{ $t('tesseramento.steps.consents.openData') }}
         </NuxtLink>
       </template>

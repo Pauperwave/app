@@ -50,7 +50,11 @@ const template = (d: RenewalMonthPoint) => `${monthLabel(d.month, 'MMMM')}: ${d.
         class="h-96"
         :width="width"
       >
-        <VisGroupedBar :x="x" :y="y" color="var(--ui-primary)" />
+        <VisGroupedBar
+          :x="x"
+          :y="y"
+          color="var(--ui-primary)"
+        />
 
         <VisAxis
           type="x"

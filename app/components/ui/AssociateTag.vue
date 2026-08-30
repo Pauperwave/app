@@ -55,7 +55,11 @@ const membershipBadge = computed(() => associate.value
 </script>
 
 <template>
-  <UPopover v-if="associate" mode="hover" :open-delay="200">
+  <UPopover
+    v-if="associate"
+    mode="hover"
+    :open-delay="200"
+  >
     <UUser
       :name="name"
       :avatar="avatar"
@@ -64,7 +68,11 @@ const membershipBadge = computed(() => associate.value
     >
       <template v-if="highlightQuery || strikethrough" #name>
         <span :class="{ 'line-through text-dimmed': strikethrough }">
-          <HighlightMatch v-if="highlightQuery" :text="name" :query="highlightQuery" />
+          <HighlightMatch
+            v-if="highlightQuery"
+            :text="name"
+            :query="highlightQuery"
+          />
           <template v-else>{{ name }}</template>
         </span>
       </template>
@@ -96,7 +104,11 @@ const membershipBadge = computed(() => associate.value
     <!-- fallow-ignore-next-line code-duplication -- mirrors the popover branch above -->
     <template v-if="highlightQuery || strikethrough" #name>
       <span :class="{ 'line-through text-dimmed': strikethrough }">
-        <HighlightMatch v-if="highlightQuery" :text="name" :query="highlightQuery" />
+        <HighlightMatch
+          v-if="highlightQuery"
+          :text="name"
+          :query="highlightQuery"
+        />
         <template v-else>{{ name }}</template>
       </span>
     </template>

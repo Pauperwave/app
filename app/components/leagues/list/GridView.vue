@@ -25,7 +25,11 @@ const range = computed(() => leagues.map(league => league.id))
 
 <template>
   <div v-if="loading" class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(280px,90vw),1fr))]">
-    <LeaguesListCard v-for="n in loadingCount" :key="n" loading />
+    <LeaguesListCard
+      v-for="n in loadingCount"
+      :key="n"
+      loading
+    />
   </div>
 
   <EmptyState

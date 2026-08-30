@@ -140,7 +140,11 @@ const items = computed(() => [
         class="max-w-md mb-6"
       />
 
-      <UStepper v-model="currentStep" :items="items" class="space-y-6">
+      <UStepper
+        v-model="currentStep"
+        :items="items"
+        class="space-y-6"
+      >
         <template #acceptance>
           <TournamentsSingleAcceptancePicker
             v-model:accepted="acceptedPlayers"
@@ -153,7 +157,11 @@ const items = computed(() => [
           <TournamentsSinglePodsManager :players="acceptedPlayers" />
         </template>
 
-        <template v-for="i in numberOfRounds" :key="`round-${i}`" #[`round-${i}`]>
+        <template
+          v-for="i in numberOfRounds"
+          :key="`round-${i}`"
+          #[`round-${i}`]
+        >
           <TournamentsSingleRoundManager :round="i" />
         </template>
 

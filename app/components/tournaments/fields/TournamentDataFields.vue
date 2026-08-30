@@ -49,7 +49,11 @@ const imageCardArtist = defineModel<string | undefined>('imageCardArtist')
   </UFormField>
 
   <div class="flex justify-between gap-2">
-    <UFormField :label="$t('tournament.addModal.fields.format')" name="formatUuid" class="flex-1">
+    <UFormField
+      :label="$t('tournament.addModal.fields.format')"
+      name="formatUuid"
+      class="flex-1"
+    >
       <USelectMenu
         v-model="state.formatUuid"
         class="w-full"
@@ -97,7 +101,11 @@ const imageCardArtist = defineModel<string | undefined>('imageCardArtist')
   </div>
 
   <div class="flex justify-between gap-2">
-    <UFormField :label="$t('tournament.addModal.fields.entryFee')" name="entryFee" class="flex-1">
+    <UFormField
+      :label="$t('tournament.addModal.fields.entryFee')"
+      name="entryFee"
+      class="flex-1"
+    >
       <UInputNumber
         v-model="state.entryFee"
         :min="0"
@@ -107,7 +115,11 @@ const imageCardArtist = defineModel<string | undefined>('imageCardArtist')
       />
     </UFormField>
 
-    <UFormField :label="$t('tournament.addModal.fields.prizes')" name="prizes" class="flex-1">
+    <UFormField
+      :label="$t('tournament.addModal.fields.prizes')"
+      name="prizes"
+      class="flex-1"
+    >
       <UInput
         :model-value="state.prizes ?? ''"
         class="w-full"

@@ -118,7 +118,11 @@ const { t } = useI18n()
 
         <LocationsListSocialLinks v-if="!loading && location" :location="location" />
         <div v-else class="flex items-center gap-3 mt-2">
-          <USkeleton v-for="n in 3" :key="n" class="size-4 rounded-full" />
+          <USkeleton
+            v-for="n in 3"
+            :key="n"
+            class="size-4 rounded-full"
+          />
         </div>
       </div>
     </div>

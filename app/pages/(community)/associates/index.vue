@@ -389,7 +389,11 @@ function renderNeutralBadge(value: string) {
             :count="selectedRosterAssociates.length"
             @clear="selection.clear()"
           />
-          <div v-else id="tour-associates-filters" class="flex items-center gap-4 flex-wrap">
+          <div
+            v-else
+            id="tour-associates-filters"
+            class="flex items-center gap-4 flex-wrap"
+          >
             <AssociatesListFiltersBar
               v-model:active-status-tab="activeStatusTab"
               v-model:search="search"
@@ -421,7 +425,11 @@ function renderNeutralBadge(value: string) {
              cached rows yet) — a background refetch keeps the existing
              rows and uses UTable's own :loading bar instead, same
              convention as tournaments/locations' own list pages. -->
-        <ListSkeleton v-if="isPending" :count="skeletonCount" :columns="columns.length" />
+        <ListSkeleton
+          v-if="isPending"
+          :count="skeletonCount"
+          :columns="columns.length"
+        />
 
         <UContextMenu v-else :items="tableContextMenuItems">
           <UTable

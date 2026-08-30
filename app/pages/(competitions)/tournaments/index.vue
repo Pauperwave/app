@@ -176,7 +176,11 @@ const bulkConfirmTitle = computed(() => {
 
           <USeparator orientation="vertical" class="h-4" />
 
-          <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refetch" />
+          <QueryRefreshControl
+            :is-loading="loading"
+            :status="status"
+            @refresh="refetch"
+          />
         </template>
 
         <template #right>
@@ -212,7 +216,11 @@ const bulkConfirmTitle = computed(() => {
             :count="selectedTournaments.length"
             @clear="selection.clear()"
           />
-          <div v-else id="tour-tournaments-filters" class="flex items-center gap-4 flex-wrap">
+          <div
+            v-else
+            id="tour-tournaments-filters"
+            class="flex items-center gap-4 flex-wrap"
+          >
             <TournamentsListFiltersBar
               v-model:status-filter="statusFilter"
               v-model:format-filter="formatFilter"
@@ -239,7 +247,11 @@ const bulkConfirmTitle = computed(() => {
             @delete="requestDelete(selectedTournaments)"
           />
           <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->
-          <div v-else id="tour-tournaments-actions" class="flex items-center gap-2">
+          <div
+            v-else
+            id="tour-tournaments-actions"
+            class="flex items-center gap-2"
+          >
             <DateRangePicker
               v-model="range"
               :highlighted-dates="tournamentDates"
@@ -266,7 +278,11 @@ const bulkConfirmTitle = computed(() => {
                cached rows yet) — a background refetch keeps the existing
                rows and uses UTable's own :loading bar instead, same
                convention as associates/index.vue. -->
-          <ListSkeleton v-if="isPending" :count="skeletonCount" :columns="columns.length" />
+          <ListSkeleton
+            v-if="isPending"
+            :count="skeletonCount"
+            :columns="columns.length"
+          />
 
           <UContextMenu v-else :items="tableContextMenuItems">
             <UTable

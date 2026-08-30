@@ -91,7 +91,11 @@ const tour = useLocationsTour()
              :loading bar instead, same convention as associates/index.vue.
              Swapping the whole table out on every refresh (the previous
              behavior here) was flagged as worse UX than associates' -->
-          <ListSkeleton v-if="isPending" :count="skeletonCount" :columns="columns.length" />
+          <ListSkeleton
+            v-if="isPending"
+            :count="skeletonCount"
+            :columns="columns.length"
+          />
 
           <UContextMenu v-else :items="tableContextMenuItems">
             <UTable

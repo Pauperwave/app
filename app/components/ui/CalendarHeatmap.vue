@@ -281,7 +281,11 @@ function cellAriaLabel(day: HeatmapDay): string {
         <div class="flex flex-col gap-2 text-xs text-muted shrink-0">
           <div class="h-4" />
           <div class="flex flex-col gap-1">
-            <div v-for="(label, index) in dayLabels" :key="index" class="h-3 leading-3">
+            <div
+              v-for="(label, index) in dayLabels"
+              :key="index"
+              class="h-3 leading-3"
+            >
               {{ label }}
             </div>
           </div>
@@ -289,7 +293,11 @@ function cellAriaLabel(day: HeatmapDay): string {
 
         <div class="flex flex-col gap-2">
           <div class="flex gap-1">
-            <div v-for="(label, index) in monthLabels" :key="index" class="w-3 text-xs text-muted shrink-0">
+            <div
+              v-for="(label, index) in monthLabels"
+              :key="index"
+              class="w-3 text-xs text-muted shrink-0"
+            >
               {{ label }}
             </div>
           </div>
@@ -326,7 +334,11 @@ function cellAriaLabel(day: HeatmapDay): string {
                legendItems is passed (categorical domains, e.g. tournament
                status — "how many that day" isn't the meaningful axis there). -->
           <div v-if="legendItems" class="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 pr-8 text-xs text-muted">
-            <span v-for="item in legendItems" :key="item.labelKey" class="flex items-center gap-1.5">
+            <span
+              v-for="item in legendItems"
+              :key="item.labelKey"
+              class="flex items-center gap-1.5"
+            >
               <span class="size-3 rounded-sm shrink-0" :class="item.class" />
               {{ t(item.labelKey) }}
             </span>
@@ -357,7 +369,11 @@ function cellAriaLabel(day: HeatmapDay): string {
             {{ t(countLabelKey, 0) }}
           </p>
           <template v-else>
-            <p v-for="(time, index) in hoveredDay.times" :key="index" class="text-muted">
+            <p
+              v-for="(time, index) in hoveredDay.times"
+              :key="index"
+              class="text-muted"
+            >
               {{ cellTimeLabel(time) }}
             </p>
           </template>

@@ -57,7 +57,11 @@ async function onRoleChange(member: Member, role: MemberRole) {
       :key="member.userId"
       class="flex items-center justify-between gap-3 py-3 px-4 sm:px-6"
     >
-      <AssociateTag :name="member.name" :associate-uuid="member.associateUuid" size="md" />
+      <AssociateTag
+        :name="member.name"
+        :associate-uuid="member.associateUuid"
+        size="md"
+      />
 
       <USelect
         :model-value="member.role"

@@ -78,7 +78,11 @@ const sorting = ref([{ id: 'deletedAt', desc: true }])
         <template #trailing>
           <USeparator orientation="vertical" class="h-4" />
 
-          <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refetch" />
+          <QueryRefreshControl
+            :is-loading="loading"
+            :status="status"
+            @refresh="refetch"
+          />
         </template>
 
         <template #right>
@@ -97,7 +101,11 @@ const sorting = ref([{ id: 'deletedAt', desc: true }])
           :description="infoDescription"
         />
 
-        <ListSkeleton v-if="isPending" :count="skeletonCount" :columns="columns.length" />
+        <ListSkeleton
+          v-if="isPending"
+          :count="skeletonCount"
+          :columns="columns.length"
+        />
 
         <template v-else-if="data.length">
           <UTable

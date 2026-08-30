@@ -118,7 +118,11 @@ const tour = useLeaguesTour()
 
           <USeparator orientation="vertical" class="h-4" />
 
-          <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refetch" />
+          <QueryRefreshControl
+            :is-loading="loading"
+            :status="status"
+            @refresh="refetch"
+          />
         </template>
 
         <template #right>
@@ -169,7 +173,11 @@ const tour = useLeaguesTour()
             @delete="requestDelete(selectedLeagues)"
           />
           <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->
-          <DateRangePicker v-else v-model="range" class="-ms-1" />
+          <DateRangePicker
+            v-else
+            v-model="range"
+            class="-ms-1"
+          />
         </template>
       </UDashboardToolbar>
     </template>
@@ -181,7 +189,11 @@ const tour = useLeaguesTour()
                cached rows yet) — a background refetch keeps the existing
                rows and uses UTable's own :loading bar instead, same
                convention as associates/index.vue. -->
-          <ListSkeleton v-if="isPending" :count="skeletonCount" :columns="columns.length" />
+          <ListSkeleton
+            v-if="isPending"
+            :count="skeletonCount"
+            :columns="columns.length"
+          />
 
           <UContextMenu v-else :items="tableContextMenuItems">
             <UTable
@@ -219,7 +231,11 @@ const tour = useLeaguesTour()
 
   <LeaguesListEditModal v-model="editModalOpen" :league="editingLeague" />
 
-  <LeaguesListAddModal v-model="copyModalOpen" hide-trigger :source-league="copySourceLeague" />
+  <LeaguesListAddModal
+    v-model="copyModalOpen"
+    hide-trigger
+    :source-league="copySourceLeague"
+  />
 
   <ConfirmModal
     v-model:open="bulkConfirmOpen"

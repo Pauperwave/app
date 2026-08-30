@@ -121,7 +121,11 @@ const bulkConfirmTitle = computed(() => {
 
           <USeparator orientation="vertical" class="h-4" />
 
-          <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refetch" />
+          <QueryRefreshControl
+            :is-loading="loading"
+            :status="status"
+            @refresh="refetch"
+          />
         </template>
 
         <template #right>
@@ -185,7 +189,11 @@ const bulkConfirmTitle = computed(() => {
                cached rows yet) — a background refetch keeps the existing
                rows and uses UTable's own :loading bar instead, same
                convention as associates/index.vue. -->
-          <ListSkeleton v-if="isPending" :count="skeletonCount" :columns="columns.length" />
+          <ListSkeleton
+            v-if="isPending"
+            :count="skeletonCount"
+            :columns="columns.length"
+          />
 
           <UContextMenu v-else :items="tableContextMenuItems">
             <UTable
@@ -223,7 +231,11 @@ const bulkConfirmTitle = computed(() => {
 
   <EventsListEditModal v-model="editModalOpen" :event="editingEvent" />
 
-  <EventsListAddModal v-model="copyModalOpen" hide-trigger :source-event="copySourceEvent" />
+  <EventsListAddModal
+    v-model="copyModalOpen"
+    hide-trigger
+    :source-event="copySourceEvent"
+  />
 
   <ConfirmModal
     v-model:open="bulkConfirmOpen"

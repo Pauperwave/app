@@ -134,7 +134,11 @@ const skeletonCount = computed(() => (isPending.value ? undefined : filteredPlay
     </template>
 
     <template #body>
-      <ListSkeleton v-if="isPending" :count="skeletonCount" :columns="columns.length" />
+      <ListSkeleton
+        v-if="isPending"
+        :count="skeletonCount"
+        :columns="columns.length"
+      />
       <UContextMenu v-else :items="tableContextMenuItems">
         <UTable
           ref="table"

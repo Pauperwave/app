@@ -40,11 +40,27 @@ const isMinorAssociate = computed(() => isMinor(state.born_date))
        out in one column (AssociatesListFormFields.vue) or two
        (/tesseramento's personalInfo step) — user request, 2026-08-19. -->
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-    <UFormField :label="$t('associate.addModal.fields.firstName')" name="first_name" required>
-      <UInput v-model="state.first_name" autocomplete="given-name" class="w-full" />
+    <UFormField
+      :label="$t('associate.addModal.fields.firstName')"
+      name="first_name"
+      required
+    >
+      <UInput
+        v-model="state.first_name"
+        autocomplete="given-name"
+        class="w-full"
+      />
     </UFormField>
-    <UFormField :label="$t('associate.addModal.fields.lastName')" name="last_name" required>
-      <UInput v-model="state.last_name" autocomplete="family-name" class="w-full" />
+    <UFormField
+      :label="$t('associate.addModal.fields.lastName')"
+      name="last_name"
+      required
+    >
+      <UInput
+        v-model="state.last_name"
+        autocomplete="family-name"
+        class="w-full"
+      />
     </UFormField>
   </div>
   <UFormField

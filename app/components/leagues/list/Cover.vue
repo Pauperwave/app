@@ -68,7 +68,11 @@ const dateRangeTooltip = computed(() => {
         height="128"
         class="w-full h-32 object-cover"
       />
-      <ImageOffPlaceholder v-else class="w-full h-32" icon-class="size-8" />
+      <ImageOffPlaceholder
+        v-else
+        class="w-full h-32"
+        icon-class="size-8"
+      />
     </template>
     <USkeleton v-else class="w-full h-32 rounded-none" />
 
@@ -82,7 +86,11 @@ const dateRangeTooltip = computed(() => {
         <span class="text-[10px] uppercase text-muted">{{ monthPart(chipDate) }}</span>
       </div>
     </UTooltip>
-    <USkeleton v-else-if="loading" class="absolute top-2 left-2 w-12 h-12 rounded-lg" :ui="{ base: 'bg-black' }" />
+    <USkeleton
+      v-else-if="loading"
+      class="absolute top-2 left-2 w-12 h-12 rounded-lg"
+      :ui="{ base: 'bg-black' }"
+    />
 
     <!-- Same attribution overlay as TournamentsListCover.vue — required
          alongside any art_crop use, see CardArtPicker.vue's own comment. -->
@@ -98,7 +106,11 @@ const dateRangeTooltip = computed(() => {
         {{ league.imageCardName }}
       </span>
     </UTooltip>
-    <USkeleton v-else-if="loading" class="absolute bottom-2 right-2 w-24 h-4 rounded" :ui="{ base: 'bg-black' }" />
+    <USkeleton
+      v-else-if="loading"
+      class="absolute bottom-2 right-2 w-24 h-4 rounded"
+      :ui="{ base: 'bg-black' }"
+    />
 
     <UCheckbox
       v-if="!loading && league && selection"

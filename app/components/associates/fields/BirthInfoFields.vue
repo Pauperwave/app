@@ -63,7 +63,11 @@ function formatDate(date: Date): string {
       />
     </UFormField>
 
-    <UFormField :label="$t('associate.addModal.fields.birthDate')" name="born_date" required>
+    <UFormField
+      :label="$t('associate.addModal.fields.birthDate')"
+      name="born_date"
+      required
+    >
       <!-- Hidden input for autofill and schema validation — the visible control
            below is a UButton+UCalendar, not a native input browsers can
            autofill on their own. -->
@@ -98,7 +102,11 @@ function formatDate(date: Date): string {
   </div>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-    <UFormField :label="$t('associate.addModal.fields.birthState')" name="born_state" required>
+    <UFormField
+      :label="$t('associate.addModal.fields.birthState')"
+      name="born_state"
+      required
+    >
       <UInput
         v-model="state.born_state"
         :placeholder="$t('associate.addModal.placeholders.birthState')"

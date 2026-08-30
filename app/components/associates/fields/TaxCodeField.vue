@@ -15,7 +15,11 @@ const { state } = defineProps<{ state: TaxCodeState }>()
 
 <template>
   <!-- eslint-disable vue/no-mutating-props -- see the top-of-file comment -->
-  <UFormField :label="$t('associate.addModal.fields.taxCode')" name="tax_code" required>
+  <UFormField
+    :label="$t('associate.addModal.fields.taxCode')"
+    name="tax_code"
+    required
+  >
     <UInput
       v-model="state.tax_code"
       :placeholder="$t('associate.addModal.placeholders.taxCode')"

@@ -240,7 +240,11 @@ const tour = useTransactionsTour()
             :count="selectedTransactions.length"
             @clear="selection.clear()"
           />
-          <div v-else id="tour-transactions-filters" class="flex items-center gap-2 flex-wrap">
+          <div
+            v-else
+            id="tour-transactions-filters"
+            class="flex items-center gap-2 flex-wrap"
+          >
             <StatusFilterGroup v-model="activeTypeTab" :items="typeTabs" />
             <GroupByToggleButton
               :label="$t('transaction.groupByPayer')"
@@ -258,7 +262,11 @@ const tour = useTransactionsTour()
             @change-type="paymentType => requestBulkTypeChange(paymentType, selectedTransactions)"
             @delete="requestBulkDelete(selectedTransactions)"
           />
-          <div v-else id="tour-transactions-actions" class="flex items-center gap-2 flex-wrap">
+          <div
+            v-else
+            id="tour-transactions-actions"
+            class="flex items-center gap-2 flex-wrap"
+          >
             <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->
             <USelectMenu
               v-model="selectedYear"
@@ -285,7 +293,11 @@ const tour = useTransactionsTour()
            rows yet) — a background refetch keeps the existing rows and uses
            UTable's own :loading bar instead, same convention as
            tournaments/locations' own list pages. -->
-      <ListSkeleton v-if="isPending" :count="skeletonCount" :columns="columns.length" />
+      <ListSkeleton
+        v-if="isPending"
+        :count="skeletonCount"
+        :columns="columns.length"
+      />
 
       <UContextMenu v-else :items="tableContextMenuItems">
         <UTable

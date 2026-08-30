@@ -76,7 +76,11 @@ function onSlotClick(hour: number) {
 <template>
   <div class="flex max-h-125 overflow-y-auto">
     <div class="flex flex-col text-xs text-muted pe-2 text-right shrink-0">
-      <div v-for="hour in hours" :key="hour" class="h-14 -translate-y-2">
+      <div
+        v-for="hour in hours"
+        :key="hour"
+        class="h-14 -translate-y-2"
+      >
         {{ hourLabel(hour) }}
       </div>
     </div>

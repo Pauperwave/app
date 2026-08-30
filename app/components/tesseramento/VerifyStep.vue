@@ -13,7 +13,11 @@ defineEmits<{ resend: [], back: [] }>()
 <template>
   <div class="flex flex-col items-center gap-4 py-6 text-center">
     <UIcon :name="ICONS.loading" class="animate-spin text-4xl" />
-    <i18n-t keypath="tesseramento.steps.verify.waiting" tag="p" class="text-muted">
+    <i18n-t
+      keypath="tesseramento.steps.verify.waiting"
+      tag="p"
+      class="text-muted"
+    >
       <template #email>
         <a :href="`mailto:${email}`" class="text-primary hover:underline">{{ email }}</a>
       </template>

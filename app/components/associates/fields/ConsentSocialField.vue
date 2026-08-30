@@ -25,7 +25,11 @@ const { state } = defineProps<{ state: ConsentSocialState }>()
       size="lg"
     >
       <template #description>
-        <NuxtLink to="/tesseramento/informativa-privacy" target="_blank" class="underline">
+        <NuxtLink
+          to="/tesseramento/informativa-privacy"
+          target="_blank"
+          class="underline"
+        >
           {{ $t('tesseramento.steps.consents.openPrivacy') }}
         </NuxtLink>
       </template>

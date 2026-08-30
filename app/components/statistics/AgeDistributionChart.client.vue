@@ -95,7 +95,11 @@ const template = (d: AgeChartPoint) => t(
         class="h-96"
         :width="width"
       >
-        <VisGroupedBar :x="x" :y="y" color="var(--ui-primary)" />
+        <VisGroupedBar
+          :x="x"
+          :y="y"
+          color="var(--ui-primary)"
+        />
 
         <VisArea
           :x="x"

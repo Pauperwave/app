@@ -18,7 +18,11 @@ const links = computed(() => [
 
 <template>
   <div v-if="links.length" class="flex items-center gap-3 mt-2">
-    <UTooltip v-for="link in links" :key="link.label" :text="link.label">
+    <UTooltip
+      v-for="link in links"
+      :key="link.label"
+      :text="link.label"
+    >
       <a
         :href="link.href"
         target="_blank"

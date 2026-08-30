@@ -142,7 +142,11 @@ function timePart(startDate: string) {
 
       <div class="flex items-center gap-2 mt-1.5 flex-nowrap overflow-hidden">
         <template v-if="!loading && tournament">
-          <BadgesFormatBadge :format="tournament.format" :icon="ICONS.gameplay" class="shrink-0" />
+          <BadgesFormatBadge
+            :format="tournament.format"
+            :icon="ICONS.gameplay"
+            class="shrink-0"
+          />
 
           <UBadge
             color="neutral"
@@ -177,7 +181,11 @@ function timePart(startDate: string) {
       <template #footer>
         <div class="flex items-center justify-between gap-2">
           <template v-if="!loading && tournament">
-            <UBadge color="neutral" variant="subtle" :icon="ICONS.players">
+            <UBadge
+              color="neutral"
+              variant="subtle"
+              :icon="ICONS.players"
+            >
               {{ tournament.registeredPlayers }}
             </UBadge>
             <span class="font-medium">{{ (tournament.entryFee ?? 0).toFixed(2) }} €</span>
