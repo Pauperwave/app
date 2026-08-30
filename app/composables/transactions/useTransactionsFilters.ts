@@ -5,10 +5,11 @@ import { PAYMENT_TYPES } from '#shared/types/transactions'
 import type { PaymentType } from '#shared/types/transactions'
 import type { Range, Transaction } from '~/types'
 
-// 'errors' is a synthetic pseudo-type, not a real payment_type value — a
-// cross-cutting "needs manual attention" filter (see needsAttention,
-// transactionIssues.ts) rather than one more slice of payment_type.
-export type TransactionTypeFilter = 'all' | PaymentType | 'errors'
+// 'errors' and 'comped' are synthetic pseudo-types, not real payment_type
+// values — 'errors' is a cross-cutting "needs manual attention" filter (see
+// needsAttention, transactionIssues.ts), 'comped' slices by payment_method
+// instead of payment_type (a comped payment can be any payment_type).
+export type TransactionTypeFilter = 'all' | PaymentType | 'errors' | 'comped'
 
 // typeFilter is passed in, not created here: the page keeps it synced with
 // ?type= in the URL (same convention associates/index.vue uses for its own
@@ -28,13 +29,18 @@ export function useTransactionsFilters(
     // filtering them out because they fall outside the current range would
     // defeat the point of a "needs attention" tab.
     if (typeFilter.value === 'errors') return needsAttention(transaction)
-    if (typeFilter.value !== 'all' && transaction.payment_type !== typeFilter.value) return false
+    if (typeFilter.value === 'comped' && transaction.payment_method !== 'Comped') return false
+    if (typeFilter.value !== 'all' && typeFilter.value !== 'comped'
+      && transaction.payment_type !== typeFilter.value) return false
     const date = new Date(transaction.payment_date)
     if (date < range.value.start || date > range.value.end) return false
     return true
   }))
 
   const errorsCount = computed(() => data.value.filter(needsAttention).length)
+
+  const compedCount = computed(() => data.value
+    .filter(transaction => transaction.payment_method === 'Comped').length)
 
   // Counts from the full unfiltered `data`, same convention as
   // useWantedCardsFilters.ts's statusTabs.
@@ -85,6 +91,12 @@ export function useTransactionsFilters(
       value: 'Token Purchase',
       count: typeCounts.value['Token Purchase'],
       icon: PAYMENT_TYPE_BADGE_CONFIG['Token Purchase'].icon
+    },
+    {
+      label: t('transaction.tabs.comped'),
+      value: 'comped',
+      count: compedCount.value,
+      icon: PAYMENT_METHOD_BADGE_CONFIG.Comped.icon
     },
     {
       label: t('transaction.tabs.errors'),

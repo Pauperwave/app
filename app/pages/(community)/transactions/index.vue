@@ -208,6 +208,15 @@ const tour = useTransactionsTour()
         @refresh="refetch"
         @tour-start="tour.start()"
       >
+        <template #search>
+          <SearchInput
+            v-model="search"
+            class="w-56 sm:w-64"
+            :placeholder="$t('transaction.searchPlaceholder')"
+          />
+          <USeparator orientation="vertical" class="h-4" />
+        </template>
+
         <div id="tour-transactions-add">
           <TransactionsListAddModal v-model="isModalOpen" />
         </div>
@@ -233,11 +242,6 @@ const tour = useTransactionsTour()
           />
           <div v-else id="tour-transactions-filters" class="flex items-center gap-2 flex-wrap">
             <StatusFilterGroup v-model="activeTypeTab" :items="typeTabs" />
-            <SearchInput
-              v-model="search"
-              class="w-56 sm:w-64 lg:w-72"
-              :placeholder="$t('transaction.searchPlaceholder')"
-            />
             <GroupByToggleButton
               :label="$t('transaction.groupByPayer')"
               :grouped="isGrouped"
