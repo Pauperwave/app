@@ -147,10 +147,26 @@ const cityItems = computed(() => {
     if (city) monthCounts.set(city, (monthCounts.get(city) ?? 0) + 1)
   }
   return [
-    { label: t('event.calendarAllCities'), value: 'all' as const, count: undefined },
+    { label: t('event.calendarAllCities'), value: 'all' as const, count: undefined, disabled: false },
+    // A city with no events in the selected month stays listed (see the
+    // comment above the `cities` set) but disabled — user request,
+    // 2026-08-30: don't hide it (that flickers the list per month) or leave
+    // it clickable to an empty state, just make it unselectable until it
+    // has something to show.
     ...[...allCities].sort((a, b) => a.localeCompare(b))
-      .map(city => ({ label: city, value: city, count: monthCounts.get(city) ?? 0 }))
+      .map((city) => {
+        const count = monthCounts.get(city) ?? 0
+        return { label: city, value: city, count, disabled: count === 0 }
+      })
   ]
+})
+
+// If the selected city drops to 0 events after a month change, it just
+// became disabled above — fall back to "Tutte" rather than leaving the
+// control showing a disabled-but-selected city and an empty list.
+watch(cityItems, (items) => {
+  const selected = items.find(item => item.value === selectedCity.value)
+  if (selected?.disabled) selectedCity.value = 'all'
 })
 
 const filteredCards = computed(() => selectedCity.value === 'all'
