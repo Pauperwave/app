@@ -38,9 +38,14 @@ const formatUsageCounts = computed(() => {
   }
   return counts
 })
+// Single search box matching tournament name — same "next to the title,
+// before the refresh control" navbar placement as transactions/index.vue's
+// own search box (user request, 2026-08-30).
+const search = ref('')
+
 const {
   statusFilter, formatFilter, filteredTournaments, statusTabs, formatTabs
-} = useTournamentsFilters(data, range)
+} = useTournamentsFilters(data, range, search)
 
 // Every known tournament's date + status color + hover label (unfiltered by
 // range/status/format) — issue #37, DateRangePicker.vue's own UChip
@@ -161,6 +166,14 @@ const bulkConfirmTitle = computed(() => {
         </template>
 
         <template #trailing>
+          <USeparator orientation="vertical" class="h-4" />
+
+          <SearchInput
+            v-model="search"
+            class="w-56 sm:w-64"
+            :placeholder="$t('tournament.searchPlaceholder')"
+          />
+
           <USeparator orientation="vertical" class="h-4" />
 
           <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refetch" />

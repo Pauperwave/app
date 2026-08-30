@@ -5,7 +5,11 @@
 import type { Ref } from 'vue'
 import type { Range, Tournament, TournamentStatus } from '~/types'
 
-export function useTournamentsFilters(data: Ref<Tournament[]>, range: Ref<Range>) {
+// search defaults to an unused empty ref — locations/[slug]/index.vue's own
+// hosted-tournaments list only needs the range filter, not a search box.
+export function useTournamentsFilters(
+  data: Ref<Tournament[]>, range: Ref<Range>, search: Ref<string> = ref('')
+) {
   const { t } = useI18n()
 
   const statusFilter = ref<'all' | TournamentStatus>('all')
@@ -17,12 +21,16 @@ export function useTournamentsFilters(data: Ref<Tournament[]>, range: Ref<Range>
   const formatFilter = ref<'all' | string>('all')
 
   // Single source of truth for filtering, shared by both UTable :data and
-  // GridView :tournaments — same reasoning as useWantedCardsFilters.ts.
+  // GridView :tournaments — same reasoning as useWantedCardsFilters.ts. Search
+  // is name-only, applied at this data level (not a UTable globalFilterFn)
+  // so it also filters the grid view, not just the table.
   const filteredTournaments = computed(() => data.value.filter((tournament) => {
     if (statusFilter.value !== 'all' && tournament.status !== statusFilter.value) return false
     if (formatFilter.value !== 'all' && tournament.format !== formatFilter.value) return false
     const startDate = new Date(tournament.startDate)
     if (startDate < range.value.start || startDate > range.value.end) return false
+    const query = search.value.trim().toLowerCase()
+    if (query && !tournament.name.toLowerCase().includes(query)) return false
     return true
   }))
 

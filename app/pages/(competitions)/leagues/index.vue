@@ -26,7 +26,12 @@ const {
   data: leaguesData, isLoading: loading, isPending, status, refetch
 } = useLeaguesQuery()
 const data = computed(() => leaguesData.value ?? [])
-const { statusFilter, filteredLeagues, statusTabs } = useLeaguesFilters(data)
+// Single search box matching league name — same "next to the title, before
+// the refresh control" navbar placement as transactions/index.vue's own
+// search box (user request, 2026-08-30).
+const search = ref('')
+
+const { statusFilter, filteredLeagues, statusTabs } = useLeaguesFilters(data, search)
 
 // undefined (ListSkeleton's/GridView's own default count) only on a genuine
 // first load — same isPending-vs-isLoading reasoning as tournaments/index.vue.
@@ -103,6 +108,14 @@ const tour = useLeaguesTour()
         </template>
 
         <template #trailing>
+          <USeparator orientation="vertical" class="h-4" />
+
+          <SearchInput
+            v-model="search"
+            class="w-56 sm:w-64"
+            :placeholder="$t('league.searchPlaceholder')"
+          />
+
           <USeparator orientation="vertical" class="h-4" />
 
           <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refetch" />
