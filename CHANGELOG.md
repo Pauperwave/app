@@ -1,6 +1,118 @@
 # Changelog
 
 
+## v0.1.8
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.1.7...v0.1.8)
+
+### Enhancements
+
+- **tesseramento:** ✨ add renewal flow for existing associates ([7c94f34](https://github.com/Pauperwave/app/commit/7c94f34))
+- **tesseramento:** ✨ make the verify-step email a mailto: link ([8c8b317](https://github.com/Pauperwave/app/commit/8c8b317))
+- **associates:** ✨ add membership event history + timeline ([75ada9f](https://github.com/Pauperwave/app/commit/75ada9f))
+- **associates:** ✨ rework renewal requests into their own tab ([9dcde87](https://github.com/Pauperwave/app/commit/9dcde87))
+- **associates:** ✨ auto-assign PW-#### numbers, editable via dedicated modal ([d84874f](https://github.com/Pauperwave/app/commit/d84874f))
+- **players:** ✨ add "Storico Partite" and "Mazzi Commander" cards ([eadb61e](https://github.com/Pauperwave/app/commit/eadb61e))
+- **associates:** ✨ add "Lega" column to the detail page's Transazioni table ([18f8c46](https://github.com/Pauperwave/app/commit/18f8c46))
+- **competitions:** ✨ add "Copia torneo"/"Copia evento" to the context menu ([3697d8c](https://github.com/Pauperwave/app/commit/3697d8c))
+- **competitions:** ✨ add "Copia lega" to the leagues context menu ([6b44079](https://github.com/Pauperwave/app/commit/6b44079))
+- **leagues:** ✨ add "Nuovo torneo" button on the league detail page ([59c2372](https://github.com/Pauperwave/app/commit/59c2372))
+- **leagues:** ✨ bring the /tournaments context menu to the league detail page ([ee7c611](https://github.com/Pauperwave/app/commit/ee7c611))
+- **ui:** 🎨 color the role badge on /players ([1a718b6](https://github.com/Pauperwave/app/commit/1a718b6))
+- **transactions:** ✨ wire highlighted-dates on the DateRangePicker ([58b6653](https://github.com/Pauperwave/app/commit/58b6653))
+- **calendar:** ✨ add city filter, Today button, and side-by-side toolbar ([0696632](https://github.com/Pauperwave/app/commit/0696632))
+- **settings:** ✨ divide "Ruoli e permessi" table into sections by theme ([2892584](https://github.com/Pauperwave/app/commit/2892584))
+- **settings:** ✨ add 6 missing rows to the permissions table ([1ff0357](https://github.com/Pauperwave/app/commit/1ff0357))
+- **settings:** ✨ add Pubblico column and drop dividers on section rows ([1b1ac6e](https://github.com/Pauperwave/app/commit/1b1ac6e))
+- **wanted-cards:** ✨ add "Compatta" dense grid view mode ([4557102](https://github.com/Pauperwave/app/commit/4557102))
+- **calendar:** ✨ show the association's codice fiscale on /calendario ([c1cc05e](https://github.com/Pauperwave/app/commit/c1cc05e))
+
+### Fixes
+
+- **tesseramento:** 🐛 stop overwriting request_date on renewal ([ee5e314](https://github.com/Pauperwave/app/commit/ee5e314))
+- **associates:** 🐛 paginate geocodes query past PostgREST's 250-row cap ([c1c41c2](https://github.com/Pauperwave/app/commit/c1c41c2))
+- **associates:** 🐛 use AssociateTypeBadge in the Tesseramento card ([03b9c47](https://github.com/Pauperwave/app/commit/03b9c47))
+- **associates:** 🐛 reorder Tesseramento card dates chronologically ([a2f924f](https://github.com/Pauperwave/app/commit/a2f924f))
+- **ui:** 🐛 remove outline-2 width from CalendarHeatmap cell focus ring ([c121c02](https://github.com/Pauperwave/app/commit/c121c02))
+- **query:** 🐛 sync fetchAllRows pageSize with the raised db.max_rows ([b478412](https://github.com/Pauperwave/app/commit/b478412))
+- **ui:** 🐛 give tessera number badges consistent width ([59144e8](https://github.com/Pauperwave/app/commit/59144e8))
+- **calendar:** 🐛 fix "black bands" around the detail slideover hero image ([2792d8b](https://github.com/Pauperwave/app/commit/2792d8b))
+- **auth:** 🐛 close route-guard gap on associates/finance/players/locations/rulesets ([aefd696](https://github.com/Pauperwave/app/commit/aefd696))
+- **settings:** 🐛 use Tailwind's important modifier to actually cancel divide-x on section rows ([4f56f97](https://github.com/Pauperwave/app/commit/4f56f97))
+- **settings:** 🐛 mark viewFinance/viewAssociates/viewPlayers/manageLocations/manageRulesets as implemented ([3011bc6](https://github.com/Pauperwave/app/commit/3011bc6))
+- **layouts:** 🐛 remove dead back-to-"/" button from auth.vue and public.vue ([ef5ea4a](https://github.com/Pauperwave/app/commit/ef5ea4a))
+- **image:** 🐛 set a custom User-Agent for ipx's remote image fetch ([41583f5](https://github.com/Pauperwave/app/commit/41583f5))
+- **calendar:** 🐛 collapse today/month/city controls to fit one row on mobile ([6c2a3cd](https://github.com/Pauperwave/app/commit/6c2a3cd))
+- **calendar:** 🐛 disable city filter options with 0 events in the selected month ([042a487](https://github.com/Pauperwave/app/commit/042a487))
+- **theme:** 🐛 size the theme-toggle reveal circle against the physical screen bounds ([8c32b9a](https://github.com/Pauperwave/app/commit/8c32b9a))
+
+### Refactors
+
+- **icons:** 🎨 centralize icon literals into ICONS across the app ([341f821](https://github.com/Pauperwave/app/commit/341f821))
+- **tournaments:** 🔥 dedup the copy-modal state and context menu builder ([c0cd5d5](https://github.com/Pauperwave/app/commit/c0cd5d5))
+- **finance:** 🔥 dedup amount formatter and summary table boilerplate ([d6dfe3a](https://github.com/Pauperwave/app/commit/d6dfe3a))
+- **transactions:** 🔥 dedup event_name/gettoni cell rendering ([7605a05](https://github.com/Pauperwave/app/commit/7605a05))
+- **ui:** 🔥 dedup calendar day-highlight logic, drop DateRangePicker's calendarYears ([2e773e5](https://github.com/Pauperwave/app/commit/2e773e5))
+- **composables:** 🔥 dedup row-context-menu state and copy-to-clipboard ([a958e62](https://github.com/Pauperwave/app/commit/a958e62))
+- **tournaments:** 🔥 dedup pod-splitting slice logic ([4ef77b0](https://github.com/Pauperwave/app/commit/4ef77b0))
+- **associates:** 🔥 dedup statute/data-consent checkboxes ([4dbdd61](https://github.com/Pauperwave/app/commit/4dbdd61))
+- **associates:** 🔥 dedup selected-rows-via-filtered-model computed ([fce3051](https://github.com/Pauperwave/app/commit/fce3051))
+- **pages:** 🔥 dedup hand-rolled table-ref types via VisibilityTableRef ([d4c882e](https://github.com/Pauperwave/app/commit/d4c882e))
+- **ui:** 🔥 dedup pointer-following virtual tooltip reference ([0c61b39](https://github.com/Pauperwave/app/commit/0c61b39))
+- **nav:** 🎨 restructure the sidebar's overview/Commander stats sections ([e9425a9](https://github.com/Pauperwave/app/commit/e9425a9))
+- **composables:** ♻️ dedupe useCopyLinkContextMenu's copy logic into useCopyToClipboard ([d965f2a](https://github.com/Pauperwave/app/commit/d965f2a))
+- **finance:** ♻️ extract computeGrandTotal/resolveTournament helpers in useFinanceSummary ([a9a4e81](https://github.com/Pauperwave/app/commit/a9a4e81))
+- **tournaments:** ♻️ extract resolveRegistrationUuids helper in AcceptancePicker ([ade1afb](https://github.com/Pauperwave/app/commit/ade1afb))
+- **associates:** ♻️ extract useAssociatesTableSetup for shared route/table/rowActions wiring ([9d1ea74](https://github.com/Pauperwave/app/commit/9d1ea74))
+- **associates:** ♻️ reuse useHomeActionCounts in requests.vue instead of recomputing counts ([09b1327](https://github.com/Pauperwave/app/commit/09b1327))
+- **finance:** ♻️ extract columnTotal helper for summary table footer sums ([d5e2ebe](https://github.com/Pauperwave/app/commit/d5e2ebe))
+- **home:** ♻️ extract upcomingTournaments util shared by Player.vue/Staff.vue ([5f7a3c3](https://github.com/Pauperwave/app/commit/5f7a3c3))
+- **finance:** ♻️ extract yearSelectItems/availableTransactionYears helpers ([0cbbc7f](https://github.com/Pauperwave/app/commit/0cbbc7f))
+- **transactions:** ♻️ extract transactionNotesCell into transactionCells.ts ([8299be8](https://github.com/Pauperwave/app/commit/8299be8))
+- **tables:** ♻️ extract auditAssociateCell for createdBy/updatedBy columns ([47fe38b](https://github.com/Pauperwave/app/commit/47fe38b))
+- **settings:** ♻️ extract updatePauperwaveSettings server helper ([628195d](https://github.com/Pauperwave/app/commit/628195d))
+- **associates:** ♻️ extract requireUserEmail server helper ([0121f49](https://github.com/Pauperwave/app/commit/0121f49))
+- **leagues:** ♻️ extract LeagueTournamentsProgress shared by Card.vue/PresentationCard.vue ([579684f](https://github.com/Pauperwave/app/commit/579684f))
+- **finance:** ♻️ reuse columnTotal in chart components, mark remaining chart scaffolding ([3ccb913](https://github.com/Pauperwave/app/commit/3ccb913))
+- **dupes:** ♻️ extract filterStandingsBySearch, fix fallow-ignore marker syntax ([b8cebf1](https://github.com/Pauperwave/app/commit/b8cebf1))
+- **layout:** ♻️ collapse nav badge v-if chain into a data-driven v-for ([104c218](https://github.com/Pauperwave/app/commit/104c218))
+- **home:** ♻️ split Staff.vue's six card sections into their own components ([af78c7d](https://github.com/Pauperwave/app/commit/af78c7d))
+- **finance:** ♻️ extract addPaymentMethodTotal helper in useFinanceSummary ([0fda6aa](https://github.com/Pauperwave/app/commit/0fda6aa))
+- **leagues:** ♻️ split useLeaguesQuery's tournament aggregation into three named passes ([44c9f78](https://github.com/Pauperwave/app/commit/44c9f78))
+- **players:** ♻️ split player detail page's three history cards into their own components ([a520b0e](https://github.com/Pauperwave/app/commit/a520b0e))
+- **wanted-cards:** ✨ refine dense grid view, extract shared row-action pieces ([8e008b3](https://github.com/Pauperwave/app/commit/8e008b3))
+- **images:** ✨ switch remaining Scryfall <img> tags to NuxtImg ([e277828](https://github.com/Pauperwave/app/commit/e277828))
+
+### Documentation
+
+- 📝 document the Nuxt UI :ui override / tailwind-merge signature gotcha ([33797af](https://github.com/Pauperwave/app/commit/33797af))
+- 📝 document the ICONS convention and shared row-actions composables ([0171f14](https://github.com/Pauperwave/app/commit/0171f14))
+- 📝 document fallow tooling gotchas learned this session ([99e7af1](https://github.com/Pauperwave/app/commit/99e7af1))
+
+### Chore
+
+- **supabase:** 🔧 regenerate database types ([abf52b6](https://github.com/Pauperwave/app/commit/abf52b6))
+- **associates:** 🔥 resolve stray TODOs on the associate detail/roster pages ([4ec980a](https://github.com/Pauperwave/app/commit/4ec980a))
+- **associates:** 🔥 remove associateStatus.ts, superseded by membershipStatusBadge.ts ([6fafae2](https://github.com/Pauperwave/app/commit/6fafae2))
+- **dupes:** 🔧 mark intentional parameterized duplication with fallow-ignore ([0d41b69](https://github.com/Pauperwave/app/commit/0d41b69))
+- **dupes:** 🔧 mark remaining intentional parameterized duplication with fallow-ignore ([a7e34e2](https://github.com/Pauperwave/app/commit/a7e34e2))
+- **dupes:** 🔧 mark Cover.vue trio and detail-page header shells as intentional duplication ([2cfe0c8](https://github.com/Pauperwave/app/commit/2cfe0c8))
+- **dupes:** 🔧 mark public/internal mirror pages and remaining chart pairs as intentional ([3db1326](https://github.com/Pauperwave/app/commit/3db1326))
+- **dupes:** 🔧 fix remaining multi-line fallow-ignore markers, add fallow:dupes:markers check ([98983e4](https://github.com/Pauperwave/app/commit/98983e4))
+- **fallow:** 🔧 ignore @iconify-json/circle-flags and /lucide as unused dependencies ([91a4984](https://github.com/Pauperwave/app/commit/91a4984))
+- **fallow:** 🔧 add health.thresholdOverrides for reviewed template-complexity findings ([4b03f5c](https://github.com/Pauperwave/app/commit/4b03f5c))
+
+### Styles
+
+- 🎨 reformat multi-line statements and trim stale comments ([423f389](https://github.com/Pauperwave/app/commit/423f389))
+- **competitions:** 🎨 add separators to tournament/event context menus ([b5e602e](https://github.com/Pauperwave/app/commit/b5e602e))
+- **calendar:** 🎨 remove elevated pill styling from the Pauperwave header logo ([12fbfd8](https://github.com/Pauperwave/app/commit/12fbfd8))
+- **calendar:** 🎨 tighten gap between Oggi and month picker on public calendar ([aff81c3](https://github.com/Pauperwave/app/commit/aff81c3))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.1.7
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.1.6...v0.1.7)
