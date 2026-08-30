@@ -141,3 +141,36 @@ export async function updateStatusById(
 
   return data
 }
+
+// Shared by /associates/[id]/update.post.ts and update-number.post.ts
+// (fallow:dupes, 2026-08-30 flagged a byte-identical 15-line clone) — same
+// "update one row, 500 on failure, return it" shape as updateStatusById, but
+// admin-gated (requireAdminPermission, not requireManagementPermission —
+// parseIdMutationRequest above doesn't fit here, see each call site's own
+// comment for why) and fixed to pauperwave_associates, the only table this
+// admin-only "Gestire l'anagrafica soci" permission governs today.
+export async function updateAssociateById(
+  event: H3Event,
+  id: number,
+  updates: Database['public']['Tables']['pauperwave_associates']['Update'],
+  errorMessage: string
+) {
+  const user = await requireAdminPermission(event)
+  const supabase = serverSupabaseServiceRole<Database>(event)
+
+  const { data, error } = await supabase
+    .from('pauperwave_associates')
+    .update({ ...updates, ...await auditColumnsForUpdate(event, user) })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error || !data) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error?.message ?? errorMessage
+    })
+  }
+
+  return data
+}
