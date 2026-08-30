@@ -1463,9 +1463,6 @@
       "save": "Salva"
     },
     "single": {
-      "presentationCard": {
-        "edit": "Modifica torneo"
-      },
       "acceptancePicker": {
         "preRegistered": "Pre-registrati",
         "receivedByPlaceholder": "Chi riceve i pagamenti?",
