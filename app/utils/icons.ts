@@ -93,7 +93,6 @@ export const ICONS = {
   calendar: 'i-lucide-calendar',
   calendarAdd: 'i-lucide-calendar-plus',
   calendarRenew: 'i-lucide-calendar-sync',
-  calendarView: 'i-lucide-calendar-days',
   calendarCheck: 'i-lucide-calendar-check',
   clock: 'i-lucide-clock',
   timer: 'i-lucide-timer',

@@ -45,7 +45,7 @@ export function useMainNavGroups(open: Ref<boolean>) {
     }
   }, {
     label: t('nav.calendar'),
-    icon: ICONS.calendarView,
+    icon: ICONS.calendar,
     to: '/calendar',
     onSelect: () => {
       open.value = false
