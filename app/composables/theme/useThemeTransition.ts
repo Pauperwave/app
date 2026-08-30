@@ -1,6 +1,7 @@
 // app\composables\theme\useThemeTransition.ts
 export function useThemeTransition() {
   const colorMode = useColorMode()
+  const { isMobile } = useDevice()
   const isDark = computed({
     get() {
       return colorMode.value === 'dark'
@@ -16,7 +17,11 @@ export function useThemeTransition() {
       Math.max(x, window.innerWidth - x),
       Math.max(y, window.innerHeight - y)
     )
-    if (!document.startViewTransition) {
+    // Same fallback as browsers without View Transitions support — on
+    // mobile, the address bar can hide/show mid-animation, which throws off
+    // the reveal circle's coverage (user report, 2026-08-30). Skip the
+    // animated reveal there entirely rather than compensating for it.
+    if (!document.startViewTransition || isMobile) {
       isDark.value = !isDark.value
       return
     }
