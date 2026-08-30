@@ -10,7 +10,7 @@
 
 <template>
   <div
-    class="flex flex-wrap items-center gap-4 mt-8 pt-6 border-t border-default max-w-2xl w-full mx-auto text-sm text-muted"
+    class="flex flex-wrap items-center gap-4 pt-6 border-t border-default max-w-2xl w-full mx-auto text-sm text-muted"
   >
     <a
       href="https://www.crvallagarina.it/"

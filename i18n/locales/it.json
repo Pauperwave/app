@@ -1090,7 +1090,11 @@
       "registerComingSoonDescription": "L'iscrizione online non è ancora attiva, scrivi sul gruppo WhatsApp o contatta il referente per iscriverti.",
       "share": "Condividi",
       "shareLinkCopiedTitle": "Link copiato",
-      "shareErrorTitle": "Impossibile condividere"
+      "shareErrorTitle": "Impossibile condividere",
+      "partnerDiscounts": {
+        "title": "Sconti dei nostri partner",
+        "codeCopiedTitle": "Codice sconto copiato"
+      }
     },
     "status": {
       "draft": "Bozza",
