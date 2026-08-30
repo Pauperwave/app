@@ -134,12 +134,6 @@ const items = computed(() => [
     </template>
 
     <template #body>
-      <TournamentsSinglePresentationCard
-        v-if="tournament"
-        :tournament="tournament"
-        class="max-w-md mb-6"
-      />
-
       <UStepper
         v-model="currentStep"
         :items="items"
