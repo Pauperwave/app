@@ -133,21 +133,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   submitting.value = true
   try {
     await createWantedCard.mutateAsync({
-      playerAssociateUuid: event.data.player,
       cardName: printing.name,
-      scryfallUrl: printing.scryfallUrl,
-      scryfallId: printing.id,
-      setCode: printing.set,
-      manaCost: printing.manaCost,
-      colorIdentity: printing.colorIdentity,
-      typeLine: printing.typeLine || null,
-      cmc: printing.cmc,
-      imageUrl: printing.imageUrl,
-      cardmarketPrice: printing.price,
-      copies: event.data.copies,
-      language: event.data.language === 'any' ? null : event.data.language,
-      treatment: event.data.foil ? ['foil'] : [],
-      notes: event.data.notes || null
+      ...wantedCardEditsFromPrinting(printing, event.data)
     })
 
     toast.add({
