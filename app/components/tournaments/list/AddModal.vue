@@ -142,6 +142,20 @@ watch(formatOptions, (options) => {
   state.formatUuid = options.find(option => option.label === 'Commander')?.value ?? state.formatUuid
 }, { immediate: true })
 
+// Live-recalculates on every format change (unlike the organizer/location/
+// format watches above, which only fill an empty field once) — roundCount
+// always has a value, so there's no "empty" state to gate on, and the whole
+// point is that switching format updates the suggested round count
+// immediately (defaultRoundCountForFormat). Skipped while copying a source
+// tournament
+// (createInitialState already seeded roundCount from it, and the format
+// watch above never overrides sourceTournament.formatUuid either).
+watch(() => state.formatUuid, (formatUuid) => {
+  if (sourceTournament) return
+  const formatName = formatOptions.value.find(option => option.value === formatUuid)?.label
+  state.roundCount = defaultRoundCountForFormat(formatName)
+})
+
 type Schema = v.InferOutput<typeof schema>
 
 // UModal only hides/shows, it does not unmount the form, so the state has to
