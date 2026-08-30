@@ -44,9 +44,9 @@ const emit = defineEmits<{ toggleColor: [value: WantedCardColorFilter], toggleGr
   -->
   <StatusFilterGroup v-model="statusFilter" :items="statusTabs" />
 
-  <!-- Search by card name hidden for now: this view serves people
+  <!-- Search by card name deliberately omitted: this view serves people
        looking for cards, not people selling them (which is the real
-       use case for search by name) — see the TODO in docs/TODO.md. -->
+       use case for search by name) — confirmed 2026-08-30, not needed. -->
 
   <!-- Replaces the old language select + foil toggle (2026-08-15 user
        request) — mana-symbol tabs instead of StatusFilterGroup, since a
