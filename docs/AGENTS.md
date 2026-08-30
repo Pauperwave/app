@@ -2,8 +2,8 @@
 
 <!-- docs/AGENTS.md -->
 
-- Integration with `MagicTheGathering/league` is imminent, not a distant goal — deadline **2026-08-30** (draft "Lo Hobbit", potentially run through this app). `app` absorbs `league`, not the other way around: it already has the more suitable format-agnostic schema and the more structured frontend. See ADR-003/ADR-007 in `docs/PROGRESS.md`. Schema/data correctness still matters, but new work should be built against the target architecture (Pinia Colada + BFF, see ADR-007/008) rather than throwaway solutions to be redone later.
 - See the root `CLAUDE.md` for stack, routing, component organization, auth flow, and data-fetching conventions — this file complements it rather than repeating it.
+- New work should be built against the target architecture (Pinia Colada + BFF, see ADR-007/008 in `docs/PROGRESS.md`) rather than throwaway solutions to be redone later.
 
 ## Database modifications
 
