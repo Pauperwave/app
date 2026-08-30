@@ -51,13 +51,7 @@ const tour = useRulesetsTour()
         </template>
 
         <template #right>
-          <UButton
-            :label="$t('ruleset.tour.startButton')"
-            icon="i-lucide-circle-help"
-            color="neutral"
-            variant="ghost"
-            @click="tour.start()"
-          />
+          <TourStartButton :label="$t('ruleset.tour.startButton')" @start="tour.start()" />
 
           <USeparator orientation="vertical" class="h-4" />
 

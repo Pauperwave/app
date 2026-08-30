@@ -89,13 +89,7 @@ function refresh() {
         </template>
 
         <template #right>
-          <UButton
-            :label="$t('statistic.tour.startButton')"
-            icon="i-lucide-circle-help"
-            color="neutral"
-            variant="ghost"
-            @click="tour.start()"
-          />
+          <TourStartButton :label="$t('statistic.tour.startButton')" @start="tour.start()" />
 
           <USeparator orientation="vertical" class="h-4" />
 

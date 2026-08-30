@@ -57,13 +57,7 @@ const tour = useStandingsFormatTour()
         </template>
 
         <template #right>
-          <UButton
-            :label="$t('standings.tour.startButton')"
-            icon="i-lucide-circle-help"
-            color="neutral"
-            variant="ghost"
-            @click="tour.start()"
-          />
+          <TourStartButton :label="$t('standings.tour.startButton')" @start="tour.start()" />
 
           <USeparator orientation="vertical" class="h-4" />
 

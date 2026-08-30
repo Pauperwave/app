@@ -29,13 +29,7 @@ const tour = useHomeTour(isStaff)
         </template>
 
         <template #right>
-          <UButton
-            :label="$t('home.tour.startButton')"
-            icon="i-lucide-circle-help"
-            color="neutral"
-            variant="ghost"
-            @click="tour.start()"
-          />
+          <TourStartButton :label="$t('home.tour.startButton')" @start="tour.start()" />
 
           <template v-if="isStaff">
             <USeparator orientation="vertical" class="h-4" />
