@@ -51,3 +51,15 @@
   scrollbar-width: thin;
   scrollbar-color: var(--color-neutral-400) transparent;
 }
+
+/* Collapsed sidebar (icon-only rail, layouts/default.vue) is too narrow
+   for even the thin scrollbar above without it overlapping the nav
+   items' hover/active pill highlight on short screens — wheel scrolling
+   still works, it's just not visually indicated here. */
+.sidebar-no-scrollbar {
+  scrollbar-width: none;
+}
+
+.sidebar-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

@@ -270,6 +270,7 @@ const groups = computed(() => [{
       :ui="{
         root: 'lg:border-e-0',
         header: 'items-start pt-6',
+        body: sidebarCollapsed ? 'sidebar-no-scrollbar' : '',
         footer: 'pb-6'
       }"
     >
