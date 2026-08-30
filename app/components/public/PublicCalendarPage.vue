@@ -281,6 +281,7 @@ const filteredCards = computed(() => selectedCity.value === 'all'
       </template>
     </div>
 
+    <CalendarPartnerDiscounts />
     <CalendarFooter />
     <CalendarDetailSlideover />
   </div>
