@@ -10,6 +10,7 @@ interface StatusFilterItem<T extends string> {
   // show their label — collapsing to a bare, unlabeled button would leave
   // no affordance at all.
   icon?: string
+  disabled?: boolean
 }
 
 const { items } = defineProps<{ items: StatusFilterItem<T>[] }>()
@@ -22,6 +23,7 @@ const modelValue = defineModel<T>()
       v-for="option in items"
       :key="option.value"
       :icon="option.icon"
+      :disabled="option.disabled"
       color="neutral"
       :variant="modelValue === option.value ? 'solid' : 'outline'"
       :aria-label="option.icon ? option.label : undefined"
