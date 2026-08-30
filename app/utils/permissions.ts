@@ -70,16 +70,15 @@ export const PERMISSION_LEVEL = {
   'delete-commander-deck': 'admin',
   // Revised down to 'admin' 2026-08-23, same request.
   'delete-ruleset': 'admin',
-  // Revised down to 'admin' 2026-08-23, second pass, same day as the three
-  // above (user request: admin AND super_admin can assign roles — not
-  // super_admin only). This only gates whether the page/nav item is
-  // reachable at all, same caveat as 'access-settings' below — the real,
-  // finer-grained boundary ("admin can grant player/organizer/admin, never
-  // super_admin, and can never touch an existing super_admin or the
-  // hardcoded protected developer account") lives in the assign_role RPC
-  // itself (migration 20260823130000), not here. A client-side `can()`
-  // check was never going to be enough to express "except this one tier"
-  // safely — this constant only decides whether the UI shows the control.
+  // 'admin' (not 'super_admin' only — user request 2026-08-23): admin can
+  // grant player/organizer/admin, but never super_admin, and can never
+  // touch an existing super_admin or the protected developer account
+  // (`role_locked` flag, `user_roles`). That finer-grained boundary lives
+  // in the assign_role RPC (migration 20260823130000/20260823140000), not
+  // this constant — this only gates the top-level tier, not the two
+  // exceptions. Enforced twice, not just once: MembersList.vue's role
+  // dropdown calls assign_role directly (wired 2026-08-25), which
+  // self-guards the exceptions server-side regardless of what the UI does.
   'manage-roles': 'admin',
   'view-associates': 'organizer', // sees every associate's data; editing/deleting stays manage-members (admin)
   'view-finance': 'organizer',

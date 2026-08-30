@@ -214,7 +214,7 @@ const rows = computed<PermissionRow[]>(() => {
     ]),
 
     ...group('roles', [
-      row('manageRoles', 'implemented', ['none', 'none', 'full', 'full'])
+      row('manageRoles', 'implemented', ['none', 'none', ['partial', 'adminNote'], 'full'])
     ]),
 
     ...group('trash', [

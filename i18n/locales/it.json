@@ -2298,7 +2298,8 @@
         "deleteTournaments": { "feature": "**Eliminare** **definitivamente** tornei/leghe/eventi" },
         "purgeTrash": { "feature": "**Eliminare** **definitivamente** una riga da /trash" },
         "manageRoles": {
-          "feature": "**Assegnare**/**modificare** ruoli (/settings/members)"
+          "feature": "**Assegnare**/**modificare** ruoli (/settings/members)",
+          "adminNote": "Un admin non può mai assegnare o toccare il ruolo super_admin, né modificare l'account protetto — vincolo applicato da assign_role lato database."
         },
         "viewFinance": {
           "feature": "**Visualizzare** transazioni e finanze (/finance, /transactions)"
