@@ -1,6 +1,47 @@
 # Changelog
 
 
+## v0.1.9
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.1.8...v0.1.9)
+
+### Enhancements
+
+- **auth:** ✨ show the app version badge on the login/auth screen ([86aeaa3](https://github.com/Pauperwave/app/commit/86aeaa3))
+- **calendar:** ✨ show partner discount codes on the public calendar ([29bfdaf](https://github.com/Pauperwave/app/commit/29bfdaf))
+- **transactions:** ✨ add an "Omaggio" tab, rename "Da sistemare", move search ([9403b2d](https://github.com/Pauperwave/app/commit/9403b2d))
+- **lists:** ✨ add name search to /tournaments, /leagues, /events ([a7c69d2](https://github.com/Pauperwave/app/commit/a7c69d2))
+
+### Fixes
+
+- **settings:** 🐛 mark deleteTournaments as implemented in the permissions table ([33077fe](https://github.com/Pauperwave/app/commit/33077fe))
+- **auth:** 🐛 require admin for membership-fee payments and associate record edits ([73a6bf5](https://github.com/Pauperwave/app/commit/73a6bf5))
+- **settings:** 🐛 align permissions doc and page for viewOwnMembership/manageRoles ([1a44138](https://github.com/Pauperwave/app/commit/1a44138))
+- **theme:** 🐛 size the theme-toggle reveal circle against the physical screen bounds" ([7ad5579](https://github.com/Pauperwave/app/commit/7ad5579))
+- **theme:** 🐛 skip the theme-toggle reveal animation on mobile ([b5f5b21](https://github.com/Pauperwave/app/commit/b5f5b21))
+- **nav:** 🐛 simplify the Calendario sidebar icon ([8031306](https://github.com/Pauperwave/app/commit/8031306))
+- **statistics:** 🐛 even out spacing and legend size on /statistics ([f39313e](https://github.com/Pauperwave/app/commit/f39313e))
+- **layout:** 🐛 hide the collapsed sidebar's scrollbar on short screens ([8e5e0d3](https://github.com/Pauperwave/app/commit/8e5e0d3))
+
+### Refactors
+
+- **ui:** ♻️ extract TourStartButton, collapse crowded navbar labels ([c46fc47](https://github.com/Pauperwave/app/commit/c46fc47))
+
+### Documentation
+
+- 📝 prune stale historical narration, refresh api.md/query-keys.md content ([60c7f33](https://github.com/Pauperwave/app/commit/60c7f33))
+- 📝 fix stale cross-references in the docs index ([bdabb44](https://github.com/Pauperwave/app/commit/bdabb44))
+- 📝 rewrite PROJECT_ANALYSIS.md from scratch against the live codebase ([4186722](https://github.com/Pauperwave/app/commit/4186722))
+- **wanted-cards:** 📝 drop dangling docs/TODO.md reference in FiltersBar ([7d84518](https://github.com/Pauperwave/app/commit/7d84518))
+
+### Chore
+
+- **claude:** 🔧 deny git push via .claude/settings.json ([217f9d7](https://github.com/Pauperwave/app/commit/217f9d7))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.1.8
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.1.7...v0.1.8)
