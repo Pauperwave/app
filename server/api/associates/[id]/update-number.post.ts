@@ -5,14 +5,21 @@
 // approval now (see approve.post.ts). This lets staff fix/assign it by hand
 // for the legacy rows that predate that mechanism (user request, 2026-08-27),
 // without threading a roster-only field through the shared application form.
+import { serverSupabaseServiceRole } from '#supabase/server'
+import type { Database } from '#shared/utils/types/database'
+
 interface UpdateAssociateNumberPayload {
   pauperwave_associate_number: string | null
 }
 
 export default defineEventHandler(async (event) => {
-  const {
-    user, id, body, supabase
-  } = await parseIdMutationRequest<UpdateAssociateNumberPayload>(event)
+  // Not parseIdMutationRequest (organizer-level) — same "Gestire
+  // l'anagrafica soci" (admin-only) reasoning as update.post.ts, found
+  // unenforced via audit, 2026-08-30.
+  const user = await requireAdminPermission(event)
+  const id = Number(getRouterParam(event, 'id'))
+  const body = await readBody<UpdateAssociateNumberPayload>(event)
+  const supabase = serverSupabaseServiceRole<Database>(event)
 
   const { data, error } = await supabase
     .from('pauperwave_associates')

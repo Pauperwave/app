@@ -1,14 +1,23 @@
 // server\api\transactions\[id]\update.post.ts
+import { serverSupabaseServiceRole } from '#supabase/server'
+import type { Database } from '#shared/utils/types/database'
 import type { NewTransactionPayload } from '#shared/types/transactions'
 
 export default defineEventHandler(async (event) => {
-  const {
-    user, id, body, supabase
-  } = await parseIdMutationRequest<NewTransactionPayload>(event)
+  // Not parseIdMutationRequest (shared by other domains at a fixed
+  // organizer tier) — this endpoint needs a conditional check, see below.
+  const user = await requireUser(event)
+  const id = Number(getRouterParam(event, 'id'))
+  const body = await readBody<NewTransactionPayload>(event)
   validatePayerInfo(body)
+  const supabase = serverSupabaseServiceRole<Database>(event)
 
   // Needed to reconcile pauperwave_associate_renewals below — the update
-  // itself doesn't tell us what the payment used to look like.
+  // itself doesn't tell us what the payment used to look like. Also
+  // decides the permission tier just below, so this read has to happen
+  // before that check (requireUser above already gates it to logged-in
+  // users only — no data is returned to the caller if the tier check
+  // rejects afterward).
   const { data: previousPayment, error: previousError } = await supabase
     .from('pauperwave_payments')
     .select('associate_uuid, payment_type, payment_date')
@@ -20,6 +29,16 @@ export default defineEventHandler(async (event) => {
       statusCode: 404,
       statusMessage: previousError?.message ?? 'Transaction not found'
     })
+  }
+
+  // Same admin-vs-organizer split as create.post.ts, checked against BOTH
+  // the old and new payment type — an organizer editing a payment INTO or
+  // OUT OF "Association Fee" is still touching membership-fee territory
+  // either way (found via audit, 2026-08-30).
+  if (previousPayment.payment_type === 'Association Fee' || body.paymentType === 'Association Fee') {
+    await requireAdminPermission(event)
+  } else {
+    await requireManagementPermission(event)
   }
 
   const { data: payment, error } = await supabase
