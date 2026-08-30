@@ -1,29 +1,25 @@
 # Pauperwave - Project Architecture Analysis
 
 **Generated:** April 2026
-**Updated:** August 2026
+**Rewritten:** 2026-08-30
 **Project:** Pauperwave - Pauper League Manager Dashboard
 **Type:** Nuxt 4 Full-Stack Web Application
 
-> **⚠️ Point-in-time snapshot, not a living doc.** Several claims below are superseded — check `docs/PROGRESS.md` (ADRs, the current architectural source of truth) before trusting anything here as current fact. Known-stale as of 2026-08-08:
-> - §2 "`@tanstack/vue-table` is not a project dependency" — **now used** (`wanted-cards` table view, added 2026-08-07).
-> - §4.1 "Pinia: Not used" — **now used** (Pinia + Pinia Colada, ADR-007, added 2026-08-08) for migrated domains; `useAssociates.ts`-style plain composables still exist for domains not yet migrated.
-> - §4.2 "Current Endpoints" table — `wanted-cards` now has 4 real BFF endpoints (`server/api/wanted-cards/*.post.ts`, ADR-007/008); see `docs/architecture/api.md`.
-> - §8.1 "There is no test runner configured" — `vitest`/`Playwright` **are configured** (mirroring `league`), just no test files written yet; see `docs/architecture/testing.md`.
-> - §11 doesn't mention `MagicTheGathering/league`'s imminent integration (deadline 2026-08-30) — see ADR-003 in `docs/PROGRESS.md`, the single most important piece of current context missing from this document.
+> **⚠️ Point-in-time snapshot, not a living doc.** This is a full rewrite of the original April 2026 audit — the codebase had drifted far enough (Pinia Colada adoption, the 4-tier role system, most mock endpoints migrated to real Supabase writes) that patching individual claims stopped being worthwhile. For anything ongoing, `docs/PROGRESS.md` (ADRs) and `docs/architecture/*.md` are the current source of truth; this document will drift again as the app keeps changing.
 
 ---
 
 ## 1. Executive Summary
 
-Pauperwave is a **Magic: The Gathering Pauper League Management Dashboard** built as a modern full-stack web application. It serves as a comprehensive platform for managing card game tournaments, leagues, member associations, and event transactions.
+Pauperwave is a **Magic: The Gathering Pauper League Management Dashboard** built as a modern full-stack web application. It serves as a comprehensive platform for managing card game tournaments, leagues, member associations, and event transactions — and, alongside the internal dashboard, a small set of public (unauthenticated) pages for standings and the tournament calendar.
 
 ### Core Value Proposition
-- **Tournament Management**: Create, schedule, and track MTG tournaments with round management
-- **League Operations**: Multi-season league tracking with leaderboards
-- **Member Association**: Complete associate lifecycle management (registration, approval, renewal)
-- **Financial Tracking**: Transaction management for fees, donations, and event payments
-- **Analytics**: Statistics and deck performance tracking
+- **Tournament Management**: Create, schedule, and track MTG tournaments with round management, pairings, and results, across multiple formats (not just Commander)
+- **League & Event Operations**: Tournaments optionally nest under a league or an event, tracked with progress/date-range summaries
+- **Member Association**: Complete associate lifecycle management (application, approval, renewal, membership status derived from a renewal ledger)
+- **Financial Tracking**: Transaction management for membership fees, event/tournament payments, and donations
+- **Role-based access**: A 4-tier role system (`player`/`organizer`/`admin`/`super_admin`) gates both routes and in-page actions, enforced server-side (RLS + BFF), not just in the UI
+- **Analytics**: Statistics, deck performance tracking, and public standings pages
 
 ---
 
@@ -32,103 +28,115 @@ Pauperwave is a **Magic: The Gathering Pauper League Management Dashboard** buil
 ### Frontend Framework
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| **Nuxt** | ^4.4.2 | Full-stack Vue framework with SSR/SSG |
+| **Nuxt** | ^4.5.2 | Full-stack Vue framework with SSR/SSG |
 | **Vue** | ^3.x | Reactive UI component library |
-| **TypeScript** | ^5.9.3 | Type-safe development |
+| **TypeScript** | ^6.0.3 | Type-safe development |
 
 ### UI & Styling
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| **Nuxt UI** | ^4.6.1 | Complete UI component library (Tailwind-based) |
-| **Tailwind CSS** | v4 (via @import) | Utility-first CSS framework |
-| **Lucide Icons** | ^1.2.101 | Modern icon library |
-| **Simple Icons** | ^1.2.76 | Brand/service icons |
+| **Nuxt UI** | ^4.10.0 | Complete UI component library (Tailwind-based) |
+| **Tailwind CSS** | ^4.3.3 (via @import) | Utility-first CSS framework |
+| **Lucide Icons** (`@iconify-json/lucide`) | ^1.2.123 | Primary icon set |
+| **Simple Icons** / **Circle Flags** | — | Brand/service icons and country flags |
 
 ### Backend & Database
 | Technology | Purpose |
 |------------|---------|
-| **Supabase** | PostgreSQL database + Auth (`@nuxtjs/supabase` ^2.0.0) |
-| **Nitro** | Nuxt's server engine (API routes) |
+| **Supabase** | PostgreSQL database + Auth (`@nuxtjs/supabase` 2.0.10) |
+| **Nitro** | Nuxt's server engine (API routes, `server/api/*`) |
 
-### Key Libraries
+### State & Data Fetching
 | Library | Purpose |
 |---------|---------|
+| **Pinia** / **@pinia/colada** | Reactive state / server-cache layer — the primary data-fetching pattern app-wide (see §4.1) |
+| **@pinia/colada-plugin-cache-persister** | Persists Colada query cache to `localStorage`, with a `PERSISTENCE_EXCLUDED_KEYS` allowlist-exclusion for PII |
+
+### Key Modules & Libraries
+| Library | Purpose |
+|---------|---------|
+| **@nuxtjs/i18n** | Single-locale (Italian) centralized string management via `i18n/locales/it.json` — not multi-language support |
 | **@vueuse/nuxt** | Vue composition utilities |
-| **@nuxt/image** | Optimized image handling |
+| **@nuxt/image** | Image optimization (`ipx` provider, custom `User-Agent` for the Scryfall CDN) |
+| **@nuxtjs/device** | Server+client device sniffing (`useDevice()`) |
+| **@nuxtjs/leaflet** | Map rendering (associates residence geocoding view) |
+| **@internationalized/date** | Date-picker primitives (Nuxt UI's `UCalendar`) |
 | **date-fns** | Date manipulation |
-| **zod** | Schema validation (v4) |
-| **maska** | Input masking |
-| **@unovis/vue** / **@unovis/ts** | Data visualization charts |
+| **@tanstack/vue-table** | Headless table logic behind every `UTable` |
+| **@vue-flow/*** | Node-graph rendering (bracket/pairing visualizations) |
+| **nuxt-echarts** / **echarts** / **@unovis/vue** | Data visualization charts |
+| **@dicebear/*** | Generated avatar fallbacks |
+| **motion-v** | Animation primitives |
+| **libphonenumber-js** | Phone number validation/formatting |
+| **valibot** | Schema validation |
+| **markdown-it** | Markdown rendering |
 
 ### Development Tools
 | Tool | Purpose |
 |------|---------|
 | **pnpm** | Package manager (v10.17.1) |
-| **ESLint** (`@nuxt/eslint`) | Code linting |
-| **vue-tsc** | Type checking |
+| **ESLint** (`@nuxt/eslint`) | Code linting (zero-warning policy) |
+| **vue-tsc** | Type checking (`pnpm typecheck`) |
+| **vitest** / **@playwright/test** | Unit and e2e test runners — configured, 3 unit test files exist today (`test/unit/composables/tournaments/*.test.ts`), no e2e tests written yet |
+| **fallow** | Static-analysis CLI (dead code, duplication, health/complexity, security) — several `pnpm fallow:*` scripts |
+| **changelogen** | Release/versioning (`pnpm release`) |
 | **Renovate** | Automated dependency updates |
-| **@faker-js/faker** | Mock data generation (dev dependency) |
-
-> Note: `@tanstack/vue-table` is **not** a project dependency (an earlier version of this document listed it in error).
 
 ---
 
 ## 3. Project Structure
 
 ```
-app/                              # Repo root (Nuxt srcDir is also `app/`)
-├── app/                          # Main application code
-│   ├── app.vue                   # Root component
-│   ├── app.config.ts             # UI theme configuration
-│   ├── assets/css/               # Global CSS (Tailwind entry)
-│   ├── layouts/                  # Page layouts
-│   │   ├── default.vue           # Dashboard layout (sidebar + navbar)
-│   │   └── auth.vue              # Auth pages layout (centered)
-│   ├── pages/                    # File-based routing (route groups in parens)
-│   │   ├── index.vue             # Dashboard home
-│   │   ├── login.vue             # Magic link authentication
-│   │   ├── (analytics)/statistics/       # Overview + decks
-│   │   ├── (community)/associates/       # Member management
-│   │   ├── (community)/transactions/     # Financial records
-│   │   ├── (competitions)/tournaments/   # Standalone tournaments
-│   │   ├── (competitions)/leagues/       # Leagues (nest tournaments)
-│   │   ├── (competitions)/events/        # Events (nest tournaments)
-│   │   ├── (settings)/settings/          # General/Members/Notifications/Security
-│   │   └── auth/callback.vue             # Supabase OTP callback
-│   ├── components/               # Vue components (feature-based, see §4.1)
-│   │   ├── home/                 # Dashboard widgets
-│   │   ├── associates/{list,single}/
-│   │   ├── tournaments/{list,single}/
-│   │   ├── leagues/{list,single}/
-│   │   ├── events/{list,single}/
-│   │   ├── rounds/single/        # Round-level components (results, pairings)
-│   │   ├── transactions/{list,single}/
-│   │   ├── settings/
-│   │   ├── inputs/               # Auto-imported without prefix (see nuxt.config.ts)
-│   │   ├── UserMenu.vue          # User dropdown
-│   │   ├── TeamsMenu.vue         # Team selector
-│   │   └── NotificationsSlideover.vue
-│   ├── composables/              # Shared logic
-│   │   ├── useDashboard.ts       # Dashboard state & shortcuts
-│   │   ├── useAssociates.ts      # Supabase data fetching
-│   │   └── useBreadcrumbs.ts     # Navigation breadcrumbs
-│   ├── middleware/               # Route middleware
-│   │   └── auth.global.ts        # Global auth protection
-│   ├── plugins/                  # Nuxt plugins
-│   ├── stores/                   # Reserved for future state stores (currently empty)
-│   ├── types/                    # TypeScript definitions (index.d.ts)
-│   └── utils/                    # Helper functions
-├── server/                       # Server-side code
-│   └── api/
-│       ├── tournaments.ts        # Mock tournament data (generated, not Supabase-backed)
-│       ├── leagues.ts            # Mock league data (generated, not Supabase-backed)
-│       ├── members.ts            # Team members data (mock)
-│       ├── notifications.ts      # Notification data (mock)
-│       └── check-associate.post.ts # Real Supabase query — email existence check for login
-├── shared/                       # Nuxt `shared/` dir (auto-imported isomorphic code); currently empty
-├── docs/                         # Documentation (this file)
-├── public/                       # Static assets
-└── .env                          # Environment variables
+app/                                # Repo root (Nuxt srcDir is also `app/`)
+├── app/                            # Main application code
+│   ├── app.vue                     # Root component
+│   ├── app.config.ts               # UI theme configuration (primary: indigo)
+│   ├── assets/css/                 # Global CSS (Tailwind entry)
+│   ├── layouts/                    # default.vue (dashboard shell), auth.vue,
+│   │                                # public.vue / public-wide.vue (unauthenticated pages)
+│   ├── pages/                      # File-based routing (route groups in parens)
+│   │   ├── index.vue                       # Dashboard home
+│   │   ├── login.vue, auth/callback.vue     # Magic-link auth flow
+│   │   ├── 403.vue                          # Permission-denied page
+│   │   ├── calendar/, finance/               # Ungrouped top-level pages
+│   │   ├── (analytics)/statistics/           # Overview, decks, commanders
+│   │   ├── (community)/associates/, associate/[slug].vue, transactions/, players/, wanted-cards/
+│   │   ├── (competitions)/tournaments/, leagues/, events/, locations/, rulesets/, standings/
+│   │   ├── (settings)/settings.vue + settings/{index,profile,members,permissions,domains,notifications}.vue, trash.vue
+│   │   └── (public)/calendario/, rankings/{cittadino,commander,pauper,premodern}/, tesseramento/  # unauthenticated
+│   ├── components/                 # Vue components (feature-based, see §4.1)
+│   │   ├── associates/, tournaments/, leagues/, events/, locations/, rulesets/,
+│   │   │   transactions/, players/, wanted-cards/, mtgFormats/, standings/,
+│   │   │   cittadino/, statistics/, finance/, tesseramento/, calendar/, rounds/, public/
+│   │   │   (each with {list,single} sub-folders where applicable)
+│   │   ├── inputs/, ui/            # pathPrefix:false — auto-import without a folder prefix
+│   │   ├── layout/                 # Sidebar/navbar chrome (UserMenu, TeamsMenu, ColorModeSwitch, ...)
+│   │   ├── badges/, magic/, notifications/, query/, tour/
+│   ├── composables/                # Shared logic, mirrors components/ domain split
+│   │   ├── <domain>/use<Domain>Query.ts + use<Domain>Mutations.ts  # Pinia Colada BFF pattern
+│   │   ├── useUserRole.ts          # Role resolution + "View as" preview
+│   │   └── ~25 cross-cutting composables (useCopyToClipboard, useSelection, ...)
+│   ├── middleware/                 # auth.global.ts, authorization.global.ts (see §4.2)
+│   ├── plugins/                    # user-role.client.ts (auth-state → role-cache invalidation)
+│   ├── stores/                     # Not used — no domain wraps its query in a Pinia store
+│   ├── types/index.d.ts            # Shared domain types (Associate, Tournament, Transaction, ...)
+│   └── utils/                      # Helper functions, incl. icons.ts (single source of truth for icon strings) and permissions.ts (ROLE_LEVEL/PERMISSION_LEVEL/can())
+├── server/                          # Server-side code
+│   ├── api/                        # ~14 domains on the BFF pattern (see docs/architecture/api.md)
+│   │   ├── associates/, events/, leagues/, locations/, mtg-formats/, players/,
+│   │   │   tournament-registrations/, tournaments/, transactions/, trash/, wanted-cards/,
+│   │   │   cardtrader/ (read-only proxy), settings/
+│   │   ├── check-associate.post.ts # Real, pre-login exception (no session yet)
+│   │   └── cittadino.ts, standings/[format].get.ts, notifications.ts  # Still mock — no backing table
+│   └── utils/                      # serverAuth.ts, idRequest.ts, auditColumns.ts (shared BFF prologues)
+├── shared/utils/types/database.ts  # Generated Supabase types (never hand-edited, `pnpm supabase:types`)
+├── i18n/locales/it.json            # Centralized Italian strings (single-locale @nuxtjs/i18n)
+├── supabase/migrations/            # 71 tracked migrations (docs/architecture/database.md)
+├── test/                           # vitest (3 unit tests) + Playwright config (no e2e tests yet)
+├── docs/                           # Documentation (this file)
+├── scripts/                        # One-off Node scripts (geocoding, price refresh, fallow reports)
+├── public/                         # Static assets
+└── .env                            # Environment variables
 ```
 
 ---
@@ -140,72 +148,72 @@ app/                              # Repo root (Nuxt srcDir is also `app/`)
 #### Component Organization (Feature-Based)
 ```
 components/
-├── [feature]/          # Domain-specific components (associates, tournaments, leagues, events, rounds, transactions)
-│   ├── list/           # List views with CRUD modals
-│   └── single/         # Detail views
-└── [shared]/           # Cross-cutting components (UserMenu, TeamsMenu, NotificationsSlideover, ...)
+├── [domain]/            # associates, tournaments, leagues, events, locations, rulesets,
+│                         # transactions, players, wanted-cards, mtgFormats, standings, ...
+│   ├── list/             # List views + CRUD modals
+│   └── single/            # Detail views
+├── inputs/, ui/           # pathPrefix:false — <TaxCodeInput>, <ConfirmModal>, not <Inputs.../<Ui...
+└── layout/, badges/, magic/, notifications/, query/, tour/, public/   # Cross-cutting, still domain-prefixed
 ```
 
-`app/components/inputs` is registered in `nuxt.config.ts` with `pathPrefix: false`, so its components auto-import **without** an `Inputs` prefix (e.g. `<TaxCodeInput>`, not `<InputsTaxCodeInput>`). All other component directories keep the default prefixed auto-import behavior.
-
-**Pattern Benefits:**
-- Clear domain boundaries
-- Co-located related functionality
-- Easy feature navigation
+`app/components/inputs` and `app/components/ui` are registered in `nuxt.config.ts` with `pathPrefix: false` (generic, already-unique-named primitives). Domain folders keep the default prefixed behavior on purpose — `AddModal.vue`/`GridView.vue` repeat by design across domains and need the prefix to stay distinguishable.
 
 #### State Management
-- **Pinia**: Not used. An `app/stores/` directory exists but is currently empty — reserved, not yet adopted.
-- **Composables**: Shared reactive state via `useAsyncData`-backed composables (see `useAssociates.ts` pattern below)
-- **URL State**: Route query parameters for filters/views
-- **Supabase**: Real-time database state
+- **Pinia**: Used, but never via a hand-written `defineStore` — every domain is a plain composable pair (`use<Domain>Query.ts`/`use<Domain>Mutations.ts`) calling Pinia Colada's `useQuery`/`useMutation` directly. `app/stores/` exists but is empty by convention, not by omission.
+- **Pinia Colada** (`@pinia/colada`): The primary server-state layer — shared cache across every mount of the same query key (unlike a hand-rolled `useAsyncData` composable, which refetches per mount). ~24 query keys registered today (`docs/architecture/query-keys.md`).
+- **URL State**: Route query parameters for filters/views.
+- **`useAsyncData`**: Only 2 domains remain on this older pattern (`cittadino`, `standings`) — both still backed by mock data, pending a real table.
 
-#### Key Composables
+#### The BFF (Backend-for-Frontend) Pattern
+Reads go client-side (Colada `useQuery`, anon Supabase key, RLS applies); writes go through a `server/api/<domain>/*.post.ts` endpoint using the service-role key, which bypasses RLS — **the endpoint itself is the authorization boundary**, not a DB policy. See `docs/architecture/api.md` for the full domain inventory and `server/utils/serverAuth.ts`'s four permission-check helpers (`requireUser`/`requireManagementPermission`/`requireAdminPermission`/`requireSuperAdminPermission`).
+
+#### Key Cross-Cutting Composables
 | Composable | Responsibility |
 |------------|--------------|
-| `useDashboard()` | Global UI state (notifications panel, keyboard shortcuts) |
-| `useAssociates()` | Supabase data fetching with caching |
+| `useUserRole()` | Resolves the current role (Colada query on `get_user_role` RPC), `can(permission)`, `isStaff`/`isAdmin`/etc., and the `super_admin`-only "View as" preview |
+| `useSelection()` | Shared multi-row selection state for tables/grids |
+| `useCopyToClipboard()` | Clipboard-write-with-toast helper |
+| `useRowContextMenu()` | Right-click context-menu wiring, shared across `use<Domain>RowActions.ts` files |
 | `useBreadcrumbs()` | Dynamic breadcrumb generation from routes |
-
-**Data-fetching composable pattern** (`useAssociates.ts`): wrap `useSupabaseClient()` calls in `useAsyncData`, always set `default: () => []` and `lazy: true`, and rethrow Supabase errors via `createError({ statusCode: 500, message })`. New domain composables should follow this shape rather than introducing a store.
 
 ### 4.2 Backend Architecture
 
 #### API Design (Nitro/Nuxt Server)
-```typescript
-// RESTful endpoints with type safety
+```
 server/api/
-├── [resource].ts           # GET collection
-└── [resource].post.ts      # POST create
+├── <domain>/create.post.ts               # Create
+├── <domain>/[id]/update.post.ts          # Update (often via shared parseIdMutationRequest)
+├── <domain>/[id]/delete.post.ts          # Soft delete
+└── <domain>/[id]/status.post.ts          # Status transition, where applicable
 ```
 
-**Current Endpoints:**
-| Endpoint | Method | Purpose | Data source |
-|----------|--------|---------|--------------|
-| `/api/tournaments` | GET | List all tournaments | **Mock** (generated in-memory, 30 fake rows) |
-| `/api/leagues` | GET | List all leagues | **Mock** (generated in-memory, 30 fake rows) |
-| `/api/members` | GET | Team member list | Mock |
-| `/api/notifications` | GET | User notifications | Mock |
-| `/api/check-associate` | POST | Verify email exists in `pauperwave_associates` | **Real** — queries Supabase via service-role client |
-
-Most list/detail views for tournaments, leagues, and associates in the UI actually read from Supabase directly through composables (e.g. `useAssociates`), not through these mock `server/api` endpoints — the mock endpoints appear to be leftover scaffolding from the original dashboard template and have not all been migrated to real queries yet.
+See `docs/architecture/api.md` for the complete, current endpoint inventory across all ~14 real domains plus the 3 still-mock routes (`cittadino`, `standings/[format]`, `notifications`).
 
 #### Authentication Flow
-1. **Magic Link Auth**: `login.vue` first calls `POST /api/check-associate` (real Supabase query on `pauperwave_associates.email_address`) to confirm the email belongs to a known associate, then calls `supabase.auth.signInWithOtp(...)`.
-2. **Global Middleware**: `app/middleware/auth.global.ts` redirects unauthenticated users to `/login`, and redirects already-authenticated users away from `/login` back to `/`. It maintains a hardcoded public-page allowlist: `/login`, `/auth/callback`, `/logout`.
-3. **Supabase module redirect options**: `nuxt.config.ts` also configures `@nuxtjs/supabase`'s own `redirectOptions` (`login: '/login'`, `callback: '/auth/callback'`, `exclude: ['/login', '/auth/callback', '/']`). This list must be kept in sync with the middleware's `publicPages` array whenever a new unauthenticated route is added — they currently overlap but are not derived from a single source of truth.
-4. **Role-Based Access**: Owner, Organizer, Judge, Writer roles (data model only — no role-gated UI/routes implemented yet).
+1. **Magic Link Auth**: `login.vue` first calls `POST /api/check-associate` (real Supabase query, service-role client via `NUXT_SUPABASE_SECRET_KEY`, runs pre-login so no session exists yet) to confirm the email belongs to a known associate, then calls `supabase.auth.signInWithOtp(...)`.
+2. **`app/middleware/auth.global.ts`**: redirects unauthenticated users to `/login`; maintains a hardcoded public-page allowlist that must stay in sync with `nuxt.config.ts`'s `@nuxtjs/supabase` `redirectOptions.exclude`.
+3. **`auth/callback.vue`**: completes the Supabase session exchange.
+4. **`app/middleware/authorization.global.ts`**: runs after `auth.global.ts` (alphabetical ordering), reads `to.meta.permission` from `definePageMeta({ permission })`, resolves the role via `useUserRole().refresh()`, and redirects to `/403` if denied — fails closed on an unresolved/errored role rather than letting the request through.
 
-### 4.3 Database Schema (Inferred)
+#### Role-Based Access (fully implemented, not conceptual)
+Four-tier hierarchy — `super_admin` ⊇ `admin` ⊇ `organizer` ⊇ `player`, each level a strict superset. Enforced at three layers: `definePageMeta({ permission })` + `authorization.global.ts` (route gating), `v-if="can(...)"` (in-page UI), and — the actual security boundary — Postgres RLS + the BFF's `requireXPermission` server checks. See `docs/architecture/roles.md` (implementation) and `docs/architecture/permissions.md` (the per-feature role matrix) for the full picture, including the `super_admin`-only carve-out in `assign_role` that stops an `admin` from ever touching the `super_admin` tier.
 
-**Primary Tables:**
+### 4.3 Database Schema
+
+31 tables in the `public` schema, 71 tracked migrations. Full reference: `docs/architecture/database.md` (migration-by-migration changelog, RLS policy table, Commander-vs-format-agnostic table inventory, the membership-status computation model).
+
+**Core domain tables:**
 | Table | Purpose |
 |-------|---------|
-| `pauperwave_associates` | Member profiles & consent |
-| `tournaments` | Event scheduling & metadata |
-| `leagues` | Season/series grouping |
-| `transactions` | Financial records |
+| `pauperwave_associates` (+ `pauperwave_associates_with_status` view) | Member profiles, consent, computed membership status |
+| `pauperwave_associate_renewals` | Append-only renewal ledger — source of truth for tesseramento status |
+| `players` | Gameplay identity, distinct from `pauperwave_associates` (membership) and `user_roles` (authorization) — see the three-axis model in `docs/architecture/database.md` |
+| `tournaments`, `leagues`, `events`, `locations`, `organizations` | Competition scheduling |
+| `pauperwave_payments` | Financial records (`payment_type`: `'Event'` vs `'Association Fee'` are treated as distinct authorization tiers) |
+| `pauperwave_wanted_cards` | "Carte Cercate" feature, deliberately format-agnostic |
+| `user_roles` | `app_role` (`player`/`organizer`/`admin`/`super_admin`), `UNIQUE(user_id)` |
 
-**Associate Model Key Fields** (from `app/types/index.d.ts`):
+**Associate model (from `app/types/index.d.ts`, generated `AssociateRow` + computed fields):**
 ```typescript
 interface Associate {
   // Identity
@@ -217,13 +225,11 @@ interface Associate {
   // Address
   residency_address, residency_city, residency_province, residency_cap
 
-  // Gaming
-  mtgo_nickname, mtga_nickname
-
   // Membership
-  request_status: 'accepted' | 'pending' | 'rejected'
-  associate_type: 'ordinario' | 'sostenitore'
-  association_date, payment_date
+  membership_request_status: 'approved' | 'pending' | 'rejected'
+  associate_type: 'regular' | 'sustaining' | null
+  membership_status: 'approved' | 'pending' | 'rejected' | 'active' | 'to_renew' | 'expired' | 'unpaid'
+  latest_renewal_year, latest_renewal_date, age  // computed at query time, never stored
 
   // Compliance
   consent_data, consent_social
@@ -231,100 +237,36 @@ interface Associate {
 }
 ```
 
-Other shared types in `app/types/index.d.ts`: `Tournament` (`status: 'scheduled' | 'canceled' | 'ongoing' | 'completed'`), `Transaction` (`status: 'paid' | 'failed' | 'refunded'`).
+Other shared types in `app/types/index.d.ts`: `Tournament` (`status: 'draft' | 'registration_open' | 'in_progress' | 'completed' | 'cancelled'`), `League`/`Event` (their own analogous status unions), `Transaction` (`payment_type`/`payment_method` unions, resolved `associate`/`tournament`/`event` joins).
 
 ---
 
 ## 5. Feature Analysis
 
 ### 5.1 Dashboard (`pages/index.vue`)
-**Purpose:** Administrative overview with quick actions
-
-**Components:**
-- `HomeStats` - KPI cards with trends
-- `HomeChart` - Revenue/participation visualization (Unovis)
-- `HomeSales` - Recent transaction list
-- `HomeDateRangePicker` - Date filtering
-- `HomePeriodSelect` - Aggregation period (daily/weekly/monthly)
-
-**Features:**
-- Quick action FAB (create transaction, associate, tournament, event, league)
-- Date range filtering
-- Period-based data aggregation
+KPI cards, revenue/participation chart, recent transactions, date-range/period filtering, and a quick-action trigger for creating a transaction/associate/tournament/event/league.
 
 ### 5.2 Tournament Management
-**Purpose:** MTG tournament lifecycle management
+**Pages:** `/tournaments` (standalone list, filterable), `/tournaments/[tournamentId]` (detail). A tournament's parent league/event is optional and polymorphic — its canonical URL stays flat (not nested under `/leagues/.../tournaments/...`), with a `?from=league:<uuid>` query param carrying the back-link context the route params alone can't express.
 
-**Pages:**
-- `/tournaments` - Standalone tournament list view with filters
-- `/tournaments/[tournamentId]` - Detail view
-- Tournaments also nest under leagues (`/leagues/[leagueId]/tournaments/[tournamentId]`) and events (`/events/[eventId]/tournaments/[tournamentId]`)
-
-**Components:**
-- `tournaments/list/Overview` - Tournament list table
-- `tournaments/single/Overview` - Tournament details
-- `tournaments/single/Participants` - Player management
-- `tournaments/single/RoundManager` - Round creation
-- `tournaments/single/RoundResults` - Results entry
-- `tournaments/single/Leaderboard` - Rankings
-- `tournaments/single/Awards` - Prize distribution
-- `tournaments/single/AcceptancePicker` - Registration approval
-- `rounds/single/*` - Round-level components used within a tournament's round management
-
-**Data Model:**
-```typescript
-interface Tournament {
-  id, uuid
-  name, description
-  start_date
-  round_count, round_duration
-  registered_players
-  format, organizer, location
-  entry_fee, prizes
-  companion_code
-  status: 'scheduled' | 'canceled' | 'ongoing' | 'completed'
-  league // Reference to parent league
-}
-```
+**Key components:** participant management, round manager/results entry, leaderboard, awards, registration acceptance picker — plus `rounds/single/*` for round-level pairing/results components shared across the flow.
 
 ### 5.3 League Management
-**Purpose:** Multi-tournament series organization
-
-**Pages:** `/leagues`, `/leagues/[leagueId]`, with nested tournaments under `/leagues/[leagueId]/tournaments/...`
-
-**Key Features:**
-- Season-based grouping (Spring, Summer, Autumn, Winter)
-- Tournament aggregation
-- Leaderboards across series
+`/leagues`, `/leagues/[leagueId]` — a league aggregates its own tournaments (count, completed count, distinct formats, date range all derived, not stored columns) and can have an assigned ruleset (Commander points-based scoring).
 
 ### 5.4 Event Management
-**Purpose:** Standalone events that, like leagues, can contain their own nested tournaments
-
-**Pages:** `/events`, `/events/[eventId]` (with `EventParticipants.vue`, `EventResults.vue` alongside `index.vue`), nested tournaments under `/events/[eventId]/tournaments/...`
+`/events`, `/events/[eventId]` — standalone events that, like leagues, can contain their own nested tournaments (matched by uuid, not name, to avoid misgrouping on a name collision).
 
 ### 5.5 Associate Management
-**Purpose:** Member lifecycle from application to renewal
+**Workflow:** application → `pending`/`approved`/`rejected` (`membership_request_status`) → renewal, tracked as an append-only ledger (`pauperwave_associate_renewals`) rather than a single mutable status field. `membership_status` is derived at query time by comparing the latest renewal year to the current calendar year, distinguishing `active`/`to_renew`/`expired`/`unpaid` (the last two split apart — a lapsed member vs. one who was approved but never paid at all).
 
-**Workflow States:**
-1. `pending` - Application pending approval
-2. `accepted` - Approved member
-3. `rejected` - Application rejected
+**Pages:** `/associates` (roster, `organizer`+), `/associates/requests` (pending renewal triage), `/associate/[slug]` (detail), `/tesseramento` (public self-service application flow, unauthenticated).
 
-**Features:**
-- Application form with consent tracking
-- Tax code validation (Italian format)
-- MTGO/MTGA nickname collection
-- GDPR compliance (consent flags)
+### 5.6 Carte Cercate (Wanted Cards)
+`/wanted-cards` — the original template domain for the BFF pattern. Players create/manage their own requests (owner-checked, not role-gated for the "mark as found/abandoned" action); staff manage everyone's. Supports a grid, a dense grid, and a table view.
 
-**Component:** `associates/list/AddModal.vue` (complex registration form)
-
-### 5.6 Transaction System
-**Purpose:** Financial tracking for membership and events
-
-**Transaction Types:**
-- `association-fee` - Annual membership dues
-- `event-fee` - Tournament entry fees
-- `donations` - Voluntary contributions
+### 5.7 Transaction System
+`/transactions`, `/finance` — two payment categories treated as distinct authorization tiers, not just display labels: `'Event'` (tournament/event fees, `organizer`+) and `'Association Fee'` (membership dues, `admin`+ — because recording one renews the payer's membership status).
 
 ---
 
@@ -335,53 +277,44 @@ interface Tournament {
 export default defineAppConfig({
   ui: {
     colors: {
-      primary: 'green',   // Brand color (Magic: The Gathering)
-      neutral: 'zinc'     // Gray scale
+      primary: 'indigo',
+      secondary: 'pink',
+      neutral: 'zinc',
+      success: 'lime',
+      info: 'cyan',
+      warning: 'yellow',
+      error: 'rose'
     }
+    // + several component-level :ui slot overrides (dashboardPanel, table,
+    //   button, pageCard, navigationMenu) — see the file's own comments for
+    //   the specific layout bugs each one fixes.
   }
 })
 ```
 
 ### 6.2 Layout Patterns
 
-**Dashboard Layout (`layouts/default.vue`):**
-```
-┌─────────────────────────────────────────┐
-│  [Sidebar]    │  [Navbar]               │
-│  - Teams      │  - Title               │
-│  - Search     │  - Actions             │
-│  - Nav Links  ├─────────────────────────┤
-│  - Footer     │  [Toolbar]              │
-│               │  - Breadcrumbs         │
-│               │  - Filters               │
-│               ├─────────────────────────┤
-│               │                         │
-│               │      [Content Area]      │
-│               │                         │
-│               │                         │
-└───────────────┴─────────────────────────┘
-```
+**Dashboard Layout (`layouts/default.vue`):** collapsible/resizable sidebar + navbar + toolbar shell, same structure as the original template but with app-specific sections. A second, distinct `public.vue`/`public-wide.vue` layout serves the unauthenticated pages (`/calendario`, `/rankings/*`, `/tesseramento`).
 
 **Key UI Features:**
-- Collapsible, resizable sidebar
-- Command palette search (Ctrl+K)
-- Keyboard shortcuts (`g-h` home, `g-a` associates, etc.)
-- Breadcrumb navigation with query param support
-- Toast notifications
-- Slide-over panels (notifications)
+- Collapsible, resizable sidebar with a "View as" role-preview banner when a `super_admin` is impersonating a lower role
+- Command palette search
+- Keyboard shortcuts (`g-x` navigation chords, see `docs/architecture/shortcuts.md`)
+- Guided tours (`app/components/tour/`) on several list pages
+- Toast notifications, slide-over panels, context menus with matching visible row-action equivalents
 
-### 6.3 Navigation Structure
+### 6.3 Navigation Structure (current, `useMainNavGroups.ts`)
 
-| Path | Label | Icon | Children |
-|------|-------|------|----------|
-| `/` | Pannello di controllo | house | - |
-| `/transactions` | Transazioni | wallet | All, Fees, Event Fees, Donations |
-| `/associates` | Associati | users | All, Waiting, Active, Expired |
-| `/tournaments` | Tornei | swords | - |
-| `/events` | Eventi | calendar | - |
-| `/leagues` | Leghe | trophy | - |
-| `/statistics` | Statistiche | chart-pie | Overview, Decks |
-| `/settings` | Impostazioni | settings | General, Members, Notifications, Security |
+| Section | Items | Gating |
+|---|---|---|
+| Dashboards | Pannello di controllo, Calendario, Statistiche (overview), Finanze | `view-finance` on Finanze |
+| Community | Transazioni, Richieste (rinnovo), Associati, Giocatori, Carte Cercate | `view-finance`/`view-associates`/`view-players` |
+| Competizioni | Tornei, Leghe, Eventi, Luoghi, Regolamenti | `manage-locations`/`manage-rulesets` |
+| Classifiche (dropdown) | Cittadino, Commander, Premodern, Pauper | — (public read) |
+| Commander | Mazzi (statistics/decks), Comandanti | — |
+| Impostazioni | Generale, Profilo, Membri, Permessi, Domini, Cestino | `access-settings`/`view-trash` |
+
+A section whose every item gets filtered out for the current role is dropped entirely, not left as a dangling header.
 
 ---
 
@@ -389,26 +322,24 @@ export default defineAppConfig({
 
 ### 7.1 Authentication
 - **Method**: Supabase Magic Link (OTP)
-- **Flow**: Email exists check (`/api/check-associate`, service-role client) → OTP sent (`signInWithOtp` from client) → callback exchange at `/auth/callback` → auto-login
-- **Session**: Cookie-based, `sameSite: 'lax'`, domain left empty to default to the current domain (`nuxt.config.ts` `supabase.cookieOptions`)
+- **Flow**: Email exists check (`/api/check-associate`) → OTP sent (`signInWithOtp`) → callback exchange at `/auth/callback` → session
+- **Session**: Cookie-based, `sameSite: 'lax'`
 
-### 7.2 Authorization
-- Global middleware (`auth.global.ts`) protects all routes except `/login`, `/auth/callback`, `/logout`
-- `@nuxtjs/supabase` module `redirectOptions.exclude` independently excludes `/login`, `/auth/callback`, `/` — keep both lists in sync (see §4.2 point 3)
-- Role-based UI elements (future implementation — `Owner/Organizer/Judge/Writer` roles exist conceptually but aren't yet enforced in routes/components)
+### 7.2 Authorization — fully implemented
+- 4-tier role hierarchy (`player`/`organizer`/`admin`/`super_admin`), one effective role per user, enforced at the database level (`user_roles` `UNIQUE(user_id)`)
+- `definePageMeta({ permission })` + `authorization.global.ts` for route gating; `v-if="can(...)"` for in-page UI; RLS + `server/utils/serverAuth.ts`'s `requireXPermission` helpers for the actual security boundary
+- `assign_role` RPC self-guards two exceptions no client-side check can express safely: an `admin` can never grant or touch the `super_admin` tier, and a `role_locked` flag protects the app owner's account unconditionally
+- See `docs/architecture/roles.md`/`permissions.md` for the full matrix and enforcement details, including a 2026-08-30 audit that found and closed two enforcement gaps (`'Association Fee'` payments and associate-record edits were both organizer-enforceable via direct API calls despite being documented as admin-only)
 
 ### 7.3 Data Compliance
-**GDPR Fields in Associate Model:**
-- `consent_data` - Data processing consent
-- `consent_social` - Social media usage consent
-- `has_read_statute` - Association statute acknowledgment
-- `has_acknowledged_surveillance_notice` - Privacy notice
+**GDPR fields in the Associate model:** `consent_data`, `consent_social`, `has_read_statute`, `has_acknowledged_surveillance_notice`.
 
 ### 7.4 Environment Security
 ```
-NUXT_PUBLIC_SUPABASE_URL  # Public
-NUXT_PUBLIC_SUPABASE_KEY  # Public (anon key)
-NUXT_SUPABASE_SECRET_KEY  # Server-only (secret) — used in server/api/check-associate.post.ts
+NUXT_PUBLIC_SUPABASE_URL   # Public
+NUXT_PUBLIC_SUPABASE_KEY   # Public (anon key)
+NUXT_SUPABASE_SECRET_KEY   # Server-only — service-role key, used by every BFF write endpoint
+CARDTRADER_API_TOKEN       # Server-only — long-lived JWT, treated as a secret
 ```
 
 ---
@@ -417,50 +348,57 @@ NUXT_SUPABASE_SECRET_KEY  # Server-only (secret) — used in server/api/check-as
 
 ### 8.1 Available Scripts
 ```bash
-pnpm dev        # Development server (http://localhost:3000)
-pnpm build      # Production build
-pnpm preview    # Preview production build
-pnpm lint       # ESLint check
-pnpm typecheck  # nuxt typecheck (vue-tsc)
+pnpm dev              # Development server (http://localhost:3000)
+pnpm build            # Production build
+pnpm preview           # Preview production build
+pnpm lint              # ESLint check
+pnpm typecheck         # nuxt typecheck (vue-tsc)
+pnpm check:paths       # Verify path-header comments on every source file
+pnpm test              # vitest run
+pnpm test:e2e          # playwright test
+pnpm supabase:types    # Regenerate shared/utils/types/database.ts
+pnpm fallow:*          # Static analysis (health, dupes, dead-code, security)
+pnpm release           # changelogen --release
 ```
 
-There is no test runner configured in this repo (no Vitest/Playwright installed as of this update).
+Test runners are configured (vitest + Playwright), with 3 unit test files written so far and no e2e suite yet — see `test/README.md`/`test/e2e/README.md`.
 
 ### 8.2 Code Quality
-- **ESLint**: `@nuxt/eslint` flat config (`eslint.config.mjs`), extends the Nuxt-generated config with stylistic rules: 1tbs brace style, no dangling commas, `vue/max-attributes-per-line` (3 single-line / 1 multi-line), `vue/no-multiple-template-root` disabled
-- **TypeScript**: project references split across `.nuxt/tsconfig.{app,server,shared,node}.json`, generated by `nuxt prepare`/`nuxt typecheck`
-- **Auto-imports**: components and composables auto-imported; `components/inputs` registered without its directory prefix
+- **ESLint**: `@nuxt/eslint` flat config, zero-warning policy (lint/typecheck must both be clean after every change)
+- **Path-header convention**: every source file under `app/`, `server/`, `shared/`, `test/`, `scripts/` starts with a comment stating its own path, checked by `scripts/check-file-paths.mjs`
+- **Icon centralization**: every icon string literal (including single-use ones) goes through `app/utils/icons.ts`'s `ICONS` constant, not inlined
+- **`fallow`**: static-analysis CLI tracking duplication/complexity/dead-code/security findings, with `.fallowrc.json` overrides for reviewed-and-accepted findings
 
 ### 8.3 Dependency Management
-- **Renovate**: Automated dependency updates via GitHub App
-- **pnpm**: Workspace-aware package manager (`pnpm-workspace.yaml`), pinned `unimport@4.1.1` resolution
+- **Renovate**: automated dependency updates
+- **pnpm**: workspace-aware, pinned `unimport@4.1.1` resolution
 
 ---
 
 ## 9. Performance Considerations
 
-### 9.1 Optimizations Implemented
+### 9.1 Notable Optimizations
 | Technique | Location | Benefit |
 |-----------|----------|---------|
-| `shallowRef` | Date ranges | Prevents deep reactivity overhead |
-| `lazy: true` | `useAsyncData` calls | Deferred data fetching |
-| Vite `optimizeDeps.include: ['zod']` | `nuxt.config.ts` | Pre-bundles zod for faster dev-server startup |
-| Client/Server components | `HomeChart` | No SSR for charts |
+| Pinia Colada shared cache | Every `use<Domain>Query.ts` | One fetch shared across every mount of the same key, not per-component |
+| `fetchAllRows` pagination helper | `app/utils/query/fetchAllRows.ts` | Works around PostgREST's silent `db.max_rows` (1000) truncation on unranged `.select()` calls — applied to `transactions`/`associates`/`associate-renewals`, still owed to a few more domains |
+| `@nuxt/image`/`ipx` | Card/tournament/event images | Resizes/converts Scryfall's fixed 488×680 source to the actual display size, with a custom `User-Agent` (Scryfall's CDN rejects the default one) |
+| Vite `optimizeDeps.include` | `nuxt.config.ts` | Pre-bundles CJS/heavy deps (`fast-levenshtein`, `@vue-flow/*`, `valibot`, `zod`) for faster dev-server startup |
+| `@nuxt/icon` client-bundle scan | `nuxt.config.ts` | Statically inlines every icon actually referenced (via `ICONS`), instead of a runtime fetch per icon |
 
-### 9.2 Image Handling
-- `@nuxt/image` for optimized images
-- Favicon configured in `app.vue`
+### 9.2 Known Gaps
+- Several `use<Domain>Query.ts` composables still use a bare `.select()` rather than `fetchAllRows` — silent truncation risk once a table crosses `db.max_rows`, not yet audited domain-by-domain (`docs/BACKLOG.md`)
+- A handful of Colada query keys carrying personal data (`associate-renewals`, `player-login-history`, others — see `docs/architecture/query-keys.md`) aren't yet excluded from `localStorage` persistence
 
 ---
 
 ## 10. Internationalization
 
-**Current State:** Italian-focused
-- Route labels in Italian ("Pannello di controllo", "Associati")
-- Date formats: European (dd/mm/yyyy implied)
-- Language: `lang="it"` in HTML attrs
+**Current State:** Single-locale, Italian-only by design (`@nuxtjs/i18n`, `strategy: 'no_prefix'`, no `/it/` URL prefix) — adopted for centralized string management, not multi-language support. UI copy and route labels are in Italian; the codebase itself (identifiers, comments) is in English.
 
-**Currency:** Euro (€) implied by context
+- Strings centralized in `i18n/locales/it.json`
+- Date formats: European (dd/mm/yyyy)
+- Currency: Euro (€)
 
 ---
 
@@ -470,37 +408,34 @@ There is no test runner configured in this repo (no Vitest/Playwright installed 
 | Service | Purpose |
 |---------|---------|
 | **Supabase** | Database + Auth |
-| **GitHub** | Repository hosting |
-| **Telegram** | Support link (t.me/emanuelenardi) |
+| **GitHub** | Repository hosting, Issues + Projects for backlog tracking |
+| **Scryfall** | Card data/images for Carte Cercate and card-art pickers |
+| **CardTrader** | Price lookups (cached locally, `pauperwave_cardtrader_blueprints`/`expansions`) |
+| **Nominatim/Photon** | Associate residence geocoding (map view) |
 
 ### 11.2 Magic: The Gathering Integrations
-- **Companion App**: `companion_code` field for Wizards' app
-- **MTGO**: Magic Online nickname tracking
-- **MTGA**: Magic Arena nickname tracking
+- **Companion App**: `companion_code` field on tournaments/events, still live
+- **MTGO/MTGA nickname tracking**: removed (`mtgo_nickname`/`mtga_nickname` dropped, migration `20260819110000` — confirmed unused across the entire membership base before dropping)
 
 ---
 
 ## 12. Future Recommendations
 
 ### 12.1 Technical Debt
-1. **Mock Data → Real API**: `tournaments.ts`, `leagues.ts`, `members.ts`, `notifications.ts` still use generated mock data instead of Supabase queries
-2. **Single source of truth for public routes**: the middleware allowlist and the Supabase module's `redirectOptions.exclude` are maintained separately and can drift
-3. **Error Handling**: Add error boundaries
-4. **Loading States**: Standardize skeleton screens
-5. **Testing**: Add Vitest + Playwright tests (none exist currently)
+1. **Remaining mock endpoints**: `cittadino`, `standings/[format]`, `notifications` still return static data — no `tournament_standings`-equivalent table exists yet
+2. **`fetchAllRows` coverage**: extend the pagination fix to every remaining `use<Domain>Query.ts` still on a bare `.select()`
+3. **Persistence exclusions**: close the gap between which Colada keys carry PII and which are actually excluded from `localStorage` persistence
+4. **Testing**: unit-test coverage is still thin (3 files); no e2e suite written yet despite Playwright being configured
 
-### 12.2 Feature Enhancements
-1. **Real-time Updates**: Supabase realtime for live leaderboards
-2. **Mobile App**: Capacitor/PWA wrapper
-3. **Payment Integration**: Stripe for online payments
-4. **Deck Registration**: OCR for decklist upload
-5. **Pairings Algorithm**: Swiss tournament pairing
-6. **Role enforcement**: Owner/Organizer/Judge/Writer roles exist in the data model but aren't yet gating routes or UI
+### 12.2 Feature Enhancements (from `docs/architecture/roles.md`'s wider-roadmap note, not yet scoped)
+1. Tournament pre-registration UI expansion
+2. Commander deck submission by players
+3. Payment/membership-renewal history for players
+4. Event participation stats
 
 ### 12.3 Performance
-1. **Pagination**: Server-side for large tables
-2. **Virtual Scrolling**: For large participant lists
-3. **Caching**: Redis for tournament data
+1. Server-side pagination for large tables (beyond the `fetchAllRows` client-side fix)
+2. Virtual scrolling for large participant lists
 
 ---
 
@@ -509,10 +444,10 @@ There is no test runner configured in this repo (no Vitest/Playwright installed 
 ### Configuration
 | File | Purpose |
 |------|---------|
-| `nuxt.config.ts` | Framework configuration |
+| `nuxt.config.ts` | Framework/module configuration |
 | `app/app.config.ts` | UI theme settings |
 | `eslint.config.mjs` | Linting rules |
-| `tsconfig.json` | TypeScript project references |
+| `colada.options.ts` | Pinia Colada cache persistence config |
 
 ### Entry Points
 | File | Purpose |
@@ -520,37 +455,32 @@ There is no test runner configured in this repo (no Vitest/Playwright installed 
 | `app/app.vue` | Root Vue component |
 | `app/layouts/default.vue` | Dashboard shell |
 | `app/pages/index.vue` | Home dashboard |
-| `app/middleware/auth.global.ts` | Auth protection |
+| `app/middleware/auth.global.ts` / `authorization.global.ts` | Auth + role-based route protection |
 
-### Critical Components
+### Critical Reference Docs
 | File | Purpose |
 |------|---------|
-| `app/components/associates/list/AddModal.vue` | Complex registration form |
-| `app/composables/useAssociates.ts` | Data fetching pattern |
-| `app/pages/login.vue` | Authentication flow |
-| `server/api/check-associate.post.ts` | Real Supabase-backed endpoint (email existence check) |
+| `CLAUDE.md` (root) | Stack, routing, component org, auth flow, data-fetching conventions — the primary agent-facing reference |
+| `docs/architecture/roles.md` | Role system implementation |
+| `docs/architecture/permissions.md` | Per-feature role matrix |
+| `docs/architecture/api.md` | `server/api/*` domain inventory |
+| `docs/architecture/database.md` | Schema, migrations, RLS |
+| `docs/architecture/query-keys.md` | Colada query key inventory |
+| `app/composables/wantedCards/useWantedCards{Query,Mutations}.ts` | The template pair for a new BFF-pattern domain |
 
 ---
 
 ## 14. Conclusion
 
-Pauperwave demonstrates a **well-architected modern Vue application** with:
-- Clean feature-based organization
-- Type-safe full-stack development
-- Production-ready UI/UX with Nuxt UI
-- Secure authentication flow
-- GDPR-compliant data model
-- Scalable component patterns
+Pauperwave is a **mature, actively-developed Nuxt application** with a real, enforced authorization model and a consistent data-fetching pattern applied across most of its domains — a substantially different codebase from the initial April 2026 audit.
 
 **Strengths:**
-- Modern stack (Nuxt 4, Vue 3, TypeScript)
-- Comprehensive feature set for MTG league management
-- Good separation of concerns
-- Thoughtful UX with keyboard shortcuts and quick actions
+- Modern stack (Nuxt 4, Vue 3, TypeScript), consistently applied Pinia Colada + BFF pattern
+- Real 4-tier role system enforced at route, UI, and — the actual boundary — RLS/server level
+- Comprehensive feature set for MTG league management across multiple formats
+- Active documentation discipline (`docs/architecture/*.md`, ADRs in `docs/PROGRESS.md`)
 
 **Areas for Growth:**
-- Test coverage (none currently)
-- Real API implementation for tournaments/leagues/members/notifications (currently mocked)
-- Documentation/comments in code
-- Error handling sophistication
-- Consolidating the two separate "public route" lists (middleware + Supabase module config)
+- Test coverage (3 unit tests, no e2e yet)
+- The last few mock endpoints (cittadino/standings/notifications) awaiting real backing tables
+- A handful of known, tracked gaps (pagination coverage, persistence exclusions) rather than unknown ones
