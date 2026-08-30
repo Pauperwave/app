@@ -39,5 +39,9 @@ const timelineItems = computed(() => [...events].reverse().map(event => ({
   <p v-if="!events.length" class="text-sm text-muted py-4 text-center">
     {{ $t('associate.detail.membershipHistory.empty') }}
   </p>
-  <UTimeline v-else :items="timelineItems" size="sm" />
+  <UTimeline
+    v-else
+    :items="timelineItems"
+    size="sm"
+  />
 </template>

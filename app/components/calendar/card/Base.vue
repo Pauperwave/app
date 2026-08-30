@@ -79,7 +79,11 @@ const isPast = computed(() => status === 'completed')
           height="80"
           class="size-full object-cover"
         />
-        <ImageOffPlaceholder v-else class="size-full" icon-class="size-6" />
+        <ImageOffPlaceholder
+          v-else
+          class="size-full"
+          icon-class="size-6"
+        />
       </div>
 
       <div class="flex-1 min-w-0">
@@ -88,7 +92,11 @@ const isPast = computed(() => status === 'completed')
             {{ name }}
           </h3>
           <div class="shrink-0" @click.stop>
-            <CalendarButtonShareButton :name="name" :start-date="startDate" :show-label="false" />
+            <CalendarButtonShareButton
+              :name="name"
+              :start-date="startDate"
+              :show-label="false"
+            />
           </div>
         </div>
 

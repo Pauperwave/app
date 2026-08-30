@@ -15,6 +15,10 @@ const items = computed<DropdownMenuItem[][]>(() => [
 
 <template>
   <UDropdownMenu :items="items">
-    <UButton :icon="ICONS.add" size="md" class="rounded-lg" />
+    <UButton
+      :icon="ICONS.add"
+      size="md"
+      class="rounded-lg"
+    />
   </UDropdownMenu>
 </template>

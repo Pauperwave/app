@@ -130,7 +130,11 @@ function timeLabel(current: Event) {
 
       <template #footer>
         <div v-if="!loading && event" class="flex items-center justify-between">
-          <UBadge color="neutral" variant="subtle" :icon="ICONS.battle">
+          <UBadge
+            color="neutral"
+            variant="subtle"
+            :icon="ICONS.battle"
+          >
             {{ t('event.tournamentsLabel', event.tournamentCount) }}
           </UBadge>
         </div>

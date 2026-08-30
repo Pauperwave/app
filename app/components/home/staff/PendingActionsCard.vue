@@ -31,7 +31,11 @@ defineProps<{ actions: PendingAction[] }>()
           <UIcon :name="action.icon" class="size-4 text-muted shrink-0" />
           {{ action.label }}
         </span>
-        <UBadge :color="action.count > 0 ? 'warning' : 'neutral'" variant="subtle" class="shrink-0">
+        <UBadge
+          :color="action.count > 0 ? 'warning' : 'neutral'"
+          variant="subtle"
+          class="shrink-0"
+        >
           {{ action.count }}
         </UBadge>
       </NuxtLink>

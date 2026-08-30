@@ -317,7 +317,11 @@ async function onSubmit() {
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <AssociatesFieldsPersonalInfoFields :state="state" />
             <UFormField :label="$t('associate.addModal.fields.email')" name="email_address_display">
-              <UInput :model-value="state.email_address" disabled class="w-full" />
+              <UInput
+                :model-value="state.email_address"
+                disabled
+                class="w-full"
+              />
             </UFormField>
           </div>
         </template>

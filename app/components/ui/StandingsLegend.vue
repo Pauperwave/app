@@ -18,7 +18,11 @@ defineProps<{ items: LegendItem[] }>()
 
 <template>
   <div class="flex items-center gap-4 text-xs text-muted">
-    <span v-for="item in items" :key="item.labelKey" class="flex items-center gap-1.5">
+    <span
+      v-for="item in items"
+      :key="item.labelKey"
+      class="flex items-center gap-1.5"
+    >
       <span :class="item.dimmed ? 'text-dimmed' : 'font-medium text-highlighted'">
         {{ item.sample }}
       </span>

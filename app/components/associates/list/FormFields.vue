@@ -40,8 +40,16 @@ const associateTypeOptions = useAssociateTypeOptions()
 
       <AssociatesListFormSection :title="$t('associate.addModal.sections.personalInfo')">
         <AssociatesFieldsPersonalInfoFields :state="state" />
-        <UFormField :label="$t('associate.addModal.fields.email')" name="email_address" required>
-          <UInput v-model="state.email_address" autocomplete="email" class="w-full" />
+        <UFormField
+          :label="$t('associate.addModal.fields.email')"
+          name="email_address"
+          required
+        >
+          <UInput
+            v-model="state.email_address"
+            autocomplete="email"
+            class="w-full"
+          />
         </UFormField>
       </AssociatesListFormSection>
 

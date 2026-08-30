@@ -47,7 +47,11 @@ function monthPart(startDate: string) {
         height="128"
         class="w-full h-32 object-cover"
       />
-      <ImageOffPlaceholder v-else class="w-full h-32" icon-class="size-8" />
+      <ImageOffPlaceholder
+        v-else
+        class="w-full h-32"
+        icon-class="size-8"
+      />
     </template>
     <USkeleton v-else class="w-full h-32 rounded-none" />
 
@@ -58,7 +62,11 @@ function monthPart(startDate: string) {
       <span class="text-base font-bold leading-none">{{ dayPart(event.startDate) }}</span>
       <span class="text-[10px] uppercase text-muted">{{ monthPart(event.startDate) }}</span>
     </div>
-    <USkeleton v-else class="absolute top-2 left-2 w-12 h-12 rounded-lg" :ui="{ base: 'bg-black' }" />
+    <USkeleton
+      v-else
+      class="absolute top-2 left-2 w-12 h-12 rounded-lg"
+      :ui="{ base: 'bg-black' }"
+    />
 
     <UCheckbox
       v-if="!loading && event && selection"

@@ -84,7 +84,11 @@ watch(country, () => reformat(nationalNumber.value))
       </template>
 
       <template #item-trailing="{ item }">
-        <UBadge color="neutral" variant="subtle" size="sm">
+        <UBadge
+          color="neutral"
+          variant="subtle"
+          size="sm"
+        >
           +{{ item.callingCode }}
         </UBadge>
       </template>

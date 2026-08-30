@@ -66,7 +66,11 @@ const template = (d: TournamentsPerYearByFormatPoint) => [
         class="h-96"
         :width="width"
       >
-        <VisStackedBar :x="x" :y="y" :color="colors" />
+        <VisStackedBar
+          :x="x"
+          :y="y"
+          :color="colors"
+        />
 
         <VisAxis
           type="x"

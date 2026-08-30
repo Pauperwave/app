@@ -29,7 +29,11 @@ const { t } = useI18n()
       />
     </UDropdownMenu>
   </UTooltip>
-  <UDropdownMenu v-else :items="items" :content="{ align: 'end' }">
+  <UDropdownMenu
+    v-else
+    :items="items"
+    :content="{ align: 'end' }"
+  >
     <UButton
       color="neutral"
       variant="outline"

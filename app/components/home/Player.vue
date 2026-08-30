@@ -72,7 +72,11 @@ const upcomingTournamentsList = computed(() => upcomingTournaments(tournaments.v
     </UPageCard>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-      <UPageCard id="tour-home-payments" :title="t('home.player.payments.title')" variant="subtle">
+      <UPageCard
+        id="tour-home-payments"
+        :title="t('home.player.payments.title')"
+        variant="subtle"
+      >
         <div v-if="!currentAssociate" class="text-sm text-muted py-4 text-center">
           {{ t('home.player.membership.noAssociate') }}
         </div>
@@ -104,7 +108,11 @@ const upcomingTournamentsList = computed(() => upcomingTournaments(tournaments.v
         </template>
       </UPageCard>
 
-      <UPageCard id="tour-home-upcoming" :title="t('home.player.upcoming.title')" variant="subtle">
+      <UPageCard
+        id="tour-home-upcoming"
+        :title="t('home.player.upcoming.title')"
+        variant="subtle"
+      >
         <div v-if="!upcomingTournamentsList.length" class="text-sm text-muted py-4 text-center">
           {{ t('home.player.upcoming.empty') }}
         </div>

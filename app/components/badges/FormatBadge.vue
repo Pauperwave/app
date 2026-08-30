@@ -32,7 +32,11 @@ const colorStyle = computed(() => {
 </script>
 
 <template>
-  <UBadge variant="subtle" :icon="icon" :style="colorStyle">
+  <UBadge
+    variant="subtle"
+    :icon="icon"
+    :style="colorStyle"
+  >
     {{ format }}
   </UBadge>
 </template>

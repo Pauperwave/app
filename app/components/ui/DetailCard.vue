@@ -26,7 +26,11 @@ const { title, fields, valueClass = '' } = defineProps<{
     </template>
     <dl class="space-y-2 text-sm">
       <slot name="before" />
-      <div v-for="field in fields" :key="field.label" class="flex justify-between items-center gap-4">
+      <div
+        v-for="field in fields"
+        :key="field.label"
+        class="flex justify-between items-center gap-4"
+      >
         <dt class="flex items-center gap-1.5 text-muted">
           <UIcon :name="field.icon" class="size-4 shrink-0" /> {{ field.label }}
         </dt>

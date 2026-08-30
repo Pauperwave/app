@@ -122,7 +122,11 @@ const foilUnavailableHint = computed(() =>
 
 <template>
   <!-- eslint-disable vue/no-mutating-props -- see the top-of-file comment -->
-  <UFormField :label="$t('wantedCard.addModal.fields.printing')" name="printingId" required>
+  <UFormField
+    :label="$t('wantedCard.addModal.fields.printing')"
+    name="printingId"
+    required
+  >
     <USelectMenu
       v-model="state.printingId"
       :items="printingItems"
@@ -149,7 +153,11 @@ const foilUnavailableHint = computed(() =>
 
   <div class="grid grid-cols-3 gap-2">
     <UFormField :label="$t('wantedCard.addModal.fields.copies')" name="copies">
-      <UInputNumber v-model="state.copies" :min="1" class="w-full" />
+      <UInputNumber
+        v-model="state.copies"
+        :min="1"
+        class="w-full"
+      />
     </UFormField>
 
     <UFormField :label="$t('wantedCard.addModal.fields.language')" name="language">
@@ -175,7 +183,11 @@ const foilUnavailableHint = computed(() =>
     </UFormField>
   </div>
 
-  <UFormField :label="$t('wantedCard.addModal.fields.player')" name="player" required>
+  <UFormField
+    :label="$t('wantedCard.addModal.fields.player')"
+    name="player"
+    required
+  >
     <USelectMenu
       v-model="state.player"
       :items="playerOptions"

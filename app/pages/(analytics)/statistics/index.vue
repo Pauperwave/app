@@ -85,7 +85,11 @@ function refresh() {
         <template #trailing>
           <USeparator orientation="vertical" class="h-4" />
 
-          <QueryRefreshControl :is-loading="loading" :status="status" @refresh="refresh" />
+          <QueryRefreshControl
+            :is-loading="loading"
+            :status="status"
+            @refresh="refresh"
+          />
         </template>
 
         <template #right>

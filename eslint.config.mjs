@@ -54,11 +54,14 @@ export default withNuxt(
         ignorePattern: 'class\\s*=\\s*"'
       }],
 
-      // Vue template lines with more than 3 bound attrs/directives wrap one
-      // per line — keeps wide component tags scannable instead of one long
-      // attribute soup.
+      // Vue template lines with 3+ bound attrs/directives wrap one per line —
+      // keeps wide component tags scannable instead of one long attribute
+      // soup. Lowered from max:3 to max:2 (user request, 2026-08-30): even 3
+      // packed attributes read worse than one-per-line, confirmed after
+      // weighing max:1 (too aggressive — a 2-attr `v-for`/`:key` pair reads
+      // fine compact) and settling on 2 as the cutoff.
       'vue/max-attributes-per-line': ['error', {
-        singleline: { max: 3 },
+        singleline: { max: 2 },
         multiline: { max: 1 }
       }],
 

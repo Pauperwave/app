@@ -75,7 +75,11 @@ const { state } = defineProps<{ state: ResidencyState }>()
         class="w-full"
       />
     </UFormField>
-    <UFormField :label="$t('associate.addModal.fields.residencyCap')" name="residency_cap" required>
+    <UFormField
+      :label="$t('associate.addModal.fields.residencyCap')"
+      name="residency_cap"
+      required
+    >
       <UInput
         v-model="state.residency_cap"
         autocomplete="postal-code"

@@ -80,7 +80,11 @@ const notificationActions: DropdownMenuItem[] = [{
               :key="notification.id"
               class="group px-3 py-4 rounded-md hover:bg-elevated/50 flex items-start gap-5"
             >
-              <UChip color="error" :show="!!notification.unread" inset>
+              <UChip
+                color="error"
+                :show="!!notification.unread"
+                inset
+              >
                 <UAvatar
                   v-bind="notification.sender.avatar"
                   :alt="notification.sender.name"

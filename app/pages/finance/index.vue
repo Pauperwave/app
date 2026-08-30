@@ -117,7 +117,11 @@ const tour = useFinanceTour()
           />
         </UPageGrid>
 
-        <FinanceCategorySummaryTable :rows="byCategory" :loading="loading" :pending="pending" />
+        <FinanceCategorySummaryTable
+          :rows="byCategory"
+          :loading="loading"
+          :pending="pending"
+        />
 
         <FinanceMonthlyOverview
           id="tour-finance-table-month"
@@ -165,7 +169,11 @@ const tour = useFinanceTour()
         </div>
 
         <div id="tour-finance-costs">
-          <FinanceMethodCostTable :rows="byMethodCost" :loading="loading" :pending="pending" />
+          <FinanceMethodCostTable
+            :rows="byMethodCost"
+            :loading="loading"
+            :pending="pending"
+          />
         </div>
       </div>
     </template>

@@ -190,7 +190,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         class="space-y-2"
         @submit="onSubmit"
       >
-        <UFormField :label="$t('wantedCard.addModal.fields.name')" name="name" required>
+        <UFormField
+          :label="$t('wantedCard.addModal.fields.name')"
+          name="name"
+          required
+        >
           <USelectMenu
             v-model="state.name"
             v-model:search-term="query"

@@ -40,7 +40,11 @@ const formattedStartDate = computed(() => {
           height="80"
           class="w-full h-full object-cover"
         />
-        <ImageOffPlaceholder v-else class="w-full h-full" icon-class="size-6" />
+        <ImageOffPlaceholder
+          v-else
+          class="w-full h-full"
+          icon-class="size-6"
+        />
       </div>
 
       <div class="flex-1 min-w-0">

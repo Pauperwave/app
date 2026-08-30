@@ -8,7 +8,11 @@ defineProps<{ tournaments: Tournament[] }>()
 </script>
 
 <template>
-  <UPageCard id="tour-home-upcoming" :title="$t('home.staff.upcoming.title')" variant="subtle">
+  <UPageCard
+    id="tour-home-upcoming"
+    :title="$t('home.staff.upcoming.title')"
+    variant="subtle"
+  >
     <div v-if="!tournaments.length" class="text-sm text-muted py-4 text-center">
       {{ $t('home.staff.upcoming.empty') }}
     </div>

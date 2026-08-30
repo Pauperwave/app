@@ -62,7 +62,11 @@ const emit = defineEmits<{ toggleColor: [value: WantedCardColorFilter], toggleGr
       @click="emit('toggleColor', option.value)"
     >
       <span v-if="option.value === 'all'">{{ option.label }}</span>
-      <MagicManaCost v-else :mana-cost="option.manaCost" :aria-label="option.label" />
+      <MagicManaCost
+        v-else
+        :mana-cost="option.manaCost"
+        :aria-label="option.label"
+      />
     </UButton>
   </UFieldGroup>
 

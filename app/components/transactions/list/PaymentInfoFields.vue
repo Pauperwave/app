@@ -34,7 +34,11 @@ const {
       name="payment_datetime"
       required
     >
-      <UDateTimeInput v-model="state.payment_datetime" disabled class="w-full" />
+      <UDateTimeInput
+        v-model="state.payment_datetime"
+        disabled
+        class="w-full"
+      />
     </UFormField>
 
     <UFormField

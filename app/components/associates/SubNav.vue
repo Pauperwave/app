@@ -27,5 +27,9 @@ const links = computed<NavigationMenuItem[][]>(() => [[{
 </script>
 
 <template>
-  <UNavigationMenu :items="links" highlight class="-mx-1 flex-1" />
+  <UNavigationMenu
+    :items="links"
+    highlight
+    class="-mx-1 flex-1"
+  />
 </template>

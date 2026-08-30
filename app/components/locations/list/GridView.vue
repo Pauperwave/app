@@ -17,8 +17,15 @@ const {
 </script>
 
 <template>
-  <div v-if="loading" class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(280px,90vw),1fr))]">
-    <LocationsListCard v-for="n in loadingCount" :key="n" loading />
+  <div
+    v-if="loading"
+    class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(280px,90vw),1fr))]"
+  >
+    <LocationsListCard
+      v-for="n in loadingCount"
+      :key="n"
+      loading
+    />
   </div>
 
   <EmptyState
@@ -26,7 +33,10 @@ const {
     :message="$t('location.grid.empty')"
   />
 
-  <div v-else class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(280px,90vw),1fr))]">
+  <div
+    v-else
+    class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(280px,90vw),1fr))]"
+  >
     <LocationsListCard
       v-for="location in locations"
       :key="location.id"

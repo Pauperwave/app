@@ -21,6 +21,10 @@ useSeoMeta({
       </p>
     </div>
 
-    <UButton :label="t('forbidden.backHome')" color="neutral" to="/" />
+    <UButton
+      :label="t('forbidden.backHome')"
+      color="neutral"
+      to="/"
+    />
   </div>
 </template>

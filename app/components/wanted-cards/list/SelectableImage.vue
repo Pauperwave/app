@@ -54,6 +54,10 @@ const lastClickShiftKey = defineModel<boolean>('lastClickShiftKey', { required: 
     loading="lazy"
   />
   <div v-else class="w-full aspect-5/7 bg-elevated flex items-center justify-center">
-    <UIcon name="i-lucide-image-off" :class="dense ? 'size-5' : 'size-8'" class="text-muted" />
+    <UIcon
+      name="i-lucide-image-off"
+      :class="dense ? 'size-5' : 'size-8'"
+      class="text-muted"
+    />
   </div>
 </template>

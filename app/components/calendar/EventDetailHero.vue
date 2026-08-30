@@ -23,7 +23,11 @@ defineProps<{ event: Event }>()
       height="384"
       class="w-full h-full object-cover"
     />
-    <ImageOffPlaceholder v-else class="w-full h-full" icon-class="size-12" />
+    <ImageOffPlaceholder
+      v-else
+      class="w-full h-full"
+      icon-class="size-12"
+    />
 
     <div class="absolute inset-0 bg-linear-to-b from-transparent to-default" />
 

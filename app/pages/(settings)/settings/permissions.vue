@@ -366,7 +366,11 @@ const columns: TableColumn<PermissionRow>[] = [
   >
     <template #header>
       <div class="flex items-center gap-4 text-sm text-muted">
-        <span v-for="item in legend" :key="item.access" class="flex items-center gap-1.5">
+        <span
+          v-for="item in legend"
+          :key="item.access"
+          class="flex items-center gap-1.5"
+        >
           <UIcon :name="ACCESS_META[item.access].icon" :class="['size-4', ACCESS_META[item.access].color]" />
           {{ item.label }}
         </span>

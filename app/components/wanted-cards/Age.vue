@@ -19,7 +19,11 @@ const TEXT_CLASS: Record<WantedCardAgeColor, string> = {
 </script>
 
 <template>
-  <span v-if="info" class="flex items-center gap-1.5 text-xs shrink-0" :class="TEXT_CLASS[info.color]">
+  <span
+    v-if="info"
+    class="flex items-center gap-1.5 text-xs shrink-0"
+    :class="TEXT_CLASS[info.color]"
+  >
     <span class="size-1.5 rounded-full shrink-0" :class="DOT_CLASS[info.color]" />
     {{ info.label }}
   </span>

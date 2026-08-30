@@ -77,7 +77,11 @@ async function onSubmit() {
         :label="$t('associate.columns.pauperwaveAssociateNumber')"
         :error="isDuplicate ? $t('associate.numberModal.duplicateError') : undefined"
       >
-        <UInput v-model="number" placeholder="PW-0000" class="w-full" />
+        <UInput
+          v-model="number"
+          placeholder="PW-0000"
+          class="w-full"
+        />
       </UFormField>
 
       <div class="flex justify-end gap-2 mt-4">

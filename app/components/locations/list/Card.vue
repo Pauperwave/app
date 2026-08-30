@@ -117,12 +117,20 @@ const mapsLink = computed(() => location
           <!-- Width matches "Via Roma, 12, 38068 Rovereto TN". -->
           <USkeleton v-else class="h-4 w-44 mt-1" />
 
-          <LocationsListSocialLinks v-if="!loading && location" :location="location" @click.stop />
+          <LocationsListSocialLinks
+            v-if="!loading && location"
+            :location="location"
+            @click.stop
+          />
           <!-- Optional on a real card (0-5 icons, none shown at all if unset)
              — same guess tradeoff as the footer's phone badge below: a
              typical-looking row rather than a pixel-exact one. -->
           <div v-else class="flex items-center gap-3 mt-2">
-            <USkeleton v-for="n in 3" :key="n" class="size-4 rounded-full" />
+            <USkeleton
+              v-for="n in 3"
+              :key="n"
+              class="size-4 rounded-full"
+            />
           </div>
         </div>
       </div>
@@ -148,7 +156,11 @@ const mapsLink = computed(() => location
             :class="{ 'opacity-60 saturate-50': location.temporarilyClosed }"
             @click.stop
           >
-            <UBadge color="neutral" variant="subtle" :icon="ICONS.mapPin">
+            <UBadge
+              color="neutral"
+              variant="subtle"
+              :icon="ICONS.mapPin"
+            >
               {{ t('location.card.openInMaps') }}
             </UBadge>
           </a>

@@ -206,7 +206,11 @@ const gridSections = computed<GridSection[]>(() => {
         <template #trailing>
           <USeparator orientation="vertical" class="h-4" />
 
-          <QueryRefreshControl :is-loading="isLoading" :status="status" @refresh="refetch" />
+          <QueryRefreshControl
+            :is-loading="isLoading"
+            :status="status"
+            @refresh="refetch"
+          />
         </template>
 
         <template #right>
@@ -259,7 +263,11 @@ const gridSections = computed<GridSection[]>(() => {
                the whole filters area (see useWantedCardsTour) — the class
                mirrors UDashboardToolbar's ui.left (gap-4 flex-wrap) so the
                layout stays identical, just nested one level deeper. -->
-          <div v-else id="tour-wanted-cards-filters" class="flex items-center gap-4 flex-wrap">
+          <div
+            v-else
+            id="tour-wanted-cards-filters"
+            class="flex items-center gap-4 flex-wrap"
+          >
             <WantedCardsListFiltersBar
               v-model:status-filter="statusFilter"
               v-model:only-mine="onlyMine"
@@ -287,7 +295,11 @@ const gridSections = computed<GridSection[]>(() => {
           <!-- Same reason as the #left wrapper: a dedicated id to anchor the
                tour to the whole view area, with classes mirroring ui.right
                (gap-4 flex-wrap). -->
-          <div v-else id="tour-wanted-cards-view-controls" class="flex items-center gap-4 flex-wrap">
+          <div
+            v-else
+            id="tour-wanted-cards-view-controls"
+            class="flex items-center gap-4 flex-wrap"
+          >
             <WantedCardsListViewControls
               v-model:grid-sort-field="gridSortField"
               v-model:grid-sort-desc="gridSortDesc"

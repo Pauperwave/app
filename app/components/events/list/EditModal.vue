@@ -164,7 +164,11 @@ async function onSubmit(formEvent: FormSubmitEvent<Schema>) {
         <div class="grid grid-cols-2 gap-2">
           <!-- eslint-disable-next-line -->
           <!-- fallow-ignore-next-line code-duplication -- see AddModal.vue -->
-          <UFormField :label="$t('event.addModal.fields.organizer')" name="organizerUuid" required>
+          <UFormField
+            :label="$t('event.addModal.fields.organizer')"
+            name="organizerUuid"
+            required
+          >
             <USelectMenu
               v-model="state.organizerUuid"
               class="w-full"

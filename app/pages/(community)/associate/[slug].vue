@@ -266,7 +266,11 @@ const { columns: associateTransactionsColumns } = useAssociateTransactionsTableC
             :fields="[]"
           >
             <template #before>
-              <div v-for="field in consensiFields" :key="field.label" class="flex justify-between items-center gap-4">
+              <div
+                v-for="field in consensiFields"
+                :key="field.label"
+                class="flex justify-between items-center gap-4"
+              >
                 <dt class="flex items-center gap-1.5 text-muted">
                   <UIcon :name="field.icon" class="size-4 shrink-0" /> {{ field.label }}
                 </dt>
