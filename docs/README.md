@@ -12,10 +12,10 @@ Master index of all project documentation.
 | `architecture/database.md` | Supabase schema, migrations, RLS policies, membership-status model, Commander-vs-format-agnostic table inventory, `created_by`/`updated_by` audit columns | Database ops |
 | `architecture/api.md` | `server/api/*` inventory: BFF pattern (reads client-side, writes through `server/api/*` with `serverSupabaseServiceRole`), which routes are real vs. mock | API reference |
 | `architecture/testing.md` | Current state (runner configured, zero tests written), what a first test pass should prioritize | Test reference |
-| `architecture/roles.md` | What's live for `user_roles`/`app_role` vs. what the backup docs only proposed, the three-layer client role-awareness pattern (resolution → route/nav gating → in-page adaptation), and why none of it is real security on its own | Roles/permissions reference |
+| `architecture/roles.md` | The role hierarchy (`player`/`organizer`/`admin`/`super_admin`) and the three-layer client role-awareness pattern (resolution → route/nav gating → in-page adaptation) as actually implemented, and why none of it is real security on its own | Roles/permissions reference |
 | `architecture/permissions.md` | Human-readable 🟢🟡🔴 role × feature matrix — the reference table for "who can do what," companion to `roles.md`'s implementation | Roles/permissions reference |
 | `architecture/shortcuts.md` | Full keyboard-shortcut map (`g-x` navigation chords + global toggles), why there are two `defineShortcuts` call sites, and how to add a new one | UI reference |
-| `architecture/query-keys.md` | Inventory of every `useAsyncData` and Pinia Colada `useQuery` key, naming convention, and which are excluded from `localStorage` persistence for PII | Data-fetching reference |
+| `architecture/query-keys.md` | Inventory of every Pinia Colada `useQuery` key (plus the two remaining mock-backed `useAsyncData` ones), naming convention, and which are excluded from `localStorage` persistence for PII | Data-fetching reference |
 | `architecture/actions.md` | Per-domain inventory of row context-menu / inline row / bulk-selection actions — what exists, where, and deliberate gaps vs. real ones | UI reference |
 | `PROJECT_ANALYSIS.md` | Initial codebase audit (stack, routing, auth flow, data-fetching conventions) — **dated snapshot, several claims superseded by `PROGRESS.md`'s ADRs, see its own header note** | Onboarding (with caveats) |
 | `PROGRESS.md` | Backward-looking curated changelog + architecture decisions (ADRs) — the most current architectural source of truth | Architecture history |
@@ -35,9 +35,8 @@ Master index of all project documentation.
 
 ## Reading order by task
 
-- **Working on the associates/tesseramento flow?** `architecture/database.md` (membership status model) → `PROJECT_ANALYSIS.md` (auth/data-fetching conventions, but check `PROGRESS.md` for anything it predates)
-- **Building/migrating a data-fetching domain?** `architecture/api.md` (BFF pattern) + `architecture/query-keys.md` (key inventory/naming) — `useWantedCards{Query,Mutations}.ts` and `useAssociates{Query,Mutations}.ts` are the concrete Pinia Colada templates, not the remaining `useAsyncData` composables (`useEventsQuery.ts`, `useLeaguesQuery.ts`, etc.)
+- **Working on the associates/tesseramento flow?** `architecture/database.md` (membership status model) → root `CLAUDE.md` (auth flow, data-fetching conventions)
+- **Building/migrating a data-fetching domain?** `architecture/api.md` (BFF pattern) + `architecture/query-keys.md` (key inventory/naming) — `useWantedCards{Query,Mutations}.ts` is the original Pinia Colada template; `cittadino`/`standings` are the only domains still on `useAsyncData`, pending a real backing table
 - **Planning new work?** [GitHub Issues + the "App" project](https://github.com/orgs/Pauperwave/projects/2) before starting — both committed and scratch items live there now
-- **Touching the DB schema?** `architecture/database.md` — RLS policies and known issues first
-- **Building anything role/permission-aware (admin vs. player)?** `architecture/roles.md` first — what's actually live vs. only designed, and why client-side checks alone aren't security — then `architecture/permissions.md` for the per-feature matrix
-- **Wondering "why does this look like it's for a different project's timeline"?** `PROGRESS.md`'s ADR-003 — integration with `MagicTheGathering/league` is imminent (2026-08-30 deadline), not a someday goal
+- **Touching the DB schema?** `architecture/database.md` — RLS policies first
+- **Building anything role/permission-aware (admin vs. player)?** `architecture/roles.md` first — the role hierarchy and why client-side checks alone aren't security — then `architecture/permissions.md` for the per-feature matrix
