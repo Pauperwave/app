@@ -1082,6 +1082,8 @@
       "nextMonth": "Mese successivo",
       "mockDataNotice": "Dati di esempio: questo calendario non è ancora collegato al database reale.",
       "contact": "Referente",
+      "taxCode": "C.F.",
+      "taxCodeCopiedTitle": "Codice fiscale copiato",
       "sponsoredBy": "Con il supporto di",
       "register": "Iscriviti",
       "registerComingSoonTitle": "Funzionalità in arrivo",

@@ -1,9 +1,10 @@
 <!-- app\components\calendar\Footer.vue -->
 <!--
-  Sponsor, site link, and contact for /calendario (see PublicCalendarPage.vue),
-  one row: sponsor on the left, a flex-1 spacer, site/phone buttons on the
-  right (CalendarContactButton.vue) — layout per
-  the user's request 2026-08-14.
+  Sponsor, tax code, and contact for /calendario (see PublicCalendarPage.vue),
+  one row: sponsor on the left, a flex-1 spacer, tax-code/phone buttons on
+  the right (TaxCodeButton.vue, ContactButton.vue) — layout per the user's
+  request 2026-08-14, tax code added 2026-08-30 for 5x1000 tax-return
+  designation purposes.
 -->
 <script lang="ts" setup></script>
 
@@ -28,6 +29,7 @@
     <div class="flex-1" />
 
     <div class="flex items-center gap-2">
+      <CalendarButtonTaxCodeButton />
       <CalendarButtonContactButton />
     </div>
   </div>
