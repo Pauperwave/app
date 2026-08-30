@@ -36,7 +36,7 @@ Raggruppata per dominio, riordinata 2026-08-23 (era ordinata per solo permessi c
 | Gestire i propri mazzi Commander | 🟢 | 🟢 | 🟢 | 🟢 |
 | Gestire i mazzi Commander di tutti i giocatori | 🔴 | 🔴 | 🟢 | 🟢 |
 | **Eliminare** un mazzo Commander altrui | 🔴 | 🔴 | 🟢 | 🟢 |
-| Visualizzare il proprio stato di tesseramento/dati anagrafici | 🟡 (solo il proprio) | 🟢 (tutti i soci) | 🟢 (tutti i soci) | 🟢 (tutti i soci) |
+| Visualizzare il proprio stato di tesseramento/dati anagrafici | 🟡 (solo il proprio) | 🟡 (solo il proprio) | 🟢 (tutti i soci) | 🟢 (tutti i soci) |
 | Gestire l'anagrafica soci (`/associates`) | 🔴 | 🔴 | 🟢 | 🟢 |
 | Gestire le quote associative | 🔴 | 🔴 | 🟢 | 🟢 |
 | Inviare email di ricevuta (quote eventi/tornei, quote associative) | 🔴 | 🔴 | 🟢 | 🟢 |
@@ -64,7 +64,7 @@ Non gated (visibili a tutti, incluso `player`): dashboard, calendario, `/tournam
 
 ## Note
 
-**Corretto 2026-08-17: "Visualizzare... dati anagrafici" è 🟢 per `organizer`, non 🟡.** Errore nella revisione 2026-08-10 — un organizer deve poter vedere l'anagrafica di *tutti* i soci (non solo la propria), distinto dalla riga "Gestire l'anagrafica soci (/associates)" qui sotto, che resta `admin`-only: `organizer` vede tutti i soci ma non modifica/elimina i loro dati. Corretto mentre si decideva il gate di navigazione per `/associates` — la vecchia riga avrebbe reso quella pagina erroneamente inaccessibile a un organizer.
+**"Visualizzare il proprio stato di tesseramento" (questa riga) è diversa da "vedere l'elenco soci."** Questa riga resta 🟡 (solo il proprio) anche per `organizer` — vedere *tutti* i soci è una capacità a parte (`view-associates`, tabella "Navigazione" sotto, `organizer`+), distinta anche da "Gestire l'anagrafica soci (/associates)" qui sotto (modificare/eliminare, `admin`-only). Tre gradini separati: vedere il proprio stato, vedere l'elenco completo, modificarlo.
 
 **"Carte Cercate" oggi *non* rispetta ancora questa matrice — deciso 2026-08-10, da correggere nel codice.** `server/api/wanted-cards/create.post.ts` usa solo `requireUser` (corretto, chiunque loggato crea la propria richiesta); ma `[id]/status.post.ts` usa oggi `requireManagementPermission`, quindi anche segnare una **propria** richiesta come "trovata"/"abbandonata" richiede un ruolo di gestione — comportamento sbagliato, confermato dall'utente. Un giocatore deve avere pieno controllo sullo stato delle proprie richieste; l'unica cosa che deve restare riservata alla gestione è l'**eliminazione** della richiesta (`[id]/delete.post.ts`, invariato). Il fix è in `server/api/wanted-cards/[id]/status.post.ts`: accettare anche il creatore della richiesta (owner-check sul `player_associate_uuid`/creator, come `player_own_registration` nei backup docs), non solo `requireManagementPermission` — vedi `docs/BACKLOG.md` P2. `[id]/update.post.ts` e `[id]/refresh-prices.post.ts` non sono stati toccati da questa decisione, restano `requireManagementPermission`.
 
