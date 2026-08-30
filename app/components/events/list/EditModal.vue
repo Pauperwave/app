@@ -10,9 +10,9 @@ import type { EventFormState } from '~/composables/events/useEventFormFields'
 const open = defineModel<boolean>({ default: false })
 const { event: editingEvent } = defineProps<{ event: Event | null }>()
 
-const toast = useToast()
 const { t } = useI18n()
 const { updateEvent } = useEventsMutations()
+const { submitting, submitWithToast } = useSubmitWithToast()
 
 // Same shape as AddModal.vue's initial state — same reasoning as
 // TournamentsListEditModal.vue's own state literal.
@@ -64,8 +64,6 @@ const {
 
 type Schema = v.InferOutput<typeof schema>
 
-const submitting = ref(false)
-
 async function onSubmit(formEvent: FormSubmitEvent<Schema>) {
   if (!editingEvent) return
 
@@ -85,23 +83,14 @@ async function onSubmit(formEvent: FormSubmitEvent<Schema>) {
     imageUrl: image.value ?? null
   }
 
-  submitting.value = true
-  try {
-    await updateEvent.mutateAsync({ id: editingEvent.id, edits: payload })
-    toast.add({
-      title: t('event.editModal.successToastTitle'),
-      color: 'success'
-    })
-    open.value = false
-  } catch (err) {
-    toast.add({
-      title: t('event.editModal.errorToastTitle'),
-      description: toErrorMessage(err),
-      color: 'error'
-    })
-  } finally {
-    submitting.value = false
-  }
+  await submitWithToast(
+    () => updateEvent.mutateAsync({ id: editingEvent.id, edits: payload }),
+    {
+      successTitle: t('event.editModal.successToastTitle'),
+      errorTitle: t('event.editModal.errorToastTitle'),
+      onSuccess: () => { open.value = false }
+    }
+  )
 }
 </script>
 

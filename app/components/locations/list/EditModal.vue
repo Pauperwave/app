@@ -8,10 +8,10 @@ import type { LocationFormState } from '~/composables/locations/useLocationFormF
 const open = defineModel<boolean>({ default: false })
 const { location } = defineProps<{ location: Location | null }>()
 
-const toast = useToast()
 const { t } = useI18n()
 const { updateLocation } = useLocationsMutations()
 const { schema } = useLocationFormFields()
+const { submitting, submitWithToast } = useSubmitWithToast()
 
 type Schema = v.InferOutput<typeof schema>
 
@@ -59,30 +59,19 @@ watch([open, () => location], ([isOpen, current]) => {
   state.temporarilyClosed = current.temporarilyClosed
 }, { immediate: true })
 
-const submitting = ref(false)
-
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   if (!location) return
 
   const payload = buildLocationPayload(event.data, openingHours.value, image.value)
 
-  submitting.value = true
-  try {
-    await updateLocation.mutateAsync({ id: location.id, edits: payload })
-    toast.add({
-      title: t('location.editModal.successToastTitle'),
-      color: 'success'
-    })
-    open.value = false
-  } catch (err) {
-    toast.add({
-      title: t('location.editModal.errorToastTitle'),
-      description: toErrorMessage(err),
-      color: 'error'
-    })
-  } finally {
-    submitting.value = false
-  }
+  await submitWithToast(
+    () => updateLocation.mutateAsync({ id: location.id, edits: payload }),
+    {
+      successTitle: t('location.editModal.successToastTitle'),
+      errorTitle: t('location.editModal.errorToastTitle'),
+      onSuccess: () => { open.value = false }
+    }
+  )
 }
 </script>
 

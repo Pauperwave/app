@@ -11,9 +11,9 @@ import type { TransactionFormState } from '~/composables/transactions/useTransac
 const open = defineModel<boolean>({ default: false })
 const { transaction } = defineProps<{ transaction: Transaction | null }>()
 
-const toast = useToast()
 const { t } = useI18n()
 const { updateTransaction } = useTransactionsMutations()
+const { submitting, submitWithToast } = useSubmitWithToast()
 
 // Same reasoning as AddModal.vue's state init: payment_amount/received_by
 // must be present (even as undefined) or valibot's v.object() raises its own
@@ -104,52 +104,39 @@ const traceability = computed(() => {
   }
 })
 
-const submitting = ref(false)
-
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   if (!transaction) return
 
-  submitting.value = true
-  try {
-    await updateTransaction.mutateAsync({
-      id: transaction.id,
-      edits: {
-        associateUuid: event.data.payer_is_associate ? (event.data.associate_uuid ?? null) : null,
-        payerName: event.data.payer_is_associate ? null : (event.data.payer_name ?? null),
-        payerSurname: event.data.payer_is_associate ? null : (event.data.payer_surname ?? null),
-        payerEmail: event.data.payer_is_associate ? null : (event.data.payer_email ?? null),
-        payerTaxCode: event.data.payer_is_associate ? null : (event.data.payer_tax_code ?? null),
-        paymentDate: event.data.payment_datetime.toDate(getLocalTimeZone()).toISOString(),
-        paymentAmount: event.data.payment_amount,
-        paymentMethod: event.data.payment_method,
-        paymentType: event.data.payment_type,
-        receivedBy: event.data.received_by,
-        tournamentUuid: event.data.tournament_uuid ?? null,
-        eventUuid: event.data.event_uuid ?? null,
-        // No longer editable via this form (tournamentUuid/eventUuid above
-        // are the real link now) — passed through unchanged rather than
-        // cleared, so an edit doesn't wipe historical-import provenance text
-        // still needed elsewhere (e.g. gettoni-encoded rows,
-        // transactionGettoni.ts).
-        eventName: transaction.event_name,
-        notes: event.data.notes ?? ''
-      }
-    })
-
-    toast.add({
-      title: t('transaction.editModal.successToastTitle'),
-      color: 'success'
-    })
-    open.value = false
-  } catch (err) {
-    toast.add({
-      title: t('transaction.editModal.errorToastTitle'),
-      description: toErrorMessage(err),
-      color: 'error'
-    })
-  } finally {
-    submitting.value = false
+  const edits = {
+    associateUuid: event.data.payer_is_associate ? (event.data.associate_uuid ?? null) : null,
+    payerName: event.data.payer_is_associate ? null : (event.data.payer_name ?? null),
+    payerSurname: event.data.payer_is_associate ? null : (event.data.payer_surname ?? null),
+    payerEmail: event.data.payer_is_associate ? null : (event.data.payer_email ?? null),
+    payerTaxCode: event.data.payer_is_associate ? null : (event.data.payer_tax_code ?? null),
+    paymentDate: event.data.payment_datetime.toDate(getLocalTimeZone()).toISOString(),
+    paymentAmount: event.data.payment_amount,
+    paymentMethod: event.data.payment_method,
+    paymentType: event.data.payment_type,
+    receivedBy: event.data.received_by,
+    tournamentUuid: event.data.tournament_uuid ?? null,
+    eventUuid: event.data.event_uuid ?? null,
+    // No longer editable via this form (tournamentUuid/eventUuid above
+    // are the real link now) — passed through unchanged rather than
+    // cleared, so an edit doesn't wipe historical-import provenance text
+    // still needed elsewhere (e.g. gettoni-encoded rows,
+    // transactionGettoni.ts).
+    eventName: transaction.event_name,
+    notes: event.data.notes ?? ''
   }
+
+  await submitWithToast(
+    () => updateTransaction.mutateAsync({ id: transaction.id, edits }),
+    {
+      successTitle: t('transaction.editModal.successToastTitle'),
+      errorTitle: t('transaction.editModal.errorToastTitle'),
+      onSuccess: () => { open.value = false }
+    }
+  )
 }
 </script>
 

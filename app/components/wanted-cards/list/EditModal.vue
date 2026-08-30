@@ -15,10 +15,10 @@ const { card } = defineProps<{
   card: WantedCard | null
 }>()
 
-const toast = useToast()
 const { t } = useI18n()
 
 const { updateWantedCard } = useWantedCardsMutations()
+const { submitting, submitWithToast } = useSubmitWithToast()
 
 // Same printing-search pattern as AddModal.vue, but the name is fixed (not
 // searchable) — fetchPrintings runs straight on the existing card's name as soon as
@@ -69,51 +69,23 @@ watch(printings, (list) => {
   state.printingId = list.find(p => p.scryfallUrl.split('?')[0] === currentBaseUrl)?.id
 })
 
-const submitting = ref(false)
-
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   if (!card) return
 
   const printing = printings.value.find(p => p.id === event.data.printingId)
   if (!printing) return
 
-  submitting.value = true
-  try {
-    await updateWantedCard.mutateAsync({
-      id: card.id,
-      edits: {
-        playerAssociateUuid: event.data.player,
-        scryfallUrl: printing.scryfallUrl,
-        scryfallId: printing.id,
-        setCode: printing.set,
-        manaCost: printing.manaCost,
-        colorIdentity: printing.colorIdentity,
-        typeLine: printing.typeLine || null,
-        cmc: printing.cmc,
-        imageUrl: printing.imageUrl,
-        cardmarketPrice: printing.price,
-        copies: event.data.copies,
-        language: event.data.language === 'any' ? null : event.data.language,
-        treatment: event.data.foil ? ['foil'] : [],
-        notes: event.data.notes || null
-      }
-    })
+  const edits = wantedCardEditsFromPrinting(printing, event.data)
 
-    toast.add({
-      title: t('wantedCard.editModal.successToastTitle'),
-      description: t('wantedCard.editModal.successToastDescription', { name: card.cardName }),
-      color: 'success'
-    })
-    open.value = false
-  } catch (err) {
-    toast.add({
-      title: t('wantedCard.editModal.errorToastTitle'),
-      description: toErrorMessage(err),
-      color: 'error'
-    })
-  } finally {
-    submitting.value = false
-  }
+  await submitWithToast(
+    () => updateWantedCard.mutateAsync({ id: card.id, edits }),
+    {
+      successTitle: t('wantedCard.editModal.successToastTitle'),
+      successDescription: t('wantedCard.editModal.successToastDescription', { name: card.cardName }),
+      errorTitle: t('wantedCard.editModal.errorToastTitle'),
+      onSuccess: () => { open.value = false }
+    }
+  )
 }
 </script>
 
