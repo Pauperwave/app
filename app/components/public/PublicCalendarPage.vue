@@ -202,33 +202,35 @@ const filteredCards = computed(() => selectedCity.value === 'all'
     </div>
 
     <div class="flex items-center justify-center gap-3">
-      <UButton
-        :icon="isCompact ? ICONS.calendarCheck : undefined"
-        :label="isCompact ? undefined : t('event.calendarToday')"
-        :aria-label="isCompact ? t('event.calendarToday') : undefined"
-        color="neutral"
-        variant="outline"
-        @click="selectedMonth = startOfMonth(new Date())"
-      />
+      <div class="flex items-center gap-2">
+        <UButton
+          :icon="isCompact ? ICONS.calendarCheck : undefined"
+          :label="isCompact ? undefined : t('event.calendarToday')"
+          :aria-label="isCompact ? t('event.calendarToday') : undefined"
+          color="neutral"
+          variant="outline"
+          @click="selectedMonth = startOfMonth(new Date())"
+        />
 
-      <div id="tour-calendar-month-picker">
-        <UPopover>
-          <UButton
-            :label="format(selectedMonth, isCompact ? 'MMM yyyy' : 'MMMM yyyy', { locale: it })"
-            class="capitalize"
-            color="neutral"
-            variant="outline"
-            :trailing-icon="ICONS.chevronDown"
-          />
-
-          <template #content>
-            <UCalendar
-              v-model="calendarMonthValue"
-              type="month"
-              class="p-2"
+        <div id="tour-calendar-month-picker">
+          <UPopover>
+            <UButton
+              :label="format(selectedMonth, isCompact ? 'MMM yyyy' : 'MMMM yyyy', { locale: it })"
+              class="capitalize"
+              color="neutral"
+              variant="outline"
+              :trailing-icon="ICONS.chevronDown"
             />
-          </template>
-        </UPopover>
+
+            <template #content>
+              <UCalendar
+                v-model="calendarMonthValue"
+                type="month"
+                class="p-2"
+              />
+            </template>
+          </UPopover>
+        </div>
       </div>
 
       <!-- Only shown once there's an actual choice to make (Tutte + 2+ real
