@@ -184,7 +184,7 @@ const filteredCards = computed(() => selectedCity.value === 'all'
     <LayoutColorModeSwitch class="absolute right-4 top-4 z-10 md:right-8 md:top-8" />
 
     <div class="flex justify-center">
-      <div class="flex items-center gap-3 bg-elevated rounded-2xl px-6 py-3 shadow-xl">
+      <div class="flex items-center gap-3">
         <img
           src="https://avatars.githubusercontent.com/u/225214755?s=200&v=4"
           alt="Pauperwave"
