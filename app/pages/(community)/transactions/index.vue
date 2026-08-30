@@ -311,9 +311,9 @@ const tour = useTransactionsTour()
           @contextmenu="onRowContextmenu"
         >
           <template #empty>
-            <div class="py-12 text-center text-muted">
-              {{ $t('transaction.empty') }}
-            </div>
+            <EmptyState
+              :message="$t('transaction.empty')"
+            />
           </template>
         </UTable>
       </UContextMenu>

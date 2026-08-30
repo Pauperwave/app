@@ -257,12 +257,10 @@ const filteredCards = computed(() => selectedCity.value === 'all'
       <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
     </div>
 
-    <div
+    <EmptyState
       v-else-if="!filteredCards.length"
-      class="text-center py-12 text-muted"
-    >
-      {{ $t('event.grid.empty') }}
-    </div>
+      :message="$t('event.grid.empty')"
+    />
 
     <div v-else id="tour-calendar-cards" class="flex flex-col gap-4 max-w-2xl w-full mx-auto">
       <template

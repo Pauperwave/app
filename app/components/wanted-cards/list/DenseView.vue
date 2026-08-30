@@ -43,9 +43,10 @@ const lastClickShiftKey = ref(false)
 </script>
 
 <template>
-  <div v-if="!hasCards" class="text-center py-12 text-muted">
-    {{ $t('wantedCard.grid.empty') }}
-  </div>
+  <EmptyState
+    v-if="!hasCards"
+    :message="$t('wantedCard.grid.empty')"
+  />
 
   <div v-else class="flex flex-col gap-6">
     <div v-for="section in sections" :key="section.player ?? '__ungrouped'">

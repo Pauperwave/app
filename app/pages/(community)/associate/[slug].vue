@@ -182,9 +182,10 @@ const { columns: associateTransactionsColumns } = useAssociateTransactionsTableC
         <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
       </div>
 
-      <div v-else-if="!associate" class="text-center py-12 text-muted">
-        {{ $t('associate.detail.notFound') }}
-      </div>
+      <EmptyState
+        v-else-if="!associate"
+        :message="$t('associate.detail.notFound')"
+      />
 
       <div v-else class="flex flex-col gap-4">
         <UCard>

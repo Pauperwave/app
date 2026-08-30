@@ -28,9 +28,10 @@ const range = computed(() => events.map(event => event.id))
     <EventsListCard v-for="n in loadingCount" :key="n" loading />
   </div>
 
-  <div v-else-if="!events.length" class="text-center py-12 text-muted">
-    {{ $t('event.grid.empty') }}
-  </div>
+  <EmptyState
+    v-else-if="!events.length"
+    :message="$t('event.grid.empty')"
+  />
 
   <div v-else class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(280px,90vw),1fr))]">
     <EventsListCard

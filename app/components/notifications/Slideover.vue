@@ -69,9 +69,10 @@ const notificationActions: DropdownMenuItem[] = [{
         />
 
         <div class="flex-1 overflow-y-auto px-2 py-3 sm:px-3">
-          <div v-if="!filteredNotifications.length" class="text-center py-12 text-muted">
-            {{ $t('notificationsSlideover.empty') }}
-          </div>
+          <EmptyState
+            v-if="!filteredNotifications.length"
+            :message="$t('notificationsSlideover.empty')"
+          />
 
           <template v-else>
             <div

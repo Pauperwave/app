@@ -154,9 +154,10 @@ function openAddModalAt(time: string) {
         />
       </div>
 
-      <div v-else class="text-center py-12 text-muted">
-        {{ t('event.detail.notFound') }}
-      </div>
+      <EmptyState
+        v-else
+        :message="t('event.detail.notFound')"
+      />
     </template>
   </UDashboardPanel>
 
