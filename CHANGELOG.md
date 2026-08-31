@@ -1,6 +1,53 @@
 # Changelog
 
 
+## v0.1.10
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.1.9...v0.1.10)
+
+### Enhancements
+
+- **calendar:** ✨ show partner discount codes on the public calendar ([29bfdaf](https://github.com/Pauperwave/app/commit/29bfdaf))
+- **transactions:** ✨ add an "Omaggio" tab, rename "Da sistemare", move search ([9403b2d](https://github.com/Pauperwave/app/commit/9403b2d))
+- **lists:** ✨ add name search to /tournaments, /leagues, /events ([a7c69d2](https://github.com/Pauperwave/app/commit/a7c69d2))
+- **tournaments:** 🔥 remove the presentation card from the detail page ([35bf05a](https://github.com/Pauperwave/app/commit/35bf05a))
+- **tournaments:** ✨ default round count by format (Pauper/Premodern/Draft: 4) ([3cf0c6a](https://github.com/Pauperwave/app/commit/3cf0c6a))
+- **tournaments:** ✨ extend Swiss round-count table past 64 players ([f4bfccd](https://github.com/Pauperwave/app/commit/f4bfccd))
+- **ui:** ✨ extract YearRangePicker, roll out year filter to 6 pages ([529f5a5](https://github.com/Pauperwave/app/commit/529f5a5))
+
+### Fixes
+
+- **nav:** 🐛 simplify the Calendario sidebar icon ([8031306](https://github.com/Pauperwave/app/commit/8031306))
+- **statistics:** 🐛 even out spacing and legend size on /statistics ([f39313e](https://github.com/Pauperwave/app/commit/f39313e))
+- **layout:** 🐛 hide the collapsed sidebar's scrollbar on short screens ([8e5e0d3](https://github.com/Pauperwave/app/commit/8e5e0d3))
+
+### Refactors
+
+- **ui:** ♻️ extract TourStartButton, collapse crowded navbar labels ([c46fc47](https://github.com/Pauperwave/app/commit/c46fc47))
+- **ui:** ♻️ extract EmptyState out of 16 copy-pasted "empty" divs ([e480aa6](https://github.com/Pauperwave/app/commit/e480aa6))
+- **server:** ♻️ dedup associates update.post.ts/update-number.post.ts ([1eefc83](https://github.com/Pauperwave/app/commit/1eefc83))
+- **ui:** ♻️ extract StatusChangeBadge out of tournaments/leagues ([6d910d8](https://github.com/Pauperwave/app/commit/6d910d8))
+- ♻️ extract useSubmitWithToast out of 7 EditModal.vue files ([410e971](https://github.com/Pauperwave/app/commit/410e971))
+- **wanted-cards:** ♻️ dedup Add/EditModal printing-to-payload mapping ([69d42b0](https://github.com/Pauperwave/app/commit/69d42b0))
+
+### Documentation
+
+- **wanted-cards:** 📝 drop dangling docs/TODO.md reference in FiltersBar ([7d84518](https://github.com/Pauperwave/app/commit/7d84518))
+- **ui:** 📝 fix stale DateRangePicker caller count in CLAUDE.md ([6244614](https://github.com/Pauperwave/app/commit/6244614))
+
+### Chore
+
+- **release:** 🔖 v0.1.9 ([631ef7b](https://github.com/Pauperwave/app/commit/631ef7b))
+
+### Styles
+
+- 🎨 lower vue/max-attributes-per-line singleline max to 2 ([14c81a4](https://github.com/Pauperwave/app/commit/14c81a4))
+- **ui:** 🎨 outline DateRangePicker's icon-only variant, drop -ms-1 hacks ([632b8bf](https://github.com/Pauperwave/app/commit/632b8bf))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.1.9
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.1.8...v0.1.9)
