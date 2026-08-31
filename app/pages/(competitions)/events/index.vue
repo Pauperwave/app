@@ -31,6 +31,10 @@ const search = ref('')
 
 const { statusFilter, filteredEvents, statusTabs } = useEventsFilters(data, range, search)
 
+// Year quick-jump next to DateRangePicker (YearRangePicker.vue, user
+// request, 2026-08-31).
+const availableYears = computed(() => availableEventYears(data.value))
+
 // undefined (ListSkeleton's/GridView's own default count) only on a genuine
 // first load — same isPending-vs-isLoading reasoning as tournaments/index.vue.
 const skeletonCount = computed(() => (isPending.value ? undefined : filteredEvents.value.length))
@@ -174,9 +178,8 @@ const bulkConfirmTitle = computed(() => {
             @mark-status="requestedStatus => requestStatusChange(requestedStatus, selectedEvents)"
             @delete="requestDelete(selectedEvents)"
           />
-          <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->
           <div v-else id="tour-events-actions">
-            <DateRangePicker v-model="range" class="-ms-1" />
+            <YearRangePicker v-model="range" :years="availableYears" />
           </div>
         </template>
       </UDashboardToolbar>

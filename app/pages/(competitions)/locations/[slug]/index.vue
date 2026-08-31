@@ -94,6 +94,11 @@ const {
   filteredTournaments: filteredHostedTournaments
 } = useTournamentsFilters(hostedTournaments, range)
 
+// Year quick-jump next to DateRangePicker (YearRangePicker.vue, user
+// request, 2026-08-31) — scoped to this location's own hosted tournaments,
+// same as hostedTournamentDates above.
+const availableYears = computed(() => availableTournamentYears(hostedTournaments.value))
+
 // Hovering/focusing a heatmap day highlights that day's tournament card
 // below (same as leagues/[leagueId]/index.vue). Matched against the
 // currently-filtered set, not the full history — a highlight for a card
@@ -162,7 +167,7 @@ const {
         </template>
 
         <template #right>
-          <DateRangePicker v-model="range" />
+          <YearRangePicker v-model="range" :years="availableYears" />
         </template>
       </UDashboardToolbar>
     </template>
