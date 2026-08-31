@@ -16,7 +16,10 @@ interface Props {
   /** Always icon-only regardless of viewport, instead of showing the
    * formatted range as the button's own label — opt-in for pages crowded
    * enough that the range text itself doesn't fit (transactions/index.vue,
-   * user request, 2026-08-27). The range is still readable via tooltip. */
+   * user request, 2026-08-27). The range is still readable via tooltip.
+   * Outlined (not ghost, unlike the labeled button below) to match
+   * ColumnVisibilityMenu's own icon-only style, its usual neighbor in these
+   * toolbars (user request, 2026-08-31). */
   iconOnly?: boolean
 }
 
@@ -144,7 +147,7 @@ const selectRange = (range: RangeSpec) => {
     <UTooltip v-if="iconOnly" :text="rangeLabel">
       <UButton
         color="neutral"
-        variant="ghost"
+        variant="outline"
         :icon="ICONS.calendar"
         :aria-label="rangeLabel"
         class="data-[state=open]:bg-elevated"

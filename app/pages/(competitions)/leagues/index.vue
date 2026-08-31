@@ -172,11 +172,10 @@ const tour = useLeaguesTour()
               requestStatusChange(requestedStatus, selectedLeagues)"
             @delete="requestDelete(selectedLeagues)"
           />
-          <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->
           <DateRangePicker
             v-else
             v-model="range"
-            class="-ms-1"
+            icon-only
           />
         </template>
       </UDashboardToolbar>
