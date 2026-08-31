@@ -1,5 +1,8 @@
 <!-- app\pages\(community)\associates\requests.vue -->
 <script setup lang="ts">
+import { subYears, addYears } from 'date-fns'
+import type { Range } from '~/types'
+
 // Was nav-hidden only — see associates/index.vue's own comment.
 definePageMeta({ permission: 'view-associates' })
 
@@ -20,11 +23,28 @@ const requestAssociates = computed(() => (associates.value ?? []).filter(
 ))
 const { pendingAssociatesCount: pendingCount, associatesCount } = useHomeActionCounts()
 
+// Filters by request_date (YearRangePicker.vue, user request, 2026-08-31) —
+// defaults wide ("all time", same ±10-year span as DateRangePicker's own
+// "Tutto" preset), unlike associates/index.vue's last-year default: this is
+// a triage queue, and a stale pending request from over a year ago is
+// exactly the kind of thing that shouldn't be hidden by default.
+const range = shallowRef<Range>({
+  start: subYears(new Date(), 10),
+  end: addYears(new Date(), 10)
+})
+const availableRequestYears = computed(() =>
+  availableAssociateRequestYears(requestAssociates.value))
+const filteredRequestAssociates = computed(() => requestAssociates.value.filter((associate) => {
+  const date = new Date(associate.request_date)
+  return date >= range.value.start && date <= range.value.end
+}))
+
 // undefined (ListSkeleton's own default count) only on a genuine first load
 // — isPending, unlike isLoading, is false once stale data exists to show a
 // real count from, even mid-refetch (e.g. the manual refresh button), same
 // convention as tournaments/locations' own list pages.
-const skeletonCount = computed(() => (isPending.value ? undefined : requestAssociates.value.length))
+const skeletonCount = computed(() =>
+  (isPending.value ? undefined : filteredRequestAssociates.value.length))
 
 const {
   route, router, table,
@@ -302,7 +322,10 @@ const tour = useAssociatesRequestsTour()
             @reject="rejectConfirmOpen = true"
             @restore="bulkRestore"
           />
-          <AssociatesTableToolbarActions v-else :visibility-items="visibilityItems" />
+          <div v-else class="flex items-center gap-2">
+            <YearRangePicker v-model="range" :years="availableRequestYears" />
+            <AssociatesTableToolbarActions :visibility-items="visibilityItems" />
+          </div>
         </template>
       </UDashboardToolbar>
     </template>
@@ -331,7 +354,7 @@ const tour = useAssociatesRequestsTour()
             estimateSize: 35,
             overscan: 12
           }"
-          :data="requestAssociates"
+          :data="filteredRequestAssociates"
           :columns="columns"
           class="flex-1 h-80 shrink-0"
           :ui="{ tr: 'cursor-pointer' }"

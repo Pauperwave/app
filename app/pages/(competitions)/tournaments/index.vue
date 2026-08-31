@@ -60,6 +60,10 @@ const tournamentDates = computed(() => data.value.map(tournament => ({
   label: `${tournament.name}${tournamentStageText(tournament)}`
 })))
 
+// Year quick-jump next to DateRangePicker (YearRangePicker.vue, user
+// request, 2026-08-31).
+const availableYears = computed(() => availableTournamentYears(data.value))
+
 // undefined (ListSkeleton's own default count) only on a genuine first
 // load — isPending, unlike isLoading, is false once stale data exists to
 // show a real count from, even mid-refetch (e.g. the manual refresh
@@ -246,16 +250,15 @@ const bulkConfirmTitle = computed(() => {
               requestLeagueChange(leagueUuid, leagueName, selectedTournaments)"
             @delete="requestDelete(selectedTournaments)"
           />
-          <!-- NOTE: The `-ms-1` class aligns with the `DashboardSidebarCollapse` button here. -->
           <div
             v-else
             id="tour-tournaments-actions"
             class="flex items-center gap-2"
           >
-            <DateRangePicker
+            <YearRangePicker
               v-model="range"
+              :years="availableYears"
               :highlighted-dates="tournamentDates"
-              class="-ms-1"
             />
 
             <USelectMenu

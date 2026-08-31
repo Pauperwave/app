@@ -1,8 +1,9 @@
 <!-- app\pages\(community)\associates\index.vue -->
 <script setup lang="ts">
+import { subYears } from 'date-fns'
 import type { TableColumn, TabsItem } from '@nuxt/ui'
 import { UBadge } from '#components'
-import type { Associate } from '~/types'
+import type { Associate, Range } from '~/types'
 import ConsentBadge from '~/components/ui/ConsentBadge.vue'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 import MembershipStatusBadge from '~/components/ui/MembershipStatusBadge.vue'
@@ -50,11 +51,28 @@ const pendingCount = computed(() => (associates.value ?? []).filter(
   associate => associate.membership_request_status === 'pending'
 ).length)
 
+// Filters by latest_renewal_date (YearRangePicker.vue, user request,
+// 2026-08-31) — defaults to the last year, the common "who renewed recently"
+// case. An associate who never renewed (null latest_renewal_date) always
+// stays visible: excluding them because they have no date to compare would
+// hide exactly the people a "never renewed" review is looking for.
+const range = shallowRef<Range>({
+  start: subYears(new Date(), 1),
+  end: new Date()
+})
+const availableRenewalYears = computed(() => availableAssociateRenewalYears(rosterAssociates.value))
+const filteredRosterAssociates = computed(() => rosterAssociates.value.filter((associate) => {
+  if (!associate.latest_renewal_date) return true
+  const date = new Date(associate.latest_renewal_date)
+  return date >= range.value.start && date <= range.value.end
+}))
+
 // undefined (ListSkeleton's own default count) only on a genuine first load
 // — isPending, unlike isLoading, is false once stale data exists to show a
 // real count from, even mid-refetch (e.g. the manual refresh button), same
 // convention as tournaments/locations' own list pages.
-const skeletonCount = computed(() => (isPending.value ? undefined : rosterAssociates.value.length))
+const skeletonCount = computed(() =>
+  (isPending.value ? undefined : filteredRosterAssociates.value.length))
 
 const tour = useAssociatesTour()
 
@@ -412,7 +430,12 @@ function renderNeutralBadge(value: string) {
             @renew="requestBulkRenew(selectedRosterAssociates)"
             @approve-renewal="confirmApproveRenewals"
           />
-          <div v-else id="tour-associates-actions">
+          <div
+            v-else
+            id="tour-associates-actions"
+            class="flex items-center gap-2"
+          >
+            <YearRangePicker v-model="range" :years="availableRenewalYears" />
             <AssociatesTableToolbarActions :visibility-items="visibilityItems" />
           </div>
         </template>
@@ -443,7 +466,7 @@ function renderNeutralBadge(value: string) {
               estimateSize: 35,
               overscan: 12
             }"
-            :data="rosterAssociates"
+            :data="filteredRosterAssociates"
             :columns="columns"
             class="flex-1 h-80 shrink-0"
             :ui="{ tr: 'cursor-pointer' }"
