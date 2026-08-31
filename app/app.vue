@@ -3,7 +3,6 @@
 import { it } from '@nuxt/ui/locale'
 
 const colorMode = useColorMode()
-const route = useRoute()
 
 const color = computed(() => colorMode.value === 'dark' ? '#1b1718' : 'white')
 
@@ -41,14 +40,7 @@ useSeoMeta({
   <UApp :locale="it">
     <NuxtLoadingIndicator />
 
-    <!-- :key forces a full remount on layout change instead of letting Vue
-         patch the previous layout's root node in place — without it, e.g.
-         auth.vue's root div (2 children as of the version-badge addition,
-         2026-08-30) was getting reused for default.vue's dashboard content
-         after login, leaving the sidebar stacked inside auth's centering
-         wrapper instead of default's own flex-row shell (bug found
-         2026-08-31 via claude-in-chrome on production). -->
-    <NuxtLayout :key="String(route.meta.layout ?? 'default')">
+    <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
   </UApp>
