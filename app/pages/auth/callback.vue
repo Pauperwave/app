@@ -1,6 +1,8 @@
 <!-- app\pages\auth\callback.vue -->
 // app/pages/auth/callback.vue
 <script setup lang="ts">
+definePageMeta({ layout: 'auth' })
+
 // `useSupabaseSession` reflects the auth state synchronously from
 // `onAuthStateChange` and doesn't depend on the module's `getClaims()` call,
 // which can silently reject (no .catch()) and leave `useSupabaseUser()` stuck
@@ -39,20 +41,18 @@ onUnmounted(() => clearTimeout(timeoutId))
 </script>
 
 <template>
-  <div class="flex items-center justify-center min-h-screen">
-    <div class="text-center">
-      <template v-if="failed">
-        <p class="mb-4">
-          {{ $t('login.callback.invalidLink') }}
-        </p>
-        <UButton to="/login">
-          {{ $t('login.callback.backToLogin') }}
-        </UButton>
-      </template>
-      <template v-else>
-        <UIcon :name="ICONS.loading" class="animate-spin text-4xl mb-4" />
-        <p>{{ $t('login.callback.verifying') }}</p>
-      </template>
-    </div>
+  <div class="text-center">
+    <template v-if="failed">
+      <p class="mb-4">
+        {{ $t('login.callback.invalidLink') }}
+      </p>
+      <UButton to="/login">
+        {{ $t('login.callback.backToLogin') }}
+      </UButton>
+    </template>
+    <template v-else>
+      <UIcon :name="ICONS.loading" class="animate-spin text-4xl mb-4" />
+      <p>{{ $t('login.callback.verifying') }}</p>
+    </template>
   </div>
 </template>
