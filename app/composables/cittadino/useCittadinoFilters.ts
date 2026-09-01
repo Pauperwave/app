@@ -1,6 +1,7 @@
 // app\composables\cittadino\useCittadinoFilters.ts
 import type { Ref } from 'vue'
 import type { CittadinoEvent, CittadinoPlacement, CittadinoStanding } from '~/types'
+import { groupBestNByPlayer } from '#shared/utils/cittadino/bestNStandings'
 
 // Owns the format filter *and* the scoring, because the two cannot be separated:
 // hiding a column while leaving the totals computed over every format would show
