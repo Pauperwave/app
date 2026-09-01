@@ -29,7 +29,7 @@ export default defineConfig({
       ],
       dirs: [
         './app/composables/**',
-        './app/utils',
+        './app/utils/**',
         './shared/utils'
       ],
       // Values referenced only in <template> (e.g. ICONS) compile to _ctx
