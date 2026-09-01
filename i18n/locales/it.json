@@ -2462,6 +2462,8 @@
     "emailNotFoundTitle": "Email non trovata",
     "emailNotFoundDescription": "L'indirizzo email non risulta associato a un account Pauperwave.",
     "errorTitle": "Errore",
+    "rateLimitTitle": "Troppi tentativi",
+    "rateLimitDescription": "Per motivi di sicurezza puoi richiedere un nuovo link solo dopo {seconds} secondi.",
     "linkSentTitle": "Link inviato",
     "linkSentDescription": "Controlla la tua casella email per accedere.",
     "welcomeBack": "Bentornato",
