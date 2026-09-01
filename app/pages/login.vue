@@ -80,11 +80,23 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
   })
 
   if (error) {
-    toast.add({
-      title: t('login.errorTitle'),
-      description: error.message,
-      color: 'error'
-    })
+    // Supabase's own rate-limit message ("For security purposes, you can
+    // only request this after N seconds.") is raw English with no i18n key
+    // of its own — every other toast in this file goes through t(), so this
+    // one shouldn't be the exception that leaks untranslated text into an
+    // Italian UI.
+    const rateLimitSeconds = error.message.match(/after (\d+) seconds/)?.[1]
+    toast.add(rateLimitSeconds
+      ? {
+        title: t('login.rateLimitTitle'),
+        description: t('login.rateLimitDescription', { seconds: rateLimitSeconds }),
+        color: 'error'
+      }
+      : {
+        title: t('login.errorTitle'),
+        description: error.message,
+        color: 'error'
+      })
   } else {
     toast.add({
       title: t('login.linkSentTitle'),
