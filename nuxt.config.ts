@@ -53,6 +53,16 @@ export default defineNuxtConfig({
     // account CardTrader (docs.cardtrader.com/en/docs/api/full/reference);
     // è un JWT permanente (scadenza anno 2126), va trattato come segreto.
     cardTraderApiToken: process.env.CARDTRADER_API_TOKEN,
+    // Server-only. Token from @BotFather; telegramWebhookSecret is an
+    // arbitrary string shared with Telegram at webhook registration time
+    // (scripts/telegram-set-webhook.mjs) to authenticate incoming updates via
+    // the X-Telegram-Bot-Api-Secret-Token header. telegramAdminChatId is the
+    // chat (user, group, or channel) that receives admin alerts — resolve it
+    // by messaging the bot and reading the chat id off the webhook update, or
+    // via @userinfobot.
+    telegramBotToken: process.env.TELEGRAM_BOT_TOKEN,
+    telegramWebhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET,
+    telegramAdminChatId: process.env.TELEGRAM_ADMIN_CHAT_ID,
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
       siteName: 'Pauperwave',
