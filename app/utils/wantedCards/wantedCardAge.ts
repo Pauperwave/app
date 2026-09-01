@@ -1,5 +1,5 @@
 // app\utils\wantedCards\wantedCardAge.ts
-import { differenceInCalendarDays, formatDistanceToNow, parseISO } from 'date-fns'
+import { differenceInCalendarDays, formatDistanceToNow, isValid, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'
 
 export type WantedCardAgeColor = 'success' | 'warning' | 'error'
@@ -18,12 +18,11 @@ const ERROR_THRESHOLD_DAYS = 90
 export function wantedCardAgeInfo(dateString: string): WantedCardAgeInfo | null {
   if (!dateString) return null
 
-  let date: Date
-  try {
-    date = parseISO(dateString)
-  } catch {
-    return null
-  }
+  // parseISO never throws on an unparseable string — it returns an Invalid
+  // Date, which formatDistanceToNow below would then throw on — so this must
+  // be checked explicitly rather than relying on a try/catch around parseISO.
+  const date = parseISO(dateString)
+  if (!isValid(date)) return null
 
   const days = differenceInCalendarDays(new Date(), date)
   const color: WantedCardAgeColor = days >= ERROR_THRESHOLD_DAYS
