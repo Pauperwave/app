@@ -12,6 +12,9 @@ dist
 # Node dependencies
 node_modules
 
+# Test coverage reports
+coverage
+
 # Logs
 logs
 *.log
