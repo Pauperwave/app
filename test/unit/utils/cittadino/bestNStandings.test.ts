@@ -1,6 +1,6 @@
 // test\unit\utils\cittadino\bestNStandings.test.ts
 import { describe, expect, it } from 'vitest'
-import { groupBestNByPlayer, toBestNPlacement, type PlacementRow } from '~/utils/cittadino/bestNStandings'
+import { groupBestNByPlayer, toBestNPlacement, type PlacementRow } from '#shared/utils/cittadino/bestNStandings'
 
 describe('toBestNPlacement', () => {
   it('maps a snake_case row to camelCase', () => {

@@ -1,6 +1,7 @@
 // app\composables\cittadino\useCittadinoQuery.ts
 import type { Ref } from 'vue'
 import type { CittadinoEvent, CittadinoPlacement } from '~/types'
+import { toBestNPlacement } from '#shared/utils/cittadino/bestNStandings'
 
 interface CittadinoResultRow {
   player_uuid: string
