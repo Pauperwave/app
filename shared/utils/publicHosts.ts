@@ -6,13 +6,13 @@
 // survive h3/Nitro's request dispatcher; confirmed 2026-08-13, see that
 // file's history for details).
 export const HOST_ROUTE_MAP: Record<string, string> = {
-  'cittadino.pauperwave.org': 'https://app.pauperwave.org/rankings/cittadino',
-  'commander.pauperwave.org': 'https://app.pauperwave.org/rankings/commander',
-  'premodern.pauperwave.org': 'https://app.pauperwave.org/rankings/premodern',
-  'pauper.pauperwave.org': 'https://app.pauperwave.org/rankings/pauper',
+  'cittadino.pauperwave.org': 'https://app.pauperwave.org/classifiche/cittadino',
+  'commander.pauperwave.org': 'https://app.pauperwave.org/classifiche/commander',
+  'premodern.pauperwave.org': 'https://app.pauperwave.org/classifiche/premodern',
+  'pauper.pauperwave.org': 'https://app.pauperwave.org/classifiche/pauper',
   'tesseramento.pauperwave.org': 'https://app.pauperwave.org/tesseramento',
   // Distinct from the internal /events dashboard route (auth-only,
-  // UDashboardPanel shell) — same reasoning as /rankings/<format> above vs.
+  // UDashboardPanel shell) — same reasoning as /classifiche/<format> above vs.
   // /standings/<format> (dashboard-only). Not /calendar either: that's an
   // unrelated in-development dashboard page (pages/calendar/index.vue) —
   // distinct word ("calendario" vs "calendar"), no collision. Renamed from

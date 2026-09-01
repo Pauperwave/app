@@ -12,16 +12,16 @@ export default defineNuxtRouteMiddleware((to) => {
     '/login', '/auth/callback', '/logout'
   ]
 
-  // Prefix-matched public paths: /tesseramento and /rankings/* back their
+  // Prefix-matched public paths: /tesseramento and /classifiche/* back their
   // own subdomains (ADR-011, docs/PROGRESS.md) — prefix, not exact, so a
   // trailing slash or future sub-route still counts as public. Keep in
   // sync with nuxt.config.ts's supabase.redirectOptions.exclude.
   const publicPrefixes = [
     '/tesseramento',
-    '/rankings/cittadino',
-    '/rankings/commander',
-    '/rankings/premodern',
-    '/rankings/pauper',
+    '/classifiche/cittadino',
+    '/classifiche/commander',
+    '/classifiche/premodern',
+    '/classifiche/pauper',
     '/calendario'
   ]
 
