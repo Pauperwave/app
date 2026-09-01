@@ -17,10 +17,10 @@ const NuxtLink = resolveComponent('NuxtLink')
 // would 404 and spam VUE_ROUTER_R0004 warnings on every render of this table.
 const builtRoutes = new Set([
   '/',
-  '/rankings/cittadino',
-  '/rankings/commander',
-  '/rankings/premodern',
-  '/rankings/pauper',
+  '/classifiche/cittadino',
+  '/classifiche/commander',
+  '/classifiche/premodern',
+  '/classifiche/pauper',
   '/calendario'
 ])
 
@@ -34,7 +34,8 @@ interface DomainRow {
   // above); every other non-null route here exists as a page today. The four
   // rankings (cittadino + one per format) moved to a dedicated `/rankings/*`
   // prefix 2026-08-13 (was `/standings/*`, which is now the internal
-  // dashboard-only route staff reach via the sidebar) — PublicFormatPage.vue
+  // dashboard-only route staff reach via the sidebar), then to `/classifiche/*`
+  // 2026-09-01 to match the app's Italian-route-label convention — PublicFormatPage.vue
   // and PublicCittadinoPage.vue back these public pages instead of
   // FormatPage.vue/the dashboard cittadino page, since the latter two require
   // the authenticated dashboard shell (see auth.global.ts). `calendario.`
@@ -55,10 +56,10 @@ interface DomainRow {
 const domains = computed<DomainRow[]>(() => [
   { host: 'pauperwave.org', purpose: t('settings.domains.rows.root'), status: 'planned', route: null },
   { host: 'app.pauperwave.org', purpose: t('settings.domains.rows.app'), status: 'live', route: '/' },
-  { host: 'cittadino.pauperwave.org', purpose: t('settings.domains.rows.cittadino'), status: 'live', route: '/rankings/cittadino' },
-  { host: 'commander.pauperwave.org', purpose: t('settings.domains.rows.commander'), status: 'live', route: '/rankings/commander' },
-  { host: 'premodern.pauperwave.org', purpose: t('settings.domains.rows.premodern'), status: 'live', route: '/rankings/premodern' },
-  { host: 'pauper.pauperwave.org', purpose: t('settings.domains.rows.pauper'), status: 'live', route: '/rankings/pauper' },
+  { host: 'cittadino.pauperwave.org', purpose: t('settings.domains.rows.cittadino'), status: 'live', route: '/classifiche/cittadino' },
+  { host: 'commander.pauperwave.org', purpose: t('settings.domains.rows.commander'), status: 'live', route: '/classifiche/commander' },
+  { host: 'premodern.pauperwave.org', purpose: t('settings.domains.rows.premodern'), status: 'live', route: '/classifiche/premodern' },
+  { host: 'pauper.pauperwave.org', purpose: t('settings.domains.rows.pauper'), status: 'live', route: '/classifiche/pauper' },
   { host: 'calendario.pauperwave.org', purpose: t('settings.domains.rows.calendario'), status: 'live', route: '/calendario' },
   { host: 'tesseramento.pauperwave.org', purpose: t('settings.domains.rows.tesseramento'), status: 'live', route: '/tesseramento' },
   { host: 'blog.pauperwave.org', purpose: t('settings.domains.rows.blog'), status: 'live', route: null },

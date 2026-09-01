@@ -38,9 +38,9 @@ const {
 const filteredStandings = computed(() => filterStandingsBySearch(standings.value, search.value))
 
 // Same convention as associates/requests.vue's tesseramentoLink: point at
-// this deploy's own /rankings/<format> for now, until each subdomain is
+// this deploy's own /classifiche/<format> for now, until each subdomain is
 // wired up in DNS (settings/domains.vue).
-const publicUrl = computed(() => `${useRequestURL().origin}/rankings/${format}`)
+const publicUrl = computed(() => `${useRequestURL().origin}/classifiche/${format}`)
 
 const tour = useStandingsFormatTour()
 </script>
@@ -78,7 +78,7 @@ const tour = useStandingsFormatTour()
 
           <!-- Same copy/open-link pair as associates/requests.vue's tesseramento
                link — points at this format's public standing page
-               (/rankings/<format>, see PublicFormatPage.vue), not this
+               (/classifiche/<format>, see PublicFormatPage.vue), not this
                internal dashboard route. -->
           <div id="tour-standings-public-link">
             <CopyOpenLinkPair

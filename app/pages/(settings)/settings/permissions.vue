@@ -47,7 +47,7 @@ interface PermissionRow {
    * missing or wrong today. Absent for 'implemented' rows. */
   statusNote?: string
   /** Unauthenticated access — the public/no-login-required equivalent of a
-   * feature, e.g. viewing standings via /rankings/<format> (ADR-011,
+   * feature, e.g. viewing standings via /classifiche/<format> (ADR-011,
    * docs/PROGRESS.md). Kept separate from `player` (the lowest *logged-in*
    * role) since the two aren't the same access boundary — most rows have no
    * public equivalent at all, hence optional/defaulting to 'none' like the

@@ -173,10 +173,10 @@ export default defineNuxtConfig({
       exclude: [
         '/login', '/auth/callback', '/',
         '/tesseramento', '/tesseramento/**',
-        '/rankings/cittadino', '/rankings/cittadino/**',
-        '/rankings/commander', '/rankings/commander/**',
-        '/rankings/premodern', '/rankings/premodern/**',
-        '/rankings/pauper', '/rankings/pauper/**',
+        '/classifiche/cittadino', '/classifiche/cittadino/**',
+        '/classifiche/commander', '/classifiche/commander/**',
+        '/classifiche/premodern', '/classifiche/premodern/**',
+        '/classifiche/pauper', '/classifiche/pauper/**',
         '/calendario', '/calendario/**'
       ]
     },

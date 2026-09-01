@@ -21,9 +21,9 @@ const {
 const filteredStandings = computed(() => filterStandingsBySearch(standings.value, search.value))
 
 // Same convention as associates/requests.vue's tesseramentoLink: point at
-// this deploy's own /rankings/cittadino for now, until the subdomain is
+// this deploy's own /classifiche/cittadino for now, until the subdomain is
 // wired up in DNS (settings/domains.vue).
-const publicUrl = computed(() => `${useRequestURL().origin}/rankings/cittadino`)
+const publicUrl = computed(() => `${useRequestURL().origin}/classifiche/cittadino`)
 
 const tour = useCittadinoTour()
 </script>
@@ -57,7 +57,7 @@ const tour = useCittadinoTour()
 
           <!-- Same copy/open-link pair as associates/requests.vue's
                tesseramento link — points at the public standings page
-               (/rankings/cittadino, see PublicCittadinoPage.vue), not this
+               (/classifiche/cittadino, see PublicCittadinoPage.vue), not this
                internal dashboard route. -->
           <div id="tour-cittadino-public-link">
             <CopyOpenLinkPair
