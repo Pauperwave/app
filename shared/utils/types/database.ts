@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.17"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -675,6 +675,42 @@ export type Database = {
             foreignKeyName: "fk_pauperwave_associate_renewals_associate_uuid_fkey"
             columns: ["associate_uuid"]
             isOneToOne: false
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
+        ]
+      }
+      pauperwave_associate_telegram_links: {
+        Row: {
+          associate_uuid: string
+          chat_id: number
+          id: number
+          linked_at: string
+        }
+        Insert: {
+          associate_uuid: string
+          chat_id: number
+          id?: never
+          linked_at?: string
+        }
+        Update: {
+          associate_uuid?: string
+          chat_id?: number
+          id?: never
+          linked_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pauperwave_associate_telegram_links_associate_uuid_fkey"
+            columns: ["associate_uuid"]
+            isOneToOne: true
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "pauperwave_associate_telegram_links_associate_uuid_fkey"
+            columns: ["associate_uuid"]
+            isOneToOne: true
             referencedRelation: "pauperwave_associates_with_status"
             referencedColumns: ["uuid"]
           },
