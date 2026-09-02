@@ -1,6 +1,7 @@
 // server\utils\telegram\bot.ts
 import { Bot } from 'grammy'
 import { registerClassificheCommand } from './commands/classifiche'
+import { registerEventiCommand } from './commands/eventi'
 import { registerStubCommands } from './commands/stubs'
 
 let bot: Bot | null = null
@@ -30,9 +31,10 @@ export function useTelegramBot(): Bot {
     + '/help — mostra questo messaggio\n'
     + '/status — mostra lo stato corrente del bot\n'
     + '/whoami — mostra l\'id di questa chat\n'
-    + '/classifiche — classifiche per formato\n\n'
+    + '/classifiche — classifiche per formato\n'
+    + '/eventi — prossimi eventi\n\n'
     + 'In arrivo:\n'
-    + '/eventi, /tornei, /leghe, /cartecercate, /prossimotorneo, '
+    + '/tornei, /leghe, /cartecercate, /prossimotorneo, '
     + '/tessera, /mieitornei, /mieimazzi, /notifiche'
   ))
 
@@ -43,6 +45,7 @@ export function useTelegramBot(): Bot {
   bot.command('whoami', ctx => ctx.reply(`Chat id: ${ctx.chat.id}`))
 
   registerClassificheCommand(bot)
+  registerEventiCommand(bot)
   registerStubCommands(bot)
 
   return bot
