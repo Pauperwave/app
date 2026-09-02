@@ -7,9 +7,12 @@ import { registerTorneiCommand } from './tornei'
 import { registerLegheCommand } from './leghe'
 import { registerProssimoCommand } from './prossimo'
 import { registerStubCommands } from './stubs'
+import { registerLinkingHandler } from './linking'
 
 // Single entry point for bot.ts — add a new command's register call here
-// instead of growing bot.ts's own import list.
+// instead of growing bot.ts's own import list. registerLinkingHandler stays
+// last: its bot.on('message:text') catch-all must only see messages no
+// earlier /command handler already claimed.
 export function registerCommands(bot: Bot) {
   registerCoreCommands(bot)
   registerClassificheCommand(bot)
@@ -18,4 +21,5 @@ export function registerCommands(bot: Bot) {
   registerLegheCommand(bot)
   registerProssimoCommand(bot)
   registerStubCommands(bot)
+  registerLinkingHandler(bot)
 }
