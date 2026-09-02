@@ -2323,7 +2323,12 @@ export type Database = {
         }
         Returns: undefined
       }
-      get_admin_telegram_chat_ids: { Args: never; Returns: number[] }
+      get_admin_telegram_chat_ids:
+        | { Args: never; Returns: number[] }
+        | {
+            Args: { p_roles?: Database["public"]["Enums"]["app_role"][] }
+            Returns: number[]
+          }
       get_user_role: {
         Args: { p_user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
