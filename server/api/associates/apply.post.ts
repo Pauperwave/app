@@ -56,5 +56,10 @@ export default defineEventHandler(async (event) => {
 
   await recordMembershipEvent(supabase, data.uuid, 'requested')
 
+  await notifyTelegramAdmins(
+    event,
+    `📋 Nuova domanda di tesseramento: ${data.first_name} ${data.last_name}`
+  )
+
   return { associate: data }
 })

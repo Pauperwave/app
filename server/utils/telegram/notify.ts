@@ -18,13 +18,27 @@ export async function sendTelegramMessage(chatId: number | string, text: string)
 // lives in get_admin_telegram_chat_ids() (migration 20260902102812) rather
 // than three separate queries here — user_roles.user_id and players.user_id
 // both reference auth.users independently, no FK PostgREST could embed across.
+//
+// Best-effort, same pattern as recordMembershipEvent (associateMembershipEvents.ts):
+// a Telegram/DB hiccup here must never fail the request that already
+// succeeded (e.g. a tesseramento application) — errors are logged, not thrown.
 async function notifyByRole(event: H3Event, text: string, roles?: ('admin' | 'super_admin')[]) {
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   const { data: chatIds, error } = await supabase.rpc('get_admin_telegram_chat_ids', { p_roles: roles })
-  if (error) throw error
+  if (error) {
+    console.error('Failed to resolve Telegram admin recipients:', error.message)
+    return
+  }
 
-  await Promise.all((chatIds ?? []).map(chatId => sendTelegramMessage(chatId, text)))
+  const results = await Promise.allSettled(
+    (chatIds ?? []).map(chatId => sendTelegramMessage(chatId, text))
+  )
+  for (const result of results) {
+    if (result.status === 'rejected') {
+      console.error('Failed to send Telegram admin notification:', result.reason)
+    }
+  }
 }
 
 // Domain events an admin/organizer needs to act on (new tesseramento
