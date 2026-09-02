@@ -21,10 +21,15 @@ interface Props {
   permission: Permission
   errorTitle: string
   mutateAsync: (payload: { id: number, status: T }) => Promise<unknown>
+  /** @default 'subtle' — 'solid' for callers overlaying the badge directly
+   * on a photo (tournaments/list/Cover.vue), where a pale subtle fill isn't
+   * reliably legible against an arbitrary image. */
+  variant?: BadgeProps['variant']
 }
 
 const {
-  id, status, statuses, icons, color, label, permission, errorTitle, mutateAsync
+  id, status, statuses, icons, color, label, permission, errorTitle, mutateAsync,
+  variant = 'subtle'
 } = defineProps<Props>()
 
 const { can } = useUserRole()
@@ -58,7 +63,7 @@ const items = computed<DropdownMenuItem[]>(() => statuses.map(s => ({
     <UBadge
       :color="color(status)"
       :icon="icons[status]"
-      variant="subtle"
+      :variant="variant"
       class="shrink-0 cursor-pointer"
     >
       {{ label(status) }}
@@ -69,7 +74,7 @@ const items = computed<DropdownMenuItem[]>(() => statuses.map(s => ({
     v-else
     :color="color(status)"
     :icon="icons[status]"
-    variant="subtle"
+    :variant="variant"
     class="shrink-0"
   >
     {{ label(status) }}

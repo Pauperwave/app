@@ -11,10 +11,15 @@
   since the crop itself has no in-image credit (unlike the full card). Shown
   below the picker here, and again wherever the cover ends up rendered
   (TournamentsListCover.vue/LeaguesListCover.vue).
+
+  Printing picker is a USelectMenu with a hover-preview row
+  (CardArtPickerRow.vue/MagicCardHoverPreview), same pattern as
+  wanted-cards/FormFields.vue's "Edizione" field — replaced a raw
+  unlabeled thumbnail grid (user request, 2026-09-02: inconsistent with
+  the rest of the app, and gave no way to tell printings apart before
+  hovering).
 -->
 <script setup lang="ts">
-import type { ScryfallPrinting } from '~/composables/useScryfallCardSearch'
-
 const model = defineModel<string | undefined>()
 const cardName = defineModel<string | undefined>('cardName')
 const artist = defineModel<string | undefined>('artist')
@@ -26,6 +31,7 @@ const {
 } = useScryfallCardSearch()
 
 const selectedName = ref<string>()
+const selectedPrintingId = ref<string>()
 const open = ref(false)
 
 // value-key on the name: keeps selectedName a plain string even though the
@@ -36,20 +42,34 @@ const nameItems = computed(() => nameSuggestions.value.map(suggestion => ({
   value: suggestion.name
 })))
 
-watch(selectedName, name => fetchPrintings(name))
+watch(selectedName, (name) => {
+  fetchPrintings(name)
+  selectedPrintingId.value = undefined
+})
 
 // Not every printing has an art_crop (some promos/tokens don't) — only those
 // are offered as a cover choice.
 const artOptions = computed(() => printings.value.filter(printing => printing.artCropUrl))
 
-function selectArt(printing: ScryfallPrinting) {
-  model.value = printing.artCropUrl!
+const printingItems = computed(() => artOptions.value.map(printing => ({
+  label: printing.setName,
+  collectorNumber: printing.collectorNumber,
+  imageUrl: printing.artCropUrl,
+  value: printing.id
+})))
+
+watch(selectedPrintingId, (id) => {
+  const printing = artOptions.value.find(candidate => candidate.id === id)
+  if (!printing?.artCropUrl) return
+
+  model.value = printing.artCropUrl
   cardName.value = printing.name
   artist.value = printing.artist ?? undefined
   open.value = false
   selectedName.value = undefined
+  selectedPrintingId.value = undefined
   query.value = ''
-}
+})
 
 function clear() {
   model.value = undefined
@@ -111,25 +131,23 @@ function clear() {
             {{ t('magic.cardArtPicker.noResults') }}
           </div>
 
-          <div v-else-if="artOptions.length" class="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-            <button
-              v-for="printing in artOptions"
-              :key="printing.id"
-              type="button"
-              class="aspect-video rounded overflow-hidden ring-2 ring-transparent hover:ring-primary transition-all"
-              :title="printing.setName"
-              @click="selectArt(printing)"
-            >
-              <NuxtImg
-                :src="printing.artCropUrl!"
-                :alt="printing.name"
-                format="webp"
-                width="120"
-                height="68"
-                class="w-full h-full object-cover"
+          <USelectMenu
+            v-else-if="artOptions.length"
+            v-model="selectedPrintingId"
+            :items="printingItems"
+            value-key="value"
+            :filter-fields="['label', 'collectorNumber']"
+            :placeholder="t('magic.cardArtPicker.printingPlaceholder')"
+            class="w-full"
+          >
+            <template #item-label="{ item }">
+              <MagicCardArtPickerRow
+                :label="item.label"
+                :collector-number="item.collectorNumber"
+                :image-url="item.imageUrl"
               />
-            </button>
-          </div>
+            </template>
+          </USelectMenu>
         </div>
       </template>
     </UPopover>

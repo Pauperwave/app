@@ -29,26 +29,14 @@ const statusItems = computed(() => TOURNAMENT_STATUSES.map(status => ({
   value: status
 })))
 
-// Picking an art in MagicCardArtPicker sets `pickedImage` immediately, but
-// the actual bulk mutation still needs its own confirm step (matches
-// markStatus/delete, which both route through ConfirmModal in index.vue) —
-// this modal's own "Applica" button is that step, not the picker itself.
+// TournamentsSetImageModal owns the picker UI/state — confirm here just
+// forwards it and closes immediately (matches markStatus/delete, which
+// both route through ConfirmModal in index.vue without awaiting first).
 const imageModalOpen = ref(false)
-const pickedImage = ref<string | undefined>(undefined)
-const pickedImageCardName = ref<string | undefined>(undefined)
-const pickedImageCardArtist = ref<string | undefined>(undefined)
 
-function confirmImage() {
-  if (!pickedImage.value) return
-  emit('setImage', pickedImage.value, pickedImageCardName.value ?? null, pickedImageCardArtist.value ?? null)
-  closeImageModal()
-}
-
-function closeImageModal() {
+function confirmImage(imageUrl: string, cardName: string | null, artist: string | null) {
+  emit('setImage', imageUrl, cardName, artist)
   imageModalOpen.value = false
-  pickedImage.value = undefined
-  pickedImageCardName.value = undefined
-  pickedImageCardArtist.value = undefined
 }
 
 // Same "own modal + explicit confirm" shape as the image action above.
@@ -191,35 +179,11 @@ function closeLeagueModal() {
     />
   </div>
 
-  <UModal
+  <TournamentsSetImageModal
     v-model:open="imageModalOpen"
     :title="t('tournament.bulkActions.setImageModalTitle', count)"
-    :ui="{ content: 'max-w-md' }"
-  >
-    <template #body>
-      <div class="space-y-4">
-        <MagicCardArtPicker
-          v-model="pickedImage"
-          v-model:card-name="pickedImageCardName"
-          v-model:artist="pickedImageCardArtist"
-        />
-
-        <div class="flex justify-end gap-2">
-          <UButton
-            :label="t('common.cancel')"
-            color="neutral"
-            variant="ghost"
-            @click="closeImageModal"
-          />
-          <UButton
-            :label="t('tournament.bulkActions.confirm')"
-            :disabled="!pickedImage"
-            @click="confirmImage"
-          />
-        </div>
-      </div>
-    </template>
-  </UModal>
+    @confirm="confirmImage"
+  />
 
   <UModal
     v-model:open="entryFeeModalOpen"
