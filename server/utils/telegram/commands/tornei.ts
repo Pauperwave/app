@@ -218,9 +218,8 @@ function buildKeyboard(rows: DatedTournamentRow[], monthOffset: number): InlineK
   })
 
   const keyboard = new InlineKeyboard()
-    .text('◀', `tornei:${monthOffset - 1}`)
-    .text(`     ${monthLabel(month)}     `, 'tornei:0')
-    .text('▶', `tornei:${monthOffset + 1}`)
+    .text('◀ Mese prec.', `tornei:${monthOffset - 1}`)
+    .text('Mese succ. ▶', `tornei:${monthOffset + 1}`)
 
   for (const row of filtered) {
     keyboard.row().text(`🎲 ${row.name}`, `torneo:${row.uuid}:${monthOffset}`)
