@@ -10,7 +10,7 @@ Stack: Nuxt 4 · Vue 3.5 · Nuxt UI · Supabase (Postgres + RLS) · TypeScript.
 pnpm install
 ```
 
-Richiede un `.env` con le variabili del progetto Supabase collegato (`NUXT_PUBLIC_SUPABASE_URL`, `NUXT_PUBLIC_SUPABASE_KEY`, `NUXT_SUPABASE_SECRET_KEY`).
+Richiede un `.env` con le variabili del progetto Supabase collegato (`NUXT_PUBLIC_SUPABASE_URL`, `NUXT_PUBLIC_SUPABASE_KEY`, `NUXT_SUPABASE_SECRET_KEY`), il token CardTrader (`CARDTRADER_API_TOKEN`) e, per il bot Telegram, `TELEGRAM_BOT_TOKEN`/`TELEGRAM_WEBHOOK_SECRET` (vedi sotto).
 
 ## Sviluppo
 
@@ -59,6 +59,16 @@ pnpm run supabase:types
 ```
 
 `shared/utils/types/database.ts` è generato: non va editato a mano.
+
+## Bot Telegram
+
+Webhook via Nitro/h3 (grammY). Dopo il deploy, registra l'URL con Telegram:
+
+```bash
+pnpm telegram:set-webhook   # richiede TELEGRAM_BOT_TOKEN/TELEGRAM_WEBHOOK_SECRET/NUXT_PUBLIC_SITE_URL nel .env
+```
+
+Comandi e stato di ogni funzionalità: `docs/architecture/telegram-bot.md`. Chi viene notificato per quale evento: `docs/architecture/telegram-notifications.md`.
 
 ## Documentazione
 
