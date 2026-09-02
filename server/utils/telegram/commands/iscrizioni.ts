@@ -2,6 +2,7 @@
 import { InlineKeyboard } from 'grammy'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
+import { fetchStageNumbers } from './calendario'
 import type { Bot } from 'grammy'
 
 interface MyTournamentRow {
@@ -9,11 +10,20 @@ interface MyTournamentRow {
   name: string
   starts_at: string
   location: { name: string | null } | null
+  stageNumber: number | null
+}
+
+interface RawTournamentRow {
+  uuid: string
+  name: string
+  starts_at: string
+  league_uuid: string | null
+  location: { name: string | null } | null
 }
 
 interface RegistrationRow {
   status: string
-  tournament: MyTournamentRow | null
+  tournament: RawTournamentRow | null
 }
 
 interface MyRegistration {
@@ -29,28 +39,38 @@ const ACTIVE_TOURNAMENT_STATUSES = ['registration_open', 'in_progress']
 async function fetchMyTournaments(associateUuid: string): Promise<MyRegistration[]> {
   const supabase = telegramServiceSupabaseClient()
 
-  const { data, error } = await supabase
-    .from('tournament_registrations')
-    .select(`
-      status,
-      players!inner(associate_uuid),
-      tournament:tournaments!inner(uuid, name, starts_at, location:locations(name))
-    `)
-    .eq('players.associate_uuid', associateUuid)
-    .is('tournament.deleted_at', null)
-    .in('tournament.status', ACTIVE_TOURNAMENT_STATUSES)
+  const [{ data, error }, stageNumbers] = await Promise.all([
+    supabase
+      .from('tournament_registrations')
+      .select(`
+        status,
+        players!inner(associate_uuid),
+        tournament:tournaments!inner(uuid, name, starts_at, league_uuid, location:locations(name))
+      `)
+      .eq('players.associate_uuid', associateUuid)
+      .is('tournament.deleted_at', null)
+      .in('tournament.status', ACTIVE_TOURNAMENT_STATUSES),
+    fetchStageNumbers()
+  ])
 
   if (error) throw error
 
   return (data as RegistrationRow[])
-    .filter((row): row is RegistrationRow & { tournament: MyTournamentRow } =>
+    .filter((row): row is RegistrationRow & { tournament: RawTournamentRow } =>
       row.tournament !== null && row.tournament.starts_at !== null)
-    .map(row => ({ registrationStatus: row.status, tournament: row.tournament }))
+    .map(row => ({
+      registrationStatus: row.status,
+      tournament: { ...row.tournament, stageNumber: stageNumbers.get(row.tournament.uuid) ?? null }
+    }))
     .sort((a, b) => a.tournament.starts_at.localeCompare(b.tournament.starts_at))
 }
 
 function statusIcon(registrationStatus: string): string {
   return registrationStatus === 'checked_in' ? '🎯' : '✅'
+}
+
+function stageLabel(tournament: MyTournamentRow): string {
+  return tournament.stageNumber ? ` — ${tournament.stageNumber}ª tappa` : ''
 }
 
 function mieiTorneiMessage(registrations: MyRegistration[]): string {
@@ -63,7 +83,7 @@ function mieiTorneiMessage(registrations: MyRegistration[]): string {
   const lines = registrations.map(({ registrationStatus, tournament }) => {
     const date = format(new Date(tournament.starts_at), 'EEE d MMM', { locale: it })
     const location = tournament.location?.name ? `\n  📍 ${tournament.location.name}` : ''
-    return `${statusIcon(registrationStatus)} *${date}* — ${tournament.name}${location}`
+    return `${statusIcon(registrationStatus)} *${date}*${stageLabel(tournament)} — ${tournament.name}${location}`
   })
 
   return `${header}\n\n${lines.join('\n')}\n\n👇 Tocca un torneo per i dettagli`
