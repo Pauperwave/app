@@ -2,7 +2,7 @@
 
 <!-- docs/architecture/telegram-bot.md -->
 
-Compagno leggibile dell'implementazione (`server/utils/telegram/`, `server/api/telegram/webhook.post.ts`) — stesso schema di `docs/architecture/permissions.md`: qui lo stato di ogni funzionalità, non solo l'intenzione. Scritto 2026-09-02, all'avvio dell'integrazione (grammY, webhook via Nitro/h3). Per il dettaglio "chi viene notificato per quale evento" vedi `docs/architecture/telegram-notifications.md`. Ogni comando vive nel proprio file sotto `commands/`, registrato tramite `commands/index.ts` (barrel) — `bot.ts` chiama solo `registerCommands(bot)`, senza una lista di import da tenere sincronizzata a mano.
+Compagno leggibile dell'implementazione (`server/utils/telegram/`, `server/api/telegram/webhook.post.ts`) — stesso schema di `docs/architecture/permissions.md`: qui lo stato di ogni funzionalità, non solo l'intenzione. Scritto 2026-09-02, all'avvio dell'integrazione (grammY, webhook via Nitro/h3). Il bot è **@PauperwaveBot** (rinominato 2026-09-03 da `UndeadButlerBot` — nome flavor legato a una singola carta MTG, sostituito con uno coerente col brand dell'app dato che il bot funge ormai da client dell'app più che da personaggio a sé). Per il dettaglio "chi viene notificato per quale evento" vedi `docs/architecture/telegram-notifications.md`. Ogni comando vive nel proprio file sotto `commands/`, registrato tramite `commands/index.ts` (barrel) — `bot.ts` chiama solo `registerCommands(bot)`, senza una lista di import da tenere sincronizzata a mano.
 
 ## Legend
 
