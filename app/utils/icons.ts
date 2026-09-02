@@ -63,6 +63,7 @@ export const ICONS = {
   playersRound: 'i-lucide-users-round',
   player: 'i-lucide-user',
   addPlayer: 'i-lucide-user-plus',
+  removePlayer: 'i-lucide-user-minus',
   playerConfirmed: 'i-lucide-user-check',
   playerLapsed: 'i-lucide-user-x',
   noShow: 'i-lucide-user-x',

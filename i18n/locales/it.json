@@ -1089,6 +1089,8 @@
       "taxCodeCopiedTitle": "Codice fiscale copiato",
       "sponsoredBy": "Con il supporto di",
       "register": "Iscriviti",
+      "unregister": "Disiscriviti",
+      "registerErrorTitle": "Iscrizione non riuscita",
       "registerComingSoonTitle": "Funzionalità in arrivo",
       "registerComingSoonDescription": "L'iscrizione online non è ancora attiva, scrivi sul gruppo WhatsApp o contatta il referente per iscriverti.",
       "share": "Condividi",
