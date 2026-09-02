@@ -56,13 +56,12 @@ export default defineNuxtConfig({
     // Server-only. Token from @BotFather; telegramWebhookSecret is an
     // arbitrary string shared with Telegram at webhook registration time
     // (scripts/telegram-set-webhook.mjs) to authenticate incoming updates via
-    // the X-Telegram-Bot-Api-Secret-Token header. telegramAdminChatId is the
-    // chat (user, group, or channel) that receives admin alerts — resolve it
-    // by messaging the bot and reading the chat id off the webhook update, or
-    // via @userinfobot.
+    // the X-Telegram-Bot-Api-Secret-Token header. Admin alert recipients are
+    // resolved from the database (notifyTelegramAdmins,
+    // pauperwave_associate_telegram_links joined on role), not an env var —
+    // see docs/architecture/telegram-bot.md, decision 2026-09-02.
     telegramBotToken: process.env.TELEGRAM_BOT_TOKEN,
     telegramWebhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET,
-    telegramAdminChatId: process.env.TELEGRAM_ADMIN_CHAT_ID,
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
       siteName: 'Pauperwave',
