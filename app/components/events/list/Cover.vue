@@ -92,9 +92,9 @@ function monthPart(startDate: string) {
     />
 
     <!-- Bottom row: status badge (left, same edge as the date chip above)
-         and the "set image" quick action (right, only while there's no
-         image yet — no attribution chip to show once there is one, see
-         the top-of-file comment). -->
+         and either the "set image" quick action or the card-art attribution
+         chip (right) — the two are mutually exclusive, one requires the
+         other missing. -->
     <div
       v-if="!loading && event"
       class="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2"
@@ -142,6 +142,7 @@ function monthPart(startDate: string) {
     </div>
     <div v-else-if="loading" class="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2">
       <USkeleton class="w-20 h-6 rounded" :ui="{ base: 'bg-black' }" />
+      <USkeleton class="w-24 h-4 rounded" :ui="{ base: 'bg-black' }" />
     </div>
 
     <UCheckbox
