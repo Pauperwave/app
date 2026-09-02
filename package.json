@@ -111,7 +111,8 @@
     "vue-tsc": "^3.3.11"
   },
   "resolutions": {
-    "unimport": "4.1.1"
+    "unimport": "4.1.1",
+    "h3": "1.15.11"
   },
   "packageManager": "pnpm@10.17.1"
 }
