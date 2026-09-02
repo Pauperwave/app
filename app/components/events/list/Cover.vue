@@ -1,17 +1,24 @@
 <!-- app\components\events\list\Cover.vue -->
 <!--
   Events' own version of TournamentsListCover.vue (2026-08-22, issue #45 +
-  "make presentable /events") — same image/date-chip/checkbox layout. No
-  attribution chip (unlike tournaments/leagues): the `events` table has no
-  image_card_name/image_card_artist columns, so there's nothing to
-  attribute even when `image` is set.
+  "make presentable /events") — same image/date-chip/checkbox layout,
+  including the attribution chip since migration 20260902195719 added
+  image_card_name/image_card_artist to events (previously events had
+  neither column — user request, 2026-09-02, "reuse the same UI
+  tournaments already has").
+
+  Status badge + quick "set image" action (2026-09-02, same treatment as
+  TournamentsListCover.vue) — single flex row along the bottom edge, not
+  independently absolutely-positioned elements (badge/button/chip have
+  different natural heights, sharing only `bottom-2` doesn't put their
+  visible edges on the same line).
 -->
 <script setup lang="ts">
 import type { Event } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 
 const {
-  // fallow-ignore-next-line code-duplication -- mirrors leagues/tournaments' own Cover.vue
+  // fallow-ignore-next-line code-duplication -- see tournaments/list/Cover.vue
   event = null, selection, range = [], loading = false
 } = defineProps<{
   event?: Event | null
@@ -25,6 +32,22 @@ const { t } = useI18n()
 
 // Same shift-click capture convention as TournamentsListCover.vue.
 const lastClickShiftKey = ref(false)
+
+// Single-event version of BulkActionsBar's "Imposta immagine" action,
+// built on the shared MagicSetImageModal — surfaced directly on a card
+// with no image yet, instead of requiring a multi-select just to add one
+// photo. Awaits its own mutation and shows a loading state, only closing
+// on success.
+const { setImage } = useEventsMutations()
+const imageModalOpen = ref(false)
+
+async function confirmImage(imageUrl: string, cardName: string | null, artist: string | null) {
+  if (!event) return
+  await setImage.mutateAsync({
+    id: event.id, imageUrl, imageCardName: cardName, imageCardArtist: artist
+  })
+  imageModalOpen.value = false
+}
 
 function dayPart(startDate: string) {
   return new Date(startDate).toLocaleDateString('it-IT', { day: '2-digit' })
@@ -68,6 +91,59 @@ function monthPart(startDate: string) {
       :ui="{ base: 'bg-black' }"
     />
 
+    <!-- Bottom row: status badge (left, same edge as the date chip above)
+         and the "set image" quick action (right, only while there's no
+         image yet — no attribution chip to show once there is one, see
+         the top-of-file comment). -->
+    <div
+      v-if="!loading && event"
+      class="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2"
+    >
+      <!-- variant="solid": a bare subtle badge floating on an arbitrary
+           photo isn't reliably legible for every status color (see
+           TournamentsListCover.vue's own note). @click.stop because
+           StatusChangeBadge's read-only branch (no manage-tournaments
+           permission) has no click handler of its own, unlike its
+           UDropdownMenu branch — without this it would bubble up to
+           Card.vue's onCardClick and navigate into the event detail. -->
+      <div class="shrink-0" @click.stop>
+        <EventsStatusBadge :event="event" variant="solid" />
+      </div>
+
+      <!-- Quick "set image" action, only when there's none yet — an
+           existing image is changed via EditModal instead, same as every
+           other field, this is just for the common "never set one" case. -->
+      <UButton
+        v-if="!event.image"
+        :label="t('event.bulkActions.setImage')"
+        :icon="ICONS.image"
+        size="xs"
+        color="neutral"
+        variant="solid"
+        class="shrink-0"
+        @click.stop="imageModalOpen = true"
+      />
+
+      <!-- Card-art attribution (required alongside any Scryfall art_crop
+           use, see CardArtPicker.vue) — only when set. -->
+      <UTooltip
+        v-else-if="event.imageCardName"
+        :text="event.imageCardArtist
+          ? t('magic.cardArtPicker.attribution', {
+            cardName: event.imageCardName, artist: event.imageCardArtist
+          })
+          : t('magic.cardArtPicker.attributionNoArtist', { cardName: event.imageCardName })"
+        class="min-w-0"
+      >
+        <span class="block truncate rounded bg-default/90 backdrop-blur-sm px-1.5 py-0.5 text-[10px] text-muted">
+          {{ event.imageCardName }}
+        </span>
+      </UTooltip>
+    </div>
+    <div v-else-if="loading" class="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2">
+      <USkeleton class="w-20 h-6 rounded" :ui="{ base: 'bg-black' }" />
+    </div>
+
     <UCheckbox
       v-if="!loading && event && selection"
       :model-value="selection.isSelected(event.id)"
@@ -80,6 +156,14 @@ function monthPart(startDate: string) {
         event.id, { shiftKey: lastClickShiftKey, range }
       )"
       @click.stop="lastClickShiftKey = $event.shiftKey"
+    />
+
+    <MagicSetImageModal
+      v-if="event"
+      v-model:open="imageModalOpen"
+      :title="t('event.bulkActions.setImageModalTitle', 1)"
+      :loading="setImage.isLoading.value"
+      @confirm="confirmImage"
     />
   </div>
 </template>

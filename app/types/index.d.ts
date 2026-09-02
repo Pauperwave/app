@@ -342,6 +342,12 @@ export interface Event {
   // Card.vue/Cover.vue (issue #45).
   locationMapsUrl: string | null
   image: string | null
+  // Attribution pair for `image` when it's a Scryfall art_crop, same as
+  // Tournament's own imageCardName/imageCardArtist (migration
+  // 20260902195719) — both null whenever image is unset or wasn't picked
+  // through the card-art picker.
+  imageCardName: string | null
+  imageCardArtist: string | null
   companionCode: string | null
 }
 

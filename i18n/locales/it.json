@@ -1109,6 +1109,7 @@
       "completed": "Completato",
       "cancelled": "Annullato"
     },
+    "statusChangeErrorTitle": "Impossibile aggiornare lo stato dell'evento",
     "filters": {
       "statusAll": "Tutti"
     },
@@ -1181,7 +1182,9 @@
       "deleteUndoToast": "{count} evento verrà eliminato | {count} eventi verranno eliminati",
       "statusSuccessToast": "{count} evento aggiornato | {count} eventi aggiornati",
       "deleteSuccessToast": "{count} evento eliminato | {count} eventi eliminati",
-      "partialFailure": "{count} operazione non riuscita | {count} operazioni non riuscite"
+      "partialFailure": "{count} operazione non riuscita | {count} operazioni non riuscite",
+      "setImage": "Imposta immagine",
+      "setImageModalTitle": "Imposta immagine per {count} evento | Imposta immagine per {count} eventi"
     },
     "card": {
       "openInMaps": "Apri in Maps"

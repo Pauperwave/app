@@ -2,6 +2,13 @@
 import type { EventStatus } from '~/types'
 import type { NewEventPayload } from '#shared/types/events'
 
+interface SetEventImageParams {
+  id: number
+  imageUrl: string | null
+  imageCardName: string | null
+  imageCardArtist: string | null
+}
+
 export function useEventsMutations() {
   const queryCache = useQueryCache()
   const invalidate = () => queryCache.invalidateQueries({ key: EVENTS_KEY })
@@ -27,6 +34,12 @@ export function useEventsMutations() {
     onSettled: invalidate
   })
 
+  const setImage = useMutation({
+    mutation: ({ id, ...body }: SetEventImageParams) =>
+      $fetch(`/api/events/${id}/image`, { method: 'POST', body }),
+    onSettled: invalidate
+  })
+
   const deleteEvent = useMutation({
     mutation: (id: number) =>
       $fetch(`/api/events/${id}/delete`, { method: 'POST' }),
@@ -34,6 +47,6 @@ export function useEventsMutations() {
   })
 
   return {
-    createEvent, updateEvent, setStatus, deleteEvent
+    createEvent, updateEvent, setStatus, setImage, deleteEvent
   }
 }

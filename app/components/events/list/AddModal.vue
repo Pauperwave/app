@@ -70,10 +70,11 @@ watch(locationOptions, (options) => {
 const { startDate, formattedStartDate, reset: resetStartDate } = useStartDateField(state)
 
 // Kept out of `state`/the valibot schema (no format validation needed) —
-// same convention as TournamentsListAddModal.vue's `image`. No card-name/
-// artist attribution pair here (unlike tournaments/leagues): the `events`
-// table has no image_card_name/image_card_artist columns.
+// same convention as TournamentsListAddModal.vue's `image`/`imageCardName`/
+// `imageCardArtist`.
 const image = ref<string | undefined>(undefined)
+const imageCardName = ref<string | undefined>(undefined)
+const imageCardArtist = ref<string | undefined>(undefined)
 
 // Re-applies sourceEvent every time the modal opens, not just on mount —
 // same reasoning as TournamentsListAddModal.vue's own watch(open, ...): this
@@ -84,6 +85,8 @@ watch(open, (isOpen) => {
   Object.assign(state, createInitialState())
   resetStartDate()
   image.value = sourceEvent.image ?? undefined
+  imageCardName.value = sourceEvent.imageCardName ?? undefined
+  imageCardArtist.value = sourceEvent.imageCardArtist ?? undefined
 })
 
 type Schema = v.InferOutput<typeof schema>
@@ -96,6 +99,8 @@ function resetForm() {
   Object.assign(state, createInitialState())
   resetStartDate()
   image.value = undefined
+  imageCardName.value = undefined
+  imageCardArtist.value = undefined
   state.organizerUuid = organizerOptions.value.find(option => option.label === 'Pauperwave')?.value
     ?? state.organizerUuid
   state.locationUuid = locationOptions.value.find(option => option.label.startsWith('Smart Lab'))?.value
@@ -116,7 +121,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     startsAt: startsAt.toISOString(),
     endsAt: endsAt ? endsAt.toISOString() : null,
     companionCode: event.data.companionCode || null,
-    imageUrl: image.value ?? null
+    imageUrl: image.value ?? null,
+    imageCardName: imageCardName.value ?? null,
+    imageCardArtist: imageCardArtist.value ?? null
   }
 
   try {
@@ -165,7 +172,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           </p>
 
           <UFormField :label="$t('league.addModal.fields.image')" name="image">
-            <MagicCardArtPicker v-model="image" />
+            <MagicCardArtPicker
+              v-model="image"
+              v-model:card-name="imageCardName"
+              v-model:artist="imageCardArtist"
+            />
           </UFormField>
 
           <div class="flex justify-between gap-2">

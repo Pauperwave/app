@@ -29,7 +29,7 @@ const statusItems = computed(() => TOURNAMENT_STATUSES.map(status => ({
   value: status
 })))
 
-// TournamentsSetImageModal owns the picker UI/state — confirm here just
+// MagicSetImageModal owns the picker UI/state — confirm here just
 // forwards it and closes immediately (matches markStatus/delete, which
 // both route through ConfirmModal in index.vue without awaiting first).
 const imageModalOpen = ref(false)
@@ -179,7 +179,7 @@ function closeLeagueModal() {
     />
   </div>
 
-  <TournamentsSetImageModal
+  <MagicSetImageModal
     v-model:open="imageModalOpen"
     :title="t('tournament.bulkActions.setImageModalTitle', count)"
     @confirm="confirmImage"

@@ -155,6 +155,8 @@ export type Database = {
           deleted_by: string | null
           ends_at: string | null
           id: number
+          image_card_artist: string | null
+          image_card_name: string | null
           image_url: string | null
           location_uuid: string | null
           name: string
@@ -171,6 +173,8 @@ export type Database = {
           deleted_by?: string | null
           ends_at?: string | null
           id?: number
+          image_card_artist?: string | null
+          image_card_name?: string | null
           image_url?: string | null
           location_uuid?: string | null
           name: string
@@ -187,6 +191,8 @@ export type Database = {
           deleted_by?: string | null
           ends_at?: string | null
           id?: number
+          image_card_artist?: string | null
+          image_card_name?: string | null
           image_url?: string | null
           location_uuid?: string | null
           name?: string
