@@ -7,7 +7,6 @@ import type { Bot } from 'grammy'
 // Each gets pulled out into its own commands/<name>.ts, same shape as
 // classifiche.ts, once actually built — remove its entry here when it is.
 const PLANNED_STUBS: { command: string, label: string }[] = [
-  { command: 'leghe', label: 'Leghe attive' },
   { command: 'cartecercate', label: 'Carte Cercate' },
   { command: 'prossimotorneo', label: 'Il prossimo torneo' },
   { command: 'tessera', label: 'Stato tesseramento' },
