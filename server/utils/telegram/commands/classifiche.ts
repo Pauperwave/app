@@ -62,19 +62,23 @@ async function formatStandingsMessage(format: StandingsFormat): Promise<string> 
   return `🏆 *Classifica ${FORMAT_LABELS[format]}*\n\n${lines.join('\n')}`
 }
 
-function formatsKeyboard(): InlineKeyboard {
+function formatsKeyboard(siteUrl: string): InlineKeyboard {
   return new InlineKeyboard()
     .text(FORMAT_LABELS.pauper, 'classifiche:pauper')
     .text(FORMAT_LABELS.commander, 'classifiche:commander').row()
     .text(FORMAT_LABELS.premodern, 'classifiche:premodern')
-    .text('Cittadino', 'classifiche:cittadino')
+    .text('Cittadino', 'classifiche:cittadino').row()
+    .url('Apri tutte le classifiche', `${siteUrl}/classifiche`)
 }
 
 export function registerClassificheCommand(bot: Bot) {
-  bot.command('classifiche', ctx => ctx.reply(
-    'Scegli un formato:',
-    { reply_markup: formatsKeyboard() }
-  ))
+  bot.command('classifiche', (ctx) => {
+    const siteUrl = useRuntimeConfig().public.siteUrl
+    return ctx.reply(
+      `Scegli un formato, oppure apri la pagina completa: ${siteUrl}/classifiche`,
+      { reply_markup: formatsKeyboard(siteUrl) }
+    )
+  })
 
   bot.callbackQuery(/^classifiche:(pauper|commander|premodern)$/, async (ctx) => {
     const format = ctx.match[1] as StandingsFormat
@@ -114,6 +118,10 @@ export function registerClassificheCommand(bot: Bot) {
 
   bot.callbackQuery('classifiche:menu', async (ctx) => {
     await ctx.answerCallbackQuery()
-    await ctx.editMessageText('Scegli un formato:', { reply_markup: formatsKeyboard() })
+    const siteUrl = useRuntimeConfig().public.siteUrl
+    await ctx.editMessageText(
+      `Scegli un formato, oppure apri la pagina completa: ${siteUrl}/classifiche`,
+      { reply_markup: formatsKeyboard(siteUrl) }
+    )
   })
 }
