@@ -25,7 +25,7 @@ const BLOCKED_STUBS: { command: string, label: string, reason: string }[] = [
   {
     command: 'tavolo',
     label: 'Tavolo e avversario del turno',
-    reason: 'l\'app non gestisce ancora gli abbinamenti per turno'
+    reason: 'gli abbinamenti esistono nel database solo come storico, non ancora aggiornati in tempo reale durante un torneo'
   },
   {
     command: 'bracket',
