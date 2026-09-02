@@ -1,6 +1,55 @@
 # Changelog
 
 
+## v0.1.11
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.1.10...v0.1.11)
+
+### Enhancements
+
+- **dev:** ✨ add dev-only test-login endpoint for browser automation ([c0025bc](https://github.com/Pauperwave/app/commit/c0025bc))
+
+### Fixes
+
+- **layout:** 🐛 key NuxtLayout so it fully remounts on layout change ([a31c945](https://github.com/Pauperwave/app/commit/a31c945))
+- **layout:** 🐛 key NuxtLayout so it fully remounts on layout change" ([165eb84](https://github.com/Pauperwave/app/commit/165eb84))
+- **auth:** 🐛 render auth/callback with the auth layout, not default ([0ac33d2](https://github.com/Pauperwave/app/commit/0ac33d2))
+- **test:** 🐛 make vitest auto-import mirror scan app/utils recursively ([e1e8b2f](https://github.com/Pauperwave/app/commit/e1e8b2f))
+- **login:** 🐛 translate Supabase's OTP rate-limit error message ([66dcbc7](https://github.com/Pauperwave/app/commit/66dcbc7))
+
+### Refactors
+
+- **routes:** 🔀 rename public standings routes from /rankings to /classifiche ([09b300b](https://github.com/Pauperwave/app/commit/09b300b))
+- **cittadino:** 🔀 move bestNStandings.ts from app/utils to shared/utils ([f7613ad](https://github.com/Pauperwave/app/commit/f7613ad))
+
+### Chore
+
+- **release:** 🔖 v0.1.10 ([435b282](https://github.com/Pauperwave/app/commit/435b282))
+
+### Tests
+
+- **unit:** ✅ add unit coverage for high-value pure-logic utils ([37799d0](https://github.com/Pauperwave/app/commit/37799d0))
+- **unit:** ✅ cover permissions, status/badge, and date-banding utils ([88249f1](https://github.com/Pauperwave/app/commit/88249f1))
+- **unit:** ✅ cover pure-logic table/selection/date composables ([81f9c44](https://github.com/Pauperwave/app/commit/81f9c44))
+- **unit:** ✅ cover toast/confirm-flow/query composables with i18n stubbing ([f7ad5e4](https://github.com/Pauperwave/app/commit/f7ad5e4))
+- **unit:** ✅ cover tournaments/transactions/events/leagues/cittadino filters ([6d3c595](https://github.com/Pauperwave/app/commit/6d3c595))
+- **unit:** ✅ cover quick-create menu items and the logout flow ([4a2b90a](https://github.com/Pauperwave/app/commit/4a2b90a))
+- **unit:** ✅ cover associate form defaults and transaction form validation ([a23defa](https://github.com/Pauperwave/app/commit/a23defa))
+- **unit:** ✅ cover the /finance summary aggregation logic ([19f9038](https://github.com/Pauperwave/app/commit/19f9038))
+- **unit:** ✅ cover format-color resolution and home sidebar action counts ([128e805](https://github.com/Pauperwave/app/commit/128e805))
+- **unit:** ✅ cover current-associate resolution and wanted-cards filters ([f4bc74e](https://github.com/Pauperwave/app/commit/f4bc74e))
+- **unit:** ✅ cover location/league/event AddModal validation schemas ([165f53f](https://github.com/Pauperwave/app/commit/165f53f))
+- **unit:** ✅ cover the associates row-actions context menu logic ([ff6f745](https://github.com/Pauperwave/app/commit/ff6f745))
+- **unit:** ✅ cover transactions and wanted-cards row-actions ([9566c36](https://github.com/Pauperwave/app/commit/9566c36))
+- **unit:** ✅ cover leagues/locations edit-modal state and players row actions ([64c2e9b](https://github.com/Pauperwave/app/commit/64c2e9b))
+- **unit:** ✅ cover events/tournaments edit-modal state and bulk actions ([e2c93d6](https://github.com/Pauperwave/app/commit/e2c93d6))
+- **unit:** ✅ cover associates and wanted-cards bulk actions ([a828473](https://github.com/Pauperwave/app/commit/a828473))
+- **unit:** ✅ cover the tournaments bulk actions (5 action types) ([b8de5bc](https://github.com/Pauperwave/app/commit/b8de5bc))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.1.10
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.1.9...v0.1.10)
