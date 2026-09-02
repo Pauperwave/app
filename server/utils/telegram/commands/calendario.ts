@@ -56,7 +56,7 @@ const SELECT_COLUMNS = `
 // just the open/upcoming rows this bot otherwise fetches — so this is a
 // deliberately separate, lightweight query (uuid/league_uuid/starts_at/
 // status only) rather than reusing fetchUpcomingTournaments' result.
-async function fetchStageNumbers(): Promise<Map<string, number>> {
+export async function fetchStageNumbers(): Promise<Map<string, number>> {
   const supabase = publicSupabaseClient()
 
   const { data, error } = await supabase
