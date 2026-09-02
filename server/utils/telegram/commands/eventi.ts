@@ -1,20 +1,7 @@
 // server\utils\telegram\commands\eventi.ts
-import { createClient } from '@supabase/supabase-js'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import type { Bot } from 'grammy'
-import type { Database } from '#shared/utils/types/database'
-
-// Telegram commands run outside any single HTTP request (the bot instance
-// is a long-lived singleton, see bot.ts) — no H3Event to pass to
-// serverSupabaseServiceRole. Same anon-client pattern as
-// server/api/dev/test-login.post.ts's anonClient: this data is public
-// anyway (same rows /calendario shows to anonymous visitors), so the
-// anon key is the right key here, not the service-role secret.
-function publicSupabaseClient() {
-  const config = useRuntimeConfig()
-  return createClient<Database>(config.public.supabase.url, config.public.supabase.key)
-}
 
 interface UpcomingEventRow {
   name: string
