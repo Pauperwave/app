@@ -3,6 +3,7 @@ import { Bot } from 'grammy'
 import { registerClassificheCommand } from './commands/classifiche'
 import { registerEventiCommand } from './commands/eventi'
 import { registerTorneiCommand } from './commands/tornei'
+import { registerLegheCommand } from './commands/leghe'
 import { registerStubCommands } from './commands/stubs'
 
 let bot: Bot | null = null
@@ -34,9 +35,10 @@ export function useTelegramBot(): Bot {
     + '/whoami — mostra l\'id di questa chat\n'
     + '/classifiche — classifiche per formato\n'
     + '/eventi — prossimi eventi\n'
-    + '/tornei — prossimi tornei (bottoni mese/location)\n\n'
+    + '/tornei — prossimi tornei (bottoni mese/location)\n'
+    + '/leghe — leghe attive\n\n'
     + 'In arrivo:\n'
-    + '/leghe, /cartecercate, /prossimotorneo, '
+    + '/cartecercate, /prossimotorneo, '
     + '/tessera, /mieitornei, /mieimazzi, /notifiche'
   ))
 
@@ -49,6 +51,7 @@ export function useTelegramBot(): Bot {
   registerClassificheCommand(bot)
   registerEventiCommand(bot)
   registerTorneiCommand(bot)
+  registerLegheCommand(bot)
   registerStubCommands(bot)
 
   return bot
