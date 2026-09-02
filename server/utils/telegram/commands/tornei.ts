@@ -24,6 +24,8 @@ interface TournamentRow {
   prizes: string | null
   contact_name: string | null
   contact_phone: string | null
+  status: string
+  image_url: string | null
   format: { name: string | null } | null
   location: LocationRow | null
   organizer: { name: string | null } | null
@@ -41,7 +43,7 @@ const MAX_ROWS = 200
 
 const SELECT_COLUMNS = `
   uuid, name, starts_at, ends_at, description, entry_fee, prizes,
-  contact_name, contact_phone,
+  contact_name, contact_phone, status, image_url,
   format:mtg_formats(name),
   location:locations(name, city, address, postal_code, province, country, google_maps_url),
   organizer:organizations(name)
@@ -79,19 +81,6 @@ async function fetchTournament(uuid: string): Promise<DatedTournamentRow | null>
   return row?.starts_at ? (row as DatedTournamentRow) : null
 }
 
-function cityOf(row: TournamentRow): string | null {
-  return row.location?.city ?? null
-}
-
-function buildCityList(rows: DatedTournamentRow[]): string[] {
-  const cities = new Set<string>()
-  for (const row of rows) {
-    const city = cityOf(row)
-    if (city) cities.add(city)
-  }
-  return [...cities].sort((a, b) => a.localeCompare(b))
-}
-
 // google_maps_url (precise place link) takes priority over a generic
 // address search, same precedence as TournamentDetailContent.vue.
 function mapsUrl(location: LocationRow): string | null {
@@ -107,29 +96,51 @@ function monthLabel(month: Date): string {
   return format(month, 'MMMM yyyy', { locale: it })
 }
 
-function tourneiMessage(rows: DatedTournamentRow[], month: Date, city: string | null): string {
+function dayLabel(date: Date): string {
+  const label = format(date, 'EEEE d MMMM', { locale: it })
+  return label.charAt(0).toUpperCase() + label.slice(1)
+}
+
+interface DayGroup {
+  day: Date
+  rows: DatedTournamentRow[]
+}
+
+function groupByDay(rows: DatedTournamentRow[]): DayGroup[] {
+  const groups = new Map<string, DayGroup>()
+  for (const row of rows) {
+    const key = format(new Date(row.starts_at), 'yyyy-MM-dd')
+    const group = groups.get(key)
+    if (group) group.rows.push(row)
+    else groups.set(key, { day: new Date(row.starts_at), rows: [row] })
+  }
+  return [...groups.values()].sort((a, b) => a.day.getTime() - b.day.getTime())
+}
+
+function tourneiMessage(rows: DatedTournamentRow[], month: Date): string {
   const start = startOfMonth(month)
   const end = endOfMonth(month)
 
   const filtered = rows.filter((row) => {
     const date = new Date(row.starts_at)
-    if (date < start || date > end) return false
-    if (city && cityOf(row) !== city) return false
-    return true
+    return date >= start && date <= end
   })
 
-  const header = `🎲 *Tornei — ${monthLabel(month)}*${city ? ` _(${city})_` : ''}`
+  const header = `🎲 *Tornei — ${monthLabel(month)}*`
 
   if (!filtered.length) return `${header}\n\nNessun torneo in programma.`
 
-  const lines = filtered.map((row) => {
-    const date = format(new Date(row.starts_at), 'd MMM', { locale: it })
-    const formatLabel = row.format?.name ? ` _[${row.format.name}]_` : ''
-    const location = row.location?.name ? ` — 📍 ${row.location.name}` : ''
-    return `*${date}*: ${row.name}${formatLabel}${location}`
+  const days = groupByDay(filtered).map(({ day, rows: dayRows }) => {
+    const dayHeader = `*${dayLabel(day)}*`
+    const dayLines = dayRows.map((row) => {
+      const formatLabel = row.format?.name ? `  _[${row.format.name}]_` : ''
+      const location = row.location?.name ? `\n  📍 ${row.location.name}` : ''
+      return `• ${row.name}${formatLabel}${location}`
+    })
+    return `${dayHeader}\n${dayLines.join('\n')}`
   })
 
-  return `${header}\n\n${lines.join('\n')}\n\n👇 Tocca un torneo per i dettagli`
+  return `${header}\n\n${days.join('\n\n')}\n\n👇 Tocca un torneo per i dettagli`
 }
 
 function tournamentDetailMessage(row: DatedTournamentRow): string {
@@ -152,80 +163,89 @@ function tournamentDetailMessage(row: DatedTournamentRow): string {
   return lines.join('\n')
 }
 
-function buildKeyboard(
-  rows: DatedTournamentRow[], monthOffset: number, cityIndex: number
-): InlineKeyboard {
-  const cities = buildCityList(rows)
+// Telegram photo captions cap at 1024 characters (vs. 4096 for plain text
+// messages) — only relevant when the detail is sent as a photo (image_url
+// set), so this trims the description first rather than the fixed fields
+// above it.
+const CAPTION_LIMIT = 1024
+
+function truncateForCaption(text: string): string {
+  if (text.length <= CAPTION_LIMIT) return text
+  return `${text.slice(0, CAPTION_LIMIT - 1)}…`
+}
+
+function detailKeyboard(row: DatedTournamentRow, monthOffset: number): InlineKeyboard {
+  const keyboard = new InlineKeyboard()
+  if (row.status === 'registration_open') {
+    keyboard.row().text('✅ Iscriviti', `iscrivi:${row.uuid}:${monthOffset}`)
+  }
+  keyboard.row().text('« Torna al mese', `tornei:${monthOffset}`)
+  return keyboard
+}
+
+function buildKeyboard(rows: DatedTournamentRow[], monthOffset: number): InlineKeyboard {
   const month = addMonths(startOfMonth(new Date()), monthOffset)
-  const city = cityIndex > 0 ? (cities[cityIndex - 1] ?? null) : null
 
   const filtered = rows.filter((row) => {
     const date = new Date(row.starts_at)
-    if (date < startOfMonth(month) || date > endOfMonth(month)) return false
-    if (city && cityOf(row) !== city) return false
-    return true
+    return date >= startOfMonth(month) && date <= endOfMonth(month)
   })
 
   const keyboard = new InlineKeyboard()
-    .text('◀', `tornei:${monthOffset - 1}:${cityIndex}`)
-    .text(monthLabel(month), `tornei:0:${cityIndex}`)
-    .text('▶', `tornei:${monthOffset + 1}:${cityIndex}`)
-
-  if (cities.length > 1) {
-    keyboard.row()
-    keyboard.text(cityIndex === 0 ? '• Tutte' : 'Tutte', `tornei:${monthOffset}:0`)
-    cities.forEach((cityName, index) => {
-      const label = cityIndex === index + 1 ? `• ${cityName}` : cityName
-      keyboard.text(label, `tornei:${monthOffset}:${index + 1}`)
-    })
-  }
+    .text('◀', `tornei:${monthOffset - 1}`)
+    .text(`     ${monthLabel(month)}     `, 'tornei:0')
+    .text('▶', `tornei:${monthOffset + 1}`)
 
   for (const row of filtered) {
-    keyboard.row().text(`🎲 ${row.name}`, `torneo:${row.uuid}:${monthOffset}:${cityIndex}`)
+    keyboard.row().text(`🎲 ${row.name}`, `torneo:${row.uuid}:${monthOffset}`)
   }
 
   return keyboard
 }
 
-async function renderTornei(monthOffset: number, cityIndex: number) {
+async function renderTornei(monthOffset: number) {
   const rows = await fetchUpcomingTournaments()
   const month = addMonths(startOfMonth(new Date()), monthOffset)
-  const cities = buildCityList(rows)
-  const city = cityIndex > 0 ? (cities[cityIndex - 1] ?? null) : null
 
   return {
-    text: tourneiMessage(rows, month, city),
-    keyboard: buildKeyboard(rows, monthOffset, cityIndex)
+    text: tourneiMessage(rows, month),
+    keyboard: buildKeyboard(rows, monthOffset)
   }
 }
 
 export function registerTorneiCommand(bot: Bot) {
   bot.command('tornei', async (ctx) => {
     try {
-      const { text, keyboard } = await renderTornei(0, 0)
+      const { text, keyboard } = await renderTornei(0)
       await ctx.reply(text, { parse_mode: 'Markdown', reply_markup: keyboard })
     } catch {
       await ctx.reply('⚠️ Non sono riuscito a recuperare i tornei, riprova più tardi.')
     }
   })
 
-  bot.callbackQuery(/^tornei:(-?\d+):(\d+)$/, async (ctx) => {
+  bot.callbackQuery(/^tornei:(-?\d+)$/, async (ctx) => {
     const monthOffset = Number(ctx.match[1])
-    const cityIndex = Number(ctx.match[2])
     await ctx.answerCallbackQuery()
 
     try {
-      const { text, keyboard } = await renderTornei(monthOffset, cityIndex)
-      await ctx.editMessageText(text, { parse_mode: 'Markdown', reply_markup: keyboard })
+      const { text, keyboard } = await renderTornei(monthOffset)
+      // The detail view may have replaced this message with a photo one
+      // (image_url tournaments) — editMessageText rejects that ("there is
+      // no text in the message to edit"), so fall back to delete + resend.
+      try {
+        await ctx.editMessageText(text, { parse_mode: 'Markdown', reply_markup: keyboard })
+      } catch {
+        await ctx.deleteMessage().catch(() => {})
+        await ctx.reply(text, { parse_mode: 'Markdown', reply_markup: keyboard })
+      }
     } catch {
       await ctx.answerCallbackQuery({ text: 'Errore nel caricamento', show_alert: true })
     }
   })
 
-  bot.callbackQuery(/^torneo:([0-9a-f-]+):(-?\d+):(\d+)$/, async (ctx) => {
+  bot.callbackQuery(/^torneo:([0-9a-f-]+):(-?\d+)$/, async (ctx) => {
     const uuid = ctx.match[1]
     const monthOffset = Number(ctx.match[2])
-    const cityIndex = Number(ctx.match[3])
     await ctx.answerCallbackQuery()
 
     if (!uuid) return
@@ -237,16 +257,65 @@ export function registerTorneiCommand(bot: Bot) {
         return
       }
 
-      const keyboard = new InlineKeyboard()
-        .text('« Torna al mese', `tornei:${monthOffset}:${cityIndex}`)
+      const keyboard = detailKeyboard(tournament, monthOffset)
+      const detail = tournamentDetailMessage(tournament)
 
-      await ctx.editMessageText(tournamentDetailMessage(tournament), {
+      if (tournament.image_url) {
+        // Can't turn an existing text message into a photo one via
+        // editMessageText — replace it instead.
+        await ctx.deleteMessage().catch(() => {})
+        await ctx.replyWithPhoto(tournament.image_url, {
+          caption: truncateForCaption(detail),
+          parse_mode: 'Markdown',
+          reply_markup: keyboard
+        })
+        return
+      }
+
+      await ctx.editMessageText(detail, {
         parse_mode: 'Markdown',
         reply_markup: keyboard,
         link_preview_options: { is_disabled: true }
       })
     } catch {
       await ctx.answerCallbackQuery({ text: 'Errore nel caricamento', show_alert: true })
+    }
+  })
+
+  bot.callbackQuery(/^iscrivi:([0-9a-f-]+):(-?\d+)$/, async (ctx) => {
+    const uuid = ctx.match[1]
+    const chatId = ctx.chat?.id
+    if (!uuid || !chatId) return
+
+    try {
+      const associateUuid = await resolveAssociateUuidByChatId(chatId)
+      if (!associateUuid) {
+        await ctx.answerCallbackQuery({
+          text: 'Devi prima collegare il tuo account: scrivimi la tua email da socio.',
+          show_alert: true
+        })
+        return
+      }
+
+      const tournament = await fetchTournament(uuid)
+      if (!tournament || tournament.status !== 'registration_open') {
+        await ctx.answerCallbackQuery({
+          text: 'Le iscrizioni per questo torneo non sono aperte.',
+          show_alert: true
+        })
+        return
+      }
+
+      const supabase = telegramServiceSupabaseClient()
+      const { error } = await supabase.rpc('register_tournament_players', {
+        p_tournament_uuid: uuid,
+        p_associate_uuids: [associateUuid]
+      })
+      if (error) throw error
+
+      await ctx.answerCallbackQuery({ text: '✅ Iscrizione confermata!', show_alert: true })
+    } catch {
+      await ctx.answerCallbackQuery({ text: 'Errore durante l\'iscrizione, riprova più tardi.', show_alert: true })
     }
   })
 }
