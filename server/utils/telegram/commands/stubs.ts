@@ -8,7 +8,6 @@ import type { Bot } from 'grammy'
 // classifiche.ts, once actually built — remove its entry here when it is.
 const PLANNED_STUBS: { command: string, label: string }[] = [
   { command: 'cartecercate', label: 'Carte Cercate' },
-  { command: 'prossimo', label: 'Il prossimo torneo' },
   { command: 'tessera', label: 'Stato tesseramento' },
   { command: 'mieitornei', label: 'Tornei a cui sei iscritto' },
   { command: 'mieimazzi', label: 'I tuoi mazzi Commander' },
