@@ -27,7 +27,6 @@ interface TournamentRow {
   status: string
   image_url: string | null
   league_uuid: string | null
-  format: { name: string | null } | null
   location: LocationRow | null
   organizer: { name: string | null } | null
 }
@@ -46,7 +45,6 @@ const MAX_ROWS = 200
 const SELECT_COLUMNS = `
   uuid, name, starts_at, ends_at, description, entry_fee, prizes,
   contact_name, contact_phone, status, image_url, league_uuid,
-  format:mtg_formats(name),
   location:locations(name, city, address, postal_code, province, country, google_maps_url),
   organizer:organizations(name)
 `
@@ -204,9 +202,8 @@ function tourneiMessage(rows: DatedTournamentRow[], month: Date): string {
   const days = groupByDay(filtered).map(({ day, rows: dayRows }) => {
     const dayHeader = `*${dayLabel(day)}*`
     const dayLines = dayRows.map((row) => {
-      const formatLabel = row.format?.name ? `  _[${row.format.name}]_` : ''
       const location = row.location?.name ? `\n  📍 ${row.location.name}` : ''
-      return `• ${row.name}${stageLabel(row)}${formatLabel}${location}`
+      return `• ${row.name}${stageLabel(row)}${location}`
     })
     return `${dayHeader}\n${dayLines.join('\n')}`
   })
@@ -219,9 +216,7 @@ function tournamentDetailMessage(
 ): string {
   const date = format(new Date(row.starts_at), 'EEEE d MMMM \'alle\' HH:mm', { locale: it })
   const endTime = row.ends_at ? ` – ${format(new Date(row.ends_at), 'HH:mm')}` : ''
-  const formatLabel = row.format?.name ? ` _[${row.format.name}]_` : ''
-
-  const lines = [`🎲 *${row.name}*${stageLabel(row)}${formatLabel}`, '', `🗓️ ${date}${endTime}`]
+  const lines = [`🎲 *${row.name}*${stageLabel(row)}`, '', `🗓️ ${date}${endTime}`]
 
   if (row.location?.name) {
     const url = mapsUrl(row.location)
