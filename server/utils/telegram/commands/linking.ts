@@ -11,6 +11,23 @@ import type { Bot } from 'grammy'
 // plain text is nothing (everything else is a /command).
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
+// Shared with tornei.ts's self-registration button — a chat can only
+// register the associate it's linked to, resolved server-side the same way
+// self-register.post.ts resolves it from the web session, just keyed by
+// chat_id instead of a Supabase auth user.
+export async function resolveAssociateUuidByChatId(chatId: number): Promise<string | null> {
+  const supabase = telegramServiceSupabaseClient()
+
+  const { data, error } = await supabase
+    .from('pauperwave_associate_telegram_links')
+    .select('associate_uuid')
+    .eq('chat_id', chatId)
+    .maybeSingle()
+
+  if (error) throw error
+  return data?.associate_uuid ?? null
+}
+
 async function linkChat(chatId: number, email: string): Promise<string> {
   const supabase = telegramServiceSupabaseClient()
 
