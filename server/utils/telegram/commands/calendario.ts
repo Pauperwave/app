@@ -1,4 +1,4 @@
-// server\utils\telegram\commands\tornei.ts
+// server\utils\telegram\commands\calendario.ts
 import { InlineKeyboard } from 'grammy'
 import { addMonths, endOfMonth, format, startOfMonth } from 'date-fns'
 import { it } from 'date-fns/locale'
@@ -186,7 +186,7 @@ function groupByDay(rows: DatedTournamentRow[]): DayGroup[] {
   return [...groups.values()].sort((a, b) => a.day.getTime() - b.day.getTime())
 }
 
-function tourneiMessage(rows: DatedTournamentRow[], month: Date): string {
+function calendarioMessage(rows: DatedTournamentRow[], month: Date): string {
   const start = startOfMonth(month)
   const end = endOfMonth(month)
 
@@ -244,18 +244,62 @@ function truncateForCaption(text: string): string {
   return `${text.slice(0, CAPTION_LIMIT - 1)}…`
 }
 
+// A tournament's detail view is reachable from more than one place
+// (calendario.ts's own month grid, leghe.ts's per-league tournament list,
+// iscrizioni.ts's "my tournaments") — `origin` is a compact token
+// (`m<monthOffset>` or `l<leagueIndex>`) carried through the torneo:/
+// iscrivi:/disiscrivi: callback_data so the "back" button returns to
+// whichever list the user actually came from, without any server-side
+// session state (Nitro is serverless, see linking.ts's own reasoning).
+// Kept short deliberately — callback_data has a hard 64-byte cap, and a
+// second full UUID (a league's) wouldn't fit alongside the tournament's own.
+function backTarget(origin: string): { label: string, data: string } {
+  if (origin.startsWith('l')) {
+    return { label: '« Torna alla lega', data: `lega:${origin.slice(1)}` }
+  }
+  return { label: '« Torna al mese', data: `calendario:${origin.slice(1)}` }
+}
+
+// Google Calendar's "render" endpoint accepts a prefilled event via query
+// params — no auth, no backend of our own needed. Missing ends_at (not
+// every tournament sets one) falls back to a 4-hour default block rather
+// than omitting the button; better a rough estimate on the user's calendar
+// than no calendar entry at all.
+function googleCalendarUrl(row: DatedTournamentRow): string {
+  const start = new Date(row.starts_at)
+  const end = row.ends_at ? new Date(row.ends_at) : new Date(start.getTime() + 4 * 60 * 60 * 1000)
+  const utcStamp = (date: Date) => `${date.toISOString().replace(/[-:]/g, '').split('.')[0]}Z`
+
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: row.name,
+    dates: `${utcStamp(start)}/${utcStamp(end)}`
+  })
+  if (row.location?.name) params.set('location', row.location.name)
+  if (row.description) params.set('details', row.description)
+
+  return `https://www.google.com/calendar/render?${params.toString()}`
+}
+
 function detailKeyboard(
-  row: DatedTournamentRow, monthOffset: number, registration: RegistrationStatus
+  row: DatedTournamentRow, origin: string, registration: RegistrationStatus
 ): InlineKeyboard {
   const keyboard = new InlineKeyboard()
   if (registration === 'checked_in') {
     keyboard.row().text('🎯 Check-in effettuato', `checkin-info:${row.uuid}`)
   } else if (registration === 'registered') {
-    keyboard.row().text('✅ Iscritto (tocca per annullare)', `disiscrivi:${row.uuid}:${monthOffset}`)
+    keyboard.row().text('❌ Annulla iscrizione', `disiscrivi:${row.uuid}:${origin}`)
   } else if (row.status === 'registration_open') {
-    keyboard.row().text('➕ Iscriviti', `iscrivi:${row.uuid}:${monthOffset}`)
+    keyboard.row().text('➕ Iscriviti', `iscrivi:${row.uuid}:${origin}`)
   }
-  keyboard.row().text('« Torna al mese', `tornei:${monthOffset}`)
+
+  const mapUrl = row.location ? mapsUrl(row.location) : null
+  const utilityRow = keyboard.row()
+  if (mapUrl) utilityRow.url('🧭 Direzioni', mapUrl)
+  utilityRow.url('🗓️ Aggiungi al calendario', googleCalendarUrl(row))
+
+  const back = backTarget(origin)
+  keyboard.row().text(back.label, back.data)
   return keyboard
 }
 
@@ -268,18 +312,18 @@ function buildKeyboard(rows: DatedTournamentRow[], monthOffset: number): InlineK
   })
 
   const keyboard = new InlineKeyboard()
-    .text('◀ Mese prec.', `tornei:${monthOffset - 1}`)
-    .text('Mese succ. ▶', `tornei:${monthOffset + 1}`)
+    .text('◀ Mese prec.', `calendario:${monthOffset - 1}`)
+    .text('Mese succ. ▶', `calendario:${monthOffset + 1}`)
 
   for (const row of filtered) {
-    keyboard.row().text(`🎲 ${row.name}`, `torneo:${row.uuid}:${monthOffset}`)
+    keyboard.row().text(`🎲 ${row.name}`, `torneo:${row.uuid}:m${monthOffset}`)
   }
 
   return keyboard
 }
 
 async function renderTournamentDetail(
-  tournament: DatedTournamentRow, monthOffset: number, chatId: number
+  tournament: DatedTournamentRow, origin: string, chatId: number
 ) {
   const associateUuid = await resolveAssociateUuidByChatId(chatId)
   const registration = associateUuid
@@ -288,36 +332,36 @@ async function renderTournamentDetail(
 
   return {
     text: tournamentDetailMessage(tournament, registration),
-    keyboard: detailKeyboard(tournament, monthOffset, registration)
+    keyboard: detailKeyboard(tournament, origin, registration)
   }
 }
 
-async function renderTornei(monthOffset: number) {
+async function renderCalendario(monthOffset: number) {
   const rows = await fetchUpcomingTournaments()
   const month = addMonths(startOfMonth(new Date()), monthOffset)
 
   return {
-    text: tourneiMessage(rows, month),
+    text: calendarioMessage(rows, month),
     keyboard: buildKeyboard(rows, monthOffset)
   }
 }
 
-export function registerTorneiCommand(bot: Bot) {
-  bot.command('tornei', async (ctx) => {
+export function registerCalendarioCommand(bot: Bot) {
+  bot.command('calendario', async (ctx) => {
     try {
-      const { text, keyboard } = await renderTornei(0)
+      const { text, keyboard } = await renderCalendario(0)
       await ctx.reply(text, { parse_mode: 'Markdown', reply_markup: keyboard })
     } catch {
       await ctx.reply('⚠️ Non sono riuscito a recuperare i tornei, riprova più tardi.')
     }
   })
 
-  bot.callbackQuery(/^tornei:(-?\d+)$/, async (ctx) => {
+  bot.callbackQuery(/^calendario:(-?\d+)$/, async (ctx) => {
     const monthOffset = Number(ctx.match[1])
     await ctx.answerCallbackQuery()
 
     try {
-      const { text, keyboard } = await renderTornei(monthOffset)
+      const { text, keyboard } = await renderCalendario(monthOffset)
       // The detail view may have replaced this message with a photo one
       // (image_url tournaments) — editMessageText rejects that ("there is
       // no text in the message to edit"), so fall back to delete + resend.
@@ -332,13 +376,15 @@ export function registerTorneiCommand(bot: Bot) {
     }
   })
 
-  bot.callbackQuery(/^torneo:([0-9a-f-]+):(-?\d+)$/, async (ctx) => {
+  // origin: m<monthOffset> from calendario.ts's own grid, l<leagueIndex>
+  // from leghe.ts's per-league tournament list — see backTarget's comment.
+  bot.callbackQuery(/^torneo:([0-9a-f-]+):([lm]-?\d+)$/, async (ctx) => {
     const uuid = ctx.match[1]
-    const monthOffset = Number(ctx.match[2])
+    const origin = ctx.match[2]
     const chatId = ctx.chat?.id
     await ctx.answerCallbackQuery()
 
-    if (!uuid || !chatId) return
+    if (!uuid || !origin || !chatId) return
 
     try {
       const tournament = await fetchTournament(uuid)
@@ -347,7 +393,7 @@ export function registerTorneiCommand(bot: Bot) {
         return
       }
 
-      const { text, keyboard } = await renderTournamentDetail(tournament, monthOffset, chatId)
+      const { text, keyboard } = await renderTournamentDetail(tournament, origin, chatId)
 
       if (tournament.image_url) {
         // Can't turn an existing text message into a photo one via
@@ -375,9 +421,9 @@ export function registerTorneiCommand(bot: Bot) {
   // after a successful iscriviti/disiscriviti, so the button reflects the
   // new registration state instead of just toasting a confirmation.
   async function refreshDetailMessage(
-    ctx: Context, tournament: DatedTournamentRow, monthOffset: number, chatId: number
+    ctx: Context, tournament: DatedTournamentRow, origin: string, chatId: number
   ) {
-    const { text, keyboard } = await renderTournamentDetail(tournament, monthOffset, chatId)
+    const { text, keyboard } = await renderTournamentDetail(tournament, origin, chatId)
     if (tournament.image_url) {
       await ctx.editMessageCaption({ caption: truncateForCaption(text), parse_mode: 'Markdown', reply_markup: keyboard })
     } else {
@@ -396,11 +442,11 @@ export function registerTorneiCommand(bot: Bot) {
     })
   })
 
-  bot.callbackQuery(/^iscrivi:([0-9a-f-]+):(-?\d+)$/, async (ctx) => {
+  bot.callbackQuery(/^iscrivi:([0-9a-f-]+):([lm]-?\d+)$/, async (ctx) => {
     const uuid = ctx.match[1]
-    const monthOffset = Number(ctx.match[2])
+    const origin = ctx.match[2]
     const chatId = ctx.chat?.id
-    if (!uuid || !chatId) return
+    if (!uuid || !origin || !chatId) return
 
     try {
       const associateUuid = await resolveAssociateUuidByChatId(chatId)
@@ -428,18 +474,18 @@ export function registerTorneiCommand(bot: Bot) {
       })
       if (error) throw error
 
-      await refreshDetailMessage(ctx, tournament, monthOffset, chatId)
+      await refreshDetailMessage(ctx, tournament, origin, chatId)
       await ctx.answerCallbackQuery({ text: '✅ Iscrizione confermata!' })
     } catch {
       await ctx.answerCallbackQuery({ text: 'Errore durante l\'iscrizione, riprova più tardi.', show_alert: true })
     }
   })
 
-  bot.callbackQuery(/^disiscrivi:([0-9a-f-]+):(-?\d+)$/, async (ctx) => {
+  bot.callbackQuery(/^disiscrivi:([0-9a-f-]+):([lm]-?\d+)$/, async (ctx) => {
     const uuid = ctx.match[1]
-    const monthOffset = Number(ctx.match[2])
+    const origin = ctx.match[2]
     const chatId = ctx.chat?.id
-    if (!uuid || !chatId) return
+    if (!uuid || !origin || !chatId) return
 
     try {
       const associateUuid = await resolveAssociateUuidByChatId(chatId)
@@ -479,7 +525,7 @@ export function registerTorneiCommand(bot: Bot) {
         .eq('uuid', existing.uuid)
       if (error) throw error
 
-      await refreshDetailMessage(ctx, tournament, monthOffset, chatId)
+      await refreshDetailMessage(ctx, tournament, origin, chatId)
       await ctx.answerCallbackQuery({ text: '✅ Iscrizione annullata.' })
     } catch {
       await ctx.answerCallbackQuery({ text: 'Errore durante l\'annullamento, riprova più tardi.', show_alert: true })

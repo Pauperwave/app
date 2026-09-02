@@ -3,7 +3,7 @@ import type { Bot } from 'grammy'
 import { registerCoreCommands } from './core'
 import { registerClassificheCommand } from './classifiche'
 import { registerEventiCommand } from './eventi'
-import { registerTorneiCommand } from './tornei'
+import { registerCalendarioCommand } from './calendario'
 import { registerLegheCommand } from './leghe'
 import { registerProssimoCommand } from './prossimo'
 import { registerIscrizioniCommand } from './iscrizioni'
@@ -18,7 +18,7 @@ export function registerCommands(bot: Bot) {
   registerCoreCommands(bot)
   registerClassificheCommand(bot)
   registerEventiCommand(bot)
-  registerTorneiCommand(bot)
+  registerCalendarioCommand(bot)
   registerLegheCommand(bot)
   registerProssimoCommand(bot)
   registerIscrizioniCommand(bot)
