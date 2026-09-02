@@ -7,13 +7,17 @@ import { registerCalendarioCommand } from './calendario'
 import { registerLegheCommand } from './leghe'
 import { registerProssimoCommand } from './prossimo'
 import { registerIscrizioniCommand } from './iscrizioni'
+import { registerSupportoCommand } from './supporto'
 import { registerStubCommands } from './stubs'
 import { registerLinkingHandler } from './linking'
 
 // Single entry point for bot.ts — add a new command's register call here
 // instead of growing bot.ts's own import list. registerLinkingHandler stays
 // last: its bot.on('message:text') catch-all must only see messages no
-// earlier /command handler already claimed.
+// earlier /command handler already claimed. registerSupportoCommand also
+// registers its own bot.on('message:text') (ForceReply-based, see
+// supporto.ts) — must come before registerLinkingHandler for the same
+// reason, though it isn't itself a plain catch-all.
 export function registerCommands(bot: Bot) {
   registerCoreCommands(bot)
   registerClassificheCommand(bot)
@@ -22,6 +26,7 @@ export function registerCommands(bot: Bot) {
   registerLegheCommand(bot)
   registerProssimoCommand(bot)
   registerIscrizioniCommand(bot)
+  registerSupportoCommand(bot)
   registerStubCommands(bot)
   registerLinkingHandler(bot)
 }
