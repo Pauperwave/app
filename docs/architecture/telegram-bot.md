@@ -51,6 +51,8 @@ Compagno leggibile dell'implementazione (`server/utils/telegram/`, `server/api/t
 
 **`/classifiche` non calcola Cittadino perché il suo scoring è strutturalmente diverso** (miglior-11 su tutti i formati, con tie-break — ADR-012, `docs/PROGRESS.md`) da quello delle classifiche per formato (`groupBestNByPlayer` semplice). Replicarlo nel bot avrebbe richiesto portare anche quella logica lato server prima che i dati sottostanti siano reali (issue #2) — rimandato.
 
+**TODO: possibile traduzione EN/DE in futuro.** Discusso 2026-09-03: ogni comando ha oggi le sue stringhe italiane hardcoded direttamente nel proprio `commands/*.ts`, nessun uso del sistema i18n dell'app (`i18n/locales/it.json`, pensato per la UI Vue/Nuxt lato client — il bot gira come singleton Nitro fuori da quel contesto). Deliberatamente non affrontato ora (nessun requisito multilingua reale ancora), ma se in futuro serve inglese/tedesco andrà introdotto un meccanismo di i18n lato server dedicato al bot (o quantomeno stringhe centralizzate per comando), non riuso diretto del sistema esistente.
+
 ## Aggiornare questa tabella
 
 Ogni volta che un comando passa da 🔴/⚫ a 🟡/🟢 (o viceversa, se qualcosa si rompe/viene rimosso), aggiornare la riga qui — stessa disciplina di `docs/architecture/permissions.md`: la tabella deve riflettere lo stato reale del codice, non l'intenzione.
