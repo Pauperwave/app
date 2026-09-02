@@ -22,6 +22,7 @@
     "uisfx",
     "vue-draggable-plus",
     "vue-echarts",
+    "vue-i18n",
     "@vue/test-utils"
   ],
   "duplicates": {
