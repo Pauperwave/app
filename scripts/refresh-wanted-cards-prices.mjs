@@ -107,6 +107,23 @@ async function resolveExpansionIds(setCode) {
   )
 }
 
+// CardTrader does not always backfill a blueprint's scryfall_id right after a set
+// releases (confirmed 2026-08-11 on "Commander: Marvel Super Heroes", msc — over
+// half of its 338 blueprints, including "Stilt-Man, Towering Terror", still had
+// scryfall_id: null) — the name match below is the fallback for that gap. Mirrors
+// server/utils/cardTrader.ts's resolveCardTraderBlueprint, which this script's own
+// header comment says it duplicates but this fallback was missing until 2026-09-02
+// (found investigating #51 "Stilt-Man" and #64 "Price of Glory" both stuck with no
+// cardtrader_price and no cached blueprint row).
+async function fetchScryfallCardName(scryfallId) {
+  const response = await fetch(`https://api.scryfall.com/cards/${scryfallId}`, {
+    headers: { 'User-Agent': SCRYFALL_USER_AGENT, 'Accept': 'application/json' }
+  })
+  if (!response.ok) return null
+  const card = await response.json()
+  return card.name ?? null
+}
+
 async function resolveBlueprintId(scryfallId, setCode) {
   const { data: cached } = await supabase
     .from('pauperwave_cardtrader_blueprints')
@@ -117,6 +134,7 @@ async function resolveBlueprintId(scryfallId, setCode) {
   if (cached) return cached.id
 
   const expansionIds = await resolveExpansionIds(setCode.toLowerCase())
+  const blueprintsByExpansion = []
 
   for (const expansionId of expansionIds) {
     const response = await fetch(`${CARDTRADER_API_BASE}/blueprints/export?expansion_id=${expansionId}`, {
@@ -125,14 +143,28 @@ async function resolveBlueprintId(scryfallId, setCode) {
     if (!response.ok) throw new Error(`CardTrader blueprints request failed: ${response.status}`)
 
     const blueprints = await response.json()
+    blueprintsByExpansion.push(blueprints)
+
     const match = blueprints.find(blueprint => blueprint.scryfall_id === scryfallId)
-    if (!match) continue
+    if (match) {
+      await supabase.from('pauperwave_cardtrader_blueprints').upsert({
+        id: match.id, scryfall_id: scryfallId, expansion_id: match.expansion_id, name: match.name
+      })
+      return match.id
+    }
+  }
 
-    await supabase.from('pauperwave_cardtrader_blueprints').upsert({
-      id: match.id, scryfall_id: scryfallId, expansion_id: match.expansion_id, name: match.name
-    })
-
-    return match.id
+  const cardName = await fetchScryfallCardName(scryfallId).catch(() => null)
+  if (cardName) {
+    for (const blueprints of blueprintsByExpansion) {
+      const match = blueprints.find(blueprint => blueprint.name === cardName)
+      if (match) {
+        await supabase.from('pauperwave_cardtrader_blueprints').upsert({
+          id: match.id, scryfall_id: scryfallId, expansion_id: match.expansion_id, name: match.name
+        })
+        return match.id
+      }
+    }
   }
 
   return null
