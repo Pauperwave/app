@@ -18,11 +18,25 @@ export async function sendTelegramMessage(chatId: number | string, text: string)
 // lives in get_admin_telegram_chat_ids() (migration 20260902102812) rather
 // than three separate queries here — user_roles.user_id and players.user_id
 // both reference auth.users independently, no FK PostgREST could embed across.
-export async function notifyTelegramAdmins(event: H3Event, text: string) {
+async function notifyByRole(event: H3Event, text: string, roles?: ('admin' | 'super_admin')[]) {
   const supabase = serverSupabaseServiceRole<Database>(event)
 
-  const { data: chatIds, error } = await supabase.rpc('get_admin_telegram_chat_ids')
+  const { data: chatIds, error } = await supabase.rpc('get_admin_telegram_chat_ids', { p_roles: roles })
   if (error) throw error
 
   await Promise.all((chatIds ?? []).map(chatId => sendTelegramMessage(chatId, text)))
+}
+
+// Domain events an admin/organizer needs to act on (new tesseramento
+// request, renewal request) — both roles, default of
+// get_admin_telegram_chat_ids().
+export async function notifyTelegramAdmins(event: H3Event, text: string) {
+  await notifyByRole(event, text)
+}
+
+// Technical errors — super_admin only, so there's a single point of
+// accountability for intervening promptly rather than spreading system
+// alerts across every admin (user request, 2026-09-02).
+export async function notifyTelegramSuperAdmins(event: H3Event, text: string) {
+  await notifyByRole(event, text, ['super_admin'])
 }
