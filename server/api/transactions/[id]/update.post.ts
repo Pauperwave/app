@@ -12,15 +12,13 @@ export default defineEventHandler(async (event) => {
   validatePayerInfo(body)
   const supabase = serverSupabaseServiceRole<Database>(event)
 
-  // Needed to reconcile pauperwave_associate_renewals below — the update
-  // itself doesn't tell us what the payment used to look like. Also
-  // decides the permission tier just below, so this read has to happen
-  // before that check (requireUser above already gates it to logged-in
-  // users only — no data is returned to the caller if the tier check
-  // rejects afterward).
+  // Needed only to decide the permission tier below (admin vs. organizer) —
+  // update_payment_with_renewal re-reads the previous row itself, inside the
+  // same transaction as the write, so there's no risk of it going stale
+  // between this check and the RPC call.
   const { data: previousPayment, error: previousError } = await supabase
     .from('pauperwave_payments')
-    .select('associate_uuid, payment_type, payment_date')
+    .select('payment_type')
     .eq('id', id)
     .single()
 
@@ -41,55 +39,46 @@ export default defineEventHandler(async (event) => {
     await requireManagementPermission(event)
   }
 
-  const { data: payment, error } = await supabase
-    .from('pauperwave_payments')
-    .update({
-      ...buildTransactionFields(body),
-      ...await auditColumnsForUpdate(event, user)
-    })
-    .eq('id', id)
-    .select()
-    .single()
+  const updatedBy = await resolveAuditAssociateUuid(event, user)
 
-  if (error || !payment) {
+  // Payment write + stale-renewal cleanup + renewal reconciliation all
+  // happen in one Postgres transaction (update_payment_with_renewal,
+  // migration 20260902105738) — previously three separate Supabase JS
+  // calls, where a failure partway through could leave the payment updated
+  // but the renewal rows out of sync with it.
+  //
+  // Cast: see the same comment in create.post.ts — Postgres function args
+  // have no introspectable nullability, the generated Args type is wrong
+  // here for the columns that are genuinely nullable.
+  const { data, error } = await supabase.rpc('update_payment_with_renewal', {
+    p_id: id,
+    p_associate_uuid: body.associateUuid,
+    p_payer_name: body.payerName,
+    p_payer_surname: body.payerSurname,
+    p_payer_email: body.payerEmail,
+    p_payer_tax_code: body.payerTaxCode,
+    p_payment_date: body.paymentDate,
+    p_payment_amount: body.paymentAmount,
+    p_payment_method: body.paymentMethod,
+    p_payment_type: body.paymentType,
+    p_received_by: body.receivedBy,
+    p_tournament_uuid: body.tournamentUuid,
+    p_event_uuid: body.eventUuid,
+    p_event_name: body.eventName,
+    p_notes: body.notes,
+    p_updated_by: updatedBy
+  } as Database['public']['Functions']['update_payment_with_renewal']['Args'])
+
+  const result = data?.[0]
+  if (error || !result) {
     throw createError({
-      statusCode: 500,
+      statusCode: error?.code === 'P0002' ? 404 : 500,
       statusMessage: error?.message ?? 'Transaction update failed'
     })
   }
 
-  // If this payment used to back a renewal (was "Association Fee" for a known
-  // associate) and no longer does — type changed, associate changed, or the
-  // date moved to a different year — that renewal row must go too, or the
-  // associate stays "active" for a fee that no longer has any payment behind
-  // it. Only removes it if no OTHER Association Fee payment for that
-  // associate+year still exists (see removeStaleRenewal).
-  const previousYear = previousPayment.payment_date
-    ? renewalYearFor(previousPayment.payment_date)
-    : null
-  const newYear = body.paymentType === 'Association Fee' ? renewalYearFor(body.paymentDate) : null
-  const renewalTargetChanged = previousPayment.associate_uuid !== body.associateUuid
-    || previousYear !== newYear
-
-  if (previousPayment.payment_type === 'Association Fee' && previousPayment.associate_uuid
-    && renewalTargetChanged) {
-    await removeStaleRenewal(supabase, {
-      associateUuid: previousPayment.associate_uuid,
-      paymentDate: previousPayment.payment_date,
-      excludePaymentId: id
-    })
+  return {
+    transaction: { id: result.updated_payment_id, uuid: result.updated_payment_uuid },
+    renewed: result.renewed
   }
-
-  // Same renewal-recording rule as create.post.ts — editing a payment into (or
-  // within) "Association Fee" for a known associate should still count as a
-  // renewal.
-  let renewed = false
-  if (body.paymentType === 'Association Fee' && body.associateUuid) {
-    renewed = await ensureRenewalForPayment(supabase, {
-      associateUuid: body.associateUuid,
-      paymentDate: body.paymentDate
-    })
-  }
-
-  return { transaction: payment, renewed }
 })
