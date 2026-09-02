@@ -28,12 +28,15 @@ export function useTelegramBot(): Bot {
     'Comandi disponibili:\n\n'
     + '/start — avvia il bot\n'
     + '/help — mostra questo messaggio\n'
+    + '/status — mostra lo stato corrente del bot\n'
     + '/whoami — mostra l\'id di questa chat\n'
     + '/classifiche — classifiche per formato\n\n'
     + 'In arrivo:\n'
     + '/eventi, /tornei, /leghe, /cartecercate, /prossimotorneo, '
     + '/tessera, /mieitornei, /mieimazzi, /notifiche'
   ))
+
+  bot.command('status', ctx => ctx.reply('🟢 Bot operativo.'))
 
   // Dev/setup helper: lets an admin read off their numeric chat id (needed
   // for TELEGRAM_ADMIN_CHAT_ID) without grepping raw getUpdates output.
