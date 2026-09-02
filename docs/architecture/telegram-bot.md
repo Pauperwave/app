@@ -22,7 +22,8 @@ Compagno leggibile dell'implementazione (`server/utils/telegram/`, `server/api/t
 |---|---|---|---|
 | `/start` | Pubblico | 🟡 | Risponde con un messaggio di benvenuto. Non chiede ancora l'email di collegamento (vedi riga sotto). |
 | `/help` | Pubblico | 🟢 | Elenco comandi disponibili. |
-| `/whoami` | Pubblico | 🟢 | Restituisce il `chat_id` numerico — helper di setup per popolare `TELEGRAM_ADMIN_CHAT_ID`, non pensato per gli utenti finali. |
+| `/status` | Pubblico | 🟢 | Liveness check, risponde "🟢 Bot operativo." |
+| `/whoami` | Pubblico | 🟢 | Restituisce il `chat_id` numerico — helper di setup (es. per popolare a mano una riga in `pauperwave_associate_telegram_links`), non pensato per gli utenti finali. |
 | `/classifiche` | Pubblico | 🟡 | Pauper/Commander/Premodern: calcolo reale (riusa `groupBestNByPlayer`, `shared/utils/cittadino/bestNStandings.ts`), top 10 + link alla pagina completa. Cittadino: solo link, nessun calcolo (scoring best-11 diverso, non replicato nel bot). |
 | `/eventi` | Pubblico | 🔴 | Prossimi eventi — dati reali già disponibili (`events`), da costruire. Comando registrato, risponde "🚧 da implementare" (`commands/stubs.ts`). |
 | `/tornei` | Pubblico | 🔴 | Prossimi tornei, con bottoni per filtrare per location/mese (stesso pattern `InlineKeyboard` di `/classifiche`). Comando registrato, risponde "🚧 da implementare" (`commands/stubs.ts`). |
