@@ -26,6 +26,7 @@ interface TournamentRow {
   contact_phone: string | null
   status: string
   image_url: string | null
+  league_uuid: string | null
   format: { name: string | null } | null
   location: LocationRow | null
   organizer: { name: string | null } | null
@@ -33,6 +34,7 @@ interface TournamentRow {
 
 interface DatedTournamentRow extends TournamentRow {
   starts_at: string
+  stageNumber: number | null
 }
 
 const OPEN_STATUSES = ['registration_open', 'in_progress']
@@ -43,42 +45,89 @@ const MAX_ROWS = 200
 
 const SELECT_COLUMNS = `
   uuid, name, starts_at, ends_at, description, entry_fee, prizes,
-  contact_name, contact_phone, status, image_url,
+  contact_name, contact_phone, status, image_url, league_uuid,
   format:mtg_formats(name),
   location:locations(name, city, address, postal_code, province, country, google_maps_url),
   organizer:organizations(name)
 `
 
-async function fetchUpcomingTournaments(): Promise<DatedTournamentRow[]> {
+// Mirrors app/utils/tournaments/tournamentStageLabel.ts's
+// assignTournamentStageNumbers: 1-based position within its own league,
+// ordered by start date, cancelled stages skipped (don't get a number,
+// don't count toward later ones). Needs the league's full history — not
+// just the open/upcoming rows this bot otherwise fetches — so this is a
+// deliberately separate, lightweight query (uuid/league_uuid/starts_at/
+// status only) rather than reusing fetchUpcomingTournaments' result.
+async function fetchStageNumbers(): Promise<Map<string, number>> {
   const supabase = publicSupabaseClient()
 
   const { data, error } = await supabase
     .from('tournaments')
-    .select(SELECT_COLUMNS)
+    .select('uuid, league_uuid, starts_at, status')
     .is('deleted_at', null)
-    .in('status', OPEN_STATUSES)
-    .gte('starts_at', startOfMonth(new Date()).toISOString())
+    .not('league_uuid', 'is', null)
     .order('starts_at', { ascending: true })
-    .limit(MAX_ROWS)
 
   if (error) throw error
-  return (data as TournamentRow[]).filter(
-    (row): row is DatedTournamentRow => row.starts_at !== null
-  )
+
+  const byLeague = new Map<string, { uuid: string, status: string }[]>()
+  for (const row of data) {
+    if (!row.league_uuid) continue
+    const list = byLeague.get(row.league_uuid) ?? []
+    list.push({ uuid: row.uuid, status: row.status })
+    byLeague.set(row.league_uuid, list)
+  }
+
+  const stageNumbers = new Map<string, number>()
+  for (const list of byLeague.values()) {
+    let position = 0
+    for (const row of list) {
+      if (row.status === 'cancelled') continue
+      position += 1
+      stageNumbers.set(row.uuid, position)
+    }
+  }
+  return stageNumbers
+}
+
+async function fetchUpcomingTournaments(): Promise<DatedTournamentRow[]> {
+  const supabase = publicSupabaseClient()
+
+  const [{ data, error }, stageNumbers] = await Promise.all([
+    supabase
+      .from('tournaments')
+      .select(SELECT_COLUMNS)
+      .is('deleted_at', null)
+      .in('status', OPEN_STATUSES)
+      .gte('starts_at', startOfMonth(new Date()).toISOString())
+      .order('starts_at', { ascending: true })
+      .limit(MAX_ROWS),
+    fetchStageNumbers()
+  ])
+
+  if (error) throw error
+  return (data as TournamentRow[])
+    .filter((row): row is TournamentRow & { starts_at: string } => row.starts_at !== null)
+    .map(row => ({ ...row, stageNumber: stageNumbers.get(row.uuid) ?? null }))
 }
 
 async function fetchTournament(uuid: string): Promise<DatedTournamentRow | null> {
   const supabase = publicSupabaseClient()
 
-  const { data, error } = await supabase
-    .from('tournaments')
-    .select(SELECT_COLUMNS)
-    .eq('uuid', uuid)
-    .maybeSingle()
+  const [{ data, error }, stageNumbers] = await Promise.all([
+    supabase
+      .from('tournaments')
+      .select(SELECT_COLUMNS)
+      .eq('uuid', uuid)
+      .maybeSingle(),
+    fetchStageNumbers()
+  ])
 
   if (error) throw error
   const row = data as TournamentRow | null
-  return row?.starts_at ? (row as DatedTournamentRow) : null
+  return row?.starts_at
+    ? { ...row, starts_at: row.starts_at, stageNumber: stageNumbers.get(row.uuid) ?? null }
+    : null
 }
 
 type RegistrationStatus = 'registered' | 'checked_in' | null
@@ -119,6 +168,10 @@ function dayLabel(date: Date): string {
   return label.charAt(0).toUpperCase() + label.slice(1)
 }
 
+function stageLabel(row: DatedTournamentRow): string {
+  return row.stageNumber ? ` — ${row.stageNumber}ª tappa` : ''
+}
+
 interface DayGroup {
   day: Date
   rows: DatedTournamentRow[]
@@ -153,7 +206,7 @@ function tourneiMessage(rows: DatedTournamentRow[], month: Date): string {
     const dayLines = dayRows.map((row) => {
       const formatLabel = row.format?.name ? `  _[${row.format.name}]_` : ''
       const location = row.location?.name ? `\n  📍 ${row.location.name}` : ''
-      return `• ${row.name}${formatLabel}${location}`
+      return `• ${row.name}${stageLabel(row)}${formatLabel}${location}`
     })
     return `${dayHeader}\n${dayLines.join('\n')}`
   })
@@ -168,7 +221,7 @@ function tournamentDetailMessage(
   const endTime = row.ends_at ? ` – ${format(new Date(row.ends_at), 'HH:mm')}` : ''
   const formatLabel = row.format?.name ? ` _[${row.format.name}]_` : ''
 
-  const lines = [`🎲 *${row.name}*${formatLabel}`, '', `🗓️ ${date}${endTime}`]
+  const lines = [`🎲 *${row.name}*${stageLabel(row)}${formatLabel}`, '', `🗓️ ${date}${endTime}`]
 
   if (row.location?.name) {
     const url = mapsUrl(row.location)
