@@ -6,6 +6,7 @@ import { registerEventiCommand } from './eventi'
 import { registerTorneiCommand } from './tornei'
 import { registerLegheCommand } from './leghe'
 import { registerProssimoCommand } from './prossimo'
+import { registerIscrizioniCommand } from './iscrizioni'
 import { registerStubCommands } from './stubs'
 import { registerLinkingHandler } from './linking'
 
@@ -20,6 +21,7 @@ export function registerCommands(bot: Bot) {
   registerTorneiCommand(bot)
   registerLegheCommand(bot)
   registerProssimoCommand(bot)
+  registerIscrizioniCommand(bot)
   registerStubCommands(bot)
   registerLinkingHandler(bot)
 }

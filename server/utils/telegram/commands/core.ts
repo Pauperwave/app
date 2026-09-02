@@ -10,9 +10,10 @@ const HELP_TEXT = 'Comandi disponibili:\n\n'
   + '/eventi — prossimi eventi\n'
   + '/tornei — prossimi tornei (bottoni mese/location)\n'
   + '/leghe — leghe attive\n'
-  + '/prossimo — il prossimo torneo\n\n'
+  + '/prossimo — il prossimo torneo\n'
+  + '/iscrizioni — i tornei a cui sei iscritto\n\n'
   + 'In arrivo:\n'
-  + '/cartecercate, /tessera, /mieitornei, /mieimazzi, /notifiche'
+  + '/cartecercate, /tessera, /mieimazzi, /notifiche'
 
 export function registerCoreCommands(bot: Bot) {
   bot.command('start', ctx => ctx.reply(

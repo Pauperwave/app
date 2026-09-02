@@ -9,7 +9,6 @@ import type { Bot } from 'grammy'
 const PLANNED_STUBS: { command: string, label: string }[] = [
   { command: 'cartecercate', label: 'Carte Cercate' },
   { command: 'tessera', label: 'Stato tesseramento' },
-  { command: 'mieitornei', label: 'Tornei a cui sei iscritto' },
   { command: 'mieimazzi', label: 'I tuoi mazzi Commander' },
   { command: 'notifiche', label: 'Notifiche per formato seguito' }
 ]
