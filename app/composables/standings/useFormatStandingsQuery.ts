@@ -90,6 +90,7 @@ export function useFormatStandingsQuery(
     )
 
     const rows = groups.map<FormatStandingRow>((group) => {
+      // fallow-ignore-next-line code-duplication -- same totals logic in server/utils/telegram/commands/classifiche.ts, duplicated because this composable is Vue-only (useAsyncData/computed) and can't run in a Telegram command handler
       const counted = group.sortedByPoints.slice(0, countedResults.value)
 
       // Placement points only count for the player's best-N results, but the

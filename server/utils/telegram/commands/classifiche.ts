@@ -44,6 +44,7 @@ async function formatStandingsMessage(format: StandingsFormat): Promise<string> 
   )
 
   const rows = groups.map((group) => {
+    // fallow-ignore-next-line code-duplication -- same totals logic in useFormatStandingsQuery.ts, see this file's own top comment for why it's duplicated instead of shared
     const counted = group.sortedByPoints.slice(0, payload.countedResults)
     const placementTotal = counted.reduce((sum, result) => sum + result.points, 0)
     const participationTotal = group.results.reduce(
