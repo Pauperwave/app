@@ -23,7 +23,9 @@ export default defineEventHandler(async (event) => {
       starts_at: body.startsAt,
       ends_at: body.endsAt,
       companion_app_code: body.companionCode,
-      image_url: body.imageUrl
+      image_url: body.imageUrl,
+      image_card_name: body.imageCardName,
+      image_card_artist: body.imageCardArtist
     })
     .select()
     .single()

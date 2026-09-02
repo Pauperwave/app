@@ -30,10 +30,11 @@ const state = reactive<EventFormState>({
 const { startDate, formattedStartDate } = useStartDateField(state, { defaultToToday: false })
 
 // Kept out of `state`/the valibot schema (no format validation needed) —
-// same convention as TournamentsListEditModal.vue's `image`. No card-name/
-// artist attribution pair here (unlike tournaments/leagues): the `events`
-// table has no image_card_name/image_card_artist columns.
+// same convention as TournamentsListEditModal.vue's `image`/`imageCardName`/
+// `imageCardArtist`.
 const image = ref<string | undefined>(undefined)
+const imageCardName = ref<string | undefined>(undefined)
+const imageCardArtist = ref<string | undefined>(undefined)
 
 // Refills every time the modal opens on a (possibly new) event — same
 // convention as TournamentsListEditModal.vue's watch on its `tournament` prop.
@@ -56,6 +57,8 @@ watch([open, () => editingEvent], ([isOpen, current]) => {
   state.locationUuid = current.locationUuid ?? undefined
   state.companionCode = current.companionCode ?? undefined
   image.value = current.image ?? undefined
+  imageCardName.value = current.imageCardName ?? undefined
+  imageCardArtist.value = current.imageCardArtist ?? undefined
 }, { immediate: true })
 
 const {
@@ -80,7 +83,9 @@ async function onSubmit(formEvent: FormSubmitEvent<Schema>) {
     startsAt: startsAt.toISOString(),
     endsAt: endsAt ? endsAt.toISOString() : null,
     companionCode: formEvent.data.companionCode || null,
-    imageUrl: image.value ?? null
+    imageUrl: image.value ?? null,
+    imageCardName: imageCardName.value ?? null,
+    imageCardArtist: imageCardArtist.value ?? null
   }
 
   await submitWithToast(
@@ -109,7 +114,11 @@ async function onSubmit(formEvent: FormSubmitEvent<Schema>) {
         @submit="onSubmit"
       >
         <UFormField :label="$t('league.addModal.fields.image')" name="image">
-          <MagicCardArtPicker v-model="image" />
+          <MagicCardArtPicker
+            v-model="image"
+            v-model:card-name="imageCardName"
+            v-model:artist="imageCardArtist"
+          />
         </UFormField>
 
         <div class="flex justify-between gap-2">

@@ -59,6 +59,8 @@ export function useEventsQuery() {
         locationCity: row.location?.city ?? null,
         locationMapsUrl: row.location?.google_maps_url ?? null,
         image: row.image_url,
+        imageCardName: row.image_card_name,
+        imageCardArtist: row.image_card_artist,
         companionCode: row.companion_app_code
       }))
     }

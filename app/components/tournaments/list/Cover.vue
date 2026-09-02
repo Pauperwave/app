@@ -32,7 +32,7 @@ const { t } = useI18n()
 const lastClickShiftKey = ref(false)
 
 // Single-tournament version of BulkActionsBar.vue's "Imposta immagine"
-// action, both built on the shared TournamentsSetImageModal — surfaced
+// action, both built on the shared MagicSetImageModal — surfaced
 // directly on a card with no image yet, instead of requiring a multi-select
 // just to add one photo (user request, 2026-09-02). Unlike the bulk one,
 // this awaits its own mutation and shows a loading state, only closing on
@@ -175,7 +175,7 @@ function monthPart(startDate: string) {
       @click.stop="lastClickShiftKey = $event.shiftKey"
     />
 
-    <TournamentsSetImageModal
+    <MagicSetImageModal
       v-if="tournament"
       v-model:open="imageModalOpen"
       :title="t('tournament.bulkActions.setImageModalTitle', 1)"
