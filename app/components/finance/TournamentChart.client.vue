@@ -1,11 +1,13 @@
-<!-- app\components\finance\TournamentTrendChart.client.vue -->
-<!-- Line+scatter, revenue over time, one point per tournament, one line per
-format — added alongside (not merged into a Grafico/Tabella switch like
-Monthly/Type/Format) TournamentSummaryTable.vue, which keeps all 34 rows
-individually addressable in a way a chart can't (user request, 2026-08-24).
-Genuinely continuous x (real tournament dates, not evenly-spaced index
-positions like every other chart on this page) — a first for this codebase,
-see the x/xTicks comments below.
+<!-- app\components\finance\TournamentChart.client.vue -->
+<!-- Line+scatter, one point per tournament, one line per format — merges
+TournamentTrendChart.client.vue (revenue) and
+TournamentParticipantsChart.client.vue (participants) into a single
+always-mounted chart driven by a `metric` prop, rather than two separate
+components toggled with v-if. Switching components would unmount/remount the
+whole VisXYContainer, so unovis has nothing to interpolate from — the lines
+would just snap. Keeping one container alive and only changing its y
+accessor/data-derived value lets unovis actually animate each line/point to
+its new position (user request, 2026-09-03: "voglio animare le linee").
 
 Deliberately no `:data` on <VisXYContainer> — @unovis/vue's per-component
 data resolves as `container.data ?? ownData` (components/line/index.js),
@@ -33,10 +35,12 @@ import { VisXYContainer, VisLine, VisScatter, VisAxis, VisTooltip } from '@unovi
 import { Scatter } from '@unovis/ts'
 import type { FinanceTournamentSummaryRow } from '~/composables/finance/useFinanceSummary'
 
-// fallow-ignore-next-line code-duplication -- see the same comment in FormatChart.client.vue
-const { rows, year, loading = false } = defineProps<{
+const {
+  rows, year, metric, loading = false
+} = defineProps<{
   rows: FinanceTournamentSummaryRow[]
   year: number
+  metric: 'participants' | 'revenue'
   loading?: boolean
 }>()
 
@@ -44,7 +48,15 @@ const { t } = useI18n()
 const amountFormatter = AMOUNT_FORMATTER
 const { chartColor } = useChartPalette()
 
-const grandTotal = computed(() => columnTotal(rows, 'total'))
+const title = computed(() => metric === 'participants'
+  ? t('finance.charts.participantsTrend')
+  : t('finance.charts.tournamentTrend'))
+const value = computed(() => metric === 'participants'
+  ? columnTotal(rows, 'count')
+  : amountFormatter.format(columnTotal(rows, 'total')))
+const caption = computed(() => metric === 'participants'
+  ? t('finance.charts.totalParticipants')
+  : t('finance.summary.grandTotal'))
 
 const chartRows = computed(() =>
   [...rows].sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()))
@@ -73,10 +85,21 @@ const legendItems = computed(() => formats.value.map((format, i) => ({
 // between tournaments (weeks apart, unevenly spaced) matter here, unlike
 // the evenly-bucketed month/format/type charts elsewhere on this page.
 const x = (row: FinanceTournamentSummaryRow) => new Date(row.startDate).getTime()
-const y = (row: FinanceTournamentSummaryRow) => row.total
+// Reads `metric` fresh on every call (Vue 3.5 reactive-prop-destructure
+// transform rewrites the bare reference to __props.metric everywhere in
+// this file, not just inside computed()) — switching metric re-evaluates y
+// for the existing points, which is exactly what lets unovis animate them
+// to their new position instead of remounting.
+const y = (row: FinanceTournamentSummaryRow) => (metric === 'participants' ? row.count : row.total)
 const color = (row: FinanceTournamentSummaryRow) => colorByFormat.value.get(row.format)
 
 const xTicks = (value: number) => formatDate(new Date(value), 'MMM yyyy')
+// Participants are a whole-number count — a fractional y tick (e.g. "3.5")
+// would misread as a real half-participant rather than just axis rounding.
+// Revenue keeps VisAxis's own default formatter (undefined tick-format).
+const yTicks = computed(() => (metric === 'participants'
+  ? (raw: number) => Math.round(raw).toString()
+  : undefined))
 
 // Spans the whole selected `year` (Jan 1 - Dec 31), same convention as
 // byMonth's own backfill (useFinanceSummary.ts) — keyed off the year
@@ -98,7 +121,16 @@ const xTickValues = computed(() => eachMonthOfInterval({
 const template = (row: FinanceTournamentSummaryRow) => [
   `<strong>${row.name}</strong>`,
   `${row.format} · ${formatDate(new Date(row.startDate), 'd MMM yyyy')}`,
-  amountFormatter.format(row.total)
+  metric === 'participants'
+    ? t('finance.charts.participantsCount', { count: row.count })
+    // compedCount is a subset of count (free entries, see
+    // FinanceTournamentSummaryRow's own comment) — count - compedCount is
+    // how many actually paid, out of the tournament's total entries (user
+    // request, 2026-09-03).
+    : `${amountFormatter.format(row.total)} ${t('finance.charts.payingCount', {
+      paying: row.count - row.compedCount,
+      total: row.count
+    })}`
 ].join('<br>')
 
 // VisCrosshair never picked up a valid position on this chart despite
@@ -115,7 +147,10 @@ const triggers = {
 
 // Same reactivity gap as FormatChart.client.vue/TypeChart.client.vue's own
 // documented fix — a manual render nudge on mount avoids the scale getting
-// stuck at its default/stale domain.
+// stuck at its default/stale domain. Explicit 0 here (not the container's
+// own animated :duration below) so the very first real paint snaps in
+// instantly instead of growing from empty — only a later metric switch
+// should animate.
 // watch on `loading`, not onMounted — see FormatChart.client.vue's own
 // comment for why (the container is hidden behind the loading skeleton
 // until then, so waiting for mount alone would miss the real chart's
@@ -128,9 +163,9 @@ watch(() => loading, (isLoading) => {
 
 <template>
   <StatisticsStatChartCard
-    :title="t('finance.charts.tournamentTrend')"
-    :value="amountFormatter.format(grandTotal)"
-    :caption="t('finance.summary.grandTotal')"
+    :title="title"
+    :value="value"
+    :caption="caption"
     :legend-items="legendItems"
     :loading="loading"
   >
@@ -140,7 +175,7 @@ watch(() => loading, (isLoading) => {
         ref="containerRef"
         :x-domain="xDomain"
         :padding="{ top: 40, left: 8, right: 8 }"
-        :duration="0"
+        :duration="400"
         class="h-96"
         :width="width"
       >
@@ -166,7 +201,10 @@ watch(() => loading, (isLoading) => {
           :tick-format="xTicks"
           :tick-values="xTickValues"
         />
-        <VisAxis type="y" />
+        <VisAxis
+          type="y"
+          :tick-format="yTicks"
+        />
 
         <VisTooltip :triggers="triggers" />
       </VisXYContainer>

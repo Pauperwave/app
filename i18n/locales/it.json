@@ -634,11 +634,17 @@
       "byFormat": "Incassato per formato",
       "byType": "Incassato per tipologia",
       "tournamentTrend": "Andamento tornei per formato",
+      "participantsTrend": "Andamento partecipanti per formato",
+      "totalParticipants": "Partecipanti totali",
+      "participantsCount": "{count} partecipanti",
+      "payingCount": "({paying}/{total} paganti)",
       "today": "Oggi"
     },
     "views": {
       "chart": "Grafico",
-      "table": "Tabella"
+      "table": "Tabella",
+      "participants": "Partecipanti",
+      "revenue": "Incassato"
     },
     "tour": {
       "startButton": "Tour guidato",

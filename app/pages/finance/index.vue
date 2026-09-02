@@ -143,23 +143,13 @@ const tour = useFinanceTour()
             :loading="loading"
             :pending="pending"
           />
-          <div id="tour-finance-table-tournament" class="flex flex-col gap-6">
-            <ClientOnly>
-              <FinanceTournamentTrendChart
-                :rows="byTournament"
-                :year="selectedYear"
-                :loading="loading"
-              />
-              <template #fallback>
-                <StatisticsStatChartCardSkeleton />
-              </template>
-            </ClientOnly>
-            <FinanceTournamentSummaryTable
-              :rows="byTournament"
-              :loading="loading"
-              :pending="pending"
-            />
-          </div>
+          <FinanceTournamentOverview
+            id="tour-finance-table-tournament"
+            :rows="byTournament"
+            :year="selectedYear"
+            :loading="loading"
+            :pending="pending"
+          />
           <FinanceEventSummaryTable
             id="tour-finance-table-event"
             :rows="byEvent"
