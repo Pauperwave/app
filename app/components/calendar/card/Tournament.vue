@@ -36,6 +36,7 @@ function openDetail() {
   <CalendarCardBase
     :name="`${tournament.name}${tournamentStageText(tournament)}`"
     :start-date="tournament.startDate"
+    :tournament="tournament"
     :status="tournament.status"
     :location="tournament.location"
     :location-address="tournament.locationAddress"

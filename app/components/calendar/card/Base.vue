@@ -16,11 +16,15 @@
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import type { CalendarIcsItem } from '~/utils/events/eventIcs'
-import type { EventStatus, TournamentStatus } from '~/types'
+import type { EventStatus, Tournament, TournamentStatus } from '~/types'
 
 interface Props {
   name: string
   startDate: string
+  // Only set by Tournament.vue — Event.vue has no real event-level
+  // registration yet (RegisterButton.vue's own header comment), so it never
+  // passes one and the button there stays the "coming soon" placeholder.
+  tournament?: Tournament | null
   // Shared between Event and Tournament cards, which have independently
   // evolving status vocabularies (migration 20260815100000) — only the
   // 'completed' literal common to both is ever compared here, but the union
@@ -40,6 +44,7 @@ interface Props {
 const {
   name,
   startDate,
+  tournament = null,
   status,
   location,
   locationAddress = null,
@@ -141,7 +146,7 @@ const isPast = computed(() => status === 'completed')
 
     <div class="flex justify-end gap-2 mt-4" @click.stop>
       <CalendarButtonAddToCalendarButton :item="icsItem" />
-      <CalendarButtonRegisterButton />
+      <CalendarButtonRegisterButton :tournament="tournament" />
     </div>
   </UCard>
 </template>

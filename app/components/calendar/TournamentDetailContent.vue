@@ -70,7 +70,7 @@ const timeRange = computed(() => tournamentTimeRange(tournament.startDate, tourn
         :start-date="tournament.startDate"
       />
       <CalendarButtonAddToCalendarButton :item="tournament" />
-      <CalendarButtonRegisterButton />
+      <CalendarButtonRegisterButton :tournament="tournament" />
     </div>
 
     <div v-if="tournament.participants.length" class="pt-4 border-t border-default">
