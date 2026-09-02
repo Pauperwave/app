@@ -17,9 +17,16 @@ const { label, collectorNumber, imageUrl } = defineProps<Props>()
 </script>
 
 <template>
+  <!-- previewWidth/Height: art_crop is a landscape crop (~626x457, unlike
+       the portrait full-card image MagicCardHoverPreview defaults to) —
+       without an override here NuxtImg crops/zooms it to fit the default
+       portrait box instead of showing the actual illustration (found
+       2026-09-02, right after the printing-selector rewrite). -->
   <MagicCardHoverPreview
     :image-url="imageUrl"
     :alt="label"
+    :preview-width="280"
+    :preview-height="204"
     class="flex items-center gap-1.5"
   >
     <span>{{ label }}</span>

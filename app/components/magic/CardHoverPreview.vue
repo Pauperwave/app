@@ -24,9 +24,17 @@ interface Props {
   /** Alt text for the image, and the modal title on mobile. */
   alt: string
   mobileModal?: boolean
+  /** @default 280 — full card portrait width. Override for a differently
+   * shaped source image (e.g. a Scryfall art_crop, landscape) so NuxtImg's
+   * resize doesn't crop/zoom it to fit a portrait box it was never meant for. */
+  previewWidth?: number
+  /** @default 392 */
+  previewHeight?: number
 }
 
-const { imageUrl, alt, mobileModal = false } = defineProps<Props>()
+const {
+  imageUrl, alt, mobileModal = false, previewWidth = 280, previewHeight = 392
+} = defineProps<Props>()
 
 defineOptions({ inheritAttrs: false })
 
@@ -87,9 +95,10 @@ function handleClick() {
         :src="imageUrl"
         :alt="alt"
         format="webp"
-        width="280"
-        height="392"
-        class="w-70 h-auto rounded-xl shadow-2xl"
+        :width="previewWidth"
+        :height="previewHeight"
+        :style="{ width: `${previewWidth}px` }"
+        class="h-auto rounded-xl shadow-2xl"
       />
     </template>
   </UTooltip>
