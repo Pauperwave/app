@@ -2,7 +2,9 @@
 import { InlineKeyboard } from 'grammy'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
+import { fetchRegistrationStatuses } from './calendario'
 import type { Bot } from 'grammy'
+import type { RegistrationStatus } from './calendario'
 
 interface ActiveLeagueRow {
   uuid: string
@@ -122,8 +124,19 @@ async function renderLeghe(): Promise<{ text: string, keyboard: InlineKeyboard |
   }
 }
 
+// The list icon (STATUS_ICON) reflects the tournament's own status; this
+// one reflects the linked chat's own registration to that specific
+// tournament — same three states as calendario.ts's detail-view button,
+// shown here directly on each list button so "am I in for this stage"
+// doesn't require tapping through to every tournament's detail.
+function personalIcon(registration: RegistrationStatus): string {
+  if (registration === 'checked_in') return '🎯'
+  if (registration === 'registered') return '✅'
+  return '🎲'
+}
+
 async function renderLegaTornei(
-  index: number
+  index: number, chatId: number
 ): Promise<{ text: string, keyboard: InlineKeyboard } | null> {
   const leagues = await fetchActiveLeagues()
   const league = leagues[index]
@@ -131,6 +144,11 @@ async function renderLegaTornei(
 
   const tournaments = await fetchLeagueTournaments(league.uuid)
   const header = `🏆 *${league.name}*`
+
+  const associateUuid = await resolveAssociateUuidByChatId(chatId)
+  const registrations = associateUuid
+    ? await fetchRegistrationStatuses(tournaments.map(t => t.uuid), associateUuid)
+    : new Map<string, RegistrationStatus>()
 
   let text = `${header}\n\nNessun torneo in programma per questa lega.`
   if (tournaments.length) {
@@ -146,12 +164,13 @@ async function renderLegaTornei(
       const location = tournament.location?.name ? `\n  📍 ${tournament.location.name}` : ''
       return `${icon} *${date}*${stageLabel} — ${tournament.name}${location}`
     })
-    text = `${header}\n\n${lines.join('\n')}\n\n👇 Tocca un torneo per i dettagli`
+    text = `${header}\n\n${lines.join('\n\n')}\n\n👇 Tocca un torneo per i dettagli`
   }
 
   const keyboard = new InlineKeyboard()
   for (const tournament of tournaments) {
-    keyboard.row().text(`🎲 ${tournament.name}`, `torneo:${tournament.uuid}:l${index}`)
+    const icon = personalIcon(registrations.get(tournament.uuid) ?? null)
+    keyboard.row().text(`${icon} ${tournament.name}`, `torneo:${tournament.uuid}:l${index}`)
   }
   keyboard.row().text('« Torna alle leghe', 'leghe:list')
 
@@ -189,10 +208,13 @@ export function registerLegheCommand(bot: Bot) {
 
   bot.callbackQuery(/^lega:(\d+)$/, async (ctx) => {
     const index = Number(ctx.match[1])
+    const chatId = ctx.chat?.id
     await ctx.answerCallbackQuery()
 
+    if (!chatId) return
+
     try {
-      const rendered = await renderLegaTornei(index)
+      const rendered = await renderLegaTornei(index, chatId)
       if (!rendered) {
         await ctx.answerCallbackQuery({ text: 'Lega non trovata', show_alert: true })
         return

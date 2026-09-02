@@ -128,7 +128,7 @@ async function fetchTournament(uuid: string): Promise<DatedTournamentRow | null>
     : null
 }
 
-type RegistrationStatus = 'registered' | 'checked_in' | null
+export type RegistrationStatus = 'registered' | 'checked_in' | null
 
 async function fetchRegistrationStatus(
   tournamentUuid: string, associateUuid: string
@@ -144,6 +144,28 @@ async function fetchRegistrationStatus(
 
   if (error) throw error
   return data?.status === 'checked_in' ? 'checked_in' : (data ? 'registered' : null)
+}
+
+// Batched variant of the above for a whole list of tournaments (leghe.ts's
+// per-league view) — one query instead of one per tournament.
+export async function fetchRegistrationStatuses(
+  tournamentUuids: string[], associateUuid: string
+): Promise<Map<string, RegistrationStatus>> {
+  const supabase = telegramServiceSupabaseClient()
+
+  const { data, error } = await supabase
+    .from('tournament_registrations')
+    .select('tournament_uuid, status, players!inner(associate_uuid)')
+    .in('tournament_uuid', tournamentUuids)
+    .eq('players.associate_uuid', associateUuid)
+
+  if (error) throw error
+
+  const statuses = new Map<string, RegistrationStatus>()
+  for (const row of data) {
+    statuses.set(row.tournament_uuid, row.status === 'checked_in' ? 'checked_in' : 'registered')
+  }
+  return statuses
 }
 
 // google_maps_url (precise place link) takes priority over a generic
