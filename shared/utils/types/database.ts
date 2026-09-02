@@ -2323,6 +2323,38 @@ export type Database = {
         }
         Returns: undefined
       }
+      create_payment_with_renewal: {
+        Args: {
+          p_associate_uuid: string
+          p_created_by: string
+          p_event_name: string
+          p_event_uuid: string
+          p_notes: string
+          p_payer_email: string
+          p_payer_name: string
+          p_payer_surname: string
+          p_payer_tax_code: string
+          p_payment_amount: number
+          p_payment_date: string
+          p_payment_method: string
+          p_payment_type: string
+          p_received_by: string
+          p_tournament_uuid: string
+        }
+        Returns: {
+          created_payment_id: number
+          created_payment_uuid: string
+          renewed: boolean
+        }[]
+      }
+      delete_payment_with_renewal: {
+        Args: { p_deleted_by: string; p_id: number }
+        Returns: undefined
+      }
+      ensure_payment_renewal: {
+        Args: { p_associate_uuid: string; p_payment_date: string }
+        Returns: boolean
+      }
       get_admin_telegram_chat_ids:
         | { Args: never; Returns: number[] }
         | {
@@ -2366,6 +2398,39 @@ export type Database = {
           player_associate_uuid: string
           registration_uuid: string
           status: string
+        }[]
+      }
+      remove_stale_payment_renewal: {
+        Args: {
+          p_associate_uuid: string
+          p_exclude_payment_id?: number
+          p_payment_date: string
+        }
+        Returns: undefined
+      }
+      update_payment_with_renewal: {
+        Args: {
+          p_associate_uuid: string
+          p_event_name: string
+          p_event_uuid: string
+          p_id: number
+          p_notes: string
+          p_payer_email: string
+          p_payer_name: string
+          p_payer_surname: string
+          p_payer_tax_code: string
+          p_payment_amount: number
+          p_payment_date: string
+          p_payment_method: string
+          p_payment_type: string
+          p_received_by: string
+          p_tournament_uuid: string
+          p_updated_by: string
+        }
+        Returns: {
+          renewed: boolean
+          updated_payment_id: number
+          updated_payment_uuid: string
         }[]
       }
     }

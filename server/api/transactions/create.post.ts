@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   validatePayerInfo(body)
 
   // Association Fee payments renew a member's tesseramento status
-  // (ensureRenewalForPayment below) — treated the same as "gestire
+  // (create_payment_with_renewal RPC below) — treated the same as "gestire
   // l'anagrafica soci" (admin), not routine event/tournament payment
   // registration (organizer). See docs/architecture/permissions.md's
   // "Gestire le quote associative" row (admin-only) — this endpoint
@@ -21,32 +21,46 @@ export default defineEventHandler(async (event) => {
     : await requireManagementPermission(event)
 
   const supabase = serverSupabaseServiceRole<Database>(event)
+  const createdBy = await resolveAuditAssociateUuid(event, user)
 
-  const { data: payment, error } = await supabase
-    .from('pauperwave_payments')
-    .insert({
-      ...buildTransactionFields(body),
-      ...await auditColumnsForInsert(event, user)
-    })
-    .select()
-    .single()
+  // Payment write + renewal reconciliation happen in one Postgres
+  // transaction (create_payment_with_renewal, migration 20260902105738) —
+  // previously two separate Supabase JS calls, where a failure in the
+  // second could leave the payment recorded with no matching renewal.
+  //
+  // Cast: Postgres function parameters carry no introspectable nullability
+  // (unlike table columns' information_schema.is_nullable), so the
+  // generated Args type shows plain `string` even for params backed by
+  // nullable columns (associateUuid, payerName, ...) — verified these
+  // accept null at runtime (tested directly against the function).
+  const { data, error } = await supabase.rpc('create_payment_with_renewal', {
+    p_associate_uuid: body.associateUuid,
+    p_payer_name: body.payerName,
+    p_payer_surname: body.payerSurname,
+    p_payer_email: body.payerEmail,
+    p_payer_tax_code: body.payerTaxCode,
+    p_payment_date: body.paymentDate,
+    p_payment_amount: body.paymentAmount,
+    p_payment_method: body.paymentMethod,
+    p_payment_type: body.paymentType,
+    p_received_by: body.receivedBy,
+    p_tournament_uuid: body.tournamentUuid,
+    p_event_uuid: body.eventUuid,
+    p_event_name: body.eventName,
+    p_notes: body.notes,
+    p_created_by: createdBy
+  } as Database['public']['Functions']['create_payment_with_renewal']['Args'])
 
-  if (error || !payment) {
+  const result = data?.[0]
+  if (error || !result) {
     throw createError({
       statusCode: 500,
       statusMessage: error?.message ?? 'Transaction creation failed'
     })
   }
 
-  // An "Association Fee" payment for a known associate IS a renewal — see
-  // server/utils/associateRenewals.ts.
-  let renewed = false
-  if (body.paymentType === 'Association Fee' && body.associateUuid) {
-    renewed = await ensureRenewalForPayment(supabase, {
-      associateUuid: body.associateUuid,
-      paymentDate: body.paymentDate
-    })
+  return {
+    transaction: { id: result.created_payment_id, uuid: result.created_payment_uuid },
+    renewed: result.renewed
   }
-
-  return { transaction: payment, renewed }
 })

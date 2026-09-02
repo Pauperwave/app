@@ -8,6 +8,7 @@ Chi viene notificato, per quale evento, e da dove — compagno di `telegram-bot.
 
 - 🟢 Collegato e funzionante
 - 🔴 Pianificato, non ancora collegato
+- ⚪ Non più necessario — il problema che l'avrebbe giustificato è stato risolto alla radice
 
 ## Eventi e destinatari
 
@@ -15,11 +16,11 @@ Chi viene notificato, per quale evento, e da dove — compagno di `telegram-bot.
 |---|---|---|---|---|
 | Nuova domanda di tesseramento | `server/api/associates/apply.post.ts` | `admin` + `super_admin` collegati | `notifyTelegramAdmins()` | 🟢 |
 | Richiesta di rinnovo tesseramento | `server/api/associates/renew.post.ts` | `admin` + `super_admin` collegati | `notifyTelegramAdmins()` | 🟢 |
-| Fallimento tecnico: pagamento scritto ma rinnovo non aggiornato | `server/api/transactions/create.post.ts`, `[id]/update.post.ts` (`ensureRenewalForPayment`/`removeStaleRenewal` falliti dopo che `pauperwave_payments` è già scritto) | Solo `super_admin` collegati | `notifyTelegramSuperAdmins()` | 🔴 |
+| ~~Fallimento tecnico: pagamento scritto ma rinnovo non aggiornato~~ | ~~`server/api/transactions/create.post.ts`, `[id]/update.post.ts`~~ | ~~Solo `super_admin` collegati~~ | ~~`notifyTelegramSuperAdmins()`~~ | ⚪ risolto 2026-09-02 con le RPC transazionali, vedi Note |
 
 ## Note
 
-**Il caso "pagamento fallito" è in discussione, non ancora deciso se servirà davvero un alert.** Individuato 2026-09-02: le due scritture (`pauperwave_payments` poi `pauperwave_associate_renewals`) non sono transazionali — il client Supabase JS/PostgREST non supporta transazioni multi-statement, ogni `.insert()`/`.upsert()` è la sua richiesta a sé. Un fallimento a metà lascia il pagamento registrato ma il rinnovo mancante, uno stato inconsistente che un 500 generico non comunica. La correzione proposta è renderle atomiche spostandole in un'unica funzione Postgres (RPC), stesso pattern già usato da `register_tournament_players` (migrazione `20260825025133`, stesso identico problema per le registrazioni torneo) — con quella in mezzo, il caso "scrittura parziale" sparisce del tutto, e l'alert Telegram diventerebbe solo un "questa operazione è fallita" generico, meno critico. **Decisione rimandata**: prima valutare se costruire le RPC transazionali (`create_payment_with_renewal`/`update_payment_with_renewal`), poi decidere se serve ancora un alert e per cosa.
+**Risolto 2026-09-02: il caso "pagamento fallito" non esiste più, niente alert necessario.** Le tre scritture non transazionali (`pauperwave_payments` poi `pauperwave_associate_renewals`, nei tre endpoint create/update/delete) sono state sostituite da tre RPC Postgres — `create_payment_with_renewal`, `update_payment_with_renewal`, `delete_payment_with_renewal` (migrazione `20260902105738`), stesso pattern di `register_tournament_players` — che fanno scrittura pagamento + riconciliazione rinnovo nella stessa transazione. Un fallimento a metà ora fa rollback di tutto: l'admin vede un 500 pulito, nessuno stato inconsistente da riparare, quindi non serve un alert Telegram per questo caso. `server/utils/associateRenewals.ts` (i tre helper TS `ensureRenewalForPayment`/`removeStaleRenewal`/`renewalYearFor`) è stato eliminato, la stessa logica ora vive in SQL (`ensure_payment_renewal`/`remove_stale_payment_renewal`, stessa migrazione). Trovato anche un bug preesistente non causato da questo lavoro: la sequenza `pauperwave_payments_id_seq` era disallineata (ferma a 705, max reale 716) e avrebbe bloccato **qualunque** nuovo inserimento — corretta con `setval` (migrazione `20260902110424`).
 
 **Perché non "nuovo pagamento quota associativa" come evento notificabile.** Scartato 2026-09-02: è l'admin stesso a compiere l'azione (registra il pagamento) — notificarlo di qualcosa che ha appena fatto lui è rumore, non segnale. Vale in generale come criterio: un evento merita un alert solo se innescato da qualcun altro (socio/giocatore) a cui l'admin deve reagire, o se è un fallimento altrimenti invisibile (job automatico non presidiato, scrittura parziale silenziosa) — non ogni azione di dominio.
 
