@@ -13,7 +13,9 @@ const HELP_TEXT = 'Comandi disponibili:\n\n'
   + '/prossimo — il prossimo torneo\n'
   + '/iscrizioni — i tornei a cui sei iscritto\n\n'
   + 'In arrivo:\n'
-  + '/cartecercate, /tessera, /mieimazzi, /notifiche'
+  + '/cartecercate, /tessera, /mieimazzi, /notifiche\n\n'
+  + 'Bloccati (in attesa di una feature nell\'app):\n'
+  + '/tavolo, /vota'
 
 export function registerCoreCommands(bot: Bot) {
   bot.command('start', ctx => ctx.reply(
