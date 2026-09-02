@@ -78,21 +78,6 @@ function monthPart(startDate: string) {
     </template>
     <USkeleton v-else class="w-full h-32 rounded-none" />
 
-    <!-- Quick "set image" action, only when there's none yet (user request,
-         2026-09-02) — an existing image is changed via EditModal instead,
-         same as every other field, this is just for the common "never set
-         one" case. -->
-    <UButton
-      v-if="!loading && tournament && !tournament.image"
-      :label="t('tournament.bulkActions.setImage')"
-      :icon="ICONS.image"
-      size="xs"
-      color="neutral"
-      variant="solid"
-      class="absolute inset-0 m-auto w-fit h-fit"
-      @click.stop="imageModalOpen = true"
-    />
-
     <div
       v-if="!loading && tournament"
       class="absolute top-2 left-2 flex flex-col items-center justify-center rounded-lg bg-default/90 backdrop-blur-sm border border-default w-12 h-12 shrink-0"
@@ -108,51 +93,68 @@ function monthPart(startDate: string) {
       :ui="{ base: 'bg-black' }"
     />
 
-    <!-- Status badge, bottom-left of the cover (user request, 2026-09-02).
-         variant="solid" (opaque fill), not the component's own default
-         "subtle" (pale tint) — a wrapping bg-default/90 backdrop box like
-         the date/attribution chips below turned out to look like a visible
-         cutout around the badge's own already-rounded shape (user feedback);
-         solid is legible directly on any photo without one. @click.stop on
-         the wrapper because StatusChangeBadge's read-only branch (no
-         manage-tournaments permission) is a plain UBadge with no click
-         handler of its own, unlike its UDropdownMenu branch, which already
-         stops propagation — without this, clicking a read-only badge would
-         bubble up to Card.vue's onCardClick and navigate into the
-         tournament detail instead of just showing the status. -->
+    <!-- Bottom row: status badge (left, same edge as the date chip above)
+         and either the "set image" quick action or the card-art attribution
+         chip (right) — the two are mutually exclusive, one requires the
+         other missing. A single flex row with items-center (user request,
+         2026-09-02) instead of three independently absolutely-positioned
+         elements: badge/button/chip have different natural heights (no
+         explicit size on the badge, size="xs" button, text-[10px] chip), so
+         sharing only `bottom-2` didn't actually put their visible edges on
+         the same line. -->
     <div
       v-if="!loading && tournament"
-      class="absolute bottom-2 left-2"
-      @click.stop
+      class="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2"
     >
-      <TournamentsStatusBadge :tournament="tournament" variant="solid" />
-    </div>
-    <USkeleton
-      v-else-if="loading"
-      class="absolute bottom-2 left-2 w-20 h-6 rounded"
-      :ui="{ base: 'bg-black' }"
-    />
+      <!-- variant="solid" (opaque fill), not the component's own default
+           "subtle" (pale tint) — a wrapping bg-default/90 backdrop box like
+           the chip on the right turned out to look like a visible cutout
+           around the badge's own already-rounded shape (user feedback);
+           solid is legible directly on any photo without one. @click.stop
+           because StatusChangeBadge's read-only branch (no
+           manage-tournaments permission) is a plain UBadge with no click
+           handler of its own, unlike its UDropdownMenu branch, which
+           already stops propagation — without this, clicking a read-only
+           badge would bubble up to Card.vue's onCardClick and navigate into
+           the tournament detail instead of just showing the status. -->
+      <div class="shrink-0" @click.stop>
+        <TournamentsStatusBadge :tournament="tournament" variant="solid" />
+      </div>
 
-    <!-- Card-art attribution chip (required alongside any Scryfall art_crop
-         use, see CardArtPicker.vue) — only when set, so no v-else pair with
-         the skeleton branch: a real card with no attribution shows neither. -->
-    <UTooltip
-      v-if="!loading && tournament && tournament.image && tournament.imageCardName"
-      :text="tournament.imageCardArtist
-        ? t('magic.cardArtPicker.attribution', {
-          cardName: tournament.imageCardName, artist: tournament.imageCardArtist
-        })
-        : t('magic.cardArtPicker.attributionNoArtist', { cardName: tournament.imageCardName })"
-    >
-      <span class="absolute bottom-2 right-2 max-w-[75%] truncate rounded bg-default/90 backdrop-blur-sm px-1.5 py-0.5 text-[10px] text-muted">
-        {{ tournament.imageCardName }}
-      </span>
-    </UTooltip>
-    <USkeleton
-      v-else-if="loading"
-      class="absolute bottom-2 right-2 w-24 h-4 rounded"
-      :ui="{ base: 'bg-black' }"
-    />
+      <!-- Quick "set image" action, only when there's none yet — an
+           existing image is changed via EditModal instead, same as every
+           other field, this is just for the common "never set one" case. -->
+      <UButton
+        v-if="!tournament.image"
+        :label="t('tournament.bulkActions.setImage')"
+        :icon="ICONS.image"
+        size="xs"
+        color="neutral"
+        variant="solid"
+        class="shrink-0"
+        @click.stop="imageModalOpen = true"
+      />
+
+      <!-- Card-art attribution (required alongside any Scryfall art_crop
+           use, see CardArtPicker.vue) — only when set. -->
+      <UTooltip
+        v-else-if="tournament.imageCardName"
+        :text="tournament.imageCardArtist
+          ? t('magic.cardArtPicker.attribution', {
+            cardName: tournament.imageCardName, artist: tournament.imageCardArtist
+          })
+          : t('magic.cardArtPicker.attributionNoArtist', { cardName: tournament.imageCardName })"
+        class="min-w-0"
+      >
+        <span class="block truncate rounded bg-default/90 backdrop-blur-sm px-1.5 py-0.5 text-[10px] text-muted">
+          {{ tournament.imageCardName }}
+        </span>
+      </UTooltip>
+    </div>
+    <div v-else-if="loading" class="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2">
+      <USkeleton class="w-20 h-6 rounded" :ui="{ base: 'bg-black' }" />
+      <USkeleton class="w-24 h-4 rounded" :ui="{ base: 'bg-black' }" />
+    </div>
 
     <!-- Hidden until hover, except once selected — same convention as
          WantedCardsListGridView.vue's card checkbox. `group-hover` targets
