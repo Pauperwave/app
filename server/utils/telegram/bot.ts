@@ -38,7 +38,7 @@ export function useTelegramBot(): Bot {
     + '/tornei — prossimi tornei (bottoni mese/location)\n'
     + '/leghe — leghe attive\n\n'
     + 'In arrivo:\n'
-    + '/cartecercate, /prossimotorneo, '
+    + '/cartecercate, /prossimo, '
     + '/tessera, /mieitornei, /mieimazzi, /notifiche'
   ))
 
