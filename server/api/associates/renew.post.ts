@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
 
   const { data: associate, error } = await supabase
     .from('pauperwave_associates')
-    .select('uuid')
+    .select('uuid, first_name, last_name')
     .eq('email_address', email)
     .eq('membership_request_status', 'approved')
     .maybeSingle()
@@ -30,6 +30,11 @@ export default defineEventHandler(async (event) => {
   }
 
   await recordMembershipEvent(supabase, associate.uuid, 'renewal_requested')
+
+  await notifyTelegramAdmins(
+    event,
+    `🔄 Richiesta di rinnovo tesseramento: ${associate.first_name} ${associate.last_name}`
+  )
 
   return { associate }
 })
