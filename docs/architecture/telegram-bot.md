@@ -2,7 +2,7 @@
 
 <!-- docs/architecture/telegram-bot.md -->
 
-Compagno leggibile dell'implementazione (`server/utils/telegram/`, `server/api/telegram/webhook.post.ts`) — stesso schema di `docs/architecture/permissions.md`: qui lo stato di ogni funzionalità, non solo l'intenzione. Scritto 2026-09-02, all'avvio dell'integrazione (grammY, webhook via Nitro/h3).
+Compagno leggibile dell'implementazione (`server/utils/telegram/`, `server/api/telegram/webhook.post.ts`) — stesso schema di `docs/architecture/permissions.md`: qui lo stato di ogni funzionalità, non solo l'intenzione. Scritto 2026-09-02, all'avvio dell'integrazione (grammY, webhook via Nitro/h3). Per il dettaglio "chi viene notificato per quale evento" vedi `docs/architecture/telegram-notifications.md`.
 
 ## Legend
 

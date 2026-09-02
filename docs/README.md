@@ -18,6 +18,7 @@ Master index of all project documentation.
 | `architecture/query-keys.md` | Inventory of every Pinia Colada `useQuery` key (plus the two remaining mock-backed `useAsyncData` ones), naming convention, and which are excluded from `localStorage` persistence for PII | Data-fetching reference |
 | `architecture/actions.md` | Per-domain inventory of row context-menu / inline row / bulk-selection actions — what exists, where, and deliberate gaps vs. real ones | UI reference |
 | `architecture/telegram-bot.md` | 🟢🟡🔴⚫ command/feature matrix for the Telegram bot (grammY) — access level, implementation status, and why table/opponent pairing is out of scope until the app has a pairing system | Bot reference |
+| `architecture/telegram-notifications.md` | Who gets notified for which event and from where (`notifyTelegramAdmins`/`notifyTelegramSuperAdmins`) — companion to `telegram-bot.md`, covers push alerts only, not the in-app notification bell | Bot reference |
 | `PROJECT_ANALYSIS.md` | Initial codebase audit (stack, routing, auth flow, data-fetching conventions) — **dated snapshot, several claims superseded by `PROGRESS.md`'s ADRs, see its own header note** | Onboarding (with caveats) |
 | `PROGRESS.md` | Backward-looking curated changelog + architecture decisions (ADRs) — the most current architectural source of truth | Architecture history |
 | `CHANGELOG.md` | Curated commit trail, grouped by date, with "what/why" for notable commits — not every commit, see the auto-generated root `CHANGELOG.md` for the complete raw index | Architecture history |
