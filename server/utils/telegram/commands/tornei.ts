@@ -253,10 +253,12 @@ function detailKeyboard(
   row: DatedTournamentRow, monthOffset: number, registration: RegistrationStatus
 ): InlineKeyboard {
   const keyboard = new InlineKeyboard()
-  if (registration === 'registered') {
-    keyboard.row().text('❌ Annulla iscrizione', `disiscrivi:${row.uuid}:${monthOffset}`)
-  } else if (registration === null && row.status === 'registration_open') {
-    keyboard.row().text('✅ Iscriviti', `iscrivi:${row.uuid}:${monthOffset}`)
+  if (registration === 'checked_in') {
+    keyboard.row().text('🎯 Check-in effettuato', `checkin-info:${row.uuid}`)
+  } else if (registration === 'registered') {
+    keyboard.row().text('✅ Iscritto (tocca per annullare)', `disiscrivi:${row.uuid}:${monthOffset}`)
+  } else if (row.status === 'registration_open') {
+    keyboard.row().text('➕ Iscriviti', `iscrivi:${row.uuid}:${monthOffset}`)
   }
   keyboard.row().text('« Torna al mese', `tornei:${monthOffset}`)
   return keyboard
@@ -391,6 +393,13 @@ export function registerTorneiCommand(bot: Bot) {
       })
     }
   }
+
+  bot.callbackQuery(/^checkin-info:([0-9a-f-]+)$/, async (ctx) => {
+    await ctx.answerCallbackQuery({
+      text: 'Hai già fatto il check-in per questo torneo, non puoi più annullare l\'iscrizione da qui.',
+      show_alert: true
+    })
+  })
 
   bot.callbackQuery(/^iscrivi:([0-9a-f-]+):(-?\d+)$/, async (ctx) => {
     const uuid = ctx.match[1]
