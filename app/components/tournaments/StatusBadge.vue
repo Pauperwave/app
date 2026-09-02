@@ -5,9 +5,13 @@
   actual dropdown/badge/error-toast logic lives once in the shared component.
 -->
 <script setup lang="ts">
+import type { BadgeProps } from '@nuxt/ui'
 import type { Tournament } from '~/types'
 
-const { tournament } = defineProps<{ tournament: Tournament }>()
+const { tournament, variant } = defineProps<{
+  tournament: Tournament
+  variant?: BadgeProps['variant']
+}>()
 const { t } = useI18n()
 const { setStatus } = useTournamentsMutations()
 </script>
@@ -23,5 +27,6 @@ const { setStatus } = useTournamentsMutations()
     permission="manage-tournaments"
     :error-title="t('tournament.statusChangeErrorTitle')"
     :mutate-async="setStatus.mutateAsync"
+    :variant="variant"
   />
 </template>

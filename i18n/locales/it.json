@@ -98,6 +98,7 @@
       "clear": "Rimuovi immagine",
       "selectedAlt": "Immagine di copertina",
       "searchPlaceholder": "Cerca una carta...",
+      "printingPlaceholder": "Scegli un'edizione",
       "loading": "Caricamento...",
       "noResults": "Nessuna illustrazione disponibile",
       "attribution": "{cardName} — illustrazione di {artist}, © Wizards of the Coast",
