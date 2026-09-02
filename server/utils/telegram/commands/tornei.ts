@@ -2,7 +2,7 @@
 import { InlineKeyboard } from 'grammy'
 import { addMonths, endOfMonth, format, startOfMonth } from 'date-fns'
 import { it } from 'date-fns/locale'
-import type { Bot } from 'grammy'
+import type { Bot, Context } from 'grammy'
 
 interface LocationRow {
   name: string | null
@@ -81,6 +81,24 @@ async function fetchTournament(uuid: string): Promise<DatedTournamentRow | null>
   return row?.starts_at ? (row as DatedTournamentRow) : null
 }
 
+type RegistrationStatus = 'registered' | 'checked_in' | null
+
+async function fetchRegistrationStatus(
+  tournamentUuid: string, associateUuid: string
+): Promise<RegistrationStatus> {
+  const supabase = telegramServiceSupabaseClient()
+
+  const { data, error } = await supabase
+    .from('tournament_registrations')
+    .select('status, players!inner(associate_uuid)')
+    .eq('tournament_uuid', tournamentUuid)
+    .eq('players.associate_uuid', associateUuid)
+    .maybeSingle()
+
+  if (error) throw error
+  return data?.status === 'checked_in' ? 'checked_in' : (data ? 'registered' : null)
+}
+
 // google_maps_url (precise place link) takes priority over a generic
 // address search, same precedence as TournamentDetailContent.vue.
 function mapsUrl(location: LocationRow): string | null {
@@ -143,7 +161,9 @@ function tourneiMessage(rows: DatedTournamentRow[], month: Date): string {
   return `${header}\n\n${days.join('\n\n')}\n\n👇 Tocca un torneo per i dettagli`
 }
 
-function tournamentDetailMessage(row: DatedTournamentRow): string {
+function tournamentDetailMessage(
+  row: DatedTournamentRow, registration: RegistrationStatus
+): string {
   const date = format(new Date(row.starts_at), 'EEEE d MMMM \'alle\' HH:mm', { locale: it })
   const endTime = row.ends_at ? ` – ${format(new Date(row.ends_at), 'HH:mm')}` : ''
   const formatLabel = row.format?.name ? ` _[${row.format.name}]_` : ''
@@ -158,6 +178,8 @@ function tournamentDetailMessage(row: DatedTournamentRow): string {
   if (row.contact_name) lines.push(`☎️ Referente: ${row.contact_name}${row.contact_phone ? ` (${row.contact_phone})` : ''}`)
   if (row.entry_fee !== null) lines.push(`💶 Quota: ${row.entry_fee} €`)
   if (row.prizes) lines.push(`🏆 Premi: ${row.prizes}`)
+  if (registration === 'registered') lines.push('', '✅ Sei iscritto a questo torneo.')
+  if (registration === 'checked_in') lines.push('', '✅ Sei iscritto e hai già fatto il check-in.')
   if (row.description) lines.push('', row.description)
 
   return lines.join('\n')
@@ -174,9 +196,13 @@ function truncateForCaption(text: string): string {
   return `${text.slice(0, CAPTION_LIMIT - 1)}…`
 }
 
-function detailKeyboard(row: DatedTournamentRow, monthOffset: number): InlineKeyboard {
+function detailKeyboard(
+  row: DatedTournamentRow, monthOffset: number, registration: RegistrationStatus
+): InlineKeyboard {
   const keyboard = new InlineKeyboard()
-  if (row.status === 'registration_open') {
+  if (registration === 'registered') {
+    keyboard.row().text('❌ Annulla iscrizione', `disiscrivi:${row.uuid}:${monthOffset}`)
+  } else if (registration === null && row.status === 'registration_open') {
     keyboard.row().text('✅ Iscriviti', `iscrivi:${row.uuid}:${monthOffset}`)
   }
   keyboard.row().text('« Torna al mese', `tornei:${monthOffset}`)
@@ -201,6 +227,20 @@ function buildKeyboard(rows: DatedTournamentRow[], monthOffset: number): InlineK
   }
 
   return keyboard
+}
+
+async function renderTournamentDetail(
+  tournament: DatedTournamentRow, monthOffset: number, chatId: number
+) {
+  const associateUuid = await resolveAssociateUuidByChatId(chatId)
+  const registration = associateUuid
+    ? await fetchRegistrationStatus(tournament.uuid, associateUuid)
+    : null
+
+  return {
+    text: tournamentDetailMessage(tournament, registration),
+    keyboard: detailKeyboard(tournament, monthOffset, registration)
+  }
 }
 
 async function renderTornei(monthOffset: number) {
@@ -246,9 +286,10 @@ export function registerTorneiCommand(bot: Bot) {
   bot.callbackQuery(/^torneo:([0-9a-f-]+):(-?\d+)$/, async (ctx) => {
     const uuid = ctx.match[1]
     const monthOffset = Number(ctx.match[2])
+    const chatId = ctx.chat?.id
     await ctx.answerCallbackQuery()
 
-    if (!uuid) return
+    if (!uuid || !chatId) return
 
     try {
       const tournament = await fetchTournament(uuid)
@@ -257,22 +298,21 @@ export function registerTorneiCommand(bot: Bot) {
         return
       }
 
-      const keyboard = detailKeyboard(tournament, monthOffset)
-      const detail = tournamentDetailMessage(tournament)
+      const { text, keyboard } = await renderTournamentDetail(tournament, monthOffset, chatId)
 
       if (tournament.image_url) {
         // Can't turn an existing text message into a photo one via
         // editMessageText — replace it instead.
         await ctx.deleteMessage().catch(() => {})
         await ctx.replyWithPhoto(tournament.image_url, {
-          caption: truncateForCaption(detail),
+          caption: truncateForCaption(text),
           parse_mode: 'Markdown',
           reply_markup: keyboard
         })
         return
       }
 
-      await ctx.editMessageText(detail, {
+      await ctx.editMessageText(text, {
         parse_mode: 'Markdown',
         reply_markup: keyboard,
         link_preview_options: { is_disabled: true }
@@ -282,8 +322,27 @@ export function registerTorneiCommand(bot: Bot) {
     }
   })
 
+  // Re-renders the same detail message (photo caption or text) in place
+  // after a successful iscriviti/disiscriviti, so the button reflects the
+  // new registration state instead of just toasting a confirmation.
+  async function refreshDetailMessage(
+    ctx: Context, tournament: DatedTournamentRow, monthOffset: number, chatId: number
+  ) {
+    const { text, keyboard } = await renderTournamentDetail(tournament, monthOffset, chatId)
+    if (tournament.image_url) {
+      await ctx.editMessageCaption({ caption: truncateForCaption(text), parse_mode: 'Markdown', reply_markup: keyboard })
+    } else {
+      await ctx.editMessageText(text, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard,
+        link_preview_options: { is_disabled: true }
+      })
+    }
+  }
+
   bot.callbackQuery(/^iscrivi:([0-9a-f-]+):(-?\d+)$/, async (ctx) => {
     const uuid = ctx.match[1]
+    const monthOffset = Number(ctx.match[2])
     const chatId = ctx.chat?.id
     if (!uuid || !chatId) return
 
@@ -313,9 +372,61 @@ export function registerTorneiCommand(bot: Bot) {
       })
       if (error) throw error
 
-      await ctx.answerCallbackQuery({ text: '✅ Iscrizione confermata!', show_alert: true })
+      await refreshDetailMessage(ctx, tournament, monthOffset, chatId)
+      await ctx.answerCallbackQuery({ text: '✅ Iscrizione confermata!' })
     } catch {
       await ctx.answerCallbackQuery({ text: 'Errore durante l\'iscrizione, riprova più tardi.', show_alert: true })
+    }
+  })
+
+  bot.callbackQuery(/^disiscrivi:([0-9a-f-]+):(-?\d+)$/, async (ctx) => {
+    const uuid = ctx.match[1]
+    const monthOffset = Number(ctx.match[2])
+    const chatId = ctx.chat?.id
+    if (!uuid || !chatId) return
+
+    try {
+      const associateUuid = await resolveAssociateUuidByChatId(chatId)
+      if (!associateUuid) {
+        await ctx.answerCallbackQuery({ text: 'Nessun account collegato.', show_alert: true })
+        return
+      }
+
+      const tournament = await fetchTournament(uuid)
+      if (!tournament) {
+        await ctx.answerCallbackQuery({ text: 'Torneo non trovato', show_alert: true })
+        return
+      }
+
+      const supabase = telegramServiceSupabaseClient()
+      const { data: existing, error: findError } = await supabase
+        .from('tournament_registrations')
+        .select('uuid, status, players!inner(associate_uuid)')
+        .eq('tournament_uuid', uuid)
+        .eq('players.associate_uuid', associateUuid)
+        .maybeSingle()
+      if (findError) throw findError
+
+      if (!existing || existing.status !== 'registered') {
+        await ctx.answerCallbackQuery({
+          text: existing?.status === 'checked_in'
+            ? 'Non puoi annullare l\'iscrizione dopo il check-in.'
+            : 'Non risulti iscritto a questo torneo.',
+          show_alert: true
+        })
+        return
+      }
+
+      const { error } = await supabase
+        .from('tournament_registrations')
+        .delete()
+        .eq('uuid', existing.uuid)
+      if (error) throw error
+
+      await refreshDetailMessage(ctx, tournament, monthOffset, chatId)
+      await ctx.answerCallbackQuery({ text: '✅ Iscrizione annullata.' })
+    } catch {
+      await ctx.answerCallbackQuery({ text: 'Errore durante l\'annullamento, riprova più tardi.', show_alert: true })
     }
   })
 }
