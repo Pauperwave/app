@@ -106,11 +106,11 @@ async function renderLeghe(): Promise<{ text: string, keyboard: InlineKeyboard |
   const lines = leagues.map((league) => {
     const total = totals.get(league.uuid) ?? 0
     const done = completed.get(league.uuid) ?? 0
-    const progress = total > 0 ? ` (${done}/${total} tornei)` : ''
+    const progress = total > 0 ? ` — ${done}/${total} tappe` : ''
     const start = formatDate(league.starts_at)
     const end = formatDate(league.ends_at)
-    const dateRange = start && end ? ` — ${start} → ${end}` : start ? ` — dal ${start}` : ''
-    return `• ${league.name}${progress}${dateRange}`
+    const dateRange = start && end ? `${start} → ${end}` : start ? `dal ${start}` : 'data da definire'
+    return `🏆 ${dateRange}${progress} — ${league.name}`
   })
 
   const keyboard = new InlineKeyboard()
@@ -161,8 +161,8 @@ async function renderLegaTornei(
         stage += 1
         stageLabel = ` — ${stage}ª tappa`
       }
-      const location = tournament.location?.name ? `\n  📍 ${tournament.location.name}` : ''
-      return `${icon} *${date}*${stageLabel} — ${tournament.name}${location}`
+      const location = tournament.location?.name ? `\n📍 ${tournament.location.name}` : ''
+      return `${icon} ${date}${stageLabel}\n${icon} ${tournament.name}${location}`
     })
     text = `${header}\n\n${lines.join('\n\n')}\n\n👇 Tocca un torneo per i dettagli`
   }
