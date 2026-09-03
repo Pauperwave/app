@@ -2,6 +2,7 @@
 import { InlineKeyboard } from 'grammy'
 import { addMonths, endOfMonth, format, startOfMonth } from 'date-fns'
 import { it } from 'date-fns/locale'
+import { stageLabel, tournamentLine } from './tournamentLine'
 import type { Bot, Context } from 'grammy'
 
 interface LocationRow {
@@ -188,10 +189,6 @@ function dayLabel(date: Date): string {
   return label.charAt(0).toUpperCase() + label.slice(1)
 }
 
-function stageLabel(row: DatedTournamentRow): string {
-  return row.stageNumber ? ` — ${row.stageNumber}ª tappa` : ''
-}
-
 interface DayGroup {
   day: Date
   rows: DatedTournamentRow[]
@@ -223,10 +220,12 @@ function calendarioMessage(rows: DatedTournamentRow[], month: Date): string {
 
   const days = groupByDay(filtered).map(({ day, rows: dayRows }) => {
     const dayHeader = `*${dayLabel(day)}*`
-    const dayLines = dayRows.map((row) => {
-      const location = row.location?.name ? `\n  📍 ${row.location.name}` : ''
-      return `• ${row.name}${stageLabel(row)}${location}`
-    })
+    const dayLines = dayRows.map(row => tournamentLine({
+      status: row.status,
+      name: row.name,
+      stageSuffix: stageLabel(row.stageNumber),
+      locationName: row.location?.name
+    }))
     return `${dayHeader}\n${dayLines.join('\n')}`
   })
 
@@ -238,7 +237,7 @@ function tournamentDetailMessage(
 ): string {
   const date = format(new Date(row.starts_at), 'EEEE d MMMM \'alle\' HH:mm', { locale: it })
   const endTime = row.ends_at ? ` – ${format(new Date(row.ends_at), 'HH:mm')}` : ''
-  const lines = [`🎲 *${row.name}*${stageLabel(row)}`, '', `🗓️ ${date}${endTime}`]
+  const lines = [`🎲 *${row.name}*${stageLabel(row.stageNumber)}`, '', `🗓️ ${date}${endTime}`]
 
   if (row.location?.name) {
     const url = mapsUrl(row.location)

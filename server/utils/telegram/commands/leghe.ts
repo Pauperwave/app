@@ -2,7 +2,8 @@
 import { InlineKeyboard } from 'grammy'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { fetchRegistrationStatuses } from './calendario'
+import { fetchRegistrationStatuses, fetchStageNumbers } from './calendario'
+import { statusIcon, stageLabel, tournamentLine } from './tournamentLine'
 import type { Bot } from 'grammy'
 import type { RegistrationStatus } from './calendario'
 
@@ -24,14 +25,6 @@ interface LeagueTournamentDetailRow {
   starts_at: string | null
   status: string
   location: { name: string | null } | null
-}
-
-const STATUS_ICON: Record<string, string> = {
-  draft: '📋',
-  registration_open: '📝',
-  in_progress: '🔄',
-  completed: '✅',
-  cancelled: '❌'
 }
 
 // Same "cancelled tournaments don't count toward the denominator" rule as
@@ -142,7 +135,10 @@ async function renderLegaTornei(
   const league = leagues[index]
   if (!league) return null
 
-  const tournaments = await fetchLeagueTournaments(league.uuid)
+  const [tournaments, stageNumbers] = await Promise.all([
+    fetchLeagueTournaments(league.uuid),
+    fetchStageNumbers()
+  ])
   const header = `🏆 *${league.name}*`
 
   const associateUuid = await resolveAssociateUuidByChatId(chatId)
@@ -152,17 +148,11 @@ async function renderLegaTornei(
 
   let text = `${header}\n\nNessun torneo in programma per questa lega.`
   if (tournaments.length) {
-    let stage = 0
     const lines = tournaments.map((tournament) => {
-      const icon = STATUS_ICON[tournament.status] ?? '•'
       const date = tournament.starts_at ? formatDate(tournament.starts_at) : 'data da definire'
-      let stageLabel = ''
-      if (tournament.status !== 'cancelled') {
-        stage += 1
-        stageLabel = ` — ${stage}ª tappa`
-      }
-      const location = tournament.location?.name ? `\n📍 ${tournament.location.name}` : ''
-      return `${icon} ${date}${stageLabel}\n${icon} ${tournament.name}${location}`
+      const stage = stageLabel(stageNumbers.get(tournament.uuid) ?? null)
+      const dateLine = `${statusIcon(tournament.status)} ${date}${stage}`
+      return `${dateLine}\n${tournamentLine({ status: tournament.status, name: tournament.name, locationName: tournament.location?.name })}`
     })
     text = `${header}\n\n${lines.join('\n\n')}\n\n👇 Tocca un torneo per i dettagli`
   }
