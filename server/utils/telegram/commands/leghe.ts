@@ -3,7 +3,7 @@ import { InlineKeyboard } from 'grammy'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { fetchRegistrationStatuses, fetchStageNumbers } from './calendario'
-import { statusIcon, stageLabel, tournamentLine } from './tournamentLine'
+import { statusIcon, stageLabel, tournamentLine, tournamentButtonLabel } from './tournamentLine'
 import type { Bot } from 'grammy'
 import type { RegistrationStatus } from './calendario'
 
@@ -149,7 +149,7 @@ async function renderLegaTornei(
   let text = `${header}\n\nNessun torneo in programma per questa lega.`
   if (tournaments.length) {
     const lines = tournaments.map((tournament) => {
-      const date = tournament.starts_at ? formatDate(tournament.starts_at) : 'data da definire'
+      const date = formatDate(tournament.starts_at) ?? 'data da definire'
       const stage = stageLabel(stageNumbers.get(tournament.uuid) ?? null)
       const dateLine = `${statusIcon(tournament.status)} ${date}${stage}`
       return `${dateLine}\n${tournamentLine({ status: tournament.status, name: tournament.name, locationName: tournament.location?.name })}`
@@ -160,7 +160,10 @@ async function renderLegaTornei(
   const keyboard = new InlineKeyboard()
   for (const tournament of tournaments) {
     const icon = personalIcon(registrations.get(tournament.uuid) ?? null)
-    keyboard.row().text(`${icon} ${tournament.name}`, `torneo:${tournament.uuid}:l${index}`)
+    const date = formatDate(tournament.starts_at) ?? 'data da definire'
+    const stageNumber = stageNumbers.get(tournament.uuid) ?? null
+    const label = tournamentButtonLabel(icon, date, stageNumber, tournament.name)
+    keyboard.row().text(label, `torneo:${tournament.uuid}:l${index}`)
   }
   keyboard.row().text('« Torna alle leghe', 'leghe:list')
 

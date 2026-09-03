@@ -3,7 +3,7 @@ import { InlineKeyboard } from 'grammy'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { fetchStageNumbers } from './calendario'
-import { stageLabel } from './tournamentLine'
+import { stageLabel, tournamentButtonLabel } from './tournamentLine'
 import type { Bot } from 'grammy'
 
 interface MyTournamentRow {
@@ -88,12 +88,16 @@ function mieiTorneiMessage(registrations: MyRegistration[]): string {
 
 function mieiTorneiKeyboard(registrations: MyRegistration[]): InlineKeyboard {
   const keyboard = new InlineKeyboard()
-  for (const { tournament } of registrations) {
+  for (const { registrationStatus, tournament } of registrations) {
     // Reuses /calendario's own detail view (commands/calendario.ts) — same
     // torneo:<uuid>:<origin> callback, "m0" (calendario, current month) as
     // a reasonable fallback back-target since this list isn't itself
     // scoped to a single month.
-    keyboard.row().text(`🎲 ${tournament.name}`, `torneo:${tournament.uuid}:m0`)
+    const date = format(new Date(tournament.starts_at), 'd MMM', { locale: it })
+    const label = tournamentButtonLabel(
+      statusIcon(registrationStatus), date, tournament.stageNumber, tournament.name
+    )
+    keyboard.row().text(label, `torneo:${tournament.uuid}:m0`)
   }
   return keyboard
 }

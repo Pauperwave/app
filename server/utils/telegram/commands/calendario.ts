@@ -2,7 +2,7 @@
 import { InlineKeyboard } from 'grammy'
 import { addMonths, endOfMonth, format, startOfMonth } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { stageLabel, tournamentLine } from './tournamentLine'
+import { stageLabel, statusIcon, tournamentButtonLabel, tournamentLine } from './tournamentLine'
 import type { Bot, Context } from 'grammy'
 
 interface LocationRow {
@@ -337,7 +337,9 @@ function buildKeyboard(rows: DatedTournamentRow[], monthOffset: number): InlineK
     .text('Mese succ. ▶', `calendario:${monthOffset + 1}`)
 
   for (const row of filtered) {
-    keyboard.row().text(`🎲 ${row.name}`, `torneo:${row.uuid}:m${monthOffset}`)
+    const date = format(new Date(row.starts_at), 'd MMM', { locale: it })
+    const label = tournamentButtonLabel(statusIcon(row.status), date, row.stageNumber, row.name)
+    keyboard.row().text(label, `torneo:${row.uuid}:m${monthOffset}`)
   }
 
   return keyboard
