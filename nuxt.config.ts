@@ -1,5 +1,19 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { execSync } from 'node:child_process'
 import pkg from './package.json' with { type: 'json' }
+
+// Vercel exposes VERCEL_GIT_COMMIT_SHA but has no equivalent commit-date env
+// var, so this reads it from git directly at build time — the build's own
+// checkout always has at least its own last commit available, deep clone or
+// not. Falls back to '' (same as gitCommitSha locally) if git isn't
+// available at all (e.g. a tarball deploy with no .git).
+function gitCommitDate(): string {
+  try {
+    return execSync('git log -1 --format=%cI').toString().trim()
+  } catch {
+    return ''
+  }
+}
 
 export default defineNuxtConfig({
   modules: [
@@ -70,7 +84,8 @@ export default defineNuxtConfig({
       appEnv: process.env.NODE_ENV ?? 'development',
       // Vercel sets this automatically at build time (the commit it's
       // building) — undefined locally/outside Vercel, not set by hand.
-      gitCommitSha: process.env.VERCEL_GIT_COMMIT_SHA ?? ''
+      gitCommitSha: process.env.VERCEL_GIT_COMMIT_SHA ?? '',
+      gitCommitDate: gitCommitDate()
     }
   },
   alias: {

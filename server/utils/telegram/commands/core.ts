@@ -1,4 +1,6 @@
 // server\utils\telegram\commands\core.ts
+import { format } from 'date-fns'
+import { it } from 'date-fns/locale'
 import type { Bot } from 'grammy'
 
 const HELP_TEXT = 'Comandi disponibili:\n\n'
@@ -35,9 +37,17 @@ export function registerCoreCommands(bot: Bot) {
   bot.command('help', ctx => ctx.reply(HELP_TEXT))
 
   bot.command('status', (ctx) => {
-    const sha = useRuntimeConfig().public.gitCommitSha
-    const version = sha ? ` (${sha.slice(0, 7)})` : ''
-    return ctx.reply(`🟢 Bot operativo.${version}`)
+    const { gitCommitSha, gitCommitDate } = useRuntimeConfig().public
+    const lines = ['🟢 Bot operativo.']
+
+    if (gitCommitSha) {
+      lines.push('', `🏷️ ${gitCommitSha.slice(0, 7)}`)
+      if (gitCommitDate) {
+        lines.push(`🗓️ ${format(new Date(gitCommitDate), 'd MMMM yyyy \'alle\' HH:mm', { locale: it })}`)
+      }
+    }
+
+    return ctx.reply(lines.join('\n'))
   })
 
   // Dev/setup helper: lets an admin read off their numeric chat id (needed
