@@ -2,6 +2,7 @@
 import { InlineKeyboard } from 'grammy'
 import type { Bot } from 'grammy'
 import { groupBestNByPlayer, toBestNPlacement } from '#shared/utils/cittadino/bestNStandings'
+import { answerLoadError } from './callbackErrors'
 
 type StandingsFormat = 'pauper' | 'commander' | 'premodern'
 
@@ -121,43 +122,58 @@ export function registerClassificheCommand(bot: Bot) {
     )
   })
 
+  // Answered exactly once, at the very end — same reasoning as leghe.ts's
+  // and calendario.ts's own callback handlers: a second answer throws
+  // GrammyError "query is too old...", uncaught, which takes the whole
+  // webhook request down with a 500.
   bot.callbackQuery(/^classifiche:(pauper|commander|premodern)$/, async (ctx) => {
     const format = ctx.match[1] as StandingsFormat
-    await ctx.answerCallbackQuery()
 
-    const siteUrl = useRuntimeConfig().public.siteUrl
-    const message = await formatStandingsMessage(format)
+    try {
+      const siteUrl = useRuntimeConfig().public.siteUrl
+      const message = await formatStandingsMessage(format)
 
-    await ctx.editMessageText(message, {
-      parse_mode: 'Markdown',
-      reply_markup: new InlineKeyboard()
-        .url('Apri pagina completa', `${siteUrl}/classifiche/${format}`)
-        .row()
-        .text('« Formati', 'classifiche:menu')
-    })
+      await ctx.editMessageText(message, {
+        parse_mode: 'Markdown',
+        reply_markup: new InlineKeyboard()
+          .url('Apri pagina completa', `${siteUrl}/classifiche/${format}`)
+          .row()
+          .text('« Formati', 'classifiche:menu')
+      })
+      await ctx.answerCallbackQuery()
+    } catch {
+      await answerLoadError(ctx)
+    }
   })
 
   bot.callbackQuery('classifiche:cittadino', async (ctx) => {
-    await ctx.answerCallbackQuery()
+    try {
+      const siteUrl = useRuntimeConfig().public.siteUrl
+      const message = await cittadinoMessage()
 
-    const siteUrl = useRuntimeConfig().public.siteUrl
-    const message = await cittadinoMessage()
-
-    await ctx.editMessageText(message, {
-      parse_mode: 'Markdown',
-      reply_markup: new InlineKeyboard()
-        .url('Apri pagina completa', `${siteUrl}/classifiche/cittadino`)
-        .row()
-        .text('« Formati', 'classifiche:menu')
-    })
+      await ctx.editMessageText(message, {
+        parse_mode: 'Markdown',
+        reply_markup: new InlineKeyboard()
+          .url('Apri pagina completa', `${siteUrl}/classifiche/cittadino`)
+          .row()
+          .text('« Formati', 'classifiche:menu')
+      })
+      await ctx.answerCallbackQuery()
+    } catch {
+      await answerLoadError(ctx)
+    }
   })
 
   bot.callbackQuery('classifiche:menu', async (ctx) => {
-    await ctx.answerCallbackQuery()
-    const siteUrl = useRuntimeConfig().public.siteUrl
-    await ctx.editMessageText(
-      `Scegli un formato, oppure apri la pagina completa: ${siteUrl}/classifiche`,
-      { reply_markup: formatsKeyboard(siteUrl) }
-    )
+    try {
+      const siteUrl = useRuntimeConfig().public.siteUrl
+      await ctx.editMessageText(
+        `Scegli un formato, oppure apri la pagina completa: ${siteUrl}/classifiche`,
+        { reply_markup: formatsKeyboard(siteUrl) }
+      )
+      await ctx.answerCallbackQuery()
+    } catch {
+      await answerLoadError(ctx)
+    }
   })
 }
