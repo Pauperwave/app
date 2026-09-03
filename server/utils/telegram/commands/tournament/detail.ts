@@ -176,6 +176,33 @@ function detailKeyboard(
   return keyboard
 }
 
+// The three tournament callback patterns (torneo:/iscrivi:/disiscrivi:) all
+// carry the same uuid + origin capture groups plus ctx.chat.id — shared here
+// so the three handlers below don't each re-derive and re-validate them.
+function tournamentCallbackParams(
+  ctx: Context
+): { uuid: string, origin: string, chatId: number } | null {
+  const uuid = ctx.match?.[1] as string | undefined
+  const origin = ctx.match?.[2] as string | undefined
+  const chatId = ctx.chat?.id
+  if (!uuid || !origin || !chatId) return null
+  return { uuid, origin, chatId }
+}
+
+// iscrivi/disiscrivi both gate on a linked associate before touching
+// tournament_registrations, differing only in the toast shown when none is
+// linked yet.
+async function resolveLinkedAssociate(
+  ctx: Context, chatId: number, notLinkedMessage: string
+): Promise<string | null> {
+  const associateUuid = await resolveAssociateUuidByChatId(chatId)
+  if (!associateUuid) {
+    await ctx.answerCallbackQuery({ text: notLinkedMessage, show_alert: true })
+    return null
+  }
+  return associateUuid
+}
+
 async function renderTournamentDetail(
   tournament: DatedTournamentRow, origin: string, chatId: number
 ) {
@@ -194,14 +221,12 @@ export function registerTournamentDetailHandlers(bot: Bot) {
   // origin: m<monthOffset> from calendario.ts's own grid, l<leagueIndex>
   // from leghe.ts's per-league tournament list — see backTarget's comment.
   bot.callbackQuery(/^torneo:([0-9a-f-]+):([lm]-?\d+)$/, async (ctx) => {
-    const uuid = ctx.match[1]
-    const origin = ctx.match[2]
-    const chatId = ctx.chat?.id
-
-    if (!uuid || !origin || !chatId) {
+    const params = tournamentCallbackParams(ctx)
+    if (!params) {
       await ctx.answerCallbackQuery().catch(() => {})
       return
     }
+    const { uuid, origin, chatId } = params
 
     try {
       const tournament = await fetchTournament(uuid)
@@ -260,17 +285,13 @@ export function registerTournamentDetailHandlers(bot: Bot) {
   })
 
   bot.callbackQuery(/^iscrivi:([0-9a-f-]+):([lm]-?\d+)$/, async (ctx) => {
-    const uuid = ctx.match[1]
-    const origin = ctx.match[2]
-    const chatId = ctx.chat?.id
-    if (!uuid || !origin || !chatId) return
+    const params = tournamentCallbackParams(ctx)
+    if (!params) return
+    const { uuid, origin, chatId } = params
 
     try {
-      const associateUuid = await resolveAssociateUuidByChatId(chatId)
-      if (!associateUuid) {
-        await ctx.answerCallbackQuery({ text: NOT_LINKED_MESSAGE, show_alert: true })
-        return
-      }
+      const associateUuid = await resolveLinkedAssociate(ctx, chatId, NOT_LINKED_MESSAGE)
+      if (!associateUuid) return
 
       const tournament = await fetchTournament(uuid)
       if (!tournament || tournament.status !== 'registration_open') {
@@ -296,17 +317,13 @@ export function registerTournamentDetailHandlers(bot: Bot) {
   })
 
   bot.callbackQuery(/^disiscrivi:([0-9a-f-]+):([lm]-?\d+)$/, async (ctx) => {
-    const uuid = ctx.match[1]
-    const origin = ctx.match[2]
-    const chatId = ctx.chat?.id
-    if (!uuid || !origin || !chatId) return
+    const params = tournamentCallbackParams(ctx)
+    if (!params) return
+    const { uuid, origin, chatId } = params
 
     try {
-      const associateUuid = await resolveAssociateUuidByChatId(chatId)
-      if (!associateUuid) {
-        await ctx.answerCallbackQuery({ text: 'Nessun account collegato.', show_alert: true })
-        return
-      }
+      const associateUuid = await resolveLinkedAssociate(ctx, chatId, 'Nessun account collegato.')
+      if (!associateUuid) return
 
       const tournament = await fetchTournament(uuid)
       if (!tournament) {
