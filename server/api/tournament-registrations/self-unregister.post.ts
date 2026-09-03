@@ -1,10 +1,4 @@
 // server\api\tournament-registrations\self-unregister.post.ts
-import { serverSupabaseServiceRole } from '#supabase/server'
-import type { Database } from '#shared/utils/types/database'
-
-interface SelfUnregisterBody {
-  tournamentUuid: string
-}
 
 // Player self-unregistration, same ownership model as self-register.post.ts
 // — associateUuid resolved server-side, never from the body. Only 'registered'
@@ -15,17 +9,7 @@ interface SelfUnregisterBody {
 // checked-in) row can't have a "Tournament Fee" payment behind it yet in
 // the normal flow.
 export default defineEventHandler(async (event) => {
-  const user = await requireUser(event)
-  const { tournamentUuid } = await readBody<SelfUnregisterBody>(event)
-  const supabase = serverSupabaseServiceRole<Database>(event)
-
-  const associateUuid = await resolveAuditAssociateUuid(event, user)
-  if (!associateUuid) {
-    throw createError({
-      statusCode: 403,
-      statusMessage: 'Nessun socio associato a questo account'
-    })
-  }
+  const { tournamentUuid, associateUuid, supabase } = await parseSelfRegistrationRequest(event)
 
   const { data: registration, error: findError } = await supabase
     .from('tournament_registrations')
