@@ -3,6 +3,7 @@ import { InlineKeyboard } from 'grammy'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { fetchStageNumbers } from './calendario'
+import { stageLabel } from './tournamentLine'
 import type { Bot } from 'grammy'
 
 interface MyTournamentRow {
@@ -69,10 +70,6 @@ function statusIcon(registrationStatus: string): string {
   return registrationStatus === 'checked_in' ? '🎯' : '✅'
 }
 
-function stageLabel(tournament: MyTournamentRow): string {
-  return tournament.stageNumber ? ` — ${tournament.stageNumber}ª tappa` : ''
-}
-
 function mieiTorneiMessage(registrations: MyRegistration[]): string {
   const header = '🎟️ *I tuoi tornei*'
 
@@ -83,7 +80,7 @@ function mieiTorneiMessage(registrations: MyRegistration[]): string {
   const lines = registrations.map(({ registrationStatus, tournament }) => {
     const date = format(new Date(tournament.starts_at), 'EEE d MMM', { locale: it })
     const location = tournament.location?.name ? `\n  📍 ${tournament.location.name}` : ''
-    return `${statusIcon(registrationStatus)} *${date}*${stageLabel(tournament)} — ${tournament.name}${location}`
+    return `${statusIcon(registrationStatus)} *${date}*${stageLabel(tournament.stageNumber)} — ${tournament.name}${location}`
   })
 
   return `${header}\n\n${lines.join('\n')}\n\n👇 Tocca un torneo per i dettagli`
