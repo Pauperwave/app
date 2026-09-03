@@ -5,7 +5,7 @@ import { it } from 'date-fns/locale'
 import { formatButtonDate, stageLabel, statusIcon, tournamentButtonLabel, tournamentLine } from './tournament/line'
 import { fetchStageNumbers } from './tournament/queries'
 import { SELECT_COLUMNS, registerTournamentDetailHandlers } from './tournament/detail'
-import { answerLoadError } from './callbackErrors'
+import { answerLoadError, editOrResendMessage } from './callbackErrors'
 import type { Bot } from 'grammy'
 import type { DatedTournamentRow, TournamentRow } from './tournament/detail'
 
@@ -139,15 +139,7 @@ export function registerCalendarioCommand(bot: Bot) {
     // respond" whenever this handler's own error path used to fire).
     try {
       const { text, keyboard } = await renderCalendario(monthOffset)
-      // The detail view may have replaced this message with a photo one
-      // (image_url tournaments) — editMessageText rejects that ("there is
-      // no text in the message to edit"), so fall back to delete + resend.
-      try {
-        await ctx.editMessageText(text, { parse_mode: 'Markdown', reply_markup: keyboard })
-      } catch {
-        await ctx.deleteMessage().catch(() => {})
-        await ctx.reply(text, { parse_mode: 'Markdown', reply_markup: keyboard })
-      }
+      await editOrResendMessage(ctx, text, keyboard)
       await ctx.answerCallbackQuery()
     } catch {
       await answerLoadError(ctx)
