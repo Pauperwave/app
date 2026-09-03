@@ -2,11 +2,11 @@
 import { InlineKeyboard } from 'grammy'
 import { addMonths, endOfMonth, format, startOfMonth } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { stageLabel, statusIcon, tournamentButtonLabel, tournamentLine } from './tournamentLine'
-import { fetchStageNumbers } from './tournamentQueries'
-import { SELECT_COLUMNS, registerTournamentDetailHandlers } from './tournamentDetail'
+import { stageLabel, statusIcon, tournamentButtonLabel, tournamentLine } from './tournament/line'
+import { fetchStageNumbers } from './tournament/queries'
+import { SELECT_COLUMNS, registerTournamentDetailHandlers } from './tournament/detail'
 import type { Bot } from 'grammy'
-import type { DatedTournamentRow, TournamentRow } from './tournamentDetail'
+import type { DatedTournamentRow, TournamentRow } from './tournament/detail'
 
 const OPEN_STATUSES = ['registration_open', 'in_progress']
 // Fetched once per render, filtered by month client-side — cheap enough for

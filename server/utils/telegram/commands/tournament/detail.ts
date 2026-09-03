@@ -1,4 +1,4 @@
-// server\utils\telegram\commands\tournamentDetail.ts
+// server\utils\telegram\commands\tournament\detail.ts
 
 // A single tournament's detail view (message + registration actions) —
 // split out of calendario.ts (2026-09-03) because it isn't actually
@@ -9,10 +9,10 @@
 import { InlineKeyboard } from 'grammy'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { tournamentHeader } from './tournamentLine'
-import { fetchRegistrationStatus, fetchStageNumbers } from './tournamentQueries'
+import { tournamentHeader } from './line'
+import { fetchRegistrationStatus, fetchStageNumbers } from './queries'
 import type { Bot, Context } from 'grammy'
-import type { RegistrationStatus } from './tournamentQueries'
+import type { RegistrationStatus } from './queries'
 
 export interface LocationRow {
   name: string | null
