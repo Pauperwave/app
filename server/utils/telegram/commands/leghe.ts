@@ -4,6 +4,7 @@ import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { statusIcon, stageLabel, tournamentLine, tournamentButtonLabel } from './tournament/line'
 import { fetchRegistrationStatuses, fetchStageNumbers } from './tournament/queries'
+import { answerLoadError } from './callbackErrors'
 import type { Bot } from 'grammy'
 import type { RegistrationStatus } from './tournament/queries'
 
@@ -77,7 +78,7 @@ async function fetchLeagueTournaments(leagueUuid: string): Promise<LeagueTournam
 }
 
 // leagues[]'s own index (starts_at ascending, same ordering every render)
-// stands in for the league's uuid in callback_data — see calendario.ts's
+// stands in for the league's uuid in callback_data — see tournament/detail.ts's
 // backTarget comment for why: callback_data has a 64-byte cap, and a torneo:
 // button already carries the tournament's own uuid, no room left for a
 // second full one.
@@ -119,7 +120,7 @@ async function renderLeghe(): Promise<{ text: string, keyboard: InlineKeyboard |
 
 // The list icon (STATUS_ICON) reflects the tournament's own status; this
 // one reflects the linked chat's own registration to that specific
-// tournament — same three states as calendario.ts's detail-view button,
+// tournament — same three states as tournament/detail.ts's detail-view button,
 // shown here directly on each list button so "am I in for this stage"
 // doesn't require tapping through to every tournament's detail.
 function personalIcon(registration: RegistrationStatus): string {
@@ -199,7 +200,7 @@ export function registerLegheCommand(bot: Bot) {
       }
       await ctx.answerCallbackQuery()
     } catch {
-      await ctx.answerCallbackQuery({ text: 'Errore nel caricamento', show_alert: true }).catch(() => {})
+      await answerLoadError(ctx)
     }
   })
 
@@ -227,7 +228,7 @@ export function registerLegheCommand(bot: Bot) {
       }
       await ctx.answerCallbackQuery()
     } catch {
-      await ctx.answerCallbackQuery({ text: 'Errore nel caricamento', show_alert: true }).catch(() => {})
+      await answerLoadError(ctx)
     }
   })
 }

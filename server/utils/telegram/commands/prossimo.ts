@@ -1,7 +1,5 @@
 // server\utils\telegram\commands\prossimo.ts
-import { format } from 'date-fns'
-import { it } from 'date-fns/locale'
-import { tournamentHeader } from './tournament/line'
+import { formatTournamentDateTime, tournamentHeader } from './tournament/line'
 import { fetchStageNumbers } from './tournament/queries'
 import type { Bot } from 'grammy'
 
@@ -35,7 +33,7 @@ async function nextTournamentMessage(): Promise<string> {
   const row = data as NextTournamentRow | null
   if (!row || !row.starts_at) return '🎲 Nessun torneo in programma al momento.'
 
-  const date = format(new Date(row.starts_at), 'EEEE d MMMM \'alle\' HH:mm', { locale: it })
+  const date = formatTournamentDateTime(row.starts_at)
   const header = tournamentHeader(row.status, row.name, stageNumbers.get(row.uuid) ?? null)
   const location = row.location?.name ? `\n📍 ${row.location.name}` : ''
 

@@ -1,4 +1,6 @@
 // server\utils\telegram\commands\tournament\line.ts
+import { format } from 'date-fns'
+import { it } from 'date-fns/locale'
 
 // Single source for how a tournament reads in a Telegram list line —
 // leghe.ts's per-league tournament list and calendario.ts's per-day
@@ -56,4 +58,18 @@ export function tournamentButtonLabel(
   icon: string, date: string, stageNumber: number | null, name: string
 ): string {
   return `${icon} ${date}${stageLabel(stageNumber)} — ${name}`
+}
+
+// Short date for a tournamentButtonLabel() call scoped to a nearby list
+// (calendario.ts's month grid, iscrizioni.ts's own tournaments) — leghe.ts
+// spans a whole league's calendar instead, so it keeps its own longer
+// 'd MMM yyyy' format rather than using this.
+export function formatButtonDate(startsAt: string): string {
+  return format(new Date(startsAt), 'd MMM', { locale: it })
+}
+
+// Full date+time header shared by tournament/detail.ts's single-tournament
+// message and prossimo.ts's next-tournament card.
+export function formatTournamentDateTime(startsAt: string): string {
+  return format(new Date(startsAt), 'EEEE d MMMM \'alle\' HH:mm', { locale: it })
 }
