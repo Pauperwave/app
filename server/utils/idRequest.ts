@@ -155,6 +155,39 @@ export async function updateStatusById(
   return data
 }
 
+// Shared by /events/[id]/image.post.ts and /tournaments/[id]/image.post.ts
+// (fallow:dupes, 2026-09-03 flagged an 18-line clone) — same "update one
+// row, 500 on failure, return it" shape as updateStatusById, for the
+// single-row "set image" quick action (BulkActionsBar's bulk version and
+// list/Cover.vue's own single-row one).
+export async function setImageById(
+  supabase: SupabaseClient<Database>,
+  table: 'tournaments' | 'events',
+  id: number,
+  image: { imageUrl: string | null, imageCardName: string | null, imageCardArtist: string | null },
+  errorMessage: string
+) {
+  const { data, error } = await supabase
+    .from(table)
+    .update({
+      image_url: image.imageUrl,
+      image_card_name: image.imageCardName,
+      image_card_artist: image.imageCardArtist
+    })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error || !data) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: error?.message ?? errorMessage
+    })
+  }
+
+  return data
+}
+
 // Shared by /associates/[id]/update.post.ts and update-number.post.ts
 // (fallow:dupes, 2026-08-30 flagged a byte-identical 15-line clone) — same
 // "update one row, 500 on failure, return it" shape as updateStatusById, but
