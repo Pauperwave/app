@@ -31,7 +31,11 @@ export function registerCoreCommands(bot: Bot) {
 
   bot.command('help', ctx => ctx.reply(HELP_TEXT))
 
-  bot.command('status', ctx => ctx.reply('🟢 Bot operativo.'))
+  bot.command('status', (ctx) => {
+    const sha = useRuntimeConfig().public.gitCommitSha
+    const version = sha ? ` (${sha.slice(0, 7)})` : ''
+    return ctx.reply(`🟢 Bot operativo.${version}`)
+  })
 
   // Dev/setup helper: lets an admin read off their numeric chat id (needed
   // to populate pauperwave_associate_telegram_links by hand) without
