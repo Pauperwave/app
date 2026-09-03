@@ -1,5 +1,5 @@
 // server\utils\telegram\commands\linking.ts
-import type { Bot } from 'grammy'
+import type { Bot, Context } from 'grammy'
 
 // No conversation state: Nitro runs on Vercel (serverless), so nothing
 // guarantees the process that handles a user's later reply is the same one
@@ -26,6 +26,28 @@ export async function resolveAssociateUuidByChatId(chatId: number): Promise<stri
 
   if (error) throw error
   return data?.associate_uuid ?? null
+}
+
+// Same literal message tessera.ts, mazzi.ts, iscrizioni.ts, and
+// tournament/detail.ts's iscrivi: handler all show when a chat tries a
+// personal command/action before linking an account.
+export const NOT_LINKED_MESSAGE = 'Devi prima collegare il tuo account: scrivimi la tua email da socio.'
+
+// tessera.ts, mazzi.ts, and iscrizioni.ts all repeated the same "get
+// chatId, resolve it, bail out with NOT_LINKED_MESSAGE if unresolved"
+// prelude — this is that prelude. Callers still catch this function's own
+// throw (a Supabase error from resolveAssociateUuidByChatId) themselves,
+// same as before the extraction.
+export async function requireLinkedAssociate(ctx: Context): Promise<string | null> {
+  const chatId = ctx.chat?.id
+  if (!chatId) return null
+
+  const associateUuid = await resolveAssociateUuidByChatId(chatId)
+  if (!associateUuid) {
+    await ctx.reply(NOT_LINKED_MESSAGE)
+    return null
+  }
+  return associateUuid
 }
 
 async function linkChat(chatId: number, email: string): Promise<string> {

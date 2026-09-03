@@ -1,4 +1,5 @@
 // server\utils\telegram\commands\mazzi.ts
+import { requireLinkedAssociate } from './linking'
 import type { Bot } from 'grammy'
 
 interface CommanderDeckRow {
@@ -40,15 +41,9 @@ function mazziMessage(decks: CommanderDeckRow[]): string {
 
 export function registerMazziCommand(bot: Bot) {
   bot.command('mazzi', async (ctx) => {
-    const chatId = ctx.chat?.id
-    if (!chatId) return
-
     try {
-      const associateUuid = await resolveAssociateUuidByChatId(chatId)
-      if (!associateUuid) {
-        await ctx.reply('Devi prima collegare il tuo account: scrivimi la tua email da socio.')
-        return
-      }
+      const associateUuid = await requireLinkedAssociate(ctx)
+      if (!associateUuid) return
 
       const decks = await fetchMyDecks(associateUuid)
       await ctx.reply(mazziMessage(decks), { parse_mode: 'Markdown', link_preview_options: { is_disabled: true } })

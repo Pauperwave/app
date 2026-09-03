@@ -2,8 +2,9 @@
 import { InlineKeyboard } from 'grammy'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { stageLabel, tournamentButtonLabel } from './tournament/line'
+import { formatButtonDate, stageLabel, tournamentButtonLabel } from './tournament/line'
 import { fetchStageNumbers } from './tournament/queries'
+import { requireLinkedAssociate } from './linking'
 import type { Bot } from 'grammy'
 
 interface MyTournamentRow {
@@ -89,11 +90,11 @@ function mieiTorneiMessage(registrations: MyRegistration[]): string {
 function mieiTorneiKeyboard(registrations: MyRegistration[]): InlineKeyboard {
   const keyboard = new InlineKeyboard()
   for (const { registrationStatus, tournament } of registrations) {
-    // Reuses /calendario's own detail view (commands/calendario.ts) — same
-    // torneo:<uuid>:<origin> callback, "m0" (calendario, current month) as
-    // a reasonable fallback back-target since this list isn't itself
-    // scoped to a single month.
-    const date = format(new Date(tournament.starts_at), 'd MMM', { locale: it })
+    // Reuses the shared tournament detail view (tournament/detail.ts) —
+    // same torneo:<uuid>:<origin> callback, "m0" (calendario, current
+    // month) as a reasonable fallback back-target since this list isn't
+    // itself scoped to a single month.
+    const date = formatButtonDate(tournament.starts_at)
     const label = tournamentButtonLabel(
       statusIcon(registrationStatus), date, tournament.stageNumber, tournament.name
     )
@@ -104,15 +105,9 @@ function mieiTorneiKeyboard(registrations: MyRegistration[]): InlineKeyboard {
 
 export function registerIscrizioniCommand(bot: Bot) {
   bot.command('iscrizioni', async (ctx) => {
-    const chatId = ctx.chat?.id
-    if (!chatId) return
-
     try {
-      const associateUuid = await resolveAssociateUuidByChatId(chatId)
-      if (!associateUuid) {
-        await ctx.reply('Devi prima collegare il tuo account: scrivimi la tua email da socio.')
-        return
-      }
+      const associateUuid = await requireLinkedAssociate(ctx)
+      if (!associateUuid) return
 
       const registrations = await fetchMyTournaments(associateUuid)
       await ctx.reply(mieiTorneiMessage(registrations), {

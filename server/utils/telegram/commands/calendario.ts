@@ -2,9 +2,10 @@
 import { InlineKeyboard } from 'grammy'
 import { addMonths, endOfMonth, format, startOfMonth } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { stageLabel, statusIcon, tournamentButtonLabel, tournamentLine } from './tournament/line'
+import { formatButtonDate, stageLabel, statusIcon, tournamentButtonLabel, tournamentLine } from './tournament/line'
 import { fetchStageNumbers } from './tournament/queries'
 import { SELECT_COLUMNS, registerTournamentDetailHandlers } from './tournament/detail'
+import { answerLoadError } from './callbackErrors'
 import type { Bot } from 'grammy'
 import type { DatedTournamentRow, TournamentRow } from './tournament/detail'
 
@@ -100,7 +101,7 @@ function buildKeyboard(rows: DatedTournamentRow[], monthOffset: number): InlineK
     .text('Mese succ. ▶', `calendario:${monthOffset + 1}`)
 
   for (const row of filtered) {
-    const date = format(new Date(row.starts_at), 'd MMM', { locale: it })
+    const date = formatButtonDate(row.starts_at)
     const label = tournamentButtonLabel(statusIcon(row.status), date, row.stageNumber, row.name)
     keyboard.row().text(label, `torneo:${row.uuid}:m${monthOffset}`)
   }
@@ -149,12 +150,12 @@ export function registerCalendarioCommand(bot: Bot) {
       }
       await ctx.answerCallbackQuery()
     } catch {
-      await ctx.answerCallbackQuery({ text: 'Errore nel caricamento', show_alert: true }).catch(() => {})
+      await answerLoadError(ctx)
     }
   })
 
   // The torneo:/iscrivi:/disiscrivi:/checkin-info: callbacks live in
-  // tournamentDetail.ts — leghe.ts's and iscrizioni.ts's own tournament
+  // tournament/detail.ts — leghe.ts's and iscrizioni.ts's own tournament
   // lists reach the same detail view, so it isn't calendario-specific.
   registerTournamentDetailHandlers(bot)
 }

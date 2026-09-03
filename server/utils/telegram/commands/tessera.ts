@@ -1,6 +1,7 @@
 // server\utils\telegram\commands\tessera.ts
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
+import { requireLinkedAssociate } from './linking'
 import type { Bot } from 'grammy'
 
 interface AssociateStatusRow {
@@ -53,15 +54,9 @@ function tesseraMessage(row: AssociateStatusRow): string {
 
 export function registerTesseraCommand(bot: Bot) {
   bot.command('tessera', async (ctx) => {
-    const chatId = ctx.chat?.id
-    if (!chatId) return
-
     try {
-      const associateUuid = await resolveAssociateUuidByChatId(chatId)
-      if (!associateUuid) {
-        await ctx.reply('Devi prima collegare il tuo account: scrivimi la tua email da socio.')
-        return
-      }
+      const associateUuid = await requireLinkedAssociate(ctx)
+      if (!associateUuid) return
 
       const row = await fetchAssociateStatus(associateUuid)
       if (!row) {

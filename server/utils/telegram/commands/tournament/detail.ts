@@ -8,9 +8,10 @@
 // calendario.ts past 480 lines on its own.
 import { InlineKeyboard } from 'grammy'
 import { format } from 'date-fns'
-import { it } from 'date-fns/locale'
-import { tournamentHeader } from './line'
+import { formatTournamentDateTime, tournamentHeader } from './line'
 import { fetchRegistrationStatus, fetchStageNumbers } from './queries'
+import { NOT_LINKED_MESSAGE } from '../linking'
+import { answerLoadError } from '../callbackErrors'
 import type { Bot, Context } from 'grammy'
 import type { RegistrationStatus } from './queries'
 
@@ -86,7 +87,7 @@ function mapsUrl(location: LocationRow): string | null {
 function tournamentDetailMessage(
   row: DatedTournamentRow, registration: RegistrationStatus
 ): string {
-  const date = format(new Date(row.starts_at), 'EEEE d MMMM \'alle\' HH:mm', { locale: it })
+  const date = formatTournamentDateTime(row.starts_at)
   const endTime = row.ends_at ? ` – ${format(new Date(row.ends_at), 'HH:mm')}` : ''
   const lines = [tournamentHeader(row.status, row.name, row.stageNumber), '', `🗓️ ${date}${endTime}`]
 
@@ -229,7 +230,7 @@ export function registerTournamentDetailHandlers(bot: Bot) {
       }
       await ctx.answerCallbackQuery()
     } catch {
-      await ctx.answerCallbackQuery({ text: 'Errore nel caricamento', show_alert: true }).catch(() => {})
+      await answerLoadError(ctx)
     }
   })
 
@@ -267,10 +268,7 @@ export function registerTournamentDetailHandlers(bot: Bot) {
     try {
       const associateUuid = await resolveAssociateUuidByChatId(chatId)
       if (!associateUuid) {
-        await ctx.answerCallbackQuery({
-          text: 'Devi prima collegare il tuo account: scrivimi la tua email da socio.',
-          show_alert: true
-        })
+        await ctx.answerCallbackQuery({ text: NOT_LINKED_MESSAGE, show_alert: true })
         return
       }
 
