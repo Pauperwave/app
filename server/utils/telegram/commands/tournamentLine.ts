@@ -20,6 +20,14 @@ export function stageLabel(stageNumber: number | null): string {
   return stageNumber ? ` — ${stageNumber}ª tappa` : ''
 }
 
+// The "icon + bold name + stage" header shared by calendario.ts's single
+// tournament detail view and prossimo.ts's next-tournament card — both show
+// one tournament at a time, with the date/location as separate lines below
+// rather than folded into this one (unlike tournamentLine()'s list rows).
+export function tournamentHeader(status: string, name: string, stageNumber: number | null): string {
+  return `${statusIcon(status)} *${name}*${stageLabel(stageNumber)}`
+}
+
 interface TournamentLineInput {
   status: string
   name: string

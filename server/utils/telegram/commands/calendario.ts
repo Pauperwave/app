@@ -2,7 +2,7 @@
 import { InlineKeyboard } from 'grammy'
 import { addMonths, endOfMonth, format, startOfMonth } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { stageLabel, statusIcon, tournamentButtonLabel, tournamentLine } from './tournamentLine'
+import { stageLabel, statusIcon, tournamentButtonLabel, tournamentHeader, tournamentLine } from './tournamentLine'
 import type { Bot, Context } from 'grammy'
 
 interface LocationRow {
@@ -237,7 +237,7 @@ function tournamentDetailMessage(
 ): string {
   const date = format(new Date(row.starts_at), 'EEEE d MMMM \'alle\' HH:mm', { locale: it })
   const endTime = row.ends_at ? ` – ${format(new Date(row.ends_at), 'HH:mm')}` : ''
-  const lines = [`🎲 *${row.name}*${stageLabel(row.stageNumber)}`, '', `🗓️ ${date}${endTime}`]
+  const lines = [tournamentHeader(row.status, row.name, row.stageNumber), '', `🗓️ ${date}${endTime}`]
 
   if (row.location?.name) {
     const url = mapsUrl(row.location)
