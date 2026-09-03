@@ -4,7 +4,7 @@ import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { statusIcon, stageLabel, tournamentLine, tournamentButtonLabel } from './tournament/line'
 import { fetchRegistrationStatuses, fetchStageNumbers } from './tournament/queries'
-import { answerLoadError } from './callbackErrors'
+import { answerLoadError, editOrResendMessage } from './callbackErrors'
 import type { Bot } from 'grammy'
 import type { RegistrationStatus } from './tournament/queries'
 
@@ -189,15 +189,7 @@ export function registerLegheCommand(bot: Bot) {
   bot.callbackQuery(/^leghe:list$/, async (ctx) => {
     try {
       const { text, keyboard } = await renderLeghe()
-      // The tournament detail view may have replaced this message with a
-      // photo one (image_url tournaments) — editMessageText rejects that,
-      // so fall back to delete + resend, same pattern as calendario.ts.
-      try {
-        await ctx.editMessageText(text, { parse_mode: 'Markdown', reply_markup: keyboard })
-      } catch {
-        await ctx.deleteMessage().catch(() => {})
-        await ctx.reply(text, { parse_mode: 'Markdown', reply_markup: keyboard })
-      }
+      await editOrResendMessage(ctx, text, keyboard)
       await ctx.answerCallbackQuery()
     } catch {
       await answerLoadError(ctx)
