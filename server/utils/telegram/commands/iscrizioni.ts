@@ -2,8 +2,8 @@
 import { InlineKeyboard } from 'grammy'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { stageLabel, tournamentButtonLabel } from './tournamentLine'
-import { fetchStageNumbers } from './tournamentQueries'
+import { stageLabel, tournamentButtonLabel } from './tournament/line'
+import { fetchStageNumbers } from './tournament/queries'
 import type { Bot } from 'grammy'
 
 interface MyTournamentRow {

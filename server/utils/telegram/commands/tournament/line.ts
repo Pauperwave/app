@@ -1,4 +1,4 @@
-// server\utils\telegram\commands\tournamentLine.ts
+// server\utils\telegram\commands\tournament\line.ts
 
 // Single source for how a tournament reads in a Telegram list line —
 // leghe.ts's per-league tournament list and calendario.ts's per-day

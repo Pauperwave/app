@@ -1,8 +1,8 @@
 // server\utils\telegram\commands\prossimo.ts
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { tournamentHeader } from './tournamentLine'
-import { fetchStageNumbers } from './tournamentQueries'
+import { tournamentHeader } from './tournament/line'
+import { fetchStageNumbers } from './tournament/queries'
 import type { Bot } from 'grammy'
 
 interface NextTournamentRow {
