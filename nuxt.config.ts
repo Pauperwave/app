@@ -67,7 +67,10 @@ export default defineNuxtConfig({
       siteName: 'Pauperwave',
       siteDescription: 'The Pauper League Manager',
       appVersion: pkg.version,
-      appEnv: process.env.NODE_ENV ?? 'development'
+      appEnv: process.env.NODE_ENV ?? 'development',
+      // Vercel sets this automatically at build time (the commit it's
+      // building) — undefined locally/outside Vercel, not set by hand.
+      gitCommitSha: process.env.VERCEL_GIT_COMMIT_SHA ?? ''
     }
   },
   alias: {
