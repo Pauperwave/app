@@ -1,6 +1,102 @@
 # Changelog
 
 
+## v0.1.12
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.1.11...v0.1.12)
+
+### Enhancements
+
+- **telegram:** ✨ scaffold Telegram bot with grammY, /classifiche and stub commands ([160c59d](https://github.com/Pauperwave/app/commit/160c59d))
+- **telegram:** ✨ resolve admin alert recipients from the database, not an env var ([2a10da7](https://github.com/Pauperwave/app/commit/2a10da7))
+- **telegram:** ✨ add /status command ([9a612a9](https://github.com/Pauperwave/app/commit/9a612a9))
+- **telegram:** ✨ add notifyTelegramSuperAdmins for technical error alerts ([3e7d4bb](https://github.com/Pauperwave/app/commit/3e7d4bb))
+- **telegram:** ✨ notify admins on new tesseramento/renewal requests ([044fda7](https://github.com/Pauperwave/app/commit/044fda7))
+- **telegram:** ✨ implement /eventi with real event data ([1ffe234](https://github.com/Pauperwave/app/commit/1ffe234))
+- **telegram:** ✨ implement /tornei with month/city navigation ([d30dadd](https://github.com/Pauperwave/app/commit/d30dadd))
+- **telegram:** ✨ implement /leghe with tournament progress ([a3e46b8](https://github.com/Pauperwave/app/commit/a3e46b8))
+- **telegram:** ✨ implement /prossimo, consolidate command registration ([222bc28](https://github.com/Pauperwave/app/commit/222bc28))
+- **tournaments:** ✨ self-service tournament registration ([1863ba3](https://github.com/Pauperwave/app/commit/1863ba3))
+- **telegram:** ✨ complete the chat-to-associate linking flow ([feba361](https://github.com/Pauperwave/app/commit/feba361))
+- **telegram:** ✨ rich /tornei detail view, clickable tournaments, month label ([bb7812b](https://github.com/Pauperwave/app/commit/bb7812b))
+- **tournaments:** ✨ status badge on card cover, quick set-image action ([0bc571d](https://github.com/Pauperwave/app/commit/0bc571d))
+- **telegram:** ✨ nicer /tornei layout, event image, self-registration button ([dd3f95f](https://github.com/Pauperwave/app/commit/dd3f95f))
+- **events:** ✨ status badge, quick set-image action, and real attribution chip ([4855ac8](https://github.com/Pauperwave/app/commit/4855ac8))
+- **telegram:** ✨ self-unregister button, toggle registration state ([7ccce72](https://github.com/Pauperwave/app/commit/7ccce72))
+- **telegram:** ✨ show league stage number ("Nª tappa") on tornei ([82287eb](https://github.com/Pauperwave/app/commit/82287eb))
+- **telegram:** ✨ three distinct icons for registration state ([6f1e8b9](https://github.com/Pauperwave/app/commit/6f1e8b9))
+- **finance:** ✨ animate tournament chart, merge into one metric-switching component ([179cce6](https://github.com/Pauperwave/app/commit/179cce6))
+- **telegram:** ✨ /iscrizioni command — list the linked user's own tournaments ([f85ca23](https://github.com/Pauperwave/app/commit/f85ca23))
+- **telegram:** ✨ rename /tornei to /calendario, action-labeled buttons, direzioni/calendario links ([40247e7](https://github.com/Pauperwave/app/commit/40247e7))
+- **telegram:** ✨ /leghe drill-down into a league's own tournaments ([42ea315](https://github.com/Pauperwave/app/commit/42ea315))
+- **telegram:** ✨ sync Telegram's "/" command menu via setMyCommands ([faf86a3](https://github.com/Pauperwave/app/commit/faf86a3))
+- **telegram:** ✨ add /vota blocked stub, surface blocked commands in /help ([7b2ecca](https://github.com/Pauperwave/app/commit/7b2ecca))
+- **telegram:** ✨ show league stage number in /iscrizioni ([03affab](https://github.com/Pauperwave/app/commit/03affab))
+- **telegram:** ✨ per-tappa registration icon + spacing in /leghe ([a29564a](https://github.com/Pauperwave/app/commit/a29564a))
+- **telegram:** ✨ /supporto command — forward a message to super_admins ([5ea2daa](https://github.com/Pauperwave/app/commit/5ea2daa))
+- **telegram:** ✨ /cartecercate, /tessera, /mazzi commands ([3026664](https://github.com/Pauperwave/app/commit/3026664))
+- **classifiche:** ✨ public /classifiche index page, bot links out to it ([e24f744](https://github.com/Pauperwave/app/commit/e24f744))
+- **telegram:** ✨ show deployed commit hash in /status ([59d38a7](https://github.com/Pauperwave/app/commit/59d38a7))
+- **telegram:** ✨ list protected commands in /start's linking prompt ([cbbb7d1](https://github.com/Pauperwave/app/commit/cbbb7d1))
+- **telegram:** 💄 restyle /leghe and per-league tournament list messages ([e344444](https://github.com/Pauperwave/app/commit/e344444))
+- **telegram:** 💄 add date and tappa to tournament button labels ([f052d1f](https://github.com/Pauperwave/app/commit/f052d1f))
+- **telegram:** ✨ render Cittadino standings in-chat instead of linking out ([addf57a](https://github.com/Pauperwave/app/commit/addf57a))
+- **telegram:** ✨ show deployed commit date/time in /status ([169d67b](https://github.com/Pauperwave/app/commit/169d67b))
+
+### Fixes
+
+- **wanted-cards:** 🐛 add missing name-fallback to the CardTrader blueprint resolver ([8c2ba2f](https://github.com/Pauperwave/app/commit/8c2ba2f))
+- **deps:** 📌 pin h3 to 1.15.11 to fix 500s on public redirect/calendario routes ([57699ac](https://github.com/Pauperwave/app/commit/57699ac))
+- **tournaments:** 🐛 align status badge and image action/attribution on cover ([f43935d](https://github.com/Pauperwave/app/commit/f43935d))
+- **events:** 🐛 fix stale comment and missing loading skeleton on Cover.vue ([3d908e1](https://github.com/Pauperwave/app/commit/3d908e1))
+- **magic:** 🐛 stop art-crop hover previews from being cropped to portrait ([bd5b107](https://github.com/Pauperwave/app/commit/bd5b107))
+- **telegram:** 🐛 drop month button, keep prev/next arrows only ([1fc22b6](https://github.com/Pauperwave/app/commit/1fc22b6))
+- **telegram:** 🐛 drop redundant format label from tornei messages ([e0ea168](https://github.com/Pauperwave/app/commit/e0ea168))
+- **telegram:** 🐛 stop double-answering callback_query, add global error handler ([89a05ef](https://github.com/Pauperwave/app/commit/89a05ef))
+- **telegram:** 🐛 catch webhook errors at the HTTP layer, not via bot.catch() ([d4e34c8](https://github.com/Pauperwave/app/commit/d4e34c8))
+- **telegram:** 🐛 unify /prossimo's tournament card with the shared torneo shape ([f6f5485](https://github.com/Pauperwave/app/commit/f6f5485))
+- **telegram:** 🐛 add try/catch to classifiche.ts's callback handlers ([87b1811](https://github.com/Pauperwave/app/commit/87b1811))
+
+### Refactors
+
+- **telegram:** 🔀 collapse admin chat id lookup into one RPC call ([ddfb760](https://github.com/Pauperwave/app/commit/ddfb760))
+- **transactions:** 🔀 make payment + renewal writes transactional ([1794e77](https://github.com/Pauperwave/app/commit/1794e77))
+- **telegram:** ♻️ share tournament list line formatting across commands ([2de032e](https://github.com/Pauperwave/app/commit/2de032e))
+- **telegram:** ♻️ extract shared tournament queries out of calendario.ts ([37f7bc0](https://github.com/Pauperwave/app/commit/37f7bc0))
+- **telegram:** ♻️ split tournament detail view out of calendario.ts ([c31b390](https://github.com/Pauperwave/app/commit/c31b390))
+- **telegram:** 🚚 group tournamentLine/Queries/Detail under commands/tournament/ ([054807f](https://github.com/Pauperwave/app/commit/054807f))
+- **telegram:** ♻️ dedupe repeated auth-gate, error-alert, and date-format code ([f698ad1](https://github.com/Pauperwave/app/commit/f698ad1))
+- **telegram:** ♻️ extract /start's reply text into a const ([653ac55](https://github.com/Pauperwave/app/commit/653ac55))
+- **telegram:** ♻️ dedupe torneo/iscrivi/disiscrivi callback prologues ([b471201](https://github.com/Pauperwave/app/commit/b471201))
+- **server:** ♻️ dedupe self-register/self-unregister's auth prologue ([a19bb60](https://github.com/Pauperwave/app/commit/a19bb60))
+- **telegram:** ♻️ dedupe calendario/leghe's edit-or-resend fallback ([b525d02](https://github.com/Pauperwave/app/commit/b525d02))
+- ♻️ move tournamentProgressByLeague into shared/utils ([e31b6ae](https://github.com/Pauperwave/app/commit/e31b6ae))
+- **server:** ♻️ dedupe events/tournaments' set-image endpoints ([dcdd3b8](https://github.com/Pauperwave/app/commit/dcdd3b8))
+- ♻️ dedupe dayPart/monthPart across list/Cover.vue components ([7bfe411](https://github.com/Pauperwave/app/commit/7bfe411))
+
+### Documentation
+
+- **telegram:** 📝 correct the /tavolo blocker and rename the link table ([8842800](https://github.com/Pauperwave/app/commit/8842800))
+- **telegram:** 📝 add /status row, drop stale TELEGRAM_ADMIN_CHAT_ID mention ([10f9a72](https://github.com/Pauperwave/app/commit/10f9a72))
+- **telegram:** 📝 add who-gets-notified-for-what matrix ([f5b52db](https://github.com/Pauperwave/app/commit/f5b52db))
+- **readme:** 📝 document Telegram bot env vars and setup ([1c09210](https://github.com/Pauperwave/app/commit/1c09210))
+- **telegram:** 📝 rename /prossimotorneo to /prossimo ([8c6515e](https://github.com/Pauperwave/app/commit/8c6515e))
+- **telegram:** 📝 add voting/commander-tracking/registration rows, link issue #82 ([#82](https://github.com/Pauperwave/app/issues/82))
+- **telegram:** 📝 mark self-service registration endpoint as done ([b6720a3](https://github.com/Pauperwave/app/commit/b6720a3))
+- **telegram:** 📝 note future EN/DE translation as a deferred TODO ([e90b551](https://github.com/Pauperwave/app/commit/e90b551))
+
+### Build
+
+- **ci:** ⬆️ bump GitHub Actions to latest majors, align matrix strategy ([2ce2857](https://github.com/Pauperwave/app/commit/2ce2857))
+
+### Chore
+
+- **fallow:** 🔇 suppress the classifiche/useFormatStandingsQuery duplication, ignore vue-i18n ([75f8e13](https://github.com/Pauperwave/app/commit/75f8e13))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.1.11
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.1.10...v0.1.11)
