@@ -28,6 +28,20 @@ export async function resolveAuditAssociateUuid(
   return data?.uuid ?? null
 }
 
+// Shared by self-register.post.ts/self-unregister.post.ts: both need the
+// caller's own associate uuid (never one from the request body) and a
+// consistent 403 when the account isn't linked to a socio.
+export async function requireOwnAssociateUuid(event: H3Event, user: JwtPayload): Promise<string> {
+  const associateUuid = await resolveAuditAssociateUuid(event, user)
+  if (!associateUuid) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Nessun socio associato a questo account'
+    })
+  }
+  return associateUuid
+}
+
 export async function auditColumnsForInsert(event: H3Event, user: JwtPayload) {
   const associateUuid = await resolveAuditAssociateUuid(event, user)
   return { created_by: associateUuid, updated_by: associateUuid }

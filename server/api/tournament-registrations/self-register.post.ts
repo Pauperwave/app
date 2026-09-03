@@ -1,10 +1,4 @@
 // server\api\tournament-registrations\self-register.post.ts
-import { serverSupabaseServiceRole } from '#supabase/server'
-import type { Database } from '#shared/utils/types/database'
-
-interface SelfRegisterBody {
-  tournamentUuid: string
-}
 
 // Player self-registration — deliberately not requireManagementPermission
 // like register.post.ts: any logged-in user may call this, but only ever
@@ -17,17 +11,7 @@ interface SelfRegisterBody {
 // client-side insert would fail for a first-time registrant with no
 // players row yet).
 export default defineEventHandler(async (event) => {
-  const user = await requireUser(event)
-  const { tournamentUuid } = await readBody<SelfRegisterBody>(event)
-  const supabase = serverSupabaseServiceRole<Database>(event)
-
-  const associateUuid = await resolveAuditAssociateUuid(event, user)
-  if (!associateUuid) {
-    throw createError({
-      statusCode: 403,
-      statusMessage: 'Nessun socio associato a questo account'
-    })
-  }
+  const { tournamentUuid, associateUuid, supabase } = await parseSelfRegistrationRequest(event)
 
   const { data: tournament, error: tournamentError } = await supabase
     .from('tournaments')

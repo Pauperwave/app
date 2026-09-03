@@ -27,6 +27,19 @@ export async function parseIdRequest(event: H3Event) {
   return { user, id, supabase }
 }
 
+// Shared by self-register.post.ts/self-unregister.post.ts (fallow:dupes,
+// 2026-09-03) — both take the same { tournamentUuid } body and need the
+// caller's own associate uuid (never one from the body, see each call
+// site's own comment on why), so this is the whole self-service prologue.
+export async function parseSelfRegistrationRequest(event: H3Event) {
+  const user = await requireUser(event)
+  const { tournamentUuid } = await readBody<{ tournamentUuid: string }>(event)
+  const supabase = serverSupabaseServiceRole<Database>(event)
+  const associateUuid = await requireOwnAssociateUuid(event, user)
+
+  return { tournamentUuid, associateUuid, supabase }
+}
+
 // Every table that supports soft delete today — shared by softDeleteById and
 // restoreById below, and by server/api/trash/restore.post.ts's whitelist
 // check (app/types/index.d.ts's TrashEntity is the client-side mirror of
