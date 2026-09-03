@@ -2,10 +2,10 @@
 import { InlineKeyboard } from 'grammy'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { fetchRegistrationStatuses, fetchStageNumbers } from './calendario'
 import { statusIcon, stageLabel, tournamentLine, tournamentButtonLabel } from './tournamentLine'
+import { fetchRegistrationStatuses, fetchStageNumbers } from './tournamentQueries'
 import type { Bot } from 'grammy'
-import type { RegistrationStatus } from './calendario'
+import type { RegistrationStatus } from './tournamentQueries'
 
 interface ActiveLeagueRow {
   uuid: string
