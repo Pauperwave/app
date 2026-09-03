@@ -25,8 +25,11 @@ export function registerCoreCommands(bot: Bot) {
   bot.command('start', ctx => ctx.reply(
     'Ciao! Sono il bot di Pauperwave 👋\n\n'
     + 'Scrivimi la tua email da socio (quella con cui ti sei tesserato) per '
-    + 'collegare il tuo account e sbloccare i comandi personalizzati — '
-    + 'oppure usa subito /help per vedere quelli pubblici, funzionano già senza.'
+    + 'collegare il tuo account e sbloccare i comandi personalizzati:\n'
+    + '/iscrizioni — i tornei a cui sei iscritto\n'
+    + '/tessera — stato del tuo tesseramento\n'
+    + '/mazzi — i tuoi mazzi Commander\n\n'
+    + 'Oppure usa subito /help per vedere quelli pubblici, funzionano già senza.'
   ))
 
   bot.command('help', ctx => ctx.reply(HELP_TEXT))
