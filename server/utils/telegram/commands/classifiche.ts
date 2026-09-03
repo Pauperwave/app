@@ -30,6 +30,17 @@ interface FormatStandingsPayload {
   results: { player_uuid: string, player_name: string, event_uuid: string, rank: number }[]
 }
 
+interface CittadinoPayload {
+  results: { player_uuid: string, player_name: string, event_uuid: string, rank: number }[]
+}
+
+// Same scale as POINTS_BY_RANK above (per-rank points, same regulation
+// shape) but Cittadino has its own counted-results cutoff and its own
+// tie-breaks (best single result, then events played) — see
+// useCittadinoFilters.ts, which this mirrors for the same Vue-only-composable
+// reason as formatStandingsMessage above.
+const CITTADINO_COUNTED_RESULTS = 11
+
 // Telegram messages cap at 4096 chars — plenty of headroom below that, but a
 // full 40+ player table isn't useful to read in a chat bubble either.
 const TOP_ROWS = 10
@@ -60,6 +71,36 @@ async function formatStandingsMessage(format: StandingsFormat): Promise<string> 
     .map((row, index) => `${index + 1}. ${row.playerName} — ${row.total} pt`)
 
   return `🏆 *Classifica ${FORMAT_LABELS[format]}*\n\n${lines.join('\n')}`
+}
+
+// fallow-ignore-next-line code-duplication -- rows.map/sort/lines block below mirrors formatStandingsMessage's, but the tie-break chain (bestSingle, eventsPlayed) is genuinely different math, not the same logic reshaped
+async function cittadinoMessage(): Promise<string> {
+  const payload = await $fetch<CittadinoPayload>('/api/cittadino')
+
+  const placements = payload.results.map(toBestNPlacement)
+  const groups = groupBestNByPlayer(placements, pointsForRank, CITTADINO_COUNTED_RESULTS)
+
+  const rows = groups.map((group) => {
+    const counted = group.sortedByPoints.slice(0, CITTADINO_COUNTED_RESULTS)
+    return {
+      playerName: group.playerName,
+      total: counted.reduce((sum, result) => sum + result.points, 0),
+      bestSingle: group.sortedByPoints[0]?.points ?? 0,
+      eventsPlayed: group.results.length
+    }
+  })
+
+  // Same tie-break order as useCittadinoFilters.ts: total, then best single
+  // result, then events played.
+  rows.sort((a, b) =>
+    b.total - a.total || b.bestSingle - a.bestSingle || b.eventsPlayed - a.eventsPlayed
+  )
+
+  const lines = rows
+    .slice(0, TOP_ROWS)
+    .map((row, index) => `${index + 1}. ${row.playerName} — ${row.total} pt`)
+
+  return `🏆 *Classifica Cittadino*\n\n${lines.join('\n')}`
 }
 
 function formatsKeyboard(siteUrl: string): InlineKeyboard {
@@ -96,24 +137,19 @@ export function registerClassificheCommand(bot: Bot) {
     })
   })
 
-  // Cittadino uses a different scoring model entirely (best-11 across every
-  // format, with its own tie-breaks — see ADR-012, docs/PROGRESS.md), not
-  // groupBestNByPlayer's plain best-N-of-one-format math above. Rendering it
-  // in-chat would mean re-deriving that logic here too; not worth it before
-  // the underlying data is real (issue #2) — link out instead.
   bot.callbackQuery('classifiche:cittadino', async (ctx) => {
     await ctx.answerCallbackQuery()
-    const siteUrl = useRuntimeConfig().public.siteUrl
 
-    await ctx.editMessageText(
-      'La classifica Cittadino usa un calcolo diverso (miglior 11 su tutti i formati) — per ora è disponibile solo sulla pagina pubblica.',
-      {
-        reply_markup: new InlineKeyboard()
-          .url('Apri classifica Cittadino', `${siteUrl}/classifiche/cittadino`)
-          .row()
-          .text('« Formati', 'classifiche:menu')
-      }
-    )
+    const siteUrl = useRuntimeConfig().public.siteUrl
+    const message = await cittadinoMessage()
+
+    await ctx.editMessageText(message, {
+      parse_mode: 'Markdown',
+      reply_markup: new InlineKeyboard()
+        .url('Apri pagina completa', `${siteUrl}/classifiche/cittadino`)
+        .row()
+        .text('« Formati', 'classifiche:menu')
+    })
   })
 
   bot.callbackQuery('classifiche:menu', async (ctx) => {
