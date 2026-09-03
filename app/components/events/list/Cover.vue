@@ -48,14 +48,6 @@ async function confirmImage(imageUrl: string, cardName: string | null, artist: s
   })
   imageModalOpen.value = false
 }
-
-function dayPart(startDate: string) {
-  return new Date(startDate).toLocaleDateString('it-IT', { day: '2-digit' })
-}
-
-function monthPart(startDate: string) {
-  return new Date(startDate).toLocaleDateString('it-IT', { month: 'short' }).replace('.', '')
-}
 </script>
 
 <template>

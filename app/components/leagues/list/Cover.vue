@@ -29,14 +29,6 @@ const { t } = useI18n()
 // Same shift-click capture convention as TournamentsListCover.vue.
 const lastClickShiftKey = ref(false)
 
-function dayPart(startDate: string) {
-  return new Date(startDate).toLocaleDateString('it-IT', { day: '2-digit' })
-}
-
-function monthPart(startDate: string) {
-  return new Date(startDate).toLocaleDateString('it-IT', { month: 'short' }).replace('.', '')
-}
-
 // The chip shows the earliest contained tournament's date, not the league's
 // own (scheduled-at-creation) startDate, when that's known — same
 // tournaments-are-the-source-of-truth reasoning as the ADR in

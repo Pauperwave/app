@@ -31,6 +31,17 @@ export function toLocalDateKey(date: Date): string {
   return `${year}-${month}-${day}`
 }
 
+// Shared by events/leagues/tournaments' list/Cover.vue for their top-left
+// day/month date chip (fallow:dupes, 2026-09-03 flagged an identical clone
+// across all three).
+export function dayPart(startDate: string): string {
+  return new Date(startDate).toLocaleDateString('it-IT', { day: '2-digit' })
+}
+
+export function monthPart(startDate: string): string {
+  return new Date(startDate).toLocaleDateString('it-IT', { month: 'short' }).replace('.', '')
+}
+
 // Tournaments' AddModal.vue/EditModal.vue: the end time is entered as a plain
 // "HH:mm" on the same calendar day as the start (no separate end-date field,
 // same reasoning as OpeningHoursEditor.vue's two independent pickers). Rolls
