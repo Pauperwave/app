@@ -5,8 +5,10 @@ import { it } from 'date-fns/locale'
 import { statusIcon, stageLabel, tournamentLine, tournamentButtonLabel } from './tournament/line'
 import { fetchRegistrationStatuses, fetchStageNumbers } from './tournament/queries'
 import { answerLoadError, editOrResendMessage } from './callbackErrors'
+import { tournamentProgressByLeague } from '#shared/utils/leagues/tournamentProgressByLeague'
 import type { Bot } from 'grammy'
 import type { RegistrationStatus } from './tournament/queries'
+import type { LeagueTournamentRow } from '#shared/utils/leagues/tournamentProgressByLeague'
 
 interface ActiveLeagueRow {
   uuid: string
@@ -15,34 +17,12 @@ interface ActiveLeagueRow {
   ends_at: string | null
 }
 
-interface LeagueTournamentRow {
-  league_uuid: string | null
-  status: string
-}
-
 interface LeagueTournamentDetailRow {
   uuid: string
   name: string
   starts_at: string | null
   status: string
   location: { name: string | null } | null
-}
-
-// Same "cancelled tournaments don't count toward the denominator" rule as
-// useLeaguesQuery.ts's tournamentProgressByLeague — a cancelled tournament
-// isn't "still to complete", so progress reads e.g. 3/5, not a permanently
-// deflated 3/6.
-function progressByLeague(rows: LeagueTournamentRow[]) {
-  const totals = new Map<string, number>()
-  const completed = new Map<string, number>()
-  for (const row of rows) {
-    if (!row.league_uuid || row.status === 'cancelled') continue
-    totals.set(row.league_uuid, (totals.get(row.league_uuid) ?? 0) + 1)
-    if (row.status === 'completed') {
-      completed.set(row.league_uuid, (completed.get(row.league_uuid) ?? 0) + 1)
-    }
-  }
-  return { totals, completed }
 }
 
 function formatDate(date: string | null): string | null {
@@ -95,7 +75,7 @@ async function renderLeghe(): Promise<{ text: string, keyboard: InlineKeyboard |
     .is('deleted_at', null)
 
   if (error) throw error
-  const { totals, completed } = progressByLeague(tournaments as LeagueTournamentRow[])
+  const { totals, completed } = tournamentProgressByLeague(tournaments as LeagueTournamentRow[])
 
   const lines = leagues.map((league) => {
     const total = totals.get(league.uuid) ?? 0
