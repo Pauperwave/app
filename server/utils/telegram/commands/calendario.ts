@@ -380,8 +380,12 @@ export function registerCalendarioCommand(bot: Bot) {
 
   bot.callbackQuery(/^calendario:(-?\d+)$/, async (ctx) => {
     const monthOffset = Number(ctx.match[1])
-    await ctx.answerCallbackQuery()
 
+    // Answered exactly once, at the very end — a callback_query can only
+    // be answered once (a second call throws GrammyError "query is too
+    // old...", uncaught, taking down the whole webhook request with a 500;
+    // confirmed 2026-09-03 as the actual cause behind "the bot doesn't
+    // respond" whenever this handler's own error path used to fire).
     try {
       const { text, keyboard } = await renderCalendario(monthOffset)
       // The detail view may have replaced this message with a photo one
@@ -393,8 +397,9 @@ export function registerCalendarioCommand(bot: Bot) {
         await ctx.deleteMessage().catch(() => {})
         await ctx.reply(text, { parse_mode: 'Markdown', reply_markup: keyboard })
       }
+      await ctx.answerCallbackQuery()
     } catch {
-      await ctx.answerCallbackQuery({ text: 'Errore nel caricamento', show_alert: true })
+      await ctx.answerCallbackQuery({ text: 'Errore nel caricamento', show_alert: true }).catch(() => {})
     }
   })
 
@@ -404,9 +409,11 @@ export function registerCalendarioCommand(bot: Bot) {
     const uuid = ctx.match[1]
     const origin = ctx.match[2]
     const chatId = ctx.chat?.id
-    await ctx.answerCallbackQuery()
 
-    if (!uuid || !origin || !chatId) return
+    if (!uuid || !origin || !chatId) {
+      await ctx.answerCallbackQuery().catch(() => {})
+      return
+    }
 
     try {
       const tournament = await fetchTournament(uuid)
@@ -426,16 +433,16 @@ export function registerCalendarioCommand(bot: Bot) {
           parse_mode: 'Markdown',
           reply_markup: keyboard
         })
-        return
+      } else {
+        await ctx.editMessageText(text, {
+          parse_mode: 'Markdown',
+          reply_markup: keyboard,
+          link_preview_options: { is_disabled: true }
+        })
       }
-
-      await ctx.editMessageText(text, {
-        parse_mode: 'Markdown',
-        reply_markup: keyboard,
-        link_preview_options: { is_disabled: true }
-      })
+      await ctx.answerCallbackQuery()
     } catch {
-      await ctx.answerCallbackQuery({ text: 'Errore nel caricamento', show_alert: true })
+      await ctx.answerCallbackQuery({ text: 'Errore nel caricamento', show_alert: true }).catch(() => {})
     }
   })
 

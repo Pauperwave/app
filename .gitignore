@@ -32,3 +32,4 @@ logs
 # VSC
 .history
 .mcp.json
+.vercel

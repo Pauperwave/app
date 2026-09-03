@@ -67,6 +67,22 @@ export function useTelegramBot(): Bot {
   bot = new Bot(token)
   registerCommands(bot)
 
+  // Without this, any uncaught error inside a command/callback handler
+  // (a bug, a transient Supabase/Telegram hiccup, ...) propagates out of
+  // bot.handleUpdate() and the webhook responds 500 — Telegram then
+  // queues the update as "pending" and stops delivering new ones until it
+  // gets a 200, which looks like "the bot doesn't respond" for every
+  // interaction, not just the one that actually failed. Logging here and
+  // swallowing the error keeps the webhook always returning 200, so a bug
+  // in one command can no longer take the whole bot down. Confirmed
+  // 2026-09-03: a callback_query handler that called
+  // ctx.answerCallbackQuery() twice (Telegram rejects the second call)
+  // was doing exactly this before both the double-answer bug and this
+  // safety net were added.
+  bot.catch((err) => {
+    console.error('Unhandled Telegram bot error:', err.error)
+  })
+
   // Best-effort, same reasoning as notify.ts's best-effort sends — a
   // Telegram hiccup here must never block the bot instance from being
   // usable, it would just leave the command-picker menu stale.

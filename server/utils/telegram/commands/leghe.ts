@@ -187,9 +187,12 @@ export function registerLegheCommand(bot: Bot) {
     }
   })
 
+  // Each handler answers the callback_query exactly once, at the very
+  // end — a second answer throws GrammyError "query is too old...",
+  // uncaught, which used to take the whole webhook request down with a
+  // 500 (confirmed 2026-09-03 as the actual cause behind "the bot
+  // doesn't respond" whenever these handlers' own error path fired).
   bot.callbackQuery(/^leghe:list$/, async (ctx) => {
-    await ctx.answerCallbackQuery()
-
     try {
       const { text, keyboard } = await renderLeghe()
       // The tournament detail view may have replaced this message with a
@@ -201,17 +204,20 @@ export function registerLegheCommand(bot: Bot) {
         await ctx.deleteMessage().catch(() => {})
         await ctx.reply(text, { parse_mode: 'Markdown', reply_markup: keyboard })
       }
+      await ctx.answerCallbackQuery()
     } catch {
-      await ctx.answerCallbackQuery({ text: 'Errore nel caricamento', show_alert: true })
+      await ctx.answerCallbackQuery({ text: 'Errore nel caricamento', show_alert: true }).catch(() => {})
     }
   })
 
   bot.callbackQuery(/^lega:(\d+)$/, async (ctx) => {
     const index = Number(ctx.match[1])
     const chatId = ctx.chat?.id
-    await ctx.answerCallbackQuery()
 
-    if (!chatId) return
+    if (!chatId) {
+      await ctx.answerCallbackQuery().catch(() => {})
+      return
+    }
 
     try {
       const rendered = await renderLegaTornei(index, chatId)
@@ -226,8 +232,9 @@ export function registerLegheCommand(bot: Bot) {
         await ctx.deleteMessage().catch(() => {})
         await ctx.reply(rendered.text, { parse_mode: 'Markdown', reply_markup: rendered.keyboard })
       }
+      await ctx.answerCallbackQuery()
     } catch {
-      await ctx.answerCallbackQuery({ text: 'Errore nel caricamento', show_alert: true })
+      await ctx.answerCallbackQuery({ text: 'Errore nel caricamento', show_alert: true }).catch(() => {})
     }
   })
 }
