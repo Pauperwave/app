@@ -152,6 +152,7 @@ export const ICONS = {
   flag: 'i-lucide-flag',
   building: 'i-lucide-building',
   mailbox: 'i-lucide-mailbox',
+  shop: 'i-lucide-store',
 
   // Misc UI
   bell: 'i-lucide-bell',

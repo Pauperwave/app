@@ -399,6 +399,11 @@ export interface Location {
   // only drives the "chiuso temporaneamente" badge/banner and disables (but
   // doesn't clear) the opening-hours editor.
   temporarilyClosed: boolean
+  // Distinguishes a game shop (Fantàsia, La Fenice, Magman, Timetwister
+  // Games) from a club/community venue (user request, 2026-09-04) — read-only
+  // display badge for now, no AddModal/EditModal toggle yet (same as
+  // temporarilyClosed, which also has none — set directly in the DB).
+  isShop: boolean
 }
 
 // --- Campionato Cittadino -----------------------------------------------------
