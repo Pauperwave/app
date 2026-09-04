@@ -74,15 +74,7 @@ const { t } = useI18n()
             <h2 class="text-xl font-semibold truncate">
               {{ location.name }}
             </h2>
-            <UBadge
-              v-if="location.isShop"
-              color="neutral"
-              variant="subtle"
-              :icon="ICONS.shop"
-              class="shrink-0"
-            >
-              {{ t('location.card.shop') }}
-            </UBadge>
+            <LocationsTypeBadge :is-shop="location.isShop" class="shrink-0" />
           </div>
           <!-- Width matches "Smart Lab Rovereto". -->
           <USkeleton v-else class="h-6 w-48" />
