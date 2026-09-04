@@ -6,7 +6,7 @@ export const TOURNAMENT_STATUSES: TournamentStatus[] = [
 ]
 
 export function tournamentStatusColor(status: TournamentStatus): StatusColor {
-  if (status === 'draft') return 'neutral'
+  if (status === 'draft' || status === 'external') return 'neutral'
   if (status === 'in_progress') return 'warning'
   if (status === 'completed') return 'success'
   if (status === 'cancelled') return 'error'
@@ -24,7 +24,7 @@ export function tournamentStatusBgClass(status: TournamentStatus): string {
   // close to the empty-cell bg-elevated (oklch 0.37 vs 0.274 — barely
   // distinguishable at a 12px swatch size, user feedback 2026-08-20). A
   // border reads more clearly than a subtle fill difference at that size.
-  if (status === 'draft') return 'bg-elevated border-2 border-accented'
+  if (status === 'draft' || status === 'external') return 'bg-elevated border-2 border-accented'
   if (status === 'in_progress') return 'bg-warning'
   if (status === 'completed') return 'bg-success'
   if (status === 'cancelled') return 'bg-error'
@@ -36,5 +36,6 @@ export const TOURNAMENT_STATUS_ICONS: Record<TournamentStatus, string> = {
   registration_open: ICONS.clock,
   in_progress: ICONS.pending,
   completed: ICONS.successFilledBig,
-  cancelled: ICONS.clear
+  cancelled: ICONS.clear,
+  external: ICONS.externalLink
 }

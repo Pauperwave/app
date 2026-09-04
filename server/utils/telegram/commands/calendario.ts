@@ -9,7 +9,11 @@ import { answerLoadError, editOrResendMessage } from './callbackErrors'
 import type { Bot } from 'grammy'
 import type { DatedTournamentRow, TournamentRow } from './tournament/detail'
 
-const OPEN_STATUSES = ['registration_open', 'in_progress']
+// 'external' (2026-09-04): shop-organized tournaments (Magman etc.) show up
+// here too for schedule comparison — see isExternalOrganizer in
+// tournament/detail.ts. Deliberately not added to prossimo.ts's own
+// OPEN_STATUSES (user request) — "your next tournament" stays Pauperwave-only.
+const OPEN_STATUSES = ['registration_open', 'in_progress', 'external']
 // Fetched once per render, filtered by month client-side — cheap enough for
 // a league of this size, and keeps the callback handler stateless (no need
 // to remember what a user was looking at between messages).

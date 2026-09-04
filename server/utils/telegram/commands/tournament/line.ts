@@ -11,7 +11,10 @@ export const STATUS_ICON: Record<string, string> = {
   registration_open: '📝',
   in_progress: '🔄',
   completed: '✅',
-  cancelled: '❌'
+  cancelled: '❌',
+  // A shop-organized tournament (Magman etc.), tracked for schedule
+  // visibility only — see isExternalOrganizer in tournament/detail.ts.
+  external: '🏪'
 }
 
 export function statusIcon(status: string): string {

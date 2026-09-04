@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
 
   const { data: tournament, error: tournamentError } = await supabase
     .from('tournaments')
-    .select('status')
+    .select('status, organizer:organizations(type)')
     .eq('uuid', tournamentUuid)
     .is('deleted_at', null)
     .single()
@@ -23,7 +23,10 @@ export default defineEventHandler(async (event) => {
   if (tournamentError || !tournament) {
     throw createError({ statusCode: 404, statusMessage: 'Torneo non trovato' })
   }
-  if (tournament.status !== 'registration_open') {
+  // Shop organizers (Magman etc.) are reference-only — Pauperwave doesn't
+  // run their registrations, same rule RegisterButton.vue (client-side) and
+  // the Telegram bot's detail.ts (isExternalOrganizer) enforce.
+  if (tournament.status !== 'registration_open' || tournament.organizer?.type === 'shop') {
     throw createError({
       statusCode: 400,
       statusMessage: 'Le iscrizioni per questo torneo non sono aperte'

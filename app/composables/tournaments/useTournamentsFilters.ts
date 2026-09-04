@@ -38,7 +38,7 @@ export function useTournamentsFilters(
   // useWantedCardsFilters.ts's statusTabs.
   const statusCounts = computed(() => {
     const counts: Record<TournamentStatus, number> = {
-      draft: 0, registration_open: 0, in_progress: 0, completed: 0, cancelled: 0
+      draft: 0, registration_open: 0, in_progress: 0, completed: 0, cancelled: 0, external: 0
     }
     for (const tournament of data.value) {
       if (tournament.status in counts) counts[tournament.status]++
