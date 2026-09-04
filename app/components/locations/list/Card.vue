@@ -59,6 +59,15 @@ const mapsLink = computed(() => location
       }"
       @click="onCardClick"
     >
+      <!-- Sibling of the dimmed content below, not a child — same
+           top-left-vs-top-right mirror of LocationsListLocationStatus's own
+           absolute positioning (user request, 2026-09-04). -->
+      <LocationsTypeBadge
+        v-if="!loading && location"
+        :is-shop="location.isShop"
+        class="absolute top-2 left-2 z-10"
+      />
+
       <!-- Not inside the opacity-60 wrapper below: CSS opacity applies to a
          whole subtree, a descendant can't opt back out of an ancestor's
          opacity — the badge has to be a sibling, not a child, of the faded
@@ -91,19 +100,10 @@ const mapsLink = computed(() => location
 
         <div class="p-4">
           <div class="flex items-start justify-between gap-2">
-            <div v-if="!loading && location" class="flex items-center gap-1.5 min-w-0">
+            <div v-if="!loading && location">
               <h3 class="font-semibold truncate">
                 {{ location.name }}
               </h3>
-              <UBadge
-                v-if="location.isShop"
-                color="neutral"
-                variant="subtle"
-                :icon="ICONS.shop"
-                class="shrink-0"
-              >
-                {{ t('location.card.shop') }}
-              </UBadge>
             </div>
             <!-- Width matches "Smart Lab Rovereto" — a typical location name. -->
             <USkeleton v-else class="h-5 w-32" />
