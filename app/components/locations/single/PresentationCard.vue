@@ -70,9 +70,20 @@ const { t } = useI18n()
         :class="{ 'opacity-60 saturate-50': !loading && location && location.temporarilyClosed }"
       >
         <div class="flex items-start justify-between gap-3">
-          <h2 v-if="!loading && location" class="text-xl font-semibold truncate">
-            {{ location.name }}
-          </h2>
+          <div v-if="!loading && location" class="flex items-center gap-2 min-w-0">
+            <h2 class="text-xl font-semibold truncate">
+              {{ location.name }}
+            </h2>
+            <UBadge
+              v-if="location.isShop"
+              color="neutral"
+              variant="subtle"
+              :icon="ICONS.shop"
+              class="shrink-0"
+            >
+              {{ t('location.card.shop') }}
+            </UBadge>
+          </div>
           <!-- Width matches "Smart Lab Rovereto". -->
           <USkeleton v-else class="h-6 w-48" />
 

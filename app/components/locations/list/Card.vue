@@ -91,9 +91,20 @@ const mapsLink = computed(() => location
 
         <div class="p-4">
           <div class="flex items-start justify-between gap-2">
-            <h3 v-if="!loading && location" class="font-semibold truncate">
-              {{ location.name }}
-            </h3>
+            <div v-if="!loading && location" class="flex items-center gap-1.5 min-w-0">
+              <h3 class="font-semibold truncate">
+                {{ location.name }}
+              </h3>
+              <UBadge
+                v-if="location.isShop"
+                color="neutral"
+                variant="subtle"
+                :icon="ICONS.shop"
+                class="shrink-0"
+              >
+                {{ t('location.card.shop') }}
+              </UBadge>
+            </div>
             <!-- Width matches "Smart Lab Rovereto" — a typical location name. -->
             <USkeleton v-else class="h-5 w-32" />
 

@@ -320,6 +320,7 @@ export type Database = {
           id: number
           image_url: string | null
           instagram_url: string | null
+          is_shop: boolean
           name: string
           opening_hours: Json | null
           phone: string | null
@@ -345,6 +346,7 @@ export type Database = {
           id?: number
           image_url?: string | null
           instagram_url?: string | null
+          is_shop?: boolean
           name: string
           opening_hours?: Json | null
           phone?: string | null
@@ -370,6 +372,7 @@ export type Database = {
           id?: number
           image_url?: string | null
           instagram_url?: string | null
+          is_shop?: boolean
           name?: string
           opening_hours?: Json | null
           phone?: string | null

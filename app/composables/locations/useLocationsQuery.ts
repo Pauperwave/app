@@ -41,7 +41,8 @@ export function useLocationsQuery() {
         instagram: row.instagram_url,
         telegramChannel: row.telegram_url,
         whatsapp: row.whatsapp_url,
-        temporarilyClosed: row.temporarily_closed
+        temporarilyClosed: row.temporarily_closed,
+        isShop: row.is_shop
       }))
     }
   })

@@ -24,6 +24,11 @@ export function useLocationsTableColumns(onEdit: (location: Location) => void) {
       header: ({ column }) => sortableHeader(t('location.columns.name'), column),
       cell: ({ row }) => h('div', { class: 'flex items-center gap-2' }, [
         h('span', { class: 'font-medium' }, row.original.name),
+        row.original.isShop
+          ? h(UBadge, {
+            color: 'neutral', variant: 'subtle', icon: ICONS.shop
+          }, () => t('location.card.shop'))
+          : null,
         row.original.temporarilyClosed
           ? h(UBadge, {
             color: 'warning', variant: 'subtle', icon: ICONS.warning
