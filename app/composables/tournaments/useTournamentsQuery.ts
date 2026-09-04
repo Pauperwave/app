@@ -20,7 +20,7 @@ export function useTournamentsQuery() {
         .select(`
           *,
           location:locations(name, address, city, province, postal_code, country, google_maps_url),
-          organizer:organizations(name),
+          organizer:organizations(name, type),
           format:mtg_formats(name),
           event:events(uuid, name),
           league:leagues(name)
@@ -48,6 +48,7 @@ export function useTournamentsQuery() {
         roundCount: row.round_count,
         registeredPlayers: row.registered_players,
         organizer: row.organizer?.name ?? null,
+        organizerType: row.organizer?.type ?? null,
         format: row.format?.name ?? '',
         status: row.status as TournamentStatus,
         location: row.location?.name ?? null,

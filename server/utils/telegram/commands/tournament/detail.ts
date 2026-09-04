@@ -39,7 +39,7 @@ export interface TournamentRow {
   image_url: string | null
   league_uuid: string | null
   location: LocationRow | null
-  organizer: { name: string | null } | null
+  organizer: { name: string | null, type: string | null } | null
 }
 
 export interface DatedTournamentRow extends TournamentRow {
@@ -51,7 +51,7 @@ export const SELECT_COLUMNS = `
   uuid, name, starts_at, ends_at, description, entry_fee, prizes,
   contact_name, contact_phone, status, image_url, league_uuid,
   location:locations(name, city, address, postal_code, province, country, google_maps_url),
-  organizer:organizations(name)
+  organizer:organizations(name, type)
 `
 
 async function fetchTournament(uuid: string): Promise<DatedTournamentRow | null> {
@@ -154,16 +154,26 @@ function googleCalendarUrl(row: DatedTournamentRow): string {
   return `https://www.google.com/calendar/render?${params.toString()}`
 }
 
+// Shop organizers (Magman etc.) show up in the bot for schedule visibility
+// (user request, 2026-09-04) but registration is their own business, not
+// Pauperwave's — the Iscriviti/Annulla/check-in flow only ever manages
+// tournament_registrations for the club's own tournaments.
+function isExternalOrganizer(row: DatedTournamentRow): boolean {
+  return row.organizer?.type === 'shop'
+}
+
 function detailKeyboard(
   row: DatedTournamentRow, origin: string, registration: RegistrationStatus
 ): InlineKeyboard {
   const keyboard = new InlineKeyboard()
-  if (registration === 'checked_in') {
-    keyboard.row().text('🎯 Check-in effettuato', `checkin-info:${row.uuid}`)
-  } else if (registration === 'registered') {
-    keyboard.row().text('❌ Annulla iscrizione', `disiscrivi:${row.uuid}:${origin}`)
-  } else if (row.status === 'registration_open') {
-    keyboard.row().text('➕ Iscriviti', `iscrivi:${row.uuid}:${origin}`)
+  if (!isExternalOrganizer(row)) {
+    if (registration === 'checked_in') {
+      keyboard.row().text('🎯 Check-in effettuato', `checkin-info:${row.uuid}`)
+    } else if (registration === 'registered') {
+      keyboard.row().text('❌ Annulla iscrizione', `disiscrivi:${row.uuid}:${origin}`)
+    } else if (row.status === 'registration_open') {
+      keyboard.row().text('➕ Iscriviti', `iscrivi:${row.uuid}:${origin}`)
+    }
   }
 
   const mapUrl = row.location ? mapsUrl(row.location) : null
@@ -294,7 +304,7 @@ export function registerTournamentDetailHandlers(bot: Bot) {
       if (!associateUuid) return
 
       const tournament = await fetchTournament(uuid)
-      if (!tournament || tournament.status !== 'registration_open') {
+      if (!tournament || tournament.status !== 'registration_open' || isExternalOrganizer(tournament)) {
         await ctx.answerCallbackQuery({
           text: 'Le iscrizioni per questo torneo non sono aperte.',
           show_alert: true

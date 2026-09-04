@@ -31,7 +31,12 @@ export type MembershipStatus = RequestStatus | 'active' | 'to_renew' | 'expired'
 
 // Matches the DB check constraint (ck_tournaments_status) verbatim — adopted
 // directly instead of mapped to a UI-only vocabulary (2026-08-15 user request).
-export type TournamentStatus = 'draft' | 'registration_open' | 'in_progress' | 'completed' | 'cancelled'
+// 'external' (2026-09-04): a tournament run by a shop organizer (Magman
+// etc.), not Pauperwave — deliberately excluded from TOURNAMENT_STATUSES
+// (app/utils/status/tournamentStatus.ts), so it's never a pickable option
+// for the club's own tournaments.
+export type TournamentStatus
+  = 'draft' | 'registration_open' | 'in_progress' | 'completed' | 'cancelled' | 'external'
 // Matches the DB check constraint (ck_leagues_status) verbatim, same
 // convention as TournamentStatus/EventStatus (2026-08-15 user request).
 export type LeagueStatus = 'draft' | 'active' | 'completed' | 'cancelled'
@@ -228,6 +233,11 @@ export interface Tournament {
   roundCount: number | null
   registeredPlayers: number | null
   organizer: string | null
+  // 'association' | 'shop' | 'other' (organizations.type, docs/supabase/2-database.md).
+  // A 'shop' organizer (Magman etc.) is reference-only — RegisterButton.vue
+  // hides Iscriviti/Disiscriviti for these, since Pauperwave doesn't run
+  // their registrations (self-register.post.ts enforces this server-side too).
+  organizerType: string | null
   format: string
   status: TournamentStatus
   // Venue name (e.g. "Smart Lab - Centro Giovani Rovereto") — kept separate

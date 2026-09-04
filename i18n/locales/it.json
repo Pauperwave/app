@@ -1361,7 +1361,8 @@
       "registration_open": "Iscrizioni aperte",
       "in_progress": "In corso",
       "completed": "Completato",
-      "cancelled": "Annullato"
+      "cancelled": "Annullato",
+      "external": "Esterno"
     },
     "filters": {
       "statusAll": "Tutti",

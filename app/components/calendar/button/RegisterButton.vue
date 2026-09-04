@@ -45,6 +45,11 @@ const isPending = computed(() => selfRegister.isLoading.value || selfUnregister.
 // in self-register.post.ts.
 const canRegister = computed(() => tournament?.status === 'registration_open')
 
+// Shop organizers (Magman etc.) are reference-only — Pauperwave doesn't run
+// their registrations, so no Iscriviti/Disiscriviti at all, same rule
+// self-register.post.ts enforces server-side.
+const isExternalOrganizer = computed(() => tournament?.organizerType === 'shop')
+
 function onClick() {
   if (!tournament) {
     registerComingSoon()
@@ -64,6 +69,7 @@ function onClick() {
 
 <template>
   <UButton
+    v-if="!isExternalOrganizer"
     :label="isRegistered ? $t('event.calendar.unregister') : $t('event.calendar.register')"
     :icon="isRegistered ? ICONS.removePlayer : ICONS.addPlayer"
     :color="isRegistered ? 'neutral' : 'primary'"
