@@ -1103,6 +1103,24 @@ export type Database = {
           },
         ]
       }
+      pauperwave_telegram_chat_settings: {
+        Row: {
+          chat_id: number
+          show_external_tournaments: boolean
+          updated_at: string
+        }
+        Insert: {
+          chat_id: number
+          show_external_tournaments?: boolean
+          updated_at?: string
+        }
+        Update: {
+          chat_id?: number
+          show_external_tournaments?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pauperwave_wanted_cards: {
         Row: {
           card_name: string
