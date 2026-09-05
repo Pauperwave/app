@@ -1,5 +1,5 @@
 // server\utils\telegram\commands\classifiche.ts
-import { InlineKeyboard } from 'grammy'
+import { Menu } from '@grammyjs/menu'
 import { FormattedString } from '@grammyjs/parse-mode'
 import { groupBestNByPlayer, toBestNPlacement } from '#shared/utils/cittadino/bestNStandings'
 import { answerLoadError } from './callbackErrors'
@@ -7,6 +7,7 @@ import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 
 type StandingsFormat = 'pauper' | 'commander' | 'premodern'
+type StandingsScope = StandingsFormat | 'cittadino'
 
 const FORMAT_LABELS: Record<StandingsFormat, string> = {
   pauper: 'Pauper',
@@ -106,76 +107,55 @@ async function cittadinoMessage(): Promise<FormattedString> {
   return fmt`🏆 ${FormattedString.b('Classifica Cittadino')}\n\n${FormattedString.join(lines, '\n')}`
 }
 
-function formatsKeyboard(siteUrl: string): InlineKeyboard {
-  return new InlineKeyboard()
-    .text(FORMAT_LABELS.pauper, 'classifiche:pauper')
-    .text(FORMAT_LABELS.commander, 'classifiche:commander').row()
-    .text(FORMAT_LABELS.premodern, 'classifiche:premodern')
-    .text('Cittadino', 'classifiche:cittadino').row()
-    .url('Apri tutte le classifiche', `${siteUrl}/classifiche`)
+function initialMessage(siteUrl: string): string {
+  return `Scegli un formato, oppure apri la pagina completa: ${siteUrl}/classifiche`
 }
 
+// Submenu reached from every format/Cittadino button on classificheMenu below
+// — the button's own payload (the scope) becomes ctx.match here too, read
+// fresh on every render since a menu re-renders itself in response to the
+// exact callback_query that navigated into it.
+const classificaMenu = new Menu<Context>('classifica-menu').dynamic((ctx, range) => {
+  const scope = ctx.match as StandingsScope | undefined
+  if (!scope) return
+
+  const siteUrl = useRuntimeConfig().public.siteUrl
+  range.url('Apri pagina completa', `${siteUrl}/classifiche/${scope}`).row()
+  // back() only swaps the keyboard back to classificheMenu's — the message
+  // text is still whatever showStandings() last set it to, so this restores
+  // the original picker text too, same as the old classifiche:menu callback.
+  range.back('« Formati', ctx => ctx.editMessageText(initialMessage(useRuntimeConfig().public.siteUrl)))
+})
+
+async function showStandings(ctx: Context & { match: string }) {
+  try {
+    const scope = ctx.match as StandingsScope
+    const message = scope === 'cittadino' ? await cittadinoMessage() : await formatStandingsMessage(scope)
+    await ctx.editMessageText(message.text, { entities: message.entities })
+  } catch {
+    await answerLoadError(ctx)
+  }
+}
+
+const classificheMenu = new Menu<Context>('classifiche-menu')
+  .submenu({ text: FORMAT_LABELS.pauper, payload: 'pauper' satisfies StandingsScope }, 'classifica-menu', showStandings)
+  .submenu({ text: FORMAT_LABELS.commander, payload: 'commander' satisfies StandingsScope }, 'classifica-menu', showStandings)
+  .row()
+  .submenu({ text: FORMAT_LABELS.premodern, payload: 'premodern' satisfies StandingsScope }, 'classifica-menu', showStandings)
+  .submenu({ text: 'Cittadino', payload: 'cittadino' satisfies StandingsScope }, 'classifica-menu', showStandings)
+  .row()
+  .dynamic((_ctx, range) => {
+    const siteUrl = useRuntimeConfig().public.siteUrl
+    range.url('Apri tutte le classifiche', `${siteUrl}/classifiche`)
+  })
+
+classificheMenu.register(classificaMenu)
+
 export function registerClassificheCommand(bot: Bot, commands: CommandGroup<Context>) {
+  bot.use(classificheMenu)
+
   commands.command('classifiche', 'Classifiche per formato', (ctx) => {
     const siteUrl = useRuntimeConfig().public.siteUrl
-    return ctx.reply(
-      `Scegli un formato, oppure apri la pagina completa: ${siteUrl}/classifiche`,
-      { reply_markup: formatsKeyboard(siteUrl) }
-    )
-  })
-
-  // Answered exactly once, at the very end — same reasoning as leghe.ts's
-  // and calendario.ts's own callback handlers: a second answer throws
-  // GrammyError "query is too old...", uncaught, which takes the whole
-  // webhook request down with a 500.
-  bot.callbackQuery(/^classifiche:(pauper|commander|premodern)$/, async (ctx) => {
-    const format = ctx.match[1] as StandingsFormat
-
-    try {
-      const siteUrl = useRuntimeConfig().public.siteUrl
-      const message = await formatStandingsMessage(format)
-
-      await ctx.editMessageText(message.text, {
-        entities: message.entities,
-        reply_markup: new InlineKeyboard()
-          .url('Apri pagina completa', `${siteUrl}/classifiche/${format}`)
-          .row()
-          .text('« Formati', 'classifiche:menu')
-      })
-      await ctx.answerCallbackQuery()
-    } catch {
-      await answerLoadError(ctx)
-    }
-  })
-
-  bot.callbackQuery('classifiche:cittadino', async (ctx) => {
-    try {
-      const siteUrl = useRuntimeConfig().public.siteUrl
-      const message = await cittadinoMessage()
-
-      await ctx.editMessageText(message.text, {
-        entities: message.entities,
-        reply_markup: new InlineKeyboard()
-          .url('Apri pagina completa', `${siteUrl}/classifiche/cittadino`)
-          .row()
-          .text('« Formati', 'classifiche:menu')
-      })
-      await ctx.answerCallbackQuery()
-    } catch {
-      await answerLoadError(ctx)
-    }
-  })
-
-  bot.callbackQuery('classifiche:menu', async (ctx) => {
-    try {
-      const siteUrl = useRuntimeConfig().public.siteUrl
-      await ctx.editMessageText(
-        `Scegli un formato, oppure apri la pagina completa: ${siteUrl}/classifiche`,
-        { reply_markup: formatsKeyboard(siteUrl) }
-      )
-      await ctx.answerCallbackQuery()
-    } catch {
-      await answerLoadError(ctx)
-    }
+    return ctx.reply(initialMessage(siteUrl), { reply_markup: classificheMenu })
   })
 }
