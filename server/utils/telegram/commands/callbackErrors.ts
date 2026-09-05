@@ -23,7 +23,7 @@ export async function editOrResendMessage(
   // a preview card for whichever one Telegram picks first would be noise on
   // every other caller (calendario.ts, leghe.ts) that has none anyway.
   const options = {
-    parse_mode: 'Markdown' as const,
+    parse_mode: 'MarkdownV2' as const,
     reply_markup: keyboard,
     link_preview_options: { is_disabled: true }
   }

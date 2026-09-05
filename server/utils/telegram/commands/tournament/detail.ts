@@ -89,19 +89,26 @@ function tournamentDetailMessage(
 ): string {
   const date = formatTournamentDateTime(row.starts_at)
   const endTime = row.ends_at ? ` – ${format(new Date(row.ends_at), 'HH:mm')}` : ''
-  const lines = [tournamentHeader(row.status, row.name, row.stageNumber), '', `🗓️ ${date}${endTime}`]
+  const lines = [
+    tournamentHeader(row.status, row.name, row.stageNumber),
+    '',
+    `🗓️ ${escapeMd(`${date}${endTime}`)}`
+  ]
 
   if (row.location?.name) {
     const url = mapsUrl(row.location)
-    lines.push(url ? `📍 [${row.location.name}](${url})` : `📍 ${row.location.name}`)
+    lines.push(url ? `📍 ${mdLink(row.location.name, url)}` : `📍 ${escapeMd(row.location.name)}`)
   }
-  if (row.organizer?.name) lines.push(`🏳️ Organizzatore: ${row.organizer.name}`)
-  if (row.contact_name) lines.push(`☎️ Referente: ${row.contact_name}${row.contact_phone ? ` (${row.contact_phone})` : ''}`)
-  if (row.entry_fee !== null) lines.push(`💶 Quota: ${row.entry_fee} €`)
-  if (row.prizes) lines.push(`🏆 Premi: ${row.prizes}`)
-  if (registration === 'registered') lines.push('', '✅ Sei iscritto a questo torneo.')
-  if (registration === 'checked_in') lines.push('', '✅ Sei iscritto e hai già fatto il check-in.')
-  if (row.description) lines.push('', row.description)
+  if (row.organizer?.name) lines.push(`🏳️ Organizzatore: ${escapeMd(row.organizer.name)}`)
+  if (row.contact_name) {
+    const phone = row.contact_phone ? ` (${row.contact_phone})` : ''
+    lines.push(`☎️ Referente: ${escapeMd(`${row.contact_name}${phone}`)}`)
+  }
+  if (row.entry_fee !== null) lines.push(`💶 Quota: ${escapeMd(String(row.entry_fee))} €`)
+  if (row.prizes) lines.push(`🏆 Premi: ${escapeMd(row.prizes)}`)
+  if (registration === 'registered') lines.push('', escapeMd('✅ Sei iscritto a questo torneo.'))
+  if (registration === 'checked_in') lines.push('', escapeMd('✅ Sei iscritto e hai già fatto il check-in.'))
+  if (row.description) lines.push('', escapeMd(row.description))
 
   return lines.join('\n')
 }
@@ -253,12 +260,12 @@ export function registerTournamentDetailHandlers(bot: Bot) {
         await ctx.deleteMessage().catch(() => {})
         await ctx.replyWithPhoto(tournament.image_url, {
           caption: truncateForCaption(text),
-          parse_mode: 'Markdown',
+          parse_mode: 'MarkdownV2',
           reply_markup: keyboard
         })
       } else {
         await ctx.editMessageText(text, {
-          parse_mode: 'Markdown',
+          parse_mode: 'MarkdownV2',
           reply_markup: keyboard,
           link_preview_options: { is_disabled: true }
         })
@@ -277,10 +284,10 @@ export function registerTournamentDetailHandlers(bot: Bot) {
   ) {
     const { text, keyboard } = await renderTournamentDetail(tournament, origin, chatId)
     if (tournament.image_url) {
-      await ctx.editMessageCaption({ caption: truncateForCaption(text), parse_mode: 'Markdown', reply_markup: keyboard })
+      await ctx.editMessageCaption({ caption: truncateForCaption(text), parse_mode: 'MarkdownV2', reply_markup: keyboard })
     } else {
       await ctx.editMessageText(text, {
-        parse_mode: 'Markdown',
+        parse_mode: 'MarkdownV2',
         reply_markup: keyboard,
         link_preview_options: { is_disabled: true }
       })

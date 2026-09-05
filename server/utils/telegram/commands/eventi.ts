@@ -24,21 +24,21 @@ async function upcomingEventsMessage(): Promise<string> {
     .limit(MAX_EVENTS)
 
   if (error) throw error
-  if (!data.length) return '📅 Nessun evento in programma al momento.'
+  if (!data.length) return escapeMd('📅 Nessun evento in programma al momento.')
 
   const lines = (data as UpcomingEventRow[]).map((event) => {
     const date = event.starts_at ? format(new Date(event.starts_at), 'd MMM', { locale: it }) : '?'
     const location = event.location?.name ? ` — ${event.location.name}` : ''
-    return `• ${date}: ${event.name}${location}`
+    return escapeMd(`• ${date}: ${event.name}${location}`)
   })
 
-  return `📅 *Prossimi eventi*\n\n${lines.join('\n')}`
+  return `📅 ${mdBold('Prossimi eventi')}\n\n${lines.join('\n')}`
 }
 
 export function registerEventiCommand(bot: Bot) {
   bot.command('eventi', async (ctx) => {
     const message = await upcomingEventsMessage()
-      .catch(() => '⚠️ Non sono riuscito a recuperare gli eventi, riprova più tardi.')
-    await ctx.reply(message, { parse_mode: 'Markdown' })
+      .catch(() => escapeMd('⚠️ Non sono riuscito a recuperare gli eventi, riprova più tardi.'))
+    await ctx.reply(message, { parse_mode: 'MarkdownV2', link_preview_options: { is_disabled: true } })
   })
 }

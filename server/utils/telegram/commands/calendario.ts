@@ -79,12 +79,12 @@ function calendarioMessage(rows: DatedTournamentRow[], month: Date): string {
     return date >= start && date <= end
   })
 
-  const header = `🎲 *Tornei — ${monthLabel(month)}*`
+  const header = `🎲 ${mdBold(`Tornei — ${monthLabel(month)}`)}`
 
-  if (!filtered.length) return `${header}\n\nNessun torneo in programma.`
+  if (!filtered.length) return `${header}\n\n${escapeMd('Nessun torneo in programma.')}`
 
   const days = groupByDay(filtered).map(({ day, rows: dayRows }) => {
-    const dayHeader = `*${dayLabel(day)}*`
+    const dayHeader = mdBold(dayLabel(day))
     const dayLines = dayRows.map(row => tournamentLine({
       status: row.status,
       name: row.name,
@@ -94,7 +94,7 @@ function calendarioMessage(rows: DatedTournamentRow[], month: Date): string {
     return `${dayHeader}\n${dayLines.join('\n')}`
   })
 
-  return `${header}\n\n${days.join('\n\n')}\n\n👇 Tocca un torneo per i dettagli`
+  return `${header}\n\n${days.join('\n\n')}\n\n👇 ${escapeMd('Tocca un torneo per i dettagli')}`
 }
 
 function buildKeyboard(rows: DatedTournamentRow[], monthOffset: number): InlineKeyboard {
@@ -132,7 +132,7 @@ export function registerCalendarioCommand(bot: Bot) {
   bot.command('calendario', async (ctx) => {
     try {
       const { text, keyboard } = await renderCalendario(0, ctx.chat.id)
-      await ctx.reply(text, { parse_mode: 'Markdown', reply_markup: keyboard })
+      await ctx.reply(text, { parse_mode: 'MarkdownV2', reply_markup: keyboard })
     } catch {
       await ctx.reply('⚠️ Non sono riuscito a recuperare i tornei, riprova più tardi.')
     }
