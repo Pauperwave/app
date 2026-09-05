@@ -14,11 +14,28 @@ interface WantedCardRow {
   copies: number
   requested_at: string | null
   status: WantedCardStatus
+  image_url: string | null
+  scryfall_url: string | null
   player_associate_uuid: string
   associate: { first_name: string | null, last_name: string | null } | null
 }
 
+const SELECT_COLUMNS = `
+  uuid, card_name, copies, requested_at, status, image_url, scryfall_url,
+  player_associate_uuid, associate:pauperwave_associates!player_associate_uuid(first_name, last_name)
+`
+
 const PAGE_SIZE = 10
+
+// Telegram photo captions cap at 1024 characters (vs. 4096 for plain text
+// messages) — only relevant when the detail is sent as a photo (image_url
+// set), same constraint as tournament/detail.ts's own truncateForCaption.
+const CAPTION_LIMIT = 1024
+
+function truncateForCaption(text: string): string {
+  if (text.length <= CAPTION_LIMIT) return text
+  return `${text.slice(0, CAPTION_LIMIT - 1)}…`
+}
 
 const STATUS_ICON: Record<WantedCardStatus, string> = {
   searching: '🔍',
@@ -63,7 +80,7 @@ async function fetchWantedCardsPage(
   const supabase = telegramServiceSupabaseClient()
   let query = supabase
     .from('pauperwave_wanted_cards')
-    .select('uuid, card_name, copies, requested_at, status, player_associate_uuid, associate:pauperwave_associates!player_associate_uuid(first_name, last_name)')
+    .select(SELECT_COLUMNS)
     .is('deleted_at', null)
 
   query = scope === 'mine'
@@ -79,9 +96,13 @@ async function fetchWantedCardsPage(
   return { rows: rows.slice(0, PAGE_SIZE), hasNext: rows.length > PAGE_SIZE }
 }
 
-function cardLine(row: WantedCardRow): string {
+// Player name is only useful in the 'all' scope — every row in 'mine' is
+// the viewer's own, repeating their own name on every line adds nothing.
+function cardLine(row: WantedCardRow, scope: Scope): string {
   const copies = row.copies > 1 ? ` x${row.copies}` : ''
-  const player = row.associate ? ` — ${row.associate.first_name} ${row.associate.last_name}` : ''
+  const player = scope === 'all' && row.associate
+    ? ` — ${row.associate.first_name} ${row.associate.last_name}`
+    : ''
   return `${STATUS_ICON[row.status]} ${row.card_name}${copies}${player}`
 }
 
@@ -91,7 +112,8 @@ function listMessage(rows: WantedCardRow[], scope: Scope): string {
     const empty = scope === 'mine' ? 'Nessuna richiesta registrata.' : 'Nessuna carta cercata al momento.'
     return `${header}\n\n${empty}`
   }
-  return `${header}\n\n${rows.map(cardLine).join('\n')}\n\n👇 Tocca una carta per i dettagli`
+  const lines = rows.map(row => cardLine(row, scope))
+  return `${header}\n\n${lines.join('\n')}\n\n👇 Tocca una carta per i dettagli`
 }
 
 function listKeyboard(
@@ -131,7 +153,7 @@ async function fetchWantedCard(uuid: string): Promise<WantedCardRow | null> {
 
   const { data, error } = await supabase
     .from('pauperwave_wanted_cards')
-    .select('uuid, card_name, copies, requested_at, status, player_associate_uuid, associate:pauperwave_associates!player_associate_uuid(first_name, last_name)')
+    .select(SELECT_COLUMNS)
     .eq('uuid', uuid)
     .is('deleted_at', null)
     .maybeSingle()
@@ -144,9 +166,10 @@ function cardDetailMessage(row: WantedCardRow): string {
   const date = row.requested_at ? format(new Date(row.requested_at), 'd MMM yyyy', { locale: it }) : null
   const player = row.associate ? `${row.associate.first_name} ${row.associate.last_name}` : 'Socio sconosciuto'
   const copies = row.copies > 1 ? ` x${row.copies}` : ''
+  const name = row.scryfall_url ? `[${row.card_name}](${row.scryfall_url})` : row.card_name
 
   const lines = [
-    `${STATUS_ICON[row.status]} *${row.card_name}*${copies}`,
+    `${STATUS_ICON[row.status]} *${name}*${copies}`,
     '',
     `👤 Richiesta da: ${player}`,
     `📌 Stato: ${STATUS_LABEL[row.status]}`
@@ -187,14 +210,56 @@ function deleteConfirmKeyboard(uuid: string, origin: string): InlineKeyboard {
 
 async function renderCardDetail(
   uuid: string, origin: string, chatId: number
-): Promise<{ text: string, keyboard: InlineKeyboard } | null> {
+): Promise<{ row: WantedCardRow, text: string, keyboard: InlineKeyboard } | null> {
   const row = await fetchWantedCard(uuid)
   if (!row) return null
 
   const associateUuid = await resolveAssociateUuidByChatId(chatId)
   return {
+    row,
     text: cardDetailMessage(row),
     keyboard: cardDetailKeyboard(row, origin, isOwnCard(row, associateUuid))
+  }
+}
+
+// The message being replaced is always a text one here (the list) — a
+// photo tournament/detail.ts-style can't be edited into via editMessageText,
+// but it doesn't need to be: this only ever opens a detail view fresh, never
+// refreshes an existing photo one (that's refreshCardDetail below).
+async function openCardDetail(
+  ctx: Context, row: WantedCardRow, text: string, keyboard: InlineKeyboard
+) {
+  if (row.image_url) {
+    await ctx.deleteMessage().catch(() => {})
+    await ctx.replyWithPhoto(row.image_url, {
+      caption: truncateForCaption(text),
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    })
+  } else {
+    await ctx.editMessageText(text, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard,
+      link_preview_options: { is_disabled: true }
+    })
+  }
+}
+
+// Re-renders an already-open detail message in place (after a status change,
+// or to show the delete confirm) — the message may already be a photo one
+// (image_url set), so this edits the caption instead of the text, same
+// distinction as tournament/detail.ts's own refreshDetailMessage.
+async function refreshCardDetail(
+  ctx: Context, row: WantedCardRow, text: string, keyboard: InlineKeyboard
+) {
+  if (row.image_url) {
+    await ctx.editMessageCaption({ caption: truncateForCaption(text), parse_mode: 'Markdown', reply_markup: keyboard })
+  } else {
+    await ctx.editMessageText(text, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard,
+      link_preview_options: { is_disabled: true }
+    })
   }
 }
 
@@ -255,7 +320,7 @@ export function registerCarteCercateCommand(bot: Bot) {
         await ctx.answerCallbackQuery({ text: 'Richiesta non trovata', show_alert: true })
         return
       }
-      await ctx.editMessageText(rendered.text, { parse_mode: 'Markdown', reply_markup: rendered.keyboard })
+      await openCardDetail(ctx, rendered.row, rendered.text, rendered.keyboard)
       await ctx.answerCallbackQuery()
     } catch {
       await answerLoadError(ctx)
@@ -288,7 +353,7 @@ export function registerCarteCercateCommand(bot: Bot) {
       if (error) throw error
 
       const rendered = await renderCardDetail(uuid, origin, chatId)
-      if (rendered) await ctx.editMessageText(rendered.text, { parse_mode: 'Markdown', reply_markup: rendered.keyboard })
+      if (rendered) await refreshCardDetail(ctx, rendered.row, rendered.text, rendered.keyboard)
       await ctx.answerCallbackQuery({ text: `✅ Segnata come "${STATUS_LABEL[status]}"` })
     } catch {
       await ctx.answerCallbackQuery({ text: 'Errore durante l\'aggiornamento, riprova più tardi.', show_alert: true })
@@ -311,9 +376,10 @@ export function registerCarteCercateCommand(bot: Bot) {
         return
       }
 
-      await ctx.editMessageText(
+      await refreshCardDetail(
+        ctx, row,
         `${cardDetailMessage(row)}\n\n⚠️ Eliminare questa richiesta?`,
-        { parse_mode: 'Markdown', reply_markup: deleteConfirmKeyboard(uuid, origin) }
+        deleteConfirmKeyboard(uuid, origin)
       )
       await ctx.answerCallbackQuery()
     } catch {
