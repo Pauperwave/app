@@ -85,3 +85,37 @@ export async function fetchRegistrationStatuses(
   }
   return statuses
 }
+
+// Per-chat visibility preference (pauperwave_telegram_chat_settings,
+// migration 20260904160000) — used by both calendario.ts (to decide whether
+// to include status 'external' rows) and visibilita.ts (to show/toggle the
+// current value), hence shared here rather than colocated with either.
+// Defaults to false (hidden) for any chat with no row yet — matches the
+// column's own db default, kept explicit here since a missing row and an
+// explicit `false` mean the same thing to every caller.
+export async function fetchShowExternalTournaments(chatId: number): Promise<boolean> {
+  const supabase = telegramServiceSupabaseClient()
+
+  const { data, error } = await supabase
+    .from('pauperwave_telegram_chat_settings')
+    .select('show_external_tournaments')
+    .eq('chat_id', chatId)
+    .maybeSingle()
+
+  if (error) throw error
+  return data?.show_external_tournaments ?? false
+}
+
+export async function setShowExternalTournaments(chatId: number, value: boolean): Promise<void> {
+  const supabase = telegramServiceSupabaseClient()
+
+  const { error } = await supabase
+    .from('pauperwave_telegram_chat_settings')
+    .upsert({
+      chat_id: chatId,
+      show_external_tournaments: value,
+      updated_at: new Date().toISOString()
+    })
+
+  if (error) throw error
+}

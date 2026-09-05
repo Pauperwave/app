@@ -3,7 +3,7 @@ import { InlineKeyboard } from 'grammy'
 import { addMonths, endOfMonth, format, startOfMonth } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { formatButtonDate, stageLabel, statusIcon, tournamentButtonLabel, tournamentLine } from './tournament/line'
-import { fetchStageNumbers } from './tournament/queries'
+import { fetchShowExternalTournaments, fetchStageNumbers } from './tournament/queries'
 import { SELECT_COLUMNS, registerTournamentDetailHandlers } from './tournament/detail'
 import { answerLoadError, editOrResendMessage } from './callbackErrors'
 import type { Bot } from 'grammy'
@@ -13,21 +13,26 @@ import type { DatedTournamentRow, TournamentRow } from './tournament/detail'
 // here too for schedule comparison — see isExternalOrganizer in
 // tournament/detail.ts. Deliberately not added to prossimo.ts's own
 // OPEN_STATUSES (user request) — "your next tournament" stays Pauperwave-only.
-const OPEN_STATUSES = ['registration_open', 'in_progress', 'external']
+// Hidden by default per chat (pauperwave_telegram_chat_settings,
+// fetchShowExternalTournaments) — toggled on via /visibilita.
+const BASE_OPEN_STATUSES = ['registration_open', 'in_progress']
 // Fetched once per render, filtered by month client-side — cheap enough for
 // a league of this size, and keeps the callback handler stateless (no need
 // to remember what a user was looking at between messages).
 const MAX_ROWS = 200
 
-async function fetchUpcomingTournaments(): Promise<DatedTournamentRow[]> {
+async function fetchUpcomingTournaments(chatId: number): Promise<DatedTournamentRow[]> {
   const supabase = publicSupabaseClient()
+
+  const showExternal = await fetchShowExternalTournaments(chatId)
+  const openStatuses = showExternal ? [...BASE_OPEN_STATUSES, 'external'] : BASE_OPEN_STATUSES
 
   const [{ data, error }, stageNumbers] = await Promise.all([
     supabase
       .from('tournaments')
       .select(SELECT_COLUMNS)
       .is('deleted_at', null)
-      .in('status', OPEN_STATUSES)
+      .in('status', openStatuses)
       .gte('starts_at', startOfMonth(new Date()).toISOString())
       .order('starts_at', { ascending: true })
       .limit(MAX_ROWS),
@@ -113,8 +118,8 @@ function buildKeyboard(rows: DatedTournamentRow[], monthOffset: number): InlineK
   return keyboard
 }
 
-async function renderCalendario(monthOffset: number) {
-  const rows = await fetchUpcomingTournaments()
+async function renderCalendario(monthOffset: number, chatId: number) {
+  const rows = await fetchUpcomingTournaments(chatId)
   const month = addMonths(startOfMonth(new Date()), monthOffset)
 
   return {
@@ -126,7 +131,7 @@ async function renderCalendario(monthOffset: number) {
 export function registerCalendarioCommand(bot: Bot) {
   bot.command('calendario', async (ctx) => {
     try {
-      const { text, keyboard } = await renderCalendario(0)
+      const { text, keyboard } = await renderCalendario(0, ctx.chat.id)
       await ctx.reply(text, { parse_mode: 'Markdown', reply_markup: keyboard })
     } catch {
       await ctx.reply('⚠️ Non sono riuscito a recuperare i tornei, riprova più tardi.')
@@ -135,6 +140,12 @@ export function registerCalendarioCommand(bot: Bot) {
 
   bot.callbackQuery(/^calendario:(-?\d+)$/, async (ctx) => {
     const monthOffset = Number(ctx.match[1])
+    const chatId = ctx.chat?.id
+
+    if (!chatId) {
+      await ctx.answerCallbackQuery().catch(() => {})
+      return
+    }
 
     // Answered exactly once, at the very end — a callback_query can only
     // be answered once (a second call throws GrammyError "query is too
@@ -142,7 +153,7 @@ export function registerCalendarioCommand(bot: Bot) {
     // confirmed 2026-09-03 as the actual cause behind "the bot doesn't
     // respond" whenever this handler's own error path used to fire).
     try {
-      const { text, keyboard } = await renderCalendario(monthOffset)
+      const { text, keyboard } = await renderCalendario(monthOffset, chatId)
       await editOrResendMessage(ctx, text, keyboard)
       await ctx.answerCallbackQuery()
     } catch {
