@@ -40,13 +40,19 @@ async function fetchAssociateStatus(associateUuid: string): Promise<AssociateSta
 
 function tesseraMessage(row: AssociateStatusRow): string {
   const status = row.membership_status ? STATUS_LABEL[row.membership_status] ?? row.membership_status : 'Sconosciuto'
-  const lines = [`🪪 *Tesseramento di ${row.first_name ?? 'te'}*`, '', `Stato: ${status}`]
+  const lines = [
+    `🪪 ${mdBold(`Tesseramento di ${row.first_name ?? 'te'}`)}`,
+    '',
+    escapeMd(`Stato: ${status}`)
+  ]
 
-  if (row.pauperwave_associate_number) lines.push(`Numero socio: ${row.pauperwave_associate_number}`)
+  if (row.pauperwave_associate_number) {
+    lines.push(escapeMd(`Numero socio: ${row.pauperwave_associate_number}`))
+  }
   if (row.latest_renewal_date) {
     const date = format(new Date(row.latest_renewal_date), 'd MMMM yyyy', { locale: it })
     const year = row.latest_renewal_year ? ` (anno ${row.latest_renewal_year})` : ''
-    lines.push(`Ultimo rinnovo: ${date}${year}`)
+    lines.push(escapeMd(`Ultimo rinnovo: ${date}${year}`))
   }
 
   return lines.join('\n')
@@ -64,7 +70,7 @@ export function registerTesseraCommand(bot: Bot) {
         return
       }
 
-      await ctx.reply(tesseraMessage(row), { parse_mode: 'Markdown' })
+      await ctx.reply(tesseraMessage(row), { parse_mode: 'MarkdownV2' })
     } catch {
       await ctx.reply('⚠️ Non sono riuscito a recuperare il tuo tesseramento, riprova più tardi.')
     }

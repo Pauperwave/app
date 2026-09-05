@@ -64,7 +64,9 @@ async function fetchLeagueTournaments(leagueUuid: string): Promise<LeagueTournam
 // second full one.
 async function renderLeghe(): Promise<{ text: string, keyboard: InlineKeyboard | undefined }> {
   const leagues = await fetchActiveLeagues()
-  if (!leagues.length) return { text: '🏆 Nessuna lega attiva al momento.', keyboard: undefined }
+  if (!leagues.length) {
+    return { text: escapeMd('🏆 Nessuna lega attiva al momento.'), keyboard: undefined }
+  }
 
   const leagueUuids = leagues.map(league => league.uuid)
   const supabase = publicSupabaseClient()
@@ -84,7 +86,7 @@ async function renderLeghe(): Promise<{ text: string, keyboard: InlineKeyboard |
     const start = formatDate(league.starts_at)
     const end = formatDate(league.ends_at)
     const dateRange = start && end ? `${start} → ${end}` : start ? `dal ${start}` : 'data da definire'
-    return `🏆 ${dateRange}${progress} — ${league.name}`
+    return `🏆 ${escapeMd(`${dateRange}${progress} — ${league.name}`)}`
   })
 
   const keyboard = new InlineKeyboard()
@@ -93,7 +95,7 @@ async function renderLeghe(): Promise<{ text: string, keyboard: InlineKeyboard |
   })
 
   return {
-    text: `🏆 *Leghe attive*\n\n${lines.join('\n')}\n\n👇 Tocca una lega per i tornei`,
+    text: `🏆 ${mdBold('Leghe attive')}\n\n${lines.join('\n')}\n\n👇 ${escapeMd('Tocca una lega per i tornei')}`,
     keyboard
   }
 }
@@ -120,22 +122,22 @@ async function renderLegaTornei(
     fetchLeagueTournaments(league.uuid),
     fetchStageNumbers()
   ])
-  const header = `🏆 *${league.name}*`
+  const header = `🏆 ${mdBold(league.name)}`
 
   const associateUuid = await resolveAssociateUuidByChatId(chatId)
   const registrations = associateUuid
     ? await fetchRegistrationStatuses(tournaments.map(t => t.uuid), associateUuid)
     : new Map<string, RegistrationStatus>()
 
-  let text = `${header}\n\nNessun torneo in programma per questa lega.`
+  let text = `${header}\n\n${escapeMd('Nessun torneo in programma per questa lega.')}`
   if (tournaments.length) {
     const lines = tournaments.map((tournament) => {
       const date = formatDate(tournament.starts_at) ?? 'data da definire'
       const stage = stageLabel(stageNumbers.get(tournament.uuid) ?? null)
-      const dateLine = `${statusIcon(tournament.status)} ${date}${stage}`
+      const dateLine = `${statusIcon(tournament.status)} ${escapeMd(`${date}${stage}`)}`
       return `${dateLine}\n${tournamentLine({ status: tournament.status, name: tournament.name, locationName: tournament.location?.name })}`
     })
-    text = `${header}\n\n${lines.join('\n\n')}\n\n👇 Tocca un torneo per i dettagli`
+    text = `${header}\n\n${lines.join('\n\n')}\n\n👇 ${escapeMd('Tocca un torneo per i dettagli')}`
   }
 
   const keyboard = new InlineKeyboard()
@@ -155,7 +157,7 @@ export function registerLegheCommand(bot: Bot) {
   bot.command('leghe', async (ctx) => {
     try {
       const { text, keyboard } = await renderLeghe()
-      await ctx.reply(text, { parse_mode: 'Markdown', reply_markup: keyboard })
+      await ctx.reply(text, { parse_mode: 'MarkdownV2', reply_markup: keyboard })
     } catch {
       await ctx.reply('⚠️ Non sono riuscito a recuperare le leghe, riprova più tardi.')
     }
@@ -193,10 +195,10 @@ export function registerLegheCommand(bot: Bot) {
       }
 
       try {
-        await ctx.editMessageText(rendered.text, { parse_mode: 'Markdown', reply_markup: rendered.keyboard })
+        await ctx.editMessageText(rendered.text, { parse_mode: 'MarkdownV2', reply_markup: rendered.keyboard })
       } catch {
         await ctx.deleteMessage().catch(() => {})
-        await ctx.reply(rendered.text, { parse_mode: 'Markdown', reply_markup: rendered.keyboard })
+        await ctx.reply(rendered.text, { parse_mode: 'MarkdownV2', reply_markup: rendered.keyboard })
       }
       await ctx.answerCallbackQuery()
     } catch {

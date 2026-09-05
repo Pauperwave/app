@@ -72,19 +72,20 @@ function statusIcon(registrationStatus: string): string {
 }
 
 function mieiTorneiMessage(registrations: MyRegistration[]): string {
-  const header = '🎟️ *I tuoi tornei*'
+  const header = `🎟️ ${mdBold('I tuoi tornei')}`
 
   if (!registrations.length) {
-    return `${header}\n\nNon risulti iscritto a nessun torneo in programma.`
+    return `${header}\n\n${escapeMd('Non risulti iscritto a nessun torneo in programma.')}`
   }
 
   const lines = registrations.map(({ registrationStatus, tournament }) => {
     const date = format(new Date(tournament.starts_at), 'EEE d MMM', { locale: it })
-    const location = tournament.location?.name ? `\n  📍 ${tournament.location.name}` : ''
-    return `${statusIcon(registrationStatus)} *${date}*${stageLabel(tournament.stageNumber)} — ${tournament.name}${location}`
+    const location = tournament.location?.name ? `\n  📍 ${escapeMd(tournament.location.name)}` : ''
+    const stage = escapeMd(stageLabel(tournament.stageNumber))
+    return `${statusIcon(registrationStatus)} ${mdBold(date)}${stage} — ${escapeMd(tournament.name)}${location}`
   })
 
-  return `${header}\n\n${lines.join('\n')}\n\n👇 Tocca un torneo per i dettagli`
+  return `${header}\n\n${lines.join('\n')}\n\n👇 ${escapeMd('Tocca un torneo per i dettagli')}`
 }
 
 function mieiTorneiKeyboard(registrations: MyRegistration[]): InlineKeyboard {
@@ -111,7 +112,7 @@ export function registerIscrizioniCommand(bot: Bot) {
 
       const registrations = await fetchMyTournaments(associateUuid)
       await ctx.reply(mieiTorneiMessage(registrations), {
-        parse_mode: 'Markdown',
+        parse_mode: 'MarkdownV2',
         reply_markup: mieiTorneiKeyboard(registrations)
       })
     } catch {

@@ -96,12 +96,11 @@ async function fetchWantedCardsPage(
   return { rows: rows.slice(0, PAGE_SIZE), hasNext: rows.length > PAGE_SIZE }
 }
 
-// Plain text, never wrapped in bold/italic here — legacy Markdown
-// (parse_mode: 'Markdown') can't nest a link inside another entity, so a
-// link is the only formatting this can safely carry. See cardDetailMessage's
-// own comment for the bug this avoids.
+// Plain text (escaped), never wrapped in bold here — legacy Markdown could
+// not nest a link inside another entity; MarkdownV2 could now, but there's
+// still no need for both on a list row.
 function cardNameLink(row: WantedCardRow): string {
-  return row.scryfall_url ? `[${row.card_name}](${row.scryfall_url})` : row.card_name
+  return row.scryfall_url ? mdLink(row.card_name, row.scryfall_url) : escapeMd(row.card_name)
 }
 
 // Player name is only useful in the 'all' scope — every row in 'mine' is
@@ -111,17 +110,17 @@ function cardLine(row: WantedCardRow, scope: Scope): string {
   const player = scope === 'all' && row.associate
     ? ` — ${row.associate.first_name} ${row.associate.last_name}`
     : ''
-  return `${STATUS_ICON[row.status]} ${cardNameLink(row)}${copies}${player}`
+  return `${STATUS_ICON[row.status]} ${cardNameLink(row)}${escapeMd(copies)}${escapeMd(player)}`
 }
 
 function listMessage(rows: WantedCardRow[], scope: Scope): string {
-  const header = scope === 'mine' ? '🔍 *Le mie carte cercate*' : '🔍 *Carte cercate*'
+  const header = `🔍 ${mdBold(scope === 'mine' ? 'Le mie carte cercate' : 'Carte cercate')}`
   if (!rows.length) {
     const empty = scope === 'mine' ? 'Nessuna richiesta registrata.' : 'Nessuna carta cercata al momento.'
-    return `${header}\n\n${empty}`
+    return `${header}\n\n${escapeMd(empty)}`
   }
   const lines = rows.map(row => cardLine(row, scope))
-  return `${header}\n\n${lines.join('\n')}\n\n👇 Tocca una carta per i dettagli`
+  return `${header}\n\n${lines.join('\n')}\n\n👇 ${escapeMd('Tocca una carta per i dettagli')}`
 }
 
 function listKeyboard(
@@ -170,23 +169,19 @@ async function fetchWantedCard(uuid: string): Promise<WantedCardRow | null> {
   return data as WantedCardRow | null
 }
 
-// Legacy Markdown (parse_mode: 'Markdown') can't nest a link inside another
-// entity — `*[name](url)*` silently fails to parse (Telegram sends back the
-// raw markdown text instead of a bold link), unlike MarkdownV2/HTML which
-// both support nesting. So the name line is bold OR a link, never both.
 function cardDetailMessage(row: WantedCardRow): string {
   const date = row.requested_at ? format(new Date(row.requested_at), 'd MMM yyyy', { locale: it }) : null
   const player = row.associate ? `${row.associate.first_name} ${row.associate.last_name}` : 'Socio sconosciuto'
   const copies = row.copies > 1 ? ` x${row.copies}` : ''
-  const name = row.scryfall_url ? cardNameLink(row) : `*${row.card_name}*`
+  const name = row.scryfall_url ? cardNameLink(row) : mdBold(row.card_name)
 
   const lines = [
-    `${STATUS_ICON[row.status]} ${name}${copies}`,
+    `${STATUS_ICON[row.status]} ${name}${escapeMd(copies)}`,
     '',
-    `👤 Richiesta da: ${player}`,
-    `📌 Stato: ${STATUS_LABEL[row.status]}`
+    `👤 ${escapeMd(`Richiesta da: ${player}`)}`,
+    `📌 ${escapeMd(`Stato: ${STATUS_LABEL[row.status]}`)}`
   ]
-  if (date) lines.push(`🗓️ Richiesta il: ${date}`)
+  if (date) lines.push(`🗓️ ${escapeMd(`Richiesta il: ${date}`)}`)
   return lines.join('\n')
 }
 
@@ -245,12 +240,12 @@ async function openCardDetail(
     await ctx.deleteMessage().catch(() => {})
     await ctx.replyWithPhoto(row.image_url, {
       caption: truncateForCaption(text),
-      parse_mode: 'Markdown',
+      parse_mode: 'MarkdownV2',
       reply_markup: keyboard
     })
   } else {
     await ctx.editMessageText(text, {
-      parse_mode: 'Markdown',
+      parse_mode: 'MarkdownV2',
       reply_markup: keyboard,
       link_preview_options: { is_disabled: true }
     })
@@ -265,10 +260,10 @@ async function refreshCardDetail(
   ctx: Context, row: WantedCardRow, text: string, keyboard: InlineKeyboard
 ) {
   if (row.image_url) {
-    await ctx.editMessageCaption({ caption: truncateForCaption(text), parse_mode: 'Markdown', reply_markup: keyboard })
+    await ctx.editMessageCaption({ caption: truncateForCaption(text), parse_mode: 'MarkdownV2', reply_markup: keyboard })
   } else {
     await ctx.editMessageText(text, {
-      parse_mode: 'Markdown',
+      parse_mode: 'MarkdownV2',
       reply_markup: keyboard,
       link_preview_options: { is_disabled: true }
     })
@@ -280,7 +275,7 @@ export function registerCarteCercateCommand(bot: Bot) {
     try {
       const { text, keyboard } = await renderList('all', 0, ctx.chat.id)
       await ctx.reply(text, {
-        parse_mode: 'Markdown',
+        parse_mode: 'MarkdownV2',
         reply_markup: keyboard,
         link_preview_options: { is_disabled: true }
       })
@@ -394,7 +389,7 @@ export function registerCarteCercateCommand(bot: Bot) {
 
       await refreshCardDetail(
         ctx, row,
-        `${cardDetailMessage(row)}\n\n⚠️ Eliminare questa richiesta?`,
+        `${cardDetailMessage(row)}\n\n⚠️ ${escapeMd('Eliminare questa richiesta?')}`,
         deleteConfirmKeyboard(uuid, origin)
       )
       await ctx.answerCallbackQuery()

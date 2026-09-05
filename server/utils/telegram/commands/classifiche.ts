@@ -69,9 +69,9 @@ async function formatStandingsMessage(format: StandingsFormat): Promise<string> 
 
   const lines = rows
     .slice(0, TOP_ROWS)
-    .map((row, index) => `${index + 1}. ${row.playerName} — ${row.total} pt`)
+    .map((row, index) => escapeMd(`${index + 1}. ${row.playerName} — ${row.total} pt`))
 
-  return `🏆 *Classifica ${FORMAT_LABELS[format]}*\n\n${lines.join('\n')}`
+  return `🏆 ${mdBold(`Classifica ${FORMAT_LABELS[format]}`)}\n\n${lines.join('\n')}`
 }
 
 // fallow-ignore-next-line code-duplication -- rows.map/sort/lines block below mirrors formatStandingsMessage's, but the tie-break chain (bestSingle, eventsPlayed) is genuinely different math, not the same logic reshaped
@@ -99,9 +99,9 @@ async function cittadinoMessage(): Promise<string> {
 
   const lines = rows
     .slice(0, TOP_ROWS)
-    .map((row, index) => `${index + 1}. ${row.playerName} — ${row.total} pt`)
+    .map((row, index) => escapeMd(`${index + 1}. ${row.playerName} — ${row.total} pt`))
 
-  return `🏆 *Classifica Cittadino*\n\n${lines.join('\n')}`
+  return `🏆 ${mdBold('Classifica Cittadino')}\n\n${lines.join('\n')}`
 }
 
 function formatsKeyboard(siteUrl: string): InlineKeyboard {
@@ -134,7 +134,7 @@ export function registerClassificheCommand(bot: Bot) {
       const message = await formatStandingsMessage(format)
 
       await ctx.editMessageText(message, {
-        parse_mode: 'Markdown',
+        parse_mode: 'MarkdownV2',
         reply_markup: new InlineKeyboard()
           .url('Apri pagina completa', `${siteUrl}/classifiche/${format}`)
           .row()
@@ -152,7 +152,7 @@ export function registerClassificheCommand(bot: Bot) {
       const message = await cittadinoMessage()
 
       await ctx.editMessageText(message, {
-        parse_mode: 'Markdown',
+        parse_mode: 'MarkdownV2',
         reply_markup: new InlineKeyboard()
           .url('Apri pagina completa', `${siteUrl}/classifiche/cittadino`)
           .row()

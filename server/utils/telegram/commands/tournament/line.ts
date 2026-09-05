@@ -29,8 +29,13 @@ export function stageLabel(stageNumber: number | null): string {
 // tournament detail view and prossimo.ts's next-tournament card — both show
 // one tournament at a time, with the date/location as separate lines below
 // rather than folded into this one (unlike tournamentLine()'s list rows).
+// MarkdownV2-safe: name is bolded (escaped internally by mdBold), the stage
+// suffix is plain text escaped here — the *button*-label helpers below
+// (tournamentButtonLabel, stageLabel's other call sites) must stay raw,
+// since Telegram button captions are literal text with no parse_mode at
+// all; escaping them would show visible backslashes on the button itself.
 export function tournamentHeader(status: string, name: string, stageNumber: number | null): string {
-  return `${statusIcon(status)} *${name}*${stageLabel(stageNumber)}`
+  return `${statusIcon(status)} ${mdBold(name)}${escapeMd(stageLabel(stageNumber))}`
 }
 
 interface TournamentLineInput {
@@ -45,8 +50,8 @@ interface TournamentLineInput {
 export function tournamentLine({
   status, name, stageSuffix = '', locationName
 }: TournamentLineInput): string {
-  const location = locationName ? `\n📍 ${locationName}` : ''
-  return `${statusIcon(status)} ${name}${stageSuffix}${location}`
+  const location = locationName ? `\n📍 ${escapeMd(locationName)}` : ''
+  return `${statusIcon(status)} ${escapeMd(name)}${escapeMd(stageSuffix)}${location}`
 }
 
 // Same "icon - date - tappa - nome" shape as tournamentLine(), for the

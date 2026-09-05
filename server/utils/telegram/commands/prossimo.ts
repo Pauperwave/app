@@ -31,19 +31,19 @@ async function nextTournamentMessage(): Promise<string> {
 
   if (error) throw error
   const row = data as NextTournamentRow | null
-  if (!row || !row.starts_at) return '🎲 Nessun torneo in programma al momento.'
+  if (!row || !row.starts_at) return escapeMd('🎲 Nessun torneo in programma al momento.')
 
   const date = formatTournamentDateTime(row.starts_at)
   const header = tournamentHeader(row.status, row.name, stageNumbers.get(row.uuid) ?? null)
-  const location = row.location?.name ? `\n📍 ${row.location.name}` : ''
+  const location = row.location?.name ? `\n📍 ${escapeMd(row.location.name)}` : ''
 
-  return `🎲 *Prossimo torneo*\n\n${header}\n🗓️ ${date}${location}`
+  return `🎲 ${mdBold('Prossimo torneo')}\n\n${header}\n🗓️ ${escapeMd(date)}${location}`
 }
 
 export function registerProssimoCommand(bot: Bot) {
   bot.command('prossimo', async (ctx) => {
     const message = await nextTournamentMessage()
-      .catch(() => '⚠️ Non sono riuscito a recuperare il prossimo torneo, riprova più tardi.')
-    await ctx.reply(message, { parse_mode: 'Markdown' })
+      .catch(() => escapeMd('⚠️ Non sono riuscito a recuperare il prossimo torneo, riprova più tardi.'))
+    await ctx.reply(message, { parse_mode: 'MarkdownV2' })
   })
 }
