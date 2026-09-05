@@ -1,6 +1,7 @@
 // server\utils\telegram\commands\collegamento.ts
 import { resolveAssociateUuidByChatId } from './linking'
-import type { Bot } from 'grammy'
+import type { Context } from 'grammy'
+import type { CommandGroup } from '@grammyjs/commands'
 
 interface AssociateIdentity {
   first_name: string | null
@@ -27,8 +28,8 @@ async function fetchAssociateIdentity(associateUuid: string): Promise<AssociateI
 // a chat isn't sure whether it already linked, or wants to confirm which
 // socio it's linked as before relying on a personal command (/tessera,
 // /mazzi, /iscrizioni).
-export function registerCollegamentoCommand(bot: Bot) {
-  bot.command('collegamento', async (ctx) => {
+export function registerCollegamentoCommand(commands: CommandGroup<Context>) {
+  commands.command('collegamento', 'Verifica se questa chat è collegata a un socio', async (ctx) => {
     try {
       const associateUuid = await resolveAssociateUuidByChatId(ctx.chat.id)
       if (!associateUuid) {

@@ -1,8 +1,9 @@
 // server\utils\telegram\commands\prossimo.ts
 import { formatTournamentDateTime, tournamentHeader } from './tournament/line'
 import { fetchStageNumbers } from './tournament/queries'
-import type { Bot } from 'grammy'
 import { FormattedString } from '@grammyjs/parse-mode'
+import type { Context } from 'grammy'
+import type { CommandGroup } from '@grammyjs/commands'
 
 interface NextTournamentRow {
   uuid: string
@@ -41,8 +42,8 @@ async function nextTournamentMessage(): Promise<FormattedString> {
   return fmt`🎲 ${FormattedString.b('Prossimo torneo')}\n\n${header}\n🗓️ ${date}${location}`
 }
 
-export function registerProssimoCommand(bot: Bot) {
-  bot.command('prossimo', async (ctx) => {
+export function registerProssimoCommand(commands: CommandGroup<Context>) {
+  commands.command('prossimo', 'Il prossimo torneo', async (ctx) => {
     const message = await nextTournamentMessage()
       .catch(() => new FormattedString('⚠️ Non sono riuscito a recuperare il prossimo torneo, riprova più tardi.'))
     await ctx.reply(message.text, { entities: message.entities })

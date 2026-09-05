@@ -5,8 +5,9 @@ import { it } from 'date-fns/locale'
 import { formatButtonDate, stageLabel, tournamentButtonLabel } from './tournament/line'
 import { fetchStageNumbers } from './tournament/queries'
 import { requireLinkedAssociate } from './linking'
-import type { Bot } from 'grammy'
 import { FormattedString } from '@grammyjs/parse-mode'
+import type { Context } from 'grammy'
+import type { CommandGroup } from '@grammyjs/commands'
 
 interface MyTournamentRow {
   uuid: string
@@ -105,8 +106,8 @@ function mieiTorneiKeyboard(registrations: MyRegistration[]): InlineKeyboard {
   return keyboard
 }
 
-export function registerIscrizioniCommand(bot: Bot) {
-  bot.command('iscrizioni', async (ctx) => {
+export function registerIscrizioniCommand(commands: CommandGroup<Context>) {
+  commands.command('iscrizioni', 'I tornei a cui sei iscritto', async (ctx) => {
     try {
       const associateUuid = await requireLinkedAssociate(ctx)
       if (!associateUuid) return

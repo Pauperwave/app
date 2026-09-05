@@ -1,7 +1,8 @@
 // server\utils\telegram\commands\core.ts
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
-import type { Bot } from 'grammy'
+import type { Context } from 'grammy'
+import type { CommandGroup } from '@grammyjs/commands'
 
 const START_TEXT = 'Ciao! Sono il bot di Pauperwave 👋\n\n'
   + 'Scrivimi la tua email da socio (quella con cui ti sei tesserato) per '
@@ -33,12 +34,12 @@ const HELP_TEXT = 'Comandi disponibili:\n\n'
   + 'Bloccati (in attesa di una feature nell\'app):\n'
   + '/tavolo, /vota'
 
-export function registerCoreCommands(bot: Bot) {
-  bot.command('start', ctx => ctx.reply(START_TEXT))
+export function registerCoreCommands(commands: CommandGroup<Context>) {
+  commands.command('start', 'Avvia il bot', ctx => ctx.reply(START_TEXT))
 
-  bot.command('help', ctx => ctx.reply(HELP_TEXT))
+  commands.command('help', 'Elenco comandi disponibili', ctx => ctx.reply(HELP_TEXT))
 
-  bot.command('status', (ctx) => {
+  commands.command('status', 'Stato del bot', (ctx) => {
     const { gitCommitSha, gitCommitDate } = useRuntimeConfig().public
     const lines = ['🟢 Bot operativo.']
 
@@ -55,5 +56,5 @@ export function registerCoreCommands(bot: Bot) {
   // Dev/setup helper: lets an admin read off their numeric chat id (needed
   // to populate pauperwave_associate_telegram_links by hand) without
   // grepping raw getUpdates output.
-  bot.command('whoami', ctx => ctx.reply(`Chat id: ${ctx.chat.id}`))
+  commands.command('whoami', 'Mostra l\'id di questa chat', ctx => ctx.reply(`Chat id: ${ctx.chat.id}`))
 }

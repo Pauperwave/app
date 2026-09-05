@@ -1,7 +1,8 @@
 // server\utils\telegram\commands\mazzi.ts
 import { requireLinkedAssociate } from './linking'
-import type { Bot } from 'grammy'
 import { FormattedString } from '@grammyjs/parse-mode'
+import type { Context } from 'grammy'
+import type { CommandGroup } from '@grammyjs/commands'
 
 interface CommanderDeckRow {
   uuid: string
@@ -47,8 +48,8 @@ function mazziMessage(decks: CommanderDeckRow[]): FormattedString {
   return fmt`${header}\n\n${FormattedString.join(lines, '\n\n')}`
 }
 
-export function registerMazziCommand(bot: Bot) {
-  bot.command('mazzi', async (ctx) => {
+export function registerMazziCommand(commands: CommandGroup<Context>) {
+  commands.command('mazzi', 'I tuoi mazzi Commander', async (ctx) => {
     try {
       const associateUuid = await requireLinkedAssociate(ctx)
       if (!associateUuid) return
