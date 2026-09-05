@@ -40,6 +40,7 @@
     "@dicebear/styles": "10.5.0",
     "@formkit/auto-animate": "^0.10.0",
     "@grammyjs/commands": "^1.4.0",
+    "@grammyjs/menu": "^1.5.0",
     "@grammyjs/parse-mode": "^2.3.0",
     "@iconify-json/circle-flags": "1.2.10",
     "@iconify-json/lucide": "^1.2.127",
