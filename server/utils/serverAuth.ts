@@ -1,6 +1,7 @@
 // server\utils\serverAuth.ts
 import { serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
 import type { H3Event } from 'h3'
+import type { JwtPayload } from '@supabase/supabase-js'
 import type { Database } from '#shared/utils/types/database'
 
 export async function requireUser(event: H3Event) {
@@ -15,11 +16,11 @@ export async function requireUser(event: H3Event) {
   return user
 }
 
-// The BFF endpoint is the authorization boundary — the service-role client
-// bypasses RLS, so management-only writes must check
-// has_management_permissions explicitly here instead of relying on a policy.
-export async function requireManagementPermission(event: H3Event) {
-  const user = await requireUser(event)
+// Boolean variant of the has_management_permissions check, shared by
+// requireManagementPermission below and by
+// wantedCards.ts's requireManagementOrWantedCardOwner (which needs to try
+// this first without throwing, before falling back to an ownership check).
+export async function hasManagementPermission(event: H3Event, user: JwtPayload): Promise<boolean> {
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   const { data: allowed, error } = await supabase.rpc('has_management_permissions', {
@@ -35,7 +36,16 @@ export async function requireManagementPermission(event: H3Event) {
     })
   }
 
-  if (!allowed) {
+  return allowed
+}
+
+// The BFF endpoint is the authorization boundary — the service-role client
+// bypasses RLS, so management-only writes must check
+// has_management_permissions explicitly here instead of relying on a policy.
+export async function requireManagementPermission(event: H3Event) {
+  const user = await requireUser(event)
+
+  if (!await hasManagementPermission(event, user)) {
     throw createError({
       statusCode: 403,
       statusMessage: 'Permessi di gestione richiesti'

@@ -16,10 +16,18 @@ export function useWantedCardsRowActions() {
   const toast = useToast()
   const undoable = useUndoableAction()
   const { setStatus, deleteWantedCard, refreshPrices } = useWantedCardsMutations()
+  const { isStaff } = useUserRole()
+  const currentAssociate = useCurrentAssociate()
 
-  // Writes are restricted to management by server-side RLS (has_management_
-  // permissions) — a non-admin user sees the error in a toast instead of an
-  // update that is silently ignored.
+  // Status change and delete are allowed for management OR the request's own
+  // owner (server/utils/wantedCards.ts's requireManagementOrWantedCardOwner,
+  // 2026-09-05 user request) — checked here too so the menu doesn't offer an
+  // action that will just 403, unlike edit/refresh-prices below which stay
+  // management-only.
+  function canManage(card: WantedCard): boolean {
+    return isStaff.value || card.playerAssociateUuid === currentAssociate.value?.uuid
+  }
+
   async function changeStatus(id: number, status: WantedCardStatus) {
     try {
       await setStatus.mutateAsync({ id, status })
@@ -148,23 +156,29 @@ export function useWantedCardsRowActions() {
     }
   }
 
-  // Shared between the table's context menu and the grid cards'. "Delete" (like
-  // update) is restricted to management by RLS — a non-admin user sees the error in
-  // a toast, as with the other items — see migration 20260807190720 and the TODO in
-  // docs/TODO.md.
+  // Shared between the table's context menu and the grid cards'. Status-change and
+  // delete are hidden (not just disabled) for a card the viewer neither manages nor
+  // owns — canManage() mirrors requireManagementOrWantedCardOwner server-side,
+  // avoiding a menu item that would just 403. Edit/refresh-prices stay
+  // management-only regardless of ownership, out of scope for the 2026-09-05 change
+  // — see migration 20260807190720 and the TODO in docs/TODO.md.
   function rowContextMenuItems(card: WantedCard): DropdownMenuItem[] {
-    const statusItems = WANTED_CARD_STATUSES
-      .filter(status => status !== card.status)
-      .map(status => ({
-        label: t(`wantedCard.contextMenu.markAs.${status}`),
-        icon: STATUS_MENU_ICONS[status],
-        color: STATUS_MENU_COLORS[status],
-        onSelect: () => changeStatus(card.id, status)
-      }))
+    const manageable = canManage(card)
+
+    const statusItems: DropdownMenuItem[] = manageable
+      ? WANTED_CARD_STATUSES
+        .filter(status => status !== card.status)
+        .map(status => ({
+          label: t(`wantedCard.contextMenu.markAs.${status}`),
+          icon: STATUS_MENU_ICONS[status],
+          color: STATUS_MENU_COLORS[status],
+          onSelect: () => changeStatus(card.id, status)
+        }))
+      : []
 
     return [
       ...statusItems,
-      { type: 'separator' },
+      ...(statusItems.length ? [{ type: 'separator' as const }] : []),
       {
         label: t('wantedCard.contextMenu.copyName'),
         icon: ICONS.copy,
@@ -189,22 +203,27 @@ export function useWantedCardsRowActions() {
       {
         label: t('wantedCard.contextMenu.refreshPrices'),
         icon: ICONS.refresh,
-        disabled: !card.scryfallId || !card.setCode,
+        disabled: !isStaff.value || !card.scryfallId || !card.setCode,
         onSelect: () => refreshCardPrices(card)
       },
       { type: 'separator' },
       {
         label: t('wantedCard.contextMenu.edit'),
         icon: ICONS.edit,
+        disabled: !isStaff.value,
         onSelect: () => openEditModal(card)
       },
-      { type: 'separator' },
-      {
-        label: t('wantedCard.contextMenu.delete'),
-        icon: ICONS.delete,
-        color: 'error',
-        onSelect: () => openDeleteConfirm(card)
-      }
+      ...(manageable
+        ? [
+          { type: 'separator' as const },
+          {
+            label: t('wantedCard.contextMenu.delete'),
+            icon: ICONS.delete,
+            color: 'error' as const,
+            onSelect: () => openDeleteConfirm(card)
+          }
+        ]
+        : [])
     ]
   }
 
