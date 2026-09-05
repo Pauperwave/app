@@ -2,7 +2,7 @@
 import { InlineKeyboard } from 'grammy'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { resolveAssociateUuidByChatId, NOT_LINKED_MESSAGE } from './linking'
+import { resolveAssociateUuidByChatId, resolveChatIdByAssociateUuid, NOT_LINKED_MESSAGE } from './linking'
 import { answerLoadError, editOrResendMessage } from './callbackErrors'
 import type { Bot, Context } from 'grammy'
 import { FormattedString } from '@grammyjs/parse-mode'
@@ -17,12 +17,15 @@ interface WantedCardRow {
   status: WantedCardStatus
   image_url: string | null
   scryfall_url: string | null
+  cardmarket_price: number | null
+  cardtrader_price: number | null
   player_associate_uuid: string
   associate: { first_name: string | null, last_name: string | null } | null
 }
 
 const SELECT_COLUMNS = `
   uuid, card_name, copies, requested_at, status, image_url, scryfall_url,
+  cardmarket_price, cardtrader_price,
   player_associate_uuid, associate:pauperwave_associates!player_associate_uuid(first_name, last_name)
 `
 
@@ -173,19 +176,28 @@ async function fetchWantedCard(uuid: string): Promise<WantedCardRow | null> {
   return data as WantedCardRow | null
 }
 
-function cardDetailMessage(row: WantedCardRow): FormattedString {
+// requesterChatId links the name to the requester's Telegram account
+// (tg://user?id=..., FormattedString.mentionUser) when they have one linked
+// — resolved by the caller (resolveChatIdByAssociateUuid), since this stays
+// a pure sync function otherwise.
+function cardDetailMessage(row: WantedCardRow, requesterChatId: number | null): FormattedString {
   const date = row.requested_at ? format(new Date(row.requested_at), 'd MMM yyyy', { locale: it }) : null
-  const player = row.associate ? `${row.associate.first_name} ${row.associate.last_name}` : 'Socio sconosciuto'
+  const playerName = row.associate ? `${row.associate.first_name} ${row.associate.last_name}` : 'Socio sconosciuto'
+  const player = requesterChatId
+    ? FormattedString.mentionUser(playerName, requesterChatId)
+    : playerName
   const copies = row.copies > 1 ? ` x${row.copies}` : ''
   const name = row.scryfall_url ? cardNameLink(row) : FormattedString.b(row.card_name)
 
   const lines: (FormattedString | string)[] = [
     fmt`${STATUS_ICON[row.status]} ${name}${copies}`,
     '',
-    `👤 Richiesta da: ${player}`,
+    fmt`👤 Richiesta da: ${player}`,
     `📌 Stato: ${STATUS_LABEL[row.status]}`
   ]
   if (date) lines.push(`🗓️ Richiesta il: ${date}`)
+  if (row.cardmarket_price !== null) lines.push(`💶 Cardmarket: ${row.cardmarket_price} €`)
+  if (row.cardtrader_price !== null) lines.push(`💶 CardTrader: ${row.cardtrader_price} €`)
   return FormattedString.join(lines, '\n')
 }
 
@@ -225,10 +237,13 @@ async function renderCardDetail(
   const row = await fetchWantedCard(uuid)
   if (!row) return null
 
-  const associateUuid = await resolveAssociateUuidByChatId(chatId)
+  const [associateUuid, requesterChatId] = await Promise.all([
+    resolveAssociateUuidByChatId(chatId),
+    resolveChatIdByAssociateUuid(row.player_associate_uuid)
+  ])
   return {
     row,
-    text: cardDetailMessage(row),
+    text: cardDetailMessage(row, requesterChatId),
     keyboard: cardDetailKeyboard(row, origin, isOwnCard(row, associateUuid))
   }
 }
@@ -397,9 +412,11 @@ export function registerCarteCercateCommand(bot: Bot) {
         return
       }
 
+      // Own card (isOwnCard just checked above) — the requester's chat_id is
+      // this same chatId, no extra lookup needed.
       await refreshCardDetail(
         ctx, row,
-        fmt`${cardDetailMessage(row)}\n\n⚠️ Eliminare questa richiesta?`,
+        fmt`${cardDetailMessage(row, chatId)}\n\n⚠️ Eliminare questa richiesta?`,
         deleteConfirmKeyboard(uuid, origin)
       )
       await ctx.answerCallbackQuery()
