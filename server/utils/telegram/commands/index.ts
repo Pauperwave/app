@@ -12,6 +12,7 @@ import { registerCarteCercateCommand } from './cartecercate'
 import { registerTesseraCommand } from './tessera'
 import { registerMazziCommand } from './mazzi'
 import { registerVisibilitaCommand } from './visibilita'
+import { registerCollegamentoCommand } from './collegamento'
 import { registerStubCommands } from './stubs'
 import { registerLinkingHandler } from './linking'
 
@@ -35,6 +36,7 @@ export function registerCommands(bot: Bot) {
   registerTesseraCommand(bot)
   registerMazziCommand(bot)
   registerVisibilitaCommand(bot)
+  registerCollegamentoCommand(bot)
   registerStubCommands(bot)
   registerLinkingHandler(bot)
 }
