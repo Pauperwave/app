@@ -28,6 +28,7 @@ let bot: Bot | null = null
 // cartecercate - Carte cercate dai soci
 // tessera - Stato del tuo tesseramento
 // mazzi - I tuoi mazzi Commander
+// visibilita - Visibilità tornei esterni (es. Magman)
 // notifiche - Notifiche per formato seguito
 // tavolo - Tavolo e avversario del turno
 // vota - Vota miglior mazzo/miglior giocata
@@ -46,6 +47,7 @@ const BOT_COMMANDS: { command: string, description: string }[] = [
   { command: 'cartecercate', description: 'Carte cercate dai soci' },
   { command: 'tessera', description: 'Stato del tuo tesseramento' },
   { command: 'mazzi', description: 'I tuoi mazzi Commander' },
+  { command: 'visibilita', description: 'Visibilità tornei esterni (es. Magman)' },
   { command: 'notifiche', description: 'Notifiche per formato seguito' },
   { command: 'tavolo', description: 'Tavolo e avversario del turno' },
   { command: 'vota', description: 'Vota miglior mazzo/miglior giocata' }
