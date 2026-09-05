@@ -18,10 +18,19 @@ export async function answerLoadError(ctx: Context) {
 export async function editOrResendMessage(
   ctx: Context, text: string, keyboard: InlineKeyboard | undefined
 ) {
+  // Disabled unconditionally, not just when a caller's text happens to have a
+  // link — cartecercate.ts's card list can carry several scryfall links, and
+  // a preview card for whichever one Telegram picks first would be noise on
+  // every other caller (calendario.ts, leghe.ts) that has none anyway.
+  const options = {
+    parse_mode: 'Markdown' as const,
+    reply_markup: keyboard,
+    link_preview_options: { is_disabled: true }
+  }
   try {
-    await ctx.editMessageText(text, { parse_mode: 'Markdown', reply_markup: keyboard })
+    await ctx.editMessageText(text, options)
   } catch {
     await ctx.deleteMessage().catch(() => {})
-    await ctx.reply(text, { parse_mode: 'Markdown', reply_markup: keyboard })
+    await ctx.reply(text, options)
   }
 }

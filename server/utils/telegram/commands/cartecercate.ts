@@ -96,6 +96,14 @@ async function fetchWantedCardsPage(
   return { rows: rows.slice(0, PAGE_SIZE), hasNext: rows.length > PAGE_SIZE }
 }
 
+// Plain text, never wrapped in bold/italic here — legacy Markdown
+// (parse_mode: 'Markdown') can't nest a link inside another entity, so a
+// link is the only formatting this can safely carry. See cardDetailMessage's
+// own comment for the bug this avoids.
+function cardNameLink(row: WantedCardRow): string {
+  return row.scryfall_url ? `[${row.card_name}](${row.scryfall_url})` : row.card_name
+}
+
 // Player name is only useful in the 'all' scope — every row in 'mine' is
 // the viewer's own, repeating their own name on every line adds nothing.
 function cardLine(row: WantedCardRow, scope: Scope): string {
@@ -103,7 +111,7 @@ function cardLine(row: WantedCardRow, scope: Scope): string {
   const player = scope === 'all' && row.associate
     ? ` — ${row.associate.first_name} ${row.associate.last_name}`
     : ''
-  return `${STATUS_ICON[row.status]} ${row.card_name}${copies}${player}`
+  return `${STATUS_ICON[row.status]} ${cardNameLink(row)}${copies}${player}`
 }
 
 function listMessage(rows: WantedCardRow[], scope: Scope): string {
@@ -162,14 +170,18 @@ async function fetchWantedCard(uuid: string): Promise<WantedCardRow | null> {
   return data as WantedCardRow | null
 }
 
+// Legacy Markdown (parse_mode: 'Markdown') can't nest a link inside another
+// entity — `*[name](url)*` silently fails to parse (Telegram sends back the
+// raw markdown text instead of a bold link), unlike MarkdownV2/HTML which
+// both support nesting. So the name line is bold OR a link, never both.
 function cardDetailMessage(row: WantedCardRow): string {
   const date = row.requested_at ? format(new Date(row.requested_at), 'd MMM yyyy', { locale: it }) : null
   const player = row.associate ? `${row.associate.first_name} ${row.associate.last_name}` : 'Socio sconosciuto'
   const copies = row.copies > 1 ? ` x${row.copies}` : ''
-  const name = row.scryfall_url ? `[${row.card_name}](${row.scryfall_url})` : row.card_name
+  const name = row.scryfall_url ? cardNameLink(row) : `*${row.card_name}*`
 
   const lines = [
-    `${STATUS_ICON[row.status]} *${name}*${copies}`,
+    `${STATUS_ICON[row.status]} ${name}${copies}`,
     '',
     `👤 Richiesta da: ${player}`,
     `📌 Stato: ${STATUS_LABEL[row.status]}`
@@ -267,7 +279,11 @@ export function registerCarteCercateCommand(bot: Bot) {
   bot.command('cartecercate', async (ctx) => {
     try {
       const { text, keyboard } = await renderList('all', 0, ctx.chat.id)
-      await ctx.reply(text, { parse_mode: 'Markdown', reply_markup: keyboard })
+      await ctx.reply(text, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard,
+        link_preview_options: { is_disabled: true }
+      })
     } catch {
       await ctx.reply('⚠️ Non sono riuscito a recuperare le carte cercate, riprova più tardi.')
     }
