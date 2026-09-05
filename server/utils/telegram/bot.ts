@@ -25,7 +25,7 @@ let bot: Bot | null = null
 // prossimo - Il prossimo torneo
 // iscrizioni - I tornei a cui sei iscritto
 // supporto - Inoltra un messaggio allo staff
-// cartecercate - Carte cercate dai soci
+// cartecercate - Carte cercate dai soci (paginato, gestisci le tue)
 // tessera - Stato del tuo tesseramento
 // mazzi - I tuoi mazzi Commander
 // visibilita - Visibilità tornei esterni (es. Magman)
@@ -44,7 +44,7 @@ const BOT_COMMANDS: { command: string, description: string }[] = [
   { command: 'prossimo', description: 'Il prossimo torneo' },
   { command: 'iscrizioni', description: 'I tornei a cui sei iscritto' },
   { command: 'supporto', description: 'Inoltra un messaggio allo staff' },
-  { command: 'cartecercate', description: 'Carte cercate dai soci' },
+  { command: 'cartecercate', description: 'Carte cercate dai soci (paginato, gestisci le tue)' },
   { command: 'tessera', description: 'Stato del tuo tesseramento' },
   { command: 'mazzi', description: 'I tuoi mazzi Commander' },
   { command: 'visibilita', description: 'Visibilità tornei esterni (es. Magman)' },
