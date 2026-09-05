@@ -7,6 +7,7 @@ import { fetchRegistrationStatuses, fetchStageNumbers } from './tournament/queri
 import { answerLoadError, editOrResendMessage } from './callbackErrors'
 import { tournamentProgressByLeague } from '#shared/utils/leagues/tournamentProgressByLeague'
 import type { Bot } from 'grammy'
+import { FormattedString } from '@grammyjs/parse-mode'
 import type { RegistrationStatus } from './tournament/queries'
 import type { LeagueTournamentRow } from '#shared/utils/leagues/tournamentProgressByLeague'
 
@@ -62,10 +63,12 @@ async function fetchLeagueTournaments(leagueUuid: string): Promise<LeagueTournam
 // backTarget comment for why: callback_data has a 64-byte cap, and a torneo:
 // button already carries the tournament's own uuid, no room left for a
 // second full one.
-async function renderLeghe(): Promise<{ text: string, keyboard: InlineKeyboard | undefined }> {
+async function renderLeghe(): Promise<
+  { text: FormattedString, keyboard: InlineKeyboard | undefined }
+> {
   const leagues = await fetchActiveLeagues()
   if (!leagues.length) {
-    return { text: escapeMd('🏆 Nessuna lega attiva al momento.'), keyboard: undefined }
+    return { text: new FormattedString('🏆 Nessuna lega attiva al momento.'), keyboard: undefined }
   }
 
   const leagueUuids = leagues.map(league => league.uuid)
@@ -86,7 +89,7 @@ async function renderLeghe(): Promise<{ text: string, keyboard: InlineKeyboard |
     const start = formatDate(league.starts_at)
     const end = formatDate(league.ends_at)
     const dateRange = start && end ? `${start} → ${end}` : start ? `dal ${start}` : 'data da definire'
-    return `🏆 ${escapeMd(`${dateRange}${progress} — ${league.name}`)}`
+    return `🏆 ${dateRange}${progress} — ${league.name}`
   })
 
   const keyboard = new InlineKeyboard()
@@ -95,7 +98,7 @@ async function renderLeghe(): Promise<{ text: string, keyboard: InlineKeyboard |
   })
 
   return {
-    text: `🏆 ${mdBold('Leghe attive')}\n\n${lines.join('\n')}\n\n👇 ${escapeMd('Tocca una lega per i tornei')}`,
+    text: fmt`🏆 ${FormattedString.b('Leghe attive')}\n\n${FormattedString.join(lines, '\n')}\n\n👇 Tocca una lega per i tornei`,
     keyboard
   }
 }
@@ -113,7 +116,7 @@ function personalIcon(registration: RegistrationStatus): string {
 
 async function renderLegaTornei(
   index: number, chatId: number
-): Promise<{ text: string, keyboard: InlineKeyboard } | null> {
+): Promise<{ text: FormattedString, keyboard: InlineKeyboard } | null> {
   const leagues = await fetchActiveLeagues()
   const league = leagues[index]
   if (!league) return null
@@ -122,22 +125,25 @@ async function renderLegaTornei(
     fetchLeagueTournaments(league.uuid),
     fetchStageNumbers()
   ])
-  const header = `🏆 ${mdBold(league.name)}`
+  const header = fmt`🏆 ${FormattedString.b(league.name)}`
 
   const associateUuid = await resolveAssociateUuidByChatId(chatId)
   const registrations = associateUuid
     ? await fetchRegistrationStatuses(tournaments.map(t => t.uuid), associateUuid)
     : new Map<string, RegistrationStatus>()
 
-  let text = `${header}\n\n${escapeMd('Nessun torneo in programma per questa lega.')}`
+  let text = fmt`${header}\n\nNessun torneo in programma per questa lega.`
   if (tournaments.length) {
     const lines = tournaments.map((tournament) => {
       const date = formatDate(tournament.starts_at) ?? 'data da definire'
       const stage = stageLabel(stageNumbers.get(tournament.uuid) ?? null)
-      const dateLine = `${statusIcon(tournament.status)} ${escapeMd(`${date}${stage}`)}`
-      return `${dateLine}\n${tournamentLine({ status: tournament.status, name: tournament.name, locationName: tournament.location?.name })}`
+      const dateLine = `${statusIcon(tournament.status)} ${date}${stage}`
+      const tournamentDetail = tournamentLine({
+        status: tournament.status, name: tournament.name, locationName: tournament.location?.name
+      })
+      return fmt`${dateLine}\n${tournamentDetail}`
     })
-    text = `${header}\n\n${lines.join('\n\n')}\n\n👇 ${escapeMd('Tocca un torneo per i dettagli')}`
+    text = fmt`${header}\n\n${FormattedString.join(lines, '\n\n')}\n\n👇 Tocca un torneo per i dettagli`
   }
 
   const keyboard = new InlineKeyboard()
@@ -157,7 +163,7 @@ export function registerLegheCommand(bot: Bot) {
   bot.command('leghe', async (ctx) => {
     try {
       const { text, keyboard } = await renderLeghe()
-      await ctx.reply(text, { parse_mode: 'MarkdownV2', reply_markup: keyboard })
+      await ctx.reply(text.text, { entities: text.entities, reply_markup: keyboard })
     } catch {
       await ctx.reply('⚠️ Non sono riuscito a recuperare le leghe, riprova più tardi.')
     }
@@ -195,10 +201,16 @@ export function registerLegheCommand(bot: Bot) {
       }
 
       try {
-        await ctx.editMessageText(rendered.text, { parse_mode: 'MarkdownV2', reply_markup: rendered.keyboard })
+        await ctx.editMessageText(rendered.text.text, {
+          entities: rendered.text.entities,
+          reply_markup: rendered.keyboard
+        })
       } catch {
         await ctx.deleteMessage().catch(() => {})
-        await ctx.reply(rendered.text, { parse_mode: 'MarkdownV2', reply_markup: rendered.keyboard })
+        await ctx.reply(rendered.text.text, {
+          entities: rendered.text.entities,
+          reply_markup: rendered.keyboard
+        })
       }
       await ctx.answerCallbackQuery()
     } catch {

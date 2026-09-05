@@ -6,6 +6,7 @@ import { formatButtonDate, stageLabel, tournamentButtonLabel } from './tournamen
 import { fetchStageNumbers } from './tournament/queries'
 import { requireLinkedAssociate } from './linking'
 import type { Bot } from 'grammy'
+import { FormattedString } from '@grammyjs/parse-mode'
 
 interface MyTournamentRow {
   uuid: string
@@ -71,21 +72,21 @@ function statusIcon(registrationStatus: string): string {
   return registrationStatus === 'checked_in' ? '🎯' : '✅'
 }
 
-function mieiTorneiMessage(registrations: MyRegistration[]): string {
-  const header = `🎟️ ${mdBold('I tuoi tornei')}`
+function mieiTorneiMessage(registrations: MyRegistration[]): FormattedString {
+  const header = fmt`🎟️ ${FormattedString.b('I tuoi tornei')}`
 
   if (!registrations.length) {
-    return `${header}\n\n${escapeMd('Non risulti iscritto a nessun torneo in programma.')}`
+    return fmt`${header}\n\nNon risulti iscritto a nessun torneo in programma.`
   }
 
   const lines = registrations.map(({ registrationStatus, tournament }) => {
     const date = format(new Date(tournament.starts_at), 'EEE d MMM', { locale: it })
-    const location = tournament.location?.name ? `\n  📍 ${escapeMd(tournament.location.name)}` : ''
-    const stage = escapeMd(stageLabel(tournament.stageNumber))
-    return `${statusIcon(registrationStatus)} ${mdBold(date)}${stage} — ${escapeMd(tournament.name)}${location}`
+    const location = tournament.location?.name ? `\n  📍 ${tournament.location.name}` : ''
+    const stage = stageLabel(tournament.stageNumber)
+    return fmt`${statusIcon(registrationStatus)} ${FormattedString.b(date)}${stage} — ${tournament.name}${location}`
   })
 
-  return `${header}\n\n${lines.join('\n')}\n\n👇 ${escapeMd('Tocca un torneo per i dettagli')}`
+  return fmt`${header}\n\n${FormattedString.join(lines, '\n')}\n\n👇 Tocca un torneo per i dettagli`
 }
 
 function mieiTorneiKeyboard(registrations: MyRegistration[]): InlineKeyboard {
@@ -111,8 +112,9 @@ export function registerIscrizioniCommand(bot: Bot) {
       if (!associateUuid) return
 
       const registrations = await fetchMyTournaments(associateUuid)
-      await ctx.reply(mieiTorneiMessage(registrations), {
-        parse_mode: 'MarkdownV2',
+      const message = mieiTorneiMessage(registrations)
+      await ctx.reply(message.text, {
+        entities: message.entities,
         reply_markup: mieiTorneiKeyboard(registrations)
       })
     } catch {

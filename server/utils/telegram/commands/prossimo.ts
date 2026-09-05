@@ -2,6 +2,7 @@
 import { formatTournamentDateTime, tournamentHeader } from './tournament/line'
 import { fetchStageNumbers } from './tournament/queries'
 import type { Bot } from 'grammy'
+import { FormattedString } from '@grammyjs/parse-mode'
 
 interface NextTournamentRow {
   uuid: string
@@ -13,7 +14,7 @@ interface NextTournamentRow {
 
 const OPEN_STATUSES = ['registration_open', 'in_progress']
 
-async function nextTournamentMessage(): Promise<string> {
+async function nextTournamentMessage(): Promise<FormattedString> {
   const supabase = publicSupabaseClient()
 
   const [{ data, error }, stageNumbers] = await Promise.all([
@@ -31,19 +32,19 @@ async function nextTournamentMessage(): Promise<string> {
 
   if (error) throw error
   const row = data as NextTournamentRow | null
-  if (!row || !row.starts_at) return escapeMd('🎲 Nessun torneo in programma al momento.')
+  if (!row || !row.starts_at) return new FormattedString('🎲 Nessun torneo in programma al momento.')
 
   const date = formatTournamentDateTime(row.starts_at)
   const header = tournamentHeader(row.status, row.name, stageNumbers.get(row.uuid) ?? null)
-  const location = row.location?.name ? `\n📍 ${escapeMd(row.location.name)}` : ''
+  const location = row.location?.name ? `\n📍 ${row.location.name}` : ''
 
-  return `🎲 ${mdBold('Prossimo torneo')}\n\n${header}\n🗓️ ${escapeMd(date)}${location}`
+  return fmt`🎲 ${FormattedString.b('Prossimo torneo')}\n\n${header}\n🗓️ ${date}${location}`
 }
 
 export function registerProssimoCommand(bot: Bot) {
   bot.command('prossimo', async (ctx) => {
     const message = await nextTournamentMessage()
-      .catch(() => escapeMd('⚠️ Non sono riuscito a recuperare il prossimo torneo, riprova più tardi.'))
-    await ctx.reply(message, { parse_mode: 'MarkdownV2' })
+      .catch(() => new FormattedString('⚠️ Non sono riuscito a recuperare il prossimo torneo, riprova più tardi.'))
+    await ctx.reply(message.text, { entities: message.entities })
   })
 }

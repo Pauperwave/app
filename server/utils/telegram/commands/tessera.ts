@@ -3,6 +3,7 @@ import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { requireLinkedAssociate } from './linking'
 import type { Bot } from 'grammy'
+import { FormattedString } from '@grammyjs/parse-mode'
 
 interface AssociateStatusRow {
   first_name: string | null
@@ -38,24 +39,24 @@ async function fetchAssociateStatus(associateUuid: string): Promise<AssociateSta
   return data
 }
 
-function tesseraMessage(row: AssociateStatusRow): string {
+function tesseraMessage(row: AssociateStatusRow): FormattedString {
   const status = row.membership_status ? STATUS_LABEL[row.membership_status] ?? row.membership_status : 'Sconosciuto'
-  const lines = [
-    `🪪 ${mdBold(`Tesseramento di ${row.first_name ?? 'te'}`)}`,
+  const lines: (FormattedString | string)[] = [
+    fmt`🪪 ${FormattedString.b(`Tesseramento di ${row.first_name ?? 'te'}`)}`,
     '',
-    escapeMd(`Stato: ${status}`)
+    `Stato: ${status}`
   ]
 
   if (row.pauperwave_associate_number) {
-    lines.push(escapeMd(`Numero socio: ${row.pauperwave_associate_number}`))
+    lines.push(`Numero socio: ${row.pauperwave_associate_number}`)
   }
   if (row.latest_renewal_date) {
     const date = format(new Date(row.latest_renewal_date), 'd MMMM yyyy', { locale: it })
     const year = row.latest_renewal_year ? ` (anno ${row.latest_renewal_year})` : ''
-    lines.push(escapeMd(`Ultimo rinnovo: ${date}${year}`))
+    lines.push(`Ultimo rinnovo: ${date}${year}`)
   }
 
-  return lines.join('\n')
+  return FormattedString.join(lines, '\n')
 }
 
 export function registerTesseraCommand(bot: Bot) {
@@ -70,7 +71,8 @@ export function registerTesseraCommand(bot: Bot) {
         return
       }
 
-      await ctx.reply(tesseraMessage(row), { parse_mode: 'MarkdownV2' })
+      const message = tesseraMessage(row)
+      await ctx.reply(message.text, { entities: message.entities })
     } catch {
       await ctx.reply('⚠️ Non sono riuscito a recuperare il tuo tesseramento, riprova più tardi.')
     }

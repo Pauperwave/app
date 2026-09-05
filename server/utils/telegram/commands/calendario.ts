@@ -7,6 +7,7 @@ import { fetchShowExternalTournaments, fetchStageNumbers } from './tournament/qu
 import { SELECT_COLUMNS, registerTournamentDetailHandlers } from './tournament/detail'
 import { answerLoadError, editOrResendMessage } from './callbackErrors'
 import type { Bot } from 'grammy'
+import { FormattedString } from '@grammyjs/parse-mode'
 import type { DatedTournamentRow, TournamentRow } from './tournament/detail'
 
 // 'external' (2026-09-04): shop-organized tournaments (Magman etc.) show up
@@ -70,7 +71,7 @@ function groupByDay(rows: DatedTournamentRow[]): DayGroup[] {
   return [...groups.values()].sort((a, b) => a.day.getTime() - b.day.getTime())
 }
 
-function calendarioMessage(rows: DatedTournamentRow[], month: Date): string {
+function calendarioMessage(rows: DatedTournamentRow[], month: Date): FormattedString {
   const start = startOfMonth(month)
   const end = endOfMonth(month)
 
@@ -79,22 +80,22 @@ function calendarioMessage(rows: DatedTournamentRow[], month: Date): string {
     return date >= start && date <= end
   })
 
-  const header = `🎲 ${mdBold(`Tornei — ${monthLabel(month)}`)}`
+  const header = fmt`🎲 ${FormattedString.b(`Tornei — ${monthLabel(month)}`)}`
 
-  if (!filtered.length) return `${header}\n\n${escapeMd('Nessun torneo in programma.')}`
+  if (!filtered.length) return fmt`${header}\n\nNessun torneo in programma.`
 
   const days = groupByDay(filtered).map(({ day, rows: dayRows }) => {
-    const dayHeader = mdBold(dayLabel(day))
+    const dayHeader = FormattedString.b(dayLabel(day))
     const dayLines = dayRows.map(row => tournamentLine({
       status: row.status,
       name: row.name,
       stageSuffix: stageLabel(row.stageNumber),
       locationName: row.location?.name
     }))
-    return `${dayHeader}\n${dayLines.join('\n')}`
+    return fmt`${dayHeader}\n${FormattedString.join(dayLines, '\n')}`
   })
 
-  return `${header}\n\n${days.join('\n\n')}\n\n👇 ${escapeMd('Tocca un torneo per i dettagli')}`
+  return fmt`${header}\n\n${FormattedString.join(days, '\n\n')}\n\n👇 Tocca un torneo per i dettagli`
 }
 
 function buildKeyboard(rows: DatedTournamentRow[], monthOffset: number): InlineKeyboard {
@@ -132,7 +133,7 @@ export function registerCalendarioCommand(bot: Bot) {
   bot.command('calendario', async (ctx) => {
     try {
       const { text, keyboard } = await renderCalendario(0, ctx.chat.id)
-      await ctx.reply(text, { parse_mode: 'MarkdownV2', reply_markup: keyboard })
+      await ctx.reply(text.text, { entities: text.entities, reply_markup: keyboard })
     } catch {
       await ctx.reply('⚠️ Non sono riuscito a recuperare i tornei, riprova più tardi.')
     }

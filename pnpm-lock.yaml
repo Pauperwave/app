@@ -21,6 +21,9 @@ importers:
       '@formkit/auto-animate':
         specifier: ^0.10.0
         version: 0.10.0
+      '@grammyjs/parse-mode':
+        specifier: ^2.3.0
+        version: 2.3.0(grammy@1.46.0)
       '@iconify-json/circle-flags':
         specifier: 1.2.10
         version: 1.2.10
@@ -1085,6 +1088,12 @@ packages:
 
   '@formkit/auto-animate@0.10.0':
     resolution: {integrity: sha512-KGomRttjUfORuPUaR/ZGQw+6xfMrTM+sxnILv7JAd9AmabU9rg9i6gF/iC0Ih+QpKCubJpCA/1DX9UHKE8cX+A==}
+
+  '@grammyjs/parse-mode@2.3.0':
+    resolution: {integrity: sha512-kEEM1B5z4lNH/99HEzXvw6wuJEAmadZ4cfcNn/F5UMOsCRogFK5lMYrA4GLLoNQ0kY3e/GJkGUBTCagfyHzn4g==}
+    engines: {node: '>=14.13.1'}
+    peerDependencies:
+      grammy: ^1.41.0
 
   '@grammyjs/types@5.0.0':
     resolution: {integrity: sha512-iq1Qrq1iPKkB8yAa0qSuIURMZOCuqTY5pWy5gHpCeL1oQ+GPadGhw/cDTVE8waJwuCzacUzuIjRv1sESvk7u7A==}
@@ -8282,6 +8291,10 @@ snapshots:
       - vue
 
   '@formkit/auto-animate@0.10.0': {}
+
+  '@grammyjs/parse-mode@2.3.0(grammy@1.46.0)':
+    dependencies:
+      grammy: 1.46.0
 
   '@grammyjs/types@5.0.0': {}
 

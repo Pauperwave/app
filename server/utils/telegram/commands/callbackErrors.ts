@@ -1,5 +1,6 @@
 // server\utils\telegram\commands\callbackErrors.ts
 import type { Context, InlineKeyboard } from 'grammy'
+import type { FormattedString } from '@grammyjs/parse-mode'
 
 // The generic "something went wrong loading this" alert every
 // callback_query handler's own catch block falls back to (leghe.ts,
@@ -16,21 +17,21 @@ export async function answerLoadError(ctx: Context) {
 // that ("there is no text in the message to edit"), so fall back to
 // delete + resend.
 export async function editOrResendMessage(
-  ctx: Context, text: string, keyboard: InlineKeyboard | undefined
+  ctx: Context, text: FormattedString, keyboard: InlineKeyboard | undefined
 ) {
   // Disabled unconditionally, not just when a caller's text happens to have a
   // link — cartecercate.ts's card list can carry several scryfall links, and
   // a preview card for whichever one Telegram picks first would be noise on
   // every other caller (calendario.ts, leghe.ts) that has none anyway.
   const options = {
-    parse_mode: 'MarkdownV2' as const,
+    entities: text.entities,
     reply_markup: keyboard,
     link_preview_options: { is_disabled: true }
   }
   try {
-    await ctx.editMessageText(text, options)
+    await ctx.editMessageText(text.text, options)
   } catch {
     await ctx.deleteMessage().catch(() => {})
-    await ctx.reply(text, options)
+    await ctx.reply(text.text, options)
   }
 }

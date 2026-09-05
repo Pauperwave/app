@@ -1,6 +1,7 @@
 // server\utils\telegram\commands\mazzi.ts
 import { requireLinkedAssociate } from './linking'
 import type { Bot } from 'grammy'
+import { FormattedString } from '@grammyjs/parse-mode'
 
 interface CommanderDeckRow {
   uuid: string
@@ -23,28 +24,27 @@ async function fetchMyDecks(associateUuid: string): Promise<CommanderDeckRow[]> 
   return data as CommanderDeckRow[]
 }
 
-function mazziMessage(decks: CommanderDeckRow[]): string {
-  const header = `🃏 ${mdBold('I tuoi mazzi Commander')}`
+function mazziMessage(decks: CommanderDeckRow[]): FormattedString {
+  const header = fmt`🃏 ${FormattedString.b('I tuoi mazzi Commander')}`
   if (!decks.length) {
-    return `${header}\n\n${escapeMd('Non hai ancora nessun mazzo Commander registrato.')}`
+    return fmt`${header}\n\nNon hai ancora nessun mazzo Commander registrato.`
   }
 
   const lines = decks.map((deck) => {
     const commanders = deck.commander_2_name
       ? `${deck.commander_1_name} / ${deck.commander_2_name}`
       : deck.commander_1_name
-    const companion = deck.companion_name ? `\n  ${escapeMd(`Companion: ${deck.companion_name}`)}` : ''
-    // mdLink, not escapeMd — this is a bare URL, and Telegram autolinks it
-    // regardless of parse_mode, but the raw string still has to survive
-    // MarkdownV2 parsing first; a URL often contains '_'/'.'/'-', which
-    // would otherwise be read as stray formatting characters or break
-    // parsing outright. Escaped link *text* renders clean (Telegram
-    // unescapes it for display), so wrapping url→url is safe and clickable.
-    const decklist = deck.decklist_url ? `\n  🔗 ${mdLink(deck.decklist_url, deck.decklist_url)}` : ''
-    return `• ${escapeMd(commanders)}${companion}${decklist}`
+    const companion = deck.companion_name ? fmt`\n  Companion: ${deck.companion_name}` : ''
+    // A real link entity (FormattedString.link), not just autolinked plain
+    // text — renders the same way, but doesn't depend on Telegram's own URL
+    // pattern detection recognizing the string.
+    const decklist = deck.decklist_url
+      ? fmt`\n  🔗 ${FormattedString.link(deck.decklist_url, deck.decklist_url)}`
+      : ''
+    return fmt`• ${commanders}${companion}${decklist}`
   })
 
-  return `${header}\n\n${lines.join('\n\n')}`
+  return fmt`${header}\n\n${FormattedString.join(lines, '\n\n')}`
 }
 
 export function registerMazziCommand(bot: Bot) {
@@ -54,7 +54,11 @@ export function registerMazziCommand(bot: Bot) {
       if (!associateUuid) return
 
       const decks = await fetchMyDecks(associateUuid)
-      await ctx.reply(mazziMessage(decks), { parse_mode: 'MarkdownV2', link_preview_options: { is_disabled: true } })
+      const message = mazziMessage(decks)
+      await ctx.reply(message.text, {
+        entities: message.entities,
+        link_preview_options: { is_disabled: true }
+      })
     } catch {
       await ctx.reply('⚠️ Non sono riuscito a recuperare i tuoi mazzi, riprova più tardi.')
     }
