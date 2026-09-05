@@ -8,6 +8,7 @@
 // calendario.ts past 480 lines on its own.
 import { InlineKeyboard } from 'grammy'
 import { format } from 'date-fns'
+import { FormattedString } from '@grammyjs/parse-mode'
 import { formatTournamentDateTime, tournamentHeader } from './line'
 import { fetchRegistrationStatus, fetchStageNumbers } from './queries'
 import { NOT_LINKED_MESSAGE } from '../linking'
@@ -86,42 +87,44 @@ function mapsUrl(location: LocationRow): string | null {
 
 function tournamentDetailMessage(
   row: DatedTournamentRow, registration: RegistrationStatus
-): string {
+): FormattedString {
   const date = formatTournamentDateTime(row.starts_at)
   const endTime = row.ends_at ? ` – ${format(new Date(row.ends_at), 'HH:mm')}` : ''
-  const lines = [
+  const lines: (FormattedString | string)[] = [
     tournamentHeader(row.status, row.name, row.stageNumber),
     '',
-    `🗓️ ${escapeMd(`${date}${endTime}`)}`
+    `🗓️ ${date}${endTime}`
   ]
 
   if (row.location?.name) {
     const url = mapsUrl(row.location)
-    lines.push(url ? `📍 ${mdLink(row.location.name, url)}` : `📍 ${escapeMd(row.location.name)}`)
+    lines.push(url ? fmt`📍 ${FormattedString.link(row.location.name, url)}` : `📍 ${row.location.name}`)
   }
-  if (row.organizer?.name) lines.push(`🏳️ Organizzatore: ${escapeMd(row.organizer.name)}`)
+  if (row.organizer?.name) lines.push(`🏳️ Organizzatore: ${row.organizer.name}`)
   if (row.contact_name) {
     const phone = row.contact_phone ? ` (${row.contact_phone})` : ''
-    lines.push(`☎️ Referente: ${escapeMd(`${row.contact_name}${phone}`)}`)
+    lines.push(`☎️ Referente: ${row.contact_name}${phone}`)
   }
-  if (row.entry_fee !== null) lines.push(`💶 Quota: ${escapeMd(String(row.entry_fee))} €`)
-  if (row.prizes) lines.push(`🏆 Premi: ${escapeMd(row.prizes)}`)
-  if (registration === 'registered') lines.push('', escapeMd('✅ Sei iscritto a questo torneo.'))
-  if (registration === 'checked_in') lines.push('', escapeMd('✅ Sei iscritto e hai già fatto il check-in.'))
-  if (row.description) lines.push('', escapeMd(row.description))
+  if (row.entry_fee !== null) lines.push(`💶 Quota: ${row.entry_fee} €`)
+  if (row.prizes) lines.push(`🏆 Premi: ${row.prizes}`)
+  if (registration === 'registered') lines.push('', '✅ Sei iscritto a questo torneo.')
+  if (registration === 'checked_in') lines.push('', '✅ Sei iscritto e hai già fatto il check-in.')
+  if (row.description) lines.push('', row.description)
 
-  return lines.join('\n')
+  return FormattedString.join(lines, '\n')
 }
 
 // Telegram photo captions cap at 1024 characters (vs. 4096 for plain text
 // messages) — only relevant when the detail is sent as a photo (image_url
 // set), so this trims the description first rather than the fixed fields
-// above it.
+// above it. .slice() (not a raw string cut) keeps the entities themselves
+// consistent with the truncated text — no risk of a partially-cut escape
+// sequence the old MarkdownV2 string version had to worry about.
 const CAPTION_LIMIT = 1024
 
-function truncateForCaption(text: string): string {
-  if (text.length <= CAPTION_LIMIT) return text
-  return `${text.slice(0, CAPTION_LIMIT - 1)}…`
+function truncateForCaption(text: FormattedString): FormattedString {
+  if (text.text.length <= CAPTION_LIMIT) return text
+  return text.slice(0, CAPTION_LIMIT - 1).plain('…')
 }
 
 // A tournament's detail view is reachable from more than one place
@@ -258,14 +261,15 @@ export function registerTournamentDetailHandlers(bot: Bot) {
         // Can't turn an existing text message into a photo one via
         // editMessageText — replace it instead.
         await ctx.deleteMessage().catch(() => {})
+        const capped = truncateForCaption(text)
         await ctx.replyWithPhoto(tournament.image_url, {
-          caption: truncateForCaption(text),
-          parse_mode: 'MarkdownV2',
+          caption: capped.caption,
+          caption_entities: capped.caption_entities,
           reply_markup: keyboard
         })
       } else {
-        await ctx.editMessageText(text, {
-          parse_mode: 'MarkdownV2',
+        await ctx.editMessageText(text.text, {
+          entities: text.entities,
           reply_markup: keyboard,
           link_preview_options: { is_disabled: true }
         })
@@ -284,10 +288,15 @@ export function registerTournamentDetailHandlers(bot: Bot) {
   ) {
     const { text, keyboard } = await renderTournamentDetail(tournament, origin, chatId)
     if (tournament.image_url) {
-      await ctx.editMessageCaption({ caption: truncateForCaption(text), parse_mode: 'MarkdownV2', reply_markup: keyboard })
+      const capped = truncateForCaption(text)
+      await ctx.editMessageCaption({
+        caption: capped.caption,
+        caption_entities: capped.caption_entities,
+        reply_markup: keyboard
+      })
     } else {
-      await ctx.editMessageText(text, {
-        parse_mode: 'MarkdownV2',
+      await ctx.editMessageText(text.text, {
+        entities: text.entities,
         reply_markup: keyboard,
         link_preview_options: { is_disabled: true }
       })

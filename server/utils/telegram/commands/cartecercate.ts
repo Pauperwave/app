@@ -5,6 +5,7 @@ import { it } from 'date-fns/locale'
 import { resolveAssociateUuidByChatId, NOT_LINKED_MESSAGE } from './linking'
 import { answerLoadError, editOrResendMessage } from './callbackErrors'
 import type { Bot, Context } from 'grammy'
+import { FormattedString } from '@grammyjs/parse-mode'
 
 type WantedCardStatus = 'searching' | 'found' | 'abandoned'
 
@@ -30,11 +31,13 @@ const PAGE_SIZE = 10
 // Telegram photo captions cap at 1024 characters (vs. 4096 for plain text
 // messages) — only relevant when the detail is sent as a photo (image_url
 // set), same constraint as tournament/detail.ts's own truncateForCaption.
+// .slice() (not a raw string cut) keeps entities consistent with the
+// truncated text.
 const CAPTION_LIMIT = 1024
 
-function truncateForCaption(text: string): string {
-  if (text.length <= CAPTION_LIMIT) return text
-  return `${text.slice(0, CAPTION_LIMIT - 1)}…`
+function truncateForCaption(text: FormattedString): FormattedString {
+  if (text.text.length <= CAPTION_LIMIT) return text
+  return text.slice(0, CAPTION_LIMIT - 1).plain('…')
 }
 
 const STATUS_ICON: Record<WantedCardStatus, string> = {
@@ -96,31 +99,32 @@ async function fetchWantedCardsPage(
   return { rows: rows.slice(0, PAGE_SIZE), hasNext: rows.length > PAGE_SIZE }
 }
 
-// Plain text (escaped), never wrapped in bold here — legacy Markdown could
-// not nest a link inside another entity; MarkdownV2 could now, but there's
-// still no need for both on a list row.
-function cardNameLink(row: WantedCardRow): string {
-  return row.scryfall_url ? mdLink(row.card_name, row.scryfall_url) : escapeMd(row.card_name)
+// Plain (never bolded) — a list row doesn't need both, only the detail
+// view's own name line ever bolds instead of linking.
+function cardNameLink(row: WantedCardRow): FormattedString {
+  return row.scryfall_url
+    ? FormattedString.link(row.card_name, row.scryfall_url)
+    : new FormattedString(row.card_name)
 }
 
 // Player name is only useful in the 'all' scope — every row in 'mine' is
 // the viewer's own, repeating their own name on every line adds nothing.
-function cardLine(row: WantedCardRow, scope: Scope): string {
+function cardLine(row: WantedCardRow, scope: Scope): FormattedString {
   const copies = row.copies > 1 ? ` x${row.copies}` : ''
   const player = scope === 'all' && row.associate
     ? ` — ${row.associate.first_name} ${row.associate.last_name}`
     : ''
-  return `${STATUS_ICON[row.status]} ${cardNameLink(row)}${escapeMd(copies)}${escapeMd(player)}`
+  return fmt`${STATUS_ICON[row.status]} ${cardNameLink(row)}${copies}${player}`
 }
 
-function listMessage(rows: WantedCardRow[], scope: Scope): string {
-  const header = `🔍 ${mdBold(scope === 'mine' ? 'Le mie carte cercate' : 'Carte cercate')}`
+function listMessage(rows: WantedCardRow[], scope: Scope): FormattedString {
+  const header = fmt`🔍 ${FormattedString.b(scope === 'mine' ? 'Le mie carte cercate' : 'Carte cercate')}`
   if (!rows.length) {
     const empty = scope === 'mine' ? 'Nessuna richiesta registrata.' : 'Nessuna carta cercata al momento.'
-    return `${header}\n\n${escapeMd(empty)}`
+    return fmt`${header}\n\n${empty}`
   }
   const lines = rows.map(row => cardLine(row, scope))
-  return `${header}\n\n${lines.join('\n')}\n\n👇 ${escapeMd('Tocca una carta per i dettagli')}`
+  return fmt`${header}\n\n${FormattedString.join(lines, '\n')}\n\n👇 Tocca una carta per i dettagli`
 }
 
 function listKeyboard(
@@ -149,7 +153,7 @@ function listKeyboard(
 
 async function renderList(
   scope: Scope, page: number, chatId: number
-): Promise<{ text: string, keyboard: InlineKeyboard }> {
+): Promise<{ text: FormattedString, keyboard: InlineKeyboard }> {
   const associateUuid = await resolveAssociateUuidByChatId(chatId)
   const { rows, hasNext } = await fetchWantedCardsPage(scope, page, associateUuid)
   return { text: listMessage(rows, scope), keyboard: listKeyboard(rows, scope, page, hasNext) }
@@ -169,20 +173,20 @@ async function fetchWantedCard(uuid: string): Promise<WantedCardRow | null> {
   return data as WantedCardRow | null
 }
 
-function cardDetailMessage(row: WantedCardRow): string {
+function cardDetailMessage(row: WantedCardRow): FormattedString {
   const date = row.requested_at ? format(new Date(row.requested_at), 'd MMM yyyy', { locale: it }) : null
   const player = row.associate ? `${row.associate.first_name} ${row.associate.last_name}` : 'Socio sconosciuto'
   const copies = row.copies > 1 ? ` x${row.copies}` : ''
-  const name = row.scryfall_url ? cardNameLink(row) : mdBold(row.card_name)
+  const name = row.scryfall_url ? cardNameLink(row) : FormattedString.b(row.card_name)
 
-  const lines = [
-    `${STATUS_ICON[row.status]} ${name}${escapeMd(copies)}`,
+  const lines: (FormattedString | string)[] = [
+    fmt`${STATUS_ICON[row.status]} ${name}${copies}`,
     '',
-    `👤 ${escapeMd(`Richiesta da: ${player}`)}`,
-    `📌 ${escapeMd(`Stato: ${STATUS_LABEL[row.status]}`)}`
+    `👤 Richiesta da: ${player}`,
+    `📌 Stato: ${STATUS_LABEL[row.status]}`
   ]
-  if (date) lines.push(`🗓️ ${escapeMd(`Richiesta il: ${date}`)}`)
-  return lines.join('\n')
+  if (date) lines.push(`🗓️ Richiesta il: ${date}`)
+  return FormattedString.join(lines, '\n')
 }
 
 // Only the requester themselves can manage their own request from the bot —
@@ -217,7 +221,7 @@ function deleteConfirmKeyboard(uuid: string, origin: string): InlineKeyboard {
 
 async function renderCardDetail(
   uuid: string, origin: string, chatId: number
-): Promise<{ row: WantedCardRow, text: string, keyboard: InlineKeyboard } | null> {
+): Promise<{ row: WantedCardRow, text: FormattedString, keyboard: InlineKeyboard } | null> {
   const row = await fetchWantedCard(uuid)
   if (!row) return null
 
@@ -234,18 +238,19 @@ async function renderCardDetail(
 // but it doesn't need to be: this only ever opens a detail view fresh, never
 // refreshes an existing photo one (that's refreshCardDetail below).
 async function openCardDetail(
-  ctx: Context, row: WantedCardRow, text: string, keyboard: InlineKeyboard
+  ctx: Context, row: WantedCardRow, text: FormattedString, keyboard: InlineKeyboard
 ) {
   if (row.image_url) {
     await ctx.deleteMessage().catch(() => {})
+    const capped = truncateForCaption(text)
     await ctx.replyWithPhoto(row.image_url, {
-      caption: truncateForCaption(text),
-      parse_mode: 'MarkdownV2',
+      caption: capped.caption,
+      caption_entities: capped.caption_entities,
       reply_markup: keyboard
     })
   } else {
-    await ctx.editMessageText(text, {
-      parse_mode: 'MarkdownV2',
+    await ctx.editMessageText(text.text, {
+      entities: text.entities,
       reply_markup: keyboard,
       link_preview_options: { is_disabled: true }
     })
@@ -257,13 +262,18 @@ async function openCardDetail(
 // (image_url set), so this edits the caption instead of the text, same
 // distinction as tournament/detail.ts's own refreshDetailMessage.
 async function refreshCardDetail(
-  ctx: Context, row: WantedCardRow, text: string, keyboard: InlineKeyboard
+  ctx: Context, row: WantedCardRow, text: FormattedString, keyboard: InlineKeyboard
 ) {
   if (row.image_url) {
-    await ctx.editMessageCaption({ caption: truncateForCaption(text), parse_mode: 'MarkdownV2', reply_markup: keyboard })
+    const capped = truncateForCaption(text)
+    await ctx.editMessageCaption({
+      caption: capped.caption,
+      caption_entities: capped.caption_entities,
+      reply_markup: keyboard
+    })
   } else {
-    await ctx.editMessageText(text, {
-      parse_mode: 'MarkdownV2',
+    await ctx.editMessageText(text.text, {
+      entities: text.entities,
       reply_markup: keyboard,
       link_preview_options: { is_disabled: true }
     })
@@ -274,8 +284,8 @@ export function registerCarteCercateCommand(bot: Bot) {
   bot.command('cartecercate', async (ctx) => {
     try {
       const { text, keyboard } = await renderList('all', 0, ctx.chat.id)
-      await ctx.reply(text, {
-        parse_mode: 'MarkdownV2',
+      await ctx.reply(text.text, {
+        entities: text.entities,
         reply_markup: keyboard,
         link_preview_options: { is_disabled: true }
       })
@@ -389,7 +399,7 @@ export function registerCarteCercateCommand(bot: Bot) {
 
       await refreshCardDetail(
         ctx, row,
-        `${cardDetailMessage(row)}\n\n⚠️ ${escapeMd('Eliminare questa richiesta?')}`,
+        fmt`${cardDetailMessage(row)}\n\n⚠️ Eliminare questa richiesta?`,
         deleteConfirmKeyboard(uuid, origin)
       )
       await ctx.answerCallbackQuery()

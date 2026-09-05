@@ -3,18 +3,19 @@ import { InlineKeyboard } from 'grammy'
 import { fetchShowExternalTournaments, setShowExternalTournaments } from './tournament/queries'
 import { answerLoadError } from './callbackErrors'
 import type { Bot } from 'grammy'
+import { FormattedString } from '@grammyjs/parse-mode'
 
 // Public, chat-scoped (not tied to a linked associate — pauperwave_telegram_chat_settings
 // keys on chat_id alone, see migration 20260904160000) toggle for whether
 // /calendario includes shop-organized tournaments (Magman etc., status
 // 'external'). Hidden by default per fetchShowExternalTournaments' own
 // fallback — this command is the only way to turn them on.
-function renderVisibilita(showExternal: boolean): { text: string, keyboard: InlineKeyboard } {
-  const prefix = escapeMd('I tornei di negozi esterni (es. Magman) sono ')
-  const state = mdBold(showExternal ? 'visibili' : 'nascosti')
-  const suffix = escapeMd(' in /calendario.')
+function renderVisibilita(
+  showExternal: boolean
+): { text: FormattedString, keyboard: InlineKeyboard } {
+  const state = FormattedString.b(showExternal ? 'visibili' : 'nascosti')
 
-  const text = `👁️ ${mdBold('Visibilità tornei')}\n\n🏪 ${prefix}${state}${suffix}`
+  const text = fmt`👁️ ${FormattedString.b('Visibilità tornei')}\n\n🏪 I tornei di negozi esterni (es. Magman) sono ${state} in /calendario.`
   const keyboard = new InlineKeyboard().text(
     showExternal ? '🙈 Nascondi tornei esterni' : '👁️ Mostra tornei esterni',
     'visibilita:toggle'
@@ -27,7 +28,7 @@ export function registerVisibilitaCommand(bot: Bot) {
   bot.command('visibilita', async (ctx) => {
     try {
       const { text, keyboard } = renderVisibilita(await fetchShowExternalTournaments(ctx.chat.id))
-      await ctx.reply(text, { parse_mode: 'MarkdownV2', reply_markup: keyboard })
+      await ctx.reply(text.text, { entities: text.entities, reply_markup: keyboard })
     } catch {
       await ctx.reply('⚠️ Non sono riuscito a recuperare le impostazioni, riprova più tardi.')
     }
@@ -45,7 +46,7 @@ export function registerVisibilitaCommand(bot: Bot) {
       await setShowExternalTournaments(chatId, next)
 
       const { text, keyboard } = renderVisibilita(next)
-      await ctx.editMessageText(text, { parse_mode: 'MarkdownV2', reply_markup: keyboard })
+      await ctx.editMessageText(text.text, { entities: text.entities, reply_markup: keyboard })
       await ctx.answerCallbackQuery({ text: next ? 'Tornei esterni mostrati' : 'Tornei esterni nascosti' })
     } catch {
       await answerLoadError(ctx)

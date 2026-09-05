@@ -1,6 +1,7 @@
 // server\utils\telegram\commands\classifiche.ts
 import { InlineKeyboard } from 'grammy'
 import type { Bot } from 'grammy'
+import { FormattedString } from '@grammyjs/parse-mode'
 import { groupBestNByPlayer, toBestNPlacement } from '#shared/utils/cittadino/bestNStandings'
 import { answerLoadError } from './callbackErrors'
 
@@ -46,7 +47,7 @@ const CITTADINO_COUNTED_RESULTS = 11
 // full 40+ player table isn't useful to read in a chat bubble either.
 const TOP_ROWS = 10
 
-async function formatStandingsMessage(format: StandingsFormat): Promise<string> {
+async function formatStandingsMessage(format: StandingsFormat): Promise<FormattedString> {
   const payload = await $fetch<FormatStandingsPayload>(`/api/standings/${format}`)
 
   const placements = payload.results.map(toBestNPlacement)
@@ -69,13 +70,13 @@ async function formatStandingsMessage(format: StandingsFormat): Promise<string> 
 
   const lines = rows
     .slice(0, TOP_ROWS)
-    .map((row, index) => escapeMd(`${index + 1}. ${row.playerName} — ${row.total} pt`))
+    .map((row, index) => `${index + 1}. ${row.playerName} — ${row.total} pt`)
 
-  return `🏆 ${mdBold(`Classifica ${FORMAT_LABELS[format]}`)}\n\n${lines.join('\n')}`
+  return fmt`🏆 ${FormattedString.b(`Classifica ${FORMAT_LABELS[format]}`)}\n\n${FormattedString.join(lines, '\n')}`
 }
 
 // fallow-ignore-next-line code-duplication -- rows.map/sort/lines block below mirrors formatStandingsMessage's, but the tie-break chain (bestSingle, eventsPlayed) is genuinely different math, not the same logic reshaped
-async function cittadinoMessage(): Promise<string> {
+async function cittadinoMessage(): Promise<FormattedString> {
   const payload = await $fetch<CittadinoPayload>('/api/cittadino')
 
   const placements = payload.results.map(toBestNPlacement)
@@ -99,9 +100,9 @@ async function cittadinoMessage(): Promise<string> {
 
   const lines = rows
     .slice(0, TOP_ROWS)
-    .map((row, index) => escapeMd(`${index + 1}. ${row.playerName} — ${row.total} pt`))
+    .map((row, index) => `${index + 1}. ${row.playerName} — ${row.total} pt`)
 
-  return `🏆 ${mdBold('Classifica Cittadino')}\n\n${lines.join('\n')}`
+  return fmt`🏆 ${FormattedString.b('Classifica Cittadino')}\n\n${FormattedString.join(lines, '\n')}`
 }
 
 function formatsKeyboard(siteUrl: string): InlineKeyboard {
@@ -133,8 +134,8 @@ export function registerClassificheCommand(bot: Bot) {
       const siteUrl = useRuntimeConfig().public.siteUrl
       const message = await formatStandingsMessage(format)
 
-      await ctx.editMessageText(message, {
-        parse_mode: 'MarkdownV2',
+      await ctx.editMessageText(message.text, {
+        entities: message.entities,
         reply_markup: new InlineKeyboard()
           .url('Apri pagina completa', `${siteUrl}/classifiche/${format}`)
           .row()
@@ -151,8 +152,8 @@ export function registerClassificheCommand(bot: Bot) {
       const siteUrl = useRuntimeConfig().public.siteUrl
       const message = await cittadinoMessage()
 
-      await ctx.editMessageText(message, {
-        parse_mode: 'MarkdownV2',
+      await ctx.editMessageText(message.text, {
+        entities: message.entities,
         reply_markup: new InlineKeyboard()
           .url('Apri pagina completa', `${siteUrl}/classifiche/cittadino`)
           .row()

@@ -2,6 +2,7 @@
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import type { Bot } from 'grammy'
+import { FormattedString } from '@grammyjs/parse-mode'
 
 interface UpcomingEventRow {
   name: string
@@ -11,7 +12,7 @@ interface UpcomingEventRow {
 
 const MAX_EVENTS = 8
 
-async function upcomingEventsMessage(): Promise<string> {
+async function upcomingEventsMessage(): Promise<FormattedString> {
   const supabase = publicSupabaseClient()
 
   const { data, error } = await supabase
@@ -24,21 +25,24 @@ async function upcomingEventsMessage(): Promise<string> {
     .limit(MAX_EVENTS)
 
   if (error) throw error
-  if (!data.length) return escapeMd('📅 Nessun evento in programma al momento.')
+  if (!data.length) return new FormattedString('📅 Nessun evento in programma al momento.')
 
   const lines = (data as UpcomingEventRow[]).map((event) => {
     const date = event.starts_at ? format(new Date(event.starts_at), 'd MMM', { locale: it }) : '?'
     const location = event.location?.name ? ` — ${event.location.name}` : ''
-    return escapeMd(`• ${date}: ${event.name}${location}`)
+    return `• ${date}: ${event.name}${location}`
   })
 
-  return `📅 ${mdBold('Prossimi eventi')}\n\n${lines.join('\n')}`
+  return fmt`📅 ${FormattedString.b('Prossimi eventi')}\n\n${FormattedString.join(lines, '\n')}`
 }
 
 export function registerEventiCommand(bot: Bot) {
   bot.command('eventi', async (ctx) => {
     const message = await upcomingEventsMessage()
-      .catch(() => escapeMd('⚠️ Non sono riuscito a recuperare gli eventi, riprova più tardi.'))
-    await ctx.reply(message, { parse_mode: 'MarkdownV2', link_preview_options: { is_disabled: true } })
+      .catch(() => new FormattedString('⚠️ Non sono riuscito a recuperare gli eventi, riprova più tardi.'))
+    await ctx.reply(message.text, {
+      entities: message.entities,
+      link_preview_options: { is_disabled: true }
+    })
   })
 }
