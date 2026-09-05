@@ -1,5 +1,6 @@
 // server\utils\telegram\commands\supporto.ts
-import type { Bot } from 'grammy'
+import type { Bot, Context } from 'grammy'
+import type { CommandGroup } from '@grammyjs/commands'
 
 // ForceReply guarantees Telegram sends the user's next message as a reply
 // to this exact one — matching its text is enough to recognize "this is a
@@ -42,8 +43,8 @@ async function notifySuperAdminsOfSupportRequest(
   }
 }
 
-export function registerSupportoCommand(bot: Bot) {
-  bot.command('supporto', async (ctx) => {
+export function registerSupportoCommand(bot: Bot, commands: CommandGroup<Context>) {
+  commands.command('supporto', 'Inoltra un messaggio allo staff', async (ctx) => {
     await ctx.reply(SUPPORT_PROMPT, {
       reply_markup: {
         force_reply: true,

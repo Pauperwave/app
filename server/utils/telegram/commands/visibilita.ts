@@ -2,8 +2,9 @@
 import { InlineKeyboard } from 'grammy'
 import { fetchShowExternalTournaments, setShowExternalTournaments } from './tournament/queries'
 import { answerLoadError } from './callbackErrors'
-import type { Bot } from 'grammy'
 import { FormattedString } from '@grammyjs/parse-mode'
+import type { Bot, Context } from 'grammy'
+import type { CommandGroup } from '@grammyjs/commands'
 
 // Public, chat-scoped (not tied to a linked associate — pauperwave_telegram_chat_settings
 // keys on chat_id alone, see migration 20260904160000) toggle for whether
@@ -24,8 +25,8 @@ function renderVisibilita(
   return { text, keyboard }
 }
 
-export function registerVisibilitaCommand(bot: Bot) {
-  bot.command('visibilita', async (ctx) => {
+export function registerVisibilitaCommand(bot: Bot, commands: CommandGroup<Context>) {
+  commands.command('visibilita', 'Visibilità tornei esterni (es. Magman)', async (ctx) => {
     try {
       const { text, keyboard } = renderVisibilita(await fetchShowExternalTournaments(ctx.chat.id))
       await ctx.reply(text.text, { entities: text.entities, reply_markup: keyboard })

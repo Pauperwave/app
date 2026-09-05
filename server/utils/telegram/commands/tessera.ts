@@ -2,8 +2,9 @@
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { requireLinkedAssociate } from './linking'
-import type { Bot } from 'grammy'
 import { FormattedString } from '@grammyjs/parse-mode'
+import type { Context } from 'grammy'
+import type { CommandGroup } from '@grammyjs/commands'
 
 interface AssociateStatusRow {
   first_name: string | null
@@ -59,8 +60,8 @@ function tesseraMessage(row: AssociateStatusRow): FormattedString {
   return FormattedString.join(lines, '\n')
 }
 
-export function registerTesseraCommand(bot: Bot) {
-  bot.command('tessera', async (ctx) => {
+export function registerTesseraCommand(commands: CommandGroup<Context>) {
+  commands.command('tessera', 'Stato del tuo tesseramento', async (ctx) => {
     try {
       const associateUuid = await requireLinkedAssociate(ctx)
       if (!associateUuid) return

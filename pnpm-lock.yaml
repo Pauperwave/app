@@ -23,6 +23,9 @@ importers:
       '@formkit/auto-animate':
         specifier: ^0.10.0
         version: 0.10.0
+      '@grammyjs/commands':
+        specifier: ^1.4.0
+        version: 1.4.0(grammy@1.46.0)
       '@grammyjs/parse-mode':
         specifier: ^2.3.0
         version: 2.3.0(grammy@1.46.0)
@@ -1090,6 +1093,11 @@ packages:
 
   '@formkit/auto-animate@0.10.0':
     resolution: {integrity: sha512-KGomRttjUfORuPUaR/ZGQw+6xfMrTM+sxnILv7JAd9AmabU9rg9i6gF/iC0Ih+QpKCubJpCA/1DX9UHKE8cX+A==}
+
+  '@grammyjs/commands@1.4.0':
+    resolution: {integrity: sha512-xUXIfpJ1IlQ/9lL7nZPyYdHytIJ6pPCxxcaA/FYb0GxDcK2gXHS0hdL/1rC2EOnXD4p/ft4lpDS9dXCq3nIXag==}
+    peerDependencies:
+      grammy: ^1.45.1
 
   '@grammyjs/parse-mode@2.3.0':
     resolution: {integrity: sha512-kEEM1B5z4lNH/99HEzXvw6wuJEAmadZ4cfcNn/F5UMOsCRogFK5lMYrA4GLLoNQ0kY3e/GJkGUBTCagfyHzn4g==}
@@ -8168,6 +8176,10 @@ snapshots:
       - vue
 
   '@formkit/auto-animate@0.10.0': {}
+
+  '@grammyjs/commands@1.4.0(grammy@1.46.0)':
+    dependencies:
+      grammy: 1.46.0
 
   '@grammyjs/parse-mode@2.3.0(grammy@1.46.0)':
     dependencies:

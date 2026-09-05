@@ -1,5 +1,6 @@
 // server\utils\telegram\commands\stubs.ts
-import type { Bot } from 'grammy'
+import type { Context } from 'grammy'
+import type { CommandGroup } from '@grammyjs/commands'
 
 // Placeholder commands for every 🔴/⚫ row in docs/architecture/telegram-bot.md
 // — registered now so they're discoverable (listed in /help, no "unknown
@@ -31,12 +32,12 @@ const BLOCKED_STUBS: { command: string, label: string, reason: string }[] = [
   }
 ]
 
-export function registerStubCommands(bot: Bot) {
+export function registerStubCommands(commands: CommandGroup<Context>) {
   for (const { command, label } of PLANNED_STUBS) {
-    bot.command(command, ctx => ctx.reply(`🚧 "${label}" — non ancora implementato.`))
+    commands.command(command, label, ctx => ctx.reply(`🚧 "${label}" — non ancora implementato.`))
   }
 
   for (const { command, label, reason } of BLOCKED_STUBS) {
-    bot.command(command, ctx => ctx.reply(`🚧 "${label}" non è ancora disponibile: ${reason}.`))
+    commands.command(command, label, ctx => ctx.reply(`🚧 "${label}" non è ancora disponibile: ${reason}.`))
   }
 }

@@ -1,8 +1,9 @@
 // server\utils\telegram\commands\eventi.ts
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
-import type { Bot } from 'grammy'
 import { FormattedString } from '@grammyjs/parse-mode'
+import type { Context } from 'grammy'
+import type { CommandGroup } from '@grammyjs/commands'
 
 interface UpcomingEventRow {
   name: string
@@ -36,8 +37,8 @@ async function upcomingEventsMessage(): Promise<FormattedString> {
   return fmt`📅 ${FormattedString.b('Prossimi eventi')}\n\n${FormattedString.join(lines, '\n')}`
 }
 
-export function registerEventiCommand(bot: Bot) {
-  bot.command('eventi', async (ctx) => {
+export function registerEventiCommand(commands: CommandGroup<Context>) {
+  commands.command('eventi', 'Prossimi eventi', async (ctx) => {
     const message = await upcomingEventsMessage()
       .catch(() => new FormattedString('⚠️ Non sono riuscito a recuperare gli eventi, riprova più tardi.'))
     await ctx.reply(message.text, {

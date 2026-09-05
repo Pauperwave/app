@@ -6,8 +6,9 @@ import { statusIcon, stageLabel, tournamentLine, tournamentButtonLabel } from '.
 import { fetchRegistrationStatuses, fetchStageNumbers } from './tournament/queries'
 import { answerLoadError, editOrResendMessage } from './callbackErrors'
 import { tournamentProgressByLeague } from '#shared/utils/leagues/tournamentProgressByLeague'
-import type { Bot } from 'grammy'
 import { FormattedString } from '@grammyjs/parse-mode'
+import type { Bot, Context } from 'grammy'
+import type { CommandGroup } from '@grammyjs/commands'
 import type { RegistrationStatus } from './tournament/queries'
 import type { LeagueTournamentRow } from '#shared/utils/leagues/tournamentProgressByLeague'
 
@@ -159,8 +160,8 @@ async function renderLegaTornei(
   return { text, keyboard }
 }
 
-export function registerLegheCommand(bot: Bot) {
-  bot.command('leghe', async (ctx) => {
+export function registerLegheCommand(bot: Bot, commands: CommandGroup<Context>) {
+  commands.command('leghe', 'Leghe attive', async (ctx) => {
     try {
       const { text, keyboard } = await renderLeghe()
       await ctx.reply(text.text, { entities: text.entities, reply_markup: keyboard })

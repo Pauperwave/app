@@ -4,8 +4,9 @@ import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { resolveAssociateUuidByChatId, resolveChatIdByAssociateUuid, NOT_LINKED_MESSAGE } from './linking'
 import { answerLoadError, editOrResendMessage } from './callbackErrors'
-import type { Bot, Context } from 'grammy'
 import { FormattedString } from '@grammyjs/parse-mode'
+import type { Bot, Context } from 'grammy'
+import type { CommandGroup } from '@grammyjs/commands'
 
 type WantedCardStatus = 'searching' | 'found' | 'abandoned'
 
@@ -295,8 +296,10 @@ async function refreshCardDetail(
   }
 }
 
-export function registerCarteCercateCommand(bot: Bot) {
-  bot.command('cartecercate', async (ctx) => {
+const CARTECERCATE_DESCRIPTION = 'Carte cercate dai soci (paginato, gestisci le tue)'
+
+export function registerCarteCercateCommand(bot: Bot, commands: CommandGroup<Context>) {
+  commands.command('cartecercate', CARTECERCATE_DESCRIPTION, async (ctx) => {
     try {
       const { text, keyboard } = await renderList('all', 0, ctx.chat.id)
       await ctx.reply(text.text, {

@@ -6,8 +6,9 @@ import { formatButtonDate, stageLabel, statusIcon, tournamentButtonLabel, tourna
 import { fetchShowExternalTournaments, fetchStageNumbers } from './tournament/queries'
 import { SELECT_COLUMNS, registerTournamentDetailHandlers } from './tournament/detail'
 import { answerLoadError, editOrResendMessage } from './callbackErrors'
-import type { Bot } from 'grammy'
 import { FormattedString } from '@grammyjs/parse-mode'
+import type { Bot, Context } from 'grammy'
+import type { CommandGroup } from '@grammyjs/commands'
 import type { DatedTournamentRow, TournamentRow } from './tournament/detail'
 
 // 'external' (2026-09-04): shop-organized tournaments (Magman etc.) show up
@@ -129,8 +130,8 @@ async function renderCalendario(monthOffset: number, chatId: number) {
   }
 }
 
-export function registerCalendarioCommand(bot: Bot) {
-  bot.command('calendario', async (ctx) => {
+export function registerCalendarioCommand(bot: Bot, commands: CommandGroup<Context>) {
+  commands.command('calendario', 'Prossimi tornei', async (ctx) => {
     try {
       const { text, keyboard } = await renderCalendario(0, ctx.chat.id)
       await ctx.reply(text.text, { entities: text.entities, reply_markup: keyboard })

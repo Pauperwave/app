@@ -1,9 +1,10 @@
 // server\utils\telegram\commands\classifiche.ts
 import { InlineKeyboard } from 'grammy'
-import type { Bot } from 'grammy'
 import { FormattedString } from '@grammyjs/parse-mode'
 import { groupBestNByPlayer, toBestNPlacement } from '#shared/utils/cittadino/bestNStandings'
 import { answerLoadError } from './callbackErrors'
+import type { Bot, Context } from 'grammy'
+import type { CommandGroup } from '@grammyjs/commands'
 
 type StandingsFormat = 'pauper' | 'commander' | 'premodern'
 
@@ -114,8 +115,8 @@ function formatsKeyboard(siteUrl: string): InlineKeyboard {
     .url('Apri tutte le classifiche', `${siteUrl}/classifiche`)
 }
 
-export function registerClassificheCommand(bot: Bot) {
-  bot.command('classifiche', (ctx) => {
+export function registerClassificheCommand(bot: Bot, commands: CommandGroup<Context>) {
+  commands.command('classifiche', 'Classifiche per formato', (ctx) => {
     const siteUrl = useRuntimeConfig().public.siteUrl
     return ctx.reply(
       `Scegli un formato, oppure apri la pagina completa: ${siteUrl}/classifiche`,
