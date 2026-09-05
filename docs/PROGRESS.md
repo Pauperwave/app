@@ -363,6 +363,14 @@ Contestualmente, rimosso il banner di avviso giallo ("Questa tabella non è anco
 
 **Conseguenze:** non è un fix mirato ai soli redirect — qualunque endpoint server-side che invocasse `getHeader`/`getRequestHeader` (o altre utility h3 con lo stesso doppio binario v1/v2) era esposto allo stesso crash "a intermittenza" a seconda di quale copia il bundler risolveva in quel build. Se in futuro una dipendenza reintroduce h3 v2 come transitiva (es. un aggiornamento di `@nuxt/eslint`/`devframe`), l'override in `resolutions` la forza comunque a `1.15.11` finché Nitro stesso non richiede h3 v2 — a quel punto l'override va rimosso in blocco, non solo alzato di versione.
 
+### ADR-033 — "Carte Cercate": il creatore gestisce (stato + eliminazione) la propria richiesta, bot e web allineati (2026-09-05)
+
+**Contesto:** richiesta utente di estendere `/cartecercate` (bot Telegram) con paginazione e un sotto-menu di gestione ("solo le mie carte", cambio stato, eliminazione). Prima di costruirlo lato bot, verificato che il permesso sottostante non esisteva ancora nemmeno lato web: `[id]/status.post.ts` e `[id]/delete.post.ts` usavano entrambi `requireManagementPermission` — anche il creatore di una richiesta doveva avere un ruolo di gestione per segnarla "trovata" o eliminarla (comportamento già segnalato come sbagliato per lo status il 2026-08-10, `docs/architecture/permissions.md`, ma mai corretto nel codice; l'eliminazione non era nemmeno stata proposta come owner-gestibile in quella decisione).
+
+**Decisione:** nuovo helper `requireManagementOrWantedCardOwner` (`server/utils/wantedCards.ts`) — prova prima `has_management_permissions` (ora esposto come `hasManagementPermission`, booleano, estratto da `requireManagementPermission` in `serverAuth.ts`), poi verifica che `player_associate_uuid` della riga coincida con l'associato dell'utente (`resolveAuditAssociateUuid`). Usato sia da `[id]/status.post.ts` sia da `[id]/delete.post.ts` (che non passa più da `parseIdRequest`, condiviso con altre tabelle sempre management-only). Lato client, `useWantedCardsRowActions.ts` nasconde le voci di stato/eliminazione (non le disabilita soltanto) quando il viewer non è né management né proprietario, invece di mostrarle e lasciarle fallire con un 403. `[id]/update.post.ts` e `refresh-prices.post.ts` restano `requireManagementPermission`-only, deliberatamente fuori scope. Il bot Telegram (`commands/cartecercate.ts`) applica la stessa regola di ownership (non ha un concetto di ruolo per una chat, solo `player_associate_uuid` risolto da `resolveAssociateUuidByChatId`).
+
+**Conseguenze:** un socio ha ora pieno controllo (stato + eliminazione, soft delete, recuperabile da `/trash`) sulle proprie richieste "Carta Cercata", sia da web sia da bot, senza bisogno di un ruolo `organizer`+. Chiunque altro resta gated su `has_management_permissions`, invariato.
+
 ## Vedi anche
 
 - `docs/architecture/database.md` — schema, RLS, migrazioni
