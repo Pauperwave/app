@@ -1,19 +1,12 @@
 // server\utils\telegram\commands\tournament\queries.ts
 
-// Supabase queries shared across more than one command — calendario.ts,
-// leghe.ts, iscrizioni.ts, and prossimo.ts all need a tournament's stage
-// number and/or the linked chat's registration status, so those live here
-// instead of in whichever command file happened to need them first (they
-// used to sit in calendario.ts, imported from there by the other three).
-// Query functions used by only one command stay local to that command.
+// Supabase queries shared across more than one command (calendario, leghe,
+// iscrizioni, prossimo all need stage numbers/registration status).
 
 // Mirrors app/utils/tournaments/tournamentStageLabel.ts's
-// assignTournamentStageNumbers: 1-based position within its own league,
-// ordered by start date, cancelled stages skipped (don't get a number,
-// don't count toward later ones). Needs the league's full history — not
-// just the open/upcoming rows most callers otherwise fetch — so this is a
-// deliberately separate, lightweight query (uuid/league_uuid/starts_at/
-// status only) rather than reusing a caller's own tournament rows.
+// assignTournamentStageNumbers: 1-based position within its league by start
+// date, cancelled stages skipped. Needs the league's full history, so this
+// is a separate lightweight query rather than reusing a caller's own rows.
 export async function fetchStageNumbers(): Promise<Map<string, number>> {
   const supabase = publicSupabaseClient()
 

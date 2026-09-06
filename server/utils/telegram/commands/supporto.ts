@@ -2,18 +2,13 @@
 import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 
-// ForceReply guarantees Telegram sends the user's next message as a reply
-// to this exact one — matching its text is enough to recognize "this is a
-// support message" with zero server-side session state (Nitro is
-// serverless, same reasoning as linking.ts's own stateless email
-// detection: no in-memory "waiting for this chat's reply" flag would
-// survive a cold start).
+// ForceReply guarantees the user's next message replies to this exact one —
+// matching its text recognizes a support message with zero server-side
+// state (same stateless reasoning as linking.ts).
 const SUPPORT_PROMPT = 'Scrivimi il messaggio da inoltrare allo staff — rispondi a questo messaggio con quello che vuoi segnalare.'
 
-// Only super_admin, not admin+super_admin like notify.ts's
-// notifyTelegramAdmins — a support request needs one point of
-// accountability to actually pick it up, same reasoning already applied to
-// notifyTelegramSuperAdmins for technical errors.
+// Only super_admin (not admin+super_admin like notifyTelegramAdmins) — one
+// point of accountability, same reasoning as notifyTelegramSuperAdmins.
 async function notifySuperAdminsOfSupportRequest(
   chatId: number, username: string | undefined, message: string
 ) {
@@ -53,10 +48,8 @@ export function registerSupportoCommand(bot: Bot, commands: CommandGroup<Context
     })
   })
 
-  // Registered before linking.ts's own catch-all (commands/index.ts keeps
-  // that one last) so a support reply is checked first — it only ever acts
-  // on replies to SUPPORT_PROMPT, calling next() for everything else,
-  // linking's email detection included.
+  // Registered before linking.ts's catch-all — only acts on replies to
+  // SUPPORT_PROMPT, calling next() otherwise.
   bot.on('message:text', async (ctx, next) => {
     if (ctx.message.reply_to_message?.text !== SUPPORT_PROMPT) {
       return next()

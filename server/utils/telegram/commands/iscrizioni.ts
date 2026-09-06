@@ -38,9 +38,8 @@ interface MyRegistration {
   tournament: MyTournamentRow
 }
 
-// Only "still relevant" statuses — a completed/cancelled/draft tournament
-// isn't an upcoming commitment worth listing here (unlike /tornei, this
-// command answers "what am I signed up for", not "what happened").
+// Only "still relevant" statuses — this answers "what am I signed up for",
+// not "what happened", so completed/cancelled/draft tournaments don't count.
 const ACTIVE_TOURNAMENT_STATUSES = ['registration_open', 'in_progress']
 
 async function fetchMyTournaments(associateUuid: string): Promise<MyRegistration[]> {
@@ -93,11 +92,9 @@ function mieiTorneiMessage(registrations: MyRegistration[]): FormattedString {
   return fmt`${header}\n\n${FormattedString.join(lines, '\n')}\n\n👇 Tocca un torneo per i dettagli`
 }
 
-// Exported so tournament/detail.ts's shared "back" button can rebuild this
-// exact view when returning from a detail page opened from here. Falls back
-// to a "not linked" message in the (practically unreachable) case of a chat
-// that unlinked mid-session — reaching iscrizioni-menu at all already
-// requires being linked, via requireLinkedAssociate in the command handler.
+// Exported so tournament/detail.ts's "back" button can rebuild this view.
+// Falls back to "not linked" for the practically unreachable case of a
+// chat that unlinked mid-session.
 export async function iscrizioniText(chatId: number): Promise<FormattedString> {
   const associateUuid = await resolveAssociateUuidByChatId(chatId)
   if (!associateUuid) return new FormattedString('Devi prima collegare il tuo account.')

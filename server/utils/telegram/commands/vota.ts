@@ -6,11 +6,9 @@ import { FormattedString } from '@grammyjs/parse-mode'
 
 import { answerLoadError } from './callbackErrors'
 
-// MOCKUP (2026-09-06, user request) — same placeholder pairing data as
-// tavolo.ts (tournament_votes/tournament_pairings have no live-write flow
-// yet, see docs/architecture/telegram-bot.md), kept separate rather than
-// imported since each file's mock stands in for its own future real query,
-// not a single shared fixture.
+// MOCKUP — same placeholder pairing data as tavolo.ts (no live-write flow
+// yet, see docs/architecture/telegram-bot.md); kept separate since each
+// mock stands in for its own future real query, not a shared fixture.
 const MOCK_OPPONENTS = ['Marco Rossi', 'Giulia Bianchi', 'Luca Verdi']
 
 const DECK_POINTS = 2
@@ -53,20 +51,13 @@ function voteMessage(state: VoteState): FormattedString {
   return fmt`🗳️ ${FormattedString.b('Riepilogo voti')}\n\n${FormattedString.join(lines, '\n')}\n\nConfermi?`
 }
 
-// Two rounds (deck vote, then play vote) followed by a summary/confirm step
-// — all driven by ctx.match alone (same "everything in callback_data, no
-// server session" philosophy as the rest of this bot), so "« Modifica" is
-// just a button back to the initial (both-unset) state, not a separate flow.
-// autoAnswer: false — every button answers itself. onMenuOutdated: false —
-// see calendario.ts's calendarioMenu for why.
+// Two rounds then a summary/confirm step, all driven by ctx.match alone —
+// "« Modifica" is just a button back to the initial (both-unset) state.
+// autoAnswer/onMenuOutdated: false — see calendario.ts's calendarioMenu.
 const votaMenu = new Menu<Context>('vt', { autoAnswer: false, onMenuOutdated: false }).dynamic((ctx, range) => {
-  // || not ?? — a bare /vota (no arguments) dispatched via @grammyjs/commands
-  // sets ctx.match to '' (CommandGroup always assigns the text following the
-  // command, empty when there is none), never undefined. '' ?? fallback
-  // would keep '' unchanged (?? only substitutes null/undefined), and
-  // decodeVoteState('') decodes to { deckIndex: 0, playIndex: NaN } — both
-  // "not null" — jumping straight to the confirm screen instead of round 1.
-  // Confirmed 2026-09-06 ("/vota shows Conferma/Modifica immediately").
+  // || not ?? — a bare /vota sets ctx.match to '' (not undefined), which ??
+  // wouldn't substitute; decodeVoteState('') gives { deckIndex: 0, playIndex:
+  // NaN } — both "not null" — jumping straight past round 1.
   const state = decodeVoteState((ctx.match as string | undefined) || encodeVoteState(INITIAL_STATE))
 
   if (state.deckIndex === null) {
@@ -109,10 +100,8 @@ async function confirmVote(ctx: Context & { match: string }) {
     const { deckIndex, playIndex } = decodeVoteState(ctx.match)
     if (deckIndex === null || playIndex === null) return
 
-    // MOCKUP — a real implementation would insert into tournament_votes here
-    // once it has a live pairing_uuid to attach the vote to (see
-    // docs/architecture/telegram-bot.md's own note on why that table is
-    // unused today).
+    // MOCKUP — a real implementation would insert into tournament_votes
+    // once it has a live pairing_uuid to attach the vote to.
     const lines = [
       `🃏 Mazzo (${DECK_POINTS} pt) → ${MOCK_OPPONENTS[deckIndex]}`,
       `🎬 Giocata (${PLAY_POINTS} pt) → ${MOCK_OPPONENTS[playIndex]}`

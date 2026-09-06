@@ -2,9 +2,7 @@
 import type { FormattedString } from '@grammyjs/parse-mode'
 
 // Shared between tournament/detail.ts and eventi.ts — both build the same
-// "maps link + Google Calendar link + capped photo caption" trio for a
-// single item with a date/location, extracted 2026-09-06 after eventi.ts's
-// event detail view duplicated all three almost byte-for-byte.
+// "maps link + Google Calendar link + capped photo caption" trio.
 
 export interface MapsAddress {
   address: string | null
@@ -35,9 +33,8 @@ export interface CalendarEventInput {
 }
 
 // Google Calendar's "render" endpoint accepts a prefilled event via query
-// params — no auth, no backend of our own needed. Missing endsAt falls back
-// to a 4-hour default block rather than omitting the button; better a rough
-// estimate on the user's calendar than no calendar entry at all.
+// params — no auth, no backend needed. Missing endsAt falls back to a
+// 4-hour block rather than omitting the button.
 export function googleCalendarUrl(input: CalendarEventInput): string {
   const start = new Date(input.startsAt)
   const end = input.endsAt ? new Date(input.endsAt) : new Date(start.getTime() + 4 * 60 * 60 * 1000)
@@ -54,10 +51,8 @@ export function googleCalendarUrl(input: CalendarEventInput): string {
   return `https://www.google.com/calendar/render?${params.toString()}`
 }
 
-// Telegram photo captions cap at 1024 characters (vs. 4096 for plain text
-// messages) — only relevant when a detail is sent as a photo (image_url
-// set). .slice() (not a raw string cut) keeps entities consistent with the
-// truncated text.
+// Telegram photo captions cap at 1024 chars (vs. 4096 for text messages).
+// .slice() keeps entities consistent with the truncated text.
 const CAPTION_LIMIT = 1024
 
 export function truncateForCaption(text: FormattedString): FormattedString {

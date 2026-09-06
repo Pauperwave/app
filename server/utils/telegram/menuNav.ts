@@ -3,20 +3,13 @@ import type { Context } from 'grammy'
 import type { Menu } from '@grammyjs/menu'
 import type { FormattedString } from '@grammyjs/parse-mode'
 
-// Tiny named-menu registry — lets a shared detail menu's "back" button look
-// up whichever list-menu instance a domain module registered under a given
-// id, without importing that module's own Menu object directly at the top
-// level. Needed because these detail<->list relationships are naturally
-// circular (calendario.ts needs torneoMenu to open a detail view forward;
-// torneoMenu needs calendario.ts's own menu+text to go back) — using a
-// registry instead of a direct import breaks the cycle, since registration
-// happens inside each register*Command() call (after every module has
-// already finished evaluating), not at module top-level.
+// Named-menu registry — lets a shared detail menu's "back" button look up a
+// list-menu instance by id without importing it directly, breaking the
+// natural circular dependency (calendario.ts needs torneoMenu to go
+// forward; torneoMenu needs calendario.ts's menu+text to go back).
 //
-// Not generic over Context flavors (unlike Menu<C> itself) — every menu in
-// this bot uses plain grammy Context, no custom flavor, so a generic here
-// would only add variance headaches (Menu<C>'s own fingerprint option makes
-// it invariant-ish) for a capability nothing actually needs.
+// Not generic over Context flavors — every menu in this bot uses plain
+// grammy Context, so a generic here would only add variance headaches.
 const menuRegistry = new Map<string, Menu<Context>>()
 
 export function registerMenu(id: string, menu: Menu<Context>) {
@@ -35,14 +28,10 @@ export interface MenuNavTarget {
   text: FormattedString
 }
 
-// Shared "go back to an origin view with full state restored" execution —
-// every domain with a detail view reachable from more than one list
-// (tournament detail today, wanted-card detail next) needs the same three
-// steps: swap ctx.match to the target's own payload format so its own
-// .dynamic() renders correctly, pick edit-in-place vs delete+resend
-// depending on whether the current message is a photo, and hand back the
-// right menu as reply_markup. Only *which* target to resolve differs per
-// domain — that's resolveTarget, supplied by the caller.
+// Shared "go back to an origin view with full state restored": swap
+// ctx.match to the target's payload, pick edit-in-place vs delete+resend
+// depending on whether the message is a photo, hand back the right menu.
+// Only *which* target to resolve differs per caller (resolveTarget).
 export async function navigateBack(
   ctx: Context & { match?: string }, resolveTarget: () => Promise<MenuNavTarget>
 ) {
