@@ -14,6 +14,7 @@ import { SELECT_COLUMNS, torneoMenu, openTournamentDetail } from './detail'
 import type { DatedTournamentRow, TournamentRow } from './detail'
 import { answerLoadError } from '../callbackErrors'
 import { registerMenu } from '../../menuNav'
+import { createPerContextCache } from '../../perContextCache'
 
 // Excludes status 'external' (shop-organized tournaments) — see
 // isExternalOrganizer in tournament/detail.ts. Bot schedule views stay
@@ -54,6 +55,24 @@ async function fetchRegistrations(
   const associateUuid = await resolveAssociateUuidByChatId(chatId)
   if (!associateUuid) return new Map()
   return fetchRegistrationStatuses(rows.map(row => row.uuid), associateUuid)
+}
+
+// The initial command handler and calendarioMenu's own .dynamic() re-render
+// both run these two queries within the same update — memoizing by ctx
+// halves the query count on every /calendario open. See perContextCache.ts.
+const memoize = createPerContextCache<{
+  rows: Promise<DatedTournamentRow[]>
+  registrations: Promise<Map<string, RegistrationStatus>>
+}>()
+
+function cachedFetchUpcomingTournaments(ctx: Context): Promise<DatedTournamentRow[]> {
+  return memoize(ctx, 'rows', () => fetchUpcomingTournaments())
+}
+
+function cachedFetchRegistrations(
+  ctx: Context, rows: DatedTournamentRow[], chatId: number
+): Promise<Map<string, RegistrationStatus>> {
+  return memoize(ctx, 'registrations', () => fetchRegistrations(rows, chatId))
 }
 
 function monthLabel(month: Date): string {
@@ -119,11 +138,11 @@ function calendarioMessage(
 // Exported so tournament/detail.ts's "back" button can rebuild this exact
 // month view — see menuNav.ts's comment on this circular import.
 export async function calendarioText(
-  monthOffset: number, chatId: number
+  ctx: Context, monthOffset: number, chatId: number
 ): Promise<FormattedString> {
-  const rows = await fetchUpcomingTournaments()
+  const rows = await cachedFetchUpcomingTournaments(ctx)
   const month = addMonths(startOfMonth(nowInRome()), monthOffset)
-  const registrations = await fetchRegistrations(rows, chatId)
+  const registrations = await cachedFetchRegistrations(ctx, rows, chatId)
   return calendarioMessage(rows, month, registrations)
 }
 
@@ -147,12 +166,12 @@ export const calendarioMenu = new Menu<Context>('cal', {
   const start = zonedRomeTimeToInstant(startOfMonth(month))
   const end = zonedRomeTimeToInstant(endOfMonth(month))
 
-  const rows = await fetchUpcomingTournaments()
+  const rows = await cachedFetchUpcomingTournaments(ctx)
   const filtered = rows.filter((row) => {
     const date = new Date(row.starts_at)
     return date >= start && date <= end
   })
-  const registrations = await fetchRegistrations(filtered, chatId)
+  const registrations = await cachedFetchRegistrations(ctx, rows, chatId)
 
   range
     .text({ text: '◀ Mese prec.', payload: String(monthOffset - 1) }, monthNav)
@@ -185,7 +204,7 @@ async function monthNav(ctx: Context & { match: string }) {
 
   try {
     const monthOffset = Number(ctx.match)
-    const text = await calendarioText(monthOffset, chatId)
+    const text = await calendarioText(ctx, monthOffset, chatId)
     await ctx.editMessageText(text.text, { entities: text.entities, reply_markup: calendarioMenu })
     await ctx.answerCallbackQuery()
   } catch {
@@ -203,7 +222,7 @@ export function registerCalendarioCommand(bot: Bot, commands: CommandGroup<Conte
 
   commands.command('calendario', 'Prossimi tornei', async (ctx) => {
     try {
-      const text = await calendarioText(0, ctx.chat.id)
+      const text = await calendarioText(ctx, 0, ctx.chat.id)
       await ctx.reply(text.text, { entities: text.entities, reply_markup: calendarioMenu })
     } catch {
       await ctx.reply('⚠️ Non sono riuscito a recuperare i tornei, riprova più tardi.')

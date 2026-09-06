@@ -11,6 +11,7 @@ import { fetchStageNumbers } from './queries'
 import { torneoMenu, openTournamentDetail } from './detail'
 import { requireLinkedAssociate, resolveAssociateUuidByChatId } from '../account/linking'
 import { registerMenu } from '../../menuNav'
+import { createPerContextCache } from '../../perContextCache'
 
 interface MyTournamentRow {
   uuid: string
@@ -77,6 +78,15 @@ async function fetchMyTournaments(associateUuid: string): Promise<MyRegistration
     .sort((a, b) => a.tournament.starts_at.localeCompare(b.tournament.starts_at))
 }
 
+// The command handler and iscrizioniMenu's own .dynamic() re-render both
+// run fetchMyTournaments within the same update — memoizing by ctx dedupes
+// it. See perContextCache.ts.
+const memoize = createPerContextCache<{ registrations: Promise<MyRegistration[]> }>()
+
+function cachedFetchMyTournaments(ctx: Context, associateUuid: string): Promise<MyRegistration[]> {
+  return memoize(ctx, 'registrations', () => fetchMyTournaments(associateUuid))
+}
+
 function statusIcon(registrationStatus: string): string {
   return registrationStatus === 'checked_in' ? '🎯' : '✅'
 }
@@ -106,11 +116,11 @@ function mieiTorneiMessage(registrations: MyRegistration[]): FormattedString {
 // Exported so tournament/detail.ts's "back" button can rebuild this view.
 // Falls back to "not linked" for the practically unreachable case of a
 // chat that unlinked mid-session.
-export async function iscrizioniText(chatId: number): Promise<FormattedString> {
+export async function iscrizioniText(ctx: Context, chatId: number): Promise<FormattedString> {
   const associateUuid = await resolveAssociateUuidByChatId(chatId)
   if (!associateUuid) return new FormattedString('Devi prima collegare il tuo account.')
 
-  const registrations = await fetchMyTournaments(associateUuid)
+  const registrations = await cachedFetchMyTournaments(ctx, associateUuid)
   return mieiTorneiMessage(registrations)
 }
 
@@ -127,7 +137,7 @@ export const iscrizioniMenu = new Menu<Context>('isc', {
   const associateUuid = await resolveAssociateUuidByChatId(chatId)
   if (!associateUuid) return
 
-  const registrations = await fetchMyTournaments(associateUuid)
+  const registrations = await cachedFetchMyTournaments(ctx, associateUuid)
   for (const { registrationStatus, tournament } of registrations) {
     const date = formatButtonDate(tournament.starts_at)
     const label = tournamentButtonLabel(
@@ -153,7 +163,7 @@ export function registerIscrizioniCommand(bot: Bot, commands: CommandGroup<Conte
       const associateUuid = await requireLinkedAssociate(ctx)
       if (!associateUuid) return
 
-      const registrations = await fetchMyTournaments(associateUuid)
+      const registrations = await cachedFetchMyTournaments(ctx, associateUuid)
       const message = mieiTorneiMessage(registrations)
       await ctx.reply(message.text, { entities: message.entities, reply_markup: iscrizioniMenu })
     } catch {
