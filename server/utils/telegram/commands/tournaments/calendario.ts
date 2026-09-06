@@ -118,7 +118,10 @@ export async function calendarioText(
 // onMenuOutdated: false — this re-fetches live data every render, so the
 // plugin's staleness fingerprint legitimately differs across renders;
 // every handler already re-validates itself (e.g. "Torneo non trovato").
-export const calendarioMenu = new Menu<Context>('cal', { autoAnswer: false, onMenuOutdated: false }).dynamic(async (ctx, range) => {
+export const calendarioMenu = new Menu<Context>('cal', {
+  autoAnswer: false,
+  onMenuOutdated: false
+}).dynamic(async (ctx, range) => {
   // || not ?? — ctx.match is '' (not undefined) for a bare /calendario, and
   // ?? doesn't substitute on ''. See vota.ts for a case where this gap
   // actually broke behavior (harmless here since Number('') === 0).
