@@ -7,8 +7,9 @@ import type { CommandGroup } from '@grammyjs/commands'
 import { Menu } from '@grammyjs/menu'
 import { FormattedString } from '@grammyjs/parse-mode'
 
-import { formatButtonDate, stageLabel, statusIcon, tournamentButtonLabel, tournamentLine } from './line'
-import { fetchStageNumbers } from './queries'
+import { formatButtonDate, stageLabel, tournamentButtonLabel, tournamentLine, personalIcon } from './line'
+import { fetchRegistrationStatuses, fetchStageNumbers } from './queries'
+import type { RegistrationStatus } from './queries'
 import { SELECT_COLUMNS, torneoMenu, openTournamentDetail } from './detail'
 import type { DatedTournamentRow, TournamentRow } from './detail'
 import { answerLoadError } from '../callbackErrors'
@@ -45,6 +46,16 @@ async function fetchUpcomingTournaments(): Promise<DatedTournamentRow[]> {
   return rows.map(row => ({ ...row, stageNumber: stageNumbers.get(row.uuid) ?? null }))
 }
 
+// Empty map for an unlinked chat — every personalIcon() lookup then falls
+// back to its own "not registered" default, same as leghe.ts's own pattern.
+async function fetchRegistrations(
+  rows: DatedTournamentRow[], chatId: number
+): Promise<Map<string, RegistrationStatus>> {
+  const associateUuid = await resolveAssociateUuidByChatId(chatId)
+  if (!associateUuid) return new Map()
+  return fetchRegistrationStatuses(rows.map(row => row.uuid), associateUuid)
+}
+
 function monthLabel(month: Date): string {
   return format(month, 'MMMM yyyy', { locale: it })
 }
@@ -75,7 +86,9 @@ function groupByDay(rows: DatedTournamentRow[]): DayGroup[] {
 // `month` is a "Rome wall-clock" Date (see nowInRome()) — start/end must
 // convert back to real instants before comparing against row.starts_at, or
 // the month boundary would be off by Italy's UTC offset again.
-function calendarioMessage(rows: DatedTournamentRow[], month: Date): FormattedString {
+function calendarioMessage(
+  rows: DatedTournamentRow[], month: Date, registrations: Map<string, RegistrationStatus>
+): FormattedString {
   const start = zonedRomeTimeToInstant(startOfMonth(month))
   const end = zonedRomeTimeToInstant(endOfMonth(month))
 
@@ -94,7 +107,8 @@ function calendarioMessage(rows: DatedTournamentRow[], month: Date): FormattedSt
       status: row.status,
       name: row.name,
       stageSuffix: stageLabel(row.stageNumber),
-      locationName: row.location?.name
+      locationName: row.location?.name,
+      icon: personalIcon(registrations.get(row.uuid) ?? null)
     }))
     return fmt`${dayHeader}\n${FormattedString.join(dayLines, '\n')}`
   })
@@ -103,14 +117,14 @@ function calendarioMessage(rows: DatedTournamentRow[], month: Date): FormattedSt
 }
 
 // Exported so tournament/detail.ts's "back" button can rebuild this exact
-// month view — see menuNav.ts's comment on this circular import. `_chatId`
-// is unused, kept only for signature symmetry with legaTorneiText/iscrizioniText.
+// month view — see menuNav.ts's comment on this circular import.
 export async function calendarioText(
-  monthOffset: number, _chatId: number
+  monthOffset: number, chatId: number
 ): Promise<FormattedString> {
   const rows = await fetchUpcomingTournaments()
   const month = addMonths(startOfMonth(nowInRome()), monthOffset)
-  return calendarioMessage(rows, month)
+  const registrations = await fetchRegistrations(rows, chatId)
+  return calendarioMessage(rows, month, registrations)
 }
 
 // autoAnswer: false — "open tournament" buttons delegate to
@@ -138,6 +152,7 @@ export const calendarioMenu = new Menu<Context>('cal', {
     const date = new Date(row.starts_at)
     return date >= start && date <= end
   })
+  const registrations = await fetchRegistrations(filtered, chatId)
 
   range
     .text({ text: '◀ Mese prec.', payload: String(monthOffset - 1) }, monthNav)
@@ -145,7 +160,8 @@ export const calendarioMenu = new Menu<Context>('cal', {
 
   for (const row of filtered) {
     const date = formatButtonDate(row.starts_at)
-    const label = tournamentButtonLabel(statusIcon(row.status), date, row.stageNumber, row.name)
+    const icon = personalIcon(registrations.get(row.uuid) ?? null)
+    const label = tournamentButtonLabel(icon, date, row.stageNumber, row.name)
     const origin = `m${monthOffset}`
     // payload: String(monthOffset), not the `${uuid}:${origin}` pair the
     // handler actually needs (it gets those from this closure instead) —
