@@ -1,5 +1,6 @@
 // server\utils\telegram\supabaseClient.ts
 import { createClient } from '@supabase/supabase-js'
+
 import type { Database } from '#shared/utils/types/database'
 
 // Telegram commands run outside any single HTTP request (the bot instance

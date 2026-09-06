@@ -29,10 +29,13 @@
 // because full "return to the exact page you came from" fidelity was an
 // explicit user request over the simpler "always reopen a fresh root view"
 // alternative.
+import type { Context } from 'grammy'
 import { Menu } from '@grammyjs/menu'
 import { FormattedString } from '@grammyjs/parse-mode'
+
 import { formatTournamentDateTime, tournamentHeader } from './line'
 import { fetchRegistrationStatus, fetchStageNumbers } from './queries'
+import type { RegistrationStatus } from './queries'
 import { NOT_LINKED_MESSAGE } from '../linking'
 import { answerLoadError } from '../callbackErrors'
 import { navigateBack, getMenu } from '../../menuNav'
@@ -45,8 +48,6 @@ import { navigateBack, getMenu } from '../../menuNav'
 import { calendarioText } from '../calendario'
 import { legaTorneiText } from '../leghe'
 import { iscrizioniText } from '../iscrizioni'
-import type { Context } from 'grammy'
-import type { RegistrationStatus } from './queries'
 
 export interface LocationRow {
   name: string | null

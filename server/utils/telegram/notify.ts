@@ -1,6 +1,7 @@
 // server\utils\telegram\notify.ts
-import { serverSupabaseServiceRole } from '#supabase/server'
 import type { H3Event } from 'h3'
+
+import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
 // Chat ids are Telegram's, not this app's user/associate ids — the caller

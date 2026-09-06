@@ -1,14 +1,16 @@
 // server\utils\telegram\commands\iscrizioni.ts
-import { Menu } from '@grammyjs/menu'
 import { it } from 'date-fns/locale'
+
+import type { Bot, Context } from 'grammy'
+import type { CommandGroup } from '@grammyjs/commands'
+import { Menu } from '@grammyjs/menu'
+import { FormattedString } from '@grammyjs/parse-mode'
+
 import { formatButtonDate, stageLabel, tournamentButtonLabel } from './tournament/line'
 import { fetchStageNumbers } from './tournament/queries'
 import { torneoMenu, openTournamentDetail } from './tournament/detail'
 import { requireLinkedAssociate, resolveAssociateUuidByChatId } from './linking'
 import { registerMenu } from '../menuNav'
-import { FormattedString } from '@grammyjs/parse-mode'
-import type { Bot, Context } from 'grammy'
-import type { CommandGroup } from '@grammyjs/commands'
 
 interface MyTournamentRow {
   uuid: string

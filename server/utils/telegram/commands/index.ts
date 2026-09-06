@@ -1,6 +1,7 @@
 // server\utils\telegram\commands\index.ts
-import { CommandGroup } from '@grammyjs/commands'
 import type { Bot, Context } from 'grammy'
+import { CommandGroup } from '@grammyjs/commands'
+
 import { registerCoreCommands } from './core'
 import { registerClassificheCommand } from './classifiche'
 import { registerEventiCommand } from './eventi'
