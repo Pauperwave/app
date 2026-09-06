@@ -90,7 +90,7 @@ function eventiMessage(events: DatedEventRow[]): FormattedString {
   if (!events.length) return new FormattedString('📅 Nessun evento in programma al momento.')
 
   const lines = events.map(eventLine)
-  return fmt`📅 ${FormattedString.b('Prossimi eventi')}\n\n${FormattedString.join(lines, '\n')}\n\n👇 Tocca un evento per i dettagli`
+  return fmt`📅 ${FormattedString.b('Prossimi eventi')}\n\n${FormattedString.join(lines, '\n')}\n\n👇🏻🏻 Tocca un evento per i dettagli`
 }
 
 // Exported so eventoMenu's "back" button can rebuild this exact list when

@@ -4,7 +4,7 @@ import { it } from 'date-fns/locale'
 import type { Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 
-const START_TEXT = 'Ciao! Sono il bot di Pauperwave 👋\n\n'
+const START_TEXT = 'Ciao! Sono il bot di Pauperwave 👋🏻\n\n'
   + 'Scrivimi la tua email da socio (quella con cui ti sei tesserato) per '
   + 'collegare il tuo account e sbloccare i comandi personalizzati:\n'
   + '/iscrizioni — i tornei a cui sei iscritto\n'

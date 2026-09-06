@@ -123,7 +123,7 @@ async function legheText(ctx: Context): Promise<FormattedString> {
     return FormattedString.join(leagueLines, '\n')
   })
 
-  return fmt`🏆 ${FormattedString.b('Leghe attive')}\n\n${FormattedString.join(blocks, '\n\n')}\n\n👇 Tocca una lega per i tornei`
+  return fmt`🏆 ${FormattedString.b('Leghe attive')}\n\n${FormattedString.join(blocks, '\n\n')}\n\n👇🏻🏻 Tocca una lega per i tornei`
 }
 
 // Exported so tournament/detail.ts's "back" button can rebuild this exact
@@ -149,7 +149,7 @@ export async function legaTorneiText(
     })
     return fmt`${dateLine}\n${tournamentDetail}`
   })
-  return fmt`${header}\n\n${FormattedString.join(lines, '\n\n')}\n\n👇 Tocca un torneo per i dettagli`
+  return fmt`${header}\n\n${FormattedString.join(lines, '\n\n')}\n\n👇🏻🏻 Tocca un torneo per i dettagli`
 }
 
 async function fetchLegaTorneiButtons(ctx: Context, index: number, chatId: number) {
