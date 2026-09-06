@@ -1,5 +1,4 @@
 // server\utils\telegram\commands\core.ts
-import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import type { Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
@@ -46,7 +45,7 @@ export function registerCoreCommands(commands: CommandGroup<Context>) {
     if (gitCommitSha) {
       lines.push('', `🏷️ ${gitCommitSha.slice(0, 7)}`)
       if (gitCommitDate) {
-        lines.push(`🗓️ ${format(new Date(gitCommitDate), 'd MMMM yyyy \'alle\' HH:mm', { locale: it })}`)
+        lines.push(`🗓️ ${formatTelegramDate(gitCommitDate, 'd MMMM yyyy \'alle\' HH:mm', { locale: it })}`)
       }
     }
 

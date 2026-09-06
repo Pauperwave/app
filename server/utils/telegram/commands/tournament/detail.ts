@@ -30,7 +30,6 @@
 // explicit user request over the simpler "always reopen a fresh root view"
 // alternative.
 import { Menu } from '@grammyjs/menu'
-import { format } from 'date-fns'
 import { FormattedString } from '@grammyjs/parse-mode'
 import { formatTournamentDateTime, tournamentHeader } from './line'
 import { fetchRegistrationStatus, fetchStageNumbers } from './queries'
@@ -122,7 +121,7 @@ function tournamentDetailMessage(
   row: DatedTournamentRow, registration: RegistrationStatus
 ): FormattedString {
   const date = formatTournamentDateTime(row.starts_at)
-  const endTime = row.ends_at ? ` – ${format(new Date(row.ends_at), 'HH:mm')}` : ''
+  const endTime = row.ends_at ? ` – ${formatTelegramDate(row.ends_at, 'HH:mm')}` : ''
   const lines: (FormattedString | string)[] = [
     tournamentHeader(row.status, row.name, row.stageNumber),
     '',

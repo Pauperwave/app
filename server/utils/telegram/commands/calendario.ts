@@ -52,8 +52,12 @@ function monthLabel(month: Date): string {
   return format(month, 'MMMM yyyy', { locale: it })
 }
 
+// formatTelegramDate (not plain format) — date is built from a stored
+// timestamptz (row.starts_at, see groupByDay below), and this runs on a
+// UTC server, so the day/weekday must be read out in Italy's own timezone,
+// not the runtime's.
 function dayLabel(date: Date): string {
-  const label = format(date, 'EEEE d MMMM', { locale: it })
+  const label = formatTelegramDate(date, 'EEEE d MMMM', { locale: it })
   return label.charAt(0).toUpperCase() + label.slice(1)
 }
 
@@ -65,7 +69,7 @@ interface DayGroup {
 function groupByDay(rows: DatedTournamentRow[]): DayGroup[] {
   const groups = new Map<string, DayGroup>()
   for (const row of rows) {
-    const key = format(new Date(row.starts_at), 'yyyy-MM-dd')
+    const key = formatTelegramDate(row.starts_at, 'yyyy-MM-dd')
     const group = groups.get(key)
     if (group) group.rows.push(row)
     else groups.set(key, { day: new Date(row.starts_at), rows: [row] })

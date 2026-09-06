@@ -1,6 +1,5 @@
 // server\utils\telegram\commands\iscrizioni.ts
 import { Menu } from '@grammyjs/menu'
-import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { formatButtonDate, stageLabel, tournamentButtonLabel } from './tournament/line'
 import { fetchStageNumbers } from './tournament/queries'
@@ -83,7 +82,7 @@ function mieiTorneiMessage(registrations: MyRegistration[]): FormattedString {
   }
 
   const lines = registrations.map(({ registrationStatus, tournament }) => {
-    const date = format(new Date(tournament.starts_at), 'EEE d MMM', { locale: it })
+    const date = formatTelegramDate(tournament.starts_at, 'EEE d MMM', { locale: it })
     const location = tournament.location?.name ? `\n  📍 ${tournament.location.name}` : ''
     const stage = stageLabel(tournament.stageNumber)
     return fmt`${statusIcon(registrationStatus)} ${FormattedString.b(date)}${stage} — ${tournament.name}${location}`

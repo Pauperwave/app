@@ -1,5 +1,4 @@
 // server\utils\telegram\commands\tournament\line.ts
-import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { FormattedString } from '@grammyjs/parse-mode'
 
@@ -77,11 +76,11 @@ export function tournamentButtonLabel(
 // spans a whole league's calendar instead, so it keeps its own longer
 // 'd MMM yyyy' format rather than using this.
 export function formatButtonDate(startsAt: string): string {
-  return format(new Date(startsAt), 'd MMM', { locale: it })
+  return formatTelegramDate(startsAt, 'd MMM', { locale: it })
 }
 
 // Full date+time header shared by tournament/detail.ts's single-tournament
 // message and prossimo.ts's next-tournament card.
 export function formatTournamentDateTime(startsAt: string): string {
-  return format(new Date(startsAt), 'EEEE d MMMM \'alle\' HH:mm', { locale: it })
+  return formatTelegramDate(startsAt, 'EEEE d MMMM \'alle\' HH:mm', { locale: it })
 }
