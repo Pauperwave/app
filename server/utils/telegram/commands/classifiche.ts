@@ -128,7 +128,13 @@ const classificaMenu = new Menu<Context>('classifica-menu', { onMenuOutdated: fa
   // back() only swaps the keyboard back to classificheMenu's — the message
   // text is still whatever showStandings() last set it to, so this restores
   // the original picker text too, same as the old classifiche:menu callback.
-  range.back('« Formati', ctx => ctx.editMessageText(initialMessage(useRuntimeConfig().public.siteUrl)))
+  // payload: scope (not omitted) — a payload-less button renders as "" and
+  // grammY only assigns a non-empty payload to ctx.match, so ctx.match would
+  // stay unset on press; this dynamic() then hits its own `if (!scope)
+  // return` guard above and re-renders zero buttons, crashing the plugin's
+  // own row/col lookup with no visible error. Confirmed 2026-09-06 ("«
+  // Formati" doing nothing on tap after picking a format).
+  range.back({ text: '« Formati', payload: scope }, ctx => ctx.editMessageText(initialMessage(useRuntimeConfig().public.siteUrl)))
 })
 
 async function showStandings(ctx: Context & { match: string }) {

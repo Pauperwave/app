@@ -78,7 +78,11 @@ const commanderMenu = new Menu<Context>('cmd', { autoAnswer: false, onMenuOutdat
 
   const results = await searchCommanders(query)
   if (!results.length) {
-    range.text('Nessun risultato — riprova con /tavolo', async (ctx) => {
+    // payload: query (not omitted) — same reasoning as the result buttons
+    // below: a payload-less button leaves ctx.match unset on press, which
+    // fails the `if (!query) return` guard above and crashes the plugin's
+    // own row/col lookup on re-render.
+    range.text({ text: 'Nessun risultato — riprova con /tavolo', payload: query }, async (ctx) => {
       await ctx.answerCallbackQuery()
     })
     return

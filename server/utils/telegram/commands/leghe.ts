@@ -209,7 +209,16 @@ export const legheTorneiMenu = new Menu<Context>('lt', { autoAnswer: false, onMe
     )
   }
 
-  range.row().back('« Torna alle leghe', async (ctx) => {
+  // payload: String(index) (not omitted) — a payload-less button renders as
+  // "" and grammY only assigns a non-empty payload to ctx.match, so
+  // ctx.match would fall back to 0 here (`Number(ctx.match ?? '0')` above)
+  // regardless of which league was actually being viewed. Harmless when
+  // league 0 happens to have the same row count, but re-renders the wrong
+  // league's tournaments otherwise and can crash the plugin's own row/col
+  // lookup when the row counts differ. Confirmed 2026-09-06 as the same bug
+  // class as classifiche.ts's "« Formati" and eventi.ts's "« Torna agli
+  // eventi".
+  range.row().back({ text: '« Torna alle leghe', payload: String(index) }, async (ctx) => {
     try {
       const text = await legheText()
       await ctx.editMessageText(text.text, { entities: text.entities, reply_markup: legheMenu })
