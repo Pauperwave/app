@@ -12,7 +12,8 @@ import { registerIscrizioniCommand } from './iscrizioni'
 import { registerSupportoCommand } from './supporto'
 import { registerTesseraCommand } from './tessera'
 import { registerCollegamentoCommand } from './collegamento'
-import { registerStubCommands } from './stubs'
+import { registerTavoloCommand } from './tavolo'
+import { registerVotaCommand } from './vota'
 import { registerLinkingHandler } from './linking'
 
 // Single source of truth for every /command's name + description + handler
@@ -45,10 +46,11 @@ const commands = new CommandGroup<Context>()
 //
 // registerLinkingHandler still stays last: its bot.on('message:text')
 // catch-all must only see messages no earlier /command handler already
-// claimed. registerSupportoCommand also registers its own
-// bot.on('message:text') (ForceReply-based, see supporto.ts) — harmless
-// regardless of exact position relative to bot.use(commands) since it only
-// ever acts on a reply to its own prompt text, calling next() otherwise.
+// claimed. registerSupportoCommand and registerTavoloCommand also register
+// their own bot.on('message:text') (ForceReply-based, see supporto.ts and
+// tavolo.ts) — harmless regardless of exact position relative to
+// bot.use(commands) since each only ever acts on a reply to its own prompt
+// text, calling next() otherwise.
 export function registerCommands(bot: Bot) {
   registerCoreCommands(commands)
   registerClassificheCommand(bot, commands)
@@ -60,7 +62,8 @@ export function registerCommands(bot: Bot) {
   registerSupportoCommand(bot, commands)
   registerTesseraCommand(commands)
   registerCollegamentoCommand(commands)
-  registerStubCommands(commands)
+  registerTavoloCommand(bot, commands)
+  registerVotaCommand(bot, commands)
 
   bot.use(commands)
 
