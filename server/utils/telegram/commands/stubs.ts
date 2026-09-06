@@ -2,15 +2,9 @@
 import type { Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 
-// Placeholder commands for every 🔴/⚫ row in docs/architecture/telegram-bot.md
+// Placeholder commands for every ⚫ row in docs/architecture/telegram-bot.md
 // — registered now so they're discoverable (listed in /help, no "unknown
 // command" silence from Telegram) even before the underlying feature exists.
-// Each gets pulled out into its own commands/<name>.ts, same shape as
-// classifiche.ts, once actually built — remove its entry here when it is.
-const PLANNED_STUBS: { command: string, label: string }[] = [
-  { command: 'notifiche', label: 'Notifiche per formato seguito' }
-]
-
 // ⚫ rows: blocked on a feature the app itself doesn't have yet (pairing
 // system, bracket column), not just "not built in the bot yet" — worded
 // differently so it doesn't read as "coming soon".
@@ -33,10 +27,6 @@ const BLOCKED_STUBS: { command: string, label: string, reason: string }[] = [
 ]
 
 export function registerStubCommands(commands: CommandGroup<Context>) {
-  for (const { command, label } of PLANNED_STUBS) {
-    commands.command(command, label, ctx => ctx.reply(`🚧 "${label}" — non ancora implementato.`))
-  }
-
   for (const { command, label, reason } of BLOCKED_STUBS) {
     commands.command(command, label, ctx => ctx.reply(`🚧 "${label}" non è ancora disponibile: ${reason}.`))
   }

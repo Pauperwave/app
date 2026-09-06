@@ -28,24 +28,6 @@ export async function resolveAssociateUuidByChatId(chatId: number): Promise<stri
   return data?.associate_uuid ?? null
 }
 
-// Reverse lookup of resolveAssociateUuidByChatId — used by cartecercate.ts to
-// link a wanted card's "Richiesta da" name to the requester's Telegram
-// account (tg://user?id=<chat_id>, via FormattedString.mentionUser), when
-// they have one linked. A private chat's own chat_id is the user's Telegram
-// user_id, so the same column doubles as both without a separate mapping.
-export async function resolveChatIdByAssociateUuid(associateUuid: string): Promise<number | null> {
-  const supabase = telegramServiceSupabaseClient()
-
-  const { data, error } = await supabase
-    .from('pauperwave_associate_telegram_links')
-    .select('chat_id')
-    .eq('associate_uuid', associateUuid)
-    .maybeSingle()
-
-  if (error) throw error
-  return data?.chat_id ?? null
-}
-
 // Same literal message tessera.ts, mazzi.ts, iscrizioni.ts, and
 // tournament/detail.ts's iscrivi: handler all show when a chat tries a
 // personal command/action before linking an account.

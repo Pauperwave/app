@@ -3,7 +3,7 @@ import { Menu } from '@grammyjs/menu'
 import { addMonths, endOfMonth, format, startOfMonth } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { formatButtonDate, stageLabel, statusIcon, tournamentButtonLabel, tournamentLine } from './tournament/line'
-import { fetchShowExternalTournaments, fetchStageNumbers } from './tournament/queries'
+import { fetchStageNumbers } from './tournament/queries'
 import { SELECT_COLUMNS, torneoMenu, openTournamentDetail } from './tournament/detail'
 import { answerLoadError } from './callbackErrors'
 import { registerMenu } from '../menuNav'
@@ -12,30 +12,25 @@ import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 import type { DatedTournamentRow, TournamentRow } from './tournament/detail'
 
-// 'external' (2026-09-04): shop-organized tournaments (Magman etc.) show up
-// here too for schedule comparison — see isExternalOrganizer in
-// tournament/detail.ts. Deliberately not added to prossimo.ts's own
-// OPEN_STATUSES (user request) — "your next tournament" stays Pauperwave-only.
-// Hidden by default per chat (pauperwave_telegram_chat_settings,
-// fetchShowExternalTournaments) — toggled on via /visibilita.
-const BASE_OPEN_STATUSES = ['registration_open', 'in_progress']
+// Deliberately excludes status 'external' (shop-organized tournaments, e.g.
+// Magman) — see isExternalOrganizer in tournament/detail.ts. Same reasoning
+// as prossimo.ts's own OPEN_STATUSES (user request): this bot's schedule
+// views stay Pauperwave-only.
+const OPEN_STATUSES = ['registration_open', 'in_progress']
 // Fetched once per render, filtered by month client-side — cheap enough for
 // a league of this size, and keeps the callback handler stateless (no need
 // to remember what a user was looking at between messages).
 const MAX_ROWS = 200
 
-async function fetchUpcomingTournaments(chatId: number): Promise<DatedTournamentRow[]> {
+async function fetchUpcomingTournaments(): Promise<DatedTournamentRow[]> {
   const supabase = publicSupabaseClient()
-
-  const showExternal = await fetchShowExternalTournaments(chatId)
-  const openStatuses = showExternal ? [...BASE_OPEN_STATUSES, 'external'] : BASE_OPEN_STATUSES
 
   const [{ data, error }, stageNumbers] = await Promise.all([
     supabase
       .from('tournaments')
       .select(SELECT_COLUMNS)
       .is('deleted_at', null)
-      .in('status', openStatuses)
+      .in('status', OPEN_STATUSES)
       .gte('starts_at', zonedRomeTimeToInstant(startOfMonth(nowInRome())).toISOString())
       .order('starts_at', { ascending: true })
       .limit(MAX_ROWS),
@@ -112,11 +107,13 @@ function calendarioMessage(rows: DatedTournamentRow[], month: Date): FormattedSt
 // Exported so tournament/detail.ts's shared "back" button can rebuild this
 // exact month view when returning from a detail page opened from here — see
 // menuNav.ts's own comment on why this is a (safe, deferred-access)
-// circular import.
+// circular import. `_chatId` is unused now that external-tournament
+// visibility isn't per-chat anymore, kept only for signature symmetry with
+// legaTorneiText/iscrizioniText (same reasoning as leghe.ts's own comment).
 export async function calendarioText(
-  monthOffset: number, chatId: number
+  monthOffset: number, _chatId: number
 ): Promise<FormattedString> {
-  const rows = await fetchUpcomingTournaments(chatId)
+  const rows = await fetchUpcomingTournaments()
   const month = addMonths(startOfMonth(nowInRome()), monthOffset)
   return calendarioMessage(rows, month)
 }
@@ -144,7 +141,7 @@ export const calendarioMenu = new Menu<Context>('cal', { autoAnswer: false, onMe
   const start = zonedRomeTimeToInstant(startOfMonth(month))
   const end = zonedRomeTimeToInstant(endOfMonth(month))
 
-  const rows = await fetchUpcomingTournaments(chatId)
+  const rows = await fetchUpcomingTournaments()
   const filtered = rows.filter((row) => {
     const date = new Date(row.starts_at)
     return date >= start && date <= end
