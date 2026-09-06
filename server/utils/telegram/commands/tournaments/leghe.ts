@@ -81,17 +81,20 @@ async function legheText(): Promise<FormattedString> {
   if (error) throw error
   const { totals, completed } = tournamentProgressByLeague(tournaments as LeagueTournamentRow[])
 
-  const lines = leagues.map((league) => {
+  const blocks = leagues.map((league) => {
     const total = totals.get(league.uuid) ?? 0
     const done = completed.get(league.uuid) ?? 0
-    const progress = total > 0 ? ` — ${done}/${total} tappe` : ''
     const start = formatDate(league.starts_at)
     const end = formatDate(league.ends_at)
     const dateRange = start && end ? `${start} → ${end}` : start ? `dal ${start}` : 'data da definire'
-    return `🏆 ${dateRange}${progress} — ${league.name}`
+
+    const leagueLines: (FormattedString | string)[] = [fmt`🏆 ${FormattedString.b(league.name)}`]
+    if (total > 0) leagueLines.push(`📊 ${done}/${total} tappe`)
+    leagueLines.push(`🗓️ ${dateRange}`)
+    return FormattedString.join(leagueLines, '\n')
   })
 
-  return fmt`🏆 ${FormattedString.b('Leghe attive')}\n\n${FormattedString.join(lines, '\n')}\n\n👇 Tocca una lega per i tornei`
+  return fmt`🏆 ${FormattedString.b('Leghe attive')}\n\n${FormattedString.join(blocks, '\n\n')}\n\n👇 Tocca una lega per i tornei`
 }
 
 // Unlike STATUS_ICON (tournament status), this reflects the chat's own
