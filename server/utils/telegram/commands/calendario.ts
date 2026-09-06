@@ -14,14 +14,12 @@ import type { DatedTournamentRow, TournamentRow } from './tournament/detail'
 import { answerLoadError } from './callbackErrors'
 import { registerMenu } from '../menuNav'
 
-// Deliberately excludes status 'external' (shop-organized tournaments, e.g.
-// Magman) — see isExternalOrganizer in tournament/detail.ts. Same reasoning
-// as prossimo.ts's own OPEN_STATUSES (user request): this bot's schedule
-// views stay Pauperwave-only.
+// Excludes status 'external' (shop-organized tournaments) — see
+// isExternalOrganizer in tournament/detail.ts. Bot schedule views stay
+// Pauperwave-only, same as prossimo.ts's own OPEN_STATUSES.
 const OPEN_STATUSES = ['registration_open', 'in_progress']
-// Fetched once per render, filtered by month client-side — cheap enough for
-// a league of this size, and keeps the callback handler stateless (no need
-// to remember what a user was looking at between messages).
+// Fetched once per render, filtered by month client-side — keeps the
+// callback handler stateless (no need to remember what a user was viewing).
 const MAX_ROWS = 200
 
 async function fetchUpcomingTournaments(): Promise<DatedTournamentRow[]> {
@@ -49,10 +47,8 @@ function monthLabel(month: Date): string {
   return format(month, 'MMMM yyyy', { locale: it })
 }
 
-// formatTelegramDate (not plain format) — date is built from a stored
-// timestamptz (row.starts_at, see groupByDay below), and this runs on a
-// UTC server, so the day/weekday must be read out in Italy's own timezone,
-// not the runtime's.
+// formatTelegramDate (not plain format) — date comes from a timestamptz
+// and this runs on a UTC server, so it must read out in Italy's timezone.
 function dayLabel(date: Date): string {
   const label = formatTelegramDate(date, 'EEEE d MMMM', { locale: it })
   return label.charAt(0).toUpperCase() + label.slice(1)
@@ -74,11 +70,9 @@ function groupByDay(rows: DatedTournamentRow[]): DayGroup[] {
   return [...groups.values()].sort((a, b) => a.day.getTime() - b.day.getTime())
 }
 
-// `month` is a "Rome wall-clock" Date (see nowInRome()'s own comment) —
-// safe to format directly (monthLabel below) or run through startOfMonth/
-// endOfMonth, but start/end must be converted back to real instants before
-// comparing against row.starts_at (an actual timestamptz), or the whole
-// month boundary would be off by Italy's UTC offset again.
+// `month` is a "Rome wall-clock" Date (see nowInRome()) — start/end must
+// convert back to real instants before comparing against row.starts_at, or
+// the month boundary would be off by Italy's UTC offset again.
 function calendarioMessage(rows: DatedTournamentRow[], month: Date): FormattedString {
   const start = zonedRomeTimeToInstant(startOfMonth(month))
   const end = zonedRomeTimeToInstant(endOfMonth(month))
@@ -106,12 +100,9 @@ function calendarioMessage(rows: DatedTournamentRow[], month: Date): FormattedSt
   return fmt`${header}\n\n${FormattedString.join(days, '\n\n')}\n\n👇 Tocca un torneo per i dettagli`
 }
 
-// Exported so tournament/detail.ts's shared "back" button can rebuild this
-// exact month view when returning from a detail page opened from here — see
-// menuNav.ts's own comment on why this is a (safe, deferred-access)
-// circular import. `_chatId` is unused now that external-tournament
-// visibility isn't per-chat anymore, kept only for signature symmetry with
-// legaTorneiText/iscrizioniText (same reasoning as leghe.ts's own comment).
+// Exported so tournament/detail.ts's "back" button can rebuild this exact
+// month view — see menuNav.ts's comment on this circular import. `_chatId`
+// is unused, kept only for signature symmetry with legaTorneiText/iscrizioniText.
 export async function calendarioText(
   monthOffset: number, _chatId: number
 ): Promise<FormattedString> {
@@ -120,27 +111,15 @@ export async function calendarioText(
   return calendarioMessage(rows, month)
 }
 
-// autoAnswer: false — the "open tournament" buttons delegate to
-// openTournamentDetail, which answers the callback itself (with a custom
-// alert on "not found"); autoAnswer's default fork would race with that.
-//
-// onMenuOutdated: false — this menu's own dynamic() re-fetches the live
-// tournament list on every render (see fetchUpcomingTournaments), so the
-// plugin's built-in fingerprint (row/col count + button labels) legitimately
-// differs between the original send and a later press whenever a tournament
-// changes status or a new one appears in the same month — the exact kind of
-// change every handler here already re-validates itself (openTournamentDetail
-// re-fetches the row and shows "Torneo non trovato" if it's gone). Confirmed
-// 2026-09-06: users hit "Menu was outdated, try again!" far more often than
-// real staleness would explain, precisely because of this re-fetch-on-every-
-// render pattern repeated across every menu in this migration.
+// autoAnswer: false — "open tournament" buttons delegate to
+// openTournamentDetail, which answers the callback itself.
+// onMenuOutdated: false — this re-fetches live data every render, so the
+// plugin's staleness fingerprint legitimately differs across renders;
+// every handler already re-validates itself (e.g. "Torneo non trovato").
 export const calendarioMenu = new Menu<Context>('cal', { autoAnswer: false, onMenuOutdated: false }).dynamic(async (ctx, range) => {
-  // || not ?? — a bare /calendario (no arguments) sets ctx.match to '' via
-  // @grammyjs/commands (always the text after the command, empty when
-  // there is none), never undefined; ?? wouldn't substitute it. Currently
-  // harmless here only because Number('') happens to equal Number('0'), but
-  // || is the correct guard regardless (see vota.ts's own comment for a
-  // case where this same '' vs. undefined gap actually broke behavior).
+  // || not ?? — ctx.match is '' (not undefined) for a bare /calendario, and
+  // ?? doesn't substitute on ''. See vota.ts for a case where this gap
+  // actually broke behavior (harmless here since Number('') === 0).
   const monthOffset = Number(ctx.match || '0')
   const chatId = ctx.chat?.id
   if (!chatId) return
@@ -190,9 +169,8 @@ async function monthNav(ctx: Context & { match: string }) {
 registerMenu('cal', calendarioMenu)
 
 export function registerCalendarioCommand(bot: Bot, commands: CommandGroup<Context>) {
-  // Deferred to call time (not module top level) — torneoMenu's own module
-  // imports calendarioText from this file, so accessing torneoMenu itself at
-  // this file's top level would race the circular import's evaluation order.
+  // Deferred to call time — torneoMenu's own module imports calendarioText
+  // back, so accessing torneoMenu at top level would race the circular import.
   calendarioMenu.register(torneoMenu)
   bot.use(calendarioMenu)
 

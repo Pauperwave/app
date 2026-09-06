@@ -1,34 +1,13 @@
 // server\utils\telegram\commands\tournament\detail.ts
 
-// A single tournament's detail view (message + registration actions) —
-// split out of calendario.ts (2026-09-03) because it isn't actually
-// calendario-specific: it's reachable from calendario.ts's own month grid,
-// leghe.ts's per-league tournament list, and iscrizioni.ts's "my
-// tournaments" list alike (see backTarget's comment below), and had grown
-// calendario.ts past 480 lines on its own.
+// A single tournament's detail view (message + registration actions),
+// shared by calendario.ts, leghe.ts, iscrizioni.ts and prossimo.ts — split
+// out of calendario.ts (2026-09-03) once it grew too large.
 //
-// @grammyjs/menu migration (2026-09-06, user request): torneoMenu is a
-// single shared Menu reachable from three different parents. Every button
-// on it carries `${uuid}:${origin}` as its payload — the plugin re-derives
-// ctx.match from whichever button was pressed, and torneoMenu's own
-// .dynamic() needs both pieces every time it renders (the tournament to
-// show, and where "back" should return to), so every button must carry the
-// full pair, not just its own half.
-//
-// The "back" button deliberately does NOT use Menu's built-in
-// .back()/ctx.menu.nav() — nav() has no way to hand the target menu a fresh
-// payload, so a plain nav() would land you back on /calendario's own menu
-// with no memory of which month you were browsing (same for a league's
-// tournament list). Instead, the back button is a plain .text() button that
-// manually: resolves which origin menu + payload to return to, fetches that
-// view's own text (calendarioText/legaTorneiText/iscrizioniText, imported
-// from their own command files — see the cycle note below), overwrites
-// ctx.match with the target's own payload format, and edits the message
-// itself with that origin menu as reply_markup. This is the fragile,
-// hand-rolled plumbing flagged before starting this refactor — it exists
-// because full "return to the exact page you came from" fidelity was an
-// explicit user request over the simpler "always reopen a fresh root view"
-// alternative.
+// torneoMenu's back button rebuilds the exact origin view (month/league/
+// list) instead of using Menu's built-in back()/nav(), which can't hand the
+// target menu a fresh payload — every button therefore carries
+// `${uuid}:${origin}` so both survive a full round trip.
 import type { Context } from 'grammy'
 import { Menu } from '@grammyjs/menu'
 import { FormattedString } from '@grammyjs/parse-mode'
@@ -40,12 +19,9 @@ import { NOT_LINKED_MESSAGE } from '../linking'
 import { answerLoadError } from '../callbackErrors'
 import { mapsUrl, googleCalendarUrl, truncateForCaption } from '../eventLinks'
 import { navigateBack, getMenu } from '../../menuNav'
-// Circular at the module level (calendario.ts/leghe.ts/iscrizioni.ts import
-// torneoMenu from here, this imports their own text-renderers back) — safe
-// because every one of these bindings is only ever called from inside an
-// async handler, never read at module-evaluation time. The target *menu*
-// objects themselves (as opposed to these text functions) come through
-// menuNav.ts's registry instead of a direct import — see its own comment.
+// Circular import (calendario/leghe/iscrizioni import torneoMenu, this
+// imports their text-renderers back) — safe since only used inside async
+// handlers. Menu objects themselves come via menuNav.ts's registry instead.
 import { calendarioText } from '../calendario'
 import { legaTorneiText } from '../leghe'
 import { iscrizioniText } from '../iscrizioni'
@@ -138,20 +114,16 @@ function tournamentDetailMessage(
   return FormattedString.join(lines, '\n')
 }
 
-// Shop organizers (Magman etc.) show up in the bot for schedule visibility
-// (user request, 2026-09-04) but registration is their own business, not
-// Pauperwave's — the Iscriviti/Annulla/check-in flow only ever manages
-// tournament_registrations for the club's own tournaments.
+// Shop organizers (Magman etc.) show up for schedule visibility, but
+// registration is their own business — Iscriviti/Annulla/check-in only
+// ever manages tournament_registrations for the club's own tournaments.
 function isExternalOrganizer(row: DatedTournamentRow): boolean {
   return row.organizer?.type === 'shop'
 }
 
-// Payload format shared by every button on torneoMenu: `${uuid}:${origin}`.
-// `origin` is the same compact token as before the menu migration
-// (`m<monthOffset>`, `l<leagueIndex>`, `i` for iscrizioni, or `p` for
-// prossimo — each of which used to share calendario's own 'm0' as a
-// placeholder back-target, now that they have a real menu of their own to
-// return to).
+// Payload shared by every torneoMenu button: `${uuid}:${origin}`. `origin`
+// is a compact token identifying where to go back to: `m<monthOffset>`,
+// `l<leagueIndex>`, `i` (iscrizioni), or `p` (prossimo).
 function encodeTorneoPayload(uuid: string, origin: string): string {
   return `${uuid}:${origin}`
 }
@@ -161,9 +133,8 @@ function decodeTorneoPayload(raw: string): { uuid: string, origin: string } {
   return { uuid: raw.slice(0, separator), origin: raw.slice(separator + 1) }
 }
 
-// Cheap, sync — used on every torneoMenu render to label the back button,
-// without the cost of actually rebuilding the origin view (only done when
-// the button is pressed, see resolveBackTarget below).
+// Cheap label for the back button — the expensive part (resolveBackTarget)
+// only runs once the button is actually pressed.
 function backLabel(origin: string): string {
   if (origin.startsWith('l')) return '« Torna alla lega'
   if (origin === 'i') return '« Torna ai tuoi tornei'
@@ -171,12 +142,9 @@ function backLabel(origin: string): string {
   return '« Torna al mese'
 }
 
-// The expensive half of going back — rebuilds the exact origin view (same
-// month / same league / the iscrizioni list) so the back button restores
-// precisely where the user came from, not a fresh default view. The target
-// Menu instance itself comes from menuNav.ts's registry (getMenu), not a
-// direct import of calendario.ts's/leghe.ts's own Menu object — see that
-// file's comment for why.
+// Rebuilds the exact origin view so "back" restores precisely where the
+// user came from. Menu instance resolved via menuNav.ts's registry
+// (getMenu), not a direct import — see that file's own comment for why.
 async function resolveBackTarget(
   origin: string, chatId: number
 ): Promise<{ payload: string, menu: Menu<Context>, text: FormattedString }> {
@@ -327,14 +295,13 @@ export const torneoMenu = new Menu<Context>('t', {
   })
 })
 
-// Registered here (not by whichever register*Command calls bot.use() on
-// this menu) since torneoMenu is a module-level singleton reachable from
-// three different parents — one registration site, unconditional.
+// Registered once here, unconditionally — torneoMenu is a singleton shared
+// by four parents, not tied to any single register*Command's bot.use().
 registerMenu('t', torneoMenu)
 
-// Opens the detail view fresh from a list (calendario/leghe/iscrizioni's own
-// submenu button middleware calls this) — as opposed to torneoMenu's own
-// internal buttons, which stay on the same message and never need this.
+// Opens the detail view fresh from a list (calendario/leghe/iscrizioni's
+// own submenu buttons call this); torneoMenu's own internal buttons stay
+// on the same message and never need it.
 export async function openTournamentDetail(ctx: Context, uuid: string, origin: string) {
   const chatId = ctx.chat?.id
   if (!chatId) {

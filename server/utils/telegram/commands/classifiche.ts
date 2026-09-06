@@ -21,12 +21,9 @@ function scopeLabel(scope: StandingsScope): string {
   return scope === 'cittadino' ? 'Cittadino' : FORMAT_LABELS[scope]
 }
 
-// Same per-rank point scale as useFormatStandingsQuery.ts — duplicated here
-// because that composable is Vue-only (useAsyncData/computed) and can't run
-// in a Telegram command handler. Only the pure grouping step
-// (groupBestNByPlayer/toBestNPlacement, shared/utils/cittadino/bestNStandings.ts)
-// is actually shared between the two; the totals/sort step below is small
-// enough to duplicate rather than force an abstraction onto the composable.
+// Same per-rank point scale as useFormatStandingsQuery.ts — duplicated
+// since that composable is Vue-only and can't run in a bot handler. Only
+// the pure grouping step (groupBestNByPlayer/toBestNPlacement) is shared.
 const POINTS_BY_RANK = [25, 18, 15, 12, 10, 8, 6, 4, 2]
 const MIN_POINTS = 1
 
@@ -54,11 +51,8 @@ interface CittadinoPayload {
   }[]
 }
 
-// Same scale as POINTS_BY_RANK above (per-rank points, same regulation
-// shape) but Cittadino has its own counted-results cutoff and its own
-// tie-breaks (best single result, then events played) — see
-// useCittadinoFilters.ts, which this mirrors for the same Vue-only-composable
-// reason as fetchFormatRows below.
+// Cittadino has its own counted-results cutoff and tie-breaks (best single
+// result, then events played) — mirrors useCittadinoFilters.ts.
 const CITTADINO_COUNTED_RESULTS = 11
 
 interface StandingsRow {
@@ -126,10 +120,8 @@ function fetchRows(scope: StandingsScope): Promise<StandingsRow[]> {
   return scope === 'cittadino' ? fetchCittadinoRows() : fetchFormatRows(scope)
 }
 
-// Telegram messages cap at 4096 chars — plenty of headroom below that, but a
-// full 40+ player table isn't useful to read in a chat bubble either, hence
-// paginating instead of showing everything at once (added 2026-09-06, user
-// request).
+// A full 40+ player table isn't useful to read in a chat bubble, hence
+// pagination instead of showing everything at once.
 const PAGE_SIZE = 10
 
 function standingsMessage(
@@ -152,9 +144,7 @@ function initialMessage(siteUrl: string): string {
   return `Scegli un formato, oppure apri la pagina completa: ${siteUrl}/classifiche`
 }
 
-// Payload shared by every button on classificaMenu: `${scope}:${page}` —
-// same compact "everything in callback_data" encoding as calendario.ts's
-// own month offset / cartecercate.ts's old scope+page pair.
+// Payload shared by every button on classificaMenu: `${scope}:${page}`.
 function encodeStandingsPayload(scope: StandingsScope, page: number): string {
   return `${scope}:${page}`
 }
@@ -165,14 +155,8 @@ function decodeStandingsPayload(raw: string): { scope: StandingsScope, page: num
   return { scope, page: Number(raw.slice(separator + 1)) }
 }
 
-// Submenu reached from every format/Cittadino button on classificheMenu below
-// — the button's own payload (scope + page) becomes ctx.match here too, read
-// fresh on every render since a menu re-renders itself in response to the
-// exact callback_query that navigated into it.
-// autoAnswer: false — every button below answers itself (showStandings,
-// pagination, back), consistent with every other menu in this bot.
-// onMenuOutdated: false — see calendario.ts's calendarioMenu for why every
-// menu in this bot disables the plugin's built-in staleness fingerprint.
+// Reached from every format/Cittadino button on classificheMenu below.
+// autoAnswer/onMenuOutdated: false — see calendario.ts's calendarioMenu.
 const classificaMenu = new Menu<Context>('classifica-menu', {
   autoAnswer: false,
   onMenuOutdated: false
@@ -202,15 +186,9 @@ const classificaMenu = new Menu<Context>('classifica-menu', {
 
   const siteUrl = useRuntimeConfig().public.siteUrl
   range.row().url('Apri pagina completa', `${siteUrl}/classifiche/${scope}`)
-  // back() only swaps the keyboard back to classificheMenu's — the message
-  // text is still whatever showStandings() last set it to, so this restores
-  // the original picker text too, same as the old classifiche:menu callback.
-  // payload: a non-empty string (not omitted) — a payload-less button
-  // renders as "" and grammY only assigns a non-empty payload to ctx.match,
-  // so ctx.match would stay unset on press; this dynamic() then hits its own
-  // `if (!raw) return` guard above and re-renders zero buttons, crashing the
-  // plugin's own row/col lookup with no visible error. Confirmed 2026-09-06
-  // ("« Formati" doing nothing on tap after picking a format).
+  // payload: raw (not omitted) — an empty payload never reaches ctx.match,
+  // so this dynamic()'s own `if (!raw) return` guard would render zero
+  // buttons and crash the plugin's row/col lookup on press.
   range.row().back({
     text: '« Formati',
     payload: raw
@@ -236,10 +214,7 @@ async function showStandings(ctx: Context & { match: string }) {
   }
 }
 
-// autoAnswer: false — every button delegates to showStandings, which
-// answers itself, consistent with every other menu in this bot.
-// onMenuOutdated: false — see calendario.ts's calendarioMenu for why every
-// menu in this bot disables the plugin's built-in staleness fingerprint.
+// autoAnswer/onMenuOutdated: false — see calendario.ts's calendarioMenu.
 const classificheMenu = new Menu<Context>('classifiche-menu', {
   autoAnswer: false,
   onMenuOutdated: false

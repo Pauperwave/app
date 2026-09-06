@@ -1,20 +1,14 @@
 // server\utils\telegram\commands\linking.ts
 import type { Bot, Context } from 'grammy'
 
-// No conversation state: Nitro runs on Vercel (serverless), so nothing
-// guarantees the process that handles a user's later reply is the same one
-// that handled /start — an in-memory "waiting for this chat's email" flag
-// wouldn't survive a cold start. Instead: any plain-text message that looks
-// like an email is treated as a linking attempt, unconditionally. Simpler
-// and stateless, at the cost of not being able to say "reply to my prompt
-// specifically" — acceptable since the only other thing a chat sends as
-// plain text is nothing (everything else is a /command).
+// No conversation state: Nitro is serverless, so an in-memory "waiting for
+// this chat's email" flag wouldn't survive a cold start. Instead, any
+// plain-text message that looks like an email is treated as a linking
+// attempt — simpler, at the cost of not requiring a reply to a specific prompt.
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-// Shared with tornei.ts's self-registration button — a chat can only
-// register the associate it's linked to, resolved server-side the same way
-// self-register.post.ts resolves it from the web session, just keyed by
-// chat_id instead of a Supabase auth user.
+// A chat can only register the associate it's linked to — same resolution
+// self-register.post.ts does from a web session, keyed by chat_id instead.
 export async function resolveAssociateUuidByChatId(chatId: number): Promise<string | null> {
   const supabase = telegramServiceSupabaseClient()
 
@@ -28,16 +22,12 @@ export async function resolveAssociateUuidByChatId(chatId: number): Promise<stri
   return data?.associate_uuid ?? null
 }
 
-// Same literal message tessera.ts, mazzi.ts, iscrizioni.ts, and
-// tournament/detail.ts's iscrivi: handler all show when a chat tries a
-// personal command/action before linking an account.
+// Same literal message tessera.ts, iscrizioni.ts, and tournament/detail.ts's
+// iscrivi: handler all show for a personal action before linking an account.
 export const NOT_LINKED_MESSAGE = 'Devi prima collegare il tuo account: scrivimi la tua email da socio.'
 
-// tessera.ts, mazzi.ts, and iscrizioni.ts all repeated the same "get
-// chatId, resolve it, bail out with NOT_LINKED_MESSAGE if unresolved"
-// prelude — this is that prelude. Callers still catch this function's own
-// throw (a Supabase error from resolveAssociateUuidByChatId) themselves,
-// same as before the extraction.
+// Shared "get chatId, resolve it, bail out with NOT_LINKED_MESSAGE" prelude
+// — callers still catch this function's own Supabase-error throw themselves.
 export async function requireLinkedAssociate(ctx: Context): Promise<string | null> {
   const chatId = ctx.chat?.id
   if (!chatId) return null
@@ -66,10 +56,8 @@ async function linkChat(chatId: number, email: string): Promise<string> {
       + 'Controlla di averla scritta correttamente, oppure contatta un admin.'
   }
 
-  // Delete any existing row for this chat first — upsert on associate_uuid
-  // alone can't also resolve a conflict on chat_id's own unique constraint
-  // (re-linking the same Telegram chat to a different associate would hit
-  // it otherwise).
+  // Delete any existing row first — upsert on associate_uuid alone can't
+  // also resolve a conflict on chat_id's own unique constraint.
   await supabase.from('pauperwave_associate_telegram_links').delete().eq('chat_id', chatId)
 
   const { error: linkError } = await supabase

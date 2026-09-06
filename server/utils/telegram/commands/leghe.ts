@@ -63,11 +63,9 @@ async function fetchLeagueTournaments(leagueUuid: string): Promise<LeagueTournam
   return data as LeagueTournamentDetailRow[]
 }
 
-// leagues[]'s own index (starts_at ascending, same ordering every render)
-// stands in for the league's uuid in callback payloads — see
-// tournament/detail.ts's origin encoding comment for why: callback_data has
-// a 64-byte cap, and a torneo button already carries the tournament's own
-// uuid, no room left for a second full one.
+// leagues[]'s own index stands in for the league's uuid in callback
+// payloads — a torneo button already carries the tournament's own uuid, no
+// room left in the 64-byte cap for a second full one.
 async function legheText(): Promise<FormattedString> {
   const leagues = await fetchActiveLeagues()
   if (!leagues.length) return new FormattedString('🏆 Nessuna lega attiva al momento.')
@@ -96,21 +94,16 @@ async function legheText(): Promise<FormattedString> {
   return fmt`🏆 ${FormattedString.b('Leghe attive')}\n\n${FormattedString.join(lines, '\n')}\n\n👇 Tocca una lega per i tornei`
 }
 
-// The list icon (STATUS_ICON) reflects the tournament's own status; this
-// one reflects the linked chat's own registration to that specific
-// tournament — same three states as tournament/detail.ts's detail-view button,
-// shown here directly on each list button so "am I in for this stage"
-// doesn't require tapping through to every tournament's detail.
+// Unlike STATUS_ICON (tournament status), this reflects the chat's own
+// registration — shown per button so "am I in" doesn't need a tap-through.
 function personalIcon(registration: RegistrationStatus): string {
   if (registration === 'checked_in') return '🎯'
   if (registration === 'registered') return '✅'
   return '🎲'
 }
 
-// Exported so tournament/detail.ts's shared "back" button can rebuild this
-// exact league's tournament list when returning from a detail page opened
-// from here. Returns null for an out-of-range index (stale/tampered
-// callback data), same as the pre-menu renderLegaTornei did.
+// Exported so tournament/detail.ts's "back" button can rebuild this exact
+// list. Returns null for an out-of-range index (stale/tampered callback data).
 export async function legaTorneiText(
   index: number, _chatId: number
 ): Promise<FormattedString | null> {
@@ -200,9 +193,7 @@ export const legheTorneiMenu = new Menu<Context>('lt', {
   autoAnswer: false,
   onMenuOutdated: false
 }).dynamic(async (ctx, range) => {
-  // || not ?? — see calendario.ts's own comment on why (ctx.match is '',
-  // not undefined, when this menu is rendered fresh via a command; harmless
-  // here only because Number('') happens to equal Number('0')).
+  // || not ?? — see calendario.ts's own comment on why.
   const index = Number(ctx.match || '0')
   const chatId = ctx.chat?.id
   if (!chatId) return
@@ -218,15 +209,9 @@ export const legheTorneiMenu = new Menu<Context>('lt', {
     )
   }
 
-  // payload: String(index) (not omitted) — a payload-less button renders as
-  // "" and grammY only assigns a non-empty payload to ctx.match, so
-  // ctx.match would fall back to 0 here (`Number(ctx.match ?? '0')` above)
-  // regardless of which league was actually being viewed. Harmless when
-  // league 0 happens to have the same row count, but re-renders the wrong
-  // league's tournaments otherwise and can crash the plugin's own row/col
-  // lookup when the row counts differ. Confirmed 2026-09-06 as the same bug
-  // class as classifiche.ts's "« Formati" and eventi.ts's "« Torna agli
-  // eventi".
+  // payload: String(index) (not omitted) — same bug class as classifiche.ts's
+  // "« Formati": an empty payload never reaches ctx.match, so this would
+  // silently fall back to league 0 (or crash if row counts differ).
   range.row().back({
     text: '« Torna alle leghe',
     payload: String(index)
@@ -245,9 +230,7 @@ registerMenu('lg', legheMenu)
 registerMenu('lt', legheTorneiMenu)
 
 export function registerLegheCommand(bot: Bot, commands: CommandGroup<Context>) {
-  // Deferred to call time, not module top level — see calendario.ts's own
-  // comment on why (torneoMenu's module imports this file's own exports
-  // back, a circular import only safe once every module has fully loaded).
+  // Deferred to call time — see calendario.ts's own comment on why.
   legheMenu.register(legheTorneiMenu)
   legheTorneiMenu.register(torneoMenu)
   bot.use(legheMenu)

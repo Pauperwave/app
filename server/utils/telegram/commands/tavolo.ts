@@ -5,12 +5,9 @@ import type { InlineQueryResultArticle } from 'grammy/types'
 import { Menu } from '@grammyjs/menu'
 import { FormattedString } from '@grammyjs/parse-mode'
 
-// MOCKUP (2026-09-06, user request) — tournament_pairings has no live-write
-// flow yet (docs/architecture/telegram-bot.md's own note on why /tavolo was
-// previously a blocked stub), so table/opponents are hardcoded sample data
-// standing in for what a real pairing lookup would return, to preview the
-// intended UX before that backend piece exists. Replace with a real query
-// once organizers can generate live pairings.
+// MOCKUP — tournament_pairings has no live-write flow yet (see
+// docs/architecture/telegram-bot.md), so this is hardcoded sample data
+// standing in for a real pairing lookup, to preview the intended UX.
 const MOCK_TABLE = {
   number: 7,
   opponents: ['Marco Rossi', 'Giulia Bianchi', 'Luca Verdi']
@@ -21,10 +18,8 @@ function tavoloMessage(): FormattedString {
   return fmt`🪑 ${FormattedString.b(`Tavolo ${MOCK_TABLE.number}`)}\n\nGiochi con:\n${FormattedString.join(lines, '\n')}\n\n👇 Imposta il tuo comandante per questo turno`
 }
 
-// Scryfall API usage guidelines require a descriptive User-Agent identifying
-// the app — same convention as priceRefresh.ts's own SCRYFALL_USER_AGENT,
-// duplicated here rather than shared since the two call sites are otherwise
-// unrelated (price lookups vs. commander name search).
+// Scryfall requires a descriptive User-Agent — same convention as
+// priceRefresh.ts's own, duplicated since the two call sites are unrelated.
 const SCRYFALL_USER_AGENT = 'Pauperwave-app/1.0 (Telegram bot commander search; contact: emanuelenardi.dev@gmail.com)'
 
 const MAX_COMMANDER_RESULTS = 5
@@ -35,11 +30,8 @@ interface ScryfallCard {
   image_uris?: { small?: string }
 }
 
-// is:commander — Scryfall's own filter for "can be your commander" (legendary
-// creatures plus the handful of cards with explicit commander-eligibility
-// text), not just any legendary. Live lookup for now (2026-09-06, mockup) —
-// a future version will curate this list directly in Supabase instead of
-// depending on Scryfall at request time, per user request.
+// is:commander — Scryfall's own "can be your commander" filter. A future
+// version will curate this list in Supabase instead of querying Scryfall live.
 async function searchCommanders(query: string): Promise<ScryfallCard[]> {
   try {
     const response = await $fetch<{ data: ScryfallCard[] }>('https://api.scryfall.com/cards/search', {
@@ -54,25 +46,19 @@ async function searchCommanders(query: string): Promise<ScryfallCard[]> {
   }
 }
 
-// Prefix marking a message as "this is a commander pick coming from the
-// inline-query result below", not user-typed text — checked in the
-// message:text handler further down. Distinctive enough not to collide with
-// anything a player would type on their own.
+// Marks a message as a commander pick from the inline-query result below
+// (checked in the message:text handler), not free-typed text.
 const COMMANDER_MESSAGE_PREFIX = '🎴 Comandante: '
 
-// autoAnswer: false — not needed here (no callback_query handler on this
-// menu at all, switchInlineCurrent is a client-side-only button that never
-// triggers one), kept only for consistency with every other menu in this
-// bot. onMenuOutdated: false — see calendario.ts's calendarioMenu for why.
+// autoAnswer/onMenuOutdated: false — kept for consistency, though this
+// menu has no callback_query handler at all (switchInlineCurrent is
+// client-side-only). See calendario.ts's calendarioMenu.
 const tavoloMenu = new Menu<Context>('tv', {
   autoAnswer: false,
   onMenuOutdated: false
 }).dynamic((_ctx, range) => {
-  // Puts the user's input field into inline mode scoped to *this* chat —
-  // requires Inline Mode enabled for the bot (BotFather: /setinline).
-  // Telegram calls bot.on('inline_query') live as they type (debounced on
-  // Telegram's own side), no ForceReply/ForceReply-matching round trip
-  // needed like supporto.ts's prompt.
+  // Puts the input field into inline mode on this chat (requires BotFather:
+  // /setinline) — bot.on('inline_query') answers live as the user types.
   range.switchInlineCurrent('🎴 Imposta comandante', '')
 })
 
@@ -103,13 +89,9 @@ export function registerTavoloCommand(bot: Bot, commands: CommandGroup<Context>)
     await ctx.answerInlineQuery(results, { cache_time: 0 })
   })
 
-  // Picking an inline result posts it as a normal message in this chat (a
-  // private chat with the bot) — recognized here by its own marker prefix
-  // rather than subscribing to chosen_inline_result (which would also
-  // require BotFather's /setinlinefeedback, unnecessary for a private
-  // 1:1 chat where the resulting message already reaches the bot).
-  // Registered before linking.ts's own catch-all (commands/index.ts keeps
-  // that one last) — same reasoning as supporto.ts's own reply handler.
+  // Picking an inline result posts it as a normal message here — recognized
+  // by its marker prefix rather than subscribing to chosen_inline_result
+  // (would also need BotFather's /setinlinefeedback, unnecessary in a DM).
   bot.on('message:text', async (ctx, next) => {
     if (!ctx.message.text.startsWith(COMMANDER_MESSAGE_PREFIX)) {
       return next()

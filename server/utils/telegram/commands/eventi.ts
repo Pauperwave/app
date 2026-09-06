@@ -145,12 +145,9 @@ async function openEventDetail(ctx: Context & { match: string }) {
   }
 }
 
-// No registration action here — unlike tournaments, events have no
-// self-service participation flow yet (EventParticipants.vue is still a
-// placeholder), so this is utility links + back only.
-// autoAnswer: false — the back button answers itself; URL buttons never
-// trigger a callback_query at all. onMenuOutdated: false — see
-// calendario.ts's calendarioMenu for why.
+// No registration action — events have no self-service participation flow
+// yet (EventParticipants.vue is still a placeholder), just links + back.
+// autoAnswer/onMenuOutdated: false — see calendario.ts's calendarioMenu.
 const eventoMenu = new Menu<Context>('evd', {
   autoAnswer: false,
   onMenuOutdated: false
@@ -171,12 +168,8 @@ const eventoMenu = new Menu<Context>('evd', {
   }))
   range.row()
 
-  // payload: uuid (not omitted) — a button with no payload renders as "" and
-  // grammY only assigns a non-empty payload to ctx.match, so a payload-less
-  // back button leaves ctx.match unset on press; this dynamic() then hits
-  // its own `if (!uuid) return` guard above and re-renders zero buttons,
-  // crashing the plugin's own row/col lookup with no visible error at all.
-  // Confirmed 2026-09-06 ("Torna agli eventi" doing nothing on tap).
+  // payload: uuid (not omitted) — an empty payload never reaches ctx.match,
+  // which would fail this dynamic()'s own `if (!uuid) return` guard above.
   range.text({ text: '« Torna agli eventi', payload: uuid }, async (ctx) => {
     try {
       await navigateBack(ctx, async () => ({

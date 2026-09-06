@@ -4,9 +4,7 @@ import { it } from 'date-fns/locale'
 import { FormattedString } from '@grammyjs/parse-mode'
 
 // Single source for how a tournament reads in a Telegram list line —
-// leghe.ts's per-league tournament list and calendario.ts's per-day
-// calendar list both rendered their own "icon + name + stage + location"
-// string independently before this; now both call tournamentLine().
+// shared by leghe.ts and calendario.ts's own per-day lists.
 export const STATUS_ICON: Record<string, string> = {
   draft: '📋',
   registration_open: '📝',
@@ -26,16 +24,11 @@ export function stageLabel(stageNumber: number | null): string {
   return stageNumber ? ` — ${stageNumber}ª tappa` : ''
 }
 
-// The "icon + bold name + stage" header shared by calendario.ts's single
-// tournament detail view and prossimo.ts's next-tournament card — both show
-// one tournament at a time, with the date/location as separate lines below
-// rather than folded into this one (unlike tournamentLine()'s list rows).
-// Returns a FormattedString (entities, not markdown source) — see
-// server/utils/telegram/format.ts's own comment for why raw dynamic values
-// never need escaping here. The *button*-label helpers below
-// (tournamentButtonLabel, stageLabel's other call sites) stay plain strings
-// regardless — Telegram button captions never carry entities/parse_mode at
-// all.
+// "Icon + bold name + stage" header shared by the single-tournament detail
+// view and prossimo.ts's card. Returns a FormattedString (entities, not
+// markdown) — see format.ts's comment on why raw values never need escaping.
+// The button-label helpers below stay plain strings regardless — button
+// captions never carry entities.
 export function tournamentHeader(
   status: string, name: string, stageNumber: number | null
 ): FormattedString {
@@ -58,24 +51,18 @@ export function tournamentLine({
   return fmt`${statusIcon(status)} ${name}${stageSuffix}${location}`
 }
 
-// Same "icon - date - tappa - nome" shape as tournamentLine(), for the
-// InlineKeyboard button label sitting under these same lists — `icon` is
-// passed in rather than derived from `status` because callers vary on what
-// the icon should mean (leghe.ts's buttons show the chat's own
-// registration state, not the tournament's status). Telegram caps a
-// button's text at 64 characters; a long date + tappa + tournament name
-// combination can exceed that, but there's no good truncation point that
-// wouldn't also hide the name, so this is left as-is.
+// Same shape as tournamentLine(), for the button label. `icon` is passed in
+// (not derived from status) since callers vary — leghe.ts's buttons show
+// registration state, not tournament status. Can exceed Telegram's 64-char
+// button cap on a long name; no good truncation point, left as-is.
 export function tournamentButtonLabel(
   icon: string, date: string, stageNumber: number | null, name: string
 ): string {
   return `${icon} ${date}${stageLabel(stageNumber)} — ${name}`
 }
 
-// Short date for a tournamentButtonLabel() call scoped to a nearby list
-// (calendario.ts's month grid, iscrizioni.ts's own tournaments) — leghe.ts
-// spans a whole league's calendar instead, so it keeps its own longer
-// 'd MMM yyyy' format rather than using this.
+// Short date for tournamentButtonLabel() in a nearby-scoped list —
+// leghe.ts spans a whole league's calendar, so it uses a longer format.
 export function formatButtonDate(startsAt: string): string {
   return formatTelegramDate(startsAt, 'd MMM', { locale: it })
 }
