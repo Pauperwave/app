@@ -15,11 +15,6 @@ const BLOCKED_STUBS: { command: string, label: string, reason: string }[] = [
     reason: 'gli abbinamenti esistono nel database solo come storico, non ancora aggiornati in tempo reale durante un torneo'
   },
   {
-    command: 'bracket',
-    label: 'Imposta il bracket di un mazzo',
-    reason: 'manca ancora il campo bracket sui mazzi Commander'
-  },
-  {
     command: 'vota',
     label: 'Vota miglior mazzo/miglior giocata',
     reason: 'il voto è legato a un abbinamento reale, che non esiste finché non c\'è un flusso di pairing live durante un torneo'
