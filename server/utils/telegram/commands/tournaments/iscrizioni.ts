@@ -88,14 +88,19 @@ function mieiTorneiMessage(registrations: MyRegistration[]): FormattedString {
     return fmt`${header}\n\nNon risulti iscritto a nessun torneo in programma.`
   }
 
-  const lines = registrations.map(({ registrationStatus, tournament }) => {
+  const blocks = registrations.map(({ registrationStatus, tournament }) => {
     const date = formatTelegramDate(tournament.starts_at, 'EEE d MMM', { locale: it })
-    const location = tournament.location?.name ? `\n  📍 ${tournament.location.name}` : ''
     const stage = stageLabel(tournament.stageNumber)
-    return fmt`${statusIcon(registrationStatus)} ${FormattedString.b(date)}${stage} — ${tournament.name}${location}`
+
+    const tournamentLines: (FormattedString | string)[] = [
+      fmt`${statusIcon(registrationStatus)} ${FormattedString.b(tournament.name)}${stage}`,
+      `🗓️ ${date}`
+    ]
+    if (tournament.location?.name) tournamentLines.push(`📍 ${tournament.location.name}`)
+    return FormattedString.join(tournamentLines, '\n')
   })
 
-  return fmt`${header}\n\n${FormattedString.join(lines, '\n')}\n\n👇 Tocca un torneo per i dettagli`
+  return fmt`${header}\n\n${FormattedString.join(blocks, '\n\n')}\n\n👇 Tocca un torneo per i dettagli`
 }
 
 // Exported so tournament/detail.ts's "back" button can rebuild this view.
