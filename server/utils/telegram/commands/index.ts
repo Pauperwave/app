@@ -52,7 +52,7 @@ const commands = new CommandGroup<Context>()
 export function registerCommands(bot: Bot) {
   registerCoreCommands(commands)
   registerClassificheCommand(bot, commands)
-  registerEventiCommand(commands)
+  registerEventiCommand(bot, commands)
   registerCalendarioCommand(bot, commands)
   registerLegheCommand(bot, commands)
   registerProssimoCommand(bot, commands)
