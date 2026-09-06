@@ -50,7 +50,7 @@ export function registerCommands(bot: Bot) {
   registerCalendarioCommand(bot, commands)
   registerLegheCommand(bot, commands)
   registerProssimoCommand(commands)
-  registerIscrizioniCommand(commands)
+  registerIscrizioniCommand(bot, commands)
   registerSupportoCommand(bot, commands)
   registerCarteCercateCommand(bot, commands)
   registerTesseraCommand(commands)

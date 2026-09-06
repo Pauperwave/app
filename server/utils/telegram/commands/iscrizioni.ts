@@ -1,12 +1,14 @@
 // server\utils\telegram\commands\iscrizioni.ts
-import { InlineKeyboard } from 'grammy'
+import { Menu } from '@grammyjs/menu'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { formatButtonDate, stageLabel, tournamentButtonLabel } from './tournament/line'
 import { fetchStageNumbers } from './tournament/queries'
-import { requireLinkedAssociate } from './linking'
+import { torneoMenu, openTournamentDetail } from './tournament/detail'
+import { requireLinkedAssociate, resolveAssociateUuidByChatId } from './linking'
+import { registerMenu } from '../menuNav'
 import { FormattedString } from '@grammyjs/parse-mode'
-import type { Context } from 'grammy'
+import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 
 interface MyTournamentRow {
@@ -90,23 +92,46 @@ function mieiTorneiMessage(registrations: MyRegistration[]): FormattedString {
   return fmt`${header}\n\n${FormattedString.join(lines, '\n')}\n\n👇 Tocca un torneo per i dettagli`
 }
 
-function mieiTorneiKeyboard(registrations: MyRegistration[]): InlineKeyboard {
-  const keyboard = new InlineKeyboard()
+// Exported so tournament/detail.ts's shared "back" button can rebuild this
+// exact view when returning from a detail page opened from here. Falls back
+// to a "not linked" message in the (practically unreachable) case of a chat
+// that unlinked mid-session — reaching iscrizioni-menu at all already
+// requires being linked, via requireLinkedAssociate in the command handler.
+export async function iscrizioniText(chatId: number): Promise<FormattedString> {
+  const associateUuid = await resolveAssociateUuidByChatId(chatId)
+  if (!associateUuid) return new FormattedString('Devi prima collegare il tuo account.')
+
+  const registrations = await fetchMyTournaments(associateUuid)
+  return mieiTorneiMessage(registrations)
+}
+
+// autoAnswer: false — the "open tournament" buttons delegate to
+// openTournamentDetail, which answers the callback itself.
+export const iscrizioniMenu = new Menu<Context>('isc', { autoAnswer: false }).dynamic(async (ctx, range) => {
+  const associateUuid = await resolveAssociateUuidByChatId(ctx.chat!.id)
+  if (!associateUuid) return
+
+  const registrations = await fetchMyTournaments(associateUuid)
   for (const { registrationStatus, tournament } of registrations) {
-    // Reuses the shared tournament detail view (tournament/detail.ts) —
-    // same torneo:<uuid>:<origin> callback, "m0" (calendario, current
-    // month) as a reasonable fallback back-target since this list isn't
-    // itself scoped to a single month.
     const date = formatButtonDate(tournament.starts_at)
     const label = tournamentButtonLabel(
       statusIcon(registrationStatus), date, tournament.stageNumber, tournament.name
     )
-    keyboard.row().text(label, `torneo:${tournament.uuid}:m0`)
+    range.row().text(
+      { text: label, payload: `${tournament.uuid}:i` },
+      ctx => openTournamentDetail(ctx, tournament.uuid, 'i')
+    )
   }
-  return keyboard
-}
+})
 
-export function registerIscrizioniCommand(commands: CommandGroup<Context>) {
+registerMenu('isc', iscrizioniMenu)
+
+export function registerIscrizioniCommand(bot: Bot, commands: CommandGroup<Context>) {
+  // Deferred to call time, not module top level — see calendario.ts's own
+  // comment on why.
+  iscrizioniMenu.register(torneoMenu)
+  bot.use(iscrizioniMenu)
+
   commands.command('iscrizioni', 'I tornei a cui sei iscritto', async (ctx) => {
     try {
       const associateUuid = await requireLinkedAssociate(ctx)
@@ -114,10 +139,7 @@ export function registerIscrizioniCommand(commands: CommandGroup<Context>) {
 
       const registrations = await fetchMyTournaments(associateUuid)
       const message = mieiTorneiMessage(registrations)
-      await ctx.reply(message.text, {
-        entities: message.entities,
-        reply_markup: mieiTorneiKeyboard(registrations)
-      })
+      await ctx.reply(message.text, { entities: message.entities, reply_markup: iscrizioniMenu })
     } catch {
       await ctx.reply('⚠️ Non sono riuscito a recuperare i tuoi tornei, riprova più tardi.')
     }

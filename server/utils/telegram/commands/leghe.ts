@@ -1,11 +1,13 @@
 // server\utils\telegram\commands\leghe.ts
-import { InlineKeyboard } from 'grammy'
+import { Menu } from '@grammyjs/menu'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { statusIcon, stageLabel, tournamentLine, tournamentButtonLabel } from './tournament/line'
 import { fetchRegistrationStatuses, fetchStageNumbers } from './tournament/queries'
-import { answerLoadError, editOrResendMessage } from './callbackErrors'
+import { torneoMenu, openTournamentDetail } from './tournament/detail'
+import { answerLoadError } from './callbackErrors'
 import { tournamentProgressByLeague } from '#shared/utils/leagues/tournamentProgressByLeague'
+import { registerMenu } from '../menuNav'
 import { FormattedString } from '@grammyjs/parse-mode'
 import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
@@ -60,17 +62,13 @@ async function fetchLeagueTournaments(leagueUuid: string): Promise<LeagueTournam
 }
 
 // leagues[]'s own index (starts_at ascending, same ordering every render)
-// stands in for the league's uuid in callback_data — see tournament/detail.ts's
-// backTarget comment for why: callback_data has a 64-byte cap, and a torneo:
-// button already carries the tournament's own uuid, no room left for a
-// second full one.
-async function renderLeghe(): Promise<
-  { text: FormattedString, keyboard: InlineKeyboard | undefined }
-> {
+// stands in for the league's uuid in callback payloads — see
+// tournament/detail.ts's origin encoding comment for why: callback_data has
+// a 64-byte cap, and a torneo button already carries the tournament's own
+// uuid, no room left for a second full one.
+async function legheText(): Promise<FormattedString> {
   const leagues = await fetchActiveLeagues()
-  if (!leagues.length) {
-    return { text: new FormattedString('🏆 Nessuna lega attiva al momento.'), keyboard: undefined }
-  }
+  if (!leagues.length) return new FormattedString('🏆 Nessuna lega attiva al momento.')
 
   const leagueUuids = leagues.map(league => league.uuid)
   const supabase = publicSupabaseClient()
@@ -93,15 +91,7 @@ async function renderLeghe(): Promise<
     return `🏆 ${dateRange}${progress} — ${league.name}`
   })
 
-  const keyboard = new InlineKeyboard()
-  leagues.forEach((league, index) => {
-    keyboard.row().text(`🏆 ${league.name}`, `lega:${index}`)
-  })
-
-  return {
-    text: fmt`🏆 ${FormattedString.b('Leghe attive')}\n\n${FormattedString.join(lines, '\n')}\n\n👇 Tocca una lega per i tornei`,
-    keyboard
-  }
+  return fmt`🏆 ${FormattedString.b('Leghe attive')}\n\n${FormattedString.join(lines, '\n')}\n\n👇 Tocca una lega per i tornei`
 }
 
 // The list icon (STATUS_ICON) reflects the tournament's own status; this
@@ -115,9 +105,13 @@ function personalIcon(registration: RegistrationStatus): string {
   return '🎲'
 }
 
-async function renderLegaTornei(
-  index: number, chatId: number
-): Promise<{ text: FormattedString, keyboard: InlineKeyboard } | null> {
+// Exported so tournament/detail.ts's shared "back" button can rebuild this
+// exact league's tournament list when returning from a detail page opened
+// from here. Returns null for an out-of-range index (stale/tampered
+// callback data), same as the pre-menu renderLegaTornei did.
+export async function legaTorneiText(
+  index: number, _chatId: number
+): Promise<FormattedString | null> {
   const leagues = await fetchActiveLeagues()
   const league = leagues[index]
   if (!league) return null
@@ -128,94 +122,111 @@ async function renderLegaTornei(
   ])
   const header = fmt`🏆 ${FormattedString.b(league.name)}`
 
+  if (!tournaments.length) return fmt`${header}\n\nNessun torneo in programma per questa lega.`
+
+  const lines = tournaments.map((tournament) => {
+    const date = formatDate(tournament.starts_at) ?? 'data da definire'
+    const stage = stageLabel(stageNumbers.get(tournament.uuid) ?? null)
+    const dateLine = `${statusIcon(tournament.status)} ${date}${stage}`
+    const tournamentDetail = tournamentLine({
+      status: tournament.status, name: tournament.name, locationName: tournament.location?.name
+    })
+    return fmt`${dateLine}\n${tournamentDetail}`
+  })
+  return fmt`${header}\n\n${FormattedString.join(lines, '\n\n')}\n\n👇 Tocca un torneo per i dettagli`
+}
+
+async function fetchLegaTorneiButtons(index: number, chatId: number) {
+  const leagues = await fetchActiveLeagues()
+  const league = leagues[index]
+  if (!league) return null
+
+  const [tournaments, stageNumbers] = await Promise.all([
+    fetchLeagueTournaments(league.uuid),
+    fetchStageNumbers()
+  ])
   const associateUuid = await resolveAssociateUuidByChatId(chatId)
   const registrations = associateUuid
     ? await fetchRegistrationStatuses(tournaments.map(t => t.uuid), associateUuid)
     : new Map<string, RegistrationStatus>()
 
-  let text = fmt`${header}\n\nNessun torneo in programma per questa lega.`
-  if (tournaments.length) {
-    const lines = tournaments.map((tournament) => {
-      const date = formatDate(tournament.starts_at) ?? 'data da definire'
-      const stage = stageLabel(stageNumbers.get(tournament.uuid) ?? null)
-      const dateLine = `${statusIcon(tournament.status)} ${date}${stage}`
-      const tournamentDetail = tournamentLine({
-        status: tournament.status, name: tournament.name, locationName: tournament.location?.name
-      })
-      return fmt`${dateLine}\n${tournamentDetail}`
-    })
-    text = fmt`${header}\n\n${FormattedString.join(lines, '\n\n')}\n\n👇 Tocca un torneo per i dettagli`
-  }
-
-  const keyboard = new InlineKeyboard()
-  for (const tournament of tournaments) {
-    const icon = personalIcon(registrations.get(tournament.uuid) ?? null)
-    const date = formatDate(tournament.starts_at) ?? 'data da definire'
-    const stageNumber = stageNumbers.get(tournament.uuid) ?? null
-    const label = tournamentButtonLabel(icon, date, stageNumber, tournament.name)
-    keyboard.row().text(label, `torneo:${tournament.uuid}:l${index}`)
-  }
-  keyboard.row().text('« Torna alle leghe', 'leghe:list')
-
-  return { text, keyboard }
+  return tournaments.map(tournament => ({
+    uuid: tournament.uuid,
+    label: tournamentButtonLabel(
+      personalIcon(registrations.get(tournament.uuid) ?? null),
+      formatDate(tournament.starts_at) ?? 'data da definire',
+      stageNumbers.get(tournament.uuid) ?? null,
+      tournament.name
+    )
+  }))
 }
 
-export function registerLegheCommand(bot: Bot, commands: CommandGroup<Context>) {
-  commands.command('leghe', 'Leghe attive', async (ctx) => {
-    try {
-      const { text, keyboard } = await renderLeghe()
-      await ctx.reply(text.text, { entities: text.entities, reply_markup: keyboard })
-    } catch {
-      await ctx.reply('⚠️ Non sono riuscito a recuperare le leghe, riprova più tardi.')
-    }
+const legheMenu = new Menu<Context>('lg', { autoAnswer: false }).dynamic(async (ctx, range) => {
+  const leagues = await fetchActiveLeagues()
+  leagues.forEach((league, index) => {
+    range.row().submenu({ text: `🏆 ${league.name}`, payload: String(index) }, 'lt', openLegaTornei)
   })
+})
 
-  // Each handler answers the callback_query exactly once, at the very
-  // end — a second answer throws GrammyError "query is too old...",
-  // uncaught, which used to take the whole webhook request down with a
-  // 500 (confirmed 2026-09-03 as the actual cause behind "the bot
-  // doesn't respond" whenever these handlers' own error path fired).
-  bot.callbackQuery(/^leghe:list$/, async (ctx) => {
-    try {
-      const { text, keyboard } = await renderLeghe()
-      await editOrResendMessage(ctx, text, keyboard)
-      await ctx.answerCallbackQuery()
-    } catch {
-      await answerLoadError(ctx)
-    }
-  })
-
-  bot.callbackQuery(/^lega:(\d+)$/, async (ctx) => {
-    const index = Number(ctx.match[1])
-    const chatId = ctx.chat?.id
-
-    if (!chatId) {
-      await ctx.answerCallbackQuery().catch(() => {})
+async function openLegaTornei(ctx: Context & { match: string }) {
+  try {
+    const index = Number(ctx.match)
+    const text = await legaTorneiText(index, ctx.chat!.id)
+    if (!text) {
+      await ctx.answerCallbackQuery({ text: 'Lega non trovata', show_alert: true })
       return
     }
+    await ctx.editMessageText(text.text, { entities: text.entities, reply_markup: legheTorneiMenu })
+    await ctx.answerCallbackQuery()
+  } catch {
+    await answerLoadError(ctx)
+  }
+}
 
+export const legheTorneiMenu = new Menu<Context>('lt', { autoAnswer: false }).dynamic(async (ctx, range) => {
+  const index = Number(ctx.match ?? '0')
+  const chatId = ctx.chat?.id
+  if (!chatId) return
+
+  const buttons = await fetchLegaTorneiButtons(index, chatId)
+  if (!buttons) return
+
+  for (const button of buttons) {
+    const origin = `l${index}`
+    range.row().text(
+      { text: button.label, payload: `${button.uuid}:${origin}` },
+      ctx => openTournamentDetail(ctx, button.uuid, origin)
+    )
+  }
+
+  range.row().back('« Torna alle leghe', async (ctx) => {
     try {
-      const rendered = await renderLegaTornei(index, chatId)
-      if (!rendered) {
-        await ctx.answerCallbackQuery({ text: 'Lega non trovata', show_alert: true })
-        return
-      }
-
-      try {
-        await ctx.editMessageText(rendered.text.text, {
-          entities: rendered.text.entities,
-          reply_markup: rendered.keyboard
-        })
-      } catch {
-        await ctx.deleteMessage().catch(() => {})
-        await ctx.reply(rendered.text.text, {
-          entities: rendered.text.entities,
-          reply_markup: rendered.keyboard
-        })
-      }
+      const text = await legheText()
+      await ctx.editMessageText(text.text, { entities: text.entities, reply_markup: legheMenu })
       await ctx.answerCallbackQuery()
     } catch {
       await answerLoadError(ctx)
+    }
+  })
+})
+
+registerMenu('lg', legheMenu)
+registerMenu('lt', legheTorneiMenu)
+
+export function registerLegheCommand(bot: Bot, commands: CommandGroup<Context>) {
+  // Deferred to call time, not module top level — see calendario.ts's own
+  // comment on why (torneoMenu's module imports this file's own exports
+  // back, a circular import only safe once every module has fully loaded).
+  legheMenu.register(legheTorneiMenu)
+  legheTorneiMenu.register(torneoMenu)
+  bot.use(legheMenu)
+
+  commands.command('leghe', 'Leghe attive', async (ctx) => {
+    try {
+      const text = await legheText()
+      await ctx.reply(text.text, { entities: text.entities, reply_markup: legheMenu })
+    } catch {
+      await ctx.reply('⚠️ Non sono riuscito a recuperare le leghe, riprova più tardi.')
     }
   })
 }
