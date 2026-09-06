@@ -71,6 +71,15 @@ export function registerTavoloCommand(bot: Bot, commands: CommandGroup<Context>)
   })
 
   bot.on('inline_query', async (ctx) => {
+    // 'sender' — a private chat with the bot itself, the only place
+    // switchInlineCurrent above can trigger this. Any other chat_type
+    // (private with someone else, group, supergroup, channel) means this
+    // came from typing "@bot ..." elsewhere, outside the /tavolo flow.
+    if (ctx.inlineQuery.chat_type !== 'sender') {
+      await ctx.answerInlineQuery([], { cache_time: 0 })
+      return
+    }
+
     const query = ctx.inlineQuery.query.trim()
     if (query.length < 2) {
       await ctx.answerInlineQuery([], { cache_time: 0 })
