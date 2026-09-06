@@ -63,7 +63,10 @@ export async function prossimoText(): Promise<FormattedString> {
 // autoAnswer: false — the button delegates to openTournamentDetail, which
 // answers the callback itself. onMenuOutdated: false — see calendario.ts's
 // calendarioMenu for why.
-export const prossimoMenu = new Menu<Context>('p', { autoAnswer: false, onMenuOutdated: false }).dynamic(async (ctx, range) => {
+export const prossimoMenu = new Menu<Context>('p', {
+  autoAnswer: false,
+  onMenuOutdated: false
+}).dynamic(async (ctx, range) => {
   const row = await fetchNextTournament()
   if (!row) return
 

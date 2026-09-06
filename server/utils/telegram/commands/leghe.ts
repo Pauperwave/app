@@ -165,7 +165,10 @@ async function fetchLegaTorneiButtons(index: number, chatId: number) {
 
 // onMenuOutdated: false — see calendario.ts's calendarioMenu for why every
 // menu in this bot disables the plugin's built-in staleness fingerprint.
-const legheMenu = new Menu<Context>('lg', { autoAnswer: false, onMenuOutdated: false }).dynamic(async (ctx, range) => {
+const legheMenu = new Menu<Context>('lg', {
+  autoAnswer: false,
+  onMenuOutdated: false
+}).dynamic(async (ctx, range) => {
   const leagues = await fetchActiveLeagues()
   leagues.forEach((league, index) => {
     range.row().submenu({ text: `🏆 ${league.name}`, payload: String(index) }, 'lt', openLegaTornei)
@@ -193,7 +196,10 @@ async function openLegaTornei(ctx: Context & { match: string }) {
   }
 }
 
-export const legheTorneiMenu = new Menu<Context>('lt', { autoAnswer: false, onMenuOutdated: false }).dynamic(async (ctx, range) => {
+export const legheTorneiMenu = new Menu<Context>('lt', {
+  autoAnswer: false,
+  onMenuOutdated: false
+}).dynamic(async (ctx, range) => {
   // || not ?? — see calendario.ts's own comment on why (ctx.match is '',
   // not undefined, when this menu is rendered fresh via a command; harmless
   // here only because Number('') happens to equal Number('0')).
@@ -221,7 +227,10 @@ export const legheTorneiMenu = new Menu<Context>('lt', { autoAnswer: false, onMe
   // lookup when the row counts differ. Confirmed 2026-09-06 as the same bug
   // class as classifiche.ts's "« Formati" and eventi.ts's "« Torna agli
   // eventi".
-  range.row().back({ text: '« Torna alle leghe', payload: String(index) }, async (ctx) => {
+  range.row().back({
+    text: '« Torna alle leghe',
+    payload: String(index)
+  }, async (ctx) => {
     try {
       const text = await legheText()
       await ctx.editMessageText(text.text, { entities: text.entities, reply_markup: legheMenu })
