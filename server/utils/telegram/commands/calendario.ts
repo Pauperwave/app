@@ -135,7 +135,13 @@ export async function calendarioText(
 // real staleness would explain, precisely because of this re-fetch-on-every-
 // render pattern repeated across every menu in this migration.
 export const calendarioMenu = new Menu<Context>('cal', { autoAnswer: false, onMenuOutdated: false }).dynamic(async (ctx, range) => {
-  const monthOffset = Number(ctx.match ?? '0')
+  // || not ?? — a bare /calendario (no arguments) sets ctx.match to '' via
+  // @grammyjs/commands (always the text after the command, empty when
+  // there is none), never undefined; ?? wouldn't substitute it. Currently
+  // harmless here only because Number('') happens to equal Number('0'), but
+  // || is the correct guard regardless (see vota.ts's own comment for a
+  // case where this same '' vs. undefined gap actually broke behavior).
+  const monthOffset = Number(ctx.match || '0')
   const chatId = ctx.chat?.id
   if (!chatId) return
 
