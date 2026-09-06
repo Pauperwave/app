@@ -15,7 +15,7 @@ const MOCK_TABLE = {
 
 function tavoloMessage(): FormattedString {
   const lines = MOCK_TABLE.opponents.map(name => `• ${name}`)
-  return fmt`🪑 ${FormattedString.b(`Tavolo ${MOCK_TABLE.number}`)}\n\nGiochi con:\n${FormattedString.join(lines, '\n')}\n\n👇 Imposta il tuo comandante per questo turno`
+  return fmt`🪑 ${FormattedString.b(`Tavolo ${MOCK_TABLE.number}`)}\n\nGiochi con:\n${FormattedString.join(lines, '\n')}\n\n👇🏻🏻 Imposta il tuo comandante per questo turno`
 }
 
 // Scryfall requires a descriptive User-Agent — same convention as
