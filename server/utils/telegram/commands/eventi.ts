@@ -151,7 +151,10 @@ async function openEventDetail(ctx: Context & { match: string }) {
 // autoAnswer: false — the back button answers itself; URL buttons never
 // trigger a callback_query at all. onMenuOutdated: false — see
 // calendario.ts's calendarioMenu for why.
-const eventoMenu = new Menu<Context>('evd', { autoAnswer: false, onMenuOutdated: false }).dynamic(async (ctx, range) => {
+const eventoMenu = new Menu<Context>('evd', {
+  autoAnswer: false,
+  onMenuOutdated: false
+}).dynamic(async (ctx, range) => {
   const uuid = ctx.match as string | undefined
   if (!uuid) return
 
@@ -176,7 +179,11 @@ const eventoMenu = new Menu<Context>('evd', { autoAnswer: false, onMenuOutdated:
   // Confirmed 2026-09-06 ("Torna agli eventi" doing nothing on tap).
   range.text({ text: '« Torna agli eventi', payload: uuid }, async (ctx) => {
     try {
-      await navigateBack(ctx, async () => ({ payload: '', menu: eventiMenu, text: await eventiText() }))
+      await navigateBack(ctx, async () => ({
+        payload: '',
+        menu: eventiMenu,
+        text: await eventiText()
+      }))
       await ctx.answerCallbackQuery()
     } catch {
       await answerLoadError(ctx)
