@@ -38,6 +38,7 @@ import { fetchRegistrationStatus, fetchStageNumbers } from './queries'
 import type { RegistrationStatus } from './queries'
 import { NOT_LINKED_MESSAGE } from '../linking'
 import { answerLoadError } from '../callbackErrors'
+import { mapsUrl, googleCalendarUrl, truncateForCaption } from '../eventLinks'
 import { navigateBack, getMenu } from '../../menuNav'
 // Circular at the module level (calendario.ts/leghe.ts/iscrizioni.ts import
 // torneoMenu from here, this imports their own text-renderers back) — safe
@@ -108,17 +109,6 @@ async function fetchTournament(uuid: string): Promise<DatedTournamentRow | null>
     : null
 }
 
-// google_maps_url (precise place link) takes priority over a generic
-// address search, same precedence as TournamentDetailContent.vue.
-function mapsUrl(location: LocationRow): string | null {
-  if (location.google_maps_url) return location.google_maps_url
-  if (!location.address) return null
-  const query = [
-    location.address, location.postal_code, location.city, location.province, location.country
-  ].filter(Boolean).join(', ')
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
-}
-
 function tournamentDetailMessage(
   row: DatedTournamentRow, registration: RegistrationStatus
 ): FormattedString {
@@ -146,39 +136,6 @@ function tournamentDetailMessage(
   if (row.description) lines.push('', row.description)
 
   return FormattedString.join(lines, '\n')
-}
-
-// Telegram photo captions cap at 1024 characters (vs. 4096 for plain text
-// messages) — only relevant when the detail is sent as a photo (image_url
-// set), so this trims the description first rather than the fixed fields
-// above it. .slice() (not a raw string cut) keeps the entities themselves
-// consistent with the truncated text.
-const CAPTION_LIMIT = 1024
-
-function truncateForCaption(text: FormattedString): FormattedString {
-  if (text.text.length <= CAPTION_LIMIT) return text
-  return text.slice(0, CAPTION_LIMIT - 1).plain('…')
-}
-
-// Google Calendar's "render" endpoint accepts a prefilled event via query
-// params — no auth, no backend of our own needed. Missing ends_at (not
-// every tournament sets one) falls back to a 4-hour default block rather
-// than omitting the button; better a rough estimate on the user's calendar
-// than no calendar entry at all.
-function googleCalendarUrl(row: DatedTournamentRow): string {
-  const start = new Date(row.starts_at)
-  const end = row.ends_at ? new Date(row.ends_at) : new Date(start.getTime() + 4 * 60 * 60 * 1000)
-  const utcStamp = (date: Date) => `${date.toISOString().replace(/[-:]/g, '').split('.')[0]}Z`
-
-  const params = new URLSearchParams({
-    action: 'TEMPLATE',
-    text: row.name,
-    dates: `${utcStamp(start)}/${utcStamp(end)}`
-  })
-  if (row.location?.name) params.set('location', row.location.name)
-  if (row.description) params.set('details', row.description)
-
-  return `https://www.google.com/calendar/render?${params.toString()}`
 }
 
 // Shop organizers (Magman etc.) show up in the bot for schedule visibility
@@ -343,7 +300,13 @@ export const torneoMenu = new Menu<Context>('t', { autoAnswer: false, onMenuOutd
 
   const mapUrl = tournament.location ? mapsUrl(tournament.location) : null
   if (mapUrl) range.url('🧭 Direzioni', mapUrl)
-  range.url('🗓️ Aggiungi al calendario', googleCalendarUrl(tournament))
+  range.url('🗓️ Aggiungi al calendario', googleCalendarUrl({
+    name: tournament.name,
+    startsAt: tournament.starts_at,
+    endsAt: tournament.ends_at,
+    locationName: tournament.location?.name,
+    description: tournament.description
+  }))
   range.row()
 
   range.text({ text: backLabel(origin), payload }, async (ctx) => {
