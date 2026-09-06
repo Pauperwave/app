@@ -1,6 +1,92 @@
 # Changelog
 
 
+## v0.1.13
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.1.12...v0.1.13)
+
+### Enhancements
+
+- **tournaments:** ✨ track Magman's own tournaments for schedule comparison ([e449090](https://github.com/Pauperwave/app/commit/e449090))
+- **locations:** ✨ badge shop venues on /locations ([2222859](https://github.com/Pauperwave/app/commit/2222859))
+- **telegram:** ✨ add pauperwave_telegram_chat_settings table ([90cbddd](https://github.com/Pauperwave/app/commit/90cbddd))
+- **telegram:** ✨ add /visibilita command to toggle Magman tournaments ([5a8fbce](https://github.com/Pauperwave/app/commit/5a8fbce))
+- **wanted-cards:** ✨ let the requester manage their own card ([be5d59d](https://github.com/Pauperwave/app/commit/be5d59d))
+- **telegram:** ✨ paginate /cartecercate and let owners manage their cards ([4445613](https://github.com/Pauperwave/app/commit/4445613))
+- **telegram:** ✨ show card image and scryfall link in /cartecercate detail ([3150df6](https://github.com/Pauperwave/app/commit/3150df6))
+- **telegram:** ✨ link requester name and show CM/CT prices in card detail ([f2627dc](https://github.com/Pauperwave/app/commit/f2627dc))
+- **telegram:** ✨ add /collegamento to check chat↔socio link status ([a6137c1](https://github.com/Pauperwave/app/commit/a6137c1))
+- **telegram:** 🔥 remove /whoami ([776995b](https://github.com/Pauperwave/app/commit/776995b))
+- **telegram-bot:** ✨ add detail button to /prossimo ([18e5d85](https://github.com/Pauperwave/app/commit/18e5d85))
+- **telegram-bot:** ✨ add per-event detail view to /eventi ([2afeb0a](https://github.com/Pauperwave/app/commit/2afeb0a))
+- **telegram-bot:** ✨ add /tavolo and /vota mockups ([2d6f712](https://github.com/Pauperwave/app/commit/2d6f712))
+- **telegram-bot:** ✨ use Telegram inline mode for commander search in /tavolo ([55f49d3](https://github.com/Pauperwave/app/commit/55f49d3))
+- **telegram-bot:** ✨ add pagination to /classifiche ([55e0866](https://github.com/Pauperwave/app/commit/55e0866))
+- **telegram-bot:** ✨ show personal registration status in /calendario ([4bf1dfc](https://github.com/Pauperwave/app/commit/4bf1dfc))
+- **supabase:** ✨ add tournament_match_results table for 1v1 match scores ([c80794b](https://github.com/Pauperwave/app/commit/c80794b))
+
+### Performance
+
+- **telegram-bot:** ⚡️ cut redundant tournament queries ([c5a2248](https://github.com/Pauperwave/app/commit/c5a2248))
+- **telegram-bot:** ⚡️ dedupe per-update query duplication across all list/detail commands ([700f307](https://github.com/Pauperwave/app/commit/700f307))
+
+### Fixes
+
+- **telegram:** 🐛 stop nesting a scryfall link inside bold markdown ([be2c314](https://github.com/Pauperwave/app/commit/be2c314))
+- **telegram:** 🐛 register every Menu before CommandGroup, not after ([9bf1ea1](https://github.com/Pauperwave/app/commit/9bf1ea1))
+- **telegram:** 🐛 format all timestamptz values in Europe/Rome, not server-local ([0339c5d](https://github.com/Pauperwave/app/commit/0339c5d))
+- **telegram:** 🐛 compute /calendario's "current month" in Italy's timezone ([d41ffa7](https://github.com/Pauperwave/app/commit/d41ffa7))
+- **telegram-bot:** 🐛 stop false-positive "Menu was outdated" errors ([c913ada](https://github.com/Pauperwave/app/commit/c913ada))
+- **telegram-bot:** 🐛 fix dead back buttons losing ctx.match ([899a720](https://github.com/Pauperwave/app/commit/899a720))
+- **telegram-bot:** 🐛 fix /vota jumping straight to the confirm screen ([24172e5](https://github.com/Pauperwave/app/commit/24172e5))
+- **telegram-bot:** 🐛 fix dead tournament buttons in /calendario and /leghe ([4b83468](https://github.com/Pauperwave/app/commit/4b83468))
+- **migrations:** 🔧 reconcile local filenames with remote-applied timestamps ([ce9c378](https://github.com/Pauperwave/app/commit/ce9c378))
+- **telegram-bot:** 🔒️ restrict /tavolo inline mode to the bot's own chat ([57d2b84](https://github.com/Pauperwave/app/commit/57d2b84))
+
+### Refactors
+
+- **locations:** ♻️ extract shared TypeBadge component ([3daa5d7](https://github.com/Pauperwave/app/commit/3daa5d7))
+- **telegram:** ♻️ migrate bot messages from Markdown to MarkdownV2 ([1fb181c](https://github.com/Pauperwave/app/commit/1fb181c))
+- **telegram:** ♻️ replace MarkdownV2 string escaping with entity-based formatting ([9ef74ca](https://github.com/Pauperwave/app/commit/9ef74ca))
+- **telegram:** ♻️ adopt @grammyjs/commands, drop manual BOT_COMMANDS array ([bac9d2d](https://github.com/Pauperwave/app/commit/bac9d2d))
+- **telegram:** ♻️ migrate /visibilita and /classifiche to @grammyjs/menu ([b6bb8d9](https://github.com/Pauperwave/app/commit/b6bb8d9))
+- **telegram:** ♻️ migrate the shared tournament-detail menu tree ([953a04e](https://github.com/Pauperwave/app/commit/953a04e))
+- **telegram:** ♻️ migrate /cartecercate to @grammyjs/menu ([95903bb](https://github.com/Pauperwave/app/commit/95903bb))
+- **telegram-bot:** ♻️ remove cartecercate, mazzi, visibilita and the notifiche stub ([adfdc3a](https://github.com/Pauperwave/app/commit/adfdc3a))
+- **telegram-bot:** ♻️ group /help by command domain ([a41eb67](https://github.com/Pauperwave/app/commit/a41eb67))
+- **telegram-bot:** ♻️ split /tavolo and /vota into their own /help section ([289a07e](https://github.com/Pauperwave/app/commit/289a07e))
+- **telegram-bot:** ♻️ split /help further into Classifiche and Le mie iscrizioni ([a1d39b1](https://github.com/Pauperwave/app/commit/a1d39b1))
+- **telegram-bot:** ♻️ remove unused /bracket stub command ([b569437](https://github.com/Pauperwave/app/commit/b569437))
+- **telegram-bot:** ♻️ make classifiche.ts's menus consistent with the rest of the bot ([018af32](https://github.com/Pauperwave/app/commit/018af32))
+- **telegram-bot:** 🚚 group commands into domain subfolders ([9248868](https://github.com/Pauperwave/app/commit/9248868))
+
+### Documentation
+
+- **telegram:** 📝 document /visibilita and default-hidden Magman tournaments ([6631d0b](https://github.com/Pauperwave/app/commit/6631d0b))
+- **telegram-bot:** 🗑️ trim historical narrative from telegram-bot.md ([8f04b4c](https://github.com/Pauperwave/app/commit/8f04b4c))
+- **telegram-bot:** 🗑️ shorten comments across the bot ([3a376b2](https://github.com/Pauperwave/app/commit/3a376b2))
+- **telegram-bot:** 🚧 mark /tavolo and /vota as WIP in /help ([702a27c](https://github.com/Pauperwave/app/commit/702a27c))
+- **telegram-bot:** 📝 mention /collegamento in /start ([8741030](https://github.com/Pauperwave/app/commit/8741030))
+
+### Chore
+
+- **telegram:** 🔥 drop dead editOrResendMessage, document menu migration ([7d07a6b](https://github.com/Pauperwave/app/commit/7d07a6b))
+- **supabase:** 🔖 regenerate database.ts after tournament_match_results migration ([507b7d0](https://github.com/Pauperwave/app/commit/507b7d0))
+
+### Styles
+
+- **telegram-bot:** 🎨 group imports by external/local/shared ([8cd5f7f](https://github.com/Pauperwave/app/commit/8cd5f7f))
+- **telegram-bot:** 🎨 wrap long multi-arg calls onto multiple lines ([f33e7fc](https://github.com/Pauperwave/app/commit/f33e7fc))
+- **telegram-bot:** 🎨 wrap remaining long Menu/call args onto multiple lines ([72c4bd9](https://github.com/Pauperwave/app/commit/72c4bd9))
+- **telegram-bot:** 🎨 show each league as a 3-line block in /leghe ([3de2ee5](https://github.com/Pauperwave/app/commit/3de2ee5))
+- **telegram-bot:** 🎨 wrap remaining single-line Menu constructors ([488da0f](https://github.com/Pauperwave/app/commit/488da0f))
+- **telegram-bot:** 🎨 show each tournament as a 3-line block in /iscrizioni ([12f1425](https://github.com/Pauperwave/app/commit/12f1425))
+- **telegram-bot:** 🎨 use light skin tone for 👋 and 👇 emoji ([8177618](https://github.com/Pauperwave/app/commit/8177618))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.1.12
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.1.11...v0.1.12)
