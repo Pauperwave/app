@@ -1,8 +1,9 @@
 // server\utils\telegram\commands\eventi.ts
 import { it } from 'date-fns/locale'
-import { FormattedString } from '@grammyjs/parse-mode'
+
 import type { Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
+import { FormattedString } from '@grammyjs/parse-mode'
 
 interface UpcomingEventRow {
   name: string

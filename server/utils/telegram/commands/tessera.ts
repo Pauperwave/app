@@ -1,10 +1,12 @@
 // server\utils\telegram\commands\tessera.ts
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { requireLinkedAssociate } from './linking'
-import { FormattedString } from '@grammyjs/parse-mode'
+
 import type { Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
+import { FormattedString } from '@grammyjs/parse-mode'
+
+import { requireLinkedAssociate } from './linking'
 
 interface AssociateStatusRow {
   first_name: string | null

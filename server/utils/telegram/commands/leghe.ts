@@ -1,16 +1,19 @@
 // server\utils\telegram\commands\leghe.ts
-import { Menu } from '@grammyjs/menu'
 import { it } from 'date-fns/locale'
-import { statusIcon, stageLabel, tournamentLine, tournamentButtonLabel } from './tournament/line'
-import { fetchRegistrationStatuses, fetchStageNumbers } from './tournament/queries'
-import { torneoMenu, openTournamentDetail } from './tournament/detail'
-import { answerLoadError } from './callbackErrors'
-import { tournamentProgressByLeague } from '#shared/utils/leagues/tournamentProgressByLeague'
-import { registerMenu } from '../menuNav'
-import { FormattedString } from '@grammyjs/parse-mode'
+
 import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
+import { Menu } from '@grammyjs/menu'
+import { FormattedString } from '@grammyjs/parse-mode'
+
+import { statusIcon, stageLabel, tournamentLine, tournamentButtonLabel } from './tournament/line'
+import { fetchRegistrationStatuses, fetchStageNumbers } from './tournament/queries'
 import type { RegistrationStatus } from './tournament/queries'
+import { torneoMenu, openTournamentDetail } from './tournament/detail'
+import { answerLoadError } from './callbackErrors'
+import { registerMenu } from '../menuNav'
+
+import { tournamentProgressByLeague } from '#shared/utils/leagues/tournamentProgressByLeague'
 import type { LeagueTournamentRow } from '#shared/utils/leagues/tournamentProgressByLeague'
 
 interface ActiveLeagueRow {

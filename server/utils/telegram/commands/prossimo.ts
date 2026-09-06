@@ -1,9 +1,10 @@
 // server\utils\telegram\commands\prossimo.ts
-import { formatTournamentDateTime, tournamentHeader } from './tournament/line'
-import { fetchStageNumbers } from './tournament/queries'
-import { FormattedString } from '@grammyjs/parse-mode'
 import type { Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
+import { FormattedString } from '@grammyjs/parse-mode'
+
+import { formatTournamentDateTime, tournamentHeader } from './tournament/line'
+import { fetchStageNumbers } from './tournament/queries'
 
 interface NextTournamentRow {
   uuid: string

@@ -1,7 +1,8 @@
 // server\utils\telegram\commands\collegamento.ts
-import { resolveAssociateUuidByChatId } from './linking'
 import type { Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
+
+import { resolveAssociateUuidByChatId } from './linking'
 
 interface AssociateIdentity {
   first_name: string | null
