@@ -9,6 +9,7 @@ const START_TEXT = 'Ciao! Sono il bot di Pauperwave 👋\n\n'
   + 'collegare il tuo account e sbloccare i comandi personalizzati:\n'
   + '/iscrizioni — i tornei a cui sei iscritto\n'
   + '/tessera — stato del tuo tesseramento\n\n'
+  + 'Usa /collegamento per verificare se questa chat è già collegata a un socio.\n\n'
   + 'Oppure usa subito /help per vedere quelli pubblici, funzionano già senza.'
 
 const HELP_TEXT = 'Comandi disponibili:\n\n'
