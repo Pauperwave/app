@@ -146,9 +146,15 @@ export const calendarioMenu = new Menu<Context>('cal', { autoAnswer: false }).dy
 })
 
 async function monthNav(ctx: Context & { match: string }) {
+  const chatId = ctx.chat?.id
+  if (!chatId) {
+    await ctx.answerCallbackQuery().catch(() => {})
+    return
+  }
+
   try {
     const monthOffset = Number(ctx.match)
-    const text = await calendarioText(monthOffset, ctx.chat!.id)
+    const text = await calendarioText(monthOffset, chatId)
     await ctx.editMessageText(text.text, { entities: text.entities, reply_markup: calendarioMenu })
     await ctx.answerCallbackQuery()
   } catch {

@@ -1,9 +1,10 @@
 // server\utils\telegram\commands\cartecercate.ts
-import { InlineKeyboard } from 'grammy'
+import { Menu } from '@grammyjs/menu'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { resolveAssociateUuidByChatId, resolveChatIdByAssociateUuid, NOT_LINKED_MESSAGE } from './linking'
-import { answerLoadError, editOrResendMessage } from './callbackErrors'
+import { answerLoadError } from './callbackErrors'
+import { navigateBack } from '../menuNav'
 import { FormattedString } from '@grammyjs/parse-mode'
 import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
@@ -34,8 +35,7 @@ const PAGE_SIZE = 10
 
 // Telegram photo captions cap at 1024 characters (vs. 4096 for plain text
 // messages) — only relevant when the detail is sent as a photo (image_url
-// set), same constraint as tournament/detail.ts's own truncateForCaption.
-// .slice() (not a raw string cut) keeps entities consistent with the
+// set). .slice() (not a raw string cut) keeps entities consistent with the
 // truncated text.
 const CAPTION_LIMIT = 1024
 
@@ -58,14 +58,22 @@ const STATUS_LABEL: Record<WantedCardStatus, string> = {
 
 type Scope = 'all' | 'mine'
 
-// Short token carried through callback_data (64-byte cap, same reasoning as
-// tournament/detail.ts's own origin encoding) — 'a'/'m' + page number.
-function encodeOrigin(scope: Scope, page: number): string {
+// Short tokens carried through menu payloads (64-byte callback_data cap,
+// same reasoning as tournament/detail.ts's own origin encoding) —
+// 'a'/'m' + page number for the list, and `${uuid}:${listPayload}` for a
+// card (so both the list scope/page AND the specific card survive a full
+// round trip through the detail and delete-confirm menus).
+function encodeListPayload(scope: Scope, page: number): string {
   return `${scope === 'mine' ? 'm' : 'a'}${page}`
 }
 
-function decodeOrigin(origin: string): { scope: Scope, page: number } {
-  return { scope: origin.startsWith('m') ? 'mine' : 'all', page: Number(origin.slice(1)) }
+function decodeListPayload(raw: string): { scope: Scope, page: number } {
+  return { scope: raw.startsWith('m') ? 'mine' : 'all', page: Number(raw.slice(1)) }
+}
+
+function decodeCardPayload(raw: string): { uuid: string, listPayload: string } {
+  const separator = raw.indexOf(':')
+  return { uuid: raw.slice(0, separator), listPayload: raw.slice(separator + 1) }
 }
 
 // pauperwave_wanted_cards has no anon-read policy (only `authenticated`, see
@@ -131,36 +139,15 @@ function listMessage(rows: WantedCardRow[], scope: Scope): FormattedString {
   return fmt`${header}\n\n${FormattedString.join(lines, '\n')}\n\n👇 Tocca una carta per i dettagli`
 }
 
-function listKeyboard(
-  rows: WantedCardRow[], scope: Scope, page: number, hasNext: boolean
-): InlineKeyboard {
-  const keyboard = new InlineKeyboard()
-
-  if (page > 0 || hasNext) {
-    const navRow = keyboard.row()
-    if (page > 0) navRow.text('◀ Pagina prec.', `cartecercate:${encodeOrigin(scope, page - 1)}`)
-    if (hasNext) navRow.text('Pagina succ. ▶', `cartecercate:${encodeOrigin(scope, page + 1)}`)
-  }
-
-  for (const row of rows) {
-    const label = `${STATUS_ICON[row.status]} ${row.card_name}`.slice(0, 64)
-    keyboard.row().text(label, `carta:${row.uuid}:${encodeOrigin(scope, page)}`)
-  }
-
-  keyboard.row().text(
-    scope === 'mine' ? '🌐 Tutte le carte' : '👤 Solo le mie carte',
-    `cartecercate:${encodeOrigin(scope === 'mine' ? 'all' : 'mine', 0)}`
-  )
-
-  return keyboard
-}
-
-async function renderList(
+// Used by both the forward list render and the back-jumps from cartaMenu/
+// cartaDeleteMenu (via navigateBack) to rebuild the exact list page a card
+// was opened from.
+async function cartecercateText(
   scope: Scope, page: number, chatId: number
-): Promise<{ text: FormattedString, keyboard: InlineKeyboard }> {
+): Promise<FormattedString> {
   const associateUuid = await resolveAssociateUuidByChatId(chatId)
-  const { rows, hasNext } = await fetchWantedCardsPage(scope, page, associateUuid)
-  return { text: listMessage(rows, scope), keyboard: listKeyboard(rows, scope, page, hasNext) }
+  const { rows } = await fetchWantedCardsPage(scope, page, associateUuid)
+  return listMessage(rows, scope)
 }
 
 async function fetchWantedCard(uuid: string): Promise<WantedCardRow | null> {
@@ -210,257 +197,333 @@ function isOwnCard(row: WantedCardRow, associateUuid: string | null): boolean {
   return associateUuid !== null && row.player_associate_uuid === associateUuid
 }
 
-function cardDetailKeyboard(row: WantedCardRow, origin: string, isOwner: boolean): InlineKeyboard {
-  const keyboard = new InlineKeyboard()
+// ---- cartecercateMenu (list, paginated) ------------------------------
 
-  if (isOwner) {
+// autoAnswer: false — the "open card" buttons navigate into cartaMenu via a
+// dedicated handler that answers itself once the detail is drawn.
+const cartecercateMenu = new Menu<Context>('cc', { autoAnswer: false }).dynamic(async (ctx, range) => {
+  const chatId = ctx.chat?.id
+  if (!chatId) return
+  const { scope, page } = decodeListPayload((ctx.match as string | undefined) ?? 'a0')
+
+  const associateUuid = await resolveAssociateUuidByChatId(chatId)
+  const { rows, hasNext } = await fetchWantedCardsPage(scope, page, associateUuid)
+
+  if (page > 0 || hasNext) {
+    const navRow = range.row()
+    if (page > 0) {
+      navRow.text({ text: '◀ Pagina prec.', payload: encodeListPayload(scope, page - 1) }, openList)
+    }
+    if (hasNext) {
+      navRow.text({ text: 'Pagina succ. ▶', payload: encodeListPayload(scope, page + 1) }, openList)
+    }
+  }
+
+  for (const row of rows) {
+    const label = `${STATUS_ICON[row.status]} ${row.card_name}`.slice(0, 64)
+    const cardPayload = `${row.uuid}:${encodeListPayload(scope, page)}`
+    range.row().submenu({ text: label, payload: cardPayload }, 'cd', openCard)
+  }
+
+  const otherScope = scope === 'mine' ? 'all' : 'mine'
+  range.row().text(
+    {
+      text: scope === 'mine' ? '🌐 Tutte le carte' : '👤 Solo le mie carte',
+      payload: encodeListPayload(otherScope, 0)
+    },
+    openList
+  )
+})
+
+// Shared by the pagination buttons and the "solo le mie/tutte" toggle —
+// both just mean "show the list at this scope/page", differing only in
+// whether the chat needs to be linked (only true when the target is
+// 'mine'), same gate the original single callback handler applied to both.
+async function openList(ctx: Context & { match: string }) {
+  const chatId = ctx.chat?.id
+  if (!chatId) {
+    await ctx.answerCallbackQuery().catch(() => {})
+    return
+  }
+
+  const { scope, page } = decodeListPayload(ctx.match)
+  if (scope === 'mine' && !await resolveAssociateUuidByChatId(chatId)) {
+    await ctx.answerCallbackQuery({ text: NOT_LINKED_MESSAGE, show_alert: true })
+    return
+  }
+
+  try {
+    const text = await cartecercateText(scope, page, chatId)
+    await ctx.editMessageText(text.text, {
+      entities: text.entities,
+      reply_markup: cartecercateMenu,
+      link_preview_options: { is_disabled: true }
+    })
+    await ctx.answerCallbackQuery()
+  } catch {
+    await answerLoadError(ctx)
+  }
+}
+
+// ---- cartaMenu (card detail) ------------------------------------------
+
+async function openCard(ctx: Context & { match: string }) {
+  const chatId = ctx.chat?.id
+  if (!chatId) {
+    await ctx.answerCallbackQuery().catch(() => {})
+    return
+  }
+
+  try {
+    const { uuid } = decodeCardPayload(ctx.match)
+    const row = await fetchWantedCard(uuid)
+    if (!row) {
+      await ctx.answerCallbackQuery({ text: 'Richiesta non trovata', show_alert: true })
+      return
+    }
+
+    const requesterChatId = await resolveChatIdByAssociateUuid(row.player_associate_uuid)
+    const text = cardDetailMessage(row, requesterChatId)
+
+    if (row.image_url) {
+      await ctx.deleteMessage().catch(() => {})
+      const capped = truncateForCaption(text)
+      await ctx.replyWithPhoto(row.image_url, {
+        caption: capped.caption,
+        caption_entities: capped.caption_entities,
+        reply_markup: cartaMenu
+      })
+    } else {
+      await ctx.editMessageText(text.text, {
+        entities: text.entities,
+        reply_markup: cartaMenu,
+        link_preview_options: { is_disabled: true }
+      })
+    }
+    await ctx.answerCallbackQuery()
+  } catch {
+    await answerLoadError(ctx)
+  }
+}
+
+// autoAnswer: false — status-change/delete/back all answer with their own
+// confirmation or error text.
+const cartaMenu = new Menu<Context>('cd', { autoAnswer: false }).dynamic(async (ctx, range) => {
+  const chatId = ctx.chat?.id
+  const raw = ctx.match as string | undefined
+  if (!chatId || !raw) return
+  const { uuid } = decodeCardPayload(raw)
+
+  const row = await fetchWantedCard(uuid)
+  if (!row) return
+
+  const associateUuid = await resolveAssociateUuidByChatId(chatId)
+  if (isOwnCard(row, associateUuid)) {
     for (const status of Object.keys(STATUS_LABEL) as WantedCardStatus[]) {
       if (status === row.status) continue
-      keyboard.row().text(`${STATUS_ICON[status]} Segna: ${STATUS_LABEL[status]}`, `cstatus:${row.uuid}:${status}:${origin}`)
+      range.row().text(
+        { text: `${STATUS_ICON[status]} Segna: ${STATUS_LABEL[status]}`, payload: raw },
+        ctx => changeStatus(ctx, status)
+      )
     }
-    keyboard.row().text('🗑️ Elimina richiesta', `cdelete:${row.uuid}:${origin}`)
+    range.row().submenu({ text: '🗑️ Elimina richiesta', payload: raw }, 'cx', openDeleteConfirm)
   }
 
-  const { scope, page } = decodeOrigin(origin)
-  keyboard.row().text('« Torna all\'elenco', `cartecercate:${encodeOrigin(scope, page)}`)
-  return keyboard
-}
+  range.row().back({ text: '« Torna all\'elenco', payload: raw }, backToList)
+})
 
-function deleteConfirmKeyboard(uuid: string, origin: string): InlineKeyboard {
-  return new InlineKeyboard()
-    .row().text('❗ Conferma eliminazione', `cdeleteok:${uuid}:${origin}`)
-    .row().text('« Annulla', `carta:${uuid}:${origin}`)
-}
-
-async function renderCardDetail(
-  uuid: string, origin: string, chatId: number
-): Promise<{ row: WantedCardRow, text: FormattedString, keyboard: InlineKeyboard } | null> {
-  const row = await fetchWantedCard(uuid)
-  if (!row) return null
-
-  const [associateUuid, requesterChatId] = await Promise.all([
-    resolveAssociateUuidByChatId(chatId),
-    resolveChatIdByAssociateUuid(row.player_associate_uuid)
-  ])
-  return {
-    row,
-    text: cardDetailMessage(row, requesterChatId),
-    keyboard: cardDetailKeyboard(row, origin, isOwnCard(row, associateUuid))
+async function changeStatus(ctx: Context & { match: string }, status: WantedCardStatus) {
+  const chatId = ctx.chat?.id
+  if (!chatId) {
+    await ctx.answerCallbackQuery().catch(() => {})
+    return
   }
-}
 
-// The message being replaced is always a text one here (the list) — a
-// photo tournament/detail.ts-style can't be edited into via editMessageText,
-// but it doesn't need to be: this only ever opens a detail view fresh, never
-// refreshes an existing photo one (that's refreshCardDetail below).
-async function openCardDetail(
-  ctx: Context, row: WantedCardRow, text: FormattedString, keyboard: InlineKeyboard
-) {
-  if (row.image_url) {
-    await ctx.deleteMessage().catch(() => {})
-    const capped = truncateForCaption(text)
-    await ctx.replyWithPhoto(row.image_url, {
-      caption: capped.caption,
-      caption_entities: capped.caption_entities,
-      reply_markup: keyboard
-    })
-  } else {
-    await ctx.editMessageText(text.text, {
-      entities: text.entities,
-      reply_markup: keyboard,
-      link_preview_options: { is_disabled: true }
-    })
+  try {
+    const { uuid } = decodeCardPayload(ctx.match)
+    const associateUuid = await resolveAssociateUuidByChatId(chatId)
+    const row = await fetchWantedCard(uuid)
+    if (!row || !isOwnCard(row, associateUuid)) {
+      await ctx.answerCallbackQuery({ text: 'Non è una tua richiesta.', show_alert: true })
+      return
+    }
+
+    const supabase = telegramServiceSupabaseClient()
+    const { error } = await supabase.from('pauperwave_wanted_cards').update({ status }).eq('uuid', uuid)
+    if (error) throw error
+
+    const requesterChatId = await resolveChatIdByAssociateUuid(row.player_associate_uuid)
+    const text = cardDetailMessage({ ...row, status }, requesterChatId)
+    if (row.image_url) {
+      const capped = truncateForCaption(text)
+      await ctx.editMessageCaption({
+        caption: capped.caption,
+        caption_entities: capped.caption_entities,
+        reply_markup: cartaMenu
+      })
+    } else {
+      await ctx.editMessageText(text.text, {
+        entities: text.entities,
+        reply_markup: cartaMenu,
+        link_preview_options: { is_disabled: true }
+      })
+    }
+    await ctx.answerCallbackQuery({ text: `✅ Segnata come "${STATUS_LABEL[status]}"` })
+  } catch {
+    await ctx.answerCallbackQuery({ text: 'Errore durante l\'aggiornamento, riprova più tardi.', show_alert: true })
   }
 }
 
-// Re-renders an already-open detail message in place (after a status change,
-// or to show the delete confirm) — the message may already be a photo one
-// (image_url set), so this edits the caption instead of the text, same
-// distinction as tournament/detail.ts's own refreshDetailMessage.
-async function refreshCardDetail(
-  ctx: Context, row: WantedCardRow, text: FormattedString, keyboard: InlineKeyboard
-) {
-  if (row.image_url) {
-    const capped = truncateForCaption(text)
-    await ctx.editMessageCaption({
-      caption: capped.caption,
-      caption_entities: capped.caption_entities,
-      reply_markup: keyboard
+async function backToList(ctx: Context & { match: string }) {
+  const chatId = ctx.chat?.id
+  if (!chatId) {
+    await ctx.answerCallbackQuery().catch(() => {})
+    return
+  }
+
+  try {
+    const { listPayload } = decodeCardPayload(ctx.match)
+    const { scope, page } = decodeListPayload(listPayload)
+    await navigateBack(ctx, async () => ({
+      payload: listPayload,
+      menu: cartecercateMenu,
+      text: await cartecercateText(scope, page, chatId)
+    }))
+    await ctx.answerCallbackQuery()
+  } catch {
+    await answerLoadError(ctx)
+  }
+}
+
+// ---- cartaDeleteMenu (delete confirmation) -----------------------------
+
+async function openDeleteConfirm(ctx: Context & { match: string }) {
+  const chatId = ctx.chat?.id
+  if (!chatId) {
+    await ctx.answerCallbackQuery().catch(() => {})
+    return
+  }
+
+  try {
+    const { uuid } = decodeCardPayload(ctx.match)
+    const associateUuid = await resolveAssociateUuidByChatId(chatId)
+    const row = await fetchWantedCard(uuid)
+    if (!row || !isOwnCard(row, associateUuid)) {
+      await ctx.answerCallbackQuery({ text: 'Non è una tua richiesta.', show_alert: true })
+      return
+    }
+
+    const requesterChatId = await resolveChatIdByAssociateUuid(row.player_associate_uuid)
+    const text = fmt`${cardDetailMessage(row, requesterChatId)}\n\n⚠️ Eliminare questa richiesta?`
+    if (row.image_url) {
+      const capped = truncateForCaption(text)
+      await ctx.editMessageCaption({
+        caption: capped.caption,
+        caption_entities: capped.caption_entities,
+        reply_markup: cartaDeleteMenu
+      })
+    } else {
+      await ctx.editMessageText(text.text, {
+        entities: text.entities,
+        reply_markup: cartaDeleteMenu,
+        link_preview_options: { is_disabled: true }
+      })
+    }
+    await ctx.answerCallbackQuery()
+  } catch {
+    await answerLoadError(ctx)
+  }
+}
+
+// autoAnswer: false — confirm/cancel both answer with their own text.
+const cartaDeleteMenu = new Menu<Context>('cx', { autoAnswer: false }).dynamic((ctx, range) => {
+  const raw = ctx.match as string | undefined
+  if (!raw) return
+  range.row().text({ text: '❗ Conferma eliminazione', payload: raw }, confirmDelete)
+  range.row().back({ text: '« Annulla', payload: raw }, cancelDelete)
+})
+
+async function confirmDelete(ctx: Context & { match: string }) {
+  const chatId = ctx.chat?.id
+  if (!chatId) {
+    await ctx.answerCallbackQuery().catch(() => {})
+    return
+  }
+
+  try {
+    const { uuid, listPayload } = decodeCardPayload(ctx.match)
+    const associateUuid = await resolveAssociateUuidByChatId(chatId)
+    const row = await fetchWantedCard(uuid)
+    if (!row || !isOwnCard(row, associateUuid)) {
+      await ctx.answerCallbackQuery({ text: 'Non è una tua richiesta.', show_alert: true })
+      return
+    }
+
+    // Soft delete (deleted_at), same convention as delete.post.ts —
+    // no deleted_by here, the bot has no auth.users id to stamp, only a
+    // chat_id/associate_uuid.
+    const supabase = telegramServiceSupabaseClient()
+    const { error } = await supabase
+      .from('pauperwave_wanted_cards')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('uuid', uuid)
+    if (error) throw error
+
+    const { scope, page } = decodeListPayload(listPayload)
+    await navigateBack(ctx, async () => ({
+      payload: listPayload,
+      menu: cartecercateMenu,
+      text: await cartecercateText(scope, page, chatId)
+    }))
+    await ctx.answerCallbackQuery({ text: '🗑️ Richiesta eliminata.' })
+  } catch {
+    await ctx.answerCallbackQuery({ text: 'Errore durante l\'eliminazione, riprova più tardi.', show_alert: true })
+  }
+}
+
+async function cancelDelete(ctx: Context & { match: string }) {
+  const chatId = ctx.chat?.id
+  if (!chatId) {
+    await ctx.answerCallbackQuery().catch(() => {})
+    return
+  }
+
+  try {
+    const raw = ctx.match
+    const { uuid } = decodeCardPayload(raw)
+    await navigateBack(ctx, async () => {
+      const row = await fetchWantedCard(uuid)
+      if (!row) throw new Error('Wanted card not found')
+      const requesterChatId = await resolveChatIdByAssociateUuid(row.player_associate_uuid)
+      return { payload: raw, menu: cartaMenu, text: cardDetailMessage(row, requesterChatId) }
     })
-  } else {
-    await ctx.editMessageText(text.text, {
-      entities: text.entities,
-      reply_markup: keyboard,
-      link_preview_options: { is_disabled: true }
-    })
+    await ctx.answerCallbackQuery()
+  } catch {
+    await answerLoadError(ctx)
   }
 }
 
 const CARTECERCATE_DESCRIPTION = 'Carte cercate dai soci (paginato, gestisci le tue)'
 
 export function registerCarteCercateCommand(bot: Bot, commands: CommandGroup<Context>) {
+  // Deferred to call time, not module top level — same circular-import
+  // reasoning as calendario.ts's own comment, though here all three menus
+  // live in this one file, so it's just kept consistent with that pattern
+  // rather than strictly necessary.
+  cartecercateMenu.register(cartaMenu)
+  cartaMenu.register(cartaDeleteMenu)
+  bot.use(cartecercateMenu)
+
   commands.command('cartecercate', CARTECERCATE_DESCRIPTION, async (ctx) => {
     try {
-      const { text, keyboard } = await renderList('all', 0, ctx.chat.id)
+      const text = await cartecercateText('all', 0, ctx.chat.id)
       await ctx.reply(text.text, {
         entities: text.entities,
-        reply_markup: keyboard,
+        reply_markup: cartecercateMenu,
         link_preview_options: { is_disabled: true }
       })
     } catch {
       await ctx.reply('⚠️ Non sono riuscito a recuperare le carte cercate, riprova più tardi.')
-    }
-  })
-
-  bot.callbackQuery(/^cartecercate:([am]\d+)$/, async (ctx) => {
-    const originToken = ctx.match?.[1] as string | undefined
-    const chatId = ctx.chat?.id
-    if (!originToken || !chatId) {
-      await ctx.answerCallbackQuery().catch(() => {})
-      return
-    }
-    const { scope, page } = decodeOrigin(originToken)
-
-    if (scope === 'mine' && !await resolveAssociateUuidByChatId(chatId)) {
-      await ctx.answerCallbackQuery({ text: NOT_LINKED_MESSAGE, show_alert: true })
-      return
-    }
-
-    try {
-      const { text, keyboard } = await renderList(scope, page, chatId)
-      await editOrResendMessage(ctx, text, keyboard)
-      await ctx.answerCallbackQuery()
-    } catch {
-      await answerLoadError(ctx)
-    }
-  })
-
-  function cardCallbackParams(
-    ctx: Context
-  ): { uuid: string, origin: string, chatId: number } | null {
-    const uuid = ctx.match?.[1] as string | undefined
-    const origin = ctx.match?.[2] as string | undefined
-    const chatId = ctx.chat?.id
-    if (!uuid || !origin || !chatId) return null
-    return { uuid, origin, chatId }
-  }
-
-  bot.callbackQuery(/^carta:([0-9a-f-]+):([am]\d+)$/, async (ctx) => {
-    const params = cardCallbackParams(ctx)
-    if (!params) {
-      await ctx.answerCallbackQuery().catch(() => {})
-      return
-    }
-    const { uuid, origin, chatId } = params
-
-    try {
-      const rendered = await renderCardDetail(uuid, origin, chatId)
-      if (!rendered) {
-        await ctx.answerCallbackQuery({ text: 'Richiesta non trovata', show_alert: true })
-        return
-      }
-      await openCardDetail(ctx, rendered.row, rendered.text, rendered.keyboard)
-      await ctx.answerCallbackQuery()
-    } catch {
-      await answerLoadError(ctx)
-    }
-  })
-
-  bot.callbackQuery(/^cstatus:([0-9a-f-]+):(searching|found|abandoned):([am]\d+)$/, async (ctx) => {
-    const uuid = ctx.match?.[1] as string | undefined
-    const status = ctx.match?.[2] as WantedCardStatus | undefined
-    const origin = ctx.match?.[3] as string | undefined
-    const chatId = ctx.chat?.id
-    if (!uuid || !status || !origin || !chatId) {
-      await ctx.answerCallbackQuery().catch(() => {})
-      return
-    }
-
-    try {
-      const associateUuid = await resolveAssociateUuidByChatId(chatId)
-      const row = await fetchWantedCard(uuid)
-      if (!row || !isOwnCard(row, associateUuid)) {
-        await ctx.answerCallbackQuery({ text: 'Non è una tua richiesta.', show_alert: true })
-        return
-      }
-
-      const supabase = telegramServiceSupabaseClient()
-      const { error } = await supabase
-        .from('pauperwave_wanted_cards')
-        .update({ status })
-        .eq('uuid', uuid)
-      if (error) throw error
-
-      const rendered = await renderCardDetail(uuid, origin, chatId)
-      if (rendered) await refreshCardDetail(ctx, rendered.row, rendered.text, rendered.keyboard)
-      await ctx.answerCallbackQuery({ text: `✅ Segnata come "${STATUS_LABEL[status]}"` })
-    } catch {
-      await ctx.answerCallbackQuery({ text: 'Errore durante l\'aggiornamento, riprova più tardi.', show_alert: true })
-    }
-  })
-
-  bot.callbackQuery(/^cdelete:([0-9a-f-]+):([am]\d+)$/, async (ctx) => {
-    const params = cardCallbackParams(ctx)
-    if (!params) {
-      await ctx.answerCallbackQuery().catch(() => {})
-      return
-    }
-    const { uuid, origin, chatId } = params
-
-    try {
-      const associateUuid = await resolveAssociateUuidByChatId(chatId)
-      const row = await fetchWantedCard(uuid)
-      if (!row || !isOwnCard(row, associateUuid)) {
-        await ctx.answerCallbackQuery({ text: 'Non è una tua richiesta.', show_alert: true })
-        return
-      }
-
-      // Own card (isOwnCard just checked above) — the requester's chat_id is
-      // this same chatId, no extra lookup needed.
-      await refreshCardDetail(
-        ctx, row,
-        fmt`${cardDetailMessage(row, chatId)}\n\n⚠️ Eliminare questa richiesta?`,
-        deleteConfirmKeyboard(uuid, origin)
-      )
-      await ctx.answerCallbackQuery()
-    } catch {
-      await answerLoadError(ctx)
-    }
-  })
-
-  bot.callbackQuery(/^cdeleteok:([0-9a-f-]+):([am]\d+)$/, async (ctx) => {
-    const uuid = ctx.match?.[1] as string | undefined
-    const origin = ctx.match?.[2] as string | undefined
-    const chatId = ctx.chat?.id
-    if (!uuid || !origin || !chatId) {
-      await ctx.answerCallbackQuery().catch(() => {})
-      return
-    }
-
-    try {
-      const associateUuid = await resolveAssociateUuidByChatId(chatId)
-      const row = await fetchWantedCard(uuid)
-      if (!row || !isOwnCard(row, associateUuid)) {
-        await ctx.answerCallbackQuery({ text: 'Non è una tua richiesta.', show_alert: true })
-        return
-      }
-
-      // Soft delete (deleted_at), same convention as delete.post.ts —
-      // no deleted_by here, the bot has no auth.users id to stamp, only a
-      // chat_id/associate_uuid.
-      const supabase = telegramServiceSupabaseClient()
-      const { error } = await supabase
-        .from('pauperwave_wanted_cards')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('uuid', uuid)
-      if (error) throw error
-
-      const { scope, page } = decodeOrigin(origin)
-      const { text, keyboard } = await renderList(scope, page, chatId)
-      await editOrResendMessage(ctx, text, keyboard)
-      await ctx.answerCallbackQuery({ text: '🗑️ Richiesta eliminata.' })
-    } catch {
-      await ctx.answerCallbackQuery({ text: 'Errore durante l\'eliminazione, riprova più tardi.', show_alert: true })
     }
   })
 }

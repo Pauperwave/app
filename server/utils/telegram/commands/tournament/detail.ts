@@ -233,9 +233,9 @@ async function resolveBackTarget(
 }
 
 async function resolveLinkedAssociate(
-  ctx: Context, notLinkedMessage: string
+  ctx: Context, chatId: number, notLinkedMessage: string
 ): Promise<string | null> {
-  const associateUuid = await resolveAssociateUuidByChatId(ctx.chat!.id)
+  const associateUuid = await resolveAssociateUuidByChatId(chatId)
   if (!associateUuid) {
     await ctx.answerCallbackQuery({ text: notLinkedMessage, show_alert: true })
     return null
@@ -247,13 +247,14 @@ async function resolveLinkedAssociate(
 // error text, which would race with Menu's default no-args auto-answer.
 export const torneoMenu = new Menu<Context>('t', { autoAnswer: false }).dynamic(async (ctx, range) => {
   const raw = ctx.match as string | undefined
-  if (!raw) return
+  const chatId = ctx.chat?.id
+  if (!raw || !chatId) return
   const { uuid, origin } = decodeTorneoPayload(raw)
 
   const tournament = await fetchTournament(uuid)
   if (!tournament) return
 
-  const associateUuid = await resolveAssociateUuidByChatId(ctx.chat!.id)
+  const associateUuid = await resolveAssociateUuidByChatId(chatId)
   const registration = associateUuid ? await fetchRegistrationStatus(uuid, associateUuid) : null
   const payload = encodeTorneoPayload(uuid, origin)
 
@@ -267,8 +268,13 @@ export const torneoMenu = new Menu<Context>('t', { autoAnswer: false }).dynamic(
       })
     } else if (registration === 'registered') {
       range.text({ text: '❌ Annulla iscrizione', payload }, async (ctx) => {
+        const buttonChatId = ctx.chat?.id
+        if (!buttonChatId) {
+          await ctx.answerCallbackQuery().catch(() => {})
+          return
+        }
         try {
-          const linkedAssociateUuid = await resolveLinkedAssociate(ctx, 'Nessun account collegato.')
+          const linkedAssociateUuid = await resolveLinkedAssociate(ctx, buttonChatId, 'Nessun account collegato.')
           if (!linkedAssociateUuid) return
 
           const supabase = telegramServiceSupabaseClient()
@@ -301,8 +307,15 @@ export const torneoMenu = new Menu<Context>('t', { autoAnswer: false }).dynamic(
       })
     } else if (tournament.status === 'registration_open') {
       range.text({ text: '➕ Iscriviti', payload }, async (ctx) => {
+        const buttonChatId = ctx.chat?.id
+        if (!buttonChatId) {
+          await ctx.answerCallbackQuery().catch(() => {})
+          return
+        }
         try {
-          const linkedAssociateUuid = await resolveLinkedAssociate(ctx, NOT_LINKED_MESSAGE)
+          const linkedAssociateUuid = await resolveLinkedAssociate(
+            ctx, buttonChatId, NOT_LINKED_MESSAGE
+          )
           if (!linkedAssociateUuid) return
 
           const supabase = telegramServiceSupabaseClient()
@@ -327,8 +340,13 @@ export const torneoMenu = new Menu<Context>('t', { autoAnswer: false }).dynamic(
   range.row()
 
   range.text({ text: backLabel(origin), payload }, async (ctx) => {
+    const buttonChatId = ctx.chat?.id
+    if (!buttonChatId) {
+      await ctx.answerCallbackQuery().catch(() => {})
+      return
+    }
     try {
-      await navigateBack(ctx, () => resolveBackTarget(origin, ctx.chat!.id))
+      await navigateBack(ctx, () => resolveBackTarget(origin, buttonChatId))
       await ctx.answerCallbackQuery()
     } catch {
       await answerLoadError(ctx)
@@ -345,6 +363,12 @@ registerMenu('t', torneoMenu)
 // submenu button middleware calls this) — as opposed to torneoMenu's own
 // internal buttons, which stay on the same message and never need this.
 export async function openTournamentDetail(ctx: Context, uuid: string, origin: string) {
+  const chatId = ctx.chat?.id
+  if (!chatId) {
+    await ctx.answerCallbackQuery().catch(() => {})
+    return
+  }
+
   try {
     const tournament = await fetchTournament(uuid)
     if (!tournament) {
@@ -352,7 +376,7 @@ export async function openTournamentDetail(ctx: Context, uuid: string, origin: s
       return
     }
 
-    const associateUuid = await resolveAssociateUuidByChatId(ctx.chat!.id)
+    const associateUuid = await resolveAssociateUuidByChatId(chatId)
     const registration = associateUuid ? await fetchRegistrationStatus(uuid, associateUuid) : null
     const text = tournamentDetailMessage(tournament, registration)
     ctx.match = encodeTorneoPayload(uuid, origin)
