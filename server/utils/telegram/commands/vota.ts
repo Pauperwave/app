@@ -57,7 +57,14 @@ function voteMessage(state: VoteState): FormattedString {
 // autoAnswer: false — every button answers itself. onMenuOutdated: false —
 // see calendario.ts's calendarioMenu for why.
 const votaMenu = new Menu<Context>('vt', { autoAnswer: false, onMenuOutdated: false }).dynamic((ctx, range) => {
-  const state = decodeVoteState((ctx.match as string | undefined) ?? encodeVoteState(INITIAL_STATE))
+  // || not ?? — a bare /vota (no arguments) dispatched via @grammyjs/commands
+  // sets ctx.match to '' (CommandGroup always assigns the text following the
+  // command, empty when there is none), never undefined. '' ?? fallback
+  // would keep '' unchanged (?? only substitutes null/undefined), and
+  // decodeVoteState('') decodes to { deckIndex: 0, playIndex: NaN } — both
+  // "not null" — jumping straight to the confirm screen instead of round 1.
+  // Confirmed 2026-09-06 ("/vota shows Conferma/Modifica immediately").
+  const state = decodeVoteState((ctx.match as string | undefined) || encodeVoteState(INITIAL_STATE))
 
   if (state.deckIndex === null) {
     MOCK_OPPONENTS.forEach((name, index) => {

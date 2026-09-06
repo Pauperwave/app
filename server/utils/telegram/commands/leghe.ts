@@ -194,7 +194,10 @@ async function openLegaTornei(ctx: Context & { match: string }) {
 }
 
 export const legheTorneiMenu = new Menu<Context>('lt', { autoAnswer: false, onMenuOutdated: false }).dynamic(async (ctx, range) => {
-  const index = Number(ctx.match ?? '0')
+  // || not ?? — see calendario.ts's own comment on why (ctx.match is '',
+  // not undefined, when this menu is rendered fresh via a command; harmless
+  // here only because Number('') happens to equal Number('0')).
+  const index = Number(ctx.match || '0')
   const chatId = ctx.chat?.id
   if (!chatId) return
 
