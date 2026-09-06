@@ -69,20 +69,57 @@ export const SELECT_COLUMNS = `
 async function fetchTournament(uuid: string): Promise<DatedTournamentRow | null> {
   const supabase = publicSupabaseClient()
 
-  const [{ data, error }, stageNumbers] = await Promise.all([
-    supabase
-      .from('tournaments')
-      .select(SELECT_COLUMNS)
-      .eq('uuid', uuid)
-      .maybeSingle(),
-    fetchStageNumbers()
-  ])
+  const { data, error } = await supabase
+    .from('tournaments')
+    .select(SELECT_COLUMNS)
+    .eq('uuid', uuid)
+    .maybeSingle()
 
   if (error) throw error
   const row = data as TournamentRow | null
-  return row?.starts_at
-    ? { ...row, starts_at: row.starts_at, stageNumber: stageNumbers.get(row.uuid) ?? null }
-    : null
+  if (!row?.starts_at) return null
+
+  // Scoped to this tournament's own league (or none) — see queries.ts's
+  // own comment on why fetchStageNumbers takes a league filter.
+  const stageNumbers = await fetchStageNumbers(row.league_uuid ? [row.league_uuid] : [])
+  return { ...row, starts_at: row.starts_at, stageNumber: stageNumbers.get(row.uuid) ?? null }
+}
+
+// Per-request memoization: openTournamentDetail() and torneoMenu's own
+// .dynamic() independently run these same three queries within the same
+// update (once for the message text, once for the buttons) — caching by
+// ctx (garbage-collected once the update finishes) halves the query count
+// on every tournament-detail open.
+const requestCache = new WeakMap<Context, {
+  tournament?: Promise<DatedTournamentRow | null>
+  associateUuid?: Promise<string | null>
+  registration?: Promise<RegistrationStatus>
+}>()
+
+function getRequestCache(ctx: Context) {
+  let cache = requestCache.get(ctx)
+  if (!cache) {
+    cache = {}
+    requestCache.set(ctx, cache)
+  }
+  return cache
+}
+
+function cachedFetchTournament(ctx: Context, uuid: string): Promise<DatedTournamentRow | null> {
+  const cache = getRequestCache(ctx)
+  return cache.tournament ??= fetchTournament(uuid)
+}
+
+function cachedResolveAssociateUuid(ctx: Context, chatId: number): Promise<string | null> {
+  const cache = getRequestCache(ctx)
+  return cache.associateUuid ??= resolveAssociateUuidByChatId(chatId)
+}
+
+function cachedFetchRegistrationStatus(
+  ctx: Context, uuid: string, associateUuid: string
+): Promise<RegistrationStatus> {
+  const cache = getRequestCache(ctx)
+  return cache.registration ??= fetchRegistrationStatus(uuid, associateUuid)
 }
 
 function tournamentDetailMessage(
@@ -163,17 +200,6 @@ async function resolveBackTarget(
   return { payload: String(offset), menu: getMenu('cal'), text: await calendarioText(offset, chatId) }
 }
 
-async function resolveLinkedAssociate(
-  ctx: Context, chatId: number, notLinkedMessage: string
-): Promise<string | null> {
-  const associateUuid = await resolveAssociateUuidByChatId(chatId)
-  if (!associateUuid) {
-    await ctx.answerCallbackQuery({ text: notLinkedMessage, show_alert: true })
-    return null
-  }
-  return associateUuid
-}
-
 // autoAnswer: false — every button below answers with its own confirmation/
 // error text, which would race with Menu's default no-args auto-answer.
 // onMenuOutdated: false — see calendario.ts's calendarioMenu for why.
@@ -186,11 +212,13 @@ export const torneoMenu = new Menu<Context>('t', {
   if (!raw || !chatId) return
   const { uuid, origin } = decodeTorneoPayload(raw)
 
-  const tournament = await fetchTournament(uuid)
+  const tournament = await cachedFetchTournament(ctx, uuid)
   if (!tournament) return
 
-  const associateUuid = await resolveAssociateUuidByChatId(chatId)
-  const registration = associateUuid ? await fetchRegistrationStatus(uuid, associateUuid) : null
+  const associateUuid = await cachedResolveAssociateUuid(ctx, chatId)
+  const registration = associateUuid
+    ? await cachedFetchRegistrationStatus(ctx, uuid, associateUuid)
+    : null
   const payload = encodeTorneoPayload(uuid, origin)
 
   if (!isExternalOrganizer(tournament)) {
@@ -201,17 +229,16 @@ export const torneoMenu = new Menu<Context>('t', {
           show_alert: true
         })
       })
-    } else if (registration === 'registered') {
+    } else if (registration === 'registered' && associateUuid) {
+      // associateUuid already resolved above (registration only comes back
+      // non-null when it was truthy) — no need to re-query it here.
+      const linkedAssociateUuid = associateUuid
       range.text({ text: '❌ Annulla iscrizione', payload }, async (ctx) => {
-        const buttonChatId = ctx.chat?.id
-        if (!buttonChatId) {
+        if (!ctx.chat?.id) {
           await ctx.answerCallbackQuery().catch(() => {})
           return
         }
         try {
-          const linkedAssociateUuid = await resolveLinkedAssociate(ctx, buttonChatId, 'Nessun account collegato.')
-          if (!linkedAssociateUuid) return
-
           const supabase = telegramServiceSupabaseClient()
           const { data: existing, error: findError } = await supabase
             .from('tournament_registrations')
@@ -242,21 +269,21 @@ export const torneoMenu = new Menu<Context>('t', {
       })
     } else if (tournament.status === 'registration_open') {
       range.text({ text: '➕ Iscriviti', payload }, async (ctx) => {
-        const buttonChatId = ctx.chat?.id
-        if (!buttonChatId) {
+        if (!ctx.chat?.id) {
           await ctx.answerCallbackQuery().catch(() => {})
           return
         }
+        // associateUuid already resolved above — reused instead of a fresh
+        // lookup, only the "not linked" alert needs to happen here.
+        if (!associateUuid) {
+          await ctx.answerCallbackQuery({ text: NOT_LINKED_MESSAGE, show_alert: true })
+          return
+        }
         try {
-          const linkedAssociateUuid = await resolveLinkedAssociate(
-            ctx, buttonChatId, NOT_LINKED_MESSAGE
-          )
-          if (!linkedAssociateUuid) return
-
           const supabase = telegramServiceSupabaseClient()
           const { error } = await supabase.rpc('register_tournament_players', {
             p_tournament_uuid: uuid,
-            p_associate_uuids: [linkedAssociateUuid]
+            p_associate_uuids: [associateUuid]
           })
           if (error) throw error
 
@@ -310,14 +337,16 @@ export async function openTournamentDetail(ctx: Context, uuid: string, origin: s
   }
 
   try {
-    const tournament = await fetchTournament(uuid)
+    const tournament = await cachedFetchTournament(ctx, uuid)
     if (!tournament) {
       await ctx.answerCallbackQuery({ text: 'Torneo non trovato', show_alert: true })
       return
     }
 
-    const associateUuid = await resolveAssociateUuidByChatId(chatId)
-    const registration = associateUuid ? await fetchRegistrationStatus(uuid, associateUuid) : null
+    const associateUuid = await cachedResolveAssociateUuid(ctx, chatId)
+    const registration = associateUuid
+      ? await cachedFetchRegistrationStatus(ctx, uuid, associateUuid)
+      : null
     const text = tournamentDetailMessage(tournament, registration)
     ctx.match = encodeTorneoPayload(uuid, origin)
 

@@ -45,25 +45,31 @@ const ACTIVE_TOURNAMENT_STATUSES = ['registration_open', 'in_progress']
 async function fetchMyTournaments(associateUuid: string): Promise<MyRegistration[]> {
   const supabase = telegramServiceSupabaseClient()
 
-  const [{ data, error }, stageNumbers] = await Promise.all([
-    supabase
-      .from('tournament_registrations')
-      .select(`
-        status,
-        players!inner(associate_uuid),
-        tournament:tournaments!inner(uuid, name, starts_at, league_uuid, location:locations(name))
-      `)
-      .eq('players.associate_uuid', associateUuid)
-      .is('tournament.deleted_at', null)
-      .in('tournament.status', ACTIVE_TOURNAMENT_STATUSES),
-    fetchStageNumbers()
-  ])
+  const { data, error } = await supabase
+    .from('tournament_registrations')
+    .select(`
+      status,
+      players!inner(associate_uuid),
+      tournament:tournaments!inner(uuid, name, starts_at, league_uuid, location:locations(name))
+    `)
+    .eq('players.associate_uuid', associateUuid)
+    .is('tournament.deleted_at', null)
+    .in('tournament.status', ACTIVE_TOURNAMENT_STATUSES)
 
   if (error) throw error
 
-  return (data as RegistrationRow[])
+  const rows = (data as RegistrationRow[])
     .filter((row): row is RegistrationRow & { tournament: RawTournamentRow } =>
       row.tournament !== null && row.tournament.starts_at !== null)
+
+  // Scoped to only the leagues this associate is actually registered in —
+  // see queries.ts's own comment on why.
+  const leagueUuids = [...new Set(
+    rows.map(row => row.tournament.league_uuid).filter(uuid => uuid !== null)
+  )]
+  const stageNumbers = await fetchStageNumbers(leagueUuids)
+
+  return rows
     .map(row => ({
       registrationStatus: row.status,
       tournament: { ...row.tournament, stageNumber: stageNumbers.get(row.tournament.uuid) ?? null }
