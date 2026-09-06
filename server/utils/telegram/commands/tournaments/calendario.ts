@@ -144,8 +144,14 @@ export const calendarioMenu = new Menu<Context>('cal', { autoAnswer: false, onMe
     const date = formatButtonDate(row.starts_at)
     const label = tournamentButtonLabel(statusIcon(row.status), date, row.stageNumber, row.name)
     const origin = `m${monthOffset}`
+    // payload: String(monthOffset), not the `${uuid}:${origin}` pair the
+    // handler actually needs (it gets those from this closure instead) —
+    // this menu's own re-render (for the row/col lookup on press) decodes
+    // ctx.match as `Number(ctx.match || '0')` above. A composite payload
+    // would parse to NaN there, emptying `filtered` and crashing the
+    // plugin's row/col lookup with no visible error. Confirmed 2026-09-06.
     range.row().text(
-      { text: label, payload: `${row.uuid}:${origin}` },
+      { text: label, payload: String(monthOffset) },
       ctx => openTournamentDetail(ctx, row.uuid, origin)
     )
   }
