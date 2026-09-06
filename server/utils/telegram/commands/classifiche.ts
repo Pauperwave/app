@@ -115,7 +115,9 @@ function initialMessage(siteUrl: string): string {
 // — the button's own payload (the scope) becomes ctx.match here too, read
 // fresh on every render since a menu re-renders itself in response to the
 // exact callback_query that navigated into it.
-const classificaMenu = new Menu<Context>('classifica-menu').dynamic((ctx, range) => {
+// onMenuOutdated: false — see calendario.ts's calendarioMenu for why every
+// menu in this bot disables the plugin's built-in staleness fingerprint.
+const classificaMenu = new Menu<Context>('classifica-menu', { onMenuOutdated: false }).dynamic((ctx, range) => {
   const scope = ctx.match as StandingsScope | undefined
   if (!scope) return
 
@@ -137,7 +139,9 @@ async function showStandings(ctx: Context & { match: string }) {
   }
 }
 
-const classificheMenu = new Menu<Context>('classifiche-menu')
+// onMenuOutdated: false — see calendario.ts's calendarioMenu for why every
+// menu in this bot disables the plugin's built-in staleness fingerprint.
+const classificheMenu = new Menu<Context>('classifiche-menu', { onMenuOutdated: false })
   .submenu({ text: FORMAT_LABELS.pauper, payload: 'pauper' satisfies StandingsScope }, 'classifica-menu', showStandings)
   .submenu({ text: FORMAT_LABELS.commander, payload: 'commander' satisfies StandingsScope }, 'classifica-menu', showStandings)
   .row()

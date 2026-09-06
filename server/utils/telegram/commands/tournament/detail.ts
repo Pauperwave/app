@@ -244,7 +244,8 @@ async function resolveLinkedAssociate(
 
 // autoAnswer: false — every button below answers with its own confirmation/
 // error text, which would race with Menu's default no-args auto-answer.
-export const torneoMenu = new Menu<Context>('t', { autoAnswer: false }).dynamic(async (ctx, range) => {
+// onMenuOutdated: false — see calendario.ts's calendarioMenu for why.
+export const torneoMenu = new Menu<Context>('t', { autoAnswer: false, onMenuOutdated: false }).dynamic(async (ctx, range) => {
   const raw = ctx.match as string | undefined
   const chatId = ctx.chat?.id
   if (!raw || !chatId) return
