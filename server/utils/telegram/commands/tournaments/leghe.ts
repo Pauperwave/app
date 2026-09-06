@@ -203,8 +203,15 @@ export const legheTorneiMenu = new Menu<Context>('lt', {
 
   for (const button of buttons) {
     const origin = `l${index}`
+    // payload: String(index), not the `${uuid}:${origin}` pair the handler
+    // actually needs (it gets those from this closure instead) — this
+    // menu's own re-render (for the row/col lookup on press) decodes
+    // ctx.match as `Number(ctx.match || '0')` above. A composite payload
+    // would parse to NaN there, making fetchLegaTorneiButtons(NaN, ...)
+    // return null and crash the plugin's row/col lookup with no visible
+    // error. Confirmed 2026-09-06 ("/leghe → lega → torneo: no response").
     range.row().text(
-      { text: button.label, payload: `${button.uuid}:${origin}` },
+      { text: button.label, payload: String(index) },
       ctx => openTournamentDetail(ctx, button.uuid, origin)
     )
   }
