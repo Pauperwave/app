@@ -3,6 +3,8 @@ import { it } from 'date-fns/locale'
 
 import { FormattedString } from '@grammyjs/parse-mode'
 
+import type { RegistrationStatus } from './queries'
+
 // Single source for how a tournament reads in a Telegram list line —
 // shared by leghe.ts and calendario.ts's own per-day lists.
 export const STATUS_ICON: Record<string, string> = {
@@ -24,6 +26,16 @@ export function stageLabel(stageNumber: number | null): string {
   return stageNumber ? ` — ${stageNumber}ª tappa` : ''
 }
 
+// Unlike statusIcon() (the tournament's own status), this reflects the
+// linked chat's own registration to that specific tournament — shown
+// wherever a personalized view makes more sense than the tournament's
+// general status (leghe.ts's and calendario.ts's own per-tournament rows).
+export function personalIcon(registration: RegistrationStatus): string {
+  if (registration === 'checked_in') return '🎯'
+  if (registration === 'registered') return '✅'
+  return '🎲'
+}
+
 // "Icon + bold name + stage" header shared by the single-tournament detail
 // view and prossimo.ts's card. Returns a FormattedString (entities, not
 // markdown) — see format.ts's comment on why raw values never need escaping.
@@ -42,13 +54,16 @@ interface TournamentLineInput {
   // elsewhere on its own line (leghe.ts's per-tournament date line).
   stageSuffix?: string
   locationName?: string | null
+  // Overrides the default statusIcon(status) — calendario.ts's own list
+  // uses this to show personalIcon() (the chat's registration) instead.
+  icon?: string
 }
 
 export function tournamentLine({
-  status, name, stageSuffix = '', locationName
+  status, name, stageSuffix = '', locationName, icon
 }: TournamentLineInput): FormattedString {
   const location = locationName ? `\n📍 ${locationName}` : ''
-  return fmt`${statusIcon(status)} ${name}${stageSuffix}${location}`
+  return fmt`${icon ?? statusIcon(status)} ${name}${stageSuffix}${location}`
 }
 
 // Same shape as tournamentLine(), for the button label. `icon` is passed in

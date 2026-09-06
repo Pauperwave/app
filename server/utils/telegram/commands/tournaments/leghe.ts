@@ -6,7 +6,7 @@ import type { CommandGroup } from '@grammyjs/commands'
 import { Menu } from '@grammyjs/menu'
 import { FormattedString } from '@grammyjs/parse-mode'
 
-import { statusIcon, stageLabel, tournamentLine, tournamentButtonLabel } from './line'
+import { statusIcon, stageLabel, tournamentLine, tournamentButtonLabel, personalIcon } from './line'
 import { fetchRegistrationStatuses, fetchStageNumbers } from './queries'
 import type { RegistrationStatus } from './queries'
 import { torneoMenu, openTournamentDetail } from './detail'
@@ -95,14 +95,6 @@ async function legheText(): Promise<FormattedString> {
   })
 
   return fmt`🏆 ${FormattedString.b('Leghe attive')}\n\n${FormattedString.join(blocks, '\n\n')}\n\n👇 Tocca una lega per i tornei`
-}
-
-// Unlike STATUS_ICON (tournament status), this reflects the chat's own
-// registration — shown per button so "am I in" doesn't need a tap-through.
-function personalIcon(registration: RegistrationStatus): string {
-  if (registration === 'checked_in') return '🎯'
-  if (registration === 'registered') return '✅'
-  return '🎲'
 }
 
 // Exported so tournament/detail.ts's "back" button can rebuild this exact
