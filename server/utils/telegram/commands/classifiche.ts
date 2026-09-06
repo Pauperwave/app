@@ -117,9 +117,11 @@ function initialMessage(siteUrl: string): string {
 // — the button's own payload (the scope) becomes ctx.match here too, read
 // fresh on every render since a menu re-renders itself in response to the
 // exact callback_query that navigated into it.
+// autoAnswer: false — every button below answers itself (showStandings, the
+// back handler), consistent with every other menu in this bot.
 // onMenuOutdated: false — see calendario.ts's calendarioMenu for why every
 // menu in this bot disables the plugin's built-in staleness fingerprint.
-const classificaMenu = new Menu<Context>('classifica-menu', { onMenuOutdated: false }).dynamic((ctx, range) => {
+const classificaMenu = new Menu<Context>('classifica-menu', { autoAnswer: false, onMenuOutdated: false }).dynamic((ctx, range) => {
   const scope = ctx.match as StandingsScope | undefined
   if (!scope) return
 
@@ -134,7 +136,14 @@ const classificaMenu = new Menu<Context>('classifica-menu', { onMenuOutdated: fa
   // return` guard above and re-renders zero buttons, crashing the plugin's
   // own row/col lookup with no visible error. Confirmed 2026-09-06 ("«
   // Formati" doing nothing on tap after picking a format).
-  range.back({ text: '« Formati', payload: scope }, ctx => ctx.editMessageText(initialMessage(useRuntimeConfig().public.siteUrl)))
+  range.back({ text: '« Formati', payload: scope }, async (ctx) => {
+    try {
+      await ctx.editMessageText(initialMessage(useRuntimeConfig().public.siteUrl))
+      await ctx.answerCallbackQuery()
+    } catch {
+      await answerLoadError(ctx)
+    }
+  })
 })
 
 async function showStandings(ctx: Context & { match: string }) {
@@ -142,19 +151,32 @@ async function showStandings(ctx: Context & { match: string }) {
     const scope = ctx.match as StandingsScope
     const message = scope === 'cittadino' ? await cittadinoMessage() : await formatStandingsMessage(scope)
     await ctx.editMessageText(message.text, { entities: message.entities })
+    await ctx.answerCallbackQuery()
   } catch {
     await answerLoadError(ctx)
   }
 }
 
+// autoAnswer: false — every button delegates to showStandings, which
+// answers itself, consistent with every other menu in this bot.
 // onMenuOutdated: false — see calendario.ts's calendarioMenu for why every
 // menu in this bot disables the plugin's built-in staleness fingerprint.
-const classificheMenu = new Menu<Context>('classifiche-menu', { onMenuOutdated: false })
-  .submenu({ text: FORMAT_LABELS.pauper, payload: 'pauper' satisfies StandingsScope }, 'classifica-menu', showStandings)
-  .submenu({ text: FORMAT_LABELS.commander, payload: 'commander' satisfies StandingsScope }, 'classifica-menu', showStandings)
+const classificheMenu = new Menu<Context>('classifiche-menu', { autoAnswer: false, onMenuOutdated: false })
+  .submenu({
+    text: FORMAT_LABELS.pauper,
+    payload: 'pauper' satisfies StandingsScope
+  }, 'classifica-menu', showStandings)
+  .submenu({
+    text: FORMAT_LABELS.commander,
+    payload: 'commander' satisfies StandingsScope
+  }, 'classifica-menu', showStandings)
   .row()
-  .submenu({ text: FORMAT_LABELS.premodern, payload: 'premodern' satisfies StandingsScope }, 'classifica-menu', showStandings)
-  .submenu({ text: 'Cittadino', payload: 'cittadino' satisfies StandingsScope }, 'classifica-menu', showStandings)
+  .submenu({
+    text: FORMAT_LABELS.premodern,
+    payload: 'premodern' satisfies StandingsScope
+  }, 'classifica-menu', showStandings)
+  .submenu({
+    text: 'Cittadino', payload: 'cittadino' satisfies StandingsScope }, 'classifica-menu', showStandings)
   .row()
   .dynamic((_ctx, range) => {
     const siteUrl = useRuntimeConfig().public.siteUrl
