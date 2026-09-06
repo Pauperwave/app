@@ -36,7 +36,7 @@ async function fetchUpcomingTournaments(chatId: number): Promise<DatedTournament
       .select(SELECT_COLUMNS)
       .is('deleted_at', null)
       .in('status', openStatuses)
-      .gte('starts_at', startOfMonth(new Date()).toISOString())
+      .gte('starts_at', zonedRomeTimeToInstant(startOfMonth(nowInRome())).toISOString())
       .order('starts_at', { ascending: true })
       .limit(MAX_ROWS),
     fetchStageNumbers()
@@ -77,9 +77,14 @@ function groupByDay(rows: DatedTournamentRow[]): DayGroup[] {
   return [...groups.values()].sort((a, b) => a.day.getTime() - b.day.getTime())
 }
 
+// `month` is a "Rome wall-clock" Date (see nowInRome()'s own comment) —
+// safe to format directly (monthLabel below) or run through startOfMonth/
+// endOfMonth, but start/end must be converted back to real instants before
+// comparing against row.starts_at (an actual timestamptz), or the whole
+// month boundary would be off by Italy's UTC offset again.
 function calendarioMessage(rows: DatedTournamentRow[], month: Date): FormattedString {
-  const start = startOfMonth(month)
-  const end = endOfMonth(month)
+  const start = zonedRomeTimeToInstant(startOfMonth(month))
+  const end = zonedRomeTimeToInstant(endOfMonth(month))
 
   const filtered = rows.filter((row) => {
     const date = new Date(row.starts_at)
@@ -112,7 +117,7 @@ export async function calendarioText(
   monthOffset: number, chatId: number
 ): Promise<FormattedString> {
   const rows = await fetchUpcomingTournaments(chatId)
-  const month = addMonths(startOfMonth(new Date()), monthOffset)
+  const month = addMonths(startOfMonth(nowInRome()), monthOffset)
   return calendarioMessage(rows, month)
 }
 
@@ -124,9 +129,9 @@ export const calendarioMenu = new Menu<Context>('cal', { autoAnswer: false }).dy
   const chatId = ctx.chat?.id
   if (!chatId) return
 
-  const month = addMonths(startOfMonth(new Date()), monthOffset)
-  const start = startOfMonth(month)
-  const end = endOfMonth(month)
+  const month = addMonths(startOfMonth(nowInRome()), monthOffset)
+  const start = zonedRomeTimeToInstant(startOfMonth(month))
+  const end = zonedRomeTimeToInstant(endOfMonth(month))
 
   const rows = await fetchUpcomingTournaments(chatId)
   const filtered = rows.filter((row) => {
