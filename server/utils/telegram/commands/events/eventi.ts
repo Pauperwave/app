@@ -104,7 +104,10 @@ function eventDetailMessage(event: EventRow): FormattedString {
 // autoAnswer: false — the "open event" buttons delegate to openEventDetail,
 // which answers the callback itself. onMenuOutdated: false — see
 // calendario.ts's calendarioMenu for why.
-const eventiMenu = new Menu<Context>('ev', { autoAnswer: false, onMenuOutdated: false }).dynamic(async (ctx, range) => {
+const eventiMenu = new Menu<Context>('ev', {
+  autoAnswer: false,
+  onMenuOutdated: false
+}).dynamic(async (ctx, range) => {
   const events = await fetchUpcomingEvents()
   for (const event of events) {
     const date = formatTelegramDate(event.starts_at, 'd MMM', { locale: it })

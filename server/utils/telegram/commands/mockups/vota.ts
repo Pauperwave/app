@@ -54,7 +54,10 @@ function voteMessage(state: VoteState): FormattedString {
 // Two rounds then a summary/confirm step, all driven by ctx.match alone —
 // "« Modifica" is just a button back to the initial (both-unset) state.
 // autoAnswer/onMenuOutdated: false — see calendario.ts's calendarioMenu.
-const votaMenu = new Menu<Context>('vt', { autoAnswer: false, onMenuOutdated: false }).dynamic((ctx, range) => {
+const votaMenu = new Menu<Context>('vt', {
+  autoAnswer: false,
+  onMenuOutdated: false
+}).dynamic((ctx, range) => {
   // || not ?? — a bare /vota sets ctx.match to '' (not undefined), which ??
   // wouldn't substitute; decodeVoteState('') gives { deckIndex: 0, playIndex:
   // NaN } — both "not null" — jumping straight past round 1.
