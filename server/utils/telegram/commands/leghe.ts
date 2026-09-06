@@ -160,7 +160,9 @@ async function fetchLegaTorneiButtons(index: number, chatId: number) {
   }))
 }
 
-const legheMenu = new Menu<Context>('lg', { autoAnswer: false }).dynamic(async (ctx, range) => {
+// onMenuOutdated: false — see calendario.ts's calendarioMenu for why every
+// menu in this bot disables the plugin's built-in staleness fingerprint.
+const legheMenu = new Menu<Context>('lg', { autoAnswer: false, onMenuOutdated: false }).dynamic(async (ctx, range) => {
   const leagues = await fetchActiveLeagues()
   leagues.forEach((league, index) => {
     range.row().submenu({ text: `🏆 ${league.name}`, payload: String(index) }, 'lt', openLegaTornei)
@@ -188,7 +190,7 @@ async function openLegaTornei(ctx: Context & { match: string }) {
   }
 }
 
-export const legheTorneiMenu = new Menu<Context>('lt', { autoAnswer: false }).dynamic(async (ctx, range) => {
+export const legheTorneiMenu = new Menu<Context>('lt', { autoAnswer: false, onMenuOutdated: false }).dynamic(async (ctx, range) => {
   const index = Number(ctx.match ?? '0')
   const chatId = ctx.chat?.id
   if (!chatId) return

@@ -124,7 +124,18 @@ export async function calendarioText(
 // autoAnswer: false — the "open tournament" buttons delegate to
 // openTournamentDetail, which answers the callback itself (with a custom
 // alert on "not found"); autoAnswer's default fork would race with that.
-export const calendarioMenu = new Menu<Context>('cal', { autoAnswer: false }).dynamic(async (ctx, range) => {
+//
+// onMenuOutdated: false — this menu's own dynamic() re-fetches the live
+// tournament list on every render (see fetchUpcomingTournaments), so the
+// plugin's built-in fingerprint (row/col count + button labels) legitimately
+// differs between the original send and a later press whenever a tournament
+// changes status or a new one appears in the same month — the exact kind of
+// change every handler here already re-validates itself (openTournamentDetail
+// re-fetches the row and shows "Torneo non trovato" if it's gone). Confirmed
+// 2026-09-06: users hit "Menu was outdated, try again!" far more often than
+// real staleness would explain, precisely because of this re-fetch-on-every-
+// render pattern repeated across every menu in this migration.
+export const calendarioMenu = new Menu<Context>('cal', { autoAnswer: false, onMenuOutdated: false }).dynamic(async (ctx, range) => {
   const monthOffset = Number(ctx.match ?? '0')
   const chatId = ctx.chat?.id
   if (!chatId) return
