@@ -169,9 +169,15 @@ const legheMenu = new Menu<Context>('lg', { autoAnswer: false }).dynamic(async (
 })
 
 async function openLegaTornei(ctx: Context & { match: string }) {
+  const chatId = ctx.chat?.id
+  if (!chatId) {
+    await ctx.answerCallbackQuery().catch(() => {})
+    return
+  }
+
   try {
     const index = Number(ctx.match)
-    const text = await legaTorneiText(index, ctx.chat!.id)
+    const text = await legaTorneiText(index, chatId)
     if (!text) {
       await ctx.answerCallbackQuery({ text: 'Lega non trovata', show_alert: true })
       return

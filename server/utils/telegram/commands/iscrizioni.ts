@@ -108,7 +108,10 @@ export async function iscrizioniText(chatId: number): Promise<FormattedString> {
 // autoAnswer: false — the "open tournament" buttons delegate to
 // openTournamentDetail, which answers the callback itself.
 export const iscrizioniMenu = new Menu<Context>('isc', { autoAnswer: false }).dynamic(async (ctx, range) => {
-  const associateUuid = await resolveAssociateUuidByChatId(ctx.chat!.id)
+  const chatId = ctx.chat?.id
+  if (!chatId) return
+
+  const associateUuid = await resolveAssociateUuidByChatId(chatId)
   if (!associateUuid) return
 
   const registrations = await fetchMyTournaments(associateUuid)
