@@ -48,6 +48,7 @@ import { navigateBack, getMenu } from '../../menuNav'
 import { calendarioText } from '../calendario'
 import { legaTorneiText } from '../leghe'
 import { iscrizioniText } from '../iscrizioni'
+import { prossimoText } from '../prossimo'
 
 export interface LocationRow {
   name: string | null
@@ -190,9 +191,10 @@ function isExternalOrganizer(row: DatedTournamentRow): boolean {
 
 // Payload format shared by every button on torneoMenu: `${uuid}:${origin}`.
 // `origin` is the same compact token as before the menu migration
-// (`m<monthOffset>`, `l<leagueIndex>`, or `i` for iscrizioni — which used to
-// share calendario's own 'm0' as a placeholder back-target, now that
-// iscrizioni has a real menu of its own to return to).
+// (`m<monthOffset>`, `l<leagueIndex>`, `i` for iscrizioni, or `p` for
+// prossimo — each of which used to share calendario's own 'm0' as a
+// placeholder back-target, now that they have a real menu of their own to
+// return to).
 function encodeTorneoPayload(uuid: string, origin: string): string {
   return `${uuid}:${origin}`
 }
@@ -208,6 +210,7 @@ function decodeTorneoPayload(raw: string): { uuid: string, origin: string } {
 function backLabel(origin: string): string {
   if (origin.startsWith('l')) return '« Torna alla lega'
   if (origin === 'i') return '« Torna ai tuoi tornei'
+  if (origin === 'p') return '« Torna al prossimo torneo'
   return '« Torna al mese'
 }
 
@@ -227,6 +230,9 @@ async function resolveBackTarget(
   }
   if (origin === 'i') {
     return { payload: '', menu: getMenu('isc'), text: await iscrizioniText(chatId) }
+  }
+  if (origin === 'p') {
+    return { payload: '', menu: getMenu('p'), text: await prossimoText() }
   }
   const offset = Number(origin.slice(1))
   return { payload: String(offset), menu: getMenu('cal'), text: await calendarioText(offset, chatId) }
