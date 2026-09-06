@@ -10,6 +10,7 @@ import { answerLoadError } from '../callbackErrors'
 import { mapsUrl, googleCalendarUrl, truncateForCaption } from './eventLinks'
 import type { MapsAddress } from './eventLinks'
 import { navigateBack } from '../../menuNav'
+import { createPerContextCache } from '../../perContextCache'
 
 interface EventRow {
   uuid: string
@@ -63,6 +64,22 @@ async function fetchEvent(uuid: string): Promise<EventRow | null> {
   return data as EventRow | null
 }
 
+// The command handler / back-button and each menu's own .dynamic() re-render
+// both re-run these same queries within the same update — memoizing by ctx
+// dedupes them. See perContextCache.ts.
+const memoize = createPerContextCache<{
+  events: Promise<DatedEventRow[]>
+  event: Promise<EventRow | null>
+}>()
+
+function cachedFetchUpcomingEvents(ctx: Context): Promise<DatedEventRow[]> {
+  return memoize(ctx, 'events', () => fetchUpcomingEvents())
+}
+
+function cachedFetchEvent(ctx: Context, uuid: string): Promise<EventRow | null> {
+  return memoize(ctx, 'event', () => fetchEvent(uuid))
+}
+
 function eventLine(event: DatedEventRow): string {
   const date = formatTelegramDate(event.starts_at, 'd MMM', { locale: it })
   const location = event.location?.name ? ` — ${event.location.name}` : ''
@@ -78,8 +95,8 @@ function eventiMessage(events: DatedEventRow[]): FormattedString {
 
 // Exported so eventoMenu's "back" button can rebuild this exact list when
 // returning from a detail page opened from here.
-async function eventiText(): Promise<FormattedString> {
-  return eventiMessage(await fetchUpcomingEvents())
+async function eventiText(ctx: Context): Promise<FormattedString> {
+  return eventiMessage(await cachedFetchUpcomingEvents(ctx))
 }
 
 function eventDetailMessage(event: EventRow): FormattedString {
@@ -108,7 +125,7 @@ const eventiMenu = new Menu<Context>('ev', {
   autoAnswer: false,
   onMenuOutdated: false
 }).dynamic(async (ctx, range) => {
-  const events = await fetchUpcomingEvents()
+  const events = await cachedFetchUpcomingEvents(ctx)
   for (const event of events) {
     const date = formatTelegramDate(event.starts_at, 'd MMM', { locale: it })
     const label = `📅 ${date} — ${event.name}`.slice(0, 64)
@@ -118,7 +135,7 @@ const eventiMenu = new Menu<Context>('ev', {
 
 async function openEventDetail(ctx: Context & { match: string }) {
   try {
-    const event = await fetchEvent(ctx.match)
+    const event = await cachedFetchEvent(ctx, ctx.match)
     if (!event) {
       await ctx.answerCallbackQuery({ text: 'Evento non trovato', show_alert: true })
       return
@@ -158,7 +175,7 @@ const eventoMenu = new Menu<Context>('evd', {
   const uuid = ctx.match as string | undefined
   if (!uuid) return
 
-  const event = await fetchEvent(uuid)
+  const event = await cachedFetchEvent(ctx, uuid)
   if (!event || !event.starts_at) return
 
   const mapUrl = event.location ? mapsUrl(event.location) : null
@@ -178,7 +195,7 @@ const eventoMenu = new Menu<Context>('evd', {
       await navigateBack(ctx, async () => ({
         payload: '',
         menu: eventiMenu,
-        text: await eventiText()
+        text: await eventiText(ctx)
       }))
       await ctx.answerCallbackQuery()
     } catch {
@@ -192,7 +209,7 @@ export function registerEventiCommand(bot: Bot, commands: CommandGroup<Context>)
   bot.use(eventiMenu)
 
   commands.command('eventi', 'Prossimi eventi', async (ctx) => {
-    const message = await eventiText()
+    const message = await eventiText(ctx)
       .catch(() => new FormattedString('⚠️ Non sono riuscito a recuperare gli eventi, riprova più tardi.'))
     await ctx.reply(message.text, {
       entities: message.entities,

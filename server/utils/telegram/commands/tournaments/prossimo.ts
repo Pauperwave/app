@@ -8,6 +8,7 @@ import { formatTournamentDateTime, tournamentHeader } from './line'
 import { fetchStageNumbers } from './queries'
 import { torneoMenu, openTournamentDetail } from './detail'
 import { registerMenu } from '../../menuNav'
+import { createPerContextCache } from '../../perContextCache'
 
 interface NextTournamentRow {
   uuid: string
@@ -37,6 +38,15 @@ async function fetchNextTournament(): Promise<NextTournamentRow | null> {
   return data as NextTournamentRow | null
 }
 
+// The command handler and prossimoMenu's own .dynamic() re-render both run
+// fetchNextTournament within the same update — memoizing by ctx dedupes it.
+// See perContextCache.ts.
+const memoize = createPerContextCache<{ row: Promise<NextTournamentRow | null> }>()
+
+function cachedFetchNextTournament(ctx: Context): Promise<NextTournamentRow | null> {
+  return memoize(ctx, 'row', () => fetchNextTournament())
+}
+
 function nextTournamentMessage(
   row: NextTournamentRow | null, stageNumber: number | null
 ): FormattedString {
@@ -53,8 +63,8 @@ function nextTournamentMessage(
 // exact view when returning from a detail page opened from here — see
 // menuNav.ts's own comment on why this is a (safe, deferred-access)
 // circular import.
-export async function prossimoText(): Promise<FormattedString> {
-  const row = await fetchNextTournament()
+export async function prossimoText(ctx: Context): Promise<FormattedString> {
+  const row = await cachedFetchNextTournament(ctx)
   // Scoped to this tournament's own league (or none) — see queries.ts's
   // own comment on why.
   const stageNumbers = await fetchStageNumbers(row?.league_uuid ? [row.league_uuid] : [])
@@ -71,7 +81,7 @@ export const prossimoMenu = new Menu<Context>('p', {
   autoAnswer: false,
   onMenuOutdated: false
 }).dynamic(async (ctx, range) => {
-  const row = await fetchNextTournament()
+  const row = await cachedFetchNextTournament(ctx)
   if (!row) return
 
   range.text(
@@ -89,7 +99,7 @@ export function registerProssimoCommand(bot: Bot, commands: CommandGroup<Context
   bot.use(prossimoMenu)
 
   commands.command('prossimo', 'Il prossimo torneo', async (ctx) => {
-    const message = await prossimoText()
+    const message = await prossimoText(ctx)
       .catch(() => new FormattedString('⚠️ Non sono riuscito a recuperare il prossimo torneo, riprova più tardi.'))
     await ctx.reply(message.text, { entities: message.entities, reply_markup: prossimoMenu })
   })

@@ -5,6 +5,7 @@ import { Menu } from '@grammyjs/menu'
 import { FormattedString } from '@grammyjs/parse-mode'
 
 import { answerLoadError } from '../callbackErrors'
+import { createPerContextCache } from '../../perContextCache'
 
 import { groupBestNByPlayer, toBestNPlacement } from '#shared/utils/cittadino/bestNStandings'
 
@@ -120,6 +121,17 @@ function fetchRows(scope: StandingsScope): Promise<StandingsRow[]> {
   return scope === 'cittadino' ? fetchCittadinoRows() : fetchFormatRows(scope)
 }
 
+// showStandings and classificaMenu's own .dynamic() re-render both call
+// fetchRows for the same scope within the same update (a button press
+// always carries one fixed scope) — memoizing by ctx dedupes what would
+// otherwise be two HTTP round-trips to /api/standings or /api/cittadino
+// per pagination click. See perContextCache.ts.
+const memoize = createPerContextCache<{ rows: Promise<StandingsRow[]> }>()
+
+function cachedFetchRows(ctx: Context, scope: StandingsScope): Promise<StandingsRow[]> {
+  return memoize(ctx, 'rows', () => fetchRows(scope))
+}
+
 // A full 40+ player table isn't useful to read in a chat bubble, hence
 // pagination instead of showing everything at once.
 const PAGE_SIZE = 10
@@ -165,7 +177,7 @@ const classificaMenu = new Menu<Context>('classifica-menu', {
   if (!raw) return
   const { scope, page } = decodeStandingsPayload(raw)
 
-  const rows = await fetchRows(scope)
+  const rows = await cachedFetchRows(ctx, scope)
   const hasNext = (page + 1) * PAGE_SIZE < rows.length
 
   if (page > 0 || hasNext) {
@@ -205,7 +217,7 @@ const classificaMenu = new Menu<Context>('classifica-menu', {
 async function showStandings(ctx: Context & { match: string }) {
   try {
     const { scope, page } = decodeStandingsPayload(ctx.match)
-    const rows = await fetchRows(scope)
+    const rows = await cachedFetchRows(ctx, scope)
     const text = standingsMessage(scope, rows, page)
     await ctx.editMessageText(text.text, { entities: text.entities, reply_markup: classificaMenu })
     await ctx.answerCallbackQuery()

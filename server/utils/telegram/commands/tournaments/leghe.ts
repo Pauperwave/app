@@ -12,6 +12,7 @@ import type { RegistrationStatus } from './queries'
 import { torneoMenu, openTournamentDetail } from './detail'
 import { answerLoadError } from '../callbackErrors'
 import { registerMenu } from '../../menuNav'
+import { createPerContextCache } from '../../perContextCache'
 
 import { tournamentProgressByLeague } from '#shared/utils/leagues/tournamentProgressByLeague'
 import type { LeagueTournamentRow } from '#shared/utils/leagues/tournamentProgressByLeague'
@@ -63,11 +64,39 @@ async function fetchLeagueTournaments(leagueUuid: string): Promise<LeagueTournam
   return data as LeagueTournamentDetailRow[]
 }
 
+// legheText/legheMenu.dynamic (initial command) and legaTorneiText/
+// fetchLegaTorneiButtons (opening a league) each independently re-run
+// within the same update — memoizing by ctx dedupes both pairs. See
+// perContextCache.ts.
+interface LeagueDetail {
+  tournaments: LeagueTournamentDetailRow[]
+  stageNumbers: Map<string, number>
+}
+
+const memoize = createPerContextCache<{
+  leagues: Promise<ActiveLeagueRow[]>
+  leagueDetail: Promise<LeagueDetail>
+}>()
+
+function cachedFetchActiveLeagues(ctx: Context): Promise<ActiveLeagueRow[]> {
+  return memoize(ctx, 'leagues', () => fetchActiveLeagues())
+}
+
+function cachedFetchLeagueDetail(ctx: Context, leagueUuid: string): Promise<LeagueDetail> {
+  return memoize(ctx, 'leagueDetail', async () => {
+    const [tournaments, stageNumbers] = await Promise.all([
+      fetchLeagueTournaments(leagueUuid),
+      fetchStageNumbers([leagueUuid])
+    ])
+    return { tournaments, stageNumbers }
+  })
+}
+
 // leagues[]'s own index stands in for the league's uuid in callback
 // payloads — a torneo button already carries the tournament's own uuid, no
 // room left in the 64-byte cap for a second full one.
-async function legheText(): Promise<FormattedString> {
-  const leagues = await fetchActiveLeagues()
+async function legheText(ctx: Context): Promise<FormattedString> {
+  const leagues = await cachedFetchActiveLeagues(ctx)
   if (!leagues.length) return new FormattedString('🏆 Nessuna lega attiva al momento.')
 
   const leagueUuids = leagues.map(league => league.uuid)
@@ -100,16 +129,13 @@ async function legheText(): Promise<FormattedString> {
 // Exported so tournament/detail.ts's "back" button can rebuild this exact
 // list. Returns null for an out-of-range index (stale/tampered callback data).
 export async function legaTorneiText(
-  index: number, _chatId: number
+  ctx: Context, index: number, _chatId: number
 ): Promise<FormattedString | null> {
-  const leagues = await fetchActiveLeagues()
+  const leagues = await cachedFetchActiveLeagues(ctx)
   const league = leagues[index]
   if (!league) return null
 
-  const [tournaments, stageNumbers] = await Promise.all([
-    fetchLeagueTournaments(league.uuid),
-    fetchStageNumbers([league.uuid])
-  ])
+  const { tournaments, stageNumbers } = await cachedFetchLeagueDetail(ctx, league.uuid)
   const header = fmt`🏆 ${FormattedString.b(league.name)}`
 
   if (!tournaments.length) return fmt`${header}\n\nNessun torneo in programma per questa lega.`
@@ -126,15 +152,12 @@ export async function legaTorneiText(
   return fmt`${header}\n\n${FormattedString.join(lines, '\n\n')}\n\n👇 Tocca un torneo per i dettagli`
 }
 
-async function fetchLegaTorneiButtons(index: number, chatId: number) {
-  const leagues = await fetchActiveLeagues()
+async function fetchLegaTorneiButtons(ctx: Context, index: number, chatId: number) {
+  const leagues = await cachedFetchActiveLeagues(ctx)
   const league = leagues[index]
   if (!league) return null
 
-  const [tournaments, stageNumbers] = await Promise.all([
-    fetchLeagueTournaments(league.uuid),
-    fetchStageNumbers([league.uuid])
-  ])
+  const { tournaments, stageNumbers } = await cachedFetchLeagueDetail(ctx, league.uuid)
   const associateUuid = await resolveAssociateUuidByChatId(chatId)
   const registrations = associateUuid
     ? await fetchRegistrationStatuses(tournaments.map(t => t.uuid), associateUuid)
@@ -157,7 +180,7 @@ const legheMenu = new Menu<Context>('lg', {
   autoAnswer: false,
   onMenuOutdated: false
 }).dynamic(async (ctx, range) => {
-  const leagues = await fetchActiveLeagues()
+  const leagues = await cachedFetchActiveLeagues(ctx)
   leagues.forEach((league, index) => {
     range.row().submenu({ text: `🏆 ${league.name}`, payload: String(index) }, 'lt', openLegaTornei)
   })
@@ -172,7 +195,7 @@ async function openLegaTornei(ctx: Context & { match: string }) {
 
   try {
     const index = Number(ctx.match)
-    const text = await legaTorneiText(index, chatId)
+    const text = await legaTorneiText(ctx, index, chatId)
     if (!text) {
       await ctx.answerCallbackQuery({ text: 'Lega non trovata', show_alert: true })
       return
@@ -193,7 +216,7 @@ export const legheTorneiMenu = new Menu<Context>('lt', {
   const chatId = ctx.chat?.id
   if (!chatId) return
 
-  const buttons = await fetchLegaTorneiButtons(index, chatId)
+  const buttons = await fetchLegaTorneiButtons(ctx, index, chatId)
   if (!buttons) return
 
   for (const button of buttons) {
@@ -219,7 +242,7 @@ export const legheTorneiMenu = new Menu<Context>('lt', {
     payload: String(index)
   }, async (ctx) => {
     try {
-      const text = await legheText()
+      const text = await legheText(ctx)
       await ctx.editMessageText(text.text, { entities: text.entities, reply_markup: legheMenu })
       await ctx.answerCallbackQuery()
     } catch {
@@ -239,7 +262,7 @@ export function registerLegheCommand(bot: Bot, commands: CommandGroup<Context>) 
 
   commands.command('leghe', 'Leghe attive', async (ctx) => {
     try {
-      const text = await legheText()
+      const text = await legheText(ctx)
       await ctx.reply(text.text, { entities: text.entities, reply_markup: legheMenu })
     } catch {
       await ctx.reply('⚠️ Non sono riuscito a recuperare le leghe, riprova più tardi.')

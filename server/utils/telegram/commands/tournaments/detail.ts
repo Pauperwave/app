@@ -19,6 +19,7 @@ import { NOT_LINKED_MESSAGE } from '../account/linking'
 import { answerLoadError } from '../callbackErrors'
 import { mapsUrl, googleCalendarUrl, truncateForCaption } from '../events/eventLinks'
 import { navigateBack, getMenu } from '../../menuNav'
+import { createPerContextCache } from '../../perContextCache'
 // Circular import (calendario/leghe/iscrizioni import torneoMenu, this
 // imports their text-renderers back) — safe since only used inside async
 // handlers. Menu objects themselves come via menuNav.ts's registry instead.
@@ -85,41 +86,28 @@ async function fetchTournament(uuid: string): Promise<DatedTournamentRow | null>
   return { ...row, starts_at: row.starts_at, stageNumber: stageNumbers.get(row.uuid) ?? null }
 }
 
-// Per-request memoization: openTournamentDetail() and torneoMenu's own
-// .dynamic() independently run these same three queries within the same
-// update (once for the message text, once for the buttons) — caching by
-// ctx (garbage-collected once the update finishes) halves the query count
-// on every tournament-detail open.
-const requestCache = new WeakMap<Context, {
-  tournament?: Promise<DatedTournamentRow | null>
-  associateUuid?: Promise<string | null>
-  registration?: Promise<RegistrationStatus>
+// openTournamentDetail() and torneoMenu's own .dynamic() independently run
+// these same three queries within the same update (once for the message
+// text, once for the buttons) — memoizing by ctx halves the query count on
+// every tournament-detail open. See perContextCache.ts for why this works.
+const memoize = createPerContextCache<{
+  tournament: Promise<DatedTournamentRow | null>
+  associateUuid: Promise<string | null>
+  registration: Promise<RegistrationStatus>
 }>()
 
-function getRequestCache(ctx: Context) {
-  let cache = requestCache.get(ctx)
-  if (!cache) {
-    cache = {}
-    requestCache.set(ctx, cache)
-  }
-  return cache
-}
-
 function cachedFetchTournament(ctx: Context, uuid: string): Promise<DatedTournamentRow | null> {
-  const cache = getRequestCache(ctx)
-  return cache.tournament ??= fetchTournament(uuid)
+  return memoize(ctx, 'tournament', () => fetchTournament(uuid))
 }
 
 function cachedResolveAssociateUuid(ctx: Context, chatId: number): Promise<string | null> {
-  const cache = getRequestCache(ctx)
-  return cache.associateUuid ??= resolveAssociateUuidByChatId(chatId)
+  return memoize(ctx, 'associateUuid', () => resolveAssociateUuidByChatId(chatId))
 }
 
 function cachedFetchRegistrationStatus(
   ctx: Context, uuid: string, associateUuid: string
 ): Promise<RegistrationStatus> {
-  const cache = getRequestCache(ctx)
-  return cache.registration ??= fetchRegistrationStatus(uuid, associateUuid)
+  return memoize(ctx, 'registration', () => fetchRegistrationStatus(uuid, associateUuid))
 }
 
 function tournamentDetailMessage(
@@ -183,21 +171,21 @@ function backLabel(origin: string): string {
 // user came from. Menu instance resolved via menuNav.ts's registry
 // (getMenu), not a direct import — see that file's own comment for why.
 async function resolveBackTarget(
-  origin: string, chatId: number
+  ctx: Context, origin: string, chatId: number
 ): Promise<{ payload: string, menu: Menu<Context>, text: FormattedString }> {
   if (origin.startsWith('l')) {
     const index = Number(origin.slice(1))
-    const text = await legaTorneiText(index, chatId) ?? new FormattedString('🏆 Lega non trovata.')
+    const text = await legaTorneiText(ctx, index, chatId) ?? new FormattedString('🏆 Lega non trovata.')
     return { payload: String(index), menu: getMenu('lt'), text }
   }
   if (origin === 'i') {
-    return { payload: '', menu: getMenu('isc'), text: await iscrizioniText(chatId) }
+    return { payload: '', menu: getMenu('isc'), text: await iscrizioniText(ctx, chatId) }
   }
   if (origin === 'p') {
-    return { payload: '', menu: getMenu('p'), text: await prossimoText() }
+    return { payload: '', menu: getMenu('p'), text: await prossimoText(ctx) }
   }
   const offset = Number(origin.slice(1))
-  return { payload: String(offset), menu: getMenu('cal'), text: await calendarioText(offset, chatId) }
+  return { payload: String(offset), menu: getMenu('cal'), text: await calendarioText(ctx, offset, chatId) }
 }
 
 // autoAnswer: false — every button below answers with its own confirmation/
@@ -212,10 +200,13 @@ export const torneoMenu = new Menu<Context>('t', {
   if (!raw || !chatId) return
   const { uuid, origin } = decodeTorneoPayload(raw)
 
-  const tournament = await cachedFetchTournament(ctx, uuid)
+  // Independent of each other — parallelized instead of two sequential awaits.
+  const [tournament, associateUuid] = await Promise.all([
+    cachedFetchTournament(ctx, uuid),
+    cachedResolveAssociateUuid(ctx, chatId)
+  ])
   if (!tournament) return
 
-  const associateUuid = await cachedResolveAssociateUuid(ctx, chatId)
   const registration = associateUuid
     ? await cachedFetchRegistrationStatus(ctx, uuid, associateUuid)
     : null
@@ -314,7 +305,7 @@ export const torneoMenu = new Menu<Context>('t', {
       return
     }
     try {
-      await navigateBack(ctx, () => resolveBackTarget(origin, buttonChatId))
+      await navigateBack(ctx, () => resolveBackTarget(ctx, origin, buttonChatId))
       await ctx.answerCallbackQuery()
     } catch {
       await answerLoadError(ctx)
@@ -337,13 +328,16 @@ export async function openTournamentDetail(ctx: Context, uuid: string, origin: s
   }
 
   try {
-    const tournament = await cachedFetchTournament(ctx, uuid)
+    // Independent of each other — parallelized instead of two sequential awaits.
+    const [tournament, associateUuid] = await Promise.all([
+      cachedFetchTournament(ctx, uuid),
+      cachedResolveAssociateUuid(ctx, chatId)
+    ])
     if (!tournament) {
       await ctx.answerCallbackQuery({ text: 'Torneo non trovato', show_alert: true })
       return
     }
 
-    const associateUuid = await cachedResolveAssociateUuid(ctx, chatId)
     const registration = associateUuid
       ? await cachedFetchRegistrationStatus(ctx, uuid, associateUuid)
       : null
