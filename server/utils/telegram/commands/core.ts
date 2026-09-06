@@ -15,7 +15,6 @@ const HELP_TEXT = 'Comandi disponibili:\n\n'
   + '/start — avvia il bot\n'
   + '/help — mostra questo messaggio\n'
   + '/status — mostra lo stato corrente del bot\n'
-  + '/whoami — mostra l\'id di questa chat\n'
   + '/classifiche — classifiche per formato\n'
   + '/eventi — prossimi eventi\n'
   + '/calendario — prossimi tornei (bottoni mese)\n'
@@ -51,9 +50,4 @@ export function registerCoreCommands(commands: CommandGroup<Context>) {
 
     return ctx.reply(lines.join('\n'))
   })
-
-  // Dev/setup helper: lets an admin read off their numeric chat id (needed
-  // to populate pauperwave_associate_telegram_links by hand) without
-  // grepping raw getUpdates output.
-  commands.command('whoami', 'Mostra l\'id di questa chat', ctx => ctx.reply(`Chat id: ${ctx.chat.id}`))
 }
