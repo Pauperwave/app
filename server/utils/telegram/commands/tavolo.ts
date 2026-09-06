@@ -64,7 +64,10 @@ const COMMANDER_MESSAGE_PREFIX = '🎴 Comandante: '
 // menu at all, switchInlineCurrent is a client-side-only button that never
 // triggers one), kept only for consistency with every other menu in this
 // bot. onMenuOutdated: false — see calendario.ts's calendarioMenu for why.
-const tavoloMenu = new Menu<Context>('tv', { autoAnswer: false, onMenuOutdated: false }).dynamic((_ctx, range) => {
+const tavoloMenu = new Menu<Context>('tv', {
+  autoAnswer: false,
+  onMenuOutdated: false
+}).dynamic((_ctx, range) => {
   // Puts the user's input field into inline mode scoped to *this* chat —
   // requires Inline Mode enabled for the bot (BotFather: /setinline).
   // Telegram calls bot.on('inline_query') live as they type (debounced on

@@ -22,7 +22,10 @@ interface VoteState {
   playIndex: number | null
 }
 
-const INITIAL_STATE: VoteState = { deckIndex: null, playIndex: null }
+const INITIAL_STATE: VoteState = {
+  deckIndex: null,
+  playIndex: null
+}
 
 function encodeVoteState(state: VoteState): string {
   return `${state.deckIndex ?? NONE}:${state.playIndex ?? NONE}`
