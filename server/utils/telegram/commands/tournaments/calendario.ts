@@ -1,4 +1,4 @@
-// server\utils\telegram\commands\calendario.ts
+// server\utils\telegram\commands\tournaments\calendario.ts
 import { addMonths, endOfMonth, format, startOfMonth } from 'date-fns'
 import { it } from 'date-fns/locale'
 
@@ -7,12 +7,12 @@ import type { CommandGroup } from '@grammyjs/commands'
 import { Menu } from '@grammyjs/menu'
 import { FormattedString } from '@grammyjs/parse-mode'
 
-import { formatButtonDate, stageLabel, statusIcon, tournamentButtonLabel, tournamentLine } from './tournament/line'
-import { fetchStageNumbers } from './tournament/queries'
-import { SELECT_COLUMNS, torneoMenu, openTournamentDetail } from './tournament/detail'
-import type { DatedTournamentRow, TournamentRow } from './tournament/detail'
-import { answerLoadError } from './callbackErrors'
-import { registerMenu } from '../menuNav'
+import { formatButtonDate, stageLabel, statusIcon, tournamentButtonLabel, tournamentLine } from './line'
+import { fetchStageNumbers } from './queries'
+import { SELECT_COLUMNS, torneoMenu, openTournamentDetail } from './detail'
+import type { DatedTournamentRow, TournamentRow } from './detail'
+import { answerLoadError } from '../callbackErrors'
+import { registerMenu } from '../../menuNav'
 
 // Excludes status 'external' (shop-organized tournaments) — see
 // isExternalOrganizer in tournament/detail.ts. Bot schedule views stay

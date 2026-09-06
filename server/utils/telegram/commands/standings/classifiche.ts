@@ -1,10 +1,10 @@
-// server\utils\telegram\commands\classifiche.ts
+// server\utils\telegram\commands\standings\classifiche.ts
 import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 import { Menu } from '@grammyjs/menu'
 import { FormattedString } from '@grammyjs/parse-mode'
 
-import { answerLoadError } from './callbackErrors'
+import { answerLoadError } from '../callbackErrors'
 
 import { groupBestNByPlayer, toBestNPlacement } from '#shared/utils/cittadino/bestNStandings'
 

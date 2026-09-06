@@ -1,4 +1,4 @@
-// server\utils\telegram\commands\collegamento.ts
+// server\utils\telegram\commands\account\collegamento.ts
 import type { Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 

@@ -1,4 +1,4 @@
-// server\utils\telegram\commands\eventi.ts
+// server\utils\telegram\commands\events\eventi.ts
 import { it } from 'date-fns/locale'
 
 import type { Bot, Context } from 'grammy'
@@ -6,10 +6,10 @@ import type { CommandGroup } from '@grammyjs/commands'
 import { Menu } from '@grammyjs/menu'
 import { FormattedString } from '@grammyjs/parse-mode'
 
-import { answerLoadError } from './callbackErrors'
+import { answerLoadError } from '../callbackErrors'
 import { mapsUrl, googleCalendarUrl, truncateForCaption } from './eventLinks'
 import type { MapsAddress } from './eventLinks'
-import { navigateBack } from '../menuNav'
+import { navigateBack } from '../../menuNav'
 
 interface EventRow {
   uuid: string

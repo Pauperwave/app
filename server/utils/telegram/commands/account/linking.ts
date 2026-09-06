@@ -1,4 +1,4 @@
-// server\utils\telegram\commands\linking.ts
+// server\utils\telegram\commands\account\linking.ts
 import type { Bot, Context } from 'grammy'
 
 // No conversation state: Nitro is serverless, so an in-memory "waiting for

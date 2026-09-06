@@ -1,4 +1,4 @@
-// server\utils\telegram\commands\tournament\detail.ts
+// server\utils\telegram\commands\tournaments\detail.ts
 
 // A single tournament's detail view (message + registration actions),
 // shared by calendario.ts, leghe.ts, iscrizioni.ts and prossimo.ts — split
@@ -15,17 +15,17 @@ import { FormattedString } from '@grammyjs/parse-mode'
 import { formatTournamentDateTime, tournamentHeader } from './line'
 import { fetchRegistrationStatus, fetchStageNumbers } from './queries'
 import type { RegistrationStatus } from './queries'
-import { NOT_LINKED_MESSAGE } from '../linking'
+import { NOT_LINKED_MESSAGE } from '../account/linking'
 import { answerLoadError } from '../callbackErrors'
-import { mapsUrl, googleCalendarUrl, truncateForCaption } from '../eventLinks'
+import { mapsUrl, googleCalendarUrl, truncateForCaption } from '../events/eventLinks'
 import { navigateBack, getMenu } from '../../menuNav'
 // Circular import (calendario/leghe/iscrizioni import torneoMenu, this
 // imports their text-renderers back) — safe since only used inside async
 // handlers. Menu objects themselves come via menuNav.ts's registry instead.
-import { calendarioText } from '../calendario'
-import { legaTorneiText } from '../leghe'
-import { iscrizioniText } from '../iscrizioni'
-import { prossimoText } from '../prossimo'
+import { calendarioText } from './calendario'
+import { legaTorneiText } from './leghe'
+import { iscrizioniText } from './iscrizioni'
+import { prossimoText } from './prossimo'
 
 export interface LocationRow {
   name: string | null
