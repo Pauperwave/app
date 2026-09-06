@@ -71,7 +71,9 @@ async function fetchFormatRows(format: StandingsFormat): Promise<StandingsRow[]>
 
   const placements = payload.results.map(toBestNPlacement)
   const groups = groupBestNByPlayer(
-    placements, pointsForRank, payload.countedResults,
+    placements,
+    pointsForRank,
+    payload.countedResults,
     () => ({ participationPoints: payload.participationPoints })
   )
 
@@ -83,7 +85,10 @@ async function fetchFormatRows(format: StandingsFormat): Promise<StandingsRow[]>
     const participationTotal = group.results.reduce(
       (sum, result) => sum + result.participationPoints, 0
     )
-    return { playerName: group.playerName, total: placementTotal + participationTotal }
+    return {
+      playerName: group.playerName,
+      total: placementTotal + participationTotal
+    }
   })
 
   rows.sort((a, b) => b.total - a.total)
@@ -128,7 +133,9 @@ function fetchRows(scope: StandingsScope): Promise<StandingsRow[]> {
 const PAGE_SIZE = 10
 
 function standingsMessage(
-  scope: StandingsScope, rows: StandingsRow[], page: number
+  scope: StandingsScope,
+  rows: StandingsRow[],
+  page: number
 ): FormattedString {
   const header = fmt`🏆 ${FormattedString.b(`Classifica ${scopeLabel(scope)}`)}`
   if (!rows.length) return fmt`${header}\n\nNessun dato disponibile.`
@@ -204,7 +211,10 @@ const classificaMenu = new Menu<Context>('classifica-menu', {
   // `if (!raw) return` guard above and re-renders zero buttons, crashing the
   // plugin's own row/col lookup with no visible error. Confirmed 2026-09-06
   // ("« Formati" doing nothing on tap after picking a format).
-  range.row().back({ text: '« Formati', payload: raw }, async (ctx) => {
+  range.row().back({
+    text: '« Formati',
+    payload: raw
+  }, async (ctx) => {
     try {
       await ctx.editMessageText(initialMessage(useRuntimeConfig().public.siteUrl))
       await ctx.answerCallbackQuery()
