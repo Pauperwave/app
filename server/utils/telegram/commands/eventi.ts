@@ -1,5 +1,4 @@
 // server\utils\telegram\commands\eventi.ts
-import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { FormattedString } from '@grammyjs/parse-mode'
 import type { Context } from 'grammy'
@@ -29,7 +28,7 @@ async function upcomingEventsMessage(): Promise<FormattedString> {
   if (!data.length) return new FormattedString('📅 Nessun evento in programma al momento.')
 
   const lines = (data as UpcomingEventRow[]).map((event) => {
-    const date = event.starts_at ? format(new Date(event.starts_at), 'd MMM', { locale: it }) : '?'
+    const date = event.starts_at ? formatTelegramDate(event.starts_at, 'd MMM', { locale: it }) : '?'
     const location = event.location?.name ? ` — ${event.location.name}` : ''
     return `• ${date}: ${event.name}${location}`
   })

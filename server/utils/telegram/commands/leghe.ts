@@ -1,6 +1,5 @@
 // server\utils\telegram\commands\leghe.ts
 import { Menu } from '@grammyjs/menu'
-import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { statusIcon, stageLabel, tournamentLine, tournamentButtonLabel } from './tournament/line'
 import { fetchRegistrationStatuses, fetchStageNumbers } from './tournament/queries'
@@ -30,7 +29,7 @@ interface LeagueTournamentDetailRow {
 }
 
 function formatDate(date: string | null): string | null {
-  return date ? format(new Date(date), 'd MMM yyyy', { locale: it }) : null
+  return date ? formatTelegramDate(date, 'd MMM yyyy', { locale: it }) : null
 }
 
 async function fetchActiveLeagues(): Promise<ActiveLeagueRow[]> {
