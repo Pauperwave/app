@@ -168,7 +168,13 @@ const eventoMenu = new Menu<Context>('evd', { autoAnswer: false, onMenuOutdated:
   }))
   range.row()
 
-  range.text('« Torna agli eventi', async (ctx) => {
+  // payload: uuid (not omitted) — a button with no payload renders as "" and
+  // grammY only assigns a non-empty payload to ctx.match, so a payload-less
+  // back button leaves ctx.match unset on press; this dynamic() then hits
+  // its own `if (!uuid) return` guard above and re-renders zero buttons,
+  // crashing the plugin's own row/col lookup with no visible error at all.
+  // Confirmed 2026-09-06 ("Torna agli eventi" doing nothing on tap).
+  range.text({ text: '« Torna agli eventi', payload: uuid }, async (ctx) => {
     try {
       await navigateBack(ctx, async () => ({ payload: '', menu: eventiMenu, text: await eventiText() }))
       await ctx.answerCallbackQuery()
