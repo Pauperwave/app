@@ -6,14 +6,47 @@
 // leghe.ts's per-league tournament list, and iscrizioni.ts's "my
 // tournaments" list alike (see backTarget's comment below), and had grown
 // calendario.ts past 480 lines on its own.
-import { InlineKeyboard } from 'grammy'
+//
+// @grammyjs/menu migration (2026-09-06, user request): torneoMenu is a
+// single shared Menu reachable from three different parents. Every button
+// on it carries `${uuid}:${origin}` as its payload — the plugin re-derives
+// ctx.match from whichever button was pressed, and torneoMenu's own
+// .dynamic() needs both pieces every time it renders (the tournament to
+// show, and where "back" should return to), so every button must carry the
+// full pair, not just its own half.
+//
+// The "back" button deliberately does NOT use Menu's built-in
+// .back()/ctx.menu.nav() — nav() has no way to hand the target menu a fresh
+// payload, so a plain nav() would land you back on /calendario's own menu
+// with no memory of which month you were browsing (same for a league's
+// tournament list). Instead, the back button is a plain .text() button that
+// manually: resolves which origin menu + payload to return to, fetches that
+// view's own text (calendarioText/legaTorneiText/iscrizioniText, imported
+// from their own command files — see the cycle note below), overwrites
+// ctx.match with the target's own payload format, and edits the message
+// itself with that origin menu as reply_markup. This is the fragile,
+// hand-rolled plumbing flagged before starting this refactor — it exists
+// because full "return to the exact page you came from" fidelity was an
+// explicit user request over the simpler "always reopen a fresh root view"
+// alternative.
+import { Menu } from '@grammyjs/menu'
 import { format } from 'date-fns'
 import { FormattedString } from '@grammyjs/parse-mode'
 import { formatTournamentDateTime, tournamentHeader } from './line'
 import { fetchRegistrationStatus, fetchStageNumbers } from './queries'
 import { NOT_LINKED_MESSAGE } from '../linking'
 import { answerLoadError } from '../callbackErrors'
-import type { Bot, Context } from 'grammy'
+import { navigateBack, getMenu } from '../../menuNav'
+// Circular at the module level (calendario.ts/leghe.ts/iscrizioni.ts import
+// torneoMenu from here, this imports their own text-renderers back) — safe
+// because every one of these bindings is only ever called from inside an
+// async handler, never read at module-evaluation time. The target *menu*
+// objects themselves (as opposed to these text functions) come through
+// menuNav.ts's registry instead of a direct import — see its own comment.
+import { calendarioText } from '../calendario'
+import { legaTorneiText } from '../leghe'
+import { iscrizioniText } from '../iscrizioni'
+import type { Context } from 'grammy'
 import type { RegistrationStatus } from './queries'
 
 export interface LocationRow {
@@ -118,29 +151,12 @@ function tournamentDetailMessage(
 // messages) — only relevant when the detail is sent as a photo (image_url
 // set), so this trims the description first rather than the fixed fields
 // above it. .slice() (not a raw string cut) keeps the entities themselves
-// consistent with the truncated text — no risk of a partially-cut escape
-// sequence the old MarkdownV2 string version had to worry about.
+// consistent with the truncated text.
 const CAPTION_LIMIT = 1024
 
 function truncateForCaption(text: FormattedString): FormattedString {
   if (text.text.length <= CAPTION_LIMIT) return text
   return text.slice(0, CAPTION_LIMIT - 1).plain('…')
-}
-
-// A tournament's detail view is reachable from more than one place
-// (calendario.ts's own month grid, leghe.ts's per-league tournament list,
-// iscrizioni.ts's "my tournaments") — `origin` is a compact token
-// (`m<monthOffset>` or `l<leagueIndex>`) carried through the torneo:/
-// iscrivi:/disiscrivi: callback_data so the "back" button returns to
-// whichever list the user actually came from, without any server-side
-// session state (Nitro is serverless, see linking.ts's own reasoning).
-// Kept short deliberately — callback_data has a hard 64-byte cap, and a
-// second full UUID (a league's) wouldn't fit alongside the tournament's own.
-function backTarget(origin: string): { label: string, data: string } {
-  if (origin.startsWith('l')) {
-    return { label: '« Torna alla lega', data: `lega:${origin.slice(1)}` }
-  }
-  return { label: '« Torna al mese', data: `calendario:${origin.slice(1)}` }
 }
 
 // Google Calendar's "render" endpoint accepts a prefilled event via query
@@ -172,50 +188,54 @@ function isExternalOrganizer(row: DatedTournamentRow): boolean {
   return row.organizer?.type === 'shop'
 }
 
-function detailKeyboard(
-  row: DatedTournamentRow, origin: string, registration: RegistrationStatus
-): InlineKeyboard {
-  const keyboard = new InlineKeyboard()
-  if (!isExternalOrganizer(row)) {
-    if (registration === 'checked_in') {
-      keyboard.row().text('🎯 Check-in effettuato', `checkin-info:${row.uuid}`)
-    } else if (registration === 'registered') {
-      keyboard.row().text('❌ Annulla iscrizione', `disiscrivi:${row.uuid}:${origin}`)
-    } else if (row.status === 'registration_open') {
-      keyboard.row().text('➕ Iscriviti', `iscrivi:${row.uuid}:${origin}`)
-    }
+// Payload format shared by every button on torneoMenu: `${uuid}:${origin}`.
+// `origin` is the same compact token as before the menu migration
+// (`m<monthOffset>`, `l<leagueIndex>`, or `i` for iscrizioni — which used to
+// share calendario's own 'm0' as a placeholder back-target, now that
+// iscrizioni has a real menu of its own to return to).
+function encodeTorneoPayload(uuid: string, origin: string): string {
+  return `${uuid}:${origin}`
+}
+
+function decodeTorneoPayload(raw: string): { uuid: string, origin: string } {
+  const separator = raw.indexOf(':')
+  return { uuid: raw.slice(0, separator), origin: raw.slice(separator + 1) }
+}
+
+// Cheap, sync — used on every torneoMenu render to label the back button,
+// without the cost of actually rebuilding the origin view (only done when
+// the button is pressed, see resolveBackTarget below).
+function backLabel(origin: string): string {
+  if (origin.startsWith('l')) return '« Torna alla lega'
+  if (origin === 'i') return '« Torna ai tuoi tornei'
+  return '« Torna al mese'
+}
+
+// The expensive half of going back — rebuilds the exact origin view (same
+// month / same league / the iscrizioni list) so the back button restores
+// precisely where the user came from, not a fresh default view. The target
+// Menu instance itself comes from menuNav.ts's registry (getMenu), not a
+// direct import of calendario.ts's/leghe.ts's own Menu object — see that
+// file's comment for why.
+async function resolveBackTarget(
+  origin: string, chatId: number
+): Promise<{ payload: string, menu: Menu<Context>, text: FormattedString }> {
+  if (origin.startsWith('l')) {
+    const index = Number(origin.slice(1))
+    const text = await legaTorneiText(index, chatId) ?? new FormattedString('🏆 Lega non trovata.')
+    return { payload: String(index), menu: getMenu('lt'), text }
   }
-
-  const mapUrl = row.location ? mapsUrl(row.location) : null
-  const utilityRow = keyboard.row()
-  if (mapUrl) utilityRow.url('🧭 Direzioni', mapUrl)
-  utilityRow.url('🗓️ Aggiungi al calendario', googleCalendarUrl(row))
-
-  const back = backTarget(origin)
-  keyboard.row().text(back.label, back.data)
-  return keyboard
+  if (origin === 'i') {
+    return { payload: '', menu: getMenu('isc'), text: await iscrizioniText(chatId) }
+  }
+  const offset = Number(origin.slice(1))
+  return { payload: String(offset), menu: getMenu('cal'), text: await calendarioText(offset, chatId) }
 }
 
-// The three tournament callback patterns (torneo:/iscrivi:/disiscrivi:) all
-// carry the same uuid + origin capture groups plus ctx.chat.id — shared here
-// so the three handlers below don't each re-derive and re-validate them.
-function tournamentCallbackParams(
-  ctx: Context
-): { uuid: string, origin: string, chatId: number } | null {
-  const uuid = ctx.match?.[1] as string | undefined
-  const origin = ctx.match?.[2] as string | undefined
-  const chatId = ctx.chat?.id
-  if (!uuid || !origin || !chatId) return null
-  return { uuid, origin, chatId }
-}
-
-// iscrivi/disiscrivi both gate on a linked associate before touching
-// tournament_registrations, differing only in the toast shown when none is
-// linked yet.
 async function resolveLinkedAssociate(
-  ctx: Context, chatId: number, notLinkedMessage: string
+  ctx: Context, notLinkedMessage: string
 ): Promise<string | null> {
-  const associateUuid = await resolveAssociateUuidByChatId(chatId)
+  const associateUuid = await resolveAssociateUuidByChatId(ctx.chat!.id)
   if (!associateUuid) {
     await ctx.answerCallbackQuery({ text: notLinkedMessage, show_alert: true })
     return null
@@ -223,169 +243,139 @@ async function resolveLinkedAssociate(
   return associateUuid
 }
 
-async function renderTournamentDetail(
-  tournament: DatedTournamentRow, origin: string, chatId: number
-) {
-  const associateUuid = await resolveAssociateUuidByChatId(chatId)
-  const registration = associateUuid
-    ? await fetchRegistrationStatus(tournament.uuid, associateUuid)
-    : null
+// autoAnswer: false — every button below answers with its own confirmation/
+// error text, which would race with Menu's default no-args auto-answer.
+export const torneoMenu = new Menu<Context>('t', { autoAnswer: false }).dynamic(async (ctx, range) => {
+  const raw = ctx.match as string | undefined
+  if (!raw) return
+  const { uuid, origin } = decodeTorneoPayload(raw)
 
-  return {
-    text: tournamentDetailMessage(tournament, registration),
-    keyboard: detailKeyboard(tournament, origin, registration)
-  }
-}
+  const tournament = await fetchTournament(uuid)
+  if (!tournament) return
 
-export function registerTournamentDetailHandlers(bot: Bot) {
-  // origin: m<monthOffset> from calendario.ts's own grid, l<leagueIndex>
-  // from leghe.ts's per-league tournament list — see backTarget's comment.
-  bot.callbackQuery(/^torneo:([0-9a-f-]+):([lm]-?\d+)$/, async (ctx) => {
-    const params = tournamentCallbackParams(ctx)
-    if (!params) {
-      await ctx.answerCallbackQuery().catch(() => {})
-      return
+  const associateUuid = await resolveAssociateUuidByChatId(ctx.chat!.id)
+  const registration = associateUuid ? await fetchRegistrationStatus(uuid, associateUuid) : null
+  const payload = encodeTorneoPayload(uuid, origin)
+
+  if (!isExternalOrganizer(tournament)) {
+    if (registration === 'checked_in') {
+      range.text({ text: '🎯 Check-in effettuato', payload }, async (ctx) => {
+        await ctx.answerCallbackQuery({
+          text: 'Hai già fatto il check-in per questo torneo, non puoi più annullare l\'iscrizione da qui.',
+          show_alert: true
+        })
+      })
+    } else if (registration === 'registered') {
+      range.text({ text: '❌ Annulla iscrizione', payload }, async (ctx) => {
+        try {
+          const linkedAssociateUuid = await resolveLinkedAssociate(ctx, 'Nessun account collegato.')
+          if (!linkedAssociateUuid) return
+
+          const supabase = telegramServiceSupabaseClient()
+          const { data: existing, error: findError } = await supabase
+            .from('tournament_registrations')
+            .select('uuid, status, players!inner(associate_uuid)')
+            .eq('tournament_uuid', uuid)
+            .eq('players.associate_uuid', linkedAssociateUuid)
+            .maybeSingle()
+          if (findError) throw findError
+
+          if (!existing || existing.status !== 'registered') {
+            await ctx.answerCallbackQuery({
+              text: existing?.status === 'checked_in'
+                ? 'Non puoi annullare l\'iscrizione dopo il check-in.'
+                : 'Non risulti iscritto a questo torneo.',
+              show_alert: true
+            })
+            return
+          }
+
+          const { error } = await supabase.from('tournament_registrations').delete().eq('uuid', existing.uuid)
+          if (error) throw error
+
+          ctx.menu.update()
+          await ctx.answerCallbackQuery({ text: '✅ Iscrizione annullata.' })
+        } catch {
+          await ctx.answerCallbackQuery({ text: 'Errore durante l\'annullamento, riprova più tardi.', show_alert: true })
+        }
+      })
+    } else if (tournament.status === 'registration_open') {
+      range.text({ text: '➕ Iscriviti', payload }, async (ctx) => {
+        try {
+          const linkedAssociateUuid = await resolveLinkedAssociate(ctx, NOT_LINKED_MESSAGE)
+          if (!linkedAssociateUuid) return
+
+          const supabase = telegramServiceSupabaseClient()
+          const { error } = await supabase.rpc('register_tournament_players', {
+            p_tournament_uuid: uuid,
+            p_associate_uuids: [linkedAssociateUuid]
+          })
+          if (error) throw error
+
+          ctx.menu.update()
+          await ctx.answerCallbackQuery({ text: '✅ Iscrizione confermata!' })
+        } catch {
+          await ctx.answerCallbackQuery({ text: 'Errore durante l\'iscrizione, riprova più tardi.', show_alert: true })
+        }
+      })
     }
-    const { uuid, origin, chatId } = params
+  }
 
+  const mapUrl = tournament.location ? mapsUrl(tournament.location) : null
+  if (mapUrl) range.url('🧭 Direzioni', mapUrl)
+  range.url('🗓️ Aggiungi al calendario', googleCalendarUrl(tournament))
+  range.row()
+
+  range.text({ text: backLabel(origin), payload }, async (ctx) => {
     try {
-      const tournament = await fetchTournament(uuid)
-      if (!tournament) {
-        await ctx.answerCallbackQuery({ text: 'Torneo non trovato', show_alert: true })
-        return
-      }
-
-      const { text, keyboard } = await renderTournamentDetail(tournament, origin, chatId)
-
-      if (tournament.image_url) {
-        // Can't turn an existing text message into a photo one via
-        // editMessageText — replace it instead.
-        await ctx.deleteMessage().catch(() => {})
-        const capped = truncateForCaption(text)
-        await ctx.replyWithPhoto(tournament.image_url, {
-          caption: capped.caption,
-          caption_entities: capped.caption_entities,
-          reply_markup: keyboard
-        })
-      } else {
-        await ctx.editMessageText(text.text, {
-          entities: text.entities,
-          reply_markup: keyboard,
-          link_preview_options: { is_disabled: true }
-        })
-      }
+      await navigateBack(ctx, () => resolveBackTarget(origin, ctx.chat!.id))
       await ctx.answerCallbackQuery()
     } catch {
       await answerLoadError(ctx)
     }
   })
+})
 
-  // Re-renders the same detail message (photo caption or text) in place
-  // after a successful iscriviti/disiscriviti, so the button reflects the
-  // new registration state instead of just toasting a confirmation.
-  async function refreshDetailMessage(
-    ctx: Context, tournament: DatedTournamentRow, origin: string, chatId: number
-  ) {
-    const { text, keyboard } = await renderTournamentDetail(tournament, origin, chatId)
+// Registered here (not by whichever register*Command calls bot.use() on
+// this menu) since torneoMenu is a module-level singleton reachable from
+// three different parents — one registration site, unconditional.
+registerMenu('t', torneoMenu)
+
+// Opens the detail view fresh from a list (calendario/leghe/iscrizioni's own
+// submenu button middleware calls this) — as opposed to torneoMenu's own
+// internal buttons, which stay on the same message and never need this.
+export async function openTournamentDetail(ctx: Context, uuid: string, origin: string) {
+  try {
+    const tournament = await fetchTournament(uuid)
+    if (!tournament) {
+      await ctx.answerCallbackQuery({ text: 'Torneo non trovato', show_alert: true })
+      return
+    }
+
+    const associateUuid = await resolveAssociateUuidByChatId(ctx.chat!.id)
+    const registration = associateUuid ? await fetchRegistrationStatus(uuid, associateUuid) : null
+    const text = tournamentDetailMessage(tournament, registration)
+    ctx.match = encodeTorneoPayload(uuid, origin)
+
     if (tournament.image_url) {
+      // Can't turn an existing text message into a photo one via
+      // editMessageText — replace it instead.
+      await ctx.deleteMessage().catch(() => {})
       const capped = truncateForCaption(text)
-      await ctx.editMessageCaption({
+      await ctx.replyWithPhoto(tournament.image_url, {
         caption: capped.caption,
         caption_entities: capped.caption_entities,
-        reply_markup: keyboard
+        reply_markup: torneoMenu
       })
     } else {
       await ctx.editMessageText(text.text, {
         entities: text.entities,
-        reply_markup: keyboard,
+        reply_markup: torneoMenu,
         link_preview_options: { is_disabled: true }
       })
     }
+    await ctx.answerCallbackQuery()
+  } catch {
+    await answerLoadError(ctx)
   }
-
-  bot.callbackQuery(/^checkin-info:([0-9a-f-]+)$/, async (ctx) => {
-    await ctx.answerCallbackQuery({
-      text: 'Hai già fatto il check-in per questo torneo, non puoi più annullare l\'iscrizione da qui.',
-      show_alert: true
-    })
-  })
-
-  bot.callbackQuery(/^iscrivi:([0-9a-f-]+):([lm]-?\d+)$/, async (ctx) => {
-    const params = tournamentCallbackParams(ctx)
-    if (!params) return
-    const { uuid, origin, chatId } = params
-
-    try {
-      const associateUuid = await resolveLinkedAssociate(ctx, chatId, NOT_LINKED_MESSAGE)
-      if (!associateUuid) return
-
-      const tournament = await fetchTournament(uuid)
-      if (!tournament || tournament.status !== 'registration_open' || isExternalOrganizer(tournament)) {
-        await ctx.answerCallbackQuery({
-          text: 'Le iscrizioni per questo torneo non sono aperte.',
-          show_alert: true
-        })
-        return
-      }
-
-      const supabase = telegramServiceSupabaseClient()
-      const { error } = await supabase.rpc('register_tournament_players', {
-        p_tournament_uuid: uuid,
-        p_associate_uuids: [associateUuid]
-      })
-      if (error) throw error
-
-      await refreshDetailMessage(ctx, tournament, origin, chatId)
-      await ctx.answerCallbackQuery({ text: '✅ Iscrizione confermata!' })
-    } catch {
-      await ctx.answerCallbackQuery({ text: 'Errore durante l\'iscrizione, riprova più tardi.', show_alert: true })
-    }
-  })
-
-  bot.callbackQuery(/^disiscrivi:([0-9a-f-]+):([lm]-?\d+)$/, async (ctx) => {
-    const params = tournamentCallbackParams(ctx)
-    if (!params) return
-    const { uuid, origin, chatId } = params
-
-    try {
-      const associateUuid = await resolveLinkedAssociate(ctx, chatId, 'Nessun account collegato.')
-      if (!associateUuid) return
-
-      const tournament = await fetchTournament(uuid)
-      if (!tournament) {
-        await ctx.answerCallbackQuery({ text: 'Torneo non trovato', show_alert: true })
-        return
-      }
-
-      const supabase = telegramServiceSupabaseClient()
-      const { data: existing, error: findError } = await supabase
-        .from('tournament_registrations')
-        .select('uuid, status, players!inner(associate_uuid)')
-        .eq('tournament_uuid', uuid)
-        .eq('players.associate_uuid', associateUuid)
-        .maybeSingle()
-      if (findError) throw findError
-
-      if (!existing || existing.status !== 'registered') {
-        await ctx.answerCallbackQuery({
-          text: existing?.status === 'checked_in'
-            ? 'Non puoi annullare l\'iscrizione dopo il check-in.'
-            : 'Non risulti iscritto a questo torneo.',
-          show_alert: true
-        })
-        return
-      }
-
-      const { error } = await supabase
-        .from('tournament_registrations')
-        .delete()
-        .eq('uuid', existing.uuid)
-      if (error) throw error
-
-      await refreshDetailMessage(ctx, tournament, origin, chatId)
-      await ctx.answerCallbackQuery({ text: '✅ Iscrizione annullata.' })
-    } catch {
-      await ctx.answerCallbackQuery({ text: 'Errore durante l\'annullamento, riprova più tardi.', show_alert: true })
-    }
-  })
 }

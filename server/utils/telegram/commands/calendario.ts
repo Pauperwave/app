@@ -1,11 +1,12 @@
 // server\utils\telegram\commands\calendario.ts
-import { InlineKeyboard } from 'grammy'
+import { Menu } from '@grammyjs/menu'
 import { addMonths, endOfMonth, format, startOfMonth } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { formatButtonDate, stageLabel, statusIcon, tournamentButtonLabel, tournamentLine } from './tournament/line'
 import { fetchShowExternalTournaments, fetchStageNumbers } from './tournament/queries'
-import { SELECT_COLUMNS, registerTournamentDetailHandlers } from './tournament/detail'
-import { answerLoadError, editOrResendMessage } from './callbackErrors'
+import { SELECT_COLUMNS, torneoMenu, openTournamentDetail } from './tournament/detail'
+import { answerLoadError } from './callbackErrors'
+import { registerMenu } from '../menuNav'
 import { FormattedString } from '@grammyjs/parse-mode'
 import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
@@ -99,72 +100,77 @@ function calendarioMessage(rows: DatedTournamentRow[], month: Date): FormattedSt
   return fmt`${header}\n\n${FormattedString.join(days, '\n\n')}\n\n👇 Tocca un torneo per i dettagli`
 }
 
-function buildKeyboard(rows: DatedTournamentRow[], monthOffset: number): InlineKeyboard {
+// Exported so tournament/detail.ts's shared "back" button can rebuild this
+// exact month view when returning from a detail page opened from here — see
+// menuNav.ts's own comment on why this is a (safe, deferred-access)
+// circular import.
+export async function calendarioText(
+  monthOffset: number, chatId: number
+): Promise<FormattedString> {
+  const rows = await fetchUpcomingTournaments(chatId)
   const month = addMonths(startOfMonth(new Date()), monthOffset)
+  return calendarioMessage(rows, month)
+}
 
+// autoAnswer: false — the "open tournament" buttons delegate to
+// openTournamentDetail, which answers the callback itself (with a custom
+// alert on "not found"); autoAnswer's default fork would race with that.
+export const calendarioMenu = new Menu<Context>('cal', { autoAnswer: false }).dynamic(async (ctx, range) => {
+  const monthOffset = Number(ctx.match ?? '0')
+  const chatId = ctx.chat?.id
+  if (!chatId) return
+
+  const month = addMonths(startOfMonth(new Date()), monthOffset)
+  const start = startOfMonth(month)
+  const end = endOfMonth(month)
+
+  const rows = await fetchUpcomingTournaments(chatId)
   const filtered = rows.filter((row) => {
     const date = new Date(row.starts_at)
-    return date >= startOfMonth(month) && date <= endOfMonth(month)
+    return date >= start && date <= end
   })
 
-  const keyboard = new InlineKeyboard()
-    .text('◀ Mese prec.', `calendario:${monthOffset - 1}`)
-    .text('Mese succ. ▶', `calendario:${monthOffset + 1}`)
+  range
+    .text({ text: '◀ Mese prec.', payload: String(monthOffset - 1) }, monthNav)
+    .text({ text: 'Mese succ. ▶', payload: String(monthOffset + 1) }, monthNav)
 
   for (const row of filtered) {
     const date = formatButtonDate(row.starts_at)
     const label = tournamentButtonLabel(statusIcon(row.status), date, row.stageNumber, row.name)
-    keyboard.row().text(label, `torneo:${row.uuid}:m${monthOffset}`)
+    const origin = `m${monthOffset}`
+    range.row().text(
+      { text: label, payload: `${row.uuid}:${origin}` },
+      ctx => openTournamentDetail(ctx, row.uuid, origin)
+    )
   }
+})
 
-  return keyboard
+async function monthNav(ctx: Context & { match: string }) {
+  try {
+    const monthOffset = Number(ctx.match)
+    const text = await calendarioText(monthOffset, ctx.chat!.id)
+    await ctx.editMessageText(text.text, { entities: text.entities, reply_markup: calendarioMenu })
+    await ctx.answerCallbackQuery()
+  } catch {
+    await answerLoadError(ctx)
+  }
 }
 
-async function renderCalendario(monthOffset: number, chatId: number) {
-  const rows = await fetchUpcomingTournaments(chatId)
-  const month = addMonths(startOfMonth(new Date()), monthOffset)
-
-  return {
-    text: calendarioMessage(rows, month),
-    keyboard: buildKeyboard(rows, monthOffset)
-  }
-}
+registerMenu('cal', calendarioMenu)
 
 export function registerCalendarioCommand(bot: Bot, commands: CommandGroup<Context>) {
+  // Deferred to call time (not module top level) — torneoMenu's own module
+  // imports calendarioText from this file, so accessing torneoMenu itself at
+  // this file's top level would race the circular import's evaluation order.
+  calendarioMenu.register(torneoMenu)
+  bot.use(calendarioMenu)
+
   commands.command('calendario', 'Prossimi tornei', async (ctx) => {
     try {
-      const { text, keyboard } = await renderCalendario(0, ctx.chat.id)
-      await ctx.reply(text.text, { entities: text.entities, reply_markup: keyboard })
+      const text = await calendarioText(0, ctx.chat.id)
+      await ctx.reply(text.text, { entities: text.entities, reply_markup: calendarioMenu })
     } catch {
       await ctx.reply('⚠️ Non sono riuscito a recuperare i tornei, riprova più tardi.')
     }
   })
-
-  bot.callbackQuery(/^calendario:(-?\d+)$/, async (ctx) => {
-    const monthOffset = Number(ctx.match[1])
-    const chatId = ctx.chat?.id
-
-    if (!chatId) {
-      await ctx.answerCallbackQuery().catch(() => {})
-      return
-    }
-
-    // Answered exactly once, at the very end — a callback_query can only
-    // be answered once (a second call throws GrammyError "query is too
-    // old...", uncaught, taking down the whole webhook request with a 500;
-    // confirmed 2026-09-03 as the actual cause behind "the bot doesn't
-    // respond" whenever this handler's own error path used to fire).
-    try {
-      const { text, keyboard } = await renderCalendario(monthOffset, chatId)
-      await editOrResendMessage(ctx, text, keyboard)
-      await ctx.answerCallbackQuery()
-    } catch {
-      await answerLoadError(ctx)
-    }
-  })
-
-  // The torneo:/iscrivi:/disiscrivi:/checkin-info: callbacks live in
-  // tournament/detail.ts — leghe.ts's and iscrizioni.ts's own tournament
-  // lists reach the same detail view, so it isn't calendario-specific.
-  registerTournamentDetailHandlers(bot)
 }
