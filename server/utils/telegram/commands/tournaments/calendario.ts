@@ -25,22 +25,24 @@ const MAX_ROWS = 200
 async function fetchUpcomingTournaments(): Promise<DatedTournamentRow[]> {
   const supabase = publicSupabaseClient()
 
-  const [{ data, error }, stageNumbers] = await Promise.all([
-    supabase
-      .from('tournaments')
-      .select(SELECT_COLUMNS)
-      .is('deleted_at', null)
-      .in('status', OPEN_STATUSES)
-      .gte('starts_at', zonedRomeTimeToInstant(startOfMonth(nowInRome())).toISOString())
-      .order('starts_at', { ascending: true })
-      .limit(MAX_ROWS),
-    fetchStageNumbers()
-  ])
+  const { data, error } = await supabase
+    .from('tournaments')
+    .select(SELECT_COLUMNS)
+    .is('deleted_at', null)
+    .in('status', OPEN_STATUSES)
+    .gte('starts_at', zonedRomeTimeToInstant(startOfMonth(nowInRome())).toISOString())
+    .order('starts_at', { ascending: true })
+    .limit(MAX_ROWS)
 
   if (error) throw error
-  return (data as TournamentRow[])
+  const rows = (data as TournamentRow[])
     .filter((row): row is TournamentRow & { starts_at: string } => row.starts_at !== null)
-    .map(row => ({ ...row, stageNumber: stageNumbers.get(row.uuid) ?? null }))
+
+  // Scoped to only the leagues actually appearing on this page, instead of
+  // every league's full history — see queries.ts's own comment on why.
+  const leagueUuids = [...new Set(rows.map(row => row.league_uuid).filter(uuid => uuid !== null))]
+  const stageNumbers = await fetchStageNumbers(leagueUuids)
+  return rows.map(row => ({ ...row, stageNumber: stageNumbers.get(row.uuid) ?? null }))
 }
 
 function monthLabel(month: Date): string {

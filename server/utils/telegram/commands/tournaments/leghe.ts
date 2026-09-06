@@ -113,7 +113,7 @@ export async function legaTorneiText(
 
   const [tournaments, stageNumbers] = await Promise.all([
     fetchLeagueTournaments(league.uuid),
-    fetchStageNumbers()
+    fetchStageNumbers([league.uuid])
   ])
   const header = fmt`🏆 ${FormattedString.b(league.name)}`
 
@@ -138,7 +138,7 @@ async function fetchLegaTorneiButtons(index: number, chatId: number) {
 
   const [tournaments, stageNumbers] = await Promise.all([
     fetchLeagueTournaments(league.uuid),
-    fetchStageNumbers()
+    fetchStageNumbers([league.uuid])
   ])
   const associateUuid = await resolveAssociateUuidByChatId(chatId)
   const registrations = associateUuid

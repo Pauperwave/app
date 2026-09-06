@@ -14,6 +14,7 @@ interface NextTournamentRow {
   name: string
   starts_at: string | null
   status: string
+  league_uuid: string | null
   location: { name: string | null } | null
 }
 
@@ -24,7 +25,7 @@ async function fetchNextTournament(): Promise<NextTournamentRow | null> {
 
   const { data, error } = await supabase
     .from('tournaments')
-    .select('uuid, name, starts_at, status, location:locations(name)')
+    .select('uuid, name, starts_at, status, league_uuid, location:locations(name)')
     .is('deleted_at', null)
     .in('status', OPEN_STATUSES)
     .gte('starts_at', new Date().toISOString())
@@ -53,7 +54,10 @@ function nextTournamentMessage(
 // menuNav.ts's own comment on why this is a (safe, deferred-access)
 // circular import.
 export async function prossimoText(): Promise<FormattedString> {
-  const [row, stageNumbers] = await Promise.all([fetchNextTournament(), fetchStageNumbers()])
+  const row = await fetchNextTournament()
+  // Scoped to this tournament's own league (or none) — see queries.ts's
+  // own comment on why.
+  const stageNumbers = await fetchStageNumbers(row?.league_uuid ? [row.league_uuid] : [])
   return nextTournamentMessage(row, row ? stageNumbers.get(row.uuid) ?? null : null)
 }
 

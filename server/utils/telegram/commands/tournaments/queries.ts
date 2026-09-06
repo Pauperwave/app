@@ -5,17 +5,28 @@
 
 // Mirrors app/utils/tournaments/tournamentStageLabel.ts's
 // assignTournamentStageNumbers: 1-based position within its league by start
-// date, cancelled stages skipped. Needs the league's full history, so this
-// is a separate lightweight query rather than reusing a caller's own rows.
-export async function fetchStageNumbers(): Promise<Map<string, number>> {
+// date, cancelled stages skipped. Needs each league's full history (not
+// just the open/upcoming rows a caller already fetched), so this is a
+// separate query rather than reusing a caller's own rows.
+//
+// leagueUuids scopes the scan to the league(s) the caller actually cares
+// about — every call site knows this upfront (a specific league, a single
+// tournament's own league, or the set of leagues appearing in a page of
+// results). Omit it only when genuinely unknown; an unscoped call re-scans
+// every league's entire history and gets more expensive as it grows.
+export async function fetchStageNumbers(leagueUuids?: string[]): Promise<Map<string, number>> {
+  if (leagueUuids?.length === 0) return new Map()
+
   const supabase = publicSupabaseClient()
 
-  const { data, error } = await supabase
+  let query = supabase
     .from('tournaments')
     .select('uuid, league_uuid, starts_at, status')
     .is('deleted_at', null)
     .not('league_uuid', 'is', null)
-    .order('starts_at', { ascending: true })
+  if (leagueUuids) query = query.in('league_uuid', leagueUuids)
+
+  const { data, error } = await query.order('starts_at', { ascending: true })
 
   if (error) throw error
 
