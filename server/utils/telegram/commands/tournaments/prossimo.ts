@@ -1,13 +1,13 @@
-// server\utils\telegram\commands\prossimo.ts
+// server\utils\telegram\commands\tournaments\prossimo.ts
 import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 import { Menu } from '@grammyjs/menu'
 import { FormattedString } from '@grammyjs/parse-mode'
 
-import { formatTournamentDateTime, tournamentHeader } from './tournament/line'
-import { fetchStageNumbers } from './tournament/queries'
-import { torneoMenu, openTournamentDetail } from './tournament/detail'
-import { registerMenu } from '../menuNav'
+import { formatTournamentDateTime, tournamentHeader } from './line'
+import { fetchStageNumbers } from './queries'
+import { torneoMenu, openTournamentDetail } from './detail'
+import { registerMenu } from '../../menuNav'
 
 interface NextTournamentRow {
   uuid: string

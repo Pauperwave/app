@@ -1,4 +1,4 @@
-// server\utils\telegram\commands\eventLinks.ts
+// server\utils\telegram\commands\events\eventLinks.ts
 import type { FormattedString } from '@grammyjs/parse-mode'
 
 // Shared between tournament/detail.ts and eventi.ts — both build the same

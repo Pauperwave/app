@@ -1,4 +1,4 @@
-// server\utils\telegram\commands\tournament\line.ts
+// server\utils\telegram\commands\tournaments\line.ts
 import { it } from 'date-fns/locale'
 
 import { FormattedString } from '@grammyjs/parse-mode'

@@ -1,4 +1,4 @@
-// server\utils\telegram\commands\tavolo.ts
+// server\utils\telegram\commands\mockups\tavolo.ts
 import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 import type { InlineQueryResultArticle } from 'grammy/types'

@@ -1,4 +1,4 @@
-// server\utils\telegram\commands\tournament\queries.ts
+// server\utils\telegram\commands\tournaments\queries.ts
 
 // Supabase queries shared across more than one command (calendario, leghe,
 // iscrizioni, prossimo all need stage numbers/registration status).

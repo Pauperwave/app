@@ -1,10 +1,10 @@
-// server\utils\telegram\commands\vota.ts
+// server\utils\telegram\commands\mockups\vota.ts
 import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 import { Menu } from '@grammyjs/menu'
 import { FormattedString } from '@grammyjs/parse-mode'
 
-import { answerLoadError } from './callbackErrors'
+import { answerLoadError } from '../callbackErrors'
 
 // MOCKUP — same placeholder pairing data as tavolo.ts (no live-write flow
 // yet, see docs/architecture/telegram-bot.md); kept separate since each

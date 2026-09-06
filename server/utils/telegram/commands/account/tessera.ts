@@ -1,4 +1,4 @@
-// server\utils\telegram\commands\tessera.ts
+// server\utils\telegram\commands\account\tessera.ts
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 
