@@ -1,4 +1,4 @@
--- supabase\migrations\20260904160000_add_telegram_chat_settings.sql
+-- supabase\migrations\20260904203828_add_telegram_chat_settings.sql
 -- Per-chat bot preferences, keyed by chat_id alone (not associate_uuid —
 -- unlike pauperwave_associate_telegram_links, these apply to any chat that
 -- has talked to the bot, linked or not; /calendario's own tornei list is

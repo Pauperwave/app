@@ -1,4 +1,4 @@
--- supabase\migrations\20260827100000_add_associate_membership_events.sql
+-- supabase\migrations\20260827081808_add_associate_membership_events.sql
 -- pauperwave_associates is a single mutable row per person with no history —
 -- everything except request_date (immutable) and the payment-driven
 -- pauperwave_associate_renewals table gets silently overwritten on the next

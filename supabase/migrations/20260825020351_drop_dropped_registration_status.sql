@@ -1,4 +1,4 @@
--- supabase\migrations\20260825100000_drop_dropped_registration_status.sql
+-- supabase\migrations\20260825020351_drop_dropped_registration_status.sql
 -- Removes 'dropped' from ck_tournament_registrations_status — it's a
 -- pre-event concept (a player who cancels their registration before the
 -- tournament day), out of scope for AcceptancePicker.vue's day-of

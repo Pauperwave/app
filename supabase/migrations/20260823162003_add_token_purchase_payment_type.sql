@@ -1,4 +1,4 @@
--- supabase\migrations\20260823170000_add_token_purchase_payment_type.sql
+-- supabase\migrations\20260823162003_add_token_purchase_payment_type.sql
 -- Adds 'Token Purchase' to ck_payment_type (user request, 2026-08-23):
 -- buying tokens to spend inside an event -- Commanderwave Fest's "N gettoni"
 -- line items -- is conceptually distinct from an Event Fee (the event entry

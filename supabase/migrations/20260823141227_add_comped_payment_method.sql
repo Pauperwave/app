@@ -1,4 +1,4 @@
--- supabase\migrations\20260823150000_add_comped_payment_method.sql
+-- supabase\migrations\20260823141227_add_comped_payment_method.sql
 -- Adds 'Comped' (complimentary/free entry, no money changed hands) to
 -- ck_payment_method, needed to import the historical 2026 receipts sheet
 -- where free tournament/event entries were logged as method "Altro".
