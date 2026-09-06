@@ -9,10 +9,7 @@ import { registerLegheCommand } from './leghe'
 import { registerProssimoCommand } from './prossimo'
 import { registerIscrizioniCommand } from './iscrizioni'
 import { registerSupportoCommand } from './supporto'
-import { registerCarteCercateCommand } from './cartecercate'
 import { registerTesseraCommand } from './tessera'
-import { registerMazziCommand } from './mazzi'
-import { registerVisibilitaCommand } from './visibilita'
 import { registerCollegamentoCommand } from './collegamento'
 import { registerStubCommands } from './stubs'
 import { registerLinkingHandler } from './linking'
@@ -60,10 +57,7 @@ export function registerCommands(bot: Bot) {
   registerProssimoCommand(commands)
   registerIscrizioniCommand(bot, commands)
   registerSupportoCommand(bot, commands)
-  registerCarteCercateCommand(bot, commands)
   registerTesseraCommand(commands)
-  registerMazziCommand(commands)
-  registerVisibilitaCommand(bot, commands)
   registerCollegamentoCommand(commands)
   registerStubCommands(commands)
 
