@@ -1,4 +1,4 @@
--- supabase\migrations\20260823160000_resequence_payments_id_from_1.sql
+-- supabase\migrations\20260823150456_resequence_payments_id_from_1.sql
 -- pauperwave_payments.id (bigint identity) started at 3, not 1 -- two values
 -- were burned by inserts that never persisted (identity sequences don't
 -- reuse rollback/deleted values) before the 2026 historical import ran.

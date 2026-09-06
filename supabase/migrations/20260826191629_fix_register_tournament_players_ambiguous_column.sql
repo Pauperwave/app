@@ -1,4 +1,4 @@
--- supabase\migrations\20260826220000_fix_register_tournament_players_ambiguous_column.sql
+-- supabase\migrations\20260826191629_fix_register_tournament_players_ambiguous_column.sql
 -- register_tournament_players (20260825110000) returned a column named
 -- associate_uuid — RETURNS TABLE columns become PL/pgSQL variables in scope
 -- for the whole function body, and that name collides with players' own

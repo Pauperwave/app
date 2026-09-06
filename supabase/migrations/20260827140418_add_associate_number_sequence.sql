@@ -1,4 +1,4 @@
--- supabase\migrations\20260827120000_add_associate_number_sequence.sql
+-- supabase\migrations\20260827140418_add_associate_number_sequence.sql
 -- No mechanism ever assigned pauperwave_associate_number: no trigger, no app
 -- code writes it anywhere (confirmed live 2026-08-27 — 248 approved
 -- associates, only 167 had a number, non-chronologically, implying manual/

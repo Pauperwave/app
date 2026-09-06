@@ -1,4 +1,4 @@
--- supabase\migrations\20260825110000_register_tournament_players_rpc.sql
+-- supabase\migrations\20260825025133_register_tournament_players_rpc.sql
 -- Makes "get-or-create players row per associate, then upsert their
 -- tournament_registrations row" atomic — previously done as two separate
 -- Supabase JS calls from server/api/tournament-registrations/register.post.ts,
