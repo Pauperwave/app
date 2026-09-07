@@ -55,6 +55,10 @@ const { t } = useI18n()
 
 const isMuted = computed(() => !!tournament && (tournament.status === 'completed' || tournament.status === 'cancelled'))
 const isCancelled = computed(() => tournament?.status === 'cancelled')
+// External (shop-organized) tournaments have no acceptance/rounds/awards
+// flow — the detail page has nothing meaningful to show for them, so the
+// card isn't a link (user request, 2026-09-07).
+const isExternal = computed(() => tournament?.status === 'external')
 
 // Ctrl/Cmd+click or shift+click anywhere on the card toggles/range-selects
 // instead of navigating — same modifier convention as a file manager, lets a
@@ -67,6 +71,7 @@ function onCardClick(event: MouseEvent) {
     selection?.toggle(tournament.id, { shiftKey: event.shiftKey, range })
     return
   }
+  if (isExternal.value) return
   navigateTo(tournamentDetailUrl(tournament))
 }
 
@@ -78,13 +83,17 @@ function timePart(startDate: string) {
 <template>
   <UContextMenu :items="!loading && tournament ? contextMenuItems!(tournament) : []">
     <UCard
-      class="overflow-hidden cursor-pointer group transition-all duration-300
-        hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1
-        hover:scale-[1.02] hover:ring-primary"
-      :class="{
-        'opacity-60 saturate-50': isMuted,
-        'shadow-xl shadow-primary/10 -translate-y-1 scale-[1.02] ring-primary': highlighted
-      }"
+      class="overflow-hidden group transition-all duration-300"
+      :class="[
+        isExternal
+          ? 'cursor-default'
+          : 'cursor-pointer hover:shadow-xl hover:shadow-primary/10 '
+            + 'hover:-translate-y-1 hover:scale-[1.02] hover:ring-primary',
+        {
+          'opacity-60 saturate-50': isMuted,
+          'shadow-xl shadow-primary/10 -translate-y-1 scale-[1.02] ring-primary': highlighted
+        }
+      ]"
       :ui="{ body: 'p-3 sm:p-3', footer: 'p-3 sm:p-3' }"
       @click="onCardClick"
       @mouseenter="tournament && onHoverChange?.(tournament)"
