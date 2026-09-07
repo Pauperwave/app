@@ -5,6 +5,8 @@ import type { InlineQueryResultArticle } from 'grammy/types'
 import { Menu } from '@grammyjs/menu'
 import { FormattedString } from '@grammyjs/parse-mode'
 
+import { risultatoMenu, openRisultato } from './risultato'
+
 // MOCKUP — tournament_pairings has no live-write flow yet (see
 // docs/architecture/telegram-bot.md), so this is hardcoded sample data
 // standing in for a real pairing lookup, to preview the intended UX.
@@ -60,9 +62,18 @@ const tavoloMenu = new Menu<Context>('tv', {
   // Puts the input field into inline mode on this chat (requires BotFather:
   // /setinline) — bot.on('inline_query') answers live as the user types.
   range.switchInlineCurrent('🎴 Imposta comandante', '')
+
+  // Opens risultato.ts's own flow (position + kills) — user request,
+  // 2026-09-07: a single entry point into result-reporting from the table
+  // view itself, instead of a separate /risultato command to remember.
+  range.row().submenu({ text: '📋 Inserisci risultati', payload: '' }, 'ris', openRisultato)
 })
 
 export function registerTavoloCommand(bot: Bot, commands: CommandGroup<Context>) {
+  // Deferred to call time — same circular-import reasoning as
+  // calendario.ts's own comment (risultato.ts has no back-reference to
+  // tavolo.ts today, but registering here keeps the convention consistent).
+  tavoloMenu.register(risultatoMenu)
   bot.use(tavoloMenu)
 
   commands.command('tavolo', 'Tavolo e avversario del turno', async (ctx) => {
