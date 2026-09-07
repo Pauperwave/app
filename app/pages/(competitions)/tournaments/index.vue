@@ -28,6 +28,16 @@ const {
   data: tournamentsData, isLoading: loading, isPending, status, refetch
 } = useTournamentsQuery()
 const data = computed(() => tournamentsData.value ?? [])
+
+// External (shop-organized, e.g. Magman) tournaments are tracked for
+// schedule comparison, not managed by Pauperwave — no acceptance/rounds/
+// awards flow exists for them, so their detail page has nothing meaningful
+// to show. Hidden from this list by default; toggled back on via the
+// eye button next to "Gestisci formati" (user request, 2026-09-07).
+const showExternal = ref(false)
+const visibleData = computed(() => showExternal.value
+  ? data.value
+  : data.value.filter(tournament => tournament.status !== 'external'))
 // Passed to MtgFormatsManageModal so it can disable deleting a format still
 // referenced by a tournament (and show how many), instead of only failing
 // after the fact.
@@ -45,7 +55,7 @@ const search = ref('')
 
 const {
   statusFilter, formatFilter, filteredTournaments, statusTabs, formatTabs
-} = useTournamentsFilters(data, range, search)
+} = useTournamentsFilters(visibleData, range, search)
 
 // Every known tournament's date + status color + hover label (unfiltered by
 // range/status/format) — issue #37, DateRangePicker.vue's own UChip
@@ -54,7 +64,7 @@ const {
 // (tournamentStageText(), "Commander Casual — 1ª tappa") rather than
 // name + status — the dot's own color already encodes status, no need to
 // repeat it (user request, 2026-08-23).
-const tournamentDates = computed(() => data.value.map(tournament => ({
+const tournamentDates = computed(() => visibleData.value.map(tournament => ({
   date: new Date(tournament.startDate),
   color: tournamentStatusColor(tournament.status),
   label: `${tournament.name}${tournamentStageText(tournament)}`
@@ -228,6 +238,7 @@ const bulkConfirmTitle = computed(() => {
             <TournamentsListFiltersBar
               v-model:status-filter="statusFilter"
               v-model:format-filter="formatFilter"
+              v-model:show-external="showExternal"
               :status-tabs="statusTabs"
               :format-tabs="formatTabs"
               @open-manage-formats="manageFormatsOpen = true"
@@ -301,7 +312,9 @@ const bulkConfirmTitle = computed(() => {
               :ui="{ tr: 'cursor-pointer' }"
               @contextmenu="onRowContextmenu"
               @select="(_e, row) => {
-                if (!row.getIsGrouped()) navigateTo(tournamentDetailUrl(row.original))
+                if (!row.getIsGrouped() && row.original.status !== 'external') {
+                  navigateTo(tournamentDetailUrl(row.original))
+                }
               }"
             />
           </UContextMenu>

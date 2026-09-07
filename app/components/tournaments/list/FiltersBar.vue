@@ -27,6 +27,7 @@ const { statusTabs, formatTabs } = defineProps<{
 
 const statusFilter = defineModel<string>('statusFilter', { required: true })
 const formatFilter = defineModel<string>('formatFilter', { required: true })
+const showExternal = defineModel<boolean>('showExternal', { required: true })
 
 const emit = defineEmits<{ openManageFormats: [] }>()
 </script>
@@ -56,12 +57,35 @@ const emit = defineEmits<{ openManageFormats: [] }>()
       class="w-40"
     />
 
-    <UButton
-      :icon="ICONS.settingsGear"
-      color="neutral"
-      variant="outline"
-      :aria-label="$t('mtgFormat.manageModal.title')"
-      @click="emit('openManageFormats')"
-    />
+    <!-- External (shop-organized, not Pauperwave) tournaments are hidden
+         from this list by default — see tournaments/index.vue's own
+         comment on why — this toggles that filter back on. Placed right
+         next to "Gestisci formati" per user request (2026-09-07). UTooltip
+         wrap — same icon-only-button convention as EditIconButton.vue. -->
+    <UTooltip
+      :text="$t(showExternal
+        ? 'tournament.filters.hideExternal'
+        : 'tournament.filters.showExternal')"
+    >
+      <UButton
+        :icon="showExternal ? ICONS.hide : ICONS.show"
+        color="neutral"
+        variant="outline"
+        :aria-label="$t(showExternal
+          ? 'tournament.filters.hideExternal'
+          : 'tournament.filters.showExternal')"
+        @click="showExternal = !showExternal"
+      />
+    </UTooltip>
+
+    <UTooltip :text="$t('mtgFormat.manageModal.title')">
+      <UButton
+        :icon="ICONS.settingsGear"
+        color="neutral"
+        variant="outline"
+        :aria-label="$t('mtgFormat.manageModal.title')"
+        @click="emit('openManageFormats')"
+      />
+    </UTooltip>
   </div>
 </template>
