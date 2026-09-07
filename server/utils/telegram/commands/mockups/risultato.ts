@@ -166,7 +166,10 @@ function voteRichMessage(
       buttons: MOCK_OPPONENTS.map((name, index) => {
         const isSelected = selectedIndex === index
         return {
-          text: `${isSelected ? '✅' : ''} ${name}`.trim(),
+          // 🔘 not ✅ — that already means "completed" (STATUS_ICON in
+          // tournaments/line.ts) and "registered" (personalIcon there too);
+          // reusing it here for "selected" would collide with both.
+          text: `${isSelected ? '🔘' : ''} ${name}`.trim(),
           style: isSelected ? 'success' as const : undefined,
           callback_data: `${pickPrefix}${encodeResultState(buildPickedState(index))}`
         }
@@ -383,13 +386,13 @@ async function sendConfirmedResult(ctx: Context, state: ResultState) {
             ],
             [
               { text: MOCK_OPPONENTS[0], align: 'left', valign: 'middle' },
-              { text: '✅', align: 'center', valign: 'middle' },
+              { text: '🔘', align: 'center', valign: 'middle' },
               { align: 'center', valign: 'middle' }
             ],
             [
               { text: MOCK_OPPONENTS[1], align: 'left', valign: 'middle' },
               { align: 'center', valign: 'middle' },
-              { text: '✅', align: 'center', valign: 'middle' }
+              { text: '🔘', align: 'center', valign: 'middle' }
             ],
             [
               { text: MOCK_OPPONENTS[2], align: 'left', valign: 'middle' },
