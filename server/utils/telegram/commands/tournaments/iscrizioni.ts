@@ -110,7 +110,7 @@ function mieiTorneiMessage(registrations: MyRegistration[]): FormattedString {
     return FormattedString.join(tournamentLines, '\n')
   })
 
-  return fmt`${header}\n\n${FormattedString.join(blocks, '\n\n')}\n\n👇🏻🏻 Tocca un torneo per i dettagli`
+  return fmt`${header}\n\n${FormattedString.join(blocks, '\n\n')}\n\n👇🏻 Tocca un torneo per i dettagli`
 }
 
 // Exported so tournament/detail.ts's "back" button can rebuild this view.

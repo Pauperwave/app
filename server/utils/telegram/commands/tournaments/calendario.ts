@@ -132,7 +132,7 @@ function calendarioMessage(
     return fmt`${dayHeader}\n${FormattedString.join(dayLines, '\n')}`
   })
 
-  return fmt`${header}\n\n${FormattedString.join(days, '\n\n')}\n\n👇🏻🏻 Tocca un torneo per i dettagli`
+  return fmt`${header}\n\n${FormattedString.join(days, '\n\n')}\n\n👇🏻 Tocca un torneo per i dettagli`
 }
 
 // Exported so tournament/detail.ts's "back" button can rebuild this exact
