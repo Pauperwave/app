@@ -156,8 +156,9 @@ export const calendarioMenu = new Menu<Context>('cal', {
   onMenuOutdated: false
 }).dynamic(async (ctx, range) => {
   // || not ?? — ctx.match is '' (not undefined) for a bare /calendario, and
-  // ?? doesn't substitute on ''. See vota.ts for a case where this gap
-  // actually broke behavior (harmless here since Number('') === 0).
+  // ?? doesn't substitute on '' (harmless here since Number('') === 0, but
+  // this exact gap did break a multi-field payload elsewhere — see
+  // risultato.ts's own comment on why).
   const monthOffset = Number(ctx.match || '0')
   const chatId = ctx.chat?.id
   if (!chatId) return

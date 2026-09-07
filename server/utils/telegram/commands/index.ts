@@ -13,7 +13,6 @@ import { registerSupportoCommand } from './supporto'
 import { registerTesseraCommand } from './account/tessera'
 import { registerCollegamentoCommand } from './account/collegamento'
 import { registerTavoloCommand } from './mockups/tavolo'
-import { registerVotaCommand } from './mockups/vota'
 import { registerRisultatoCommand } from './mockups/risultato'
 import { registerLinkingHandler } from './account/linking'
 
@@ -40,7 +39,6 @@ export function registerCommands(bot: Bot) {
   registerTesseraCommand(commands)
   registerCollegamentoCommand(commands)
   registerTavoloCommand(bot, commands)
-  registerVotaCommand(bot, commands)
   registerRisultatoCommand(bot, commands)
 
   bot.use(commands)
