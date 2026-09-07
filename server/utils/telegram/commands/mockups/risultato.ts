@@ -96,18 +96,21 @@ function killButton(state: ResultState, name: string, index: number) {
   }
 }
 
+const KILLS_ROW_SIZE = 2
+
 function killsRichMessage(state: ResultState): InputRichMessage {
+  const buttons = MOCK_KILL_TARGETS.map((name, index) => killButton(state, name, index))
+  // 2x2 grid (user request, 2026-09-07) — one InputRichBlockButtons block
+  // per row, chunked instead of one block per target.
+  const buttonRows = []
+  for (let i = 0; i < buttons.length; i += KILLS_ROW_SIZE) {
+    buttonRows.push({ type: 'buttons' as const, buttons: buttons.slice(i, i + KILLS_ROW_SIZE) })
+  }
+
   return {
     blocks: [
       { type: 'paragraph', text: '💀 Chi hai eliminato?\n\nTocca per selezionare/deselezionare, poi conferma.' },
-      {
-        type: 'buttons',
-        buttons: MOCK_OPPONENTS.map((name, index) => killButton(state, name, index))
-      },
-      {
-        type: 'buttons',
-        buttons: [killButton(state, SELF_KILL_TARGET, MOCK_OPPONENTS.length)]
-      },
+      ...buttonRows,
       {
         type: 'buttons',
         buttons: [{
@@ -260,11 +263,22 @@ export const risultatoMenu = new Menu<Context>('ris', {
   row.text({ text: '✏️ Modifica', payload: encodeResultState(INITIAL_STATE) }, renderResultStep)
 })
 
+// Switching a message from risultatoMenu's own reply_markup to a Rich
+// Message leaves the old inline keyboard attached underneath otherwise —
+// editMessageText only replaces reply_markup when one is explicitly passed,
+// it doesn't clear it just because the new content is a rich_message
+// instead of plain text (confirmed bug report, 2026-09-07: kills step was
+// showing both the Rich Message's own pill buttons *and* the stale
+// position-step keyboard below it).
+function editRichMessage(ctx: Context, message: InputRichMessage) {
+  return ctx.editMessageText(message, { reply_markup: { inline_keyboard: [] } })
+}
+
 async function renderResultStep(ctx: Context & { match: string }) {
   try {
     const state = decodeResultState(ctx.match)
     if (state.position !== null && !state.killsConfirmed) {
-      await ctx.editMessageText(killsRichMessage(state))
+      await editRichMessage(ctx, killsRichMessage(state))
       await ctx.answerCallbackQuery()
       return
     }
@@ -379,7 +393,7 @@ export function registerRisultatoCommand(bot: Bot, commands: CommandGroup<Contex
       if (!data.startsWith(prefix)) continue
       try {
         const state = decodeResultState(data.slice(prefix.length))
-        await ctx.editMessageText(render(state))
+        await editRichMessage(ctx, render(state))
         await ctx.answerCallbackQuery()
       } catch {
         await answerLoadError(ctx)
@@ -393,7 +407,7 @@ export function registerRisultatoCommand(bot: Bot, commands: CommandGroup<Contex
     if (data.startsWith(KILL_CONFIRM_PREFIX)) {
       try {
         const state = decodeResultState(data.slice(KILL_CONFIRM_PREFIX.length))
-        await ctx.editMessageText(deckVoteRichMessage(state))
+        await editRichMessage(ctx, deckVoteRichMessage(state))
         await ctx.answerCallbackQuery()
       } catch {
         await answerLoadError(ctx)
