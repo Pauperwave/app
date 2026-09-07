@@ -15,17 +15,21 @@ const { isLoading, status } = defineProps<Props>()
 defineEmits<{ refresh: [] }>()
 
 const { lastUpdatedAt } = useQueryFreshness(computed(() => isLoading), computed(() => status))
+const { t } = useI18n()
 </script>
 
 <template>
   <div class="flex items-center gap-1.5">
-    <UButton
-      :icon="ICONS.refresh"
-      color="neutral"
-      variant="outline"
-      :loading="isLoading"
-      @click="$emit('refresh')"
-    />
+    <UTooltip :text="t('common.refresh')">
+      <UButton
+        :icon="ICONS.refresh"
+        color="neutral"
+        variant="outline"
+        :loading="isLoading"
+        :aria-label="t('common.refresh')"
+        @click="$emit('refresh')"
+      />
+    </UTooltip>
 
     <QueryDataFreshnessIndicator :last-updated-at="lastUpdatedAt" />
   </div>

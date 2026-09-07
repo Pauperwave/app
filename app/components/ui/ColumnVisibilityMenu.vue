@@ -29,17 +29,26 @@ const { t } = useI18n()
       />
     </UDropdownMenu>
   </UTooltip>
-  <UDropdownMenu
+  <!-- text/content: same "only below lg" tooltip as TourStartButton.vue's
+       own collapsing label — the button already shows its own text above
+       that breakpoint. -->
+  <UTooltip
     v-else
-    :items="items"
-    :content="{ align: 'end' }"
+    :text="t('common.showColumns')"
+    :ui="{ content: 'lg:hidden' }"
   >
-    <UButton
-      color="neutral"
-      variant="outline"
-      :trailing-icon="ICONS.settingsColumns"
+    <UDropdownMenu
+      :items="items"
+      :content="{ align: 'end' }"
     >
-      <span class="hidden lg:inline">{{ t('common.showColumns') }}</span>
-    </UButton>
-  </UDropdownMenu>
+      <UButton
+        color="neutral"
+        variant="outline"
+        :trailing-icon="ICONS.settingsColumns"
+        :aria-label="t('common.showColumns')"
+      >
+        <span class="hidden lg:inline">{{ t('common.showColumns') }}</span>
+      </UButton>
+    </UDropdownMenu>
+  </UTooltip>
 </template>
