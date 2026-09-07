@@ -149,9 +149,9 @@ function pickRichMessage(
       buttons: labels.map((label, index) => {
         const isSelected = selectedIndex === index
         return {
-          // 🔘 not ✅ — that already means "completed"/"registered"
+          // ⭐ not ✅ — that already means "completed"/"registered"
           // elsewhere (tournaments/line.ts).
-          text: `${isSelected ? '🔘' : ''} ${label}`.trim(),
+          text: `${isSelected ? '⭐' : ''} ${label}`.trim(),
           style: isSelected ? 'success' as const : undefined,
           callback_data: `${pickPrefix}${encodeResultState(buildPickedState(index))}`
         }
@@ -185,7 +185,7 @@ function positionRichMessage(state: ResultState): InputRichMessage {
 
 function deckVoteRichMessage(state: ResultState): InputRichMessage {
   return pickRichMessage(
-    '🃏 Voto del mazzo (2 punti)\n\nA chi lo assegni?',
+    '🃏 Voto del mazzo (2️⃣ punti)\n\nA chi lo assegni?',
     MOCK_OPPONENTS,
     state.deckVoteIndex,
     DECK_VOTE_PICK_PREFIX,
@@ -197,7 +197,7 @@ function deckVoteRichMessage(state: ResultState): InputRichMessage {
 
 function playVoteRichMessage(state: ResultState): InputRichMessage {
   return pickRichMessage(
-    '🎬 Voto della giocata (1 punto)\n\nA chi lo assegni?',
+    '🎬 Voto della giocata (1️⃣ punto)\n\nA chi lo assegni?',
     MOCK_OPPONENTS,
     state.playVoteIndex,
     PLAY_VOTE_PICK_PREFIX,
@@ -306,23 +306,23 @@ async function sendConfirmedResult(ctx: Context, state: ResultState) {
               ],
               [
                 { text: MOCK_OPPONENTS[0], align: 'left', valign: 'middle' },
-                { text: '🔘', align: 'center', valign: 'middle' },
+                { text: '⭐', align: 'center', valign: 'middle' },
                 { align: 'center', valign: 'middle' }
               ],
               [
                 { text: MOCK_OPPONENTS[1], align: 'left', valign: 'middle' },
                 { align: 'center', valign: 'middle' },
-                { text: '🔘', align: 'center', valign: 'middle' }
+                { text: '⭐', align: 'center', valign: 'middle' }
               ],
               [
                 { text: MOCK_OPPONENTS[2], align: 'left', valign: 'middle' },
                 { align: 'center', valign: 'middle' },
-                { align: 'center', valign: 'middle' }
+                { text: '⭐', align: 'center', valign: 'middle' }
               ],
               [
                 { text: { type: 'bold', text: 'Totale' }, align: 'left', valign: 'middle' },
                 { text: { type: 'bold', text: '2 pt' }, align: 'center', valign: 'middle' },
-                { text: { type: 'bold', text: '1 pt' }, align: 'center', valign: 'middle' }
+                { text: { type: 'bold', text: '2 pt' }, align: 'center', valign: 'middle' }
               ]
             ]
           }
