@@ -228,6 +228,22 @@ function summaryLines(state: ResultState): string[] {
   return lines
 }
 
+// Modifica reopens the position step but keeps every other pick as-is
+// (only position and the *Confirmed flags reset) — user request,
+// 2026-09-07: re-visiting kills/deck vote/play vote should show the
+// previous choice already highlighted as a pill instead of starting blank,
+// since killsRichMessage/voteRichMessage already render whatever
+// killMask/deckVoteIndex/playVoteIndex the state carries.
+function editState(state: ResultState): ResultState {
+  return {
+    ...state,
+    position: null,
+    killsConfirmed: false,
+    deckVoteConfirmed: false,
+    playVoteConfirmed: false
+  }
+}
+
 // Same Rich Message pill-button treatment as every other step (user
 // request, 2026-09-07) — Conferma/Modifica are no longer risultatoMenu
 // buttons, so this dynamic() (below) never needs a branch or a row/col-
@@ -249,7 +265,7 @@ function finalRichMessage(state: ResultState): InputRichMessage {
           {
             text: '✏️ Modifica',
             style: 'danger',
-            callback_data: `${FINAL_EDIT_PREFIX}${encodeResultState(INITIAL_STATE)}`
+            callback_data: `${FINAL_EDIT_PREFIX}${encodeResultState(editState(state))}`
           }
         ]
       }
@@ -280,9 +296,14 @@ export const risultatoMenu = new Menu<Context>('ris', {
     // Single row — 4-player pods only, matching MOCK_OPPONENTS' own
     // 3-opponent mock. A real implementation would size this from the
     // actual pairing.
+    // { ...state, position }, not { ...INITIAL_STATE, position } — keeps
+    // whatever kills/vote picks Modifica carried over (editState, above),
+    // so re-visiting those steps shows the previous choice already
+    // highlighted instead of blank. A no-op for a genuinely fresh
+    // /risultato, where state already equals INITIAL_STATE.
     const row = range.row()
     for (let position = 1; position <= MOCK_OPPONENTS.length + 1; position++) {
-      const payload = encodeResultState({ ...INITIAL_STATE, position })
+      const payload = encodeResultState({ ...state, position })
       row.text({ text: `${position}°`, payload }, renderResultStep)
     }
     return
@@ -502,11 +523,12 @@ export function registerRisultatoCommand(bot: Bot, commands: CommandGroup<Contex
         // normally set by the menu's own dispatch, but this handler
         // bypasses that entirely (custom callback_data), so it has to be
         // set explicitly here first, same pattern as
-        // tournament/detail.ts's navigateBack. Without it dynamic() would
-        // fall back to whatever ctx.match already held instead of
-        // INITIAL_STATE (bug report, 2026-09-07, before this was a Rich
-        // Message: the summary screen showed position buttons underneath).
-        ctx.match = encodeResultState(INITIAL_STATE)
+        // tournament/detail.ts's navigateBack. The payload (built by
+        // editState()) carries the previous kills/vote picks forward, not
+        // INITIAL_STATE — that's the whole point of Modifica showing them
+        // pre-filled instead of blank (bug report, 2026-09-07: this used to
+        // hardcode INITIAL_STATE here, discarding them).
+        ctx.match = data.slice(FINAL_EDIT_PREFIX.length)
         const text = positionStepMessage()
         await ctx.editMessageText(text.text, {
           entities: text.entities, reply_markup: risultatoMenu
