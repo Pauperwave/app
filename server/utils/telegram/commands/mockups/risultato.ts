@@ -270,6 +270,13 @@ function editRichMessage(ctx: Context, message: InputRichMessage) {
   return ctx.editMessageText(message, { reply_markup: { inline_keyboard: [] } })
 }
 
+// editMessageText and answerCallbackQuery are independent Telegram API
+// calls — awaiting them sequentially adds a full extra round-trip of
+// perceived latency to every tap for no reason, so they run concurrently.
+function showRichStep(ctx: Context, message: InputRichMessage) {
+  return Promise.all([editRichMessage(ctx, message), ctx.answerCallbackQuery()])
+}
+
 async function sendConfirmedResult(ctx: Context, state: ResultState) {
   try {
     // MOCKUP — a real implementation would insert into
@@ -277,49 +284,52 @@ async function sendConfirmedResult(ctx: Context, state: ResultState) {
     // kill) and tournament_votes (one row per vote) once there's a live
     // pairing_uuid to attach them to.
     const text = fmt`✅ ${FormattedString.b('Risultato registrato (anteprima)')}\n\n${FormattedString.join(summaryLines(state), '\n')}`
-    await ctx.editMessageText(text.text, { entities: text.entities })
 
-    // MOCKUP — a real implementation only sends this once every player at
-    // the table has submitted their own result.
-    await ctx.replyWithRichMessage({
-      blocks: [
-        {
-          type: 'table',
-          is_bordered: true,
-          is_striped: true,
-          caption: 'Riepilogo voti ricevuti (anteprima) — quando tutti avranno votato',
-          cells: [
-            [
-              { text: 'Da chi', is_header: true, align: 'left', valign: 'middle' },
-              { text: 'Mazzo (2pt)', is_header: true, align: 'center', valign: 'middle' },
-              { text: 'Giocata (1pt)', is_header: true, align: 'center', valign: 'middle' }
-            ],
-            [
-              { text: MOCK_OPPONENTS[0], align: 'left', valign: 'middle' },
-              { text: '🔘', align: 'center', valign: 'middle' },
-              { align: 'center', valign: 'middle' }
-            ],
-            [
-              { text: MOCK_OPPONENTS[1], align: 'left', valign: 'middle' },
-              { align: 'center', valign: 'middle' },
-              { text: '🔘', align: 'center', valign: 'middle' }
-            ],
-            [
-              { text: MOCK_OPPONENTS[2], align: 'left', valign: 'middle' },
-              { align: 'center', valign: 'middle' },
-              { align: 'center', valign: 'middle' }
-            ],
-            [
-              { text: { type: 'bold', text: 'Totale' }, align: 'left', valign: 'middle' },
-              { text: { type: 'bold', text: '2 pt' }, align: 'center', valign: 'middle' },
-              { text: { type: 'bold', text: '1 pt' }, align: 'center', valign: 'middle' }
+    // MOCKUP — the table only sends once here for preview purposes; a real
+    // implementation would send it once every player at the table has
+    // submitted their own result. Independent of the edit above and of
+    // answerCallbackQuery, so all three run concurrently.
+    await Promise.all([
+      ctx.editMessageText(text.text, { entities: text.entities }),
+      ctx.replyWithRichMessage({
+        blocks: [
+          {
+            type: 'table',
+            is_bordered: true,
+            is_striped: true,
+            caption: 'Riepilogo voti ricevuti (anteprima) — quando tutti avranno votato',
+            cells: [
+              [
+                { text: 'Da chi', is_header: true, align: 'left', valign: 'middle' },
+                { text: 'Mazzo (2pt)', is_header: true, align: 'center', valign: 'middle' },
+                { text: 'Giocata (1pt)', is_header: true, align: 'center', valign: 'middle' }
+              ],
+              [
+                { text: MOCK_OPPONENTS[0], align: 'left', valign: 'middle' },
+                { text: '🔘', align: 'center', valign: 'middle' },
+                { align: 'center', valign: 'middle' }
+              ],
+              [
+                { text: MOCK_OPPONENTS[1], align: 'left', valign: 'middle' },
+                { align: 'center', valign: 'middle' },
+                { text: '🔘', align: 'center', valign: 'middle' }
+              ],
+              [
+                { text: MOCK_OPPONENTS[2], align: 'left', valign: 'middle' },
+                { align: 'center', valign: 'middle' },
+                { align: 'center', valign: 'middle' }
+              ],
+              [
+                { text: { type: 'bold', text: 'Totale' }, align: 'left', valign: 'middle' },
+                { text: { type: 'bold', text: '2 pt' }, align: 'center', valign: 'middle' },
+                { text: { type: 'bold', text: '1 pt' }, align: 'center', valign: 'middle' }
+              ]
             ]
-          ]
-        }
-      ]
-    })
-
-    await ctx.answerCallbackQuery()
+          }
+        ]
+      }),
+      ctx.answerCallbackQuery()
+    ])
   } catch {
     await answerLoadError(ctx)
   }
@@ -328,8 +338,7 @@ async function sendConfirmedResult(ctx: Context, state: ResultState) {
 // Shared entry point for both /risultato and tavolo.ts's own "Inserisci
 // risultati" button.
 export async function openRisultato(ctx: Context) {
-  await editRichMessage(ctx, positionRichMessage(INITIAL_STATE))
-  await ctx.answerCallbackQuery()
+  await showRichStep(ctx, positionRichMessage(INITIAL_STATE))
 }
 
 export function registerRisultatoCommand(bot: Bot, commands: CommandGroup<Context>) {
@@ -351,68 +360,37 @@ export function registerRisultatoCommand(bot: Bot, commands: CommandGroup<Contex
       if (!data.startsWith(prefix)) continue
       try {
         const state = decodeResultState(data.slice(prefix.length))
-        await editRichMessage(ctx, render(state))
-        await ctx.answerCallbackQuery()
+        await showRichStep(ctx, render(state))
       } catch {
         await answerLoadError(ctx)
       }
       return
     }
 
-    if (data.startsWith(POSITION_CONFIRM_PREFIX)) {
+    // Each of these hands off to a *different* step's Rich Message —
+    // prefix -> [decode offset, next render] pairs, same shape as richSteps.
+    const transitions: [prefix: string, render: (state: ResultState) => InputRichMessage][] = [
+      [POSITION_CONFIRM_PREFIX, killsRichMessage],
+      [KILL_CONFIRM_PREFIX, deckVoteRichMessage],
+      [DECK_VOTE_CONFIRM_PREFIX, playVoteRichMessage],
+      [PLAY_VOTE_CONFIRM_PREFIX, finalRichMessage],
+      [FINAL_EDIT_PREFIX, positionRichMessage]
+    ]
+    for (const [prefix, render] of transitions) {
+      if (!data.startsWith(prefix)) continue
       try {
-        const state = decodeResultState(data.slice(POSITION_CONFIRM_PREFIX.length))
-        await editRichMessage(ctx, killsRichMessage(state))
-        await ctx.answerCallbackQuery()
+        const state = decodeResultState(data.slice(prefix.length))
+        await showRichStep(ctx, render(state))
       } catch {
         await answerLoadError(ctx)
       }
       return
     }
-    if (data.startsWith(KILL_CONFIRM_PREFIX)) {
-      try {
-        const state = decodeResultState(data.slice(KILL_CONFIRM_PREFIX.length))
-        await editRichMessage(ctx, deckVoteRichMessage(state))
-        await ctx.answerCallbackQuery()
-      } catch {
-        await answerLoadError(ctx)
-      }
-      return
-    }
-    if (data.startsWith(DECK_VOTE_CONFIRM_PREFIX)) {
-      try {
-        const state = decodeResultState(data.slice(DECK_VOTE_CONFIRM_PREFIX.length))
-        await editRichMessage(ctx, playVoteRichMessage(state))
-        await ctx.answerCallbackQuery()
-      } catch {
-        await answerLoadError(ctx)
-      }
-      return
-    }
-    if (data.startsWith(PLAY_VOTE_CONFIRM_PREFIX)) {
-      try {
-        const state = decodeResultState(data.slice(PLAY_VOTE_CONFIRM_PREFIX.length))
-        await editRichMessage(ctx, finalRichMessage(state))
-        await ctx.answerCallbackQuery()
-      } catch {
-        await answerLoadError(ctx)
-      }
-      return
-    }
+
     if (data.startsWith(FINAL_CONFIRM_PREFIX)) {
       try {
         const state = decodeResultState(data.slice(FINAL_CONFIRM_PREFIX.length))
         await sendConfirmedResult(ctx, state)
-      } catch {
-        await answerLoadError(ctx)
-      }
-      return
-    }
-    if (data.startsWith(FINAL_EDIT_PREFIX)) {
-      try {
-        const state = decodeResultState(data.slice(FINAL_EDIT_PREFIX.length))
-        await editRichMessage(ctx, positionRichMessage(state))
-        await ctx.answerCallbackQuery()
       } catch {
         await answerLoadError(ctx)
       }
