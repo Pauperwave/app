@@ -14,6 +14,7 @@ import { registerTesseraCommand } from './account/tessera'
 import { registerCollegamentoCommand } from './account/collegamento'
 import { registerTavoloCommand } from './mockups/tavolo'
 import { registerVotaCommand } from './mockups/vota'
+import { registerRisultatoCommand } from './mockups/risultato'
 import { registerLinkingHandler } from './account/linking'
 
 // Single CommandGroup (@grammyjs/commands) shared by every register*Command
@@ -40,6 +41,7 @@ export function registerCommands(bot: Bot) {
   registerCollegamentoCommand(commands)
   registerTavoloCommand(bot, commands)
   registerVotaCommand(bot, commands)
+  registerRisultatoCommand(bot, commands)
 
   bot.use(commands)
 
