@@ -177,10 +177,19 @@ export const risultatoMenu = new Menu<Context>('ris', {
   // see calendario.ts's own history). The buttons below are never actually
   // shown to a user; only their existence at the right position matters.
   if (!state.killsConfirmed) {
+    // Single row, matching the position step's own single-row shape
+    // (MOCK_KILL_TARGETS.length === MOCK_OPPONENTS.length + 1, same count
+    // as the position buttons) — row/col here must reconstruct to the same
+    // shape a just-pressed position button (row 0, col 0-3) was rendered
+    // at, or range[row][col] is undefined and dispatch crashes silently.
+    // Confirmed bug, 2026-09-07: an earlier per-item range.row() call here
+    // (one row per button) didn't match the position step's shape once
+    // that step was changed to a single row, and broke dispatch entirely.
+    const killsRow = range.row()
     MOCK_KILL_TARGETS.forEach((name, index) => {
       const bit = 1 << index
       const payload = encodeResultState({ ...state, killMask: state.killMask ^ bit })
-      range.row().text({ text: name, payload }, renderResultStep)
+      killsRow.text({ text: name, payload }, renderResultStep)
     })
     range.row().text(
       { text: '➡️ Conferma uccisioni', payload: encodeResultState({ ...state, killsConfirmed: true }) },
