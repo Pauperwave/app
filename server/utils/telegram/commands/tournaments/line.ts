@@ -4,18 +4,19 @@ import { it } from 'date-fns/locale'
 import { FormattedString } from '@grammyjs/parse-mode'
 
 import type { RegistrationStatus } from './queries'
+import { ICONS } from '../../icons'
 
 // Single source for how a tournament reads in a Telegram list line —
 // shared by leghe.ts and calendario.ts's own per-day lists.
 export const STATUS_ICON: Record<string, string> = {
-  draft: '📋',
-  registration_open: '📝',
-  in_progress: '🔄',
-  completed: '✅',
-  cancelled: '❌',
+  draft: ICONS.statusDraft,
+  registration_open: ICONS.statusRegistrationOpen,
+  in_progress: ICONS.statusInProgress,
+  completed: ICONS.statusCompleted,
+  cancelled: ICONS.statusCancelled,
   // A shop-organized tournament (Magman etc.), tracked for schedule
   // visibility only — see isExternalOrganizer in tournament/detail.ts.
-  external: '🏪'
+  external: ICONS.statusExternal
 }
 
 export function statusIcon(status: string): string {
@@ -31,9 +32,9 @@ export function stageLabel(stageNumber: number | null): string {
 // wherever a personalized view makes more sense than the tournament's
 // general status (leghe.ts's and calendario.ts's own per-tournament rows).
 export function personalIcon(registration: RegistrationStatus): string {
-  if (registration === 'checked_in') return '🎯'
-  if (registration === 'registered') return '✅'
-  return '🎲'
+  if (registration === 'checked_in') return ICONS.registrationCheckedIn
+  if (registration === 'registered') return ICONS.registrationRegistered
+  return ICONS.registrationNone
 }
 
 // "Icon + bold name + stage" header shared by the single-tournament detail

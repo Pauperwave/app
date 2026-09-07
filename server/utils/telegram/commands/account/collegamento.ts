@@ -24,11 +24,10 @@ async function fetchAssociateIdentity(associateUuid: string): Promise<AssociateI
 }
 
 // Read-only check for "is this chat linked, and to whom" — distinct from
-// /whoami (numeric chat_id, a setup helper) and from actually linking
-// (linking.ts's email-in-plain-text flow, triggered by /start). Useful when
-// a chat isn't sure whether it already linked, or wants to confirm which
-// socio it's linked as before relying on a personal command (/tessera,
-// /mazzi, /iscrizioni).
+// actually linking (linking.ts's email-in-plain-text flow, triggered by
+// /start). Useful when a chat isn't sure whether it already linked, or
+// wants to confirm which socio it's linked as before relying on a
+// personal command (/tessera, /iscrizioni).
 export function registerCollegamentoCommand(commands: CommandGroup<Context>) {
   commands.command('collegamento', 'Verifica se questa chat è collegata a un socio', async (ctx) => {
     try {

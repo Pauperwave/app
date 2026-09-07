@@ -3,6 +3,13 @@
 // Supabase queries shared across more than one command (calendario, leghe,
 // iscrizioni, prossimo all need stage numbers/registration status).
 
+// "Currently relevant" tournament statuses — shared by calendario.ts,
+// prossimo.ts and iscrizioni.ts, previously duplicated under three
+// different names in each. Excludes 'external' (shop-organized
+// tournaments, see isExternalOrganizer in detail.ts) — bot schedule views
+// stay Pauperwave-only.
+export const OPEN_TOURNAMENT_STATUSES = ['registration_open', 'in_progress']
+
 // Mirrors app/utils/tournaments/tournamentStageLabel.ts's
 // assignTournamentStageNumbers: 1-based position within its league by start
 // date, cancelled stages skipped. Needs each league's full history (not
