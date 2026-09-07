@@ -92,6 +92,7 @@ function killedNames(killMask: number): string[] {
 // None of these may be a prefix of another (e.g. 'rkdeckpick:' vs a
 // hypothetical 'rkdeck:') — startsWith() would match both for the longer
 // one's payloads, misrouting it to the shorter prefix's handler.
+const POSITION_PICK_PREFIX = 'rkposition:'
 const KILL_TOGGLE_PREFIX = 'rktoggle:'
 const KILL_CONFIRM_PREFIX = 'rkconfirm:'
 const DECK_VOTE_PICK_PREFIX = 'rkdeckpick:'
@@ -211,11 +212,28 @@ function playVoteRichMessage(state: ResultState): InputRichMessage {
   )
 }
 
-// Only ever rendered for INITIAL_STATE (openRisultato/the bare /risultato
-// command) — every other step renders through its own Rich Message
-// function instead, including the final summary (finalRichMessage, below).
-function positionStepMessage(): FormattedString {
-  return fmt`🏅 ${FormattedString.b('Posizione finale')}\n\nChe piazzamento hai fatto al tavolo?`
+// Last step to move onto a Rich Message (user request, 2026-09-07) — now
+// nothing in this whole flow uses risultatoMenu's own reply_markup at all.
+// Single-pick, no separate confirm (unlike the vote steps) — matches this
+// step's original behavior, never explicitly asked to change. Highlights
+// state.position when set (Modifica carries it forward, via editState
+// below) instead of always starting blank.
+function positionRichMessage(state: ResultState): InputRichMessage {
+  const buttons = []
+  for (let position = 1; position <= MOCK_OPPONENTS.length + 1; position++) {
+    const isSelected = state.position === position
+    buttons.push({
+      text: `${isSelected ? '🔘' : ''} ${position}°`.trim(),
+      style: isSelected ? 'success' as const : undefined,
+      callback_data: `${POSITION_PICK_PREFIX}${encodeResultState({ ...state, position })}`
+    })
+  }
+  return {
+    blocks: [
+      { type: 'paragraph', text: '🏅 Posizione finale\n\nChe piazzamento hai fatto al tavolo?' },
+      { type: 'buttons', buttons }
+    ]
+  }
 }
 
 function summaryLines(state: ResultState): string[] {
@@ -228,16 +246,14 @@ function summaryLines(state: ResultState): string[] {
   return lines
 }
 
-// Modifica reopens the position step but keeps every other pick as-is
-// (only position and the *Confirmed flags reset) — user request,
-// 2026-09-07: re-visiting kills/deck vote/play vote should show the
-// previous choice already highlighted as a pill instead of starting blank,
-// since killsRichMessage/voteRichMessage already render whatever
-// killMask/deckVoteIndex/playVoteIndex the state carries.
+// Modifica reopens the position step but keeps every pick as-is (only the
+// *Confirmed flags reset) — user request, 2026-09-07: re-visiting any step
+// should show the previous choice already highlighted as a pill instead of
+// starting blank, since positionRichMessage/killsRichMessage/voteRichMessage
+// all already render whatever state they're given.
 function editState(state: ResultState): ResultState {
   return {
     ...state,
-    position: null,
     killsConfirmed: false,
     deckVoteConfirmed: false,
     playVoteConfirmed: false
@@ -273,82 +289,19 @@ function finalRichMessage(state: ResultState): InputRichMessage {
   }
 }
 
-// Only the position step actually lives in this Menu (a single row of
-// buttons) — kills, deck vote, play vote and the final confirm/edit screen
-// are all Rich Message steps instead (killsRichMessage/deckVoteRichMessage/
-// playVoteRichMessage/finalRichMessage, see registerRisultatoCommand's own
-// callback_query:data listener). Kills still needs a same-shape dummy
-// branch here purely for row/col reconstruction when a position button is
-// pressed (see its own comment below) — none of the later steps do, since
-// nothing here ever transitions into or out of them via a Menu button.
-// autoAnswer/onMenuOutdated: false — see calendario.ts's calendarioMenu.
+// Empty placeholder Menu — every step in this flow (including position,
+// as of 2026-09-07) is a Rich Message now, so risultatoMenu's own
+// reply_markup is never actually attached to a message anywhere. It still
+// has to exist and stay registered purely so tavolo.ts's own
+// `tavoloMenu.register(risultatoMenu)` / `.submenu('ris', openRisultato)`
+// keeps working — @grammyjs/menu requires a real registered Menu instance
+// as a submenu's target, even one whose own dynamic() never renders
+// anything (openRisultato replaces the message with a Rich Message
+// instead of ever letting this menu's own keyboard show).
 export const risultatoMenu = new Menu<Context>('ris', {
   autoAnswer: false,
   onMenuOutdated: false
-}).dynamic((ctx, range) => {
-  // || not ?? — a bare /risultato sets ctx.match to '' (not undefined),
-  // and ?? doesn't substitute on ''; decodeResultState('') would misread
-  // every field as "set" instead of falling through to INITIAL_STATE.
-  const raw = (ctx.match as string | undefined) || encodeResultState(INITIAL_STATE)
-  const state = decodeResultState(raw)
-
-  if (state.position === null) {
-    // Single row — 4-player pods only, matching MOCK_OPPONENTS' own
-    // 3-opponent mock. A real implementation would size this from the
-    // actual pairing.
-    // { ...state, position }, not { ...INITIAL_STATE, position } — keeps
-    // whatever kills/vote picks Modifica carried over (editState, above),
-    // so re-visiting those steps shows the previous choice already
-    // highlighted instead of blank. A no-op for a genuinely fresh
-    // /risultato, where state already equals INITIAL_STATE.
-    const row = range.row()
-    for (let position = 1; position <= MOCK_OPPONENTS.length + 1; position++) {
-      const payload = encodeResultState({ ...state, position })
-      row.text({ text: `${position}°`, payload }, renderResultStep)
-    }
-    return
-  }
-
-  // Kills step is actually rendered as a Rich Message with its own
-  // callback-styled buttons (killsRichMessage) instead of risultatoMenu's
-  // reply_markup — renderResultStep intercepts and shows that instead
-  // whenever it decodes a "position set, kills not confirmed" state. This
-  // branch still has to build a real, same-shape row of buttons though:
-  // pressing a position button makes @grammyjs/menu reconstruct THIS
-  // dynamic() (with ctx.match already set to the new, post-press state) to
-  // resolve the pressed button's own row/col for dispatch — with
-  // onMenuOutdated: false skipping the bounds check, an empty range here
-  // would crash range[row][col] with no visible error (confirmed bug class,
-  // see calendario.ts's own history). The buttons below are never actually
-  // shown to a user; only their existence at the right position matters.
-  if (!state.killsConfirmed) {
-    // Single row, matching the position step's own single-row shape
-    // (MOCK_KILL_TARGETS.length === MOCK_OPPONENTS.length + 1, same count
-    // as the position buttons) — row/col here must reconstruct to the same
-    // shape a just-pressed position button (row 0, col 0-3) was rendered
-    // at, or range[row][col] is undefined and dispatch crashes silently.
-    // Confirmed bug, 2026-09-07: an earlier per-item range.row() call here
-    // (one row per button) didn't match the position step's shape once
-    // that step was changed to a single row, and broke dispatch entirely.
-    const killsRow = range.row()
-    MOCK_KILL_TARGETS.forEach((name, index) => {
-      const bit = 1 << index
-      const payload = encodeResultState({ ...state, killMask: state.killMask ^ bit })
-      killsRow.text({ text: name, payload }, renderResultStep)
-    })
-    range.row().text(
-      { text: '➡️ Conferma uccisioni', payload: encodeResultState({ ...state, killsConfirmed: true }) },
-      renderResultStep
-    )
-    return
-  }
-
-  // Deck vote, play vote and the final confirm/edit screen are all Rich
-  // Message steps (deckVoteRichMessage/playVoteRichMessage/
-  // finalRichMessage), reached only via their own rkdeck:/rkplay:/
-  // rkfconfirm:/rkedit: callbacks — never through a risultatoMenu button —
-  // so this dynamic() has nothing left to render for any of those states.
-})
+}).dynamic(() => {})
 
 // Switching a message from risultatoMenu's own reply_markup to a Rich
 // Message leaves the old inline keyboard attached underneath otherwise —
@@ -359,19 +312,6 @@ export const risultatoMenu = new Menu<Context>('ris', {
 // position-step keyboard below it).
 function editRichMessage(ctx: Context, message: InputRichMessage) {
   return ctx.editMessageText(message, { reply_markup: { inline_keyboard: [] } })
-}
-
-// Only ever invoked as a position button's own handler (position picks are
-// the only thing left in risultatoMenu) — always transitions into the
-// kills step, so no need to branch on state here at all.
-async function renderResultStep(ctx: Context & { match: string }) {
-  try {
-    const state = decodeResultState(ctx.match)
-    await editRichMessage(ctx, killsRichMessage(state))
-    await ctx.answerCallbackQuery()
-  } catch {
-    await answerLoadError(ctx)
-  }
 }
 
 // Plain function, not a Menu handler — invoked directly from
@@ -440,8 +380,7 @@ async function sendConfirmedResult(ctx: Context, state: ResultState) {
 // "Inserisci risultati" button (same message-replace shape as
 // tournament/detail.ts's openTournamentDetail, one caller per trigger).
 export async function openRisultato(ctx: Context) {
-  const text = positionStepMessage()
-  await ctx.editMessageText(text.text, { entities: text.entities, reply_markup: risultatoMenu })
+  await editRichMessage(ctx, positionRichMessage(INITIAL_STATE))
   await ctx.answerCallbackQuery()
 }
 
@@ -477,6 +416,16 @@ export function registerRisultatoCommand(bot: Bot, commands: CommandGroup<Contex
       return
     }
 
+    if (data.startsWith(POSITION_PICK_PREFIX)) {
+      try {
+        const state = decodeResultState(data.slice(POSITION_PICK_PREFIX.length))
+        await editRichMessage(ctx, killsRichMessage(state))
+        await ctx.answerCallbackQuery()
+      } catch {
+        await answerLoadError(ctx)
+      }
+      return
+    }
     if (data.startsWith(KILL_CONFIRM_PREFIX)) {
       try {
         const state = decodeResultState(data.slice(KILL_CONFIRM_PREFIX.length))
@@ -518,21 +467,11 @@ export function registerRisultatoCommand(bot: Bot, commands: CommandGroup<Contex
     }
     if (data.startsWith(FINAL_EDIT_PREFIX)) {
       try {
-        // reply_markup: risultatoMenu makes @grammyjs/menu call dynamic()
-        // to build the keyboard, which reads its state from ctx.match —
-        // normally set by the menu's own dispatch, but this handler
-        // bypasses that entirely (custom callback_data), so it has to be
-        // set explicitly here first, same pattern as
-        // tournament/detail.ts's navigateBack. The payload (built by
-        // editState()) carries the previous kills/vote picks forward, not
-        // INITIAL_STATE — that's the whole point of Modifica showing them
-        // pre-filled instead of blank (bug report, 2026-09-07: this used to
-        // hardcode INITIAL_STATE here, discarding them).
-        ctx.match = data.slice(FINAL_EDIT_PREFIX.length)
-        const text = positionStepMessage()
-        await ctx.editMessageText(text.text, {
-          entities: text.entities, reply_markup: risultatoMenu
-        })
+        // Payload (built by editState()) carries every previous pick
+        // forward, not INITIAL_STATE — that's the whole point of Modifica
+        // showing them pre-filled instead of blank.
+        const state = decodeResultState(data.slice(FINAL_EDIT_PREFIX.length))
+        await editRichMessage(ctx, positionRichMessage(state))
         await ctx.answerCallbackQuery()
       } catch {
         await answerLoadError(ctx)
@@ -543,7 +482,6 @@ export function registerRisultatoCommand(bot: Bot, commands: CommandGroup<Contex
   })
 
   commands.command('risultato', 'Registra posizione, uccisioni e voti del tavolo', async (ctx) => {
-    const text = positionStepMessage()
-    await ctx.reply(text.text, { entities: text.entities, reply_markup: risultatoMenu })
+    await ctx.replyWithRichMessage(positionRichMessage(INITIAL_STATE))
   })
 }
