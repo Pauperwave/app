@@ -53,6 +53,7 @@
     "switchToLightMode": "Passa al tema chiaro",
     "switchToDarkMode": "Passa al tema scuro",
     "retry": "Riprova",
+    "refresh": "Aggiorna",
     "associateTag": {
       "lastRenewal": "Ultimo rinnovo",
       "neverRenewed": "Mai rinnovato"

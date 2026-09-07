@@ -19,26 +19,35 @@ const modelValue = defineModel<T>()
 
 <template>
   <UFieldGroup>
-    <UButton
+    <!-- text: undefined when there's no icon — those items always show
+         their own label, a tooltip would be redundant. lg:hidden content
+         (only when there is an icon): the label is already visible above
+         `lg`, same threshold as the collapse itself. -->
+    <UTooltip
       v-for="option in items"
       :key="option.value"
-      :icon="option.icon"
-      :disabled="option.disabled"
-      color="neutral"
-      :variant="modelValue === option.value ? 'solid' : 'outline'"
-      :aria-label="option.icon ? option.label : undefined"
-      @click="modelValue = option.value"
+      :text="option.icon ? option.label : undefined"
+      :ui="{ content: 'lg:hidden' }"
     >
-      <span :class="option.icon ? 'hidden lg:inline' : undefined">{{ option.label }}</span>
+      <UButton
+        :icon="option.icon"
+        :disabled="option.disabled"
+        color="neutral"
+        :variant="modelValue === option.value ? 'solid' : 'outline'"
+        :aria-label="option.icon ? option.label : undefined"
+        @click="modelValue = option.value"
+      >
+        <span :class="option.icon ? 'hidden lg:inline' : undefined">{{ option.label }}</span>
 
-      <template v-if="option.count !== undefined" #trailing>
-        <UBadge
-          :label="option.count"
-          color="neutral"
-          variant="subtle"
-          size="sm"
-        />
-      </template>
-    </UButton>
+        <template v-if="option.count !== undefined" #trailing>
+          <UBadge
+            :label="option.count"
+            color="neutral"
+            variant="subtle"
+            size="sm"
+          />
+        </template>
+      </UButton>
+    </UTooltip>
   </UFieldGroup>
 </template>

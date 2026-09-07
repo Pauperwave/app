@@ -16,12 +16,18 @@ defineEmits<{ start: [] }>()
 </script>
 
 <template>
-  <UButton
-    icon="i-lucide-circle-help"
-    color="neutral"
-    variant="ghost"
-    @click="$emit('start')"
-  >
-    <span class="hidden lg:inline">{{ label }}</span>
-  </UButton>
+  <!-- text: undefined above `lg` — the label is already visible there, a
+       tooltip repeating it would be redundant (only useful once it
+       collapses to icon-only below `lg`, same threshold). -->
+  <UTooltip :text="label" :ui="{ content: 'lg:hidden' }">
+    <UButton
+      icon="i-lucide-circle-help"
+      color="neutral"
+      variant="ghost"
+      :aria-label="label"
+      @click="$emit('start')"
+    >
+      <span class="hidden lg:inline">{{ label }}</span>
+    </UButton>
+  </UTooltip>
 </template>
