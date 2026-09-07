@@ -277,6 +277,18 @@ function showRichStep(ctx: Context, message: InputRichMessage) {
   return Promise.all([editRichMessage(ctx, message), ctx.answerCallbackQuery()])
 }
 
+// MOCKUP scoring — no real point system exists yet for 1v1 formats
+// (docs/architecture/telegram-bot.md's own Note on this). Placeholder
+// values only, to preview the shape of a per-round score summary.
+const POSITION_POINTS: Record<number, number> = { 1: 8, 2: 6, 3: 4, 4: 2 }
+const KILL_POINTS = 1
+const DECK_VOTE_POINTS = 2
+const PLAY_VOTE_POINTS = 1
+// MOCKUP — stands in for "how many opponents actually voted for you",
+// which needs the pairing-live flow to know for real.
+const MOCK_DECK_VOTES_RECEIVED = 1
+const MOCK_PLAY_VOTES_RECEIVED = 2
+
 async function sendConfirmedResult(ctx: Context, state: ResultState) {
   try {
     // MOCKUP — a real implementation would insert into
@@ -284,6 +296,12 @@ async function sendConfirmedResult(ctx: Context, state: ResultState) {
     // kill) and tournament_votes (one row per vote) once there's a live
     // pairing_uuid to attach them to.
     const text = fmt`✅ ${FormattedString.b('Risultato registrato (anteprima)')}\n\n${FormattedString.join(summaryLines(state), '\n')}`
+
+    const positionPoints = POSITION_POINTS[state.position ?? 0] ?? 0
+    const killPoints = killedNames(state.killMask).length * KILL_POINTS
+    const deckVotePoints = MOCK_DECK_VOTES_RECEIVED * DECK_VOTE_POINTS
+    const playVotePoints = MOCK_PLAY_VOTES_RECEIVED * PLAY_VOTE_POINTS
+    const totalPoints = positionPoints + killPoints + deckVotePoints + playVotePoints
 
     // MOCKUP — the table only sends once here for preview purposes; a real
     // implementation would send it once every player at the table has
@@ -321,8 +339,40 @@ async function sendConfirmedResult(ctx: Context, state: ResultState) {
               ],
               [
                 { text: { type: 'bold', text: 'Totale' }, align: 'left', valign: 'middle' },
-                { text: { type: 'bold', text: '2 pt' }, align: 'center', valign: 'middle' },
-                { text: { type: 'bold', text: '2 pt' }, align: 'center', valign: 'middle' }
+                { text: { type: 'bold', text: `${deckVotePoints} pt` }, align: 'center', valign: 'middle' },
+                { text: { type: 'bold', text: `${playVotePoints} pt` }, align: 'center', valign: 'middle' }
+              ]
+            ]
+          },
+          {
+            type: 'table',
+            is_bordered: true,
+            is_striped: true,
+            caption: 'Riepilogo punteggio del turno (anteprima)',
+            cells: [
+              [
+                { text: 'Categoria', is_header: true, align: 'left', valign: 'middle' },
+                { text: 'Punti', is_header: true, align: 'center', valign: 'middle' }
+              ],
+              [
+                { text: '🏅 Posizionamento', align: 'left', valign: 'middle' },
+                { text: `${positionPoints} pt`, align: 'center', valign: 'middle' }
+              ],
+              [
+                { text: '💀 Uccisioni', align: 'left', valign: 'middle' },
+                { text: `${killPoints} pt`, align: 'center', valign: 'middle' }
+              ],
+              [
+                { text: '🃏 Voto mazzo ricevuto', align: 'left', valign: 'middle' },
+                { text: `${deckVotePoints} pt`, align: 'center', valign: 'middle' }
+              ],
+              [
+                { text: '🎬 Voto giocata ricevuto', align: 'left', valign: 'middle' },
+                { text: `${playVotePoints} pt`, align: 'center', valign: 'middle' }
+              ],
+              [
+                { text: { type: 'bold', text: 'Totale' }, align: 'left', valign: 'middle' },
+                { text: { type: 'bold', text: `${totalPoints} pt` }, align: 'center', valign: 'middle' }
               ]
             ]
           }
