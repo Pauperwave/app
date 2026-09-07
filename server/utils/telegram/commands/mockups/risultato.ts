@@ -3,7 +3,6 @@ import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 import type { InputRichMessage } from 'grammy/types'
 import { Menu } from '@grammyjs/menu'
-import { FormattedString } from '@grammyjs/parse-mode'
 
 import { answerLoadError } from '../callbackErrors'
 
@@ -207,14 +206,28 @@ function playVoteRichMessage(state: ResultState): InputRichMessage {
   )
 }
 
-function summaryLines(state: ResultState): string[] {
-  const lines = [`🏅 Posizionamento → ${state.position}°`]
+// Same table shape shown in both finalRichMessage (pre-confirm) and
+// sendConfirmedResult (post-confirm) — one row per fact instead of a
+// paragraph of arrow-separated lines, matching the votes/score tables.
+function summaryTableBlock(state: ResultState, caption: string) {
   const kills = killedNames(state.killMask)
-  lines.push(kills.length ? `💀 Uccisioni → ${kills.join(', ')}` : '💀 Uccisioni → nessuna')
-  lines.push(
-    `🗳️ Voti → mazzo: ${MOCK_OPPONENTS[state.deckVoteIndex ?? 0]}, giocata: ${MOCK_OPPONENTS[state.playVoteIndex ?? 0]}`
-  )
-  return lines
+  const row = (label: string, value: string) => [
+    { text: label, align: 'left' as const, valign: 'middle' as const },
+    { text: value, align: 'left' as const, valign: 'middle' as const }
+  ]
+  return {
+    type: 'table' as const,
+    is_bordered: true as const,
+    is_striped: true as const,
+    caption,
+    cells: [
+      row('Categoria', 'Valore').map(cell => ({ ...cell, is_header: true as const })),
+      row('🏅 Posizionamento', `${state.position}°`),
+      row('💀 Uccisioni', kills.length ? kills.join(', ') : 'Nessuna'),
+      row('🃏 Voto mazzo', MOCK_OPPONENTS[state.deckVoteIndex ?? 0] ?? '-'),
+      row('🎬 Voto giocata', MOCK_OPPONENTS[state.playVoteIndex ?? 0] ?? '-')
+    ]
+  }
 }
 
 // Modifica keeps every pick as-is, only resetting the *Confirmed flags —
@@ -233,7 +246,7 @@ function finalRichMessage(state: ResultState): InputRichMessage {
   return {
     blocks: [
       { type: 'heading', size: 3, text: '📋 Riepilogo risultato' },
-      { type: 'paragraph', text: summaryLines(state).join('\n') },
+      summaryTableBlock(state, 'Il tuo turno'),
       { type: 'paragraph', text: 'Confermi?' },
       {
         type: 'buttons',
@@ -295,20 +308,23 @@ async function sendConfirmedResult(ctx: Context, state: ResultState) {
     // tournament_round_results.position, tournament_kills (one row per
     // kill) and tournament_votes (one row per vote) once there's a live
     // pairing_uuid to attach them to.
-    const text = fmt`✅ ${FormattedString.b('Risultato registrato (anteprima)')}\n\n${FormattedString.join(summaryLines(state), '\n')}`
-
     const positionPoints = POSITION_POINTS[state.position ?? 0] ?? 0
     const killPoints = killedNames(state.killMask).length * KILL_POINTS
     const deckVotePoints = MOCK_DECK_VOTES_RECEIVED * DECK_VOTE_POINTS
     const playVotePoints = MOCK_PLAY_VOTES_RECEIVED * PLAY_VOTE_POINTS
     const totalPoints = positionPoints + killPoints + deckVotePoints + playVotePoints
 
-    // MOCKUP — the table only sends once here for preview purposes; a real
-    // implementation would send it once every player at the table has
-    // submitted their own result. Independent of the edit above and of
-    // answerCallbackQuery, so all three run concurrently.
+    // MOCKUP — the second table only sends once here for preview purposes;
+    // a real implementation would send it once every player at the table
+    // has submitted their own result. All three calls are independent, so
+    // they run concurrently.
     await Promise.all([
-      ctx.editMessageText(text.text, { entities: text.entities }),
+      ctx.editMessageText({
+        blocks: [
+          { type: 'heading', size: 3, text: '✅ Risultato registrato (anteprima)' },
+          summaryTableBlock(state, 'Il tuo turno')
+        ]
+      }),
       ctx.replyWithRichMessage({
         blocks: [
           {
