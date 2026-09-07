@@ -7,36 +7,26 @@ import { FormattedString } from '@grammyjs/parse-mode'
 
 import { answerLoadError } from '../callbackErrors'
 
-// MOCKUP — same placeholder pairing data as tavolo.ts (no live-write flow
-// yet, see docs/architecture/telegram-bot.md); kept separate since each
-// mock stands in for its own future real query, not a shared fixture.
-// Commander itself isn't reported here — that happens separately, as soon
-// as the round starts, via /tavolo's own "Imposta comandante" (real-time
-// data entry, this only covers what's known once the round has ended).
+// MOCKUP — no live-write flow yet (docs/architecture/telegram-bot.md).
+// Commander itself is set separately, at round start, via /tavolo.
 const MOCK_OPPONENTS = ['Marco Rossi', 'Giulia Bianchi', 'Luca Verdi']
 
 // Kill targets include yourself — Commander has real self-kill cases
-// (suicide via combat damage to yourself, a wipe that hits your own board,
-// etc.), so "who did you eliminate" can't be opponents-only. Vote targets
-// (below) stay MOCK_OPPONENTS-only — you don't vote for your own deck/play.
+// (suicide). Vote targets stay MOCK_OPPONENTS-only.
 const SELF_KILL_TARGET = 'Te stesso (suicidio)'
 const MOCK_KILL_TARGETS = [...MOCK_OPPONENTS, SELF_KILL_TARGET]
+const POSITION_LABELS = Array.from({ length: MOCK_OPPONENTS.length + 1 }, (_, i) => `${i + 1}°`)
 
 const NONE = '-'
 
-// killMask: one bit per MOCK_KILL_TARGETS index (0-15 for 4 targets) — a
-// bitmask, not an array, since it round-trips through a callback payload
-// string more compactly than a list of indices.
+// killMask: one bit per MOCK_KILL_TARGETS index — round-trips through a
+// callback payload more compactly than a list of indices.
 interface ResultState {
   position: number | null
+  positionConfirmed: boolean
   killMask: number
   killsConfirmed: boolean
   deckVoteIndex: number | null
-  // Separate from deckVoteIndex/playVoteIndex being non-null: a pick is
-  // only *tentative* (still shown highlighted on the same step, with a
-  // Conferma button) until this flips true — same "pick, then a separate
-  // confirm" shape as kills, added per user request (2026-09-07: "tasto di
-  // conferma per ogni voto").
   deckVoteConfirmed: boolean
   playVoteIndex: number | null
   playVoteConfirmed: boolean
@@ -44,6 +34,7 @@ interface ResultState {
 
 const INITIAL_STATE: ResultState = {
   position: null,
+  positionConfirmed: false,
   killMask: 0,
   killsConfirmed: false,
   deckVoteIndex: null,
@@ -55,6 +46,7 @@ const INITIAL_STATE: ResultState = {
 function encodeResultState(state: ResultState): string {
   return [
     state.position ?? NONE,
+    state.positionConfirmed ? 1 : 0,
     state.killMask,
     state.killsConfirmed ? 1 : 0,
     state.deckVoteIndex ?? NONE,
@@ -66,12 +58,13 @@ function encodeResultState(state: ResultState): string {
 
 function decodeResultState(raw: string): ResultState {
   const [
-    position, killMask, killsConfirmed,
+    position, positionConfirmed, killMask, killsConfirmed,
     deckVoteIndex, deckVoteConfirmed, playVoteIndex, playVoteConfirmed
   ] = raw.split(':')
   const optionalIndex = (value: string | undefined) => value === NONE ? null : Number(value)
   return {
     position: optionalIndex(position),
+    positionConfirmed: positionConfirmed === '1',
     killMask: Number(killMask),
     killsConfirmed: killsConfirmed === '1',
     deckVoteIndex: optionalIndex(deckVoteIndex),
@@ -85,14 +78,11 @@ function killedNames(killMask: number): string[] {
   return MOCK_KILL_TARGETS.filter((_, index) => (killMask & (1 << index)) !== 0)
 }
 
-// Prefixes for the Rich Message steps' own callback_data — no slashes, so
-// @grammyjs/menu's own `id/row/col/payload/type+hash` parser never matches
-// them (it requires numeric row/col in the first two slash-segments) and
-// just no-ops (returns next()) instead of misreading them.
-// None of these may be a prefix of another (e.g. 'rkdeckpick:' vs a
-// hypothetical 'rkdeck:') — startsWith() would match both for the longer
-// one's payloads, misrouting it to the shorter prefix's handler.
-const POSITION_PICK_PREFIX = 'rkposition:'
+// No slashes — never matches @grammyjs/menu's own id/row/col/payload
+// format, so it just no-ops instead of misreading these. None may prefix
+// another (startsWith() would misroute the longer one).
+const POSITION_PICK_PREFIX = 'rkpositionpick:'
+const POSITION_CONFIRM_PREFIX = 'rkpositionok:'
 const KILL_TOGGLE_PREFIX = 'rktoggle:'
 const KILL_CONFIRM_PREFIX = 'rkconfirm:'
 const DECK_VOTE_PICK_PREFIX = 'rkdeckpick:'
@@ -102,13 +92,6 @@ const PLAY_VOTE_CONFIRM_PREFIX = 'rkplayok:'
 const FINAL_CONFIRM_PREFIX = 'rkfconfirm:'
 const FINAL_EDIT_PREFIX = 'rkedit:'
 
-// Kills step rendered as a Rich Message (grammY 1.46+) instead of a
-// Menu-managed keyboard — an experiment (user request, 2026-09-07) with the
-// newer styled "pill" buttons (danger/primary), which only exist on Rich
-// Message button blocks, not on a plain reply_markup inline keyboard.
-// One InputRichBlockButtons = one row (max 8 buttons) — opponents and
-// yourself split across two rows since they're conceptually different
-// (suicide vs. eliminating someone else), not just for layout's sake.
 function killButton(state: ResultState, name: string, index: number) {
   const bit = 1 << index
   const isPicked = (state.killMask & bit) !== 0
@@ -122,10 +105,10 @@ function killButton(state: ResultState, name: string, index: number) {
 
 const KILLS_ROW_SIZE = 2
 
+// Multiselect, so it keeps its own toggle+confirm shape instead of the
+// single-pick pickRichMessage() below. 2x2 grid: one buttons block per row.
 function killsRichMessage(state: ResultState): InputRichMessage {
   const buttons = MOCK_KILL_TARGETS.map((name, index) => killButton(state, name, index))
-  // 2x2 grid (user request, 2026-09-07) — one InputRichBlockButtons block
-  // per row, chunked instead of one block per target.
   const buttonRows = []
   for (let i = 0; i < buttons.length; i += KILLS_ROW_SIZE) {
     buttonRows.push({ type: 'buttons' as const, buttons: buttons.slice(i, i + KILLS_ROW_SIZE) })
@@ -147,13 +130,12 @@ function killsRichMessage(state: ResultState): InputRichMessage {
   }
 }
 
-// Deck/play vote are single-pick, not multiselect, but still get their own
-// explicit confirm step (user request, 2026-09-07: "tasto di conferma per
-// ogni voto") — same pick-then-confirm shape as kills. Picking re-renders
-// this same step with that opponent highlighted and a Conferma button
-// added; the Conferma button is the only thing that actually advances.
-function voteRichMessage(
+// Shared pick-then-confirm shape for every single-pick step (position,
+// deck vote, play vote): picking re-renders the same message with that
+// option highlighted and a Conferma button added; only Conferma advances.
+function pickRichMessage(
   heading: string,
+  labels: string[],
   selectedIndex: number | null,
   pickPrefix: string,
   confirmPrefix: string,
@@ -164,13 +146,12 @@ function voteRichMessage(
     { type: 'paragraph', text: heading },
     {
       type: 'buttons',
-      buttons: MOCK_OPPONENTS.map((name, index) => {
+      buttons: labels.map((label, index) => {
         const isSelected = selectedIndex === index
         return {
-          // 🔘 not ✅ — that already means "completed" (STATUS_ICON in
-          // tournaments/line.ts) and "registered" (personalIcon there too);
-          // reusing it here for "selected" would collide with both.
-          text: `${isSelected ? '🔘' : ''} ${name}`.trim(),
+          // 🔘 not ✅ — that already means "completed"/"registered"
+          // elsewhere (tournaments/line.ts).
+          text: `${isSelected ? '🔘' : ''} ${label}`.trim(),
           style: isSelected ? 'success' as const : undefined,
           callback_data: `${pickPrefix}${encodeResultState(buildPickedState(index))}`
         }
@@ -181,7 +162,7 @@ function voteRichMessage(
     blocks.push({
       type: 'buttons',
       buttons: [{
-        text: '➡️ Conferma voto',
+        text: '➡️ Conferma',
         style: 'primary',
         callback_data: `${confirmPrefix}${encodeResultState(confirmedState)}`
       }]
@@ -190,9 +171,22 @@ function voteRichMessage(
   return { blocks }
 }
 
+function positionRichMessage(state: ResultState): InputRichMessage {
+  return pickRichMessage(
+    '🏅 Posizione finale\n\nChe piazzamento hai fatto al tavolo?',
+    POSITION_LABELS,
+    state.position !== null ? state.position - 1 : null,
+    POSITION_PICK_PREFIX,
+    POSITION_CONFIRM_PREFIX,
+    index => ({ ...state, position: index + 1 }),
+    { ...state, positionConfirmed: true }
+  )
+}
+
 function deckVoteRichMessage(state: ResultState): InputRichMessage {
-  return voteRichMessage(
+  return pickRichMessage(
     '🃏 Voto del mazzo (2 punti)\n\nA chi lo assegni?',
+    MOCK_OPPONENTS,
     state.deckVoteIndex,
     DECK_VOTE_PICK_PREFIX,
     DECK_VOTE_CONFIRM_PREFIX,
@@ -202,38 +196,15 @@ function deckVoteRichMessage(state: ResultState): InputRichMessage {
 }
 
 function playVoteRichMessage(state: ResultState): InputRichMessage {
-  return voteRichMessage(
+  return pickRichMessage(
     '🎬 Voto della giocata (1 punto)\n\nA chi lo assegni?',
+    MOCK_OPPONENTS,
     state.playVoteIndex,
     PLAY_VOTE_PICK_PREFIX,
     PLAY_VOTE_CONFIRM_PREFIX,
     index => ({ ...state, playVoteIndex: index }),
     { ...state, playVoteConfirmed: true }
   )
-}
-
-// Last step to move onto a Rich Message (user request, 2026-09-07) — now
-// nothing in this whole flow uses risultatoMenu's own reply_markup at all.
-// Single-pick, no separate confirm (unlike the vote steps) — matches this
-// step's original behavior, never explicitly asked to change. Highlights
-// state.position when set (Modifica carries it forward, via editState
-// below) instead of always starting blank.
-function positionRichMessage(state: ResultState): InputRichMessage {
-  const buttons = []
-  for (let position = 1; position <= MOCK_OPPONENTS.length + 1; position++) {
-    const isSelected = state.position === position
-    buttons.push({
-      text: `${isSelected ? '🔘' : ''} ${position}°`.trim(),
-      style: isSelected ? 'success' as const : undefined,
-      callback_data: `${POSITION_PICK_PREFIX}${encodeResultState({ ...state, position })}`
-    })
-  }
-  return {
-    blocks: [
-      { type: 'paragraph', text: '🏅 Posizione finale\n\nChe piazzamento hai fatto al tavolo?' },
-      { type: 'buttons', buttons }
-    ]
-  }
 }
 
 function summaryLines(state: ResultState): string[] {
@@ -246,24 +217,18 @@ function summaryLines(state: ResultState): string[] {
   return lines
 }
 
-// Modifica reopens the position step but keeps every pick as-is (only the
-// *Confirmed flags reset) — user request, 2026-09-07: re-visiting any step
-// should show the previous choice already highlighted as a pill instead of
-// starting blank, since positionRichMessage/killsRichMessage/voteRichMessage
-// all already render whatever state they're given.
+// Modifica keeps every pick as-is, only resetting the *Confirmed flags —
+// each step then shows its previous choice pre-highlighted instead of blank.
 function editState(state: ResultState): ResultState {
   return {
     ...state,
+    positionConfirmed: false,
     killsConfirmed: false,
     deckVoteConfirmed: false,
     playVoteConfirmed: false
   }
 }
 
-// Same Rich Message pill-button treatment as every other step (user
-// request, 2026-09-07) — Conferma/Modifica are no longer risultatoMenu
-// buttons, so this dynamic() (below) never needs a branch or a row/col-
-// matching dummy for the final state either.
 function finalRichMessage(state: ResultState): InputRichMessage {
   return {
     blocks: [
@@ -289,34 +254,22 @@ function finalRichMessage(state: ResultState): InputRichMessage {
   }
 }
 
-// Empty placeholder Menu — every step in this flow (including position,
-// as of 2026-09-07) is a Rich Message now, so risultatoMenu's own
-// reply_markup is never actually attached to a message anywhere. It still
-// has to exist and stay registered purely so tavolo.ts's own
-// `tavoloMenu.register(risultatoMenu)` / `.submenu('ris', openRisultato)`
-// keeps working — @grammyjs/menu requires a real registered Menu instance
-// as a submenu's target, even one whose own dynamic() never renders
-// anything (openRisultato replaces the message with a Rich Message
-// instead of ever letting this menu's own keyboard show).
+// Every step is a Rich Message now — risultatoMenu's own reply_markup is
+// never attached to a message. It still has to stay registered because
+// tavolo.ts's tavoloMenu.register(risultatoMenu)/.submenu('ris', ...)
+// needs a real Menu instance as a submenu target.
 export const risultatoMenu = new Menu<Context>('ris', {
   autoAnswer: false,
   onMenuOutdated: false
 }).dynamic(() => {})
 
-// Switching a message from risultatoMenu's own reply_markup to a Rich
-// Message leaves the old inline keyboard attached underneath otherwise —
-// editMessageText only replaces reply_markup when one is explicitly passed,
-// it doesn't clear it just because the new content is a rich_message
-// instead of plain text (confirmed bug report, 2026-09-07: kills step was
-// showing both the Rich Message's own pill buttons *and* the stale
-// position-step keyboard below it).
+// editMessageText only replaces reply_markup when one is passed explicitly
+// — it won't clear a stale inline keyboard just because the new content is
+// a rich_message instead of plain text.
 function editRichMessage(ctx: Context, message: InputRichMessage) {
   return ctx.editMessageText(message, { reply_markup: { inline_keyboard: [] } })
 }
 
-// Plain function, not a Menu handler — invoked directly from
-// registerRisultatoCommand's FINAL_CONFIRM_PREFIX handling instead, since
-// finalRichMessage's Conferma button isn't a risultatoMenu button either.
 async function sendConfirmedResult(ctx: Context, state: ResultState) {
   try {
     // MOCKUP — a real implementation would insert into
@@ -327,11 +280,7 @@ async function sendConfirmedResult(ctx: Context, state: ResultState) {
     await ctx.editMessageText(text.text, { entities: text.entities })
 
     // MOCKUP — a real implementation only sends this once every player at
-    // the table has submitted their own result (needs the same pairing-live
-    // flow as everything else here); shown immediately for preview purposes.
-    // Rich Messages (grammY 1.46+, ctx.replyWithRichMessage) support a real
-    // `table` block — used here instead of faking columns with a monospace
-    // <pre> block, user request 2026-09-07.
+    // the table has submitted their own result.
     await ctx.replyWithRichMessage({
       blocks: [
         {
@@ -376,9 +325,8 @@ async function sendConfirmedResult(ctx: Context, state: ResultState) {
   }
 }
 
-// Shared entry point for both /risultato itself and tavolo.ts's own
-// "Inserisci risultati" button (same message-replace shape as
-// tournament/detail.ts's openTournamentDetail, one caller per trigger).
+// Shared entry point for both /risultato and tavolo.ts's own "Inserisci
+// risultati" button.
 export async function openRisultato(ctx: Context) {
   await editRichMessage(ctx, positionRichMessage(INITIAL_STATE))
   await ctx.answerCallbackQuery()
@@ -387,15 +335,10 @@ export async function openRisultato(ctx: Context) {
 export function registerRisultatoCommand(bot: Bot, commands: CommandGroup<Context>) {
   bot.use(risultatoMenu)
 
-  // Kills/deck-vote/play-vote/final steps' own callback handling — none of
-  // their buttons are routed through risultatoMenu (see killsRichMessage's
-  // own comment on why), so they need their own listener. Registered
-  // before commands/other menus don't matter here: none of these prefixes
-  // collide with @grammyjs/menu's own callback_data format, which just
-  // no-ops. Each entry re-renders the *same* step (a pick, still pending
-  // confirm) — the *-CONFIRM_PREFIX handlers below hand off to the next
-  // step instead, since committing a pick is what actually advances.
+  // Each entry re-renders the same step (a pick, still pending confirm) —
+  // the *_CONFIRM_PREFIX handlers below hand off to the next step instead.
   const richSteps: [prefix: string, render: (state: ResultState) => InputRichMessage][] = [
+    [POSITION_PICK_PREFIX, positionRichMessage],
     [KILL_TOGGLE_PREFIX, killsRichMessage],
     [DECK_VOTE_PICK_PREFIX, deckVoteRichMessage],
     [PLAY_VOTE_PICK_PREFIX, playVoteRichMessage]
@@ -416,9 +359,9 @@ export function registerRisultatoCommand(bot: Bot, commands: CommandGroup<Contex
       return
     }
 
-    if (data.startsWith(POSITION_PICK_PREFIX)) {
+    if (data.startsWith(POSITION_CONFIRM_PREFIX)) {
       try {
-        const state = decodeResultState(data.slice(POSITION_PICK_PREFIX.length))
+        const state = decodeResultState(data.slice(POSITION_CONFIRM_PREFIX.length))
         await editRichMessage(ctx, killsRichMessage(state))
         await ctx.answerCallbackQuery()
       } catch {
@@ -467,9 +410,6 @@ export function registerRisultatoCommand(bot: Bot, commands: CommandGroup<Contex
     }
     if (data.startsWith(FINAL_EDIT_PREFIX)) {
       try {
-        // Payload (built by editState()) carries every previous pick
-        // forward, not INITIAL_STATE — that's the whole point of Modifica
-        // showing them pre-filled instead of blank.
         const state = decodeResultState(data.slice(FINAL_EDIT_PREFIX.length))
         await editRichMessage(ctx, positionRichMessage(state))
         await ctx.answerCallbackQuery()
