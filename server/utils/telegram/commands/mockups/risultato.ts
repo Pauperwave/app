@@ -1,6 +1,7 @@
 // server\utils\telegram\commands\mockups\risultato.ts
 import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
+import type { InputRichMessage } from 'grammy/types'
 import { Menu } from '@grammyjs/menu'
 import { FormattedString } from '@grammyjs/parse-mode'
 
@@ -14,9 +15,15 @@ import { answerLoadError } from '../callbackErrors'
 // data entry, this only covers what's known once the round has ended).
 const MOCK_OPPONENTS = ['Marco Rossi', 'Giulia Bianchi', 'Luca Verdi']
 
+// Kill targets include yourself — Commander has real self-kill cases
+// (suicide via combat damage to yourself, a wipe that hits your own board,
+// etc.), so "who did you eliminate" can't be opponents-only. Vote targets
+// (below) stay MOCK_OPPONENTS-only — you don't vote for your own deck/play.
+const MOCK_KILL_TARGETS = [...MOCK_OPPONENTS, 'Te stesso (suicidio)']
+
 const NONE = '-'
 
-// killMask: one bit per MOCK_OPPONENTS index (0-7 for 3 opponents) — a
+// killMask: one bit per MOCK_KILL_TARGETS index (0-15 for 4 targets) — a
 // bitmask, not an array, since it round-trips through a callback payload
 // string more compactly than a list of indices.
 interface ResultState {
@@ -58,7 +65,51 @@ function decodeResultState(raw: string): ResultState {
 }
 
 function killedNames(killMask: number): string[] {
-  return MOCK_OPPONENTS.filter((_, index) => (killMask & (1 << index)) !== 0)
+  return MOCK_KILL_TARGETS.filter((_, index) => (killMask & (1 << index)) !== 0)
+}
+
+// Prefixes for the kills step's own callback_data — no slashes, so
+// @grammyjs/menu's own `id/row/col/payload/type+hash` parser never matches
+// them (it requires numeric row/col in the first two slash-segments) and
+// just no-ops (returns next()) instead of misreading them.
+const KILL_TOGGLE_PREFIX = 'rktoggle:'
+const KILL_CONFIRM_PREFIX = 'rkconfirm:'
+
+// Kills step rendered as a Rich Message (grammY 1.46+) instead of a
+// Menu-managed keyboard — an experiment (user request, 2026-09-07) with the
+// newer styled "pill" buttons (danger/primary), which only exist on Rich
+// Message button blocks, not on a plain reply_markup inline keyboard.
+function killsRichMessage(state: ResultState): InputRichMessage {
+  const picked = killedNames(state.killMask)
+  const summary = picked.length ? `Selezionati: ${picked.join(', ')}` : 'Nessuno selezionato'
+
+  return {
+    blocks: [
+      { type: 'paragraph', text: '💀 Chi hai eliminato?\n\nTocca per selezionare/deselezionare, poi conferma.' },
+      { type: 'paragraph', text: summary },
+      {
+        type: 'buttons',
+        buttons: MOCK_KILL_TARGETS.map((name, index) => {
+          const bit = 1 << index
+          const isPicked = (state.killMask & bit) !== 0
+          const nextState = { ...state, killMask: state.killMask ^ bit }
+          return {
+            text: `${isPicked ? '💀' : '⬜'} ${name}`,
+            style: isPicked ? 'danger' as const : undefined,
+            callback_data: `${KILL_TOGGLE_PREFIX}${encodeResultState(nextState)}`
+          }
+        })
+      },
+      {
+        type: 'buttons',
+        buttons: [{
+          text: '➡️ Conferma uccisioni',
+          style: 'primary',
+          callback_data: `${KILL_CONFIRM_PREFIX}${encodeResultState({ ...state, killsConfirmed: true })}`
+        }]
+      }
+    ]
+  }
 }
 
 function resultMessage(state: ResultState): FormattedString {
@@ -113,12 +164,23 @@ export const risultatoMenu = new Menu<Context>('ris', {
     return
   }
 
+  // Kills step is actually rendered as a Rich Message with its own
+  // callback-styled buttons (killsRichMessage) instead of risultatoMenu's
+  // reply_markup — renderResultStep intercepts and shows that instead
+  // whenever it decodes a "position set, kills not confirmed" state. This
+  // branch still has to build a real, same-shape row of buttons though:
+  // pressing a position button makes @grammyjs/menu reconstruct THIS
+  // dynamic() (with ctx.match already set to the new, post-press state) to
+  // resolve the pressed button's own row/col for dispatch — with
+  // onMenuOutdated: false skipping the bounds check, an empty range here
+  // would crash range[row][col] with no visible error (confirmed bug class,
+  // see calendario.ts's own history). The buttons below are never actually
+  // shown to a user; only their existence at the right position matters.
   if (!state.killsConfirmed) {
-    MOCK_OPPONENTS.forEach((name, index) => {
+    MOCK_KILL_TARGETS.forEach((name, index) => {
       const bit = 1 << index
-      const picked = (state.killMask & bit) !== 0
       const payload = encodeResultState({ ...state, killMask: state.killMask ^ bit })
-      range.row().text({ text: `${picked ? '✅' : '⬜'} ${name}`, payload }, renderResultStep)
+      range.row().text({ text: name, payload }, renderResultStep)
     })
     range.row().text(
       { text: '➡️ Conferma uccisioni', payload: encodeResultState({ ...state, killsConfirmed: true }) },
@@ -153,6 +215,11 @@ export const risultatoMenu = new Menu<Context>('ris', {
 async function renderResultStep(ctx: Context & { match: string }) {
   try {
     const state = decodeResultState(ctx.match)
+    if (state.position !== null && !state.killsConfirmed) {
+      await ctx.editMessageText(killsRichMessage(state))
+      await ctx.answerCallbackQuery()
+      return
+    }
     const text = resultMessage(state)
     await ctx.editMessageText(text.text, { entities: text.entities, reply_markup: risultatoMenu })
     await ctx.answerCallbackQuery()
@@ -242,6 +309,39 @@ export async function openRisultato(ctx: Context) {
 
 export function registerRisultatoCommand(bot: Bot, commands: CommandGroup<Context>) {
   bot.use(risultatoMenu)
+
+  // Kills step's own callback handling — its buttons aren't routed through
+  // risultatoMenu at all (see killsRichMessage's own comment on why), so
+  // they need their own listener. Registered before commands/other menus
+  // don't matter here: KILL_TOGGLE_PREFIX/KILL_CONFIRM_PREFIX never collide
+  // with @grammyjs/menu's own callback_data format, which just no-ops.
+  bot.on('callback_query:data', async (ctx, next) => {
+    const data = ctx.callbackQuery.data
+    if (data.startsWith(KILL_TOGGLE_PREFIX)) {
+      try {
+        const state = decodeResultState(data.slice(KILL_TOGGLE_PREFIX.length))
+        await ctx.editMessageText(killsRichMessage(state))
+        await ctx.answerCallbackQuery()
+      } catch {
+        await answerLoadError(ctx)
+      }
+      return
+    }
+    if (data.startsWith(KILL_CONFIRM_PREFIX)) {
+      try {
+        const state = decodeResultState(data.slice(KILL_CONFIRM_PREFIX.length))
+        const text = resultMessage(state)
+        await ctx.editMessageText(text.text, {
+          entities: text.entities, reply_markup: risultatoMenu
+        })
+        await ctx.answerCallbackQuery()
+      } catch {
+        await answerLoadError(ctx)
+      }
+      return
+    }
+    await next()
+  })
 
   commands.command('risultato', 'Registra posizione, uccisioni e voti del tavolo', async (ctx) => {
     const text = resultMessage(INITIAL_STATE)
