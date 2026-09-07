@@ -56,7 +56,7 @@ function nextTournamentMessage(
   const header = tournamentHeader(row.status, row.name, stageNumber)
   const location = row.location?.name ? `\n📍 ${row.location.name}` : ''
 
-  return fmt`🎲 ${FormattedString.b('Prossimo torneo')}\n\n${header}\n🗓️ ${date}${location}\n\n👇🏻🏻 Tocca per i dettagli`
+  return fmt`🎲 ${FormattedString.b('Prossimo torneo')}\n\n${header}\n🗓️ ${date}${location}\n\n👇🏻 Tocca per i dettagli`
 }
 
 // Exported so tournament/detail.ts's shared "back" button can rebuild this
@@ -85,7 +85,7 @@ export const prossimoMenu = new Menu<Context>('p', {
   if (!row) return
 
   range.text(
-    { text: '👇🏻🏻 Apri dettagli', payload: `${row.uuid}:p` },
+    { text: '👇🏻 Apri dettagli', payload: `${row.uuid}:p` },
     ctx => openTournamentDetail(ctx, row.uuid, 'p')
   )
 })
