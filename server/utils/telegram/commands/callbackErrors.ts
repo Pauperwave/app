@@ -10,3 +10,15 @@ import type { Context } from 'grammy'
 export async function answerLoadError(ctx: Context) {
   await ctx.answerCallbackQuery({ text: 'Errore nel caricamento', show_alert: true }).catch(() => {})
 }
+
+// Shared "no chat id -> dismiss the callback query and bail" guard every
+// button-press handler needing a real chat id used to duplicate inline
+// (detail.ts, leghe.ts, calendario.ts).
+export async function requireChatId(ctx: Context): Promise<number | null> {
+  const chatId = ctx.chat?.id
+  if (!chatId) {
+    await ctx.answerCallbackQuery().catch(() => {})
+    return null
+  }
+  return chatId
+}

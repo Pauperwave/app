@@ -10,7 +10,7 @@ import { statusIcon, stageLabel, tournamentLine, tournamentButtonLabel, personal
 import { fetchRegistrationStatuses, fetchStageNumbers } from './queries'
 import type { RegistrationStatus } from './queries'
 import { torneoMenu, openTournamentDetail } from './detail'
-import { answerLoadError } from '../callbackErrors'
+import { answerLoadError, requireChatId } from '../callbackErrors'
 import { registerMenu } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
 
@@ -187,11 +187,8 @@ const legheMenu = new Menu<Context>('lg', {
 })
 
 async function openLegaTornei(ctx: Context & { match: string }) {
-  const chatId = ctx.chat?.id
-  if (!chatId) {
-    await ctx.answerCallbackQuery().catch(() => {})
-    return
-  }
+  const chatId = await requireChatId(ctx)
+  if (!chatId) return
 
   try {
     const index = Number(ctx.match)

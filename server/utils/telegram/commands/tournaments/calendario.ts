@@ -8,18 +8,14 @@ import { Menu } from '@grammyjs/menu'
 import { FormattedString } from '@grammyjs/parse-mode'
 
 import { formatButtonDate, stageLabel, tournamentButtonLabel, tournamentLine, personalIcon } from './line'
-import { fetchRegistrationStatuses, fetchStageNumbers } from './queries'
+import { fetchRegistrationStatuses, fetchStageNumbers, OPEN_TOURNAMENT_STATUSES } from './queries'
 import type { RegistrationStatus } from './queries'
 import { SELECT_COLUMNS, torneoMenu, openTournamentDetail } from './detail'
 import type { DatedTournamentRow, TournamentRow } from './detail'
-import { answerLoadError } from '../callbackErrors'
+import { answerLoadError, requireChatId } from '../callbackErrors'
 import { registerMenu } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
 
-// Excludes status 'external' (shop-organized tournaments) — see
-// isExternalOrganizer in tournament/detail.ts. Bot schedule views stay
-// Pauperwave-only, same as prossimo.ts's own OPEN_STATUSES.
-const OPEN_STATUSES = ['registration_open', 'in_progress']
 // Fetched once per render, filtered by month client-side — keeps the
 // callback handler stateless (no need to remember what a user was viewing).
 const MAX_ROWS = 200
@@ -31,7 +27,7 @@ async function fetchUpcomingTournaments(): Promise<DatedTournamentRow[]> {
     .from('tournaments')
     .select(SELECT_COLUMNS)
     .is('deleted_at', null)
-    .in('status', OPEN_STATUSES)
+    .in('status', OPEN_TOURNAMENT_STATUSES)
     .gte('starts_at', zonedRomeTimeToInstant(startOfMonth(nowInRome())).toISOString())
     .order('starts_at', { ascending: true })
     .limit(MAX_ROWS)
@@ -197,11 +193,8 @@ export const calendarioMenu = new Menu<Context>('cal', {
 })
 
 async function monthNav(ctx: Context & { match: string }) {
-  const chatId = ctx.chat?.id
-  if (!chatId) {
-    await ctx.answerCallbackQuery().catch(() => {})
-    return
-  }
+  const chatId = await requireChatId(ctx)
+  if (!chatId) return
 
   try {
     const monthOffset = Number(ctx.match)

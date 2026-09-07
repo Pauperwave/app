@@ -5,7 +5,7 @@ import { Menu } from '@grammyjs/menu'
 import { FormattedString } from '@grammyjs/parse-mode'
 
 import { formatTournamentDateTime, tournamentHeader } from './line'
-import { fetchStageNumbers } from './queries'
+import { fetchStageNumbers, OPEN_TOURNAMENT_STATUSES } from './queries'
 import { torneoMenu, openTournamentDetail } from './detail'
 import { registerMenu } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
@@ -19,8 +19,6 @@ interface NextTournamentRow {
   location: { name: string | null } | null
 }
 
-const OPEN_STATUSES = ['registration_open', 'in_progress']
-
 async function fetchNextTournament(): Promise<NextTournamentRow | null> {
   const supabase = publicSupabaseClient()
 
@@ -28,7 +26,7 @@ async function fetchNextTournament(): Promise<NextTournamentRow | null> {
     .from('tournaments')
     .select('uuid, name, starts_at, status, league_uuid, location:locations(name)')
     .is('deleted_at', null)
-    .in('status', OPEN_STATUSES)
+    .in('status', OPEN_TOURNAMENT_STATUSES)
     .gte('starts_at', new Date().toISOString())
     .order('starts_at', { ascending: true })
     .limit(1)

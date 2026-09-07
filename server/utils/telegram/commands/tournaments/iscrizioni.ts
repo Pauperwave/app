@@ -7,11 +7,12 @@ import { Menu } from '@grammyjs/menu'
 import { FormattedString } from '@grammyjs/parse-mode'
 
 import { formatButtonDate, stageLabel, tournamentButtonLabel } from './line'
-import { fetchStageNumbers } from './queries'
+import { fetchStageNumbers, OPEN_TOURNAMENT_STATUSES } from './queries'
 import { torneoMenu, openTournamentDetail } from './detail'
 import { requireLinkedAssociate, resolveAssociateUuidByChatId } from '../account/linking'
 import { registerMenu } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
+import { ICONS } from '../../icons'
 
 interface MyTournamentRow {
   uuid: string
@@ -39,10 +40,6 @@ interface MyRegistration {
   tournament: MyTournamentRow
 }
 
-// Only "still relevant" statuses — this answers "what am I signed up for",
-// not "what happened", so completed/cancelled/draft tournaments don't count.
-const ACTIVE_TOURNAMENT_STATUSES = ['registration_open', 'in_progress']
-
 async function fetchMyTournaments(associateUuid: string): Promise<MyRegistration[]> {
   const supabase = telegramServiceSupabaseClient()
 
@@ -55,7 +52,7 @@ async function fetchMyTournaments(associateUuid: string): Promise<MyRegistration
     `)
     .eq('players.associate_uuid', associateUuid)
     .is('tournament.deleted_at', null)
-    .in('tournament.status', ACTIVE_TOURNAMENT_STATUSES)
+    .in('tournament.status', OPEN_TOURNAMENT_STATUSES)
 
   if (error) throw error
 
@@ -87,8 +84,10 @@ function cachedFetchMyTournaments(ctx: Context, associateUuid: string): Promise<
   return memoize(ctx, 'registrations', () => fetchMyTournaments(associateUuid))
 }
 
-function statusIcon(registrationStatus: string): string {
-  return registrationStatus === 'checked_in' ? '🎯' : '✅'
+// Named registrationIcon, not statusIcon — line.ts already exports a
+// statusIcon for tournament status, a different meaning entirely.
+function registrationIcon(registrationStatus: string): string {
+  return registrationStatus === 'checked_in' ? ICONS.registrationCheckedIn : ICONS.registrationRegistered
 }
 
 function mieiTorneiMessage(registrations: MyRegistration[]): FormattedString {
@@ -103,7 +102,7 @@ function mieiTorneiMessage(registrations: MyRegistration[]): FormattedString {
     const stage = stageLabel(tournament.stageNumber)
 
     const tournamentLines: (FormattedString | string)[] = [
-      fmt`${statusIcon(registrationStatus)} ${FormattedString.b(tournament.name)}${stage}`,
+      fmt`${registrationIcon(registrationStatus)} ${FormattedString.b(tournament.name)}${stage}`,
       `🗓️ ${date}`
     ]
     if (tournament.location?.name) tournamentLines.push(`📍 ${tournament.location.name}`)
@@ -141,7 +140,7 @@ export const iscrizioniMenu = new Menu<Context>('isc', {
   for (const { registrationStatus, tournament } of registrations) {
     const date = formatButtonDate(tournament.starts_at)
     const label = tournamentButtonLabel(
-      statusIcon(registrationStatus), date, tournament.stageNumber, tournament.name
+      registrationIcon(registrationStatus), date, tournament.stageNumber, tournament.name
     )
     range.row().text(
       { text: label, payload: `${tournament.uuid}:i` },

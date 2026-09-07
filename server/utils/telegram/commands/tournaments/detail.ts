@@ -10,13 +10,15 @@
 // `${uuid}:${origin}` so both survive a full round trip.
 import type { Context } from 'grammy'
 import { Menu } from '@grammyjs/menu'
+import type { MenuFlavor } from '@grammyjs/menu'
 import { FormattedString } from '@grammyjs/parse-mode'
 
 import { formatTournamentDateTime, tournamentHeader } from './line'
 import { fetchRegistrationStatus, fetchStageNumbers } from './queries'
 import type { RegistrationStatus } from './queries'
 import { NOT_LINKED_MESSAGE } from '../account/linking'
-import { answerLoadError } from '../callbackErrors'
+import { answerLoadError, requireChatId } from '../callbackErrors'
+import { ICONS } from '../../icons'
 import { mapsUrl, googleCalendarUrl, truncateForCaption } from '../events/eventLinks'
 import { navigateBack, getMenu } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
@@ -132,8 +134,8 @@ function tournamentDetailMessage(
   }
   if (row.entry_fee !== null) lines.push(`💶 Quota: ${row.entry_fee} €`)
   if (row.prizes) lines.push(`🏆 Premi: ${row.prizes}`)
-  if (registration === 'registered') lines.push('', '✅ Sei iscritto a questo torneo.')
-  if (registration === 'checked_in') lines.push('', '✅ Sei iscritto e hai già fatto il check-in.')
+  if (registration === 'registered') lines.push('', `${ICONS.registrationRegistered} Sei iscritto a questo torneo.`)
+  if (registration === 'checked_in') lines.push('', `${ICONS.registrationCheckedIn} Sei iscritto e hai già fatto il check-in.`)
   if (row.description) lines.push('', row.description)
 
   return FormattedString.join(lines, '\n')
@@ -188,6 +190,63 @@ async function resolveBackTarget(
   return { payload: String(offset), menu: getMenu('cal'), text: await calendarioText(ctx, offset, chatId) }
 }
 
+async function handleCancelRegistration(
+  ctx: Context & MenuFlavor, tournamentUuid: string, linkedAssociateUuid: string
+) {
+  try {
+    const supabase = telegramServiceSupabaseClient()
+    const { data: existing, error: findError } = await supabase
+      .from('tournament_registrations')
+      .select('uuid, status, players!inner(associate_uuid)')
+      .eq('tournament_uuid', tournamentUuid)
+      .eq('players.associate_uuid', linkedAssociateUuid)
+      .maybeSingle()
+    if (findError) throw findError
+
+    if (!existing || existing.status !== 'registered') {
+      await ctx.answerCallbackQuery({
+        text: existing?.status === 'checked_in'
+          ? 'Non puoi annullare l\'iscrizione dopo il check-in.'
+          : 'Non risulti iscritto a questo torneo.',
+        show_alert: true
+      })
+      return
+    }
+
+    const { error } = await supabase.from('tournament_registrations').delete().eq('uuid', existing.uuid)
+    if (error) throw error
+
+    ctx.menu.update()
+    await ctx.answerCallbackQuery({ text: '✅ Iscrizione annullata.' })
+  } catch {
+    await ctx.answerCallbackQuery({ text: 'Errore durante l\'annullamento, riprova più tardi.', show_alert: true })
+  }
+}
+
+async function handleRegister(
+  ctx: Context & MenuFlavor, tournamentUuid: string, associateUuid: string | null
+) {
+  // associateUuid already resolved by the caller — only the "not linked"
+  // alert needs to happen here.
+  if (!associateUuid) {
+    await ctx.answerCallbackQuery({ text: NOT_LINKED_MESSAGE, show_alert: true })
+    return
+  }
+  try {
+    const supabase = telegramServiceSupabaseClient()
+    const { error } = await supabase.rpc('register_tournament_players', {
+      p_tournament_uuid: tournamentUuid,
+      p_associate_uuids: [associateUuid]
+    })
+    if (error) throw error
+
+    ctx.menu.update()
+    await ctx.answerCallbackQuery({ text: '✅ Iscrizione confermata!' })
+  } catch {
+    await ctx.answerCallbackQuery({ text: 'Errore durante l\'iscrizione, riprova più tardi.', show_alert: true })
+  }
+}
+
 // autoAnswer: false — every button below answers with its own confirmation/
 // error text, which would race with Menu's default no-args auto-answer.
 // onMenuOutdated: false — see calendario.ts's calendarioMenu for why.
@@ -224,66 +283,12 @@ export const torneoMenu = new Menu<Context>('t', {
       // associateUuid already resolved above (registration only comes back
       // non-null when it was truthy) — no need to re-query it here.
       const linkedAssociateUuid = associateUuid
-      range.text({ text: '❌ Annulla iscrizione', payload }, async (ctx) => {
-        if (!ctx.chat?.id) {
-          await ctx.answerCallbackQuery().catch(() => {})
-          return
-        }
-        try {
-          const supabase = telegramServiceSupabaseClient()
-          const { data: existing, error: findError } = await supabase
-            .from('tournament_registrations')
-            .select('uuid, status, players!inner(associate_uuid)')
-            .eq('tournament_uuid', uuid)
-            .eq('players.associate_uuid', linkedAssociateUuid)
-            .maybeSingle()
-          if (findError) throw findError
-
-          if (!existing || existing.status !== 'registered') {
-            await ctx.answerCallbackQuery({
-              text: existing?.status === 'checked_in'
-                ? 'Non puoi annullare l\'iscrizione dopo il check-in.'
-                : 'Non risulti iscritto a questo torneo.',
-              show_alert: true
-            })
-            return
-          }
-
-          const { error } = await supabase.from('tournament_registrations').delete().eq('uuid', existing.uuid)
-          if (error) throw error
-
-          ctx.menu.update()
-          await ctx.answerCallbackQuery({ text: '✅ Iscrizione annullata.' })
-        } catch {
-          await ctx.answerCallbackQuery({ text: 'Errore durante l\'annullamento, riprova più tardi.', show_alert: true })
-        }
-      })
+      range.text(
+        { text: '❌ Annulla iscrizione', payload },
+        ctx => handleCancelRegistration(ctx, uuid, linkedAssociateUuid)
+      )
     } else if (tournament.status === 'registration_open') {
-      range.text({ text: '➕ Iscriviti', payload }, async (ctx) => {
-        if (!ctx.chat?.id) {
-          await ctx.answerCallbackQuery().catch(() => {})
-          return
-        }
-        // associateUuid already resolved above — reused instead of a fresh
-        // lookup, only the "not linked" alert needs to happen here.
-        if (!associateUuid) {
-          await ctx.answerCallbackQuery({ text: NOT_LINKED_MESSAGE, show_alert: true })
-          return
-        }
-        try {
-          const supabase = telegramServiceSupabaseClient()
-          const { error } = await supabase.rpc('register_tournament_players', {
-            p_tournament_uuid: uuid,
-            p_associate_uuids: [associateUuid]
-          })
-          if (error) throw error
-
-          ctx.menu.update()
-          await ctx.answerCallbackQuery({ text: '✅ Iscrizione confermata!' })
-        } catch {
-          await ctx.answerCallbackQuery({ text: 'Errore durante l\'iscrizione, riprova più tardi.', show_alert: true })
-        }
-      })
+      range.text({ text: '➕ Iscriviti', payload }, ctx => handleRegister(ctx, uuid, associateUuid))
     }
   }
 
@@ -299,11 +304,8 @@ export const torneoMenu = new Menu<Context>('t', {
   range.row()
 
   range.text({ text: backLabel(origin), payload }, async (ctx) => {
-    const buttonChatId = ctx.chat?.id
-    if (!buttonChatId) {
-      await ctx.answerCallbackQuery().catch(() => {})
-      return
-    }
+    const buttonChatId = await requireChatId(ctx)
+    if (!buttonChatId) return
     try {
       await navigateBack(ctx, () => resolveBackTarget(ctx, origin, buttonChatId))
       await ctx.answerCallbackQuery()
@@ -321,11 +323,8 @@ registerMenu('t', torneoMenu)
 // own submenu buttons call this); torneoMenu's own internal buttons stay
 // on the same message and never need it.
 export async function openTournamentDetail(ctx: Context, uuid: string, origin: string) {
-  const chatId = ctx.chat?.id
-  if (!chatId) {
-    await ctx.answerCallbackQuery().catch(() => {})
-    return
-  }
+  const chatId = await requireChatId(ctx)
+  if (!chatId) return
 
   try {
     // Independent of each other — parallelized instead of two sequential awaits.
