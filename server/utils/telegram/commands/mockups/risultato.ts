@@ -180,6 +180,51 @@ async function confirmResult(ctx: Context & { match: string }) {
     )
     const text = fmt`✅ ${FormattedString.b('Risultato registrato (anteprima)')}\n\n${FormattedString.join(lines, '\n')}`
     await ctx.editMessageText(text.text, { entities: text.entities })
+
+    // MOCKUP — a real implementation only sends this once every player at
+    // the table has submitted their own result (needs the same pairing-live
+    // flow as everything else here); shown immediately for preview purposes.
+    // Rich Messages (grammY 1.46+, ctx.replyWithRichMessage) support a real
+    // `table` block — used here instead of faking columns with a monospace
+    // <pre> block, user request 2026-09-07.
+    await ctx.replyWithRichMessage({
+      blocks: [
+        {
+          type: 'table',
+          is_bordered: true,
+          is_striped: true,
+          caption: 'Riepilogo voti ricevuti (anteprima) — quando tutti avranno votato',
+          cells: [
+            [
+              { text: 'Da chi', is_header: true, align: 'left', valign: 'middle' },
+              { text: 'Mazzo (2pt)', is_header: true, align: 'center', valign: 'middle' },
+              { text: 'Giocata (1pt)', is_header: true, align: 'center', valign: 'middle' }
+            ],
+            [
+              { text: MOCK_OPPONENTS[0], align: 'left', valign: 'middle' },
+              { text: '✅', align: 'center', valign: 'middle' },
+              { align: 'center', valign: 'middle' }
+            ],
+            [
+              { text: MOCK_OPPONENTS[1], align: 'left', valign: 'middle' },
+              { align: 'center', valign: 'middle' },
+              { text: '✅', align: 'center', valign: 'middle' }
+            ],
+            [
+              { text: MOCK_OPPONENTS[2], align: 'left', valign: 'middle' },
+              { align: 'center', valign: 'middle' },
+              { align: 'center', valign: 'middle' }
+            ],
+            [
+              { text: { type: 'bold', text: 'Totale' }, align: 'left', valign: 'middle' },
+              { text: { type: 'bold', text: '2 pt' }, align: 'center', valign: 'middle' },
+              { text: { type: 'bold', text: '1 pt' }, align: 'center', valign: 'middle' }
+            ]
+          ]
+        }
+      ]
+    })
+
     await ctx.answerCallbackQuery()
   } catch {
     await answerLoadError(ctx)
