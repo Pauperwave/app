@@ -7,6 +7,7 @@ import type { CommandGroup } from '@grammyjs/commands'
 import { FormattedString } from '@grammyjs/parse-mode'
 
 import { requireLinkedAssociate } from './linking'
+import { registerDeepLink } from '../../deepLinks'
 
 interface AssociateStatusRow {
   first_name: string | null
@@ -62,22 +63,29 @@ function tesseraMessage(row: AssociateStatusRow): FormattedString {
   return FormattedString.join(lines, '\n')
 }
 
-export function registerTesseraCommand(commands: CommandGroup<Context>) {
-  commands.command('tessera', 'Stato del tuo tesseramento', async (ctx) => {
-    try {
-      const associateUuid = await requireLinkedAssociate(ctx)
-      if (!associateUuid) return
+// Extracted so it can be reused verbatim by t.me/<bot>?start=tessera — see
+// deepLinks.ts. Intended entry point: a renewal-reminder message/email
+// linking straight to the player's own membership status.
+async function tesseraCommandHandler(ctx: Context) {
+  try {
+    const associateUuid = await requireLinkedAssociate(ctx)
+    if (!associateUuid) return
 
-      const row = await fetchAssociateStatus(associateUuid)
-      if (!row) {
-        await ctx.reply('⚠️ Non trovo il tuo tesseramento, contatta un admin.')
-        return
-      }
-
-      const message = tesseraMessage(row)
-      await ctx.reply(message.text, { entities: message.entities })
-    } catch {
-      await ctx.reply('⚠️ Non sono riuscito a recuperare il tuo tesseramento, riprova più tardi.')
+    const row = await fetchAssociateStatus(associateUuid)
+    if (!row) {
+      await ctx.reply('⚠️ Non trovo il tuo tesseramento, contatta un admin.')
+      return
     }
-  })
+
+    const message = tesseraMessage(row)
+    await ctx.reply(message.text, { entities: message.entities })
+  } catch {
+    await ctx.reply('⚠️ Non sono riuscito a recuperare il tuo tesseramento, riprova più tardi.')
+  }
+}
+
+registerDeepLink('tessera', tesseraCommandHandler)
+
+export function registerTesseraCommand(commands: CommandGroup<Context>) {
+  commands.command('tessera', 'Stato del tuo tesseramento', tesseraCommandHandler)
 }
