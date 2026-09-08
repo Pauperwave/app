@@ -255,9 +255,9 @@ function votesReceivedTableBlock(deckVotePoints: number, playVotePoints: number)
         { text: 'Mazzo', is_header: true as const, align: 'center' as const, valign: 'middle' as const },
         { text: 'Giocata', is_header: true as const, align: 'center' as const, valign: 'middle' as const }
       ],
-      [{ text: MOCK_OPPONENTS[0], align: 'left' as const, valign: 'middle' as const }, cell('⭐'), cell(undefined)],
-      [{ text: MOCK_OPPONENTS[1], align: 'left' as const, valign: 'middle' as const }, cell(undefined), cell('⭐')],
-      [{ text: MOCK_OPPONENTS[2], align: 'left' as const, valign: 'middle' as const }, cell(undefined), cell('⭐')],
+      [{ text: MOCK_OPPONENTS[0], align: 'left' as const, valign: 'middle' as const }, cell('ok'), cell(undefined)],
+      [{ text: MOCK_OPPONENTS[1], align: 'left' as const, valign: 'middle' as const }, cell(undefined), cell('ok')],
+      [{ text: MOCK_OPPONENTS[2], align: 'left' as const, valign: 'middle' as const }, cell(undefined), cell('ok')],
       [
         { text: { type: 'bold' as const, text: 'Totale' }, align: 'left' as const, valign: 'middle' as const },
         { text: { type: 'bold' as const, text: `${deckVotePoints} pt` }, align: 'center' as const, valign: 'middle' as const },
@@ -287,8 +287,8 @@ function scoreSummaryTableBlock(
       ],
       row('🏅 Posizionamento', positionPoints),
       row('💀 Uccisioni', killPoints),
-      row('🃏 Voto mazzo ricevuto', deckVotePoints),
-      row('🎬 Voto giocata ricevuto', playVotePoints),
+      row('🃏 Voti mazzo', deckVotePoints),
+      row('🎬 Voti giocata', playVotePoints),
       [
         { text: { type: 'bold' as const, text: 'Totale' }, align: 'left' as const, valign: 'middle' as const },
         { text: { type: 'bold' as const, text: `${totalPoints} pt` }, align: 'center' as const, valign: 'middle' as const }
@@ -313,7 +313,7 @@ function finalRichMessage(state: ResultState): InputRichMessage {
   return {
     blocks: [
       { type: 'heading', size: 3, text: '📋 Riepilogo risultato' },
-      summaryTableBlock(state, 'Il tuo turno'),
+      summaryTableBlock(state, 'Risultato inviato'),
       { type: 'paragraph', text: 'Confermi?' },
       {
         type: 'buttons',
@@ -388,10 +388,7 @@ async function sendConfirmedResult(ctx: Context, state: ResultState) {
     // gives each table its own full width instead of sharing a message.
     await Promise.all([
       ctx.editMessageText({
-        blocks: [
-          { type: 'heading', size: 3, text: '✅ Risultato registrato (anteprima)' },
-          summaryTableBlock(state, 'Il tuo turno')
-        ]
+        blocks: [summaryTableBlock(state, 'Risultato inviato')]
       }),
       ctx.replyWithRichMessage({
         blocks: [votesReceivedTableBlock(deckVotePoints, playVotePoints)]
