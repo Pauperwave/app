@@ -22,6 +22,23 @@ export async function resolveAssociateUuidByChatId(chatId: number): Promise<stri
   return data?.associate_uuid ?? null
 }
 
+// Reverse of resolveAssociateUuidByChatId — needed wherever the server (not
+// an incoming Telegram update) is the one initiating contact, e.g. pushing a
+// pairing notification once tournament_pairings gets a live-write flow: the
+// trigger knows the associate_uuid, not the chat_id.
+export async function resolveChatIdByAssociateUuid(associateUuid: string): Promise<number | null> {
+  const supabase = telegramServiceSupabaseClient()
+
+  const { data, error } = await supabase
+    .from('pauperwave_associate_telegram_links')
+    .select('chat_id')
+    .eq('associate_uuid', associateUuid)
+    .maybeSingle()
+
+  if (error) throw error
+  return data?.chat_id ?? null
+}
+
 // Same literal message tessera.ts, iscrizioni.ts, and tournament/detail.ts's
 // iscrivi: handler all show for a personal action before linking an account.
 export const NOT_LINKED_MESSAGE = 'Devi prima collegare il tuo account: scrivimi la tua email da socio.'
