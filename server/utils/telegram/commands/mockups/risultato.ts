@@ -5,6 +5,7 @@ import type { InputRichMessage } from 'grammy/types'
 import { Menu } from '@grammyjs/menu'
 
 import { answerLoadError } from '../callbackErrors'
+import { registerDeepLink } from '../../deepLinks'
 
 // MOCKUP — no live-write flow yet (docs/architecture/telegram-bot.md).
 // Commander itself is set separately, at round start, via /tavolo.
@@ -414,6 +415,15 @@ export async function openRisultato(ctx: Context) {
   await showRichStep(ctx, positionRichMessage(INITIAL_STATE))
 }
 
+// Extracted so it can be reused verbatim by t.me/<bot>?start=risultato —
+// see deepLinks.ts. Not openRisultato: that one edits/answers an existing
+// callback query, which a fresh /start context doesn't have.
+async function risultatoCommandHandler(ctx: Context) {
+  await ctx.replyWithRichMessage(positionRichMessage(INITIAL_STATE))
+}
+
+registerDeepLink('risultato', risultatoCommandHandler)
+
 export function registerRisultatoCommand(bot: Bot, commands: CommandGroup<Context>) {
   bot.use(risultatoMenu)
 
@@ -472,7 +482,5 @@ export function registerRisultatoCommand(bot: Bot, commands: CommandGroup<Contex
     await next()
   })
 
-  commands.command('risultato', 'Registra posizione, uccisioni e voti del tavolo', async (ctx) => {
-    await ctx.replyWithRichMessage(positionRichMessage(INITIAL_STATE))
-  })
+  commands.command('risultato', 'Registra posizione, uccisioni e voti del tavolo', risultatoCommandHandler)
 }
