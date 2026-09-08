@@ -69,6 +69,20 @@ const tavoloMenu = new Menu<Context>('tv', {
   range.row().submenu({ text: '📋 Inserisci risultati', payload: '' }, 'ris', openRisultato)
 })
 
+// Chat-id based (not ctx-based) so it can be called from a server-side
+// trigger too, not just in response to an incoming update — e.g. pushing
+// this proactively once a pairing is generated, instead of waiting for the
+// player to type /tavolo. Not wired to a real trigger yet: tournament_pairings
+// has no live-write flow (see docs/architecture/telegram-bot.md), so
+// MOCK_TABLE stays hardcoded until that exists — this only saves the
+// /tavolo command handler from duplicating the send once that trigger lands.
+export async function pushTavoloMessage(chatId: number) {
+  const bot = useTelegramBot()
+  const text = tavoloMessage()
+  const other = { entities: text.entities, reply_markup: tavoloMenu }
+  await bot.api.sendMessage(chatId, text.text, other)
+}
+
 export function registerTavoloCommand(bot: Bot, commands: CommandGroup<Context>) {
   // Deferred to call time — same circular-import reasoning as
   // calendario.ts's own comment (risultato.ts has no back-reference to
@@ -77,8 +91,8 @@ export function registerTavoloCommand(bot: Bot, commands: CommandGroup<Context>)
   bot.use(tavoloMenu)
 
   commands.command('tavolo', 'Tavolo e avversario del turno', async (ctx) => {
-    const text = tavoloMessage()
-    await ctx.reply(text.text, { entities: text.entities, reply_markup: tavoloMenu })
+    if (!ctx.chat?.id) return
+    await pushTavoloMessage(ctx.chat.id)
   })
 
   bot.on('inline_query', async (ctx) => {
