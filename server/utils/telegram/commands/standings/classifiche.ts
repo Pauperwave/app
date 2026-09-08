@@ -6,6 +6,7 @@ import { FormattedString } from '@grammyjs/parse-mode'
 
 import { answerLoadError } from '../callbackErrors'
 import { createPerContextCache } from '../../perContextCache'
+import { registerDeepLink } from '../../deepLinks'
 
 import { groupBestNByPlayer, toBestNPlacement } from '#shared/utils/cittadino/bestNStandings'
 
@@ -256,11 +257,17 @@ const classificheMenu = new Menu<Context>('classifiche-menu', {
 
 classificheMenu.register(classificaMenu)
 
+// Extracted so it can be reused verbatim by t.me/<bot>?start=classifiche —
+// see deepLinks.ts.
+function classificheCommandHandler(ctx: Context) {
+  const siteUrl = useRuntimeConfig().public.siteUrl
+  return ctx.reply(initialMessage(siteUrl), { reply_markup: classificheMenu })
+}
+
+registerDeepLink('classifiche', classificheCommandHandler)
+
 export function registerClassificheCommand(bot: Bot, commands: CommandGroup<Context>) {
   bot.use(classificheMenu)
 
-  commands.command('classifiche', 'Classifiche per formato', (ctx) => {
-    const siteUrl = useRuntimeConfig().public.siteUrl
-    return ctx.reply(initialMessage(siteUrl), { reply_markup: classificheMenu })
-  })
+  commands.command('classifiche', 'Classifiche per formato', classificheCommandHandler)
 }
