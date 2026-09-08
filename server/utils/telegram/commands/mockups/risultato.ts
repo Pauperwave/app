@@ -279,7 +279,7 @@ function scoreSummaryTableBlock(
     type: 'table' as const,
     is_bordered: true as const,
     is_striped: true as const,
-    caption: 'Riepilogo punteggio del turno (anteprima)',
+    caption: 'Riepilogo punteggio del turno',
     cells: [
       [
         { text: 'Categoria', is_header: true as const, align: 'left' as const, valign: 'middle' as const },
@@ -381,10 +381,11 @@ async function sendConfirmedResult(ctx: Context, state: ResultState) {
     const playVotePoints = MOCK_PLAY_VOTES_RECEIVED * PLAY_VOTE_POINTS
     const totalPoints = positionPoints + killPoints + deckVotePoints + playVotePoints
 
-    // MOCKUP — the second table only sends once here for preview purposes;
-    // a real implementation would send it once every player at the table
-    // has submitted their own result. All three calls are independent, so
-    // they run concurrently.
+    // MOCKUP — both tables only send once here for preview purposes; a real
+    // implementation would send them once every player at the table has
+    // submitted their own result. All four calls are independent, so they
+    // run concurrently. Two separate messages, not two blocks in one —
+    // gives each table its own full width instead of sharing a message.
     await Promise.all([
       ctx.editMessageText({
         blocks: [
@@ -393,12 +394,12 @@ async function sendConfirmedResult(ctx: Context, state: ResultState) {
         ]
       }),
       ctx.replyWithRichMessage({
-        blocks: [
-          votesReceivedTableBlock(deckVotePoints, playVotePoints),
-          scoreSummaryTableBlock(
-            positionPoints, killPoints, deckVotePoints, playVotePoints, totalPoints
-          )
-        ]
+        blocks: [votesReceivedTableBlock(deckVotePoints, playVotePoints)]
+      }),
+      ctx.replyWithRichMessage({
+        blocks: [scoreSummaryTableBlock(
+          positionPoints, killPoints, deckVotePoints, playVotePoints, totalPoints
+        )]
       }),
       ctx.answerCallbackQuery()
     ])
