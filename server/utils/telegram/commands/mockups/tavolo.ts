@@ -6,6 +6,7 @@ import { Menu } from '@grammyjs/menu'
 import { FormattedString } from '@grammyjs/parse-mode'
 
 import { risultatoMenu, openRisultato } from './risultato'
+import { registerDeepLink } from '../../deepLinks'
 
 // MOCKUP — tournament_pairings has no live-write flow yet (see
 // docs/architecture/telegram-bot.md), so this is hardcoded sample data
@@ -83,6 +84,16 @@ export async function pushTavoloMessage(chatId: number) {
   await bot.api.sendMessage(chatId, text.text, other)
 }
 
+// Extracted so it can be reused verbatim by t.me/<bot>?start=tavolo — see
+// deepLinks.ts. Intended entry point: a QR code at the physical table,
+// scanned mid-round instead of typing /tavolo cold.
+async function tavoloCommandHandler(ctx: Context) {
+  if (!ctx.chat?.id) return
+  await pushTavoloMessage(ctx.chat.id)
+}
+
+registerDeepLink('tavolo', tavoloCommandHandler)
+
 export function registerTavoloCommand(bot: Bot, commands: CommandGroup<Context>) {
   // Deferred to call time — same circular-import reasoning as
   // calendario.ts's own comment (risultato.ts has no back-reference to
@@ -90,10 +101,7 @@ export function registerTavoloCommand(bot: Bot, commands: CommandGroup<Context>)
   tavoloMenu.register(risultatoMenu)
   bot.use(tavoloMenu)
 
-  commands.command('tavolo', 'Tavolo e avversario del turno', async (ctx) => {
-    if (!ctx.chat?.id) return
-    await pushTavoloMessage(ctx.chat.id)
-  })
+  commands.command('tavolo', 'Tavolo e avversario del turno', tavoloCommandHandler)
 
   bot.on('inline_query', async (ctx) => {
     // 'sender' — a private chat with the bot itself, the only place
