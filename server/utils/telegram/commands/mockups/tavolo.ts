@@ -70,18 +70,18 @@ const tavoloMenu = new Menu<Context>('tv', {
   range.row().submenu({ text: '📋 Inserisci risultati', payload: '' }, 'ris', openRisultato)
 })
 
-// Chat-id based (not ctx-based) so it can be called from a server-side
-// trigger too, not just in response to an incoming update — e.g. pushing
-// this proactively once a pairing is generated, instead of waiting for the
-// player to type /tavolo. Not wired to a real trigger yet: tournament_pairings
-// has no live-write flow (see docs/architecture/telegram-bot.md), so
-// MOCK_TABLE stays hardcoded until that exists — this only saves the
-// /tavolo command handler from duplicating the send once that trigger lands.
-export async function pushTavoloMessage(chatId: number) {
-  const bot = useTelegramBot()
+// ctx.api, not bot.api — @grammyjs/menu can only render a menu's
+// fingerprint into reply_markup through a context's own api, not the bare
+// bot-level client (confirmed 2026-09-09 in production: "Cannot send menu
+// 'tv'! ... try to send it through bot.api?", @grammyjs/menu/out/menu.js's
+// own inline_keyboard getter). So this still needs an update's ctx, which
+// rules out a truly ctx-less server trigger (e.g. a cron job) sending this
+// exact menu until the plugin supports it — it only helps today when an
+// existing update wants to push to a *different* chatId than its own.
+export async function pushTavoloMessage(ctx: Context, chatId: number) {
   const text = tavoloMessage()
   const other = { entities: text.entities, reply_markup: tavoloMenu }
-  await bot.api.sendMessage(chatId, text.text, other)
+  await ctx.api.sendMessage(chatId, text.text, other)
 }
 
 // Extracted so it can be reused verbatim by t.me/<bot>?start=tavolo — see
@@ -89,7 +89,7 @@ export async function pushTavoloMessage(chatId: number) {
 // scanned mid-round instead of typing /tavolo cold.
 async function tavoloCommandHandler(ctx: Context) {
   if (!ctx.chat?.id) return
-  await pushTavoloMessage(ctx.chat.id)
+  await pushTavoloMessage(ctx, ctx.chat.id)
 }
 
 registerDeepLink('tavolo', tavoloCommandHandler)
