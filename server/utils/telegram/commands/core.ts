@@ -3,6 +3,7 @@ import { it } from 'date-fns/locale'
 
 import type { Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
+import { resolveDeepLink } from '../deepLinks'
 
 const START_TEXT = 'Ciao! Sono il bot di Pauperwave 👋🏻\n\n'
   + 'Scrivimi la tua email da socio (quella con cui ti sei tesserato) per '
@@ -36,7 +37,18 @@ const HELP_TEXT = 'Comandi disponibili:\n\n'
   + '/supporto — inoltra un messaggio allo staff'
 
 export function registerCoreCommands(commands: CommandGroup<Context>) {
-  commands.command('start', 'Avvia il bot', ctx => ctx.reply(START_TEXT))
+  // Telegram delivers t.me/<bot>?start=<payload> as "/start <payload>" —
+  // ctx.match is the payload itself. A recognized one (see deepLinks.ts,
+  // populated by each register*Command that opts in) takes over from the
+  // plain welcome text, landing the user directly on that view.
+  commands.command('start', 'Avvia il bot', async (ctx) => {
+    const handler = ctx.match ? resolveDeepLink(ctx.match) : undefined
+    if (handler) {
+      await handler(ctx)
+      return
+    }
+    await ctx.reply(START_TEXT)
+  })
 
   commands.command('help', 'Elenco comandi disponibili', ctx => ctx.reply(HELP_TEXT))
 
