@@ -11,6 +11,7 @@ import { mapsUrl, googleCalendarUrl, truncateForCaption } from './eventLinks'
 import type { MapsAddress } from './eventLinks'
 import { navigateBack } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
+import { registerDeepLink } from '../../deepLinks'
 
 interface EventRow {
   uuid: string
@@ -204,17 +205,23 @@ const eventoMenu = new Menu<Context>('evd', {
   })
 })
 
+// Extracted so it can be reused verbatim by t.me/<bot>?start=eventi — see
+// deepLinks.ts.
+async function eventiCommandHandler(ctx: Context) {
+  const message = await eventiText(ctx)
+    .catch(() => new FormattedString('⚠️ Non sono riuscito a recuperare gli eventi, riprova più tardi.'))
+  await ctx.reply(message.text, {
+    entities: message.entities,
+    reply_markup: eventiMenu,
+    link_preview_options: { is_disabled: true }
+  })
+}
+
+registerDeepLink('eventi', eventiCommandHandler)
+
 export function registerEventiCommand(bot: Bot, commands: CommandGroup<Context>) {
   eventiMenu.register(eventoMenu)
   bot.use(eventiMenu)
 
-  commands.command('eventi', 'Prossimi eventi', async (ctx) => {
-    const message = await eventiText(ctx)
-      .catch(() => new FormattedString('⚠️ Non sono riuscito a recuperare gli eventi, riprova più tardi.'))
-    await ctx.reply(message.text, {
-      entities: message.entities,
-      reply_markup: eventiMenu,
-      link_preview_options: { is_disabled: true }
-    })
-  })
+  commands.command('eventi', 'Prossimi eventi', eventiCommandHandler)
 }
