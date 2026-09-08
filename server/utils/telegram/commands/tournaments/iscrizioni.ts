@@ -13,6 +13,7 @@ import { requireLinkedAssociate, resolveAssociateUuidByChatId } from '../account
 import { registerMenu } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
 import { ICONS } from '../../icons'
+import { registerDeepLink } from '../../deepLinks'
 
 interface MyTournamentRow {
   uuid: string
@@ -151,22 +152,29 @@ export const iscrizioniMenu = new Menu<Context>('isc', {
 
 registerMenu('isc', iscrizioniMenu)
 
+// Extracted so it can be reused verbatim by t.me/<bot>?start=iscrizioni —
+// see deepLinks.ts. A "apri nel bot" button on the web app's own
+// registrations page is the intended entry point (2026-09-08).
+async function iscrizioniCommandHandler(ctx: Context) {
+  try {
+    const associateUuid = await requireLinkedAssociate(ctx)
+    if (!associateUuid) return
+
+    const registrations = await cachedFetchMyTournaments(ctx, associateUuid)
+    const message = mieiTorneiMessage(registrations)
+    await ctx.reply(message.text, { entities: message.entities, reply_markup: iscrizioniMenu })
+  } catch {
+    await ctx.reply('⚠️ Non sono riuscito a recuperare i tuoi tornei, riprova più tardi.')
+  }
+}
+
+registerDeepLink('iscrizioni', iscrizioniCommandHandler)
+
 export function registerIscrizioniCommand(bot: Bot, commands: CommandGroup<Context>) {
   // Deferred to call time, not module top level — see calendario.ts's own
   // comment on why.
   iscrizioniMenu.register(torneoMenu)
   bot.use(iscrizioniMenu)
 
-  commands.command('iscrizioni', 'I tornei a cui sei iscritto', async (ctx) => {
-    try {
-      const associateUuid = await requireLinkedAssociate(ctx)
-      if (!associateUuid) return
-
-      const registrations = await cachedFetchMyTournaments(ctx, associateUuid)
-      const message = mieiTorneiMessage(registrations)
-      await ctx.reply(message.text, { entities: message.entities, reply_markup: iscrizioniMenu })
-    } catch {
-      await ctx.reply('⚠️ Non sono riuscito a recuperare i tuoi tornei, riprova più tardi.')
-    }
-  })
+  commands.command('iscrizioni', 'I tornei a cui sei iscritto', iscrizioniCommandHandler)
 }
