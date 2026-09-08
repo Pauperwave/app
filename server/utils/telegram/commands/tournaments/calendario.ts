@@ -15,6 +15,7 @@ import type { DatedTournamentRow, TournamentRow } from './detail'
 import { answerLoadError, requireChatId } from '../callbackErrors'
 import { registerMenu } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
+import { registerDeepLink } from '../../deepLinks'
 
 // Fetched once per render, filtered by month client-side — keeps the
 // callback handler stateless (no need to remember what a user was viewing).
@@ -208,18 +209,26 @@ async function monthNav(ctx: Context & { match: string }) {
 
 registerMenu('cal', calendarioMenu)
 
+// Extracted so it can be reused verbatim by t.me/<bot>?start=calendario —
+// see deepLinks.ts.
+async function calendarioCommandHandler(ctx: Context) {
+  if (!ctx.chat?.id) return
+
+  try {
+    const text = await calendarioText(ctx, 0, ctx.chat.id)
+    await ctx.reply(text.text, { entities: text.entities, reply_markup: calendarioMenu })
+  } catch {
+    await ctx.reply('⚠️ Non sono riuscito a recuperare i tornei, riprova più tardi.')
+  }
+}
+
+registerDeepLink('calendario', calendarioCommandHandler)
+
 export function registerCalendarioCommand(bot: Bot, commands: CommandGroup<Context>) {
   // Deferred to call time — torneoMenu's own module imports calendarioText
   // back, so accessing torneoMenu at top level would race the circular import.
   calendarioMenu.register(torneoMenu)
   bot.use(calendarioMenu)
 
-  commands.command('calendario', 'Prossimi tornei', async (ctx) => {
-    try {
-      const text = await calendarioText(ctx, 0, ctx.chat.id)
-      await ctx.reply(text.text, { entities: text.entities, reply_markup: calendarioMenu })
-    } catch {
-      await ctx.reply('⚠️ Non sono riuscito a recuperare i tornei, riprova più tardi.')
-    }
-  })
+  commands.command('calendario', 'Prossimi tornei', calendarioCommandHandler)
 }
