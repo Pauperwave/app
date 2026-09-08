@@ -16,6 +16,8 @@ import { registerTavoloCommand } from './mockups/tavolo'
 import { registerRisultatoCommand } from './mockups/risultato'
 import { registerLinkingHandler } from './account/linking'
 
+const UNKNOWN_MESSAGE_TEXT = '🤔 Non ho capito questo messaggio. Usa /help per vedere i comandi disponibili.'
+
 // Single CommandGroup (@grammyjs/commands) shared by every register*Command
 // — derives Telegram's own "/" picker (setCommands, below) directly from
 // what's registered here, so the two can't drift apart.
@@ -44,6 +46,11 @@ export function registerCommands(bot: Bot) {
   bot.use(commands)
 
   registerLinkingHandler(bot)
+
+  // Registered last of all — every other handler above calls next() when a
+  // message isn't theirs to handle, so anything still unclaimed here is
+  // genuinely not a recognized command, prompt reply, or linking attempt.
+  bot.on('message:text', ctx => ctx.reply(UNKNOWN_MESSAGE_TEXT))
 
   // Best-effort, same reasoning as notify.ts's own best-effort sends — a
   // Telegram hiccup here must never block the bot instance from being
