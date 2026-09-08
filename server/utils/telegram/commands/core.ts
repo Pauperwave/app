@@ -36,6 +36,14 @@ const HELP_TEXT = 'Comandi disponibili:\n\n'
   + '💬 Supporto\n'
   + '/supporto — inoltra un messaggio allo staff'
 
+// Extracted so it can be reused verbatim by t.me/<bot>?start=help — see
+// deepLinks.ts.
+function helpCommandHandler(ctx: Context) {
+  return ctx.reply(HELP_TEXT)
+}
+
+registerDeepLink('help', helpCommandHandler)
+
 export function registerCoreCommands(commands: CommandGroup<Context>) {
   // Telegram delivers t.me/<bot>?start=<payload> as "/start <payload>" —
   // ctx.match is the payload itself. A recognized one (see deepLinks.ts,
@@ -50,7 +58,7 @@ export function registerCoreCommands(commands: CommandGroup<Context>) {
     await ctx.reply(START_TEXT)
   })
 
-  commands.command('help', 'Elenco comandi disponibili', ctx => ctx.reply(HELP_TEXT))
+  commands.command('help', 'Elenco comandi disponibili', helpCommandHandler)
 
   commands.command('status', 'Stato del bot', (ctx) => {
     const { gitCommitSha, gitCommitDate } = useRuntimeConfig().public
