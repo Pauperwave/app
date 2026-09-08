@@ -238,9 +238,12 @@ function summaryTableBlock(state: ResultState, caption: string) {
   }
 }
 
-// MOCKUP — which opponents "starred" is hardcoded sample data, same as
-// the rest of this file's mock pairing.
+// MOCKUP — which opponents voted for the deck/play is hardcoded sample
+// data, same as the rest of this file's mock pairing.
 function votesReceivedTableBlock(deckVotePoints: number, playVotePoints: number) {
+  // Plain '✓' (U+2713, no emoji variation selector) rather than '⭐️' or a
+  // colorful emoji — those render with a taller line-height in Telegram's
+  // table cells and visibly stretch the whole row.
   const cell = (value: string | undefined) => ({
     text: value, align: 'center' as const, valign: 'middle' as const
   })
@@ -255,9 +258,9 @@ function votesReceivedTableBlock(deckVotePoints: number, playVotePoints: number)
         { text: 'Mazzo', is_header: true as const, align: 'center' as const, valign: 'middle' as const },
         { text: 'Giocata', is_header: true as const, align: 'center' as const, valign: 'middle' as const }
       ],
-      [{ text: MOCK_OPPONENTS[0], align: 'left' as const, valign: 'middle' as const }, cell('ok'), cell(undefined)],
-      [{ text: MOCK_OPPONENTS[1], align: 'left' as const, valign: 'middle' as const }, cell(undefined), cell('ok')],
-      [{ text: MOCK_OPPONENTS[2], align: 'left' as const, valign: 'middle' as const }, cell(undefined), cell('ok')],
+      [{ text: MOCK_OPPONENTS[0], align: 'left' as const, valign: 'middle' as const }, cell('✓'), cell(undefined)],
+      [{ text: MOCK_OPPONENTS[1], align: 'left' as const, valign: 'middle' as const }, cell(undefined), cell('✓')],
+      [{ text: MOCK_OPPONENTS[2], align: 'left' as const, valign: 'middle' as const }, cell(undefined), cell('✓')],
       [
         { text: { type: 'bold' as const, text: 'Totale' }, align: 'left' as const, valign: 'middle' as const },
         { text: { type: 'bold' as const, text: `${deckVotePoints} pt` }, align: 'center' as const, valign: 'middle' as const },
