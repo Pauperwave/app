@@ -1,6 +1,7 @@
 // server\utils\telegram\commands\supporto.ts
 import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
+import { registerDeepLink } from '../deepLinks'
 
 // ForceReply guarantees the user's next message replies to this exact one —
 // matching its text recognizes a support message with zero server-side
@@ -38,15 +39,21 @@ async function notifySuperAdminsOfSupportRequest(
   }
 }
 
-export function registerSupportoCommand(bot: Bot, commands: CommandGroup<Context>) {
-  commands.command('supporto', 'Inoltra un messaggio allo staff', async (ctx) => {
-    await ctx.reply(SUPPORT_PROMPT, {
-      reply_markup: {
-        force_reply: true,
-        input_field_placeholder: 'Il tuo messaggio...'
-      }
-    })
+// Extracted so it can be reused verbatim by t.me/<bot>?start=supporto —
+// see deepLinks.ts.
+async function supportoCommandHandler(ctx: Context) {
+  await ctx.reply(SUPPORT_PROMPT, {
+    reply_markup: {
+      force_reply: true,
+      input_field_placeholder: 'Il tuo messaggio...'
+    }
   })
+}
+
+registerDeepLink('supporto', supportoCommandHandler)
+
+export function registerSupportoCommand(bot: Bot, commands: CommandGroup<Context>) {
+  commands.command('supporto', 'Inoltra un messaggio allo staff', supportoCommandHandler)
 
   // Registered before linking.ts's catch-all — only acts on replies to
   // SUPPORT_PROMPT, calling next() otherwise.
