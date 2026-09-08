@@ -44,6 +44,24 @@ function helpCommandHandler(ctx: Context) {
 
 registerDeepLink('help', helpCommandHandler)
 
+// Extracted so it can be reused verbatim by t.me/<bot>?start=status — see
+// deepLinks.ts.
+function statusCommandHandler(ctx: Context) {
+  const { gitCommitSha, gitCommitDate } = useRuntimeConfig().public
+  const lines = ['🟢 Bot operativo.']
+
+  if (gitCommitSha) {
+    lines.push('', `🏷️ ${gitCommitSha.slice(0, 7)}`)
+    if (gitCommitDate) {
+      lines.push(`🗓️ ${formatTelegramDate(gitCommitDate, 'd MMMM yyyy \'alle\' HH:mm', { locale: it })}`)
+    }
+  }
+
+  return ctx.reply(lines.join('\n'))
+}
+
+registerDeepLink('status', statusCommandHandler)
+
 export function registerCoreCommands(commands: CommandGroup<Context>) {
   // Telegram delivers t.me/<bot>?start=<payload> as "/start <payload>" —
   // ctx.match is the payload itself. A recognized one (see deepLinks.ts,
@@ -60,17 +78,5 @@ export function registerCoreCommands(commands: CommandGroup<Context>) {
 
   commands.command('help', 'Elenco comandi disponibili', helpCommandHandler)
 
-  commands.command('status', 'Stato del bot', (ctx) => {
-    const { gitCommitSha, gitCommitDate } = useRuntimeConfig().public
-    const lines = ['🟢 Bot operativo.']
-
-    if (gitCommitSha) {
-      lines.push('', `🏷️ ${gitCommitSha.slice(0, 7)}`)
-      if (gitCommitDate) {
-        lines.push(`🗓️ ${formatTelegramDate(gitCommitDate, 'd MMMM yyyy \'alle\' HH:mm', { locale: it })}`)
-      }
-    }
-
-    return ctx.reply(lines.join('\n'))
-  })
+  commands.command('status', 'Stato del bot', statusCommandHandler)
 }
