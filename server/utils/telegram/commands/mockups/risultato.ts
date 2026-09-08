@@ -132,6 +132,9 @@ function killsRichMessage(state: ResultState): InputRichMessage {
 // Shared pick-then-confirm shape for every single-pick step (position,
 // deck vote, play vote): picking re-renders the same message with that
 // option highlighted and a Conferma button added; only Conferma advances.
+// oneRowPerOption: true for name-labeled options (opponents) — a single
+// shared row got cramped/wrapped names on narrow screens; short labels
+// (position's "1°"–"4°") stay on one row instead.
 function pickRichMessage(
   heading: string,
   labels: string[],
@@ -139,23 +142,26 @@ function pickRichMessage(
   pickPrefix: string,
   confirmPrefix: string,
   buildPickedState: (index: number) => ResultState,
-  confirmedState: ResultState
+  confirmedState: ResultState,
+  oneRowPerOption = false
 ): InputRichMessage {
+  const optionButtons = labels.map((label, index) => {
+    const isSelected = selectedIndex === index
+    return {
+      // ⭐ not ✅ — that already means "completed"/"registered"
+      // elsewhere (tournaments/line.ts).
+      text: `${isSelected ? '⭐' : ''} ${label}`.trim(),
+      style: isSelected ? 'success' as const : undefined,
+      callback_data: `${pickPrefix}${encodeResultState(buildPickedState(index))}`
+    }
+  })
+  const optionRows = oneRowPerOption
+    ? optionButtons.map(button => ({ type: 'buttons' as const, buttons: [button] }))
+    : [{ type: 'buttons' as const, buttons: optionButtons }]
+
   const blocks: InputRichMessage['blocks'] = [
     { type: 'paragraph', text: heading },
-    {
-      type: 'buttons',
-      buttons: labels.map((label, index) => {
-        const isSelected = selectedIndex === index
-        return {
-          // ⭐ not ✅ — that already means "completed"/"registered"
-          // elsewhere (tournaments/line.ts).
-          text: `${isSelected ? '⭐' : ''} ${label}`.trim(),
-          style: isSelected ? 'success' as const : undefined,
-          callback_data: `${pickPrefix}${encodeResultState(buildPickedState(index))}`
-        }
-      })
-    }
+    ...optionRows
   ]
   if (selectedIndex !== null) {
     blocks.push({
@@ -190,7 +196,8 @@ function deckVoteRichMessage(state: ResultState): InputRichMessage {
     DECK_VOTE_PICK_PREFIX,
     DECK_VOTE_CONFIRM_PREFIX,
     index => ({ ...state, deckVoteIndex: index }),
-    { ...state, deckVoteConfirmed: true }
+    { ...state, deckVoteConfirmed: true },
+    true
   )
 }
 
@@ -202,7 +209,8 @@ function playVoteRichMessage(state: ResultState): InputRichMessage {
     PLAY_VOTE_PICK_PREFIX,
     PLAY_VOTE_CONFIRM_PREFIX,
     index => ({ ...state, playVoteIndex: index }),
-    { ...state, playVoteConfirmed: true }
+    { ...state, playVoteConfirmed: true },
+    true
   )
 }
 
