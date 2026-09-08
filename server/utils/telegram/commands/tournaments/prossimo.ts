@@ -9,6 +9,7 @@ import { fetchStageNumbers, OPEN_TOURNAMENT_STATUSES } from './queries'
 import { torneoMenu, openTournamentDetail } from './detail'
 import { registerMenu } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
+import { registerDeepLink } from '../../deepLinks'
 
 interface NextTournamentRow {
   uuid: string
@@ -90,15 +91,21 @@ export const prossimoMenu = new Menu<Context>('p', {
 
 registerMenu('p', prossimoMenu)
 
+// Extracted so it can be reused verbatim by t.me/<bot>?start=prossimo —
+// see deepLinks.ts.
+async function prossimoCommandHandler(ctx: Context) {
+  const message = await prossimoText(ctx)
+    .catch(() => new FormattedString('⚠️ Non sono riuscito a recuperare il prossimo torneo, riprova più tardi.'))
+  await ctx.reply(message.text, { entities: message.entities, reply_markup: prossimoMenu })
+}
+
+registerDeepLink('prossimo', prossimoCommandHandler)
+
 export function registerProssimoCommand(bot: Bot, commands: CommandGroup<Context>) {
   // Deferred to call time (not module top level) — same circular-import
   // reasoning as calendario.ts's own comment.
   prossimoMenu.register(torneoMenu)
   bot.use(prossimoMenu)
 
-  commands.command('prossimo', 'Il prossimo torneo', async (ctx) => {
-    const message = await prossimoText(ctx)
-      .catch(() => new FormattedString('⚠️ Non sono riuscito a recuperare il prossimo torneo, riprova più tardi.'))
-    await ctx.reply(message.text, { entities: message.entities, reply_markup: prossimoMenu })
-  })
+  commands.command('prossimo', 'Il prossimo torneo', prossimoCommandHandler)
 }
