@@ -230,6 +230,65 @@ function summaryTableBlock(state: ResultState, caption: string) {
   }
 }
 
+// MOCKUP — which opponents "starred" is hardcoded sample data, same as
+// the rest of this file's mock pairing.
+function votesReceivedTableBlock(deckVotePoints: number, playVotePoints: number) {
+  const cell = (value: string | undefined) => ({
+    text: value, align: 'center' as const, valign: 'middle' as const
+  })
+  return {
+    type: 'table' as const,
+    is_bordered: true as const,
+    is_striped: true as const,
+    caption: 'Riepilogo voti ricevuti',
+    cells: [
+      [
+        { text: 'Da chi', is_header: true as const, align: 'left' as const, valign: 'middle' as const },
+        { text: 'Mazzo', is_header: true as const, align: 'center' as const, valign: 'middle' as const },
+        { text: 'Giocata', is_header: true as const, align: 'center' as const, valign: 'middle' as const }
+      ],
+      [{ text: MOCK_OPPONENTS[0], align: 'left' as const, valign: 'middle' as const }, cell('⭐'), cell(undefined)],
+      [{ text: MOCK_OPPONENTS[1], align: 'left' as const, valign: 'middle' as const }, cell(undefined), cell('⭐')],
+      [{ text: MOCK_OPPONENTS[2], align: 'left' as const, valign: 'middle' as const }, cell(undefined), cell('⭐')],
+      [
+        { text: { type: 'bold' as const, text: 'Totale' }, align: 'left' as const, valign: 'middle' as const },
+        { text: { type: 'bold' as const, text: `${deckVotePoints} pt` }, align: 'center' as const, valign: 'middle' as const },
+        { text: { type: 'bold' as const, text: `${playVotePoints} pt` }, align: 'center' as const, valign: 'middle' as const }
+      ]
+    ]
+  }
+}
+
+function scoreSummaryTableBlock(
+  positionPoints: number, killPoints: number,
+  deckVotePoints: number, playVotePoints: number, totalPoints: number
+) {
+  const row = (label: string, points: number) => [
+    { text: label, align: 'left' as const, valign: 'middle' as const },
+    { text: `${points} pt`, align: 'center' as const, valign: 'middle' as const }
+  ]
+  return {
+    type: 'table' as const,
+    is_bordered: true as const,
+    is_striped: true as const,
+    caption: 'Riepilogo punteggio del turno (anteprima)',
+    cells: [
+      [
+        { text: 'Categoria', is_header: true as const, align: 'left' as const, valign: 'middle' as const },
+        { text: 'Punti', is_header: true as const, align: 'center' as const, valign: 'middle' as const }
+      ],
+      row('🏅 Posizionamento', positionPoints),
+      row('💀 Uccisioni', killPoints),
+      row('🃏 Voto mazzo ricevuto', deckVotePoints),
+      row('🎬 Voto giocata ricevuto', playVotePoints),
+      [
+        { text: { type: 'bold' as const, text: 'Totale' }, align: 'left' as const, valign: 'middle' as const },
+        { text: { type: 'bold' as const, text: `${totalPoints} pt` }, align: 'center' as const, valign: 'middle' as const }
+      ]
+    ]
+  }
+}
+
 // Modifica keeps every pick as-is, only resetting the *Confirmed flags —
 // each step then shows its previous choice pre-highlighted instead of blank.
 function editState(state: ResultState): ResultState {
@@ -327,71 +386,10 @@ async function sendConfirmedResult(ctx: Context, state: ResultState) {
       }),
       ctx.replyWithRichMessage({
         blocks: [
-          {
-            type: 'table',
-            is_bordered: true,
-            is_striped: true,
-            caption: 'Riepilogo voti ricevuti (anteprima) — quando tutti avranno votato',
-            cells: [
-              [
-                { text: 'Da chi', is_header: true, align: 'left', valign: 'middle' },
-                { text: 'Mazzo', is_header: true, align: 'center', valign: 'middle' },
-                { text: 'Giocata', is_header: true, align: 'center', valign: 'middle' }
-              ],
-              [
-                { text: MOCK_OPPONENTS[0], align: 'left', valign: 'middle' },
-                { text: '⭐', align: 'center', valign: 'middle' },
-                { align: 'center', valign: 'middle' }
-              ],
-              [
-                { text: MOCK_OPPONENTS[1], align: 'left', valign: 'middle' },
-                { align: 'center', valign: 'middle' },
-                { text: '⭐', align: 'center', valign: 'middle' }
-              ],
-              [
-                { text: MOCK_OPPONENTS[2], align: 'left', valign: 'middle' },
-                { align: 'center', valign: 'middle' },
-                { text: '⭐', align: 'center', valign: 'middle' }
-              ],
-              [
-                { text: { type: 'bold', text: 'Totale' }, align: 'left', valign: 'middle' },
-                { text: { type: 'bold', text: `${deckVotePoints} pt` }, align: 'center', valign: 'middle' },
-                { text: { type: 'bold', text: `${playVotePoints} pt` }, align: 'center', valign: 'middle' }
-              ]
-            ]
-          },
-          {
-            type: 'table',
-            is_bordered: true,
-            is_striped: true,
-            caption: 'Riepilogo punteggio del turno (anteprima)',
-            cells: [
-              [
-                { text: 'Categoria', is_header: true, align: 'left', valign: 'middle' },
-                { text: 'Punti', is_header: true, align: 'center', valign: 'middle' }
-              ],
-              [
-                { text: '🏅 Posizionamento', align: 'left', valign: 'middle' },
-                { text: `${positionPoints} pt`, align: 'center', valign: 'middle' }
-              ],
-              [
-                { text: '💀 Uccisioni', align: 'left', valign: 'middle' },
-                { text: `${killPoints} pt`, align: 'center', valign: 'middle' }
-              ],
-              [
-                { text: '🃏 Voto mazzo ricevuto', align: 'left', valign: 'middle' },
-                { text: `${deckVotePoints} pt`, align: 'center', valign: 'middle' }
-              ],
-              [
-                { text: '🎬 Voto giocata ricevuto', align: 'left', valign: 'middle' },
-                { text: `${playVotePoints} pt`, align: 'center', valign: 'middle' }
-              ],
-              [
-                { text: { type: 'bold', text: 'Totale' }, align: 'left', valign: 'middle' },
-                { text: { type: 'bold', text: `${totalPoints} pt` }, align: 'center', valign: 'middle' }
-              ]
-            ]
-          }
+          votesReceivedTableBlock(deckVotePoints, playVotePoints),
+          scoreSummaryTableBlock(
+            positionPoints, killPoints, deckVotePoints, playVotePoints, totalPoints
+          )
         ]
       }),
       ctx.answerCallbackQuery()
