@@ -335,8 +335,8 @@ async function sendConfirmedResult(ctx: Context, state: ResultState) {
             cells: [
               [
                 { text: 'Da chi', is_header: true, align: 'left', valign: 'middle' },
-                { text: 'Mazzo (2pt)', is_header: true, align: 'center', valign: 'middle' },
-                { text: 'Giocata (1pt)', is_header: true, align: 'center', valign: 'middle' }
+                { text: 'Mazzo', is_header: true, align: 'center', valign: 'middle' },
+                { text: 'Giocata', is_header: true, align: 'center', valign: 'middle' }
               ],
               [
                 { text: MOCK_OPPONENTS[0], align: 'left', valign: 'middle' },
