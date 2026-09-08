@@ -13,6 +13,7 @@ import { torneoMenu, openTournamentDetail } from './detail'
 import { answerLoadError, requireChatId } from '../callbackErrors'
 import { registerMenu } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
+import { registerDeepLink } from '../../deepLinks'
 
 import { tournamentProgressByLeague } from '#shared/utils/leagues/tournamentProgressByLeague'
 import type { LeagueTournamentRow } from '#shared/utils/leagues/tournamentProgressByLeague'
@@ -251,18 +252,24 @@ export const legheTorneiMenu = new Menu<Context>('lt', {
 registerMenu('lg', legheMenu)
 registerMenu('lt', legheTorneiMenu)
 
+// Extracted so it can be reused verbatim by t.me/<bot>?start=leghe — see
+// deepLinks.ts.
+async function legheCommandHandler(ctx: Context) {
+  try {
+    const text = await legheText(ctx)
+    await ctx.reply(text.text, { entities: text.entities, reply_markup: legheMenu })
+  } catch {
+    await ctx.reply('⚠️ Non sono riuscito a recuperare le leghe, riprova più tardi.')
+  }
+}
+
+registerDeepLink('leghe', legheCommandHandler)
+
 export function registerLegheCommand(bot: Bot, commands: CommandGroup<Context>) {
   // Deferred to call time — see calendario.ts's own comment on why.
   legheMenu.register(legheTorneiMenu)
   legheTorneiMenu.register(torneoMenu)
   bot.use(legheMenu)
 
-  commands.command('leghe', 'Leghe attive', async (ctx) => {
-    try {
-      const text = await legheText(ctx)
-      await ctx.reply(text.text, { entities: text.entities, reply_markup: legheMenu })
-    } catch {
-      await ctx.reply('⚠️ Non sono riuscito a recuperare le leghe, riprova più tardi.')
-    }
-  })
+  commands.command('leghe', 'Leghe attive', legheCommandHandler)
 }
