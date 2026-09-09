@@ -38,7 +38,9 @@ async function collegamentoCommandHandler(ctx: Context) {
     const associateUuid = await resolveAssociateUuidByChatId(ctx.chat.id)
     if (!associateUuid) {
       await ctx.replyWithRichMessage({
-        markdown: '❌ Questa chat non è collegata a nessun socio.\n\nScrivimi la tua email da socio per collegarla.'
+        markdown: '❌ Questa chat non è collegata a nessun socio.\n\n'
+          + 'Scrivimi la tua email da socio per collegarla.\n\n'
+          + 'Se non ti ricordi l\'email puoi scrivere a /supporto.'
       })
       return
     }
@@ -60,6 +62,40 @@ async function collegamentoCommandHandler(ctx: Context) {
 
 registerDeepLink('collegamento', collegamentoCommandHandler)
 
+// Opposite of /collegamento — removes this chat's row from
+// pauperwave_associate_telegram_links, same table linkChat() (linking.ts)
+// upserts into. Extracted so it can be reused verbatim by
+// t.me/<bot>?start=scollegamento — see deepLinks.ts.
+async function scollegamentoCommandHandler(ctx: Context) {
+  if (!ctx.chat?.id) return
+
+  try {
+    const associateUuid = await resolveAssociateUuidByChatId(ctx.chat.id)
+    if (!associateUuid) {
+      await ctx.replyWithRichMessage({ markdown: '❌ Questa chat non è collegata a nessun socio.' })
+      return
+    }
+
+    const supabase = telegramServiceSupabaseClient()
+    const { error } = await supabase
+      .from('pauperwave_associate_telegram_links')
+      .delete()
+      .eq('chat_id', ctx.chat.id)
+    if (error) throw error
+
+    await ctx.replyWithRichMessage({
+      markdown: '✅ Chat scollegata.\n\nScrivimi di nuovo la tua email da socio per ricollegarla.'
+    })
+  } catch {
+    await ctx.replyWithRichMessage({
+      markdown: '⚠️ Non sono riuscito a scollegare la chat, riprova più tardi.'
+    })
+  }
+}
+
+registerDeepLink('scollegamento', scollegamentoCommandHandler)
+
 export function registerCollegamentoCommand(commands: CommandGroup<Context>) {
   commands.command('collegamento', 'Verifica se questa chat è collegata a un socio', collegamentoCommandHandler)
+  commands.command('scollegamento', 'Scollega questa chat dal tuo profilo socio', scollegamentoCommandHandler)
 }
