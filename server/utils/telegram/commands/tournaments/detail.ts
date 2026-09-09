@@ -143,11 +143,34 @@ function tournamentDetailBlocks(
   const endTime = row.ends_at ? ` – ${formatTelegramDate(row.ends_at, 'HH:mm')}` : ''
   blocks.push({ type: 'paragraph', text: `🗓️ ${date}${endTime}` })
 
+  const mapUrl = row.location ? mapsUrl(row.location) : null
   if (row.location?.name) {
-    const url = mapsUrl(row.location)
-    const text = url ? ['📍 ', { type: 'url' as const, text: row.location.name, url }] : `📍 ${row.location.name}`
+    const text = mapUrl
+      ? ['📍 ', { type: 'url' as const, text: row.location.name, url: mapUrl }]
+      : `📍 ${row.location.name}`
     blocks.push({ type: 'paragraph', text })
   }
+
+  // Direzioni/Aggiungi al calendario as inline URL buttons right next to
+  // the date/location they relate to, not stacked in torneoMenu's own
+  // reply_markup at the bottom — same "buttons near their own content"
+  // reasoning as calendario.ts's per-tournament button. Plain UrlButtons
+  // need no callback_query handling at all (Telegram opens them directly).
+  const calendarUrl = googleCalendarUrl({
+    name: row.name,
+    startsAt: row.starts_at,
+    endsAt: row.ends_at,
+    locationName: row.location?.name,
+    description: row.description
+  })
+  blocks.push({
+    type: 'buttons',
+    buttons: [
+      ...(mapUrl ? [{ text: '🧭 Direzioni', url: mapUrl }] : []),
+      { text: '🗓️ Aggiungi al calendario', url: calendarUrl }
+    ]
+  })
+
   if (row.organizer?.name) blocks.push({ type: 'paragraph', text: `🏳️ Organizzatore: ${row.organizer.name}` })
   if (row.contact_name) {
     const phone = row.contact_phone ? ` (${row.contact_phone})` : ''
@@ -317,17 +340,6 @@ export const torneoMenu = new Menu<Context>('t', {
       range.text({ text: '➕ Iscriviti', payload }, ctx => handleRegister(ctx, uuid, associateUuid))
     }
   }
-
-  const mapUrl = tournament.location ? mapsUrl(tournament.location) : null
-  if (mapUrl) range.url('🧭 Direzioni', mapUrl)
-  range.url('🗓️ Aggiungi al calendario', googleCalendarUrl({
-    name: tournament.name,
-    startsAt: tournament.starts_at,
-    endsAt: tournament.ends_at,
-    locationName: tournament.location?.name,
-    description: tournament.description
-  }))
-  range.row()
 
   range.text({ text: backLabel(origin), payload }, async (ctx) => {
     const buttonChatId = await requireChatId(ctx)
