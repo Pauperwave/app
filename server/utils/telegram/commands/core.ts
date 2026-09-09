@@ -62,8 +62,8 @@ function helpBlocks(): InputRichMessage['blocks'] {
     {
       type: 'buttons',
       buttons: [
-        { text: '🎲 Apri /calendario', callback_data: encodeHelpBtn('calendario') },
-        { text: '🏆 Apri /prossimo', callback_data: encodeHelpBtn('prossimo') }
+        { text: '🎲 Apri Calendario', callback_data: encodeHelpBtn('calendario') },
+        { text: '🏆 Apri Prossimo', callback_data: encodeHelpBtn('prossimo') }
       ]
     },
 
@@ -84,7 +84,7 @@ function helpBlocks(): InputRichMessage['blocks'] {
         + '/scollegamento — scollega questa chat dal tuo profilo socio\n'
         + '/tessera — stato del tuo tesseramento'
     },
-    { type: 'buttons', buttons: [{ text: '🪪 Apri /tessera', callback_data: encodeHelpBtn('tessera') }] },
+    { type: 'buttons', buttons: [{ text: '🪪 Apri Tessera', callback_data: encodeHelpBtn('tessera') }] },
 
     { type: 'paragraph', text: { type: 'bold', text: '💬 Supporto' } },
     { type: 'paragraph', text: '/supporto — inoltra un messaggio allo staff' }
