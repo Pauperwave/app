@@ -2,7 +2,6 @@
 import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 import { Menu } from '@grammyjs/menu'
-import { FormattedString } from '@grammyjs/parse-mode'
 
 import { answerLoadError } from '../callbackErrors'
 import { createPerContextCache } from '../../perContextCache'
@@ -137,20 +136,20 @@ function cachedFetchRows(ctx: Context, scope: StandingsScope): Promise<Standings
 // pagination instead of showing everything at once.
 const PAGE_SIZE = 10
 
-function standingsMessage(
+function standingsMarkdown(
   scope: StandingsScope,
   rows: StandingsRow[],
   page: number
-): FormattedString {
-  const header = fmt`🏆 ${FormattedString.b(`Classifica ${scopeLabel(scope)}`)}`
-  if (!rows.length) return fmt`${header}\n\nNessun dato disponibile.`
+): string {
+  const header = `## 🏆 Classifica ${scopeLabel(scope)}`
+  if (!rows.length) return `${header}\n\nNessun dato disponibile.`
 
   const start = page * PAGE_SIZE
   const lines = rows
     .slice(start, start + PAGE_SIZE)
     .map((row, index) => `${start + index + 1}. ${row.playerName} — ${row.total} pt`)
 
-  return fmt`${header}\n\n${FormattedString.join(lines, '\n')}`
+  return `${header}\n\n${lines.join('\n')}`
 }
 
 function initialMessage(siteUrl: string): string {
@@ -207,7 +206,7 @@ const classificaMenu = new Menu<Context>('classifica-menu', {
     payload: raw
   }, async (ctx) => {
     try {
-      await ctx.editMessageText(initialMessage(useRuntimeConfig().public.siteUrl))
+      await ctx.editMessageText({ markdown: initialMessage(useRuntimeConfig().public.siteUrl) })
       await ctx.answerCallbackQuery()
     } catch {
       await answerLoadError(ctx)
@@ -219,8 +218,8 @@ async function showStandings(ctx: Context & { match: string }) {
   try {
     const { scope, page } = decodeStandingsPayload(ctx.match)
     const rows = await cachedFetchRows(ctx, scope)
-    const text = standingsMessage(scope, rows, page)
-    await ctx.editMessageText(text.text, { entities: text.entities, reply_markup: classificaMenu })
+    const markdown = standingsMarkdown(scope, rows, page)
+    await ctx.editMessageText({ markdown }, { reply_markup: classificaMenu })
     await ctx.answerCallbackQuery()
   } catch {
     await answerLoadError(ctx)
@@ -261,7 +260,8 @@ classificheMenu.register(classificaMenu)
 // see deepLinks.ts.
 function classificheCommandHandler(ctx: Context) {
   const siteUrl = useRuntimeConfig().public.siteUrl
-  return ctx.reply(initialMessage(siteUrl), { reply_markup: classificheMenu })
+  const other = { reply_markup: classificheMenu }
+  return ctx.replyWithRichMessage({ markdown: initialMessage(siteUrl) }, other)
 }
 
 registerDeepLink('classifiche', classificheCommandHandler)
