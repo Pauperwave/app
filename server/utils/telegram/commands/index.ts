@@ -30,7 +30,7 @@ const commands = new CommandGroup<Context>()
 // registerLinkingHandler stays last — its message:text catch-all must only
 // see messages no earlier command/prompt handler already claimed.
 export function registerCommands(bot: Bot) {
-  registerCoreCommands(commands)
+  registerCoreCommands(bot, commands)
   registerClassificheCommand(bot, commands)
   registerEventiCommand(bot, commands)
   registerCalendarioCommand(bot, commands)
