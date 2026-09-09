@@ -229,7 +229,8 @@ async function calendarioCommandHandler(ctx: Context) {
   try {
     const blocks = await calendarioBlocksFor(ctx, 0, ctx.chat.id)
     await ctx.replyWithRichMessage({ blocks }, { reply_markup: calendarioMenu })
-  } catch {
+  } catch (err) {
+    console.error('Failed to handle /calendario:', err)
     await ctx.replyWithRichMessage({
       markdown: '⚠️ Non sono riuscito a recuperare i tornei, riprova più tardi.'
     })
