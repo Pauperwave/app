@@ -40,7 +40,11 @@ async function notifySuperAdminsOfSupportRequest(
 }
 
 // Extracted so it can be reused verbatim by t.me/<bot>?start=supporto —
-// see deepLinks.ts.
+// see deepLinks.ts. NOT a Rich Message on purpose: a message sent via
+// sendRichMessage has no .text field (RichMessageMessage carries
+// .rich_message instead — see @grammyjs/types/message.d.ts), so
+// ctx.message.reply_to_message?.text below would never match SUPPORT_PROMPT
+// again and the whole force-reply correlation would silently break.
 async function supportoCommandHandler(ctx: Context) {
   await ctx.reply(SUPPORT_PROMPT, {
     reply_markup: {
@@ -64,9 +68,13 @@ export function registerSupportoCommand(bot: Bot, commands: CommandGroup<Context
 
     try {
       await notifySuperAdminsOfSupportRequest(ctx.chat.id, ctx.from?.username, ctx.message.text)
-      await ctx.reply('✅ Messaggio inoltrato allo staff, ti risponderanno appena possibile.')
+      await ctx.replyWithRichMessage({
+        markdown: '✅ Messaggio inoltrato allo staff, ti risponderanno appena possibile.'
+      })
     } catch {
-      await ctx.reply('⚠️ Non sono riuscito a inoltrare il messaggio, riprova più tardi.')
+      await ctx.replyWithRichMessage({
+        markdown: '⚠️ Non sono riuscito a inoltrare il messaggio, riprova più tardi.'
+      })
     }
   })
 }
