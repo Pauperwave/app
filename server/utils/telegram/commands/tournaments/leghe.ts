@@ -4,9 +4,8 @@ import { it } from 'date-fns/locale'
 import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 import { Menu } from '@grammyjs/menu'
-import { FormattedString } from '@grammyjs/parse-mode'
 
-import { statusIcon, stageLabel, tournamentLine, tournamentButtonLabel, personalIcon } from './line'
+import { statusIcon, stageLabel, tournamentButtonLabel, personalIcon } from './line'
 import { fetchRegistrationStatuses, fetchStageNumbers } from './queries'
 import type { RegistrationStatus } from './queries'
 import { torneoMenu, openTournamentDetail } from './detail'
@@ -96,9 +95,9 @@ function cachedFetchLeagueDetail(ctx: Context, leagueUuid: string): Promise<Leag
 // leagues[]'s own index stands in for the league's uuid in callback
 // payloads — a torneo button already carries the tournament's own uuid, no
 // room left in the 64-byte cap for a second full one.
-async function legheText(ctx: Context): Promise<FormattedString> {
+async function legheMarkdown(ctx: Context): Promise<string> {
   const leagues = await cachedFetchActiveLeagues(ctx)
-  if (!leagues.length) return new FormattedString('🏆 Nessuna lega attiva al momento.')
+  if (!leagues.length) return '🏆 Nessuna lega attiva al momento.'
 
   const leagueUuids = leagues.map(league => league.uuid)
   const supabase = publicSupabaseClient()
@@ -118,39 +117,37 @@ async function legheText(ctx: Context): Promise<FormattedString> {
     const end = formatDate(league.ends_at)
     const dateRange = start && end ? `${start} → ${end}` : start ? `dal ${start}` : 'data da definire'
 
-    const leagueLines: (FormattedString | string)[] = [fmt`🏆 ${FormattedString.b(league.name)}`]
+    const leagueLines = [`🏆 **${league.name}**`]
     if (total > 0) leagueLines.push(`📊 ${done}/${total} tappe`)
     leagueLines.push(`🗓️ ${dateRange}`)
-    return FormattedString.join(leagueLines, '\n')
+    return leagueLines.join('\n')
   })
 
-  return fmt`🏆 ${FormattedString.b('Leghe attive')}\n\n${FormattedString.join(blocks, '\n\n')}\n\n👇🏻 Tocca una lega per i tornei`
+  return `## 🏆 Leghe attive\n\n${blocks.join('\n\n')}`
 }
 
 // Exported so tournament/detail.ts's "back" button can rebuild this exact
 // list. Returns null for an out-of-range index (stale/tampered callback data).
-export async function legaTorneiText(
+export async function legaTorneiMarkdown(
   ctx: Context, index: number, _chatId: number
-): Promise<FormattedString | null> {
+): Promise<string | null> {
   const leagues = await cachedFetchActiveLeagues(ctx)
   const league = leagues[index]
   if (!league) return null
 
   const { tournaments, stageNumbers } = await cachedFetchLeagueDetail(ctx, league.uuid)
-  const header = fmt`🏆 ${FormattedString.b(league.name)}`
+  const header = `## 🏆 ${league.name}`
 
-  if (!tournaments.length) return fmt`${header}\n\nNessun torneo in programma per questa lega.`
+  if (!tournaments.length) return `${header}\n\nNessun torneo in programma per questa lega.`
 
   const lines = tournaments.map((tournament) => {
     const date = formatDate(tournament.starts_at) ?? 'data da definire'
     const stage = stageLabel(stageNumbers.get(tournament.uuid) ?? null)
     const dateLine = `${statusIcon(tournament.status)} ${date}${stage}`
-    const tournamentDetail = tournamentLine({
-      status: tournament.status, name: tournament.name, locationName: tournament.location?.name
-    })
-    return fmt`${dateLine}\n${tournamentDetail}`
+    const location = tournament.location?.name ? `\n📍 ${tournament.location.name}` : ''
+    return `${dateLine}\n${statusIcon(tournament.status)} ${tournament.name}${location}`
   })
-  return fmt`${header}\n\n${FormattedString.join(lines, '\n\n')}\n\n👇🏻 Tocca un torneo per i dettagli`
+  return `${header}\n\n${lines.join('\n\n')}`
 }
 
 async function fetchLegaTorneiButtons(ctx: Context, index: number, chatId: number) {
@@ -193,12 +190,12 @@ async function openLegaTornei(ctx: Context & { match: string }) {
 
   try {
     const index = Number(ctx.match)
-    const text = await legaTorneiText(ctx, index, chatId)
-    if (!text) {
+    const markdown = await legaTorneiMarkdown(ctx, index, chatId)
+    if (!markdown) {
       await ctx.answerCallbackQuery({ text: 'Lega non trovata', show_alert: true })
       return
     }
-    await ctx.editMessageText(text.text, { entities: text.entities, reply_markup: legheTorneiMenu })
+    await ctx.editMessageText({ markdown }, { reply_markup: legheTorneiMenu })
     await ctx.answerCallbackQuery()
   } catch {
     await answerLoadError(ctx)
@@ -240,8 +237,8 @@ export const legheTorneiMenu = new Menu<Context>('lt', {
     payload: String(index)
   }, async (ctx) => {
     try {
-      const text = await legheText(ctx)
-      await ctx.editMessageText(text.text, { entities: text.entities, reply_markup: legheMenu })
+      const markdown = await legheMarkdown(ctx)
+      await ctx.editMessageText({ markdown }, { reply_markup: legheMenu })
       await ctx.answerCallbackQuery()
     } catch {
       await answerLoadError(ctx)
@@ -256,10 +253,12 @@ registerMenu('lt', legheTorneiMenu)
 // deepLinks.ts.
 async function legheCommandHandler(ctx: Context) {
   try {
-    const text = await legheText(ctx)
-    await ctx.reply(text.text, { entities: text.entities, reply_markup: legheMenu })
+    const markdown = await legheMarkdown(ctx)
+    await ctx.replyWithRichMessage({ markdown }, { reply_markup: legheMenu })
   } catch {
-    await ctx.reply('⚠️ Non sono riuscito a recuperare le leghe, riprova più tardi.')
+    await ctx.replyWithRichMessage({
+      markdown: '⚠️ Non sono riuscito a recuperare le leghe, riprova più tardi.'
+    })
   }
 }
 
