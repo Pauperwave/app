@@ -14,6 +14,7 @@ import { registerMenu } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
 import { ICONS } from '../../icons'
 import { registerDeepLink } from '../../deepLinks'
+import { showThinkingDraft } from '../../thinkingDraft'
 
 interface MyTournamentRow {
   uuid: string
@@ -156,6 +157,7 @@ registerMenu('isc', iscrizioniMenu)
 // see deepLinks.ts. A "apri nel bot" button on the web app's own
 // registrations page is the intended entry point (2026-09-08).
 async function iscrizioniCommandHandler(ctx: Context) {
+  showThinkingDraft(ctx)
   try {
     const associateUuid = await requireLinkedAssociate(ctx)
     if (!associateUuid) return
