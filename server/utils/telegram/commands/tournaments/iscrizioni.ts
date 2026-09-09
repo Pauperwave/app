@@ -4,7 +4,6 @@ import { it } from 'date-fns/locale'
 import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 import { Menu } from '@grammyjs/menu'
-import { FormattedString } from '@grammyjs/parse-mode'
 
 import { formatButtonDate, stageLabel, tournamentButtonLabel } from './line'
 import { fetchStageNumbers, OPEN_TOURNAMENT_STATUSES } from './queries'
@@ -91,37 +90,37 @@ function registrationIcon(registrationStatus: string): string {
   return registrationStatus === 'checked_in' ? ICONS.registrationCheckedIn : ICONS.registrationRegistered
 }
 
-function mieiTorneiMessage(registrations: MyRegistration[]): FormattedString {
-  const header = fmt`🎟️ ${FormattedString.b('I tuoi tornei')}`
+function mieiTorneiMarkdown(registrations: MyRegistration[]): string {
+  const header = '## 🎟️ I tuoi tornei'
 
   if (!registrations.length) {
-    return fmt`${header}\n\nNon risulti iscritto a nessun torneo in programma.`
+    return `${header}\n\nNon risulti iscritto a nessun torneo in programma.`
   }
 
   const blocks = registrations.map(({ registrationStatus, tournament }) => {
     const date = formatTelegramDate(tournament.starts_at, 'EEE d MMM', { locale: it })
     const stage = stageLabel(tournament.stageNumber)
 
-    const tournamentLines: (FormattedString | string)[] = [
-      fmt`${registrationIcon(registrationStatus)} ${FormattedString.b(tournament.name)}${stage}`,
+    const tournamentLines = [
+      `${registrationIcon(registrationStatus)} **${tournament.name}**${stage}`,
       `🗓️ ${date}`
     ]
     if (tournament.location?.name) tournamentLines.push(`📍 ${tournament.location.name}`)
-    return FormattedString.join(tournamentLines, '\n')
+    return tournamentLines.join('\n')
   })
 
-  return fmt`${header}\n\n${FormattedString.join(blocks, '\n\n')}\n\n👇🏻 Tocca un torneo per i dettagli`
+  return `${header}\n\n${blocks.join('\n\n')}`
 }
 
 // Exported so tournament/detail.ts's "back" button can rebuild this view.
 // Falls back to "not linked" for the practically unreachable case of a
 // chat that unlinked mid-session.
-export async function iscrizioniText(ctx: Context, chatId: number): Promise<FormattedString> {
+export async function iscrizioniMarkdown(ctx: Context, chatId: number): Promise<string> {
   const associateUuid = await resolveAssociateUuidByChatId(chatId)
-  if (!associateUuid) return new FormattedString('Devi prima collegare il tuo account.')
+  if (!associateUuid) return 'Devi prima collegare il tuo account.'
 
   const registrations = await cachedFetchMyTournaments(ctx, associateUuid)
-  return mieiTorneiMessage(registrations)
+  return mieiTorneiMarkdown(registrations)
 }
 
 // autoAnswer: false — the "open tournament" buttons delegate to
@@ -161,10 +160,12 @@ async function iscrizioniCommandHandler(ctx: Context) {
     if (!associateUuid) return
 
     const registrations = await cachedFetchMyTournaments(ctx, associateUuid)
-    const message = mieiTorneiMessage(registrations)
-    await ctx.reply(message.text, { entities: message.entities, reply_markup: iscrizioniMenu })
+    const markdown = mieiTorneiMarkdown(registrations)
+    await ctx.replyWithRichMessage({ markdown }, { reply_markup: iscrizioniMenu })
   } catch {
-    await ctx.reply('⚠️ Non sono riuscito a recuperare i tuoi tornei, riprova più tardi.')
+    await ctx.replyWithRichMessage({
+      markdown: '⚠️ Non sono riuscito a recuperare i tuoi tornei, riprova più tardi.'
+    })
   }
 }
 
