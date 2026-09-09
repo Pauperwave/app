@@ -107,22 +107,31 @@ async function eventiText(ctx: Context): Promise<string> {
 // message as the text — see detail.ts's tournamentDetailBlocks for the
 // full reasoning (InputRichBlockPhoto lets editMessageText update image
 // + text on one message, instead of the old delete+resend-as-photo).
+//
+// One block per line, not a joined markdown string — a block's `text` is
+// structured RichText and is never markdown-parsed, so "**bold**"/
+// "[text](url)" show up literally instead of rendering (confirmed
+// 2026-09-09 from the actual bot output). See tournamentDetailBlocks's
+// own comment for the same reasoning.
 function eventDetailBlocks(event: EventRow): InputRichMessage['blocks'] {
   const date = event.starts_at
     ? formatTelegramDate(event.starts_at, 'EEEE d MMMM \'alle\' HH:mm', { locale: it })
     : 'Data da definire'
-  const lines = [`## 📅 ${event.name}`, `🗓️ ${date}`]
-
-  if (event.location?.name) {
-    const url = mapsUrl(event.location)
-    lines.push(url ? `📍 [${event.location.name}](${url})` : `📍 ${event.location.name}`)
-  }
-  if (event.organizer?.name) lines.push(`🏳️ Organizzatore: ${event.organizer.name}`)
 
   const blocks: InputRichMessage['blocks'] = []
   if (event.image_url) blocks.push({ type: 'photo', photo: { type: 'photo', media: event.image_url } })
-  // \n\n, not \n — see core.ts's HELP_TEXT comment on Rich Message markdown.
-  blocks.push({ type: 'paragraph', text: lines.join('\n\n') })
+  blocks.push({ type: 'heading', size: 3, text: `📅 ${event.name}` })
+  blocks.push({ type: 'paragraph', text: `🗓️ ${date}` })
+
+  if (event.location?.name) {
+    const url = mapsUrl(event.location)
+    const text = url
+      ? ['📍 ', { type: 'url' as const, text: event.location.name, url }]
+      : `📍 ${event.location.name}`
+    blocks.push({ type: 'paragraph', text })
+  }
+  if (event.organizer?.name) blocks.push({ type: 'paragraph', text: `🏳️ Organizzatore: ${event.organizer.name}` })
+
   return blocks
 }
 

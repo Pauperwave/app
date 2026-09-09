@@ -120,35 +120,49 @@ function cachedFetchRegistrationStatus(
 // editMessageText already supports editing text<->rich_message on one
 // message, so folding the photo into a block removes the old text/photo
 // message-type mismatch that forced a delete+recreate.
+//
+// One `paragraph` block per line, not a single block with a joined string —
+// a block's `text` is structured RichText, not a markdown string: it's
+// never parsed, so a literal "**bold**"/"[text](url)" shows up as-is
+// instead of rendering. Bold/links need real RichTextBold/RichTextUrl
+// nodes (confirmed 2026-09-09 from the actual bot output). Splitting into
+// one block per line also sidesteps the whole \n-vs-\n\n markdown-mode
+// question entirely — blocks space themselves apart on their own.
 function tournamentDetailBlocks(
   row: DatedTournamentRow, registration: RegistrationStatus
 ): InputRichMessage['blocks'] {
+  const blocks: InputRichMessage['blocks'] = []
+  if (row.image_url) blocks.push({ type: 'photo', photo: { type: 'photo', media: row.image_url } })
+
+  blocks.push({
+    type: 'paragraph',
+    text: [`${statusIcon(row.status)} `, { type: 'bold', text: row.name }, stageLabel(row.stageNumber)]
+  })
+
   const date = formatTournamentDateTime(row.starts_at)
   const endTime = row.ends_at ? ` – ${formatTelegramDate(row.ends_at, 'HH:mm')}` : ''
-  const lines: string[] = [
-    `${statusIcon(row.status)} **${row.name}**${stageLabel(row.stageNumber)}`,
-    `🗓️ ${date}${endTime}`
-  ]
+  blocks.push({ type: 'paragraph', text: `🗓️ ${date}${endTime}` })
 
   if (row.location?.name) {
     const url = mapsUrl(row.location)
-    lines.push(url ? `📍 [${row.location.name}](${url})` : `📍 ${row.location.name}`)
+    const text = url ? ['📍 ', { type: 'url' as const, text: row.location.name, url }] : `📍 ${row.location.name}`
+    blocks.push({ type: 'paragraph', text })
   }
-  if (row.organizer?.name) lines.push(`🏳️ Organizzatore: ${row.organizer.name}`)
+  if (row.organizer?.name) blocks.push({ type: 'paragraph', text: `🏳️ Organizzatore: ${row.organizer.name}` })
   if (row.contact_name) {
     const phone = row.contact_phone ? ` (${row.contact_phone})` : ''
-    lines.push(`☎️ Referente: ${row.contact_name}${phone}`)
+    blocks.push({ type: 'paragraph', text: `☎️ Referente: ${row.contact_name}${phone}` })
   }
-  if (row.entry_fee !== null) lines.push(`💶 Quota: ${row.entry_fee} €`)
-  if (row.prizes) lines.push(`🏆 Premi: ${row.prizes}`)
-  if (registration === 'registered') lines.push(`${ICONS.registrationRegistered} Sei iscritto a questo torneo.`)
-  if (registration === 'checked_in') lines.push(`${ICONS.registrationCheckedIn} Sei iscritto e hai già fatto il check-in.`)
-  if (row.description) lines.push(row.description)
+  if (row.entry_fee !== null) blocks.push({ type: 'paragraph', text: `💶 Quota: ${row.entry_fee} €` })
+  if (row.prizes) blocks.push({ type: 'paragraph', text: `🏆 Premi: ${row.prizes}` })
+  if (registration === 'registered') {
+    blocks.push({ type: 'paragraph', text: `${ICONS.registrationRegistered} Sei iscritto a questo torneo.` })
+  }
+  if (registration === 'checked_in') {
+    blocks.push({ type: 'paragraph', text: `${ICONS.registrationCheckedIn} Sei iscritto e hai già fatto il check-in.` })
+  }
+  if (row.description) blocks.push({ type: 'paragraph', text: row.description })
 
-  const blocks: InputRichMessage['blocks'] = []
-  if (row.image_url) blocks.push({ type: 'photo', photo: { type: 'photo', media: row.image_url } })
-  // \n\n, not \n — see core.ts's HELP_TEXT comment on Rich Message markdown.
-  blocks.push({ type: 'paragraph', text: lines.join('\n\n') })
   return blocks
 }
 
