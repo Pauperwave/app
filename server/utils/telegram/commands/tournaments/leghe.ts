@@ -14,6 +14,7 @@ import { answerLoadError, requireChatId } from '../callbackErrors'
 import { registerMenu } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
 import { registerDeepLink } from '../../deepLinks'
+import { showThinkingDraft } from '../../thinkingDraft'
 
 import { tournamentProgressByLeague } from '#shared/utils/leagues/tournamentProgressByLeague'
 import type { LeagueTournamentRow } from '#shared/utils/leagues/tournamentProgressByLeague'
@@ -255,6 +256,7 @@ registerMenu('lt', legheTorneiMenu)
 // Extracted so it can be reused verbatim by t.me/<bot>?start=leghe — see
 // deepLinks.ts.
 async function legheCommandHandler(ctx: Context) {
+  showThinkingDraft(ctx)
   try {
     const text = await legheText(ctx)
     await ctx.reply(text.text, { entities: text.entities, reply_markup: legheMenu })
