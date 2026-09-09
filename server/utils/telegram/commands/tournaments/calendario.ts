@@ -116,14 +116,15 @@ function calendarioMarkdown(
 
   if (!filtered.length) return `${header}\n\nNessun torneo in programma.`
 
-  // \n\n throughout, not \n — see core.ts's HELP_TEXT comment on Rich
-  // Message markdown.
+  // \n\n between distinct tournaments (or a day header and its first
+  // tournament); MD_BREAK within one tournament's own name+location so
+  // they stay visually grouped instead of reading as two separate entries.
   const days = groupByDay(filtered).map(({ day, rows: dayRows }) => {
     const dayHeader = `**${dayLabel(day)}**`
     const dayLines = dayRows.map((row) => {
       const icon = personalIcon(registrations.get(row.uuid) ?? null)
       const stage = stageLabel(row.stageNumber)
-      const location = row.location?.name ? `\n\n📍 ${row.location.name}` : ''
+      const location = row.location?.name ? `${MD_BREAK}📍 ${row.location.name}` : ''
       return `${icon} ${row.name}${stage}${location}`
     })
     return `${dayHeader}\n\n${dayLines.join('\n\n')}`

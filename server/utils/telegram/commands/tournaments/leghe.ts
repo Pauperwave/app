@@ -120,8 +120,7 @@ async function legheMarkdown(ctx: Context): Promise<string> {
     const leagueLines = [`🏆 **${league.name}**`]
     if (total > 0) leagueLines.push(`📊 ${done}/${total} tappe`)
     leagueLines.push(`🗓️ ${dateRange}`)
-    // \n\n, not \n — see core.ts's HELP_TEXT comment on Rich Message markdown.
-    return leagueLines.join('\n\n')
+    return leagueLines.join(MD_BREAK)
   })
 
   return `## 🏆 Leghe attive\n\n${blocks.join('\n\n')}`
@@ -145,9 +144,8 @@ export async function legaTorneiMarkdown(
     const date = formatDate(tournament.starts_at) ?? 'data da definire'
     const stage = stageLabel(stageNumbers.get(tournament.uuid) ?? null)
     const dateLine = `${statusIcon(tournament.status)} ${date}${stage}`
-    const location = tournament.location?.name ? `\n\n📍 ${tournament.location.name}` : ''
-    // \n\n, not \n — see core.ts's HELP_TEXT comment on Rich Message markdown.
-    return `${dateLine}\n\n${statusIcon(tournament.status)} ${tournament.name}${location}`
+    const location = tournament.location?.name ? `${MD_BREAK}📍 ${tournament.location.name}` : ''
+    return `${dateLine}${MD_BREAK}${statusIcon(tournament.status)} ${tournament.name}${location}`
   })
   return `${header}\n\n${lines.join('\n\n')}`
 }
