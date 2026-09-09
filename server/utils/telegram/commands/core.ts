@@ -5,36 +5,43 @@ import type { Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 import { resolveDeepLink } from '../deepLinks'
 
+// Rich Message markdown, not plain text — a single \n is a soft break
+// there (collapsed/ignored like standard Markdown), not a real line break
+// like it is in ctx.reply's plain-text mode. Every list line below needs
+// "- " (an actual markdown list item) to render on its own line; a bare
+// "\n"-joined line list would run together into one paragraph. Confirmed
+// 2026-09-09 — HELP_TEXT rendered as a single unbroken run of text in
+// production before this fix.
 const START_TEXT = 'Ciao! Sono il bot di Pauperwave 👋🏻\n\n'
   + 'Scrivimi la tua email da socio (quella con cui ti sei tesserato) per '
-  + 'collegare il tuo account e sbloccare i comandi personalizzati:\n'
-  + '/iscrizioni — i tornei a cui sei iscritto\n'
-  + '/tessera — stato del tuo tesseramento\n\n'
+  + 'collegare il tuo account e sbloccare i comandi personalizzati:\n\n'
+  + '- /iscrizioni — i tornei a cui sei iscritto\n'
+  + '- /tessera — stato del tuo tesseramento\n\n'
   + 'Usa /collegamento per verificare se questa chat è già collegata a un socio.\n\n'
   + 'Oppure usa subito /help per vedere quelli pubblici, funzionano già senza.'
 
 const HELP_TEXT = 'Comandi disponibili:\n\n'
-  + '⚙️ Generale\n'
-  + '/start — avvia il bot\n'
-  + '/help — mostra questo messaggio\n'
-  + '/status — mostra lo stato corrente del bot\n\n'
-  + '🏆 Classifiche\n'
-  + '/classifiche — classifiche per formato\n\n'
-  + '🎲 Tornei e leghe\n'
-  + '/eventi — prossimi eventi\n'
-  + '/calendario — prossimi tornei\n'
-  + '/leghe — leghe attive\n'
-  + '/prossimo — il prossimo torneo\n\n'
-  + '🎟️ Le mie iscrizioni\n'
-  + '/iscrizioni — i tornei a cui sei iscritto\n\n'
-  + '🏟️ Durante un torneo\n'
-  + '🚧 /tavolo — tavolo, avversario del turno e comandante (in lavorazione, dati di esempio)\n'
-  + '🚧 /risultato — posizione, uccisioni e voti di fine turno (in lavorazione, dati di esempio)\n\n'
-  + '👤 Account\n'
-  + '/collegamento — verifica se questa chat è collegata a un socio\n'
-  + '/tessera — stato del tuo tesseramento\n\n'
-  + '💬 Supporto\n'
-  + '/supporto — inoltra un messaggio allo staff'
+  + '**⚙️ Generale**\n\n'
+  + '- /start — avvia il bot\n'
+  + '- /help — mostra questo messaggio\n'
+  + '- /status — mostra lo stato corrente del bot\n\n'
+  + '**🏆 Classifiche**\n\n'
+  + '- /classifiche — classifiche per formato\n\n'
+  + '**🎲 Tornei e leghe**\n\n'
+  + '- /eventi — prossimi eventi\n'
+  + '- /calendario — prossimi tornei\n'
+  + '- /leghe — leghe attive\n'
+  + '- /prossimo — il prossimo torneo\n\n'
+  + '**🎟️ Le mie iscrizioni**\n\n'
+  + '- /iscrizioni — i tornei a cui sei iscritto\n\n'
+  + '**🏟️ Durante un torneo**\n\n'
+  + '- 🚧 /tavolo — tavolo, avversario del turno e comandante (in lavorazione, dati di esempio)\n'
+  + '- 🚧 /risultato — posizione, uccisioni e voti di fine turno (in lavorazione, dati di esempio)\n\n'
+  + '**👤 Account**\n\n'
+  + '- /collegamento — verifica se questa chat è collegata a un socio\n'
+  + '- /tessera — stato del tuo tesseramento\n\n'
+  + '**💬 Supporto**\n\n'
+  + '- /supporto — inoltra un messaggio allo staff'
 
 // Extracted so it can be reused verbatim by t.me/<bot>?start=help — see
 // deepLinks.ts.
@@ -51,13 +58,15 @@ function statusCommandHandler(ctx: Context) {
   const lines = ['🟢 Bot operativo.']
 
   if (gitCommitSha) {
-    lines.push('', `🏷️ ${gitCommitSha.slice(0, 7)}`)
+    lines.push(`🏷️ ${gitCommitSha.slice(0, 7)}`)
     if (gitCommitDate) {
       lines.push(`🗓️ ${formatTelegramDate(gitCommitDate, 'd MMMM yyyy \'alle\' HH:mm', { locale: it })}`)
     }
   }
 
-  return ctx.replyWithRichMessage({ markdown: lines.join('\n') })
+  // \n\n, not \n — see HELP_TEXT's own comment on why a single newline
+  // doesn't produce a line break in Rich Message markdown.
+  return ctx.replyWithRichMessage({ markdown: lines.join('\n\n') })
 }
 
 registerDeepLink('status', statusCommandHandler)

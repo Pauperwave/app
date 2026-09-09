@@ -16,7 +16,9 @@ const MOCK_TABLE = {
 }
 
 function tavoloMarkdown(): string {
-  const lines = MOCK_TABLE.opponents.map(name => `• ${name}`)
+  // "- " (a real markdown list item), not "• " — see core.ts's HELP_TEXT
+  // comment on why a plain bullet character still needs \n\n to break.
+  const lines = MOCK_TABLE.opponents.map(name => `- ${name}`)
   return `## 🪑 Tavolo ${MOCK_TABLE.number}\n\nGiochi con:\n${lines.join('\n')}`
 }
 
