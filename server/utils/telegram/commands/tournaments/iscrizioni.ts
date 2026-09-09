@@ -106,8 +106,7 @@ function mieiTorneiMarkdown(registrations: MyRegistration[]): string {
       `🗓️ ${date}`
     ]
     if (tournament.location?.name) tournamentLines.push(`📍 ${tournament.location.name}`)
-    // \n\n, not \n — see core.ts's HELP_TEXT comment on Rich Message markdown.
-    return tournamentLines.join('\n\n')
+    return tournamentLines.join(MD_BREAK)
   })
 
   return `${header}\n\n${blocks.join('\n\n')}`
