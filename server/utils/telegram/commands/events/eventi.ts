@@ -87,20 +87,22 @@ function eventLine(event: DatedEventRow): string {
   return `• ${date}: ${event.name}${location}`
 }
 
-function eventiMessage(events: DatedEventRow[]): FormattedString {
-  if (!events.length) return new FormattedString('📅 Nessun evento in programma al momento.')
+function eventiMarkdown(events: DatedEventRow[]): string {
+  if (!events.length) return '📅 Nessun evento in programma al momento.'
 
   const lines = events.map(eventLine)
-  return fmt`📅 ${FormattedString.b('Prossimi eventi')}\n\n${FormattedString.join(lines, '\n')}\n\n👇🏻 Tocca un evento per i dettagli`
+  return `## 📅 Prossimi eventi\n\n${lines.join('\n')}`
 }
 
 // Exported so eventoMenu's "back" button can rebuild this exact list when
 // returning from a detail page opened from here.
-async function eventiText(ctx: Context): Promise<FormattedString> {
-  return eventiMessage(await cachedFetchUpcomingEvents(ctx))
+async function eventiText(ctx: Context): Promise<string> {
+  return eventiMarkdown(await cachedFetchUpcomingEvents(ctx))
 }
 
-function eventDetailMessage(event: EventRow): FormattedString {
+// FormattedString, not markdown — still needed for the photo path's
+// caption (see openEventDetail), which isn't a Rich Message.
+function eventDetailCaption(event: EventRow): FormattedString {
   const date = event.starts_at
     ? formatTelegramDate(event.starts_at, 'EEEE d MMMM \'alle\' HH:mm', { locale: it })
     : 'Data da definire'
@@ -117,6 +119,21 @@ function eventDetailMessage(event: EventRow): FormattedString {
   if (event.organizer?.name) lines.push(`🏳️ Organizzatore: ${event.organizer.name}`)
 
   return FormattedString.join(lines, '\n')
+}
+
+function eventDetailMarkdown(event: EventRow): string {
+  const date = event.starts_at
+    ? formatTelegramDate(event.starts_at, 'EEEE d MMMM \'alle\' HH:mm', { locale: it })
+    : 'Data da definire'
+  const lines = [`## 📅 ${event.name}`, '', `🗓️ ${date}`]
+
+  if (event.location?.name) {
+    const url = mapsUrl(event.location)
+    lines.push(url ? `📍 [${event.location.name}](${url})` : `📍 ${event.location.name}`)
+  }
+  if (event.organizer?.name) lines.push(`🏳️ Organizzatore: ${event.organizer.name}`)
+
+  return lines.join('\n')
 }
 
 // autoAnswer: false — the "open event" buttons delegate to openEventDetail,
@@ -141,24 +158,20 @@ async function openEventDetail(ctx: Context & { match: string }) {
       await ctx.answerCallbackQuery({ text: 'Evento non trovato', show_alert: true })
       return
     }
-    const text = eventDetailMessage(event)
-
     if (event.image_url) {
       // Can't turn an existing text message into a photo one via
-      // editMessageText — replace it instead.
+      // editMessageText — replace it instead. Still the FormattedString
+      // path: replyWithPhoto's caption isn't a Rich Message.
       await ctx.deleteMessage().catch(() => {})
-      const capped = truncateForCaption(text)
+      const capped = truncateForCaption(eventDetailCaption(event))
       await ctx.replyWithPhoto(event.image_url, {
         caption: capped.caption,
         caption_entities: capped.caption_entities,
         reply_markup: eventoMenu
       })
     } else {
-      await ctx.editMessageText(text.text, {
-        entities: text.entities,
-        reply_markup: eventoMenu,
-        link_preview_options: { is_disabled: true }
-      })
+      const markdown = eventDetailMarkdown(event)
+      await ctx.editMessageText({ markdown }, { reply_markup: eventoMenu })
     }
     await ctx.answerCallbackQuery()
   } catch {
@@ -196,7 +209,7 @@ const eventoMenu = new Menu<Context>('evd', {
       await navigateBack(ctx, async () => ({
         payload: '',
         menu: eventiMenu,
-        text: await eventiText(ctx)
+        text: { markdown: await eventiText(ctx) }
       }))
       await ctx.answerCallbackQuery()
     } catch {
@@ -208,13 +221,9 @@ const eventoMenu = new Menu<Context>('evd', {
 // Extracted so it can be reused verbatim by t.me/<bot>?start=eventi — see
 // deepLinks.ts.
 async function eventiCommandHandler(ctx: Context) {
-  const message = await eventiText(ctx)
-    .catch(() => new FormattedString('⚠️ Non sono riuscito a recuperare gli eventi, riprova più tardi.'))
-  await ctx.reply(message.text, {
-    entities: message.entities,
-    reply_markup: eventiMenu,
-    link_preview_options: { is_disabled: true }
-  })
+  const markdown = await eventiText(ctx)
+    .catch(() => '⚠️ Non sono riuscito a recuperare gli eventi, riprova più tardi.')
+  await ctx.replyWithRichMessage({ markdown }, { reply_markup: eventiMenu })
 }
 
 registerDeepLink('eventi', eventiCommandHandler)
