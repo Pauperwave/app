@@ -2,8 +2,8 @@
 import { it } from 'date-fns/locale'
 
 import type { Bot, Context } from 'grammy'
+import type { InputRichMessage } from 'grammy/types'
 import type { CommandGroup } from '@grammyjs/commands'
-import { Menu } from '@grammyjs/menu'
 import { resolveDeepLink } from '../deepLinks'
 
 // Rich Message markdown, not plain text — a single \n is a soft break
@@ -21,51 +21,92 @@ const START_TEXT = 'Ciao! Sono il bot di Pauperwave 👋🏻\n\n'
   + 'Usa /collegamento per verificare se questa chat è già collegata a un socio.\n\n'
   + 'Oppure usa subito /help per vedere quelli pubblici, funzionano già senza.'
 
-const HELP_TEXT = 'Comandi disponibili:\n\n'
-  + '**⚙️ Generale**\n\n'
-  + '- /start — avvia il bot\n'
-  + '- /help — mostra questo messaggio\n'
-  + '- /status — mostra lo stato corrente del bot\n\n'
-  + '**🏆 Classifiche**\n\n'
-  + '- /classifiche — classifiche per formato\n\n'
-  + '**🎲 Tornei e leghe**\n\n'
-  + '- /eventi — prossimi eventi\n'
-  + '- /calendario — prossimi tornei\n'
-  + '- /leghe — leghe attive\n'
-  + '- /prossimo — il prossimo torneo\n\n'
-  + '**🎟️ Le mie iscrizioni**\n\n'
-  + '- /iscrizioni — i tornei a cui sei iscritto\n\n'
-  + '**🏟️ Durante un torneo**\n\n'
-  + '- 🚧 /tavolo — tavolo, avversario del turno e comandante (in lavorazione, dati di esempio)\n'
-  + '- 🚧 /risultato — posizione, uccisioni e voti di fine turno (in lavorazione, dati di esempio)\n\n'
-  + '**👤 Account**\n\n'
-  + '- /collegamento — verifica se questa chat è collegata a un socio\n'
-  + '- /scollegamento — scollega questa chat dal tuo profilo socio\n'
-  + '- /tessera — stato del tuo tesseramento\n\n'
-  + '**💬 Supporto**\n\n'
-  + '- /supporto — inoltra un messaggio allo staff'
+// Quick-launch buttons for a few of the most-used commands, embedded as
+// inline "buttons" blocks right after the category they belong to — same
+// "buttons near their own content" pattern as calendario.ts's per-tournament
+// button, not a Menu-managed reply_markup. Handled by a plain
+// bot.on('callback_query:data', ...) below (helpbtn: prefix), reusing each
+// command's own deep-link handler (deepLinks.ts) instead of a separate
+// import per button.
+const HELP_BTN_PREFIX = 'helpbtn:'
 
-// Shortcuts to a few of the most-used commands, so /help doubles as a
-// launcher instead of just a list to read and retype from. Reuses each
-// command's own deep-link handler (deepLinks.ts) instead of importing it
-// directly — same reasoning as the /start payload dispatch just below:
-// one registry, no per-button wiring to keep in sync. Static content, no
-// autoAnswer: false/onMenuOutdated: false override needed — Menu's default
-// auto-ack is exactly what a "just run the command" button needs.
-const helpMenu = new Menu<Context>('help')
-  .text('🎲 /calendario', ctx => resolveDeepLink('calendario')?.(ctx))
-  .row()
-  .text('🏆 /prossimo', ctx => resolveDeepLink('prossimo')?.(ctx))
-  .row()
-  .text('🪪 /tessera', ctx => resolveDeepLink('tessera')?.(ctx))
+function encodeHelpBtn(payload: string): string {
+  return `${HELP_BTN_PREFIX}${payload}`
+}
+
+// blocks, not markdown — a block's `text` is structured RichText, not
+// parsed markdown, so a plain "\n" is a literal line break here (unlike
+// markdown mode, where it's a soft break that gets collapsed — see
+// git history on this file for that whole saga). No "- " list marker
+// needed either, which is what broke Telegram's own tap-to-run bot_command
+// detection on "/command" mentions in the previous markdown version
+// (confirmed 2026-09-09).
+function helpBlocks(): InputRichMessage['blocks'] {
+  return [
+    { type: 'heading', size: 3, text: 'Comandi disponibili' },
+
+    { type: 'paragraph', text: { type: 'bold', text: '⚙️ Generale' } },
+    {
+      type: 'paragraph',
+      text: '/start — avvia il bot\n/help — mostra questo messaggio\n/status — mostra lo stato corrente del bot'
+    },
+
+    { type: 'paragraph', text: { type: 'bold', text: '🏆 Classifiche' } },
+    { type: 'paragraph', text: '/classifiche — classifiche per formato' },
+
+    { type: 'paragraph', text: { type: 'bold', text: '🎲 Tornei e leghe' } },
+    {
+      type: 'paragraph',
+      text: '/eventi — prossimi eventi\n/calendario — prossimi tornei\n/leghe — leghe attive\n/prossimo — il prossimo torneo'
+    },
+    {
+      type: 'buttons',
+      buttons: [
+        { text: '🎲 Apri /calendario', callback_data: encodeHelpBtn('calendario') },
+        { text: '🏆 Apri /prossimo', callback_data: encodeHelpBtn('prossimo') }
+      ]
+    },
+
+    { type: 'paragraph', text: { type: 'bold', text: '🎟️ Le mie iscrizioni' } },
+    { type: 'paragraph', text: '/iscrizioni — i tornei a cui sei iscritto' },
+
+    { type: 'paragraph', text: { type: 'bold', text: '🏟️ Durante un torneo' } },
+    {
+      type: 'paragraph',
+      text: '🚧 /tavolo — tavolo, avversario del turno e comandante (in lavorazione, dati di esempio)\n'
+        + '🚧 /risultato — posizione, uccisioni e voti di fine turno (in lavorazione, dati di esempio)'
+    },
+
+    { type: 'paragraph', text: { type: 'bold', text: '👤 Account' } },
+    {
+      type: 'paragraph',
+      text: '/collegamento — verifica se questa chat è collegata a un socio\n'
+        + '/scollegamento — scollega questa chat dal tuo profilo socio\n'
+        + '/tessera — stato del tuo tesseramento'
+    },
+    { type: 'buttons', buttons: [{ text: '🪪 Apri /tessera', callback_data: encodeHelpBtn('tessera') }] },
+
+    { type: 'paragraph', text: { type: 'bold', text: '💬 Supporto' } },
+    { type: 'paragraph', text: '/supporto — inoltra un messaggio allo staff' }
+  ]
+}
 
 // Extracted so it can be reused verbatim by t.me/<bot>?start=help — see
 // deepLinks.ts.
 function helpCommandHandler(ctx: Context) {
-  return ctx.replyWithRichMessage({ markdown: HELP_TEXT }, { reply_markup: helpMenu })
+  return ctx.replyWithRichMessage({ blocks: helpBlocks() })
 }
 
 registerDeepLink('help', helpCommandHandler)
+
+async function handleHelpButton(ctx: Context, next: () => Promise<void>) {
+  const data = ctx.callbackQuery?.data
+  if (!data?.startsWith(HELP_BTN_PREFIX)) return next()
+
+  const payload = data.slice(HELP_BTN_PREFIX.length)
+  await resolveDeepLink(payload)?.(ctx)
+  await ctx.answerCallbackQuery()
+}
 
 // Extracted so it can be reused verbatim by t.me/<bot>?start=status — see
 // deepLinks.ts.
@@ -88,7 +129,7 @@ function statusCommandHandler(ctx: Context) {
 registerDeepLink('status', statusCommandHandler)
 
 export function registerCoreCommands(bot: Bot, commands: CommandGroup<Context>) {
-  bot.use(helpMenu)
+  bot.on('callback_query:data', handleHelpButton)
 
   // Telegram delivers t.me/<bot>?start=<payload> as "/start <payload>" —
   // ctx.match is the payload itself. A recognized one (see deepLinks.ts,
