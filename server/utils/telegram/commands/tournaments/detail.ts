@@ -26,7 +26,7 @@ import { createPerContextCache } from '../../perContextCache'
 // Circular import (calendario/leghe/iscrizioni import torneoMenu, this
 // imports their text-renderers back) — safe since only used inside async
 // handlers. Menu objects themselves come via menuNav.ts's registry instead.
-import { calendarioText } from './calendario'
+import { calendarioMarkdownFor } from './calendario'
 import { legaTorneiMarkdown } from './leghe'
 import { iscrizioniMarkdown } from './iscrizioni'
 import { prossimoMarkdown } from './prossimo'
@@ -221,7 +221,8 @@ async function resolveBackTarget(
     return { payload: '', menu: getMenu('p'), text: { markdown: await prossimoMarkdown(ctx) } }
   }
   const offset = Number(origin.slice(1))
-  return { payload: String(offset), menu: getMenu('cal'), text: await calendarioText(ctx, offset, chatId) }
+  const markdown = await calendarioMarkdownFor(ctx, offset, chatId)
+  return { payload: String(offset), menu: getMenu('cal'), text: { markdown } }
 }
 
 async function handleCancelRegistration(
