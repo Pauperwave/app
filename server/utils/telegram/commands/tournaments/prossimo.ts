@@ -128,7 +128,8 @@ async function prossimoCommandHandler(ctx: Context) {
   try {
     const markdown = await prossimoMarkdown(ctx)
     await ctx.replyWithRichMessage({ markdown }, { reply_markup: prossimoMenu })
-  } catch {
+  } catch (err) {
+    console.error('Failed to handle /prossimo:', err)
     await ctx.replyWithRichMessage({
       markdown: '⚠️ Non sono riuscito a recuperare il prossimo torneo, riprova più tardi.'
     })
