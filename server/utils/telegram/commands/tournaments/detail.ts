@@ -144,12 +144,9 @@ function tournamentDetailBlocks(
   blocks.push({ type: 'paragraph', text: `🗓️ ${date}${endTime}` })
 
   const mapUrl = row.location ? mapsUrl(row.location) : null
-  if (row.location?.name) {
-    const text = mapUrl
-      ? ['📍 ', { type: 'url' as const, text: row.location.name, url: mapUrl }]
-      : `📍 ${row.location.name}`
-    blocks.push({ type: 'paragraph', text })
-  }
+  // Plain text, not a link — the "🧭 Direzioni" button just below already
+  // covers this exact URL, so a second inline hyperlink was redundant.
+  if (row.location?.name) blocks.push({ type: 'paragraph', text: `📍 ${row.location.name}` })
 
   // Direzioni/Aggiungi al calendario as inline URL buttons right next to
   // the date/location they relate to, not stacked in torneoMenu's own
