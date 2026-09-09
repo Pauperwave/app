@@ -1,8 +1,9 @@
 // server\utils\telegram\commands\core.ts
 import { it } from 'date-fns/locale'
 
-import type { Context } from 'grammy'
+import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
+import { Menu } from '@grammyjs/menu'
 import { resolveDeepLink } from '../deepLinks'
 
 // Rich Message markdown, not plain text — a single \n is a soft break
@@ -44,10 +45,24 @@ const HELP_TEXT = 'Comandi disponibili:\n\n'
   + '**💬 Supporto**\n\n'
   + '- /supporto — inoltra un messaggio allo staff'
 
+// Shortcuts to a few of the most-used commands, so /help doubles as a
+// launcher instead of just a list to read and retype from. Reuses each
+// command's own deep-link handler (deepLinks.ts) instead of importing it
+// directly — same reasoning as the /start payload dispatch just below:
+// one registry, no per-button wiring to keep in sync. Static content, no
+// autoAnswer: false/onMenuOutdated: false override needed — Menu's default
+// auto-ack is exactly what a "just run the command" button needs.
+const helpMenu = new Menu<Context>('help')
+  .text('🎲 /calendario', ctx => resolveDeepLink('calendario')?.(ctx))
+  .row()
+  .text('🏆 /prossimo', ctx => resolveDeepLink('prossimo')?.(ctx))
+  .row()
+  .text('🪪 /tessera', ctx => resolveDeepLink('tessera')?.(ctx))
+
 // Extracted so it can be reused verbatim by t.me/<bot>?start=help — see
 // deepLinks.ts.
 function helpCommandHandler(ctx: Context) {
-  return ctx.replyWithRichMessage({ markdown: HELP_TEXT })
+  return ctx.replyWithRichMessage({ markdown: HELP_TEXT }, { reply_markup: helpMenu })
 }
 
 registerDeepLink('help', helpCommandHandler)
@@ -72,7 +87,9 @@ function statusCommandHandler(ctx: Context) {
 
 registerDeepLink('status', statusCommandHandler)
 
-export function registerCoreCommands(commands: CommandGroup<Context>) {
+export function registerCoreCommands(bot: Bot, commands: CommandGroup<Context>) {
+  bot.use(helpMenu)
+
   // Telegram delivers t.me/<bot>?start=<payload> as "/start <payload>" —
   // ctx.match is the payload itself. A recognized one (see deepLinks.ts,
   // populated by each register*Command that opts in) takes over from the
