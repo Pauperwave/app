@@ -4,7 +4,6 @@ import type { CommandGroup } from '@grammyjs/commands'
 
 import { resolveAssociateUuidByChatId } from './linking'
 import { registerDeepLink } from '../../deepLinks'
-import { showThinkingDraft } from '../../thinkingDraft'
 
 interface AssociateIdentity {
   first_name: string | null
@@ -35,7 +34,6 @@ async function fetchAssociateIdentity(associateUuid: string): Promise<AssociateI
 async function collegamentoCommandHandler(ctx: Context) {
   if (!ctx.chat?.id) return
 
-  showThinkingDraft(ctx)
   try {
     const associateUuid = await resolveAssociateUuidByChatId(ctx.chat.id)
     if (!associateUuid) {
