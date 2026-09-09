@@ -4,7 +4,7 @@ import type { CommandGroup } from '@grammyjs/commands'
 import { Menu } from '@grammyjs/menu'
 import { FormattedString } from '@grammyjs/parse-mode'
 
-import { formatTournamentDateTime, tournamentHeader } from './line'
+import { formatTournamentDateTime, tournamentHeader, statusIcon, stageLabel } from './line'
 import { fetchStageNumbers, OPEN_TOURNAMENT_STATUSES } from './queries'
 import { torneoMenu, openTournamentDetail } from './detail'
 import { registerMenu } from '../../menuNav'
@@ -59,16 +59,47 @@ function nextTournamentMessage(
   return fmt`🎲 ${FormattedString.b('Prossimo torneo')}\n\n${header}\n🗓️ ${date}${location}\n\n👇🏻 Tocca per i dettagli`
 }
 
+// Markdown twin of nextTournamentMessage, for the Rich Message reply only
+// (see prossimoCommandHandler) — kept separate rather than reused, since
+// tournament/detail.ts's "back" button still needs the FormattedString
+// version above to edit a plain text message, not a rich one.
+function nextTournamentMarkdown(row: NextTournamentRow | null, stageNumber: number | null): string {
+  if (!row || !row.starts_at) return '🎲 Nessun torneo in programma al momento.'
+
+  const date = formatTournamentDateTime(row.starts_at)
+  const stage = stageLabel(stageNumber)
+  const location = row.location?.name ? `\n📍 ${row.location.name}` : ''
+
+  return `## 🎲 Prossimo torneo\n\n${statusIcon(row.status)} **${row.name}**${stage}\n🗓️ ${date}${location}\n\n👇🏻 Tocca per i dettagli`
+}
+
+async function fetchNextTournamentWithStage(
+  ctx: Context
+): Promise<{ row: NextTournamentRow | null, stageNumber: number | null }> {
+  const row = await cachedFetchNextTournament(ctx)
+  // Scoped to this tournament's own league (or none) — see queries.ts's
+  // own comment on why.
+  const stageNumbers = await fetchStageNumbers(row?.league_uuid ? [row.league_uuid] : [])
+  return { row, stageNumber: row ? stageNumbers.get(row.uuid) ?? null : null }
+}
+
 // Exported so tournament/detail.ts's shared "back" button can rebuild this
 // exact view when returning from a detail page opened from here — see
 // menuNav.ts's own comment on why this is a (safe, deferred-access)
 // circular import.
 export async function prossimoText(ctx: Context): Promise<FormattedString> {
-  const row = await cachedFetchNextTournament(ctx)
-  // Scoped to this tournament's own league (or none) — see queries.ts's
-  // own comment on why.
-  const stageNumbers = await fetchStageNumbers(row?.league_uuid ? [row.league_uuid] : [])
-  return nextTournamentMessage(row, row ? stageNumbers.get(row.uuid) ?? null : null)
+  const { row, stageNumber } = await fetchNextTournamentWithStage(ctx)
+  return nextTournamentMessage(row, stageNumber)
+}
+
+// Rich Message (markdown) twin of prossimoText — see tournament/detail.ts's
+// resolveBackTarget 'p' branch, the only other caller. Kept as a separate
+// exported function (not a flag on prossimoText) since the two return
+// different Telegram message shapes, not just different formatting of the
+// same one.
+export async function prossimoMarkdown(ctx: Context): Promise<string> {
+  const { row, stageNumber } = await fetchNextTournamentWithStage(ctx)
+  return nextTournamentMarkdown(row, stageNumber)
 }
 
 // Single-button "menu" — only ever shows the one next tournament, but still
@@ -96,9 +127,17 @@ registerMenu('p', prossimoMenu)
 // see deepLinks.ts.
 async function prossimoCommandHandler(ctx: Context) {
   showThinkingDraft(ctx)
-  const message = await prossimoText(ctx)
-    .catch(() => new FormattedString('⚠️ Non sono riuscito a recuperare il prossimo torneo, riprova più tardi.'))
-  await ctx.reply(message.text, { entities: message.entities, reply_markup: prossimoMenu })
+
+  try {
+    const markdown = await prossimoMarkdown(ctx)
+    // sendRichMessage (not a plain reply) is what lets the shimmer draft
+    // above resolve into this exact message in place — see thinkingDraft.ts.
+    await ctx.replyWithRichMessage({ markdown }, { reply_markup: prossimoMenu })
+  } catch {
+    await ctx.replyWithRichMessage({
+      markdown: '⚠️ Non sono riuscito a recuperare il prossimo torneo, riprova più tardi.'
+    })
+  }
 }
 
 registerDeepLink('prossimo', prossimoCommandHandler)
