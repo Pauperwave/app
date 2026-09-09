@@ -3,7 +3,6 @@ import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 import type { InlineQueryResultArticle } from 'grammy/types'
 import { Menu } from '@grammyjs/menu'
-import { FormattedString } from '@grammyjs/parse-mode'
 
 import { risultatoMenu, openRisultato } from './risultato'
 import { registerDeepLink } from '../../deepLinks'
@@ -16,9 +15,9 @@ const MOCK_TABLE = {
   opponents: ['Marco Rossi', 'Giulia Bianchi', 'Luca Verdi']
 }
 
-function tavoloMessage(): FormattedString {
+function tavoloMarkdown(): string {
   const lines = MOCK_TABLE.opponents.map(name => `• ${name}`)
-  return fmt`🪑 ${FormattedString.b(`Tavolo ${MOCK_TABLE.number}`)}\n\nGiochi con:\n${FormattedString.join(lines, '\n')}\n\n👇🏻 Imposta il tuo comandante per questo turno`
+  return `## 🪑 Tavolo ${MOCK_TABLE.number}\n\nGiochi con:\n${lines.join('\n')}`
 }
 
 // Scryfall requires a descriptive User-Agent — same convention as
@@ -79,9 +78,8 @@ const tavoloMenu = new Menu<Context>('tv', {
 // exact menu until the plugin supports it — it only helps today when an
 // existing update wants to push to a *different* chatId than its own.
 export async function pushTavoloMessage(ctx: Context, chatId: number) {
-  const text = tavoloMessage()
-  const other = { entities: text.entities, reply_markup: tavoloMenu }
-  await ctx.api.sendMessage(chatId, text.text, other)
+  const other = { reply_markup: tavoloMenu }
+  await ctx.api.sendRichMessage(chatId, { markdown: tavoloMarkdown() }, other)
 }
 
 // Extracted so it can be reused verbatim by t.me/<bot>?start=tavolo — see
@@ -143,6 +141,6 @@ export function registerTavoloCommand(bot: Bot, commands: CommandGroup<Context>)
     // MOCKUP — a real implementation would persist this against the
     // player's current pairing once tournament_pairings has a live-write
     // flow (see docs/architecture/telegram-bot.md).
-    await ctx.reply(`✅ Comandante impostato per questo turno: ${name}`)
+    await ctx.replyWithRichMessage({ markdown: `✅ Comandante impostato per questo turno: ${name}` })
   })
 }
