@@ -2,7 +2,7 @@
 import type { Bot, Context } from 'grammy'
 import { CommandGroup } from '@grammyjs/commands'
 
-import { registerCoreCommands } from './core'
+import { registerCoreCommands, registerHelpButtonHandler } from './core'
 import { registerClassificheCommand } from './standings/classifiche'
 import { registerEventiCommand } from './events/eventi'
 import { registerCalendarioCommand } from './tournaments/calendario'
@@ -46,6 +46,12 @@ export function registerCommands(bot: Bot) {
   bot.use(commands)
 
   registerLinkingHandler(bot)
+
+  // Registered after every register*Command above — see registerHelpButtonHandler's
+  // own comment on why it can't run before the bot.use(<menu>) calls those
+  // functions make (a /help button reusing a command whose reply needs its
+  // own menu would otherwise fail to send).
+  registerHelpButtonHandler(bot)
 
   // Registered last of all — every other handler above calls next() when a
   // message isn't theirs to handle, so anything still unclaimed here is

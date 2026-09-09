@@ -231,10 +231,8 @@ async function calendarioCommandHandler(ctx: Context) {
     await ctx.replyWithRichMessage({ blocks }, { reply_markup: calendarioMenu })
   } catch (err) {
     console.error('Failed to handle /calendario:', err)
-    // TEMP: error detail in-chat for live debugging — remove once diagnosed.
-    const detail = err instanceof Error ? err.message : String(err)
     await ctx.replyWithRichMessage({
-      markdown: `⚠️ Non sono riuscito a recuperare i tornei, riprova più tardi.\n\n\`${detail}\``
+      markdown: '⚠️ Non sono riuscito a recuperare i tornei, riprova più tardi.'
     })
   }
 }
