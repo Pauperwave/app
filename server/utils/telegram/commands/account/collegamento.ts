@@ -37,9 +37,9 @@ async function collegamentoCommandHandler(ctx: Context) {
   try {
     const associateUuid = await resolveAssociateUuidByChatId(ctx.chat.id)
     if (!associateUuid) {
-      await ctx.reply(
-        '❌ Questa chat non è collegata a nessun socio.\n\nScrivimi la tua email da socio per collegarla.'
-      )
+      await ctx.replyWithRichMessage({
+        markdown: '❌ Questa chat non è collegata a nessun socio.\n\nScrivimi la tua email da socio per collegarla.'
+      })
       return
     }
 
@@ -49,9 +49,11 @@ async function collegamentoCommandHandler(ctx: Context) {
 
     const lines = [`✅ Questa chat è collegata${name ? ` a ${name}` : ''}.`]
     if (email) lines.push(email)
-    await ctx.reply(lines.join('\n'))
+    await ctx.replyWithRichMessage({ markdown: lines.join('\n') })
   } catch {
-    await ctx.reply('⚠️ Non sono riuscito a verificare il collegamento, riprova più tardi.')
+    await ctx.replyWithRichMessage({
+      markdown: '⚠️ Non sono riuscito a verificare il collegamento, riprova più tardi.'
+    })
   }
 }
 
