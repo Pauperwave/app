@@ -39,7 +39,7 @@ const HELP_TEXT = 'Comandi disponibili:\n\n'
 // Extracted so it can be reused verbatim by t.me/<bot>?start=help — see
 // deepLinks.ts.
 function helpCommandHandler(ctx: Context) {
-  return ctx.reply(HELP_TEXT)
+  return ctx.replyWithRichMessage({ markdown: HELP_TEXT })
 }
 
 registerDeepLink('help', helpCommandHandler)
@@ -57,7 +57,7 @@ function statusCommandHandler(ctx: Context) {
     }
   }
 
-  return ctx.reply(lines.join('\n'))
+  return ctx.replyWithRichMessage({ markdown: lines.join('\n') })
 }
 
 registerDeepLink('status', statusCommandHandler)
@@ -73,7 +73,7 @@ export function registerCoreCommands(commands: CommandGroup<Context>) {
       await handler(ctx)
       return
     }
-    await ctx.reply(START_TEXT)
+    await ctx.replyWithRichMessage({ markdown: START_TEXT })
   })
 
   commands.command('help', 'Elenco comandi disponibili', helpCommandHandler)
