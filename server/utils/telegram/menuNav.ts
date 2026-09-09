@@ -1,5 +1,6 @@
 // server\utils\telegram\menuNav.ts
 import type { Context } from 'grammy'
+import type { InputRichMessage } from 'grammy/types'
 import type { Menu } from '@grammyjs/menu'
 
 // Named-menu registry — lets a shared detail menu's "back" button look up a
@@ -24,7 +25,10 @@ export function getMenu(id: string): Menu<Context> {
 export interface MenuNavTarget {
   payload: string
   menu: Menu<Context>
-  text: { markdown: string }
+  // markdown or blocks — both are valid InputRichMessage shapes on the same
+  // interface (not a discriminated union), so callers can hand back either
+  // without navigateBack needing to branch on which one it got.
+  text: InputRichMessage
 }
 
 // Shared "go back to an origin view with full state restored": swap

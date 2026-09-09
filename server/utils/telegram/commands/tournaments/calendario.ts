@@ -3,10 +3,11 @@ import { addMonths, endOfMonth, format, startOfMonth } from 'date-fns'
 import { it } from 'date-fns/locale'
 
 import type { Bot, Context } from 'grammy'
+import type { InputRichMessage } from 'grammy/types'
 import type { CommandGroup } from '@grammyjs/commands'
 import { Menu } from '@grammyjs/menu'
 
-import { formatButtonDate, stageLabel, tournamentButtonLabel, personalIcon } from './line'
+import { stageLabel, personalIcon } from './line'
 import { fetchRegistrationStatuses, fetchStageNumbers, OPEN_TOURNAMENT_STATUSES } from './queries'
 import type { RegistrationStatus } from './queries'
 import { SELECT_COLUMNS, torneoMenu, openTournamentDetail } from './detail'
@@ -98,12 +99,32 @@ function groupByDay(rows: DatedTournamentRow[]): DayGroup[] {
   return [...groups.values()].sort((a, b) => a.day.getTime() - b.day.getTime())
 }
 
+// A button right under each tournament, embedded as its own "buttons"
+// block in the rich message body — not a Menu-managed reply_markup — so
+// it sits next to the tournament it opens instead of in one long list at
+// the very end of the message. User request 2026-09-09 ("avere tutti
+// quei bottoni in fondo non è il massimo a livello di UX"). Handled by a
+// plain bot.on('callback_query:data', ...) below (see registerCalendarioCommand)
+// rather than @grammyjs/menu, which only manages reply_markup buttons.
+const CAL_OPEN_PREFIX = 'calopen:'
+
+function encodeCalOpenPayload(uuid: string, origin: string): string {
+  return `${CAL_OPEN_PREFIX}${uuid}:${origin}`
+}
+
+function decodeCalOpenPayload(data: string): { uuid: string, origin: string } {
+  const rest = data.slice(CAL_OPEN_PREFIX.length)
+  const separator = rest.indexOf(':')
+  return { uuid: rest.slice(0, separator), origin: rest.slice(separator + 1) }
+}
+
 // `month` is a "Rome wall-clock" Date (see nowInRome()) — start/end must
 // convert back to real instants before comparing against row.starts_at, or
 // the month boundary would be off by Italy's UTC offset again.
-function calendarioMarkdown(
-  rows: DatedTournamentRow[], month: Date, registrations: Map<string, RegistrationStatus>
-): string {
+function calendarioBlocks(
+  rows: DatedTournamentRow[], month: Date,
+  registrations: Map<string, RegistrationStatus>, monthOffset: number
+): InputRichMessage['blocks'] {
   const start = zonedRomeTimeToInstant(startOfMonth(month))
   const end = zonedRomeTimeToInstant(endOfMonth(month))
 
@@ -112,86 +133,65 @@ function calendarioMarkdown(
     return date >= start && date <= end
   })
 
-  const header = `## 🎲 Tornei — ${monthLabel(month)}`
+  const blocks: InputRichMessage['blocks'] = [
+    { type: 'heading', size: 3, text: `🎲 Tornei — ${monthLabel(month)}` }
+  ]
 
-  if (!filtered.length) return `${header}\n\nNessun torneo in programma.`
+  if (!filtered.length) {
+    blocks.push({ type: 'paragraph', text: 'Nessun torneo in programma.' })
+    return blocks
+  }
 
-  // \n\n between distinct tournaments (or a day header and its first
-  // tournament); MD_BREAK within one tournament's own name+location so
-  // they stay visually grouped instead of reading as two separate entries.
-  const days = groupByDay(filtered).map(({ day, rows: dayRows }) => {
-    const dayHeader = `**${dayLabel(day)}**`
-    const dayLines = dayRows.map((row) => {
+  const origin = `m${monthOffset}`
+  for (const { day, rows: dayRows } of groupByDay(filtered)) {
+    blocks.push({ type: 'paragraph', text: { type: 'bold', text: dayLabel(day) } })
+
+    for (const row of dayRows) {
       const icon = personalIcon(registrations.get(row.uuid) ?? null)
       const stage = stageLabel(row.stageNumber)
-      const location = row.location?.name ? `${MD_BREAK}📍 ${row.location.name}` : ''
-      return `${icon} ${row.name}${stage}${location}`
-    })
-    return `${dayHeader}\n\n${dayLines.join('\n\n')}`
-  })
+      blocks.push({ type: 'paragraph', text: `${icon} ${row.name}${stage}` })
+      if (row.location?.name) blocks.push({ type: 'paragraph', text: `📍 ${row.location.name}` })
 
-  return `${header}\n\n${days.join('\n\n')}`
+      blocks.push({
+        type: 'buttons',
+        buttons: [{ text: '👇🏻 Apri dettagli', callback_data: encodeCalOpenPayload(row.uuid, origin) }]
+      })
+    }
+  }
+
+  return blocks
 }
 
 // Exported so tournament/detail.ts's "back" button can rebuild this exact
 // month view — see menuNav.ts's comment on this circular import.
-export async function calendarioMarkdownFor(
+export async function calendarioBlocksFor(
   ctx: Context, monthOffset: number, chatId: number
-): Promise<string> {
+): Promise<InputRichMessage['blocks']> {
   const rows = await cachedFetchUpcomingTournaments(ctx)
   const month = addMonths(startOfMonth(nowInRome()), monthOffset)
   const registrations = await cachedFetchRegistrations(ctx, rows, chatId)
-  return calendarioMarkdown(rows, month, registrations)
+  return calendarioBlocks(rows, month, registrations, monthOffset)
 }
 
-// autoAnswer: false — "open tournament" buttons delegate to
-// openTournamentDetail, which answers the callback itself.
+// Only the month-nav buttons live here now — per-tournament "open detail"
+// buttons are inline rich-message "buttons" blocks (see calendarioBlocks),
+// not Menu-managed reply_markup, so they sit right under their own
+// tournament instead of in one long list at the end of the message.
 // onMenuOutdated: false — this re-fetches live data every render, so the
-// plugin's staleness fingerprint legitimately differs across renders;
-// every handler already re-validates itself (e.g. "Torneo non trovato").
+// plugin's staleness fingerprint legitimately differs across renders.
 export const calendarioMenu = new Menu<Context>('cal', {
   autoAnswer: false,
   onMenuOutdated: false
-}).dynamic(async (ctx, range) => {
+}).dynamic((ctx, range) => {
   // || not ?? — ctx.match is '' (not undefined) for a bare /calendario, and
   // ?? doesn't substitute on '' (harmless here since Number('') === 0, but
   // this exact gap did break a multi-field payload elsewhere — see
   // risultato.ts's own comment on why).
   const monthOffset = Number(ctx.match || '0')
-  const chatId = ctx.chat?.id
-  if (!chatId) return
-
-  const month = addMonths(startOfMonth(nowInRome()), monthOffset)
-  const start = zonedRomeTimeToInstant(startOfMonth(month))
-  const end = zonedRomeTimeToInstant(endOfMonth(month))
-
-  const rows = await cachedFetchUpcomingTournaments(ctx)
-  const filtered = rows.filter((row) => {
-    const date = new Date(row.starts_at)
-    return date >= start && date <= end
-  })
-  const registrations = await cachedFetchRegistrations(ctx, rows, chatId)
 
   range
     .text({ text: '◀ Mese prec.', payload: String(monthOffset - 1) }, monthNav)
     .text({ text: 'Mese succ. ▶', payload: String(monthOffset + 1) }, monthNav)
-
-  for (const row of filtered) {
-    const date = formatButtonDate(row.starts_at)
-    const icon = personalIcon(registrations.get(row.uuid) ?? null)
-    const label = tournamentButtonLabel(icon, date, row.stageNumber, row.name)
-    const origin = `m${monthOffset}`
-    // payload: String(monthOffset), not the `${uuid}:${origin}` pair the
-    // handler actually needs (it gets those from this closure instead) —
-    // this menu's own re-render (for the row/col lookup on press) decodes
-    // ctx.match as `Number(ctx.match || '0')` above. A composite payload
-    // would parse to NaN there, emptying `filtered` and crashing the
-    // plugin's row/col lookup with no visible error. Confirmed 2026-09-06.
-    range.row().text(
-      { text: label, payload: String(monthOffset) },
-      ctx => openTournamentDetail(ctx, row.uuid, origin)
-    )
-  }
 })
 
 async function monthNav(ctx: Context & { match: string }) {
@@ -200,12 +200,23 @@ async function monthNav(ctx: Context & { match: string }) {
 
   try {
     const monthOffset = Number(ctx.match)
-    const markdown = await calendarioMarkdownFor(ctx, monthOffset, chatId)
-    await ctx.editMessageText({ markdown }, { reply_markup: calendarioMenu })
+    const blocks = await calendarioBlocksFor(ctx, monthOffset, chatId)
+    await ctx.editMessageText({ blocks }, { reply_markup: calendarioMenu })
     await ctx.answerCallbackQuery()
   } catch {
     await answerLoadError(ctx)
   }
+}
+
+// Handles taps on calendarioBlocks's own per-tournament "buttons" blocks —
+// registered before bot.use(commands) (see registerCalendarioCommand),
+// distinct callback_data prefix so it only ever claims its own presses.
+async function handleCalendarioOpenButton(ctx: Context, next: () => Promise<void>) {
+  const data = ctx.callbackQuery?.data
+  if (!data?.startsWith(CAL_OPEN_PREFIX)) return next()
+
+  const { uuid, origin } = decodeCalOpenPayload(data)
+  await openTournamentDetail(ctx, uuid, origin)
 }
 
 registerMenu('cal', calendarioMenu)
@@ -216,8 +227,8 @@ async function calendarioCommandHandler(ctx: Context) {
   if (!ctx.chat?.id) return
 
   try {
-    const markdown = await calendarioMarkdownFor(ctx, 0, ctx.chat.id)
-    await ctx.replyWithRichMessage({ markdown }, { reply_markup: calendarioMenu })
+    const blocks = await calendarioBlocksFor(ctx, 0, ctx.chat.id)
+    await ctx.replyWithRichMessage({ blocks }, { reply_markup: calendarioMenu })
   } catch {
     await ctx.replyWithRichMessage({
       markdown: '⚠️ Non sono riuscito a recuperare i tornei, riprova più tardi.'
@@ -232,6 +243,11 @@ export function registerCalendarioCommand(bot: Bot, commands: CommandGroup<Conte
   // back, so accessing torneoMenu at top level would race the circular import.
   calendarioMenu.register(torneoMenu)
   bot.use(calendarioMenu)
+
+  // Registered before bot.use(commands) in commands/index.ts's ordering
+  // doesn't matter here — callback_query:data isn't dispatched by
+  // CommandGroup at all, so there's no load-bearing order versus it.
+  bot.on('callback_query:data', handleCalendarioOpenButton)
 
   commands.command('calendario', 'Prossimi tornei', calendarioCommandHandler)
 }
