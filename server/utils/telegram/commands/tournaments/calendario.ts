@@ -5,9 +5,8 @@ import { it } from 'date-fns/locale'
 import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 import { Menu } from '@grammyjs/menu'
-import { FormattedString } from '@grammyjs/parse-mode'
 
-import { formatButtonDate, stageLabel, tournamentButtonLabel, tournamentLine, personalIcon } from './line'
+import { formatButtonDate, stageLabel, tournamentButtonLabel, personalIcon } from './line'
 import { fetchRegistrationStatuses, fetchStageNumbers, OPEN_TOURNAMENT_STATUSES } from './queries'
 import type { RegistrationStatus } from './queries'
 import { SELECT_COLUMNS, torneoMenu, openTournamentDetail } from './detail'
@@ -102,9 +101,9 @@ function groupByDay(rows: DatedTournamentRow[]): DayGroup[] {
 // `month` is a "Rome wall-clock" Date (see nowInRome()) — start/end must
 // convert back to real instants before comparing against row.starts_at, or
 // the month boundary would be off by Italy's UTC offset again.
-function calendarioMessage(
+function calendarioMarkdown(
   rows: DatedTournamentRow[], month: Date, registrations: Map<string, RegistrationStatus>
-): FormattedString {
+): string {
   const start = zonedRomeTimeToInstant(startOfMonth(month))
   const end = zonedRomeTimeToInstant(endOfMonth(month))
 
@@ -113,34 +112,33 @@ function calendarioMessage(
     return date >= start && date <= end
   })
 
-  const header = fmt`🎲 ${FormattedString.b(`Tornei — ${monthLabel(month)}`)}`
+  const header = `## 🎲 Tornei — ${monthLabel(month)}`
 
-  if (!filtered.length) return fmt`${header}\n\nNessun torneo in programma.`
+  if (!filtered.length) return `${header}\n\nNessun torneo in programma.`
 
   const days = groupByDay(filtered).map(({ day, rows: dayRows }) => {
-    const dayHeader = FormattedString.b(dayLabel(day))
-    const dayLines = dayRows.map(row => tournamentLine({
-      status: row.status,
-      name: row.name,
-      stageSuffix: stageLabel(row.stageNumber),
-      locationName: row.location?.name,
-      icon: personalIcon(registrations.get(row.uuid) ?? null)
-    }))
-    return fmt`${dayHeader}\n${FormattedString.join(dayLines, '\n')}`
+    const dayHeader = `**${dayLabel(day)}**`
+    const dayLines = dayRows.map((row) => {
+      const icon = personalIcon(registrations.get(row.uuid) ?? null)
+      const stage = stageLabel(row.stageNumber)
+      const location = row.location?.name ? `\n📍 ${row.location.name}` : ''
+      return `${icon} ${row.name}${stage}${location}`
+    })
+    return `${dayHeader}\n${dayLines.join('\n')}`
   })
 
-  return fmt`${header}\n\n${FormattedString.join(days, '\n\n')}\n\n👇🏻 Tocca un torneo per i dettagli`
+  return `${header}\n\n${days.join('\n\n')}`
 }
 
 // Exported so tournament/detail.ts's "back" button can rebuild this exact
 // month view — see menuNav.ts's comment on this circular import.
-export async function calendarioText(
+export async function calendarioMarkdownFor(
   ctx: Context, monthOffset: number, chatId: number
-): Promise<FormattedString> {
+): Promise<string> {
   const rows = await cachedFetchUpcomingTournaments(ctx)
   const month = addMonths(startOfMonth(nowInRome()), monthOffset)
   const registrations = await cachedFetchRegistrations(ctx, rows, chatId)
-  return calendarioMessage(rows, month, registrations)
+  return calendarioMarkdown(rows, month, registrations)
 }
 
 // autoAnswer: false — "open tournament" buttons delegate to
@@ -199,8 +197,8 @@ async function monthNav(ctx: Context & { match: string }) {
 
   try {
     const monthOffset = Number(ctx.match)
-    const text = await calendarioText(ctx, monthOffset, chatId)
-    await ctx.editMessageText(text.text, { entities: text.entities, reply_markup: calendarioMenu })
+    const markdown = await calendarioMarkdownFor(ctx, monthOffset, chatId)
+    await ctx.editMessageText({ markdown }, { reply_markup: calendarioMenu })
     await ctx.answerCallbackQuery()
   } catch {
     await answerLoadError(ctx)
@@ -215,10 +213,12 @@ async function calendarioCommandHandler(ctx: Context) {
   if (!ctx.chat?.id) return
 
   try {
-    const text = await calendarioText(ctx, 0, ctx.chat.id)
-    await ctx.reply(text.text, { entities: text.entities, reply_markup: calendarioMenu })
+    const markdown = await calendarioMarkdownFor(ctx, 0, ctx.chat.id)
+    await ctx.replyWithRichMessage({ markdown }, { reply_markup: calendarioMenu })
   } catch {
-    await ctx.reply('⚠️ Non sono riuscito a recuperare i tornei, riprova più tardi.')
+    await ctx.replyWithRichMessage({
+      markdown: '⚠️ Non sono riuscito a recuperare i tornei, riprova più tardi.'
+    })
   }
 }
 
