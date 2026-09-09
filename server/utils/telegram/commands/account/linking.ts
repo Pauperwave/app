@@ -51,7 +51,7 @@ export async function requireLinkedAssociate(ctx: Context): Promise<string | nul
 
   const associateUuid = await resolveAssociateUuidByChatId(chatId)
   if (!associateUuid) {
-    await ctx.reply(NOT_LINKED_MESSAGE)
+    await ctx.replyWithRichMessage({ markdown: NOT_LINKED_MESSAGE })
     return null
   }
   return associateUuid
