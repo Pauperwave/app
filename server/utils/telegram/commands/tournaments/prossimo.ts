@@ -10,6 +10,7 @@ import { torneoMenu, openTournamentDetail } from './detail'
 import { registerMenu } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
 import { registerDeepLink } from '../../deepLinks'
+import { showThinkingDraft } from '../../thinkingDraft'
 
 interface NextTournamentRow {
   uuid: string
@@ -94,6 +95,7 @@ registerMenu('p', prossimoMenu)
 // Extracted so it can be reused verbatim by t.me/<bot>?start=prossimo —
 // see deepLinks.ts.
 async function prossimoCommandHandler(ctx: Context) {
+  showThinkingDraft(ctx)
   const message = await prossimoText(ctx)
     .catch(() => new FormattedString('⚠️ Non sono riuscito a recuperare il prossimo torneo, riprova più tardi.'))
   await ctx.reply(message.text, { entities: message.entities, reply_markup: prossimoMenu })
