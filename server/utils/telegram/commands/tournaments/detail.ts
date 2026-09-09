@@ -9,17 +9,17 @@
 // target menu a fresh payload — every button therefore carries
 // `${uuid}:${origin}` so both survive a full round trip.
 import type { Context } from 'grammy'
+import type { InputRichMessage } from 'grammy/types'
 import { Menu } from '@grammyjs/menu'
 import type { MenuFlavor } from '@grammyjs/menu'
-import { FormattedString } from '@grammyjs/parse-mode'
 
-import { formatTournamentDateTime, tournamentHeader, statusIcon, stageLabel } from './line'
+import { formatTournamentDateTime, statusIcon, stageLabel } from './line'
 import { fetchRegistrationStatus, fetchStageNumbers } from './queries'
 import type { RegistrationStatus } from './queries'
 import { NOT_LINKED_MESSAGE } from '../account/linking'
 import { answerLoadError, requireChatId } from '../callbackErrors'
 import { ICONS } from '../../icons'
-import { mapsUrl, googleCalendarUrl, truncateForCaption } from '../events/eventLinks'
+import { mapsUrl, googleCalendarUrl } from '../events/eventLinks'
 import { navigateBack, getMenu } from '../../menuNav'
 import type { MenuNavTarget } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
@@ -113,42 +113,16 @@ function cachedFetchRegistrationStatus(
   return memoize(ctx, 'registration', () => fetchRegistrationStatus(uuid, associateUuid))
 }
 
-function tournamentDetailMessage(
+// A photo block (when the tournament has one) lives inside the same rich
+// message as the text — not a separate replyWithPhoto — so the whole view,
+// image included, can be edited in place instead of deleted and resent.
+// Confirmed 2026-09-09: InputRichBlockPhoto exists specifically for this;
+// editMessageText already supports editing text<->rich_message on one
+// message, so folding the photo into a block removes the old text/photo
+// message-type mismatch that forced a delete+recreate.
+function tournamentDetailBlocks(
   row: DatedTournamentRow, registration: RegistrationStatus
-): FormattedString {
-  const date = formatTournamentDateTime(row.starts_at)
-  const endTime = row.ends_at ? ` – ${formatTelegramDate(row.ends_at, 'HH:mm')}` : ''
-  const lines: (FormattedString | string)[] = [
-    tournamentHeader(row.status, row.name, row.stageNumber),
-    '',
-    `🗓️ ${date}${endTime}`
-  ]
-
-  if (row.location?.name) {
-    const url = mapsUrl(row.location)
-    lines.push(url ? fmt`📍 ${FormattedString.link(row.location.name, url)}` : `📍 ${row.location.name}`)
-  }
-  if (row.organizer?.name) lines.push(`🏳️ Organizzatore: ${row.organizer.name}`)
-  if (row.contact_name) {
-    const phone = row.contact_phone ? ` (${row.contact_phone})` : ''
-    lines.push(`☎️ Referente: ${row.contact_name}${phone}`)
-  }
-  if (row.entry_fee !== null) lines.push(`💶 Quota: ${row.entry_fee} €`)
-  if (row.prizes) lines.push(`🏆 Premi: ${row.prizes}`)
-  if (registration === 'registered') lines.push('', `${ICONS.registrationRegistered} Sei iscritto a questo torneo.`)
-  if (registration === 'checked_in') lines.push('', `${ICONS.registrationCheckedIn} Sei iscritto e hai già fatto il check-in.`)
-  if (row.description) lines.push('', row.description)
-
-  return FormattedString.join(lines, '\n')
-}
-
-// Markdown twin of tournamentDetailMessage, for openTournamentDetail's own
-// non-photo edit (see below) — the photo path still needs the
-// FormattedString version above (truncateForCaption works on entities, not
-// markdown source, and replyWithPhoto's caption isn't a Rich Message).
-function tournamentDetailMarkdown(
-  row: DatedTournamentRow, registration: RegistrationStatus
-): string {
+): InputRichMessage['blocks'] {
   const date = formatTournamentDateTime(row.starts_at)
   const endTime = row.ends_at ? ` – ${formatTelegramDate(row.ends_at, 'HH:mm')}` : ''
   const lines: string[] = [
@@ -171,8 +145,11 @@ function tournamentDetailMarkdown(
   if (registration === 'checked_in') lines.push(`${ICONS.registrationCheckedIn} Sei iscritto e hai già fatto il check-in.`)
   if (row.description) lines.push(row.description)
 
+  const blocks: InputRichMessage['blocks'] = []
+  if (row.image_url) blocks.push({ type: 'photo', photo: { type: 'photo', media: row.image_url } })
   // \n\n, not \n — see core.ts's HELP_TEXT comment on Rich Message markdown.
-  return lines.join('\n\n')
+  blocks.push({ type: 'paragraph', text: lines.join('\n\n') })
+  return blocks
 }
 
 // Shop organizers (Magman etc.) show up for schedule visibility, but
@@ -377,22 +354,8 @@ export async function openTournamentDetail(ctx: Context, uuid: string, origin: s
       : null
     ctx.match = encodeTorneoPayload(uuid, origin)
 
-    if (tournament.image_url) {
-      // Can't turn an existing text message into a photo one via
-      // editMessageText — replace it instead. Still the FormattedString
-      // path: replyWithPhoto's caption isn't a Rich Message.
-      const text = tournamentDetailMessage(tournament, registration)
-      await ctx.deleteMessage().catch(() => {})
-      const capped = truncateForCaption(text)
-      await ctx.replyWithPhoto(tournament.image_url, {
-        caption: capped.caption,
-        caption_entities: capped.caption_entities,
-        reply_markup: torneoMenu
-      })
-    } else {
-      const markdown = tournamentDetailMarkdown(tournament, registration)
-      await ctx.editMessageText({ markdown }, { reply_markup: torneoMenu })
-    }
+    const blocks = tournamentDetailBlocks(tournament, registration)
+    await ctx.editMessageText({ blocks }, { reply_markup: torneoMenu })
     await ctx.answerCallbackQuery()
   } catch {
     await answerLoadError(ctx)

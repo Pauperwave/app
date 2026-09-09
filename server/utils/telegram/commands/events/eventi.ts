@@ -2,12 +2,12 @@
 import { it } from 'date-fns/locale'
 
 import type { Bot, Context } from 'grammy'
+import type { InputRichMessage } from 'grammy/types'
 import type { CommandGroup } from '@grammyjs/commands'
 import { Menu } from '@grammyjs/menu'
-import { FormattedString } from '@grammyjs/parse-mode'
 
 import { answerLoadError } from '../callbackErrors'
-import { mapsUrl, googleCalendarUrl, truncateForCaption } from './eventLinks'
+import { mapsUrl, googleCalendarUrl } from './eventLinks'
 import type { MapsAddress } from './eventLinks'
 import { navigateBack } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
@@ -103,28 +103,11 @@ async function eventiText(ctx: Context): Promise<string> {
   return eventiMarkdown(await cachedFetchUpcomingEvents(ctx))
 }
 
-// FormattedString, not markdown — still needed for the photo path's
-// caption (see openEventDetail), which isn't a Rich Message.
-function eventDetailCaption(event: EventRow): FormattedString {
-  const date = event.starts_at
-    ? formatTelegramDate(event.starts_at, 'EEEE d MMMM \'alle\' HH:mm', { locale: it })
-    : 'Data da definire'
-  const lines: (FormattedString | string)[] = [
-    fmt`📅 ${FormattedString.b(event.name)}`,
-    '',
-    `🗓️ ${date}`
-  ]
-
-  if (event.location?.name) {
-    const url = mapsUrl(event.location)
-    lines.push(url ? fmt`📍 ${FormattedString.link(event.location.name, url)}` : `📍 ${event.location.name}`)
-  }
-  if (event.organizer?.name) lines.push(`🏳️ Organizzatore: ${event.organizer.name}`)
-
-  return FormattedString.join(lines, '\n')
-}
-
-function eventDetailMarkdown(event: EventRow): string {
+// A photo block (when the event has one) lives inside the same rich
+// message as the text — see detail.ts's tournamentDetailBlocks for the
+// full reasoning (InputRichBlockPhoto lets editMessageText update image
+// + text on one message, instead of the old delete+resend-as-photo).
+function eventDetailBlocks(event: EventRow): InputRichMessage['blocks'] {
   const date = event.starts_at
     ? formatTelegramDate(event.starts_at, 'EEEE d MMMM \'alle\' HH:mm', { locale: it })
     : 'Data da definire'
@@ -136,8 +119,11 @@ function eventDetailMarkdown(event: EventRow): string {
   }
   if (event.organizer?.name) lines.push(`🏳️ Organizzatore: ${event.organizer.name}`)
 
+  const blocks: InputRichMessage['blocks'] = []
+  if (event.image_url) blocks.push({ type: 'photo', photo: { type: 'photo', media: event.image_url } })
   // \n\n, not \n — see core.ts's HELP_TEXT comment on Rich Message markdown.
-  return lines.join('\n\n')
+  blocks.push({ type: 'paragraph', text: lines.join('\n\n') })
+  return blocks
 }
 
 // autoAnswer: false — the "open event" buttons delegate to openEventDetail,
@@ -162,21 +148,8 @@ async function openEventDetail(ctx: Context & { match: string }) {
       await ctx.answerCallbackQuery({ text: 'Evento non trovato', show_alert: true })
       return
     }
-    if (event.image_url) {
-      // Can't turn an existing text message into a photo one via
-      // editMessageText — replace it instead. Still the FormattedString
-      // path: replyWithPhoto's caption isn't a Rich Message.
-      await ctx.deleteMessage().catch(() => {})
-      const capped = truncateForCaption(eventDetailCaption(event))
-      await ctx.replyWithPhoto(event.image_url, {
-        caption: capped.caption,
-        caption_entities: capped.caption_entities,
-        reply_markup: eventoMenu
-      })
-    } else {
-      const markdown = eventDetailMarkdown(event)
-      await ctx.editMessageText({ markdown }, { reply_markup: eventoMenu })
-    }
+    const blocks = eventDetailBlocks(event)
+    await ctx.editMessageText({ blocks }, { reply_markup: eventoMenu })
     await ctx.answerCallbackQuery()
   } catch {
     await answerLoadError(ctx)

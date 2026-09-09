@@ -1,8 +1,7 @@
 // server\utils\telegram\commands\events\eventLinks.ts
-import type { FormattedString } from '@grammyjs/parse-mode'
 
 // Shared between tournament/detail.ts and eventi.ts — both build the same
-// "maps link + Google Calendar link + capped photo caption" trio.
+// "maps link + Google Calendar link" pair.
 
 export interface MapsAddress {
   address: string | null
@@ -49,13 +48,4 @@ export function googleCalendarUrl(input: CalendarEventInput): string {
   if (input.description) params.set('details', input.description)
 
   return `https://www.google.com/calendar/render?${params.toString()}`
-}
-
-// Telegram photo captions cap at 1024 chars (vs. 4096 for text messages).
-// .slice() keeps entities consistent with the truncated text.
-const CAPTION_LIMIT = 1024
-
-export function truncateForCaption(text: FormattedString): FormattedString {
-  if (text.text.length <= CAPTION_LIMIT) return text
-  return text.slice(0, CAPTION_LIMIT - 1).plain('…')
 }
