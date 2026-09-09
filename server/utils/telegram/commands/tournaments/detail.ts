@@ -13,7 +13,7 @@ import { Menu } from '@grammyjs/menu'
 import type { MenuFlavor } from '@grammyjs/menu'
 import { FormattedString } from '@grammyjs/parse-mode'
 
-import { formatTournamentDateTime, tournamentHeader } from './line'
+import { formatTournamentDateTime, tournamentHeader, statusIcon, stageLabel } from './line'
 import { fetchRegistrationStatus, fetchStageNumbers } from './queries'
 import type { RegistrationStatus } from './queries'
 import { NOT_LINKED_MESSAGE } from '../account/linking'
@@ -21,6 +21,7 @@ import { answerLoadError, requireChatId } from '../callbackErrors'
 import { ICONS } from '../../icons'
 import { mapsUrl, googleCalendarUrl, truncateForCaption } from '../events/eventLinks'
 import { navigateBack, getMenu } from '../../menuNav'
+import type { MenuNavTarget } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
 // Circular import (calendario/leghe/iscrizioni import torneoMenu, this
 // imports their text-renderers back) — safe since only used inside async
@@ -28,7 +29,7 @@ import { createPerContextCache } from '../../perContextCache'
 import { calendarioText } from './calendario'
 import { legaTorneiText } from './leghe'
 import { iscrizioniText } from './iscrizioni'
-import { prossimoText } from './prossimo'
+import { prossimoMarkdown } from './prossimo'
 
 export interface LocationRow {
   name: string | null
@@ -141,6 +142,39 @@ function tournamentDetailMessage(
   return FormattedString.join(lines, '\n')
 }
 
+// Markdown twin of tournamentDetailMessage, for openTournamentDetail's own
+// non-photo edit (see below) — the photo path still needs the
+// FormattedString version above (truncateForCaption works on entities, not
+// markdown source, and replyWithPhoto's caption isn't a Rich Message).
+function tournamentDetailMarkdown(
+  row: DatedTournamentRow, registration: RegistrationStatus
+): string {
+  const date = formatTournamentDateTime(row.starts_at)
+  const endTime = row.ends_at ? ` – ${formatTelegramDate(row.ends_at, 'HH:mm')}` : ''
+  const lines: string[] = [
+    `${statusIcon(row.status)} **${row.name}**${stageLabel(row.stageNumber)}`,
+    '',
+    `🗓️ ${date}${endTime}`
+  ]
+
+  if (row.location?.name) {
+    const url = mapsUrl(row.location)
+    lines.push(url ? `📍 [${row.location.name}](${url})` : `📍 ${row.location.name}`)
+  }
+  if (row.organizer?.name) lines.push(`🏳️ Organizzatore: ${row.organizer.name}`)
+  if (row.contact_name) {
+    const phone = row.contact_phone ? ` (${row.contact_phone})` : ''
+    lines.push(`☎️ Referente: ${row.contact_name}${phone}`)
+  }
+  if (row.entry_fee !== null) lines.push(`💶 Quota: ${row.entry_fee} €`)
+  if (row.prizes) lines.push(`🏆 Premi: ${row.prizes}`)
+  if (registration === 'registered') lines.push('', `${ICONS.registrationRegistered} Sei iscritto a questo torneo.`)
+  if (registration === 'checked_in') lines.push('', `${ICONS.registrationCheckedIn} Sei iscritto e hai già fatto il check-in.`)
+  if (row.description) lines.push('', row.description)
+
+  return lines.join('\n')
+}
+
 // Shop organizers (Magman etc.) show up for schedule visibility, but
 // registration is their own business — Iscriviti/Annulla/check-in only
 // ever manages tournament_registrations for the club's own tournaments.
@@ -174,7 +208,7 @@ function backLabel(origin: string): string {
 // (getMenu), not a direct import — see that file's own comment for why.
 async function resolveBackTarget(
   ctx: Context, origin: string, chatId: number
-): Promise<{ payload: string, menu: Menu<Context>, text: FormattedString }> {
+): Promise<MenuNavTarget> {
   if (origin.startsWith('l')) {
     const index = Number(origin.slice(1))
     const text = await legaTorneiText(ctx, index, chatId) ?? new FormattedString('🏆 Lega non trovata.')
@@ -184,7 +218,7 @@ async function resolveBackTarget(
     return { payload: '', menu: getMenu('isc'), text: await iscrizioniText(ctx, chatId) }
   }
   if (origin === 'p') {
-    return { payload: '', menu: getMenu('p'), text: await prossimoText(ctx) }
+    return { payload: '', menu: getMenu('p'), text: { markdown: await prossimoMarkdown(ctx) } }
   }
   const offset = Number(origin.slice(1))
   return { payload: String(offset), menu: getMenu('cal'), text: await calendarioText(ctx, offset, chatId) }
@@ -340,12 +374,13 @@ export async function openTournamentDetail(ctx: Context, uuid: string, origin: s
     const registration = associateUuid
       ? await cachedFetchRegistrationStatus(ctx, uuid, associateUuid)
       : null
-    const text = tournamentDetailMessage(tournament, registration)
     ctx.match = encodeTorneoPayload(uuid, origin)
 
     if (tournament.image_url) {
       // Can't turn an existing text message into a photo one via
-      // editMessageText — replace it instead.
+      // editMessageText — replace it instead. Still the FormattedString
+      // path: replyWithPhoto's caption isn't a Rich Message.
+      const text = tournamentDetailMessage(tournament, registration)
       await ctx.deleteMessage().catch(() => {})
       const capped = truncateForCaption(text)
       await ctx.replyWithPhoto(tournament.image_url, {
@@ -354,11 +389,8 @@ export async function openTournamentDetail(ctx: Context, uuid: string, origin: s
         reply_markup: torneoMenu
       })
     } else {
-      await ctx.editMessageText(text.text, {
-        entities: text.entities,
-        reply_markup: torneoMenu,
-        link_preview_options: { is_disabled: true }
-      })
+      const markdown = tournamentDetailMarkdown(tournament, registration)
+      await ctx.editMessageText({ markdown }, { reply_markup: torneoMenu })
     }
     await ctx.answerCallbackQuery()
   } catch {

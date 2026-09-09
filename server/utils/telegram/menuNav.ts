@@ -1,7 +1,7 @@
 // server\utils\telegram\menuNav.ts
 import type { Context } from 'grammy'
 import type { Menu } from '@grammyjs/menu'
-import type { FormattedString } from '@grammyjs/parse-mode'
+import { FormattedString } from '@grammyjs/parse-mode'
 
 // Named-menu registry — lets a shared detail menu's "back" button look up a
 // list-menu instance by id without importing it directly, breaking the
@@ -22,10 +22,14 @@ export function getMenu(id: string): Menu<Context> {
   return menu
 }
 
+// A back target's content is either a plain FormattedString (text+entities)
+// or Rich Message markdown — origins that have been converted to
+// sendRichMessage (see tournament/detail.ts's 'p' branch) hand back the
+// latter, everyone else still hands back the former.
 export interface MenuNavTarget {
   payload: string
   menu: Menu<Context>
-  text: FormattedString
+  text: FormattedString | { markdown: string }
 }
 
 // Shared "go back to an origin view with full state restored": swap
@@ -37,15 +41,22 @@ export async function navigateBack(
 ) {
   const target = await resolveTarget()
   ctx.match = target.payload
+  const { text } = target
 
   if (ctx.callbackQuery?.message && 'photo' in ctx.callbackQuery.message) {
     await ctx.deleteMessage().catch(() => {})
-    await ctx.reply(target.text.text, { entities: target.text.entities, reply_markup: target.menu })
-  } else {
-    await ctx.editMessageText(target.text.text, {
-      entities: target.text.entities,
+    if (text instanceof FormattedString) {
+      await ctx.reply(text.text, { entities: text.entities, reply_markup: target.menu })
+    } else {
+      await ctx.replyWithRichMessage(text, { reply_markup: target.menu })
+    }
+  } else if (text instanceof FormattedString) {
+    await ctx.editMessageText(text.text, {
+      entities: text.entities,
       reply_markup: target.menu,
       link_preview_options: { is_disabled: true }
     })
+  } else {
+    await ctx.editMessageText(text, { reply_markup: target.menu })
   }
 }
