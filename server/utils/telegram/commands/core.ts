@@ -128,9 +128,22 @@ function statusCommandHandler(ctx: Context) {
 
 registerDeepLink('status', statusCommandHandler)
 
-export function registerCoreCommands(bot: Bot, commands: CommandGroup<Context>) {
+// Registered separately from registerCoreCommands, and called last of all
+// (see commands/index.ts) — @grammyjs/menu installs each menu's own
+// "permission to send this menu" via ctx.api.config.use(...) *inside its
+// own middleware*, once per update (confirmed 2026-09-09 in
+// @grammyjs/menu/out/menu.js:570). handleHelpButton never calls next(), so
+// registering it before a later command's bot.use(itsMenu) would skip that
+// menu's middleware entirely for this update, and reusing that command's
+// deep-link handler here (which sends a message with that menu as
+// reply_markup) would fail with "Cannot send menu 'x'! ... try to send it
+// through bot.api?" — exactly what happened when this lived inside
+// registerCoreCommands, called first.
+export function registerHelpButtonHandler(bot: Bot) {
   bot.on('callback_query:data', handleHelpButton)
+}
 
+export function registerCoreCommands(bot: Bot, commands: CommandGroup<Context>) {
   // Telegram delivers t.me/<bot>?start=<payload> as "/start <payload>" —
   // ctx.match is the payload itself. A recognized one (see deepLinks.ts,
   // populated by each register*Command that opts in) takes over from the
