@@ -16,7 +16,6 @@ import { answerLoadError, requireChatId } from '../callbackErrors'
 import { registerMenu } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
 import { registerDeepLink } from '../../deepLinks'
-import { showThinkingDraft } from '../../thinkingDraft'
 
 // Fetched once per render, filtered by month client-side — keeps the
 // callback handler stateless (no need to remember what a user was viewing).
@@ -215,7 +214,6 @@ registerMenu('cal', calendarioMenu)
 async function calendarioCommandHandler(ctx: Context) {
   if (!ctx.chat?.id) return
 
-  showThinkingDraft(ctx)
   try {
     const text = await calendarioText(ctx, 0, ctx.chat.id)
     await ctx.reply(text.text, { entities: text.entities, reply_markup: calendarioMenu })

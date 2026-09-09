@@ -12,7 +12,6 @@ import type { MapsAddress } from './eventLinks'
 import { navigateBack } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
 import { registerDeepLink } from '../../deepLinks'
-import { showThinkingDraft } from '../../thinkingDraft'
 
 interface EventRow {
   uuid: string
@@ -209,7 +208,6 @@ const eventoMenu = new Menu<Context>('evd', {
 // Extracted so it can be reused verbatim by t.me/<bot>?start=eventi — see
 // deepLinks.ts.
 async function eventiCommandHandler(ctx: Context) {
-  showThinkingDraft(ctx)
   const message = await eventiText(ctx)
     .catch(() => new FormattedString('⚠️ Non sono riuscito a recuperare gli eventi, riprova più tardi.'))
   await ctx.reply(message.text, {

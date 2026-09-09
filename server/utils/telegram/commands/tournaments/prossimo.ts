@@ -10,7 +10,6 @@ import { torneoMenu, openTournamentDetail } from './detail'
 import { registerMenu } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
 import { registerDeepLink } from '../../deepLinks'
-import { showThinkingDraft } from '../../thinkingDraft'
 
 interface NextTournamentRow {
   uuid: string
@@ -70,7 +69,7 @@ function nextTournamentMarkdown(row: NextTournamentRow | null, stageNumber: numb
   const stage = stageLabel(stageNumber)
   const location = row.location?.name ? `\n📍 ${row.location.name}` : ''
 
-  return `## 🎲 Prossimo torneo\n\n${statusIcon(row.status)} **${row.name}**${stage}\n🗓️ ${date}${location}\n\n👇🏻 Tocca per i dettagli`
+  return `## 🎲 Prossimo torneo\n\n${statusIcon(row.status)} **${row.name}**${stage}\n🗓️ ${date}${location}`
 }
 
 async function fetchNextTournamentWithStage(
@@ -126,12 +125,8 @@ registerMenu('p', prossimoMenu)
 // Extracted so it can be reused verbatim by t.me/<bot>?start=prossimo —
 // see deepLinks.ts.
 async function prossimoCommandHandler(ctx: Context) {
-  showThinkingDraft(ctx)
-
   try {
     const markdown = await prossimoMarkdown(ctx)
-    // sendRichMessage (not a plain reply) is what lets the shimmer draft
-    // above resolve into this exact message in place — see thinkingDraft.ts.
     await ctx.replyWithRichMessage({ markdown }, { reply_markup: prossimoMenu })
   } catch {
     await ctx.replyWithRichMessage({
