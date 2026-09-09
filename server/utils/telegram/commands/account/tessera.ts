@@ -8,6 +8,7 @@ import { FormattedString } from '@grammyjs/parse-mode'
 
 import { requireLinkedAssociate } from './linking'
 import { registerDeepLink } from '../../deepLinks'
+import { showThinkingDraft } from '../../thinkingDraft'
 
 interface AssociateStatusRow {
   first_name: string | null
@@ -67,6 +68,7 @@ function tesseraMessage(row: AssociateStatusRow): FormattedString {
 // deepLinks.ts. Intended entry point: a renewal-reminder message/email
 // linking straight to the player's own membership status.
 async function tesseraCommandHandler(ctx: Context) {
+  showThinkingDraft(ctx)
   try {
     const associateUuid = await requireLinkedAssociate(ctx)
     if (!associateUuid) return
