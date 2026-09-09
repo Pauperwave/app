@@ -4,7 +4,6 @@ import { it } from 'date-fns/locale'
 
 import type { Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
-import { FormattedString } from '@grammyjs/parse-mode'
 
 import { requireLinkedAssociate } from './linking'
 import { registerDeepLink } from '../../deepLinks'
@@ -43,10 +42,10 @@ async function fetchAssociateStatus(associateUuid: string): Promise<AssociateSta
   return data
 }
 
-function tesseraMessage(row: AssociateStatusRow): FormattedString {
+function tesseraMarkdown(row: AssociateStatusRow): string {
   const status = row.membership_status ? STATUS_LABEL[row.membership_status] ?? row.membership_status : 'Sconosciuto'
-  const lines: (FormattedString | string)[] = [
-    fmt`🪪 ${FormattedString.b(`Tesseramento di ${row.first_name ?? 'te'}`)}`,
+  const lines: string[] = [
+    `## 🪪 Tesseramento di ${row.first_name ?? 'te'}`,
     '',
     `Stato: ${status}`
   ]
@@ -60,7 +59,7 @@ function tesseraMessage(row: AssociateStatusRow): FormattedString {
     lines.push(`Ultimo rinnovo: ${date}${year}`)
   }
 
-  return FormattedString.join(lines, '\n')
+  return lines.join('\n')
 }
 
 // Extracted so it can be reused verbatim by t.me/<bot>?start=tessera — see
@@ -73,14 +72,15 @@ async function tesseraCommandHandler(ctx: Context) {
 
     const row = await fetchAssociateStatus(associateUuid)
     if (!row) {
-      await ctx.reply('⚠️ Non trovo il tuo tesseramento, contatta un admin.')
+      await ctx.replyWithRichMessage({ markdown: '⚠️ Non trovo il tuo tesseramento, contatta un admin.' })
       return
     }
 
-    const message = tesseraMessage(row)
-    await ctx.reply(message.text, { entities: message.entities })
+    await ctx.replyWithRichMessage({ markdown: tesseraMarkdown(row) })
   } catch {
-    await ctx.reply('⚠️ Non sono riuscito a recuperare il tuo tesseramento, riprova più tardi.')
+    await ctx.replyWithRichMessage({
+      markdown: '⚠️ Non sono riuscito a recuperare il tuo tesseramento, riprova più tardi.'
+    })
   }
 }
 
