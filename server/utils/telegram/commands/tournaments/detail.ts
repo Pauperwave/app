@@ -153,7 +153,6 @@ function tournamentDetailMarkdown(
   const endTime = row.ends_at ? ` – ${formatTelegramDate(row.ends_at, 'HH:mm')}` : ''
   const lines: string[] = [
     `${statusIcon(row.status)} **${row.name}**${stageLabel(row.stageNumber)}`,
-    '',
     `🗓️ ${date}${endTime}`
   ]
 
@@ -168,11 +167,12 @@ function tournamentDetailMarkdown(
   }
   if (row.entry_fee !== null) lines.push(`💶 Quota: ${row.entry_fee} €`)
   if (row.prizes) lines.push(`🏆 Premi: ${row.prizes}`)
-  if (registration === 'registered') lines.push('', `${ICONS.registrationRegistered} Sei iscritto a questo torneo.`)
-  if (registration === 'checked_in') lines.push('', `${ICONS.registrationCheckedIn} Sei iscritto e hai già fatto il check-in.`)
-  if (row.description) lines.push('', row.description)
+  if (registration === 'registered') lines.push(`${ICONS.registrationRegistered} Sei iscritto a questo torneo.`)
+  if (registration === 'checked_in') lines.push(`${ICONS.registrationCheckedIn} Sei iscritto e hai già fatto il check-in.`)
+  if (row.description) lines.push(row.description)
 
-  return lines.join('\n')
+  // \n\n, not \n — see core.ts's HELP_TEXT comment on Rich Message markdown.
+  return lines.join('\n\n')
 }
 
 // Shop organizers (Magman etc.) show up for schedule visibility, but

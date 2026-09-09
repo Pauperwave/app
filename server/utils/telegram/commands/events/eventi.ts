@@ -84,7 +84,10 @@ function cachedFetchEvent(ctx: Context, uuid: string): Promise<EventRow | null> 
 function eventLine(event: DatedEventRow): string {
   const date = formatTelegramDate(event.starts_at, 'd MMM', { locale: it })
   const location = event.location?.name ? ` — ${event.location.name}` : ''
-  return `• ${date}: ${event.name}${location}`
+  // "- " (a real markdown list item), not "• " — a plain bullet character
+  // is just text and still needs \n\n to break onto its own line; "- "
+  // renders as a tight list on single \n. See core.ts's HELP_TEXT comment.
+  return `- ${date}: ${event.name}${location}`
 }
 
 function eventiMarkdown(events: DatedEventRow[]): string {
@@ -125,7 +128,7 @@ function eventDetailMarkdown(event: EventRow): string {
   const date = event.starts_at
     ? formatTelegramDate(event.starts_at, 'EEEE d MMMM \'alle\' HH:mm', { locale: it })
     : 'Data da definire'
-  const lines = [`## 📅 ${event.name}`, '', `🗓️ ${date}`]
+  const lines = [`## 📅 ${event.name}`, `🗓️ ${date}`]
 
   if (event.location?.name) {
     const url = mapsUrl(event.location)
@@ -133,7 +136,8 @@ function eventDetailMarkdown(event: EventRow): string {
   }
   if (event.organizer?.name) lines.push(`🏳️ Organizzatore: ${event.organizer.name}`)
 
-  return lines.join('\n')
+  // \n\n, not \n — see core.ts's HELP_TEXT comment on Rich Message markdown.
+  return lines.join('\n\n')
 }
 
 // autoAnswer: false — the "open event" buttons delegate to openEventDetail,

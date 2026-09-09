@@ -46,7 +46,6 @@ function tesseraMarkdown(row: AssociateStatusRow): string {
   const status = row.membership_status ? STATUS_LABEL[row.membership_status] ?? row.membership_status : 'Sconosciuto'
   const lines: string[] = [
     `## 🪪 Tesseramento di ${row.first_name ?? 'te'}`,
-    '',
     `Stato: ${status}`
   ]
 
@@ -59,7 +58,9 @@ function tesseraMarkdown(row: AssociateStatusRow): string {
     lines.push(`Ultimo rinnovo: ${date}${year}`)
   }
 
-  return lines.join('\n')
+  // \n\n, not \n — see core.ts's HELP_TEXT comment on why a single newline
+  // doesn't produce a line break in Rich Message markdown.
+  return lines.join('\n\n')
 }
 
 // Extracted so it can be reused verbatim by t.me/<bot>?start=tessera — see

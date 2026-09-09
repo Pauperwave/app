@@ -49,7 +49,8 @@ async function collegamentoCommandHandler(ctx: Context) {
 
     const lines = [`✅ Questa chat è collegata${name ? ` a ${name}` : ''}.`]
     if (email) lines.push(email)
-    await ctx.replyWithRichMessage({ markdown: lines.join('\n') })
+    // \n\n, not \n — see core.ts's HELP_TEXT comment on Rich Message markdown.
+    await ctx.replyWithRichMessage({ markdown: lines.join('\n\n') })
   } catch {
     await ctx.replyWithRichMessage({
       markdown: '⚠️ Non sono riuscito a verificare il collegamento, riprova più tardi.'

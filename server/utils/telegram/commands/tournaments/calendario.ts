@@ -116,15 +116,17 @@ function calendarioMarkdown(
 
   if (!filtered.length) return `${header}\n\nNessun torneo in programma.`
 
+  // \n\n throughout, not \n — see core.ts's HELP_TEXT comment on Rich
+  // Message markdown.
   const days = groupByDay(filtered).map(({ day, rows: dayRows }) => {
     const dayHeader = `**${dayLabel(day)}**`
     const dayLines = dayRows.map((row) => {
       const icon = personalIcon(registrations.get(row.uuid) ?? null)
       const stage = stageLabel(row.stageNumber)
-      const location = row.location?.name ? `\n📍 ${row.location.name}` : ''
+      const location = row.location?.name ? `\n\n📍 ${row.location.name}` : ''
       return `${icon} ${row.name}${stage}${location}`
     })
-    return `${dayHeader}\n${dayLines.join('\n')}`
+    return `${dayHeader}\n\n${dayLines.join('\n\n')}`
   })
 
   return `${header}\n\n${days.join('\n\n')}`
