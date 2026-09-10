@@ -27,7 +27,7 @@ import { createPerContextCache } from '../../perContextCache'
 // handlers. Menu objects themselves come via menuNav.ts's registry instead.
 import { calendarioBlocksFor } from './calendario'
 import { legaTorneiMarkdown } from './leghe'
-import { iscrizioniMarkdown } from './iscrizioni'
+import { iscrizioniBlocksFor } from './iscrizioni'
 import { prossimoMarkdown } from './prossimo'
 
 export interface LocationRow {
@@ -220,7 +220,7 @@ async function resolveBackTarget(
     return { payload: String(index), menu: getMenu('lt'), text: { markdown } }
   }
   if (origin === 'i') {
-    return { payload: '', menu: getMenu('isc'), text: { markdown: await iscrizioniMarkdown(ctx, chatId) } }
+    return { payload: '', menu: getMenu('isc'), text: { blocks: await iscrizioniBlocksFor(ctx, chatId) } }
   }
   if (origin === 'p') {
     return { payload: '', menu: getMenu('p'), text: { markdown: await prossimoMarkdown(ctx) } }

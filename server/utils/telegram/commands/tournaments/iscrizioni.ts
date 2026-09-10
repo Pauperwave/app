@@ -2,10 +2,11 @@
 import { it } from 'date-fns/locale'
 
 import type { Bot, Context } from 'grammy'
+import type { InputRichMessage } from 'grammy/types'
 import type { CommandGroup } from '@grammyjs/commands'
 import { Menu } from '@grammyjs/menu'
 
-import { formatButtonDate, stageLabel, tournamentButtonLabel } from './line'
+import { stageLabel } from './line'
 import { fetchStageNumbers, OPEN_TOURNAMENT_STATUSES } from './queries'
 import { torneoMenu, openTournamentDetail } from './detail'
 import { requireLinkedAssociate, resolveAssociateUuidByChatId } from '../account/linking'
@@ -90,66 +91,88 @@ function registrationIcon(registrationStatus: string): string {
   return registrationStatus === 'checked_in' ? ICONS.registrationCheckedIn : ICONS.registrationRegistered
 }
 
-function mieiTorneiMarkdown(registrations: MyRegistration[]): string {
-  const header = '## 🎟️ I tuoi tornei'
+// A button right under each tournament, embedded as its own "buttons"
+// block in the rich message body — not a Menu-managed reply_markup — same
+// "buttons near their own content" pattern as calendario.ts's own list
+// (user request 2026-09-09, applied here too so /iscrizioni matches).
+// Handled by a plain bot.on('callback_query:data', ...) below (see
+// registerIscrizioniCommand) rather than @grammyjs/menu. No origin to
+// encode in the payload (unlike calendario.ts's month offset) — this list
+// only ever has one shape, so the uuid alone is enough.
+const ISC_OPEN_PREFIX = 'iscopen:'
+
+function encodeIscOpenPayload(uuid: string): string {
+  return `${ISC_OPEN_PREFIX}${uuid}`
+}
+
+function decodeIscOpenPayload(data: string): string {
+  return data.slice(ISC_OPEN_PREFIX.length)
+}
+
+function mieiTorneiBlocks(registrations: MyRegistration[]): InputRichMessage['blocks'] {
+  const blocks: InputRichMessage['blocks'] = [
+    { type: 'heading', size: 3, text: '🎟️ I tuoi tornei' }
+  ]
 
   if (!registrations.length) {
-    return `${header}\n\nNon risulti iscritto a nessun torneo in programma.`
+    blocks.push({ type: 'paragraph', text: 'Non risulti iscritto a nessun torneo in programma.' })
+    return blocks
   }
 
-  const blocks = registrations.map(({ registrationStatus, tournament }) => {
+  for (const { registrationStatus, tournament } of registrations) {
     const date = formatTelegramDate(tournament.starts_at, 'EEE d MMM', { locale: it })
     const stage = stageLabel(tournament.stageNumber)
 
-    const tournamentLines = [
-      `${registrationIcon(registrationStatus)} **${tournament.name}**${stage}`,
-      `🗓️ ${date}`
-    ]
-    if (tournament.location?.name) tournamentLines.push(`📍 ${tournament.location.name}`)
-    return tournamentLines.join(MD_BREAK)
-  })
+    blocks.push({
+      type: 'paragraph',
+      text: [`${registrationIcon(registrationStatus)} `, { type: 'bold', text: tournament.name }, stage]
+    })
+    blocks.push({ type: 'paragraph', text: `🗓️ ${date}` })
+    if (tournament.location?.name) blocks.push({ type: 'paragraph', text: `📍 ${tournament.location.name}` })
 
-  return `${header}\n\n${blocks.join('\n\n')}`
+    blocks.push({
+      type: 'buttons',
+      buttons: [{ text: '👇🏻 Apri dettagli', callback_data: encodeIscOpenPayload(tournament.uuid) }]
+    })
+  }
+
+  return blocks
 }
 
 // Exported so tournament/detail.ts's "back" button can rebuild this view.
 // Falls back to "not linked" for the practically unreachable case of a
 // chat that unlinked mid-session.
-export async function iscrizioniMarkdown(ctx: Context, chatId: number): Promise<string> {
+export async function iscrizioniBlocksFor(ctx: Context, chatId: number): Promise<InputRichMessage['blocks']> {
   const associateUuid = await resolveAssociateUuidByChatId(chatId)
-  if (!associateUuid) return 'Devi prima collegare il tuo account.'
+  if (!associateUuid) return [{ type: 'paragraph', text: 'Devi prima collegare il tuo account.' }]
 
   const registrations = await cachedFetchMyTournaments(ctx, associateUuid)
-  return mieiTorneiMarkdown(registrations)
+  return mieiTorneiBlocks(registrations)
 }
 
-// autoAnswer: false — the "open tournament" buttons delegate to
-// openTournamentDetail, which answers the callback itself.
-// onMenuOutdated: false — see calendario.ts's calendarioMenu for why.
+// No buttons of its own any more (see ISC_OPEN_PREFIX above) — kept only
+// so torneoMenu's send permission gets installed for this update (via
+// .register() below) and so the "back" target from a detail view still has
+// a reply_markup to hand back. Same reasoning as calendarioMenu keeping
+// its .register(torneoMenu) despite calendarioMenu's own per-tournament
+// buttons having moved inline too.
 export const iscrizioniMenu = new Menu<Context>('isc', {
   autoAnswer: false,
   onMenuOutdated: false
-}).dynamic(async (ctx, range) => {
-  const chatId = ctx.chat?.id
-  if (!chatId) return
-
-  const associateUuid = await resolveAssociateUuidByChatId(chatId)
-  if (!associateUuid) return
-
-  const registrations = await cachedFetchMyTournaments(ctx, associateUuid)
-  for (const { registrationStatus, tournament } of registrations) {
-    const date = formatButtonDate(tournament.starts_at)
-    const label = tournamentButtonLabel(
-      registrationIcon(registrationStatus), date, tournament.stageNumber, tournament.name
-    )
-    range.row().text(
-      { text: label, payload: `${tournament.uuid}:i` },
-      ctx => openTournamentDetail(ctx, tournament.uuid, 'i')
-    )
-  }
 })
 
 registerMenu('isc', iscrizioniMenu)
+
+// Handles taps on mieiTorneiBlocks's own per-tournament "buttons" blocks —
+// registered before bot.use(commands) (see registerIscrizioniCommand),
+// distinct callback_data prefix so it only ever claims its own presses.
+async function handleIscOpenButton(ctx: Context, next: () => Promise<void>) {
+  const data = ctx.callbackQuery?.data
+  if (!data?.startsWith(ISC_OPEN_PREFIX)) return next()
+
+  const uuid = decodeIscOpenPayload(data)
+  await openTournamentDetail(ctx, uuid, 'i')
+}
 
 // Extracted so it can be reused verbatim by t.me/<bot>?start=iscrizioni —
 // see deepLinks.ts. A "apri nel bot" button on the web app's own
@@ -160,8 +183,8 @@ async function iscrizioniCommandHandler(ctx: Context) {
     if (!associateUuid) return
 
     const registrations = await cachedFetchMyTournaments(ctx, associateUuid)
-    const markdown = mieiTorneiMarkdown(registrations)
-    await ctx.replyWithRichMessage({ markdown }, { reply_markup: iscrizioniMenu })
+    const blocks = mieiTorneiBlocks(registrations)
+    await ctx.replyWithRichMessage({ blocks }, { reply_markup: iscrizioniMenu })
   } catch {
     await ctx.replyWithRichMessage({
       markdown: '⚠️ Non sono riuscito a recuperare i tuoi tornei, riprova più tardi.'
@@ -176,6 +199,10 @@ export function registerIscrizioniCommand(bot: Bot, commands: CommandGroup<Conte
   // comment on why.
   iscrizioniMenu.register(torneoMenu)
   bot.use(iscrizioniMenu)
+
+  // Registered before bot.use(commands) — same reasoning as
+  // calendario.ts's own handleCalendarioOpenButton registration.
+  bot.on('callback_query:data', handleIscOpenButton)
 
   commands.command('iscrizioni', 'I tornei a cui sei iscritto', iscrizioniCommandHandler)
 }
