@@ -81,26 +81,47 @@ function cachedFetchEvent(ctx: Context, uuid: string): Promise<EventRow | null> 
   return memoize(ctx, 'event', () => fetchEvent(uuid))
 }
 
-function eventLine(event: DatedEventRow): string {
-  const date = formatTelegramDate(event.starts_at, 'd MMM', { locale: it })
-  const location = event.location?.name ? ` — ${event.location.name}` : ''
-  // "- " (a real markdown list item), not "• " — a plain bullet character
-  // is just text and still needs \n\n to break onto its own line; "- "
-  // renders as a tight list on single \n. See core.ts's HELP_TEXT comment.
-  return `- ${date}: ${event.name}${location}`
+// A button right under each event, embedded as its own "buttons" block in
+// the rich message body — not a Menu-managed reply_markup — same "buttons
+// near their own content" pattern as calendario.ts's own list (user
+// request 2026-09-09, applied to eventi.ts's two screens too).
+const EV_OPEN_PREFIX = 'evopen:'
+
+function encodeEvOpenPayload(uuid: string): string {
+  return `${EV_OPEN_PREFIX}${uuid}`
 }
 
-function eventiMarkdown(events: DatedEventRow[]): string {
-  if (!events.length) return '📅 Nessun evento in programma al momento.'
+function decodeEvOpenPayload(data: string): string {
+  return data.slice(EV_OPEN_PREFIX.length)
+}
 
-  const lines = events.map(eventLine)
-  return `## 📅 Prossimi eventi\n\n${lines.join('\n')}`
+function eventiBlocks(events: DatedEventRow[]): InputRichMessage['blocks'] {
+  const blocks: InputRichMessage['blocks'] = [
+    { type: 'heading', size: 3, text: '📅 Prossimi eventi' }
+  ]
+
+  if (!events.length) {
+    blocks.push({ type: 'paragraph', text: 'Nessun evento in programma al momento.' })
+    return blocks
+  }
+
+  for (const event of events) {
+    const date = formatTelegramDate(event.starts_at, 'd MMM', { locale: it })
+    const location = event.location?.name ? ` — ${event.location.name}` : ''
+    blocks.push({ type: 'paragraph', text: `📅 ${date}: ${event.name}${location}` })
+    blocks.push({
+      type: 'buttons',
+      buttons: [{ text: '👇🏻 Apri dettagli', callback_data: encodeEvOpenPayload(event.uuid) }]
+    })
+  }
+
+  return blocks
 }
 
 // Exported so eventoMenu's "back" button can rebuild this exact list when
 // returning from a detail page opened from here.
-async function eventiText(ctx: Context): Promise<string> {
-  return eventiMarkdown(await cachedFetchUpcomingEvents(ctx))
+async function eventiBlocksFor(ctx: Context): Promise<InputRichMessage['blocks']> {
+  return eventiBlocks(await cachedFetchUpcomingEvents(ctx))
 }
 
 // A photo block (when the event has one) lives inside the same rich
@@ -113,6 +134,11 @@ async function eventiText(ctx: Context): Promise<string> {
 // "[text](url)" show up literally instead of rendering (confirmed
 // 2026-09-09 from the actual bot output). See tournamentDetailBlocks's
 // own comment for the same reasoning.
+//
+// Direzioni/Aggiungi al calendario live inline here too, as a "buttons"
+// block right after the date/location they relate to — not in eventoMenu's
+// own reply_markup — same reasoning as tournamentDetailBlocks's own
+// Direzioni/Aggiungi al calendario buttons.
 function eventDetailBlocks(event: EventRow): InputRichMessage['blocks'] {
   const date = event.starts_at
     ? formatTelegramDate(event.starts_at, 'EEEE d MMMM \'alle\' HH:mm', { locale: it })
@@ -123,40 +149,51 @@ function eventDetailBlocks(event: EventRow): InputRichMessage['blocks'] {
   blocks.push({ type: 'heading', size: 3, text: `📅 ${event.name}` })
   blocks.push({ type: 'paragraph', text: `🗓️ ${date}` })
 
-  if (event.location?.name) {
-    const url = mapsUrl(event.location)
-    const text = url
-      ? ['📍 ', { type: 'url' as const, text: event.location.name, url }]
-      : `📍 ${event.location.name}`
-    blocks.push({ type: 'paragraph', text })
-  }
+  const mapUrl = event.location ? mapsUrl(event.location) : null
+  // Plain text, not a link — the "🧭 Direzioni" button just below already
+  // covers this exact URL, so a second inline hyperlink was redundant.
+  if (event.location?.name) blocks.push({ type: 'paragraph', text: `📍 ${event.location.name}` })
+
+  // event.starts_at is nullable on this row (unlike the guaranteed-dated
+  // DatedEventRow the list view uses) — no calendar link without a date.
+  const calendarUrl = event.starts_at
+    ? googleCalendarUrl({
+      name: event.name,
+      startsAt: event.starts_at,
+      endsAt: event.ends_at,
+      locationName: event.location?.name
+    })
+    : null
+  const linkButtons = [
+    ...(mapUrl ? [{ text: '🧭 Direzioni', url: mapUrl }] : []),
+    ...(calendarUrl ? [{ text: '🗓️ Aggiungi al calendario', url: calendarUrl }] : [])
+  ]
+  if (linkButtons.length) blocks.push({ type: 'buttons', buttons: linkButtons })
+
   if (event.organizer?.name) blocks.push({ type: 'paragraph', text: `🏳️ Organizzatore: ${event.organizer.name}` })
 
   return blocks
 }
 
-// autoAnswer: false — the "open event" buttons delegate to openEventDetail,
-// which answers the callback itself. onMenuOutdated: false — see
-// calendario.ts's calendarioMenu for why.
+// No buttons of its own any more (see EV_OPEN_PREFIX above) — kept only so
+// eventoMenu's send permission gets installed for this update, matching
+// iscrizioniMenu's own reasoning.
 const eventiMenu = new Menu<Context>('ev', {
   autoAnswer: false,
   onMenuOutdated: false
-}).dynamic(async (ctx, range) => {
-  const events = await cachedFetchUpcomingEvents(ctx)
-  for (const event of events) {
-    const date = formatTelegramDate(event.starts_at, 'd MMM', { locale: it })
-    const label = `📅 ${date} — ${event.name}`.slice(0, 64)
-    range.row().submenu({ text: label, payload: event.uuid }, 'evd', openEventDetail)
-  }
 })
 
-async function openEventDetail(ctx: Context & { match: string }) {
+async function openEventDetail(ctx: Context, uuid: string) {
   try {
-    const event = await cachedFetchEvent(ctx, ctx.match)
+    const event = await cachedFetchEvent(ctx, uuid)
     if (!event) {
       await ctx.answerCallbackQuery({ text: 'Evento non trovato', show_alert: true })
       return
     }
+    // Sets ctx.match before editing so eventoMenu's own .dynamic() (re-run
+    // by grammY right after, to build the reply_markup) reads the right
+    // uuid — same pattern as tournament/detail.ts's openTournamentDetail.
+    ctx.match = uuid
     const blocks = eventDetailBlocks(event)
     await ctx.editMessageText({ blocks }, { reply_markup: eventoMenu })
     await ctx.answerCallbackQuery()
@@ -165,28 +202,27 @@ async function openEventDetail(ctx: Context & { match: string }) {
   }
 }
 
-// No registration action — events have no self-service participation flow
-// yet (EventParticipants.vue is still a placeholder), just links + back.
-// autoAnswer/onMenuOutdated: false — see calendario.ts's calendarioMenu.
+// Handles taps on eventiBlocks's own per-event "buttons" blocks — registered
+// before bot.use(commands) (see registerEventiCommand), distinct
+// callback_data prefix so it only ever claims its own presses.
+async function handleEvOpenButton(ctx: Context, next: () => Promise<void>) {
+  const data = ctx.callbackQuery?.data
+  if (!data?.startsWith(EV_OPEN_PREFIX)) return next()
+
+  await openEventDetail(ctx, decodeEvOpenPayload(data))
+}
+
+// Only the "back to eventi" button lives here now — Direzioni/Aggiungi al
+// calendario are inline rich-message "buttons" blocks (see
+// eventDetailBlocks above), not Menu-managed reply_markup.
+// autoAnswer: false — the back button answers its own callback.
+// onMenuOutdated: false — see calendario.ts's calendarioMenu for why.
 const eventoMenu = new Menu<Context>('evd', {
   autoAnswer: false,
   onMenuOutdated: false
 }).dynamic(async (ctx, range) => {
   const uuid = ctx.match as string | undefined
   if (!uuid) return
-
-  const event = await cachedFetchEvent(ctx, uuid)
-  if (!event || !event.starts_at) return
-
-  const mapUrl = event.location ? mapsUrl(event.location) : null
-  if (mapUrl) range.url('🧭 Direzioni', mapUrl)
-  range.url('🗓️ Aggiungi al calendario', googleCalendarUrl({
-    name: event.name,
-    startsAt: event.starts_at,
-    endsAt: event.ends_at,
-    locationName: event.location?.name
-  }))
-  range.row()
 
   // payload: uuid (not omitted) — an empty payload never reaches ctx.match,
   // which would fail this dynamic()'s own `if (!uuid) return` guard above.
@@ -195,7 +231,7 @@ const eventoMenu = new Menu<Context>('evd', {
       await navigateBack(ctx, async () => ({
         payload: '',
         menu: eventiMenu,
-        text: { markdown: await eventiText(ctx) }
+        text: { blocks: await eventiBlocksFor(ctx) }
       }))
       await ctx.answerCallbackQuery()
     } catch {
@@ -207,9 +243,14 @@ const eventoMenu = new Menu<Context>('evd', {
 // Extracted so it can be reused verbatim by t.me/<bot>?start=eventi — see
 // deepLinks.ts.
 async function eventiCommandHandler(ctx: Context) {
-  const markdown = await eventiText(ctx)
-    .catch(() => '⚠️ Non sono riuscito a recuperare gli eventi, riprova più tardi.')
-  await ctx.replyWithRichMessage({ markdown }, { reply_markup: eventiMenu })
+  try {
+    const blocks = await eventiBlocksFor(ctx)
+    await ctx.replyWithRichMessage({ blocks }, { reply_markup: eventiMenu })
+  } catch {
+    await ctx.replyWithRichMessage({
+      markdown: '⚠️ Non sono riuscito a recuperare gli eventi, riprova più tardi.'
+    })
+  }
 }
 
 registerDeepLink('eventi', eventiCommandHandler)
@@ -217,6 +258,10 @@ registerDeepLink('eventi', eventiCommandHandler)
 export function registerEventiCommand(bot: Bot, commands: CommandGroup<Context>) {
   eventiMenu.register(eventoMenu)
   bot.use(eventiMenu)
+
+  // Registered before bot.use(commands) — same reasoning as calendario.ts's
+  // own handleCalendarioOpenButton registration.
+  bot.on('callback_query:data', handleEvOpenButton)
 
   commands.command('eventi', 'Prossimi eventi', eventiCommandHandler)
 }

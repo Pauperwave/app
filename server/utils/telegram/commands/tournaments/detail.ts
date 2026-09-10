@@ -26,7 +26,7 @@ import { createPerContextCache } from '../../perContextCache'
 // imports their text-renderers back) — safe since only used inside async
 // handlers. Menu objects themselves come via menuNav.ts's registry instead.
 import { calendarioBlocksFor } from './calendario'
-import { legaTorneiMarkdown } from './leghe'
+import { legaTorneiBlocks } from './leghe'
 import { iscrizioniBlocksFor } from './iscrizioni'
 import { prossimoMarkdown } from './prossimo'
 
@@ -216,8 +216,8 @@ async function resolveBackTarget(
 ): Promise<MenuNavTarget> {
   if (origin.startsWith('l')) {
     const index = Number(origin.slice(1))
-    const markdown = await legaTorneiMarkdown(ctx, index, chatId) ?? '🏆 Lega non trovata.'
-    return { payload: String(index), menu: getMenu('lt'), text: { markdown } }
+    const blocks = await legaTorneiBlocks(ctx, index) ?? [{ type: 'paragraph', text: '🏆 Lega non trovata.' }]
+    return { payload: String(index), menu: getMenu('lt'), text: { blocks } }
   }
   if (origin === 'i') {
     return { payload: '', menu: getMenu('isc'), text: { blocks: await iscrizioniBlocksFor(ctx, chatId) } }
