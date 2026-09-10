@@ -67,22 +67,6 @@ export function tournamentLine({
   return fmt`${icon ?? statusIcon(status)} ${name}${stageSuffix}${location}`
 }
 
-// Same shape as tournamentLine(), for the button label. `icon` is passed in
-// (not derived from status) since callers vary — leghe.ts's buttons show
-// registration state, not tournament status. Can exceed Telegram's 64-char
-// button cap on a long name; no good truncation point, left as-is.
-export function tournamentButtonLabel(
-  icon: string, date: string, stageNumber: number | null, name: string
-): string {
-  return `${icon} ${date}${stageLabel(stageNumber)} — ${name}`
-}
-
-// Short date for tournamentButtonLabel() in a nearby-scoped list —
-// leghe.ts spans a whole league's calendar, so it uses a longer format.
-export function formatButtonDate(startsAt: string): string {
-  return formatTelegramDate(startsAt, 'd MMM', { locale: it })
-}
-
 // Full date+time header shared by tournament/detail.ts's single-tournament
 // message and prossimo.ts's next-tournament card.
 export function formatTournamentDateTime(startsAt: string): string {
