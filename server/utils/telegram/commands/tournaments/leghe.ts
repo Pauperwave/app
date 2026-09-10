@@ -151,7 +151,7 @@ async function legheBlocks(ctx: Context): Promise<InputRichMessage['blocks']> {
     blocks.push({ type: 'paragraph', text: `🗓️ ${dateRange}` })
     blocks.push({
       type: 'buttons',
-      buttons: [{ text: '👇🏻 Apri lega', callback_data: encodeLgOpenPayload(index) }]
+      buttons: [{ text: 'Apri lega', callback_data: encodeLgOpenPayload(index) }]
     })
   })
 
@@ -188,7 +188,7 @@ export async function legaTorneiBlocks(ctx: Context, index: number): Promise<Inp
 
     blocks.push({
       type: 'buttons',
-      buttons: [{ text: '👇🏻 Apri dettagli', callback_data: encodeLtOpenPayload(tournament.uuid, index) }]
+      buttons: [{ text: 'Apri dettagli', callback_data: encodeLtOpenPayload(tournament.uuid, index) }]
     })
   }
 

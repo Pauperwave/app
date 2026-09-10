@@ -111,7 +111,7 @@ function eventiBlocks(events: DatedEventRow[]): InputRichMessage['blocks'] {
     blocks.push({ type: 'paragraph', text: `📅 ${date}: ${event.name}${location}` })
     blocks.push({
       type: 'buttons',
-      buttons: [{ text: '👇🏻 Apri dettagli', callback_data: encodeEvOpenPayload(event.uuid) }]
+      buttons: [{ text: 'Apri dettagli', callback_data: encodeEvOpenPayload(event.uuid) }]
     })
   }
 

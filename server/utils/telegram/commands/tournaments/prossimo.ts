@@ -119,7 +119,7 @@ export const prossimoMenu = new Menu<Context>('p', {
   if (!row) return
 
   range.text(
-    { text: '👇🏻 Apri dettagli', payload: `${row.uuid}:p` },
+    { text: 'Apri dettagli', payload: `${row.uuid}:p` },
     ctx => openTournamentDetail(ctx, row.uuid, 'p')
   )
 })

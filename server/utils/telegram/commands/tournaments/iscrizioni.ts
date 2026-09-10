@@ -132,7 +132,7 @@ function mieiTorneiBlocks(registrations: MyRegistration[]): InputRichMessage['bl
 
     blocks.push({
       type: 'buttons',
-      buttons: [{ text: '👇🏻 Apri dettagli', callback_data: encodeIscOpenPayload(tournament.uuid) }]
+      buttons: [{ text: 'Apri dettagli', callback_data: encodeIscOpenPayload(tournament.uuid) }]
     })
   }
 

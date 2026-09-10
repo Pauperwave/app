@@ -154,7 +154,7 @@ function calendarioBlocks(
 
       blocks.push({
         type: 'buttons',
-        buttons: [{ text: '👇🏻 Apri dettagli', callback_data: encodeCalOpenPayload(row.uuid, origin) }]
+        buttons: [{ text: 'Apri dettagli', callback_data: encodeCalOpenPayload(row.uuid, origin) }]
       })
     }
   }
