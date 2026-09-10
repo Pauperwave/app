@@ -6,21 +6,6 @@ import type { InputRichMessage } from 'grammy/types'
 import type { CommandGroup } from '@grammyjs/commands'
 import { resolveDeepLink } from '../deepLinks'
 
-// Rich Message markdown, not plain text — a single \n is a soft break
-// there (collapsed/ignored like standard Markdown), not a real line break
-// like it is in ctx.reply's plain-text mode. Every list line below needs
-// "- " (an actual markdown list item) to render on its own line; a bare
-// "\n"-joined line list would run together into one paragraph. Confirmed
-// 2026-09-09 — HELP_TEXT rendered as a single unbroken run of text in
-// production before this fix.
-const START_TEXT = 'Ciao! Sono il bot di Pauperwave 👋🏻\n\n'
-  + 'Scrivimi la tua email da socio (quella con cui ti sei tesserato) per '
-  + 'collegare il tuo account e sbloccare i comandi personalizzati:\n\n'
-  + '- /iscrizioni — i tornei a cui sei iscritto\n'
-  + '- /tessera — stato del tuo tesseramento\n\n'
-  + 'Usa /collegamento per verificare se questa chat è già collegata a un socio.\n\n'
-  + 'Oppure usa subito /help per vedere quelli pubblici, funzionano già senza.'
-
 // Quick-launch buttons for a few of the most-used commands, embedded as
 // inline "buttons" blocks right after the category they belong to — same
 // "buttons near their own content" pattern as calendario.ts's per-tournament
@@ -32,6 +17,35 @@ const HELP_BTN_PREFIX = 'helpbtn:'
 
 function encodeHelpBtn(payload: string): string {
   return `${HELP_BTN_PREFIX}${payload}`
+}
+
+// blocks, not markdown — same reasoning as helpBlocks()'s own comment
+// below, plus it lets the four commands mentioned here (iscrizioni,
+// tessera, collegamento, help) carry their own quick-launch buttons.
+function startBlocks(): InputRichMessage['blocks'] {
+  return [
+    { type: 'paragraph', text: 'Ciao! Sono il bot di Pauperwave 👋🏻' },
+    {
+      type: 'paragraph',
+      text: 'Scrivimi la tua email da socio (quella con cui ti sei tesserato) per collegare il tuo account '
+        + 'e sbloccare i comandi personalizzati:'
+    },
+    {
+      type: 'paragraph',
+      text: '/iscrizioni — i tornei a cui sei iscritto\n/tessera — stato del tuo tesseramento'
+    },
+    {
+      type: 'buttons',
+      buttons: [
+        { text: '🎟️ Iscrizioni', callback_data: encodeHelpBtn('iscrizioni') },
+        { text: '🪪 Tessera', callback_data: encodeHelpBtn('tessera') }
+      ]
+    },
+    { type: 'paragraph', text: 'Usa /collegamento per verificare se questa chat è già collegata a un socio.' },
+    { type: 'buttons', buttons: [{ text: '🔗 Collegamento', callback_data: encodeHelpBtn('collegamento') }] },
+    { type: 'paragraph', text: 'Oppure usa subito /help per vedere quelli pubblici, funzionano già senza.' },
+    { type: 'buttons', buttons: [{ text: '📖 Help', callback_data: encodeHelpBtn('help') }] }
+  ]
 }
 
 // blocks, not markdown — a block's `text` is structured RichText, not
@@ -54,6 +68,7 @@ function helpBlocks(): InputRichMessage['blocks'] {
 
     { type: 'paragraph', text: { type: 'bold', text: '🏆 Classifiche' } },
     { type: 'paragraph', text: '/classifiche — classifiche per formato' },
+    { type: 'buttons', buttons: [{ text: '🏆 Classifiche', callback_data: encodeHelpBtn('classifiche') }] },
 
     { type: 'paragraph', text: { type: 'bold', text: '🎲 Tornei e leghe' } },
     {
@@ -71,6 +86,7 @@ function helpBlocks(): InputRichMessage['blocks'] {
 
     { type: 'paragraph', text: { type: 'bold', text: '🎟️ Le mie iscrizioni' } },
     { type: 'paragraph', text: '/iscrizioni — i tornei a cui sei iscritto' },
+    { type: 'buttons', buttons: [{ text: '🎟️ Iscrizioni', callback_data: encodeHelpBtn('iscrizioni') }] },
 
     { type: 'paragraph', text: { type: 'bold', text: '🏟️ Durante un torneo' } },
     {
@@ -97,6 +113,7 @@ function helpBlocks(): InputRichMessage['blocks'] {
       type: 'buttons',
       buttons: [
         { text: '🔗 Collegamento', callback_data: encodeHelpBtn('collegamento') },
+        { text: '🔓 Scollegamento', callback_data: encodeHelpBtn('scollegamento') },
         { text: '🪪 Tessera', callback_data: encodeHelpBtn('tessera') }
       ]
     },
@@ -137,8 +154,8 @@ function statusCommandHandler(ctx: Context) {
     }
   }
 
-  // \n\n, not \n — see HELP_TEXT's own comment on why a single newline
-  // doesn't produce a line break in Rich Message markdown.
+  // \n\n, not \n — in Rich Message markdown mode a single \n is a soft
+  // break (collapsed, like standard Markdown), not a real line break.
   return ctx.replyWithRichMessage({ markdown: lines.join('\n\n') })
 }
 
@@ -170,7 +187,7 @@ export function registerCoreCommands(bot: Bot, commands: CommandGroup<Context>) 
       await handler(ctx)
       return
     }
-    await ctx.replyWithRichMessage({ markdown: START_TEXT })
+    await ctx.replyWithRichMessage({ blocks: startBlocks() })
   })
 
   commands.command('help', 'Elenco comandi disponibili', helpCommandHandler)
