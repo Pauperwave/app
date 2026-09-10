@@ -18,7 +18,6 @@ import { fetchRegistrationStatus, fetchStageNumbers } from './queries'
 import type { RegistrationStatus } from './queries'
 import { NOT_LINKED_MESSAGE } from '../account/linking'
 import { answerLoadError, requireChatId } from '../callbackErrors'
-import { ICONS } from '../../icons'
 import { mapsUrl, googleCalendarUrl } from '../events/eventLinks'
 import { navigateBack, getMenu } from '../../menuNav'
 import type { MenuNavTarget } from '../../menuNav'
@@ -89,10 +88,13 @@ async function fetchTournament(uuid: string): Promise<DatedTournamentRow | null>
   return { ...row, starts_at: row.starts_at, stageNumber: stageNumbers.get(row.uuid) ?? null }
 }
 
-// openTournamentDetail() and torneoMenu's own .dynamic() independently run
-// these same three queries within the same update (once for the message
-// text, once for the buttons) — memoizing by ctx halves the query count on
-// every tournament-detail open. See perContextCache.ts for why this works.
+// openTournamentDetail() and torneoMenu's own .dynamic() both fetch the
+// tournament row within the same update (once for the message text, once
+// for the buttons) — memoizing by ctx halves that query. associateUuid/
+// registration are only ever needed by .dynamic() (for the button label)
+// and by the register/cancel handlers it wires up, but share the same
+// per-ctx cache since a registration action re-triggers .dynamic() within
+// the same update. See perContextCache.ts for why this works.
 const memoize = createPerContextCache<{
   tournament: Promise<DatedTournamentRow | null>
   associateUuid: Promise<string | null>
@@ -128,9 +130,7 @@ function cachedFetchRegistrationStatus(
 // nodes (confirmed 2026-09-09 from the actual bot output). Splitting into
 // one block per line also sidesteps the whole \n-vs-\n\n markdown-mode
 // question entirely — blocks space themselves apart on their own.
-function tournamentDetailBlocks(
-  row: DatedTournamentRow, registration: RegistrationStatus
-): InputRichMessage['blocks'] {
+function tournamentDetailBlocks(row: DatedTournamentRow): InputRichMessage['blocks'] {
   const blocks: InputRichMessage['blocks'] = []
   if (row.image_url) blocks.push({ type: 'photo', photo: { type: 'photo', media: row.image_url } })
 
@@ -175,12 +175,6 @@ function tournamentDetailBlocks(
   }
   if (row.entry_fee !== null) blocks.push({ type: 'paragraph', text: `💶 Quota: ${row.entry_fee} €` })
   if (row.prizes) blocks.push({ type: 'paragraph', text: `🏆 Premi: ${row.prizes}` })
-  if (registration === 'registered') {
-    blocks.push({ type: 'paragraph', text: `${ICONS.registrationRegistered} Sei iscritto a questo torneo.` })
-  }
-  if (registration === 'checked_in') {
-    blocks.push({ type: 'paragraph', text: `${ICONS.registrationCheckedIn} Sei iscritto e hai già fatto il check-in.` })
-  }
   if (row.description) blocks.push({ type: 'paragraph', text: row.description })
 
   return blocks
@@ -362,22 +356,15 @@ export async function openTournamentDetail(ctx: Context, uuid: string, origin: s
   if (!chatId) return
 
   try {
-    // Independent of each other — parallelized instead of two sequential awaits.
-    const [tournament, associateUuid] = await Promise.all([
-      cachedFetchTournament(ctx, uuid),
-      cachedResolveAssociateUuid(ctx, chatId)
-    ])
+    const tournament = await cachedFetchTournament(ctx, uuid)
     if (!tournament) {
       await ctx.answerCallbackQuery({ text: 'Torneo non trovato', show_alert: true })
       return
     }
 
-    const registration = associateUuid
-      ? await cachedFetchRegistrationStatus(ctx, uuid, associateUuid)
-      : null
     ctx.match = encodeTorneoPayload(uuid, origin)
 
-    const blocks = tournamentDetailBlocks(tournament, registration)
+    const blocks = tournamentDetailBlocks(tournament)
     await ctx.editMessageText({ blocks }, { reply_markup: torneoMenu })
     await ctx.answerCallbackQuery()
   } catch {
