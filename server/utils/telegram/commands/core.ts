@@ -50,6 +50,7 @@ function helpBlocks(): InputRichMessage['blocks'] {
       type: 'paragraph',
       text: '/start — avvia il bot\n/help — mostra questo messaggio\n/status — mostra lo stato corrente del bot'
     },
+    { type: 'buttons', buttons: [{ text: '🟢 Status', callback_data: encodeHelpBtn('status') }] },
 
     { type: 'paragraph', text: { type: 'bold', text: '🏆 Classifiche' } },
     { type: 'paragraph', text: '/classifiche — classifiche per formato' },
@@ -62,8 +63,9 @@ function helpBlocks(): InputRichMessage['blocks'] {
     {
       type: 'buttons',
       buttons: [
-        { text: '🎲 Apri Calendario', callback_data: encodeHelpBtn('calendario') },
-        { text: '🏆 Apri Prossimo', callback_data: encodeHelpBtn('prossimo') }
+        { text: '📅 Calendario', callback_data: encodeHelpBtn('calendario') },
+        { text: '🏆 Leghe', callback_data: encodeHelpBtn('leghe') },
+        { text: '⏭️ Prossimo', callback_data: encodeHelpBtn('prossimo') }
       ]
     },
 
@@ -76,6 +78,13 @@ function helpBlocks(): InputRichMessage['blocks'] {
       text: '🚧 /tavolo — tavolo, avversario del turno e comandante (in lavorazione, dati di esempio)\n'
         + '🚧 /risultato — posizione, uccisioni e voti di fine turno (in lavorazione, dati di esempio)'
     },
+    {
+      type: 'buttons',
+      buttons: [
+        { text: '🪑 Tavolo', callback_data: encodeHelpBtn('tavolo') },
+        { text: '🏅 Risultato', callback_data: encodeHelpBtn('risultato') }
+      ]
+    },
 
     { type: 'paragraph', text: { type: 'bold', text: '👤 Account' } },
     {
@@ -84,10 +93,17 @@ function helpBlocks(): InputRichMessage['blocks'] {
         + '/scollegamento — scollega questa chat dal tuo profilo socio\n'
         + '/tessera — stato del tuo tesseramento'
     },
-    { type: 'buttons', buttons: [{ text: '🪪 Apri Tessera', callback_data: encodeHelpBtn('tessera') }] },
+    {
+      type: 'buttons',
+      buttons: [
+        { text: '🔗 Collegamento', callback_data: encodeHelpBtn('collegamento') },
+        { text: '🪪 Tessera', callback_data: encodeHelpBtn('tessera') }
+      ]
+    },
 
     { type: 'paragraph', text: { type: 'bold', text: '💬 Supporto' } },
-    { type: 'paragraph', text: '/supporto — inoltra un messaggio allo staff' }
+    { type: 'paragraph', text: '/supporto — inoltra un messaggio allo staff' },
+    { type: 'buttons', buttons: [{ text: '💬 Supporto', callback_data: encodeHelpBtn('supporto') }] }
   ]
 }
 
