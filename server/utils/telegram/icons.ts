@@ -12,5 +12,15 @@ export const ICONS = {
   registrationRegistered: '✅',
   registrationNone: '⚪',
   openDetails: 'ℹ️',
-  league: '🏆'
+  // League headers, classifica/leaderboard headers, and prize lines all
+  // reuse the same trophy glyph — one constant covers all three rather
+  // than three identically-valued keys.
+  trophy: '🏆',
+  date: '🗓️',
+  location: '📍',
+  calendar: '📅',
+  directions: '🧭',
+  ticket: '🎟️',
+  membershipCard: '🪪',
+  fee: '💶'
 } as const

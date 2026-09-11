@@ -22,6 +22,7 @@ import { mapsUrl, googleCalendarUrl } from '../events/eventLinks'
 import { navigateBack, getMenu } from '../../menuNav'
 import type { MenuNavTarget } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
+import { ICONS } from '../../icons'
 // Circular import (calendario/leghe/iscrizioni import torneoMenu, this
 // imports their text-renderers back) — safe since only used inside async
 // handlers. Menu objects themselves come via menuNav.ts's registry instead.
@@ -141,12 +142,12 @@ function tournamentDetailBlocks(row: DatedTournamentRow): InputRichMessage['bloc
 
   const date = formatTournamentDateTime(row.starts_at)
   const endTime = row.ends_at ? ` – ${formatTelegramDate(row.ends_at, 'HH:mm')}` : ''
-  blocks.push({ type: 'paragraph', text: `🗓️ ${date}${endTime}` })
+  blocks.push({ type: 'paragraph', text: `${ICONS.date} ${date}${endTime}` })
 
   const mapUrl = row.location ? mapsUrl(row.location) : null
-  // Plain text, not a link — the "🧭 Direzioni" button just below already
+  // Plain text, not a link — the "Direzioni" button just below already
   // covers this exact URL, so a second inline hyperlink was redundant.
-  if (row.location?.name) blocks.push({ type: 'paragraph', text: `📍 ${row.location.name}` })
+  if (row.location?.name) blocks.push({ type: 'paragraph', text: `${ICONS.location} ${row.location.name}` })
 
   // Direzioni/Aggiungi al calendario as inline URL buttons right next to
   // the date/location they relate to, not stacked in torneoMenu's own
@@ -163,8 +164,8 @@ function tournamentDetailBlocks(row: DatedTournamentRow): InputRichMessage['bloc
   blocks.push({
     type: 'buttons',
     buttons: [
-      ...(mapUrl ? [{ text: '🧭 Direzioni', url: mapUrl }] : []),
-      { text: '🗓️ Aggiungi al calendario', url: calendarUrl }
+      ...(mapUrl ? [{ text: `${ICONS.directions} Direzioni`, url: mapUrl }] : []),
+      { text: `${ICONS.date} Aggiungi al calendario`, url: calendarUrl }
     ]
   })
 
@@ -173,8 +174,8 @@ function tournamentDetailBlocks(row: DatedTournamentRow): InputRichMessage['bloc
     const phone = row.contact_phone ? ` (${row.contact_phone})` : ''
     blocks.push({ type: 'paragraph', text: `☎️ Referente: ${row.contact_name}${phone}` })
   }
-  if (row.entry_fee !== null) blocks.push({ type: 'paragraph', text: `💶 Quota: ${row.entry_fee} €` })
-  if (row.prizes) blocks.push({ type: 'paragraph', text: `🏆 Premi: ${row.prizes}` })
+  if (row.entry_fee !== null) blocks.push({ type: 'paragraph', text: `${ICONS.fee} Quota: ${row.entry_fee} €` })
+  if (row.prizes) blocks.push({ type: 'paragraph', text: `${ICONS.trophy} Premi: ${row.prizes}` })
   if (row.description) blocks.push({ type: 'paragraph', text: row.description })
 
   return blocks
@@ -216,7 +217,7 @@ async function resolveBackTarget(
 ): Promise<MenuNavTarget> {
   if (origin.startsWith('l')) {
     const index = Number(origin.slice(1))
-    const blocks = await legaTorneiBlocks(ctx, index) ?? [{ type: 'paragraph', text: '🏆 Lega non trovata.' }]
+    const blocks = await legaTorneiBlocks(ctx, index) ?? [{ type: 'paragraph', text: `${ICONS.trophy} Lega non trovata.` }]
     return { payload: String(index), menu: getMenu('lt'), text: { blocks } }
   }
   if (origin === 'i') {
@@ -319,7 +320,7 @@ export const torneoMenu = new Menu<Context>('t', {
 
   if (!isExternalOrganizer(tournament)) {
     if (registration === 'checked_in') {
-      range.text({ text: '🎯 Check-in effettuato', payload }, async (ctx) => {
+      range.text({ text: `${ICONS.registrationCheckedIn} Check-in effettuato`, payload }, async (ctx) => {
         await ctx.answerCallbackQuery({
           text: 'Hai già fatto il check-in per questo torneo, non puoi più annullare l\'iscrizione da qui.',
           show_alert: true

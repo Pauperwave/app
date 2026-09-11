@@ -4,6 +4,7 @@ import { it } from 'date-fns/locale'
 import type { Bot, Context } from 'grammy'
 import type { InputRichMessage } from 'grammy/types'
 import type { CommandGroup } from '@grammyjs/commands'
+import { ICONS } from '../icons'
 import { resolveDeepLink } from '../deepLinks'
 
 // Quick-launch buttons for a few of the most-used commands, embedded as
@@ -37,8 +38,8 @@ function startBlocks(): InputRichMessage['blocks'] {
     {
       type: 'buttons',
       buttons: [
-        { text: '🎟️ Iscrizioni', callback_data: encodeHelpBtn('iscrizioni') },
-        { text: '🪪 Tessera', callback_data: encodeHelpBtn('tessera') }
+        { text: `${ICONS.ticket} Iscrizioni`, callback_data: encodeHelpBtn('iscrizioni') },
+        { text: `${ICONS.membershipCard} Tessera`, callback_data: encodeHelpBtn('tessera') }
       ]
     },
     { type: 'paragraph', text: 'Usa /collegamento per verificare se questa chat è già collegata a un socio.' },
@@ -66,9 +67,9 @@ function helpBlocks(): InputRichMessage['blocks'] {
     },
     { type: 'buttons', buttons: [{ text: '🟢 Status', callback_data: encodeHelpBtn('status') }] },
 
-    { type: 'paragraph', text: { type: 'bold', text: '🏆 Classifiche' } },
+    { type: 'paragraph', text: { type: 'bold', text: `${ICONS.trophy} Classifiche` } },
     { type: 'paragraph', text: '/classifiche — classifiche per formato' },
-    { type: 'buttons', buttons: [{ text: '🏆 Classifiche', callback_data: encodeHelpBtn('classifiche') }] },
+    { type: 'buttons', buttons: [{ text: `${ICONS.trophy} Classifiche`, callback_data: encodeHelpBtn('classifiche') }] },
 
     { type: 'paragraph', text: { type: 'bold', text: '🎲 Tornei e leghe' } },
     {
@@ -78,15 +79,15 @@ function helpBlocks(): InputRichMessage['blocks'] {
     {
       type: 'buttons',
       buttons: [
-        { text: '📅 Calendario', callback_data: encodeHelpBtn('calendario') },
-        { text: '🏆 Leghe', callback_data: encodeHelpBtn('leghe') },
+        { text: `${ICONS.calendar} Calendario`, callback_data: encodeHelpBtn('calendario') },
+        { text: `${ICONS.trophy} Leghe`, callback_data: encodeHelpBtn('leghe') },
         { text: '⏭️ Prossimo', callback_data: encodeHelpBtn('prossimo') }
       ]
     },
 
-    { type: 'paragraph', text: { type: 'bold', text: '🎟️ Le mie iscrizioni' } },
+    { type: 'paragraph', text: { type: 'bold', text: `${ICONS.ticket} Le mie iscrizioni` } },
     { type: 'paragraph', text: '/iscrizioni — i tornei a cui sei iscritto' },
-    { type: 'buttons', buttons: [{ text: '🎟️ Iscrizioni', callback_data: encodeHelpBtn('iscrizioni') }] },
+    { type: 'buttons', buttons: [{ text: `${ICONS.ticket} Iscrizioni`, callback_data: encodeHelpBtn('iscrizioni') }] },
 
     { type: 'paragraph', text: { type: 'bold', text: '🏟️ Durante un torneo (Commander)' } },
     {
@@ -114,7 +115,7 @@ function helpBlocks(): InputRichMessage['blocks'] {
       buttons: [
         { text: '🔗 Collegamento', callback_data: encodeHelpBtn('collegamento') },
         { text: '🔓 Scollegamento', callback_data: encodeHelpBtn('scollegamento') },
-        { text: '🪪 Tessera', callback_data: encodeHelpBtn('tessera') }
+        { text: `${ICONS.membershipCard} Tessera`, callback_data: encodeHelpBtn('tessera') }
       ]
     },
 
@@ -150,7 +151,7 @@ function statusCommandHandler(ctx: Context) {
   if (gitCommitSha) {
     lines.push(`🏷️ ${gitCommitSha.slice(0, 7)}`)
     if (gitCommitDate) {
-      lines.push(`🗓️ ${formatTelegramDate(gitCommitDate, 'd MMMM yyyy \'alle\' HH:mm', { locale: it })}`)
+      lines.push(`${ICONS.date} ${formatTelegramDate(gitCommitDate, 'd MMMM yyyy \'alle\' HH:mm', { locale: it })}`)
     }
   }
 

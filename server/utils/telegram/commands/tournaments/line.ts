@@ -64,7 +64,7 @@ interface TournamentLineInput {
 export function tournamentLine({
   status, name, stageSuffix = '', locationName, icon
 }: TournamentLineInput): FormattedString {
-  const location = locationName ? `\n📍 ${locationName}` : ''
+  const location = locationName ? `\n${ICONS.location} ${locationName}` : ''
   return fmt`${icon ?? statusIcon(status)} ${name}${stageSuffix}${location}`
 }
 

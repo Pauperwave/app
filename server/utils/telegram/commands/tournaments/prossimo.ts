@@ -54,9 +54,9 @@ function nextTournamentMessage(
 
   const date = formatTournamentDateTime(row.starts_at)
   const header = tournamentHeader(row.status, row.name, stageNumber)
-  const location = row.location?.name ? `\n📍 ${row.location.name}` : ''
+  const location = row.location?.name ? `\n${ICONS.location} ${row.location.name}` : ''
 
-  return fmt`🎲 ${FormattedString.b('Prossimo torneo')}\n\n${header}\n🗓️ ${date}${location}\n\n👇🏻 Tocca per i dettagli`
+  return fmt`🎲 ${FormattedString.b('Prossimo torneo')}\n\n${header}\n${ICONS.date} ${date}${location}\n\n👇🏻 Tocca per i dettagli`
 }
 
 // Markdown twin of nextTournamentMessage, for the Rich Message reply only
@@ -68,13 +68,13 @@ function nextTournamentMarkdown(row: NextTournamentRow | null, stageNumber: numb
 
   const date = formatTournamentDateTime(row.starts_at)
   const stage = stageLabel(stageNumber)
-  const location = row.location?.name ? `\n\n📍 ${row.location.name}` : ''
+  const location = row.location?.name ? `\n\n${ICONS.location} ${row.location.name}` : ''
 
   // \n\n, not \n — in Rich Message markdown mode a single \n is a soft
   // break (collapsed, like standard Markdown), not a real line break. See
   // core.ts's own comment on this. The name/date and date/location lines
   // below were previously running together on the same visual line.
-  return `## 🎲 Prossimo torneo\n\n${statusIcon(row.status)} **${row.name}**${stage}\n\n🗓️ ${date}${location}`
+  return `## 🎲 Prossimo torneo\n\n${statusIcon(row.status)} **${row.name}**${stage}\n\n${ICONS.date} ${date}${location}`
 }
 
 async function fetchNextTournamentWithStage(
