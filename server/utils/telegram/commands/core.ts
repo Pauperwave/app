@@ -88,7 +88,7 @@ function helpBlocks(): InputRichMessage['blocks'] {
     { type: 'paragraph', text: '/iscrizioni — i tornei a cui sei iscritto' },
     { type: 'buttons', buttons: [{ text: '🎟️ Iscrizioni', callback_data: encodeHelpBtn('iscrizioni') }] },
 
-    { type: 'paragraph', text: { type: 'bold', text: '🏟️ Durante un torneo' } },
+    { type: 'paragraph', text: { type: 'bold', text: '🏟️ Durante un torneo (Commander)' } },
     {
       type: 'paragraph',
       text: '🚧 /tavolo — tavolo, avversario del turno e comandante (in lavorazione, dati di esempio)\n'
