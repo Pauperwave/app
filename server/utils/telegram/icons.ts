@@ -10,7 +10,7 @@ export const ICONS = {
   statusExternal: '🏪',
   registrationCheckedIn: '🎯',
   registrationRegistered: '✅',
-  registrationNone: '🎲',
+  registrationNone: '⚪',
   openDetails: 'ℹ️',
   league: '🏆'
 } as const

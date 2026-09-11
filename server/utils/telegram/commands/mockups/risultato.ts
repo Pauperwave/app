@@ -316,7 +316,7 @@ function editState(state: ResultState): ResultState {
 function finalRichMessage(state: ResultState): InputRichMessage {
   return {
     blocks: [
-      { type: 'heading', size: 3, text: '📋 Riepilogo risultato' },
+      { type: 'heading', size: 3, text: '🧾 Riepilogo risultato' },
       summaryTableBlock(state, 'Risultato inviato'),
       { type: 'paragraph', text: 'Confermi?' },
       {

@@ -68,7 +68,7 @@ const tavoloMenu = new Menu<Context>('tv', {
   // Opens risultato.ts's own flow (position + kills) — user request,
   // 2026-09-07: a single entry point into result-reporting from the table
   // view itself, instead of a separate /risultato command to remember.
-  range.row().submenu({ text: '📋 Inserisci risultati', payload: '' }, 'ris', openRisultato)
+  range.row().submenu({ text: '✍️ Inserisci risultati', payload: '' }, 'ris', openRisultato)
 })
 
 // ctx.api, not bot.api — @grammyjs/menu can only render a menu's
