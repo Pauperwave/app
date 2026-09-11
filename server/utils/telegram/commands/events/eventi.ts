@@ -66,20 +66,30 @@ async function fetchEvent(uuid: string): Promise<EventRow | null> {
   return data as EventRow | null
 }
 
-// The command handler / back-button and each menu's own .dynamic() re-render
-// both re-run these same queries within the same update — memoizing by ctx
-// dedupes them. See perContextCache.ts.
+// Neither cache below dedupes a same-update repeat right now — eventiMenu
+// and eventoMenu carry no buttons of their own that re-run these fetches
+// (see EV_OPEN_PREFIX below), so each is only ever called once per update
+// today. Kept anyway per perContextCache.ts's own pattern: cheap insurance
+// if that changes, not a proven current savings.
 const memoize = createPerContextCache<{
   events: Promise<DatedEventRow[]>
-  event: Promise<EventRow | null>
+  eventsByUuid: Map<string, Promise<EventRow | null>>
 }>()
 
 function cachedFetchUpcomingEvents(ctx: Context): Promise<DatedEventRow[]> {
   return memoize(ctx, 'events', () => fetchUpcomingEvents())
 }
 
+// Keyed by uuid, not a single fixed cache slot — see detail.ts's
+// cachedFetchTournament for why (confirmed 2026-09-12 code review).
 function cachedFetchEvent(ctx: Context, uuid: string): Promise<EventRow | null> {
-  return memoize(ctx, 'event', () => fetchEvent(uuid))
+  const cache = memoize(ctx, 'eventsByUuid', () => new Map())
+  let entry = cache.get(uuid)
+  if (!entry) {
+    entry = fetchEvent(uuid)
+    cache.set(uuid, entry)
+  }
+  return entry
 }
 
 // A button right under each event, embedded as its own "buttons" block in

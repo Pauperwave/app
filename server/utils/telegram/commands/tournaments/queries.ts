@@ -75,8 +75,8 @@ export async function fetchRegistrationStatus(
   return data?.status === 'checked_in' ? 'checked_in' : (data ? 'registered' : null)
 }
 
-// Batched variant of the above for a whole list of tournaments (leghe.ts's
-// per-league view) — one query instead of one per tournament.
+// Batched variant of the above for a whole list of tournaments
+// (calendario.ts's month view) — one query instead of one per tournament.
 export async function fetchRegistrationStatuses(
   tournamentUuids: string[], associateUuid: string
 ): Promise<Map<string, RegistrationStatus>> {
