@@ -97,13 +97,25 @@ async function fetchTournament(uuid: string): Promise<DatedTournamentRow | null>
 // per-ctx cache since a registration action re-triggers .dynamic() within
 // the same update. See perContextCache.ts for why this works.
 const memoize = createPerContextCache<{
-  tournament: Promise<DatedTournamentRow | null>
+  tournaments: Map<string, Promise<DatedTournamentRow | null>>
   associateUuid: Promise<string | null>
   registration: Promise<RegistrationStatus>
 }>()
 
+// Keyed by uuid (not a single fixed cache slot) — today's callers only
+// ever resolve one uuid per update, so a fixed key would have worked too,
+// but that's an implicit assumption, not a guarantee. Keying by uuid means
+// a future caller resolving two different tournaments in the same update
+// gets two real fetches instead of the second silently reusing the
+// first's cached row. Confirmed 2026-09-12 code review.
 function cachedFetchTournament(ctx: Context, uuid: string): Promise<DatedTournamentRow | null> {
-  return memoize(ctx, 'tournament', () => fetchTournament(uuid))
+  const cache = memoize(ctx, 'tournaments', () => new Map())
+  let entry = cache.get(uuid)
+  if (!entry) {
+    entry = fetchTournament(uuid)
+    cache.set(uuid, entry)
+  }
+  return entry
 }
 
 function cachedResolveAssociateUuid(ctx: Context, chatId: number): Promise<string | null> {

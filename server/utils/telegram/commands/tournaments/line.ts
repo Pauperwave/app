@@ -49,25 +49,6 @@ export function tournamentHeader(
   return fmt`${statusIcon(status)} ${FormattedString.b(name)}${stageLabel(stageNumber)}`
 }
 
-interface TournamentLineInput {
-  status: string
-  name: string
-  // Left out (default '') where the caller already shows the stage
-  // elsewhere on its own line (leghe.ts's per-tournament date line).
-  stageSuffix?: string
-  locationName?: string | null
-  // Overrides the default statusIcon(status) — calendario.ts's own list
-  // uses this to show personalIcon() (the chat's registration) instead.
-  icon?: string
-}
-
-export function tournamentLine({
-  status, name, stageSuffix = '', locationName, icon
-}: TournamentLineInput): FormattedString {
-  const location = locationName ? `\n${ICONS.location} ${locationName}` : ''
-  return fmt`${icon ?? statusIcon(status)} ${name}${stageSuffix}${location}`
-}
-
 // Full date+time header shared by tournament/detail.ts's single-tournament
 // message and prossimo.ts's next-tournament card.
 export function formatTournamentDateTime(startsAt: string): string {

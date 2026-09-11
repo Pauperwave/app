@@ -65,9 +65,11 @@ async function fetchLeagueTournaments(leagueUuid: string): Promise<LeagueTournam
   return data as LeagueTournamentDetailRow[]
 }
 
-// legheBlocks (initial command) and legaTorneiBlocks (opening a league) each
-// independently re-run within the same update — memoizing by ctx dedupes
-// both pairs. See perContextCache.ts.
+// Neither cache below actually dedupes a same-update repeat right now —
+// legheBlocks and legaTorneiBlocks never both run in one update, so each
+// of cachedFetchActiveLeagues/cachedFetchLeagueDetail is only ever called
+// once per update today. Kept anyway per perContextCache.ts's own pattern:
+// cheap insurance if that changes, not a proven current savings.
 interface LeagueDetail {
   tournaments: LeagueTournamentDetailRow[]
   stageNumbers: Map<string, number>
@@ -75,21 +77,33 @@ interface LeagueDetail {
 
 const memoize = createPerContextCache<{
   leagues: Promise<ActiveLeagueRow[]>
-  leagueDetail: Promise<LeagueDetail>
+  leagueDetails: Map<string, Promise<LeagueDetail>>
 }>()
 
 function cachedFetchActiveLeagues(ctx: Context): Promise<ActiveLeagueRow[]> {
   return memoize(ctx, 'leagues', () => fetchActiveLeagues())
 }
 
+// Keyed by leagueUuid, not a single fixed cache slot — resolveBackTarget
+// and handleLgOpenButton each only ever resolve one league per update
+// today, but keying by id means that stays true even if a future caller
+// needs two different leagues' detail in the same update, instead of the
+// second call silently reusing the first's cached rows. Confirmed
+// 2026-09-12 code review.
 function cachedFetchLeagueDetail(ctx: Context, leagueUuid: string): Promise<LeagueDetail> {
-  return memoize(ctx, 'leagueDetail', async () => {
-    const [tournaments, stageNumbers] = await Promise.all([
-      fetchLeagueTournaments(leagueUuid),
-      fetchStageNumbers([leagueUuid])
-    ])
-    return { tournaments, stageNumbers }
-  })
+  const cache = memoize(ctx, 'leagueDetails', () => new Map())
+  let entry = cache.get(leagueUuid)
+  if (!entry) {
+    entry = (async () => {
+      const [tournaments, stageNumbers] = await Promise.all([
+        fetchLeagueTournaments(leagueUuid),
+        fetchStageNumbers([leagueUuid])
+      ])
+      return { tournaments, stageNumbers }
+    })()
+    cache.set(leagueUuid, entry)
+  }
+  return entry
 }
 
 // leagues[]'s own index stands in for the league's uuid in callback

@@ -56,16 +56,35 @@ function encodeResultState(state: ResultState): string {
   ].join(':')
 }
 
+// Every caller wraps this in a try/catch that falls back to
+// answerLoadError() on a bad payload — but that catch only fires if this
+// actually throws. `Number(undefined)` is NaN, not an error, so a
+// too-short/garbled payload used to decode into a silently-wrong
+// ResultState instead of tripping that catch. Confirmed 2026-09-12 code
+// review. Validate shape/parse results explicitly instead.
 function decodeResultState(raw: string): ResultState {
+  const parts = raw.split(':')
+  if (parts.length !== 8) throw new Error(`Malformed result state payload: "${raw}"`)
+
   const [
     position, positionConfirmed, killMask, killsConfirmed,
     deckVoteIndex, deckVoteConfirmed, playVoteIndex, playVoteConfirmed
-  ] = raw.split(':')
-  const optionalIndex = (value: string | undefined) => value === NONE ? null : Number(value)
+  ] = parts
+
+  const optionalIndex = (value: string | undefined): number | null => {
+    if (value === undefined) throw new Error(`Malformed result state payload: "${raw}"`)
+    if (value === NONE) return null
+    const parsed = Number(value)
+    if (Number.isNaN(parsed)) throw new Error(`Malformed result state payload: "${raw}"`)
+    return parsed
+  }
+  const mask = Number(killMask)
+  if (Number.isNaN(mask)) throw new Error(`Malformed result state payload: "${raw}"`)
+
   return {
     position: optionalIndex(position),
     positionConfirmed: positionConfirmed === '1',
-    killMask: Number(killMask),
+    killMask: mask,
     killsConfirmed: killsConfirmed === '1',
     deckVoteIndex: optionalIndex(deckVoteIndex),
     deckVoteConfirmed: deckVoteConfirmed === '1',
