@@ -12,6 +12,7 @@ import { torneoMenu, openTournamentDetail } from './detail'
 import { answerLoadError } from '../callbackErrors'
 import { registerMenu } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
+import { ICONS } from '../../icons'
 import { registerDeepLink } from '../../deepLinks'
 
 import { tournamentProgressByLeague } from '#shared/utils/leagues/tournamentProgressByLeague'
@@ -151,7 +152,7 @@ async function legheBlocks(ctx: Context): Promise<InputRichMessage['blocks']> {
     blocks.push({ type: 'paragraph', text: `🗓️ ${dateRange}` })
     blocks.push({
       type: 'buttons',
-      buttons: [{ text: 'Apri lega', callback_data: encodeLgOpenPayload(index) }]
+      buttons: [{ text: `${ICONS.league} Apri lega`, callback_data: encodeLgOpenPayload(index) }]
     })
   })
 
@@ -188,7 +189,7 @@ export async function legaTorneiBlocks(ctx: Context, index: number): Promise<Inp
 
     blocks.push({
       type: 'buttons',
-      buttons: [{ text: 'Apri dettagli', callback_data: encodeLtOpenPayload(tournament.uuid, index) }]
+      buttons: [{ text: `${ICONS.openDetails} Apri dettagli`, callback_data: encodeLtOpenPayload(tournament.uuid, index) }]
     })
   }
 

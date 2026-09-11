@@ -11,6 +11,7 @@ import { mapsUrl, googleCalendarUrl } from './eventLinks'
 import type { MapsAddress } from './eventLinks'
 import { navigateBack } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
+import { ICONS } from '../../icons'
 import { registerDeepLink } from '../../deepLinks'
 
 interface EventRow {
@@ -111,7 +112,7 @@ function eventiBlocks(events: DatedEventRow[]): InputRichMessage['blocks'] {
     blocks.push({ type: 'paragraph', text: `📅 ${date}: ${event.name}${location}` })
     blocks.push({
       type: 'buttons',
-      buttons: [{ text: 'Apri dettagli', callback_data: encodeEvOpenPayload(event.uuid) }]
+      buttons: [{ text: `${ICONS.openDetails} Apri dettagli`, callback_data: encodeEvOpenPayload(event.uuid) }]
     })
   }
 
