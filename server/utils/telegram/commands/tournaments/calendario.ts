@@ -15,6 +15,7 @@ import type { DatedTournamentRow, TournamentRow } from './detail'
 import { answerLoadError, requireChatId } from '../callbackErrors'
 import { registerMenu } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
+import { ICONS } from '../../icons'
 import { registerDeepLink } from '../../deepLinks'
 
 // Fetched once per render, filtered by month client-side — keeps the
@@ -154,7 +155,7 @@ function calendarioBlocks(
 
       blocks.push({
         type: 'buttons',
-        buttons: [{ text: 'Apri dettagli', callback_data: encodeCalOpenPayload(row.uuid, origin) }]
+        buttons: [{ text: `${ICONS.openDetails} Apri dettagli`, callback_data: encodeCalOpenPayload(row.uuid, origin) }]
       })
     }
   }

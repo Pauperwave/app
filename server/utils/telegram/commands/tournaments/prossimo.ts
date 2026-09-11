@@ -9,6 +9,7 @@ import { fetchStageNumbers, OPEN_TOURNAMENT_STATUSES } from './queries'
 import { torneoMenu, openTournamentDetail } from './detail'
 import { registerMenu } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
+import { ICONS } from '../../icons'
 import { registerDeepLink } from '../../deepLinks'
 
 interface NextTournamentRow {
@@ -119,7 +120,7 @@ export const prossimoMenu = new Menu<Context>('p', {
   if (!row) return
 
   range.text(
-    { text: 'Apri dettagli', payload: `${row.uuid}:p` },
+    { text: `${ICONS.openDetails} Apri dettagli`, payload: `${row.uuid}:p` },
     ctx => openTournamentDetail(ctx, row.uuid, 'p')
   )
 })
