@@ -30,7 +30,8 @@ export function stageLabel(stageNumber: number | null): string {
 // Unlike statusIcon() (the tournament's own status), this reflects the
 // linked chat's own registration to that specific tournament — shown
 // wherever a personalized view makes more sense than the tournament's
-// general status (leghe.ts's and calendario.ts's own per-tournament rows).
+// general status (calendario.ts's per-tournament rows, iscrizioni.ts's
+// own list — every row there is a registration by definition).
 export function personalIcon(registration: RegistrationStatus): string {
   if (registration === 'checked_in') return ICONS.registrationCheckedIn
   if (registration === 'registered') return ICONS.registrationRegistered

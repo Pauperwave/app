@@ -6,7 +6,7 @@ import type { InputRichMessage } from 'grammy/types'
 import type { CommandGroup } from '@grammyjs/commands'
 import { Menu } from '@grammyjs/menu'
 
-import { stageLabel } from './line'
+import { stageLabel, personalIcon } from './line'
 import { fetchStageNumbers, OPEN_TOURNAMENT_STATUSES } from './queries'
 import { torneoMenu, openTournamentDetail } from './detail'
 import { requireLinkedAssociate, resolveAssociateUuidByChatId } from '../account/linking'
@@ -37,7 +37,7 @@ interface RegistrationRow {
 }
 
 interface MyRegistration {
-  registrationStatus: string
+  registrationStatus: 'registered' | 'checked_in'
   tournament: MyTournamentRow
 }
 
@@ -69,8 +69,10 @@ async function fetchMyTournaments(associateUuid: string): Promise<MyRegistration
   const stageNumbers = await fetchStageNumbers(leagueUuids)
 
   return rows
-    .map(row => ({
-      registrationStatus: row.status,
+    .map((row): MyRegistration => ({
+      // Same normalization as queries.ts's own fetchRegistrationStatuses —
+      // any row present here is either checked in or plain registered.
+      registrationStatus: row.status === 'checked_in' ? 'checked_in' : 'registered',
       tournament: { ...row.tournament, stageNumber: stageNumbers.get(row.tournament.uuid) ?? null }
     }))
     .sort((a, b) => a.tournament.starts_at.localeCompare(b.tournament.starts_at))
@@ -83,12 +85,6 @@ const memoize = createPerContextCache<{ registrations: Promise<MyRegistration[]>
 
 function cachedFetchMyTournaments(ctx: Context, associateUuid: string): Promise<MyRegistration[]> {
   return memoize(ctx, 'registrations', () => fetchMyTournaments(associateUuid))
-}
-
-// Named registrationIcon, not statusIcon — line.ts already exports a
-// statusIcon for tournament status, a different meaning entirely.
-function registrationIcon(registrationStatus: string): string {
-  return registrationStatus === 'checked_in' ? ICONS.registrationCheckedIn : ICONS.registrationRegistered
 }
 
 // A button right under each tournament, embedded as its own "buttons"
@@ -125,7 +121,7 @@ function mieiTorneiBlocks(registrations: MyRegistration[]): InputRichMessage['bl
 
     blocks.push({
       type: 'paragraph',
-      text: [`${registrationIcon(registrationStatus)} `, { type: 'bold', text: tournament.name }, stage]
+      text: [`${personalIcon(registrationStatus)} `, { type: 'bold', text: tournament.name }, stage]
     })
     blocks.push({ type: 'paragraph', text: `🗓️ ${date}` })
     if (tournament.location?.name) blocks.push({ type: 'paragraph', text: `📍 ${tournament.location.name}` })

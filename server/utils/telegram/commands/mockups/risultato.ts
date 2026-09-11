@@ -424,51 +424,53 @@ async function risultatoCommandHandler(ctx: Context) {
 
 registerDeepLink('risultato', risultatoCommandHandler)
 
+type PrefixedStep = [prefix: string, render: (state: ResultState) => InputRichMessage]
+
+// Shared by richSteps (re-renders the same pending step) and transitions
+// (hands off to the *next* step) below — same decode/render/catch shape,
+// only the table differs. Returns whether a prefix matched, so the caller
+// can fall through to try the next table.
+async function tryHandleStep(ctx: Context, data: string, steps: PrefixedStep[]): Promise<boolean> {
+  for (const [prefix, render] of steps) {
+    if (!data.startsWith(prefix)) continue
+    try {
+      const state = decodeResultState(data.slice(prefix.length))
+      await showRichStep(ctx, render(state))
+    } catch {
+      await answerLoadError(ctx)
+    }
+    return true
+  }
+  return false
+}
+
 export function registerRisultatoCommand(bot: Bot, commands: CommandGroup<Context>) {
   bot.use(risultatoMenu)
 
   // Each entry re-renders the same step (a pick, still pending confirm) —
   // the *_CONFIRM_PREFIX handlers below hand off to the next step instead.
-  const richSteps: [prefix: string, render: (state: ResultState) => InputRichMessage][] = [
+  const richSteps: PrefixedStep[] = [
     [POSITION_PICK_PREFIX, positionRichMessage],
     [KILL_TOGGLE_PREFIX, killsRichMessage],
     [DECK_VOTE_PICK_PREFIX, deckVoteRichMessage],
     [PLAY_VOTE_PICK_PREFIX, playVoteRichMessage]
   ]
 
+  // Each of these hands off to a *different* step's Rich Message —
+  // prefix -> [decode offset, next render] pairs, same shape as richSteps.
+  const transitions: PrefixedStep[] = [
+    [POSITION_CONFIRM_PREFIX, killsRichMessage],
+    [KILL_CONFIRM_PREFIX, deckVoteRichMessage],
+    [DECK_VOTE_CONFIRM_PREFIX, playVoteRichMessage],
+    [PLAY_VOTE_CONFIRM_PREFIX, finalRichMessage],
+    [FINAL_EDIT_PREFIX, positionRichMessage]
+  ]
+
   bot.on('callback_query:data', async (ctx, next) => {
     const data = ctx.callbackQuery.data
 
-    for (const [prefix, render] of richSteps) {
-      if (!data.startsWith(prefix)) continue
-      try {
-        const state = decodeResultState(data.slice(prefix.length))
-        await showRichStep(ctx, render(state))
-      } catch {
-        await answerLoadError(ctx)
-      }
-      return
-    }
-
-    // Each of these hands off to a *different* step's Rich Message —
-    // prefix -> [decode offset, next render] pairs, same shape as richSteps.
-    const transitions: [prefix: string, render: (state: ResultState) => InputRichMessage][] = [
-      [POSITION_CONFIRM_PREFIX, killsRichMessage],
-      [KILL_CONFIRM_PREFIX, deckVoteRichMessage],
-      [DECK_VOTE_CONFIRM_PREFIX, playVoteRichMessage],
-      [PLAY_VOTE_CONFIRM_PREFIX, finalRichMessage],
-      [FINAL_EDIT_PREFIX, positionRichMessage]
-    ]
-    for (const [prefix, render] of transitions) {
-      if (!data.startsWith(prefix)) continue
-      try {
-        const state = decodeResultState(data.slice(prefix.length))
-        await showRichStep(ctx, render(state))
-      } catch {
-        await answerLoadError(ctx)
-      }
-      return
-    }
+    if (await tryHandleStep(ctx, data, richSteps)) return
+    if (await tryHandleStep(ctx, data, transitions)) return
 
     if (data.startsWith(FINAL_CONFIRM_PREFIX)) {
       try {
