@@ -135,7 +135,7 @@ function calendarioBlocks(
   })
 
   const blocks: InputRichMessage['blocks'] = [
-    { type: 'heading', size: 3, text: `📅 Tornei — ${monthLabel(month)}` }
+    { type: 'heading', size: 3, text: `${ICONS.calendar} Tornei — ${monthLabel(month)}` }
   ]
 
   if (!filtered.length) {
@@ -151,7 +151,7 @@ function calendarioBlocks(
       const icon = personalIcon(registrations.get(row.uuid) ?? null)
       const stage = stageLabel(row.stageNumber)
       blocks.push({ type: 'paragraph', text: `${icon} ${row.name}${stage}` })
-      if (row.location?.name) blocks.push({ type: 'paragraph', text: `📍 ${row.location.name}` })
+      if (row.location?.name) blocks.push({ type: 'paragraph', text: `${ICONS.location} ${row.location.name}` })
 
       blocks.push({
         type: 'buttons',

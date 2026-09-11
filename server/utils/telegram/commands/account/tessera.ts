@@ -6,6 +6,7 @@ import type { Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 
 import { requireLinkedAssociate } from './linking'
+import { ICONS } from '../../icons'
 import { registerDeepLink } from '../../deepLinks'
 
 interface AssociateStatusRow {
@@ -20,7 +21,7 @@ const STATUS_LABEL: Record<string, string> = {
   active: '✅ Attivo',
   to_renew: '⚠️ Da rinnovare',
   expired: '❌ Scaduto',
-  unpaid: '💶 Quota non pagata',
+  unpaid: `${ICONS.fee} Quota non pagata`,
   pending: '⏳ Richiesta in attesa di approvazione',
   approved: '✅ Approvato',
   rejected: '❌ Richiesta rifiutata'
@@ -45,7 +46,7 @@ async function fetchAssociateStatus(associateUuid: string): Promise<AssociateSta
 function tesseraMarkdown(row: AssociateStatusRow): string {
   const status = row.membership_status ? STATUS_LABEL[row.membership_status] ?? row.membership_status : 'Sconosciuto'
   const lines: string[] = [
-    `## 🪪 Tesseramento di ${row.first_name ?? 'te'}`,
+    `## ${ICONS.membershipCard} Tesseramento di ${row.first_name ?? 'te'}`,
     `Stato: ${status}`
   ]
 

@@ -98,7 +98,7 @@ function decodeEvOpenPayload(data: string): string {
 
 function eventiBlocks(events: DatedEventRow[]): InputRichMessage['blocks'] {
   const blocks: InputRichMessage['blocks'] = [
-    { type: 'heading', size: 3, text: '📅 Prossimi eventi' }
+    { type: 'heading', size: 3, text: `${ICONS.calendar} Prossimi eventi` }
   ]
 
   if (!events.length) {
@@ -109,7 +109,7 @@ function eventiBlocks(events: DatedEventRow[]): InputRichMessage['blocks'] {
   for (const event of events) {
     const date = formatTelegramDate(event.starts_at, 'd MMM', { locale: it })
     const location = event.location?.name ? ` — ${event.location.name}` : ''
-    blocks.push({ type: 'paragraph', text: `📅 ${date}: ${event.name}${location}` })
+    blocks.push({ type: 'paragraph', text: `${ICONS.calendar} ${date}: ${event.name}${location}` })
     blocks.push({
       type: 'buttons',
       buttons: [{ text: `${ICONS.openDetails} Apri dettagli`, callback_data: encodeEvOpenPayload(event.uuid) }]
@@ -147,13 +147,13 @@ function eventDetailBlocks(event: EventRow): InputRichMessage['blocks'] {
 
   const blocks: InputRichMessage['blocks'] = []
   if (event.image_url) blocks.push({ type: 'photo', photo: { type: 'photo', media: event.image_url } })
-  blocks.push({ type: 'heading', size: 3, text: `📅 ${event.name}` })
-  blocks.push({ type: 'paragraph', text: `🗓️ ${date}` })
+  blocks.push({ type: 'heading', size: 3, text: `${ICONS.calendar} ${event.name}` })
+  blocks.push({ type: 'paragraph', text: `${ICONS.date} ${date}` })
 
   const mapUrl = event.location ? mapsUrl(event.location) : null
-  // Plain text, not a link — the "🧭 Direzioni" button just below already
+  // Plain text, not a link — the "Direzioni" button just below already
   // covers this exact URL, so a second inline hyperlink was redundant.
-  if (event.location?.name) blocks.push({ type: 'paragraph', text: `📍 ${event.location.name}` })
+  if (event.location?.name) blocks.push({ type: 'paragraph', text: `${ICONS.location} ${event.location.name}` })
 
   // event.starts_at is nullable on this row (unlike the guaranteed-dated
   // DatedEventRow the list view uses) — no calendar link without a date.
@@ -166,8 +166,8 @@ function eventDetailBlocks(event: EventRow): InputRichMessage['blocks'] {
     })
     : null
   const linkButtons = [
-    ...(mapUrl ? [{ text: '🧭 Direzioni', url: mapUrl }] : []),
-    ...(calendarUrl ? [{ text: '🗓️ Aggiungi al calendario', url: calendarUrl }] : [])
+    ...(mapUrl ? [{ text: `${ICONS.directions} Direzioni`, url: mapUrl }] : []),
+    ...(calendarUrl ? [{ text: `${ICONS.date} Aggiungi al calendario`, url: calendarUrl }] : [])
   ]
   if (linkButtons.length) blocks.push({ type: 'buttons', buttons: linkButtons })
 

@@ -5,6 +5,7 @@ import { Menu } from '@grammyjs/menu'
 
 import { answerLoadError } from '../callbackErrors'
 import { createPerContextCache } from '../../perContextCache'
+import { ICONS } from '../../icons'
 import { registerDeepLink } from '../../deepLinks'
 
 import { groupBestNByPlayer, toBestNPlacement } from '#shared/utils/cittadino/bestNStandings'
@@ -141,7 +142,7 @@ function standingsMarkdown(
   rows: StandingsRow[],
   page: number
 ): string {
-  const header = `## 🏆 Classifica ${scopeLabel(scope)}`
+  const header = `## ${ICONS.trophy} Classifica ${scopeLabel(scope)}`
   if (!rows.length) return `${header}\n\nNessun dato disponibile.`
 
   const start = page * PAGE_SIZE

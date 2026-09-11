@@ -107,7 +107,7 @@ function decodeIscOpenPayload(data: string): string {
 
 function mieiTorneiBlocks(registrations: MyRegistration[]): InputRichMessage['blocks'] {
   const blocks: InputRichMessage['blocks'] = [
-    { type: 'heading', size: 3, text: '🎟️ I tuoi tornei' }
+    { type: 'heading', size: 3, text: `${ICONS.ticket} I tuoi tornei` }
   ]
 
   if (!registrations.length) {
@@ -123,8 +123,10 @@ function mieiTorneiBlocks(registrations: MyRegistration[]): InputRichMessage['bl
       type: 'paragraph',
       text: [`${personalIcon(registrationStatus)} `, { type: 'bold', text: tournament.name }, stage]
     })
-    blocks.push({ type: 'paragraph', text: `🗓️ ${date}` })
-    if (tournament.location?.name) blocks.push({ type: 'paragraph', text: `📍 ${tournament.location.name}` })
+    blocks.push({ type: 'paragraph', text: `${ICONS.date} ${date}` })
+    if (tournament.location?.name) {
+      blocks.push({ type: 'paragraph', text: `${ICONS.location} ${tournament.location.name}` })
+    }
 
     blocks.push({
       type: 'buttons',

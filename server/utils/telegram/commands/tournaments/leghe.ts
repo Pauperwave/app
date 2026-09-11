@@ -123,7 +123,7 @@ function decodeLtOpenPayload(data: string): { uuid: string, index: number } {
 // request 2026-09-09, applied to leghe.ts's two screens too).
 async function legheBlocks(ctx: Context): Promise<InputRichMessage['blocks']> {
   const leagues = await cachedFetchActiveLeagues(ctx)
-  if (!leagues.length) return [{ type: 'paragraph', text: '🏆 Nessuna lega attiva al momento.' }]
+  if (!leagues.length) return [{ type: 'paragraph', text: `${ICONS.trophy} Nessuna lega attiva al momento.` }]
 
   const leagueUuids = leagues.map(league => league.uuid)
   const supabase = publicSupabaseClient()
@@ -137,7 +137,7 @@ async function legheBlocks(ctx: Context): Promise<InputRichMessage['blocks']> {
   const { totals, completed } = tournamentProgressByLeague(tournaments as LeagueTournamentRow[])
 
   const blocks: InputRichMessage['blocks'] = [
-    { type: 'heading', size: 3, text: '🏆 Leghe attive' }
+    { type: 'heading', size: 3, text: `${ICONS.trophy} Leghe attive` }
   ]
 
   leagues.forEach((league, index) => {
@@ -147,12 +147,12 @@ async function legheBlocks(ctx: Context): Promise<InputRichMessage['blocks']> {
     const end = formatDate(league.ends_at)
     const dateRange = start && end ? `${start} → ${end}` : start ? `dal ${start}` : 'data da definire'
 
-    blocks.push({ type: 'paragraph', text: { type: 'bold', text: `🏆 ${league.name}` } })
+    blocks.push({ type: 'paragraph', text: { type: 'bold', text: `${ICONS.trophy} ${league.name}` } })
     if (total > 0) blocks.push({ type: 'paragraph', text: `📊 ${done}/${total} tappe` })
-    blocks.push({ type: 'paragraph', text: `🗓️ ${dateRange}` })
+    blocks.push({ type: 'paragraph', text: `${ICONS.date} ${dateRange}` })
     blocks.push({
       type: 'buttons',
-      buttons: [{ text: `${ICONS.league} Apri lega`, callback_data: encodeLgOpenPayload(index) }]
+      buttons: [{ text: `${ICONS.trophy} Apri lega`, callback_data: encodeLgOpenPayload(index) }]
     })
   })
 
@@ -168,7 +168,7 @@ export async function legaTorneiBlocks(ctx: Context, index: number): Promise<Inp
 
   const { tournaments, stageNumbers } = await cachedFetchLeagueDetail(ctx, league.uuid)
   const blocks: InputRichMessage['blocks'] = [
-    { type: 'heading', size: 3, text: `🏆 ${league.name}` }
+    { type: 'heading', size: 3, text: `${ICONS.trophy} ${league.name}` }
   ]
 
   if (!tournaments.length) {
@@ -185,7 +185,9 @@ export async function legaTorneiBlocks(ctx: Context, index: number): Promise<Inp
       type: 'paragraph',
       text: [`${statusIcon(tournament.status)} `, { type: 'bold', text: tournament.name }]
     })
-    if (tournament.location?.name) blocks.push({ type: 'paragraph', text: `📍 ${tournament.location.name}` })
+    if (tournament.location?.name) {
+      blocks.push({ type: 'paragraph', text: `${ICONS.location} ${tournament.location.name}` })
+    }
 
     blocks.push({
       type: 'buttons',
