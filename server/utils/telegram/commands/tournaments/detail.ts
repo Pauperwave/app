@@ -256,6 +256,9 @@ async function handleCancelRegistration(
     const { error } = await supabase.from('tournament_registrations').delete().eq('uuid', existing.uuid)
     if (error) throw error
 
+    // See perContextCache.ts's own comment on why this overwrite is needed
+    // before ctx.menu.update() can re-render with the right button.
+    memoize.set(ctx, 'registration', Promise.resolve(null))
     ctx.menu.update()
     await ctx.answerCallbackQuery({ text: '✅ Iscrizione annullata.' })
   } catch {
@@ -280,6 +283,9 @@ async function handleRegister(
     })
     if (error) throw error
 
+    // See perContextCache.ts's own comment on why this overwrite is needed
+    // before ctx.menu.update() can re-render with the right button.
+    memoize.set(ctx, 'registration', Promise.resolve('registered'))
     ctx.menu.update()
     await ctx.answerCallbackQuery({ text: '✅ Iscrizione confermata!' })
   } catch {

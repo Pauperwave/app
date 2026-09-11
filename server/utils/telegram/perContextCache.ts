@@ -8,7 +8,20 @@ import type { Context } from 'grammy'
 // caching a fetch by ctx (garbage-collected once the update finishes)
 // dedupes a query/request that would otherwise run twice per update.
 // Generalized out of tournament/detail.ts's original hand-rolled WeakMap.
-export function createPerContextCache<T extends Record<string, unknown>>() {
+interface PerContextCache<T extends Record<string, unknown>> {
+  <K extends keyof T>(ctx: Context, key: K, fetch: () => T[K]): T[K]
+  // Overwrites an already-memoized value for this ctx — for a mutation
+  // that invalidates a value cached earlier in the same update (grammY's
+  // own button-press matching re-runs .dynamic() *before* calling the
+  // pressed button's handler, which can memoize a pre-mutation value that
+  // a later ctx.menu.update() would otherwise reuse stale). See
+  // tournament/detail.ts's handleRegister/handleCancelRegistration for the
+  // concrete case this was added for (confirmed 2026-09-11 — the
+  // Iscriviti/Annulla button wasn't flipping after a successful action).
+  set<K extends keyof T>(ctx: Context, key: K, value: T[K]): void
+}
+
+export function createPerContextCache<T extends Record<string, unknown>>(): PerContextCache<T> {
   const store = new WeakMap<Context, Partial<T>>()
 
   function getCache(ctx: Context): Partial<T> {
@@ -20,8 +33,14 @@ export function createPerContextCache<T extends Record<string, unknown>>() {
     return cache
   }
 
-  return function memoize<K extends keyof T>(ctx: Context, key: K, fetch: () => T[K]): T[K] {
+  const memoize = ((ctx, key, fetch) => {
     const cache = getCache(ctx)
-    return cache[key] ??= fetch()
+    return (cache[key] ??= fetch())
+  }) as PerContextCache<T>
+
+  memoize.set = (ctx, key, value) => {
+    getCache(ctx)[key] = value
   }
+
+  return memoize
 }
