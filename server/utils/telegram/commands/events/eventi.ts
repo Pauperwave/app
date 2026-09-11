@@ -171,7 +171,7 @@ function eventDetailBlocks(event: EventRow): InputRichMessage['blocks'] {
   ]
   if (linkButtons.length) blocks.push({ type: 'buttons', buttons: linkButtons })
 
-  if (event.organizer?.name) blocks.push({ type: 'paragraph', text: `🏳️ Organizzatore: ${event.organizer.name}` })
+  if (event.organizer?.name) blocks.push({ type: 'paragraph', text: `🏢 Organizzatore: ${event.organizer.name}` })
 
   return blocks
 }

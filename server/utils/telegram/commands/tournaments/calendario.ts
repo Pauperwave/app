@@ -135,7 +135,7 @@ function calendarioBlocks(
   })
 
   const blocks: InputRichMessage['blocks'] = [
-    { type: 'heading', size: 3, text: `🎲 Tornei — ${monthLabel(month)}` }
+    { type: 'heading', size: 3, text: `📅 Tornei — ${monthLabel(month)}` }
   ]
 
   if (!filtered.length) {

@@ -168,7 +168,7 @@ function tournamentDetailBlocks(row: DatedTournamentRow): InputRichMessage['bloc
     ]
   })
 
-  if (row.organizer?.name) blocks.push({ type: 'paragraph', text: `🏳️ Organizzatore: ${row.organizer.name}` })
+  if (row.organizer?.name) blocks.push({ type: 'paragraph', text: `🏢 Organizzatore: ${row.organizer.name}` })
   if (row.contact_name) {
     const phone = row.contact_phone ? ` (${row.contact_phone})` : ''
     blocks.push({ type: 'paragraph', text: `☎️ Referente: ${row.contact_name}${phone}` })
