@@ -94,17 +94,26 @@ function helpBlocks(): InputRichMessage['blocks'] {
     { type: 'paragraph', text: '/iscrizioni — i tornei a cui sei iscritto' },
     { type: 'buttons', buttons: [{ text: `${ICONS.ticket} Iscrizioni`, callback_data: encodeHelpBtn('iscrizioni') }] },
 
-    { type: 'paragraph', text: { type: 'bold', text: '🏟️ Durante un torneo (Commander)' } },
+    { type: 'paragraph', text: { type: 'bold', text: '🏟️ Durante un torneo' } },
     {
       type: 'paragraph',
-      text: '🚧 /tavolo — tavolo, avversario del turno e comandante (in lavorazione, dati di esempio)\n'
-        + '🚧 /risultato — posizione, uccisioni e voti di fine turno (in lavorazione, dati di esempio)'
+      text: '🚧 /tavolo — tavolo, avversario del turno e comandante (Commander, in lavorazione, dati di esempio)\n'
+        + '🚧 /risultato — posizione, uccisioni e voti di fine turno (Commander, in lavorazione, dati di esempio)\n'
+        + '/dado — un dado a 6 facce (animato)\n/moneta — testa o croce\n/tira [facce] — un dado a N facce (default 20)'
     },
     {
       type: 'buttons',
       buttons: [
         { text: '🪑 Tavolo', callback_data: encodeHelpBtn('tavolo') },
         { text: '🏅 Risultato', callback_data: encodeHelpBtn('risultato') }
+      ]
+    },
+    {
+      type: 'buttons',
+      buttons: [
+        { text: '🎲 Dado', callback_data: encodeHelpBtn('dado') },
+        { text: '🪙 Moneta', callback_data: encodeHelpBtn('moneta') },
+        { text: '🔢 Tira', callback_data: encodeHelpBtn('tira') }
       ]
     },
 
@@ -121,20 +130,6 @@ function helpBlocks(): InputRichMessage['blocks'] {
         { text: '🔗 Collegamento', callback_data: encodeHelpBtn('collegamento') },
         { text: '🔓 Scollegamento', callback_data: encodeHelpBtn('scollegamento') },
         { text: `${ICONS.membershipCard} Tessera`, callback_data: encodeHelpBtn('tessera') }
-      ]
-    },
-
-    { type: 'paragraph', text: { type: 'bold', text: '🎰 Dadi' } },
-    {
-      type: 'paragraph',
-      text: '/dado — un dado a 6 facce (animato)\n/moneta — testa o croce\n/tira [facce] — un dado a N facce (default 20)'
-    },
-    {
-      type: 'buttons',
-      buttons: [
-        { text: '🎲 Dado', callback_data: encodeHelpBtn('dado') },
-        { text: '🪙 Moneta', callback_data: encodeHelpBtn('moneta') },
-        { text: '🔢 Tira', callback_data: encodeHelpBtn('tira') }
       ]
     },
 
