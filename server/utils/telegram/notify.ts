@@ -5,10 +5,12 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
 // Chat ids are Telegram's, not this app's user/associate ids — the caller
-// must already know which chat to target.
+// must already know which chat to target. Returns the sent Message so
+// callers needing its message_id (e.g. supporto.ts's reply-thread mapping)
+// don't have to call bot.api.sendMessage themselves.
 export async function sendTelegramMessage(chatId: number | string, text: string) {
   const bot = useTelegramBot()
-  await bot.api.sendMessage(chatId, text)
+  return bot.api.sendMessage(chatId, text)
 }
 
 // Recipients resolved from the database, not a hardcoded chat id — a static

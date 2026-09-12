@@ -1139,6 +1139,30 @@ export type Database = {
         }
         Relationships: []
       }
+      pauperwave_telegram_support_threads: {
+        Row: {
+          admin_chat_id: number
+          admin_message_id: number
+          created_at: string
+          id: number
+          member_chat_id: number
+        }
+        Insert: {
+          admin_chat_id: number
+          admin_message_id: number
+          created_at?: string
+          id?: never
+          member_chat_id: number
+        }
+        Update: {
+          admin_chat_id?: number
+          admin_message_id?: number
+          created_at?: string
+          id?: never
+          member_chat_id?: number
+        }
+        Relationships: []
+      }
       pauperwave_wanted_cards: {
         Row: {
           card_name: string
