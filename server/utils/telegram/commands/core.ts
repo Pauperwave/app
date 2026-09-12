@@ -124,6 +124,20 @@ function helpBlocks(): InputRichMessage['blocks'] {
       ]
     },
 
+    { type: 'paragraph', text: { type: 'bold', text: '🎰 Dadi' } },
+    {
+      type: 'paragraph',
+      text: '/dado — un dado a 6 facce (animato)\n/moneta — testa o croce\n/tira [facce] — un dado a N facce (default 20)'
+    },
+    {
+      type: 'buttons',
+      buttons: [
+        { text: '🎲 Dado', callback_data: encodeHelpBtn('dado') },
+        { text: '🪙 Moneta', callback_data: encodeHelpBtn('moneta') },
+        { text: '🔢 Tira', callback_data: encodeHelpBtn('tira') }
+      ]
+    },
+
     { type: 'paragraph', text: { type: 'bold', text: '💬 Supporto' } },
     { type: 'paragraph', text: '/supporto — inoltra un messaggio allo staff' },
     { type: 'buttons', buttons: [{ text: '💬 Supporto', callback_data: encodeHelpBtn('supporto') }] }
