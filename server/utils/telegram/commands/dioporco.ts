@@ -1,7 +1,6 @@
 // server\utils\telegram\commands\dioporco.ts
-import type { Context } from 'grammy'
+import type { Bot, Context } from 'grammy'
 import type { InputRichMessage } from 'grammy/types'
-import type { CommandGroup } from '@grammyjs/commands'
 import { encodeHelpBtn } from './core'
 import { registerDeepLink } from '../deepLinks'
 
@@ -36,6 +35,11 @@ async function dioporcoCommandHandler(ctx: Context) {
 
 registerDeepLink('dioporco', dioporcoCommandHandler)
 
-export function registerDioporcoCommand(commands: CommandGroup<Context>) {
-  commands.command('dioporco', 'Sfogati un po\'', dioporcoCommandHandler)
+// bot.command() (grammY core), not commands.command() (@grammyjs/commands'
+// CommandGroup) — the CommandGroup is what commands.setCommands() reads to
+// populate Telegram's own "/" picker, so registering here instead keeps
+// this easter egg working when typed while staying out of that list and
+// out of /help's own command listing.
+export function registerDioporcoCommand(bot: Bot) {
+  bot.command('dioporco', dioporcoCommandHandler)
 }

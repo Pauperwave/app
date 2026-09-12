@@ -1,8 +1,9 @@
 // server\utils\telegram\commands\index.ts
 import type { Bot, Context } from 'grammy'
+import { InlineKeyboard } from 'grammy'
 import { CommandGroup } from '@grammyjs/commands'
 
-import { registerCoreCommands, registerHelpButtonHandler } from './core'
+import { registerCoreCommands, registerHelpButtonHandler, encodeHelpBtn } from './core'
 import { registerClassificheCommand } from './standings/classifiche'
 import { registerEventiCommand } from './events/eventi'
 import { registerCalendarioCommand } from './tournaments/calendario'
@@ -40,7 +41,7 @@ export function registerCommands(bot: Bot) {
   registerProssimoCommand(bot, commands)
   registerIscrizioniCommand(bot, commands)
   registerSupportoCommand(bot, commands)
-  registerDioporcoCommand(commands)
+  registerDioporcoCommand(bot)
   registerDiceCommands(commands)
   registerTesseraCommand(commands)
   registerCollegamentoCommand(commands)
@@ -60,7 +61,11 @@ export function registerCommands(bot: Bot) {
   // Registered last of all — every other handler above calls next() when a
   // message isn't theirs to handle, so anything still unclaimed here is
   // genuinely not a recognized command, prompt reply, or linking attempt.
-  bot.on('message:text', ctx => ctx.reply(UNKNOWN_MESSAGE_TEXT))
+  // Reuses core.ts's own helpbtn: mechanism (handleHelpButton, registered
+  // bot-wide) instead of a separate callback_query handler just for this.
+  bot.on('message:text', ctx => ctx.reply(UNKNOWN_MESSAGE_TEXT, {
+    reply_markup: new InlineKeyboard().text('📖 Help', encodeHelpBtn('help'))
+  }))
 
   // Best-effort, same reasoning as notify.ts's own best-effort sends — a
   // Telegram hiccup here must never block the bot instance from being
