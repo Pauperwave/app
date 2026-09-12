@@ -6,6 +6,9 @@ import { Menu } from '@grammyjs/menu'
 
 import { answerLoadError } from '../callbackErrors'
 import { registerDeepLink } from '../../deepLinks'
+import { MOCK_FORMAT } from './mockPairing'
+import { risultato1v1CommandHandler, registerRisultato1v1Handlers } from './risultato1v1'
+import { showRichStep, twoColumnFactsTable } from './richStepHelpers'
 
 // MOCKUP — no live-write flow yet (docs/architecture/telegram-bot.md).
 // Commander itself is set separately, at round start, via /tavolo.
@@ -239,23 +242,12 @@ function playVoteRichMessage(state: ResultState): InputRichMessage {
 // paragraph of arrow-separated lines, matching the votes/score tables.
 function summaryTableBlock(state: ResultState, caption: string) {
   const kills = killedNames(state.killMask)
-  const row = (label: string, value: string) => [
-    { text: label, align: 'left' as const, valign: 'middle' as const },
-    { text: value, align: 'left' as const, valign: 'middle' as const }
-  ]
-  return {
-    type: 'table' as const,
-    is_bordered: true as const,
-    is_striped: true as const,
-    caption,
-    cells: [
-      row('Categoria', 'Valore').map(cell => ({ ...cell, is_header: true as const })),
-      row('🏅 Posizionamento', `${state.position}°`),
-      row('💀 Uccisioni', kills.length ? kills.join(', ') : 'Nessuna'),
-      row('🃏 Voto mazzo', MOCK_OPPONENTS[state.deckVoteIndex ?? 0] ?? '-'),
-      row('🎬 Voto giocata', MOCK_OPPONENTS[state.playVoteIndex ?? 0] ?? '-')
-    ]
-  }
+  return twoColumnFactsTable(caption, [
+    ['🏅 Posizionamento', `${state.position}°`],
+    ['💀 Uccisioni', kills.length ? kills.join(', ') : 'Nessuna'],
+    ['🃏 Voto mazzo', MOCK_OPPONENTS[state.deckVoteIndex ?? 0] ?? '-'],
+    ['🎬 Voto giocata', MOCK_OPPONENTS[state.playVoteIndex ?? 0] ?? '-']
+  ])
 }
 
 // MOCKUP — which opponents voted for the deck/play is hardcoded sample
@@ -366,20 +358,6 @@ export const risultatoMenu = new Menu<Context>('ris', {
   onMenuOutdated: false
 }).dynamic(() => {})
 
-// editMessageText only replaces reply_markup when one is passed explicitly
-// — it won't clear a stale inline keyboard just because the new content is
-// a rich_message instead of plain text.
-function editRichMessage(ctx: Context, message: InputRichMessage) {
-  return ctx.editMessageText(message, { reply_markup: { inline_keyboard: [] } })
-}
-
-// editMessageText and answerCallbackQuery are independent Telegram API
-// calls — awaiting them sequentially adds a full extra round-trip of
-// perceived latency to every tap for no reason, so they run concurrently.
-function showRichStep(ctx: Context, message: InputRichMessage) {
-  return Promise.all([editRichMessage(ctx, message), ctx.answerCallbackQuery()])
-}
-
 // MOCKUP scoring — no real point system exists yet for 1v1 formats
 // (docs/architecture/telegram-bot.md's own Note on this). Placeholder
 // values only, to preview the shape of a per-round score summary.
@@ -429,15 +407,24 @@ async function sendConfirmedResult(ctx: Context, state: ResultState) {
 }
 
 // Shared entry point for both /risultato and tavolo.ts's own "Inserisci
-// risultati" button.
+// risultati" button — tavolo.ts branches on MOCK_FORMAT itself to pick
+// which of openRisultato/openRisultato1v1 its own button opens, so this
+// one only ever needs to handle the Commander case.
 export async function openRisultato(ctx: Context) {
   await showRichStep(ctx, positionRichMessage(INITIAL_STATE))
 }
 
 // Extracted so it can be reused verbatim by t.me/<bot>?start=risultato —
 // see deepLinks.ts. Not openRisultato: that one edits/answers an existing
-// callback query, which a fresh /start context doesn't have.
+// callback query, which a fresh /start context doesn't have. Branches on
+// MOCK_FORMAT since /risultato (unlike /tavolo's own button) has no
+// button context to infer the format from — user decision 2026-09-12:
+// one command, format-detected, not two commands to remember.
 async function risultatoCommandHandler(ctx: Context) {
+  if (MOCK_FORMAT === '1v1') {
+    await risultato1v1CommandHandler(ctx)
+    return
+  }
   await ctx.replyWithRichMessage(positionRichMessage(INITIAL_STATE))
 }
 
@@ -465,6 +452,7 @@ async function tryHandleStep(ctx: Context, data: string, steps: PrefixedStep[]):
 
 export function registerRisultatoCommand(bot: Bot, commands: CommandGroup<Context>) {
   bot.use(risultatoMenu)
+  registerRisultato1v1Handlers(bot)
 
   // Each entry re-renders the same step (a pick, still pending confirm) —
   // the *_CONFIRM_PREFIX handlers below hand off to the next step instead.
@@ -503,5 +491,5 @@ export function registerRisultatoCommand(bot: Bot, commands: CommandGroup<Contex
     await next()
   })
 
-  commands.command('risultato', 'Registra posizione, uccisioni e voti del tavolo', risultatoCommandHandler)
+  commands.command('risultato', 'Registra il risultato del turno', risultatoCommandHandler)
 }

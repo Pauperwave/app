@@ -5,21 +5,26 @@ import type { InlineQueryResultArticle, InputRichMessage } from 'grammy/types'
 import { Menu } from '@grammyjs/menu'
 
 import { risultatoMenu, openRisultato } from './risultato'
+import { risultato1v1Menu, openRisultato1v1 } from './risultato1v1'
+import { MOCK_FORMAT, type TableFormat } from './mockPairing'
 import { registerDeepLink } from '../../deepLinks'
 
 // MOCKUP — tournament_pairings has no live-write flow yet (see
 // docs/architecture/telegram-bot.md), so this is hardcoded sample data
 // standing in for a real pairing lookup, to preview the intended UX.
-const MOCK_TABLE = {
-  number: 7,
-  opponents: ['Marco Rossi', 'Giulia Bianchi', 'Luca Verdi']
+// Opponent count differs by format (a 1v1 pairing has exactly one), hence
+// a table per MOCK_FORMAT rather than one fixed opponents list.
+const MOCK_TABLE_BY_FORMAT: Record<TableFormat, { number: number, opponents: string[] }> = {
+  'commander': { number: 7, opponents: ['Marco Rossi', 'Giulia Bianchi', 'Luca Verdi'] },
+  '1v1': { number: 3, opponents: ['Marco Rossi'] }
 }
 
 function tavoloMarkdown(): string {
+  const table = MOCK_TABLE_BY_FORMAT[MOCK_FORMAT]
   // "- " (a real markdown list item), not "• " — see core.ts's HELP_TEXT
   // comment on why a plain bullet character still needs \n\n to break.
-  const lines = MOCK_TABLE.opponents.map(name => `- ${name}`)
-  return `## 🪑 Tavolo ${MOCK_TABLE.number}\n\nGiochi con:\n${lines.join('\n')}`
+  const lines = table.opponents.map(name => `- ${name}`)
+  return `## 🪑 Tavolo ${table.number}\n\nGiochi con:\n${lines.join('\n')}`
 }
 
 // Scryfall requires a descriptive User-Agent — same convention as
@@ -83,14 +88,24 @@ const tavoloMenu = new Menu<Context>('tv', {
   autoAnswer: false,
   onMenuOutdated: false
 }).dynamic((_ctx, range) => {
-  // Puts the input field into inline mode on this chat (requires BotFather:
-  // /setinline) — bot.on('inline_query') answers live as the user types.
-  range.switchInlineCurrent('🎴 Imposta comandante', '')
+  // Commander only — 1v1 formats have no commander to set. Puts the input
+  // field into inline mode on this chat (requires BotFather: /setinline) —
+  // bot.on('inline_query') answers live as the user types.
+  if (MOCK_FORMAT === 'commander') {
+    range.switchInlineCurrent('🎴 Imposta comandante', '')
+    range.row()
+  }
 
-  // Opens risultato.ts's own flow (position + kills) — user request,
-  // 2026-09-07: a single entry point into result-reporting from the table
-  // view itself, instead of a separate /risultato command to remember.
-  range.row().submenu({ text: '✍️ Inserisci risultati', payload: '' }, 'ris', openRisultato)
+  // Opens risultato.ts's own Commander flow (position + kills + votes) or
+  // risultato1v1.ts's own match-outcome flow, depending on MOCK_FORMAT —
+  // user request 2026-09-07: a single entry point into result-reporting
+  // from the table view itself, instead of a separate /risultato command
+  // to remember.
+  if (MOCK_FORMAT === 'commander') {
+    range.submenu({ text: '✍️ Inserisci risultati', payload: '' }, 'ris', openRisultato)
+  } else {
+    range.submenu({ text: '✍️ Inserisci risultati', payload: '' }, 'ris1v1', openRisultato1v1)
+  }
 })
 
 // ctx.api, not bot.api — @grammyjs/menu can only render a menu's
@@ -120,7 +135,11 @@ export function registerTavoloCommand(bot: Bot, commands: CommandGroup<Context>)
   // Deferred to call time — same circular-import reasoning as
   // calendario.ts's own comment (risultato.ts has no back-reference to
   // tavolo.ts today, but registering here keeps the convention consistent).
+  // Both submenu targets registered unconditionally, regardless of which
+  // one MOCK_FORMAT actually renders — same reasoning as tournament/
+  // detail.ts's torneoMenu being registered by all four of its parents.
   tavoloMenu.register(risultatoMenu)
+  tavoloMenu.register(risultato1v1Menu)
   bot.use(tavoloMenu)
 
   commands.command('tavolo', 'Tavolo e avversario del turno', tavoloCommandHandler)

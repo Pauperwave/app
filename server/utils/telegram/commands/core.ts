@@ -97,9 +97,8 @@ function helpBlocks(): InputRichMessage['blocks'] {
     { type: 'paragraph', text: { type: 'bold', text: '🏟️ Durante un torneo' } },
     {
       type: 'paragraph',
-      text: '🚧 /tavolo — tavolo, avversario del turno e comandante (Commander, in lavorazione, dati di esempio)\n'
-        + '🚧 /risultato — posizione, uccisioni e voti di fine turno (Commander, in lavorazione, dati di esempio)\n'
-        + '/dado — un dado a 6 facce (animato)\n/moneta — testa o croce\n/tira [facce] — un dado a N facce (default 20)'
+      text: '🚧 /tavolo — tavolo, avversario del turno e comandante se presente (in lavorazione, dati di esempio)\n'
+        + '🚧 /risultato — risultato del turno, Commander o 1v1 (in lavorazione, dati di esempio)'
     },
     {
       type: 'buttons',
@@ -107,6 +106,12 @@ function helpBlocks(): InputRichMessage['blocks'] {
         { text: '🪑 Tavolo', callback_data: encodeHelpBtn('tavolo') },
         { text: '🏅 Risultato', callback_data: encodeHelpBtn('risultato') }
       ]
+    },
+
+    { type: 'paragraph', text: { type: 'bold', text: '🎰 Dadi' } },
+    {
+      type: 'paragraph',
+      text: '/dado — un dado a 6 facce (animato)\n/moneta — testa o croce\n/tira [facce] — un dado a N facce (default 20)'
     },
     {
       type: 'buttons',
