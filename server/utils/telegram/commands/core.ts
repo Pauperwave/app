@@ -98,13 +98,15 @@ function helpBlocks(): InputRichMessage['blocks'] {
     {
       type: 'paragraph',
       text: '🚧 /tavolo — tavolo, avversario del turno e comandante se presente (in lavorazione, dati di esempio)\n'
-        + '🚧 /risultato — risultato del turno, Commander o 1v1 (in lavorazione, dati di esempio)'
+        + '🚧 /risultato — risultato del turno, Commander o 1v1 (in lavorazione, dati di esempio)\n'
+        + '/turni — contatore dei turni aggiuntivi a fine tempo'
     },
     {
       type: 'buttons',
       buttons: [
         { text: '🪑 Tavolo', callback_data: encodeHelpBtn('tavolo') },
-        { text: '🏅 Risultato', callback_data: encodeHelpBtn('risultato') }
+        { text: '🏅 Risultato', callback_data: encodeHelpBtn('risultato') },
+        { text: '🔢 Turni', callback_data: encodeHelpBtn('turni') }
       ]
     },
 

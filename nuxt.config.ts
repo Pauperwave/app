@@ -204,7 +204,8 @@ export default defineNuxtConfig({
         '/classifiche/commander', '/classifiche/commander/**',
         '/classifiche/premodern', '/classifiche/premodern/**',
         '/classifiche/pauper', '/classifiche/pauper/**',
-        '/calendario', '/calendario/**'
+        '/calendario', '/calendario/**',
+        '/telegram', '/telegram/**'
       ]
     },
     cookieOptions: {

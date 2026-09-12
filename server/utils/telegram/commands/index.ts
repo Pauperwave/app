@@ -12,6 +12,7 @@ import { registerProssimoCommand } from './tournaments/prossimo'
 import { registerIscrizioniCommand } from './tournaments/iscrizioni'
 import { registerSupportoCommand } from './supporto'
 import { registerDiceCommands } from './dice'
+import { registerTurniCommand } from './turni'
 import { registerTesseraCommand } from './account/tessera'
 import { registerCollegamentoCommand } from './account/collegamento'
 import { registerTavoloCommand } from './mockups/tavolo'
@@ -41,6 +42,7 @@ export function registerCommands(bot: Bot) {
   registerIscrizioniCommand(bot, commands)
   registerSupportoCommand(bot, commands)
   registerDiceCommands(commands)
+  registerTurniCommand(commands)
   registerTesseraCommand(commands)
   registerCollegamentoCommand(commands)
   registerTavoloCommand(bot, commands)
