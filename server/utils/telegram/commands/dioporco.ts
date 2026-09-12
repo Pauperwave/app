@@ -2,6 +2,7 @@
 import type { Context } from 'grammy'
 import type { InputRichMessage } from 'grammy/types'
 import type { CommandGroup } from '@grammyjs/commands'
+import { encodeHelpBtn } from './core'
 import { registerDeepLink } from '../deepLinks'
 
 // Ilharg, the Raze-Boar (WAR 133) — a literal "Boar God" creature type, so
@@ -20,7 +21,10 @@ function dioporcoBlocks(): InputRichMessage['blocks'] {
       text: 'Hai evocato Ilharg, l\'unico vero Boar God di Magic — letteralmente un "dio porco". '
         + 'Speriamo ti sia sfogato.'
     },
-    { type: 'paragraph', text: 'Ora torna in te e usa /help per vedere i comandi disponibili.' }
+    { type: 'paragraph', text: 'Ora torna in te e usa /help per vedere i comandi disponibili.' },
+    // Reuses core.ts's own helpbtn: mechanism (handleHelpButton, registered
+    // bot-wide) instead of a separate callback_query handler just for this.
+    { type: 'buttons', buttons: [{ text: '📖 Help', callback_data: encodeHelpBtn('help') }] }
   ]
 }
 

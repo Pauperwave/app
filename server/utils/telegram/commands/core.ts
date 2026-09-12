@@ -18,7 +18,10 @@ import { resolveDeepLink } from '../deepLinks'
 // import per button.
 const HELP_BTN_PREFIX = 'helpbtn:'
 
-function encodeHelpBtn(payload: string): string {
+// Exported so other commands (dioporco.ts) can send a button that opens
+// one of these deep links too, without duplicating the whole
+// prefix/handler mechanism below.
+export function encodeHelpBtn(payload: string): string {
   return `${HELP_BTN_PREFIX}${payload}`
 }
 
