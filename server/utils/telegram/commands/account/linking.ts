@@ -57,6 +57,47 @@ export async function requireLinkedAssociate(ctx: Context): Promise<string | nul
   return associateUuid
 }
 
+// Rate-limits linking attempts per chat — without this, any chat could
+// brute-force/enumerate member emails by typing many in a row and reading
+// the bot's different responses (not found / already linked elsewhere /
+// success). One row per attempt (see the migration's own comment for why),
+// so this is a plain "how many in the last N minutes" range query.
+const MAX_LINK_ATTEMPTS = 5
+const LINK_ATTEMPT_WINDOW_MINUTES = 15
+
+// Returns false (and does not record a new attempt) once the window's
+// already full — fails closed on its own Supabase errors, since silently
+// allowing every attempt through on an infra hiccup would defeat the point
+// of a rate limit specifically meant to resist abuse.
+async function recordLinkAttempt(chatId: number): Promise<boolean> {
+  const supabase = telegramServiceSupabaseClient()
+  const windowStart = new Date(Date.now() - LINK_ATTEMPT_WINDOW_MINUTES * 60_000).toISOString()
+
+  // Opportunistic cleanup of this chat's own stale rows — keeps the table
+  // self-bounding without a separate cron job.
+  await supabase
+    .from('pauperwave_telegram_link_attempts')
+    .delete()
+    .eq('chat_id', chatId)
+    .lt('attempted_at', windowStart)
+
+  const { count, error: countError } = await supabase
+    .from('pauperwave_telegram_link_attempts')
+    .select('*', { count: 'exact', head: true })
+    .eq('chat_id', chatId)
+    .gte('attempted_at', windowStart)
+
+  if (countError) throw countError
+  if ((count ?? 0) >= MAX_LINK_ATTEMPTS) return false
+
+  const { error: insertError } = await supabase
+    .from('pauperwave_telegram_link_attempts')
+    .insert({ chat_id: chatId })
+
+  if (insertError) throw insertError
+  return true
+}
+
 async function linkChat(chatId: number, email: string): Promise<string> {
   const supabase = telegramServiceSupabaseClient()
 
@@ -112,7 +153,22 @@ export function registerLinkingHandler(bot: Bot) {
       return next()
     }
 
-    const reply = await linkChat(ctx.chat.id, text.toLowerCase())
+    const chatId = ctx.chat.id
+    let allowed: boolean
+    try {
+      allowed = await recordLinkAttempt(chatId)
+    } catch {
+      await ctx.reply('⚠️ Errore nel collegamento, riprova più tardi.')
+      return
+    }
+    if (!allowed) {
+      await ctx.reply(
+        `⚠️ Troppi tentativi di collegamento. Riprova tra qualche minuto (max ${MAX_LINK_ATTEMPTS} ogni ${LINK_ATTEMPT_WINDOW_MINUTES} minuti).`
+      )
+      return
+    }
+
+    const reply = await linkChat(chatId, text.toLowerCase())
       .catch(() => '⚠️ Errore nel collegamento, riprova più tardi.')
 
     await ctx.reply(reply)

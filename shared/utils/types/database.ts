@@ -1121,6 +1121,24 @@ export type Database = {
         }
         Relationships: []
       }
+      pauperwave_telegram_link_attempts: {
+        Row: {
+          attempted_at: string
+          chat_id: number
+          id: number
+        }
+        Insert: {
+          attempted_at?: string
+          chat_id: number
+          id?: never
+        }
+        Update: {
+          attempted_at?: string
+          chat_id?: number
+          id?: never
+        }
+        Relationships: []
+      }
       pauperwave_wanted_cards: {
         Row: {
           card_name: string
