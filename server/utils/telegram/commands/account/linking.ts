@@ -73,6 +73,18 @@ async function linkChat(chatId: number, email: string): Promise<string> {
       + 'Controlla di averla scritta correttamente, oppure contatta un admin.'
   }
 
+  // Refuse to silently steal the link away from whatever chat already has
+  // it — the upsert below is keyed on associate_uuid alone (onConflict),
+  // so without this check it would just transfer the link here with no
+  // trace. An email address isn't a secret, so anyone who knows (or
+  // guesses) a member's registered email could otherwise hijack their
+  // link by typing it into a different chat.
+  const existingChatId = await resolveChatIdByAssociateUuid(associate.uuid)
+  if (existingChatId !== null && existingChatId !== chatId) {
+    return '⚠️ Questa email è già collegata a un\'altra chat. '
+      + 'Se è la tua email e hai perso l\'accesso a quella chat, contatta un admin per scollegarla.'
+  }
+
   // Delete any existing row first — upsert on associate_uuid alone can't
   // also resolve a conflict on chat_id's own unique constraint.
   await supabase.from('pauperwave_associate_telegram_links').delete().eq('chat_id', chatId)
