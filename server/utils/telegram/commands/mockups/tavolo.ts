@@ -1,7 +1,7 @@
 // server\utils\telegram\commands\mockups\tavolo.ts
 import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
-import type { InlineQueryResultArticle } from 'grammy/types'
+import type { InlineQueryResultArticle, InputRichMessage } from 'grammy/types'
 import { Menu } from '@grammyjs/menu'
 
 import { risultatoMenu, openRisultato } from './risultato'
@@ -31,7 +31,10 @@ const MAX_COMMANDER_RESULTS = 5
 interface ScryfallCard {
   name: string
   type_line?: string
-  image_uris?: { small?: string }
+  image_uris?: { small?: string, normal?: string }
+  // Modal DFCs/split cards carry images per face instead of on the card
+  // itself — cardImageUrl() below falls back to the front face's image.
+  card_faces?: { image_uris?: { normal?: string } }[]
 }
 
 // is:commander — Scryfall's own "can be your commander" filter. A future
@@ -48,6 +51,25 @@ async function searchCommanders(query: string): Promise<ScryfallCard[]> {
     // not an error worth surfacing differently from "no results".
     return []
   }
+}
+
+// Exact-name lookup for the confirmation message below — the inline query
+// result only round-trips the card's name through COMMANDER_MESSAGE_PREFIX,
+// not its image, so the full card is re-fetched here rather than threading
+// image_uris through the picked message text.
+async function fetchCommanderByName(name: string): Promise<ScryfallCard | null> {
+  try {
+    return await $fetch<ScryfallCard>('https://api.scryfall.com/cards/named', {
+      query: { exact: name },
+      headers: { 'User-Agent': SCRYFALL_USER_AGENT, 'Accept': 'application/json' }
+    })
+  } catch {
+    return null
+  }
+}
+
+function cardImageUrl(card: ScryfallCard): string | null {
+  return card.image_uris?.normal ?? card.card_faces?.[0]?.image_uris?.normal ?? null
 }
 
 // Marks a message as a commander pick from the inline-query result below
@@ -143,6 +165,13 @@ export function registerTavoloCommand(bot: Bot, commands: CommandGroup<Context>)
     // MOCKUP — a real implementation would persist this against the
     // player's current pairing once tournament_pairings has a live-write
     // flow (see docs/architecture/telegram-bot.md).
-    await ctx.replyWithRichMessage({ markdown: `✅ Comandante impostato per questo turno: ${name}` })
+    const card = await fetchCommanderByName(name)
+    const imageUrl = card ? cardImageUrl(card) : null
+
+    const blocks: InputRichMessage['blocks'] = []
+    if (imageUrl) blocks.push({ type: 'photo', photo: { type: 'photo', media: imageUrl } })
+    blocks.push({ type: 'paragraph', text: `✅ Comandante impostato per questo turno: ${name}` })
+
+    await ctx.replyWithRichMessage({ blocks })
   })
 }
