@@ -1,6 +1,7 @@
 // server\utils\telegram\icons.ts
-// Single source of truth for every emoji reused across more than one file
-// in the Telegram bot — mirrors app/utils/icons.ts's role for the web app.
+// Single source of truth for every emoji used in the Telegram bot,
+// including single-use ones — mirrors app/utils/icons.ts's role (and its
+// dedup-identical-only-doesn't-apply-here policy) for the web app.
 export const ICONS = {
   statusDraft: '📋',
   statusRegistrationOpen: '📝',
@@ -22,5 +23,10 @@ export const ICONS = {
   directions: '🧭',
   ticket: '🎟️',
   membershipCard: '🪪',
-  fee: '💶'
+  fee: '💶',
+  // classificheMenu's own format-picker buttons.
+  pauper: '👛',
+  commander: '👑',
+  premodern: '📜',
+  cittadino: '🎖️'
 } as const

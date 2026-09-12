@@ -233,20 +233,20 @@ const classificheMenu = new Menu<Context>('classifiche-menu', {
   onMenuOutdated: false
 })
   .submenu({
-    text: FORMAT_LABELS.pauper,
+    text: `${ICONS.pauper} ${FORMAT_LABELS.pauper}`,
     payload: encodeStandingsPayload('pauper', 0)
   }, 'classifica-menu', showStandings)
   .submenu({
-    text: FORMAT_LABELS.commander,
+    text: `${ICONS.commander} ${FORMAT_LABELS.commander}`,
     payload: encodeStandingsPayload('commander', 0)
   }, 'classifica-menu', showStandings)
   .row()
   .submenu({
-    text: FORMAT_LABELS.premodern,
+    text: `${ICONS.premodern} ${FORMAT_LABELS.premodern}`,
     payload: encodeStandingsPayload('premodern', 0)
   }, 'classifica-menu', showStandings)
   .submenu({
-    text: 'Cittadino',
+    text: `${ICONS.cittadino} Cittadino`,
     payload: encodeStandingsPayload('cittadino', 0)
   }, 'classifica-menu', showStandings)
   .row()
