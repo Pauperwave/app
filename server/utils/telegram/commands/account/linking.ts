@@ -62,8 +62,8 @@ export async function requireLinkedAssociate(ctx: Context): Promise<string | nul
 // the bot's different responses (not found / already linked elsewhere /
 // success). One row per attempt (see the migration's own comment for why),
 // so this is a plain "how many in the last N minutes" range query.
-const MAX_LINK_ATTEMPTS = 5
-const LINK_ATTEMPT_WINDOW_MINUTES = 15
+const MAX_LINK_ATTEMPTS = 1
+const LINK_ATTEMPT_WINDOW_MINUTES = 1
 
 // Returns false (and does not record a new attempt) once the window's
 // already full — fails closed on its own Supabase errors, since silently
@@ -73,12 +73,13 @@ async function recordLinkAttempt(chatId: number): Promise<boolean> {
   const supabase = telegramServiceSupabaseClient()
   const windowStart = new Date(Date.now() - LINK_ATTEMPT_WINDOW_MINUTES * 60_000).toISOString()
 
-  // Opportunistic cleanup of this chat's own stale rows — keeps the table
-  // self-bounding without a separate cron job.
+  // Table-wide cleanup (not just this chat's own rows) — every attempt,
+  // from any chat, sweeps out anything stale, so a chat that never tries
+  // again doesn't leave an orphaned row behind forever. Cheap enough at
+  // this bot's scale to skip a separate cron job for it.
   await supabase
     .from('pauperwave_telegram_link_attempts')
     .delete()
-    .eq('chat_id', chatId)
     .lt('attempted_at', windowStart)
 
   const { count, error: countError } = await supabase
@@ -162,9 +163,10 @@ export function registerLinkingHandler(bot: Bot) {
       return
     }
     if (!allowed) {
-      await ctx.reply(
-        `⚠️ Troppi tentativi di collegamento. Riprova tra qualche minuto (max ${MAX_LINK_ATTEMPTS} ogni ${LINK_ATTEMPT_WINDOW_MINUTES} minuti).`
-      )
+      // Not interpolating MAX_LINK_ATTEMPTS/LINK_ATTEMPT_WINDOW_MINUTES into
+      // this text — at 1/1 "1 tentativo ogni 1 minuti" reads wrong, and a
+      // generic message doesn't need updating if those values change again.
+      await ctx.reply('⚠️ Troppi tentativi di collegamento. Riprova tra qualche minuto.')
       return
     }
 
