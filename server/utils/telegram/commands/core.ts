@@ -2,9 +2,11 @@
 import { it } from 'date-fns/locale'
 
 import type { Bot, Context } from 'grammy'
+import { GrammyError, InlineKeyboard } from 'grammy'
 import type { InputRichMessage } from 'grammy/types'
 import type { CommandGroup } from '@grammyjs/commands'
 import { ICONS } from '../icons'
+import { answerLoadError } from './callbackErrors'
 import { resolveDeepLink } from '../deepLinks'
 
 // Quick-launch buttons for a few of the most-used commands, embedded as
@@ -142,9 +144,12 @@ async function handleHelpButton(ctx: Context, next: () => Promise<void>) {
   await ctx.answerCallbackQuery()
 }
 
-// Extracted so it can be reused verbatim by t.me/<bot>?start=status — see
-// deepLinks.ts.
-function statusCommandHandler(ctx: Context) {
+// Reads useRuntimeConfig().public fresh on every call (not cached at
+// module scope) — that's the whole point of the refresh button below: a
+// new deployment means a new cold Nitro instance with its own build-time
+// config, so re-reading it can actually surface a newer gitCommitSha
+// once Vercel has rolled traffic over to it.
+function statusText(): string {
   const { gitCommitSha, gitCommitDate } = useRuntimeConfig().public
   const lines = ['🟢 Bot operativo.']
 
@@ -157,10 +162,47 @@ function statusCommandHandler(ctx: Context) {
 
   // \n\n, not \n — in Rich Message markdown mode a single \n is a soft
   // break (collapsed, like standard Markdown), not a real line break.
-  return ctx.replyWithRichMessage({ markdown: lines.join('\n\n') })
+  return lines.join('\n\n')
+}
+
+const STATUS_REFRESH_DATA = 'statusrefresh'
+
+// Plain grammy InlineKeyboard, not @grammyjs/menu — a single static
+// refresh button doesn't need submenu/dynamic-range features, and skips
+// the whole "must be reachable via bot.use()/.register() for this exact
+// update" registration-order class of gotcha documented elsewhere in this
+// file (see registerHelpButtonHandler's own comment).
+function statusKeyboard(): InlineKeyboard {
+  return new InlineKeyboard().text('🔄 Aggiorna', STATUS_REFRESH_DATA)
+}
+
+// Extracted so it can be reused verbatim by t.me/<bot>?start=status — see
+// deepLinks.ts.
+function statusCommandHandler(ctx: Context) {
+  return ctx.replyWithRichMessage({ markdown: statusText() }, { reply_markup: statusKeyboard() })
 }
 
 registerDeepLink('status', statusCommandHandler)
+
+// "Bad Request: message is not modified" is Telegram's own error for an
+// edit whose content is byte-identical to what's already there — the
+// expected outcome of most taps here (no new deployment yet), not a real
+// failure, so it gets its own quiet answer instead of answerLoadError's
+// alert.
+async function handleStatusRefresh(ctx: Context, next: () => Promise<void>) {
+  if (ctx.callbackQuery?.data !== STATUS_REFRESH_DATA) return next()
+
+  try {
+    await ctx.editMessageText({ markdown: statusText() }, { reply_markup: statusKeyboard() })
+    await ctx.answerCallbackQuery({ text: '✅ Aggiornato.' })
+  } catch (err) {
+    if (err instanceof GrammyError && err.description.includes('message is not modified')) {
+      await ctx.answerCallbackQuery({ text: 'Nessuna versione più recente disponibile.' })
+      return
+    }
+    await answerLoadError(ctx)
+  }
+}
 
 // Registered separately from registerCoreCommands, and called last of all
 // (see commands/index.ts) — @grammyjs/menu installs each menu's own
@@ -194,4 +236,8 @@ export function registerCoreCommands(bot: Bot, commands: CommandGroup<Context>) 
   commands.command('help', 'Elenco comandi disponibili', helpCommandHandler)
 
   commands.command('status', 'Stato del bot', statusCommandHandler)
+
+  // Not Menu-managed, so no registration-order dependency on bot.use(commands)
+  // — see statusKeyboard's own comment on why a plain InlineKeyboard was used.
+  bot.on('callback_query:data', handleStatusRefresh)
 }
