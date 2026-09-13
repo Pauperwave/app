@@ -24,8 +24,12 @@ function onTimerReset() {
   telegramHaptic()?.impactOccurred('light')
 }
 
+// Unico modo per tornare al timer una volta scaduto: la sezione turni resta
+// visibile finché roundTimer.timeIsUp è true (vedi v-if/v-else sotto), quindi
+// il reset dei turni deve azzerare anche il timer, non solo il contatore.
 function onTurnsReset() {
   extraTurns.reset()
+  roundTimer.reset()
   telegramHaptic()?.impactOccurred('light')
 }
 

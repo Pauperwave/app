@@ -26,9 +26,10 @@ const emit = defineEmits<{
       Turni aggiuntivi a fine tempo
     </p>
 
-    <div class="flex gap-2 justify-center">
+    <div class="flex gap-2 justify-center w-full">
       <UButton
-        size="xs"
+        size="lg"
+        block
         :variant="startingPlayer === 'me' ? 'solid' : 'subtle'"
         @click="emit('setStartingPlayer', 'me')"
       >
@@ -36,7 +37,8 @@ const emit = defineEmits<{
       </UButton>
 
       <UButton
-        size="xs"
+        size="lg"
+        block
         color="neutral"
         :variant="startingPlayer === 'opponent' ? 'solid' : 'subtle'"
         @click="emit('setStartingPlayer', 'opponent')"
