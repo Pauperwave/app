@@ -288,7 +288,7 @@ useHead({
         </UButton>
       </div>
 
-      <div class="flex-1 min-h-0 grid grid-cols-2 gap-2">
+      <div class="flex-1 min-h-0 grid grid-rows-2 gap-2">
         <div
           class="flex items-center justify-center rounded-lg text-2xl font-bold transition-colors"
           :class="activePlayer === 'me' ? 'bg-primary text-inverted' : 'bg-elevated text-muted'"
