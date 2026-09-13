@@ -23,7 +23,7 @@ const emit = defineEmits<{
       Punteggio match (Bo{{ gamesToWinMatch * 2 - 1 }})
     </p>
 
-    <p class="text-5xl font-bold tabular-nums">
+    <p class="text-8xl font-bold tabular-nums">
       {{ myGamesWon }} - {{ opponentGamesWon }}
     </p>
 
@@ -53,16 +53,14 @@ const emit = defineEmits<{
       >
         Vinta da avversario
       </UButton>
-    </div>
 
-    <UButton
-      size="sm"
-      color="neutral"
-      variant="ghost"
-      :icon="ICONS.rotateBack"
-      @click="emit('reset')"
-    >
-      Reset punteggio
-    </UButton>
+      <UButton
+        size="lg"
+        color="neutral"
+        variant="subtle"
+        :icon="ICONS.rotateBack"
+        @click="emit('reset')"
+      />
+    </div>
   </section>
 </template>
