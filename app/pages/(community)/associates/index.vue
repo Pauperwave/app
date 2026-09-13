@@ -135,7 +135,10 @@ async function confirmApproveRenewals() {
 // own globalFilter/globalFilterOptions, not a hand-rolled ref+watch pair —
 // see associatesGlobalFilterFn.ts. Declared before the columns destructure
 // below since useAssociatesTableColumns needs it to highlight matches.
-const search = ref('')
+// useState (not ref) so the typed text survives navigating to
+// /associates/requests and back — a plain ref resets to '' every time this
+// page unmounts (user request, 2026-09-13).
+const search = useState('associates-search', () => '')
 
 // fallow-ignore-next-line code-duplication -- mirrors requests.vue's own (different column/query semantics per page)
 const {
