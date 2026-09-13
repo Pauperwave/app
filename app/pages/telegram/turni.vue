@@ -149,25 +149,25 @@ useHead({
 
 <template>
   <div class="h-full w-full flex flex-col gap-2 text-center">
-    <section class="flex flex-col items-center gap-1">
-      <p class="text-muted text-xs">
+    <section class="flex-[1] min-h-0 flex flex-col items-center justify-center gap-2">
+      <p class="text-muted text-sm">
         Punteggio match (Bo{{ GAMES_TO_WIN_MATCH * 2 - 1 }})
       </p>
 
-      <p class="text-3xl font-bold tabular-nums">
+      <p class="text-5xl font-bold tabular-nums">
         {{ myGamesWon }} - {{ opponentGamesWon }}
       </p>
 
       <p
         v-if="matchWinner"
-        class="text-primary text-xs font-medium"
+        class="text-primary text-sm font-medium"
       >
         {{ matchWinner === 'me' ? 'Hai vinto il match!' : 'Ha vinto l\'avversario.' }}
       </p>
 
       <div class="flex gap-2 w-full">
         <UButton
-          size="sm"
+          size="lg"
           block
           :disabled="!!matchWinner"
           @click="winGame('me')"
@@ -176,7 +176,7 @@ useHead({
         </UButton>
 
         <UButton
-          size="sm"
+          size="lg"
           block
           color="neutral"
           :disabled="!!matchWinner"
@@ -187,7 +187,7 @@ useHead({
       </div>
 
       <UButton
-        size="xs"
+        size="sm"
         color="neutral"
         variant="ghost"
         :icon="ICONS.rotateBack"
@@ -201,7 +201,7 @@ useHead({
 
     <section
       v-if="!timeIsUp"
-      class="flex-1 min-h-0 flex flex-col w-full"
+      class="flex-[2] min-h-0 flex flex-col w-full"
     >
       <p class="text-muted text-sm">
         Timer del round ({{ ROUND_MINUTES }} minuti)
@@ -257,7 +257,7 @@ useHead({
 
     <section
       v-else
-      class="flex-1 min-h-0 flex flex-col w-full gap-2"
+      class="flex-[2] min-h-0 flex flex-col w-full gap-2"
     >
       <div class="flex items-center justify-between px-1">
         <p class="text-muted text-xs">
