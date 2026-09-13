@@ -46,20 +46,20 @@ useHead({
 
 <template>
   <div class="h-full w-full flex flex-col gap-2 text-center">
-    <TelegramMatchScoreSection
-      :games-to-win-match="matchScore.gamesToWinMatch"
-      :my-games-won="matchScore.myGamesWon.value"
-      :opponent-games-won="matchScore.opponentGamesWon.value"
-      :match-winner="matchScore.matchWinner.value"
-      @win="matchScore.winGame"
-      @reset="matchScore.reset"
-    />
+    <div class="landscape:hidden flex-1 min-h-0 flex flex-col gap-2">
+      <TelegramMatchScoreSection
+        :my-games-won="matchScore.myGamesWon.value"
+        :opponent-games-won="matchScore.opponentGamesWon.value"
+        :match-winner="matchScore.matchWinner.value"
+        @win="matchScore.winGame"
+        @reset="matchScore.reset"
+      />
 
-    <USeparator />
+      <USeparator />
+    </div>
 
     <TelegramRoundTimerSection
       v-if="!roundTimer.timeIsUp.value"
-      :round-minutes="roundTimer.roundMinutes"
       :label="roundTimer.label.value"
       :is-active="roundTimer.isActive.value"
       :adjust-minutes="roundTimer.adjustMinutes"

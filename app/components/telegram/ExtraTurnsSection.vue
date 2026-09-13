@@ -28,8 +28,9 @@ const emit = defineEmits<{
 
     <div class="flex gap-2 justify-center w-full">
       <UButton
-        size="lg"
+        size="xl"
         block
+        class="h-14 text-lg"
         :variant="startingPlayer === 'me' ? 'solid' : 'subtle'"
         @click="emit('setStartingPlayer', 'me')"
       >
@@ -37,9 +38,10 @@ const emit = defineEmits<{
       </UButton>
 
       <UButton
-        size="lg"
+        size="xl"
         block
         color="neutral"
+        class="h-14 text-lg"
         :variant="startingPlayer === 'opponent' ? 'solid' : 'subtle'"
         @click="emit('setStartingPlayer', 'opponent')"
       >
@@ -55,7 +57,7 @@ const emit = defineEmits<{
         @click="emit('action')"
       >
         <span class="text-6xl font-bold">Avversario</span>
-        <span class="flex gap-2 text-4xl tabular-nums">
+        <span class="flex gap-2 text-5xl tabular-nums">
           <template
             v-for="(t, i) in turnsByPlayer.opponent"
             :key="t"
@@ -73,7 +75,7 @@ const emit = defineEmits<{
         @click="emit('action')"
       >
         <span class="text-6xl font-bold">Io</span>
-        <span class="flex gap-2 text-4xl tabular-nums">
+        <span class="flex gap-2 text-5xl tabular-nums">
           <template
             v-for="(t, i) in turnsByPlayer.me"
             :key="t"
@@ -86,22 +88,24 @@ const emit = defineEmits<{
     </div>
 
     <div class="flex gap-2 w-full items-stretch">
-      <div class="flex items-center justify-center rounded-lg bg-elevated px-4 text-3xl font-bold tabular-nums shrink-0">
+      <div class="flex items-center justify-center rounded-lg bg-elevated px-4 text-5xl font-bold tabular-nums shrink-0">
         {{ turn }}/{{ totalTurns }}
       </div>
 
       <UButton
-        size="lg"
+        size="xl"
         block
+        class="h-16 text-lg"
         @click="emit('action')"
       >
         {{ isLastTurn ? 'Fine partita' : 'Turno successivo' }}
       </UButton>
 
       <UButton
-        size="lg"
+        size="xl"
         color="neutral"
         variant="subtle"
+        class="h-16"
         :icon="ICONS.rotateBack"
         @click="emit('reset')"
       />
