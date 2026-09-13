@@ -5,11 +5,12 @@ interface Props {
   totalTurns: number
   isLastTurn: boolean
   activePlayer: 'me' | 'opponent'
+  turnsByPlayer: Record<'me' | 'opponent', number[]>
   startingPlayer: 'me' | 'opponent'
 }
 
 const {
-  turn, totalTurns, isLastTurn, activePlayer, startingPlayer
+  turn, totalTurns, isLastTurn, activePlayer, turnsByPlayer, startingPlayer
 } = defineProps<Props>()
 
 const emit = defineEmits<{
@@ -47,20 +48,38 @@ const emit = defineEmits<{
     <div class="flex-1 min-h-0 grid grid-rows-2 gap-2">
       <button
         type="button"
-        class="flex items-center justify-center rounded-lg text-2xl font-bold transition-colors active:opacity-80"
+        class="flex flex-col items-center justify-center gap-1 rounded-lg transition-colors active:opacity-80"
         :class="activePlayer === 'opponent' ? 'bg-primary text-inverted' : 'bg-elevated text-muted'"
         @click="emit('action')"
       >
-        Avversario
+        <span class="text-2xl font-bold">Avversario</span>
+        <span class="flex gap-1 text-sm tabular-nums">
+          <template
+            v-for="(t, i) in turnsByPlayer.opponent"
+            :key="t"
+          >
+            <span :class="t === turn ? 'font-extrabold' : 'opacity-60'">{{ t }}</span>
+            <span v-if="i < turnsByPlayer.opponent.length - 1">→</span>
+          </template>
+        </span>
       </button>
 
       <button
         type="button"
-        class="flex items-center justify-center rounded-lg text-2xl font-bold transition-colors active:opacity-80"
+        class="flex flex-col items-center justify-center gap-1 rounded-lg transition-colors active:opacity-80"
         :class="activePlayer === 'me' ? 'bg-primary text-inverted' : 'bg-elevated text-muted'"
         @click="emit('action')"
       >
-        Io
+        <span class="text-2xl font-bold">Io</span>
+        <span class="flex gap-1 text-sm tabular-nums">
+          <template
+            v-for="(t, i) in turnsByPlayer.me"
+            :key="t"
+          >
+            <span :class="t === turn ? 'font-extrabold' : 'opacity-60'">{{ t }}</span>
+            <span v-if="i < turnsByPlayer.me.length - 1">→</span>
+          </template>
+        </span>
       </button>
     </div>
 

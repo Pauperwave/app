@@ -18,6 +18,18 @@ export function useExtraTurns() {
     turn.value % 2 === 1 ? startingPlayer.value : otherPlayer(startingPlayer.value)
   ))
 
+  // Quali numeri di turno toccano a chi (es. 1→3→5 a chi inizia, 2→4
+  // all'altro) — mostrato sotto ogni quadrante "Io"/"Avversario" per
+  // chiarire a colpo d'occhio la sequenza, non solo il turno corrente.
+  const turnsByPlayer = computed<Record<Player, number[]>>(() => {
+    const sequences: Record<Player, number[]> = { me: [], opponent: [] }
+    for (let candidate = 1; candidate <= TOTAL_TURNS; candidate++) {
+      const player = candidate % 2 === 1 ? startingPlayer.value : otherPlayer(startingPlayer.value)
+      sequences[player].push(candidate)
+    }
+    return sequences
+  })
+
   function setStartingPlayer(player: Player) {
     startingPlayer.value = player
   }
@@ -60,6 +72,7 @@ export function useExtraTurns() {
     turn,
     isLastTurn,
     activePlayer,
+    turnsByPlayer,
     startingPlayer,
     setStartingPlayer,
     action,
