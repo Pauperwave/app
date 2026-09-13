@@ -1,15 +1,12 @@
 <!-- app\components\telegram\MatchScoreSection.vue -->
 <script setup lang="ts">
 interface Props {
-  gamesToWinMatch: number
   myGamesWon: number
   opponentGamesWon: number
   matchWinner: 'me' | 'opponent' | null
 }
 
-const {
-  gamesToWinMatch, myGamesWon, opponentGamesWon, matchWinner
-} = defineProps<Props>()
+const { myGamesWon, opponentGamesWon, matchWinner } = defineProps<Props>()
 
 const emit = defineEmits<{
   win: [winner: 'me' | 'opponent']
@@ -19,11 +16,7 @@ const emit = defineEmits<{
 
 <template>
   <section class="flex-1 min-h-0 flex flex-col items-center justify-center gap-2">
-    <p class="text-muted text-sm">
-      Punteggio match (Bo{{ gamesToWinMatch * 2 - 1 }})
-    </p>
-
-    <p class="text-8xl font-bold tabular-nums">
+    <p class="text-9xl font-bold tabular-nums">
       {{ myGamesWon }} - {{ opponentGamesWon }}
     </p>
 
@@ -36,8 +29,9 @@ const emit = defineEmits<{
 
     <div class="flex gap-2 w-full">
       <UButton
-        size="lg"
+        size="xl"
         block
+        class="h-16 text-lg"
         :disabled="!!matchWinner"
         @click="emit('win', 'me')"
       >
@@ -45,9 +39,10 @@ const emit = defineEmits<{
       </UButton>
 
       <UButton
-        size="lg"
+        size="xl"
         block
         color="neutral"
+        class="h-16 text-lg"
         :disabled="!!matchWinner"
         @click="emit('win', 'opponent')"
       >
@@ -55,9 +50,10 @@ const emit = defineEmits<{
       </UButton>
 
       <UButton
-        size="lg"
+        size="xl"
         color="neutral"
         variant="subtle"
+        class="h-16"
         :icon="ICONS.rotateBack"
         @click="emit('reset')"
       />
