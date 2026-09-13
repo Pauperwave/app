@@ -70,6 +70,7 @@ useHead({
       :total-turns="extraTurns.totalTurns"
       :is-last-turn="extraTurns.isLastTurn.value"
       :active-player="extraTurns.activePlayer.value"
+      :turns-by-player="extraTurns.turnsByPlayer.value"
       :starting-player="extraTurns.startingPlayer.value"
       @set-starting-player="extraTurns.setStartingPlayer"
       @action="extraTurns.action"
