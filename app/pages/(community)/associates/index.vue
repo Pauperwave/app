@@ -137,7 +137,10 @@ async function confirmApproveRenewals() {
 // below since useAssociatesTableColumns needs it to highlight matches.
 // useState (not ref) so the typed text survives navigating to
 // /associates/requests and back — a plain ref resets to '' every time this
-// page unmounts (user request, 2026-09-13).
+// page unmounts (user request, 2026-09-13). Shares its key with
+// requests.vue's own search on purpose: switching between the two pages
+// carries the same search text over, not two independently-remembered
+// values (user clarification, 2026-09-14).
 const search = useState('associates-search', () => '')
 
 // fallow-ignore-next-line code-duplication -- mirrors requests.vue's own (different column/query semantics per page)

@@ -26,11 +26,11 @@ const search = defineModel<string>('search', { required: true })
 </script>
 
 <template>
-  <StatusFilterGroup v-model="activeStatusTab" :items="statusTabs" />
-
   <SearchInput
     v-model="search"
     class="w-56 sm:w-64 lg:w-72"
     :placeholder="$t('associate.searchPlaceholder')"
   />
+
+  <StatusFilterGroup v-model="activeStatusTab" :items="statusTabs" />
 </template>
