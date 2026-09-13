@@ -52,8 +52,8 @@ const emit = defineEmits<{
         :class="activePlayer === 'opponent' ? 'bg-primary text-inverted' : 'bg-elevated text-muted'"
         @click="emit('action')"
       >
-        <span class="text-2xl font-bold">Avversario</span>
-        <span class="flex gap-1 text-sm tabular-nums">
+        <span class="text-6xl font-bold">Avversario</span>
+        <span class="flex gap-2 text-4xl tabular-nums">
           <template
             v-for="(t, i) in turnsByPlayer.opponent"
             :key="t"
@@ -70,8 +70,8 @@ const emit = defineEmits<{
         :class="activePlayer === 'me' ? 'bg-primary text-inverted' : 'bg-elevated text-muted'"
         @click="emit('action')"
       >
-        <span class="text-2xl font-bold">Io</span>
-        <span class="flex gap-1 text-sm tabular-nums">
+        <span class="text-6xl font-bold">Io</span>
+        <span class="flex gap-2 text-4xl tabular-nums">
           <template
             v-for="(t, i) in turnsByPlayer.me"
             :key="t"
