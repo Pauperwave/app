@@ -130,7 +130,10 @@ async function bulkRestore() {
 // (user request) — same associatesGlobalFilterFn.ts, matching name/email
 // /phone/tax-code. Declared before the columns destructure below since
 // useAssociatesRequestsTableColumns needs it to highlight matches.
-const search = ref('')
+// useState (not ref) so the typed text survives navigating to /associates
+// and back — a plain ref resets to '' every time this page unmounts (user
+// request, 2026-09-13).
+const search = useState('associates-requests-search', () => '')
 
 // fallow-ignore-next-line code-duplication -- see associates/index.vue
 const { columns, visibilityItems }
