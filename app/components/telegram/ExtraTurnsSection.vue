@@ -45,19 +45,23 @@ const emit = defineEmits<{
     </div>
 
     <div class="flex-1 min-h-0 grid grid-rows-2 gap-2">
-      <div
-        class="flex items-center justify-center rounded-lg text-2xl font-bold transition-colors"
+      <button
+        type="button"
+        class="flex items-center justify-center rounded-lg text-2xl font-bold transition-colors active:opacity-80"
         :class="activePlayer === 'opponent' ? 'bg-primary text-inverted' : 'bg-elevated text-muted'"
+        @click="emit('action')"
       >
         Avversario
-      </div>
+      </button>
 
-      <div
-        class="flex items-center justify-center rounded-lg text-2xl font-bold transition-colors"
+      <button
+        type="button"
+        class="flex items-center justify-center rounded-lg text-2xl font-bold transition-colors active:opacity-80"
         :class="activePlayer === 'me' ? 'bg-primary text-inverted' : 'bg-elevated text-muted'"
+        @click="emit('action')"
       >
         Io
-      </div>
+      </button>
     </div>
 
     <div class="flex gap-2 w-full items-stretch">
