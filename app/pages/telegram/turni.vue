@@ -127,8 +127,12 @@ function handleTurnAction() {
   }
 }
 
+// Reset "turni" azzera l'intero flusso, non solo il contatore — altrimenti
+// timer.remaining resterebbe a 0 e timeIsUp continuerebbe a mostrare questa
+// stessa sezione invece di tornare al timer per il prossimo round.
 function resetTurns() {
   turn.value = 1
+  timer.stop()
   haptic()?.impactOccurred('light')
 }
 
@@ -144,8 +148,8 @@ useHead({
 </script>
 
 <template>
-  <div class="h-full w-full max-w-sm mx-auto flex flex-col gap-3 text-center">
-    <section class="flex flex-col items-center gap-1.5">
+  <div class="h-full w-full flex flex-col gap-2 text-center">
+    <section class="flex flex-col items-center gap-1">
       <p class="text-muted text-xs">
         Punteggio match (Bo{{ GAMES_TO_WIN_MATCH * 2 - 1 }})
       </p>
@@ -195,16 +199,21 @@ useHead({
 
     <USeparator />
 
-    <section class="flex-1 min-h-0 flex flex-col items-center justify-center gap-4 w-full">
-      <template v-if="!timeIsUp">
-        <p class="text-muted text-sm">
-          Timer del round ({{ ROUND_MINUTES }} minuti)
-        </p>
+    <section
+      v-if="!timeIsUp"
+      class="flex-1 min-h-0 flex flex-col w-full"
+    >
+      <p class="text-muted text-sm">
+        Timer del round ({{ ROUND_MINUTES }} minuti)
+      </p>
 
-        <p class="text-7xl font-bold tabular-nums">
+      <div class="flex-1 min-h-0 flex items-center justify-center">
+        <p class="text-8xl font-bold tabular-nums">
           {{ timerLabel }}
         </p>
+      </div>
 
+      <div class="flex flex-col gap-2 w-full">
         <div class="flex gap-2 w-full">
           <UButton
             size="lg"
@@ -243,61 +252,75 @@ useHead({
             +{{ TIMER_ADJUST_MINUTES }} min
           </UButton>
         </div>
-      </template>
+      </div>
+    </section>
 
-      <template v-else>
-        <p class="text-muted text-sm">
+    <section
+      v-else
+      class="flex-1 min-h-0 flex flex-col w-full gap-2"
+    >
+      <div class="flex items-center justify-between px-1">
+        <p class="text-muted text-xs">
           Turni aggiuntivi a fine tempo
         </p>
 
-        <div class="flex gap-2">
-          <UButton
-            size="xs"
-            :variant="startingPlayer === 'me' ? 'solid' : 'subtle'"
-            @click="startingPlayer = 'me'"
-          >
-            Inizio io
-          </UButton>
-
-          <UButton
-            size="xs"
-            color="neutral"
-            :variant="startingPlayer === 'opponent' ? 'solid' : 'subtle'"
-            @click="startingPlayer = 'opponent'"
-          >
-            Inizia avversario
-          </UButton>
-        </div>
-
-        <p class="text-7xl font-bold tabular-nums">
+        <p class="text-lg font-bold tabular-nums">
           {{ turn }}/{{ TOTAL_TURNS }}
         </p>
+      </div>
 
-        <UBadge
-          size="lg"
-          :color="activePlayer === 'me' ? 'primary' : 'neutral'"
+      <div class="flex gap-2 justify-center">
+        <UButton
+          size="xs"
+          :variant="startingPlayer === 'me' ? 'solid' : 'subtle'"
+          @click="startingPlayer = 'me'"
         >
-          Turno attivo: {{ activePlayer === 'me' ? 'Io' : 'Avversario' }}
-        </UBadge>
+          Inizio io
+        </UButton>
 
-        <div class="flex gap-2 w-full">
-          <UButton
-            size="lg"
-            block
-            @click="handleTurnAction"
-          >
-            {{ isLastTurn ? 'Fine partita' : 'Turno successivo' }}
-          </UButton>
+        <UButton
+          size="xs"
+          color="neutral"
+          :variant="startingPlayer === 'opponent' ? 'solid' : 'subtle'"
+          @click="startingPlayer = 'opponent'"
+        >
+          Inizia avversario
+        </UButton>
+      </div>
 
-          <UButton
-            size="lg"
-            color="neutral"
-            variant="subtle"
-            :icon="ICONS.rotateBack"
-            @click="resetTurns"
-          />
+      <div class="flex-1 min-h-0 grid grid-cols-2 gap-2">
+        <div
+          class="flex items-center justify-center rounded-lg text-2xl font-bold transition-colors"
+          :class="activePlayer === 'me' ? 'bg-primary text-inverted' : 'bg-elevated text-muted'"
+        >
+          Io
         </div>
-      </template>
+
+        <div
+          class="flex items-center justify-center rounded-lg text-2xl font-bold transition-colors"
+          :class="activePlayer === 'opponent' ? 'bg-primary text-inverted' : 'bg-elevated text-muted'"
+        >
+          Avversario
+        </div>
+      </div>
+
+      <div class="flex gap-2 w-full">
+        <UButton
+          size="lg"
+          block
+          @click="handleTurnAction"
+        >
+          {{ isLastTurn ? 'Fine partita' : 'Turno successivo' }}
+        </UButton>
+
+        <UButton
+          size="lg"
+          color="neutral"
+          variant="subtle"
+          :icon="ICONS.rotateBack"
+          @click="resetTurns"
+        />
+      </div>
     </section>
   </div>
 </template>
