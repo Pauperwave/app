@@ -259,15 +259,9 @@ useHead({
       v-else
       class="flex-[2] min-h-0 flex flex-col w-full gap-2"
     >
-      <div class="flex items-center justify-between px-1">
-        <p class="text-muted text-xs">
-          Turni aggiuntivi a fine tempo
-        </p>
-
-        <p class="text-lg font-bold tabular-nums">
-          {{ turn }}/{{ TOTAL_TURNS }}
-        </p>
-      </div>
+      <p class="text-muted text-xs">
+        Turni aggiuntivi a fine tempo
+      </p>
 
       <div class="flex gap-2 justify-center">
         <UButton
@@ -291,20 +285,24 @@ useHead({
       <div class="flex-1 min-h-0 grid grid-rows-2 gap-2">
         <div
           class="flex items-center justify-center rounded-lg text-2xl font-bold transition-colors"
-          :class="activePlayer === 'me' ? 'bg-primary text-inverted' : 'bg-elevated text-muted'"
-        >
-          Io
-        </div>
-
-        <div
-          class="flex items-center justify-center rounded-lg text-2xl font-bold transition-colors"
           :class="activePlayer === 'opponent' ? 'bg-primary text-inverted' : 'bg-elevated text-muted'"
         >
           Avversario
         </div>
+
+        <div
+          class="flex items-center justify-center rounded-lg text-2xl font-bold transition-colors"
+          :class="activePlayer === 'me' ? 'bg-primary text-inverted' : 'bg-elevated text-muted'"
+        >
+          Io
+        </div>
       </div>
 
-      <div class="flex gap-2 w-full">
+      <div class="flex gap-2 w-full items-stretch">
+        <div class="flex items-center justify-center rounded-lg bg-elevated px-4 text-3xl font-bold tabular-nums shrink-0">
+          {{ turn }}/{{ TOTAL_TURNS }}
+        </div>
+
         <UButton
           size="lg"
           block
