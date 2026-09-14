@@ -63,3 +63,14 @@
 .sidebar-no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Layout-debug mode (dev tool, toggled per-page): margin isn't a stylable
+   box on its own, so the standard trick is to tint every element's own
+   border box (content+padding+border) — whatever's left uncolored between
+   boxes is the margin. Doesn't touch the page's own background (no forced
+   white, in either light or dark mode) so toggling this never reads as a
+   theme switch — the margin gaps just show through to whatever the page's
+   real background already was. */
+.debug-spacing * {
+  outline: 1px dashed rgba(99, 102, 241, 0.4) !important;
+}

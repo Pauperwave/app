@@ -6,6 +6,7 @@
 import type { AcceptancePickerItem } from '~/components/tournaments/single/AcceptancePicker.vue'
 
 const { t } = useI18n()
+const toast = useToast()
 const route = useRoute()
 const tournamentUuid = computed(() => route.params.tournamentId as string)
 
@@ -52,6 +53,30 @@ const numberOfRounds = computed(() =>
 
 const currentStep = ref(0)
 
+// "Avvio evento" — flips the tournament out of registration and into play
+// (user request, 2026-09-14). Only offered while registration is still open;
+// once in_progress/completed/cancelled/external there's nothing left to start.
+const { setStatus } = useTournamentsMutations()
+const canStartTournament = computed(() => tournament.value?.status === 'registration_open')
+const isStartConfirmOpen = ref(false)
+
+async function confirmStartTournament() {
+  if (!tournament.value) return
+  try {
+    await setStatus.mutateAsync({ id: tournament.value.id, status: 'in_progress' })
+    isStartConfirmOpen.value = false
+    // Moves off the acceptance step once the event actually starts — a no-op
+    // if the organizer had already clicked ahead in the stepper themselves.
+    if (currentStep.value === 0) currentStep.value = 1
+  } catch (err) {
+    toast.add({
+      title: t('tournament.startTournamentErrorTitle'),
+      description: toErrorMessage(err),
+      color: 'error'
+    })
+  }
+}
+
 // Titles pair with a static description for now (e.g. "In attesa") — real
 // per-round status (completed/in-progress/pending, based on actual
 // tournament progress) needs round-tracking data that doesn't exist yet.
@@ -93,6 +118,23 @@ const items = computed(() => [
     icon: ICONS.listOrdered
   }
 ])
+
+// "Modifica torneo" — reuses the same edit modal/composable as the list
+// page (user request, 2026-09-14: editing must stay possible from the
+// detail page too, not just tournaments/index.vue's row actions).
+const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowActions()
+
+// Layout-debug switch (dev tool, user request 2026-09-14) — toggles
+// .debug-spacing (main.css) on <html> to visualize every element's margin
+// as a white gap against its own tinted border box. Removed on unmount so
+// it can't leak into another page if the toggle is left on mid-navigation.
+const debugSpacingEnabled = ref(false)
+watch(debugSpacingEnabled, (enabled) => {
+  document.documentElement.classList.toggle('debug-spacing', enabled)
+})
+onUnmounted(() => {
+  document.documentElement.classList.remove('debug-spacing')
+})
 </script>
 
 <template>
@@ -105,6 +147,45 @@ const items = computed(() => [
         </template>
 
         <template #right>
+          <!-- Dev-only visibility into the real tournament.status while the
+               acceptance -> in_progress flow is still being built out (user
+               request, 2026-09-14) — reuses the same StatusChangeBadge
+               dropdown Cover.vue/list rows already have, so it also doubles
+               as a quick way to force a status during testing rather than
+               going through the full "Avvia torneo" confirm flow every time. -->
+          <TournamentsStatusBadge v-if="tournament" :tournament="tournament" />
+
+          <USeparator orientation="vertical" class="h-4" />
+
+          <USwitch
+            v-model="debugSpacingEnabled"
+            :label="$t('tournament.debugSpacingLabel')"
+          />
+
+          <USeparator orientation="vertical" class="h-4" />
+
+          <EditIconButton
+            v-if="tournament"
+            :label="$t('tournament.rowActions.edit')"
+            @click="openEditModal(tournament)"
+          />
+
+          <USeparator orientation="vertical" class="h-4" />
+
+          <template v-if="canStartTournament">
+            <UButton
+              :icon="ICONS.battle"
+              color="primary"
+              variant="solid"
+              size="md"
+              @click="isStartConfirmOpen = true"
+            >
+              {{ $t('tournament.startTournament') }}
+            </UButton>
+
+            <USeparator orientation="vertical" class="h-4" />
+          </template>
+
           <NotificationsBellButton />
         </template>
       </UDashboardNavbar>
@@ -115,17 +196,12 @@ const items = computed(() => [
         </template>
 
         <template v-if="originLeague" #right>
-          <!-- :ui leadingIcon override: UBreadcrumb's own separator chevron
-               renders at size-5, but UButton's xs/sm sizes both default to
-               size-4 — matched explicitly so the two chevrons in this same
-               toolbar row read as the same size. -->
           <UButton
             :to="`/leagues/${originLeague.uuid}`"
             :icon="ICONS.chevronLeft"
-            :ui="{ leadingIcon: 'size-5' }"
             color="neutral"
             variant="ghost"
-            size="xs"
+            size="md"
           >
             {{ $t('tournament.backToLeague', { league: originLeague.name }) }}
           </UButton>
@@ -137,7 +213,6 @@ const items = computed(() => [
       <UStepper
         v-model="currentStep"
         :items="items"
-        class="space-y-6"
       >
         <template #acceptance>
           <TournamentsSingleAcceptancePicker
@@ -169,4 +244,17 @@ const items = computed(() => [
       </UStepper>
     </template>
   </UDashboardPanel>
+
+  <ConfirmModal
+    v-model:open="isStartConfirmOpen"
+    :title="t('tournament.startTournamentConfirmTitle')"
+    :description="t('tournament.startTournamentConfirmDescription')"
+    :confirm-label="t('tournament.startTournament')"
+    :confirm-icon="ICONS.battle"
+    confirm-color="primary"
+    :loading="setStatus.isLoading.value"
+    @confirm="confirmStartTournament"
+  />
+
+  <TournamentsListEditModal v-model="editModalOpen" :tournament="editingTournament" />
 </template>

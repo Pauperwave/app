@@ -1392,6 +1392,11 @@
     "viewEventDetails": "Vedi dettagli evento",
     "deleteTournament": "Elimina torneo",
     "backToLeague": "Torna a {league}",
+    "startTournament": "Avvia torneo",
+    "startTournamentConfirmTitle": "Avviare il torneo?",
+    "startTournamentConfirmDescription": "Il torneo passerà in corso e le iscrizioni verranno chiuse.",
+    "startTournamentErrorTitle": "Impossibile avviare il torneo",
+    "debugSpacingLabel": "Margini",
     "selectedRows": "{selected} su {total} riga(e) selezionata(e).",
     "queryStatus": {
       "upcoming": "In programma",
