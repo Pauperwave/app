@@ -51,13 +51,22 @@ const dateRangeTooltip = computed(() => {
 <template>
   <div class="relative -m-3 mb-3">
     <template v-if="!loading && league">
+      <!-- No `height` prop: league.image is always a Scryfall art_crop
+           (~1.37:1), nowhere near this box's real ~2.3-3:1 rendered aspect
+           (w-full at grid-card width, fixed h-32). Forcing height="128"
+           alongside width="640" made ipx pre-crop the source to a 5:1 sliver
+           server-side, which the CSS object-cover below then cropped
+           *again* to fit the box — two mismatched crops compounding into a
+           heavily zoomed-in fragment (user report, 2026-09-14, "zoomata").
+           Requesting only `width` lets ipx resize preserving the source's
+           own aspect, so object-cover ends up doing the one crop that
+           actually matches the real box. -->
       <NuxtImg
         v-if="league.image"
         :src="league.image"
         :alt="league.name"
         format="webp"
         width="640"
-        height="128"
         class="w-full h-32 object-cover"
       />
       <ImageOffPlaceholder

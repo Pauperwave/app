@@ -53,13 +53,19 @@ async function confirmImage(imageUrl: string, cardName: string | null, artist: s
 <template>
   <div class="relative -m-3 mb-3">
     <template v-if="!loading && tournament">
+      <!-- No `height` prop — see leagues/list/Cover.vue's own comment
+           (2026-09-14 "zoomata" fix): forcing height="128" alongside
+           width="640" made ipx pre-crop the art_crop source (~1.37:1) to an
+           unrelated 5:1 sliver before object-cover cropped it *again* to
+           the box's real aspect, compounding into a heavily zoomed-in
+           fragment. Width-only lets ipx preserve the source aspect, so
+           object-cover ends up doing the one crop that matches. -->
       <NuxtImg
         v-if="tournament.image"
         :src="tournament.image"
         :alt="tournament.name"
         format="webp"
         width="640"
-        height="128"
         class="w-full h-32 object-cover"
       />
       <ImageOffPlaceholder
