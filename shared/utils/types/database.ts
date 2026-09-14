@@ -2606,6 +2606,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      start_commander_round_one: {
+        Args: { p_associate_order: string[]; p_tournament_uuid: string }
+        Returns: string
+      }
       update_payment_with_renewal: {
         Args: {
           p_associate_uuid: string
