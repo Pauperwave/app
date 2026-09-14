@@ -169,28 +169,38 @@ const {
 )
 
 // Wires the sidebar links (/associates?status=pending|active|to_renew) to the
-// membership_status column filter, which can only be applied after UTable mounts.
-// "pending_renewal" (2026-08-27) filters a different column entirely — it's
-// not a membership_status value, it's derived from
-// pauperwave_associate_membership_events (see has_pending_renewal column
-// below) — so the two filters are mutually exclusive, not combined.
-// fallow-ignore-next-line code-duplication -- see the destructure comment above
+// membership_status column filter. "pending_renewal" (2026-08-27) filters a
+// different column entirely — it's not a membership_status value, it's
+// derived from pauperwave_associate_membership_events (see
+// has_pending_renewal column below) — so the two filters are mutually
+// exclusive, not combined.
+//
+// Replaces columnFilters.value wholesale instead of imperatively calling
+// column.setFilterValue() on columns fetched from table.value?.tableApi —
+// that approach (still used by requests.vue, which has no
+// has_pending_renewal column to race against) mutates the TanStack table's
+// internal state directly while UTable's own v-model:column-filters
+// controls the same state declaratively from columnFilters. Confirmed
+// 2026-09-14: switching status=pending_renewal -> status=active left the
+// table still showing only the pending-renewal row — the second
+// setFilterValue call (clearing has_pending_renewal) lost the race against
+// UTable's prop-watcher re-syncing from the (still stale) columnFilters
+// ref. Assigning columnFilters.value directly makes it the one source of
+// truth, no imperative/declarative dual-write to race.
 function applyMembershipStatusFilterFromQuery() {
-  const statusColumn = table.value?.tableApi?.getColumn('membership_status')
-  const pendingRenewalColumn = table.value?.tableApi?.getColumn('has_pending_renewal')
-  if (!statusColumn || !pendingRenewalColumn) return
-
   const status = route.query.status
   if (status === 'pending_renewal') {
-    statusColumn.setFilterValue(undefined)
-    pendingRenewalColumn.setFilterValue(true)
+    columnFilters.value = [{ id: 'has_pending_renewal', value: true }]
+  } else if (typeof status === 'string') {
+    columnFilters.value = [{ id: 'membership_status', value: status }]
   } else {
-    pendingRenewalColumn.setFilterValue(undefined)
-    statusColumn.setFilterValue(typeof status === 'string' ? status : undefined)
+    columnFilters.value = []
   }
 }
 
-onMounted(() => nextTick(applyMembershipStatusFilterFromQuery))
+// No longer needs nextTick to wait for UTable to mount — columnFilters is a
+// plain ref this page owns, not something read off table.value?.tableApi.
+onMounted(applyMembershipStatusFilterFromQuery)
 watch(() => route.query.status, applyMembershipStatusFilterFromQuery)
 
 // Real counts per membership status, for the tabs above the table (they replace the
@@ -249,7 +259,7 @@ const activeStatusTab = computed({
   }
 })
 
-const columnFilters = ref([])
+const columnFilters = ref<{ id: string, value: unknown }[]>([])
 
 const columnVisibility = ref({
   // Always "approved" here now that pending/rejected requests live on their
