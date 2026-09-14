@@ -1547,7 +1547,91 @@
         "invalidCount": "Numero di giocatori non valido per formare i tavoli",
         "podTitle": "Tavolo {n}",
         "modalTitle": "Formazione tavoli",
-        "modalDescription": "Trascina i giocatori per spostarli tra i tavoli"
+        "modalDescription": "Trascina i giocatori per spostarli tra i tavoli",
+        "startRoundOneErrorTitle": "Impossibile avviare il round 1"
+      },
+      "tablePreview": {
+        "summary": "{count} giocatori",
+        "title": "Anteprima tavoli",
+        "description": "Trascina i giocatori per modificare i tavoli, poi confermare per avviare il round",
+        "tableHeading": "Tavolo {n}",
+        "scoreLabel": "Punteggio: {score}",
+        "dragPlayerAriaLabel": "Sposta giocatore",
+        "dropHere": "Rilascia qui",
+        "emptySlot": "Posto vuoto",
+        "invalidTableSizes": "Uno o più tavoli hanno un numero di giocatori non valido",
+        "duplicatePlayers": "Un giocatore risulta seduto a più tavoli",
+        "missingPlayers": "Manca uno o più giocatori dai tavoli",
+        "forbiddenPairsPresent": "Alcuni tavoli contengono una coppia da evitare",
+        "status": {
+          "conflict": "Conflitto"
+        },
+        "optimizer": {
+          "noImprovements": "Nessun miglioramento trovato",
+          "improvedDescription": "Punteggio migliorato di {delta} (tavoli: {tables})",
+          "noneFallback": "nessuno",
+          "optimizationCompleteTitle": "Ottimizzazione completata",
+          "alreadyOptimizedTitle": "Già ottimizzato",
+          "conflictResolutionFailedTitle": "Impossibile risolvere il conflitto",
+          "noValidSolutionFallback": "Nessuna disposizione valida trovata",
+          "conflictResolutionCompleteTitle": "Conflitto risolto"
+        },
+        "presets": {
+          "social": "Sociale",
+          "balanced": "Equilibrato",
+          "competitive": "Competitivo",
+          "reset": "Ripristina",
+          "custom": "Personalizzato"
+        },
+        "weights": {
+          "heading": "Pesi dell'algoritmo",
+          "formulaHeading": "Formula",
+          "formula": "Punteggio = equilibrio + novità - rematch - rotazione tavoli da 3 + bonus dimensione tavolo"
+        },
+        "weightLabels": {
+          "strengthBalance": "Equilibrio forza",
+          "novelty": "Novità",
+          "rematch": "Rematch",
+          "rotateTable3": "Rotazione tavoli da 3",
+          "tableSize4": "Bonus tavolo da 4",
+          "tableSize3": "Penalità tavolo da 3"
+        },
+        "forbiddenPairs": {
+          "heading": "Coppie da evitare",
+          "playerAPlaceholder": "Giocatore A",
+          "playerBPlaceholder": "Giocatore B",
+          "searchPlaceholder": "Cerca...",
+          "addPair": "Aggiungi coppia",
+          "resolveConflicts": "Risolvi conflitti",
+          "empty": "Nessuna coppia da evitare",
+          "storageNote": "Le coppie da evitare sono globali e valgono per tutti i tornei"
+        },
+        "settings": {
+          "title": "Impostazioni abbinamenti",
+          "description": "Pesi dell'algoritmo e coppie da evitare"
+        },
+        "toolbar": {
+          "totalScoreLabel": "Punteggio totale:",
+          "weightsAndConstraints": "Pesi e vincoli",
+          "weightsAndConstraintsTooltip": "Modifica i pesi dell'algoritmo e le coppie da evitare",
+          "optimize": "Ottimizza",
+          "optimizeTooltip": "Ricalcola la disposizione dei tavoli con l'algoritmo",
+          "random": "Randomizza",
+          "randomTooltip": "Mescola casualmente i giocatori tra i tavoli"
+        },
+        "scoreBreakdown": {
+          "modalTitle": "Dettaglio punteggio tavolo",
+          "noDetails": "Nessun dettaglio disponibile",
+          "strengthBalance": "Equilibrio forza",
+          "novelty": "Novità",
+          "rematch": "Rematch",
+          "tableSizeWeight": "Bonus/penalità dimensione tavolo",
+          "tableTotal": "Totale tavolo",
+          "playerTotal": "Totale giocatore",
+          "rotateTable3Tooltip": "Penalità per rotazione ai tavoli da 3, pagata solo a questo tavolo",
+          "table3CountHistory": "Storico tavoli da 3",
+          "table3CountHistoryTooltip": "Numero di volte che questo giocatore si è seduto a un tavolo da 3"
+        }
       },
       "awardsPlaceholder": "Componente premi che mostrerà la classifica finale",
       "leaderboardTitle": "Classifica torneo specifico",
