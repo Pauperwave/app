@@ -4,10 +4,12 @@
   AcceptancePicker and round 1 in tournaments/[tournamentId]/index.vue's
   stepper, only when the tournament's format is Draft. Pod sizing comes from
   useDraftPods.ts (ideal 8, min 6), already built/tested. Editing happens in a
-  modal with drag-and-drop chips, mirroring MagicTheGathering/league's own
-  Commander table-preview flow (TablePreviewModal.vue/TableCard.vue/
-  TableSeatItem.vue) — VueDraggable instances sharing one `group` name give
-  cross-pod dragging for free, no manual move-player logic needed.
+  modal with drag-and-drop chips.
+
+  Commander's own pod-formation step (2026-09-15) uses the ported
+  MagicTheGathering/league flow instead (TablePreviewModal.vue and friends,
+  under components/tournaments/single/pairing/) — this component stays
+  Draft-only, a preview-only toy with no persistence, unaffected by that.
 -->
 <script lang="ts" setup>
 import { VueDraggable } from 'vue-draggable-plus'

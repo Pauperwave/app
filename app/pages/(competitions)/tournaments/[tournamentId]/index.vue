@@ -4,6 +4,7 @@
 // header skeleton mirrors other detail pages (events/leagues/associates); these are
 // still mock-data pages, expected to change dramatically once real functionality lands
 import type { AcceptancePickerItem } from '~/components/tournaments/single/AcceptancePicker.vue'
+import type { TablePlayer } from '~/types'
 
 const { t } = useI18n()
 const toast = useToast()
@@ -46,6 +47,7 @@ const originLeague = computed(() => origin.value
 const acceptedPlayers = ref<AcceptancePickerItem[]>([])
 
 const isDraft = computed(() => tournament.value?.format === 'Draft')
+const isCommander = computed(() => tournament.value?.format === 'Commander')
 
 const { calculateRoundCount } = useSwissRoundCount()
 const numberOfRounds = computed(() =>
@@ -77,6 +79,33 @@ async function confirmStartTournament() {
   }
 }
 
+// Commander's round 1 (user request, 2026-09-15) — the pods step's
+// "Confirm" only persists anything for Commander (see PodsManager.vue's
+// own comment); Draft's step stays the existing preview-only toy.
+const { startRoundOne } = useTournamentRoundsMutations(tournamentUuid)
+const podsModalOpen = ref(false)
+
+// TablePreviewModal (ported from league, 2026-09-15) takes TablePlayer[]
+// (value/label), not AcceptancePickerItem's fuller shape — same associate
+// uuid identity either way (AcceptancePickerItem.value).
+const tablePreviewPlayers = computed<TablePlayer[]>(() =>
+  acceptedPlayers.value.map(player => ({ value: player.value, label: player.label })))
+const { calculatePods: calculateCommanderPods } = useCommanderPods()
+const canOpenTablePreview = computed(() =>
+  calculateCommanderPods(acceptedPlayers.value.length).canPlay)
+
+async function onPodsConfirm(associateOrder: string[]) {
+  try {
+    await startRoundOne.mutateAsync(associateOrder)
+    podsModalOpen.value = false
+    if (currentStep.value === items.value.findIndex(item => item.slot === 'pods')) {
+      currentStep.value += 1
+    }
+  } catch {
+    // Toasted by useTournamentRoundsMutations' own onError — nothing left to do here.
+  }
+}
+
 // Titles pair with a static description for now (e.g. "In attesa") — real
 // per-round status (completed/in-progress/pending, based on actual
 // tournament progress) needs round-tracking data that doesn't exist yet.
@@ -88,10 +117,11 @@ const items = computed(() => [
     description: t('tournament.stepper.acceptanceDescription'),
     icon: ICONS.players
   },
-  // Draft-only: pod formation happens once, before round 1 — Commander's
-  // pod-every-round shape is a different flow entirely, deliberately not
-  // modeled here (out of scope, see the plan for this change).
-  ...(isDraft.value
+  // Draft AND Commander both need a pods step before round 1 — Draft's
+  // pods are fixed for the whole tournament, Commander's are re-formed
+  // every round (see round-${i} below and PodsManager.vue's own comment),
+  // but round 1 itself is seated the same way for both: this one step.
+  ...(isDraft.value || isCommander.value
     ? [{
       slot: 'pods',
       title: t('tournament.stepper.pods'),
@@ -118,6 +148,37 @@ const items = computed(() => [
     icon: ICONS.listOrdered
   }
 ])
+
+// URL sync (ported from league's useTournamentUrl.ts, user request,
+// 2026-09-15) — reflects the current stepper slot and the pods-preview
+// modal into ?step=/&preview=1, so a refresh or a shared link lands back
+// on the same step instead of always resetting to "acceptance".
+const {
+  stepFromQuery, syncStep, previewFromQuery, syncPreview
+} = useTournamentUrl()
+
+// One-shot restore, not a continuous sync — once the query param has
+// placed currentStep, further changes to `items` (e.g. numberOfRounds
+// resolving once acceptedPlayers loads) shouldn't silently yank the
+// organizer back to a step they've already navigated away from.
+let hasRestoredStepFromQuery = false
+watch(items, (currentItems) => {
+  if (hasRestoredStepFromQuery || !stepFromQuery.value) return
+  const index = currentItems.findIndex(item => item.slot === stepFromQuery.value)
+  if (index !== -1) {
+    currentStep.value = index
+    hasRestoredStepFromQuery = true
+  }
+}, { immediate: true })
+
+watch(() => items.value[currentStep.value]?.slot, (slot) => {
+  if (slot) syncStep(slot)
+})
+
+watch(podsModalOpen, syncPreview)
+watch(previewFromQuery, (isPreview) => {
+  if (isPreview && canOpenTablePreview.value) podsModalOpen.value = true
+}, { immediate: true })
 
 // "Modifica torneo" — reuses the same edit modal/composable as the list
 // page (user request, 2026-09-14: editing must stay possible from the
@@ -222,8 +283,33 @@ onUnmounted(() => {
           />
         </template>
 
-        <template v-if="isDraft" #pods>
-          <TournamentsSinglePodsManager :players="acceptedPlayers" />
+        <template #pods>
+          <TournamentsSinglePodsManager v-if="isDraft" :players="acceptedPlayers" />
+
+          <template v-else-if="isCommander">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-medium text-highlighted">
+                {{ canOpenTablePreview
+                  ? t('tournament.single.tablePreview.summary', { count: acceptedPlayers.length })
+                  : t('tournament.single.podsManager.invalidCount') }}
+              </span>
+              <UButton
+                :label="t('tournament.single.podsManager.open')"
+                :icon="ICONS.layers"
+                :disabled="!canOpenTablePreview"
+                @click="podsModalOpen = true"
+              />
+            </div>
+
+            <TournamentsSinglePairingTablePreviewModal
+              v-model:open="podsModalOpen"
+              :players="tablePreviewPlayers"
+              :tournament-uuid="tournamentUuid"
+              :current-round="1"
+              :loading="startRoundOne.isLoading.value"
+              @confirm="onPodsConfirm"
+            />
+          </template>
         </template>
 
         <template

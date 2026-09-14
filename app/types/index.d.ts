@@ -527,3 +527,44 @@ export interface CalendarHighlightedDate {
   color: StatusColor
   label: string
 }
+
+// --- Commander pairing/table-preview (ported from MagicTheGathering/league,
+// 2026-09-15) ---------------------------------------------------------------
+// `TablePlayer.value` is an associate uuid (AcceptancePickerItem.value), not
+// a numeric player id like league's own TablePlayer — this app has no
+// numeric player identity to key by on the client.
+export interface TablePlayer {
+  value: string
+  label: string
+  seed?: number
+}
+
+export interface Seat {
+  id: string
+  player: TablePlayer | null
+}
+
+export interface PairingTable {
+  id: string
+  tableNumber: number
+  seats: Seat[]
+}
+
+// Global, cross-tournament hard constraint ("never seat these two
+// together") — mirrors the player_avoid_pairs table's own canonical
+// (player_a_uuid, player_b_uuid) ordering, but unordered here (the
+// optimizer only cares about the unordered pair, ordering is a storage
+// concern handled server-side).
+export interface PairingForbiddenPair {
+  playerA: string
+  playerB: string
+}
+
+export interface PairingWeights {
+  strengthBalance: number
+  novelty: number
+  rematch: number
+  rotateTable3: number
+  tableSize4: number
+  tableSize3: number
+}
