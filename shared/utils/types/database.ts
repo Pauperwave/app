@@ -1363,6 +1363,53 @@ export type Database = {
           },
         ]
       }
+      player_avoid_pairs: {
+        Row: {
+          created_at: string
+          player_a_uuid: string
+          player_b_uuid: string
+        }
+        Insert: {
+          created_at?: string
+          player_a_uuid: string
+          player_b_uuid: string
+        }
+        Update: {
+          created_at?: string
+          player_a_uuid?: string
+          player_b_uuid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_avoid_pairs_player_a_uuid_fkey"
+            columns: ["player_a_uuid"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "player_avoid_pairs_player_a_uuid_fkey"
+            columns: ["player_a_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_full"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "player_avoid_pairs_player_b_uuid_fkey"
+            columns: ["player_b_uuid"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "player_avoid_pairs_player_b_uuid_fkey"
+            columns: ["player_b_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_full"
+            referencedColumns: ["uuid"]
+          },
+        ]
+      }
       player_login_history: {
         Row: {
           created_at: string
