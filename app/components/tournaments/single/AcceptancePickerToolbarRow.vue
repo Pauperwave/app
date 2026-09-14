@@ -38,7 +38,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div v-if="selectedCount" class="flex items-center justify-end gap-2 mb-2">
+  <div v-if="selectedCount" class="flex items-center justify-end gap-2">
     <span class="text-sm text-muted">
       {{ t('tournament.single.acceptancePicker.selectedCount', { count: selectedCount }) }}
     </span>

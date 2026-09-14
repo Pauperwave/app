@@ -70,15 +70,21 @@ const tableEstimateLabel = computed(() => {
 </script>
 
 <template>
+  <!-- Single pill instead of a bold badge next to an equally bold plain-text
+       span (previous look, 2026-09-14 user feedback: "non mi piace tantissimo")
+       — the table breakdown now sits inside the same badge, de-emphasized
+       (font-normal + muted) after a middle-dot separator, so it reads as a
+       detail of the player count rather than a second competing headline. -->
   <UBadge
     :color="badge.color"
+    :icon="ICONS.players"
     variant="subtle"
     size="lg"
-    :ui="{ base: 'px-2.5 py-1.5 text-sm font-medium' }"
+    :ui="{ base: 'px-2.5 py-1.5 text-sm font-medium gap-1.5' }"
   >
     {{ badge.label }}
+    <span v-if="tableEstimateLabel" class="font-normal text-muted">
+      · {{ tableEstimateLabel }}
+    </span>
   </UBadge>
-  <span v-if="tableEstimateLabel" class="text-sm font-medium text-highlighted">
-    {{ tableEstimateLabel }}
-  </span>
 </template>

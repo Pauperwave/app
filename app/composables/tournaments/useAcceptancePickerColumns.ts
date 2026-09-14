@@ -29,6 +29,12 @@ export interface UseAcceptancePickerColumnsOptions {
   acceptedAt: Record<string, Date>
   paymentMethodByPlayer: Record<string, PaymentMethod | null>
   togglePaymentMethod: (item: AcceptancePickerItem, method: PaymentMethod) => void
+  // "Test" payment button — marks a player as paid for testing purposes
+  // without writing a pauperwave_payments row (user request, 2026-09-14).
+  // Kept as its own record/toggle rather than folded into paymentMethodByPlayer,
+  // since that one is synced straight from the real payments query.
+  testPayments: Record<string, boolean>
+  toggleTestPayment: (item: AcceptancePickerItem) => void
   requestRemoveAccepted: (item: AcceptancePickerItem) => void
   // Disables the no-show/payment/remove row buttons while their mutation is
   // in flight — a double-click guard against firing the same write twice
@@ -50,11 +56,18 @@ const PAYMENT_METHOD_LABEL_KEYS: Record<PaymentMethod, string | null> = {
   Comped: 'transaction.addModal.paymentMethodOptions.comped'
 }
 
+// Not a real PaymentMethod (ck_payment_method rejects anything outside
+// PAYMENT_METHODS) — deliberately not added there or to
+// PAYMENT_METHOD_BADGE_CONFIG, since both are shared with the real
+// transactions list/filters. This button only ever toggles the local
+// testPayments record, never pauperwave_payments.
+const TEST_PAYMENT_BADGE = { color: 'warning' as const, icon: ICONS.flaskConical }
+
 export function useAcceptancePickerColumns(options: UseAcceptancePickerColumnsOptions) {
   const {
     sourceRowHandler, acceptedRowHandler, registrationOrderByValue, sourceRowStatus,
-    toggleNoShow, acceptedAt, paymentMethodByPlayer, togglePaymentMethod, requestRemoveAccepted,
-    isMutating
+    toggleNoShow, acceptedAt, paymentMethodByPlayer, togglePaymentMethod, testPayments,
+    toggleTestPayment, requestRemoveAccepted, isMutating
   } = options
 
   const { t } = useI18n()
@@ -259,22 +272,37 @@ export function useAcceptancePickerColumns(options: UseAcceptancePickerColumnsOp
       cell: ({ row }) => {
         const item = row.original
         const method = paymentMethodByPlayer[item.value] ?? null
-        return h(UFieldGroup, { size: 'sm' }, () => PAYMENT_METHOD_OPTIONS.map((option) => {
-          const badge = PAYMENT_METHOD_BADGE_CONFIG[option]
-          const label = paymentMethodLabel(option)
-          return h(UButton, {
-            'key': option,
-            'label': label,
-            'icon': badge.icon,
-            'color': method === option ? badge.color : 'neutral',
-            'variant': method === option ? 'solid' : 'outline',
+        const isTest = testPayments[item.value] ?? false
+        return h(UFieldGroup, { size: 'sm' }, () => [
+          ...PAYMENT_METHOD_OPTIONS.map((option) => {
+            const badge = PAYMENT_METHOD_BADGE_CONFIG[option]
+            const label = paymentMethodLabel(option)
+            return h(UButton, {
+              'key': option,
+              'label': label,
+              'icon': badge.icon,
+              'color': method === option ? badge.color : 'neutral',
+              'variant': method === option ? 'solid' : 'outline',
+              'disabled': isMutating.value,
+              'aria-label': t('tournament.single.acceptancePicker.paymentAriaLabel', {
+                method: label, name: item.label
+              }),
+              'onClick': () => togglePaymentMethod(item, option)
+            })
+          }),
+          h(UButton, {
+            'key': 'test',
+            'label': t('tournament.single.acceptancePicker.testPaymentLabel'),
+            'icon': TEST_PAYMENT_BADGE.icon,
+            'color': isTest ? TEST_PAYMENT_BADGE.color : 'neutral',
+            'variant': isTest ? 'solid' : 'outline',
             'disabled': isMutating.value,
-            'aria-label': t('tournament.single.acceptancePicker.paymentAriaLabel', {
-              method: label, name: item.label
+            'aria-label': t('tournament.single.acceptancePicker.testPaymentAriaLabel', {
+              name: item.label
             }),
-            'onClick': () => togglePaymentMethod(item, option)
+            'onClick': () => toggleTestPayment(item)
           })
-        }))
+        ])
       }
     },
     {
