@@ -3,6 +3,12 @@
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Row } from '@tanstack/vue-table'
 import type { PaymentMethod } from '#shared/types/transactions'
+// Explicit import, not auto-import — Nitro's own server-side useStorage
+// (unstorage's Storage<T>) shadows VueUse's client composable of the same
+// name in the shared auto-import namespace, resolving to the wrong one
+// (confirmed 2026-09-14: typecheck picked Storage<T>, and the browser threw
+// "useStorage is not defined" at runtime).
+import { useStorage } from '@vueuse/core'
 
 interface Props {
   tournamentUuid: string
@@ -298,6 +304,28 @@ watch(paymentsData, (payments) => {
   }
 }, { immediate: true })
 
+// "Test" payment button (user request, 2026-09-14) — marks a player as paid
+// for testing purposes without writing a pauperwave_payments row. Kept out of
+// paymentMethodByPlayer/pauperwave_payments entirely ('test' isn't a real
+// PaymentMethod, ck_payment_method would reject it), but persisted to
+// localStorage via VueUse's useStorage (user request, 2026-09-14: survive a
+// reload without needing an actual DB write) rather than a plain reactive() —
+// keyed per tournament so different tournaments' test marks don't collide.
+const testPayments = useStorage<Record<string, boolean>>(
+  () => `tournament-test-payments-${tournamentUuid}`, {}
+)
+
+function toggleTestPayment(item: AcceptancePickerItem) {
+  if (testPayments.value[item.value]) {
+    Reflect.deleteProperty(testPayments.value, item.value)
+    return
+  }
+  // Mutually exclusive with a real payment method — a row shouldn't show
+  // both a live "Cash" and the "Test" state active at once.
+  if (paymentMethodByPlayer[item.value]) setPaymentMethod(item, null)
+  testPayments.value[item.value] = true
+}
+
 // Shared by the arrow button (whole current selection) and the
 // "Pre-registrati" context menu's "Aggiungi agli iscritti" action (user
 // request, 2026-08-24), which passes just the right-clicked row or
@@ -395,6 +423,7 @@ const acceptedRemove = useRemoveConfirmFlow<AcceptancePickerItem>({
     const registrationUuids = resolveRegistrationUuids(itemsToRemove)
     if (registrationUuids.length)
       setRegistrationStatus.mutate({ registrationUuids, status: 'registered' })
+    for (const item of itemsToRemove) Reflect.deleteProperty(testPayments.value, item.value)
     acceptedSelectionState.deselect(itemsToRemove)
   }
 })
@@ -450,6 +479,7 @@ function setPaymentMethod(item: AcceptancePickerItem, method: PaymentMethod | nu
     })
     return
   }
+  if (method !== null) Reflect.deleteProperty(testPayments.value, item.value)
   setPayment.mutate({
     associateUuid: item.value,
     method, receivedBy:
@@ -478,6 +508,8 @@ const {
   acceptedAt,
   paymentMethodByPlayer,
   togglePaymentMethod,
+  testPayments: testPayments.value,
+  toggleTestPayment,
   requestRemoveAccepted,
   isMutating
 })
@@ -504,6 +536,12 @@ function acceptedRowContextMenuItems(item: AcceptancePickerItem): DropdownMenuIt
         onSelect: () => setPaymentMethod(item, method === option ? null : option)
       }
     }),
+    {
+      label: t('tournament.single.acceptancePicker.testPaymentLabel'),
+      icon: ICONS.flaskConical,
+      color: testPayments.value[item.value] ? 'warning' : undefined,
+      onSelect: () => toggleTestPayment(item)
+    },
     { type: 'separator' as const },
     {
       label: bulk
@@ -529,7 +567,7 @@ const acceptedTableContextMenuItems = computed<DropdownMenuItem[]>(
 
 <template>
   <div class="flex items-start gap-2 w-full">
-    <div class="flex flex-col gap-1 w-136 shrink-0">
+    <div class="flex flex-col gap-2 w-136 shrink-0">
       <div class="flex items-center justify-between gap-2 min-h-8">
         <h2 class="font-medium text-highlighted">
           {{ t('tournament.single.acceptancePicker.preRegistered') }}
@@ -582,7 +620,7 @@ const acceptedTableContextMenuItems = computed<DropdownMenuItem[]>(
       />
     </div>
 
-    <div class="flex flex-col flex-1 gap-1">
+    <div class="flex flex-col flex-1 gap-2">
       <div class="flex items-center gap-2 min-h-8">
         <h2 class="font-medium text-highlighted">
           {{ t('tournament.single.acceptancePicker.registeredPaid') }}
@@ -592,7 +630,7 @@ const acceptedTableContextMenuItems = computed<DropdownMenuItem[]>(
           v-model="receivedBy"
           :items="RECEIVER_OPTIONS"
           :placeholder="t('tournament.single.acceptancePicker.receivedByPlaceholder')"
-          class="w-48 ms-auto"
+          class="w-64 ms-auto"
         />
       </div>
 

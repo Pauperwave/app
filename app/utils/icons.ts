@@ -139,6 +139,7 @@ export const ICONS = {
   idCard: 'i-lucide-id-card',
   receipt: 'i-lucide-receipt',
   incognito: 'i-lucide-hat-glasses',
+  flaskConical: 'i-lucide-flask-conical',
 
   // Contact / identity fields
   mail: 'i-lucide-mail',

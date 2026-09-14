@@ -1497,6 +1497,8 @@
         "playerColumn": "Giocatore",
         "paymentColumn": "Pagamento",
         "paymentAriaLabel": "Segna {name} come pagato con {method}",
+        "testPaymentLabel": "Test",
+        "testPaymentAriaLabel": "Segna {name} come pagato (test, non registrato)",
         "actionsColumn": "Azioni",
         "noShowColumn": "No-show",
         "markNoShowAriaLabel": "Segna {name} come no-show",

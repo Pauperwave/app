@@ -30,7 +30,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 mb-2">
+  <div class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
     <SearchInput
       v-model="search"
       :placeholder="t('tournament.single.acceptancePicker.searchPlaceholder')"
