@@ -2549,6 +2549,14 @@ export type Database = {
         }
         Returns: string
       }
+      advance_swiss_round: {
+        Args: {
+          p_associate_order?: string[]
+          p_current_round_number: number
+          p_tournament_uuid: string
+        }
+        Returns: string
+      }
       assign_role: {
         Args: {
           p_role: Database["public"]["Enums"]["app_role"]
@@ -2646,7 +2654,15 @@ export type Database = {
         Args: { p_associate_order: string[]; p_tournament_uuid: string }
         Returns: string
       }
+      start_swiss_round_one: {
+        Args: { p_associate_order: string[]; p_tournament_uuid: string }
+        Returns: string
+      }
       turn_back_commander_round: {
+        Args: { p_current_round_number: number; p_tournament_uuid: string }
+        Returns: undefined
+      }
+      turn_back_swiss_round: {
         Args: { p_current_round_number: number; p_tournament_uuid: string }
         Returns: undefined
       }
