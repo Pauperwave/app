@@ -2,6 +2,7 @@
 // fallow-ignore-file code-duplication -- mirrors useTournamentsFilters.ts's
 // date-range/status filter shape on purpose; expected to diverge once real
 // Supabase tables land
+import { endOfDay } from 'date-fns'
 import type { Ref } from 'vue'
 import type { Event, EventStatus, Range } from '~/types'
 
@@ -17,7 +18,10 @@ export function useEventsFilters(data: Ref<Event[]>, range: Ref<Range>, search: 
   const filteredEvents = computed(() => data.value.filter((event) => {
     if (statusFilter.value !== 'all' && event.status !== statusFilter.value) return false
     const startDate = new Date(event.startDate)
-    if (startDate < range.value.start || startDate > range.value.end) return false
+    // See useTournamentsFilters.ts's own comment — range.value.end lands at
+    // midnight of the picked end day, so an event later that same day
+    // needs the comparison bumped to end-of-day or it's wrongly excluded.
+    if (startDate < range.value.start || startDate > endOfDay(range.value.end)) return false
     const query = search.value.trim().toLowerCase()
     if (query && !event.name.toLowerCase().includes(query)) return false
     return true
