@@ -127,14 +127,40 @@ const canOpenTablePreview = computed(() => {
 // "Cubo Commander" has no round-management flow at all yet (see
 // isCubeCommander's own comment), so it stays on the plain confirm dialog
 // too, same as any other format with no pods/preview concept.
+function goToPodsPreview() {
+  const podsIndex = items.value.findIndex(item => item.slot === 'pods')
+  if (podsIndex !== -1) currentStep.value = podsIndex
+  podsModalOpen.value = true
+}
+
 function onStartTournamentClick() {
   if (isDraft.value || isCommander.value || is1v1Format.value) {
-    const podsIndex = items.value.findIndex(item => item.slot === 'pods')
-    if (podsIndex !== -1) currentStep.value = podsIndex
-    podsModalOpen.value = true
+    goToPodsPreview()
     return
   }
   isStartConfirmOpen.value = true
+}
+
+// "Torna al round precedente" on round 1 (user request, 2026-09-18): once
+// its RPC has wiped round 1 back to registration_open, round 1 turning
+// back is conceptually the same as any other round turning back — it
+// should land the organizer straight on "round 0"'s own next-round
+// preview, which for round 1 is the pods/table-preview step itself
+// (exactly what "Avvia torneo" opens). See onRoundTurnedBack below for
+// round 2+, which reopens the previous round's own advancePreviewOpen
+// instead — same mechanism, different destination.
+const pendingAdvancePreviewRound = ref<number | null>(null)
+function onRoundTurnedBack(roundNumber: number) {
+  if (roundNumber === 1) {
+    goToPodsPreview()
+    return
+  }
+  const previousRoundIndex = items.value.findIndex(item => item.slot === `round-${roundNumber - 1}`)
+  if (previousRoundIndex !== -1) currentStep.value = previousRoundIndex
+  pendingAdvancePreviewRound.value = roundNumber - 1
+}
+function onAdvancePreviewAutoOpened() {
+  pendingAdvancePreviewRound.value = null
 }
 
 async function onPodsConfirm(associateOrder: string[]) {
@@ -357,6 +383,7 @@ onUnmounted(() => {
             v-model:accepted="acceptedPlayers"
             :tournament-uuid="tournamentUuid"
             :is-draft="isDraft"
+            :is1v1="is1v1Format"
           />
         </template>
 
@@ -429,12 +456,18 @@ onUnmounted(() => {
             :tournament-uuid="tournamentUuid"
             :round-number="i"
             :round-count="numberOfRounds"
+            :auto-open-advance-preview="pendingAdvancePreviewRound === i"
+            @turned-back="onRoundTurnedBack(i)"
+            @advance-preview-auto-opened="onAdvancePreviewAutoOpened"
           />
           <TournamentsSingleSwissRoundManager
             v-else-if="is1v1Format"
             :tournament-uuid="tournamentUuid"
             :round-number="i"
             :round-count="numberOfRounds"
+            :auto-open-advance-preview="pendingAdvancePreviewRound === i"
+            @turned-back="onRoundTurnedBack(i)"
+            @advance-preview-auto-opened="onAdvancePreviewAutoOpened"
           />
           <TournamentsSingleRoundManager v-else :round="i" />
         </template>

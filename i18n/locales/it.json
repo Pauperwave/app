@@ -1533,6 +1533,7 @@
         "playersCountMinimum": "{count} / {min} giocatori minimi",
         "playersCountInvalid": "{count} giocatore: configurazione non valida | {count} giocatori: configurazione non valida",
         "playersCount": "{count} giocatore | {count} giocatori",
+        "tablesOf2": "{count} tavolo da 2 | {count} tavoli da 2",
         "tablesOf3": "{count} tavolo da 3 | {count} tavoli da 3",
         "tablesOf4": "{count} tavolo da 4 | {count} tavoli da 4",
         "tablesOf6": "{count} tavolo da 6 | {count} tavoli da 6",

@@ -16,12 +16,25 @@
 import type { TablePlayer } from '~/types'
 import type { WinnerChecklistEntry } from '~/components/tournaments/single/pairing/WinnerChecklistCard.vue'
 
-const { tournamentUuid, roundNumber, roundCount } = defineProps<{
+const {
+  tournamentUuid, roundNumber, roundCount, autoOpenAdvancePreview = false
+} = defineProps<{
   tournamentUuid: string
   roundNumber: number
   /** Total round count for this tournament — "Prossimo Round" ends the
    * tournament instead of creating a new one once past this. */
   roundCount: number
+  /** Set by index.vue right after a "Torna al round precedente" click on
+   * round `roundNumber + 1` — turning back round N means "delete round N,
+   * then show round N-1's own next-round preview again" (user request,
+   * 2026-09-18), so this round's manager needs to reopen its own
+   * advancePreviewOpen on behalf of the round that just turned back into it. */
+  autoOpenAdvancePreview?: boolean
+}>()
+
+const emit = defineEmits<{
+  turnedBack: []
+  advancePreviewAutoOpened: []
 }>()
 
 const { t } = useI18n()
@@ -277,8 +290,19 @@ async function endTournament() {
 async function onTurnBack() {
   try {
     await turnBackRound.mutateAsync(roundNumber)
+    emit('turnedBack')
   } catch { /* toasted by the mutation's own onError */ }
 }
+
+// See autoOpenAdvancePreview's own comment — index.vue flips this on right
+// after deleting round `roundNumber + 1`, asking this (the previous) round
+// to reopen its own "next round" preview so the organizer lands straight
+// back on the table arrangement they're meant to redo.
+watch(() => autoOpenAdvancePreview, (value) => {
+  if (!value) return
+  advancePreviewOpen.value = true
+  emit('advancePreviewAutoOpened')
+}, { immediate: true })
 </script>
 
 <template>
