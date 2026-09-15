@@ -33,8 +33,8 @@ const { breadcrumbItems } = useBreadcrumbs(
 )
 
 // "Back to league" link — see app/utils/tournaments/tournamentOrigin.ts for why this is
-// a query param (?from=league:<uuid>) rather than a nested route.
-const origin = computed(() => parseNavigationOrigin(route.query.from))
+// a query param (?league=<uuid>) rather than a nested route.
+const origin = computed(() => parseNavigationOrigin(route.query.league))
 const { data: leaguesData } = useLeaguesQuery()
 const originLeague = computed(() => origin.value
   ? leaguesData.value?.find(league => league.uuid === origin.value?.uuid) ?? null
