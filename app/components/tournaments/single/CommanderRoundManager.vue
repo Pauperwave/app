@@ -14,6 +14,7 @@
 -->
 <script setup lang="ts">
 import type { TablePlayer } from '~/types'
+import type { WinnerChecklistEntry } from '~/components/tournaments/single/pairing/WinnerChecklistCard.vue'
 
 const { tournamentUuid, roundNumber, roundCount } = defineProps<{
   tournamentUuid: string
@@ -103,6 +104,27 @@ function isPairingDraw(pairingUuid: string): boolean {
   const noKills = killsFor(pairingUuid).length === 0
   return allFirst && noKills
 }
+
+// ─── Winner checklist ("Vincitori tavoli") ──────────────────────────────────
+// One entry per table that already has a real winner (position === 1,
+// draws excluded via isPairingDraw — a draw has no actual winner, same
+// distinction useCommanderScoring.ts's isDrawTable makes for scoring).
+const winners = computed<WinnerChecklistEntry[]>(() =>
+  pairingsForRound.value.reduce<WinnerChecklistEntry[]>((entries, pairing) => {
+    if (isPairingDraw(pairing.uuid)) return entries
+    const pos = positionsFor(pairing.uuid)
+    const winnerUuids = pairing.playerUuids.filter(playerUuid => pos.get(playerUuid) === 1)
+    if (winnerUuids.length === 0) return entries
+    entries.push({
+      pairingUuid: pairing.uuid,
+      tableNumber: pairing.tableNumber ?? 0,
+      players: winnerUuids.map(playerUuid => ({ value: playerUuid, label: labelFor(playerUuid) }))
+    })
+    return entries
+  }, []))
+
+const { checked: winnersChecked, toggle: toggleWinnerChecked }
+  = useWinnerChecklist(() => tournamentUuid, () => roundNumber)
 
 // ─── Ranking modal ──────────────────────────────────────────────────────────
 const { saveRanking } = useTournamentRoundResultsMutations(() => tournamentUuid)
@@ -316,10 +338,18 @@ async function onTurnBack() {
       <EmptyState v-else :message="t('tournament.single.roundManager.noPairings')" />
     </div>
 
-    <TournamentsSinglePairingStandingsSidebar
-      :standings="liveStandings"
-      :is-ended="tournamentIsEnded"
-    />
+    <div class="space-y-3">
+      <TournamentsSinglePairingWinnerChecklistCard
+        :winners="winners"
+        :checked="winnersChecked"
+        @toggle="toggleWinnerChecked"
+      />
+
+      <TournamentsSinglePairingStandingsSidebar
+        :standings="liveStandings"
+        :is-ended="tournamentIsEnded"
+      />
+    </div>
   </div>
 
   <TournamentsSinglePairingTableScoreGridModal
