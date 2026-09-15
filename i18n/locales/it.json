@@ -52,6 +52,14 @@
     "no": "No",
     "switchToLightMode": "Passa al tema chiaro",
     "switchToDarkMode": "Passa al tema scuro",
+    "enableDeveloperView": "Attiva vista sviluppatore",
+    "disableDeveloperView": "Disattiva vista sviluppatore",
+    "developerViewPasswordDescription": "Attiva modalità sviluppatore",
+    "developerViewPasswordPlaceholder": "Password",
+    "developerViewPasswordConfirm": "Sblocca",
+    "developerViewPasswordError": "Password errata",
+    "developerViewSettings": "Impostazioni sviluppatore",
+    "developerViewOverlayLabel": "Mostra margini",
     "retry": "Riprova",
     "refresh": "Aggiorna",
     "associateTag": {
@@ -1396,7 +1404,6 @@
     "startTournamentConfirmTitle": "Avviare il torneo?",
     "startTournamentConfirmDescription": "Il torneo passerà in corso e le iscrizioni verranno chiuse.",
     "startTournamentErrorTitle": "Impossibile avviare il torneo",
-    "debugSpacingLabel": "Margini",
     "selectedRows": "{selected} su {total} riga(e) selezionata(e).",
     "queryStatus": {
       "upcoming": "In programma",
@@ -1496,6 +1503,7 @@
         "paymentColumn": "Pagamento",
         "paymentAriaLabel": "Segna {name} come pagato con {method}",
         "testPaymentLabel": "Test",
+        "testPaymentLabelBulk": "Test ({count})",
         "testPaymentAriaLabel": "Segna {name} come pagato (test, non registrato)",
         "actionsColumn": "Azioni",
         "noShowColumn": "No-show",
@@ -2697,6 +2705,10 @@
   "teamsMenu": {
     "createTeam": "Crea team",
     "manageTeams": "Gestisci team"
+  },
+  "versionBadge": {
+    "copy": "Copia versione",
+    "copied": "Versione copiata negli appunti"
   },
   "userMenu": {
     "fallbackName": "Utente",

@@ -71,6 +71,9 @@ export function useAcceptancePickerColumns(options: UseAcceptancePickerColumnsOp
   } = options
 
   const { t } = useI18n()
+  // "Test" payment button is developer-only (user request, 2026-09-18) —
+  // a testing shortcut, not something a real check-in desk should see.
+  const { isDeveloperView } = useDeveloperView()
 
   function paymentMethodLabel(option: PaymentMethod): string {
     const labelKey = PAYMENT_METHOD_LABEL_KEYS[option]
@@ -290,18 +293,20 @@ export function useAcceptancePickerColumns(options: UseAcceptancePickerColumnsOp
               'onClick': () => togglePaymentMethod(item, option)
             })
           }),
-          h(UButton, {
-            'key': 'test',
-            'label': t('tournament.single.acceptancePicker.testPaymentLabel'),
-            'icon': TEST_PAYMENT_BADGE.icon,
-            'color': isTest ? TEST_PAYMENT_BADGE.color : 'neutral',
-            'variant': isTest ? 'solid' : 'outline',
-            'disabled': isMutating.value,
-            'aria-label': t('tournament.single.acceptancePicker.testPaymentAriaLabel', {
-              name: item.label
-            }),
-            'onClick': () => toggleTestPayment(item)
-          })
+          ...(isDeveloperView.value
+            ? [h(UButton, {
+              'key': 'test',
+              'label': t('tournament.single.acceptancePicker.testPaymentLabel'),
+              'icon': TEST_PAYMENT_BADGE.icon,
+              'color': isTest ? TEST_PAYMENT_BADGE.color : 'neutral',
+              'variant': isTest ? 'solid' : 'outline',
+              'disabled': isMutating.value,
+              'aria-label': t('tournament.single.acceptancePicker.testPaymentAriaLabel', {
+                name: item.label
+              }),
+              'onClick': () => toggleTestPayment(item)
+            })]
+            : [])
         ])
       }
     },
