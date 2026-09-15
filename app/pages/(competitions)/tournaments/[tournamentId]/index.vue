@@ -48,6 +48,14 @@ const acceptedPlayers = ref<AcceptancePickerItem[]>([])
 
 const isDraft = computed(() => tournament.value?.format === 'Draft')
 const isCommander = computed(() => tournament.value?.format === 'Commander')
+// Everything else pairs 1v1 in Swiss rounds (Pauper/Premodern/Oldschool/
+// Sealed/Cubo Vintage) — except "Cubo Commander", which is still a
+// multiplayer pod format despite the name (user decision, 2026-09-17) and
+// stays on the RoundManager.vue stub until it gets wired into Commander's
+// own flow, a separate decision not made yet.
+const isCubeCommander = computed(() => tournament.value?.format === 'Cubo Commander')
+const is1v1Format = computed(() =>
+  !!tournament.value && !isDraft.value && !isCommander.value && !isCubeCommander.value)
 
 const { calculateRoundCount } = useSwissRoundCount()
 const numberOfRounds = computed(() =>
@@ -103,9 +111,11 @@ const tablePreviewPlayers = computed<TablePlayer[]>(() =>
   acceptedPlayers.value.map(player => ({ value: player.value, label: player.label })))
 const { calculatePods: calculateCommanderPods } = useCommanderPods()
 const { calculatePods: calculateDraftPods } = useDraftPods()
+const { calculatePairing: calculateSwissPairing } = useSwissPairing()
 const canOpenTablePreview = computed(() => {
   if (isCommander.value) return calculateCommanderPods(acceptedPlayers.value.length).canPlay
   if (isDraft.value) return calculateDraftPods(acceptedPlayers.value.length).canPlay
+  if (is1v1Format.value) return calculateSwissPairing(acceptedPlayers.value.length).canPlay
   return true
 })
 
@@ -114,10 +124,11 @@ const canOpenTablePreview = computed(() => {
 // from clicking "Avvia Torneo" into the pairing-preview modal (`preview=1`
 // layered on top of the still-registration phase); the tournament doesn't
 // actually start until the organizer confirms the pod arrangement there.
-// Formats with no pods concept at all (plain Swiss) have nothing to
-// preview, so they keep the plain yes/no confirm dialog.
+// "Cubo Commander" has no round-management flow at all yet (see
+// isCubeCommander's own comment), so it stays on the plain confirm dialog
+// too, same as any other format with no pods/preview concept.
 function onStartTournamentClick() {
-  if (isDraft.value || isCommander.value) {
+  if (isDraft.value || isCommander.value || is1v1Format.value) {
     const podsIndex = items.value.findIndex(item => item.slot === 'pods')
     if (podsIndex !== -1) currentStep.value = podsIndex
     podsModalOpen.value = true
@@ -135,6 +146,23 @@ async function onPodsConfirm(associateOrder: string[]) {
     }
   } catch {
     // Toasted by useTournamentRoundsMutations' own onError — nothing left to do here.
+  }
+}
+
+// 1v1 Swiss's own round-1 seating (Phase 1 of
+// docs/plans/2026-09-15-swiss-pairing-draft-1v1-plan.md) — same
+// "client arranges, RPC seats" split as onPodsConfirm (Commander), calling
+// the Swiss-specific RPC instead (migration 20260918000000).
+const { startRoundOneSwiss } = useTournamentSwissRoundsMutations(tournamentUuid)
+async function onSwissPodsConfirm(associateOrder: string[]) {
+  try {
+    await startRoundOneSwiss.mutateAsync(associateOrder)
+    podsModalOpen.value = false
+    if (currentStep.value === items.value.findIndex(item => item.slot === 'pods')) {
+      currentStep.value += 1
+    }
+  } catch {
+    // Toasted by useTournamentSwissRoundsMutations' own onError — nothing left to do here.
   }
 }
 
@@ -164,11 +192,12 @@ const items = computed(() => [
     description: t('tournament.stepper.acceptanceDescription'),
     icon: ICONS.players
   },
-  // Draft AND Commander both need a pods step before round 1 — Draft's
-  // pods are fixed for the whole tournament, Commander's are re-formed
-  // every round (see round-${i} below and PodsManager.vue's own comment),
-  // but round 1 itself is seated the same way for both: this one step.
-  ...(isDraft.value || isCommander.value
+  // Draft, Commander AND 1v1 Swiss all need a pods/table-preview step
+  // before round 1 — Draft's pods are fixed for the whole tournament,
+  // Commander's and 1v1's are re-formed every round (see round-${i} below
+  // and PodsManager.vue's own comment), but round 1 itself is seated the
+  // same way for all three: this one step.
+  ...(isDraft.value || isCommander.value || is1v1Format.value
     ? [{
       slot: 'pods',
       title: t('tournament.stepper.pods'),
@@ -363,6 +392,31 @@ onUnmounted(() => {
               @confirm="onPodsConfirm"
             />
           </template>
+
+          <template v-else-if="is1v1Format">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-medium text-highlighted">
+                {{ canOpenTablePreview
+                  ? t('tournament.single.swissTablePreview.summary', {
+                    count: acceptedPlayers.length / 2
+                  })
+                  : t('tournament.single.swissTablePreview.invalidCount') }}
+              </span>
+              <UButton
+                :label="t('tournament.single.podsManager.open')"
+                :icon="ICONS.layers"
+                :disabled="!canOpenTablePreview"
+                @click="podsModalOpen = true"
+              />
+            </div>
+
+            <TournamentsSinglePairingSwissTablePreviewModal
+              v-model:open="podsModalOpen"
+              :players="tablePreviewPlayers"
+              :loading="startRoundOneSwiss.isLoading.value"
+              @confirm="onSwissPodsConfirm"
+            />
+          </template>
         </template>
 
         <template
@@ -372,6 +426,12 @@ onUnmounted(() => {
         >
           <TournamentsSingleCommanderRoundManager
             v-if="isCommander"
+            :tournament-uuid="tournamentUuid"
+            :round-number="i"
+            :round-count="numberOfRounds"
+          />
+          <TournamentsSingleSwissRoundManager
+            v-else-if="is1v1Format"
             :tournament-uuid="tournamentUuid"
             :round-number="i"
             :round-count="numberOfRounds"

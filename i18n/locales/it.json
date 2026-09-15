@@ -1633,6 +1633,13 @@
           "table3CountHistoryTooltip": "Numero di volte che questo giocatore si è seduto a un tavolo da 3"
         }
       },
+      "swissTablePreview": {
+        "title": "Anteprima tavoli",
+        "description": "Trascina i giocatori per riordinarli, poi confermare per formare le coppie",
+        "summary": "{count} tavoli",
+        "invalidCount": "Numero di giocatori non valido per formare i tavoli (i bye non sono ancora supportati)",
+        "tableNumber": "Tavolo {n}"
+      },
       "awardsPlaceholder": "Componente premi che mostrerà la classifica finale",
       "leaderboardTitle": "Classifica torneo specifico",
       "participantsPlaceholder": "Partecipanti all'evento",
@@ -1660,7 +1667,8 @@
         "standingsFullscreenTooltip": "Schermo intero",
         "standingsExitFullscreenTooltip": "Esci da schermo intero",
         "votesAriaLabel": "Vota {name}",
-        "commanderAriaLabel": "Comandante di {name}"
+        "commanderAriaLabel": "Comandante di {name}",
+        "versusSeparator": "vs"
       },
       "roundResultsPlaceholder": "Risultati del singolo evento",
       "roundResultAddModal": {
