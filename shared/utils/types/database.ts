@@ -404,15 +404,24 @@ export type Database = {
       }
       mtg_commanders: {
         Row: {
+          art_crop_url: string | null
+          back_art_crop_url: string | null
+          back_image_url: string | null
+          back_large_image_url: string | null
+          back_mana_cost: string | null
+          back_oracle_text: string | null
+          back_type_line: string | null
           card_name: string
           cmc: number | null
           color_identity: string[] | null
           edhrec_rank: number | null
           id: number
           image_url: string | null
+          is_double_faced: boolean | null
           keywords: string[] | null
+          large_image_url: string | null
           last_synced_at: string
-          legalities: Json | null
+          layout: string | null
           mana_cost: string | null
           oracle_text: string | null
           partner_group_tag: string | null
@@ -420,20 +429,29 @@ export type Database = {
           partner_with_scryfall_id: string | null
           released_at: string | null
           scryfall_id: string
-          scryfall_url: string
+          scryfall_url: string | null
           type_line: string | null
           uuid: string
         }
         Insert: {
+          art_crop_url?: string | null
+          back_art_crop_url?: string | null
+          back_image_url?: string | null
+          back_large_image_url?: string | null
+          back_mana_cost?: string | null
+          back_oracle_text?: string | null
+          back_type_line?: string | null
           card_name: string
           cmc?: number | null
           color_identity?: string[] | null
           edhrec_rank?: number | null
           id?: number
           image_url?: string | null
+          is_double_faced?: boolean | null
           keywords?: string[] | null
+          large_image_url?: string | null
           last_synced_at?: string
-          legalities?: Json | null
+          layout?: string | null
           mana_cost?: string | null
           oracle_text?: string | null
           partner_group_tag?: string | null
@@ -441,20 +459,29 @@ export type Database = {
           partner_with_scryfall_id?: string | null
           released_at?: string | null
           scryfall_id: string
-          scryfall_url: string
+          scryfall_url?: string | null
           type_line?: string | null
           uuid?: string
         }
         Update: {
+          art_crop_url?: string | null
+          back_art_crop_url?: string | null
+          back_image_url?: string | null
+          back_large_image_url?: string | null
+          back_mana_cost?: string | null
+          back_oracle_text?: string | null
+          back_type_line?: string | null
           card_name?: string
           cmc?: number | null
           color_identity?: string[] | null
           edhrec_rank?: number | null
           id?: number
           image_url?: string | null
+          is_double_faced?: boolean | null
           keywords?: string[] | null
+          large_image_url?: string | null
           last_synced_at?: string
-          legalities?: Json | null
+          layout?: string | null
           mana_cost?: string | null
           oracle_text?: string | null
           partner_group_tag?: string | null
@@ -462,7 +489,7 @@ export type Database = {
           partner_with_scryfall_id?: string | null
           released_at?: string | null
           scryfall_id?: string
-          scryfall_url?: string
+          scryfall_url?: string | null
           type_line?: string | null
           uuid?: string
         }
@@ -2514,6 +2541,14 @@ export type Database = {
       }
     }
     Functions: {
+      advance_commander_round: {
+        Args: {
+          p_associate_order?: string[]
+          p_current_round_number: number
+          p_tournament_uuid: string
+        }
+        Returns: string
+      }
       assign_role: {
         Args: {
           p_role: Database["public"]["Enums"]["app_role"]
@@ -2559,6 +2594,7 @@ export type Database = {
             Args: { p_roles?: Database["public"]["Enums"]["app_role"][] }
             Returns: number[]
           }
+      get_commander_catalog: { Args: never; Returns: Json }
       get_user_role: {
         Args: { p_user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -2609,6 +2645,10 @@ export type Database = {
       start_commander_round_one: {
         Args: { p_associate_order: string[]; p_tournament_uuid: string }
         Returns: string
+      }
+      turn_back_commander_round: {
+        Args: { p_current_round_number: number; p_tournament_uuid: string }
+        Returns: undefined
       }
       update_payment_with_renewal: {
         Args: {
