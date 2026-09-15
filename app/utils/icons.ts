@@ -38,6 +38,8 @@ export const ICONS = {
   fitView: 'i-lucide-scan',
   draw: 'i-lucide-handshake',
   expand: 'i-lucide-expand',
+  collapse: 'i-lucide-minimize',
+  booster: 'i-lucide-gift',
   security: 'i-lucide-shield',
   permissions: 'i-lucide-key-round',
   globe: 'i-lucide-globe',

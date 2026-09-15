@@ -94,7 +94,7 @@ const canToggleDraw = computed(() => isDraw || (!hasRanking.value && !hasKills))
         </UBadge>
         <UButton
           size="xs"
-          variant="ghost"
+          variant="outline"
           :color="hasCommander(player.value) ? 'success' : 'neutral'"
           :icon="ICONS.commander"
           :aria-label="t(
@@ -104,7 +104,7 @@ const canToggleDraw = computed(() => isDraw || (!hasRanking.value && !hasKills))
         />
         <UButton
           size="xs"
-          variant="ghost"
+          variant="outline"
           :color="hasVotes(player.value) ? 'success' : 'neutral'"
           :icon="ICONS.userStar"
           :aria-label="t('tournament.single.roundManager.votesAriaLabel', { name: player.label })"
@@ -117,8 +117,9 @@ const canToggleDraw = computed(() => isDraw || (!hasRanking.value && !hasKills))
       <div class="flex gap-2">
         <UButton
           size="xs"
+          class="flex-1 justify-center"
           :color="hasRanking ? 'success' : 'neutral'"
-          :variant="hasRanking ? 'solid' : 'outline'"
+          variant="outline"
           :icon="ICONS.standings"
           :disabled="isDraw"
           :label="t('tournament.single.roundManager.rankingButton')"
@@ -126,8 +127,9 @@ const canToggleDraw = computed(() => isDraw || (!hasRanking.value && !hasKills))
         />
         <UButton
           size="xs"
+          class="flex-1 justify-center"
           :color="hasKills ? 'success' : 'neutral'"
-          :variant="hasKills ? 'solid' : 'outline'"
+          variant="outline"
           :icon="ICONS.battle"
           :disabled="isDraw"
           :label="t('tournament.single.roundManager.killsButton')"
@@ -135,8 +137,9 @@ const canToggleDraw = computed(() => isDraw || (!hasRanking.value && !hasKills))
         />
         <UButton
           size="xs"
+          class="flex-1 justify-center"
           :color="isDraw ? 'success' : 'neutral'"
-          :variant="isDraw ? 'solid' : 'outline'"
+          variant="outline"
           :icon="ICONS.draw"
           :disabled="!canToggleDraw"
           :label="t('tournament.single.roundManager.drawButton')"

@@ -45,6 +45,22 @@ const canHaveCommander2 = computed(() =>
 const commander2Whitelist = computed(() =>
   commander1.value && canHaveCommander2.value ? getAllowedPartners(commander1.value) : [])
 
+// Mirrors league's own CommanderModal.vue commander2Label — the field's
+// label names the actual mechanic (Partner/Background/Companion/...)
+// instead of a generic "second commander" placeholder.
+const commander2Label = computed(() => {
+  switch (commander1PartnerType.value) {
+    case 'partner': return t('tournament.single.commanderModal.partnerTypes.partner')
+    case 'partner_with': return t('tournament.single.commanderModal.partnerTypes.partnerWith')
+    case 'background':
+    case 'background_commander': return t('tournament.single.commanderModal.partnerTypes.background')
+    case 'friends_forever': return t('tournament.single.commanderModal.partnerTypes.friendsForever')
+    case 'doctors_companion': return t('tournament.single.commanderModal.partnerTypes.doctorsCompanion')
+    case 'companion': return t('tournament.single.commanderModal.partnerTypes.companion')
+    default: return t('tournament.single.commanderModal.partnerTypes.generic')
+  }
+})
+
 // "Partner with <specific card>" is a fixed, named pair — there's only ever
 // one legal commander2 once commander1 is picked, so auto-fill it instead
 // of making the player find it in the (still broad) whitelist themselves.
@@ -118,15 +134,18 @@ function handleConfirm() {
         />
 
         <div v-if="canHaveCommander2" class="space-y-1">
-          <UBadge
-            v-if="commander2Whitelist.length > 0"
-            size="sm"
-            color="info"
-            variant="soft"
-          >
-            {{ t('tournament.single.commanderModal.compatibleCards',
-                 { count: commander2Whitelist.length }) }}
-          </UBadge>
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-medium">{{ commander2Label }}</span>
+            <UBadge
+              v-if="commander2Whitelist.length > 0"
+              size="sm"
+              color="info"
+              variant="soft"
+            >
+              {{ t('tournament.single.commanderModal.compatibleCards',
+                   { count: commander2Whitelist.length }) }}
+            </UBadge>
+          </div>
           <USelectMenu
             v-model="commander2"
             v-model:search-term="commander2Query"
