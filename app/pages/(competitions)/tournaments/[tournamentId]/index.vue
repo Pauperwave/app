@@ -295,18 +295,6 @@ watch(previewFromQuery, (isPreview) => {
 // page (user request, 2026-09-14: editing must stay possible from the
 // detail page too, not just tournaments/index.vue's row actions).
 const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowActions()
-
-// Layout-debug switch (dev tool, user request 2026-09-14) — toggles
-// .debug-spacing (main.css) on <html> to visualize every element's margin
-// as a white gap against its own tinted border box. Removed on unmount so
-// it can't leak into another page if the toggle is left on mid-navigation.
-const debugSpacingEnabled = ref(false)
-watch(debugSpacingEnabled, (enabled) => {
-  document.documentElement.classList.toggle('debug-spacing', enabled)
-})
-onUnmounted(() => {
-  document.documentElement.classList.remove('debug-spacing')
-})
 </script>
 
 <template>
@@ -326,13 +314,6 @@ onUnmounted(() => {
                as a quick way to force a status during testing rather than
                going through the full "Avvia torneo" confirm flow every time. -->
           <TournamentsStatusBadge v-if="tournament" :tournament="tournament" />
-
-          <USeparator orientation="vertical" class="h-4" />
-
-          <USwitch
-            v-model="debugSpacingEnabled"
-            :label="$t('tournament.debugSpacingLabel')"
-          />
 
           <USeparator orientation="vertical" class="h-4" />
 

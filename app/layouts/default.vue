@@ -275,7 +275,14 @@ const groups = computed(() => [{
       }"
     >
       <template #header="{ collapsed }">
-        <LayoutTeamsMenu :collapsed="collapsed" />
+        <!-- Developer toggle lives next to the org selector (user request,
+             2026-09-18, after the sidebar footer's UserMenu/ColorModeSwitch
+             row ran out of room) — same "flex-1 sibling" pattern the footer
+             row already uses for LayoutUserMenu. -->
+        <div class="flex items-center gap-1 w-full" :class="collapsed ? 'flex-col' : ''">
+          <LayoutTeamsMenu :collapsed="collapsed" class="flex-1 min-w-0" />
+          <LayoutDeveloperViewToggle />
+        </div>
       </template>
 
       <template #default="{ collapsed }">
@@ -381,6 +388,13 @@ const groups = computed(() => [{
           </UNavigationMenu>
         </div>
 
+        <!-- Grouped together (user request, 2026-09-18: bring the version
+             badge closer to "Scorciatoie da tastiera") — negative margin on
+             the nav menu itself rather than guessing at its own internal
+             `:ui` spacing key (see the Nuxt UI :ui-override gotcha in
+             CLAUDE.md: an override doesn't reliably cancel a
+             differently-scoped default class, so a margin from outside is
+             the safer bet here). -->
         <div class="mt-auto flex" :class="collapsed ? 'justify-center' : 'justify-start px-2.5'">
           <LayoutVersionBadge :collapsed="collapsed" />
         </div>
@@ -390,6 +404,7 @@ const groups = computed(() => [{
           :items="footerNavItems"
           orientation="vertical"
           tooltip
+          class="-mt-2"
         />
       </template>
 

@@ -328,6 +328,28 @@ function toggleTestPayment(item: AcceptancePickerItem) {
   testPayments.value[item.value] = true
 }
 
+// Bulk-aware context-menu variant (user request, 2026-09-18) — unlike real
+// payment methods (deliberately kept single-row, see setPaymentMethod's own
+// comment), "Pagamento test" is pure client-side localStorage state, not a
+// pauperwave_payments write, so there's no atomicity/error-class concern
+// looping over it. Same "clicked row decides the action, selection decides
+// the scope" convention as resolveContextMenuTargets — every target ends
+// up in the same on/off state as the clicked row's own next value, rather
+// than each toggling independently off whatever its own prior state was.
+function toggleTestPaymentForTargets(items: AcceptancePickerItem[]) {
+  const [anchor] = items
+  if (!anchor) return
+  const nextValue = !testPayments.value[anchor.value]
+  for (const item of items) {
+    if (nextValue) {
+      if (paymentMethodByPlayer[item.value]) setPaymentMethod(item, null)
+      testPayments.value[item.value] = true
+    } else {
+      Reflect.deleteProperty(testPayments.value, item.value)
+    }
+  }
+}
+
 // Shared by the arrow button (whole current selection) and the
 // "Pre-registrati" context menu's "Aggiungi agli iscritti" action (user
 // request, 2026-08-24), which passes just the right-clicked row or
@@ -518,10 +540,14 @@ const {
 
 // Right-click context menu, "Iscritti (Pagato)" side (user request,
 // 2026-08-24) — mirrors the visible payment-method buttons + remove button,
-// same UContextMenu pattern as the source table above. Payment is always
-// single-row (see setPaymentMethod above); remove stays bulk-aware
-// (resolveContextMenuTargets) since it's already one batched network call,
-// not a loop.
+// same UContextMenu pattern as the source table above. Real payment methods
+// stay single-row (see setPaymentMethod above); "Pagamento test" and remove
+// are both bulk-aware (resolveContextMenuTargets) — remove because it's
+// already one batched network call, "Pagamento test" because it never
+// touches the network at all (see toggleTestPaymentForTargets's own
+// comment).
+const { isDeveloperView } = useDeveloperView()
+
 function acceptedRowContextMenuItems(item: AcceptancePickerItem): DropdownMenuItem[] {
   const method = paymentMethodByPlayer[item.value] ?? null
   const targets = resolveContextMenuTargets(item, selectedAccepted.value)
@@ -538,12 +564,18 @@ function acceptedRowContextMenuItems(item: AcceptancePickerItem): DropdownMenuIt
         onSelect: () => setPaymentMethod(item, method === option ? null : option)
       }
     }),
-    {
-      label: t('tournament.single.acceptancePicker.testPaymentLabel'),
-      icon: ICONS.flaskConical,
-      color: testPayments.value[item.value] ? 'warning' : undefined,
-      onSelect: () => toggleTestPayment(item)
-    },
+    // Developer-only (user request, 2026-09-18) — a testing shortcut, not
+    // something a real check-in desk should see by default.
+    ...(isDeveloperView.value
+      ? [{
+        label: bulk
+          ? t('tournament.single.acceptancePicker.testPaymentLabelBulk', { count: targets.length })
+          : t('tournament.single.acceptancePicker.testPaymentLabel'),
+        icon: ICONS.flaskConical,
+        color: testPayments.value[item.value] ? 'warning' as const : undefined,
+        onSelect: () => toggleTestPaymentForTargets(targets)
+      }]
+      : []),
     { type: 'separator' as const },
     {
       label: bulk

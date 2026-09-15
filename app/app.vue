@@ -28,6 +28,24 @@ useHead({
 useSeoMeta({
   description: 'Gestionale della lega Pauper Pauperwave: associati, tornei, leghe, eventi, carte cercate e classifiche.'
 })
+
+// Global developer-view effect (user request, 2026-09-18) — called once
+// here rather than from DeveloperViewToggle.vue itself, so the
+// .debug-spacing class stays in sync even if that component were ever
+// rendered more than once (same "call once" precedent as league's own
+// useDeveloperViewOverlay.ts, minus the MutationObserver machinery this
+// app doesn't need — .debug-spacing is a pure CSS outline, nothing to
+// re-scan on DOM changes). Active only once both isDeveloperView AND
+// isOverlayEnabled are on, same two-tier gating as league's own
+// overlayActive computed. Wrapped in onMounted, same reason as league's
+// own version: `document` doesn't exist during SSR.
+const { isDeveloperView, isOverlayEnabled } = useDeveloperView()
+const overlayActive = computed(() => isDeveloperView.value && isOverlayEnabled.value)
+onMounted(() => {
+  watch(overlayActive, (enabled) => {
+    document.documentElement.classList.toggle('debug-spacing', enabled)
+  }, { immediate: true })
+})
 </script>
 
 <template>
