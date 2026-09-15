@@ -1655,11 +1655,21 @@
         "standingsFinal": "Classifica finale",
         "standingsEmpty": "Nessuna classifica disponibile",
         "standingsPoints": "{points} pt",
-        "votesAriaLabel": "Vota {name}"
+        "standingsCopyTooltip": "Copia classifica",
+        "standingsCopiedTitle": "Classifica copiata",
+        "standingsFullscreenTooltip": "Schermo intero",
+        "standingsExitFullscreenTooltip": "Esci da schermo intero",
+        "votesAriaLabel": "Vota {name}",
+        "commanderAriaLabel": "Comandante di {name}"
       },
       "roundResultsPlaceholder": "Risultati del singolo evento",
       "roundResultAddModal": {
         "placeholder": "Aggiunta del risultato del round"
+      },
+      "winnerChecklist": {
+        "title": "Vincitori tavoli",
+        "hint": "Spunta quando il premio è stato consegnato",
+        "handedOutAriaLabel": "Premio consegnato a {name}"
       },
       "scoreGrid": {
         "title": "Inserisci classifica tavolo",
@@ -1669,6 +1679,15 @@
         "title": "Seleziona comandante",
         "commanderPlaceholder": "Cerca comandante...",
         "partnerPlaceholder": "Cerca secondo comandante...",
+        "partnerTypes": {
+          "partner": "Partner",
+          "partnerWith": "Partner con",
+          "background": "Background",
+          "friendsForever": "Friends Forever",
+          "doctorsCompanion": "Companion del Dottore",
+          "companion": "Companion",
+          "generic": "Secondo comandante"
+        },
         "compatibleCards": "{count} carta compatibile | {count} carte compatibili",
         "errorTitle": "Impossibile salvare il comandante",
         "syncCatalogButton": "Aggiorna elenco carte",

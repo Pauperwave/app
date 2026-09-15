@@ -2,22 +2,22 @@
 import type { TablePlayer } from '~/types'
 // Drag-and-drop dense-rank grid state for TableScoreGridModal.vue — ported
 // from MagicTheGathering/league's useRankingGrid.ts (user request,
-// 2026-09-15/16: copy the ranking-entry logic as-is), rebuilt on
-// vue-draggable-plus's VueDraggable instead of league's native HTML5 drag
-// events, per this app's own DnD convention (PodsManager.vue, TableCard.vue
-// under components/tournaments/single/pairing/).
+// 2026-09-15/16/17: copy the ranking-entry logic AND the grid mechanic
+// as-is, not a row-based reinterpretation — an earlier pass here remodeled
+// this as N draggable rank rows, which lost league's actual "each player
+// has a fixed column/lane, only moves vertically within it" structure and
+// was called out as not faithful).
 //
-// League models this as a fixed player-columns × rank-rows grid (a token can
-// only move vertically within its own column). VueDraggable has no native
-// concept of "columns" — it operates on sortable lists — so this is
-// remodeled as N rank ROWS, each its own VueDraggable list, all sharing one
-// drag group so a player chip can move freely between rows (rank rows can
-// hold 0+ players, for ties). This is behaviorally equivalent: "move a
-// token to a different row" IS "change that player's rank" either way, the
-// column constraint in league's version never let a token change identity —
-// it only ever moved within its own lane.
+// Model: a size×size grid where each COLUMN is a fixed player seat (never
+// changes) and the ROW a player currently occupies is their rank (row 0 =
+// 1st). A drag only ever moves a token within its own column — dropping
+// onto an occupied cell swaps the two occupants (same swap semantics as
+// league's handleDrop). Native HTML5 drag events (draggable/dragstart/
+// dragover/drop/dragend), not VueDraggable/Sortable.js — Sortable has no
+// built-in "confined to one list-of-one column" concept, native drag events
+// are what league itself uses for exactly this reason.
 //
-// Validation rule unchanged: the set of non-empty rows must be a gapless
+// Validation rule unchanged: the set of occupied rows must be a gapless
 // sequence starting from row 0 (e.g. rows [0,0,1,2] used is valid — two
 // players tied at rank 1, then rank 2, then rank 3 — but [0,0,2,3] with an
 // empty row 1 is not).
@@ -25,49 +25,108 @@ export function useCommanderRankingGrid(players: () => TablePlayer[]) {
   const gridSize = computed(() => (players().length === 3 ? 3 : 4))
   const rankRange = computed(() => Array.from({ length: gridSize.value }, (_, i) => i))
 
-  // rows[i] = the players currently tied at rank i+1.
-  const rows = ref<TablePlayer[][]>([])
+  // grid[row][col] — col is the player's fixed seat, row is their current rank.
+  const grid = ref<(TablePlayer | null)[][]>([])
+
+  const isDragging = ref(false)
+  const draggedFromCell = ref<{ row: number, col: number } | null>(null)
+  const draggedFromCol = ref<number | null>(null)
 
   const isValidFormation = computed(() => {
-    const placedCount = rows.value.reduce((sum, row) => sum + row.length, 0)
-    if (placedCount !== players().length) return false
+    const size = gridSize.value
 
-    const usedRows = rows.value
-      .map((row, index) => (row.length > 0 ? index : null))
-      .filter((index): index is number => index !== null)
+    const formation: (number | null)[] = Array(size).fill(null)
+    for (let col = 0; col < size; col++) {
+      for (let row = 0; row < size; row++) {
+        if (grid.value[row]?.[col]) {
+          formation[col] = row
+          break
+        }
+      }
+    }
 
-    return usedRows.every((rowIndex, i) => rowIndex === i)
+    if (formation.some(r => r === null)) return false
+
+    const usedRows = [...new Set(formation as number[])].sort((a, b) => a - b)
+    return usedRows.every((row, i) => row === i)
   })
 
   function initializeGrid(savedPositions?: Map<string, number> | null) {
     const size = gridSize.value
-    const newRows: TablePlayer[][] = Array.from({ length: size }, () => [])
+    const newGrid: (TablePlayer | null)[][] = Array.from({ length: size }, () =>
+      Array<TablePlayer | null>(size).fill(null))
 
-    for (const player of players()) {
+    players().forEach((player, col) => {
+      if (col >= size) return
       const savedRank = savedPositions?.get(player.value)
-      const rowIndex = savedRank && savedRank >= 1 && savedRank <= size ? savedRank - 1 : 0
-      newRows[rowIndex]?.push(player)
+      const row = savedRank && savedRank >= 1 && savedRank <= size ? savedRank - 1 : 0
+      const targetRow = newGrid[row]
+      if (targetRow) targetRow[col] = player
+    })
+
+    grid.value = newGrid
+  }
+
+  function handleDragStart(row: number, col: number) {
+    isDragging.value = true
+    draggedFromCell.value = { row, col }
+    draggedFromCol.value = col
+  }
+
+  function handleDrop(row: number, col: number) {
+    const from = draggedFromCell.value
+    if (!from) return
+    // Constraint: a token only ever moves within its own column.
+    if (from.col !== col || (from.row === row && from.col === col)) {
+      draggedFromCell.value = null
+      return
     }
 
-    rows.value = newRows
+    const newGrid = grid.value.map(r => [...r])
+    const fromSeat = newGrid[from.row]?.[from.col] ?? null
+    const toSeat = newGrid[row]?.[col] ?? null
+    const targetRow = newGrid[row]
+    const sourceRow = newGrid[from.row]
+    if (targetRow) targetRow[col] = fromSeat
+    if (sourceRow) sourceRow[from.col] = toSeat
+
+    grid.value = newGrid
+    draggedFromCell.value = null
   }
 
-  function updateRow(rowIndex: number, value: TablePlayer[]) {
-    rows.value[rowIndex] = value
+  function handleDragEnd() {
+    isDragging.value = false
+    draggedFromCell.value = null
+    draggedFromCol.value = null
   }
 
-  /** Ordered (dense rank, ties share a rank) list — position is 1-based. */
+  /** Ordered (dense rank, ties share a position) list — position is 1-based. */
   function getRanking(): { playerUuid: string, position: number }[] {
+    const size = gridSize.value
     const entries: { playerUuid: string, position: number }[] = []
-    rows.value.forEach((row, rowIndex) => {
-      for (const player of row) {
-        entries.push({ playerUuid: player.value, position: rowIndex + 1 })
+    for (let col = 0; col < size; col++) {
+      for (let row = 0; row < size; row++) {
+        const player = grid.value[row]?.[col]
+        if (player) {
+          entries.push({ playerUuid: player.value, position: row + 1 })
+          break
+        }
       }
-    })
+    }
     return entries
   }
 
   return {
-    rows, gridSize, rankRange, isValidFormation, initializeGrid, updateRow, getRanking
+    grid,
+    gridSize,
+    rankRange,
+    isDragging,
+    draggedFromCol,
+    isValidFormation,
+    initializeGrid,
+    handleDragStart,
+    handleDrop,
+    handleDragEnd,
+    getRanking
   }
 }
