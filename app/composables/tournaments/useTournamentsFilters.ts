@@ -2,7 +2,7 @@
 // fallow-ignore-file code-duplication -- mirrors useEventsFilters.ts's
 // date-range/status filter shape on purpose; expected to diverge once real
 // Supabase tables land
-import { endOfDay } from 'date-fns'
+import { endOfDay, startOfDay } from 'date-fns'
 import type { Ref } from 'vue'
 import type { Range, Tournament, TournamentStatus } from '~/types'
 
@@ -35,7 +35,17 @@ export function useTournamentsFilters(
     // day) would otherwise fail this check even though its day is inside
     // the picked range (confirmed live, 2026-09-18: today's own tournament
     // missing from the grid with today included in the date filter).
-    if (startDate < range.value.start || startDate > endOfDay(range.value.end)) return false
+    //
+    // range.value.start has the exact same problem in the other direction
+    // when it's still the page's own un-picked default (`new Date()`, the
+    // literal current moment including today's real time-of-day, not
+    // midnight) — a tournament scheduled earlier today than whatever
+    // moment the page happened to load at would fail this check too
+    // (confirmed live again right after the endOfDay fix above: same day,
+    // still missing, this time on the lower bound).
+    const inRange = startDate >= startOfDay(range.value.start)
+      && startDate <= endOfDay(range.value.end)
+    if (!inRange) return false
     const query = search.value.trim().toLowerCase()
     if (query && !tournament.name.toLowerCase().includes(query)) return false
     return true
