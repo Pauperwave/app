@@ -1638,11 +1638,59 @@
       "participantsPlaceholder": "Partecipanti all'evento",
       "roundManager": {
         "title": "Gestione Round {round}",
-        "content": "Contenuto di gestione per il Round {round}."
+        "content": "Contenuto di gestione per il Round {round}.",
+        "advanceButton": "Prossimo round",
+        "advanceRoundErrorTitle": "Impossibile avanzare al round successivo",
+        "turnBackButton": "Torna al round precedente",
+        "turnBackRoundErrorTitle": "Impossibile tornare al round precedente",
+        "endTournamentButton": "Termina torneo",
+        "drawButton": "Pareggio",
+        "killsButton": "Uccisioni",
+        "rankingButton": "Classifica",
+        "tableHeading": "Tavolo {n}",
+        "tableComplete": "Completo",
+        "tableIncomplete": "In corso",
+        "noPairings": "Nessun tavolo per questo round",
+        "standingsPartial": "Classifica parziale",
+        "standingsFinal": "Classifica finale",
+        "standingsEmpty": "Nessuna classifica disponibile",
+        "standingsPoints": "{points} pt",
+        "votesAriaLabel": "Vota {name}"
       },
       "roundResultsPlaceholder": "Risultati del singolo evento",
       "roundResultAddModal": {
         "placeholder": "Aggiunta del risultato del round"
+      },
+      "scoreGrid": {
+        "title": "Inserisci classifica tavolo",
+        "description": "Trascina i giocatori per ordinarli in base al piazzamento"
+      },
+      "commanderModal": {
+        "title": "Seleziona comandante",
+        "commanderPlaceholder": "Cerca comandante...",
+        "partnerPlaceholder": "Cerca secondo comandante...",
+        "compatibleCards": "{count} carta compatibile | {count} carte compatibili",
+        "errorTitle": "Impossibile salvare il comandante",
+        "syncCatalogButton": "Aggiorna elenco carte",
+        "syncSuccessWithNew": "Catalogo aggiornato: {count} nuova carta | Catalogo aggiornato: {count} nuove carte",
+        "syncSuccessNoNew": "Catalogo già aggiornato, nessuna nuova carta",
+        "syncErrorTitle": "Impossibile aggiornare il catalogo"
+      },
+      "votesModal": {
+        "title": "Voti",
+        "brewLabel": "Miglior mazzo",
+        "playLabel": "Miglior giocata"
+      },
+      "killTracker": {
+        "title": "Tracciamento uccisioni",
+        "description": "Collega i giocatori per registrare chi ha eliminato chi",
+        "killCountTooltip": "{count} eliminazione effettuata | {count} eliminazioni effettuate",
+        "deathCountTooltip": "{count} eliminazione subita | {count} eliminazioni subite",
+        "lock": "Blocca",
+        "unlock": "Sblocca",
+        "zoomIn": "Aumenta zoom",
+        "zoomOut": "Riduci zoom",
+        "fitView": "Adatta alla vista"
       }
     }
   },
