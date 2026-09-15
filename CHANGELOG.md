@@ -1,6 +1,42 @@
 # Changelog
 
 
+## v0.1.15
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.1.14...v0.1.15)
+
+### Enhancements
+
+- **tournaments:** ✨ add start/edit actions and dev tools to the detail navbar ([21c97c1](https://github.com/Pauperwave/app/commit/21c97c1))
+- **tournaments:** ✨ add a local-only test payment option and tidy up the acceptance picker ([eac7f80](https://github.com/Pauperwave/app/commit/eac7f80))
+- **db:** 🗃️ track the Commander tournament schema and add avoid-pairs + round/table uniqueness ([8090d8f](https://github.com/Pauperwave/app/commit/8090d8f))
+- **db:** 🗃️ seed the Base Commander ruleset ported from league ([29eef00](https://github.com/Pauperwave/app/commit/29eef00))
+- **tournaments:** 🗃️ back round 1 pod creation and avoid-pairs with a real RPC/BFF layer ([432f044](https://github.com/Pauperwave/app/commit/432f044))
+- **tournaments:** ✨ port league's Commander pairing-optimizer/preview UI, wire up round 1 and URL sync ([e015e42](https://github.com/Pauperwave/app/commit/e015e42))
+- **tournaments:** 🗃️ back round-advance/turn-back and the commander catalog with real RPCs/BFF ([3f2bc44](https://github.com/Pauperwave/app/commit/3f2bc44))
+- **tournaments:** ✨ port league's round-in-progress Commander UI (results, kills, votes, standings, commander select) ([9b1f4aa](https://github.com/Pauperwave/app/commit/9b1f4aa))
+- **tournaments:** ✨ port the "Vincitori tavoli" winner checklist ([ec7771f](https://github.com/Pauperwave/app/commit/ec7771f))
+- **tournaments:** ✨ skip the start confirm dialog for pod-based formats ([24dc730](https://github.com/Pauperwave/app/commit/24dc730))
+- **tournaments:** ✨ round-1 pairing + advance/turn-back for 1v1 Swiss ([b9759cf](https://github.com/Pauperwave/app/commit/b9759cf))
+
+### Fixes
+
+- **associates:** 🐛 share search text between /associates and /associates/requests ([f663d1a](https://github.com/Pauperwave/app/commit/f663d1a))
+- **associates:** 🐛 stop status filter from getting stuck after pending_renewal ([a4ca366](https://github.com/Pauperwave/app/commit/a4ca366))
+- **cards:** 🐛 stop over-cropping cover art into a zoomed sliver ([0391889](https://github.com/Pauperwave/app/commit/0391889))
+- **tournaments:** 🐛 restore fidelity to league's Commander pairing UI ([4abb47d](https://github.com/Pauperwave/app/commit/4abb47d))
+- **tournaments:** 🐛 fix 1v1 Swiss advance bug + unify round turn-back UX ([6518014](https://github.com/Pauperwave/app/commit/6518014))
+
+### Documentation
+
+- 📝 document the UTable imperative-vs-v-model column filter race ([0cfa888](https://github.com/Pauperwave/app/commit/0cfa888))
+- 📝 record the useStorage auto-import collision gotcha ([02c41ec](https://github.com/Pauperwave/app/commit/02c41ec))
+- **tournaments:** 📝 add build plan for 1v1 Swiss pairing (Draft/1v1) ([48904c2](https://github.com/Pauperwave/app/commit/48904c2))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.1.14
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.1.13...v0.1.14)
