@@ -2650,6 +2650,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      reset_tournament: {
+        Args: { p_tournament_uuid: string }
+        Returns: undefined
+      }
       start_commander_round_one: {
         Args: { p_associate_order: string[]; p_tournament_uuid: string }
         Returns: string

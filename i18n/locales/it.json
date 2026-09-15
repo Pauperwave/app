@@ -1405,8 +1405,6 @@
     "stepper": {
       "acceptance": "Accettazione",
       "acceptanceDescription": "Iscrizioni aperte",
-      "pods": "Tavoli",
-      "podsDescription": "Formazione tavoli",
       "round": "Round {n}",
       "roundPending": "In attesa",
       "awards": "Premi",
@@ -1552,7 +1550,6 @@
         "startRoundOneErrorTitle": "Impossibile avviare il round 1"
       },
       "tablePreview": {
-        "summary": "{count} giocatori",
         "title": "Anteprima tavoli",
         "description": "Trascina i giocatori per modificare i tavoli, poi confermare per avviare il round",
         "tableHeading": "Tavolo {n}",
@@ -1641,6 +1638,11 @@
         "invalidCount": "Numero di giocatori non valido per formare i tavoli (i bye non sono ancora supportati)",
         "tableNumber": "Tavolo {n}"
       },
+      "resetButton": "Reset",
+      "resetErrorTitle": "Impossibile resettare il torneo",
+      "resetConfirmTitle": "Resettare il torneo?",
+      "resetConfirmDescription": "Tutti i round, i tavoli, i risultati e la classifica verranno eliminati e il torneo tornerà in iscrizioni aperte.",
+      "resetConfirmWarning": "Questa azione non può essere annullata.",
       "awardsPlaceholder": "Componente premi che mostrerà la classifica finale",
       "leaderboardTitle": "Classifica torneo specifico",
       "participantsPlaceholder": "Partecipanti all'evento",

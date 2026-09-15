@@ -95,6 +95,26 @@ async function confirmStartTournament() {
   }
 }
 
+// "Reset" (user request, 2026-09-18) — wipes every round/pairing/result/
+// standing and puts the tournament back at registration_open, for the two
+// formats that actually have round data to wipe (Commander, 1v1 Swiss).
+// Draft/Cubo Commander/etc. have no round-level DB state yet (see
+// isCubeCommander's own comment), so there'd be nothing for this to reset.
+const { resetTournament } = useTournamentResetMutation(tournamentUuid)
+const isResetConfirmOpen = ref(false)
+const canResetTournament = computed(() =>
+  (isCommander.value || is1v1Format.value) && tournament.value?.status !== 'registration_open')
+
+async function confirmResetTournament() {
+  try {
+    await resetTournament.mutateAsync()
+    isResetConfirmOpen.value = false
+    currentStep.value = 0
+  } catch {
+    // Toasted by useTournamentResetMutation's own onError — nothing left to do here.
+  }
+}
+
 // Commander's round 1 (user request, 2026-09-15) — the pods step's
 // "Confirm" only persists anything for Commander (see PodsManager.vue's
 // own comment); Draft's step stays the existing preview-only toy.
@@ -120,39 +140,38 @@ const canOpenTablePreview = computed(() => {
 })
 
 // "Avvia torneo" (user request, 2026-09-17: copy league's own UX, for every
-// format that has a pods step — not Commander-only). league goes straight
-// from clicking "Avvia Torneo" into the pairing-preview modal (`preview=1`
-// layered on top of the still-registration phase); the tournament doesn't
-// actually start until the organizer confirms the pod arrangement there.
-// "Cubo Commander" has no round-management flow at all yet (see
-// isCubeCommander's own comment), so it stays on the plain confirm dialog
-// too, same as any other format with no pods/preview concept.
-function goToPodsPreview() {
-  const podsIndex = items.value.findIndex(item => item.slot === 'pods')
-  if (podsIndex !== -1) currentStep.value = podsIndex
-  podsModalOpen.value = true
-}
-
+// format that forms tables before round 1 — not Commander-only). league
+// goes straight from clicking "Avvia Torneo" into the pairing-preview modal
+// (`preview=1` layered on top of the still-registration phase); the
+// tournament doesn't actually start until the organizer confirms the pod
+// arrangement there. "Cubo Commander" has no round-management flow at all
+// yet (see isCubeCommander's own comment), so it stays on the plain confirm
+// dialog too, same as any other format with no table-preview concept.
 function onStartTournamentClick() {
   if (isDraft.value || isCommander.value || is1v1Format.value) {
-    goToPodsPreview()
+    podsModalOpen.value = true
     return
   }
   isStartConfirmOpen.value = true
 }
 
+function goToRoundOne() {
+  const round1Index = items.value.findIndex(item => item.slot === 'round-1')
+  if (round1Index !== -1) currentStep.value = round1Index
+}
+
 // "Torna al round precedente" on round 1 (user request, 2026-09-18): once
 // its RPC has wiped round 1 back to registration_open, round 1 turning
-// back is conceptually the same as any other round turning back — it
-// should land the organizer straight on "round 0"'s own next-round
-// preview, which for round 1 is the pods/table-preview step itself
-// (exactly what "Avvia torneo" opens). See onRoundTurnedBack below for
-// round 2+, which reopens the previous round's own advancePreviewOpen
-// instead — same mechanism, different destination.
+// back lands the organizer on "acceptance" with the same table-preview
+// modal "Avvia torneo" opens (there's no dedicated pods step to return to
+// — see items' own comment). See onRoundTurnedBack below for round 2+,
+// which reopens the previous round's own advancePreviewOpen instead —
+// same mechanism, different destination.
 const pendingAdvancePreviewRound = ref<number | null>(null)
 function onRoundTurnedBack(roundNumber: number) {
   if (roundNumber === 1) {
-    goToPodsPreview()
+    currentStep.value = 0
+    podsModalOpen.value = true
     return
   }
   const previousRoundIndex = items.value.findIndex(item => item.slot === `round-${roundNumber - 1}`)
@@ -167,9 +186,7 @@ async function onPodsConfirm(associateOrder: string[]) {
   try {
     await startRoundOne.mutateAsync(associateOrder)
     podsModalOpen.value = false
-    if (currentStep.value === items.value.findIndex(item => item.slot === 'pods')) {
-      currentStep.value += 1
-    }
+    goToRoundOne()
   } catch {
     // Toasted by useTournamentRoundsMutations' own onError — nothing left to do here.
   }
@@ -184,9 +201,7 @@ async function onSwissPodsConfirm(associateOrder: string[]) {
   try {
     await startRoundOneSwiss.mutateAsync(associateOrder)
     podsModalOpen.value = false
-    if (currentStep.value === items.value.findIndex(item => item.slot === 'pods')) {
-      currentStep.value += 1
-    }
+    goToRoundOne()
   } catch {
     // Toasted by useTournamentSwissRoundsMutations' own onError — nothing left to do here.
   }
@@ -218,19 +233,13 @@ const items = computed(() => [
     description: t('tournament.stepper.acceptanceDescription'),
     icon: ICONS.players
   },
-  // Draft, Commander AND 1v1 Swiss all need a pods/table-preview step
-  // before round 1 — Draft's pods are fixed for the whole tournament,
-  // Commander's and 1v1's are re-formed every round (see round-${i} below
-  // and PodsManager.vue's own comment), but round 1 itself is seated the
-  // same way for all three: this one step.
-  ...(isDraft.value || isCommander.value || is1v1Format.value
-    ? [{
-      slot: 'pods',
-      title: t('tournament.stepper.pods'),
-      description: t('tournament.stepper.podsDescription'),
-      icon: ICONS.layers
-    }]
-    : []),
+  // Table formation deliberately has NO dedicated stepper step (user
+  // request, 2026-09-18: it isn't a "stage" the organizer sits on, just a
+  // transient modal on top of whichever step is already active) — "Avvia
+  // torneo" opens it straight from "acceptance", and each round's own
+  // "Prossimo round"/turn-back reopens the equivalent modal on top of that
+  // round's own step (see CommanderRoundManager.vue/SwissRoundManager.vue's
+  // own advancePreviewOpen).
   ...Array.from({ length: numberOfRounds.value }, (_, i) => ({
     slot: `round-${i + 1}`,
     title: t('tournament.stepper.round', { n: i + 1 }),
@@ -350,6 +359,20 @@ onUnmounted(() => {
             <USeparator orientation="vertical" class="h-4" />
           </template>
 
+          <template v-if="canResetTournament">
+            <UButton
+              :icon="ICONS.rotateBack"
+              color="error"
+              variant="outline"
+              size="md"
+              @click="isResetConfirmOpen = true"
+            >
+              {{ $t('tournament.single.resetButton') }}
+            </UButton>
+
+            <USeparator orientation="vertical" class="h-4" />
+          </template>
+
           <NotificationsBellButton />
         </template>
       </UDashboardNavbar>
@@ -385,65 +408,6 @@ onUnmounted(() => {
             :is-draft="isDraft"
             :is1v1="is1v1Format"
           />
-        </template>
-
-        <template #pods>
-          <TournamentsSinglePodsManager
-            v-if="isDraft"
-            v-model:open="podsModalOpen"
-            :players="acceptedPlayers"
-            @confirm="onDraftPodsConfirm"
-          />
-
-          <template v-else-if="isCommander">
-            <div class="flex items-center justify-between">
-              <span class="text-sm font-medium text-highlighted">
-                {{ canOpenTablePreview
-                  ? t('tournament.single.tablePreview.summary', { count: acceptedPlayers.length })
-                  : t('tournament.single.podsManager.invalidCount') }}
-              </span>
-              <UButton
-                :label="t('tournament.single.podsManager.open')"
-                :icon="ICONS.layers"
-                :disabled="!canOpenTablePreview"
-                @click="podsModalOpen = true"
-              />
-            </div>
-
-            <TournamentsSinglePairingTablePreviewModal
-              v-model:open="podsModalOpen"
-              :players="tablePreviewPlayers"
-              :tournament-uuid="tournamentUuid"
-              :current-round="1"
-              :loading="startRoundOne.isLoading.value"
-              @confirm="onPodsConfirm"
-            />
-          </template>
-
-          <template v-else-if="is1v1Format">
-            <div class="flex items-center justify-between">
-              <span class="text-sm font-medium text-highlighted">
-                {{ canOpenTablePreview
-                  ? t('tournament.single.swissTablePreview.summary', {
-                    count: acceptedPlayers.length / 2
-                  })
-                  : t('tournament.single.swissTablePreview.invalidCount') }}
-              </span>
-              <UButton
-                :label="t('tournament.single.podsManager.open')"
-                :icon="ICONS.layers"
-                :disabled="!canOpenTablePreview"
-                @click="podsModalOpen = true"
-              />
-            </div>
-
-            <TournamentsSinglePairingSwissTablePreviewModal
-              v-model:open="podsModalOpen"
-              :players="tablePreviewPlayers"
-              :loading="startRoundOneSwiss.isLoading.value"
-              @confirm="onSwissPodsConfirm"
-            />
-          </template>
         </template>
 
         <template
@@ -494,5 +458,46 @@ onUnmounted(() => {
     @confirm="confirmStartTournament"
   />
 
+  <ConfirmModal
+    v-model:open="isResetConfirmOpen"
+    :title="t('tournament.single.resetConfirmTitle')"
+    :description="t('tournament.single.resetConfirmDescription')"
+    :warning="t('tournament.single.resetConfirmWarning')"
+    :confirm-label="t('tournament.single.resetButton')"
+    :confirm-icon="ICONS.rotateBack"
+    confirm-color="error"
+    :loading="resetTournament.isLoading.value"
+    @confirm="confirmResetTournament"
+  />
+
   <TournamentsListEditModal v-model="editModalOpen" :tournament="editingTournament" />
+
+  <!-- Table formation has no dedicated stepper step (see items' own
+       comment) — these are transient modals opened by "Avvia torneo" (round
+       1) or a round manager's own "Prossimo round"/turn-back, on top of
+       whichever step happens to be active underneath. -->
+  <TournamentsSinglePodsManager
+    v-if="isDraft"
+    v-model:open="podsModalOpen"
+    :players="acceptedPlayers"
+    @confirm="onDraftPodsConfirm"
+  />
+
+  <TournamentsSinglePairingTablePreviewModal
+    v-else-if="isCommander"
+    v-model:open="podsModalOpen"
+    :players="tablePreviewPlayers"
+    :tournament-uuid="tournamentUuid"
+    :current-round="1"
+    :loading="startRoundOne.isLoading.value"
+    @confirm="onPodsConfirm"
+  />
+
+  <TournamentsSinglePairingSwissTablePreviewModal
+    v-else-if="is1v1Format"
+    v-model:open="podsModalOpen"
+    :players="tablePreviewPlayers"
+    :loading="startRoundOneSwiss.isLoading.value"
+    @confirm="onSwissPodsConfirm"
+  />
 </template>
