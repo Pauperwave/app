@@ -11,10 +11,21 @@
 <script setup lang="ts">
 import type { TablePlayer } from '~/types'
 
-const { tournamentUuid, roundNumber, roundCount } = defineProps<{
+const {
+  tournamentUuid, roundNumber, roundCount, autoOpenAdvancePreview = false
+} = defineProps<{
   tournamentUuid: string
   roundNumber: number
   roundCount: number
+  // See CommanderRoundManager.vue's own comment on this prop (same
+  // "turning back round N reopens round N-1's own next-round preview"
+  // mechanism, user request 2026-09-18).
+  autoOpenAdvancePreview?: boolean
+}>()
+
+const emit = defineEmits<{
+  turnedBack: []
+  advancePreviewAutoOpened: []
 }>()
 
 const { t } = useI18n()
@@ -42,6 +53,9 @@ function labelFor(playerUuid: string): string {
   const associate = associateUuid ? associatesByUuid.value.get(associateUuid) : undefined
   return associate ? `${associate.first_name} ${associate.last_name}` : playerUuid
 }
+function associateUuidFor(playerUuid: string): string | undefined {
+  return associateByPlayerUuid.value.get(playerUuid)
+}
 
 const pairingsForRound = computed(() =>
   (pairings.value ?? []).filter(p => p.roundUuid === round.value?.uuid))
@@ -57,9 +71,20 @@ const advancePreviewOpen = ref(false)
 
 // No standings to seed the next round from yet (phase 3) — carry over this
 // round's own seating order, same continuity idea as Commander's
-// nextRoundSeedPlayers, just without a rank signal to sort by.
+// nextRoundSeedPlayers. Unlike tablePlayersFor (used for on-screen display,
+// keyed by players.uuid same as Commander's own pairing cards),
+// SwissTablePreviewModal's confirm hands this straight to
+// advance_swiss_round's p_associate_order, which resolves against
+// players.associate_uuid — value here MUST be the associate uuid, not the
+// player uuid, or the RPC can't resolve anyone (confirmed live: "Could not
+// resolve every associate to a registered player of this tournament").
 const nextRoundSeedPlayers = computed<TablePlayer[]>(() =>
-  pairingsForRound.value.flatMap(pairing => tablePlayersFor(pairing)))
+  pairingsForRound.value.flatMap(pairing => pairing.playerUuids
+    .map((playerUuid) => {
+      const associateUuid = associateUuidFor(playerUuid)
+      return associateUuid ? { value: associateUuid, label: labelFor(playerUuid) } : null
+    })
+    .filter((player): player is TablePlayer => player !== null)))
 
 function openAdvancePreview() {
   advancePreviewOpen.value = true
@@ -81,8 +106,15 @@ async function endTournament() {
 async function onTurnBack() {
   try {
     await turnBackRoundSwiss.mutateAsync(roundNumber)
+    emit('turnedBack')
   } catch { /* toasted by the mutation's own onError */ }
 }
+
+watch(() => autoOpenAdvancePreview, (value) => {
+  if (!value) return
+  advancePreviewOpen.value = true
+  emit('advancePreviewAutoOpened')
+}, { immediate: true })
 </script>
 
 <template>

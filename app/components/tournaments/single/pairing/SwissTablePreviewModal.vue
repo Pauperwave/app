@@ -34,7 +34,12 @@ function shuffle() {
   orderedPlayers.value = [...players].sort(() => Math.random() - 0.5)
 }
 
-watch(() => players, shuffle, { immediate: true })
+// Watches length, not the array reference itself — same as
+// PodsManager.vue's own shufflePods watcher. The parent's players prop is a
+// fresh computed array on every re-render (e.g. a query refetch after a
+// failed advance), so watching the reference would silently reshuffle the
+// organizer's already-arranged order underneath them.
+watch(() => players.length, shuffle, { immediate: true })
 
 const canPlay = computed(() => calculatePairing(players.length).canPlay)
 const pairs = computed<TablePlayer[][]>(() => {

@@ -13,13 +13,15 @@ import { useStorage } from '@vueuse/core'
 interface Props {
   tournamentUuid: string
   // Which pod-size composable the "Iscritti (Pagato)" table-count badge uses
-  // (ideal 8/min 6 for Draft vs. ideal 4/min 3 for Commander) — parent
-  // already computes this for the Draft-only PodsManager step, passed
-  // through rather than re-deriving `tournament.format === 'Draft'` here.
+  // (ideal 8/min 6 for Draft, ideal 4/min 3 for Commander, pairs of 2 for
+  // 1v1 Swiss) — parent already computes isDraft/is1v1 for its own
+  // pods/table-preview step, passed through rather than re-deriving
+  // `tournament.format` here.
   isDraft?: boolean
+  is1v1?: boolean
 }
 
-const { tournamentUuid, isDraft = false } = defineProps<Props>()
+const { tournamentUuid, isDraft = false, is1v1 = false } = defineProps<Props>()
 
 const { t } = useI18n()
 const toast = useToast()
@@ -625,7 +627,11 @@ const acceptedTableContextMenuItems = computed<DropdownMenuItem[]>(
         <h2 class="font-medium text-highlighted">
           {{ t('tournament.single.acceptancePicker.registeredPaid') }}
         </h2>
-        <TournamentsSinglePlayersCountBadge :count="targetItems.length" :is-draft="isDraft" />
+        <TournamentsSinglePlayersCountBadge
+          :count="targetItems.length"
+          :is-draft="isDraft"
+          :is1v1="is1v1"
+        />
         <USelectMenu
           v-model="receivedBy"
           :items="RECEIVER_OPTIONS"
