@@ -62,14 +62,22 @@ const { setStatus } = useTournamentsMutations()
 const canStartTournament = computed(() => tournament.value?.status === 'registration_open')
 const isStartConfirmOpen = ref(false)
 
-async function confirmStartTournament() {
+// Shared by both "no pods step" formats (plain yes/no confirm dialog) and
+// Draft's own pods-preview confirm (see onDraftPodsConfirm below) — the
+// actual status flip is identical either way, only what happens right
+// before it (a dialog vs. a pod arrangement) differs.
+async function startTournamentByStatusFlip() {
   if (!tournament.value) return
+  await setStatus.mutateAsync({ id: tournament.value.id, status: 'in_progress' })
+  // Moves off the acceptance step once the event actually starts — a no-op
+  // if the organizer had already clicked ahead in the stepper themselves.
+  if (currentStep.value === 0) currentStep.value = 1
+}
+
+async function confirmStartTournament() {
   try {
-    await setStatus.mutateAsync({ id: tournament.value.id, status: 'in_progress' })
+    await startTournamentByStatusFlip()
     isStartConfirmOpen.value = false
-    // Moves off the acceptance step once the event actually starts — a no-op
-    // if the organizer had already clicked ahead in the stepper themselves.
-    if (currentStep.value === 0) currentStep.value = 1
   } catch (err) {
     toast.add({
       title: t('tournament.startTournamentErrorTitle'),
@@ -83,6 +91,9 @@ async function confirmStartTournament() {
 // "Confirm" only persists anything for Commander (see PodsManager.vue's
 // own comment); Draft's step stays the existing preview-only toy.
 const { startRoundOne } = useTournamentRoundsMutations(tournamentUuid)
+// Shared by both PodsManager.vue (Draft) and TablePreviewModal.vue
+// (Commander) — only one of the two ever renders at a time (isDraft xor
+// isCommander), so one boolean is enough for either.
 const podsModalOpen = ref(false)
 
 // TablePreviewModal (ported from league, 2026-09-15) takes TablePlayer[]
@@ -91,8 +102,29 @@ const podsModalOpen = ref(false)
 const tablePreviewPlayers = computed<TablePlayer[]>(() =>
   acceptedPlayers.value.map(player => ({ value: player.value, label: player.label })))
 const { calculatePods: calculateCommanderPods } = useCommanderPods()
-const canOpenTablePreview = computed(() =>
-  calculateCommanderPods(acceptedPlayers.value.length).canPlay)
+const { calculatePods: calculateDraftPods } = useDraftPods()
+const canOpenTablePreview = computed(() => {
+  if (isCommander.value) return calculateCommanderPods(acceptedPlayers.value.length).canPlay
+  if (isDraft.value) return calculateDraftPods(acceptedPlayers.value.length).canPlay
+  return true
+})
+
+// "Avvia torneo" (user request, 2026-09-17: copy league's own UX, for every
+// format that has a pods step — not Commander-only). league goes straight
+// from clicking "Avvia Torneo" into the pairing-preview modal (`preview=1`
+// layered on top of the still-registration phase); the tournament doesn't
+// actually start until the organizer confirms the pod arrangement there.
+// Formats with no pods concept at all (plain Swiss) have nothing to
+// preview, so they keep the plain yes/no confirm dialog.
+function onStartTournamentClick() {
+  if (isDraft.value || isCommander.value) {
+    const podsIndex = items.value.findIndex(item => item.slot === 'pods')
+    if (podsIndex !== -1) currentStep.value = podsIndex
+    podsModalOpen.value = true
+    return
+  }
+  isStartConfirmOpen.value = true
+}
 
 async function onPodsConfirm(associateOrder: string[]) {
   try {
@@ -103,6 +135,21 @@ async function onPodsConfirm(associateOrder: string[]) {
     }
   } catch {
     // Toasted by useTournamentRoundsMutations' own onError — nothing left to do here.
+  }
+}
+
+// Draft's own pods step has no real persistence yet (PodsManager.vue's own
+// comment) — confirming there still needs to actually start the tournament,
+// same status-flip start-round-one's own RPC does implicitly for Commander.
+async function onDraftPodsConfirm() {
+  try {
+    await startTournamentByStatusFlip()
+  } catch (err) {
+    toast.add({
+      title: t('tournament.startTournamentErrorTitle'),
+      description: toErrorMessage(err),
+      color: 'error'
+    })
   }
 }
 
@@ -239,7 +286,8 @@ onUnmounted(() => {
               color="primary"
               variant="solid"
               size="md"
-              @click="isStartConfirmOpen = true"
+              :disabled="!canOpenTablePreview"
+              @click="onStartTournamentClick"
             >
               {{ $t('tournament.startTournament') }}
             </UButton>
@@ -284,7 +332,12 @@ onUnmounted(() => {
         </template>
 
         <template #pods>
-          <TournamentsSinglePodsManager v-if="isDraft" :players="acceptedPlayers" />
+          <TournamentsSinglePodsManager
+            v-if="isDraft"
+            v-model:open="podsModalOpen"
+            :players="acceptedPlayers"
+            @confirm="onDraftPodsConfirm"
+          />
 
           <template v-else-if="isCommander">
             <div class="flex items-center justify-between">

@@ -19,10 +19,20 @@ const { players } = defineProps<{
   players: AcceptancePickerItem[]
 }>()
 
+const emit = defineEmits<{
+  // Fired when the organizer confirms the pod arrangement — Draft's own
+  // pods still aren't persisted anywhere (out of scope, see the top-of-file
+  // comment), this is only a signal for the parent to actually start the
+  // tournament (user request, 2026-09-17: "Avvia torneo" should skip
+  // straight to this preview for every format that has a pods step, not
+  // just Commander, matching league's own "preview then start" UX).
+  confirm: []
+}>()
+
 const { t } = useI18n()
 const { calculatePods, buildPreviewPods } = useDraftPods()
 
-const open = ref(false)
+const open = defineModel<boolean>('open', { default: false })
 const podAssignments = ref<AcceptancePickerItem[][]>([])
 
 // Re-rolls the whole pod split from scratch — no memory of prior manual
@@ -41,6 +51,11 @@ function shufflePods() {
 watch(() => players.length, shufflePods, { immediate: true })
 
 const canPlay = computed(() => calculatePods(players.length).canPlay)
+
+function confirm() {
+  emit('confirm')
+  open.value = false
+}
 </script>
 
 <template>
@@ -121,7 +136,7 @@ const canPlay = computed(() => calculatePods(players.length).canPlay)
       </template>
 
       <template #footer>
-        <UButton :label="t('common.confirm')" @click="open = false" />
+        <UButton :label="t('common.confirm')" @click="confirm" />
       </template>
     </UModal>
   </div>
