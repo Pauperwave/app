@@ -317,7 +317,13 @@ onUnmounted(() => {
           :key="`round-${i}`"
           #[`round-${i}`]
         >
-          <TournamentsSingleRoundManager :round="i" />
+          <TournamentsSingleCommanderRoundManager
+            v-if="isCommander"
+            :tournament-uuid="tournamentUuid"
+            :round-number="i"
+            :round-count="numberOfRounds"
+          />
+          <TournamentsSingleRoundManager v-else :round="i" />
         </template>
 
         <template #awards>
