@@ -46,6 +46,7 @@ export function useTournamentsQuery() {
         startDate: row.starts_at ?? row.created_at,
         endDate: row.ends_at,
         roundCount: row.round_count,
+        roundDurationMinutes: row.round_duration_minutes,
         registeredPlayers: row.registered_players,
         organizer: row.organizer?.name ?? null,
         organizerType: row.organizer?.type ?? null,

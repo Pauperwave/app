@@ -26,6 +26,7 @@ export default defineEventHandler(async (event) => {
       starts_at: body.startsAt,
       ends_at: body.endsAt,
       round_count: body.roundCount,
+      round_duration_minutes: body.roundDurationMinutes ?? 75,
       entry_fee: body.entryFee,
       description: body.description,
       prizes: body.prizes,

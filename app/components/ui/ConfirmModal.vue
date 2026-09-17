@@ -29,7 +29,8 @@ const {
   confirmColor = 'error',
   loading = false,
   dismissible = true,
-  confirmDisabled = false
+  confirmDisabled = false,
+  portal = true
 } = defineProps<{
   title: string
   /** Shown under the title, e.g. a one-line summary of the action. */
@@ -51,6 +52,11 @@ const {
    *  "who received this" select) before confirming makes sense — disables the
    *  confirm button without blocking the whole modal. */
   confirmDisabled?: boolean
+  /** Forwarded to UModal — set to false so the modal renders inside a
+   *  fullscreen-API'd ancestor instead of body-teleporting out of it (e.g.
+   *  RoundTimer.vue's own fullscreen mode, where a teleported modal would
+   *  render behind the fullscreen element). */
+  portal?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -78,6 +84,7 @@ function onCancel() {
     :title="title"
     :description="displayDescription || undefined"
     :dismissible="dismissible && !loading"
+    :portal="portal"
     :ui="{ footer: 'justify-end p-3 sm:px-3 gap-2' }"
   >
     <template v-if="$slots.default" #body>

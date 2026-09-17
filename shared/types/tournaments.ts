@@ -14,6 +14,7 @@ export interface NewTournamentPayload {
   startsAt: string
   endsAt: string | null
   roundCount: number | null
+  roundDurationMinutes: number | null
   entryFee: number | null
   description: string | null
   prizes: string | null
