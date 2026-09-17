@@ -24,9 +24,7 @@ export function useNavBadgeCounts() {
 
   // Same 'players'/'transactions'/'tournaments'/'leagues'/'events'/
   // 'locations' Pinia Colada keys as each domain's own index.vue — plain
-  // totals, no extra fetch. statistics/decks.vue and statistics/commanders/
-  // index.vue have no query of their own yet (both still empty placeholder
-  // pages), so those two nav items don't get a badge.
+  // totals, no extra fetch.
   const { data: players } = usePlayersQuery()
   const playersCount = computed(() => (players.value ?? []).length)
 
@@ -45,6 +43,14 @@ export function useNavBadgeCounts() {
   const { data: locations } = useLocationsQuery()
   const locationsCount = computed(() => (locations.value ?? []).length)
 
+  // "Mazzi"/"Comandanti" both read the same `commander_stats` list (same
+  // Pinia Colada key, no extra fetch): decksCount is one row per commander
+  // pair, commandersCount is every distinct individual commander name across
+  // both slots (getAllCommanderNames, same helper commanders/index.vue uses).
+  const { data: commanderStats } = useAllCommanderStats()
+  const decksCount = computed(() => (commanderStats.value ?? []).length)
+  const commandersCount = computed(() => getAllCommanderNames(commanderStats.value ?? []).length)
+
   // One entry per nav-item badge (some items, like /associates, carry two at
   // once: the plain roster count and a separate warning count) — collapses
   // what used to be nine near-identical <UBadge v-if="item.to === '/x'">
@@ -59,7 +65,9 @@ export function useNavBadgeCounts() {
     { to: '/tournaments', count: tournamentsCount, color: 'neutral' },
     { to: '/leagues', count: leaguesCount, color: 'neutral' },
     { to: '/events', count: eventsCount, color: 'neutral' },
-    { to: '/locations', count: locationsCount, color: 'neutral' }
+    { to: '/locations', count: locationsCount, color: 'neutral' },
+    { to: '/statistics/decks', count: decksCount, color: 'neutral' },
+    { to: '/statistics/commanders', count: commandersCount, color: 'neutral' }
   ]
 
   function navItemBadges(to: NavigationMenuItem['to']) {
