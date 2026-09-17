@@ -16,7 +16,10 @@ import type { TablePlayer } from '~/types'
 
 const open = defineModel<boolean>('open', { default: false })
 
-const { players, savedPositions = null, loading = false } = defineProps<{
+const {
+  tableNumber = null, players, savedPositions = null, loading = false
+} = defineProps<{
+  tableNumber?: number | null
   players: TablePlayer[]
   /** Existing placements, if this pod's ranking has already been saved once. */
   savedPositions?: Map<string, number> | null
@@ -63,37 +66,52 @@ function cellClass(row: number, col: number): string {
   <UModal
     v-model:open="open"
     :title="t('tournament.single.scoreGrid.title')"
-    :description="t('tournament.single.scoreGrid.description')"
+    :description="tableNumber !== null
+      ? t('tournament.single.scoreGrid.tableDescription', { n: tableNumber })
+      : ''"
     :ui="{ content: 'sm:max-w-2xl' }"
   >
     <template #body>
-      <div class="space-y-2">
-        <div
-          v-for="row in rankRange"
-          :key="`row-${row}`"
-          class="flex items-center gap-3"
-        >
-          <span class="w-6 shrink-0 text-right text-xl font-bold text-muted">{{ row + 1 }}</span>
+      <div class="space-y-4">
+        <p class="text-sm text-muted">
+          {{ t('tournament.single.scoreGrid.instructions') }}
+        </p>
 
+        <div class="space-y-2">
           <div
-            class="grid flex-1 gap-2"
-            :class="gridSize === 3 ? 'grid-cols-3' : 'grid-cols-4'"
+            v-for="row in rankRange"
+            :key="`row-${row}`"
+            class="flex items-center gap-3"
           >
+            <span class="w-6 shrink-0 text-right text-xl font-bold text-muted">{{ row + 1 }}</span>
+
             <div
-              v-for="col in rankRange"
-              :key="`row-${row}-col-${col}`"
-              :class="cellClass(row, col)"
-              @dragover.prevent
-              @drop="handleDrop(row, col)"
+              class="grid flex-1 gap-2"
+              :class="gridSize === 3 ? 'grid-cols-3' : 'grid-cols-4'"
             >
               <div
-                v-if="grid[row]?.[col]"
-                draggable="true"
-                class="w-full h-full flex items-center justify-center px-1.5 cursor-grab active:cursor-grabbing"
-                @dragstart="handleDragStart(row, col)"
-                @dragend="handleDragEnd"
+                v-for="col in rankRange"
+                :key="`row-${row}-col-${col}`"
+                :class="cellClass(row, col)"
+                @dragover.prevent
+                @drop="handleDrop(row, col)"
               >
-                <span class="text-sm truncate">{{ grid[row]![col]!.label }}</span>
+                <div
+                  v-if="grid[row]?.[col]"
+                  draggable="true"
+                  class="w-full h-full flex items-center gap-1.5 px-1.5 cursor-grab active:cursor-grabbing"
+                  @dragstart="handleDragStart(row, col)"
+                  @dragend="handleDragEnd"
+                >
+                  <UIcon :name="ICONS.dragHandle" class="size-4 text-muted shrink-0" />
+                  <AssociateTag
+                    :name="splitPlayerName(grid[row]![col]!.label).firstName"
+                    :surname="splitPlayerName(grid[row]![col]!.label).surname"
+                    :associate-uuid="grid[row]![col]!.value"
+                    size="sm"
+                    class="flex-1 truncate"
+                  />
+                </div>
               </div>
             </div>
           </div>
