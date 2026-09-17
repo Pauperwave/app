@@ -24,7 +24,7 @@ defineProps<{
         :label="$t('cittadino.filters.formats')"
         color="neutral"
         :variant="isFiltered ? 'solid' : 'outline'"
-        trailing-icon="i-lucide-list-filter"
+        :trailing-icon="ICONS.filterList"
       />
     </UDropdownMenu>
 

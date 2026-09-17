@@ -76,7 +76,7 @@ const emit = defineEmits<{ toggleColor: [value: WantedCardColorFilter], toggleGr
     >
       <UButton
         :label="$t('wantedCard.filters.onlyMine')"
-        icon="i-lucide-user-round"
+        :icon="ICONS.userRound"
         color="neutral"
         :variant="onlyMine ? 'solid' : 'outline'"
         :disabled="!currentAssociate"

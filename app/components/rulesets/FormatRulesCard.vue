@@ -53,7 +53,7 @@ const rules = computed(() => FORMAT_RULES[format])
         v-if="!rules.confirmed"
         color="warning"
         variant="subtle"
-        icon="i-lucide-triangle-alert"
+        :icon="ICONS.warning"
         :description="$t('ruleset.format.placeholderNotice', { format: rules.label })"
       />
 
@@ -87,7 +87,7 @@ const rules = computed(() => FORMAT_RULES[format])
             :key="league.name"
             class="flex gap-2"
           >
-            <UIcon name="i-lucide-calendar-range" class="mt-0.5 size-4 shrink-0 text-primary" />
+            <UIcon :name="ICONS.calendarRange" class="mt-0.5 size-4 shrink-0 text-primary" />
             <span>
               <span class="font-medium text-highlighted">{{ league.name }}</span> —
               {{ $t('ruleset.format.leagueSummary', {
@@ -111,7 +111,7 @@ const rules = computed(() => FORMAT_RULES[format])
       <USeparator />
 
       <div class="flex gap-2">
-        <UIcon name="i-lucide-sparkles" class="mt-0.5 size-4 shrink-0 text-primary" />
+        <UIcon :name="ICONS.optimize" class="mt-0.5 size-4 shrink-0 text-primary" />
         <div>
           <p class="text-sm font-medium text-highlighted">
             {{ $t('ruleset.format.automationTitle') }}

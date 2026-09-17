@@ -32,7 +32,7 @@ const missingCount = computed(() => associates.length - markers.value.length)
   <div class="flex flex-col gap-4">
     <UAlert
       v-if="!loading && missingCount > 0"
-      icon="i-lucide-map-pin-off"
+      :icon="ICONS.mapPinOff"
       color="neutral"
       variant="subtle"
       :title="$t('associate.map.missingCoordinates', missingCount)"
@@ -88,7 +88,7 @@ const missingCount = computed(() => associates.length - markers.value.length)
 
       <template #fallback>
         <div class="flex items-center justify-center h-150">
-          <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
+          <UIcon :name="ICONS.loading" class="animate-spin text-3xl text-muted" />
         </div>
       </template>
     </ClientOnly>

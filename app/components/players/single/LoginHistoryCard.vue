@@ -13,7 +13,7 @@ defineProps<{ loading: boolean, dates: string[] | undefined }>()
     </template>
 
     <div v-if="loading" class="flex items-center justify-center py-8">
-      <UIcon name="i-lucide-loader-circle" class="animate-spin text-2xl text-muted" />
+      <UIcon :name="ICONS.loading" class="animate-spin text-2xl text-muted" />
     </div>
 
     <template v-else-if="!dates?.length">

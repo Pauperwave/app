@@ -22,13 +22,13 @@ defineProps<{
   <UAlert
     color="warning"
     variant="subtle"
-    icon="i-lucide-triangle-alert"
+    :icon="ICONS.warning"
     class="shrink-0"
     :description="$t('common.mockDataNotice')"
   />
 
   <div v-if="isInitialLoad" class="flex items-center justify-center py-12">
-    <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
+    <UIcon :name="ICONS.loading" class="animate-spin text-3xl text-muted" />
   </div>
 
   <PublicMatrixTable

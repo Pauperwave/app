@@ -17,7 +17,7 @@ const { coords, isGeocoding } = useAddressGeocode(addressRef)
       v-if="isGeocoding"
       class="absolute inset-0 z-10 flex items-center justify-center bg-default/60"
     >
-      <UIcon name="i-lucide-loader-circle" class="animate-spin text-2xl text-muted" />
+      <UIcon :name="ICONS.loading" class="animate-spin text-2xl text-muted" />
     </div>
 
     <ClientOnly>

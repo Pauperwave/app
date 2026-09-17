@@ -10,6 +10,8 @@ export const ICONS = {
   // Actions
   add: 'i-lucide-plus',
   addCircle: 'i-lucide-circle-plus',
+  play: 'i-lucide-play',
+  pause: 'i-lucide-pause',
   delete: 'i-lucide-trash',
   edit: 'i-lucide-pencil-line',
   confirm: 'i-lucide-check',
@@ -26,6 +28,7 @@ export const ICONS = {
   search: 'i-lucide-search',
   filter: 'i-lucide-filter',
   filterClear: 'i-lucide-filter-x',
+  filterList: 'i-lucide-list-filter',
   filters: 'i-lucide-sliders-horizontal',
   optimize: 'i-lucide-sparkles',
   settings: 'i-lucide-settings',
@@ -55,10 +58,12 @@ export const ICONS = {
   successFilled: 'i-lucide-circle-check',
   successFilledBig: 'i-lucide-circle-check-big',
   help: 'i-lucide-circle-question-mark',
+  helpCircle: 'i-lucide-circle-help',
   loading: 'i-lucide-loader-circle',
   pending: 'i-lucide-circle-dot-dashed',
   banned: 'i-lucide-ban',
   warning: 'i-lucide-triangle-alert',
+  alertCircle: 'i-lucide-circle-alert',
   list: 'i-lucide-list',
   listOrdered: 'i-lucide-list-ordered',
   circleDot: 'i-lucide-circle-dot',
@@ -67,6 +72,7 @@ export const ICONS = {
   tag: 'i-lucide-tag',
   rotateBack: 'i-lucide-rotate-ccw',
   userStar: 'i-lucide-user-star',
+  vote: 'i-lucide-star',
 
   // People
   players: 'i-lucide-users',
@@ -77,6 +83,7 @@ export const ICONS = {
   playerConfirmed: 'i-lucide-user-check',
   playerLapsed: 'i-lucide-user-x',
   noShow: 'i-lucide-user-x',
+  userRound: 'i-lucide-user-round',
 
   // Visibility
   show: 'i-lucide-eye',
@@ -90,6 +97,7 @@ export const ICONS = {
   chevronsLeft: 'i-lucide-chevrons-left',
   chevronsRight: 'i-lucide-chevrons-right',
   chevronsUpDown: 'i-lucide-chevrons-up-down',
+  forward: 'i-lucide-arrow-right',
   ellipsisVertical: 'i-lucide-ellipsis-vertical',
   bookOpen: 'i-lucide-book-open',
   keyboard: 'i-lucide-keyboard',
@@ -99,14 +107,17 @@ export const ICONS = {
   sortAscNumeric: 'i-lucide-arrow-up-narrow-wide',
   sortDescNumeric: 'i-lucide-arrow-down-wide-narrow',
   sortBoth: 'i-lucide-arrow-up-down',
+  sortAlpha: 'i-lucide-arrow-down-a-z',
 
   // Calendar / time
   calendar: 'i-lucide-calendar',
   calendarAdd: 'i-lucide-calendar-plus',
   calendarRenew: 'i-lucide-calendar-sync',
   calendarCheck: 'i-lucide-calendar-check',
+  calendarRange: 'i-lucide-calendar-range',
   clock: 'i-lucide-clock',
   timer: 'i-lucide-timer',
+  timerOff: 'i-lucide-timer-off',
   pauseCircle: 'i-lucide-circle-pause',
   history: 'i-lucide-history',
   cake: 'i-lucide-cake',
@@ -127,9 +138,17 @@ export const ICONS = {
   userRoundCog: 'i-lucide-user-round-cog',
   rules: 'i-lucide-scroll-text',
   battle: 'i-lucide-swords',
+  kills: 'i-lucide-sword',
+  deaths: 'i-lucide-skull',
   layers: 'i-lucide-layers',
   gameplay: 'i-lucide-gamepad-2',
   cardSearch: 'i-lucide-scan-search',
+  manaCost: 'i-lucide-gem',
+  deckStats: 'i-lucide-layout-list',
+  brewVote: 'i-lucide-flask-round',
+  brewVotes: 'i-lucide-flask-conical',
+  playVotes: 'i-lucide-zap',
+  quickAction: 'i-lucide-zap',
 
   // League / event / scoring
   standings: 'i-lucide-trophy',
@@ -137,6 +156,7 @@ export const ICONS = {
   chartPie: 'i-lucide-chart-pie',
   chartColumn: 'i-lucide-chart-column-big',
   hash: 'i-lucide-hash',
+  total: 'i-lucide-calculator',
 
   // Payments
   wallet: 'i-lucide-wallet',
@@ -158,6 +178,7 @@ export const ICONS = {
   smartphone: 'i-lucide-smartphone',
   mapPin: 'i-lucide-map-pin',
   mapPinPlus: 'i-lucide-map-pin-plus',
+  mapPinOff: 'i-lucide-map-pin-off',
   map: 'i-lucide-map',
   heartHandshake: 'i-lucide-heart-handshake',
   flag: 'i-lucide-flag',
@@ -173,6 +194,9 @@ export const ICONS = {
   image: 'i-lucide-image',
   imageOff: 'i-lucide-image-off',
   externalLink: 'i-lucide-arrow-up-right',
+  compareArrows: 'i-lucide-git-compare-arrows',
+  megaphone: 'i-lucide-megaphone',
+  package: 'i-lucide-package',
   github: 'i-simple-icons-github',
 
   // Social

@@ -208,7 +208,7 @@ const addTournamentModalOpen = ref(false)
 
     <template #body>
       <div v-if="leagueLoading" class="flex items-center justify-center py-12">
-        <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
+        <UIcon :name="ICONS.loading" class="animate-spin text-3xl text-muted" />
       </div>
 
       <div v-else class="flex flex-col gap-6">

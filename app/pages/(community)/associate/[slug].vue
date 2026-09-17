@@ -179,7 +179,7 @@ const { columns: associateTransactionsColumns } = useAssociateTransactionsTableC
 
     <template #body>
       <div v-if="loading" class="flex items-center justify-center py-12">
-        <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
+        <UIcon :name="ICONS.loading" class="animate-spin text-3xl text-muted" />
       </div>
 
       <EmptyState
