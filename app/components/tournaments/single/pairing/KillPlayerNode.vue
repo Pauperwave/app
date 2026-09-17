@@ -8,9 +8,11 @@
   ck_tournament_kills_no_self_kill check constraint (killer_uuid <>
   killed_player_uuid), added earlier this session, so a self-kill can
   never be persisted here regardless of what the canvas would allow.
-  Also dropped: DiceBear-generated placeholder avatars (a new dependency
-  for a cosmetic detail) — UAvatar's own initials fallback (from `alt`)
-  covers a player with no avatar just fine.
+  Uses ICONS.kills/ICONS.deaths (not battle/playerLapsed) and
+  generatePlayerAvatar (already a dependency elsewhere in this app, e.g.
+  AssociateTag.vue) for the node's avatar, matching league 1:1 — an earlier
+  pass here had used different icons/no avatar (2026-09-16 "mancano delle
+  funzionalità" follow-up).
 -->
 <script setup lang="ts">
 import { Handle, Position } from '@vue-flow/core'
@@ -55,7 +57,7 @@ const hasStats = computed(() => data.killCount > 0 || data.deathCount > 0)
         :text="t('tournament.single.killTracker.killCountTooltip', { count: data.killCount })"
       >
         <UBadge
-          :icon="ICONS.battle"
+          :icon="ICONS.kills"
           :label="String(data.killCount)"
           :color="data.color"
           variant="solid"
@@ -67,7 +69,7 @@ const hasStats = computed(() => data.killCount > 0 || data.deathCount > 0)
         :text="t('tournament.single.killTracker.deathCountTooltip', { count: data.deathCount })"
       >
         <UBadge
-          :icon="ICONS.playerLapsed"
+          :icon="ICONS.deaths"
           :label="String(data.deathCount)"
           color="neutral"
           variant="solid"
@@ -89,7 +91,7 @@ const hasStats = computed(() => data.killCount > 0 || data.deathCount > 0)
     :style="{ width: data.width }"
   >
     <div class="flex items-center gap-2 px-2 py-2">
-      <UAvatar :alt="data.player.label" />
+      <UAvatar :src="generatePlayerAvatar(data.player.value)" :alt="data.player.label" />
       <p class="text-xs font-semibold whitespace-nowrap">
         {{ data.player.label }}
       </p>
