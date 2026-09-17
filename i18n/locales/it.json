@@ -2285,6 +2285,12 @@
     "fallbackName": "Mazzo sconosciuto",
     "emptyList": "Nessun mazzo trovato",
     "notFound": "Mazzo non trovato",
+    "views": {
+      "table": "Tabella",
+      "grid": "Griglia",
+      "dense": "Compatta"
+    },
+    "nameColumn": "Mazzo",
     "sortOptions": {
       "alphabetical": "Alfabetico",
       "popularity": "Popolarità",
@@ -2335,6 +2341,11 @@
   },
   "commander": {
     "breadcrumb": "Comandanti",
+    "views": {
+      "table": "Tabella",
+      "grid": "Griglia",
+      "dense": "Compatta"
+    },
     "index": {
       "nameColumn": "Comandante",
       "searchPlaceholder": "Cerca comandante...",

@@ -5,10 +5,19 @@
      port). Simpler than league's version: commander_stats already has one
      row per unique commander pair, so there's no separate dedup step. -->
 <script setup lang="ts">
+import type { TableColumn, TabsItem } from '@nuxt/ui'
+import { NuxtLink } from '#components'
 import type { CommanderStatsPair } from '~/composables/commanders/useCommanderStatsQuery'
 import type { CommanderCard } from '~/composables/commanders/useCommanderCards'
 
 const { t } = useI18n()
+
+const viewMode = ref<'table' | 'dense' | 'grid'>('grid')
+const viewModeItems = computed<TabsItem[]>(() => [
+  { label: t('deck.views.table'), value: 'table', icon: ICONS.table },
+  { label: t('deck.views.dense'), value: 'dense', icon: ICONS.gridDense },
+  { label: t('deck.views.grid'), value: 'grid', icon: ICONS.grid }
+])
 
 const { data: pairsData, isLoading: pairsLoading } = useAllCommanderStats()
 const pairs = computed(() => pairsData.value ?? [])
@@ -80,6 +89,43 @@ const sortedPairs = computed(() => {
   return list
 })
 
+// Table view reuses sortedPairs as-is -- sorting is already handled by the
+// toolbar's own select+direction toggle above (shared by all 3 view modes),
+// so this table doesn't need its own per-column sortable headers.
+function pairName(pair: CommanderStatsPair): string {
+  return [pair.commander1Name, pair.commander2Name].filter(Boolean).join(' / ')
+}
+function pairSlug(pair: CommanderStatsPair): string {
+  return slugify(pair.commander1Name)
+}
+function statColumn(
+  accessorKey: keyof CommanderStatsPair, label: string
+): TableColumn<CommanderStatsPair> {
+  return {
+    accessorKey,
+    header: () => label,
+    meta: { class: { th: 'text-center', td: 'text-center px-3 py-1.5' } }
+  }
+}
+const tableColumns: TableColumn<CommanderStatsPair>[] = [
+  {
+    id: 'name',
+    header: t('deck.nameColumn'),
+    cell: ({ row }) => h(
+      NuxtLink,
+      { to: `/statistics/decks/${pairSlug(row.original)}`, class: 'hover:underline' },
+      () => pairName(row.original)
+    )
+  },
+  statColumn('playerCount', t('deck.statsPlayers')),
+  statColumn('matchCount', t('deck.statsMatches')),
+  statColumn('winCount', t('deck.statsWins')),
+  statColumn('totalKills', t('deck.statsKills'))
+]
+
+const showLoadingState = computed(() =>
+  (pairsLoading.value || commanderLoading.value) && sortedPairs.value.length === 0)
+
 useSeoMeta({ title: () => t('deck.breadcrumb') })
 </script>
 
@@ -92,6 +138,10 @@ useSeoMeta({ title: () => t('deck.breadcrumb') })
         </template>
 
         <template #right>
+          <ViewModeTabs v-model="viewMode" :items="viewModeItems" />
+
+          <USeparator orientation="vertical" class="h-4" />
+
           <USelectMenu
             v-model="selectedSort"
             :items="sortOptions"
@@ -113,21 +163,63 @@ useSeoMeta({ title: () => t('deck.breadcrumb') })
     </template>
 
     <template #body>
+      <ListSkeleton
+        v-if="viewMode === 'table' && showLoadingState"
+        :columns="tableColumns.length"
+      />
+
       <div
-        v-if="(pairsLoading || commanderLoading) && sortedPairs.length === 0"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+        v-else-if="viewMode !== 'table' && showLoadingState"
+        class="grid gap-4"
+        :class="viewMode === 'dense'
+          ? 'grid-cols-[repeat(auto-fill,minmax(min(140px,42vw),1fr))]'
+          : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'"
       >
-        <CommandersDeckCardSkeleton v-for="n in 8" :key="n" />
+        <template v-if="viewMode === 'dense'">
+          <CommandersDeckDenseCard
+            v-for="n in 16"
+            :key="n"
+            loading
+          />
+        </template>
+        <template v-else>
+          <CommandersDeckCardSkeleton v-for="n in 8" :key="n" />
+        </template>
       </div>
 
       <EmptyState v-else-if="sortedPairs.length === 0" :message="t('deck.emptyList')" />
 
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        <CommandersDeckCard
-          v-for="pair in sortedPairs"
-          :key="`${pair.commander1Name}|${pair.commander2Name ?? ''}`"
-          :pair="pair"
-        />
+      <UTable
+        v-else-if="viewMode === 'table'"
+        :data="sortedPairs"
+        :columns="tableColumns"
+      >
+        <template #empty>
+          <EmptyState :message="t('deck.emptyList')" />
+        </template>
+      </UTable>
+
+      <div
+        v-else
+        class="grid gap-4"
+        :class="viewMode === 'dense'
+          ? 'grid-cols-[repeat(auto-fill,minmax(min(140px,42vw),1fr))]'
+          : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'"
+      >
+        <template v-if="viewMode === 'dense'">
+          <CommandersDeckDenseCard
+            v-for="pair in sortedPairs"
+            :key="`${pair.commander1Name}|${pair.commander2Name ?? ''}`"
+            :pair="pair"
+          />
+        </template>
+        <template v-else>
+          <CommandersDeckCard
+            v-for="pair in sortedPairs"
+            :key="`${pair.commander1Name}|${pair.commander2Name ?? ''}`"
+            :pair="pair"
+          />
+        </template>
       </div>
     </template>
   </UDashboardPanel>
