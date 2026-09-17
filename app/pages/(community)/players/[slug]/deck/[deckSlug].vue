@@ -70,7 +70,7 @@ const { breadcrumbItems } = useBreadcrumbs()
         <UBreadcrumb :items="breadcrumbItems" class="mb-2" />
 
         <div class="bg-elevated rounded-xl border border-default shadow-lg overflow-hidden">
-          <div class="aspect-16/9 bg-muted" :class="commander2Name ? 'flex' : ''">
+          <div class="aspect-video bg-muted" :class="commander2Name ? 'flex' : ''">
             <ImageWithFallback
               :src="art1"
               :alt="commander1Name ?? ''"

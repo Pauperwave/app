@@ -73,7 +73,7 @@ useSeoMeta({ title: () => commanderName.value ?? t('commander.breadcrumb') })
     <template #body>
       <div v-if="commanderName" class="max-w-4xl mx-auto space-y-6">
         <div class="bg-elevated rounded-xl border border-default shadow-lg overflow-hidden">
-          <div class="aspect-16/9 bg-muted">
+          <div class="aspect-video bg-muted">
             <ImageWithFallback
               :src="art"
               :alt="commanderName"

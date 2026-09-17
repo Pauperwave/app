@@ -170,7 +170,7 @@ const groups = useCommandPaletteGroups({ open, mainNavGroups, footerNavItems })
                 <UIcon
                   v-if="item.icon"
                   :name="item.icon"
-                  :class="[itemUi.linkLeadingIcon({ active, disabled: !!item.disabled }), '!mr-0']"
+                  :class="[itemUi.linkLeadingIcon({ active, disabled: !!item.disabled }), 'mr-0!']"
                 />
               </UChip>
               <UIcon
