@@ -1,4 +1,4 @@
-<!-- app\pages\(analytics)\statistics\decks.vue -->
+<!-- app\pages\(analytics)\statistics\decks\index.vue -->
 <!-- Deck-pairing browsing hub — ported from MagicTheGathering/league's
      pages/decks/index.vue (user request, 2026-09-17: restore the feature
      league had that never made it into this app's first commander-pages
