@@ -21,7 +21,7 @@ import { upperFirst } from 'scule'
 import type { UserProps } from '@nuxt/ui'
 
 const {
-  name, associateUuid, highlightQuery, size = 'sm', strikethrough = false
+  name, associateUuid, highlightQuery, size = 'sm', strikethrough = false, surname
 } = defineProps<{
   name: string
   associateUuid?: string | null
@@ -39,6 +39,12 @@ const {
   // "Pre-registrati" table (user request, 2026-08-24), generic enough for
   // any other "this person is marked as not participating" use later.
   strikethrough?: boolean
+  // Opt-in (2026-09-19, user request: "il colore delle persone" round-view
+  // cards should match league's own PlayerNameTag.vue) — when given, `name`
+  // renders plain and `surname` renders bold + text-primary, same visual
+  // split as league. Every existing call site omits this and keeps
+  // rendering `name` as one plain string, unaffected.
+  surname?: string
 }>()
 
 const avatar = computed(() => ({ src: generatePlayerAvatar(name), alt: name }))
@@ -66,10 +72,13 @@ const membershipBadge = computed(() => associate.value
       :size="size"
       class="cursor-default"
     >
-      <template v-if="highlightQuery || strikethrough" #name>
+      <template v-if="surname || highlightQuery || strikethrough" #name>
         <span :class="{ 'line-through text-dimmed': strikethrough }">
+          <template v-if="surname">
+            {{ name }} <span class="font-bold text-primary whitespace-nowrap">{{ surname }}</span>
+          </template>
           <HighlightMatch
-            v-if="highlightQuery"
+            v-else-if="highlightQuery"
             :text="name"
             :query="highlightQuery"
           />
@@ -102,10 +111,13 @@ const membershipBadge = computed(() => associate.value
     :size="size"
   >
     <!-- fallow-ignore-next-line code-duplication -- mirrors the popover branch above -->
-    <template v-if="highlightQuery || strikethrough" #name>
+    <template v-if="surname || highlightQuery || strikethrough" #name>
       <span :class="{ 'line-through text-dimmed': strikethrough }">
+        <template v-if="surname">
+          {{ name }} <span class="font-bold text-primary whitespace-nowrap">{{ surname }}</span>
+        </template>
         <HighlightMatch
-          v-if="highlightQuery"
+          v-else-if="highlightQuery"
           :text="name"
           :query="highlightQuery"
         />
