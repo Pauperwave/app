@@ -2,13 +2,6 @@
 <script lang="ts" setup>
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Row } from '@tanstack/vue-table'
-import type { PaymentMethod } from '#shared/types/transactions'
-// Explicit import, not auto-import — Nitro's own server-side useStorage
-// (unstorage's Storage<T>) shadows VueUse's client composable of the same
-// name in the shared auto-import namespace, resolving to the wrong one
-// (confirmed 2026-09-14: typecheck picked Storage<T>, and the browser threw
-// "useStorage is not defined" at runtime).
-import { useStorage } from '@vueuse/core'
 
 interface Props {
   tournamentUuid: string
@@ -24,7 +17,6 @@ interface Props {
 const { tournamentUuid, isDraft = false, is1v1 = false } = defineProps<Props>()
 
 const { t } = useI18n()
-const toast = useToast()
 
 export interface AcceptancePickerItem {
   label: string
@@ -44,11 +36,16 @@ const {
   data: registrationsData,
   isLoading: isRegistrationsLoading
 } = useTournamentRegistrationsQuery(() => tournamentUuid)
-const { data: paymentsData } = useTournamentPaymentsQuery(() => tournamentUuid)
 const { data: associatesData, isLoading: isAssociatesLoading } = useAssociatesQuery()
 const {
-  registerAssociates, setRegistrationStatus, deleteRegistrations, setPayment
+  registerAssociates, setRegistrationStatus, deleteRegistrations
 } = useTournamentRegistrationsMutations(() => tournamentUuid)
+
+const payments = useAcceptancePickerPayments({ tournamentUuid: () => tournamentUuid })
+const {
+  paymentMethodByPlayer, testPayments, receivedBy, setPaymentMethod, togglePaymentMethod,
+  toggleTestPayment, toggleTestPaymentForTargets
+} = payments
 
 // Both tables draw from registrations + associates — either still loading
 // means the row set shown so far is incomplete, so both tables share one
@@ -67,7 +64,7 @@ const isMutating = computed(() =>
   registerAssociates.isLoading.value
   || setRegistrationStatus.isLoading.value
   || deleteRegistrations.isLoading.value
-  || setPayment.isLoading.value)
+  || payments.setPayment.isLoading.value)
 
 const associateByUuid = computed(() =>
   new Map((associatesData.value ?? []).map(associate => [associate.uuid, associate])))
@@ -296,60 +293,6 @@ watch(registrationsData, (registrations) => {
   }
 }, { immediate: true })
 
-const paymentMethodByPlayer = reactive<Record<string, PaymentMethod | null>>({})
-watch(paymentsData, (payments) => {
-  for (const key of Object.keys(paymentMethodByPlayer)) {
-    Reflect.deleteProperty(paymentMethodByPlayer, key)
-  }
-  for (const payment of payments ?? []) {
-    paymentMethodByPlayer[payment.associateUuid] = payment.paymentMethod
-  }
-}, { immediate: true })
-
-// "Test" payment button (user request, 2026-09-14) — marks a player as paid
-// for testing purposes without writing a pauperwave_payments row. Kept out of
-// paymentMethodByPlayer/pauperwave_payments entirely ('test' isn't a real
-// PaymentMethod, ck_payment_method would reject it), but persisted to
-// localStorage via VueUse's useStorage (user request, 2026-09-14: survive a
-// reload without needing an actual DB write) rather than a plain reactive() —
-// keyed per tournament so different tournaments' test marks don't collide.
-const testPayments = useStorage<Record<string, boolean>>(
-  () => `tournament-test-payments-${tournamentUuid}`, {}
-)
-
-function toggleTestPayment(item: AcceptancePickerItem) {
-  if (testPayments.value[item.value]) {
-    Reflect.deleteProperty(testPayments.value, item.value)
-    return
-  }
-  // Mutually exclusive with a real payment method — a row shouldn't show
-  // both a live "Cash" and the "Test" state active at once.
-  if (paymentMethodByPlayer[item.value]) setPaymentMethod(item, null)
-  testPayments.value[item.value] = true
-}
-
-// Bulk-aware context-menu variant (user request, 2026-09-18) — unlike real
-// payment methods (deliberately kept single-row, see setPaymentMethod's own
-// comment), "Pagamento test" is pure client-side localStorage state, not a
-// pauperwave_payments write, so there's no atomicity/error-class concern
-// looping over it. Same "clicked row decides the action, selection decides
-// the scope" convention as resolveContextMenuTargets — every target ends
-// up in the same on/off state as the clicked row's own next value, rather
-// than each toggling independently off whatever its own prior state was.
-function toggleTestPaymentForTargets(items: AcceptancePickerItem[]) {
-  const [anchor] = items
-  if (!anchor) return
-  const nextValue = !testPayments.value[anchor.value]
-  for (const item of items) {
-    if (nextValue) {
-      if (paymentMethodByPlayer[item.value]) setPaymentMethod(item, null)
-      testPayments.value[item.value] = true
-    } else {
-      Reflect.deleteProperty(testPayments.value, item.value)
-    }
-  }
-}
-
 // Shared by the arrow button (whole current selection) and the
 // "Pre-registrati" context menu's "Aggiungi agli iscritti" action (user
 // request, 2026-08-24), which passes just the right-clicked row or
@@ -367,50 +310,13 @@ function transferSelected() {
   transferToAccepted(sourceSelection.value)
 }
 
-// "Aggiungi giocatori" — ported from MagicTheGathering/league's WaitingList.vue
-// (user request, 2026-08-24), for walk-ins: any club associate not already
-// pre-registered or accepted, searched/multi-selected and added straight into
-// "Iscritti (Pagato)", skipping the pre-registration step entirely. Reads the
-// real associates roster (not just the pre-registered pool), since a walk-in
-// by definition isn't one of tonight's pre-registered names.
-const addablePlayerIds = ref<string[]>([])
-
+// "Aggiungi giocatori" (walk-ins) — see useWalkInPlayers.ts. A candidate must
+// not already be pre-registered or accepted for this tournament.
 const knownPlayerIds = computed(() => new Set(items.value.map(item => item.value)))
-// Only currently-active members are real "giocatori" — excludes
-// pending/rejected requests and expired/unpaid/to_renew memberships (user
-// request, 2026-08-24: "stiamo aggiungendo 'associati' non giocatori").
-// Also excludes APS Pauperwave's own registry record (PW-0000, uuid constant
-// from useTransactionFormOptions) — the association itself, not a player,
-// same exclusion useTransactionFormFields.ts already applies for payers.
-const addableAssociates = computed(() =>
-  (associatesData.value ?? []).filter(associate =>
-    !knownPlayerIds.value.has(associate.uuid)
-    && associate.uuid !== APS_PAUPERWAVE_ASSOCIATE_UUID
-    && associate.membership_status === 'active'))
-const addableAssociateOptions = computed(() => addableAssociates.value.map(associate => ({
-  value: associate.uuid,
-  label: `${associate.first_name} ${associate.last_name}`
-})))
-
-function addSelectedAssociates() {
-  if (!addablePlayerIds.value.length) return
-  registerAssociates.mutate({ associateUuids: addablePlayerIds.value, status: 'checked_in' })
-  addablePlayerIds.value = []
-}
-
-// Same "Aggiungi giocatori" mechanism as above, but onto "Pre-registrati"
-// itself rather than straight into "Iscritti (Pagato)" (user request,
-// 2026-08-24: "come faccio ad aggiungere persone all'elenco dei
-// preregistrati?") — shares the same addableAssociateOptions pool, since
-// knownPlayerIds already excludes anyone in either list regardless of which
-// one they get added to.
-const addableSourcePlayerIds = ref<string[]>([])
-
-function addSelectedToPreRegistered() {
-  if (!addableSourcePlayerIds.value.length) return
-  registerAssociates.mutate({ associateUuids: addableSourcePlayerIds.value })
-  addableSourcePlayerIds.value = []
-}
+const {
+  addableAssociateOptions, addablePlayerIds, addSelectedAssociates,
+  addableSourcePlayerIds, addSelectedToPreRegistered
+} = useWalkInPlayers({ tournamentUuid: () => tournamentUuid, knownPlayerIds })
 
 // Confirm-before-destructive-action flow, one instance per side — extracted
 // into useRemoveConfirmFlow once both sides grew a byte-identical copy of it
@@ -477,43 +383,6 @@ const removeModalOpen = computed({
     }
   }
 })
-
-// Who's running the check-in desk right now — required to record a *new*
-// pauperwave_payments row (received_by is NOT NULL, and there's no
-// "current logged-in user" to default it to, same gap already flagged in
-// useAssociatesBulkActions.ts). Chosen once per session from
-// RECEIVER_OPTIONS, not per click — these payment buttons have no form of
-// their own (user request, 2026-08-25).
-const receivedBy = ref<string | undefined>(undefined)
-
-// Payment is single-row only (removed bulk 2026-08-25, user request: "I was
-// thinking to remove the bulk actions for payment so I remove a whole class
-// of errors and cases") — one real pauperwave_payments write per click,
-// no loop of N mutation calls with no atomicity between them.
-function setPaymentMethod(item: AcceptancePickerItem, method: PaymentMethod | null) {
-  // Only a brand-new payment strictly needs receivedBy server-side (an
-  // update to an existing row keeps its own) — but this session-wide
-  // desk-staff selection is still worth nudging for up front, since
-  // silently omitting it on every subsequent click would be confusing.
-  if (method !== null && !paymentMethodByPlayer[item.value] && !receivedBy.value) {
-    toast.add({
-      title: t('tournament.single.acceptancePicker.receivedByRequiredTitle'),
-      description: t('tournament.single.acceptancePicker.receivedByRequiredDescription'),
-      color: 'warning'
-    })
-    return
-  }
-  if (method !== null) Reflect.deleteProperty(testPayments.value, item.value)
-  setPayment.mutate({
-    associateUuid: item.value,
-    method, receivedBy:
-    receivedBy.value
-  })
-}
-
-function togglePaymentMethod(item: AcceptancePickerItem, method: PaymentMethod) {
-  setPaymentMethod(item, paymentMethodByPlayer[item.value] === method ? null : method)
-}
 
 // Table column definitions live in useAcceptancePickerColumns.ts (extracted
 // once they made up roughly half this file, user request, 2026-08-24) —
