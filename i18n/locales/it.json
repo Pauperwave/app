@@ -1136,7 +1136,8 @@
       "startDate": "Data",
       "tournamentCount": "Tornei",
       "organizer": "Organizzatore",
-      "location": "Luogo"
+      "location": "Luogo",
+      "actions": "Azioni"
     },
     "tournamentsLabel": "{count} torneo | {count} tornei",
     "addModal": {
