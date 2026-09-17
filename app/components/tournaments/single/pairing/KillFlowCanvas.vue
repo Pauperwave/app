@@ -12,7 +12,11 @@
   suicide badge — this app's tournament_kills table has a
   ck_tournament_kills_no_self_kill check constraint (killer_uuid <>
   killed_player_uuid, added earlier this session), so a self-kill edge could
-  never be persisted here anyway.
+  never be persisted here anyway. 2026-09-16 "il codice del grafo non si
+  comporta allo stesso modo" follow-up: onConnect/onEdgeClick now validate
+  duplicate/reverse kills and toast feedback exactly like league's
+  killsStore.addKill/onEdgeClick, instead of silently emitting straight to
+  the mutation with no client-side check or confirmation.
 -->
 <script setup lang="ts">
 import { VueFlow, MarkerType, useVueFlow, type Node, type Edge, type Connection, type EdgeMouseEvent } from '@vue-flow/core'
@@ -41,6 +45,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const toast = useToast()
 
 const interactive = ref(true)
 
@@ -146,12 +151,52 @@ function validateConnection(connection: Connection): boolean {
     && validPlayerUuids.has(connection.target)
 }
 
+// Same duplicate/reverse-kill rejection as league's killsStore.addKill —
+// Vue Flow re-runs `isValidConnection` against every edge on every setEdges()
+// sync (not just live drag attempts), so that check only covers table
+// membership; a real kill (already present, or its exact reverse) is
+// rejected here instead, once, at the moment the user actually drags a
+// connection.
+function isKillPresent(killerUuid: string, killedPlayerUuid: string): boolean {
+  return kills.some(k => k.killerUuid === killerUuid && k.killedPlayerUuid === killedPlayerUuid)
+}
+function isReverseKillPresent(killerUuid: string, killedPlayerUuid: string): boolean {
+  return kills.some(k => k.killerUuid === killedPlayerUuid && k.killedPlayerUuid === killerUuid)
+}
+
 function onConnect(connection: Connection) {
-  emit('connect', connection.source, connection.target)
+  const { source: killerUuid, target: killedPlayerUuid } = connection
+
+  if (isKillPresent(killerUuid, killedPlayerUuid)) {
+    toast.add({
+      title: t('tournament.single.killTracker.invalidTitle'),
+      description: t('tournament.single.killTracker.alreadyRegistered'),
+      color: 'warning',
+      icon: ICONS.warning
+    })
+    return
+  }
+  if (isReverseKillPresent(killerUuid, killedPlayerUuid)) {
+    toast.add({
+      title: t('tournament.single.killTracker.invalidTitle'),
+      description: t('tournament.single.killTracker.victimAlreadyKilled'),
+      color: 'warning',
+      icon: ICONS.warning
+    })
+    return
+  }
+
+  emit('connect', killerUuid, killedPlayerUuid)
 }
 
 function onEdgeClick({ edge }: EdgeMouseEvent) {
   emit('removeKill', edge.source, edge.target)
+  toast.add({
+    title: t('tournament.single.killTracker.killRemovedTitle'),
+    color: 'neutral',
+    icon: ICONS.delete,
+    duration: 2000
+  })
 }
 </script>
 
