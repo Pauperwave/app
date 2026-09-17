@@ -30,6 +30,10 @@ Master index of all project documentation.
 | `audits/2026-08-16-fallow-health-review.md` | Follow-up `fallow:health` review: what got fixed since 2026-08-12 (GridView.vue, DetailSlideover.vue, tesseramento/index.vue partially), fresh score/targets, and why the 4 remaining refactoring targets are false economy or deliberately deferred | Process |
 | `plans/2026-08-18-testing-coverage-plan.md` | Concrete, tiered list of what to unit/e2e test first, superseding `architecture/testing.md`'s own stale priority list | Test reference |
 | `audits/2026-08-18-associates-csv-reconciliation.md` | Categorized review of the 171 field conflicts between the DB and the historical Google Form roster — what's safe to fix, what's already correct, what needs asking the associate directly | Data model |
+| `audits/2026-08-24-finance-payment-amount-corrections.md` | One-off `payment_amount` mismatches found while building `/finance`'s category summary, confirmed with the user and fixed directly in `pauperwave_payments` | Data model |
+| `audits/2026-09-16-app-components-composables-pages-inventory.md` | Full inventory of `app`'s own components/composables/pages — the baseline half of the app-vs-league comparison below | Onboarding |
+| `audits/2026-09-16-league-components-composables-pages-inventory.md` | Same inventory pass for the (abandoned) `MagicTheGathering/league` sibling project — comparison baseline only, not a migration target | Onboarding |
+| `audits/2026-09-16-league-vs-app-feature-comparison.md` | Feature-by-feature comparison between `league` and `app` — what `app` already covers, what's `league`-only and not being ported (see ADR-003's 2026-09-17 correction in `PROGRESS.md`: `league` is abandoned, not being absorbed) | Onboarding |
 
 ## Not yet documented
 

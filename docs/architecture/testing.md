@@ -19,4 +19,4 @@ See `docs/plans/2026-08-18-testing-coverage-plan.md` for the current, concrete, 
 
 ## Not yet decided
 
-- Whether writing the first tests belongs in `docs/BACKLOG.md` as a scoped item, or stays a `docs/TODO.md` observation until there's a concrete regression that motivates it — see the note in `docs/BACKLOG.md`/`TODO.md` about this being felt acutely on `/wanted-cards` specifically
+- Whether writing the first tests is worth scoping as its own [GitHub Issue](https://github.com/orgs/Pauperwave/projects/2) now, or waits until a concrete regression motivates it.

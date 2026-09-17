@@ -13,7 +13,7 @@
 
 ## Writes go through a BFF, not the client
 
-- New/migrated domains (see `wanted-cards` as the template, ADR-007/008 in `docs/PROGRESS.md`): reads go client-side via `useQuery` (Pinia Colada) straight to Supabase with the anon key; writes go through a `server/api/<domain>/*.post.ts` endpoint using `serverSupabaseServiceRole`, which bypasses RLS — that endpoint is the authorization boundary (`server/utils/serverAuth.ts`'s `requireUser`/`requireManagementPermission`), not a DB policy or trigger relying on `auth.uid()` (always `null` under the service-role key).
+- New/migrated domains (see `wanted-cards` as the template, ADR-007/008 in `docs/PROGRESS.md`): reads go client-side via `useQuery` (Pinia Colada) straight to Supabase with the anon key; writes go through a `server/api/<domain>/*.post.ts` endpoint using `serverSupabaseServiceRole`. That endpoint — via `server/utils/serverAuth.ts`'s `requireUser`/`requireManagementPermission` — is the authorization boundary, not a DB policy or trigger. See `docs/architecture/api.md` for the full pattern.
 - `created_by`/`updated_by` population (where those columns exist) goes through `server/utils/auditColumns.ts` (`auditColumnsForInsert`/`auditColumnsForUpdate`), generic and reusable — spread into the insert/update payload of any BFF endpoint, not reinvented per table.
 
 ## Code quality requirements

@@ -46,6 +46,12 @@ Rules:
 | `tournaments/useTournamentsQuery.ts` | `['tournaments']` | `useTournamentsMutations.ts` |
 | `tournaments/useTournamentPaymentsQuery.ts` | `['tournament-payments', tournamentUuid]` | invalidated by `useTournamentRegistrationsMutations.ts` |
 | `tournaments/useTournamentRegistrationsQuery.ts` | `['tournament-registrations', tournamentUuid]` | `useTournamentRegistrationsMutations.ts` |
+| `tournaments/useTournamentRoundsQuery.ts` | `['tournament-rounds', tournamentUuid]` | `useTournamentRoundsMutations.ts` |
+| `tournaments/useTournamentPairingsQuery.ts` | `['tournament-pairings', tournamentUuid]` | via round/pairing mutations (`useTournamentRoundsMutations.ts`, `useTournamentPairingResetMutation.ts`) |
+| `tournaments/useTournamentRoundResultsQuery.ts` | `['tournament-round-results', tournamentUuid]` | `useTournamentRoundResultsMutations.ts` |
+| `tournaments/useTournamentKillsQuery.ts` | `['tournament-kills', tournamentUuid]` | `useTournamentKillsMutations.ts` |
+| `tournaments/useTournamentVotesQuery.ts` | `['tournament-votes', tournamentUuid]` | `useTournamentVotesMutations.ts` |
+| `tournaments/useAvoidPairsQuery.ts` | `['avoid-pairs']` | `useAvoidPairsMutations.ts` |
 | `transactions/useTransactionsQuery.ts` | `['transactions']` | `useTransactionsMutations.ts` |
 | `trash/useTrashQuery.ts` | `['trash']` | `useTrashMutations.ts` |
 | `useUserRole.ts` | `['user-role']` | written via `assign_role` RPC (`useMembersMutations.ts`), invalidated on auth state change (`app/plugins/user-role.client.ts`) — see `docs/architecture/roles.md` |

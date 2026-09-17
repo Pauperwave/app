@@ -3,6 +3,69 @@
 
 One entry per **notable** commit, newest first, grouped by date. Each entry: the commit subject (gitmoji convention), then what/why bullets. Not every commit gets an entry anymore (see ADR-010 in `PROGRESS.md`) — mechanical ones (`style`, `chore`, trivial `refactor`) are skipped here; the complete raw index (every commit, auto-generated) lives in the root `CHANGELOG.md` via `changelogen`, never edited by hand. This file complements `PROGRESS.md` (curated ADRs and per-area status): the changelog is the annotated commit trail, `PROGRESS.md` is the distilled history — fold important outcomes there, keep the play-by-play here.
 
+## 2026-09-14 – 2026-09-15 — Commander tournament pairing engine ported into `app`
+
+- `app` gains its own live pairing/round-management system for Commander tournaments, ported and adapted from `MagicTheGathering/league` (`feat(tournaments): 🗃️ back round 1 pod creation and avoid-pairs with a real RPC/BFF layer`, `feat(tournaments): ✨ port league's Commander pairing-optimizer/preview UI`, `feat(tournaments): ✨ port league's round-in-progress Commander UI (results, kills, votes, standings, commander select)`) — new schema for the Commander tournament domain (avoid-pairs, round/table uniqueness) and a seeded "Base Commander" ruleset.
+- Round 1 pairing/advance/turn-back now also works for 1v1 Swiss formats, not just Commander pods (`feat(tournaments): ✨ round-1 pairing + advance/turn-back for 1v1 Swiss`, with a same-day fix for a Swiss-advance bug and unified turn-back UX).
+- Smaller polish same week: a "Reset" button replacing the dedicated pods step, skipping the start-confirm dialog for pod-based formats, and two date-filter fixes (today's own tournament no longer vanishes, lower bound corrected).
+- `feat(layout): ✨ show the git commit hash in the version badge` and `feat(layout): ✨ add a password-gated developer view (margins overlay)` — dev-facing additions, unrelated to the pairing work above.
+
+## 2026-09-06 – 2026-09-13 — Telegram bot: rich messages, deep links, `/turni` Mini App, `/risultato`
+
+- The bot's replies were converted wholesale from plain text to grammY "Rich Messages" (blocks, tables, thinking-shimmer drafts) across every command (`/start`, `/help`, `/status`, `/calendario`, `/leghe`, `/iscrizioni`, `/eventi`, `/classifiche`, `/tessera`, `/collegamento`, `/tavolo`, `/supporto`), plus a deep-link manager so `/start <payload>` can jump straight into any command's own flow.
+- `/risultato` (post-round result reporting: position + kills) went from a mockup to a full Rich-Message flow with explicit per-step confirmation, pill-button kill/vote pickers, and a per-round score summary table — several follow-up fixes for a stuck position step, duplicated checkmarks, and shape-mismatch crashes.
+- New `/turni` Telegram Mini App: a full-screen round timer + Bo3 score tracker with tappable turn-advance quadrants, reworked twice for layout (landscape focus mode, bigger touch targets, split active-turn indicator) after real usage.
+- Security hardening found via a same-week code review: rate-limited account-linking attempts to 1/minute (`fix(telegram-bot): 🔒️ stop a member's email link from being silently stolen`), and restricted `/tavolo`'s inline mode to the bot's own chat.
+- Misc: `/dado`/`/moneta`/`/tira` dice/coin commands, a `/dioporco` easter egg, commander card art shown in `/tavolo`'s confirmation, and every `timestamptz` display fixed to render in `Europe/Rome` instead of server-local time.
+
+## 2026-09-02 – 2026-09-05 — Telegram bot scaffolded; self-service tournament registration
+
+- `MagicTheGathering/app`'s Telegram bot (grammY) goes from nothing to a working command set in a few days: `/classifiche`, `/tornei` (renamed `/calendario`), `/eventi`, `/leghe`, `/iscrizioni`, `/status`, plus the chat↔associate account-linking flow and admin alert notifications (`notifyTelegramAdmins`/`notifyTelegramSuperAdmins`) — see `docs/architecture/telegram-bot.md`/`telegram-notifications.md`.
+- `feat(tournaments): ✨ self-service tournament registration` — players can now register/self-unregister for a tournament directly (web and, same week, via a Telegram button), instead of staff doing it manually.
+- `/cartecercate` (wanted-cards) gains pagination and owner-only manage actions in the bot, mirroring the web-side ownership change in ADR-033.
+
+## 2026-08-30 – 2026-09-01
+
+- `feat(ui): ✨ extract YearRangePicker, roll out year filter to 6 pages` and `feat(list-pages): ✨ default DateRangePicker to next-year instead of all-time` (30/08) — consistent date filtering across list pages.
+- `feat(tournaments): ✨ default round count by format (Pauper/Premodern/Draft: 4)` and `extend Swiss round-count table past 64 players`.
+- `feat(dev): ✨ add dev-only test-login endpoint for browser automation` (2026-09-01) — see `docs/architecture/api.md`'s "Other routes" table; 404s outside dev, lets automated browser testing reach authenticated routes without a real magic-link round trip.
+
+## 2026-08-24 – 2026-08-29 — `/finance` dashboard, trash retention, permissions overhaul
+
+- `feat(finance): ✨ add /finance dashboard` with Contanti/Pos/Paypal breakdowns and a scalable "Riepilogo per categoria" — see ADR-031 in `PROGRESS.md` for why the aggregations are client-side, not Supabase views.
+- Trash retention countdown + permanent purge shipped (`feat(trash): ✨ 60-day retention countdown, permanent purge, AssociateTag`) — see ADR-028 for the `pg_cron`/`trash_retention_days` design.
+- `admin` promoted to "every power except permanent deletion" and role-assignment locked down (`feat(permissions): ⬆️ admin gains every power except permanent deletion`, `feat(roles): 🔒️ admin can assign roles but never touch super_admin`) — see ADR-029/ADR-030.
+- Transactions kept growing: search bar, "Da sistemare" tab flagging real data gaps, "Comped"/"Token Purchase" payment types, bulk payment-type change, calendar-year presets.
+- `feat(tournaments): ✨ add useCommanderPods, ported from MagicTheGathering/league` / `add useDraftPods for Draft format pod-size distribution` — the first Commander/Draft pod-formation logic to land in `app`, ahead of the full pairing engine (see 2026-09-14/15 above).
+
+## 2026-08-22 – 2026-08-23 — Events built out end-to-end; soft delete everywhere
+
+- `/events` went from mock data to a full domain in a few days: Google Calendar-style day schedule with click-to-create, edit/bulk-actions, image picker, real detail page with a tournament-activity heatmap.
+- Soft delete rolled out to every remaining hard-delete endpoint, plus a cross-domain `/trash` page with admin-only restore — see ADR-017/ADR-025/ADR-026/ADR-027 for the design and its `locations`/`deleted_by` extensions.
+- `feat(locations): ✨ add /locations management page` — new CRUD domain.
+- Per-card grid loading skeletons rolled out across tournaments/leagues/locations, replacing spinners.
+
+## 2026-08-17 – 2026-08-20 — Role/permission system; leagues & tournaments CRUD; search everywhere
+
+- The full role-based authorization roadmap landed as a numbered series of commits (steps 3–12): `app_role` enum recreated with `super_admin`, `assign_role` RPC, `ROLE_LEVEL`/`PERMISSION_LEVEL`/`can()`, `useUserRole` composable, cache-invalidation plugin, `PageMeta.permission`, auth middleware + `/403` page, and sidebar nav gated by permission — see `docs/architecture/roles.md`/`permissions.md` for the resulting model (this multi-day build predates and underlies ADR-015 onward, no single ADR covers it).
+- Leagues gained full CRUD (edit/delete/selection/bulk actions), a cover image that cascades to its tournaments (ADR-018), and dates derived from its own tournaments instead of being editable (ADR-019); `mtg-formats` gained a management modal and DB-backed colors (ADR-016).
+- `feat(players): ✨ track login history and add player detail page` — see ADR-022 for the `auth.audit_log_entries` trigger design.
+- Search-with-match-highlighting rolled out to associates/players/standings, backed by new shared `HighlightMatch`/`SearchInput` components; new detail pages for leagues/locations/events, each with a tournament-activity heatmap.
+
+## 2026-08-13 – 2026-08-16 — Transactions built end-to-end; public standings/subdomains; guided tours
+
+- `feat(transactions): ✨ build out the transactions feature end-to-end` plus associate edit/renew/bulk-reject workflows and a generalized `ConfirmModal` — the transactions domain's first real version.
+- Four rankings (cittadino/commander/premodern/pauper) published on public, unauthenticated subdomains — see ADR-011 in `PROGRESS.md` for the full history of corrections on which routes are actually public vs. behind login, and the eventual cross-domain-redirect fix for an h3/Nitro path-mutation bug.
+- `feat(db): 🗃️ schema for events/tournaments/leagues, seed the Hobbit Draft` and `feat(competitions): ✨ migrate events/tournaments/leagues off mock data` — these three domains move onto real Supabase tables.
+- `feat(tours): ✨ add guided-tour infrastructure` + tours added to every dashboard page.
+
+## 2026-08-09 – 2026-08-12
+
+- Standings/rankings UI explored as mockups before the real DB migration above: Cittadino ranking + per-format standings, a Commander participation-point rule (see ADR-012 for the tiebreak criterion decided the same window).
+- `feat(settings): ✨ replace Notifiche with a live permissions matrix page` and `feat(notifications): ✨ add reusable bell button, redesign the notifications panel` — the bell/slideover UI landed here, still backed by mock data (see ADR-021 in `PROGRESS.md`, proposed later, for why it hasn't moved to real persisted events yet).
+- `feat(tesseramento): ✨ public membership application form` and `feat(inputs): ✨ international phone number input` — the public membership-signup flow.
+- `feat(shortcuts): ✨ g-x navigation chords, press-g hints, keyboard tour` — see `docs/architecture/shortcuts.md`.
+
 ## 2026-08-08
 
 ### `refactor(associates): ♻️ extract useCurrentAssociate from the wanted-cards filters`

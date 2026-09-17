@@ -170,4 +170,4 @@ Same route for staff and players, `v-if` inside it:
 
 ## Wider roadmap (context, not scoped now)
 
-Future player-area shape, not yet scoped or estimated: tournament pre-registration, commander deck submission, payment/membership-renewal history, event participation stats. To be broken down into `docs/BACKLOG.md`/`docs/TODO.md` items individually as each is actually picked up.
+Future player-area shape, not yet scoped or estimated: commander deck submission, payment/membership-renewal history, event participation stats. To be broken down into [GitHub Issues](https://github.com/orgs/Pauperwave/projects/2) individually as each is actually picked up.
