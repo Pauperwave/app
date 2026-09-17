@@ -120,10 +120,11 @@ const tableContextMenuItems = computed<DropdownMenuItem[]>(() =>
 const selectedTournaments = computed(() =>
   filteredTournaments.value.filter(tournament => selection.isSelected(tournament.id)))
 
-const viewMode = ref<'table' | 'grid'>('grid')
+const viewMode = ref<'table' | 'dense' | 'grid'>('grid')
 const viewModeItems = computed<TabsItem[]>(() => [
-  { label: t('tournament.views.grid'), value: 'grid', icon: ICONS.grid },
-  { label: t('tournament.views.table'), value: 'table', icon: ICONS.table }
+  { label: t('tournament.views.table'), value: 'table', icon: ICONS.table },
+  { label: t('tournament.views.dense'), value: 'dense', icon: ICONS.gridDense },
+  { label: t('tournament.views.grid'), value: 'grid', icon: ICONS.grid }
 ])
 
 const sorting = ref([{ id: 'startDate', desc: false }])
@@ -320,12 +321,21 @@ const bulkConfirmTitle = computed(() => {
           </UContextMenu>
         </template>
 
-        <!-- Grid mode's own loading state lives in GridView.vue/Card.vue
+        <!-- Grid/dense modes' own loading state lives in Card.vue/DenseCard.vue
              now (2026-08-22) — no separate ListSkeleton grid variant, see
              their own comments for why. :loading is isPending, not isLoading
              (2026-08-22) — same fix as the table view above: a background
              refresh keeps the real cards, only a genuine first load shows
              the skeleton grid. -->
+        <TournamentsListDenseView
+          v-else-if="viewMode === 'dense'"
+          :tournaments="filteredTournaments"
+          :context-menu-items="tournamentContextMenuItems"
+          :selection="selection"
+          :loading="isPending"
+          :loading-count="skeletonCount"
+        />
+
         <TournamentsListGridView
           v-else
           :tournaments="filteredTournaments"
