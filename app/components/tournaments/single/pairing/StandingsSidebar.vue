@@ -45,53 +45,55 @@ async function handleCopyStandings() {
     class="bg-linear-to-b from-primary/10 to-transparent rounded-xl p-3 border-2 border-primary/30 shadow-lg"
     :class="isFullscreen ? 'h-screen w-screen overflow-auto bg-default flex flex-col' : ''"
   >
-    <div class="flex items-center justify-end gap-1 mb-1">
-      <UTooltip :text="t('tournament.single.roundManager.standingsCopyTooltip')">
-        <UButton
-          :icon="ICONS.copy"
-          color="neutral"
-          variant="ghost"
-          size="xs"
-          :aria-label="t('tournament.single.roundManager.standingsCopyTooltip')"
-          @click="handleCopyStandings"
-        />
-      </UTooltip>
-      <UTooltip
-        :text="isFullscreen
-          ? t('tournament.single.roundManager.standingsExitFullscreenTooltip')
-          : t('tournament.single.roundManager.standingsFullscreenTooltip')"
-      >
-        <UButton
-          :icon="isFullscreen ? ICONS.collapse : ICONS.expand"
-          color="neutral"
-          variant="ghost"
-          size="xs"
-          :aria-label="isFullscreen
-            ? t('tournament.single.roundManager.standingsExitFullscreenTooltip')
-            : t('tournament.single.roundManager.standingsFullscreenTooltip')"
-          @click="toggleFullscreen"
-        />
-      </UTooltip>
-    </div>
-
     <UCollapsible v-model:open="isOpen">
-      <button type="button" class="flex items-center justify-center gap-1.5 mb-2 w-full cursor-pointer">
-        <UIcon
-          :name="ICONS.standings"
-          class="text-primary"
-          :class="isFullscreen ? 'size-8' : 'size-4'"
-        />
-        <h4 class="font-bold text-primary" :class="isFullscreen ? 'text-3xl' : 'text-base'">
-          {{ isEnded
-            ? t('tournament.single.roundManager.standingsFinal')
-            : t('tournament.single.roundManager.standingsPartial') }}
-        </h4>
-        <UIcon
-          :name="ICONS.chevronDown"
-          class="size-3.5 text-primary transition-transform"
-          :class="isOpen ? '' : '-rotate-90'"
-        />
-      </button>
+      <div class="flex items-center justify-between gap-2 mb-2">
+        <button type="button" class="flex items-center gap-1.5 min-w-0 cursor-pointer">
+          <UIcon
+            :name="ICONS.standings"
+            class="text-primary shrink-0"
+            :class="isFullscreen ? 'size-8' : 'size-4'"
+          />
+          <h4 class="font-bold text-primary truncate" :class="isFullscreen ? 'text-3xl' : 'text-base'">
+            {{ isEnded
+              ? t('tournament.single.roundManager.standingsFinal')
+              : t('tournament.single.roundManager.standingsPartial') }}
+          </h4>
+          <UIcon
+            :name="ICONS.chevronDown"
+            class="size-3.5 text-primary transition-transform shrink-0"
+            :class="isOpen ? '' : '-rotate-90'"
+          />
+        </button>
+
+        <div class="flex items-center gap-1 shrink-0">
+          <UTooltip :text="t('tournament.single.roundManager.standingsCopyTooltip')">
+            <UButton
+              :icon="ICONS.copy"
+              color="neutral"
+              variant="ghost"
+              size="xs"
+              :aria-label="t('tournament.single.roundManager.standingsCopyTooltip')"
+              @click.stop="handleCopyStandings"
+            />
+          </UTooltip>
+          <UTooltip
+            :text="isFullscreen
+              ? t('tournament.single.roundManager.standingsExitFullscreenTooltip')
+              : t('tournament.single.roundManager.standingsFullscreenTooltip')"
+          >
+            <UButton
+              :icon="isFullscreen ? ICONS.collapse : ICONS.expand"
+              color="neutral"
+              variant="ghost"
+              size="xs"
+              :aria-label="isFullscreen
+                ? t('tournament.single.roundManager.standingsExitFullscreenTooltip')
+                : t('tournament.single.roundManager.standingsFullscreenTooltip')"
+              @click.stop="toggleFullscreen"
+            />
+          </UTooltip>
+        </div>
+      </div>
 
       <template #content>
         <div v-if="standings.length > 0" class="space-y-1">

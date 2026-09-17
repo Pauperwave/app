@@ -103,6 +103,8 @@ function confirm() {
               :group="{ name: 'pods', pull: true, put: true }"
               handle=".drag-handle"
               :animation="180"
+              ghost-class="!opacity-0"
+              chosen-class="scale-95"
               @update:model-value="
                 (value: AcceptancePickerItem[]) => podAssignments[podIndex] = value
               "
