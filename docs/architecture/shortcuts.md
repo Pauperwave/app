@@ -6,6 +6,8 @@ All shortcuts are registered via Nuxt UI's `defineShortcuts`. Two separate call 
 
 - `app/composables/useDashboard.ts` — navigation (`g-x` chords) and the one global toggle that doesn't need the sidebar's own state (`n`).
 - `app/layouts/default.vue` — `b`, the one shortcut that needs the sidebar's `collapsed` state directly (see "Sidebar collapse" below).
+- `app/components/tournaments/single/CommanderRoundManager.vue` — `f-t`, toggles the tables fullscreen view (state lives in that component's own `useFullscreen`).
+- `app/components/tournaments/single/pairing/RoundTimer.vue` — `f-c`, toggles the countdown timer's own fullscreen view (same reasoning, separate `useFullscreen` instance).
 
 ## Navigation (`g-x` chords)
 
@@ -47,6 +49,10 @@ Pressing "g" shows a muted `g x` `UKbd` pair next to each nav item's label, and 
 
 Note this can outlive `defineShortcuts`' own 800ms chain window: if nothing else is pressed, the hint keeps showing even after the chord opportunity has technically expired. Accepted tradeoff — the hint is a reminder of the mapping, not a strict "chord is live" indicator, and re-pressing "g" always re-opens a fresh chain regardless.
 
+### "Press f" hint
+
+Same mechanism as the "g" hint above, extracted into a shared composable (`app/composables/useChordHintKey.ts`) since `CommanderRoundManager.vue` and `RoundTimer.vue` both need the identical listener for their own `f-t`/`f-c` chords — unlike the "g" hint, which stays inlined in `default.vue` since its logic is bound up with the shortcuts tour and `NAV_SHORTCUTS`, not identical to a plain "did they press this key" check. Each component calls `useChordHintKey('f')` itself and renders its own `f t`/`f c` `UKbd` pair next to its own fullscreen button — no shared UI, just the shared keydown-detection logic.
+
 ## Global actions (bare single letters)
 
 Deliberately not part of the `g-x` navigation set — these aren't "go to a place," they're "do a thing right here," so a chord would just add friction for no safety benefit (there's nothing to accidentally navigate away from).
@@ -56,8 +62,12 @@ Deliberately not part of the `g-x` navigation set — these aren't "go to a plac
 | `n` | Toggle the notifications slideover | `useDashboard.ts` |
 | `b` | Toggle sidebar collapsed/expanded | `default.vue` (see below) |
 | `h` | Start/restart the current page's guided tour | `TourGuide.vue` (see below) |
+| `f` `t` | Toggle the round's tables fullscreen view | `CommanderRoundManager.vue` |
+| `f` `c` | Toggle the round timer's own fullscreen view | `RoundTimer.vue` |
 
 `defineShortcuts` treats a bare `h` and any two-key chord starting with `g` as distinct bindings regardless — the same way bare `n` already coexists with `g-n` (Transazioni) — so bare `h` was never actually at risk of colliding with the now-removed `g-h` chord.
+
+`f` is now a second chord prefix (`f-t`/`f-c`, fullscreen toggles), so the same key-repeat caveat as `g-g` applies: `f-f` must stay permanently unassignable for the same reason — don't map anything there later.
 
 There used to be a `t` shortcut for the light/dark theme toggle, removed 2026-08-11. It also would have needed to bypass `LayoutColorModeSwitch.vue`'s own click handler (`useThemeTransition().toggleTheme` takes a `MouseEvent` to anchor its circular reveal animation at the click position, which a keyboard press doesn't have), so nothing else was affected by dropping it.
 
