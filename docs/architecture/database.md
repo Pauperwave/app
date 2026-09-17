@@ -6,13 +6,13 @@ Supabase Postgres project `app` (`uggrolzdntoamclgnzrt`), 31 tables in the `publ
 
 ## Membership status model
 
-Three layers, kept intentionally separate rather than collapsed into one status column (a prior version had exactly that bug — see `docs/TODO.md`'s RLS item and the `membership_request_status`/`request_status` fix in git history):
+Three layers, kept intentionally separate rather than collapsed into one status column (a prior version had exactly that bug — see the `membership_request_status`/`request_status` fix in git history):
 
 1. **Request status** (`pauperwave_associates.membership_request_status`) — one-shot outcome of the membership application: `approved` / `pending` / `rejected`.
 2. **Renewal ledger** (`pauperwave_associate_renewals`) — append-only, one row per associate per `renewal_year`. Source of truth for whether someone is currently tesserato.
 3. **Computed membership status** (`pauperwave_associates_with_status.membership_status`) — never stored, derived at query time by comparing the latest `renewal_year` to the current calendar year (calendar-year renewal cycle, not per-associate anniversary). Falls back to the request status for `pending`/`rejected` associates.
 
-The view uses `security_invoker = true`, so its join to `pauperwave_associate_renewals` is filtered by the *querying user's* RLS, not a superuser's — see the open verification item in `docs/TODO.md`.
+The view uses `security_invoker = true`, so its join to `pauperwave_associate_renewals` is filtered by the *querying user's* RLS, not a superuser's.
 
 ## Associate vs. player vs. app role
 
@@ -35,11 +35,10 @@ An `admin` (elevated authorization) is very likely *also* a `players` row (they 
 
 **Open question, not verified: does every associate get a `players` row, or only those who actually compete?** No migration in this repo's tracked history creates `players` rows (same pre-existing-schema situation as `user_roles`, adopted retroactively — see "Migrations" above), and no application code in `app/`/`server/` inserts into `players` either — nothing auto-provisions one on associate approval or on first login, as far as this codebase shows. Needs a live-data check (row counts, or associates with no matching `players.associate_uuid`) before assuming either "every associate has one" or "only competitors do."
 
-## RLS policies (as of 2026-08-05, wanted_cards row added 2026-08-08)
+## RLS policies (as of 2026-08-05, wanted_cards row added 2026-08-08, catch-all associates policy dropped 2026-08-22)
 
 | Table | Policy | Role | Effect |
 |---|---|---|---|
-| `pauperwave_associates` | `"Only auth users can do things"` | `authenticated` | `FOR ALL`, `USING (true)` — any logged-in user has full read/write on every associate row. Flagged as **P1 in `docs/BACKLOG.md`**: overly permissive, overrides the narrower policies below since Postgres RLS policies are OR'd. |
 | `pauperwave_associates` | `management_full_access` | `public` | `has_management_permissions(auth.uid())` |
 | `pauperwave_associates` | `player_own_associate` | `public` | `SELECT` only, own record via `players.user_id` |
 | `pauperwave_associate_renewals` | `management_full_access` | `public` | `has_management_permissions(auth.uid())` |
@@ -93,9 +92,7 @@ An `admin` (elevated authorization) is very likely *also* a `players` row (they 
 
 ## `created_by`/`updated_by` audit columns
 
-Present on 6 tables (`pauperwave_associates`, `pauperwave_wanted_cards`, `pauperwave_associate_geocodes`, `pauperwave_associate_renewals`, `pauperwave_payments`, `user_roles`), but until 2026-08-08 **none of them were ever populated** — no trigger, no application code wrote them (confirmed: 0/47 `pauperwave_wanted_cards` rows had either set). Populated now for `pauperwave_wanted_cards` only, via `server/utils/auditColumns.ts` (generic, reusable) called from its BFF endpoints — see ADR-008 in `docs/PROGRESS.md`. The other 5 tables are backlog (`docs/BACKLOG.md`), each needing its own decision on whether `created_by`/`updated_by` should reference `auth.users(id)` (as they do today) or get retargeted to `pauperwave_associates(uuid)` like `wanted_cards` did, depending on whether/how the value is shown in UI.
-
-See `docs/TODO.md` for open items (RLS/permissions verification for the renewals view, full table audit).
+Present on 6 tables (`pauperwave_associates`, `pauperwave_wanted_cards`, `pauperwave_associate_geocodes`, `pauperwave_associate_renewals`, `pauperwave_payments`, `user_roles`), but until 2026-08-08 **none of them were ever populated** — no trigger, no application code wrote them (confirmed: 0/47 `pauperwave_wanted_cards` rows had either set). Populated now for `pauperwave_wanted_cards` only, via `server/utils/auditColumns.ts` (generic, reusable) called from its BFF endpoints — see ADR-008 in `docs/PROGRESS.md`. `pauperwave_associates` and `user_roles` also got the pattern (see the `finish_audit_trail_pattern`/`payments_audit_columns` migrations below); any table still missing it needs its own decision on whether `created_by`/`updated_by` should reference `auth.users(id)` or `pauperwave_associates(uuid)` like `wanted_cards` did, depending on whether/how the value is shown in UI.
 
 ## Migrations
 
