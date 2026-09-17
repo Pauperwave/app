@@ -1074,6 +1074,8 @@
     "openPublicLink": "Apri il calendario pubblico",
     "calendarAllCities": "Tutte",
     "calendarToday": "Oggi",
+    "calendarShowExternal": "Mostra tornei esterni",
+    "calendarHideExternal": "Nascondi tornei esterni",
     "calendarTour": {
       "startButton": "Tour guidato",
       "steps": {
@@ -1331,6 +1333,7 @@
     },
     "views": {
       "table": "Tabella",
+      "dense": "Compatta",
       "grid": "Griglia"
     },
     "grid": {
@@ -1416,6 +1419,8 @@
       "roundPending": "In attesa",
       "awards": "Premi",
       "awardsDescription": "In attesa",
+      "prizes": "Distribuzione premi",
+      "prizesDescription": "Suggerimento buste",
       "leaderboard": "Classifica",
       "leaderboardDescription": "Disponibile a fine torneo"
     },
@@ -1651,7 +1656,48 @@
       "resetConfirmTitle": "Resettare il torneo?",
       "resetConfirmDescription": "Tutti i round, i tavoli, i risultati e la classifica verranno eliminati e il torneo tornerà in iscrizioni aperte.",
       "resetConfirmWarning": "Questa azione non può essere annullata.",
-      "awardsPlaceholder": "Componente premi che mostrerà la classifica finale",
+      "awards": {
+        "sectionTitle": "Premi Torneo",
+        "victim": {
+          "title": "La Vittima",
+          "stat": "Eliminato {count} volta | Eliminato {count} volte"
+        },
+        "killer": {
+          "title": "Il Carnefice",
+          "stat": "{count} uccisione | {count} uccisioni"
+        },
+        "brewer": {
+          "title": "Master Brewer",
+          "stat": "{count} PT Brew"
+        },
+        "player": {
+          "title": "Il Player",
+          "stat": "{count} voto Play | {count} voti Play"
+        }
+      },
+      "prizeDistribution": {
+        "sectionTitle": "Distribuzione buste",
+        "notPersistedNoticeTitle": "Non salvata",
+        "notPersistedNotice": "Questa distribuzione è solo un suggerimento a schermo: non viene salvata. Se ricarichi la pagina o lasci lo step, si azzera.",
+        "totalPacks": "Buste totali disponibili",
+        "minPacksPerPlayer": "Minimo garantito a giocatore",
+        "shapeHeading": "Forma della distribuzione",
+        "presets": {
+          "flat": "Equa",
+          "balanced": "Bilanciata",
+          "competitive": "Competitiva",
+          "reset": "Reset",
+          "custom": "Personalizzato"
+        },
+        "weightLabels": {
+          "decay": "Decadimento per piazzamento",
+          "topCutoff": "Piazzamenti premiati"
+        },
+        "suggested": "{count} suggerite",
+        "insufficientPacksTitle": "Buste insufficienti",
+        "insufficientPacksDescription": "Il minimo garantito da solo richiede {allocated} buste, ne hai impostate {total}: aumenta il totale o riduci il minimo per giocatore.",
+        "chartTooltip": "#{rank} {label}: {packs} busta | #{rank} {label}: {packs} buste"
+      },
       "leaderboardTitle": "Classifica torneo specifico",
       "participantsPlaceholder": "Partecipanti all'evento",
       "roundManager": {
@@ -1660,11 +1706,33 @@
         "advanceButton": "Prossimo round",
         "advanceRoundErrorTitle": "Impossibile avanzare al round successivo",
         "turnBackButton": "Torna al round precedente",
+        "turnBackToRegistrationButton": "Torna alle iscrizioni",
         "turnBackRoundErrorTitle": "Impossibile tornare al round precedente",
+        "timerExpiredTitle": "Tempo scaduto!",
+        "timerExpiredDescription": "Il tempo del round {round} è terminato",
         "endTournamentButton": "Termina torneo",
         "drawButton": "Pareggio",
         "killsButton": "Uccisioni",
         "rankingButton": "Classifica",
+        "rankingSetTooltip": "Classifica inserita",
+        "rankingNotSetTooltip": "Inserisci classifica",
+        "killsSetTooltip": "Uccisioni registrate",
+        "killsNotSetTooltip": "Inserisci uccisioni",
+        "commanderSetTooltip": "Commander inserito",
+        "commanderNotSetTooltip": "Inserisci comandante",
+        "voteSetTooltip": "Voto inserito",
+        "voteNotSetTooltip": "Inserisci voto",
+        "drawnTooltip": "Patta registrata",
+        "drawUndoTooltip": "Patta registrata — clicca per annullarla",
+        "drawDisabledTooltip": "Resetta il tavolo prima di dichiarare una patta",
+        "drawHint": "Segna zero uccisioni e classifica tutti i giocatori del tavolo a pari primo posto",
+        "drawConfirmTitle": "Conferma Patta",
+        "drawConfirmDescription": "Stai per segnare zero uccisioni e classificare tutti i giocatori del tavolo a pari primo posto",
+        "drawConfirmWarning": "Questa azione sovrascriverà uccisioni e classifica già inserite per questo tavolo.",
+        "undrawConfirmTitle": "Annulla Patta",
+        "undrawConfirmDescription": "Stai per annullare la patta e cancellare uccisioni e classifica di questo tavolo",
+        "undrawConfirmLabel": "Annulla Patta",
+        "undrawErrorTitle": "Impossibile annullare la patta",
         "tableHeading": "Tavolo {n}",
         "tableComplete": "Completo",
         "tableIncomplete": "In corso",
@@ -1679,7 +1747,83 @@
         "standingsExitFullscreenTooltip": "Esci da schermo intero",
         "votesAriaLabel": "Vota {name}",
         "commanderAriaLabel": "Comandante di {name}",
-        "versusSeparator": "vs"
+        "versusSeparator": "vs",
+        "tablesHeading": "Tavoli",
+        "fullscreenTooltip": "Schermo intero",
+        "exitFullscreenTooltip": "Esci da schermo intero",
+        "scoresButtonLabel": "Punteggi",
+        "scoresModalTitle": "Punteggi tavolo {n}",
+        "scoresModalEmpty": "Nessun risultato inserito per questo tavolo",
+        "scoresModalPlayerColumn": "Giocatore",
+        "resetTableTooltip": "Resetta tavolo",
+        "resetTableErrorTitle": "Impossibile resettare il tavolo",
+        "resetConfirmTitle": "Resettare il tavolo?",
+        "resetConfirmDescription": "Classifica, uccisioni e voti verranno eliminati per",
+        "resetConfirmWarning": "Questa azione non può essere annullata.",
+        "quickFillTooltip": "Compila con dati di test",
+        "quickFillConfirmTitle": "Compilare il tavolo con dati di test?",
+        "quickFillConfirmDescription": "Classifica, un'uccisione, comandante e voti fittizi verranno impostati per",
+        "quickFillConfirmWarning": "Sovrascrive eventuali dati già inseriti per questo tavolo.",
+        "quickFillAllTooltip": "Compila tutti i tavoli",
+        "quickFillAllConfirmTitle": "Compilare tutti i tavoli con dati di test?",
+        "quickFillAllConfirmDescription": "Ogni tavolo di questo round verrà compilato con dati fittizi.",
+        "roundStatus": {
+          "title": "Stato inserimento",
+          "searchPlaceholder": "Cerca per nome o tavolo",
+          "filterAll": "Tutti",
+          "filterPending": "Da fare",
+          "filterDone": "Fatto",
+          "sections": {
+            "rankings": "Classifiche",
+            "kills": "Uccisioni",
+            "commanders": "Comandanti",
+            "votes": "Voti"
+          }
+        }
+      },
+      "roundTimer": {
+        "expiredTooltip": "Timer scaduto",
+        "startTooltip": "Avvia timer",
+        "pauseTooltip": "Pausa timer",
+        "resetTooltip": "Resetta timer",
+        "skipPreTooltip": "Salta al round",
+        "forceEndTooltip": "Termina partita",
+        "add5Tooltip": "Aggiungi 5 minuti",
+        "add10Tooltip": "Aggiungi 10 minuti",
+        "subtract5Tooltip": "Togli 5 minuti",
+        "subtract10Tooltip": "Togli 10 minuti",
+        "fullscreenTooltip": "Schermo intero",
+        "exitFullscreenTooltip": "Esci da schermo intero",
+        "resetConfirm": {
+          "title": "Conferma Reset",
+          "description": "Stai per resettare il timer del round",
+          "question": "Sei sicuro di voler resettare il timer",
+          "confirmLabel": "Reset"
+        },
+        "subtractExpireConfirm": {
+          "title": "Il timer scadrà",
+          "description": "Stai per togliere tempo al round",
+          "question": "Questa sottrazione farà scadere subito il timer, continuare",
+          "confirmLabel": "Sottrai"
+        },
+        "skipPreConfirm": {
+          "title": "Salta preparazione",
+          "description": "Stai per saltare i minuti rimanenti di preparazione e avviare subito il round",
+          "question": "Sei sicuro di voler saltare alla fase di gioco",
+          "confirmLabel": "Salta"
+        },
+        "forceEndConfirm": {
+          "title": "Termina partita",
+          "description": "Stai per terminare subito i turni e passare a fine partita",
+          "question": "Sei sicuro di voler terminare la partita ora",
+          "confirmLabel": "Termina"
+        },
+        "phases": {
+          "pre": "SISTEMATEVI",
+          "round": "GIOCO",
+          "turns": "TURNI",
+          "ended": "FINE PARTITA"
+        }
       },
       "roundResultsPlaceholder": "Risultati del singolo evento",
       "roundResultAddModal": {
@@ -1691,14 +1835,17 @@
         "handedOutAriaLabel": "Premio consegnato a {name}"
       },
       "scoreGrid": {
-        "title": "Inserisci classifica tavolo",
-        "description": "Trascina i giocatori per ordinarli in base al piazzamento"
+        "title": "Inserisci classifica",
+        "tableDescription": "Tavolo {n}",
+        "instructions": "Trascina le chip dei giocatori per definire l'ordine di classifica (da sinistra a destra, dall'alto in basso)"
       },
       "commanderModal": {
         "title": "Seleziona comandante",
+        "label": "Comandante",
         "commanderPlaceholder": "Cerca comandante...",
         "partnerPlaceholder": "Cerca secondo comandante...",
         "partnerTypes": {
+          "commander2Unavailable": "Comandante 2 (non disponibile)",
           "partner": "Partner",
           "partnerWith": "Partner con",
           "background": "Background",
@@ -1710,14 +1857,31 @@
         "compatibleCards": "{count} carta compatibile | {count} carte compatibili",
         "errorTitle": "Impossibile salvare il comandante",
         "syncCatalogButton": "Aggiorna elenco carte",
+        "syncingCatalog": "Aggiornamento in corso...",
         "syncSuccessWithNew": "Catalogo aggiornato: {count} nuova carta | Catalogo aggiornato: {count} nuove carte",
         "syncSuccessNoNew": "Catalogo già aggiornato, nessuna nuova carta",
-        "syncErrorTitle": "Impossibile aggiornare il catalogo"
+        "syncErrorTitle": "Impossibile aggiornare il catalogo",
+        "search": {
+          "recentlyUsedGroup": "Mazzi già giocati",
+          "allCommandersGroup": "Tutti i comandanti"
+        },
+        "voteCard": {
+          "assignCommander": "Assegna comandante"
+        },
+        "artAlt": "Immagine di {name}",
+        "syncCatalogConfirm": {
+          "title": "Aggiornare l'elenco carte?",
+          "description": "Controlla su Scryfall se sono uscite nuove carte utilizzabili come comandante e le aggiunge al database, poi ricarica l'elenco.",
+          "question": "Vuoi procedere con l'aggiornamento",
+          "warning": "Potrebbe richiedere qualche secondo ed è utile solo se mancano carte uscite di recente — nell'uso normale non serve premerlo.",
+          "confirmLabel": "Aggiorna"
+        }
       },
       "votesModal": {
         "title": "Voti",
         "brewLabel": "Miglior mazzo",
-        "playLabel": "Miglior giocata"
+        "playLabel": "Miglior giocata",
+        "weightBadge": "+{weight} punti"
       },
       "killTracker": {
         "title": "Tracciamento uccisioni",
@@ -1728,7 +1892,16 @@
         "unlock": "Sblocca",
         "zoomIn": "Aumenta zoom",
         "zoomOut": "Riduci zoom",
-        "fitView": "Adatta alla vista"
+        "fitView": "Adatta alla vista",
+        "registeredKillsLabel": "Uccisioni registrate:",
+        "noKills": "Nessuna uccisione registrata. Trascina tra i giocatori per aggiungerne.",
+        "resetButton": "Azzera",
+        "removeKillAriaLabel": "Rimuovi questa uccisione",
+        "playerFallback": "#{uuid}",
+        "invalidTitle": "Non valido",
+        "killRemovedTitle": "Uccisione rimossa",
+        "alreadyRegistered": "Uccisione già registrata",
+        "victimAlreadyKilled": "La vittima ha già ucciso questo giocatore"
       }
     }
   },
@@ -1873,6 +2046,13 @@
         "info": "Informazioni"
       }
     },
+    "stats": {
+      "matches": "Partite",
+      "wins": "Vittorie",
+      "kills": "Uccisioni",
+      "average": "Media"
+    },
+    "fallbackName": "Giocatore",
     "commander": {
       "matchHistoryTitle": "Storico Partite",
       "matchHistoryEmpty": "Nessuna partita registrata",
@@ -1892,8 +2072,21 @@
         "companion": "Companion",
         "createdAt": "Creato il",
         "decklist": "Decklist",
-        "openDecklist": "Apri decklist"
-      }
+        "openDecklist": "Apri decklist",
+        "bracket": "Bracket",
+        "borrowed": "Prestito",
+        "actions": "Azioni"
+      },
+      "deckSaveError": "Impossibile salvare il mazzo",
+      "deckDeleteError": "Impossibile eliminare il mazzo"
+    },
+    "deckBracket": {
+      "chipUnset": "Imposta bracket",
+      "chipSet": "Bracket {level} · {name}",
+      "modalTitle": "Imposta bracket",
+      "modalSubtitle": "{deckName} — quanto è ottimizzato questo mazzo?",
+      "deckBuildingLabel": "Deck building",
+      "saveError": "Impossibile salvare il bracket"
     },
     "tour": {
       "startButton": "Tour guidato",
@@ -2087,8 +2280,73 @@
       "save": "Salva"
     }
   },
+  "deck": {
+    "breadcrumb": "Mazzi",
+    "fallbackName": "Mazzo sconosciuto",
+    "emptyList": "Nessun mazzo trovato",
+    "notFound": "Mazzo non trovato",
+    "sortOptions": {
+      "alphabetical": "Alfabetico",
+      "popularity": "Popolarità",
+      "frequency": "Frequenza",
+      "color": "Colore",
+      "manaCost": "Costo mana"
+    },
+    "statsPlayers": "Giocatori",
+    "statsMatches": "Partite",
+    "statsWins": "Vittorie",
+    "statsKills": "Uccisioni",
+    "viewOnScryfall": "Cerca su Scryfall",
+    "borrowedBadge": "Prestato da {name}",
+    "borrowedUnknownLender": "Prestato",
+    "addModal": {
+      "openButton": "Nuovo mazzo",
+      "title": "Nuovo mazzo",
+      "description": "Registra un nuovo mazzo Commander per questo giocatore.",
+      "fields": {
+        "commander1": "Comandante",
+        "commander2": "Comandante (partner)",
+        "companion": "Companion",
+        "decklistUrl": "Link decklist",
+        "isBorrowed": "Mazzo in prestito",
+        "lender": "Prestato da"
+      },
+      "cancel": "Annulla",
+      "create": "Crea mazzo",
+      "successToastTitle": "Mazzo creato",
+      "errorToastTitle": "Impossibile creare il mazzo"
+    },
+    "editModal": {
+      "title": "Modifica mazzo",
+      "description": "Aggiorna companion, decklist e prestito.",
+      "cancel": "Annulla",
+      "save": "Salva",
+      "successToastTitle": "Mazzo aggiornato",
+      "errorToastTitle": "Impossibile aggiornare il mazzo"
+    },
+    "deleteConfirm": {
+      "title": "Eliminare il mazzo?",
+      "description": "Questa azione non può essere annullata.",
+      "question": "Vuoi eliminare questo mazzo?",
+      "warning": "Un mazzo già utilizzato in un torneo non può essere eliminato.",
+      "successToastTitle": "Mazzo eliminato"
+    }
+  },
   "commander": {
-    "breadcrumb": "Comandanti"
+    "breadcrumb": "Comandanti",
+    "index": {
+      "nameColumn": "Comandante",
+      "searchPlaceholder": "Cerca comandante...",
+      "emptyList": "Nessun comandante trovato"
+    },
+    "page": {
+      "notFound": "Comandante non trovato",
+      "decksHeading": "Giocatori che lo hanno usato",
+      "partnerSuffix": "con {name}",
+      "winRateHeading": "Percentuale vittorie",
+      "chartWins": "Vittorie",
+      "chartOtherMatches": "Altre partite"
+    }
   },
   "ruleset": {
     "breadcrumb": "Regolamenti",
@@ -2098,7 +2356,39 @@
       "premodern": "Premodern",
       "pauper": "Pauper",
       "draft": "Draft",
-      "sealed": "Sealed"
+      "sealed": "Sealed",
+      "manage": "Gestione"
+    },
+    "actions": {
+      "kill": "Uccisione",
+      "brew": "Miglior mazzo",
+      "play": "Miglior giocata",
+      "participation": "Partecipazione"
+    },
+    "form": {
+      "nameLabel": "Nome",
+      "gameActionsHeading": "Punti per azione",
+      "positionsHeading": "Punti per piazzamento"
+    },
+    "manage": {
+      "title": "Gestione regolamenti",
+      "description": "Crea e modifica i regolamenti di punteggio usati dalle leghe.",
+      "addButton": "Nuovo regolamento",
+      "empty": "Nessun regolamento trovato",
+      "defaultBadge": "Predefinito",
+      "createTitle": "Nuovo regolamento",
+      "createDescription": "Definisci i punti per ogni azione e piazzamento.",
+      "editTitle": "Modifica regolamento",
+      "editDescription": "Aggiorna i punti per ogni azione e piazzamento.",
+      "create": "Crea",
+      "save": "Salva",
+      "cancel": "Annulla",
+      "saveError": "Impossibile salvare il regolamento",
+      "deleteError": "Impossibile eliminare il regolamento",
+      "deleteConfirmTitle": "Eliminare il regolamento?",
+      "deleteConfirmDescription": "Questa azione non può essere annullata.",
+      "deleteConfirmQuestion": "Vuoi eliminare questo regolamento?",
+      "deleteConfirmWarning": "Un regolamento assegnato a una lega non può essere eliminato."
     },
     "tour": {
       "startButton": "Tour guidato",
@@ -2701,6 +2991,33 @@
     "dismiss": "Rimuovi",
     "ignore": "Ignora",
     "accept": "Accetta"
+  },
+  "bracket": {
+    "level1": {
+      "name": "Esibizione",
+      "experience": "Datti alla pazza gioia con il tuo mazzo Commander ultra-casual!",
+      "deckBuilding": "Nessuna carta dalla lista Game Changers. Nessuna combo infinita intenzionale a due carte, nessuna mass land denial, nessuna carta a turno extra. I tutor dovrebbero essere scarsi."
+    },
+    "level2": {
+      "name": "Base",
+      "experience": "Il punto di riferimento più semplice è che un mazzo preconstruito medio attuale si colloca a livello Base (Bracket 2).",
+      "deckBuilding": "Nessuna carta dalla lista Game Changers. Nessuna combo infinita intenzionale a due carte o mass land denial. Le carte a turno extra dovrebbero comparire solo in piccole quantità e non sono pensate per essere incatenate in successione o loopate. I tutor dovrebbero essere scarsi."
+    },
+    "level3": {
+      "name": "Potenziato",
+      "experience": "Questi mazzi sono rinforzati e pronti a giocare oltre la forza di un mazzo preconstruito medio.",
+      "deckBuilding": "Fino a tre carte dalla lista Game Changers. Nessuna combo infinita intenzionale a due carte nelle fasi iniziali. Le carte a turno extra dovrebbero comparire solo in piccole quantità e non sono pensate per essere incatenate in successione o loopate. Nessuna mass land denial."
+    },
+    "level4": {
+      "name": "Ottimizzato",
+      "experience": "È tempo di scatenarsi!",
+      "deckBuilding": "Nessuna restrizione (a parte la banned list)."
+    },
+    "level5": {
+      "name": "cEDH",
+      "experience": "Alta potenza, con una mentalità molto competitiva e orientata al metagame.",
+      "deckBuilding": "Nessuna restrizione (a parte la banned list)."
+    }
   },
   "teamsMenu": {
     "createTeam": "Crea team",

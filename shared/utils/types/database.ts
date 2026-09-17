@@ -43,39 +43,62 @@ export type Database = {
       }
       commander_decks: {
         Row: {
+          bracket_level: number | null
           commander_1_name: string
           commander_2_name: string | null
           companion_name: string | null
           created_at: string
           decklist_url: string | null
           id: number
+          is_borrowed: boolean
+          lender_uuid: string | null
           player_uuid: string
           updated_at: string
           uuid: string
         }
         Insert: {
+          bracket_level?: number | null
           commander_1_name: string
           commander_2_name?: string | null
           companion_name?: string | null
           created_at?: string
           decklist_url?: string | null
           id?: number
+          is_borrowed?: boolean
+          lender_uuid?: string | null
           player_uuid: string
           updated_at?: string
           uuid?: string
         }
         Update: {
+          bracket_level?: number | null
           commander_1_name?: string
           commander_2_name?: string | null
           companion_name?: string | null
           created_at?: string
           decklist_url?: string | null
           id?: number
+          is_borrowed?: boolean
+          lender_uuid?: string | null
           player_uuid?: string
           updated_at?: string
           uuid?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "commander_decks_lender_uuid_fkey"
+            columns: ["lender_uuid"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "commander_decks_lender_uuid_fkey"
+            columns: ["lender_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_full"
+            referencedColumns: ["uuid"]
+          },
           {
             foreignKeyName: "fk_commander_decks_player"
             columns: ["player_uuid"]
@@ -2224,6 +2247,7 @@ export type Database = {
           registered_players: number | null
           round_count: number | null
           round_current: number | null
+          round_duration_minutes: number
           starts_at: string | null
           status: string
           updated_at: string
@@ -2255,6 +2279,7 @@ export type Database = {
           registered_players?: number | null
           round_count?: number | null
           round_current?: number | null
+          round_duration_minutes?: number
           starts_at?: string | null
           status: string
           updated_at?: string
@@ -2286,6 +2311,7 @@ export type Database = {
           registered_players?: number | null
           round_count?: number | null
           round_current?: number | null
+          round_duration_minutes?: number
           starts_at?: string | null
           status?: string
           updated_at?: string
@@ -2411,6 +2437,18 @@ export type Database = {
       }
     }
     Views: {
+      commander_stats: {
+        Row: {
+          average_score: number | null
+          commander_1_name: string | null
+          commander_2_name: string | null
+          match_count: number | null
+          player_count: number | null
+          total_kills: number | null
+          win_count: number | null
+        }
+        Relationships: []
+      }
       pauperwave_associates_with_status: {
         Row: {
           age: number | null
@@ -2650,6 +2688,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      reset_commander_pairing: {
+        Args: { p_pairing_uuid: string }
+        Returns: undefined
+      }
       reset_tournament: {
         Args: { p_tournament_uuid: string }
         Returns: undefined
@@ -2668,6 +2710,10 @@ export type Database = {
       }
       turn_back_swiss_round: {
         Args: { p_current_round_number: number; p_tournament_uuid: string }
+        Returns: undefined
+      }
+      undraw_commander_pairing: {
+        Args: { p_pairing_uuid: string }
         Returns: undefined
       }
       update_payment_with_renewal: {

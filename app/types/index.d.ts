@@ -231,6 +231,7 @@ export interface Tournament {
   startDate: string
   endDate: string | null
   roundCount: number | null
+  roundDurationMinutes: number
   registeredPlayers: number | null
   organizer: string | null
   // 'association' | 'shop' | 'other' (organizations.type, docs/supabase/2-database.md).
@@ -567,4 +568,15 @@ export interface PairingWeights {
   rotateTable3: number
   tableSize4: number
   tableSize3: number
+}
+
+// Booster-pack redistribution suggestion (Prizes.vue step) — totalPacks/
+// minPacksPerPlayer are resource inputs the organizer fills in by hand
+// (no "how many packs do we have" data exists anywhere), decay/topCutoff
+// are the distribution "shape" the preset buttons drive.
+export interface PrizeDistributionSettings {
+  totalPacks: number
+  minPacksPerPlayer: number
+  decay: number
+  topCutoff: number
 }
