@@ -6,7 +6,7 @@
 // tournament has no league or the league has no ruleset assigned. Previously
 // always read is_default unconditionally (a stub flagged in this file's own
 // prior comment and in advance_commander_round's migration).
-import type { RulesetPointValues } from './useCommanderScoring'
+import type { RulesetPointValues } from './pairing/useCommanderScoring'
 
 export function useRulesetPointsQuery(tournamentUuid: MaybeRefOrGetter<string>) {
   const supabase = useSupabaseClient()

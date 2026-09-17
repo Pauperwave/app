@@ -9,7 +9,7 @@
   app's uuid-keyed pairings/players instead of league's numeric ids.
 -->
 <script setup lang="ts">
-import type { TournamentPairing } from '~/composables/tournaments/useTournamentPairingsQuery'
+import type { TournamentPairing } from '~/composables/tournaments/pairing/useTournamentPairingsQuery'
 
 const { pairingsForRound, labelFor } = defineProps<{
   pairingsForRound: TournamentPairing[]

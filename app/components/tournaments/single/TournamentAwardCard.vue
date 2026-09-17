@@ -4,7 +4,7 @@
      player's own commander) — flavor illustrations for the award itself,
      so they don't change as standings do. -->
 <script setup lang="ts">
-import type { TournamentAwardKind } from '~/composables/tournaments/useTournamentAwards'
+import type { TournamentAwardKind } from '~/composables/tournaments/prizes/useTournamentAwards'
 
 const {
   kind, associateUuid, label, value

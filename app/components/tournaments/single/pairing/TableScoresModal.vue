@@ -19,7 +19,7 @@ import type { TablePlayer } from '~/types'
 import {
   calculatePlayerTableScore, buildPosValues,
   type CommanderTableResult, type RulesetPointValues
-} from '~/composables/tournaments/useCommanderScoring'
+} from '~/composables/tournaments/pairing/useCommanderScoring'
 import { AssociateTag } from '#components'
 
 const open = defineModel<boolean>('open', { default: false })

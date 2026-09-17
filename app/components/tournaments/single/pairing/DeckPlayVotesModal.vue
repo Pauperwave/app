@@ -10,7 +10,7 @@
 -->
 <script setup lang="ts">
 import type { TablePlayer } from '~/types'
-import type { RulesetPointValues } from '~/composables/tournaments/useCommanderScoring'
+import type { RulesetPointValues } from '~/composables/tournaments/pairing/useCommanderScoring'
 
 const props = defineProps<{
   brewVotePlayerUuid: string | null

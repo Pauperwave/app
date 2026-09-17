@@ -10,7 +10,7 @@
 -->
 <script setup lang="ts">
 import type { TablePlayer } from '~/types'
-import type { RulesetPointValues } from '~/composables/tournaments/useCommanderScoring'
+import type { RulesetPointValues } from '~/composables/tournaments/pairing/useCommanderScoring'
 import type DeckPlayVotesModal from '~/components/tournaments/single/pairing/DeckPlayVotesModal.vue'
 
 const open = defineModel<boolean>('open', { default: false })

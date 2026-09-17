@@ -7,7 +7,7 @@
 -->
 <script setup lang="ts">
 import type { Seat, PairingTable } from '~/types'
-import type { TableStatus } from '~/composables/tournaments/useTablePairingDnd'
+import type { TableStatus } from '~/composables/tournaments/pairing/useTablePairingDnd'
 import { VueDraggable } from 'vue-draggable-plus'
 
 const { t } = useI18n()

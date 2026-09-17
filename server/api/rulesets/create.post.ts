@@ -1,7 +1,7 @@
 // server\api\rulesets\create.post.ts
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
-import type { RulesetPointValues } from '~/composables/tournaments/useCommanderScoring'
+import type { RulesetPointValues } from '~/composables/tournaments/pairing/useCommanderScoring'
 
 interface CreateRulesetBody {
   name: string

@@ -7,7 +7,7 @@
   tournament has ended) rather than a separate standings+victimCounts pair.
 -->
 <script setup lang="ts">
-import type { LiveCommanderStanding } from '~/composables/tournaments/useLiveCommanderStandings'
+import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/useLiveCommanderStandings'
 
 const { standings } = defineProps<{
   standings: LiveCommanderStanding[]

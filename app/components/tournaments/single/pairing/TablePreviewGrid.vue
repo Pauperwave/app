@@ -5,7 +5,7 @@
 -->
 <script setup lang="ts">
 import type { Seat, PairingTable } from '~/types'
-import type { TableStatus } from '~/composables/tournaments/useTablePairingDnd'
+import type { TableStatus } from '~/composables/tournaments/pairing/useTablePairingDnd'
 
 const { tables } = defineProps<{
   tables: PairingTable[]
