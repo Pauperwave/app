@@ -1,6 +1,5 @@
 <!-- app\components\tournaments\single\AcceptancePicker.vue -->
 <script lang="ts" setup>
-import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Row } from '@tanstack/vue-table'
 
 interface Props {
@@ -157,75 +156,6 @@ function setNoShow(itemsToUpdate: AcceptancePickerItem[], noShow: boolean) {
 function toggleNoShow(item: AcceptancePickerItem) {
   setNoShow([item], sourceRowStatus(item) !== 'noShow')
 }
-
-// Right-clicking a row that's part of the current multi-selection acts on
-// the whole selection, not just that one row (user request, 2026-08-24: "the
-// contextual menu actions should work on every selected item") — same
-// "clicked row decides the target action, selection decides the scope"
-// convention for both tables' context menus below.
-function resolveContextMenuTargets<T extends AcceptancePickerItem>(
-  clicked: T, selection: T[]
-): T[] {
-  return selection.length > 1 && selection.some(selected => selected.value === clicked.value)
-    ? selection
-    : [clicked]
-}
-
-// Right-click context menu, "Pre-registrati" side (user request, 2026-08-24)
-// — same UContextMenu-wrapping-UTable + "row set on @contextmenu, items
-// computed from it" pattern as associates' useAssociatesRowActions.ts.
-// Mirrors the visible no-show toggle button; empty for an already-accepted
-// row (nothing left to do from this side, same as the button's own
-// `if (status === 'accepted') return null`).
-function sourceRowContextMenuItems(item: AcceptancePickerItem): DropdownMenuItem[] {
-  const status = sourceRowStatus(item)
-  if (status === 'accepted') return []
-
-  const targets = resolveContextMenuTargets(item, sourceSelection.value)
-  const markAsNoShow = status !== 'noShow'
-
-  return [
-    // Only for pending rows — a no-show shouldn't be silently accepted
-    // without first clearing that status (user request, 2026-08-24:
-    // "Aggiungi l'azione di 'Aggiunta agli iscritti'"), same single-item vs.
-    // whole-selection scope as the no-show action below.
-    ...(status === 'pending'
-      ? [{
-        label: targets.length > 1
-          ? t('tournament.single.acceptancePicker.addToAcceptedMenuLabelBulk', { count: targets.length })
-          : t('tournament.single.acceptancePicker.addToAcceptedMenuLabel'),
-        icon: ICONS.playerConfirmed,
-        onSelect: () => transferToAccepted(targets)
-      }, { type: 'separator' as const }]
-      : []),
-    {
-      label: targets.length > 1
-        ? t(
-          markAsNoShow
-            ? 'tournament.single.acceptancePicker.markNoShowMenuLabelBulk'
-            : 'tournament.single.acceptancePicker.unmarkNoShowMenuLabelBulk',
-          { count: targets.length }
-        )
-        : t(
-          markAsNoShow
-            ? 'tournament.single.acceptancePicker.markNoShowMenuLabel'
-            : 'tournament.single.acceptancePicker.unmarkNoShowMenuLabel'
-        ),
-      icon: ICONS.noShow,
-      onSelect: () => setNoShow(targets, markAsNoShow)
-    }
-  ]
-}
-
-const sourceContextMenuRow = ref<AcceptancePickerItem | null>(null)
-function onSourceRowContextmenu(_event: Event, row: { original: AcceptancePickerItem }) {
-  sourceContextMenuRow.value = row.original
-}
-const sourceTableContextMenuItems = computed<DropdownMenuItem[]>(
-  () => sourceContextMenuRow.value
-    ? sourceRowContextMenuItems(sourceContextMenuRow.value)
-    : []
-)
 
 // "Pre-registrati" as a table, not a UListbox — mirrors "Iscritti (Pagato)"'s
 // own table (select / # / time / player), plus its own no-show action (user
@@ -407,65 +337,24 @@ const {
   isMutating
 })
 
-// Right-click context menu, "Iscritti (Pagato)" side (user request,
-// 2026-08-24) — mirrors the visible payment-method buttons + remove button,
-// same UContextMenu pattern as the source table above. Real payment methods
-// stay single-row (see setPaymentMethod above); "Pagamento test" and remove
-// are both bulk-aware (resolveContextMenuTargets) — remove because it's
-// already one batched network call, "Pagamento test" because it never
-// touches the network at all (see toggleTestPaymentForTargets's own
-// comment).
-const { isDeveloperView } = useDeveloperView()
-
-function acceptedRowContextMenuItems(item: AcceptancePickerItem): DropdownMenuItem[] {
-  const method = paymentMethodByPlayer[item.value] ?? null
-  const targets = resolveContextMenuTargets(item, selectedAccepted.value)
-  const bulk = targets.length > 1
-
-  return [
-    ...paymentMethodOptions.map((option): DropdownMenuItem => {
-      const badge = PAYMENT_METHOD_BADGE_CONFIG[option]
-      const label = paymentMethodLabel(option)
-      return {
-        label,
-        icon: badge.icon,
-        color: method === option ? badge.color : undefined,
-        onSelect: () => setPaymentMethod(item, method === option ? null : option)
-      }
-    }),
-    // Developer-only (user request, 2026-09-18) — a testing shortcut, not
-    // something a real check-in desk should see by default.
-    ...(isDeveloperView.value
-      ? [{
-        label: bulk
-          ? t('tournament.single.acceptancePicker.testPaymentLabelBulk', { count: targets.length })
-          : t('tournament.single.acceptancePicker.testPaymentLabel'),
-        icon: ICONS.flaskConical,
-        color: testPayments.value[item.value] ? 'warning' as const : undefined,
-        onSelect: () => toggleTestPaymentForTargets(targets)
-      }]
-      : []),
-    { type: 'separator' as const },
-    {
-      label: bulk
-        ? t('tournament.single.acceptancePicker.removeActionBulk', { count: targets.length })
-        : t('tournament.single.acceptancePicker.removeAction'),
-      icon: ICONS.delete,
-      color: 'error' as const,
-      onSelect: () => acceptedRemove.request(targets)
-    }
-  ]
-}
-
-const acceptedContextMenuRow = ref<AcceptancePickerItem | null>(null)
-function onAcceptedRowContextmenu(_event: Event, row: { original: AcceptancePickerItem }) {
-  acceptedContextMenuRow.value = row.original
-}
-const acceptedTableContextMenuItems = computed<DropdownMenuItem[]>(
-  () => acceptedContextMenuRow.value
-    ? acceptedRowContextMenuItems(acceptedContextMenuRow.value)
-    : []
-)
+// Right-click context menus, both sides — see useAcceptancePickerRowActions.ts.
+const {
+  sourceTableContextMenuItems, onSourceRowContextmenu,
+  acceptedTableContextMenuItems, onAcceptedRowContextmenu
+} = useAcceptancePickerRowActions({
+  sourceRowStatus,
+  sourceSelection,
+  transferToAccepted,
+  setNoShow,
+  selectedAccepted,
+  paymentMethodByPlayer,
+  paymentMethodOptions,
+  paymentMethodLabel,
+  setPaymentMethod,
+  testPayments: testPayments.value,
+  toggleTestPaymentForTargets,
+  requestRemoveAcceptedTargets: targets => acceptedRemove.request(targets)
+})
 </script>
 
 <template>
