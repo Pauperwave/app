@@ -25,7 +25,7 @@ defineProps<{
   <UAlert
     color="warning"
     variant="subtle"
-    icon="i-lucide-triangle-alert"
+    :icon="ICONS.warning"
     class="shrink-0"
     :description="$t('common.mockDataNotice')"
   />
@@ -34,7 +34,7 @@ defineProps<{
     v-if="error"
     color="error"
     variant="subtle"
-    icon="i-lucide-circle-alert"
+    :icon="ICONS.alertCircle"
     :title="$t('cittadino.error.title')"
     :description="$t('cittadino.error.description')"
   >
@@ -51,7 +51,7 @@ defineProps<{
   </UAlert>
 
   <div v-else-if="isInitialLoad" class="flex items-center justify-center py-12">
-    <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
+    <UIcon :name="ICONS.loading" class="animate-spin text-3xl text-muted" />
   </div>
 
   <template v-else>

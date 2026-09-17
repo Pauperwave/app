@@ -108,7 +108,7 @@ const { data: commanderDecks, isLoading: commanderDecksLoading }
 
     <template #body>
       <div v-if="loading" class="flex items-center justify-center py-12">
-        <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
+        <UIcon :name="ICONS.loading" class="animate-spin text-3xl text-muted" />
       </div>
 
       <EmptyState
@@ -184,7 +184,11 @@ const { data: commanderDecks, isLoading: commanderDecksLoading }
           :matches="matchHistory"
         />
 
-        <PlayersSingleCommanderDecksCard :loading="commanderDecksLoading" :decks="commanderDecks" />
+        <PlayersSingleCommanderDecksCard
+          :loading="commanderDecksLoading"
+          :player-uuid="playerUuid"
+          :decks="commanderDecks"
+        />
       </div>
     </template>
   </UDashboardPanel>

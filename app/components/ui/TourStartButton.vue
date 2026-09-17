@@ -21,7 +21,7 @@ defineEmits<{ start: [] }>()
        collapses to icon-only below `lg`, same threshold). -->
   <UTooltip :text="label" :ui="{ content: 'lg:hidden' }">
     <UButton
-      icon="i-lucide-circle-help"
+      :icon="ICONS.helpCircle"
       color="neutral"
       variant="ghost"
       :aria-label="label"

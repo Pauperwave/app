@@ -78,7 +78,7 @@ function updateTime(day: DayOfWeek, key: 'open' | 'close', value: TimeValue | nu
         :model-value="parseTime(draft[day].open)"
         @update:model-value="updateTime(day, 'open', $event)"
       />
-      <UIcon name="i-lucide-arrow-right" class="text-muted shrink-0" />
+      <UIcon :name="ICONS.forward" class="text-muted shrink-0" />
       <UInputTime
         :range="false"
         :hour-cycle="24"

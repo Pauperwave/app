@@ -65,6 +65,23 @@ const { data: eventsData, isLoading: loadingEvents } = useEventsQuery()
 const { data: tournamentsData, isLoading: loadingTournaments } = useTournamentsQuery()
 const loading = computed(() => loadingEvents.value || loadingTournaments.value)
 
+// External (shop-organized, e.g. Magman) tournaments are hidden from this
+// public calendar by default — same mechanism and reasoning as
+// tournaments/index.vue's own showExternal toggle (user request, 2026-09-16).
+const showExternal = ref(false)
+
+// Draft tournaments are always excluded, no toggle — unlike "external"
+// (a real tournament just organized by someone else, sometimes worth
+// showing), a draft is by definition not ready to be public yet. Confirmed
+// 2026-09-17: useTournamentsQuery() has no status filter at all (only
+// deleted_at), and nothing else in this component/CalendarCard*.vue was
+// hiding drafts — status was only ever used for the badge/isPast check
+// (calendar/card/Base.vue), so a draft tournament was fully visible here,
+// including on the unauthenticated calendario.pauperwave.org route.
+const visibleTournamentsData = computed(() => (tournamentsData.value ?? [])
+  .filter(tournament => tournament.status !== 'draft')
+  .filter(tournament => showExternal.value || tournament.status !== 'external'))
+
 interface EventCard {
   kind: 'event'
   event: Event
@@ -97,7 +114,7 @@ const cards = computed<CalendarCardEntry[]>(() => {
   const eventGroups = new Map<string, Tournament[]>()
   const standalone: Tournament[] = []
 
-  for (const tournament of tournamentsData.value ?? []) {
+  for (const tournament of visibleTournamentsData.value) {
     if (tournament.eventUuid) {
       const existing = eventGroups.get(tournament.eventUuid) ?? []
       eventGroups.set(tournament.eventUuid, [...existing, tournament])
@@ -251,10 +268,30 @@ const filteredCards = computed(() => selectedCity.value === 'all'
         />
         <StatusFilterGroup v-else v-model="selectedCity" :items="cityItems" />
       </div>
+
+      <!-- External (shop-organized, not Pauperwave) tournaments are hidden
+           by default — see the showExternal comment above — this toggles
+           that filter back on, same icon-only-button convention as
+           tournaments/list/FiltersBar.vue's own toggle. -->
+      <UTooltip
+        :text="$t(showExternal
+          ? 'event.calendarHideExternal'
+          : 'event.calendarShowExternal')"
+      >
+        <UButton
+          :icon="showExternal ? ICONS.hide : ICONS.show"
+          color="neutral"
+          variant="outline"
+          :aria-label="$t(showExternal
+            ? 'event.calendarHideExternal'
+            : 'event.calendarShowExternal')"
+          @click="showExternal = !showExternal"
+        />
+      </UTooltip>
     </div>
 
     <div v-if="loading" class="flex items-center justify-center py-12">
-      <UIcon name="i-lucide-loader-circle" class="animate-spin text-3xl text-muted" />
+      <UIcon :name="ICONS.loading" class="animate-spin text-3xl text-muted" />
     </div>
 
     <EmptyState

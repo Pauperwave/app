@@ -135,7 +135,7 @@ const columns: TableColumn<DomainRow>[] = [
     <UAlert
       color="warning"
       variant="subtle"
-      icon="i-lucide-triangle-alert"
+      :icon="ICONS.warning"
       :title="$t('settings.domains.warning.title')"
       :description="$t('settings.domains.warning.description')"
     />
