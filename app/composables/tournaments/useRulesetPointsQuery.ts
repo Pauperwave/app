@@ -1,27 +1,34 @@
 // app\composables\tournaments\useRulesetPointsQuery.ts
-// Reads the default ruleset's point values (seeded "Base" ruleset, migration
-// 20260915000000) — app has no per-tournament/league ruleset assignment yet
-// (league resolves one per-league via leagues.ruleset_id), so this always
-// reads whichever ruleset has is_default = true. Revisit once a real
-// per-tournament ruleset FK exists — same stub noted in
-// advance_commander_round's own migration comment.
+// Reads a tournament's effective ruleset point values — resolves
+// tournament -> league -> leagues.ruleset_uuid (both already exist in the
+// schema and were simply never wired together, user request 2026-09-17),
+// falling back to whichever ruleset has is_default = true when the
+// tournament has no league or the league has no ruleset assigned. Previously
+// always read is_default unconditionally (a stub flagged in this file's own
+// prior comment and in advance_commander_round's migration).
 import type { RulesetPointValues } from './useCommanderScoring'
 
-export const RULESET_POINTS_KEY = ['ruleset-points', 'default']
-
-export function useRulesetPointsQuery() {
+export function useRulesetPointsQuery(tournamentUuid: MaybeRefOrGetter<string>) {
   const supabase = useSupabaseClient()
+  const { data: tournaments } = useTournamentsQuery()
+  const { data: leagues } = useLeaguesQuery()
+
+  const rulesetUuid = computed<string | null>(() => {
+    const tournament = (tournaments.value ?? []).find(t => t.uuid === toValue(tournamentUuid))
+    if (!tournament?.leagueUuid) return null
+    const league = (leagues.value ?? []).find(l => l.uuid === tournament.leagueUuid)
+    return league?.rulesetUuid ?? null
+  })
 
   return useQuery({
-    key: () => RULESET_POINTS_KEY,
+    key: () => ['ruleset-points', rulesetUuid.value ?? 'default'],
     query: async (): Promise<RulesetPointValues> => {
-      const { data: ruleset, error: rulesetError } = await supabase
-        .from('rulesets')
-        .select('uuid')
-        .eq('is_default', true)
-        .limit(1)
-        .single()
+      let rulesetQuery = supabase.from('rulesets').select('uuid')
+      rulesetQuery = rulesetUuid.value
+        ? rulesetQuery.eq('uuid', rulesetUuid.value)
+        : rulesetQuery.eq('is_default', true)
 
+      const { data: ruleset, error: rulesetError } = await rulesetQuery.limit(1).single()
       if (rulesetError) throw rulesetError
 
       const { data: points, error: pointsError } = await supabase
