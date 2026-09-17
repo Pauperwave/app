@@ -28,6 +28,7 @@ const state = reactive<TournamentFormState>({
   startDate: undefined,
   startTime: undefined,
   roundCount: undefined,
+  roundDurationMinutes: undefined,
   formatUuid: undefined,
   description: undefined,
   prizes: undefined,
@@ -79,6 +80,7 @@ watch([open, () => tournament], ([isOpen, current]) => {
     ? new Date(current.endDate).toTimeString().substring(0, 5)
     : undefined
   state.roundCount = current.roundCount ?? 1
+  state.roundDurationMinutes = current.roundDurationMinutes ?? 75
   state.formatUuid = current.formatUuid
   state.description = current.description ?? undefined
   state.prizes = current.prizes ?? undefined
@@ -119,6 +121,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     startsAt: startsAt.toISOString(),
     endsAt: endsAt ? endsAt.toISOString() : null,
     roundCount: event.data.roundCount,
+    roundDurationMinutes: event.data.roundDurationMinutes,
     entryFee: event.data.entryFee,
     description: event.data.description || null,
     prizes: event.data.prizes || null,

@@ -26,6 +26,7 @@ function buildSchema(t: ReturnType<typeof useI18n>['t']) {
       v.integer(),
       v.minValue(1, t('tournament.addModal.validation.roundCountPositive'))
     ),
+    roundDurationMinutes: v.pipe(v.number(), v.minValue(10), v.maxValue(120)),
     organizerUuid: v.optional(v.string()),
     locationUuid: v.optional(v.string()),
     // Both optional and mutually independent (CLAUDE.md: "a tournament's

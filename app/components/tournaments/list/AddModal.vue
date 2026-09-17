@@ -57,6 +57,7 @@ function createInitialState(): TournamentFormState {
       ? new Date(source.endDate).toTimeString().substring(0, 5)
       : '00:00',
     roundCount: source?.roundCount ?? 2,
+    roundDurationMinutes: source?.roundDurationMinutes ?? 75,
     formatUuid: source?.formatUuid ?? undefined as unknown as string,
     description: source?.description ?? undefined,
     prizes: source?.prizes ?? undefined,
@@ -192,6 +193,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     startsAt: startsAt.toISOString(),
     endsAt: endsAt ? endsAt.toISOString() : null,
     roundCount: event.data.roundCount,
+    roundDurationMinutes: event.data.roundDurationMinutes,
     entryFee: event.data.entryFee,
     description: event.data.description || null,
     prizes: event.data.prizes || null,
