@@ -11,7 +11,7 @@
   says so explicitly so the organizer doesn't assume a refresh is safe.
 -->
 <script setup lang="ts">
-import type { LiveCommanderStanding } from '~/composables/tournaments/useLiveCommanderStandings'
+import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/useLiveCommanderStandings'
 import type { PrizeDistributionSettings } from '~/types'
 
 const { standings } = defineProps<{

@@ -8,7 +8,7 @@
 -->
 <script setup lang="ts">
 import type { TablePlayer } from '~/types'
-import type { PairingPlayerScore, PairingTableScore } from '~/composables/tournaments/pairingOptimizer'
+import type { PairingPlayerScore, PairingTableScore } from '~/composables/tournaments/pairing/pairingOptimizer'
 
 interface PlayerRow {
   player: TablePlayer

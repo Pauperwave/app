@@ -10,7 +10,7 @@
   useRoundStatus.ts instead of league's own Pinia stores.
 -->
 <script setup lang="ts">
-import type { TournamentPairing } from '~/composables/tournaments/useTournamentPairingsQuery'
+import type { TournamentPairing } from '~/composables/tournaments/pairing/useTournamentPairingsQuery'
 import type { RoundStatusFilter } from '~/utils/tournaments/roundStatusSearch'
 
 const {

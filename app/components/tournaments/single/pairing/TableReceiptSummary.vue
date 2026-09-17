@@ -4,7 +4,7 @@
   request, 2026-09-15).
 -->
 <script setup lang="ts">
-import type { PairingTableScore } from '~/composables/tournaments/pairingOptimizer'
+import type { PairingTableScore } from '~/composables/tournaments/pairing/pairingOptimizer'
 
 defineProps<{
   score: PairingTableScore

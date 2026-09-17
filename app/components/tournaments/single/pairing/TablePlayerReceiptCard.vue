@@ -5,7 +5,7 @@
 -->
 <script setup lang="ts">
 import type { TablePlayer } from '~/types'
-import type { PairingPlayerScore } from '~/composables/tournaments/pairingOptimizer'
+import type { PairingPlayerScore } from '~/composables/tournaments/pairing/pairingOptimizer'
 
 defineProps<{
   player: TablePlayer

@@ -10,7 +10,7 @@
   placement icons) — this app has no such dev-mode toggle to gate it behind.
 -->
 <script setup lang="ts">
-import type { LiveCommanderStanding } from '~/composables/tournaments/useLiveCommanderStandings'
+import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/useLiveCommanderStandings'
 
 const { standings, isEnded } = defineProps<{
   standings: LiveCommanderStanding[]
