@@ -1,6 +1,7 @@
 <!-- app\pages\(competitions)\rulesets\index.vue -->
 <script lang="ts" setup>
 import type { TabsItem } from '@nuxt/ui'
+import type { RulesetWithPoints } from '~/composables/rulesets/useRulesetsWithPointsQuery'
 
 // Was nav-hidden only (sidebar gated on manage-rulesets, the route itself
 // wide open to any authenticated user) — closed 2026-08-29, see the
@@ -8,8 +9,40 @@ import type { TabsItem } from '@nuxt/ui'
 definePageMeta({ permission: 'manage-rulesets' })
 
 const { t } = useI18n()
+const { can } = useUserRole()
 
 useSeoMeta({ title: () => t('ruleset.breadcrumb') })
+
+// Ruleset management (user request, 2026-09-17): a "Gestione" tab alongside
+// the published-format tabs above — different kind of content (a CRUD data
+// table, not published regulation text) but genuinely ruleset-related, so it
+// stays on this page rather than moving to /settings.
+const { data: rulesetsData, isLoading: rulesetsLoading } = useRulesetsWithPointsQuery()
+const { deleteRuleset } = useRulesetsMutations()
+
+const formModalOpen = ref(false)
+const editingRuleset = ref<RulesetWithPoints | null>(null)
+
+function openCreateModal() {
+  editingRuleset.value = null
+  formModalOpen.value = true
+}
+function openEditModal(ruleset: RulesetWithPoints) {
+  editingRuleset.value = ruleset
+  formModalOpen.value = true
+}
+
+const deleteConfirmOpen = ref(false)
+const rulesetToDelete = ref<RulesetWithPoints | null>(null)
+function requestDelete(ruleset: RulesetWithPoints) {
+  rulesetToDelete.value = ruleset
+  deleteConfirmOpen.value = true
+}
+function confirmDelete() {
+  if (!rulesetToDelete.value) return
+  deleteRuleset.mutate({ rulesetUuid: rulesetToDelete.value.uuid })
+  deleteConfirmOpen.value = false
+}
 
 // Rules are rendered from the same constants the standings are scored with, so
 // the published regulation cannot drift from what /standings/cittadino actually
@@ -34,7 +67,8 @@ const tabs = computed<TabsItem[]>(() => [
   { label: t('ruleset.tabs.premodern'), value: 'premodern' },
   { label: t('ruleset.tabs.pauper'), value: 'pauper' },
   { label: t('ruleset.tabs.draft'), value: 'draft' },
-  { label: t('ruleset.tabs.sealed'), value: 'sealed' }
+  { label: t('ruleset.tabs.sealed'), value: 'sealed' },
+  { label: t('ruleset.tabs.manage'), value: 'manage' }
 ])
 
 const activeTab = ref('cittadino')
@@ -103,7 +137,7 @@ const tour = useRulesetsTour()
 
               <ul class="flex flex-col gap-3 text-sm text-muted">
                 <li class="flex gap-2">
-                  <UIcon name="i-lucide-calculator" class="mt-0.5 size-4 shrink-0 text-primary" />
+                  <UIcon :name="ICONS.total" class="mt-0.5 size-4 shrink-0 text-primary" />
                   <span>
                     {{ $t('ruleset.cittadino.bestResults', {
                       counted: CITTADINO_COUNTED_RESULTS
@@ -111,7 +145,7 @@ const tour = useRulesetsTour()
                   </span>
                 </li>
                 <li class="flex gap-2">
-                  <UIcon name="i-lucide-git-compare-arrows" class="mt-0.5 size-4 shrink-0 text-primary" />
+                  <UIcon :name="ICONS.compareArrows" class="mt-0.5 size-4 shrink-0 text-primary" />
                   <span>{{ $t('ruleset.cittadino.tieBreak') }}</span>
                 </li>
                 <li class="flex gap-2">
@@ -125,7 +159,7 @@ const tour = useRulesetsTour()
                   <span>{{ $t('ruleset.cittadino.eligibility') }}</span>
                 </li>
                 <li class="flex gap-2">
-                  <UIcon name="i-lucide-megaphone" class="mt-0.5 size-4 shrink-0 text-primary" />
+                  <UIcon :name="ICONS.megaphone" class="mt-0.5 size-4 shrink-0 text-primary" />
                   <span>{{ $t('ruleset.cittadino.publication') }}</span>
                 </li>
               </ul>
@@ -168,11 +202,11 @@ const tour = useRulesetsTour()
 
               <ul class="flex flex-col gap-3 text-sm text-muted">
                 <li class="flex gap-2">
-                  <UIcon name="i-lucide-package" class="mt-0.5 size-4 shrink-0 text-primary" />
+                  <UIcon :name="ICONS.package" class="mt-0.5 size-4 shrink-0 text-primary" />
                   <span>{{ $t('ruleset.draft.boosters') }}</span>
                 </li>
                 <li class="flex gap-2">
-                  <UIcon name="i-lucide-users" class="mt-0.5 size-4 shrink-0 text-primary" />
+                  <UIcon :name="ICONS.players" class="mt-0.5 size-4 shrink-0 text-primary" />
                   <span>{{ $t('ruleset.draft.pods') }}</span>
                 </li>
               </ul>
@@ -188,9 +222,83 @@ const tour = useRulesetsTour()
             <UAlert
               color="warning"
               variant="subtle"
-              icon="i-lucide-triangle-alert"
+              :icon="ICONS.warning"
               :description="$t('ruleset.sealed.placeholderNotice')"
             />
+          </UPageCard>
+
+          <UPageCard
+            v-else-if="activeTab === 'manage'"
+            :title="$t('ruleset.manage.title')"
+            :description="$t('ruleset.manage.description')"
+            :icon="ICONS.settingsGear"
+          >
+            <div class="flex flex-col gap-4">
+              <AddButton
+                v-if="can('manage-rulesets')"
+                :label="$t('ruleset.manage.addButton')"
+                :icon="ICONS.add"
+                @click="openCreateModal"
+              />
+
+              <ListSkeleton v-if="rulesetsLoading" :columns="4" />
+
+              <EmptyState
+                v-else-if="!rulesetsData?.length"
+                :message="$t('ruleset.manage.empty')"
+              />
+
+              <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <UCard v-for="ruleset in rulesetsData" :key="ruleset.uuid">
+                  <template #header>
+                    <div class="flex items-center justify-between gap-2">
+                      <div class="flex items-center gap-2">
+                        <span class="font-semibold">{{ ruleset.name }}</span>
+                        <UBadge
+                          v-if="ruleset.isDefault"
+                          size="xs"
+                          color="primary"
+                          variant="subtle"
+                        >
+                          {{ $t('ruleset.manage.defaultBadge') }}
+                        </UBadge>
+                      </div>
+                      <div class="flex gap-1">
+                        <EditIconButton
+                          :label="$t('ruleset.manage.editTitle')"
+                          size="xs"
+                          @click="openEditModal(ruleset)"
+                        />
+                        <UButton
+                          v-if="can('delete-ruleset')"
+                          :icon="ICONS.delete"
+                          size="xs"
+                          color="error"
+                          variant="ghost"
+                          @click="requestDelete(ruleset)"
+                        />
+                      </div>
+                    </div>
+                  </template>
+
+                  <div class="flex flex-wrap gap-1.5 text-xs text-muted">
+                    <span>{{ $t('ruleset.actions.kill') }}: {{ ruleset.kill }}</span>
+                    <span>·</span>
+                    <span>{{ $t('ruleset.actions.brew') }}: {{ ruleset.brew }}</span>
+                    <span>·</span>
+                    <span>{{ $t('ruleset.actions.play') }}: {{ ruleset.play }}</span>
+                    <span>·</span>
+                    <span>
+                      {{ $t('ruleset.actions.participation') }}: {{ ruleset.participation }}
+                    </span>
+                    <span>·</span>
+                    <span>1°-4°: {{
+                      [ruleset.rank1, ruleset.rank2, ruleset.rank3, ruleset.rank4].join('/')
+                    }}</span>
+                  </div>
+                </UCard>
+              </div>
+            </div>
           </UPageCard>
         </div>
       </div>
@@ -198,4 +306,17 @@ const tour = useRulesetsTour()
   </UDashboardPanel>
 
   <TourGuide :tour="tour" />
+
+  <RulesetsFormModal v-model:open="formModalOpen" :ruleset="editingRuleset" />
+
+  <ConfirmModal
+    v-model:open="deleteConfirmOpen"
+    :title="$t('ruleset.manage.deleteConfirmTitle')"
+    :description="$t('ruleset.manage.deleteConfirmDescription')"
+    :question="$t('ruleset.manage.deleteConfirmQuestion')"
+    :subject="rulesetToDelete?.name"
+    :warning="$t('ruleset.manage.deleteConfirmWarning')"
+    :loading="deleteRuleset.isLoading.value"
+    @confirm="confirmDelete"
+  />
 </template>
