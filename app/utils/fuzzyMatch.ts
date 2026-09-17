@@ -1,6 +1,7 @@
 // app\utils\fuzzyMatch.ts
 // Ported from MagicTheGathering/league (user request, 2026-09-16) — the
 // commander search box's autocomplete relevance ranking.
+import type { VNode } from 'vue'
 
 export interface FuzzyMatchResult {
   /** Higher is a better match — rewards contiguous and early matches. */
@@ -40,4 +41,46 @@ export function fuzzyMatch(text: string, query: string): FuzzyMatchResult | null
   }
 
   return { score, indices }
+}
+
+/**
+ * Splits `text` into plain-text and highlighted runs based on matched
+ * indices (as returned by `fuzzyMatch`) — consecutive matched characters are
+ * merged into a single `<span>` so a contiguous match renders as one
+ * contiguous highlight instead of one padded span per character. Pass the
+ * result as VNode children (e.g. a component's default/named slot render fn).
+ */
+export function highlightFuzzyChars(text: string, indices: number[]) {
+  const indexSet = new Set(indices)
+  const nodes: (string | VNode)[] = []
+  let plain = ''
+  let match = ''
+
+  const flushPlain = () => {
+    if (plain) {
+      nodes.push(plain)
+      plain = ''
+    }
+  }
+  const flushMatch = () => {
+    if (match) {
+      nodes.push(h('span', { class: 'bg-rose-100 text-black rounded-sm' }, match))
+      match = ''
+    }
+  }
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i]!
+    if (indexSet.has(i)) {
+      flushPlain()
+      match += char
+    } else {
+      flushMatch()
+      plain += char
+    }
+  }
+  flushPlain()
+  flushMatch()
+
+  return nodes
 }
