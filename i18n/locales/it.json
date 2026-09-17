@@ -2297,6 +2297,7 @@
     "statsWins": "Vittorie",
     "statsKills": "Uccisioni",
     "viewOnScryfall": "Cerca su Scryfall",
+    "viewDetails": "Vedi dettagli",
     "borrowedBadge": "Prestato da {name}",
     "borrowedUnknownLender": "Prestato",
     "addModal": {
