@@ -25,6 +25,9 @@ export interface LiveCommanderStanding {
   kills: number
   brewReceived: number
   playReceived: number
+  /** Times killed — feeds the "Vittima" award (useTournamentAwards.ts), not
+   *  part of the score/sort itself. */
+  deaths: number
 }
 
 export function useLiveCommanderStandings(tournamentUuid: MaybeRefOrGetter<string>) {
@@ -34,7 +37,7 @@ export function useLiveCommanderStandings(tournamentUuid: MaybeRefOrGetter<strin
   const { data: resultsData } = useTournamentRoundResultsQuery(tournamentUuid)
   const { data: killsData } = useTournamentKillsQuery(tournamentUuid)
   const { data: votesData } = useTournamentVotesQuery(tournamentUuid)
-  const { data: rulesetPoints } = useRulesetPointsQuery()
+  const { data: rulesetPoints } = useRulesetPointsQuery(tournamentUuid)
 
   const associateByUuid = computed(() =>
     new Map((associatesData.value ?? []).map(a => [a.uuid, a])))
@@ -59,7 +62,8 @@ export function useLiveCommanderStandings(tournamentUuid: MaybeRefOrGetter<strin
         victories: 0,
         kills: 0,
         brewReceived: 0,
-        playReceived: 0
+        playReceived: 0,
+        deaths: 0
       })
     }
 
@@ -95,6 +99,8 @@ export function useLiveCommanderStandings(tournamentUuid: MaybeRefOrGetter<strin
         acc.kills += scored.numberOfKills
         acc.brewReceived += scored.brewVotesReceived
         acc.playReceived += scored.playVotesReceived
+        acc.deaths += (killsData.value ?? [])
+          .filter(k => k.pairingUuid === pairing.uuid && k.killedPlayerUuid === playerUuid).length
       }
     }
 
