@@ -9,7 +9,7 @@
   scale) + the existing commander catalog (mana cost/color identity).
 -->
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
+import type { TableColumn, TabsItem } from '@nuxt/ui'
 import { USkeleton, MagicManaCost, NuxtLink } from '#components'
 
 const { t } = useI18n()
@@ -27,6 +27,7 @@ interface CommanderRow {
   manaCost: string | null
   cmc: number | null
   colorIdentity: string[]
+  artCropUrl: string | null
   playerCount: number
   matchCount: number
   winCount: number
@@ -42,6 +43,7 @@ const allRows = computed<CommanderRow[]>(() => allNames.value.map((name) => {
     manaCost: catalogRow?.manaCost ?? null,
     cmc: catalogRow?.cmc ?? null,
     colorIdentity: catalogRow?.colorIdentity ?? [],
+    artCropUrl: catalogRow?.artCropUrl ?? null,
     playerCount: agg?.playerCount ?? 0,
     matchCount: agg?.matchCount ?? 0,
     winCount: agg?.winCount ?? 0,
@@ -49,6 +51,13 @@ const allRows = computed<CommanderRow[]>(() => allNames.value.map((name) => {
     averageScore: agg?.averageScore ?? 0
   }
 }))
+
+const viewMode = ref<'table' | 'dense' | 'grid'>('table')
+const viewModeItems = computed<TabsItem[]>(() => [
+  { label: t('commander.views.table'), value: 'table', icon: ICONS.table },
+  { label: t('commander.views.dense'), value: 'dense', icon: ICONS.gridDense },
+  { label: t('commander.views.grid'), value: 'grid', icon: ICONS.grid }
+])
 
 const search = ref('')
 const filteredRows = computed(() => {
@@ -113,6 +122,10 @@ const isLoading = statsLoading
         </template>
 
         <template #right>
+          <ViewModeTabs v-model="viewMode" :items="viewModeItems" />
+
+          <USeparator orientation="vertical" class="h-4" />
+
           <NotificationsBellButton />
         </template>
       </UDashboardNavbar>
@@ -129,10 +142,31 @@ const isLoading = statsLoading
     </template>
 
     <template #body>
-      <ListSkeleton v-if="isLoading" :columns="columns.length" />
+      <ListSkeleton v-if="viewMode === 'table' && isLoading" :columns="columns.length" />
+
+      <div
+        v-else-if="viewMode !== 'table' && isLoading"
+        class="grid gap-4"
+        :class="viewMode === 'dense'
+          ? 'grid-cols-[repeat(auto-fill,minmax(min(140px,42vw),1fr))]'
+          : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'"
+      >
+        <template v-if="viewMode === 'dense'">
+          <CommandersCommanderDenseCard
+            v-for="n in 16"
+            :key="n"
+            loading
+          />
+        </template>
+        <template v-else>
+          <CommandersDeckCardSkeleton v-for="n in 8" :key="n" />
+        </template>
+      </div>
+
+      <EmptyState v-else-if="filteredRows.length === 0" :message="t('commander.index.emptyList')" />
 
       <UTable
-        v-else
+        v-else-if="viewMode === 'table'"
         :data="filteredRows"
         :columns="columns"
         :sorting="[{ id: 'name', desc: false }]"
@@ -142,6 +176,30 @@ const isLoading = statsLoading
           <EmptyState :message="t('commander.index.emptyList')" />
         </template>
       </UTable>
+
+      <div
+        v-else
+        class="grid gap-4"
+        :class="viewMode === 'dense'
+          ? 'grid-cols-[repeat(auto-fill,minmax(min(140px,42vw),1fr))]'
+          : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'"
+      >
+        <template v-if="viewMode === 'dense'">
+          <CommandersCommanderDenseCard
+            v-for="row in filteredRows"
+            :key="row.name"
+            :row="row"
+          />
+        </template>
+        <template v-else>
+          <CommandersCommanderCard
+            v-for="row in filteredRows"
+            :key="row.name"
+            :row="row"
+            :loading="catalogLoading"
+          />
+        </template>
+      </div>
     </template>
   </UDashboardPanel>
 </template>
