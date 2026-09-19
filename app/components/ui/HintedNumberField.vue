@@ -36,7 +36,7 @@ const model = defineModel<number>({ required: true })
 </script>
 
 <template>
-  <div class="space-y-1.5">
+  <div class="space-y-1">
     <div class="flex items-center gap-1.5">
       <span class="text-sm">{{ label }}</span>
       <UTooltip
