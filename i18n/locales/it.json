@@ -3070,7 +3070,15 @@
   },
   "versionBadge": {
     "copy": "Copia versione",
-    "copied": "Versione copiata negli appunti"
+    "copied": "Versione copiata negli appunti",
+    "updatedNow": "Aggiornato adesso",
+    "updated": {
+      "minutes": "Aggiornato {count} minuto fa | Aggiornato {count} minuti fa",
+      "hours": "Aggiornato {count} ora fa | Aggiornato {count} ore fa",
+      "days": "Aggiornato {count} giorno fa | Aggiornato {count} giorni fa",
+      "months": "Aggiornato {count} mese fa | Aggiornato {count} mesi fa",
+      "years": "Aggiornato {count} anno fa | Aggiornato {count} anni fa"
+    }
   },
   "userMenu": {
     "fallbackName": "Utente",
