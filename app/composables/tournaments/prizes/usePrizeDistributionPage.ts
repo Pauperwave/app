@@ -21,6 +21,14 @@ export function usePrizeDistributionPage(standings: MaybeRefOrGetter<PrizeStandi
     settings.value = { ...settings.value, ...patch }
   }
 
+  // Every setting back to its starting value; the saved "custom" shares stay
+  function resetSettings() {
+    settings.value = {
+      ...DEFAULT_PRIZE_DISTRIBUTION_SETTINGS,
+      bonusShares: [...DEFAULT_PRIZE_DISTRIBUTION_SETTINGS.bonusShares]
+    }
+  }
+
   const playerCount = computed(() => toValue(standings).length)
 
   const {
@@ -96,6 +104,7 @@ export function usePrizeDistributionPage(standings: MaybeRefOrGetter<PrizeStandi
   return {
     settings,
     updateSettings,
+    resetSettings,
     selectedPreset,
     hasCustomShares,
     applyDistributionPreset,

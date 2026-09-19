@@ -4,7 +4,8 @@
   same shape as PairingPresetButtons.vue (user request, 2026-09-17: reuse
   the pairing weight-preset pattern for prize redistribution). Options and
   labels only; the markup lives in the generic <PresetButtons>. "Custom"
-  restores the organizer's last hand-edited shares (disabled until one exists).
+  restores the organizer's last hand-edited shares (disabled until one exists);
+  "reset" puts every setting back to its starting value.
 -->
 <script setup lang="ts">
 export type PrizeDistributionPresetKind = 'flat' | 'balanced' | 'competitive' | 'custom'
@@ -16,6 +17,7 @@ const { selected, hasCustom } = defineProps<{
 
 const emit = defineEmits<{
   select: [preset: PrizeDistributionPresetKind]
+  reset: []
 }>()
 
 const { t } = useI18n()
@@ -36,10 +38,12 @@ const presets: Array<{
     :options="presets"
     :selected="selected"
     :custom-label="t('tournament.single.prizeDistribution.presets.custom')"
+    :reset-label="t('tournament.single.prizeDistribution.presets.reset')"
     :custom-hint="t('tournament.single.prizeDistribution.presets.customHint')"
     :custom-disabled="!hasCustom"
     custom-clickable
     @select="preset => emit('select', preset)"
+    @reset="emit('reset')"
     @custom="emit('select', 'custom')"
   />
 </template>

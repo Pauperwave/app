@@ -1684,6 +1684,7 @@
           "flat": "Equa",
           "balanced": "Bilanciata",
           "competitive": "Competitiva",
+          "reset": "Ripristina",
           "custom": "Personalizzato",
           "customHint": "Modifica una percentuale o le buste di un piazzamento: la tua ripartizione viene salvata qui."
         },
