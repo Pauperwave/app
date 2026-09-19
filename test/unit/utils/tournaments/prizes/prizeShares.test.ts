@@ -95,3 +95,59 @@ describe('sharesForPackEdit', () => {
     expect(sharesForPackEdit(0, 5, 20, noBonus)).toEqual(noBonus.bonusShares)
   })
 })
+
+describe('sharesForPackEdit — who gives and who takes', () => {
+  const noCap = settings({ maxPacksPerPlayer: 0 })
+
+  function packsAfter(
+    rank: number,
+    packs: number,
+    base = noCap
+  ): number[] {
+    const bonusShares = sharesForPackEdit(rank, packs, 20, base)
+    return computePrizeDistribution(20, { ...base, bonusShares }).slice(0, 8)
+  }
+
+  it('takes the pack from the first placement when giving one to a lower one', () => {
+    // 7 6 5 4 3 3 3 3 -> #5 goes to 4, #1 gives one
+    expect(packsAfter(4, 4)).toEqual([6, 6, 5, 4, 4, 3, 3, 3])
+  })
+
+  it('takes the pack from the next placement when the first one is edited', () => {
+    expect(packsAfter(0, 8)).toEqual([8, 5, 5, 4, 3, 3, 3, 3])
+  })
+
+  it('skips the placements already at the guaranteed minimum', () => {
+    const concentrated = settings({
+      maxPacksPerPlayer: 0, bonusShares: [0, 100, 0, 0, 0, 0, 0, 0]
+    })
+    // 3 13 3 3 3 3 3 3: only #2 has packs above the minimum to give
+    expect(packsAfter(4, 4, concentrated)).toEqual([3, 12, 3, 3, 4, 3, 3, 3])
+  })
+
+  it('gives a released pack to the first placement still under the cap', () => {
+    const capped = settings({})
+    // cap 7: #1 is full, so lowering #4 (4 -> 3) hands its pack to #2
+    expect(packsAfter(3, 3, capped)).toEqual([7, 7, 5, 3, 3, 3, 3, 3])
+  })
+
+  it('goes back to where it started after +1 then -1 on the same placement', () => {
+    const before = computePrizeDistribution(20, noCap).slice(0, 8)
+    const up = sharesForPackEdit(4, 4, 20, noCap)
+    const upSettings = { ...noCap, bonusShares: up }
+    const down = sharesForPackEdit(4, 3, 20, upSettings)
+
+    expect(computePrizeDistribution(20, { ...noCap, bonusShares: down }).slice(0, 8))
+      .toEqual(before)
+  })
+
+  it('moves several packs one at a time, the highest placement giving until its minimum', () => {
+    expect(packsAfter(4, 6)).toEqual([4, 6, 5, 4, 6, 3, 3, 3])
+  })
+
+  it('never lets a placement give below the guaranteed minimum', () => {
+    const packs = packsAfter(4, 13)
+    expect(packs.every(value => value >= 3)).toBe(true)
+    expect(sum(packs)).toBe(34)
+  })
+})
