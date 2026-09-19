@@ -1691,7 +1691,6 @@
         "weightLabels": {
           "topCutoff": "Numero di piazzamenti premiati"
         },
-        "sharesTotal": "Totale: {total}%",
         "nonRewardedMinPacks": "Minimo per ogni non premiato",
         "maxPacksPerPlayer": "Massimo di buste per piazzamento",
         "reservedPacks": "Buste accantonate (non assegnate)",

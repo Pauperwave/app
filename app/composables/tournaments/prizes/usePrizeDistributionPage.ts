@@ -68,10 +68,6 @@ export function usePrizeDistributionPage(standings: MaybeRefOrGetter<PrizeStandi
     updatePacks(rank, packs + direction)
   }
 
-  const sharesTotal = computed(() => Math.round(
-    rows.value.reduce((sum, row) => sum + (row.sharePercent ?? 0), 0)
-  ))
-
   // Settings drawn as horizontal reference lines in the chart
   const chartGuides = computed(() => {
     const { minPacksPerPlayer, nonRewardedMinPacks } = settings.value
@@ -101,7 +97,6 @@ export function usePrizeDistributionPage(standings: MaybeRefOrGetter<PrizeStandi
     rewardedCount,
     packsRange,
     rows,
-    sharesTotal,
     chartGuides,
     chartRows,
     updatePacks,

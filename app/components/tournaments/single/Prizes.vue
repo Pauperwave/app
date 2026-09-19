@@ -29,7 +29,6 @@ const {
   rewardedCount,
   packsRange,
   rows,
-  sharesTotal,
   chartGuides,
   chartRows,
   updatePacks,
@@ -74,25 +73,17 @@ const {
           />
         </div>
 
-        <div class="flex shrink-0 items-center justify-between text-sm">
-          <span class="font-medium">
-            {{ t('tournament.single.prizeDistribution.distributedSummary', {
-              assigned: allocatedTotal, total: budget.distributable
-            }) }}
-            <span
-              v-if="settings.reservedPacks > 0"
-              class="font-normal text-muted"
-            >
-              · {{ t('tournament.single.prizeDistribution.reservedSummary', {
-                count: settings.reservedPacks
-              }) }}
-            </span>
-          </span>
+        <div class="shrink-0 text-sm font-medium">
+          {{ t('tournament.single.prizeDistribution.distributedSummary', {
+            assigned: allocatedTotal, total: budget.distributable
+          }) }}
           <span
-            v-if="budget.bonusPool > 0"
-            class="font-mono text-xs"
+            v-if="settings.reservedPacks > 0"
+            class="font-normal text-muted"
           >
-            {{ t('tournament.single.prizeDistribution.sharesTotal', { total: sharesTotal }) }}
+            · {{ t('tournament.single.prizeDistribution.reservedSummary', {
+              count: settings.reservedPacks
+            }) }}
           </span>
         </div>
 
