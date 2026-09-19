@@ -16,6 +16,19 @@ export const DEFAULT_PRIZE_DISTRIBUTION_SETTINGS: PrizeDistributionSettings = {
   topCutoff: 8
 }
 
+// True when every setting is back at its starting value. The shares are
+// compared with a tolerance: stepping a pack up and down leaves float noise.
+export function isDefaultPrizeSettings(settings: PrizeDistributionSettings): boolean {
+  const defaults = DEFAULT_PRIZE_DISTRIBUTION_SETTINGS
+  const scalarKeys = (Object.keys(defaults) as Array<keyof PrizeDistributionSettings>)
+    .filter(key => key !== 'bonusShares')
+  if (scalarKeys.some(key => settings[key] !== defaults[key])) return false
+
+  const length = Math.max(settings.bonusShares.length, defaults.bonusShares.length)
+  return Array.from({ length }).every((_, rank) =>
+    Math.abs((settings.bonusShares[rank] ?? 0) - (defaults.bonusShares[rank] ?? 0)) < 1e-6)
+}
+
 // Guards float noise like 0.9999999 when a share was derived from a pack count
 const SHARE_EPSILON = 1e-9
 

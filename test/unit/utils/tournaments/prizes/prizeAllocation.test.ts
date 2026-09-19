@@ -1,7 +1,7 @@
 // test\unit\utils\tournaments\prizes\prizeAllocation.test.ts
 import { describe, expect, it } from 'vitest'
 import {
-  computePrizeDistribution, DEFAULT_PRIZE_DISTRIBUTION_SETTINGS
+  computePrizeDistribution, DEFAULT_PRIZE_DISTRIBUTION_SETTINGS, isDefaultPrizeSettings
 } from '~/utils/tournaments/prizes/prizeAllocation'
 import { settings, sum } from './prizeTestHelpers'
 
@@ -132,5 +132,29 @@ describe('computePrizeDistribution — maxPacksPerPlayer', () => {
   it('treats 0 as no cap', () => {
     expect(computePrizeDistribution(20, settings({ maxPacksPerPlayer: 0 })).slice(0, 4))
       .toEqual([7, 6, 5, 4])
+  })
+})
+
+describe('isDefaultPrizeSettings', () => {
+  it('is true for the default settings', () => {
+    expect(isDefaultPrizeSettings(DEFAULT_PRIZE_DISTRIBUTION_SETTINGS)).toBe(true)
+  })
+
+  it('is false as soon as one number differs', () => {
+    expect(isDefaultPrizeSettings(settings({ totalPacks: 35 }))).toBe(false)
+    expect(isDefaultPrizeSettings(settings({ maxPacksPerPlayer: 0 }))).toBe(false)
+    expect(isDefaultPrizeSettings(settings({ topCutoff: 7 }))).toBe(false)
+  })
+
+  it('is false when a share differs', () => {
+    expect(isDefaultPrizeSettings(settings({ bonusShares: [30, 40, 20, 10, 0, 0, 0, 0] })))
+      .toBe(false)
+  })
+
+  it('ignores float noise and trailing zero shares', () => {
+    expect(isDefaultPrizeSettings(settings({ bonusShares: [40.0000001, 29.9999999, 20, 10] })))
+      .toBe(true)
+    expect(isDefaultPrizeSettings(settings({ bonusShares: [40, 30, 20, 10, 0, 0, 0, 0, 0] })))
+      .toBe(true)
   })
 })

@@ -22,6 +22,7 @@ const {
   settings,
   updateSettings,
   resetSettings,
+  isAtDefaults,
   selectedPreset,
   hasCustomShares,
   applyDistributionPreset,
@@ -64,6 +65,7 @@ const {
           <TournamentsSinglePrizesPrizeDistributionPresetButtons
             :selected="selectedPreset"
             :has-custom="hasCustomShares"
+            :reset-disabled="isAtDefaults"
             @select="applyDistributionPreset"
             @reset="resetSettings"
           />
