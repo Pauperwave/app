@@ -5,13 +5,12 @@
   2026-09-17). Same standings source as Awards.vue (already final by the
   time this step is reachable) — index = final placement.
 
-  Deliberately not persisted anywhere (user decision, 2026-09-17): totalPacks/
-  minPacksPerPlayer/bonusShares/topCutoff all live in a local ref and reset
-  the moment this component remounts.
+  Layout only: the state and the derived data live in
+  usePrizeDistributionPage. Deliberately not persisted (user decision,
+  2026-09-17): the settings reset the moment this component remounts.
 -->
 <script setup lang="ts">
 import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/useLiveCommanderStandings'
-import type { PrizeDistributionSettings } from '~/types'
 
 const { standings } = defineProps<{
   standings: LiveCommanderStanding[]
@@ -19,81 +18,23 @@ const { standings } = defineProps<{
 
 const { t } = useI18n()
 
-const settings = ref<PrizeDistributionSettings>({ ...DEFAULT_PRIZE_DISTRIBUTION_SETTINGS })
-
-function updateSettings(patch: Partial<PrizeDistributionSettings>) {
-  settings.value = { ...settings.value, ...patch }
-}
-
 const {
+  settings,
+  updateSettings,
   selectedPreset,
   hasCustomShares,
-  saveCustomShares,
-  applyDistributionPreset
-} = usePrizeDistributionPresets(settings, updateSettings)
-
-const { distribution, allocatedTotal } = usePrizeDistribution(
-  () => standings.length,
-  settings
-)
-
-const budget = computed(() => prizeBudgetOf(standings.length, settings.value))
-const rewardedCount = computed(() => Math.min(settings.value.topCutoff, standings.length))
-const packsRange = computed(() => rewardedPacksRange(standings.length, settings.value))
-
-// Share = extra packs / bonus pool, taken from the packs a placement really gets
-// (not the nominal share), so it stays true with rounding, caps and minimums
-function realSharePercent(packs: number): number {
-  const { bonusPool } = budget.value
-  if (bonusPool <= 0) return 0
-  return ((packs - settings.value.minPacksPerPlayer) / bonusPool) * 100
-}
-
-const rows = computed(() => standings.map((standing, index) => {
-  const packs = distribution.value[index] ?? 0
-
-  return {
-    associateUuid: standing.associateUuid,
-    label: standing.label,
-    packs,
-    sharePercent: index < rewardedCount.value ? realSharePercent(packs) : null
-  }
-}))
-
-// Editing packs derives the matching share, so the two inputs stay linked
-function updatePacks(rank: number, packs: number) {
-  const bonusShares = sharesForPackEdit(rank, packs, standings.length, settings.value)
-  updateSettings({ bonusShares })
-  saveCustomShares(bonusShares)
-}
-
-// A share step moves exactly one pack to/from the other rewarded placements
-function stepShare(rank: number, direction: 1 | -1) {
-  const packs = rows.value[rank]?.packs ?? 0
-  updatePacks(rank, packs + direction)
-}
-
-const sharesTotal = computed(() => Math.round(
-  rows.value.reduce((sum, row) => sum + (row.sharePercent ?? 0), 0)
-))
-
-// Settings drawn as horizontal reference lines in the chart
-const chartGuides = computed(() => {
-  const { minPacksPerPlayer, nonRewardedMinPacks } = settings.value
-  const { nonRewardedCount, bonusCap } = budget.value
-
-  return {
-    minPacks: minPacksPerPlayer,
-    nonRewardedMinPacks: nonRewardedCount > 0 ? nonRewardedMinPacks : 0,
-    maxPacks: Number.isFinite(bonusCap) ? minPacksPerPlayer + bonusCap : null
-  }
-})
-
-// Chart only shows the rewarded placements (topCutoff), not every player
-const chartRows = computed(() => rows.value.slice(0, settings.value.topCutoff).map(row => ({
-  label: row.label,
-  packs: row.packs
-})))
+  applyDistributionPreset,
+  allocatedTotal,
+  budget,
+  rewardedCount,
+  packsRange,
+  rows,
+  sharesTotal,
+  chartGuides,
+  chartRows,
+  updatePacks,
+  stepShare
+} = usePrizeDistributionPage(() => standings)
 </script>
 
 <template>
