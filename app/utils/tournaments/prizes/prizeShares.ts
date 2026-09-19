@@ -1,68 +1,71 @@
 // app\utils\tournaments\prizes\prizeShares.ts
-// Keeps the per-placement shares and the pack counts linked: editing one
-// rebalances the others so every pack stays assigned.
+// Keeps the per-placement shares and the pack counts linked: when a placement
+// is edited, whole packs move to/from the others and the shares are derived
+// from the packs that result, so every pack stays assigned.
 import type { PrizeDistributionSettings } from '~/types'
 import { computePrizeDistribution } from '~/utils/tournaments/prizes/prizeAllocation'
 import { prizeBudgetOf } from '~/utils/tournaments/prizes/prizeBudget'
 
-// Gives `rank` the requested share and takes/gives the difference from the
-// other rewarded ranks, proportionally to what they have (evenly if they were
-// all at 0), so the shares keep summing to 100 — the same "packs come from
-// somewhere else" mechanism the pack counts follow.
-function rebalanceShares(
+// Who gives or takes a pack is decided by rank, never by rounding: the
+// highest placement (other than the edited one) that has packs above the
+// minimum gives first, and the highest one still under the cap takes first.
+function firstIndex(
+  packs: number[],
+  excluded: number,
+  matches: (packs: number) => boolean
+): number {
+  return packs.findIndex((value, index) => index !== excluded && matches(value))
+}
+
+// Moves the packs of the rewarded placements so `rank` ends up with `target`
+function movePacks(
+  packs: number[],
   rank: number,
-  share: number,
-  cutoff: number,
+  target: number,
+  min: number,
+  max: number
+): number[] {
+  const next = [...packs]
+  let delta = target - (next[rank] ?? 0)
+
+  while (delta > 0) {
+    const donor = firstIndex(next, rank, value => value > min)
+    if (donor === -1) break
+    next[donor] = (next[donor] ?? 0) - 1
+    next[rank] = (next[rank] ?? 0) + 1
+    delta -= 1
+  }
+
+  while (delta < 0) {
+    const receiver = firstIndex(next, rank, value => value < max)
+    if (receiver === -1) break
+    next[receiver] = (next[receiver] ?? 0) + 1
+    next[rank] = (next[rank] ?? 0) - 1
+    delta += 1
+  }
+
+  return next
+}
+
+// The shares that reproduce exactly these packs (extra packs / bonus pool)
+function sharesFromPacks(
+  packs: number[],
+  min: number,
+  bonusPool: number,
   currentShares: number[]
 ): number[] {
-  const next = Array.from({ length: Math.max(currentShares.length, cutoff) },
+  const next = Array.from({ length: Math.max(currentShares.length, packs.length) },
     (_, index) => currentShares[index] ?? 0)
-  if (rank >= cutoff) return next
-
-  const clamped = Math.min(100, Math.max(0, share))
-  const otherRanks = Array.from({ length: cutoff }, (_, index) => index)
-    .filter(index => index !== rank)
-  if (otherRanks.length === 0) {
-    next[rank] = 100
-    return next
-  }
-
-  const othersTotal = otherRanks.reduce((sum, index) => sum + (next[index] ?? 0), 0)
-  const remaining = 100 - clamped
-
-  for (const index of otherRanks) {
-    next[index] = othersTotal > 0
-      ? ((next[index] ?? 0) / othersTotal) * remaining
-      : remaining / otherRanks.length
-  }
-  next[rank] = clamped
-
+  packs.forEach((value, rank) => {
+    next[rank] = ((value - min) / bonusPool) * 100
+  })
   return next
 }
 
-// Re-derives the shares of the rewarded ranks from the whole packs they really
-// get (extra packs / bonus pool), so a share is never finer than a pack.
-function snapSharesToPacks(
-  rankedCount: number,
-  settings: PrizeDistributionSettings
-): number[] {
-  const { rewardedCount, bonusPool } = prizeBudgetOf(rankedCount, settings)
-  const next = [...settings.bonusShares]
-  if (bonusPool <= 0) return next
-
-  const minPerPlayer = Math.max(0, settings.minPacksPerPlayer)
-  const packs = computePrizeDistribution(rankedCount, settings)
-  for (let rank = 0; rank < rewardedCount; rank++) {
-    next[rank] = (((packs[rank] ?? 0) - minPerPlayer) / bonusPool) * 100
-  }
-
-  return next
-}
-
-// Keeps packs and shares linked: when the organizer asks for a pack count on a
-// rank, derive that rank's share of the bonus pool, take/give the difference
-// from the other rewarded ranks, then snap every share to the whole packs it
-// produces. Moving a rank by one pack therefore moves exactly one pack.
+// Keeps packs and shares linked: asks for `packs` on a placement, moves the
+// difference one pack at a time from/to the others (see firstIndex) and
+// returns the shares that reproduce that distribution. Moving a placement by
+// one pack therefore moves exactly one pack.
 export function sharesForPackEdit(
   rank: number,
   packs: number,
@@ -70,16 +73,14 @@ export function sharesForPackEdit(
   settings: PrizeDistributionSettings
 ): number[] {
   const { rewardedCount, bonusPool, bonusCap } = prizeBudgetOf(rankedCount, settings)
-  if (bonusPool <= 0) return [...settings.bonusShares]
+  if (rank >= rewardedCount || bonusPool <= 0) return [...settings.bonusShares]
 
-  const minPerPlayer = Math.max(0, settings.minPacksPerPlayer)
-  const bonus = Math.min(bonusPool, bonusCap, Math.max(0, packs - minPerPlayer))
-  const rebalanced = rebalanceShares(
-    rank,
-    (bonus / bonusPool) * 100,
-    rewardedCount,
-    settings.bonusShares
-  )
+  const min = Math.max(0, settings.minPacksPerPlayer)
+  const max = min + Math.min(bonusPool, bonusCap)
+  const target = Math.min(max, Math.max(min, packs))
 
-  return snapSharesToPacks(rankedCount, { ...settings, bonusShares: rebalanced })
+  const current = computePrizeDistribution(rankedCount, settings).slice(0, rewardedCount)
+  const moved = movePacks(current, rank, target, min, max)
+
+  return sharesFromPacks(moved, min, bonusPool, settings.bonusShares)
 }
