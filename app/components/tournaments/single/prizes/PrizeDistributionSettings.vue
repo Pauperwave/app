@@ -82,129 +82,80 @@ const topCutoffHint = computed(() => {
       {{ t('tournament.single.prizeDistribution.sections.packs') }}
     </h4>
 
-    <div class="w-52 space-y-1.5">
-      <span class="text-sm">{{ t('tournament.single.prizeDistribution.totalPacks') }}</span>
-      <UTooltip
-        :text="totalPacksHint"
-        :disabled="!totalPacksHint"
-      >
-        <!-- native wrapper: UInputNumber drops the tooltip trigger listeners -->
-        <div>
-          <UInputNumber
-            :model-value="settings.totalPacks"
-            :min="limits.minTotalPacks"
-            class="w-full"
-            :icon="ICONS.package"
-            @update:model-value="value => emit('update', { totalPacks: Number(value ?? 0) })"
-          />
-        </div>
-      </UTooltip>
-    </div>
+    <HintedNumberField
+      :label="t('tournament.single.prizeDistribution.totalPacks')"
+      :hint="totalPacksHint"
+      :model-value="settings.totalPacks"
+      :min="limits.minTotalPacks"
+      :icon="ICONS.package"
+      class="w-52"
+      @update:model-value="value => emit('update', { totalPacks: value })"
+    />
 
-    <div class="w-52 space-y-1.5">
-      <span class="text-sm">{{ t('tournament.single.prizeDistribution.reservedPacks') }}</span>
-      <UTooltip
-        :text="reservedHint"
-        :disabled="!reservedHint"
-      >
-        <!-- native wrapper: UInputNumber drops the tooltip trigger listeners -->
-        <div>
-          <UInputNumber
-            :model-value="settings.reservedPacks"
-            :min="0"
-            :max="limits.maxReservedPacks"
-            class="w-full"
-            :icon="ICONS.package"
-            @update:model-value="value => emit('update', { reservedPacks: Number(value ?? 0) })"
-          />
-        </div>
-      </UTooltip>
-    </div>
+    <HintedNumberField
+      :label="t('tournament.single.prizeDistribution.reservedPacks')"
+      :hint="reservedHint"
+      :model-value="settings.reservedPacks"
+      :min="0"
+      :max="limits.maxReservedPacks"
+      :icon="ICONS.package"
+      class="w-52"
+      @update:model-value="value => emit('update', { reservedPacks: value })"
+    />
 
     <h4 class="col-span-2 text-base font-semibold">
       {{ t('tournament.single.prizeDistribution.sections.minimums') }}
     </h4>
 
-    <div class="w-52 space-y-1.5">
-      <span class="text-sm">{{ t('tournament.single.prizeDistribution.minPacksPerPlayer') }}</span>
-      <UTooltip
-        :text="minPacksHint"
-        :disabled="!minPacksHint"
-      >
-        <!-- native wrapper: UInputNumber drops the tooltip trigger listeners -->
-        <div>
-          <UInputNumber
-            :model-value="settings.minPacksPerPlayer"
-            :min="0"
-            :max="limits.maxMinPacksPerPlayer"
-            class="w-full"
-            :icon="ICONS.booster"
-            @update:model-value="value => emit('update', { minPacksPerPlayer: Number(value ?? 0) })"
-          />
-        </div>
-      </UTooltip>
-    </div>
+    <HintedNumberField
+      :label="t('tournament.single.prizeDistribution.minPacksPerPlayer')"
+      :hint="minPacksHint"
+      :model-value="settings.minPacksPerPlayer"
+      :min="0"
+      :max="limits.maxMinPacksPerPlayer"
+      :icon="ICONS.booster"
+      class="w-52"
+      @update:model-value="value => emit('update', { minPacksPerPlayer: value })"
+    />
 
-    <div class="w-52 space-y-1.5">
-      <span class="text-sm">{{ t('tournament.single.prizeDistribution.nonRewardedMinPacks') }}</span>
-      <UTooltip
-        :text="nonRewardedMinHint"
-        :disabled="!nonRewardedMinHint"
-      >
-        <!-- native wrapper: UInputNumber drops the tooltip trigger listeners -->
-        <div>
-          <UInputNumber
-            :model-value="settings.nonRewardedMinPacks"
-            :min="0"
-            :max="limits.maxNonRewardedMinPacks"
-            :disabled="limits.nonRewardedCount === 0"
-            class="w-full"
-            :icon="ICONS.players"
-            @update:model-value="value => emit('update', {
-              nonRewardedMinPacks: Number(value ?? 0)
-            })"
-          />
-        </div>
-      </UTooltip>
-    </div>
+    <HintedNumberField
+      :label="t('tournament.single.prizeDistribution.nonRewardedMinPacks')"
+      :hint="nonRewardedMinHint"
+      :model-value="settings.nonRewardedMinPacks"
+      :min="0"
+      :max="limits.maxNonRewardedMinPacks"
+      :disabled="limits.nonRewardedCount === 0"
+      :icon="ICONS.players"
+      class="w-52"
+      @update:model-value="value => emit('update', { nonRewardedMinPacks: value })"
+    />
 
     <h4 class="col-span-2 text-base font-semibold">
       {{ t('tournament.single.prizeDistribution.sections.placements') }}
     </h4>
 
-    <div class="w-52 space-y-1.5">
-      <span class="text-sm">{{ t('tournament.single.prizeDistribution.weightLabels.topCutoff') }}</span>
-      <UTooltip
-        :text="topCutoffHint"
-        :disabled="!topCutoffHint"
-      >
-        <!-- native wrapper: UInputNumber drops the tooltip trigger listeners -->
-        <div>
-          <UInputNumber
-            :model-value="Math.min(settings.topCutoff, playerCount)"
-            :min="1"
-            :max="limits.maxTopCutoff"
-            :step="1"
-            class="w-full"
-            :icon="ICONS.standings"
-            @update:model-value="value => emit('update', { topCutoff: Number(value ?? 0) })"
-          />
-        </div>
-      </UTooltip>
-    </div>
+    <HintedNumberField
+      :label="t('tournament.single.prizeDistribution.weightLabels.topCutoff')"
+      :hint="topCutoffHint"
+      :model-value="Math.min(settings.topCutoff, playerCount)"
+      :min="1"
+      :max="limits.maxTopCutoff"
+      :step="1"
+      :icon="ICONS.standings"
+      class="w-52"
+      @update:model-value="value => emit('update', { topCutoff: value })"
+    />
 
-    <div class="w-52 space-y-1.5">
-      <span class="text-sm">{{ t('tournament.single.prizeDistribution.maxPacksPerPlayer') }}</span>
-      <!-- Greyed out while 0, i.e. no cap in effect -->
-      <UInputNumber
-        :model-value="settings.maxPacksPerPlayer"
-        :min="0"
-        :step="1"
-        class="w-full"
-        :class="{ 'opacity-50': settings.maxPacksPerPlayer === 0 }"
-        :icon="ICONS.package"
-        @update:model-value="value => updateMaxPacksPerPlayer(Number(value ?? 0))"
-      />
-    </div>
+    <!-- Greyed out while 0, i.e. no cap in effect -->
+    <HintedNumberField
+      :label="t('tournament.single.prizeDistribution.maxPacksPerPlayer')"
+      :model-value="settings.maxPacksPerPlayer"
+      :min="0"
+      :step="1"
+      :dimmed="settings.maxPacksPerPlayer === 0"
+      :icon="ICONS.package"
+      class="w-52"
+      @update:model-value="updateMaxPacksPerPlayer"
+    />
   </section>
 </template>
