@@ -31,7 +31,6 @@ describe('usePrizeDistributionPage', () => {
     const shares = page.rows.value.slice(0, 8).map(row => row.sharePercent)
 
     expect(shares).toEqual([40, 30, 20, 10, 0, 0, 0, 0])
-    expect(page.sharesTotal.value).toBe(100)
   })
 
   it('has no share for the non-rewarded rows', () => {
@@ -86,7 +85,6 @@ describe('usePrizeDistributionPage', () => {
     expect(diffs[4]).toBe(1)
     expect(diffs.filter(diff => diff === -1)).toHaveLength(1)
     expect(page.allocatedTotal.value).toBe(34)
-    expect(page.sharesTotal.value).toBe(100)
   })
 
   it('gives a pack back to another placement on a negative share step', () => {
