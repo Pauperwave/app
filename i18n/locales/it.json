@@ -1696,6 +1696,8 @@
         "maxPacksPerPlayer": "Tetto per piazzamento",
         "reservedPacks": "Buste da tenere da parte",
         "reservedSummary": "{count} da parte",
+        "stepShareDown": "Togli una busta",
+        "stepShareUp": "Aggiungi una busta",
         "notRewardedDivider": "Non premiati (oltre i primi {count})",
         "distributedSummary": "Buste distribuite: {assigned} su {total}",
         "hints": {
