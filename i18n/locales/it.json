@@ -1678,8 +1678,8 @@
       },
       "prizeDistribution": {
         "sectionTitle": "Distribuzione buste",
-        "totalPacks": "Buste totali disponibili",
-        "minPacksPerPlayer": "Minimo garantito a giocatore",
+        "totalPacks": "Buste disponibili in totale",
+        "minPacksPerPlayer": "Minimo per ogni premiato",
         "shapeHeading": "Come distribuire",
         "presets": {
           "flat": "Equa",
@@ -1689,13 +1689,13 @@
           "customHint": "Modifica una percentuale o le buste di un piazzamento: la tua ripartizione viene salvata qui."
         },
         "weightLabels": {
-          "topCutoff": "Piazzamenti premiati"
+          "topCutoff": "Numero di piazzamenti premiati"
         },
         "sharesTotal": "Totale: {total}%",
-        "nonRewardedMinPacks": "Minimo per i non premiati",
-        "maxPacksPerPlayer": "Tetto per piazzamento",
-        "reservedPacks": "Buste da tenere da parte",
-        "reservedSummary": "{count} da parte",
+        "nonRewardedMinPacks": "Minimo per ogni non premiato",
+        "maxPacksPerPlayer": "Massimo di buste per piazzamento",
+        "reservedPacks": "Buste accantonate (non assegnate)",
+        "reservedSummary": "{count} accantonate",
         "stepShareDown": "Togli una busta",
         "stepShareUp": "Aggiungi una busta",
         "notRewardedDivider": "Non premiati (oltre i primi {count})",
@@ -1709,15 +1709,23 @@
           "topCutoffAllPlayers": "Stai già premiando tutti i giocatori.",
           "topCutoffAtMax": "Con {total} buste e un minimo di {min} puoi premiare al massimo {max} piazzamenti."
         },
+        "info": {
+          "totalPacks": "Tutte le buste che hai a disposizione per questo torneo, comprese quelle che accantoni.",
+          "reservedPacks": "Buste che non vengono date a nessuno (per esempio da estrarre a sorte o da tenere per il negozio). Si tolgono dal totale prima di distribuire.",
+          "minPacksPerPlayer": "Buste che ogni giocatore premiato riceve comunque, prima della divisione del bonus.",
+          "nonRewardedMinPacks": "Buste di partecipazione che ogni giocatore fuori dai premiati riceve. Si tolgono dal totale prima di calcolare il bonus.",
+          "topCutoff": "Quanti giocatori, a partire dal primo in classifica, ricevono il minimo e possono avere un bonus.",
+          "maxPacksPerPlayer": "Massimo di buste che un singolo piazzamento può ricevere: l'eccedenza passa agli altri premiati. Se le buste non basterebbero a distribuirle tutte, il limite viene ignorato."
+        },
         "sections": {
           "packs": "Buste",
           "minimums": "Minimi garantiti",
           "placements": "Piazzamenti"
         },
         "chartLines": {
-          "min": "Minimo garantito: {count}",
-          "nonRewardedMin": "Minimo non premiati: {count}",
-          "cap": "Tetto: {count}"
+          "min": "Minimo per ogni premiato: {count}",
+          "nonRewardedMin": "Minimo per ogni non premiato: {count}",
+          "cap": "Massimo per piazzamento: {count}"
         },
         "chartAxisX": "Piazzamento",
         "chartAxisY": "Buste",
