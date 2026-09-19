@@ -35,29 +35,10 @@ function formatShare(share: number): string {
 }
 
 // Briefly tint rows whose pack count just changed (green = gained, red = lost)
-const flashes = ref<Record<string, 'gain' | 'loss'>>({})
-let previousPacks = new Map<string, number>()
-let flashTimer: ReturnType<typeof setTimeout> | undefined
-
-watch(() => rows.map(row => row.packs), () => {
-  const changes: Record<string, 'gain' | 'loss'> = {}
-  for (const row of rows) {
-    const before = previousPacks.get(row.associateUuid)
-    if (before !== undefined && before !== row.packs) {
-      changes[row.associateUuid] = row.packs > before ? 'gain' : 'loss'
-    }
-  }
-  previousPacks = new Map(rows.map(row => [row.associateUuid, row.packs]))
-
-  if (Object.keys(changes).length === 0) return
-  flashes.value = changes
-  clearTimeout(flashTimer)
-  flashTimer = setTimeout(() => {
-    flashes.value = {}
-  }, 900)
-}, { immediate: true })
-
-onBeforeUnmount(() => clearTimeout(flashTimer))
+const { flashes } = useChangeFlash(() => rows.map(row => ({
+  key: row.associateUuid,
+  value: row.packs
+})))
 </script>
 
 <template>
@@ -93,28 +74,17 @@ onBeforeUnmount(() => clearTimeout(flashTimer))
         />
 
         <!-- Buttons only, no typing: each step moves exactly one pack -->
-        <div
+        <ValueStepper
           v-if="row.sharePercent !== null"
-          class="flex w-32 items-center justify-between rounded-md ring ring-inset ring-accented"
-        >
-          <UButton
-            :icon="ICONS.subtract"
-            :disabled="row.packs <= minPacks"
-            color="neutral"
-            variant="ghost"
-            size="sm"
-            @click="emit('stepShare', index, -1)"
-          />
-          <span class="font-mono text-sm tabular-nums">{{ formatShare(row.sharePercent) }}</span>
-          <UButton
-            :icon="ICONS.add"
-            :disabled="row.packs >= maxPacks"
-            color="neutral"
-            variant="ghost"
-            size="sm"
-            @click="emit('stepShare', index, 1)"
-          />
-        </div>
+          :label="formatShare(row.sharePercent)"
+          :can-decrease="row.packs > minPacks"
+          :can-increase="row.packs < maxPacks"
+          :decrease-label="t('tournament.single.prizeDistribution.stepShareDown')"
+          :increase-label="t('tournament.single.prizeDistribution.stepShareUp')"
+          class="w-32"
+          @decrease="emit('stepShare', index, -1)"
+          @increase="emit('stepShare', index, 1)"
+        />
         <div
           v-else
           class="w-32"
