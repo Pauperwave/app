@@ -157,6 +157,41 @@ describe('usePrizeDistributionPage', () => {
     expect(packsOf(page)).toEqual(customPacks)
   })
 
+  it('resets every setting to its starting value', () => {
+    const page = usePrizeDistributionPage(makeStandings(20))
+    const initial = packsOf(page)
+
+    page.updateSettings({ totalPacks: 60, minPacksPerPlayer: 2, maxPacksPerPlayer: 0 })
+    page.stepShare(4, 1)
+    expect(packsOf(page)).not.toEqual(initial)
+
+    page.resetSettings()
+
+    expect(packsOf(page)).toEqual(initial)
+    expect(page.settings.value.totalPacks).toBe(34)
+    expect(page.settings.value.maxPacksPerPlayer).toBe(7)
+  })
+
+  it('keeps the saved custom shares when resetting', () => {
+    const page = usePrizeDistributionPage(makeStandings(20))
+    page.stepShare(4, 1)
+    expect(page.hasCustomShares.value).toBe(true)
+
+    page.resetSettings()
+
+    expect(page.hasCustomShares.value).toBe(true)
+    expect(page.selectedPreset.value).toBe('balanced')
+  })
+
+  it('does not share the shares array with the defaults after a reset', () => {
+    const page = usePrizeDistributionPage(makeStandings(20))
+    page.resetSettings()
+    page.stepShare(4, 1)
+    page.resetSettings()
+
+    expect(page.settings.value.bonusShares).toEqual([40, 30, 20, 10, 0, 0, 0, 0])
+  })
+
   it('reacts to the standings changing', () => {
     const standings = ref(makeStandings(20))
     const page = usePrizeDistributionPage(standings)

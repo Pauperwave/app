@@ -21,6 +21,7 @@ const { t } = useI18n()
 const {
   settings,
   updateSettings,
+  resetSettings,
   selectedPreset,
   hasCustomShares,
   applyDistributionPreset,
@@ -64,6 +65,7 @@ const {
             :selected="selectedPreset"
             :has-custom="hasCustomShares"
             @select="applyDistributionPreset"
+            @reset="resetSettings"
           />
         </div>
 
