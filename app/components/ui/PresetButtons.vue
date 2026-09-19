@@ -13,6 +13,7 @@ const {
   selected,
   customLabel,
   resetLabel = '',
+  resetDisabled = false,
   customClickable = false,
   customDisabled = false,
   customHint = ''
@@ -22,6 +23,8 @@ const {
   customLabel: string
   // The reset button only shows when a label is given
   resetLabel?: string
+  // Nothing to reset (already at the starting values)
+  resetDisabled?: boolean
   customClickable?: boolean
   customDisabled?: boolean
   // Tooltip shown while the custom button is disabled
@@ -52,6 +55,7 @@ const emit = defineEmits<{
 
     <UButton
       v-if="resetLabel"
+      :disabled="resetDisabled"
       :icon="ICONS.rotateBack"
       color="warning"
       variant="soft"

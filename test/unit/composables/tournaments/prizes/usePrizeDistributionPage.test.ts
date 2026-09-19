@@ -172,6 +172,31 @@ describe('usePrizeDistributionPage', () => {
     expect(page.settings.value.maxPacksPerPlayer).toBe(7)
   })
 
+  it('is at the defaults at the start, so there is nothing to reset', () => {
+    const page = usePrizeDistributionPage(makeStandings(20))
+    expect(page.isAtDefaults.value).toBe(true)
+  })
+
+  it('leaves the defaults after a setting or a share step, and returns after a reset', () => {
+    const page = usePrizeDistributionPage(makeStandings(20))
+
+    page.updateSettings({ totalPacks: 40 })
+    expect(page.isAtDefaults.value).toBe(false)
+
+    page.resetSettings()
+    expect(page.isAtDefaults.value).toBe(true)
+
+    page.stepShare(4, 1)
+    expect(page.isAtDefaults.value).toBe(false)
+  })
+
+  it('is back at the defaults after stepping a pack up and down again', () => {
+    const page = usePrizeDistributionPage(makeStandings(20))
+    page.stepShare(4, 1)
+    page.stepShare(4, -1)
+    expect(page.isAtDefaults.value).toBe(true)
+  })
+
   it('keeps the saved custom shares when resetting', () => {
     const page = usePrizeDistributionPage(makeStandings(20))
     page.stepShare(4, 1)

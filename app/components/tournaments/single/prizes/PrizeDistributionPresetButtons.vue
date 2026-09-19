@@ -10,9 +10,11 @@
 <script setup lang="ts">
 export type PrizeDistributionPresetKind = 'flat' | 'balanced' | 'competitive' | 'custom'
 
-const { selected, hasCustom } = defineProps<{
+const { selected, hasCustom, resetDisabled = false } = defineProps<{
   selected: PrizeDistributionPresetKind
   hasCustom: boolean
+  // Every setting is already at its starting value
+  resetDisabled?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -39,6 +41,7 @@ const presets: Array<{
     :selected="selected"
     :custom-label="t('tournament.single.prizeDistribution.presets.custom')"
     :reset-label="t('tournament.single.prizeDistribution.presets.reset')"
+    :reset-disabled="resetDisabled"
     :custom-hint="t('tournament.single.prizeDistribution.presets.customHint')"
     :custom-disabled="!hasCustom"
     custom-clickable

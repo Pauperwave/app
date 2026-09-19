@@ -8,7 +8,9 @@ import type { PrizeDistributionSettings } from '~/types'
 import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/useLiveCommanderStandings'
 import { usePrizeDistribution } from '~/composables/tournaments/prizes/usePrizeDistribution'
 import { usePrizeDistributionPresets } from '~/composables/tournaments/prizes/usePrizeDistributionPresets'
-import { DEFAULT_PRIZE_DISTRIBUTION_SETTINGS } from '~/utils/tournaments/prizes/prizeAllocation'
+import {
+  DEFAULT_PRIZE_DISTRIBUTION_SETTINGS, isDefaultPrizeSettings
+} from '~/utils/tournaments/prizes/prizeAllocation'
 import { prizeBudgetOf } from '~/utils/tournaments/prizes/prizeBudget'
 import { packRangeOf, sharesForPackEdit } from '~/utils/tournaments/prizes/prizeShares'
 
@@ -28,6 +30,8 @@ export function usePrizeDistributionPage(standings: MaybeRefOrGetter<PrizeStandi
       bonusShares: [...DEFAULT_PRIZE_DISTRIBUTION_SETTINGS.bonusShares]
     }
   }
+
+  const isAtDefaults = computed(() => isDefaultPrizeSettings(settings.value))
 
   const playerCount = computed(() => toValue(standings).length)
 
@@ -105,6 +109,7 @@ export function usePrizeDistributionPage(standings: MaybeRefOrGetter<PrizeStandi
     settings,
     updateSettings,
     resetSettings,
+    isAtDefaults,
     selectedPreset,
     hasCustomShares,
     applyDistributionPreset,
