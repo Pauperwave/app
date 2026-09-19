@@ -20,93 +20,59 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-// Limits keep "every guaranteed minimum + reserve <= total packs" always true
-const rewardedCount = computed(() => Math.max(1, Math.min(settings.topCutoff, playerCount)))
-const nonRewardedCount = computed(() => Math.max(0, playerCount - rewardedCount.value))
+// The bounds keep "every guaranteed minimum + reserve <= total packs" always true
+const limits = computed(() => prizeSettingsLimits(settings, playerCount))
+const states = computed(() => prizeLimitStates(settings, playerCount))
 
-const rewardedGuaranteed = computed(() => settings.minPacksPerPlayer * rewardedCount.value)
-const nonRewardedGuaranteed = computed(() => settings.nonRewardedMinPacks * nonRewardedCount.value)
-
-const minTotalPacks = computed(() =>
-  rewardedGuaranteed.value + nonRewardedGuaranteed.value + settings.reservedPacks)
-
-const maxMinPacksPerPlayer = computed(() => Math.max(0, Math.floor(
-  (settings.totalPacks - settings.reservedPacks - nonRewardedGuaranteed.value) / rewardedCount.value
-)))
-
-const maxNonRewardedMinPacks = computed(() => {
-  if (nonRewardedCount.value === 0) return 0
-  const spare = settings.totalPacks - settings.reservedPacks - rewardedGuaranteed.value
-  return Math.max(0, Math.floor(spare / nonRewardedCount.value))
-})
-
-const maxReservedPacks = computed(() =>
-  Math.max(0, settings.totalPacks - rewardedGuaranteed.value - nonRewardedGuaranteed.value))
-
-const maxTopCutoff = computed(() => {
-  const {
-    minPacksPerPlayer, nonRewardedMinPacks, totalPacks, reservedPacks
-  } = settings
-  if (minPacksPerPlayer <= nonRewardedMinPacks) return Math.max(1, playerCount)
-
-  const spare = totalPacks - reservedPacks - nonRewardedMinPacks * playerCount
-  const affordable = Math.floor(spare / (minPacksPerPlayer - nonRewardedMinPacks))
-  return Math.max(1, Math.min(playerCount, affordable))
-})
-
-// Lowest useful cap: below it the rewarded packs would not fit, so the cap would be ignored
-const minMaxPacksPerPlayer = computed(() => {
-  const rewardedPool = settings.totalPacks - settings.reservedPacks - nonRewardedGuaranteed.value
-  return Math.max(settings.minPacksPerPlayer, Math.ceil(rewardedPool / rewardedCount.value))
-})
-
-// 0 turns the cap off; values below the lowest useful cap jump to it (or back to 0)
 function updateMaxPacksPerPlayer(value: number) {
-  const isUnusable = value > 0 && value < minMaxPacksPerPlayer.value
-  const next = isUnusable
-    ? (value > settings.maxPacksPerPlayer ? minMaxPacksPerPlayer.value : 0)
-    : value
-
-  emit('update', { maxPacksPerPlayer: next })
+  emit('update', {
+    maxPacksPerPlayer: resolveMaxPacksPerPlayer(
+      value,
+      settings.maxPacksPerPlayer,
+      limits.value.lowestUsefulCap
+    )
+  })
 }
 
 // Tooltip explaining why a control's +/- is disabled; undefined while it isn't
-const totalPacksHint = computed(() => (settings.totalPacks <= minTotalPacks.value
+const totalPacksHint = computed(() => (states.value.totalPacksAtMin
   ? t('tournament.single.prizeDistribution.hints.totalPacksAtMin', {
-    min: minTotalPacks.value, count: rewardedCount.value
+    min: limits.value.minTotalPacks, count: limits.value.rewardedCount
   })
   : undefined))
 
-const minPacksHint = computed(() => (settings.minPacksPerPlayer >= maxMinPacksPerPlayer.value
+const minPacksHint = computed(() => (states.value.minPacksAtMax
   ? t('tournament.single.prizeDistribution.hints.minPacksAtMax', {
-    total: settings.totalPacks, count: rewardedCount.value
+    total: settings.totalPacks, count: limits.value.rewardedCount
   })
   : undefined))
 
 const nonRewardedMinHint = computed(() => {
-  if (nonRewardedCount.value === 0) {
+  if (states.value.nonRewarded === 'none') {
     return t('tournament.single.prizeDistribution.hints.nonRewardedNone')
   }
 
-  return settings.nonRewardedMinPacks >= maxNonRewardedMinPacks.value
-    ? t('tournament.single.prizeDistribution.hints.nonRewardedAtMax', {
-      total: settings.totalPacks
-    })
+  return states.value.nonRewarded === 'atMax'
+    ? t('tournament.single.prizeDistribution.hints.nonRewardedAtMax', { total: settings.totalPacks })
     : undefined
 })
 
-const reservedHint = computed(() => (settings.reservedPacks >= maxReservedPacks.value
+const reservedHint = computed(() => (states.value.reservedAtMax
   ? t('tournament.single.prizeDistribution.hints.reservedAtMax')
   : undefined))
 
 const topCutoffHint = computed(() => {
-  if (rewardedCount.value < maxTopCutoff.value) return undefined
+  if (states.value.topCutoff === 'allPlayers') {
+    return t('tournament.single.prizeDistribution.hints.topCutoffAllPlayers')
+  }
 
-  return maxTopCutoff.value >= playerCount
-    ? t('tournament.single.prizeDistribution.hints.topCutoffAllPlayers')
-    : t('tournament.single.prizeDistribution.hints.topCutoffAtMax', {
-      total: settings.totalPacks, min: settings.minPacksPerPlayer, max: maxTopCutoff.value
+  return states.value.topCutoff === 'atMax'
+    ? t('tournament.single.prizeDistribution.hints.topCutoffAtMax', {
+      total: settings.totalPacks,
+      min: settings.minPacksPerPlayer,
+      max: limits.value.maxTopCutoff
     })
+    : undefined
 })
 </script>
 
@@ -126,7 +92,7 @@ const topCutoffHint = computed(() => {
         <div>
           <UInputNumber
             :model-value="settings.totalPacks"
-            :min="minTotalPacks"
+            :min="limits.minTotalPacks"
             class="w-full"
             :icon="ICONS.package"
             @update:model-value="value => emit('update', { totalPacks: Number(value ?? 0) })"
@@ -146,7 +112,7 @@ const topCutoffHint = computed(() => {
           <UInputNumber
             :model-value="settings.reservedPacks"
             :min="0"
-            :max="maxReservedPacks"
+            :max="limits.maxReservedPacks"
             class="w-full"
             :icon="ICONS.package"
             @update:model-value="value => emit('update', { reservedPacks: Number(value ?? 0) })"
@@ -170,7 +136,7 @@ const topCutoffHint = computed(() => {
           <UInputNumber
             :model-value="settings.minPacksPerPlayer"
             :min="0"
-            :max="maxMinPacksPerPlayer"
+            :max="limits.maxMinPacksPerPlayer"
             class="w-full"
             :icon="ICONS.booster"
             @update:model-value="value => emit('update', { minPacksPerPlayer: Number(value ?? 0) })"
@@ -190,8 +156,8 @@ const topCutoffHint = computed(() => {
           <UInputNumber
             :model-value="settings.nonRewardedMinPacks"
             :min="0"
-            :max="maxNonRewardedMinPacks"
-            :disabled="nonRewardedCount === 0"
+            :max="limits.maxNonRewardedMinPacks"
+            :disabled="limits.nonRewardedCount === 0"
             class="w-full"
             :icon="ICONS.players"
             @update:model-value="value => emit('update', {
@@ -217,7 +183,7 @@ const topCutoffHint = computed(() => {
           <UInputNumber
             :model-value="Math.min(settings.topCutoff, playerCount)"
             :min="1"
-            :max="maxTopCutoff"
+            :max="limits.maxTopCutoff"
             :step="1"
             class="w-full"
             :icon="ICONS.standings"
