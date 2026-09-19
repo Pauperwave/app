@@ -27,7 +27,6 @@ const {
   allocatedTotal,
   budget,
   rewardedCount,
-  packsRange,
   rows,
   chartGuides,
   chartRows,
@@ -86,8 +85,6 @@ const {
           <TournamentsSinglePrizesPrizeDistributionTable
             :rows="rows"
             :rewarded-count="rewardedCount"
-            :min-packs="packsRange.min"
-            :max-packs="packsRange.max"
             class="w-full"
             @update-packs="updatePacks"
             @step-share="stepShare"

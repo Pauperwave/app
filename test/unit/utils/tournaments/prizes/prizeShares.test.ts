@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   computePrizeDistribution, DEFAULT_PRIZE_DISTRIBUTION_SETTINGS
 } from '~/utils/tournaments/prizes/prizeAllocation'
-import { sharesForPackEdit } from '~/utils/tournaments/prizes/prizeShares'
+import { packRangeOf, sharesForPackEdit } from '~/utils/tournaments/prizes/prizeShares'
 import { settings, sum } from './prizeTestHelpers'
 
 describe('sharesForPackEdit', () => {
@@ -74,7 +74,7 @@ describe('sharesForPackEdit', () => {
   })
 
   it('clamps a pack count below the guaranteed minimum to the minimum', () => {
-    expect(distributionAfter(0, 0)[0]).toBe(3)
+    expect(distributionAfter(3, 0)[3]).toBe(3)
   })
 
   it('works when the other ranks had 0%', () => {
@@ -117,12 +117,12 @@ describe('sharesForPackEdit — who gives and who takes', () => {
     expect(packsAfter(0, 8)).toEqual([8, 5, 5, 4, 3, 3, 3, 3])
   })
 
-  it('skips the placements already at the guaranteed minimum', () => {
-    const concentrated = settings({
-      maxPacksPerPlayer: 0, bonusShares: [0, 100, 0, 0, 0, 0, 0, 0]
+  it('skips a giver that would end up below the placement under it', () => {
+    const tied = settings({
+      maxPacksPerPlayer: 0, bonusShares: [50, 50, 0, 0, 0, 0, 0, 0]
     })
-    // 3 13 3 3 3 3 3 3: only #2 has packs above the minimum to give
-    expect(packsAfter(4, 4, concentrated)).toEqual([3, 12, 3, 3, 4, 3, 3, 3])
+    // 8 8 3 3 ...: #1 giving would leave it under #2, so #2 gives
+    expect(packsAfter(2, 4, tied)).toEqual([8, 7, 4, 3, 3, 3, 3, 3])
   })
 
   it('gives a released pack to the first placement still under the cap', () => {
@@ -141,13 +141,75 @@ describe('sharesForPackEdit — who gives and who takes', () => {
       .toEqual(before)
   })
 
-  it('moves several packs one at a time, the highest placement giving until its minimum', () => {
-    expect(packsAfter(4, 6)).toEqual([4, 6, 5, 4, 6, 3, 3, 3])
+  it('stops at the placement above when asked for more than it can reach', () => {
+    // #5 cannot pass #4, which has 4
+    expect(packsAfter(4, 6)).toEqual([6, 6, 5, 4, 4, 3, 3, 3])
   })
 
   it('never lets a placement give below the guaranteed minimum', () => {
     const packs = packsAfter(4, 13)
     expect(packs.every(value => value >= 3)).toBe(true)
     expect(sum(packs)).toBe(34)
+  })
+})
+
+describe('sharesForPackEdit — a lower placement never has more packs', () => {
+  function stepAll(base: ReturnType<typeof settings>, steps: number): number[][] {
+    let current = base
+    const history: number[][] = []
+    const directions = [1, -1, 1, 1, -1, -1, 1, -1] as const
+
+    for (let step = 0; step < steps; step++) {
+      const rank = (step * 3) % 8
+      const packs = computePrizeDistribution(20, current)[rank] ?? 0
+      const direction = directions[step % directions.length] ?? 1
+      current = { ...current, bonusShares: sharesForPackEdit(rank, packs + direction, 20, current) }
+      history.push(computePrizeDistribution(20, current).slice(0, 8))
+    }
+
+    return history
+  }
+
+  it('keeps the placements in non-increasing order after every step', () => {
+    for (const packs of stepAll(settings({}), 60)) {
+      expect(packs).toEqual([...packs].sort((a, b) => b - a))
+    }
+  })
+
+  it('keeps every pack assigned and every placement within its bounds', () => {
+    for (const packs of stepAll(settings({}), 60)) {
+      expect(sum(packs)).toBe(34)
+      expect(packs.every(value => value >= 3 && value <= 7)).toBe(true)
+    }
+  })
+
+  it('does not raise a placement above the one before it', () => {
+    // 7 6 5 4 3 3 3 3: #5 can reach 4 (level with #4) but not 5
+    const first = sharesForPackEdit(4, 4, 20, settings({}))
+    const raised = { ...settings({}), bonusShares: first }
+    const second = sharesForPackEdit(4, 5, 20, raised)
+
+    expect(computePrizeDistribution(20, { ...raised, bonusShares: second })[4]).toBe(4)
+  })
+})
+
+describe('packRangeOf', () => {
+  const rangeOf = (rank: number) => packRangeOf(rank, 20, settings({}))
+
+  it('lets a placement move between its neighbours and the bounds', () => {
+    // 7 6 5 4 3 3 3 3, minimum 3, cap 7
+    expect(rangeOf(0)).toEqual({ min: 6, max: 7 })
+    expect(rangeOf(1)).toEqual({ min: 5, max: 7 })
+    expect(rangeOf(3)).toEqual({ min: 3, max: 5 })
+    expect(rangeOf(4)).toEqual({ min: 3, max: 4 })
+  })
+
+  it('has no range to move in outside the rewarded placements', () => {
+    expect(rangeOf(12)).toEqual({ min: 0, max: 0 })
+  })
+
+  it('has no range to move in without a bonus pool', () => {
+    const noBonus = settings({ totalPacks: 24 })
+    expect(packRangeOf(0, 20, noBonus)).toEqual({ min: 3, max: 3 })
   })
 })

@@ -9,8 +9,8 @@ import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/us
 import { usePrizeDistribution } from '~/composables/tournaments/prizes/usePrizeDistribution'
 import { usePrizeDistributionPresets } from '~/composables/tournaments/prizes/usePrizeDistributionPresets'
 import { DEFAULT_PRIZE_DISTRIBUTION_SETTINGS } from '~/utils/tournaments/prizes/prizeAllocation'
-import { prizeBudgetOf, rewardedPacksRange } from '~/utils/tournaments/prizes/prizeBudget'
-import { sharesForPackEdit } from '~/utils/tournaments/prizes/prizeShares'
+import { prizeBudgetOf } from '~/utils/tournaments/prizes/prizeBudget'
+import { packRangeOf, sharesForPackEdit } from '~/utils/tournaments/prizes/prizeShares'
 
 type PrizeStanding = Pick<LiveCommanderStanding, 'associateUuid' | 'label'>
 
@@ -34,7 +34,6 @@ export function usePrizeDistributionPage(standings: MaybeRefOrGetter<PrizeStandi
 
   const budget = computed(() => prizeBudgetOf(playerCount.value, settings.value))
   const rewardedCount = computed(() => budget.value.rewardedCount)
-  const packsRange = computed(() => rewardedPacksRange(playerCount.value, settings.value))
 
   // Share = extra packs / bonus pool, taken from the packs a placement really gets
   // (not the nominal share), so it stays true with rounding, caps and minimums
@@ -47,11 +46,19 @@ export function usePrizeDistributionPage(standings: MaybeRefOrGetter<PrizeStandi
   const rows = computed(() => toValue(standings).map((standing, index) => {
     const packs = distribution.value[index] ?? 0
 
+    const isRewarded = index < rewardedCount.value
+    // Fewest/most packs this placement can reach without passing a neighbour
+    const range = isRewarded
+      ? packRangeOf(index, playerCount.value, settings.value)
+      : { min: packs, max: packs }
+
     return {
       associateUuid: standing.associateUuid,
       label: standing.label,
       packs,
-      sharePercent: index < rewardedCount.value ? realSharePercent(packs) : null
+      minPacks: range.min,
+      maxPacks: range.max,
+      sharePercent: isRewarded ? realSharePercent(packs) : null
     }
   }))
 
@@ -95,7 +102,6 @@ export function usePrizeDistributionPage(standings: MaybeRefOrGetter<PrizeStandi
     allocatedTotal,
     budget,
     rewardedCount,
-    packsRange,
     rows,
     chartGuides,
     chartRows,
