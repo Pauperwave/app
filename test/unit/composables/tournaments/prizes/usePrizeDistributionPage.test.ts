@@ -98,14 +98,41 @@ describe('usePrizeDistributionPage', () => {
     expect(diffs.filter(diff => diff === 1)).toHaveLength(1)
   })
 
-  it('sets the requested packs on updatePacks', () => {
+  it('sets the requested packs on updatePacks, up to the placement above', () => {
     const page = usePrizeDistributionPage(makeStandings(20))
     page.updateSettings({ maxPacksPerPlayer: 0 })
 
     page.updatePacks(1, 9)
 
-    expect(packsOf(page)[1]).toBe(9)
+    // #2 cannot pass #1, which has 7
+    expect(packsOf(page)[1]).toBe(7)
     expect(page.allocatedTotal.value).toBe(34)
+  })
+
+  it('never puts a lower placement above a higher one after any step', () => {
+    const page = usePrizeDistributionPage(makeStandings(20))
+    const directions = [1, -1, 1, 1, -1, -1, 1, -1] as const
+
+    for (let step = 0; step < 40; step++) {
+      page.stepShare((step * 3) % 8, directions[step % directions.length] ?? 1)
+      const rewarded = packsOf(page).slice(0, 8)
+      expect(rewarded).toEqual([...rewarded].sort((a, b) => b - a))
+    }
+  })
+
+  it('gives every rewarded row the packs range it can reach', () => {
+    const page = usePrizeDistributionPage(makeStandings(20))
+    const first = page.rows.value[0]
+    const fifth = page.rows.value[4]
+
+    expect([first?.minPacks, first?.maxPacks]).toEqual([6, 7])
+    expect([fifth?.minPacks, fifth?.maxPacks]).toEqual([3, 4])
+  })
+
+  it('gives the non-rewarded rows no range to move in', () => {
+    const page = usePrizeDistributionPage(makeStandings(20))
+    const ninth = page.rows.value[8]
+    expect([ninth?.minPacks, ninth?.maxPacks]).toEqual([0, 0])
   })
 
   it('saves the shares as the custom preset after a manual edit', () => {

@@ -37,14 +37,3 @@ export function prizeBudgetOf(
 
   return { rewardedCount, nonRewardedCount, distributable, rewardedPool, bonusPool, bonusCap }
 }
-
-// Lowest/highest pack count a rewarded placement can take: the guaranteed
-// minimum, up to the minimum plus the whole bonus pool (or the cap).
-export function rewardedPacksRange(
-  rankedCount: number,
-  settings: PrizeDistributionSettings
-): { min: number, max: number } {
-  const min = Math.max(0, settings.minPacksPerPlayer)
-  const { bonusPool, bonusCap } = prizeBudgetOf(rankedCount, settings)
-  return { min, max: min + Math.min(bonusPool, bonusCap) }
-}

@@ -14,8 +14,6 @@ const { rows, rewardedCount } = defineProps<{
   rows: PrizeDistributionRowData[]
   // Rows at index >= rewardedCount are outside the rewarded placements
   rewardedCount: number
-  minPacks: number
-  maxPacks: number
 }>()
 
 const emit = defineEmits<{
@@ -47,8 +45,6 @@ const isNonRewardedOpen = ref(false)
         :key="row.associateUuid"
         :row="row"
         :rank="rank"
-        :min-packs="minPacks"
-        :max-packs="maxPacks"
         :flash="flashes[row.associateUuid]"
         @update-packs="(placement, packs) => emit('updatePacks', placement, packs)"
         @step-share="(placement, direction) => emit('stepShare', placement, direction)"
@@ -84,8 +80,6 @@ const isNonRewardedOpen = ref(false)
             :key="row.associateUuid"
             :row="row"
             :rank="rank"
-            :min-packs="minPacks"
-            :max-packs="maxPacks"
             :flash="flashes[row.associateUuid]"
             muted
           />

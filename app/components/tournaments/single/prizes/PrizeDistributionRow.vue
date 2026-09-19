@@ -11,6 +11,9 @@ export interface PrizeDistributionRowData {
   associateUuid: string
   label: string
   packs: number
+  // Fewest/most packs this placement can reach without passing a neighbour
+  minPacks: number
+  maxPacks: number
   // Percent of the bonus pool for this placement; null outside the rewarded ones
   sharePercent: number | null
 }
@@ -21,8 +24,6 @@ const {
   row: PrizeDistributionRowData
   // 0-based placement
   rank: number
-  minPacks: number
-  maxPacks: number
   // Tint while the pack count has just changed
   flash?: ChangeFlash
   muted?: boolean
@@ -64,8 +65,8 @@ function formatShare(share: number): string {
     <ValueStepper
       v-if="row.sharePercent !== null"
       :label="formatShare(row.sharePercent)"
-      :can-decrease="row.packs > minPacks"
-      :can-increase="row.packs < maxPacks"
+      :can-decrease="row.packs > row.minPacks"
+      :can-increase="row.packs < row.maxPacks"
       :decrease-label="t('tournament.single.prizeDistribution.stepShareDown')"
       :increase-label="t('tournament.single.prizeDistribution.stepShareUp')"
       class="w-32"
@@ -79,8 +80,8 @@ function formatShare(share: number): string {
 
     <UInputNumber
       :model-value="row.packs"
-      :min="minPacks"
-      :max="maxPacks"
+      :min="row.minPacks"
+      :max="row.maxPacks"
       :disabled="row.sharePercent === null"
       class="w-28"
       :icon="ICONS.booster"
