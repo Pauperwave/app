@@ -37,12 +37,7 @@ const {
 </script>
 
 <template>
-  <div v-if="standings.length > 0" class="space-y-4">
-    <h3 class="font-semibold text-lg flex items-center gap-2">
-      <UIcon :name="ICONS.booster" class="text-primary" />
-      {{ t('tournament.single.prizeDistribution.sectionTitle') }}
-    </h3>
-
+  <div v-if="standings.length > 0">
     <div class="grid grid-cols-1 gap-6 lg:h-[calc(100dvh-20rem)] lg:grid-cols-[55%_1fr]">
       <div class="flex min-h-0 flex-col gap-4">
         <TournamentsSinglePrizesPrizeDistributionSettings

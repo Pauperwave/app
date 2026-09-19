@@ -1677,7 +1677,6 @@
         }
       },
       "prizeDistribution": {
-        "sectionTitle": "Distribuzione buste",
         "totalPacks": "Buste disponibili in totale",
         "minPacksPerPlayer": "Minimo per ogni premiato",
         "shapeHeading": "Come distribuire",
