@@ -39,7 +39,7 @@ const {
 <template>
   <div v-if="standings.length > 0">
     <div class="grid grid-cols-1 gap-6 lg:h-[calc(100dvh-20rem)] lg:grid-cols-[55%_1fr]">
-      <div class="flex min-h-0 flex-col gap-4">
+      <div class="flex min-h-0 flex-col gap-6">
         <TournamentsSinglePrizesPrizeDistributionSettings
           :settings="settings"
           :player-count="standings.length"
