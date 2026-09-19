@@ -77,8 +77,8 @@ const topCutoffHint = computed(() => {
 </script>
 
 <template>
-  <section class="grid w-fit grid-cols-2 gap-x-3 gap-y-2">
-    <h4 class="col-span-2 text-base font-semibold">
+  <section class="grid w-fit grid-cols-2 gap-x-3 gap-y-1">
+    <h4 class="col-span-2 mt-1.5 text-base font-semibold first:mt-0">
       {{ t('tournament.single.prizeDistribution.sections.packs') }}
     </h4>
 
@@ -88,8 +88,9 @@ const topCutoffHint = computed(() => {
       :hint="totalPacksHint"
       :model-value="settings.totalPacks"
       :min="limits.minTotalPacks"
+      size="sm"
       :icon="ICONS.package"
-      class="w-64"
+      class="w-60"
       @update:model-value="value => emit('update', { totalPacks: value })"
     />
 
@@ -100,12 +101,13 @@ const topCutoffHint = computed(() => {
       :model-value="settings.reservedPacks"
       :min="0"
       :max="limits.maxReservedPacks"
+      size="sm"
       :icon="ICONS.package"
-      class="w-64"
+      class="w-60"
       @update:model-value="value => emit('update', { reservedPacks: value })"
     />
 
-    <h4 class="col-span-2 text-base font-semibold">
+    <h4 class="col-span-2 mt-1.5 text-base font-semibold first:mt-0">
       {{ t('tournament.single.prizeDistribution.sections.minimums') }}
     </h4>
 
@@ -116,8 +118,9 @@ const topCutoffHint = computed(() => {
       :model-value="settings.minPacksPerPlayer"
       :min="0"
       :max="limits.maxMinPacksPerPlayer"
+      size="sm"
       :icon="ICONS.booster"
-      class="w-64"
+      class="w-60"
       @update:model-value="value => emit('update', { minPacksPerPlayer: value })"
     />
 
@@ -129,12 +132,13 @@ const topCutoffHint = computed(() => {
       :min="0"
       :max="limits.maxNonRewardedMinPacks"
       :disabled="limits.nonRewardedCount === 0"
+      size="sm"
       :icon="ICONS.players"
-      class="w-64"
+      class="w-60"
       @update:model-value="value => emit('update', { nonRewardedMinPacks: value })"
     />
 
-    <h4 class="col-span-2 text-base font-semibold">
+    <h4 class="col-span-2 mt-1.5 text-base font-semibold first:mt-0">
       {{ t('tournament.single.prizeDistribution.sections.placements') }}
     </h4>
 
@@ -146,8 +150,9 @@ const topCutoffHint = computed(() => {
       :min="1"
       :max="limits.maxTopCutoff"
       :step="1"
+      size="sm"
       :icon="ICONS.standings"
-      class="w-64"
+      class="w-60"
       @update:model-value="value => emit('update', { topCutoff: value })"
     />
 
@@ -159,8 +164,9 @@ const topCutoffHint = computed(() => {
       :min="0"
       :step="1"
       :dimmed="settings.maxPacksPerPlayer === 0"
+      size="sm"
       :icon="ICONS.package"
-      class="w-64"
+      class="w-60"
       @update:model-value="updateMaxPacksPerPlayer"
     />
   </section>

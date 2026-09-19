@@ -16,6 +16,7 @@ const {
   min = undefined,
   max = undefined,
   step = undefined,
+  size = undefined,
   disabled = false,
   dimmed = false
 } = defineProps<{
@@ -27,6 +28,7 @@ const {
   min?: number
   max?: number
   step?: number
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   disabled?: boolean
   // Muted look, e.g. while the value means "off"
   dimmed?: boolean
@@ -36,9 +38,9 @@ const model = defineModel<number>({ required: true })
 </script>
 
 <template>
-  <div class="space-y-1.5">
+  <div class="space-y-1">
     <div class="flex items-center gap-1.5">
-      <span class="text-sm">{{ label }}</span>
+      <span class="text-xs">{{ label }}</span>
       <UTooltip
         v-if="info"
         :text="info"
@@ -67,6 +69,7 @@ const model = defineModel<number>({ required: true })
           :min="min"
           :max="max"
           :step="step"
+          :size="size"
           :icon="icon"
           :disabled="disabled"
           :class="{ 'opacity-50': dimmed }"
