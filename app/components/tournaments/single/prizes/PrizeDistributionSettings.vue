@@ -122,13 +122,16 @@ const topCutoffHint = computed(() => {
         :text="totalPacksHint"
         :disabled="!totalPacksHint"
       >
-        <UInputNumber
-          :model-value="settings.totalPacks"
-          :min="minTotalPacks"
-          class="w-full"
-          :icon="ICONS.package"
-          @update:model-value="value => emit('update', { totalPacks: Number(value ?? 0) })"
-        />
+        <!-- native wrapper: UInputNumber drops the tooltip trigger listeners -->
+        <div>
+          <UInputNumber
+            :model-value="settings.totalPacks"
+            :min="minTotalPacks"
+            class="w-full"
+            :icon="ICONS.package"
+            @update:model-value="value => emit('update', { totalPacks: Number(value ?? 0) })"
+          />
+        </div>
       </UTooltip>
     </div>
 
@@ -138,14 +141,17 @@ const topCutoffHint = computed(() => {
         :text="reservedHint"
         :disabled="!reservedHint"
       >
-        <UInputNumber
-          :model-value="settings.reservedPacks"
-          :min="0"
-          :max="maxReservedPacks"
-          class="w-full"
-          :icon="ICONS.package"
-          @update:model-value="value => emit('update', { reservedPacks: Number(value ?? 0) })"
-        />
+        <!-- native wrapper: UInputNumber drops the tooltip trigger listeners -->
+        <div>
+          <UInputNumber
+            :model-value="settings.reservedPacks"
+            :min="0"
+            :max="maxReservedPacks"
+            class="w-full"
+            :icon="ICONS.package"
+            @update:model-value="value => emit('update', { reservedPacks: Number(value ?? 0) })"
+          />
+        </div>
       </UTooltip>
     </div>
 
@@ -159,14 +165,17 @@ const topCutoffHint = computed(() => {
         :text="minPacksHint"
         :disabled="!minPacksHint"
       >
-        <UInputNumber
-          :model-value="settings.minPacksPerPlayer"
-          :min="0"
-          :max="maxMinPacksPerPlayer"
-          class="w-full"
-          :icon="ICONS.booster"
-          @update:model-value="value => emit('update', { minPacksPerPlayer: Number(value ?? 0) })"
-        />
+        <!-- native wrapper: UInputNumber drops the tooltip trigger listeners -->
+        <div>
+          <UInputNumber
+            :model-value="settings.minPacksPerPlayer"
+            :min="0"
+            :max="maxMinPacksPerPlayer"
+            class="w-full"
+            :icon="ICONS.booster"
+            @update:model-value="value => emit('update', { minPacksPerPlayer: Number(value ?? 0) })"
+          />
+        </div>
       </UTooltip>
     </div>
 
@@ -176,15 +185,20 @@ const topCutoffHint = computed(() => {
         :text="nonRewardedMinHint"
         :disabled="!nonRewardedMinHint"
       >
-        <UInputNumber
-          :model-value="settings.nonRewardedMinPacks"
-          :min="0"
-          :max="maxNonRewardedMinPacks"
-          :disabled="nonRewardedCount === 0"
-          class="w-full"
-          :icon="ICONS.players"
-          @update:model-value="value => emit('update', { nonRewardedMinPacks: Number(value ?? 0) })"
-        />
+        <!-- native wrapper: UInputNumber drops the tooltip trigger listeners -->
+        <div>
+          <UInputNumber
+            :model-value="settings.nonRewardedMinPacks"
+            :min="0"
+            :max="maxNonRewardedMinPacks"
+            :disabled="nonRewardedCount === 0"
+            class="w-full"
+            :icon="ICONS.players"
+            @update:model-value="value => emit('update', {
+              nonRewardedMinPacks: Number(value ?? 0)
+            })"
+          />
+        </div>
       </UTooltip>
     </div>
 
@@ -198,15 +212,18 @@ const topCutoffHint = computed(() => {
         :text="topCutoffHint"
         :disabled="!topCutoffHint"
       >
-        <UInputNumber
-          :model-value="Math.min(settings.topCutoff, playerCount)"
-          :min="1"
-          :max="maxTopCutoff"
-          :step="1"
-          class="w-full"
-          :icon="ICONS.standings"
-          @update:model-value="value => emit('update', { topCutoff: Number(value ?? 0) })"
-        />
+        <!-- native wrapper: UInputNumber drops the tooltip trigger listeners -->
+        <div>
+          <UInputNumber
+            :model-value="Math.min(settings.topCutoff, playerCount)"
+            :min="1"
+            :max="maxTopCutoff"
+            :step="1"
+            class="w-full"
+            :icon="ICONS.standings"
+            @update:model-value="value => emit('update', { topCutoff: Number(value ?? 0) })"
+          />
+        </div>
       </UTooltip>
     </div>
 
