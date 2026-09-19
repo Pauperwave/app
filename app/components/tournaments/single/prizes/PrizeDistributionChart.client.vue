@@ -52,7 +52,7 @@ const lines = computed(() => {
       value: guides.minPacks,
       label: t('tournament.single.prizeDistribution.chartLines.min', { count: guides.minPacks }),
       color: 'var(--ui-success)',
-      position: PlotlineLabelPosition.TopLeft
+      position: PlotlineLabelPosition.TopRight
     })
   }
 
@@ -64,7 +64,7 @@ const lines = computed(() => {
         count: guides.nonRewardedMinPacks
       }),
       color: 'var(--ui-info)',
-      position: PlotlineLabelPosition.TopRight
+      position: PlotlineLabelPosition.BottomRight
     })
   }
 
