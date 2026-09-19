@@ -1,6 +1,6 @@
 <!-- app\components\tournaments\single\prizes\PrizeDistributionSettings.vue -->
 <!--
-  Prize suggestion inputs, three rows of two: packs available / set aside,
+  Prize suggestion inputs, three columns of two: packs available / set aside,
   guaranteed minimum for rewarded / non-rewarded players, and how many
   placements are rewarded / the cap per placement. Same
   UInputNumber layout as PairingWeightsSection.vue; the distribution shape
@@ -77,91 +77,97 @@ const topCutoffHint = computed(() => {
 </script>
 
 <template>
-  <section class="grid w-fit grid-cols-2 gap-x-3 gap-y-2">
-    <h4 class="col-span-2 text-base font-semibold">
-      {{ t('tournament.single.prizeDistribution.sections.packs') }}
-    </h4>
+  <section class="grid w-full grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-3">
+    <div class="space-y-2">
+      <h4 class="text-base font-semibold">
+        {{ t('tournament.single.prizeDistribution.sections.packs') }}
+      </h4>
 
-    <HintedNumberField
-      :label="t('tournament.single.prizeDistribution.totalPacks')"
-      :info="t('tournament.single.prizeDistribution.info.totalPacks')"
-      :hint="totalPacksHint"
-      :model-value="settings.totalPacks"
-      :min="limits.minTotalPacks"
-      :icon="ICONS.package"
-      class="w-64"
-      @update:model-value="value => emit('update', { totalPacks: value })"
-    />
+      <HintedNumberField
+        :label="t('tournament.single.prizeDistribution.totalPacks')"
+        :info="t('tournament.single.prizeDistribution.info.totalPacks')"
+        :hint="totalPacksHint"
+        :model-value="settings.totalPacks"
+        :min="limits.minTotalPacks"
+        :icon="ICONS.package"
+        class="w-64"
+        @update:model-value="value => emit('update', { totalPacks: value })"
+      />
 
-    <HintedNumberField
-      :label="t('tournament.single.prizeDistribution.reservedPacks')"
-      :info="t('tournament.single.prizeDistribution.info.reservedPacks')"
-      :hint="reservedHint"
-      :model-value="settings.reservedPacks"
-      :min="0"
-      :max="limits.maxReservedPacks"
-      :icon="ICONS.package"
-      class="w-64"
-      @update:model-value="value => emit('update', { reservedPacks: value })"
-    />
+      <HintedNumberField
+        :label="t('tournament.single.prizeDistribution.reservedPacks')"
+        :info="t('tournament.single.prizeDistribution.info.reservedPacks')"
+        :hint="reservedHint"
+        :model-value="settings.reservedPacks"
+        :min="0"
+        :max="limits.maxReservedPacks"
+        :icon="ICONS.package"
+        class="w-64"
+        @update:model-value="value => emit('update', { reservedPacks: value })"
+      />
+    </div>
 
-    <h4 class="col-span-2 text-base font-semibold">
-      {{ t('tournament.single.prizeDistribution.sections.minimums') }}
-    </h4>
+    <div class="space-y-2">
+      <h4 class="text-base font-semibold">
+        {{ t('tournament.single.prizeDistribution.sections.minimums') }}
+      </h4>
 
-    <HintedNumberField
-      :label="t('tournament.single.prizeDistribution.minPacksPerPlayer')"
-      :info="t('tournament.single.prizeDistribution.info.minPacksPerPlayer')"
-      :hint="minPacksHint"
-      :model-value="settings.minPacksPerPlayer"
-      :min="0"
-      :max="limits.maxMinPacksPerPlayer"
-      :icon="ICONS.booster"
-      class="w-64"
-      @update:model-value="value => emit('update', { minPacksPerPlayer: value })"
-    />
+      <HintedNumberField
+        :label="t('tournament.single.prizeDistribution.minPacksPerPlayer')"
+        :info="t('tournament.single.prizeDistribution.info.minPacksPerPlayer')"
+        :hint="minPacksHint"
+        :model-value="settings.minPacksPerPlayer"
+        :min="0"
+        :max="limits.maxMinPacksPerPlayer"
+        :icon="ICONS.booster"
+        class="w-64"
+        @update:model-value="value => emit('update', { minPacksPerPlayer: value })"
+      />
 
-    <HintedNumberField
-      :label="t('tournament.single.prizeDistribution.nonRewardedMinPacks')"
-      :info="t('tournament.single.prizeDistribution.info.nonRewardedMinPacks')"
-      :hint="nonRewardedMinHint"
-      :model-value="settings.nonRewardedMinPacks"
-      :min="0"
-      :max="limits.maxNonRewardedMinPacks"
-      :disabled="limits.nonRewardedCount === 0"
-      :icon="ICONS.players"
-      class="w-64"
-      @update:model-value="value => emit('update', { nonRewardedMinPacks: value })"
-    />
+      <HintedNumberField
+        :label="t('tournament.single.prizeDistribution.nonRewardedMinPacks')"
+        :info="t('tournament.single.prizeDistribution.info.nonRewardedMinPacks')"
+        :hint="nonRewardedMinHint"
+        :model-value="settings.nonRewardedMinPacks"
+        :min="0"
+        :max="limits.maxNonRewardedMinPacks"
+        :disabled="limits.nonRewardedCount === 0"
+        :icon="ICONS.players"
+        class="w-64"
+        @update:model-value="value => emit('update', { nonRewardedMinPacks: value })"
+      />
+    </div>
 
-    <h4 class="col-span-2 text-base font-semibold">
-      {{ t('tournament.single.prizeDistribution.sections.placements') }}
-    </h4>
+    <div class="space-y-2">
+      <h4 class="text-base font-semibold">
+        {{ t('tournament.single.prizeDistribution.sections.placements') }}
+      </h4>
 
-    <HintedNumberField
-      :label="t('tournament.single.prizeDistribution.weightLabels.topCutoff')"
-      :info="t('tournament.single.prizeDistribution.info.topCutoff')"
-      :hint="topCutoffHint"
-      :model-value="Math.min(settings.topCutoff, playerCount)"
-      :min="1"
-      :max="limits.maxTopCutoff"
-      :step="1"
-      :icon="ICONS.standings"
-      class="w-64"
-      @update:model-value="value => emit('update', { topCutoff: value })"
-    />
+      <HintedNumberField
+        :label="t('tournament.single.prizeDistribution.weightLabels.topCutoff')"
+        :info="t('tournament.single.prizeDistribution.info.topCutoff')"
+        :hint="topCutoffHint"
+        :model-value="Math.min(settings.topCutoff, playerCount)"
+        :min="1"
+        :max="limits.maxTopCutoff"
+        :step="1"
+        :icon="ICONS.standings"
+        class="w-64"
+        @update:model-value="value => emit('update', { topCutoff: value })"
+      />
 
-    <!-- Greyed out while 0, i.e. no cap in effect -->
-    <HintedNumberField
-      :label="t('tournament.single.prizeDistribution.maxPacksPerPlayer')"
-      :info="t('tournament.single.prizeDistribution.info.maxPacksPerPlayer')"
-      :model-value="settings.maxPacksPerPlayer"
-      :min="0"
-      :step="1"
-      :dimmed="settings.maxPacksPerPlayer === 0"
-      :icon="ICONS.package"
-      class="w-64"
-      @update:model-value="updateMaxPacksPerPlayer"
-    />
+      <!-- Greyed out while 0, i.e. no cap in effect -->
+      <HintedNumberField
+        :label="t('tournament.single.prizeDistribution.maxPacksPerPlayer')"
+        :info="t('tournament.single.prizeDistribution.info.maxPacksPerPlayer')"
+        :model-value="settings.maxPacksPerPlayer"
+        :min="0"
+        :step="1"
+        :dimmed="settings.maxPacksPerPlayer === 0"
+        :icon="ICONS.package"
+        class="w-64"
+        @update:model-value="updateMaxPacksPerPlayer"
+      />
+    </div>
   </section>
 </template>
