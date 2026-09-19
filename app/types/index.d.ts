@@ -572,11 +572,20 @@ export interface PairingWeights {
 
 // Booster-pack redistribution suggestion (Prizes.vue step) — totalPacks/
 // minPacksPerPlayer are resource inputs the organizer fills in by hand
-// (no "how many packs do we have" data exists anywhere), decay/topCutoff
-// are the distribution "shape" the preset buttons drive.
+// (no "how many packs do we have" data exists anywhere), bonusShares is the
+// distribution "shape" the preset buttons drive. bonusShares[rank] is the
+// percent of the bonus pool (packs above the guaranteed minimum) given to
+// that placement, rank 0 = 1st place; missing ranks count as 0.
+//
+// nonRewardedMinPacks is what every player outside the rewarded placements
+// gets, reservedPacks are packs set aside (not assigned to anyone), and
+// maxPacksPerPlayer caps a single rewarded placement (0 = no cap).
 export interface PrizeDistributionSettings {
   totalPacks: number
   minPacksPerPlayer: number
-  decay: number
+  nonRewardedMinPacks: number
+  reservedPacks: number
+  maxPacksPerPlayer: number
+  bonusShares: number[]
   topCutoff: number
 }

@@ -6,9 +6,8 @@
   time this step is reachable) — index = final placement.
 
   Deliberately not persisted anywhere (user decision, 2026-09-17): totalPacks/
-  minPacksPerPlayer/decay/topCutoff and per-player overrides all live in
-  local refs and reset the moment this component remounts. The UAlert below
-  says so explicitly so the organizer doesn't assume a refresh is safe.
+  minPacksPerPlayer/bonusShares/topCutoff all live in a local ref and reset
+  the moment this component remounts.
 -->
 <script setup lang="ts">
 import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/useLiveCommanderStandings'
@@ -22,46 +21,78 @@ const { t } = useI18n()
 
 const settings = ref<PrizeDistributionSettings>({ ...DEFAULT_PRIZE_DISTRIBUTION_SETTINGS })
 
-// Seeds totalPacks to "one per player" the first time standings actually
-// resolve, so the field isn't stuck at 0 — a one-shot seed, not a
-// continuous sync, so it doesn't stomp on an organizer-entered value once
-// they've started editing.
-let hasSeededTotalPacks = false
-watch(() => standings.length, (count) => {
-  if (hasSeededTotalPacks || count === 0) return
-  settings.value.totalPacks = count
-  hasSeededTotalPacks = true
-}, { immediate: true })
-
 function updateSettings(patch: Partial<PrizeDistributionSettings>) {
   settings.value = { ...settings.value, ...patch }
 }
 
-const { selectedPreset, applyDistributionPreset }
-  = usePrizeDistributionPresets(settings, updateSettings)
+const {
+  selectedPreset,
+  hasCustomShares,
+  saveCustomShares,
+  applyDistributionPreset
+} = usePrizeDistributionPresets(settings, updateSettings)
 
-const { distribution, isInsufficientPacks, allocatedTotal } = usePrizeDistribution(
+const { distribution, allocatedTotal } = usePrizeDistribution(
   () => standings.length,
   settings
 )
 
-// associateUuid -> manual override, not persisted (see file header).
-const overrides = ref<Record<string, number | null>>({})
+const budget = computed(() => prizeBudgetOf(standings.length, settings.value))
+const rewardedCount = computed(() => Math.min(settings.value.topCutoff, standings.length))
+const packsRange = computed(() => rewardedPacksRange(standings.length, settings.value))
 
-function setOverride(associateUuid: string, packs: number | null) {
-  overrides.value = { ...overrides.value, [associateUuid]: packs }
+// Share = extra packs / bonus pool, taken from the packs a placement really gets
+// (not the nominal share), so it stays true with rounding, caps and minimums
+function realSharePercent(packs: number): number {
+  const { bonusPool } = budget.value
+  if (bonusPool <= 0) return 0
+  return ((packs - settings.value.minPacksPerPlayer) / bonusPool) * 100
 }
 
-const rows = computed(() => standings.map((standing, index) => ({
-  associateUuid: standing.associateUuid,
-  label: standing.label,
-  suggestedPacks: distribution.value[index] ?? 0,
-  overridePacks: overrides.value[standing.associateUuid] ?? null
-})))
+const rows = computed(() => standings.map((standing, index) => {
+  const packs = distribution.value[index] ?? 0
 
-const chartRows = computed(() => rows.value.map(row => ({
+  return {
+    associateUuid: standing.associateUuid,
+    label: standing.label,
+    packs,
+    sharePercent: index < rewardedCount.value ? realSharePercent(packs) : null
+  }
+}))
+
+// Editing packs derives the matching share, so the two inputs stay linked
+function updatePacks(rank: number, packs: number) {
+  const bonusShares = sharesForPackEdit(rank, packs, standings.length, settings.value)
+  updateSettings({ bonusShares })
+  saveCustomShares(bonusShares)
+}
+
+// A share step moves exactly one pack to/from the other rewarded placements
+function stepShare(rank: number, direction: 1 | -1) {
+  const packs = rows.value[rank]?.packs ?? 0
+  updatePacks(rank, packs + direction)
+}
+
+const sharesTotal = computed(() => Math.round(
+  rows.value.reduce((sum, row) => sum + (row.sharePercent ?? 0), 0)
+))
+
+// Settings drawn as horizontal reference lines in the chart
+const chartGuides = computed(() => {
+  const { minPacksPerPlayer, nonRewardedMinPacks } = settings.value
+  const { nonRewardedCount, bonusCap } = budget.value
+
+  return {
+    minPacks: minPacksPerPlayer,
+    nonRewardedMinPacks: nonRewardedCount > 0 ? nonRewardedMinPacks : 0,
+    maxPacks: Number.isFinite(bonusCap) ? minPacksPerPlayer + bonusCap : null
+  }
+})
+
+// Chart only shows the rewarded placements (topCutoff), not every player
+const chartRows = computed(() => rows.value.slice(0, settings.value.topCutoff).map(row => ({
   label: row.label,
-  packs: row.overridePacks ?? row.suggestedPacks
+  packs: row.packs
 })))
 </script>
 
@@ -72,35 +103,70 @@ const chartRows = computed(() => rows.value.map(row => ({
       {{ t('tournament.single.prizeDistribution.sectionTitle') }}
     </h3>
 
-    <UAlert
-      color="neutral"
-      variant="subtle"
-      :icon="ICONS.info"
-      :title="t('tournament.single.prizeDistribution.notPersistedNoticeTitle')"
-      :description="t('tournament.single.prizeDistribution.notPersistedNotice')"
-    />
+    <div class="grid grid-cols-1 gap-6 lg:h-[calc(100dvh-20rem)] lg:grid-cols-[55%_1fr]">
+      <div class="flex min-h-0 flex-col gap-4">
+        <TournamentsSinglePrizesPrizeDistributionSettings
+          :settings="settings"
+          :player-count="standings.length"
+          class="shrink-0"
+          @update="updateSettings"
+        />
 
-    <TournamentsSinglePrizesPrizeDistributionSettings
-      :settings="settings"
-      :player-count="standings.length"
-      :selected-preset="selectedPreset"
-      @select-preset="applyDistributionPreset"
-      @update="updateSettings"
-    />
+        <div class="h-96 shrink-0">
+          <TournamentsSinglePrizesPrizeDistributionChart
+            :rows="chartRows"
+            :guides="chartGuides"
+          />
+        </div>
+      </div>
 
-    <UAlert
-      v-if="isInsufficientPacks"
-      color="warning"
-      variant="subtle"
-      :icon="ICONS.warning"
-      :title="t('tournament.single.prizeDistribution.insufficientPacksTitle')"
-      :description="t('tournament.single.prizeDistribution.insufficientPacksDescription', {
-        allocated: allocatedTotal, total: settings.totalPacks
-      })"
-    />
+      <div class="flex min-h-0 flex-col gap-3">
+        <div class="shrink-0 space-y-2">
+          <h4 class="text-base font-semibold">
+            {{ t('tournament.single.prizeDistribution.shapeHeading') }}
+          </h4>
 
-    <TournamentsSinglePrizesPrizeDistributionChart :rows="chartRows" />
+          <TournamentsSinglePrizesPrizeDistributionPresetButtons
+            :selected="selectedPreset"
+            :has-custom="hasCustomShares"
+            @select="applyDistributionPreset"
+          />
+        </div>
 
-    <TournamentsSinglePrizesPrizeDistributionTable :rows="rows" @override="setOverride" />
+        <div class="flex shrink-0 items-center justify-between text-sm">
+          <span class="font-medium">
+            {{ t('tournament.single.prizeDistribution.distributedSummary', {
+              assigned: allocatedTotal, total: budget.distributable
+            }) }}
+            <span
+              v-if="settings.reservedPacks > 0"
+              class="font-normal text-muted"
+            >
+              · {{ t('tournament.single.prizeDistribution.reservedSummary', {
+                count: settings.reservedPacks
+              }) }}
+            </span>
+          </span>
+          <span
+            v-if="budget.bonusPool > 0"
+            class="font-mono text-xs"
+          >
+            {{ t('tournament.single.prizeDistribution.sharesTotal', { total: sharesTotal }) }}
+          </span>
+        </div>
+
+        <div class="min-h-0 flex-1 overflow-y-auto">
+          <TournamentsSinglePrizesPrizeDistributionTable
+            :rows="rows"
+            :rewarded-count="rewardedCount"
+            :min-packs="packsRange.min"
+            :max-packs="packsRange.max"
+            class="w-full"
+            @update-packs="updatePacks"
+            @step-share="stepShare"
+          />
+        </div>
+      </div>
+    </div>
   </div>
 </template>

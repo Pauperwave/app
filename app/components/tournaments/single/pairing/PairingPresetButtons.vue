@@ -2,6 +2,7 @@
 <!--
   Named weight-preset quick-select for the pairing optimizer's settings
   modal — ported from MagicTheGathering/league (user request, 2026-09-15).
+  Options and labels only; the markup lives in the generic <PresetButtons>.
 -->
 <script setup lang="ts">
 export type PairingPresetKind = 'balanced' | 'social' | 'competitive' | 'reset' | 'custom'
@@ -16,44 +17,27 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-const presets: Array<{ key: Exclude<PairingPresetKind, 'custom' | 'reset'>, label: string, icon: string }> = [
+type PairingPresetOption = Exclude<PairingPresetKind, 'custom' | 'reset'>
+
+const presets: Array<{ key: PairingPresetOption, label: string, icon: string }> = [
   { key: 'social', label: t('tournament.single.tablePreview.presets.social'), icon: ICONS.players },
   { key: 'balanced', label: t('tournament.single.tablePreview.presets.balanced'), icon: ICONS.rules },
   { key: 'competitive', label: t('tournament.single.tablePreview.presets.competitive'), icon: ICONS.standings }
 ]
+
+// usePairingPresets' selectedPreset never returns 'reset' (it's an action, not
+// a state); this only narrows the type for <PresetButtons>
+const selectedOption = computed<PairingPresetOption | 'custom'>(() =>
+  selected === 'reset' ? 'balanced' : selected)
 </script>
 
 <template>
-  <div class="flex flex-wrap items-center gap-2">
-    <UFieldGroup>
-      <UButton
-        v-for="option in presets"
-        :key="option.key"
-        :icon="option.icon"
-        :color="selected === option.key ? 'primary' : 'neutral'"
-        :variant="selected === option.key ? 'soft' : 'outline'"
-        @click="emit('select', option.key)"
-      >
-        {{ option.label }}
-      </UButton>
-    </UFieldGroup>
-
-    <UButton
-      :icon="ICONS.rotateBack"
-      color="warning"
-      variant="soft"
-      @click="emit('select', 'reset')"
-    >
-      {{ t('tournament.single.tablePreview.presets.reset') }}
-    </UButton>
-
-    <UButton
-      :icon="ICONS.filters"
-      :color="selected === 'custom' ? 'primary' : 'neutral'"
-      :variant="selected === 'custom' ? 'soft' : 'outline'"
-      class="pointer-events-none select-none"
-    >
-      {{ t('tournament.single.tablePreview.presets.custom') }}
-    </UButton>
-  </div>
+  <PresetButtons
+    :options="presets"
+    :selected="selectedOption"
+    :custom-label="t('tournament.single.tablePreview.presets.custom')"
+    :reset-label="t('tournament.single.tablePreview.presets.reset')"
+    @select="preset => emit('select', preset)"
+    @reset="emit('select', 'reset')"
+  />
 </template>

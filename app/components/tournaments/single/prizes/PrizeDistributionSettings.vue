@@ -1,103 +1,227 @@
 <!-- app\components\tournaments\single\prizes\PrizeDistributionSettings.vue -->
 <!--
-  Resource inputs (totalPacks/minPacksPerPlayer) + distribution-shape
-  sliders (decay/topCutoff) for the prize suggestion panel — same
-  UInputNumber slider layout as PairingWeightsSection.vue, split into two
-  groups since totalPacks/minPacksPerPlayer aren't part of any preset
-  (organizer-entered resources, not a "shape" the presets drive).
+  Prize suggestion inputs, three rows of two: packs available / set aside,
+  guaranteed minimum for rewarded / non-rewarded players, and how many
+  placements are rewarded / the cap per placement. Same
+  UInputNumber layout as PairingWeightsSection.vue; the distribution shape
+  (presets + per-placement shares) lives next to the standings table.
 -->
 <script setup lang="ts">
 import type { PrizeDistributionSettings } from '~/types'
-import type { PrizeDistributionPresetKind } from './PrizeDistributionPresetButtons.vue'
 
-const { settings, playerCount, selectedPreset } = defineProps<{
+const { settings, playerCount } = defineProps<{
   settings: PrizeDistributionSettings
   playerCount: number
-  selectedPreset: PrizeDistributionPresetKind
 }>()
 
 const emit = defineEmits<{
-  selectPreset: [preset: Exclude<PrizeDistributionPresetKind, 'custom'>]
   update: [patch: Partial<PrizeDistributionSettings>]
 }>()
 
 const { t } = useI18n()
 
-const shapeItems = computed(() => [
-  {
-    key: 'decay' as const,
-    label: t('tournament.single.prizeDistribution.weightLabels.decay'),
-    value: settings.decay,
-    min: 0.1,
-    max: 1,
-    step: 0.05
-  },
-  {
-    key: 'topCutoff' as const,
-    label: t('tournament.single.prizeDistribution.weightLabels.topCutoff'),
-    value: Math.min(settings.topCutoff, playerCount),
-    min: 1,
-    max: Math.max(1, playerCount),
-    step: 1
+// Limits keep "every guaranteed minimum + reserve <= total packs" always true
+const rewardedCount = computed(() => Math.max(1, Math.min(settings.topCutoff, playerCount)))
+const nonRewardedCount = computed(() => Math.max(0, playerCount - rewardedCount.value))
+
+const rewardedGuaranteed = computed(() => settings.minPacksPerPlayer * rewardedCount.value)
+const nonRewardedGuaranteed = computed(() => settings.nonRewardedMinPacks * nonRewardedCount.value)
+
+const minTotalPacks = computed(() =>
+  rewardedGuaranteed.value + nonRewardedGuaranteed.value + settings.reservedPacks)
+
+const maxMinPacksPerPlayer = computed(() => Math.max(0, Math.floor(
+  (settings.totalPacks - settings.reservedPacks - nonRewardedGuaranteed.value) / rewardedCount.value
+)))
+
+const maxNonRewardedMinPacks = computed(() => {
+  if (nonRewardedCount.value === 0) return 0
+  const spare = settings.totalPacks - settings.reservedPacks - rewardedGuaranteed.value
+  return Math.max(0, Math.floor(spare / nonRewardedCount.value))
+})
+
+const maxReservedPacks = computed(() =>
+  Math.max(0, settings.totalPacks - rewardedGuaranteed.value - nonRewardedGuaranteed.value))
+
+const maxTopCutoff = computed(() => {
+  const {
+    minPacksPerPlayer, nonRewardedMinPacks, totalPacks, reservedPacks
+  } = settings
+  if (minPacksPerPlayer <= nonRewardedMinPacks) return Math.max(1, playerCount)
+
+  const spare = totalPacks - reservedPacks - nonRewardedMinPacks * playerCount
+  const affordable = Math.floor(spare / (minPacksPerPlayer - nonRewardedMinPacks))
+  return Math.max(1, Math.min(playerCount, affordable))
+})
+
+// Lowest useful cap: below it the rewarded packs would not fit, so the cap would be ignored
+const minMaxPacksPerPlayer = computed(() => {
+  const rewardedPool = settings.totalPacks - settings.reservedPacks - nonRewardedGuaranteed.value
+  return Math.max(settings.minPacksPerPlayer, Math.ceil(rewardedPool / rewardedCount.value))
+})
+
+// 0 turns the cap off; values below the lowest useful cap jump to it (or back to 0)
+function updateMaxPacksPerPlayer(value: number) {
+  const isUnusable = value > 0 && value < minMaxPacksPerPlayer.value
+  const next = isUnusable
+    ? (value > settings.maxPacksPerPlayer ? minMaxPacksPerPlayer.value : 0)
+    : value
+
+  emit('update', { maxPacksPerPlayer: next })
+}
+
+// Tooltip explaining why a control's +/- is disabled; undefined while it isn't
+const totalPacksHint = computed(() => (settings.totalPacks <= minTotalPacks.value
+  ? t('tournament.single.prizeDistribution.hints.totalPacksAtMin', {
+    min: minTotalPacks.value, count: rewardedCount.value
+  })
+  : undefined))
+
+const minPacksHint = computed(() => (settings.minPacksPerPlayer >= maxMinPacksPerPlayer.value
+  ? t('tournament.single.prizeDistribution.hints.minPacksAtMax', {
+    total: settings.totalPacks, count: rewardedCount.value
+  })
+  : undefined))
+
+const nonRewardedMinHint = computed(() => {
+  if (nonRewardedCount.value === 0) {
+    return t('tournament.single.prizeDistribution.hints.nonRewardedNone')
   }
-])
+
+  return settings.nonRewardedMinPacks >= maxNonRewardedMinPacks.value
+    ? t('tournament.single.prizeDistribution.hints.nonRewardedAtMax', {
+      total: settings.totalPacks
+    })
+    : undefined
+})
+
+const reservedHint = computed(() => (settings.reservedPacks >= maxReservedPacks.value
+  ? t('tournament.single.prizeDistribution.hints.reservedAtMax')
+  : undefined))
+
+const topCutoffHint = computed(() => {
+  if (rewardedCount.value < maxTopCutoff.value) return undefined
+
+  return maxTopCutoff.value >= playerCount
+    ? t('tournament.single.prizeDistribution.hints.topCutoffAllPlayers')
+    : t('tournament.single.prizeDistribution.hints.topCutoffAtMax', {
+      total: settings.totalPacks, min: settings.minPacksPerPlayer, max: maxTopCutoff.value
+    })
+})
 </script>
 
 <template>
-  <section class="space-y-4">
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-      <div class="space-y-1.5">
-        <span class="text-sm">{{ t('tournament.single.prizeDistribution.totalPacks') }}</span>
+  <section class="grid w-fit grid-cols-2 gap-x-3 gap-y-2">
+    <h4 class="col-span-2 text-base font-semibold">
+      {{ t('tournament.single.prizeDistribution.sections.packs') }}
+    </h4>
+
+    <div class="w-52 space-y-1.5">
+      <span class="text-sm">{{ t('tournament.single.prizeDistribution.totalPacks') }}</span>
+      <UTooltip
+        :text="totalPacksHint"
+        :disabled="!totalPacksHint"
+      >
         <UInputNumber
           :model-value="settings.totalPacks"
-          :min="0"
+          :min="minTotalPacks"
           class="w-full"
           :icon="ICONS.package"
           @update:model-value="value => emit('update', { totalPacks: Number(value ?? 0) })"
         />
-      </div>
-      <div class="space-y-1.5">
-        <span class="text-sm">{{ t('tournament.single.prizeDistribution.minPacksPerPlayer') }}</span>
+      </UTooltip>
+    </div>
+
+    <div class="w-52 space-y-1.5">
+      <span class="text-sm">{{ t('tournament.single.prizeDistribution.reservedPacks') }}</span>
+      <UTooltip
+        :text="reservedHint"
+        :disabled="!reservedHint"
+      >
+        <UInputNumber
+          :model-value="settings.reservedPacks"
+          :min="0"
+          :max="maxReservedPacks"
+          class="w-full"
+          :icon="ICONS.package"
+          @update:model-value="value => emit('update', { reservedPacks: Number(value ?? 0) })"
+        />
+      </UTooltip>
+    </div>
+
+    <h4 class="col-span-2 text-base font-semibold">
+      {{ t('tournament.single.prizeDistribution.sections.minimums') }}
+    </h4>
+
+    <div class="w-52 space-y-1.5">
+      <span class="text-sm">{{ t('tournament.single.prizeDistribution.minPacksPerPlayer') }}</span>
+      <UTooltip
+        :text="minPacksHint"
+        :disabled="!minPacksHint"
+      >
         <UInputNumber
           :model-value="settings.minPacksPerPlayer"
           :min="0"
+          :max="maxMinPacksPerPlayer"
           class="w-full"
           :icon="ICONS.booster"
           @update:model-value="value => emit('update', { minPacksPerPlayer: Number(value ?? 0) })"
         />
-      </div>
+      </UTooltip>
     </div>
 
-    <div class="space-y-3">
-      <div class="text-sm font-semibold">
-        {{ t('tournament.single.prizeDistribution.shapeHeading') }}
-      </div>
+    <div class="w-52 space-y-1.5">
+      <span class="text-sm">{{ t('tournament.single.prizeDistribution.nonRewardedMinPacks') }}</span>
+      <UTooltip
+        :text="nonRewardedMinHint"
+        :disabled="!nonRewardedMinHint"
+      >
+        <UInputNumber
+          :model-value="settings.nonRewardedMinPacks"
+          :min="0"
+          :max="maxNonRewardedMinPacks"
+          :disabled="nonRewardedCount === 0"
+          class="w-full"
+          :icon="ICONS.players"
+          @update:model-value="value => emit('update', { nonRewardedMinPacks: Number(value ?? 0) })"
+        />
+      </UTooltip>
+    </div>
 
-      <TournamentsSinglePrizesPrizeDistributionPresetButtons
-        :selected="selectedPreset"
-        @select="preset => emit('selectPreset', preset)"
+    <h4 class="col-span-2 text-base font-semibold">
+      {{ t('tournament.single.prizeDistribution.sections.placements') }}
+    </h4>
+
+    <div class="w-52 space-y-1.5">
+      <span class="text-sm">{{ t('tournament.single.prizeDistribution.weightLabels.topCutoff') }}</span>
+      <UTooltip
+        :text="topCutoffHint"
+        :disabled="!topCutoffHint"
+      >
+        <UInputNumber
+          :model-value="Math.min(settings.topCutoff, playerCount)"
+          :min="1"
+          :max="maxTopCutoff"
+          :step="1"
+          class="w-full"
+          :icon="ICONS.standings"
+          @update:model-value="value => emit('update', { topCutoff: Number(value ?? 0) })"
+        />
+      </UTooltip>
+    </div>
+
+    <div class="w-52 space-y-1.5">
+      <span class="text-sm">{{ t('tournament.single.prizeDistribution.maxPacksPerPlayer') }}</span>
+      <!-- Greyed out while 0, i.e. no cap in effect -->
+      <UInputNumber
+        :model-value="settings.maxPacksPerPlayer"
+        :min="0"
+        :step="1"
+        class="w-full"
+        :class="{ 'opacity-50': settings.maxPacksPerPlayer === 0 }"
+        :icon="ICONS.package"
+        @update:model-value="value => updateMaxPacksPerPlayer(Number(value ?? 0))"
       />
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div
-          v-for="item in shapeItems"
-          :key="item.key"
-          class="space-y-1.5"
-        >
-          <div class="flex items-center justify-between text-sm">
-            <span>{{ item.label }}</span>
-            <span class="font-mono text-xs">{{ item.value.toFixed(item.key === 'decay' ? 2 : 0) }}</span>
-          </div>
-          <UInputNumber
-            :model-value="item.value"
-            :min="item.min"
-            :max="item.max"
-            :step="item.step"
-            class="w-full"
-            @update:model-value="value => emit('update', { [item.key]: Number(value ?? 0) })"
-          />
-        </div>
-      </div>
     </div>
   </section>
 </template>
