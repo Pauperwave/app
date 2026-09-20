@@ -52,12 +52,16 @@ export function useTournamentStepper(options: {
       description: t('tournament.stepper.roundPending'),
       icon: ICONS.battle
     })),
-    {
-      slot: 'awards',
-      title: t('tournament.stepper.awards'),
-      description: t('tournament.stepper.awardsDescription'),
-      icon: ICONS.standings
-    },
+    // The awards (Vittima, Carnefice, Master Brewer, Il Player) come from
+    // kills and votes, so this step only exists for Commander.
+    ...(isCommander.value
+      ? [{
+        slot: 'awards',
+        title: t('tournament.stepper.awards'),
+        description: t('tournament.stepper.awardsDescription'),
+        icon: ICONS.standings
+      }]
+      : []),
     {
       slot: 'prizes',
       title: t('tournament.stepper.prizes'),
