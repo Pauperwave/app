@@ -37,4 +37,13 @@ describe('useSwissRoundCount', () => {
     expect(calculateRoundCount(9, null)).toBe(4)
     expect(calculateRoundCount(9, undefined)).toBe(4)
   })
+
+  it('uses the tiers it is given, and the beyond value past the last one', () => {
+    const tiers = [{ maxPlayers: 4, rounds: 2 }, { maxPlayers: 10, rounds: 3 }]
+    const rules = { tiers, beyond: 6 }
+
+    expect(calculateRoundCount(4, null, rules)).toBe(2)
+    expect(calculateRoundCount(5, null, rules)).toBe(3)
+    expect(calculateRoundCount(11, null, rules)).toBe(6)
+  })
 })

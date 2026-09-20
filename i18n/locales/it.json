@@ -2858,6 +2858,39 @@
         }
       }
     },
+    "tournament": {
+      "title": "Tornei",
+      "description": "Valori usati dalla logica dei tornei: durata dei round e numero di round. Il punteggio Swiss (3/1/0 punti, minimo 0,33 negli spareggi) segue il regolamento ufficiale e non è modificabile.",
+      "saveChanges": "Salva modifiche",
+      "fields": {
+        "commanderRoundMinutes": "Durata round Commander (minuti)",
+        "commanderRoundMinutesDescription": "Applicata ai tornei Commander e Cubo Commander alla creazione.",
+        "oneVsOneRoundMinutes": "Durata round 1vs1 (minuti)",
+        "oneVsOneRoundMinutesDescription": "Applicata a tutti gli altri formati alla creazione. Il regolamento ufficiale consiglia 50 minuti.",
+        "defaultRoundCount": "Round di default",
+        "defaultRoundCountDescription": "Numero di round proposto per i formati non elencati qui sotto.",
+        "roundCountByFormat": "Round per formato",
+        "roundCountByFormatDescription": "Numero di round proposto alla creazione, per formato.",
+        "formatPlaceholder": "Formato",
+        "addFormat": "Aggiungi formato",
+        "swissTiers": "Round Swiss per numero di giocatori",
+        "swissTiersDescription": "Numero di round calcolato in base ai giocatori iscritti, se non impostato a mano sul torneo.",
+        "upTo": "Fino a",
+        "playersRounds": "giocatori:",
+        "addTier": "Aggiungi fascia",
+        "swissRoundCountBeyond": "Round oltre l'ultima fascia",
+        "swissRoundCountBeyondDescription": "Usato quando i giocatori superano l'ultima fascia.",
+        "remove": "Rimuovi"
+      },
+      "validation": {
+        "minutes": "Inserisci una durata tra 10 e 120 minuti",
+        "rounds": "Inserisci un numero intero di almeno 1",
+        "format": "Scegli un formato"
+      },
+      "successToastTitle": "Impostazioni dei tornei aggiornate",
+      "successToastDescription": "I nuovi valori verranno usati dai prossimi tornei.",
+      "errorToastTitle": "Impossibile aggiornare le impostazioni dei tornei"
+    },
     "membershipFee": {
       "title": "Quota associativa",
       "description": "Importo e metodo di pagamento predefiniti applicati a ogni tesseramento e rinnovo.",

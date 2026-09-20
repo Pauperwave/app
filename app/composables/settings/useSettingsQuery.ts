@@ -1,5 +1,6 @@
 // app\composables\settings\useSettingsQuery.ts
 import type { PaymentMethod } from '#shared/types/transactions'
+import type { SwissRoundCountTier } from '#shared/types/settings'
 
 export const SETTINGS_KEY = ['settings']
 
@@ -15,6 +16,14 @@ export interface AppSettings {
   // 20260823120000) — same singleton-row convention as the membership fee
   // fields above, not a separate table.
   trashRetentionDays: number
+  // Tournament values that used to be hardcoded in the tournament logic
+  // (migration 20260920000000); the two round-count tables are jsonb.
+  commanderRoundMinutes: number
+  oneVsOneRoundMinutes: number
+  defaultRoundCount: number
+  roundCountByFormat: Record<string, number>
+  swissRoundCountTiers: SwissRoundCountTier[]
+  swissRoundCountBeyond: number
 }
 
 export function useSettingsQuery() {
@@ -25,7 +34,11 @@ export function useSettingsQuery() {
     query: async (): Promise<AppSettings> => {
       const { data, error } = await supabase
         .from('pauperwave_settings')
-        .select('membership_fee_amount, membership_fee_payment_method, trash_retention_days')
+        .select(`
+          membership_fee_amount, membership_fee_payment_method, trash_retention_days,
+          commander_round_minutes, one_vs_one_round_minutes, default_round_count,
+          round_count_by_format, swiss_round_count_tiers, swiss_round_count_beyond
+        `)
         .eq('id', 1)
         .single()
 
@@ -34,7 +47,13 @@ export function useSettingsQuery() {
       return {
         membershipFeeAmount: data.membership_fee_amount,
         membershipFeePaymentMethod: data.membership_fee_payment_method as PaymentMethod,
-        trashRetentionDays: data.trash_retention_days
+        trashRetentionDays: data.trash_retention_days,
+        commanderRoundMinutes: data.commander_round_minutes,
+        oneVsOneRoundMinutes: data.one_vs_one_round_minutes,
+        defaultRoundCount: data.default_round_count,
+        roundCountByFormat: data.round_count_by_format as Record<string, number>,
+        swissRoundCountTiers: data.swiss_round_count_tiers as unknown as SwissRoundCountTier[],
+        swissRoundCountBeyond: data.swiss_round_count_beyond
       }
     }
   })
