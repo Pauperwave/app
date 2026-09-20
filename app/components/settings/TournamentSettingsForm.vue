@@ -1,8 +1,8 @@
 <!-- app\components\settings\TournamentSettingsForm.vue -->
 <!--
   /settings' "Tornei" section: the values that used to be hardcoded in the
-  tournament logic — round duration per format family, the default round
-  count and the two round-count tables. Swiss scoring (3/1/0 points, the 0.33
+  tournament logic — round duration and round count per format family, and
+  the Swiss round-count tiers. Swiss scoring (3/1/0 points, the 0.33
   tiebreak floor) is deliberately absent: it is fixed by the official Magic
   Tournament Rules.
 -->
@@ -15,10 +15,7 @@ const { t } = useI18n()
 const toast = useToast()
 
 const settings = useSettingsQuery()
-const { data: formats } = useMtgFormatsQuery()
 const { updateTournamentSettings } = useSettingsMutations()
-
-const formatNames = computed(() => (formats.value ?? []).map(format => format.name))
 
 const minutesSchema = v.pipe(
   v.number(t('settings.tournament.validation.minutes')),
@@ -35,12 +32,9 @@ const roundsSchema = v.pipe(
 const schema = v.object({
   commanderRoundMinutes: minutesSchema,
   oneVsOneRoundMinutes: minutesSchema,
-  defaultRoundCount: roundsSchema,
+  commanderRoundCount: roundsSchema,
+  oneVsOneRoundCount: roundsSchema,
   swissRoundCountBeyond: roundsSchema,
-  formatRounds: v.array(v.object({
-    format: v.pipe(v.string(), v.minLength(1, t('settings.tournament.validation.format'))),
-    rounds: roundsSchema
-  })),
   tiers: v.array(v.object({ maxPlayers: roundsSchema, rounds: roundsSchema }))
 })
 
@@ -49,9 +43,9 @@ type Schema = v.InferOutput<typeof schema>
 const state = reactive<Partial<Schema>>({
   commanderRoundMinutes: undefined,
   oneVsOneRoundMinutes: undefined,
-  defaultRoundCount: undefined,
+  commanderRoundCount: undefined,
+  oneVsOneRoundCount: undefined,
   swissRoundCountBeyond: undefined,
-  formatRounds: [],
   tiers: []
 })
 
@@ -61,20 +55,11 @@ watch(settings.data, (data) => {
   if (!data || state.commanderRoundMinutes !== undefined) return
   state.commanderRoundMinutes = data.commanderRoundMinutes
   state.oneVsOneRoundMinutes = data.oneVsOneRoundMinutes
-  state.defaultRoundCount = data.defaultRoundCount
+  state.commanderRoundCount = data.commanderRoundCount
+  state.oneVsOneRoundCount = data.oneVsOneRoundCount
   state.swissRoundCountBeyond = data.swissRoundCountBeyond
-  state.formatRounds = Object.entries(data.roundCountByFormat)
-    .map(([format, rounds]) => ({ format, rounds }))
   state.tiers = data.swissRoundCountTiers.map((tier: SwissRoundCountTier) => ({ ...tier }))
 }, { immediate: true })
-
-function addFormatRounds() {
-  state.formatRounds?.push({ format: '', rounds: state.defaultRoundCount ?? 2 })
-}
-
-function removeFormatRounds(index: number) {
-  state.formatRounds?.splice(index, 1)
-}
 
 function addTier() {
   const lastTier = state.tiers?.at(-1)
@@ -89,12 +74,11 @@ function removeTier(index: number) {
 }
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  const { formatRounds, tiers, ...values } = event.data
+  const { tiers, ...values } = event.data
 
   try {
     await updateTournamentSettings.mutateAsync({
       ...values,
-      roundCountByFormat: Object.fromEntries(formatRounds.map(row => [row.format, row.rounds])),
       swissRoundCountTiers: tiers
     })
     toast.add({
@@ -169,65 +153,32 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       </UFormField>
       <USeparator />
       <UFormField
-        name="defaultRoundCount"
-        :label="$t('settings.tournament.fields.defaultRoundCount')"
-        :description="$t('settings.tournament.fields.defaultRoundCountDescription')"
+        name="commanderRoundCount"
+        :label="$t('settings.tournament.fields.commanderRoundCount')"
+        :description="$t('settings.tournament.fields.commanderRoundCountDescription')"
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
         <UInputNumber
-          v-model="state.defaultRoundCount"
+          v-model="state.commanderRoundCount"
           :min="1"
           :step="1"
           class="w-48"
         />
       </UFormField>
       <USeparator />
-      <div class="space-y-3">
-        <div>
-          <p class="text-sm font-medium">
-            {{ $t('settings.tournament.fields.roundCountByFormat') }}
-          </p>
-          <p class="text-sm text-muted">
-            {{ $t('settings.tournament.fields.roundCountByFormatDescription') }}
-          </p>
-        </div>
-        <div
-          v-for="(row, index) in state.formatRounds"
-          :key="index"
-          class="flex items-start gap-2"
-        >
-          <UFormField :name="`formatRounds.${index}.format`">
-            <USelectMenu
-              v-model="row.format"
-              :items="formatNames"
-              :placeholder="$t('settings.tournament.fields.formatPlaceholder')"
-              class="w-48"
-            />
-          </UFormField>
-          <UFormField :name="`formatRounds.${index}.rounds`">
-            <UInputNumber
-              v-model="row.rounds"
-              :min="1"
-              :step="1"
-              class="w-32"
-            />
-          </UFormField>
-          <UButton
-            :icon="ICONS.delete"
-            :aria-label="$t('settings.tournament.fields.remove')"
-            color="neutral"
-            variant="ghost"
-            @click="removeFormatRounds(index)"
-          />
-        </div>
-        <UButton
-          :label="$t('settings.tournament.fields.addFormat')"
-          :icon="ICONS.add"
-          color="neutral"
-          variant="outline"
-          @click="addFormatRounds"
+      <UFormField
+        name="oneVsOneRoundCount"
+        :label="$t('settings.tournament.fields.oneVsOneRoundCount')"
+        :description="$t('settings.tournament.fields.oneVsOneRoundCountDescription')"
+        class="flex max-sm:flex-col justify-between items-start gap-4"
+      >
+        <UInputNumber
+          v-model="state.oneVsOneRoundCount"
+          :min="1"
+          :step="1"
+          class="w-48"
         />
-      </div>
+      </UFormField>
       <USeparator />
       <div class="space-y-3">
         <div>

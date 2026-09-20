@@ -27,8 +27,8 @@ export interface SwissRoundCountTier {
 export interface UpdateTournamentSettingsPayload {
   commanderRoundMinutes: number
   oneVsOneRoundMinutes: number
-  defaultRoundCount: number
-  roundCountByFormat: Record<string, number>
+  commanderRoundCount: number
+  oneVsOneRoundCount: number
   swissRoundCountTiers: SwissRoundCountTier[]
   swissRoundCountBeyond: number
 }

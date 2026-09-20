@@ -7,26 +7,26 @@ describe('defaultRoundCountForFormat', () => {
     ['Draft', 4],
     ['Pauper', 4],
     ['Premodern', 4],
+    ['SomeUnknownFormat', 4],
     ['Commander', 2],
-    ['SomeUnknownFormat', 2]
+    ['Cubo Commander', 2]
   ])('%s -> %i rounds', (formatName, rounds) => {
     expect(defaultRoundCountForFormat(formatName)).toBe(rounds)
   })
 
-  it('falls back to the default when no format is given', () => {
+  it('falls back to the Commander count when no format is given', () => {
     expect(defaultRoundCountForFormat(undefined)).toBe(2)
   })
 })
 
 describe('defaultRoundCountForFormat with custom rules', () => {
-  const rules = { defaultRoundCount: 3, roundCountByFormat: { Pauper: 5 } }
+  const rules = { commanderRoundCount: 3, oneVsOneRoundCount: 5 }
 
-  it('uses the per-format count when there is one', () => {
+  it('uses the 1v1 count for a 1v1 format', () => {
     expect(defaultRoundCountForFormat('Pauper', rules)).toBe(5)
   })
 
-  it('falls back to the default round count otherwise', () => {
+  it('uses the Commander count for a multiplayer format', () => {
     expect(defaultRoundCountForFormat('Commander', rules)).toBe(3)
-    expect(defaultRoundCountForFormat(undefined, rules)).toBe(3)
   })
 })

@@ -17,11 +17,11 @@ export interface AppSettings {
   // fields above, not a separate table.
   trashRetentionDays: number
   // Tournament values that used to be hardcoded in the tournament logic
-  // (migration 20260920000000); the two round-count tables are jsonb.
+  // (migrations 20260920000000, 20260920030000); the Swiss tiers are jsonb.
   commanderRoundMinutes: number
   oneVsOneRoundMinutes: number
-  defaultRoundCount: number
-  roundCountByFormat: Record<string, number>
+  commanderRoundCount: number
+  oneVsOneRoundCount: number
   swissRoundCountTiers: SwissRoundCountTier[]
   swissRoundCountBeyond: number
 }
@@ -36,8 +36,8 @@ export function useSettingsQuery() {
         .from('pauperwave_settings')
         .select(`
           membership_fee_amount, membership_fee_payment_method, trash_retention_days,
-          commander_round_minutes, one_vs_one_round_minutes, default_round_count,
-          round_count_by_format, swiss_round_count_tiers, swiss_round_count_beyond
+          commander_round_minutes, one_vs_one_round_minutes, commander_round_count,
+          one_vs_one_round_count, swiss_round_count_tiers, swiss_round_count_beyond
         `)
         .eq('id', 1)
         .single()
@@ -50,8 +50,8 @@ export function useSettingsQuery() {
         trashRetentionDays: data.trash_retention_days,
         commanderRoundMinutes: data.commander_round_minutes,
         oneVsOneRoundMinutes: data.one_vs_one_round_minutes,
-        defaultRoundCount: data.default_round_count,
-        roundCountByFormat: data.round_count_by_format as Record<string, number>,
+        commanderRoundCount: data.commander_round_count,
+        oneVsOneRoundCount: data.one_vs_one_round_count,
         swissRoundCountTiers: data.swiss_round_count_tiers as unknown as SwissRoundCountTier[],
         swissRoundCountBeyond: data.swiss_round_count_beyond
       }
