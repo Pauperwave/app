@@ -1,7 +1,9 @@
 // app\utils\tournaments\prizes\prizeLimits.ts
 // Bounds of the prize settings controls, so no combination that could not be
-// paid out (guaranteed minimums + reserve > total packs) can be reached, and
-// which controls sit at a bound (the UI explains why the +/- is disabled).
+// paid out (guaranteed minimums + reserve > total packs) or that would break
+// the placement order (a non-rewarded player with more packs than a rewarded
+// one) can be reached, and which controls sit at a bound (the UI explains why
+// the +/- is disabled).
 import type { PrizeDistributionSettings } from '~/types'
 import { DEFAULT_PRIZE_DISTRIBUTION_SETTINGS } from '~/utils/tournaments/prizes/prizeAllocation'
 import { prizeBudgetOf } from '~/utils/tournaments/prizes/prizeBudget'
@@ -11,7 +13,10 @@ export interface PrizeSettingsLimits {
   rewardedCount: number
   nonRewardedCount: number
   minTotalPacks: number
+  // The rewarded minimum can't drop below what non-rewarded players get
+  minMinPacksPerPlayer: number
   maxMinPacksPerPlayer: number
+  // Never above the rewarded minimum: a lower placement never has more packs
   maxNonRewardedMinPacks: number
   maxReservedPacks: number
   maxTopCutoff: number
@@ -38,9 +43,15 @@ export function prizeSettingsLimits(
     (totalPacks - reservedPacks - nonRewardedGuaranteed) / rewardedCount
   ))
 
-  const maxNonRewardedMinPacks = nonRewardedCount === 0
+  // Only matters while someone is outside the rewarded placements
+  const minMinPacksPerPlayer = nonRewardedCount > 0 ? nonRewardedMinPacks : 0
+
+  const affordableNonRewardedMin = nonRewardedCount === 0
     ? 0
     : Math.max(0, Math.floor((totalPacks - reservedPacks - rewardedGuaranteed) / nonRewardedCount))
+  const maxNonRewardedMinPacks = nonRewardedCount === 0
+    ? 0
+    : Math.min(affordableNonRewardedMin, minPacksPerPlayer)
 
   const maxReservedPacks = Math.max(0, totalPacks - rewardedGuaranteed - nonRewardedGuaranteed)
 
@@ -59,6 +70,7 @@ export function prizeSettingsLimits(
     rewardedCount,
     nonRewardedCount,
     minTotalPacks,
+    minMinPacksPerPlayer,
     maxMinPacksPerPlayer,
     maxNonRewardedMinPacks,
     maxReservedPacks,
@@ -69,9 +81,12 @@ export function prizeSettingsLimits(
 
 export interface PrizeLimitStates {
   totalPacksAtMin: boolean
+  // At the bound set by the non-rewarded minimum (not just the natural 0)
+  minPacksAtMin: boolean
   minPacksAtMax: boolean
-  // 'none' = nobody is outside the rewarded placements
-  nonRewarded: 'none' | 'atMax' | null
+  // 'none' = nobody is outside the rewarded placements, 'atRewardedMin' = can't
+  // go above what the rewarded players get, 'atMax' = limited by the packs
+  nonRewarded: 'none' | 'atRewardedMin' | 'atMax' | null
   reservedAtMax: boolean
   // 'allPlayers' = already rewarding everyone, 'atMax' = limited by the packs
   topCutoff: 'allPlayers' | 'atMax' | null
@@ -86,6 +101,7 @@ export function prizeLimitStates(
 
   let nonRewarded: PrizeLimitStates['nonRewarded'] = null
   if (limits.nonRewardedCount === 0) nonRewarded = 'none'
+  else if (settings.nonRewardedMinPacks >= settings.minPacksPerPlayer) nonRewarded = 'atRewardedMin'
   else if (settings.nonRewardedMinPacks >= limits.maxNonRewardedMinPacks) nonRewarded = 'atMax'
 
   let topCutoff: PrizeLimitStates['topCutoff'] = null
@@ -95,6 +111,8 @@ export function prizeLimitStates(
 
   return {
     totalPacksAtMin: settings.totalPacks <= limits.minTotalPacks,
+    minPacksAtMin: limits.minMinPacksPerPlayer > 0
+      && settings.minPacksPerPlayer <= limits.minMinPacksPerPlayer,
     minPacksAtMax: settings.minPacksPerPlayer >= limits.maxMinPacksPerPlayer,
     nonRewarded,
     reservedAtMax: settings.reservedPacks >= limits.maxReservedPacks,
@@ -141,7 +159,11 @@ export function prizeResetTargets(
   return {
     totalPacks: Math.max(defaults.totalPacks, limits.minTotalPacks),
     reservedPacks: clamp(defaults.reservedPacks, 0, limits.maxReservedPacks),
-    minPacksPerPlayer: clamp(defaults.minPacksPerPlayer, 0, limits.maxMinPacksPerPlayer),
+    minPacksPerPlayer: clamp(
+      defaults.minPacksPerPlayer,
+      limits.minMinPacksPerPlayer,
+      limits.maxMinPacksPerPlayer
+    ),
     nonRewardedMinPacks: clamp(defaults.nonRewardedMinPacks, 0, limits.maxNonRewardedMinPacks),
     topCutoff: clamp(defaults.topCutoff, 1, limits.maxTopCutoff),
     // 0 means "no cap"; a starting cap too low to hold every pack goes up to the lowest useful
