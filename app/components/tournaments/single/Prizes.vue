@@ -10,10 +10,10 @@
   2026-09-17): the settings reset the moment this component remounts.
 -->
 <script setup lang="ts">
-import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/useLiveCommanderStandings'
+import type { PrizeStanding } from '~/composables/tournaments/prizes/usePrizeDistributionPage'
 
 const { standings } = defineProps<{
-  standings: LiveCommanderStanding[]
+  standings: PrizeStanding[]
 }>()
 
 const { t } = useI18n()

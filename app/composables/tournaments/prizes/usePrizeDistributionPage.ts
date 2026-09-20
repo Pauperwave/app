@@ -5,7 +5,6 @@
 // 2026-09-17), except the organizer's "custom" shares — see
 // usePrizeDistributionPresets.
 import type { PrizeDistributionSettings } from '~/types'
-import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/useLiveCommanderStandings'
 import { usePrizeDistribution } from '~/composables/tournaments/prizes/usePrizeDistribution'
 import { usePrizeDistributionPresets } from '~/composables/tournaments/prizes/usePrizeDistributionPresets'
 import {
@@ -14,7 +13,11 @@ import {
 import { prizeBudgetOf } from '~/utils/tournaments/prizes/prizeBudget'
 import { packRangeOf, sharesForPackEdit } from '~/utils/tournaments/prizes/prizeShares'
 
-type PrizeStanding = Pick<LiveCommanderStanding, 'associateUuid' | 'label'>
+// Shared by the Commander and the Swiss standings: all the prizes need is who, in rank order.
+export interface PrizeStanding {
+  associateUuid: string
+  label: string
+}
 
 export function usePrizeDistributionPage(standings: MaybeRefOrGetter<PrizeStanding[]>) {
   const settings = ref<PrizeDistributionSettings>({ ...DEFAULT_PRIZE_DISTRIBUTION_SETTINGS })
