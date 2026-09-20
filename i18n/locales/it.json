@@ -2894,12 +2894,10 @@
         "commanderRoundMinutesDescription": "Applicata ai tornei Commander e Cubo Commander alla creazione.",
         "oneVsOneRoundMinutes": "Durata round 1vs1 (minuti)",
         "oneVsOneRoundMinutesDescription": "Applicata a tutti gli altri formati alla creazione. Il regolamento ufficiale consiglia 50 minuti.",
-        "defaultRoundCount": "Round di default",
-        "defaultRoundCountDescription": "Numero di round proposto per i formati non elencati qui sotto.",
-        "roundCountByFormat": "Round per formato",
-        "roundCountByFormatDescription": "Numero di round proposto alla creazione, per formato.",
-        "formatPlaceholder": "Formato",
-        "addFormat": "Aggiungi formato",
+        "commanderRoundCount": "Numero di round Commander",
+        "commanderRoundCountDescription": "Proposto ai tornei Commander e Cubo Commander alla creazione.",
+        "oneVsOneRoundCount": "Numero di round 1vs1",
+        "oneVsOneRoundCountDescription": "Proposto a tutti gli altri formati alla creazione.",
         "swissTiers": "Round Swiss per numero di giocatori",
         "swissTiersDescription": "Numero di round calcolato in base ai giocatori iscritti, se non impostato a mano sul torneo.",
         "upTo": "Fino a",
@@ -2911,8 +2909,7 @@
       },
       "validation": {
         "minutes": "Inserisci una durata tra 10 e 120 minuti",
-        "rounds": "Inserisci un numero intero di almeno 1",
-        "format": "Scegli un formato"
+        "rounds": "Inserisci un numero intero di almeno 1"
       },
       "successToastTitle": "Impostazioni dei tornei aggiornate",
       "successToastDescription": "I nuovi valori verranno usati dai prossimi tornei.",

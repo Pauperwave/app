@@ -15,12 +15,11 @@ export default defineEventHandler(async (event) => {
   if (!isValidMinutes(body.commanderRoundMinutes) || !isValidMinutes(body.oneVsOneRoundMinutes)) {
     throw createError({ statusCode: 400, statusMessage: 'Durata round non valida (10-120 minuti)' })
   }
-  const roundCounts = [body.defaultRoundCount, body.swissRoundCountBeyond]
+  const roundCounts = [
+    body.commanderRoundCount, body.oneVsOneRoundCount, body.swissRoundCountBeyond
+  ]
   if (!roundCounts.every(isPositiveInteger)) {
     throw createError({ statusCode: 400, statusMessage: 'Numero di round non valido' })
-  }
-  if (!Object.values(body.roundCountByFormat).every(isPositiveInteger)) {
-    throw createError({ statusCode: 400, statusMessage: 'Round per formato non validi' })
   }
 
   const tiers = body.swissRoundCountTiers
@@ -40,8 +39,8 @@ export default defineEventHandler(async (event) => {
   const settings = await updatePauperwaveSettings(supabase, event, user, {
     commander_round_minutes: body.commanderRoundMinutes,
     one_vs_one_round_minutes: body.oneVsOneRoundMinutes,
-    default_round_count: body.defaultRoundCount,
-    round_count_by_format: body.roundCountByFormat,
+    commander_round_count: body.commanderRoundCount,
+    one_vs_one_round_count: body.oneVsOneRoundCount,
     swiss_round_count_tiers: tiers as unknown as Json,
     swiss_round_count_beyond: body.swissRoundCountBeyond
   })

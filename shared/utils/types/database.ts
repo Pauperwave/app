@@ -1110,14 +1110,14 @@ export type Database = {
       }
       pauperwave_settings: {
         Row: {
+          commander_round_count: number
           commander_round_minutes: number
           created_at: string
-          default_round_count: number
           id: number
           membership_fee_amount: number
           membership_fee_payment_method: string
+          one_vs_one_round_count: number
           one_vs_one_round_minutes: number
-          round_count_by_format: Json
           swiss_round_count_beyond: number
           swiss_round_count_tiers: Json
           trash_retention_days: number
@@ -1125,14 +1125,14 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          commander_round_count?: number
           commander_round_minutes?: number
           created_at?: string
-          default_round_count?: number
           id?: number
           membership_fee_amount?: number
           membership_fee_payment_method?: string
+          one_vs_one_round_count?: number
           one_vs_one_round_minutes?: number
-          round_count_by_format?: Json
           swiss_round_count_beyond?: number
           swiss_round_count_tiers?: Json
           trash_retention_days?: number
@@ -1140,14 +1140,14 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          commander_round_count?: number
           commander_round_minutes?: number
           created_at?: string
-          default_round_count?: number
           id?: number
           membership_fee_amount?: number
           membership_fee_payment_method?: string
+          one_vs_one_round_count?: number
           one_vs_one_round_minutes?: number
-          round_count_by_format?: Json
           swiss_round_count_beyond?: number
           swiss_round_count_tiers?: Json
           trash_retention_days?: number
