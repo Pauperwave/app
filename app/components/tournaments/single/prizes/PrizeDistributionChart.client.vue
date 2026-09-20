@@ -64,7 +64,7 @@ const lines = computed(() => {
         count: guides.nonRewardedMinPacks
       }),
       color: 'var(--ui-info)',
-      position: PlotlineLabelPosition.BottomRight
+      position: PlotlineLabelPosition.TopRight
     })
   }
 
