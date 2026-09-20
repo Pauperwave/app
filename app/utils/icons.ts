@@ -35,6 +35,7 @@ export const ICONS = {
   settingsColumns: 'i-lucide-settings-2',
   settingsGear: 'i-lucide-settings',
   logout: 'i-lucide-log-out',
+  drop: 'i-lucide-log-out',
   lock: 'i-lucide-lock',
   unlock: 'i-lucide-lock-open',
   subtract: 'i-lucide-minus',
