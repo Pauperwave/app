@@ -44,6 +44,7 @@ const {
   // renders plain and `surname` renders bold + text-primary, same visual
   // split as league. Every existing call site omits this and keeps
   // rendering `name` as one plain string, unaffected.
+  // With `highlightQuery`, the search match is highlighted in both parts.
   surname?: string
 }>()
 
@@ -75,7 +76,21 @@ const membershipBadge = computed(() => associate.value
       <template v-if="surname || highlightQuery || strikethrough" #name>
         <span :class="{ 'line-through text-dimmed': strikethrough }">
           <template v-if="surname">
-            {{ name }} <span class="font-bold text-primary whitespace-nowrap">{{ surname }}</span>
+            <HighlightMatch
+              v-if="highlightQuery"
+              :text="name"
+              :query="highlightQuery"
+            />
+            <template v-else>{{ name }}</template>
+            {{ ' ' }}
+            <span class="font-bold text-primary whitespace-nowrap">
+              <HighlightMatch
+                v-if="highlightQuery"
+                :text="surname"
+                :query="highlightQuery"
+              />
+              <template v-else>{{ surname }}</template>
+            </span>
           </template>
           <HighlightMatch
             v-else-if="highlightQuery"
@@ -114,7 +129,21 @@ const membershipBadge = computed(() => associate.value
     <template v-if="surname || highlightQuery || strikethrough" #name>
       <span :class="{ 'line-through text-dimmed': strikethrough }">
         <template v-if="surname">
-          {{ name }} <span class="font-bold text-primary whitespace-nowrap">{{ surname }}</span>
+          <HighlightMatch
+            v-if="highlightQuery"
+            :text="name"
+            :query="highlightQuery"
+          />
+          <template v-else>{{ name }}</template>
+          {{ ' ' }}
+          <span class="font-bold text-primary whitespace-nowrap">
+            <HighlightMatch
+              v-if="highlightQuery"
+              :text="surname"
+              :query="highlightQuery"
+            />
+            <template v-else>{{ surname }}</template>
+          </span>
         </template>
         <HighlightMatch
           v-else-if="highlightQuery"
