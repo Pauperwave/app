@@ -17,14 +17,14 @@ export function useTournamentDropsQuery(tournamentUuid: MaybeRefOrGetter<string>
   return useQuery({
     key: () => TOURNAMENT_DROPS_KEY(toValue(tournamentUuid)),
     query: async (): Promise<TournamentDrop[]> => {
-      const { data, error } = await supabase
+      const data = await fetchAllRows((from, to) => supabase
         .from('tournament_player_drops')
         .select('player_uuid, round_uuid, dropped_at')
         .eq('tournament_uuid', toValue(tournamentUuid))
+        .order('id')
+        .range(from, to))
 
-      if (error) throw error
-
-      return (data ?? []).map(row => ({
+      return data.map(row => ({
         playerUuid: row.player_uuid,
         roundUuid: row.round_uuid,
         droppedAt: row.dropped_at
