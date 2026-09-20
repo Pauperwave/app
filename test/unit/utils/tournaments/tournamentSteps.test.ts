@@ -34,6 +34,15 @@ describe('reachedStepSlots', () => {
     expect(reachedStepSlots(ALL, 'round-9', false)).toEqual(['acceptance'])
   })
 
+  it('reaches every step when any step may be opened (development / developer view)', () => {
+    expect(reachedStepSlots(ALL, 'acceptance', false, true)).toEqual(ALL)
+    expect(reachedStepSlots(ALL, null, false, true)).toEqual(ALL)
+  })
+
+  it('still restricts the steps by default, without the exception', () => {
+    expect(reachedStepSlots(ALL, 'acceptance', false, false)).toEqual(['acceptance'])
+  })
+
   it('returns nothing for an empty list', () => {
     expect(reachedStepSlots([], 'acceptance', false)).toEqual([])
   })

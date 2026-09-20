@@ -95,15 +95,18 @@ export function useTournamentStepper(options: {
   // completed). Every step stays visible, but the ones ahead can't be opened —
   // not with a click, not with a `?step=` link: the tournament only gets there
   // through its own buttons ("Avvia torneo", "Prossimo round", ...). See
-  // tournamentSteps.ts. Free navigation between steps is a testing aid, so it
-  // is only allowed in development (import.meta.dev), never in production.
-  const reachedSlots = computed(() => import.meta.dev
-    ? allItems.value.map(item => item.slot)
-    : reachedStepSlots(
-      allItems.value.map(item => item.slot),
-      defaultStepSlot.value,
-      tournament.value?.status === 'completed'
-    ))
+  // tournamentSteps.ts. Free navigation between steps is a testing aid: allowed
+  // in development (import.meta.dev) and, in production, while the developer
+  // view is on (a password-gated speed bump like the toggle itself, not a
+  // security boundary — the actions keep their own permissions).
+  const { isDeveloperView } = useDeveloperView()
+
+  const reachedSlots = computed(() => reachedStepSlots(
+    allItems.value.map(item => item.slot),
+    defaultStepSlot.value,
+    tournament.value?.status === 'completed',
+    import.meta.dev || isDeveloperView.value
+  ))
 
   const items = computed(() => allItems.value.map(item => ({
     ...item,
