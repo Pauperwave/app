@@ -58,7 +58,7 @@ const emit = defineEmits<{
       :disabled="resetDisabled"
       :icon="ICONS.rotateBack"
       color="warning"
-      variant="soft"
+      variant="outline"
       @click="emit('reset')"
     >
       {{ resetLabel }}
