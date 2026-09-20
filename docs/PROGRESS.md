@@ -439,6 +439,26 @@ Contestualmente, rimosso il banner di avviso giallo ("Questa tabella non è anco
 
 **Conseguenze:** la vista sviluppatore è un aiuto ai test, non un confine di sicurezza: la password è un semplice ostacolo e le azioni mantengono i propri permessi.
 
+### ADR-041 — Accettazione al tavolo di check-in: aggiunta di giocatori sul posto e pagamento per giocatore (2026-09-14/17, ricostruito il 2026-09-20)
+
+*Ricostruito il 2026-09-20 da messaggi di commit e da commenti nel codice.*
+
+**Contesto:** il passo "Accettazione" (`AcceptancePicker.vue`) ha due tabelle, "Pre-registrati" e "Iscritti (Pagato)". La sera del torneo servono due cose che le iscrizioni anticipate non coprono: aggiungere chi si presenta senza essersi pre-registrato e registrare come ha pagato ognuno. Il componente era arrivato a 719 righe.
+
+**Decisione:** (1) **Giocatori sul posto** (`useWalkInPlayers.ts`, "Aggiungi giocatori", portato da `WaitingList.vue` di `league`): qualunque socio non già pre-registrato o accettato può essere cercato, selezionato in blocco e aggiunto direttamente in "Iscritti (Pagato)" oppure in "Pre-registrati". Si leggono i soci veri dell'anagrafica, non solo il gruppo dei pre-registrati, ma solo quelli con tesseramento attivo: restano fuori richieste in sospeso o rifiutate e tesseramenti scaduti, non pagati o da rinnovare, e il record dell'associazione stessa (`PW-0000`), che non è un giocatore. (2) **Pagamento per giocatore** (`useAcceptancePickerPayments.ts`): il metodo si sceglie con un pulsante per riga (Cash, POS, Comped, ...) e ogni click scrive **una sola riga** in `pauperwave_payments` tramite l'endpoint `tournament-registrations/payment` (niente ciclo di N mutazioni senza atomicità). `received_by` è obbligatorio ed è chi sta al banco: si sceglie una volta per sessione, non a ogni click. (3) **Pagamento "Test"**: un pulsante che segna un giocatore come pagato **senza scrivere nel DB** (`'test'` non è un `PaymentMethod` valido e `ck_payment_method` lo rifiuterebbe); lo stato vive in localStorage (VueUse `useStorage`, per torneo) ed è visibile solo con la vista sviluppatore.
+
+**Conseguenze:** il resto del componente resta dov'è di proposito: le due tabelle condividono selezione, ricerca e conferma di rimozione in modo intrecciato, e spezzarle aveva già causato bug tra le due. Le voci di menu contestuale sono state estratte in `useAcceptancePickerRowActions.ts` (con test). I segni "Test" non sopravvivono a un cambio di browser e non compaiono mai nei conti.
+
+### ADR-042 — Schema Commander tracciato a posteriori e motore di accoppiamento portato da `league` (2026-09-14/17, ricostruito il 2026-09-20)
+
+*Ricostruito il 2026-09-20 da messaggi di commit e da commenti nel codice e nelle migrazioni.*
+
+**Contesto:** rounds, pairings, results, standings, kills, votes, rulesets e `commander_decks` esistevano nel database ma senza migrazioni tracciate (creati fuori dal repo mentre si pianificava il porting da `league`).
+
+**Decisione:** (1) **Schema tracciato**: la migrazione `20260914000000` cattura retroattivamente lo stato reale, così un ambiente nuovo lo riproduce; la `20260914000001` aggiunge `UNIQUE(round_uuid, table_number)`, la tabella `player_avoid_pairs` (vincolo globale di coppie da non accostare, portato da `league`) e le policy `UPDATE` di self-service dei giocatori su risultati, uccisioni e voti, pensate per il futuro flusso del bot Telegram. Il ruleset "Base Commander" è ricopiato tale e quale da `league` (`20260915000000`). (2) **Ottimizzatore** (`pairingOptimizer.ts`, portato con il codice originale, identificando i giocatori con l'uuid del socio invece dell'id numerico): ricerca golosa a 3 tentativi più scambi locali, 5 pesi di punteggio, coppie vietate come vincolo duro. L'invariante è che per ogni tavolo la somma dei totali dei giocatori sia uguale al totale del tavolo, e **un peso viene applicato due volte di proposito** (al punto di attribuzione e di nuovo quando si ricalcola il totale del tavolo): non è un bug e non va "corretto". (3) **Riscrittura del 2026-09-17**: `CommanderRoundManager.vue` è stato scomposto in `useCommanderRoundData`, `Lifecycle`, `Modals` e `SubmitHandlers` (come la scomposizione di `league`), aggiunti `TableScoresModal`, `TableStateBadge` e `TablesFullscreenView`, e il reset o l'annullamento della patta di un singolo tavolo (ADR-037). (4) La spunta "Vincitori tavoli" (buste consegnate) è salvata in localStorage per torneo e round (`useStorage`), non nel database.
+
+**Conseguenze:** i segnali dell'ottimizzatore che richiedono la storia tra tornei diversi (`playersForScoring`, storico, `leagueRematchCounts`) sono azzerati di proposito (`STUB:` in `TablePreviewModal.vue`) finché non esiste quella storia. Le policy di self-service su risultati, uccisioni e voti esistono già a livello di database ma non sono usate finché il bot non ha il flusso corrispondente. La spunta "Vincitori tavoli" non è condivisa tra dispositivi.
+
 ## Vedi anche
 
 - `docs/architecture/database.md` — schema, RLS, migrazioni
