@@ -4,7 +4,7 @@
 
 ## Current state: unit tests in place, no e2e specs yet (updated 2026-09-20)
 
-`vitest` (`pnpm test`, `test:watch`, `test:coverage`) runs 99 test files / 686 tests under `test/unit/` (`utils/` for pure helpers, `composables/` for composables). The first ones landed in late August and the suite has grown with the features: renewals and money math, the round timer, Commander scoring and standings sort, the prize distribution, and the 1v1 Swiss scoring and pairing. There are no component tests yet, and `vitest.config.ts`'s auto-import mirror still doesn't cover Nuxt runtime composables, so composables that query Supabase need a hand-mocked `useSupabaseClient` per test.
+`vitest` (`pnpm test`, `test:watch`, `test:coverage`) runs 99 test files / 696 tests under `test/unit/` (`utils/` for pure helpers, `composables/` for composables). The first ones landed in late August and the suite has grown with the features: renewals and money math, the round timer, Commander scoring and standings sort, the prize distribution (see `prize-distribution.md`), and the 1v1 Swiss scoring and pairing. There are no component tests yet, and `vitest.config.ts`'s auto-import mirror still doesn't cover Nuxt runtime composables, so composables that query Supabase need a hand-mocked `useSupabaseClient` per test.
 
 `Playwright` is configured (`pnpm test:e2e`, `test:e2e:headed`) but `test/e2e/` has no specs: login is a Supabase magic-link (OTP email) and the auth-stub blocker in `test/e2e/README.md` is still open.
 
