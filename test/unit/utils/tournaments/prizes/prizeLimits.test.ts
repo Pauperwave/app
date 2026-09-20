@@ -91,6 +91,7 @@ describe('prizeLimitStates', () => {
     const states = prizeLimitStates(settings({ totalPacks: 60 }), PLAYERS)
     expect(states).toEqual({
       totalPacksAtMin: false,
+      minPacksAtMin: false,
       minPacksAtMax: false,
       nonRewarded: null,
       reservedAtMax: false,
@@ -181,5 +182,76 @@ describe('prizeResetTargets', () => {
     const targets = prizeResetTargets(settings({ totalPacks: 12, topCutoff: 2 }), PLAYERS)
     // 12 packs at a minimum of 3 afford 4 placements
     expect(targets.topCutoff).toBe(4)
+  })
+})
+
+describe('a lower placement never has more packs than a higher one', () => {
+  it('keeps the non-rewarded minimum at most the rewarded minimum, even with packs to spare', () => {
+    // 100 packs would pay 7 to each of the 12 non-rewarded, but the rewarded minimum is 2
+    const limits = prizeSettingsLimits(settings({ totalPacks: 100, minPacksPerPlayer: 2 }), PLAYERS)
+    expect(limits.maxNonRewardedMinPacks).toBe(2)
+  })
+
+  it('still limits the non-rewarded minimum by the packs when they are the tighter bound', () => {
+    // 34 - 24 = 10 spare packs over 12 non-rewarded players
+    expect(prizeSettingsLimits(settings({}), PLAYERS).maxNonRewardedMinPacks).toBe(0)
+  })
+
+  it('stops the rewarded minimum from dropping below the non-rewarded one', () => {
+    const limits = prizeSettingsLimits(
+      settings({ totalPacks: 100, minPacksPerPlayer: 3, nonRewardedMinPacks: 3 }),
+      PLAYERS
+    )
+    expect(limits.minMinPacksPerPlayer).toBe(3)
+  })
+
+  it('does not bound the rewarded minimum from below when everyone is rewarded', () => {
+    const limits = prizeSettingsLimits(
+      settings({ topCutoff: 20, nonRewardedMinPacks: 3 }),
+      PLAYERS
+    )
+    expect(limits.minMinPacksPerPlayer).toBe(0)
+  })
+
+  it('flags the non-rewarded minimum when it reaches the rewarded minimum', () => {
+    const states = prizeLimitStates(
+      settings({ totalPacks: 100, minPacksPerPlayer: 2, nonRewardedMinPacks: 2 }),
+      PLAYERS
+    )
+    expect(states.nonRewarded).toBe('atRewardedMin')
+  })
+
+  it('reports the ordering bound before the pack bound when both apply', () => {
+    // 0 non-rewarded minimum, rewarded minimum 0: at the ordering bound too
+    const states = prizeLimitStates(settings({ minPacksPerPlayer: 0 }), PLAYERS)
+    expect(states.nonRewarded).toBe('atRewardedMin')
+  })
+
+  it('flags the rewarded minimum when it cannot go below the non-rewarded one', () => {
+    const states = prizeLimitStates(
+      settings({ totalPacks: 100, minPacksPerPlayer: 3, nonRewardedMinPacks: 3 }),
+      PLAYERS
+    )
+    expect(states.minPacksAtMin).toBe(true)
+  })
+
+  it('does not flag the rewarded minimum at its natural floor of 0', () => {
+    expect(prizeLimitStates(settings({ minPacksPerPlayer: 0 }), PLAYERS).minPacksAtMin).toBe(false)
+  })
+
+  it('resets the rewarded minimum up to the non-rewarded one when going back to 3 would break the order', () => {
+    const targets = prizeResetTargets(
+      settings({ totalPacks: 100, minPacksPerPlayer: 5, nonRewardedMinPacks: 5 }),
+      PLAYERS
+    )
+    expect(targets.minPacksPerPlayer).toBe(5)
+  })
+
+  it('resets the non-rewarded minimum to at most the rewarded one', () => {
+    const targets = prizeResetTargets(
+      settings({ totalPacks: 100, minPacksPerPlayer: 2, nonRewardedMinPacks: 2 }),
+      PLAYERS
+    )
+    expect(targets.nonRewardedMinPacks).toBe(0)
   })
 })
