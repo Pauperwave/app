@@ -16,6 +16,23 @@ export interface UpdateTrashRetentionPayload {
   trashRetentionDays: number
 }
 
+// Swiss round count by player count: the first tier whose `maxPlayers` covers
+// the player count applies, `swissRoundCountBeyond` past the last tier.
+export interface SwissRoundCountTier {
+  maxPlayers: number
+  rounds: number
+}
+
+// Shared by useSettingsMutations.ts and update-tournament-settings.post.ts.
+export interface UpdateTournamentSettingsPayload {
+  commanderRoundMinutes: number
+  oneVsOneRoundMinutes: number
+  defaultRoundCount: number
+  roundCountByFormat: Record<string, number>
+  swissRoundCountTiers: SwissRoundCountTier[]
+  swissRoundCountBeyond: number
+}
+
 // /settings/members (2026-08-25 user request: wire the template's mock
 // roster to the real role system) — one row per current organizer/admin/
 // super_admin, not every associate or every account-linked player: 'player'

@@ -70,8 +70,14 @@ const acceptedCount = computed(() =>
   (registrationsData.value ?? []).filter(r => r.status === 'checked_in').length)
 
 const { calculateRoundCount } = useSwissRoundCount()
-const numberOfRounds = computed(() =>
-  calculateRoundCount(acceptedCount.value, tournament.value?.roundCount))
+const { data: settings } = useSettingsQuery()
+const numberOfRounds = computed(() => calculateRoundCount(
+  acceptedCount.value,
+  tournament.value?.roundCount,
+  settings.value
+    ? { tiers: settings.value.swissRoundCountTiers, beyond: settings.value.swissRoundCountBeyond }
+    : undefined
+))
 
 // URL sync (ported from league's useTournamentUrl.ts) — reflects the current
 // stepper slot and the pods-preview modal into ?step=/&preview=1, so a

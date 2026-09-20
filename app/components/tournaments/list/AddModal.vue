@@ -151,10 +151,24 @@ watch(formatOptions, (options) => {
 // tournament
 // (createInitialState already seeded roundCount from it, and the format
 // watch above never overrides sourceTournament.formatUuid either).
+const { data: settings } = useSettingsQuery()
+
+// Round count and duration a format starts with (both editable in /settings).
+function applyFormatDefaults(formatUuid: string | undefined) {
+  const formatName = formatOptions.value.find(option => option.value === formatUuid)?.label
+  state.roundCount = defaultRoundCountForFormat(formatName, settings.value)
+  state.roundDurationMinutes = defaultRoundMinutesForFormat(formatName, settings.value)
+}
+
 watch(() => state.formatUuid, (formatUuid) => {
   if (sourceTournament) return
-  const formatName = formatOptions.value.find(option => option.value === formatUuid)?.label
-  state.roundCount = defaultRoundCountForFormat(formatName)
+  applyFormatDefaults(formatUuid)
+})
+
+// The settings may arrive after the format was already picked.
+watch(settings, (loaded, previous) => {
+  if (sourceTournament || previous || !loaded) return
+  applyFormatDefaults(state.formatUuid)
 })
 
 type Schema = v.InferOutput<typeof schema>

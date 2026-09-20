@@ -24,6 +24,7 @@ export type Permission
     | 'send-payment-receipts'
     | 'manage-members'
     | 'manage-membership-fees'
+    | 'manage-tournament-settings'
     | 'manage-all-commander-decks'
     | 'delete-tournaments'
     | 'cancel-round'
@@ -58,6 +59,7 @@ export const PERMISSION_LEVEL = {
   'send-payment-receipts': 'admin', // event/tournament AND membership-fee receipts — organizer can manage the payment, not email the receipt
   'manage-members': 'admin',
   'manage-membership-fees': 'admin',
+  'manage-tournament-settings': 'admin',
   'manage-all-commander-decks': 'admin',
   'delete-tournaments': 'super_admin', // permanent deletion only — create/edit stays 'organizer' above
   // Revised down to 'admin' 2026-08-23 (user request: admin gets every
