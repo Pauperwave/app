@@ -99,8 +99,8 @@ function reset() {
             :icon="ICONS.rotateBack"
             :disabled="model === resetValue"
             :aria-label="t('common.resetToValue', { value: resetValue })"
-            color="neutral"
-            variant="ghost"
+            color="warning"
+            variant="soft"
             size="sm"
             square
             @click="reset"
