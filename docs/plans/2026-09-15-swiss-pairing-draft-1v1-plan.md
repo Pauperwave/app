@@ -6,6 +6,16 @@ Commander is the only format with a real round-management flow today (pairing, r
 
 Draft and 1v1 share the same round mechanic once seated (best-of-3 head-to-head, standard Swiss pairing) — Draft's only difference is the existing pod stage before round 1. So this plan builds one Swiss engine used by both, gated the same way Commander's pods step is (`isDraft.value || is1v1Format.value` instead of `isCommander.value`).
 
+## Status (2026-09-20)
+
+All three phases are built, with these differences from the text below:
+
+- **Phase 3 has no `tournament_swiss_standings` table.** The standings are derived from pairings, match results and drops (`useLiveSwissStandings.ts`), see ADR-034 in `docs/PROGRESS.md`. Scoring is the official one (3/1/0, OMW% → GW% → OGW%, 0.33 floor) and is not configurable.
+- **Byes and drops are in scope.** A bye is a single-player pairing scoring as a 2-0 win; the bye goes to the lowest-ranked active player without a previous bye. Drops are recorded per round with a timestamp and take effect from the next round (ADR-036).
+- **`player_avoid_pairs` is not used**: the pairing only avoids rematches (`app/utils/tournaments/swissPairing.ts`).
+- **Draft** still falls back to the placeholder round view: the round manager is gated on `is1v1Format`, which excludes Draft.
+- **Not built:** awards for 1v1 formats (the Commander ones don't apply).
+
 ## What already exists and is reusable as-is
 
 - **`tournament_rounds` / `tournament_pairings`** (`supabase/migrations/20260914000000_baseline_commander_tournament_schema.sql`) — already format-agnostic: `player1_uuid`..`player4_uuid`, `table_number`, `round_uuid`. 1v1 just uses `player1_uuid`/`player2_uuid`, leaving `player3_uuid`/`player4_uuid` null.
