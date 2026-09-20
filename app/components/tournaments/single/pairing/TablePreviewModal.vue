@@ -314,12 +314,14 @@ function openTableScoreBreakdown(tableIndex: number) {
         <div class="flex gap-2 justify-end ms-auto">
           <UButton
             :label="t('common.cancel')"
+            :trailing-icon="ICONS.undo"
             color="neutral"
             variant="outline"
             @click="handleCancel"
           />
           <UButton
             :label="t('common.confirm')"
+            :trailing-icon="ICONS.confirm"
             :loading="loading"
             :disabled="!isValid"
             @click="handleConfirm"
