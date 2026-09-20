@@ -100,7 +100,7 @@ function reset() {
             :disabled="model === resetValue"
             :aria-label="t('common.resetToValue', { value: resetValue })"
             color="warning"
-            variant="soft"
+            variant="outline"
             size="sm"
             square
             @click="reset"
