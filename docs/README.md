@@ -17,6 +17,7 @@ Master index of all project documentation.
 | `architecture/shortcuts.md` | Full keyboard-shortcut map (`g-x` navigation chords + global toggles), why there are two `defineShortcuts` call sites, and how to add a new one | UI reference |
 | `architecture/query-keys.md` | Inventory of every Pinia Colada `useQuery` key (plus the two remaining mock-backed `useAsyncData` ones), naming convention, and which are excluded from `localStorage` persistence for PII | Data-fetching reference |
 | `architecture/actions.md` | Per-domain inventory of row context-menu / inline row / bulk-selection actions — what exists, where, and deliberate gaps vs. real ones | UI reference |
+| `architecture/prize-distribution.md` | The "Distribuzione premi" step: how a pool of booster packs becomes a per-placement suggestion — settings and defaults, the split algorithm, the constraints (every pack assigned, per-placement bounds, non-increasing order, whole packs), the limits of each control, the packs-between-placements rule, presets/custom/reset, and where each rule lives and is tested | Prizes reference |
 | `architecture/telegram-bot.md` | 🟢🟡🔴⚫ command/feature matrix for the Telegram bot (grammY) — access level, implementation status, and why table/opponent pairing is out of scope until the app has a pairing system | Bot reference |
 | `architecture/telegram-notifications.md` | Who gets notified for which event and from where (`notifyTelegramAdmins`/`notifyTelegramSuperAdmins`) — companion to `telegram-bot.md`, covers push alerts only, not the in-app notification bell | Bot reference |
 | `PROJECT_ANALYSIS.md` | Initial codebase audit (stack, routing, auth flow, data-fetching conventions) — **dated snapshot, several claims superseded by `PROGRESS.md`'s ADRs, see its own header note** | Onboarding (with caveats) |
@@ -46,3 +47,4 @@ Master index of all project documentation.
 - **Planning new work?** [GitHub Issues + the "App" project](https://github.com/orgs/Pauperwave/projects/2) before starting — both committed and scratch items live there now
 - **Touching the DB schema?** `architecture/database.md` — RLS policies first
 - **Building anything role/permission-aware (admin vs. player)?** `architecture/roles.md` first — the role hierarchy and why client-side checks alone aren't security — then `architecture/permissions.md` for the per-feature matrix
+- **Touching the prizes (booster distribution) step?** `architecture/prize-distribution.md` first — the constraints and where each rule lives — then ADR-039 in `PROGRESS.md` for why it is a non-persisted suggestion
