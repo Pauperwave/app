@@ -30,27 +30,35 @@ const { t } = useI18n()
       @click="emit('turnBack')"
     />
 
-    <UButton
-      v-if="!isLastRound"
-      :label="t('tournament.single.roundManager.advanceButton')"
-      :icon="ICONS.forward"
-      :disabled="advanceDisabled"
-      color="primary"
-      variant="outline"
-      size="md"
-      trailing
-      @click="emit('advance')"
-    />
-    <UButton
-      v-else
-      :label="t('tournament.single.roundManager.endTournamentButton')"
-      :icon="ICONS.standings"
-      :disabled="advanceDisabled"
-      :loading="endLoading"
-      color="primary"
-      variant="outline"
-      size="md"
-      @click="emit('endTournament')"
-    />
+    <!-- The wrapper span keeps hover alive while the button is disabled -->
+    <UTooltip
+      :text="t('tournament.single.roundManager.advanceDisabledTooltip')"
+      :disabled="!advanceDisabled"
+    >
+      <span class="inline-flex">
+        <UButton
+          v-if="!isLastRound"
+          :label="t('tournament.single.roundManager.advanceButton')"
+          :icon="ICONS.forward"
+          :disabled="advanceDisabled"
+          color="primary"
+          variant="outline"
+          size="md"
+          trailing
+          @click="emit('advance')"
+        />
+        <UButton
+          v-else
+          :label="t('tournament.single.roundManager.endTournamentButton')"
+          :icon="ICONS.standings"
+          :disabled="advanceDisabled"
+          :loading="endLoading"
+          color="primary"
+          variant="outline"
+          size="md"
+          @click="emit('endTournament')"
+        />
+      </span>
+    </UTooltip>
   </div>
 </template>

@@ -1774,6 +1774,7 @@
         "noPairings": "Nessun tavolo per questo round",
         "matchResultErrorTitle": "Impossibile salvare il risultato",
         "matchResultDeleteErrorTitle": "Impossibile cancellare il risultato",
+        "advanceDisabledTooltip": "Completa tutti i tavoli del round per continuare",
         "matchResultPending": "Da inserire",
         "matchResultDeleteLabel": "Annulla inserimento",
         "dropBadge": "Drop R{round}",
