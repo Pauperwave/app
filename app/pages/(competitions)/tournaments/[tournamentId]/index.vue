@@ -49,6 +49,7 @@ const acceptedPlayers = ref<AcceptancePickerItem[]>([])
 const isDraft = computed(() => tournament.value?.format === 'Draft')
 const isCommander = computed(() => tournament.value?.format === 'Commander')
 const { liveStandings } = useLiveCommanderStandings(tournamentUuid)
+const { liveStandings: liveSwissStandings } = useLiveSwissStandings(tournamentUuid)
 // Everything else pairs 1v1 in Swiss rounds (Pauper/Premodern/Oldschool/
 // Sealed/Cubo Vintage) — except "Cubo Commander", which is still a
 // multiplayer pod format despite the name (user decision, 2026-09-17) and
@@ -230,6 +231,7 @@ const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowAct
             :tournament-uuid="tournamentUuid"
             :round-number="i"
             :round-count="numberOfRounds"
+            :round-duration-minutes="tournament?.roundDurationMinutes"
             :auto-open-advance-preview="pendingAdvancePreviewRound === i"
             @turned-back="onRoundTurnedBack(i)"
             @advance-preview-auto-opened="onAdvancePreviewAutoOpened"
@@ -243,10 +245,13 @@ const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowAct
 
         <template #prizes>
           <TournamentsSinglePrizes v-if="isCommander" :standings="liveStandings" />
+          <TournamentsSinglePrizes v-else-if="is1v1Format" :standings="liveSwissStandings" />
         </template>
 
         <template #leaderboard>
-          <TournamentsSingleLeaderboard />
+          <TournamentsSingleLeaderboard
+            :swiss-standings="is1v1Format ? liveSwissStandings : undefined"
+          />
         </template>
       </UStepper>
     </template>

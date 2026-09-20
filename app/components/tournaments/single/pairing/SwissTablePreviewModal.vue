@@ -11,7 +11,8 @@
   TableSeatItem.vue), not Commander's own weighted drag-and-drop optimizer
   (no scoring/standings to optimize against yet for this format, phase 3 of
   the plan) — just free cross-table dragging + a validity check that every
-  table still has exactly 2 players.
+  table still has exactly 2 players (or, with an odd count, one lone player:
+  the bye).
 -->
 <script lang="ts" setup>
 import { VueDraggable } from 'vue-draggable-plus'
@@ -49,20 +50,28 @@ function shuffle() {
 // organizer's already-arranged tables underneath them.
 watch(() => players.length, shuffle, { immediate: true })
 
-const canPlay = computed(() => calculatePairing(players.length).canPlay)
+const pairingSplit = computed(() => calculatePairing(players.length))
+const canPlay = computed(() => pairingSplit.value.canPlay)
 // Cross-table dragging (unlike the old single flat list) can leave a table
 // with the wrong seat count — every table must land back on exactly 2
-// before confirming, same "every table valid" gate as Commander's own
-// TablePreviewModal.vue (isValid/previewError), reusing its error copy.
+// before confirming (except the single bye of an odd count), same "every
+// table valid" gate as Commander's own TablePreviewModal.vue
+// (isValid/previewError), reusing its error copy.
+const byeTableCount = computed(() => tables.value.filter(table => table.length === 1).length)
 const isValid = computed(() =>
-  tables.value.length > 0 && tables.value.every(table => table.length === 2))
+  tables.value.length > 0
+  && tables.value.every(table => table.length === 1 || table.length === 2)
+  && byeTableCount.value === (pairingSplit.value.hasBye ? 1 : 0))
 
 function updateTable(tableIndex: number, value: TablePlayer[]) {
   tables.value[tableIndex] = value
 }
 
+// The bye (lone player) always goes last: the RPC seats the odd one out at the end.
 function confirm() {
-  emit('confirm', tables.value.flat().map(player => player.value))
+  const pairedTables = tables.value.filter(table => table.length === 2)
+  const byeTables = tables.value.filter(table => table.length === 1)
+  emit('confirm', [...pairedTables, ...byeTables].flat().map(player => player.value))
 }
 </script>
 
@@ -100,7 +109,9 @@ function confirm() {
               <div class="flex items-center gap-2">
                 <UIcon :name="ICONS.tableView" class="size-4 text-primary" />
                 <span class="font-semibold text-base">
-                  {{ t('tournament.single.swissTablePreview.tableNumber', { n: tableIndex + 1 }) }}
+                  {{ table.length === 1
+                    ? t('tournament.single.roundManager.byeTitle')
+                    : t('tournament.single.swissTablePreview.tableNumber', { n: tableIndex + 1 }) }}
                 </span>
               </div>
             </template>
