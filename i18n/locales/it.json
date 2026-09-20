@@ -1711,6 +1711,18 @@
           "topCutoffAllPlayers": "Stai già premiando tutti i giocatori.",
           "topCutoffAtMax": "Con {total} buste e un minimo di {min} puoi premiare al massimo {max} piazzamenti."
         },
+        "stepHints": {
+          "increase": {
+            "noBonus": "Non ci sono buste extra da distribuire: aumenta prima il totale o abbassa i minimi.",
+            "cap": "Hai raggiunto il massimo di buste per un singolo piazzamento: alza prima il limite.",
+            "blocked": "Nessun altro piazzamento può cederne una senza scendere sotto il minimo o sotto il posto successivo."
+          },
+          "decrease": {
+            "noBonus": "Non ci sono buste extra da spostare: tutti hanno già il minimo.",
+            "atMin": "È già al minimo garantito: abbassa prima il minimo dei premiati.",
+            "blocked": "Nessun altro piazzamento può riceverla senza superare il limite o il posto precedente."
+          }
+        },
         "info": {
           "totalPacks": "Tutte le buste che hai a disposizione per questo torneo, comprese quelle che accantoni.",
           "reservedPacks": "Buste che non vengono date a nessuno (per esempio da estrarre a sorte o da tenere per il negozio). Si tolgono dal totale prima di distribuire.",

@@ -6,6 +6,7 @@
 -->
 <script setup lang="ts">
 import type { ChangeFlash } from '~/composables/useChangeFlash'
+import type { PackStepBlocks } from '~/utils/tournaments/prizes/prizeShares'
 
 export interface PrizeDistributionRowData {
   associateUuid: string
@@ -14,6 +15,9 @@ export interface PrizeDistributionRowData {
   // Fewest/most packs this placement can reach without passing a neighbour
   minPacks: number
   maxPacks: number
+  // Why the share's +/- is disabled, null while it isn't
+  increaseBlock: PackStepBlocks['increase']
+  decreaseBlock: PackStepBlocks['decrease']
   // Percent of the bonus pool for this placement; null outside the rewarded ones
   sharePercent: number | null
 }
@@ -35,6 +39,17 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+
+const increaseHint = computed(() => row.increaseBlock
+  ? t(`tournament.single.prizeDistribution.stepHints.increase.${row.increaseBlock}`)
+  : undefined)
+
+const decreaseHint = computed(() => row.decreaseBlock
+  ? t(`tournament.single.prizeDistribution.stepHints.decrease.${row.decreaseBlock}`)
+  : undefined)
+
+// The pack field's own +/- stop at the same bounds as the share's
+const packsHint = computed(() => increaseHint.value ?? decreaseHint.value)
 
 // Shares come from whole packs, so at most one decimal (e.g. 9.1%)
 function formatShare(share: number): string {
@@ -69,6 +84,8 @@ function formatShare(share: number): string {
       :can-increase="row.packs < row.maxPacks"
       :decrease-label="t('tournament.single.prizeDistribution.stepShareDown')"
       :increase-label="t('tournament.single.prizeDistribution.stepShareUp')"
+      :decrease-hint="decreaseHint"
+      :increase-hint="increaseHint"
       class="w-32"
       @decrease="emit('stepShare', rank, -1)"
       @increase="emit('stepShare', rank, 1)"
@@ -78,14 +95,22 @@ function formatShare(share: number): string {
       class="w-32"
     />
 
-    <UInputNumber
-      :model-value="row.packs"
-      :min="row.minPacks"
-      :max="row.maxPacks"
-      :disabled="row.sharePercent === null"
-      class="w-28"
-      :icon="ICONS.booster"
-      @update:model-value="value => emit('updatePacks', rank, Number(value ?? 0))"
-    />
+    <!-- Native div: UInputNumber drops the listeners UTooltip's trigger passes to its root -->
+    <UTooltip
+      :text="packsHint"
+      :disabled="!packsHint"
+    >
+      <div class="w-28">
+        <UInputNumber
+          :model-value="row.packs"
+          :min="row.minPacks"
+          :max="row.maxPacks"
+          :disabled="row.sharePercent === null"
+          class="w-full"
+          :icon="ICONS.booster"
+          @update:model-value="value => emit('updatePacks', rank, Number(value ?? 0))"
+        />
+      </div>
+    </UTooltip>
   </div>
 </template>
