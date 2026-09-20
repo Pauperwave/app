@@ -11,7 +11,7 @@ import {
   DEFAULT_PRIZE_DISTRIBUTION_SETTINGS, isDefaultPrizeSettings
 } from '~/utils/tournaments/prizes/prizeAllocation'
 import { prizeBudgetOf } from '~/utils/tournaments/prizes/prizeBudget'
-import { packRangeOf, sharesForPackEdit } from '~/utils/tournaments/prizes/prizeShares'
+import { packRangeOf, packStepBlocksOf, sharesForPackEdit } from '~/utils/tournaments/prizes/prizeShares'
 
 // Shared by the Commander and the Swiss standings: all the prizes need is who, in rank order.
 export interface PrizeStanding {
@@ -67,12 +67,18 @@ export function usePrizeDistributionPage(standings: MaybeRefOrGetter<PrizeStandi
       ? packRangeOf(index, playerCount.value, settings.value)
       : { min: packs, max: packs }
 
+    const blocks = isRewarded
+      ? packStepBlocksOf(packs, range, playerCount.value, settings.value)
+      : { increase: null, decrease: null }
+
     return {
       associateUuid: standing.associateUuid,
       label: standing.label,
       packs,
       minPacks: range.min,
       maxPacks: range.max,
+      increaseBlock: blocks.increase,
+      decreaseBlock: blocks.decrease,
       sharePercent: isRewarded ? realSharePercent(packs) : null
     }
   }))

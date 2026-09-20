@@ -113,6 +113,39 @@ export function sharesForPackEdit(
   return sharesFromPacks(moved, min, bonusPool, settings.bonusShares)
 }
 
+// Why a placement's +/- is disabled: no bonus to move, the cap or the minimum,
+// or (blocked) no other placement can give/take without breaking the order
+export interface PackStepBlocks {
+  increase: 'noBonus' | 'cap' | 'blocked' | null
+  decrease: 'noBonus' | 'atMin' | 'blocked' | null
+}
+
+export function packStepBlocksOf(
+  packs: number,
+  range: { min: number, max: number },
+  rankedCount: number,
+  settings: PrizeDistributionSettings
+): PackStepBlocks {
+  const { bonusPool, bonusCap } = prizeBudgetOf(rankedCount, settings)
+  const min = Math.max(0, settings.minPacksPerPlayer)
+
+  let increase: PackStepBlocks['increase'] = null
+  if (packs >= range.max) {
+    if (bonusPool <= 0) increase = 'noBonus'
+    else if (Number.isFinite(bonusCap) && packs >= min + bonusCap) increase = 'cap'
+    else increase = 'blocked'
+  }
+
+  let decrease: PackStepBlocks['decrease'] = null
+  if (packs <= range.min) {
+    if (bonusPool <= 0) decrease = 'noBonus'
+    else if (packs <= min) decrease = 'atMin'
+    else decrease = 'blocked'
+  }
+
+  return { increase, decrease }
+}
+
 // The fewest and most packs a rewarded placement can reach from the current
 // distribution, one valid pack at a time
 export function packRangeOf(

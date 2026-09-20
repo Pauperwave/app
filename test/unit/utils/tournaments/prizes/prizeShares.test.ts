@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   computePrizeDistribution, DEFAULT_PRIZE_DISTRIBUTION_SETTINGS
 } from '~/utils/tournaments/prizes/prizeAllocation'
-import { packRangeOf, sharesForPackEdit } from '~/utils/tournaments/prizes/prizeShares'
+import { packRangeOf, packStepBlocksOf, sharesForPackEdit } from '~/utils/tournaments/prizes/prizeShares'
 import { settings, sum } from './prizeTestHelpers'
 
 describe('sharesForPackEdit', () => {
@@ -211,5 +211,38 @@ describe('packRangeOf', () => {
   it('has no range to move in without a bonus pool', () => {
     const noBonus = settings({ totalPacks: 24 })
     expect(packRangeOf(0, 20, noBonus)).toEqual({ min: 3, max: 3 })
+  })
+})
+
+describe('packStepBlocksOf', () => {
+  function blocksOf(rank: number, custom = settings({})) {
+    const packs = computePrizeDistribution(20, custom)[rank] ?? 0
+    return packStepBlocksOf(packs, packRangeOf(rank, 20, custom), 20, custom)
+  }
+
+  it('blames the cap when the first placement is already at it', () => {
+    // 7 6 5 4 3 3 3 3 with a cap of 7
+    expect(blocksOf(0).increase).toBe('cap')
+  })
+
+  it('has nothing to explain while a step is possible', () => {
+    expect(blocksOf(1)).toEqual({ increase: null, decrease: null })
+  })
+
+  it('blames the minimum when a placement is already at it', () => {
+    expect(blocksOf(7).decrease).toBe('atMin')
+  })
+
+  it('blames the missing bonus pool when there is none', () => {
+    expect(blocksOf(0, settings({ totalPacks: 24 }))).toEqual({
+      increase: 'noBonus',
+      decrease: 'noBonus'
+    })
+  })
+
+  it('reports a blocked step when no other placement can give without breaking the order', () => {
+    // No cap: the first can't go up because everyone else is already at the minimum
+    const noCap = settings({ maxPacksPerPlayer: 0, bonusShares: [100] })
+    expect(blocksOf(0, noCap).increase).toBe('blocked')
   })
 })
