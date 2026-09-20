@@ -1,7 +1,7 @@
 // test\unit\utils\tournaments\prizes\prizeLimits.test.ts
 import { describe, expect, it } from 'vitest'
 import {
-  prizeLimitStates, prizeSettingsLimits, resolveMaxPacksPerPlayer
+  prizeLimitStates, prizeResetTargets, prizeSettingsLimits, resolveMaxPacksPerPlayer
 } from '~/utils/tournaments/prizes/prizeLimits'
 import { settings } from './prizeTestHelpers'
 
@@ -138,5 +138,48 @@ describe('resolveMaxPacksPerPlayer', () => {
 
   it('drops back to "no cap" when lowering below the lowest useful cap', () => {
     expect(resolveMaxPacksPerPlayer(4, 5, 5)).toBe(0)
+  })
+})
+
+describe('prizeResetTargets', () => {
+  it('goes back to the starting values when the other settings allow them', () => {
+    expect(prizeResetTargets(settings({ totalPacks: 50, reservedPacks: 2 }), PLAYERS)).toEqual({
+      totalPacks: 34,
+      reservedPacks: 0,
+      minPacksPerPlayer: 3,
+      nonRewardedMinPacks: 0,
+      topCutoff: 8,
+      maxPacksPerPlayer: 7
+    })
+  })
+
+  it('never takes the total below what the minimums and the reserve need', () => {
+    // 8 x 5 rewarded minimum = 40 > 34
+    const targets = prizeResetTargets(settings({ totalPacks: 60, minPacksPerPlayer: 5 }), PLAYERS)
+    expect(targets.totalPacks).toBe(40)
+  })
+
+  it('never takes the minimum above what the total can pay', () => {
+    const targets = prizeResetTargets(settings({ totalPacks: 24, minPacksPerPlayer: 2 }), PLAYERS)
+    expect(targets.minPacksPerPlayer).toBe(3)
+    const tight = prizeResetTargets(settings({ totalPacks: 20, minPacksPerPlayer: 1 }), PLAYERS)
+    expect(tight.minPacksPerPlayer).toBe(2)
+  })
+
+  it('never takes the reserve above the free packs', () => {
+    const targets = prizeResetTargets(settings({ totalPacks: 24, reservedPacks: 0 }), PLAYERS)
+    expect(targets.reservedPacks).toBe(0)
+  })
+
+  it('goes to the lowest useful cap when the starting cap could not hold every pack', () => {
+    // 60 packs, minimum 3, 8 rewarded: ceil(60 / 8) = 8 > 7
+    const targets = prizeResetTargets(settings({ totalPacks: 60, maxPacksPerPlayer: 0 }), PLAYERS)
+    expect(targets.maxPacksPerPlayer).toBe(8)
+  })
+
+  it('keeps the starting number of rewarded placements within what the packs afford', () => {
+    const targets = prizeResetTargets(settings({ totalPacks: 12, topCutoff: 2 }), PLAYERS)
+    // 12 packs at a minimum of 3 afford 4 placements
+    expect(targets.topCutoff).toBe(4)
   })
 })

@@ -37,6 +37,7 @@
   },
   "common": {
     "close": "Chiudi",
+    "resetToValue": "Ripristina a {value}",
     "selectAll": "Seleziona tutti",
     "selectRow": "Seleziona riga",
     "dataFreshness": "Aggiornato {time}",
