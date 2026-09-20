@@ -379,7 +379,7 @@ Contestualmente, rimosso il banner di avviso giallo ("Questa tabella non è anco
 
 **Decisione:** (1) la classifica non è persistita: `useLiveSwissStandings.ts` la ricalcola da `tournament_pairings`, `tournament_match_results` e `tournament_player_drops`, quindi si aggiorna appena un risultato viene scelto (aggiornamento ottimistico della cache). (2) Punteggio e spareggi sono quelli ufficiali e **non sono modificabili**: 3 punti per vittoria, 1 per pareggio, 0 per sconfitta; spareggi in ordine OMW%, GW%, OGW%, ognuno con minimo **0,33** (il primo calcolo usava 1/3, corretto dopo aver letto le MTR). Il bye vale una vittoria 2-0 (3 punti match, 6 punti partita) ed è ignorato nelle percentuali degli avversari. Una prima versione metteva punti e minimo in `/settings`; scartata perché fissati dal regolamento (vedi ADR-035). (3) Gli accoppiamenti dei round successivi sono generati da `pairSwissRound` (`app/utils/tournaments/swissPairing.ts`): per rango, senza rematch, con ricerca a ritroso limitata a 50.000 passi e ripiego sull'ordine di classifica; l'organizzatore può sempre riordinare nell'anteprima. `player_avoid_pairs` non è usato.
 
-**Conseguenze:** nessuna migrazione per la classifica e nessun rischio di dati fuori sincrono. "Prossimo round" resta disabilitato finché ogni tavolo non ha un risultato, perché gli accoppiamenti dipendono dalla classifica. Se servirà una classifica pubblica o nel bot Telegram, valutare una vista o una tabella. I riconoscimenti (Awards) dei tornei 1vs1 non sono definiti: il passo resta vuoto (quelli di Commander, uccisioni e voti, non hanno senso qui).
+**Conseguenze:** nessuna migrazione per la classifica e nessun rischio di dati fuori sincrono. "Prossimo round" resta disabilitato finché ogni tavolo non ha un risultato, perché gli accoppiamenti dipendono dalla classifica. Se servirà una classifica pubblica o nel bot Telegram, valutare una vista o una tabella. Il passo "Premi" (Awards: La Vittima, Il Carnefice, Master Brewer, Il Player) nasce da uccisioni e voti, quindi esiste solo per Commander: per gli altri formati non compare nello stepper (2026-09-20, richiesta utente). Il suo nome andrebbe rivisto, perché di fatto è la classifica più i premi particolari di Commander (arcinemico, mazzo più votato, giocata più votata).
 
 ### ADR-035 — Regole dei tornei modificabili da `/settings` (2026-09-20)
 
@@ -393,11 +393,51 @@ Contestualmente, rimosso il banner di avviso giallo ("Questa tabella non è anco
 
 **Contesto:** con un numero dispari di giocatori serve un bye, e serve tracciare chi esce dal torneo e quando (le MTR §2.10 permettono di droppare in qualsiasi momento, avvisando prima che vengano generati gli accoppiamenti del round successivo).
 
-**Decisione:** (1) tabella `tournament_player_drops` (migrazione `20260920010000`): una riga per giocatore e torneo, con `round_uuid` (cascade: annullare un round annulla anche i drop fatti in quel round) e `dropped_at`. Il drop vale **dal round successivo**: la partita del round in corso conta ancora, e il giocatore resta in classifica con un badge "Drop R{n}". Un click sul badge annulla il drop. (2) Un bye è un pairing con un solo giocatore (`player2_uuid` e `table_number` nulli, già `completed`, nessuna riga in `tournament_match_results`); `ck_tournament_pairings_player_count` accetta ora il caso a un giocatore, e `start_swiss_round_one`/`advance_swiss_round` accettano conteggi dispari: l'ultimo dell'ordine ricevuto è il bye. (3) L'ordine lo calcola il client: bye al giocatore attivo più in basso in classifica **che non ne ha già avuto uno** (nessuno ne riceve due, salvo che tutti li abbiano già avuti); al round 1, l'ultimo del sorteggio. Nell'anteprima il bye si può assegnare a mano trascinando un altro giocatore.
+**Decisione:** (1) tabella `tournament_player_drops` (migrazione `20260920010000`): una riga per giocatore e torneo, con `round_uuid` (cascade: annullare un round annulla anche i drop fatti in quel round) e `dropped_at`. Il drop vale **dal round successivo**: la partita del round in corso conta ancora, e il giocatore resta in classifica con un badge "Drop R{n}". Nelle schede un click sul badge annulla il drop; nella tabella il drop è un'azione di riga (colonna "Azioni", `RowActionsMenu`, come nelle altre tabelle) e il badge, in sola lettura, compare accanto al giocatore. (2) Un bye è un pairing con un solo giocatore (`player2_uuid` e `table_number` nulli, già `completed`, nessuna riga in `tournament_match_results`); `ck_tournament_pairings_player_count` accetta ora il caso a un giocatore, e `start_swiss_round_one`/`advance_swiss_round` accettano conteggi dispari: l'ultimo dell'ordine ricevuto è il bye. (3) L'ordine lo calcola il client: bye al giocatore attivo più in basso in classifica **che non ne ha già avuto uno** (nessuno ne riceve due, salvo che tutti li abbiano già avuti); al round 1, l'ultimo del sorteggio. Nell'anteprima il bye si può assegnare a mano trascinando un altro giocatore.
 
 **Nota sulle fonti:** il testo delle MTR letto il 2026-09-20 non dice a chi va il bye né limita a uno per giocatore (l'Appendice C definisce solo come si conta). Quella regola è la prassi dei software da torneo, adottata come regola della casa. Un testo incollato citava la "MTR 2.5" come fonte, ma la 2.5 tratta di concessioni e pareggi intenzionali.
 
 **Conseguenze:** le migrazioni sono state applicate al progetto Supabase `app` direttamente dal MCP oltre che salvate in `supabase/migrations`. Byes e drop entrano nel calcolo della classifica (ADR-034): il bye come vittoria 2-0, il drop solo come marcatura e come esclusione dagli accoppiamenti successivi.
+
+### ADR-037 — Tornei dal vivo: un RPC atomico per ogni transizione di round, dietro un endpoint BFF (2026-09-14/15, ricostruito il 2026-09-20)
+
+*Ricostruito il 2026-09-20 da messaggi di commit, commenti nelle migrazioni e nel codice: non era stato scritto all'epoca.*
+
+**Contesto:** con `league` abbandonato (ADR-003), la gestione dal vivo di un torneo (accoppiamenti, round, risultati, classifica) doveva vivere in `app`, sopra tabelle in parte Commander-specifiche (`docs/architecture/database.md`). Il codice utile di `league` è stato portato, non integrato: ottimizzatore di accoppiamenti, punteggio, tracciamento uccisioni e voti, classifica live.
+
+**Decisione:** ogni transizione del ciclo di vita di un torneo è una route Nitro (`server/api/tournament-rounds/*.post.ts`) che chiama **una sola funzione plpgsql atomica** con il service role, secondo la convenzione lettura da client / scrittura BFF (ADR-007): `start_commander_round_one` (`20260915000001`), `advance_commander_round` e `turn_back_commander_round` (`20260916000000`, con la classifica sempre ricalcolata da zero e mai incrementata), le equivalenti Swiss (`20260918000000`, vedi ADR-034 e ADR-036), `reset_tournament` (`20260918020000`: valida per qualunque formato, cancella round, tavoli, risultati e classifica, riporta il torneo a `registration_open` e risincronizza le sequenze `identity` a `max(id)+1`), `reset_commander_pairing` e `undraw_commander_pairing` (`20260919000000` e `20260919010000`: svuotano i dati di un solo tavolo). Il passo "Tavoli" è stato tolto dallo stepper: le anteprime dei tavoli (Draft, Commander, 1vs1) sono modali aperti da "Avvia torneo" o dall'avanzamento di un round. I punti del regolamento si risolvono per torneo passando dalla lega (`tournament` → `league` → `leagues.ruleset_uuid`) prima di ripiegare sul ruleset predefinito.
+
+**Conseguenze:** ogni passaggio è tutto-o-niente, quindi un errore a metà non lascia round o tavoli a metà. Le funzioni non hanno un controllo di permesso proprio: il confine è il `requireManagementPermission` dell'endpoint. I segnali dell'ottimizzatore che richiederebbero la storia tra tornei diversi sono deliberatamente azzerati (`STUB:` in `TablePreviewModal.vue`). `docs/architecture/postgres-functions.md` documenta per ora solo le funzioni Swiss.
+
+### ADR-038 — Durata del round per torneo e motore del timer (2026-09-16/17, ricostruito il 2026-09-20)
+
+*Ricostruito il 2026-09-20 da messaggi di commit, commenti nelle migrazioni e nel codice.*
+
+**Contesto:** `RoundTimer.vue` usava una durata fissa di 75 minuti senza una fonte reale; il form di creazione dei tornei di `league` aveva già un campo "durata round" con default 75 e intervallo 10-120.
+
+**Decisione:** colonna `tournaments.round_duration_minutes` (migrazione `20260919020000`, `integer not null default 75`, check 10-120), modificabile da `SchedulingFields.vue` in creazione e modifica. Il conto alla rovescia è una macchina a stati in `useRoundTimerEngine.ts` (test in `roundTimer.test.ts`), mostrata da `RoundTimer.vue`. Il default per formato passa poi alle impostazioni (ADR-035).
+
+**Conseguenze:** la durata è per torneo, non globale. Il timer non è ancora sincronizzato con l'app Telegram (lo dice un `TODO` in `CommanderRoundManager.vue`). Anche il round 1vs1 usa lo stesso timer.
+
+### ADR-039 — Distribuzione dei premi (buste): suggerimento non persistito, con vincoli di ordine (2026-09-17/20, ricostruito il 2026-09-20)
+
+*Ricostruito il 2026-09-20 da messaggi di commit e da commenti nel codice.*
+
+**Contesto:** a fine torneo l'organizzatore ridistribuisce le buste in premio secondo la classifica finale. Il passo "Distribuzione premi" è uno step dello stepper tra "Premi" e "Classifica".
+
+**Decisione:** il risultato è un **suggerimento non persistito**, scelta esplicita dell'utente del 2026-09-17: le impostazioni si azzerano quando il componente viene rimontato (`Prizes.vue`). Fa eccezione il preset "custom", che ripristina le ultime quote dell'organizzatore (localStorage via VueUse). La logica è in funzioni pure testate (`app/utils/tournaments/prizes/`: `prizeAllocation`, `prizeBudget`, `prizeLimits`, `prizeShares`) e lo stato in `usePrizeDistributionPage.ts`. Percentuali e buste sono collegate: un passo di quota sposta esattamente una busta, le quote si derivano dalle buste realmente assegnate e nessuna busta resta non assegnata. Impostazioni: minimo per i non premiati, buste accantonate e tetto per posizione (7 di default), disegnati come linee guida nel grafico. Vincolo: **una posizione più bassa non riceve mai più buste di una più alta** (`packRangeOf` calcola l'intervallo raggiungibile di ogni riga e disabilita i controlli fuori limite).
+
+**Conseguenze:** nulla da migrare né da tenere sincronizzato, ma chi ricarica la pagina perde le impostazioni. Il passo usa solo `associateUuid` e etichetta in ordine di rango, quindi serve anche la classifica Swiss (ADR-034). I premi "evidenza" del passo "Premi" (Vittima, Carnefice, Master Brewer, Player) sono legati a uccisioni e voti: quel passo esiste solo per Commander e non compare per gli altri formati.
+
+### ADR-040 — Lo stepper del torneo non apre i passi non ancora raggiunti; la vista sviluppatore è l'eccezione (2026-09-15/20, ricostruito il 2026-09-20)
+
+*Ricostruito il 2026-09-20 da messaggi di commit.*
+
+**Contesto:** un organizzatore poteva aprire, per esempio, il passo Premi di un torneo ancora in iscrizione.
+
+**Decisione:** in produzione tutti i passi restano visibili, ma quelli oltre il passo reale del torneo (un torneo completato li ha raggiunti tutti) sono disabilitati: non si aprono con un click e un link `?step=` verso uno di essi viene ignorato, con l'URL corretto sul passo mostrato. Al torneo si arriva ai passi successivi solo con i suoi pulsanti (Avvia torneo, Prossimo round, ...). La regola sta nelle funzioni pure `reachedStepSlots`/`resolveActiveStepSlot` (`app/utils/tournaments/tournamentSteps.ts`, testate). Eccezioni: in sviluppo (`import.meta.dev`) e con la **vista sviluppatore** attiva (`useDeveloperView`, portata da `league` il 2026-09-15 con la sua stessa password fissa nel codice).
+
+**Conseguenze:** la vista sviluppatore è un aiuto ai test, non un confine di sicurezza: la password è un semplice ostacolo e le azioni mantengono i propri permessi.
 
 ## Vedi anche
 

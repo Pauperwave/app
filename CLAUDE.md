@@ -29,7 +29,7 @@ pnpm fallow:audit     # fallow audit
 pnpm fallow:security  # fallow security
 ```
 
-vitest and Playwright are configured (mirroring `MagicTheGathering/league`), but no tests exist yet — see `test/README.md` and `test/e2e/README.md`. Always run `pnpm lint` and `pnpm typecheck` after changes; both must be clean (see the zero-warning policy in global CLAUDE.md).
+vitest and Playwright are configured (mirroring `MagicTheGathering/league`); vitest has unit tests for utils and composables under `test/unit/`, Playwright has no specs yet — see `test/README.md`, `test/e2e/README.md` and `docs/architecture/testing.md`. Always run `pnpm lint` and `pnpm typecheck` after changes; both must be clean (see the zero-warning policy in global CLAUDE.md).
 
 Add a path comment as the first line of every source file under `app/`, `server/`, `shared/`, `test/`, `scripts/`: `<!-- app\components\X.vue -->` or `// app\stores\x.ts` (backslash-separated, matching the checker in `scripts/check-file-paths.mjs`, copied unmodified from `MagicTheGathering/league`). Skips `shared/utils/types/database.ts` (generated via `pnpm supabase:types`, never hand-edited).
 

@@ -14,7 +14,7 @@ All three phases are built, with these differences from the text below:
 - **Byes and drops are in scope.** A bye is a single-player pairing scoring as a 2-0 win; the bye goes to the lowest-ranked active player without a previous bye. Drops are recorded per round with a timestamp and take effect from the next round (ADR-036).
 - **`player_avoid_pairs` is not used**: the pairing only avoids rematches (`app/utils/tournaments/swissPairing.ts`).
 - **Draft** still falls back to the placeholder round view: the round manager is gated on `is1v1Format`, which excludes Draft.
-- **Not built:** awards for 1v1 formats (the Commander ones don't apply).
+- **Awards:** the "Premi" step (Vittima, Carnefice, Master Brewer, Il Player) comes from kills and votes, so it exists only for Commander and is hidden for the other formats.
 
 ## What already exists and is reusable as-is
 

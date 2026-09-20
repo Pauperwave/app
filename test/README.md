@@ -1,3 +1,3 @@
 # test
 
-vitest (`pnpm test`) and Playwright (`pnpm test:e2e`) are configured (`vitest.config.ts`, `playwright.config.ts`), mirroring `MagicTheGathering/league`. No tests exist yet — `CLAUDE.md`'s "no test runner configured" note is now stale for the infra itself, but still true in that nothing here is tested yet.
+vitest (`pnpm test`) and Playwright (`pnpm test:e2e`) are configured (`vitest.config.ts`, `playwright.config.ts`), mirroring `MagicTheGathering/league`. Unit tests live in `test/unit/` (`utils/` and `composables/`, 99 files as of 2026-09-20); there are no component tests and no Playwright specs yet, see `docs/architecture/testing.md`.
