@@ -17,14 +17,14 @@ export function useTournamentMatchResultsQuery(tournamentUuid: MaybeRefOrGetter<
   return useQuery({
     key: () => TOURNAMENT_MATCH_RESULTS_KEY(toValue(tournamentUuid)),
     query: async (): Promise<TournamentMatchResult[]> => {
-      const { data, error } = await supabase
+      const data = await fetchAllRows((from, to) => supabase
         .from('tournament_match_results')
         .select('pairing_uuid, player1_games_won, player2_games_won')
         .eq('tournament_uuid', toValue(tournamentUuid))
+        .order('id')
+        .range(from, to))
 
-      if (error) throw error
-
-      return (data ?? []).map(row => ({
+      return data.map(row => ({
         pairingUuid: row.pairing_uuid,
         player1GamesWon: row.player1_games_won,
         player2GamesWon: row.player2_games_won
