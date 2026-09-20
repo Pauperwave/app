@@ -18,6 +18,10 @@ Most are `SECURITY DEFINER` — they run with the privileges of the function's o
   - [`assign_role`](#assign_rolep_user_id-uuid-p_role-app_role-returns-void)
 - [Tournament registration](#tournament-registration)
   - [`register_tournament_players`](#register_tournament_playersp_tournament_uuid-uuid-p_associate_uuids-uuid-p_status-text-default-registered-returns-table-)
+- [Tournament rounds (1v1 Swiss)](#tournament-rounds-1v1-swiss)
+  - [`start_swiss_round_one`](#start_swiss_round_onep_tournament_uuid-uuid-p_associate_order-uuid-returns-uuid)
+  - [`advance_swiss_round`](#advance_swiss_roundp_tournament_uuid-uuid-p_current_round_number-smallint-p_associate_order-uuid-default-null-returns-uuid)
+  - [`turn_back_swiss_round`](#turn_back_swiss_roundp_tournament_uuid-uuid-p_current_round_number-smallint-returns-void)
 - [Auditing & housekeeping](#auditing--housekeeping)
   - [`log_player_login`](#log_player_login-returns-trigger)
   - [`purge_expired_trash`](#purge_expired_trash-returns-void)
@@ -181,6 +185,22 @@ Called via `supabase.rpc(...)` from `server/api/tournament-registrations/registe
 Not `SECURITY DEFINER` (unlike the role functions above) — it relies on the caller's own privileges, since it's invoked from a server endpoint that already authenticates via `serverSupabaseServiceRole` and gates on `requireManagementPermission`.
 
 **Why an RPC at all:** the Supabase JS client can't run multiple statements in one transaction — each `.from(...).insert(...)` is its own round-trip. Wrapping all three steps in one `plpgsql` function makes Postgres run them as a single transaction: if step 2 failed partway through, step 1's `players` inserts wouldn't be left dangling half-applied.
+
+## Tournament rounds (1v1 Swiss)
+
+Migrations `20260918000000` (created) and `20260920010000` (odd counts / byes). The Commander equivalents (`start_commander_round_one`, `advance_commander_round`, ...) are not documented here yet. All three run through `server/api/tournament-rounds/*-swiss.post.ts` with the service role; none has an explicit permission check of its own — the endpoint's `requireManagementPermission` is the boundary.
+
+### `start_swiss_round_one(p_tournament_uuid uuid, p_associate_order uuid[]) returns uuid`
+
+Creates round 1 (`in_progress`) and seats the associates in the order given — two by two, table 1 first — then moves the tournament to `in_progress`. With an odd count the **last** associate of the order gets the bye: a pairing with `player2_uuid` and `table_number` null and status `completed`. Raises if fewer than 2 associates are given or if any of them isn't a registered player of the tournament. Returns the round uuid.
+
+### `advance_swiss_round(p_tournament_uuid uuid, p_current_round_number smallint, p_associate_order uuid[] default null) returns uuid`
+
+Completes the current round. Past the tournament's `round_count` it marks the tournament `completed` and returns null; otherwise `p_associate_order` is required and the next round is seated exactly like round 1 (last of an odd list = bye). The order is computed by the client from the live standings (`pairSwissRound`), so the function itself applies no ranking or rematch rule.
+
+### `turn_back_swiss_round(p_tournament_uuid uuid, p_current_round_number smallint) returns void`
+
+Deletes the given round; the cascades wipe its pairings, match results and drops. Turning back round 1 deletes every round and puts the tournament back to `registration_open`.
 
 ## Auditing & housekeeping
 

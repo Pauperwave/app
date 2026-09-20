@@ -30,11 +30,13 @@
 | `transactions` | `server/api/transactions/**` | `create`/`[id]/update` require admin specifically for `'Association Fee'` payments (see `idRequest.ts` above) |
 | `trash` | `server/api/trash/**` | `restore.post.ts` (admin), `purge.post.ts` (super_admin) — not a domain of its own, operates across every soft-deletable table (`docs/architecture/database.md`) |
 | `cardtrader` | `server/api/cardtrader/**` | Read-only proxy/cache (`price.get.ts`/`resolve.get.ts`), not a mutation domain |
-| `settings` | `server/api/settings/**` | `members.get.ts` (real account-linked players + roles, admin-gated read), `update-membership-fee.post.ts`, `update-trash-retention.post.ts` |
+| `settings` | `server/api/settings/**` | `members.get.ts` (real account-linked players + roles, admin-gated read), `update-membership-fee.post.ts`, `update-trash-retention.post.ts`, `update-tournament-settings.post.ts` (round durations, default round counts and the Swiss rounds-by-players table) |
 | `commander-decks` | `server/api/commander-decks/**` | `create`/`update`/`delete`/`select.post.ts` (assign a deck to a player for a tournament), `set-bracket.post.ts` |
 | `player-avoid-pairs` | `server/api/player-avoid-pairs/**` | `create`/`delete` — pairing-avoidance constraints for the Swiss/Commander pairing engine |
 | `tournament-rounds` | `server/api/tournament-rounds/**` | Round lifecycle for live pairing: `start-round-one[-swiss]`, `advance-round[-swiss]`, `turn-back-round[-swiss]`, `reset`, `reset-pairing`, `undraw-pairing` |
 | `tournament-round-results` | `server/api/tournament-round-results/**` | `upsert.post.ts` — records a pod/table's result for a round |
+| `tournament-match-results` | `server/api/tournament-match-results/**` | `upsert.post.ts` — records a 1v1 best-of-3 result and marks the pairing completed |
+| `tournament-drops` | `server/api/tournament-drops/**` | `set.post.ts` — records or undoes a player's drop (round and time stamped by the database) |
 | `tournament-kills` | `server/api/tournament-kills/**` | `create`/`delete` — Commander kill-tracking events |
 | `tournament-votes` | `server/api/tournament-votes/**` | `create`/`delete` — Commander brew/play votes |
 | `admin` | `server/api/admin/**` | `sync-commanders.post.ts` — incremental resync of `mtg_commanders` from Scryfall, `requireManagementPermission`-gated; ported from `MagicTheGathering/league` |
