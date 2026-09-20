@@ -4,13 +4,34 @@
 import type { TableColumn } from '@nuxt/ui'
 import type { LiveSwissStanding } from '~/composables/tournaments/pairing/useLiveSwissStandings'
 
-const { standings } = defineProps<{
+const { standings, pendingPlayerUuids = [] } = defineProps<{
   standings: LiveSwissStanding[]
+  // Players whose table in the current round has no result yet.
+  pendingPlayerUuids?: string[]
 }>()
 
 const { t } = useI18n()
 
-// standings arrive already ranked, so a row's position is its rank.
+const search = ref('')
+
+// Filtering keeps each player's real rank, not their position in the filtered list.
+const rankByPlayerUuid = computed(() =>
+  new Map(standings.map((standing, index) => [standing.playerUuid, index + 1])))
+const filteredStandings = computed(() =>
+  standings.filter(standing => matchesRoundStatusSearch(standing.label, search.value)))
+
+const tableMeta = {
+  class: {
+    tr: (row: { original: LiveSwissStanding }) =>
+      pendingPlayerUuids.includes(row.original.playerUuid) ? 'bg-warning/10' : ''
+  }
+}
+
+// No match played yet: the tiebreaks would only show the 33.3% floor.
+function hasPlayed(standing: LiveSwissStanding): boolean {
+  return standing.wins + standing.draws + standing.losses > 0
+}
+
 const columns = computed<TableColumn<LiveSwissStanding>[]>(() => [
   { id: 'rank', header: '#', meta: { class: { td: 'font-mono' } } },
   { id: 'player', header: t('tournament.single.roundManager.playerColumn') },
@@ -28,10 +49,21 @@ function formatPercentage(value: number): string {
 </script>
 
 <template>
-  <UTable
+  <SearchInput
     v-if="standings.length > 0"
-    :data="standings"
+    v-model="search"
+    :placeholder="t('tournament.single.roundManager.matchSearchPlaceholder')"
+    class="mb-2 w-full"
+  />
+  <EmptyState
+    v-if="standings.length > 0 && filteredStandings.length === 0"
+    :message="t('tournament.single.roundManager.matchNoSearchResults')"
+  />
+  <UTable
+    v-else-if="standings.length > 0"
+    :data="filteredStandings"
     :columns="columns"
+    :meta="tableMeta"
     :ui="{ th: 'border-r-0', td: 'border-r-0' }"
   >
     <template #points-header>
@@ -61,13 +93,14 @@ function formatPercentage(value: number): string {
     </template>
 
     <template #rank-cell="{ row }">
-      {{ row.index + 1 }}
+      {{ rankByPlayerUuid.get(row.original.playerUuid) }}
     </template>
     <template #player-cell="{ row }">
       <div class="flex items-center gap-1.5">
         <AssociateTag
           :name="row.original.label"
           :associate-uuid="row.original.associateUuid"
+          :highlight-query="search"
         />
         <UBadge
           v-if="row.original.dropped"
@@ -84,13 +117,13 @@ function formatPercentage(value: number): string {
       {{ row.original.wins }}-{{ row.original.draws }}-{{ row.original.losses }}
     </template>
     <template #omw-cell="{ row }">
-      {{ formatPercentage(row.original.omw) }}
+      {{ hasPlayed(row.original) ? formatPercentage(row.original.omw) : '–' }}
     </template>
     <template #gw-cell="{ row }">
-      {{ formatPercentage(row.original.gw) }}
+      {{ hasPlayed(row.original) ? formatPercentage(row.original.gw) : '–' }}
     </template>
     <template #ogw-cell="{ row }">
-      {{ formatPercentage(row.original.ogw) }}
+      {{ hasPlayed(row.original) ? formatPercentage(row.original.ogw) : '–' }}
     </template>
   </UTable>
 

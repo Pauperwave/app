@@ -94,7 +94,8 @@ function matchPlayersFor(pairing: { playerUuids: string[] }): SwissMatchPlayer[]
 }
 
 // ─── Match results ──────────────────────────────────────────────────────────
-const { saveMatchResult } = useTournamentMatchResultsMutations(() => tournamentUuid)
+const { saveMatchResult, deleteMatchResult }
+  = useTournamentMatchResultsMutations(() => tournamentUuid)
 
 const matchResultByPairingUuid = computed(() =>
   new Map((matchResults.value ?? []).map(result => [result.pairingUuid, result])))
@@ -109,6 +110,10 @@ async function onScoreSelect(pairingUuid: string, score: MatchScore) {
       pairingUuid, player1Uuid, player2Uuid, ...score
     })
   } catch { /* toasted by the mutation's own onError */ }
+}
+
+function onScoreClear(pairingUuid: string) {
+  deleteMatchResult.mutate(pairingUuid)
 }
 
 // ─── Drops ──────────────────────────────────────────────────────────────────
@@ -195,6 +200,12 @@ const allResultsEntered = computed(() =>
   && pairingsForRound.value.every(pairing =>
     pairing.playerUuids.length === 1 || matchResultByPairingUuid.value.has(pairing.uuid)))
 
+// Players still waiting for their table's result (a bye has none to enter).
+const pendingPlayerUuids = computed(() => pairingsForRound.value
+  .filter(pairing =>
+    pairing.playerUuids.length > 1 && !matchResultByPairingUuid.value.has(pairing.uuid))
+  .flatMap(pairing => pairing.playerUuids))
+
 const tournamentIsEnded = computed(() =>
   isLastRoundOfTournament.value && round.value?.status === 'completed')
 
@@ -276,6 +287,7 @@ watch(() => autoOpenAdvancePreview, (value) => {
             :current="matchResultByPairingUuid.get(pairing.uuid)"
             :search="search"
             @select="score => onScoreSelect(pairing.uuid, score)"
+            @clear="onScoreClear(pairing.uuid)"
             @toggle-drop="onToggleDrop"
           />
         </div>
@@ -284,6 +296,7 @@ watch(() => autoOpenAdvancePreview, (value) => {
           :rows="matchRows"
           :search="search"
           @select="onScoreSelect"
+          @clear="onScoreClear"
           @toggle-drop="onToggleDrop"
         />
       </template>
@@ -295,11 +308,25 @@ watch(() => autoOpenAdvancePreview, (value) => {
       class="self-start"
     >
       <template #header>
-        {{ tournamentIsEnded
-          ? t('tournament.single.roundManager.standingsFinal')
-          : t('tournament.single.roundManager.standingsPartial') }}
+        <div class="flex items-center justify-between gap-2">
+          <span>
+            {{ tournamentIsEnded
+              ? t('tournament.single.roundManager.standingsFinal')
+              : t('tournament.single.roundManager.standingsPartial') }}
+          </span>
+          <span
+            v-if="pendingPlayerUuids.length > 0"
+            class="flex items-center gap-1.5 text-xs font-normal text-muted"
+          >
+            <span class="size-3 rounded-sm border border-warning/40 bg-warning/10" />
+            {{ t('tournament.single.roundManager.standingsPendingLegend') }}
+          </span>
+        </div>
       </template>
-      <TournamentsSinglePairingSwissStandingsTable :standings="liveStandings" />
+      <TournamentsSinglePairingSwissStandingsTable
+        :standings="liveStandings"
+        :pending-player-uuids="pendingPlayerUuids"
+      />
     </UCard>
   </div>
 
