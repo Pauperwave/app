@@ -13,9 +13,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-const droppedAtTime = computed(() => dropped
-  ? new Date(dropped.droppedAt).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
-  : '')
+const droppedAtTime = computed(() => dropped ? formatDropTime(dropped.droppedAt) : '')
 </script>
 
 <template>
