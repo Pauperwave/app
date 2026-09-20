@@ -129,33 +129,15 @@ const showFHint = useChordHintKey('f')
 <template>
   <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-4">
     <div class="space-y-3">
-      <div class="flex items-center justify-between">
-        <UButton
-          :label="turnBackButtonLabel"
-          :icon="ICONS.undo"
-          color="error"
-          variant="outline"
-          @click="onTurnBack"
-        />
-
-        <UButton
-          v-if="!isLastRoundOfTournament"
-          :label="t('tournament.single.roundManager.advanceButton')"
-          :icon="ICONS.forward"
-          trailing
-          :disabled="!allPairingsComplete"
-          @click="openAdvancePreview"
-        />
-        <UButton
-          v-else
-          :label="t('tournament.single.roundManager.endTournamentButton')"
-          :icon="ICONS.standings"
-          color="primary"
-          :disabled="!allPairingsComplete"
-          :loading="advanceRound.isLoading.value"
-          @click="endTournament"
-        />
-      </div>
+      <TournamentsSinglePairingRoundNavButtons
+        :turn-back-label="turnBackButtonLabel"
+        :is-last-round="isLastRoundOfTournament"
+        :advance-disabled="!allPairingsComplete"
+        :end-loading="advanceRound.isLoading.value"
+        @turn-back="onTurnBack"
+        @advance="openAdvancePreview"
+        @end-tournament="endTournament"
+      />
 
       <TournamentsSinglePairingRoundTimer
         :key="roundNumber"
