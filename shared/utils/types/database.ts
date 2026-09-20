@@ -1110,28 +1110,46 @@ export type Database = {
       }
       pauperwave_settings: {
         Row: {
+          commander_round_minutes: number
           created_at: string
+          default_round_count: number
           id: number
           membership_fee_amount: number
           membership_fee_payment_method: string
+          one_vs_one_round_minutes: number
+          round_count_by_format: Json
+          swiss_round_count_beyond: number
+          swiss_round_count_tiers: Json
           trash_retention_days: number
           updated_at: string
           updated_by: string | null
         }
         Insert: {
+          commander_round_minutes?: number
           created_at?: string
+          default_round_count?: number
           id?: number
           membership_fee_amount?: number
           membership_fee_payment_method?: string
+          one_vs_one_round_minutes?: number
+          round_count_by_format?: Json
+          swiss_round_count_beyond?: number
+          swiss_round_count_tiers?: Json
           trash_retention_days?: number
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
+          commander_round_minutes?: number
           created_at?: string
+          default_round_count?: number
           id?: number
           membership_fee_amount?: number
           membership_fee_payment_method?: string
+          one_vs_one_round_minutes?: number
+          round_count_by_format?: Json
+          swiss_round_count_beyond?: number
+          swiss_round_count_tiers?: Json
           trash_retention_days?: number
           updated_at?: string
           updated_by?: string | null
@@ -1892,6 +1910,62 @@ export type Database = {
           },
           {
             foreignKeyName: "fk_tournament_pairings_tournament_uuid_fkey"
+            columns: ["tournament_uuid"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["uuid"]
+          },
+        ]
+      }
+      tournament_player_drops: {
+        Row: {
+          dropped_at: string
+          id: number
+          player_uuid: string
+          round_uuid: string
+          tournament_uuid: string
+          uuid: string
+        }
+        Insert: {
+          dropped_at?: string
+          id?: never
+          player_uuid: string
+          round_uuid: string
+          tournament_uuid: string
+          uuid?: string
+        }
+        Update: {
+          dropped_at?: string
+          id?: never
+          player_uuid?: string
+          round_uuid?: string
+          tournament_uuid?: string
+          uuid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_player_drops_player_uuid_fkey"
+            columns: ["player_uuid"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "tournament_player_drops_player_uuid_fkey"
+            columns: ["player_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_full"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "tournament_player_drops_round_uuid_fkey"
+            columns: ["round_uuid"]
+            isOneToOne: false
+            referencedRelation: "tournament_rounds"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "tournament_player_drops_tournament_uuid_fkey"
             columns: ["tournament_uuid"]
             isOneToOne: false
             referencedRelation: "tournaments"
