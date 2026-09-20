@@ -12,6 +12,7 @@ export function useTournamentSwissRoundsMutations(tournamentUuid: MaybeRefOrGett
     queryCache.invalidateQueries({ key: TOURNAMENTS_KEY })
     queryCache.invalidateQueries({ key: TOURNAMENT_ROUNDS_KEY(toValue(tournamentUuid)) })
     queryCache.invalidateQueries({ key: TOURNAMENT_PAIRINGS_KEY(toValue(tournamentUuid)) })
+    queryCache.invalidateQueries({ key: TOURNAMENT_MATCH_RESULTS_KEY(toValue(tournamentUuid)) })
   }
 
   const startRoundOneSwiss = useMutation({
