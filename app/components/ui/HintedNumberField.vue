@@ -5,7 +5,9 @@
   input) explains why its +/- is disabled — it shows only while it's set, so
   the parent decides when a bound is reached. UInputNumber is wrapped in a
   native div because it drops the listeners UTooltip's trigger passes to its
-  root (same as UChip).
+  root (same as UChip). With `resetValue` a button to the right of the input
+  puts the field back to it (disabled while it already is): the parent passes
+  the starting value already clamped to what the other settings allow.
 -->
 <script setup lang="ts">
 const {
@@ -17,7 +19,8 @@ const {
   max = undefined,
   step = undefined,
   disabled = false,
-  dimmed = false
+  dimmed = false,
+  resetValue = undefined
 } = defineProps<{
   label: string
   // What the setting does, shown on the info icon
@@ -30,9 +33,17 @@ const {
   disabled?: boolean
   // Muted look, e.g. while the value means "off"
   dimmed?: boolean
+  // Value the reset button restores; no button without it
+  resetValue?: number
 }>()
 
 const model = defineModel<number>({ required: true })
+
+const { t } = useI18n()
+
+function reset() {
+  if (resetValue !== undefined) model.value = resetValue
+}
 </script>
 
 <template>
@@ -57,23 +68,45 @@ const model = defineModel<number>({ required: true })
         </span>
       </UTooltip>
     </div>
-    <UTooltip
-      :text="hint"
-      :disabled="!hint"
-    >
-      <div>
-        <UInputNumber
-          :model-value="model"
-          :min="min"
-          :max="max"
-          :step="step"
-          :icon="icon"
-          :disabled="disabled"
-          :class="{ 'opacity-50': dimmed }"
-          class="w-full"
-          @update:model-value="value => (model = Number(value ?? 0))"
-        />
+    <div class="flex items-center gap-1">
+      <div class="min-w-0 flex-1">
+        <UTooltip
+          :text="hint"
+          :disabled="!hint"
+        >
+          <div>
+            <UInputNumber
+              :model-value="model"
+              :min="min"
+              :max="max"
+              :step="step"
+              :icon="icon"
+              :disabled="disabled"
+              :class="{ 'opacity-50': dimmed }"
+              class="w-full"
+              @update:model-value="value => (model = Number(value ?? 0))"
+            />
+          </div>
+        </UTooltip>
       </div>
-    </UTooltip>
+
+      <UTooltip
+        v-if="resetValue !== undefined"
+        :text="t('common.resetToValue', { value: resetValue })"
+      >
+        <span class="inline-flex">
+          <UButton
+            :icon="ICONS.rotateBack"
+            :disabled="model === resetValue"
+            :aria-label="t('common.resetToValue', { value: resetValue })"
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            square
+            @click="reset"
+          />
+        </span>
+      </UTooltip>
+    </div>
   </div>
 </template>

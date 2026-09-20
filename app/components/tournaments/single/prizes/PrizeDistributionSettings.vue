@@ -23,6 +23,7 @@ const { t } = useI18n()
 // The bounds keep "every guaranteed minimum + reserve <= total packs" always true
 const limits = computed(() => prizeSettingsLimits(settings, playerCount))
 const states = computed(() => prizeLimitStates(settings, playerCount))
+const resetTargets = computed(() => prizeResetTargets(settings, playerCount))
 
 function updateMaxPacksPerPlayer(value: number) {
   emit('update', {
@@ -87,6 +88,7 @@ const topCutoffHint = computed(() => {
         <HintedNumberField
           :label="t('tournament.single.prizeDistribution.totalPacks')"
           :info="t('tournament.single.prizeDistribution.info.totalPacks')"
+          :reset-value="resetTargets.totalPacks"
           :hint="totalPacksHint"
           :model-value="settings.totalPacks"
           :min="limits.minTotalPacks"
@@ -98,6 +100,7 @@ const topCutoffHint = computed(() => {
         <HintedNumberField
           :label="t('tournament.single.prizeDistribution.reservedPacks')"
           :info="t('tournament.single.prizeDistribution.info.reservedPacks')"
+          :reset-value="resetTargets.reservedPacks"
           :hint="reservedHint"
           :model-value="settings.reservedPacks"
           :min="0"
@@ -118,6 +121,7 @@ const topCutoffHint = computed(() => {
         <HintedNumberField
           :label="t('tournament.single.prizeDistribution.minPacksPerPlayer')"
           :info="t('tournament.single.prizeDistribution.info.minPacksPerPlayer')"
+          :reset-value="resetTargets.minPacksPerPlayer"
           :hint="minPacksHint"
           :model-value="settings.minPacksPerPlayer"
           :min="0"
@@ -130,6 +134,7 @@ const topCutoffHint = computed(() => {
         <HintedNumberField
           :label="t('tournament.single.prizeDistribution.nonRewardedMinPacks')"
           :info="t('tournament.single.prizeDistribution.info.nonRewardedMinPacks')"
+          :reset-value="resetTargets.nonRewardedMinPacks"
           :hint="nonRewardedMinHint"
           :model-value="settings.nonRewardedMinPacks"
           :min="0"
@@ -151,6 +156,7 @@ const topCutoffHint = computed(() => {
         <HintedNumberField
           :label="t('tournament.single.prizeDistribution.weightLabels.topCutoff')"
           :info="t('tournament.single.prizeDistribution.info.topCutoff')"
+          :reset-value="resetTargets.topCutoff"
           :hint="topCutoffHint"
           :model-value="Math.min(settings.topCutoff, playerCount)"
           :min="1"
@@ -165,6 +171,7 @@ const topCutoffHint = computed(() => {
         <HintedNumberField
           :label="t('tournament.single.prizeDistribution.maxPacksPerPlayer')"
           :info="t('tournament.single.prizeDistribution.info.maxPacksPerPlayer')"
+          :reset-value="resetTargets.maxPacksPerPlayer"
           :model-value="settings.maxPacksPerPlayer"
           :min="0"
           :step="1"

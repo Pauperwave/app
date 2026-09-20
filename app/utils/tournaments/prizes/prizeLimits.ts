@@ -3,6 +3,7 @@
 // paid out (guaranteed minimums + reserve > total packs) can be reached, and
 // which controls sit at a bound (the UI explains why the +/- is disabled).
 import type { PrizeDistributionSettings } from '~/types'
+import { DEFAULT_PRIZE_DISTRIBUTION_SETTINGS } from '~/utils/tournaments/prizes/prizeAllocation'
 import { prizeBudgetOf } from '~/utils/tournaments/prizes/prizeBudget'
 
 export interface PrizeSettingsLimits {
@@ -111,4 +112,39 @@ export function resolveMaxPacksPerPlayer(
   const isUnusable = value > 0 && value < lowestUsefulCap
   if (!isUnusable) return value
   return value > current ? lowestUsefulCap : 0
+}
+
+export interface PrizeResetTargets {
+  totalPacks: number
+  reservedPacks: number
+  minPacksPerPlayer: number
+  nonRewardedMinPacks: number
+  topCutoff: number
+  maxPacksPerPlayer: number
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
+}
+
+// The value each setting goes back to: its starting value, or the closest one
+// the other settings still allow (e.g. the total can't drop below what the
+// minimums need, so it goes to that instead)
+export function prizeResetTargets(
+  settings: PrizeDistributionSettings,
+  playerCount: number
+): PrizeResetTargets {
+  const defaults = DEFAULT_PRIZE_DISTRIBUTION_SETTINGS
+  const limits = prizeSettingsLimits(settings, playerCount)
+  const cap = defaults.maxPacksPerPlayer
+
+  return {
+    totalPacks: Math.max(defaults.totalPacks, limits.minTotalPacks),
+    reservedPacks: clamp(defaults.reservedPacks, 0, limits.maxReservedPacks),
+    minPacksPerPlayer: clamp(defaults.minPacksPerPlayer, 0, limits.maxMinPacksPerPlayer),
+    nonRewardedMinPacks: clamp(defaults.nonRewardedMinPacks, 0, limits.maxNonRewardedMinPacks),
+    topCutoff: clamp(defaults.topCutoff, 1, limits.maxTopCutoff),
+    // 0 means "no cap"; a starting cap too low to hold every pack goes up to the lowest useful
+    maxPacksPerPlayer: cap > 0 && cap < limits.lowestUsefulCap ? limits.lowestUsefulCap : cap
+  }
 }
