@@ -158,13 +158,22 @@ function confirm() {
         <span v-if="!isValid" class="text-sm text-error">
           {{ t('tournament.single.tablePreview.invalidTableSizes') }}
         </span>
-        <UButton
-          class="ms-auto"
-          :label="t('common.confirm')"
-          :loading="loading"
-          :disabled="!isValid"
-          @click="confirm"
-        />
+        <div class="flex gap-2 justify-end ms-auto">
+          <UButton
+            :label="t('common.cancel')"
+            :trailing-icon="ICONS.undo"
+            color="neutral"
+            variant="outline"
+            @click="open = false"
+          />
+          <UButton
+            :label="t('common.confirm')"
+            :trailing-icon="ICONS.confirm"
+            :loading="loading"
+            :disabled="!isValid"
+            @click="confirm"
+          />
+        </div>
       </div>
     </template>
   </UModal>
