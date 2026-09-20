@@ -10,6 +10,7 @@ const { rows, search = '' } = defineProps<{
 
 const emit = defineEmits<{
   select: [pairingUuid: string, score: MatchScore]
+  clear: [pairingUuid: string]
   toggleDrop: [playerUuid: string]
 }>()
 
@@ -36,13 +37,33 @@ function resultSortKey(row: SwissMatchRow): number | undefined {
 // The drop is a row action (the same "Azioni" column the other tables use); the
 // player cell only shows that it happened.
 function rowActionItems(row: SwissMatchRow): DropdownMenuItem[] {
-  return [{
+  const items: DropdownMenuItem[] = [{
     label: row.player.dropped
       ? t('tournament.single.roundManager.dropUndoLabel')
       : t('tournament.single.roundManager.dropLabel'),
     icon: ICONS.drop,
     onSelect: () => emit('toggleDrop', row.player.playerUuid)
   }]
+  if (row.current) {
+    items.push({
+      label: t('tournament.single.roundManager.matchResultDeleteLabel'),
+      icon: ICONS.undo,
+      onSelect: () => emit('clear', row.pairingUuid)
+    })
+  }
+  return items
+}
+
+// Rows still waiting for a result are tinted, the ones with a result fade back.
+const tableMeta = {
+  class: {
+    tr: (row: { original: SwissMatchRow }) => {
+      if (row.original.isBye) return ''
+      return row.original.current
+        ? 'opacity-75 transition-opacity hover:opacity-100'
+        : 'bg-warning/10'
+    }
+  }
 }
 
 const columns = computed<TableColumn<SwissMatchRow>[]>(() => [
@@ -82,6 +103,7 @@ const columns = computed<TableColumn<SwissMatchRow>[]>(() => [
     v-model:sorting="sorting"
     :data="rows"
     :columns="columns"
+    :meta="tableMeta"
     sticky="header"
   >
     <template #tableNumber-cell="{ row }">

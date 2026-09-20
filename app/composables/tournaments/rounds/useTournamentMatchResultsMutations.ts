@@ -20,6 +20,8 @@ export function useTournamentMatchResultsMutations(tournamentUuid: MaybeRefOrGet
         body: { tournamentUuid: toValue(tournamentUuid), ...payload }
       }),
     onMutate({ pairingUuid, player1GamesWon, player2GamesWon }) {
+      // An in-flight refetch would overwrite the optimistic value with stale data
+      queryCache.cancelQueries({ key: resultsKey() })
       const previous = queryCache.getQueryData<TournamentMatchResult[]>(resultsKey())
       queryCache.setQueryData<TournamentMatchResult[]>(
         resultsKey(),
@@ -44,5 +46,34 @@ export function useTournamentMatchResultsMutations(tournamentUuid: MaybeRefOrGet
     }
   })
 
-  return { saveMatchResult }
+  const deleteMatchResult = useMutation({
+    mutation: (pairingUuid: string) =>
+      $fetch('/api/tournament-match-results/delete', {
+        method: 'POST',
+        body: { pairingUuid }
+      }),
+    onMutate(pairingUuid) {
+      queryCache.cancelQueries({ key: resultsKey() })
+      const previous = queryCache.getQueryData<TournamentMatchResult[]>(resultsKey())
+      queryCache.setQueryData<TournamentMatchResult[]>(
+        resultsKey(),
+        current => (current ?? []).filter(result => result.pairingUuid !== pairingUuid)
+      )
+      return { previous }
+    },
+    onError: (error, _pairingUuid, context) => {
+      if (context?.previous) queryCache.setQueryData(resultsKey(), context.previous)
+      toast.add({
+        title: t('tournament.single.roundManager.matchResultDeleteErrorTitle'),
+        description: toErrorMessage(error),
+        color: 'error'
+      })
+    },
+    onSettled: () => {
+      queryCache.invalidateQueries({ key: resultsKey() })
+      queryCache.invalidateQueries({ key: TOURNAMENT_PAIRINGS_KEY(toValue(tournamentUuid)) })
+    }
+  })
+
+  return { saveMatchResult, deleteMatchResult }
 }
