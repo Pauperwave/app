@@ -7,12 +7,15 @@
 
 // The steps up to and including the tournament's real current one; a completed
 // tournament has been through all of them (awards, prizes, leaderboard).
+// `canOpenAny` lifts the restriction (development, or the developer view): every
+// step is then reachable, as a testing aid.
 export function reachedStepSlots(
   allSlots: string[],
   currentSlot: string | null,
-  isCompleted: boolean
+  isCompleted: boolean,
+  canOpenAny = false
 ): string[] {
-  if (isCompleted) return allSlots
+  if (isCompleted || canOpenAny) return allSlots
 
   const index = currentSlot ? allSlots.indexOf(currentSlot) : -1
   return allSlots.slice(0, Math.max(index, 0) + 1)
