@@ -1694,7 +1694,7 @@
         },
         "nonRewardedMinPacks": "Minimo per ogni non premiato",
         "maxPacksPerPlayer": "Massimo di buste per piazzamento",
-        "reservedPacks": "Buste accantonate (non assegnate)",
+        "reservedPacks": "Buste accantonate",
         "reservedSummary": "{count} accantonate",
         "stepShareDown": "Togli una busta",
         "stepShareUp": "Aggiungi una busta",
