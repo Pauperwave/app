@@ -59,7 +59,7 @@ function reset() {
         }"
       >
         <span
-          class="inline-flex cursor-help text-muted"
+          class="inline-flex cursor-pointer text-muted"
           tabindex="0"
           role="img"
           :aria-label="info"
