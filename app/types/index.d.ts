@@ -589,3 +589,42 @@ export interface PrizeDistributionSettings {
   bonusShares: number[]
   topCutoff: number
 }
+
+// --- 1v1 Swiss match-result entry (SwissRoundManager.vue) ------------------
+// Games won by each side of a best-of-3 pairing (player1/player2 = the
+// pairing's own seat order).
+export interface MatchScore {
+  player1GamesWon: number
+  player2GamesWon: number
+}
+
+// A player's drop: the round they dropped in and when (they aren't paired from
+// the next round on).
+export interface SwissDropInfo {
+  roundNumber: number
+  droppedAt: string
+}
+
+// Who a 1v1 player is, as rendered by AssociateTag.
+export interface SwissMatchPerson {
+  associateUuid?: string
+  name: string
+  surname?: string
+}
+
+// One player of a 1v1 pairing, as shown in the card/table match views.
+export interface SwissMatchPlayer extends SwissMatchPerson {
+  seat: 0 | 1
+  playerUuid: string
+  opponent: SwissMatchPerson
+  dropped: SwissDropInfo | null
+}
+
+export interface SwissMatchRow {
+  pairingUuid: string
+  tableNumber: number
+  player: SwissMatchPlayer
+  current: MatchScore | null
+  // A single player sitting out: scores as a 2-0 win.
+  isBye: boolean
+}
