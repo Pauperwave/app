@@ -4,7 +4,7 @@
 
 Documento vivo per tracciare avanzamento, architettura e decisioni. Aggiornare quando cambiano scope, stack o convenzioni rilevanti.
 
-**Ultimo aggiornamento:** 2026-09-17
+**Ultimo aggiornamento:** 2026-09-20
 
 ---
 
@@ -372,6 +372,32 @@ Contestualmente, rimosso il banner di avviso giallo ("Questa tabella non è anco
 **Decisione:** nuovo helper `requireManagementOrWantedCardOwner` (`server/utils/wantedCards.ts`) — prova prima `has_management_permissions` (ora esposto come `hasManagementPermission`, booleano, estratto da `requireManagementPermission` in `serverAuth.ts`), poi verifica che `player_associate_uuid` della riga coincida con l'associato dell'utente (`resolveAuditAssociateUuid`). Usato sia da `[id]/status.post.ts` sia da `[id]/delete.post.ts` (che non passa più da `parseIdRequest`, condiviso con altre tabelle sempre management-only). Lato client, `useWantedCardsRowActions.ts` nasconde le voci di stato/eliminazione (non le disabilita soltanto) quando il viewer non è né management né proprietario, invece di mostrarle e lasciarle fallire con un 403. `[id]/update.post.ts` e `refresh-prices.post.ts` restano `requireManagementPermission`-only, deliberatamente fuori scope. Il bot Telegram (`commands/cartecercate.ts`) applica la stessa regola di ownership (non ha un concetto di ruolo per una chat, solo `player_associate_uuid` risolto da `resolveAssociateUuidByChatId`).
 
 **Conseguenze:** un socio ha ora pieno controllo (stato + eliminazione, soft delete, recuperabile da `/trash`) sulle proprie richieste "Carta Cercata", sia da web sia da bot, senza bisogno di un ruolo `organizer`+. Chiunque altro resta gated su `has_management_permissions`, invariato.
+
+### ADR-034 — Tornei 1vs1: classifica calcolata dai risultati, punteggio fisso secondo il regolamento ufficiale (2026-09-20)
+
+**Contesto:** la fase 3 di `docs/plans/2026-09-15-swiss-pairing-draft-1v1-plan.md` prevedeva una tabella `tournament_swiss_standings` e lasciava da confermare se il punteggio seguisse le regole ufficiali o una tabella "della casa" (come il punteggio ruleset di Commander). Verificato sul testo delle Magic Tournament Rules (MTR, in vigore dal 27 febbraio 2026, §3.1 e Appendice C).
+
+**Decisione:** (1) la classifica non è persistita: `useLiveSwissStandings.ts` la ricalcola da `tournament_pairings`, `tournament_match_results` e `tournament_player_drops`, quindi si aggiorna appena un risultato viene scelto (aggiornamento ottimistico della cache). (2) Punteggio e spareggi sono quelli ufficiali e **non sono modificabili**: 3 punti per vittoria, 1 per pareggio, 0 per sconfitta; spareggi in ordine OMW%, GW%, OGW%, ognuno con minimo **0,33** (il primo calcolo usava 1/3, corretto dopo aver letto le MTR). Il bye vale una vittoria 2-0 (3 punti match, 6 punti partita) ed è ignorato nelle percentuali degli avversari. Una prima versione metteva punti e minimo in `/settings`; scartata perché fissati dal regolamento (vedi ADR-035). (3) Gli accoppiamenti dei round successivi sono generati da `pairSwissRound` (`app/utils/tournaments/swissPairing.ts`): per rango, senza rematch, con ricerca a ritroso limitata a 50.000 passi e ripiego sull'ordine di classifica; l'organizzatore può sempre riordinare nell'anteprima. `player_avoid_pairs` non è usato.
+
+**Conseguenze:** nessuna migrazione per la classifica e nessun rischio di dati fuori sincrono. "Prossimo round" resta disabilitato finché ogni tavolo non ha un risultato, perché gli accoppiamenti dipendono dalla classifica. Se servirà una classifica pubblica o nel bot Telegram, valutare una vista o una tabella. I riconoscimenti (Awards) dei tornei 1vs1 non sono definiti: il passo resta vuoto (quelli di Commander, uccisioni e voti, non hanno senso qui).
+
+### ADR-035 — Regole dei tornei modificabili da `/settings` (2026-09-20)
+
+**Contesto:** alcuni valori vivevano nascosti nella logica dei tornei: durata del round (75 minuti per tutti), numero di round per formato (`defaultRoundCount.ts`) e tabella dei round Swiss per numero di giocatori (`useSwissRoundCount.ts`). Richiesta: portarli in `/settings`, prima della quota associativa, e usare 50 minuti per i formati 1vs1.
+
+**Decisione:** nuove colonne sulla riga singleton `pauperwave_settings` (migrazione `20260920000000`): `commander_round_minutes` (75), `one_vs_one_round_minutes` (50), `default_round_count` (2), `round_count_by_format` e `swiss_round_count_tiers` (jsonb: piccole liste ordinate, modificate per intero) e `swiss_round_count_beyond` (10). Durate con check 10-120. I 50 minuti corrispondono al tempo consigliato dalle MTR per Constructed e Limited (Appendice B; minimo 40). Sezione "Tornei" in `/settings` (`TournamentSettingsForm.vue`), permesso `manage-tournament-settings` (`admin`), endpoint `settings/update-tournament-settings.post.ts` con validazione lato server. La durata parte dalla famiglia del formato (`is1v1FormatName`: tutto tranne Commander e Cubo Commander; Draft conta come 1vs1). Le funzioni pure (`defaultRoundCountForFormat`, `defaultRoundMinutesForFormat`, `calculateRoundCount`) ricevono le regole come parametro, con i valori precedenti come default finché le impostazioni non sono caricate.
+
+**Conseguenze:** i valori si applicano ai tornei creati dopo la modifica, non a quelli esistenti. `AddModal` ricalcola round e durata a ogni cambio di formato e una volta sola al primo caricamento delle impostazioni (mai a ogni refetch, per non sovrascrivere ciò che l'organizzatore ha già scritto). Il punteggio Swiss resta fuori dalle impostazioni (vedi ADR-034).
+
+### ADR-036 — Drop e bye nei tornei 1vs1 (2026-09-20)
+
+**Contesto:** con un numero dispari di giocatori serve un bye, e serve tracciare chi esce dal torneo e quando (le MTR §2.10 permettono di droppare in qualsiasi momento, avvisando prima che vengano generati gli accoppiamenti del round successivo).
+
+**Decisione:** (1) tabella `tournament_player_drops` (migrazione `20260920010000`): una riga per giocatore e torneo, con `round_uuid` (cascade: annullare un round annulla anche i drop fatti in quel round) e `dropped_at`. Il drop vale **dal round successivo**: la partita del round in corso conta ancora, e il giocatore resta in classifica con un badge "Drop R{n}". Un click sul badge annulla il drop. (2) Un bye è un pairing con un solo giocatore (`player2_uuid` e `table_number` nulli, già `completed`, nessuna riga in `tournament_match_results`); `ck_tournament_pairings_player_count` accetta ora il caso a un giocatore, e `start_swiss_round_one`/`advance_swiss_round` accettano conteggi dispari: l'ultimo dell'ordine ricevuto è il bye. (3) L'ordine lo calcola il client: bye al giocatore attivo più in basso in classifica **che non ne ha già avuto uno** (nessuno ne riceve due, salvo che tutti li abbiano già avuti); al round 1, l'ultimo del sorteggio. Nell'anteprima il bye si può assegnare a mano trascinando un altro giocatore.
+
+**Nota sulle fonti:** il testo delle MTR letto il 2026-09-20 non dice a chi va il bye né limita a uno per giocatore (l'Appendice C definisce solo come si conta). Quella regola è la prassi dei software da torneo, adottata come regola della casa. Un testo incollato citava la "MTR 2.5" come fonte, ma la 2.5 tratta di concessioni e pareggi intenzionali.
+
+**Conseguenze:** le migrazioni sono state applicate al progetto Supabase `app` direttamente dal MCP oltre che salvate in `supabase/migrations`. Byes e drop entrano nel calcolo della classifica (ADR-034): il bye come vittoria 2-0, il drop solo come marcatura e come esclusione dagli accoppiamenti successivi.
 
 ## Vedi anche
 
