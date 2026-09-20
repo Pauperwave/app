@@ -1702,6 +1702,8 @@
         "distributedSummary": "Buste distribuite: {assigned} su {total}",
         "hints": {
           "totalPacksAtMin": "Non puoi scendere sotto {min} buste: è il minimo garantito per i {count} premiati.",
+          "minPacksAtMin": "Non può scendere sotto il minimo dei non premiati ({min}): abbassa prima quello.",
+          "nonRewardedAtRewardedMin": "I non premiati non possono avere più buste dei premiati (minimo {min}): alza prima il minimo dei premiati.",
           "minPacksAtMax": "Con {total} buste per {count} premiati non puoi garantire di più: aumenta prima il totale.",
           "nonRewardedNone": "Stai già premiando tutti i giocatori: nessuno è fuori dai premiati.",
           "nonRewardedAtMax": "Con {total} buste non puoi garantire di più ai non premiati senza togliere il minimo ai premiati.",
@@ -1713,7 +1715,7 @@
           "totalPacks": "Tutte le buste che hai a disposizione per questo torneo, comprese quelle che accantoni.",
           "reservedPacks": "Buste che non vengono date a nessuno (per esempio da estrarre a sorte o da tenere per il negozio). Si tolgono dal totale prima di distribuire.",
           "minPacksPerPlayer": "Buste che ogni giocatore premiato riceve comunque, prima della divisione del bonus.",
-          "nonRewardedMinPacks": "Buste di partecipazione che ogni giocatore fuori dai premiati riceve. Si tolgono dal totale prima di calcolare il bonus.",
+          "nonRewardedMinPacks": "Buste di partecipazione che ogni giocatore fuori dai premiati riceve, mai più di quelle di un premiato. Si tolgono dal totale prima di calcolare il bonus.",
           "topCutoff": "Quanti giocatori, a partire dal primo in classifica, ricevono il minimo e possono avere un bonus.",
           "maxPacksPerPlayer": "Massimo di buste che un singolo piazzamento può ricevere: l'eccedenza passa agli altri premiati. Se le buste non basterebbero a distribuirle tutte, il limite viene ignorato."
         },
