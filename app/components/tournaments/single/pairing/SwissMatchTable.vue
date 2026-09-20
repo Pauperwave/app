@@ -1,6 +1,6 @@
 <!-- app\components\tournaments\single\pairing\SwissMatchTable.vue -->
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
+import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { MatchScore, SwissMatchRow } from '~/types'
 
 const { rows, search = '' } = defineProps<{
@@ -33,6 +33,18 @@ function resultSortKey(row: SwissMatchRow): number | undefined {
     : player2GamesWon - player1GamesWon
 }
 
+// The drop is a row action (the same "Azioni" column the other tables use); the
+// player cell only shows that it happened.
+function rowActionItems(row: SwissMatchRow): DropdownMenuItem[] {
+  return [{
+    label: row.player.dropped
+      ? t('tournament.single.roundManager.dropUndoLabel')
+      : t('tournament.single.roundManager.dropLabel'),
+    icon: ICONS.drop,
+    onSelect: () => emit('toggleDrop', row.player.playerUuid)
+  }]
+}
+
 const columns = computed<TableColumn<SwissMatchRow>[]>(() => [
   {
     id: 'tableNumber',
@@ -56,6 +68,11 @@ const columns = computed<TableColumn<SwissMatchRow>[]>(() => [
     accessorFn: resultSortKey,
     header: ({ column }) => sortableHeader(t('tournament.single.roundManager.resultColumn'), column),
     sortUndefined: 'last'
+  },
+  {
+    id: 'actions',
+    header: t('tournament.single.roundManager.actionsColumn'),
+    meta: { class: { th: 'text-center w-20', td: 'text-center' } }
   }
 ])
 </script>
@@ -79,10 +96,22 @@ const columns = computed<TableColumn<SwissMatchRow>[]>(() => [
           :associate-uuid="row.original.player.associateUuid"
           :highlight-query="search"
         />
-        <TournamentsSinglePairingSwissDropControl
-          :dropped="row.original.player.dropped"
-          @toggle="emit('toggleDrop', row.original.player.playerUuid)"
-        />
+        <UTooltip
+          v-if="row.original.player.dropped"
+          :text="t('tournament.single.roundManager.dropBadgeTooltip', {
+            round: row.original.player.dropped.roundNumber,
+            time: formatDropTime(row.original.player.dropped.droppedAt)
+          })"
+        >
+          <UBadge
+            :label="t('tournament.single.roundManager.dropBadge', {
+              round: row.original.player.dropped.roundNumber
+            })"
+            color="warning"
+            variant="subtle"
+            size="sm"
+          />
+        </UTooltip>
       </div>
     </template>
 
@@ -112,6 +141,9 @@ const columns = computed<TableColumn<SwissMatchRow>[]>(() => [
         :current="row.original.current"
         @select="score => emit('select', row.original.pairingUuid, score)"
       />
+    </template>
+    <template #actions-cell="{ row }">
+      <RowActionsMenu :items="rowActionItems(row.original)" />
     </template>
   </UTable>
 </template>
