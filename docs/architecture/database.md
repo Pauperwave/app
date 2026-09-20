@@ -60,7 +60,9 @@ An `admin` (elevated authorization) is very likely *also* a `players` row (they 
 | `ruleset__points` | 🔴 Commander | same |
 | `ruleset__descriptions` | 🔴 Commander | same |
 | `tournament_kills` | 🔴 Commander | `killer_uuid`/`killed_player_uuid` — multiplayer-pod "kill" mechanic |
-| `tournament_pairings` | 🔴 Commander | `player1_uuid`…`player4_uuid` — hardcodes 4-seat pods, doesn't fit 1v1 matches (Draft/Premodern/Pauper) |
+| `tournament_pairings` | 🟡 Mixed | `player1_uuid`…`player4_uuid` — sized for 4-seat pods, but 1v1 matches use two seats and, since 2026-09-20, a single player is a bye (`ck_tournament_pairings_player_count`, migrations `20260918000000` and `20260920010000`) |
+| `tournament_match_results` | 🟢 Agnostic | 1v1 best-of-3 result per pairing (`player1_games_won`/`player2_games_won`, only the five valid scores); 1v1-only in practice |
+| `tournament_player_drops` | 🟢 Agnostic | added 2026-09-20 — one row per dropped player and tournament, with the round (`round_uuid`, cascades) and `dropped_at`; see ADR-036 in `docs/PROGRESS.md` |
 | `tournament_votes` | 🔴 Commander | `vote_type` — "play/brew" vote mechanic specific to Commander pods |
 | `tournament_round_results` | 🔴 Commander | has FK `commander_deck_uuid` |
 | `tournament_standings` | 🟡 Mixed | generic ranking columns (`player_score`, `player_rank`, `player_victories`) but also `votes_brew_received`/`votes_play_received` — a Commander concept mixed into an otherwise reusable table |
@@ -174,3 +176,6 @@ The project's migration history was adopted retroactively on 2026-08-05: 21 pre-
 | `20260826220000_fix_register_tournament_players_ambiguous_column.sql` | Fixes an ambiguous-column-reference bug in `register_tournament_players` (its own `RETURNS TABLE` column shadowed a PL/pgSQL variable of the same name) |
 | `20260827100000_add_associate_membership_events.sql` | New table `pauperwave_associate_membership_events` — an append-only history log, since `pauperwave_associates` is otherwise a single mutable row with no history |
 | `20260827120000_add_associate_number_sequence.sql` | Adds a sequence backing `pauperwave_associate_number` — nothing had ever auto-assigned it (confirmed live: 248 approved associates with no number) |
+| `20260920000000_tournament_settings.sql` | Adds the tournament rules to `pauperwave_settings`: round minutes per format family (75/50), default round count, `round_count_by_format` and `swiss_round_count_tiers` (jsonb), `swiss_round_count_beyond` — see ADR-035 |
+| `20260920010000_swiss_drops_and_byes.sql` | New `tournament_player_drops` table; `ck_tournament_pairings_player_count` accepts a single-player pairing (a bye); `start_swiss_round_one`/`advance_swiss_round` accept odd counts — see ADR-036 |
+| `20260920020000_drop_swiss_scoring_settings.sql` | Drops the Swiss win/draw points and tiebreak-floor columns added by the first migration of the day — scoring is fixed by the official rules, not a setting (ADR-034) |

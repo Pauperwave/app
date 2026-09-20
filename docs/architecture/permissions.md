@@ -39,6 +39,7 @@ Raggruppata per dominio, riordinata 2026-08-23 (era ordinata per solo permessi c
 | Visualizzare il proprio stato di tesseramento/dati anagrafici | 🟡 (solo il proprio) | 🟡 (solo il proprio) | 🟢 (tutti i soci) | 🟢 (tutti i soci) |
 | Gestire l'anagrafica soci (`/associates`) | 🔴 | 🔴 | 🟢 | 🟢 |
 | Gestire le quote associative | 🔴 | 🔴 | 🟢 | 🟢 |
+| Modificare le regole dei tornei da `/settings` (`manage-tournament-settings`: durata dei round, round di default, tabella round Swiss) | 🔴 | 🔴 | 🟢 | 🟢 |
 | Inviare email di ricevuta (quote eventi/tornei, quote associative) | 🔴 | 🔴 | 🟢 | 🟢 |
 | **Eliminare** un regolamento (ruleset) | 🔴 | 🔴 | 🟢 | 🟢 |
 | **Eliminare definitivamente** una riga da `/trash` (`purge-trash`) | 🔴 | 🔴 | 🔴 | 🟢 |

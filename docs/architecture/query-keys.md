@@ -49,6 +49,8 @@ Rules:
 | `tournaments/useTournamentRoundsQuery.ts` | `['tournament-rounds', tournamentUuid]` | `useTournamentRoundsMutations.ts` |
 | `tournaments/useTournamentPairingsQuery.ts` | `['tournament-pairings', tournamentUuid]` | via round/pairing mutations (`useTournamentRoundsMutations.ts`, `useTournamentPairingResetMutation.ts`) |
 | `tournaments/useTournamentRoundResultsQuery.ts` | `['tournament-round-results', tournamentUuid]` | `useTournamentRoundResultsMutations.ts` |
+| `tournaments/rounds/useTournamentMatchResultsQuery.ts` | `['tournament-match-results', tournamentUuid]` | `useTournamentMatchResultsMutations.ts` (optimistic), invalidated by `useTournamentSwissRoundsMutations.ts` |
+| `tournaments/rounds/useTournamentDropsQuery.ts` | `['tournament-drops', tournamentUuid]` | `useTournamentDropsMutations.ts` (optimistic) |
 | `tournaments/useTournamentKillsQuery.ts` | `['tournament-kills', tournamentUuid]` | `useTournamentKillsMutations.ts` |
 | `tournaments/useTournamentVotesQuery.ts` | `['tournament-votes', tournamentUuid]` | `useTournamentVotesMutations.ts` |
 | `tournaments/useAvoidPairsQuery.ts` | `['avoid-pairs']` | `useAvoidPairsMutations.ts` |
