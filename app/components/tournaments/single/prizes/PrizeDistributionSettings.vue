@@ -42,15 +42,29 @@ const totalPacksHint = computed(() => (states.value.totalPacksAtMin
   })
   : undefined))
 
-const minPacksHint = computed(() => (states.value.minPacksAtMax
-  ? t('tournament.single.prizeDistribution.hints.minPacksAtMax', {
-    total: settings.totalPacks, count: limits.value.rewardedCount
-  })
-  : undefined))
+const minPacksHint = computed(() => {
+  if (states.value.minPacksAtMin) {
+    return t('tournament.single.prizeDistribution.hints.minPacksAtMin', {
+      min: limits.value.minMinPacksPerPlayer
+    })
+  }
+
+  return states.value.minPacksAtMax
+    ? t('tournament.single.prizeDistribution.hints.minPacksAtMax', {
+      total: settings.totalPacks, count: limits.value.rewardedCount
+    })
+    : undefined
+})
 
 const nonRewardedMinHint = computed(() => {
   if (states.value.nonRewarded === 'none') {
     return t('tournament.single.prizeDistribution.hints.nonRewardedNone')
+  }
+
+  if (states.value.nonRewarded === 'atRewardedMin') {
+    return t('tournament.single.prizeDistribution.hints.nonRewardedAtRewardedMin', {
+      min: settings.minPacksPerPlayer
+    })
   }
 
   return states.value.nonRewarded === 'atMax'
@@ -124,7 +138,7 @@ const topCutoffHint = computed(() => {
           :reset-value="resetTargets.minPacksPerPlayer"
           :hint="minPacksHint"
           :model-value="settings.minPacksPerPlayer"
-          :min="0"
+          :min="limits.minMinPacksPerPlayer"
           :max="limits.maxMinPacksPerPlayer"
           :icon="ICONS.booster"
           class="w-full"
