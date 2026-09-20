@@ -10,6 +10,7 @@
 // round in the DB but never moved the stepper there).
 import type { ComputedRef } from 'vue'
 import type { Tournament } from '~/types'
+import { reachedStepSlots, resolveActiveStepSlot } from '~/utils/tournaments/tournamentSteps'
 
 export function useTournamentStepper(options: {
   tournamentUuid: MaybeRefOrGetter<string>
@@ -30,7 +31,9 @@ export function useTournamentStepper(options: {
   // per-round status (completed/in-progress/pending, based on actual
   // tournament progress) needs round-tracking data that doesn't exist yet.
   // See docs/TODO.md.
-  const items = computed(() => [
+  // Every step the tournament can go through, whether it has reached it or not
+  // (see `items` below for what is actually clickable).
+  const allItems = computed(() => [
     {
       slot: 'acceptance',
       title: t('tournament.stepper.acceptance'),
@@ -88,6 +91,25 @@ export function useTournamentStepper(options: {
     return 'acceptance'
   })
 
+  // The steps up to the tournament's real current one (all of them once it is
+  // completed). Every step stays visible, but the ones ahead can't be opened —
+  // not with a click, not with a `?step=` link: the tournament only gets there
+  // through its own buttons ("Avvia torneo", "Prossimo round", ...). See
+  // tournamentSteps.ts. Free navigation between steps is a testing aid, so it
+  // is only allowed in development (import.meta.dev), never in production.
+  const reachedSlots = computed(() => import.meta.dev
+    ? allItems.value.map(item => item.slot)
+    : reachedStepSlots(
+      allItems.value.map(item => item.slot),
+      defaultStepSlot.value,
+      tournament.value?.status === 'completed'
+    ))
+
+  const items = computed(() => allItems.value.map(item => ({
+    ...item,
+    disabled: !reachedSlots.value.includes(item.slot)
+  })))
+
   // `manualStepSlot` is the organizer's own explicit navigation (clicking a
   // step, or a bookmarked `?step=` link); it's cleared the moment the
   // tournament's real step changes, so any actual progress (round advance/
@@ -104,6 +126,11 @@ export function useTournamentStepper(options: {
     if (tracksRounds.value && rounds.value === undefined) return
     manualStepSlot.value = stepFromQuery.value ?? null
     hasInitializedStep = true
+
+    // A `?step=` link to a step not reached yet was ignored above: correct the
+    // URL to the step actually shown instead of leaving the stale one in it
+    const shownSlot = activeStepSlot.value
+    if (shownSlot && stepFromQuery.value !== shownSlot) syncStep(shownSlot)
   }
   // Deferred to onMounted (client-only) — rounds/tournament aren't
   // SSR-prefetched, so applying this correction eagerly during setup would
@@ -112,7 +139,7 @@ export function useTournamentStepper(options: {
   // properties of null (reading 'insertBefore')" instead of just a hydration
   // warning. Real changes to `defaultStepSlot` after this point are normal
   // post-hydration reactive updates, not part of the initial render.
-  watch([items, rounds, tournament], () => tryInitializeStep())
+  watch([allItems, rounds, tournament], () => tryInitializeStep())
   onMounted(() => tryInitializeStep())
 
   // Only after the initial restore above — otherwise defaultStepSlot's own
@@ -123,7 +150,12 @@ export function useTournamentStepper(options: {
     if (hasInitializedStep) manualStepSlot.value = null
   })
 
-  const activeStepSlot = computed(() => manualStepSlot.value ?? defaultStepSlot.value)
+  // A manual pick (or `?step=` link) to a step not reached yet is ignored
+  const activeStepSlot = computed(() => resolveActiveStepSlot(
+    manualStepSlot.value,
+    reachedSlots.value,
+    defaultStepSlot.value
+  ))
 
   const currentStep = computed({
     get: () => {
@@ -136,7 +168,10 @@ export function useTournamentStepper(options: {
     // index) is the organizer's own explicit navigation, recorded as a manual
     // override until the next real change to defaultStepSlot clears it again.
     set: (index: number) => {
-      manualStepSlot.value = items.value[index]?.slot ?? null
+      const slot = items.value[index]?.slot ?? null
+      // A step ahead of the tournament's progress is not reachable
+      if (slot && !reachedSlots.value.includes(slot)) return
+      manualStepSlot.value = slot
     }
   })
 
