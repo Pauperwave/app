@@ -1,7 +1,9 @@
 // app\composables\leagues\useLeaguesTableColumns.ts
 import { h } from 'vue'
 import type { Row } from '@tanstack/vue-table'
-import { EditIconButton, UBadge, UIcon, UProgress } from '#components'
+import {
+  BadgesFormatBadge, EditIconButton, ImageOffPlaceholder, LeaguesRulesetBadge, UBadge, UIcon, UProgress
+} from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { League } from '~/types'
 import type { Selection } from '~/composables/useSelection'
@@ -45,17 +47,35 @@ export function useLeaguesTableColumns(
   const selectColumn = useGroupedSelectColumn<League>(selection)
 
   const columnHeaders: Record<string, string> = {
+    image: t('league.columns.image'),
     status: t('league.columns.status'),
     name: t('league.columns.name'),
     startDate: t('league.columns.startDate'),
     endDate: t('league.columns.endDate'),
     tournamentCount: t('league.columns.tournamentCount'),
+    formats: t('league.columns.formats'),
     ruleset: t('league.columns.ruleset'),
     actions: t('league.columns.actions')
   }
 
   const columns: TableColumn<League>[] = [
     selectColumn,
+    {
+      accessorKey: 'image',
+      header: t('league.columns.image'),
+      enableSorting: false,
+      meta: { class: { th: 'w-px', td: 'w-px' } },
+      cell: ({ row }) => {
+        if (row.getIsGrouped()) return null
+        return row.original.image
+          ? h('img', {
+            src: row.original.image,
+            alt: row.original.name,
+            class: 'size-8 rounded object-cover'
+          })
+          : h(ImageOffPlaceholder, { class: 'size-8 rounded', iconClass: 'size-4' })
+      }
+    },
     {
       accessorKey: 'status',
       header: ({ column }) => sortableHeader(t('league.columns.status'), column),
@@ -117,9 +137,25 @@ export function useLeaguesTableColumns(
       }
     },
     {
+      id: 'formats',
+      // Same 2 badges + "+N" cap as leagues/list/Card.vue.
+      header: t('league.columns.formats'),
+      enableSorting: false,
+      cell: ({ row }) => {
+        if (row.getIsGrouped()) return null
+        const { tournamentFormats } = row.original
+        const extra = tournamentFormats.length - 2
+        return h('div', { class: 'flex items-center gap-1.5' }, [
+          ...tournamentFormats.slice(0, 2).map(format =>
+            h(BadgesFormatBadge, { format, icon: ICONS.gameplay })),
+          extra > 0 ? h(UBadge, { color: 'neutral', variant: 'subtle' }, () => `+${extra}`) : null
+        ])
+      }
+    },
+    {
       accessorKey: 'ruleset',
       header: t('league.columns.ruleset'),
-      cell: ({ row }) => row.getIsGrouped() ? null : row.original.ruleset
+      cell: ({ row }) => row.getIsGrouped() ? null : h(LeaguesRulesetBadge, { league: row.original })
     },
     {
       id: 'actions',
