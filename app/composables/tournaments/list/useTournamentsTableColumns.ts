@@ -3,10 +3,11 @@
 // status-badge column shape on purpose; expected to diverge once real Supabase
 // tables land
 import { h } from 'vue'
+import { differenceInMinutes, format } from 'date-fns'
 import type { Row } from '@tanstack/vue-table'
 import {
-  BadgesFormatBadge, BadgesLeagueBadge, BadgesLocationBadge,
-  EditIconButton, ImageOffPlaceholder, TournamentsStageLabel, UBadge, UIcon
+  BadgesEventBadge, BadgesFormatBadge, BadgesLeagueBadge, BadgesOrganizerBadge,
+  EditIconButton, ImageOffPlaceholder, TournamentsEntryFeeBadge, TournamentsLocationChangeBadge, TournamentsStageLabel, UBadge, UIcon
 } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { Tournament } from '~/types'
@@ -32,6 +33,25 @@ function groupHeaderCell(row: Row<Tournament>, label: string) {
   ])
 }
 
+// Grouped rows sort by size (subRows); leaf rows have none, so a plain
+// subRows compare left them all tied — sort those alphabetically, empty last.
+function sortGroupsBySizeElseText(rowA: Row<Tournament>, rowB: Row<Tournament>, columnId: string) {
+  if (rowA.getIsGrouped() && rowB.getIsGrouped()) return rowA.subRows.length - rowB.subRows.length
+  const valueA = rowA.getValue<string | null>(columnId) ?? ''
+  const valueB = rowB.getValue<string | null>(columnId) ?? ''
+  if (!valueA || !valueB) return valueA ? -1 : valueB ? 1 : 0
+  return valueA.localeCompare(valueB, 'it')
+}
+
+// "2h 30min" / "45min" — minutes rounded down, derived from start/end.
+function durationLabel(startDate: string, endDate: string) {
+  const minutes = differenceInMinutes(new Date(endDate), new Date(startDate))
+  const hours = Math.floor(minutes / 60)
+  const rest = minutes % 60
+  if (!hours) return `${rest}min`
+  return rest ? `${hours}h ${rest}min` : `${hours}h`
+}
+
 // Pure config except for `selection`/`onEdit` (depends only on t() otherwise) —
 // same reasoning as useWantedCardsTableColumns.ts. Both are threaded through
 // rather than read from a composable here, since that state
@@ -52,11 +72,17 @@ export function useTournamentsTableColumns(
   const columnHeaders: Record<string, string> = {
     image: t('tournament.columns.image'),
     league: t('tournament.columns.league'),
+    event: t('tournament.columns.event'),
     name: t('tournament.columns.name'),
     status: t('tournament.columns.status'),
     startDate: t('tournament.columns.startDate'),
+    startTime: t('tournament.columns.startTime'),
+    endTime: t('tournament.columns.endTime'),
+    duration: t('tournament.columns.duration'),
     format: t('tournament.columns.format'),
     location: t('tournament.columns.location'),
+    organizer: t('tournament.columns.organizer'),
+    roundCount: t('tournament.columns.roundCount'),
     registeredPlayers: t('tournament.columns.registeredPlayers'),
     entryFee: t('tournament.columns.entryFee'),
     actions: t('tournament.columns.actions')
@@ -85,12 +111,21 @@ export function useTournamentsTableColumns(
       header: ({ column }) => sortableHeader(t('tournament.columns.league'), column),
       // Sorts groups by number of tournaments (subRows), same reasoning as
       // useWantedCardsTableColumns.ts's player column.
-      sortingFn: (rowA, rowB) => (rowA.subRows?.length ?? 0) - (rowB.subRows?.length ?? 0),
+      sortingFn: sortGroupsBySizeElseText,
       cell: ({ row, getValue }) => {
         const league = getValue<string | null>()
         if (row.getIsGrouped()) return groupHeaderCell(row, league ?? t('tournament.columns.noLeague'))
         if (!league || !row.original.leagueUuid) return null
         return h(BadgesLeagueBadge, { league, leagueUuid: row.original.leagueUuid })
+      }
+    },
+    {
+      accessorKey: 'event',
+      header: ({ column }) => sortableHeader(t('tournament.columns.event'), column),
+      cell: ({ row, getValue }) => {
+        const event = getValue<string | null>()
+        if (row.getIsGrouped() || !event || !row.original.eventUuid) return null
+        return h(BadgesEventBadge, { event, eventUuid: row.original.eventUuid })
       }
     },
     {
@@ -125,12 +160,35 @@ export function useTournamentsTableColumns(
       header: ({ column }) => sortableHeader(t('tournament.columns.startDate'), column),
       cell: ({ row }) => row.getIsGrouped()
         ? null
-        : h(DateWithRelativeTooltip, { isoString: row.original.startDate })
+        : h(DateWithRelativeTooltip, { isoString: row.original.startDate, time: false })
+    },
+    {
+      id: 'startTime',
+      // Not sortable: the time of day alone isn't a meaningful order, startDate covers it.
+      header: t('tournament.columns.startTime'),
+      enableSorting: false,
+      cell: ({ row }) => row.getIsGrouped() ? null : format(new Date(row.original.startDate), 'HH:mm')
+    },
+    {
+      id: 'endTime',
+      header: t('tournament.columns.endTime'),
+      enableSorting: false,
+      cell: ({ row }) => row.getIsGrouped() || !row.original.endDate
+        ? null
+        : format(new Date(row.original.endDate), 'HH:mm')
+    },
+    {
+      id: 'duration',
+      header: t('tournament.columns.duration'),
+      enableSorting: false,
+      cell: ({ row }) => row.getIsGrouped() || !row.original.endDate
+        ? null
+        : durationLabel(row.original.startDate, row.original.endDate)
     },
     {
       accessorKey: 'format',
       header: ({ column }) => sortableHeader(t('tournament.columns.format'), column),
-      sortingFn: (rowA, rowB) => (rowA.subRows?.length ?? 0) - (rowB.subRows?.length ?? 0),
+      sortingFn: sortGroupsBySizeElseText,
       cell: ({ row, getValue }) => {
         const format = getValue<string>()
         if (row.getIsGrouped()) return groupHeaderCell(row, format)
@@ -140,17 +198,24 @@ export function useTournamentsTableColumns(
     {
       accessorKey: 'location',
       header: ({ column }) => sortableHeader(t('tournament.columns.location'), column),
-      sortingFn: (rowA, rowB) => (rowA.subRows?.length ?? 0) - (rowB.subRows?.length ?? 0),
+      sortingFn: sortGroupsBySizeElseText,
       cell: ({ row, getValue }) => {
         const location = getValue<string | null>()
         if (row.getIsGrouped()) return groupHeaderCell(row, location ?? t('tournament.columns.noLocation'))
-        if (!location) return null
-        return h(BadgesLocationBadge, {
-          location,
-          locationAddress: row.original.locationAddress,
-          mapsUrl: row.original.locationMapsUrl
-        })
+        return h(TournamentsLocationChangeBadge, { tournament: row.original })
       }
+    },
+    {
+      accessorKey: 'organizer',
+      header: ({ column }) => sortableHeader(t('tournament.columns.organizer'), column),
+      cell: ({ row }) => row.getIsGrouped() || !row.original.organizer
+        ? null
+        : h(BadgesOrganizerBadge, { organizer: row.original.organizer })
+    },
+    {
+      accessorKey: 'roundCount',
+      header: ({ column }) => sortableHeader(t('tournament.columns.roundCount'), column),
+      cell: ({ row }) => row.getIsGrouped() ? null : row.original.roundCount
     },
     {
       accessorKey: 'registeredPlayers',
@@ -160,7 +225,9 @@ export function useTournamentsTableColumns(
     {
       accessorKey: 'entryFee',
       header: ({ column }) => sortableHeader(t('tournament.columns.entryFee'), column),
-      cell: ({ row }) => row.getIsGrouped() ? null : `${(row.original.entryFee ?? 0).toFixed(2)} €`
+      cell: ({ row }) => row.getIsGrouped()
+        ? null
+        : h(TournamentsEntryFeeBadge, { tournament: row.original })
     },
     {
       id: 'actions',

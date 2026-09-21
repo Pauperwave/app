@@ -6,6 +6,7 @@
 import { add } from 'date-fns'
 import { getGroupedRowModel } from '@tanstack/vue-table'
 import type { DropdownMenuItem, TabsItem } from '@nuxt/ui'
+import type { VisibilityTableRef } from '~/composables/useColumnVisibilityItems'
 import type { Range, Tournament } from '~/types'
 
 const { t } = useI18n()
@@ -93,7 +94,7 @@ const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowAct
 const { copyModalOpen, copySourceTournament, openCopyModal } = useTournamentCopyModal()
 
 const selection = useSelection<number>()
-const { columns } = useTournamentsTableColumns(selection, openEditModal)
+const { columns, columnHeaders } = useTournamentsTableColumns(selection, openEditModal)
 const {
   pendingAction, confirmOpen: bulkConfirmOpen, requestStatusChange, requestImageChange,
   requestEntryFeeChange, requestLeagueChange, requestDelete, confirmPendingAction
@@ -122,12 +123,17 @@ const selectedTournaments = computed(() =>
 
 const viewMode = ref<'table' | 'dense' | 'grid'>('grid')
 const viewModeItems = computed<TabsItem[]>(() => [
-  { label: t('tournament.views.table'), value: 'table', icon: ICONS.table },
+  { label: t('tournament.views.grid'), value: 'grid', icon: ICONS.grid },
   { label: t('tournament.views.dense'), value: 'dense', icon: ICONS.gridDense },
-  { label: t('tournament.views.grid'), value: 'grid', icon: ICONS.grid }
+  { label: t('tournament.views.table'), value: 'table', icon: ICONS.table }
 ])
 
 const sorting = ref([{ id: 'startDate', desc: false }])
+
+// "Mostra colonne" menu — organizer/rounds/event start hidden to keep the table narrow.
+const table = useTemplateRef<VisibilityTableRef>('table')
+const columnVisibility = ref<Record<string, boolean>>({ organizer: false, roundCount: false, event: false })
+const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, columnHeaders)
 
 // Table-only (unlike wanted-cards, which also groups the grid into
 // sections) — grouping is only meaningful with the table's own columns.
@@ -282,6 +288,11 @@ const bulkConfirmTitle = computed(() => {
               :icon="ICONS.layers"
               class="w-60"
             />
+
+            <ColumnVisibilityMenu
+              v-if="viewMode === 'table'"
+              :items="columnVisibilityItems"
+            />
           </div>
         </template>
       </UDashboardToolbar>
@@ -302,7 +313,9 @@ const bulkConfirmTitle = computed(() => {
 
           <UContextMenu v-else :items="tableContextMenuItems">
             <UTable
+              ref="table"
               v-model:sorting="sorting"
+              v-model:column-visibility="columnVisibility"
               :data="filteredTournaments"
               :columns="columns"
               :grouping="grouping"
