@@ -33,12 +33,15 @@ const search = ref('')
 
 const { statusFilter, filteredLeagues, statusTabs } = useLeaguesFilters(data, search)
 
-// Every known league's date + status color + hover label, for the picker's dots.
-const leagueDates = computed(() => data.value.map(league => ({
-  date: new Date(league.startDate),
-  color: leagueStatusColor(league.status),
-  label: league.name
-})))
+// Dots the picker on every league tournament's date (not the league's own start date).
+const { data: tournamentsData } = useTournamentsQuery()
+const leagueDates = computed(() => (tournamentsData.value ?? [])
+  .filter(tournament => tournament.leagueUuid)
+  .map(tournament => ({
+    date: new Date(tournament.startDate),
+    color: tournamentStatusColor(tournament.status),
+    label: `${tournament.name}${tournamentStageText(tournament)}`
+  })))
 
 // undefined (ListSkeleton's/GridView's own default count) only on a genuine
 // first load — same isPending-vs-isLoading reasoning as tournaments/index.vue.
