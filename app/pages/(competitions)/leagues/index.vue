@@ -33,6 +33,13 @@ const search = ref('')
 
 const { statusFilter, filteredLeagues, statusTabs } = useLeaguesFilters(data, search)
 
+// Every known league's date + status color + hover label, for the picker's dots.
+const leagueDates = computed(() => data.value.map(league => ({
+  date: new Date(league.startDate),
+  color: leagueStatusColor(league.status),
+  label: league.name
+})))
+
 // undefined (ListSkeleton's/GridView's own default count) only on a genuine
 // first load — same isPending-vs-isLoading reasoning as tournaments/index.vue.
 const skeletonCount = computed(() => (isPending.value ? undefined : filteredLeagues.value.length))
@@ -175,6 +182,7 @@ const tour = useLeaguesTour()
           <DateRangePicker
             v-else
             v-model="range"
+            :highlighted-dates="leagueDates"
             icon-only
           />
         </template>

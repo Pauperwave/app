@@ -31,6 +31,13 @@ const search = ref('')
 
 const { statusFilter, filteredEvents, statusTabs } = useEventsFilters(data, range, search)
 
+// Every known event's date + status color + hover label, for the picker's dots.
+const eventDates = computed(() => data.value.map(event => ({
+  date: new Date(event.startDate),
+  color: eventStatusColor(event.status),
+  label: event.name
+})))
+
 // Year quick-jump next to DateRangePicker (YearRangePicker.vue, user
 // request, 2026-08-31).
 const availableYears = computed(() => availableEventYears(data.value))
@@ -179,7 +186,11 @@ const bulkConfirmTitle = computed(() => {
             @delete="requestDelete(selectedEvents)"
           />
           <div v-else id="tour-events-actions">
-            <YearRangePicker v-model="range" :years="availableYears" />
+            <YearRangePicker
+              v-model="range"
+              :years="availableYears"
+              :highlighted-dates="eventDates"
+            />
           </div>
         </template>
       </UDashboardToolbar>
