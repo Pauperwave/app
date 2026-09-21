@@ -28,7 +28,7 @@ export function useEventsQuery() {
           .order('id', { ascending: true }),
         supabase
           .from('tournaments')
-          .select('event_uuid')
+          .select('event_uuid, status')
           .not('event_uuid', 'is', null)
       ])
 
@@ -36,9 +36,13 @@ export function useEventsQuery() {
       if (tournamentsResult.error) throw tournamentsResult.error
 
       const tournamentCounts = new Map<string, number>()
+      const completedCounts = new Map<string, number>()
       for (const row of tournamentsResult.data) {
         if (!row.event_uuid) continue
         tournamentCounts.set(row.event_uuid, (tournamentCounts.get(row.event_uuid) ?? 0) + 1)
+        if (row.status === 'completed') {
+          completedCounts.set(row.event_uuid, (completedCounts.get(row.event_uuid) ?? 0) + 1)
+        }
       }
 
       return eventsResult.data.map(row => ({
@@ -49,6 +53,7 @@ export function useEventsQuery() {
         startDate: row.starts_at ?? row.created_at,
         endDate: row.ends_at,
         tournamentCount: tournamentCounts.get(row.uuid) ?? 0,
+        completedTournamentCount: completedCounts.get(row.uuid) ?? 0,
         organizer: row.organizer?.name ?? null,
         organizerUuid: row.organizer_uuid,
         locationUuid: row.location_uuid,

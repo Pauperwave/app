@@ -4,7 +4,9 @@
 // tournaments/index.vue's mock-driven layout on purpose; expected to diverge
 // once real Supabase tables land
 import { add } from 'date-fns'
+import { getGroupedRowModel } from '@tanstack/vue-table'
 import type { DropdownMenuItem, TabsItem } from '@nuxt/ui'
+import type { VisibilityTableRef } from '~/composables/useColumnVisibilityItems'
 import type { Event, Range } from '~/types'
 
 const { isModalOpen } = useModalOpenFromQuery()
@@ -59,7 +61,7 @@ function openCopyModal(event: Event) {
 }
 
 const selection = useSelection<number>()
-const { columns } = useEventsTableColumns(selection, openEditModal)
+const { columns, columnHeaders } = useEventsTableColumns(selection, openEditModal)
 const {
   pendingAction, confirmOpen: bulkConfirmOpen, requestStatusChange,
   requestDelete, confirmPendingAction
@@ -98,6 +100,21 @@ const viewModeItems = computed<TabsItem[]>(() => [
 ])
 
 const sorting = ref([{ id: 'startDate', desc: false }])
+
+// "Mostra colonne" menu — duration/city start hidden to keep the table narrow.
+const table = useTemplateRef<VisibilityTableRef>('table')
+const columnVisibility = ref<Record<string, boolean>>({ duration: false, locationCity: false })
+const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, columnHeaders)
+
+// Table-only, off by default — same convention as leagues/index.vue's
+// groupBy; the grid view always sections by status on its own.
+type GroupByOption = 'none' | 'status'
+const groupBy = ref<GroupByOption>('none')
+const grouping = computed(() => groupBy.value === 'none' ? [] : [groupBy.value])
+const groupByItems = computed(() => [
+  { label: t('event.filters.groupByNone'), value: 'none' as const },
+  { label: t('event.filters.groupByStatus'), value: 'status' as const }
+])
 
 const tour = useEventsTour()
 
@@ -185,11 +202,29 @@ const bulkConfirmTitle = computed(() => {
             @mark-status="requestedStatus => requestStatusChange(requestedStatus, selectedEvents)"
             @delete="requestDelete(selectedEvents)"
           />
-          <div v-else id="tour-events-actions">
+          <div
+            v-else
+            id="tour-events-actions"
+            class="flex items-center gap-2"
+          >
             <YearRangePicker
               v-model="range"
               :years="availableYears"
               :highlighted-dates="eventDates"
+            />
+
+            <USelectMenu
+              v-if="viewMode === 'table'"
+              v-model="groupBy"
+              :items="groupByItems"
+              value-key="value"
+              :icon="ICONS.layers"
+              class="w-60"
+            />
+
+            <ColumnVisibilityMenu
+              v-if="viewMode === 'table'"
+              :items="columnVisibilityItems"
             />
           </div>
         </template>
@@ -211,14 +246,22 @@ const bulkConfirmTitle = computed(() => {
 
           <UContextMenu v-else :items="tableContextMenuItems">
             <UTable
+              ref="table"
               v-model:sorting="sorting"
+              v-model:column-visibility="columnVisibility"
               :data="filteredEvents"
               :columns="columns"
+              :grouping="grouping"
+              :grouping-options="{
+                getGroupedRowModel: getGroupedRowModel()
+              }"
               :loading="loading"
               class="w-full"
               :ui="{ tr: 'cursor-pointer' }"
               @contextmenu="onRowContextmenu"
-              @select="(_e, row) => navigateTo(`/events/${row.original.uuid}`)"
+              @select="(_e, row) => {
+                if (!row.getIsGrouped()) navigateTo(`/events/${row.original.uuid}`)
+              }"
             />
           </UContextMenu>
         </template>

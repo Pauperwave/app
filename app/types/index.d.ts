@@ -335,6 +335,7 @@ export interface Event {
   startDate: string
   endDate: string | null
   tournamentCount: number
+  completedTournamentCount: number
   organizer: string | null
   // FK uuids alongside their resolved display names above (2026-08-22,
   // EventsListEditModal.vue) — needed to prefill the edit form's
