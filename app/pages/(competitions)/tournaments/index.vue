@@ -132,7 +132,11 @@ const sorting = ref([{ id: 'startDate', desc: false }])
 
 // "Mostra colonne" menu — organizer/rounds/event start hidden to keep the table narrow.
 const table = useTemplateRef<VisibilityTableRef>('table')
-const columnVisibility = ref<Record<string, boolean>>({ organizer: false, roundCount: false, event: false })
+const columnVisibility = ref<Record<string, boolean>>({
+  organizer: false,
+  roundCount: false,
+  event: false
+})
 const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, columnHeaders)
 
 // Table-only (unlike wanted-cards, which also groups the grid into

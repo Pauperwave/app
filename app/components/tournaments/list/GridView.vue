@@ -27,7 +27,10 @@ const STATUS_ORDER: Tournament['status'][] = [
   'in_progress', 'registration_open', 'draft', 'completed', 'cancelled', 'external'
 ]
 const sections = computed(() => STATUS_ORDER
-  .map(status => ({ status, tournaments: tournaments.filter(tournament => tournament.status === status) }))
+  .map(status => ({
+    status,
+    tournaments: tournaments.filter(tournament => tournament.status === status)
+  }))
   .filter(section => section.tournaments.length))
 
 // The ordered list a shift-click range resolves against — the currently

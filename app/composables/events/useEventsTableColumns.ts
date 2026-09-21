@@ -5,7 +5,8 @@ import { h } from 'vue'
 import { differenceInCalendarDays } from 'date-fns'
 import type { Row } from '@tanstack/vue-table'
 import {
-  BadgesLocationBadge, BadgesOrganizerBadge, EditIconButton, ImageOffPlaceholder, UBadge, UIcon, UProgress
+  BadgesLocationBadge, BadgesOrganizerBadge, EditIconButton, ImageOffPlaceholder,
+  UBadge, UIcon, UProgress
 } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { Event } from '~/types'
@@ -135,7 +136,9 @@ export function useEventsTableColumns(
             total: tournamentCount
           })),
           h(UProgress, {
-            modelValue: tournamentCount ? Math.round((completedTournamentCount / tournamentCount) * 100) : 0,
+            modelValue: tournamentCount
+              ? Math.round((completedTournamentCount / tournamentCount) * 100)
+              : 0,
             size: 'sm'
           })
         ])

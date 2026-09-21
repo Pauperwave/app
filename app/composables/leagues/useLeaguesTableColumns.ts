@@ -2,7 +2,8 @@
 import { h } from 'vue'
 import type { Row } from '@tanstack/vue-table'
 import {
-  BadgesFormatBadge, EditIconButton, ImageOffPlaceholder, LeaguesRulesetBadge, UBadge, UIcon, UProgress
+  BadgesFormatBadge, EditIconButton, ImageOffPlaceholder, LeaguesRulesetBadge,
+  UBadge, UIcon, UProgress
 } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { League } from '~/types'
@@ -116,7 +117,10 @@ export function useLeaguesTableColumns(
       header: ({ column }) => sortableHeader(t('league.columns.endDate'), column),
       cell: ({ row }) => row.getIsGrouped() || !row.original.tournamentDateRange
         ? null
-        : h(DateWithRelativeTooltip, { isoString: row.original.tournamentDateRange.end, time: false })
+        : h(DateWithRelativeTooltip, {
+          isoString: row.original.tournamentDateRange.end,
+          time: false
+        })
     },
     {
       accessorKey: 'tournamentCount',
@@ -130,7 +134,9 @@ export function useLeaguesTableColumns(
             total: tournamentCount
           })),
           h(UProgress, {
-            modelValue: tournamentCount ? Math.round((completedTournamentCount / tournamentCount) * 100) : 0,
+            modelValue: tournamentCount
+              ? Math.round((completedTournamentCount / tournamentCount) * 100)
+              : 0,
             size: 'sm'
           })
         ])
@@ -155,7 +161,9 @@ export function useLeaguesTableColumns(
     {
       accessorKey: 'ruleset',
       header: t('league.columns.ruleset'),
-      cell: ({ row }) => row.getIsGrouped() ? null : h(LeaguesRulesetBadge, { league: row.original })
+      cell: ({ row }) => row.getIsGrouped()
+        ? null
+        : h(LeaguesRulesetBadge, { league: row.original })
     },
     {
       id: 'actions',

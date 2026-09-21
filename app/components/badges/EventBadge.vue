@@ -1,5 +1,6 @@
 <!-- app\components\badges\EventBadge.vue -->
-<!-- A tournament's parent event as a clickable pill linking to its detail page, same shape as LeagueBadge.vue. -->
+<!-- A tournament's parent event as a clickable pill linking to its detail page,
+     same shape as LeagueBadge.vue. -->
 <script setup lang="ts">
 const { event, eventUuid } = defineProps<{
   event: string

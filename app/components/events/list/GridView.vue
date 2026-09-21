@@ -26,7 +26,9 @@ const sections = computed(() => STATUS_ORDER
 
 // The ordered list a shift-click range resolves against, flattened in drawn
 // order so it follows the sections.
-const range = computed(() => sections.value.flatMap(section => section.events).map(event => event.id))
+const range = computed(() => sections.value
+  .flatMap(section => section.events)
+  .map(event => event.id))
 </script>
 
 <template>

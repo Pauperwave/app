@@ -7,7 +7,8 @@ import { differenceInMinutes, format } from 'date-fns'
 import type { Row } from '@tanstack/vue-table'
 import {
   BadgesEventBadge, BadgesFormatBadge, BadgesLeagueBadge, BadgesOrganizerBadge,
-  EditIconButton, ImageOffPlaceholder, TournamentsEntryFeeBadge, TournamentsLocationChangeBadge, TournamentsStageLabel, UBadge, UIcon
+  EditIconButton, ImageOffPlaceholder, TournamentsEntryFeeBadge,
+  TournamentsLocationChangeBadge, TournamentsStageLabel, UBadge, UIcon
 } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { Tournament } from '~/types'
