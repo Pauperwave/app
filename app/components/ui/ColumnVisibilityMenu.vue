@@ -14,7 +14,13 @@ import type { DropdownMenuItem } from '@nuxt/ui'
 // "collapses below lg" — opt-in for pages crowded enough that even the lg
 // breakpoint isn't enough room (transactions/index.vue, user request,
 // 2026-08-27, alongside DateRangePicker's own iconOnly).
-const { items, iconOnly = false } = defineProps<{ items: DropdownMenuItem[], iconOnly?: boolean }>()
+const {
+  items,
+  iconOnly = false
+} = defineProps<{
+  items: DropdownMenuItem[]
+  iconOnly?: boolean
+}>()
 const { t } = useI18n()
 </script>
 
