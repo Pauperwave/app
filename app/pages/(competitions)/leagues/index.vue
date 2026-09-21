@@ -6,6 +6,7 @@
 import { add } from 'date-fns'
 import { getGroupedRowModel } from '@tanstack/vue-table'
 import type { DropdownMenuItem, TabsItem } from '@nuxt/ui'
+import type { VisibilityTableRef } from '~/composables/useColumnVisibilityItems'
 import type { League, Range } from '~/types'
 
 const { isModalOpen } = useModalOpenFromQuery()
@@ -62,7 +63,7 @@ function openCopyModal(league: League) {
 }
 
 const selection = useSelection<number>()
-const { columns } = useLeaguesTableColumns(selection, openEditModal)
+const { columns, columnHeaders } = useLeaguesTableColumns(selection, openEditModal)
 const {
   pendingAction, confirmOpen: bulkConfirmOpen, requestStatusChange, requestDelete,
   confirmPendingAction
@@ -106,6 +107,11 @@ const viewModeItems = computed<TabsItem[]>(() => [
 // order (useLeaguesQuery.ts orders by starts_at) — the table view previously
 // defaulted to name, the only column it had a sort on at all.
 const sorting = ref([{ id: 'startDate', desc: false }])
+
+// "Mostra colonne" menu — every column visible by default.
+const table = useTemplateRef<VisibilityTableRef>('table')
+const columnVisibility = ref<Record<string, boolean>>({})
+const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, columnHeaders)
 
 // Table-only, off by default — same convention as tournaments/index.vue's
 // groupBy; the grid view always sections by status on its own.
@@ -208,6 +214,11 @@ const tour = useLeaguesTour()
               :icon="ICONS.layers"
               class="w-60"
             />
+
+            <ColumnVisibilityMenu
+              v-if="viewMode === 'table'"
+              :items="columnVisibilityItems"
+            />
           </div>
         </template>
       </UDashboardToolbar>
@@ -228,7 +239,9 @@ const tour = useLeaguesTour()
 
           <UContextMenu v-else :items="tableContextMenuItems">
             <UTable
+              ref="table"
               v-model:sorting="sorting"
+              v-model:column-visibility="columnVisibility"
               :data="filteredLeagues"
               :columns="columns"
               :grouping="grouping"
