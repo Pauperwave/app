@@ -8,6 +8,7 @@
 -->
 <script setup lang="ts">
 import * as v from 'valibot'
+import { useEventListener } from '@vueuse/core'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { SwissRoundCountTier } from '#shared/types/settings'
 
@@ -49,6 +50,10 @@ const state = reactive<Partial<Schema>>({
   tiers: []
 })
 
+// Form values as last loaded or saved, to tell when there are unsaved edits.
+const savedSnapshot = ref('')
+const isDirty = computed(() => JSON.stringify(state) !== savedSnapshot.value)
+
 // Fills the form once, the first time the query resolves — not a continuous
 // sync, which would clobber an in-progress edit on a window-refocus refetch.
 watch(settings.data, (data) => {
@@ -59,7 +64,12 @@ watch(settings.data, (data) => {
   state.oneVsOneRoundCount = data.oneVsOneRoundCount
   state.swissRoundCountBeyond = data.swissRoundCountBeyond
   state.tiers = data.swissRoundCountTiers.map((tier: SwissRoundCountTier) => ({ ...tier }))
+  savedSnapshot.value = JSON.stringify(state)
 }, { immediate: true })
+
+useEventListener('beforeunload', (event) => {
+  if (isDirty.value) event.preventDefault()
+})
 
 function addTier() {
   const lastTier = state.tiers?.at(-1)
@@ -81,6 +91,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       ...values,
       swissRoundCountTiers: tiers
     })
+    savedSnapshot.value = JSON.stringify(state)
     toast.add({
       title: t('settings.tournament.successToastTitle'),
       description: t('settings.tournament.successToastDescription'),
@@ -111,14 +122,24 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       orientation="horizontal"
       class="mb-4"
     >
-      <UButton
-        form="tournament-settings"
-        :label="$t('settings.tournament.saveChanges')"
-        :loading="updateTournamentSettings.isLoading.value"
-        color="neutral"
-        type="submit"
-        class="w-fit lg:ms-auto"
-      />
+      <div class="flex items-center gap-3 lg:ms-auto">
+        <!-- invisible, not v-if: the hint must not shift the layout -->
+        <p
+          class="text-sm text-warning"
+          :class="{ invisible: !isDirty }"
+        >
+          {{ $t('settings.tournament.unsavedChanges') }}
+        </p>
+        <UButton
+          form="tournament-settings"
+          :label="$t('settings.tournament.saveChanges')"
+          :loading="updateTournamentSettings.isLoading.value"
+          :disabled="!isDirty"
+          color="neutral"
+          type="submit"
+          class="w-fit"
+        />
+      </div>
     </UPageCard>
 
     <UPageCard variant="subtle">
@@ -221,6 +242,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             :aria-label="$t('settings.tournament.fields.remove')"
             color="neutral"
             variant="ghost"
+            class="hover:text-error"
             @click="removeTier(index)"
           />
         </div>

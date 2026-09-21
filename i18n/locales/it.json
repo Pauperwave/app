@@ -2926,6 +2926,7 @@
         "minutes": "Inserisci una durata tra 10 e 120 minuti",
         "rounds": "Inserisci un numero intero di almeno 1"
       },
+      "unsavedChanges": "Modifiche non salvate",
       "successToastTitle": "Impostazioni dei tornei aggiornate",
       "successToastDescription": "I nuovi valori verranno usati dai prossimi tornei.",
       "errorToastTitle": "Impossibile aggiornare le impostazioni dei tornei"
