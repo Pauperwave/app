@@ -29,7 +29,7 @@ pnpm fallow:audit     # fallow audit
 pnpm fallow:security  # fallow security
 ```
 
-vitest and Playwright are configured (mirroring `MagicTheGathering/league`); vitest has unit tests for utils and composables under `test/unit/`, Playwright has no specs yet — see `test/README.md`, `test/e2e/README.md` and `docs/architecture/testing.md`. Always run `pnpm lint` and `pnpm typecheck` after changes; both must be clean (see the zero-warning policy in global CLAUDE.md).
+vitest and Playwright are configured (mirroring `MagicTheGathering/league`); vitest has unit tests for utils and composables under `test/unit/`, Playwright has no specs yet — see `test/README.md`, `test/e2e/README.md` and `docs/architecture/testing.md`. Always run `pnpm lint` after changes; it must be clean (see the zero-warning policy in global CLAUDE.md). **Skip `pnpm typecheck` by default** — it's by far the slowest step (it recompiles the whole Nuxt UI type surface) while lint is fast, and this is a single-developer project. Run it only when explicitly asked, or before high-stakes changes (shared types in `app/types/index.d.ts`, large refactors, anything about to be pushed/PR'd) — and if skipped on a risky change, say so rather than implying it passed.
 
 Add a path comment as the first line of every source file under `app/`, `server/`, `shared/`, `test/`, `scripts/`: `<!-- app\components\X.vue -->` or `// app\stores\x.ts` (backslash-separated, matching the checker in `scripts/check-file-paths.mjs`, copied unmodified from `MagicTheGathering/league`). Skips `shared/utils/types/database.ts` (generated via `pnpm supabase:types`, never hand-edited).
 
@@ -106,7 +106,7 @@ In an `app/utils/*.ts` file, the export declared immediately after an `export co
 
 Confirmed 2026-08-09 in `app/utils/cittadino/cittadinoPoints.ts`: `CITTADINO_MIN_POINTS`, declared right after `CITTADINO_POINTS_BY_RANK = [25, 18, …]`, was the only one of five exports missing. Renaming it changed nothing; moving it *above* the array export fixed it and restored all five. Blank lines between declarations make no difference.
 
-Workaround: declare scalar exports before array-literal ones, or import the symbol explicitly. Worth checking with `grep "export {" .nuxt/imports.d.ts` when adding constants to a utils file that also exports an array — and this is one concrete reason `pnpm typecheck` must actually be run rather than assumed.
+Workaround: declare scalar exports before array-literal ones, or import the symbol explicitly. Worth checking with `grep "export {" .nuxt/imports.d.ts` when adding constants to a utils file that also exports an array — and this is one concrete reason `pnpm typecheck` shouldn't be *assumed* clean when a change touches a utils file with array exports.
 
 Related failure mode confirmed 2026-08-29 in `app/utils/wantedCards/wantedCardLanguages.ts`: the file itself (which exports an array-literal `WANTED_CARD_LANGUAGES = [...] as const`) failed to resolve the *incoming* auto-import of `ICONS` (from `app/utils/icons.ts`) when referenced inside its own `WANTED_CARD_LANGUAGE_ICONS` object — `TS2304: Cannot find name 'ICONS'`, reproducible across repeated `pnpm typecheck` runs. So the array-literal-export fragility can affect a file's own *inbound* auto-imports too, not just its outbound exports. Fix: add an explicit `import { ICONS } from '~/utils/icons'` rather than relying on auto-import.
 
