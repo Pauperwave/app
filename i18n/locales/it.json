@@ -49,6 +49,7 @@
     "forward": "Avanti",
     "dummyLinkLabel": "Vedi esempio (ID fittizio)",
     "showColumns": "Mostra colonne",
+    "editableBadgeHint": "Clicca per modificare",
     "yes": "Yes",
     "no": "No",
     "switchToLightMode": "Passa al tema chiaro",
@@ -957,11 +958,13 @@
       "groupByStatus": "Raggruppa per stato"
     },
     "columns": {
+      "image": "Immagine",
       "status": "Stato",
       "name": "Nome",
       "startDate": "Data di inizio",
       "endDate": "Data di fine",
       "tournamentCount": "Tornei",
+      "formats": "Formati",
       "ruleset": "Regolamento",
       "actions": "Azioni"
     },
@@ -1132,18 +1135,25 @@
     },
     "statusChangeErrorTitle": "Impossibile aggiornare lo stato dell'evento",
     "filters": {
-      "statusAll": "Tutti"
+      "statusAll": "Tutti",
+      "groupByNone": "Nessun raggruppamento",
+      "groupByStatus": "Raggruppa per stato"
     },
     "columns": {
+      "image": "Immagine",
       "status": "Stato",
       "name": "Nome",
-      "startDate": "Data",
+      "startDate": "Data di inizio",
+      "endDate": "Data di fine",
+      "duration": "Durata",
       "tournamentCount": "Tornei",
+      "city": "Città",
       "organizer": "Organizzatore",
       "location": "Luogo",
       "actions": "Azioni"
     },
     "tournamentsLabel": "{count} torneo | {count} tornei",
+    "duration": "{count} giorno | {count} giorni",
     "addModal": {
       "title": "Nuovo evento",
       "description": "Aggiungi un nuovo evento al database",
@@ -1285,17 +1295,22 @@
       "uuid": "UUID",
       "status": "Stato",
       "name": "Nome",
-      "startDate": "Data e Ora",
+      "startDate": "Data",
+      "startTime": "Ora inizio",
+      "endTime": "Ora fine",
+      "duration": "Durata",
       "roundCount": "Turni",
       "roundDuration": "Durata Turni",
       "registeredPlayers": "Iscritti",
       "league": "Lega",
       "noLeague": "Nessuna lega",
+      "event": "Evento",
       "format": "Formato",
       "organizer": "Organizzatore",
       "location": "Luogo",
       "noLocation": "Nessun luogo",
       "entryFee": "Quota Iscrizione",
+      "entryFeeFree": "Gratis",
       "companionCode": "Codice Companion",
       "prizes": "Premi",
       "actions": "Azioni"
@@ -1306,6 +1321,8 @@
       "delete": "Elimina"
     },
     "statusChangeErrorTitle": "Impossibile aggiornare lo stato del torneo",
+    "entryFeeChangeErrorTitle": "Impossibile aggiornare la quota di iscrizione",
+    "locationChangeErrorTitle": "Impossibile aggiornare il luogo del torneo",
     "bulkActions": {
       "selectedCount": "{count} selezionato | {count} selezionati",
       "clearSelection": "Deseleziona",
