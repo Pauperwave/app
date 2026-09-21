@@ -154,6 +154,18 @@ const groupByItems = computed(() => [
   { label: t('tournament.filters.groupByFormat'), value: 'format' as const },
   { label: t('tournament.filters.groupByLocation'), value: 'location' as const }
 ])
+// Icon-only dropdown trigger (compact by default, user request 2026-09-21)
+// instead of a labeled USelectMenu — same checkbox-items-in-a-UDropdownMenu
+// shape as StatusChangeBadge.vue's own quick-change menu, single-select via
+// `checked: item.value === groupBy.value` standing in for a radio group.
+const groupByLabel = computed(() =>
+  groupByItems.value.find(item => item.value === groupBy.value)?.label ?? '')
+const groupByMenuItems = computed<DropdownMenuItem[]>(() => groupByItems.value.map(item => ({
+  label: item.label,
+  checked: item.value === groupBy.value,
+  type: 'checkbox' as const,
+  onSelect: () => { groupBy.value = item.value }
+})))
 
 const tour = useTournamentsTour()
 
@@ -284,18 +296,21 @@ const bulkConfirmTitle = computed(() => {
               :highlighted-dates="tournamentDates"
             />
 
-            <USelectMenu
-              v-if="viewMode === 'table'"
-              v-model="groupBy"
-              :items="groupByItems"
-              value-key="value"
-              :icon="ICONS.layers"
-              class="w-60"
-            />
+            <UTooltip v-if="viewMode === 'table'" :text="groupByLabel">
+              <UDropdownMenu :items="groupByMenuItems" :content="{ align: 'end' }">
+                <UButton
+                  color="neutral"
+                  variant="outline"
+                  :icon="ICONS.layers"
+                  :aria-label="groupByLabel"
+                />
+              </UDropdownMenu>
+            </UTooltip>
 
             <ColumnVisibilityMenu
               v-if="viewMode === 'table'"
               :items="columnVisibilityItems"
+              icon-only
             />
           </div>
         </template>
@@ -369,7 +384,10 @@ const bulkConfirmTitle = computed(() => {
 
   <TourGuide :tour="tour" />
 
-  <TournamentsListEditModal v-model="editModalOpen" :tournament="editingTournament" />
+  <TournamentsListEditModal
+    v-model="editModalOpen"
+    :tournament="editingTournament"
+  />
 
   <TournamentsListAddModal
     v-model="copyModalOpen"
@@ -377,7 +395,10 @@ const bulkConfirmTitle = computed(() => {
     :source-tournament="copySourceTournament"
   />
 
-  <MtgFormatsManageModal v-model="manageFormatsOpen" :format-usage-counts="formatUsageCounts" />
+  <MtgFormatsManageModal
+    v-model="manageFormatsOpen"
+    :format-usage-counts="formatUsageCounts"
+  />
 
   <ConfirmModal
     v-model:open="bulkConfirmOpen"
