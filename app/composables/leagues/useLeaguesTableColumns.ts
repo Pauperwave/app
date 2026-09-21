@@ -1,10 +1,31 @@
 // app\composables\leagues\useLeaguesTableColumns.ts
 import { h } from 'vue'
-import { EditIconButton, UBadge } from '#components'
+import type { Row } from '@tanstack/vue-table'
+import { EditIconButton, UBadge, UIcon } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { League } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
+
+// A group-header row's status cell: expand chevron, status badge, league count.
+function statusGroupHeaderCell(row: Row<League>, status: League['status'], label: string) {
+  return h('button', {
+    type: 'button',
+    class: 'flex items-center gap-1.5 font-medium cursor-pointer',
+    onClick: () => row.toggleExpanded()
+  }, [
+    h(UIcon, {
+      name: row.getIsExpanded() ? ICONS.chevronDown : ICONS.chevronRight,
+      class: 'size-4'
+    }),
+    h(UBadge, {
+      color: leagueStatusColor(status),
+      variant: 'subtle',
+      icon: LEAGUE_STATUS_ICONS[status]
+    }, () => label),
+    h(UBadge, { color: 'neutral', variant: 'subtle', size: 'sm' }, () => String(row.subRows.length))
+  ])
+}
 
 // Same shape as useTournamentsTableColumns.ts — selection/onEdit threaded
 // through rather than read from a composable here, since that state
@@ -37,16 +58,24 @@ export function useLeaguesTableColumns(
     {
       accessorKey: 'status',
       header: ({ column }) => sortableHeader(t('league.columns.status'), column),
-      cell: ({ row }) => h(UBadge, {
-        color: leagueStatusColor(row.original.status),
-        variant: 'subtle',
-        icon: LEAGUE_STATUS_ICONS[row.original.status]
-      }, () => t(`league.status.${row.original.status}`))
+      cell: ({ row, getValue }) => {
+        if (row.getIsGrouped()) {
+          const status = getValue<League['status']>()
+          return statusGroupHeaderCell(row, status, t(`league.status.${status}`))
+        }
+        return h(UBadge, {
+          color: leagueStatusColor(row.original.status),
+          variant: 'subtle',
+          icon: LEAGUE_STATUS_ICONS[row.original.status]
+        }, () => t(`league.status.${row.original.status}`))
+      }
     },
     {
       accessorKey: 'name',
       header: ({ column }) => sortableHeader(t('league.columns.name'), column),
-      cell: ({ row }) => h('span', { class: 'font-medium' }, row.original.name)
+      cell: ({ row }) => row.getIsGrouped()
+        ? null
+        : h('span', { class: 'font-medium' }, row.original.name)
     },
     {
       accessorKey: 'startDate',
@@ -55,20 +84,24 @@ export function useLeaguesTableColumns(
       // so this is effectively "when does this league's activity start" —
       // date-only, same rationale as useLeaguesQuery.ts falling back to
       // created_at rather than showing a time-of-day that was never real.
-      cell: ({ row }) =>
-        h(DateWithRelativeTooltip, { isoString: row.original.startDate, time: false })
+      cell: ({ row }) => row.getIsGrouped()
+        ? null
+        : h(DateWithRelativeTooltip, { isoString: row.original.startDate, time: false })
     },
     {
       accessorKey: 'tournamentCount',
       header: ({ column }) => sortableHeader(t('league.columns.tournamentCount'), column),
-      cell: ({ row }) => t('league.progress', {
-        completed: row.original.completedTournamentCount,
-        total: row.original.tournamentCount
-      })
+      cell: ({ row }) => row.getIsGrouped()
+        ? null
+        : t('league.progress', {
+          completed: row.original.completedTournamentCount,
+          total: row.original.tournamentCount
+        })
     },
     {
       accessorKey: 'ruleset',
-      header: t('league.columns.ruleset')
+      header: t('league.columns.ruleset'),
+      cell: ({ row }) => row.getIsGrouped() ? null : row.original.ruleset
     },
     {
       id: 'actions',
@@ -76,14 +109,16 @@ export function useLeaguesTableColumns(
       // stopPropagation: the row itself also navigates on click (UTable's
       // @select, see leagues/index.vue) — without this, clicking the edit
       // button would open the edit modal AND navigate away underneath it.
-      cell: ({ row }) => h(EditIconButton, {
-        label: t('league.rowActions.edit'),
-        size: 'xs',
-        onClick: (e: MouseEvent) => {
-          e.stopPropagation()
-          onEdit(row.original)
-        }
-      })
+      cell: ({ row }) => row.getIsGrouped()
+        ? null
+        : h(EditIconButton, {
+          label: t('league.rowActions.edit'),
+          size: 'xs',
+          onClick: (e: MouseEvent) => {
+            e.stopPropagation()
+            onEdit(row.original)
+          }
+        })
     }
   ]
 
