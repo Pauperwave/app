@@ -46,6 +46,12 @@ export function useTournamentsMutations() {
     onSettled: invalidate
   })
 
+  const setLocation = useMutation({
+    mutation: ({ id, locationUuid }: { id: number, locationUuid: string | null }) =>
+      $fetch(`/api/tournaments/${id}/location`, { method: 'POST', body: { locationUuid } }),
+    onSettled: invalidate
+  })
+
   // Also invalidates leagues (not just tournaments) — recomputeLeagueDates
   // on the server changes the affected league(s)' starts_at/ends_at, which
   // LEAGUES_KEY-scoped queries (the leagues list/detail pages) need to pick
@@ -66,7 +72,7 @@ export function useTournamentsMutations() {
   })
 
   return {
-    createTournament, updateTournament, setStatus, setImage, setEntryFee,
+    createTournament, updateTournament, setStatus, setImage, setEntryFee, setLocation,
     setLeague, deleteTournament
   }
 }
