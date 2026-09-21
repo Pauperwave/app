@@ -22,11 +22,21 @@ const {
   loadingCount?: number
 }>()
 
+// One section per status, most actionable first — empty statuses are skipped.
+const STATUS_ORDER: Tournament['status'][] = [
+  'in_progress', 'registration_open', 'draft', 'completed', 'cancelled', 'external'
+]
+const sections = computed(() => STATUS_ORDER
+  .map(status => ({ status, tournaments: tournaments.filter(tournament => tournament.status === status) }))
+  .filter(section => section.tournaments.length))
+
 // The ordered list a shift-click range resolves against — the currently
-// rendered (already filtered) cards, same reasoning as the table's own
-// range (useTournamentsTableColumns.ts). Passed down to each Card.vue rather
-// than recomputed per-card.
-const range = computed(() => tournaments.map(tournament => tournament.id))
+// rendered (already filtered) cards flattened in drawn order, same reasoning
+// as the table's own range (useTournamentsTableColumns.ts). Passed down to
+// each Card.vue rather than recomputed per-card.
+const range = computed(() => sections.value
+  .flatMap(section => section.tournaments)
+  .map(tournament => tournament.id))
 </script>
 
 <template>
@@ -43,17 +53,38 @@ const range = computed(() => tournaments.map(tournament => tournament.id))
     :message="$t('tournament.grid.empty')"
   />
 
-  <div v-else class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(280px,90vw),1fr))]">
-    <TournamentsListCard
-      v-for="tournament in tournaments"
-      :key="tournament.id"
-      :tournament="tournament"
-      :context-menu-items="contextMenuItems"
-      :on-edit="onEdit"
-      :selection="selection"
-      :range="range"
-      :highlighted="tournament.id === highlightedTournamentId"
-      :on-hover-change="onHoverChange"
-    />
+  <div v-else class="flex flex-col gap-6">
+    <div v-for="section in sections" :key="section.status">
+      <div class="flex items-center gap-1.5 mb-3">
+        <UBadge
+          :color="tournamentStatusColor(section.status)"
+          variant="subtle"
+          :icon="TOURNAMENT_STATUS_ICONS[section.status]"
+        >
+          {{ $t(`tournament.status.${section.status}`) }}
+        </UBadge>
+        <UBadge
+          color="neutral"
+          variant="subtle"
+          size="sm"
+        >
+          {{ section.tournaments.length }}
+        </UBadge>
+      </div>
+
+      <div class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(280px,90vw),1fr))]">
+        <TournamentsListCard
+          v-for="tournament in section.tournaments"
+          :key="tournament.id"
+          :tournament="tournament"
+          :context-menu-items="contextMenuItems"
+          :on-edit="onEdit"
+          :selection="selection"
+          :range="range"
+          :highlighted="tournament.id === highlightedTournamentId"
+          :on-hover-change="onHoverChange"
+        />
+      </div>
+    </div>
   </div>
 </template>

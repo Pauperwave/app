@@ -108,8 +108,11 @@ export function useTournamentsTableColumns(
     {
       accessorKey: 'status',
       header: ({ column }) => sortableHeader(t('tournament.columns.status'), column),
-      cell: ({ row }) => {
-        if (row.getIsGrouped()) return null
+      cell: ({ row, getValue }) => {
+        if (row.getIsGrouped()) {
+          const status = getValue<Tournament['status']>()
+          return groupHeaderCell(row, t(`tournament.status.${status}`))
+        }
         return h(UBadge, {
           color: tournamentStatusColor(row.original.status),
           variant: 'subtle',
