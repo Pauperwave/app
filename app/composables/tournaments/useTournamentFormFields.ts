@@ -5,6 +5,22 @@
 // differ. Same reasoning as useTransactionFormFields.ts.
 import * as v from 'valibot'
 import type { InferOutput } from 'valibot'
+import type { SelectMenuItem } from '@nuxt/ui'
+import type { League, LeagueStatus } from '~/types'
+
+const LEAGUE_SELECT_GROUP_ORDER: LeagueStatus[] = ['active', 'draft', 'completed', 'cancelled']
+
+// Tournaments are the source of truth for a league's real span, startDate is the fallback
+function leagueStart(league: League) {
+  return league.tournamentDateRange?.start ?? league.startDate
+}
+
+function leagueDateSpan(league: League) {
+  const format = (isoString: string) => new Date(isoString).toLocaleDateString('it-IT')
+  const start = format(leagueStart(league))
+  const end = league.tournamentDateRange ? format(league.tournamentDateRange.end) : start
+  return start === end ? start : `${start} → ${end}`
+}
 
 function buildSchema(t: ReturnType<typeof useI18n>['t']) {
   return v.object({
@@ -66,9 +82,24 @@ export function useTournamentFormFields() {
     value: format.uuid, label: format.name
   })))
 
-  const leagueOptions = computed(() => (leagues.value ?? []).map(league => ({
-    value: league.uuid, label: league.name
-  })))
+  // Grouped by status (label rows), newest first, with the date span as description
+  const leagueOptions = computed<SelectMenuItem[]>(() => {
+    const allLeagues = leagues.value ?? []
+    return LEAGUE_SELECT_GROUP_ORDER.flatMap((status) => {
+      const groupLeagues = allLeagues
+        .filter(league => league.status === status)
+        .sort((a, b) => leagueStart(b).localeCompare(leagueStart(a)))
+      if (!groupLeagues.length) return []
+      return [
+        { type: 'label' as const, label: t(`tournament.addModal.leagueGroups.${status}`) },
+        ...groupLeagues.map(league => ({
+          value: league.uuid,
+          label: league.name,
+          description: leagueDateSpan(league)
+        }))
+      ]
+    })
+  })
   const eventOptions = computed(() => (events.value ?? []).map(event => ({
     value: event.uuid, label: event.name
   })))

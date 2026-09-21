@@ -1444,6 +1444,12 @@
         "completed": "Completato",
         "cancelled": "Annullato"
       },
+      "leagueGroups": {
+        "draft": "Bozze",
+        "active": "Attive",
+        "completed": "Completate",
+        "cancelled": "Annullate"
+      },
       "fields": {
         "status": "Stato",
         "visibility": "Visibilità",
