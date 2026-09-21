@@ -1,7 +1,7 @@
 // app\composables\leagues\useLeaguesTableColumns.ts
 import { h } from 'vue'
 import type { Row } from '@tanstack/vue-table'
-import { EditIconButton, UBadge, UIcon } from '#components'
+import { EditIconButton, UBadge, UIcon, UProgress } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { League } from '~/types'
 import type { Selection } from '~/composables/useSelection'
@@ -48,6 +48,7 @@ export function useLeaguesTableColumns(
     status: t('league.columns.status'),
     name: t('league.columns.name'),
     startDate: t('league.columns.startDate'),
+    endDate: t('league.columns.endDate'),
     tournamentCount: t('league.columns.tournamentCount'),
     ruleset: t('league.columns.ruleset'),
     actions: t('league.columns.actions')
@@ -89,14 +90,31 @@ export function useLeaguesTableColumns(
         : h(DateWithRelativeTooltip, { isoString: row.original.startDate, time: false })
     },
     {
+      id: 'endDate',
+      // League has no end column of its own — its last tournament's date.
+      accessorFn: league => league.tournamentDateRange?.end ?? '',
+      header: ({ column }) => sortableHeader(t('league.columns.endDate'), column),
+      cell: ({ row }) => row.getIsGrouped() || !row.original.tournamentDateRange
+        ? null
+        : h(DateWithRelativeTooltip, { isoString: row.original.tournamentDateRange.end, time: false })
+    },
+    {
       accessorKey: 'tournamentCount',
       header: ({ column }) => sortableHeader(t('league.columns.tournamentCount'), column),
-      cell: ({ row }) => row.getIsGrouped()
-        ? null
-        : t('league.progress', {
-          completed: row.original.completedTournamentCount,
-          total: row.original.tournamentCount
-        })
+      cell: ({ row }) => {
+        if (row.getIsGrouped()) return null
+        const { completedTournamentCount, tournamentCount } = row.original
+        return h('div', { class: 'flex flex-col gap-1 min-w-32' }, [
+          h('span', { class: 'text-xs text-muted' }, t('league.progress', {
+            completed: completedTournamentCount,
+            total: tournamentCount
+          })),
+          h(UProgress, {
+            modelValue: tournamentCount ? Math.round((completedTournamentCount / tournamentCount) * 100) : 0,
+            size: 'sm'
+          })
+        ])
+      }
     },
     {
       accessorKey: 'ruleset',
