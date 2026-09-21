@@ -1,8 +1,8 @@
 // server\utils\telegram\commands\mockups\richStepHelpers.ts
 
-// Shared by risultato.ts's (Commander) and risultato1v1.ts's own
+// Shared by risultato.ts's (Commander) and tournaments/matchReport.ts's (1v1)
 // step-by-step result wizards — extracted 2026-09-12 after fallow flagged
-// both files independently defining byte-identical copies of these.
+// two files independently defining byte-identical copies of these.
 import type { Context } from 'grammy'
 import type { InputRichMessage } from 'grammy/types'
 

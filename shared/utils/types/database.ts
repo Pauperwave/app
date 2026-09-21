@@ -1719,6 +1719,74 @@ export type Database = {
           },
         ]
       }
+      tournament_match_result_reports: {
+        Row: {
+          created_at: string
+          id: number
+          pairing_uuid: string
+          player1_games_won: number
+          player2_games_won: number
+          reporter_uuid: string
+          status: string
+          tournament_uuid: string
+          updated_at: string
+          uuid: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          pairing_uuid: string
+          player1_games_won: number
+          player2_games_won: number
+          reporter_uuid: string
+          status?: string
+          tournament_uuid: string
+          updated_at?: string
+          uuid?: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          pairing_uuid?: string
+          player1_games_won?: number
+          player2_games_won?: number
+          reporter_uuid?: string
+          status?: string
+          tournament_uuid?: string
+          updated_at?: string
+          uuid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_match_result_reports_pairing_uuid_fkey"
+            columns: ["pairing_uuid"]
+            isOneToOne: true
+            referencedRelation: "tournament_pairings"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "tournament_match_result_reports_reporter_uuid_fkey"
+            columns: ["reporter_uuid"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "tournament_match_result_reports_reporter_uuid_fkey"
+            columns: ["reporter_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_full"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "tournament_match_result_reports_tournament_uuid_fkey"
+            columns: ["tournament_uuid"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["uuid"]
+          },
+        ]
+      }
       tournament_match_results: {
         Row: {
           created_at: string
