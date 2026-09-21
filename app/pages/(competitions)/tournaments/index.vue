@@ -134,11 +134,12 @@ const sorting = ref([{ id: 'startDate', desc: false }])
 // One dimension at a time (not multi-level): league/format/location are
 // each already a single flat dimension, and stacking more than one adds
 // nesting complexity nobody asked for. Off by default.
-type GroupByOption = 'none' | 'league' | 'format' | 'location'
+type GroupByOption = 'none' | 'status' | 'league' | 'format' | 'location'
 const groupBy = ref<GroupByOption>('none')
 const grouping = computed(() => groupBy.value === 'none' ? [] : [groupBy.value])
 const groupByItems = computed(() => [
   { label: t('tournament.filters.groupByNone'), value: 'none' as const },
+  { label: t('tournament.filters.groupByStatus'), value: 'status' as const },
   { label: t('tournament.filters.groupByLeague'), value: 'league' as const },
   { label: t('tournament.filters.groupByFormat'), value: 'format' as const },
   { label: t('tournament.filters.groupByLocation'), value: 'location' as const }

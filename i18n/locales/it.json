@@ -1385,6 +1385,7 @@
       "groupByLeague": "Raggruppa per lega",
       "groupByFormat": "Raggruppa per formato",
       "groupByLocation": "Raggruppa per luogo",
+      "groupByStatus": "Raggruppa per stato",
       "showExternal": "Mostra tornei esterni",
       "hideExternal": "Nascondi tornei esterni"
     },
