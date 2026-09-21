@@ -62,6 +62,7 @@ An `admin` (elevated authorization) is very likely *also* a `players` row (they 
 | `tournament_kills` | 🔴 Commander | `killer_uuid`/`killed_player_uuid` — multiplayer-pod "kill" mechanic |
 | `tournament_pairings` | 🟡 Mixed | `player1_uuid`…`player4_uuid` — sized for 4-seat pods, but 1v1 matches use two seats and, since 2026-09-20, a single player is a bye (`ck_tournament_pairings_player_count`, migrations `20260918000000` and `20260920010000`) |
 | `tournament_match_results` | 🟢 Agnostic | 1v1 best-of-3 result per pairing (`player1_games_won`/`player2_games_won`, only the five valid scores); 1v1-only in practice |
+| `tournament_match_result_reports` | 🟢 Agnostic | 1v1 result reported by one player via the Telegram bot, waiting for the opponent (`pending`) or an organizer (`disputed`); one per pairing, deleted when the real result is saved; written only by the bot (service role), read by management |
 | `tournament_player_drops` | 🟢 Agnostic | added 2026-09-20 — one row per dropped player and tournament, with the round (`round_uuid`, cascades) and `dropped_at`; see ADR-036 in `docs/PROGRESS.md` |
 | `tournament_votes` | 🔴 Commander | `vote_type` — "play/brew" vote mechanic specific to Commander pods |
 | `tournament_round_results` | 🔴 Commander | has FK `commander_deck_uuid` |

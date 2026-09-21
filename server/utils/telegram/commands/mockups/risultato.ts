@@ -6,8 +6,7 @@ import { Menu } from '@grammyjs/menu'
 
 import { answerLoadError } from '../callbackErrors'
 import { registerDeepLink } from '../../deepLinks'
-import { MOCK_FORMAT } from './mockPairing'
-import { risultato1v1CommandHandler, registerRisultato1v1Handlers } from './risultato1v1'
+import { replyWithLiveTable } from '../tournaments/matchReport'
 import { showRichStep, twoColumnFactsTable } from './richStepHelpers'
 
 // MOCKUP — no live-write flow yet (docs/architecture/telegram-bot.md).
@@ -407,24 +406,18 @@ async function sendConfirmedResult(ctx: Context, state: ResultState) {
 }
 
 // Shared entry point for both /risultato and tavolo.ts's own "Inserisci
-// risultati" button — tavolo.ts branches on MOCK_FORMAT itself to pick
-// which of openRisultato/openRisultato1v1 its own button opens, so this
-// one only ever needs to handle the Commander case.
+// risultati" button — the Commander mockup only, a 1v1 table is answered
+// by tournaments/matchReport.ts first.
 export async function openRisultato(ctx: Context) {
   await showRichStep(ctx, positionRichMessage(INITIAL_STATE))
 }
 
 // Extracted so it can be reused verbatim by t.me/<bot>?start=risultato —
 // see deepLinks.ts. Not openRisultato: that one edits/answers an existing
-// callback query, which a fresh /start context doesn't have. Branches on
-// MOCK_FORMAT since /risultato (unlike /tavolo's own button) has no
-// button context to infer the format from — user decision 2026-09-12:
-// one command, format-detected, not two commands to remember.
+// callback query, which a fresh /start context doesn't have. A real 1v1
+// table wins over the Commander mockup — one command, format-detected.
 async function risultatoCommandHandler(ctx: Context) {
-  if (MOCK_FORMAT === '1v1') {
-    await risultato1v1CommandHandler(ctx)
-    return
-  }
+  if (await replyWithLiveTable(ctx)) return
   await ctx.replyWithRichMessage(positionRichMessage(INITIAL_STATE))
 }
 
@@ -452,7 +445,6 @@ async function tryHandleStep(ctx: Context, data: string, steps: PrefixedStep[]):
 
 export function registerRisultatoCommand(bot: Bot, commands: CommandGroup<Context>) {
   bot.use(risultatoMenu)
-  registerRisultato1v1Handlers(bot)
 
   // Each entry re-renders the same step (a pick, still pending confirm) —
   // the *_CONFIRM_PREFIX handlers below hand off to the next step instead.
