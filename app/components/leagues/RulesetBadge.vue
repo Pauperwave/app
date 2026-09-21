@@ -60,20 +60,26 @@ const items = computed<DropdownMenuItem[]>(() => [
        model entirely (it still fires/stops the click) so only the badge's
        own box remains. -->
   <span class="contents" @click.stop>
-    <UDropdownMenu
+    <UTooltip
       v-if="can('manage-tournaments')"
-      :items="items"
-      :content="{ align: 'end' }"
+      :text="t('common.editableBadgeHint')"
     >
-      <UBadge
-        color="neutral"
-        variant="subtle"
-        :icon="ICONS.bookOpen"
-        class="shrink-0 cursor-pointer"
-      >
-        {{ league.ruleset ?? t('league.addModal.fields.selectRuleset') }}
-      </UBadge>
-    </UDropdownMenu>
+      <span class="inline-flex">
+        <UDropdownMenu
+          :items="items"
+          :content="{ align: 'end' }"
+        >
+          <UBadge
+            color="neutral"
+            variant="subtle"
+            :icon="ICONS.bookOpen"
+            class="shrink-0 cursor-pointer"
+          >
+            {{ league.ruleset ?? t('league.addModal.fields.selectRuleset') }}
+          </UBadge>
+        </UDropdownMenu>
+      </span>
+    </UTooltip>
 
     <UBadge
       v-else
