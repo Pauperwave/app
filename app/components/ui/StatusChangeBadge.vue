@@ -54,21 +54,27 @@ const items = computed<DropdownMenuItem[]>(() => statuses.map(s => ({
 </script>
 
 <template>
-  <UDropdownMenu
+  <UTooltip
     v-if="can(permission)"
-    :items="items"
-    :content="{ align: 'end' }"
-    @click.stop.prevent
+    :text="$t('common.editableBadgeHint')"
   >
-    <UBadge
-      :color="color(status)"
-      :icon="icons[status]"
-      :variant="variant"
-      class="shrink-0 cursor-pointer"
-    >
-      {{ label(status) }}
-    </UBadge>
-  </UDropdownMenu>
+    <span class="inline-flex">
+      <UDropdownMenu
+        :items="items"
+        :content="{ align: 'end' }"
+        @click.stop.prevent
+      >
+        <UBadge
+          :color="color(status)"
+          :icon="icons[status]"
+          :variant="variant"
+          class="shrink-0 cursor-pointer"
+        >
+          {{ label(status) }}
+        </UBadge>
+      </UDropdownMenu>
+    </span>
+  </UTooltip>
 
   <UBadge
     v-else
