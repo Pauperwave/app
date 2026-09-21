@@ -960,6 +960,7 @@
       "status": "Stato",
       "name": "Nome",
       "startDate": "Data di inizio",
+      "endDate": "Data di fine",
       "tournamentCount": "Tornei",
       "ruleset": "Regolamento",
       "actions": "Azioni"
@@ -1384,10 +1385,10 @@
       "statusAll": "Tutti",
       "formatPlaceholder": "Formato",
       "groupByNone": "Nessun raggruppamento",
+      "groupByStatus": "Raggruppa per stato",
       "groupByLeague": "Raggruppa per lega",
       "groupByFormat": "Raggruppa per formato",
       "groupByLocation": "Raggruppa per luogo",
-      "groupByStatus": "Raggruppa per stato",
       "showExternal": "Mostra tornei esterni",
       "hideExternal": "Nascondi tornei esterni"
     },
