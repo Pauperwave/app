@@ -4,6 +4,7 @@
 // tournaments/index.vue's mock-driven layout on purpose; expected to diverge
 // once real Supabase tables land
 import { add } from 'date-fns'
+import { getGroupedRowModel } from '@tanstack/vue-table'
 import type { DropdownMenuItem, TabsItem } from '@nuxt/ui'
 import type { League, Range } from '~/types'
 
@@ -106,6 +107,16 @@ const viewModeItems = computed<TabsItem[]>(() => [
 // defaulted to name, the only column it had a sort on at all.
 const sorting = ref([{ id: 'startDate', desc: false }])
 
+// Table-only, off by default — same convention as tournaments/index.vue's
+// groupBy; the grid view always sections by status on its own.
+type GroupByOption = 'none' | 'status'
+const groupBy = ref<GroupByOption>('none')
+const grouping = computed(() => groupBy.value === 'none' ? [] : [groupBy.value])
+const groupByItems = computed(() => [
+  { label: t('league.filters.groupByNone'), value: 'none' as const },
+  { label: t('league.filters.groupByStatus'), value: 'status' as const }
+])
+
 const tour = useLeaguesTour()
 </script>
 
@@ -182,12 +193,22 @@ const tour = useLeaguesTour()
               requestStatusChange(requestedStatus, selectedLeagues)"
             @delete="requestDelete(selectedLeagues)"
           />
-          <DateRangePicker
-            v-else
-            v-model="range"
-            :highlighted-dates="leagueDates"
-            icon-only
-          />
+          <div v-else class="flex items-center gap-2">
+            <DateRangePicker
+              v-model="range"
+              :highlighted-dates="leagueDates"
+              icon-only
+            />
+
+            <USelectMenu
+              v-if="viewMode === 'table'"
+              v-model="groupBy"
+              :items="groupByItems"
+              value-key="value"
+              :icon="ICONS.layers"
+              class="w-60"
+            />
+          </div>
         </template>
       </UDashboardToolbar>
     </template>
@@ -210,11 +231,17 @@ const tour = useLeaguesTour()
               v-model:sorting="sorting"
               :data="filteredLeagues"
               :columns="columns"
+              :grouping="grouping"
+              :grouping-options="{
+                getGroupedRowModel: getGroupedRowModel()
+              }"
               :loading="loading"
               class="w-full"
               :ui="{ tr: 'cursor-pointer' }"
               @contextmenu="onRowContextmenu"
-              @select="(_e, row) => navigateTo(`/leagues/${row.original.uuid}`)"
+              @select="(_e, row) => {
+                if (!row.getIsGrouped()) navigateTo(`/leagues/${row.original.uuid}`)
+              }"
             />
           </UContextMenu>
         </template>

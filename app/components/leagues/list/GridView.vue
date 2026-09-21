@@ -18,9 +18,15 @@ const {
   loadingCount?: number
 }>()
 
-// The ordered list a shift-click range resolves against — same reasoning as
-// TournamentsListGridView.vue's own range.
-const range = computed(() => leagues.map(league => league.id))
+// One section per status, active first — empty statuses are skipped.
+const STATUS_ORDER: League['status'][] = ['active', 'draft', 'completed', 'cancelled']
+const sections = computed(() => STATUS_ORDER
+  .map(status => ({ status, leagues: leagues.filter(league => league.status === status) }))
+  .filter(section => section.leagues.length))
+
+// The ordered list a shift-click range resolves against, flattened in drawn
+// order so it follows the sections.
+const range = computed(() => sections.value.flatMap(section => section.leagues).map(league => league.id))
 </script>
 
 <template>
@@ -37,15 +43,36 @@ const range = computed(() => leagues.map(league => league.id))
     :message="$t('league.grid.empty')"
   />
 
-  <div v-else class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(280px,90vw),1fr))]">
-    <LeaguesListCard
-      v-for="league in leagues"
-      :key="league.id"
-      :league="league"
-      :context-menu-items="contextMenuItems"
-      :on-edit="onEdit"
-      :selection="selection"
-      :range="range"
-    />
+  <div v-else class="flex flex-col gap-6">
+    <div v-for="section in sections" :key="section.status">
+      <div class="flex items-center gap-1.5 mb-3">
+        <UBadge
+          :color="leagueStatusColor(section.status)"
+          variant="subtle"
+          :icon="LEAGUE_STATUS_ICONS[section.status]"
+        >
+          {{ $t(`league.status.${section.status}`) }}
+        </UBadge>
+        <UBadge
+          color="neutral"
+          variant="subtle"
+          size="sm"
+        >
+          {{ section.leagues.length }}
+        </UBadge>
+      </div>
+
+      <div class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(280px,90vw),1fr))]">
+        <LeaguesListCard
+          v-for="league in section.leagues"
+          :key="league.id"
+          :league="league"
+          :context-menu-items="contextMenuItems"
+          :on-edit="onEdit"
+          :selection="selection"
+          :range="range"
+        />
+      </div>
+    </div>
   </div>
 </template>

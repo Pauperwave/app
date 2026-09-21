@@ -952,7 +952,9 @@
       "cancelled": "Annullata"
     },
     "filters": {
-      "statusAll": "Tutte"
+      "statusAll": "Tutte",
+      "groupByNone": "Nessun raggruppamento",
+      "groupByStatus": "Raggruppa per stato"
     },
     "columns": {
       "status": "Stato",
