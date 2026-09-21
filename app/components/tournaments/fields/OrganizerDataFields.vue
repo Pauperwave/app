@@ -15,6 +15,7 @@
 -->
 <!-- eslint-disable vue/no-mutating-props -- see the comment above -->
 <script setup lang="ts">
+import type { SelectMenuItem } from '@nuxt/ui'
 import type { TournamentFormState } from '~/composables/tournaments/useTournamentFormFields'
 
 interface SelectOption {
@@ -28,7 +29,7 @@ const {
   state: TournamentFormState
   organizerOptions: SelectOption[]
   locationOptions: SelectOption[]
-  leagueOptions: SelectOption[]
+  leagueOptions: SelectMenuItem[]
   eventOptions: SelectOption[]
 }>()
 </script>
@@ -63,6 +64,7 @@ const {
         v-model="state.leagueUuid"
         class="w-full"
         :items="leagueOptions"
+        :ui="{ itemDescription: 'text-xs' }"
         value-key="value"
         clear
         :placeholder="$t('tournament.addModal.fields.linkLeague')"
