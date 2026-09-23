@@ -17,14 +17,10 @@ const pair = computed(() =>
 const commander1Name = computed(() => pair.value?.commander1Name ?? null)
 const commander2Name = computed(() => pair.value?.commander2Name ?? null)
 
-const { commander1Data, commander2Data, loading: catalogLoading } = useCommanderCards(
-  commander1Name, commander2Name
-)
-const art1 = computed(() => getArtCrop(commander1Data.value))
-const art2 = computed(() => getArtCrop(commander2Data.value))
-
-const commanderDisplayName = computed(() => [commander1Name.value, commander2Name.value]
-  .filter(Boolean).join(' / ') || t('deck.fallbackName'))
+const {
+  commander1Data, commander2Data, catalogLoading, art1, art2, commanderDisplayName
+}
+  = useCommanderPairDisplay(commander1Name, commander2Name)
 
 // Every deck (any player) that has featured commander1Name in either slot,
 // filtered client-side to the exact pair (commander2Name must match too).
