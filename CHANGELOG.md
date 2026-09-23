@@ -1,6 +1,35 @@
 # Changelog
 
 
+## v0.2.1
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.2.0...v0.2.1)
+
+### Enhancements
+
+- **ui:** ✨ show the item count in every multi-item action's own label ([2c27181](https://github.com/Pauperwave/app/commit/2c27181))
+
+### Fixes
+
+- **fallow:** 🐛 fix 3 broken fallow-ignore-next-line markers, tighten the checker ([e3a09e6](https://github.com/Pauperwave/app/commit/e3a09e6))
+
+### Refactors
+
+- **telegram:** ♻️ break the detail.ts <-> calendario/leghe/iscrizioni/prossimo import cycle ([28317ec](https://github.com/Pauperwave/app/commit/28317ec))
+- ♻️ dedup round/player lookup and settings form dirty-tracking ([09342ce](https://github.com/Pauperwave/app/commit/09342ce))
+- ♻️ dedup Commander/Swiss/reset round-lifecycle mutation wiring ([74c6a04](https://github.com/Pauperwave/app/commit/74c6a04))
+- ♻️ dedup RPC error handling across tournament-rounds endpoints ([e6bcd2c](https://github.com/Pauperwave/app/commit/e6bcd2c))
+- ♻️ dedup commander-decks lender rule and avoid-pairs player resolution ([83cc528](https://github.com/Pauperwave/app/commit/83cc528))
+- ♻️ dedup matchReport.ts guard clauses, mark iscrizioni/leghe's trivial dupe ([3c418e8](https://github.com/Pauperwave/app/commit/3c418e8))
+- ♻️ dedup default.vue's "g" hint listener and deck modals' lender fields ([ed6dd92](https://github.com/Pauperwave/app/commit/ed6dd92))
+- ♻️ dedup tournaments Grid/Dense views and cards, Cover skeleton, pointer tooltip ([20400cd](https://github.com/Pauperwave/app/commit/20400cd))
+- ♻️ dedup commander/deck detail pages' hero image, stats grid, and links ([e469080](https://github.com/Pauperwave/app/commit/e469080))
+- ♻️ dedup commander-pair art/display-name resolution across deck pages ([ec86942](https://github.com/Pauperwave/app/commit/ec86942))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.2.0
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.1.15...v0.2.0)
