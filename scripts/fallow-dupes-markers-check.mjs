@@ -21,11 +21,21 @@ const broken = []
 for (const file of files) {
   const lines = fs.readFileSync(path.join(root, file), 'utf8').split('\n')
   for (let i = 0; i < lines.length; i++) {
-    if (!lines[i].includes('fallow-ignore-next-line')) continue
     const markerLine = lines[i].trim()
     const isHtmlComment = markerLine.startsWith('<!--')
-    const closesOnSameLine = isHtmlComment && markerLine.includes('-->')
     const isJsComment = markerLine.startsWith('//')
+
+    // Only an actual directive counts — the marker keyword must open the
+    // comment's own content, not just appear somewhere in a sentence (e.g.
+    // this file's own header explains the marker by name, in prose, which
+    // used to false-positive as a broken marker on itself).
+    const content = markerLine
+      .replace(/^<!--\s*/, '')
+      .replace(/\s*-->$/, '')
+      .replace(/^\/\/\s*/, '')
+    if (!content.startsWith('fallow-ignore-next-line')) continue
+
+    const closesOnSameLine = isHtmlComment && markerLine.includes('-->')
 
     if (isJsComment && (lines[i + 1] ?? '').trim().startsWith('//')) {
       broken.push(`${file}:${i + 1}`)
