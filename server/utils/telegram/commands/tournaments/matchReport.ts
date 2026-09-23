@@ -156,6 +156,48 @@ async function alertBlock(ctx: Context, block: ReportBlock | RespondBlock) {
   await ctx.answerCallbackQuery({ text: BLOCK_MESSAGES[block], show_alert: true }).catch(() => {})
 }
 
+// requireTable + a reportBlockReason check, alerting and returning null if
+// blocked — shared by handleOpen/handleSummary/handleSend, which
+// independently duplicated this exact pair of calls.
+async function requireReportableTable(
+  ctx: Context, pairingUuid: string
+): Promise<LiveTable | null> {
+  const table = await requireTable(ctx, pairingUuid)
+  if (!table) return null
+
+  const block = reportBlockReason({
+    pairingStatus: table.pairingStatus,
+    isParticipant: true,
+    report: table.report
+  })
+  if (block) {
+    await alertBlock(ctx, block)
+    return null
+  }
+  return table
+}
+
+// Same as requireReportableTable, for the opponent's confirm/dispute side —
+// shared by handleConfirm/handleDispute.
+async function requireRespondableTable(
+  ctx: Context, pairingUuid: string
+): Promise<LiveTable | null> {
+  const table = await requireTable(ctx, pairingUuid)
+  if (!table) return null
+
+  const block = respondBlockReason({
+    pairingStatus: table.pairingStatus,
+    isParticipant: true,
+    responderUuid: table.myPlayerUuid,
+    report: table.report
+  })
+  if (block) {
+    await alertBlock(ctx, block)
+    return null
+  }
+  return table
+}
+
 // Best-effort: the result is already saved, a failed message must not undo it
 async function notifyOpponent(ctx: Context, table: LiveTable, message: InputRichMessage) {
   try {
@@ -167,43 +209,22 @@ async function notifyOpponent(ctx: Context, table: LiveTable, message: InputRich
 }
 
 async function handleOpen(ctx: Context, pairingUuid: string) {
-  const table = await requireTable(ctx, pairingUuid)
+  const table = await requireReportableTable(ctx, pairingUuid)
   if (!table) return
-
-  const block = reportBlockReason({
-    pairingStatus: table.pairingStatus,
-    isParticipant: true,
-    report: table.report
-  })
-  if (block) return alertBlock(ctx, block)
 
   await showRichStep(ctx, outcomePickRichMessage(table))
 }
 
 async function handleSummary(ctx: Context, pairingUuid: string, outcomeIndex: number) {
-  const table = await requireTable(ctx, pairingUuid)
+  const table = await requireReportableTable(ctx, pairingUuid)
   if (!table) return
-
-  const block = reportBlockReason({
-    pairingStatus: table.pairingStatus,
-    isParticipant: true,
-    report: table.report
-  })
-  if (block) return alertBlock(ctx, block)
 
   await showRichStep(ctx, summaryRichMessage(table, outcomeIndex))
 }
 
 async function handleSend(ctx: Context, pairingUuid: string, outcomeIndex: number) {
-  const table = await requireTable(ctx, pairingUuid)
+  const table = await requireReportableTable(ctx, pairingUuid)
   if (!table) return
-
-  const block = reportBlockReason({
-    pairingStatus: table.pairingStatus,
-    isParticipant: true,
-    report: table.report
-  })
-  if (block) return alertBlock(ctx, block)
 
   const outcome = outcomeAt(outcomeIndex)
   const games = gamesFromOutcome(outcome, table.isPlayer1)
@@ -234,16 +255,10 @@ async function handleSend(ctx: Context, pairingUuid: string, outcomeIndex: numbe
 }
 
 async function handleConfirm(ctx: Context, pairingUuid: string) {
-  const table = await requireTable(ctx, pairingUuid)
-  if (!table) return
-
-  const block = respondBlockReason({
-    pairingStatus: table.pairingStatus,
-    isParticipant: true,
-    responderUuid: table.myPlayerUuid,
-    report: table.report
-  })
-  if (block || !table.report) return alertBlock(ctx, block ?? 'no-report')
+  const table = await requireRespondableTable(ctx, pairingUuid)
+  // respondBlockReason already returns 'no-report' when table.report is
+  // null, so this is narrowing for TS, not a reachable extra guard.
+  if (!table?.report) return
 
   await saveMatchResult(telegramServiceSupabaseClient(), {
     tournamentUuid: table.tournamentUuid,
@@ -265,16 +280,8 @@ async function handleConfirm(ctx: Context, pairingUuid: string) {
 }
 
 async function handleDispute(ctx: Context, pairingUuid: string) {
-  const table = await requireTable(ctx, pairingUuid)
+  const table = await requireRespondableTable(ctx, pairingUuid)
   if (!table) return
-
-  const block = respondBlockReason({
-    pairingStatus: table.pairingStatus,
-    isParticipant: true,
-    responderUuid: table.myPlayerUuid,
-    report: table.report
-  })
-  if (block) return alertBlock(ctx, block)
 
   await disputeMatchReport(table.pairingUuid)
   await showRichStep(ctx, {

@@ -199,6 +199,7 @@ export async function legaTorneiBlocks(ctx: Context, index: number): Promise<Inp
       type: 'paragraph',
       text: [`${statusIcon(tournament.status)} `, { type: 'bold', text: tournament.name }]
     })
+    // fallow-ignore-next-line code-duplication -- iscrizioni.ts's own location/button block, different payload encoder
     if (tournament.location?.name) {
       blocks.push({ type: 'paragraph', text: `${ICONS.location} ${tournament.location.name}` })
     }
