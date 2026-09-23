@@ -461,6 +461,14 @@ Contestualmente, rimosso il banner di avviso giallo ("Questa tabella non è anco
 
 **Conseguenze:** i segnali dell'ottimizzatore che richiedono la storia tra tornei diversi (`playersForScoring`, storico, `leagueRematchCounts`) sono azzerati di proposito (`STUB:` in `TablePreviewModal.vue`) finché non esiste quella storia. Le policy di self-service su risultati, uccisioni e voti esistono già a livello di database ma non sono usate finché il bot non ha il flusso corrispondente. La spunta "Vincitori tavoli" non è condivisa tra dispositivi.
 
+### ADR-043 — Pairing Swiss round 2+: ordine deterministico per tiebreaker, non randomizzato per fascia come WER/Companion (2026-09-23)
+
+**Contesto:** `SwissTablePreviewModal.vue` randomizzava (`shuffle()`) l'ordine dei giocatori a ogni apertura, scartando l'ordine per classifica calcolato da `pairSwissRound()` — bug segnalato dall'utente ("Ho la sensazione che le coppie siano ancora random"), corretto sostituendo lo shuffle automatico con un semplice reset dall'ordine ricevuto (`resetTables`), lasciando "Shuffle" come azione esplicita separata. La correzione ha portato a chiedersi se l'algoritmo di pairing sottostante rispecchi quello ufficiale usato da WER/Companion.
+
+**Decisione:** `pairSwissRound()` resta **deterministico**: accoppia consecutivamente i giocatori ordinati per classifica intera (match points → OMW% → GW% → OGW%, da `swissScoring.ts`), evitando i rematch con backtracking, bye al più basso senza bye ancora. L'algoritmo ufficiale (WER, ereditato da Companion) raggruppa allo stesso modo per fascia di punteggio ma **randomizza l'ordine di pairing all'interno di ogni fascia** a ogni turno, invece di usare i tiebreaker per stabilirlo. Si è scelto di non replicare questa randomizzazione: (1) romperebbe l'invariante su cui si basa il fix di `SwissTablePreviewModal.vue` appena fatto — riaprire il modale o un refetch produrrebbe un ordine diverso anche senza toccare "Shuffle", lo stesso bug spostato un livello più in basso; (2) i test unitari su `swissPairing.ts` asseriscono oggi la sequenza esatta di output, un RNG richiederebbe seed/mock o asserzioni indebolite a sole proprietà strutturali; (3) la fedeltà a WER/Companion è cosmetica per una lega non sanzionata WPN — nessun organizzatore o giocatore ha mai lamentato prevedibilità come problema.
+
+**Conseguenze:** a parità di punteggio, due giocatori con tiebreaker fissi tendono sempre alla stessa posizione relativa nel pairing tra un turno e l'altro — effetto minore, mai segnalato come problema reale finora. Se in futuro servisse maggiore fedeltà a un torneo sanzionato (es. eventi ufficiali via Companion), la scelta da rivedere è randomizzare l'ordine dentro ogni fascia di punteggio in `pairSwissRound()`, accettando il costo in complessità/test descritto sopra.
+
 ## Vedi anche
 
 - `docs/architecture/database.md` — schema, RLS, migrazioni
