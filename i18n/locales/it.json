@@ -2138,6 +2138,13 @@
       "deleteErrorTitle": "Eliminazione non riuscita",
       "deleteConflictDescription": "Il giocatore ha dati collegati (tornei, decks, ...) e non può essere eliminato."
     },
+    "bulkActions": {
+      "selectedCount": "{count} selezionato | {count} selezionati",
+      "clearSelection": "Deseleziona",
+      "deleteConfirmTitle": "Eliminare {count} giocatore? | Eliminare {count} giocatori?",
+      "deleteSuccessToast": "{count} giocatore eliminato | {count} giocatori eliminati",
+      "partialFailure": "{count} eliminazione non riuscita | {count} eliminazioni non riuscite"
+    },
     "detail": {
       "navbarTitle": "Giocatore",
       "notFound": "Giocatore non trovato.",
