@@ -35,10 +35,6 @@ const art2 = computed(() => getArtCrop(commander2Data.value))
 const commanderDisplayName = computed(() => [commander1Name.value, commander2Name.value]
   .filter(Boolean).join(' / ') || t('deck.fallbackName'))
 
-const scryfallSearchUrl = computed(() => commander1Name.value
-  ? `https://scryfall.com/search?q=!"${encodeURIComponent(commander1Name.value)}"`
-  : '#')
-
 const { data: stats } = useCommanderDeckStatsQuery(() => deck.value?.uuid)
 const { data: playersFullData } = usePlayersQuery()
 const lenderName = computed(() => {
@@ -70,21 +66,13 @@ const { breadcrumbItems } = useBreadcrumbs()
         <UBreadcrumb :items="breadcrumbItems" class="mb-2" />
 
         <div class="bg-elevated rounded-xl border border-default shadow-lg overflow-hidden">
-          <div class="aspect-video bg-muted" :class="commander2Name ? 'flex' : ''">
-            <ImageWithFallback
-              :src="art1"
-              :alt="commander1Name ?? ''"
-              :loading="catalogLoading"
-              :class="commander2Name ? 'flex-1' : ''"
-            />
-            <ImageWithFallback
-              v-if="commander2Name"
-              :src="art2"
-              :alt="commander2Name"
-              :loading="catalogLoading"
-              class="flex-1"
-            />
-          </div>
+          <MagicCommanderHeroImage
+            :art1="art1"
+            :alt1="commander1Name ?? ''"
+            :art2="art2"
+            :alt2="commander2Name"
+            :loading="catalogLoading"
+          />
           <div class="p-4 space-y-2">
             <div class="flex items-center justify-between gap-3">
               <div>
@@ -115,33 +103,16 @@ const { breadcrumbItems } = useBreadcrumbs()
           </div>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <UCard
-            v-for="stat in [
-              { label: t('deck.statsMatches'), value: stats?.matchCount ?? 0 },
-              { label: t('deck.statsWins'), value: stats?.winCount ?? 0 },
-              { label: t('deck.statsKills'), value: stats?.totalKills ?? 0 },
-              { label: t('player.stats.average'), value: stats?.averageScore ?? 0 }
-            ]"
-            :key="stat.label"
-          >
-            <p class="text-xs text-muted uppercase mb-1">
-              {{ stat.label }}
-            </p>
-            <p class="text-2xl font-semibold">
-              {{ stat.value }}
-            </p>
-          </UCard>
-        </div>
-
-        <UButton
-          :label="t('deck.viewOnScryfall')"
-          :icon="ICONS.externalLink"
-          variant="outline"
-          color="neutral"
-          :to="scryfallSearchUrl"
-          target="_blank"
+        <StatCardsGrid
+          :stats="[
+            { label: t('deck.statsMatches'), value: stats?.matchCount ?? 0 },
+            { label: t('deck.statsWins'), value: stats?.winCount ?? 0 },
+            { label: t('deck.statsKills'), value: stats?.totalKills ?? 0 },
+            { label: t('player.stats.average'), value: stats?.averageScore ?? 0 }
+          ]"
         />
+
+        <ScryfallSearchButton :name="commander1Name" />
       </div>
 
       <EmptyState v-else-if="!decksLoading" :message="t('deck.notFound')" />

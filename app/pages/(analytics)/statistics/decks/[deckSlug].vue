@@ -26,10 +26,6 @@ const art2 = computed(() => getArtCrop(commander2Data.value))
 const commanderDisplayName = computed(() => [commander1Name.value, commander2Name.value]
   .filter(Boolean).join(' / ') || t('deck.fallbackName'))
 
-const scryfallSearchUrl = computed(() => commander1Name.value
-  ? `https://scryfall.com/search?q=!"${encodeURIComponent(commander1Name.value)}"`
-  : '#')
-
 // Every deck (any player) that has featured commander1Name in either slot,
 // filtered client-side to the exact pair (commander2Name must match too).
 const { data: decksFeaturing } = useDecksFeaturingCommanderQuery(commander1Name)
@@ -76,21 +72,13 @@ useSeoMeta({ title: () => commanderDisplayName.value })
     <template #body>
       <div v-if="pair" class="max-w-4xl mx-auto space-y-6">
         <div class="bg-elevated rounded-xl border border-default shadow-lg overflow-hidden">
-          <div class="aspect-video bg-muted" :class="commander2Name ? 'flex' : ''">
-            <ImageWithFallback
-              :src="art1"
-              :alt="commander1Name ?? ''"
-              :loading="catalogLoading"
-              :class="commander2Name ? 'flex-1' : ''"
-            />
-            <ImageWithFallback
-              v-if="commander2Name"
-              :src="art2"
-              :alt="commander2Name"
-              :loading="catalogLoading"
-              class="flex-1"
-            />
-          </div>
+          <MagicCommanderHeroImage
+            :art1="art1"
+            :alt1="commander1Name ?? ''"
+            :art2="art2"
+            :alt2="commander2Name"
+            :loading="catalogLoading"
+          />
           <div class="p-4 flex items-center justify-between gap-3">
             <h1 class="text-xl font-bold">
               {{ commanderDisplayName }}
@@ -102,57 +90,23 @@ useSeoMeta({ title: () => commanderDisplayName.value })
           </div>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <UCard
-            v-for="stat in [
-              { label: t('deck.statsPlayers'), value: pair.playerCount },
-              { label: t('deck.statsMatches'), value: pair.matchCount },
-              { label: t('deck.statsWins'), value: pair.winCount },
-              { label: t('deck.statsKills'), value: pair.totalKills }
-            ]"
-            :key="stat.label"
-          >
-            <p class="text-xs text-muted uppercase mb-1">
-              {{ stat.label }}
-            </p>
-            <p class="text-2xl font-semibold">
-              {{ stat.value }}
-            </p>
-          </UCard>
-        </div>
-
-        <div class="space-y-3">
-          <h2 class="text-lg font-bold flex items-center gap-2">
-            <UIcon :name="ICONS.players" class="size-5 text-primary" />
-            {{ t('commander.page.decksHeading') }}
-          </h2>
-
-          <div v-if="decksWithPlayers.length" class="flex flex-wrap gap-2">
-            <NuxtLink
-              v-for="entry in decksWithPlayers"
-              :key="entry.deckUuid"
-              :to="entry.playerSlug ? `/players/${entry.playerSlug}/deck/${deckSlug}` : undefined"
-            >
-              <UBadge
-                color="neutral"
-                variant="soft"
-                size="lg"
-              >
-                {{ entry.playerLabel ?? t('player.fallbackName') }}
-              </UBadge>
-            </NuxtLink>
-          </div>
-          <EmptyState v-else :message="t('commander.index.emptyList')" />
-        </div>
-
-        <UButton
-          :label="t('deck.viewOnScryfall')"
-          :icon="ICONS.externalLink"
-          variant="outline"
-          color="neutral"
-          :to="scryfallSearchUrl"
-          target="_blank"
+        <StatCardsGrid
+          :stats="[
+            { label: t('deck.statsPlayers'), value: pair.playerCount },
+            { label: t('deck.statsMatches'), value: pair.matchCount },
+            { label: t('deck.statsWins'), value: pair.winCount },
+            { label: t('deck.statsKills'), value: pair.totalKills }
+          ]"
         />
+
+        <StatisticsDecksFeaturingList
+          :entries="decksWithPlayers"
+          :link-to="entry => entry.playerSlug
+            ? `/players/${entry.playerSlug}/deck/${deckSlug}`
+            : undefined"
+        />
+
+        <ScryfallSearchButton :name="commander1Name" />
       </div>
 
       <EmptyState v-else :message="t('deck.notFound')" />
