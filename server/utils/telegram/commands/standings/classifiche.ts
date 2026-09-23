@@ -74,8 +74,7 @@ async function fetchFormatRows(format: StandingsFormat): Promise<StandingsRow[]>
   )
 
   const rows = groups.map((group) => {
-    // fallow-ignore-next-line code-duplication -- same totals logic in useFormatStandingsQuery.ts
-    // see this file's own top comment for why it's duplicated instead of shared
+    // fallow-ignore-next-line code-duplication -- mirrors useFormatStandingsQuery.ts's totals
     const counted = group.sortedByPoints.slice(0, payload.countedResults)
     const placementTotal = counted.reduce((sum, result) => sum + result.points, 0)
     const participationTotal = group.results.reduce(
@@ -91,8 +90,7 @@ async function fetchFormatRows(format: StandingsFormat): Promise<StandingsRow[]>
   return rows
 }
 
-// fallow-ignore-next-line code-duplication -- rows.map/sort block below mirrors fetchFormatRows's
-// but the tie-break chain (bestSingle, eventsPlayed) is genuinely different math, not the same logic reshaped
+// fallow-ignore-next-line code-duplication -- shape mirrors fetchFormatRows, tie-break math differs
 async function fetchCittadinoRows(): Promise<StandingsRow[]> {
   const payload = await $fetch<CittadinoPayload>('/api/cittadino')
 
