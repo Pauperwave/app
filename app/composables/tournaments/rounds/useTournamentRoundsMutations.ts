@@ -5,8 +5,6 @@
 // server/api endpoint" convention as useTournamentRegistrationsMutations.ts.
 export function useTournamentRoundsMutations(tournamentUuid: MaybeRefOrGetter<string>) {
   const queryCache = useQueryCache()
-  const toast = useToast()
-  const { t } = useI18n()
 
   // Every round-lifecycle write touches rounds/pairings/results/standings —
   // invalidate all of it rather than tracking exactly which query each
@@ -18,51 +16,27 @@ export function useTournamentRoundsMutations(tournamentUuid: MaybeRefOrGetter<st
     queryCache.invalidateQueries({ key: TOURNAMENT_STANDINGS_KEY(toValue(tournamentUuid)) })
   }
 
-  const startRoundOne = useMutation({
-    mutation: (associateOrder: string[]) =>
-      $fetch('/api/tournament-rounds/start-round-one', {
-        method: 'POST',
-        body: { tournamentUuid: toValue(tournamentUuid), associateOrder }
-      }),
-    onError: (error) => {
-      toast.add({
-        title: t('tournament.single.podsManager.startRoundOneErrorTitle'),
-        description: toErrorMessage(error),
-        color: 'error'
-      })
-    },
+  const startRoundOne = useRoundLifecycleMutation<string[]>({
+    endpoint: '/api/tournament-rounds/start-round-one',
+    errorTitleKey: 'tournament.single.podsManager.startRoundOneErrorTitle',
+    body: associateOrder => ({ tournamentUuid: toValue(tournamentUuid), associateOrder }),
     onSettled: invalidateRoundData
   })
 
-  const advanceRound = useMutation({
-    mutation: (payload: { currentRoundNumber: number, associateOrder?: string[] }) =>
-      $fetch('/api/tournament-rounds/advance-round', {
-        method: 'POST',
-        body: { tournamentUuid: toValue(tournamentUuid), ...payload }
-      }),
-    onError: (error) => {
-      toast.add({
-        title: t('tournament.single.roundManager.advanceRoundErrorTitle'),
-        description: toErrorMessage(error),
-        color: 'error'
-      })
-    },
+  const advanceRound = useRoundLifecycleMutation<{
+    currentRoundNumber: number
+    associateOrder?: string[]
+  }>({
+    endpoint: '/api/tournament-rounds/advance-round',
+    errorTitleKey: 'tournament.single.roundManager.advanceRoundErrorTitle',
+    body: payload => ({ tournamentUuid: toValue(tournamentUuid), ...payload }),
     onSettled: invalidateRoundData
   })
 
-  const turnBackRound = useMutation({
-    mutation: (currentRoundNumber: number) =>
-      $fetch('/api/tournament-rounds/turn-back-round', {
-        method: 'POST',
-        body: { tournamentUuid: toValue(tournamentUuid), currentRoundNumber }
-      }),
-    onError: (error) => {
-      toast.add({
-        title: t('tournament.single.roundManager.turnBackRoundErrorTitle'),
-        description: toErrorMessage(error),
-        color: 'error'
-      })
-    },
+  const turnBackRound = useRoundLifecycleMutation<number>({
+    endpoint: '/api/tournament-rounds/turn-back-round',
+    errorTitleKey: 'tournament.single.roundManager.turnBackRoundErrorTitle',
+    body: currentRoundNumber => ({ tournamentUuid: toValue(tournamentUuid), currentRoundNumber }),
     onSettled: invalidateRoundData
   })
 

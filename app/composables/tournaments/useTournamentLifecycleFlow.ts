@@ -76,7 +76,7 @@ export function useTournamentLifecycleFlow(options: {
 
   async function confirmResetTournament() {
     try {
-      await resetTournament.mutateAsync()
+      await resetTournament.mutateAsync(undefined)
       isResetConfirmOpen.value = false
     } catch {
       // Toasted by useTournamentResetMutation's own onError — nothing left to do here.
