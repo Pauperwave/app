@@ -1799,6 +1799,7 @@ export type Database = {
           player1_uuid: string
           player2_games_won: number
           player2_uuid: string
+          reported_by_player_uuid: string | null
           tournament_uuid: string
           updated_at: string
           uuid: string
@@ -1811,6 +1812,7 @@ export type Database = {
           player1_uuid: string
           player2_games_won: number
           player2_uuid: string
+          reported_by_player_uuid?: string | null
           tournament_uuid: string
           updated_at?: string
           uuid?: string
@@ -1823,6 +1825,7 @@ export type Database = {
           player1_uuid?: string
           player2_games_won?: number
           player2_uuid?: string
+          reported_by_player_uuid?: string | null
           tournament_uuid?: string
           updated_at?: string
           uuid?: string
@@ -1868,6 +1871,20 @@ export type Database = {
             columns: ["tournament_uuid"]
             isOneToOne: false
             referencedRelation: "tournaments"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "tournament_match_results_reported_by_player_uuid_fkey"
+            columns: ["reported_by_player_uuid"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "tournament_match_results_reported_by_player_uuid_fkey"
+            columns: ["reported_by_player_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_full"
             referencedColumns: ["uuid"]
           },
         ]

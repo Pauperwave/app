@@ -12,6 +12,10 @@ export interface MatchResultInput {
   player2Uuid: string
   player1GamesWon: number
   player2GamesWon: number
+  // Set only when this result came from a player's Telegram report the
+  // opponent confirmed — null/omitted for one an organizer entered directly,
+  // so the UI can tell the two apart (user request, 2026-09-23).
+  reportedByPlayerUuid?: string | null
 }
 
 // Invalid best-of-3 scores are rejected by ck_tournament_match_results_score.
@@ -24,7 +28,8 @@ export async function saveMatchResult(supabase: SupabaseClient<Database>, input:
       player1_uuid: input.player1Uuid,
       player2_uuid: input.player2Uuid,
       player1_games_won: input.player1GamesWon,
-      player2_games_won: input.player2GamesWon
+      player2_games_won: input.player2GamesWon,
+      reported_by_player_uuid: input.reportedByPlayerUuid ?? null
     }, { onConflict: 'pairing_uuid' })
 
   if (resultError) {

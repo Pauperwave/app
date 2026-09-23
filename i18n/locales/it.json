@@ -1817,6 +1817,7 @@
         "matchResultPending": "Da inserire",
         "matchResultReported": "Suggerito da {name}",
         "matchResultDisputed": "Contestato da {name}",
+        "matchResultConfirmed": "Suggerito da {reporter} e confermato da {confirmer}",
         "matchResultReportedScore": "Risultato suggerito: {score}, in attesa di conferma dell'avversario",
         "matchResultDeleteLabel": "Annulla inserimento",
         "dropBadge": "Drop R{round}",
