@@ -54,15 +54,12 @@ function rowActionItems(row: SwissMatchRow): DropdownMenuItem[] {
   return items
 }
 
-// Rows still waiting for a result are tinted — a reported-but-unconfirmed
-// row gets the "info" tint (2026-09-23 user request), plain "warning" while
-// nothing's been submitted at all.
+// Rows still waiting for a result are tinted warning.
 const tableMeta = {
   class: {
     tr: (row: { original: SwissMatchRow }) => {
       if (row.original.isBye) return ''
-      if (row.original.current) return 'opacity-75 transition-opacity hover:opacity-100'
-      return row.original.report ? 'bg-info/10' : 'bg-warning/10'
+      return row.original.current ? 'opacity-75 transition-opacity hover:opacity-100' : 'bg-warning/10'
     }
   }
 }
@@ -123,7 +120,7 @@ const columns = computed<TableColumn<SwissMatchRow>[]>(() => [
           v-if="row.original.player.dropped"
           :text="t('tournament.single.roundManager.dropBadgeTooltip', {
             round: row.original.player.dropped.roundNumber,
-            time: formatDropTime(row.original.player.dropped.droppedAt)
+            time: formatTimeOfDay(row.original.player.dropped.droppedAt)
           })"
         >
           <UBadge
@@ -161,8 +158,7 @@ const columns = computed<TableColumn<SwissMatchRow>[]>(() => [
       <div v-else class="flex items-center gap-1.5">
         <TournamentsSinglePairingSwissMatchResultBadge
           :current="row.original.current"
-          :report="row.original.report"
-          :confirmed-info="row.original.confirmedInfo"
+          :telegram-info="row.original.telegramInfo"
           size="sm"
           :show-pending-badge="false"
           :show-delete-button="false"
@@ -170,7 +166,6 @@ const columns = computed<TableColumn<SwissMatchRow>[]>(() => [
         <TournamentsSinglePairingSwissScoreButtons
           :seat="row.original.player.seat"
           :current="row.original.current"
-          :reported="row.original.report?.status === 'pending' ? row.original.report.score : null"
           @select="score => emit('select', row.original.pairingUuid, score)"
         />
       </div>

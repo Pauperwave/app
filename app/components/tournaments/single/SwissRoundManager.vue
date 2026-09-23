@@ -61,7 +61,7 @@ const lifecycle = useSwissRoundLifecycle({
 
 const {
   isLastRoundOfTournament, tournamentIsEnded, pairingsForRound,
-  matchResultByPairingUuid, reportByPairingUuid, confirmedInfoFor,
+  matchResultByPairingUuid, telegramInfoFor,
   matchPlayersFor, pendingPlayerUuids, liveStandings
 } = roundData
 
@@ -99,23 +99,21 @@ const matchTables = computed(() => pairingsForRound.value.flatMap((pairing) => {
       pairing,
       players,
       isBye: pairing.playerUuids.length === 1,
-      report: reportByPairingUuid.value.get(pairing.uuid) ?? null,
-      confirmedInfo: confirmedInfoFor(pairing, matchResultByPairingUuid.value.get(pairing.uuid))
+      telegramInfo: telegramInfoFor(matchResultByPairingUuid.value.get(pairing.uuid))
     }]
     : []
 }))
 
 const matchRows = computed<SwissMatchRow[]>(() =>
   matchTables.value.flatMap(({
-    pairing, players, isBye, report, confirmedInfo
+    pairing, players, isBye, telegramInfo
   }) =>
     players.map(player => ({
       pairingUuid: pairing.uuid,
       tableNumber: pairing.tableNumber ?? 0,
       player,
       current: matchResultByPairingUuid.value.get(pairing.uuid) ?? null,
-      report,
-      confirmedInfo,
+      telegramInfo,
       isBye
     }))))
 </script>
@@ -159,14 +157,13 @@ const matchRows = computed<SwissMatchRow[]>(() =>
           class="grid grid-cols-[repeat(auto-fill,minmax(26rem,1fr))] gap-3"
         >
           <TournamentsSinglePairingSwissMatchCard
-            v-for="{ pairing, players, isBye, report, confirmedInfo } in matchTables"
+            v-for="{ pairing, players, isBye, telegramInfo } in matchTables"
             :key="pairing.uuid"
             :table-number="pairing.tableNumber ?? 0"
             :players="players"
             :is-bye="isBye"
             :current="matchResultByPairingUuid.get(pairing.uuid)"
-            :report="report"
-            :confirmed-info="confirmedInfo"
+            :telegram-info="telegramInfo"
             :search="search"
             @select="score => onScoreSelect(pairing.uuid, score)"
             @clear="onScoreClear(pairing.uuid)"

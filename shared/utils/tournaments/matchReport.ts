@@ -1,16 +1,17 @@
 // shared\utils\tournaments\matchReport.ts
-// A 1v1 result reported by one player and confirmed by the other (Telegram bot):
-// which outcomes exist, how one becomes the pairing's two scores, and who may
-// report or answer a pending report.
-export type ReportStatus = 'pending' | 'disputed'
-
-export interface PendingReport {
+// A 1v1 result reported by one player via the Telegram bot: written straight
+// to tournament_match_results (same as an organizer's own entry), with the
+// opponent then asked to confirm or dispute it — a dispute flags an
+// already-saved result for organizer review, it doesn't revert it (user
+// request, 2026-09-24).
+export interface ReportedResult {
   reporterUuid: string
-  status: ReportStatus
+  confirmedAt: string | null
+  disputedAt: string | null
 }
 
-export type ReportBlock = 'not-a-player' | 'match-completed' | 'already-reported'
-export type RespondBlock = 'not-a-player' | 'match-completed' | 'no-report' | 'own-report' | 'already-disputed'
+export type ReportBlock = 'not-a-player' | 'match-completed'
+export type RespondBlock = 'not-a-player' | 'no-report' | 'own-report' | 'already-confirmed' | 'already-disputed'
 
 export interface MatchOutcome {
   label: string
@@ -18,32 +19,29 @@ export interface MatchOutcome {
   gamesLost: number
 }
 
-// Why a player can't report this match, or null if they can. One report per
+// Why a player can't report this match, or null if they can. One result per
 // pairing: a wrong one is disputed by the opponent and the organizer decides.
 export function reportBlockReason(input: {
   pairingStatus: string
   isParticipant: boolean
-  report: PendingReport | null
 }): ReportBlock | null {
   if (!input.isParticipant) return 'not-a-player'
   if (input.pairingStatus === 'completed') return 'match-completed'
-  if (input.report) return 'already-reported'
   return null
 }
 
-// Why a player can't confirm/dispute the report, or null if they can. Only the
+// Why a player can't confirm/dispute the result, or null if they can. Only the
 // opponent answers: the reporter confirming their own report would defeat it.
 export function respondBlockReason(input: {
-  pairingStatus: string
   isParticipant: boolean
   responderUuid: string
-  report: PendingReport | null
+  result: ReportedResult | null
 }): RespondBlock | null {
   if (!input.isParticipant) return 'not-a-player'
-  if (input.pairingStatus === 'completed') return 'match-completed'
-  if (!input.report) return 'no-report'
-  if (input.report.reporterUuid === input.responderUuid) return 'own-report'
-  if (input.report.status === 'disputed') return 'already-disputed'
+  if (!input.result) return 'no-report'
+  if (input.result.reporterUuid === input.responderUuid) return 'own-report'
+  if (input.result.confirmedAt) return 'already-confirmed'
+  if (input.result.disputedAt) return 'already-disputed'
   return null
 }
 
