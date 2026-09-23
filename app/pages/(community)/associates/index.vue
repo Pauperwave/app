@@ -111,6 +111,16 @@ const {
 // isn't destructive.
 const { approveRenewals } = useAssociatesMutations()
 const toast = useToast()
+
+// "Seleziona tutti" (2026-09-23 user request, replacing the standalone
+// TableSelectionFooter.vue row) — selects every currently filtered/visible
+// row, same row model selectedRosterAssociates itself resolves against.
+function selectAllRosterAssociates() {
+  selection.setAll(
+    (table.value?.tableApi?.getFilteredRowModel().rows ?? []).map(row => row.original.id),
+    true
+  )
+}
 async function confirmApproveRenewals() {
   const ids = selectedRosterAssociates.value.map(associate => associate.id)
   if (!ids.length) return
@@ -421,7 +431,9 @@ function renderNeutralBadge(value: string) {
             v-if="selectedRosterAssociates.length"
             side="left"
             :count="selectedRosterAssociates.length"
+            :total="table?.tableApi?.getFilteredRowModel().rows.length || 0"
             @clear="selection.clear()"
+            @select-all="selectAllRosterAssociates"
           />
           <div
             v-else
@@ -441,6 +453,7 @@ function renderNeutralBadge(value: string) {
             v-if="selectedRosterAssociates.length"
             side="right"
             :count="selectedRosterAssociates.length"
+            :total="table?.tableApi?.getFilteredRowModel().rows.length || 0"
             show-renew
             :show-approve-renewal="activeStatusTab === 'pending_renewal'"
             @renew="requestBulkRenew(selectedRosterAssociates)"
@@ -494,11 +507,6 @@ function renderNeutralBadge(value: string) {
             )"
           />
         </UContextMenu>
-
-        <TableSelectionFooter
-          :selected="selectedRosterAssociates.length"
-          :total="table?.tableApi?.getFilteredRowModel().rows.length || 0"
-        />
       </template>
 
       <AssociatesListMapView

@@ -71,6 +71,15 @@ const selectedRejectedIds = computed(() => selectedRequestAssociates.value
   .filter(associate => associate.membership_request_status === 'rejected')
   .map(associate => associate.id))
 
+// "Seleziona tutti" (2026-09-23 user request, replacing the standalone
+// TableSelectionFooter.vue row) — same as associates/index.vue's own.
+function selectAllRequestAssociates() {
+  selection.setAll(
+    (table.value?.tableApi?.getFilteredRowModel().rows ?? []).map(row => row.original.id),
+    true
+  )
+}
+
 // Closes the modal immediately and defers the actual reject behind a
 // 10-second undo window (useUndoableAction.ts) instead of awaiting the
 // mutation on confirm.
@@ -300,7 +309,9 @@ const tour = useAssociatesRequestsTour()
             v-if="selectedRequestAssociates.length"
             side="left"
             :count="selectedRequestAssociates.length"
+            :total="table?.tableApi?.getFilteredRowModel().rows.length || 0"
             @clear="selection.clear()"
+            @select-all="selectAllRequestAssociates"
           />
           <div
             v-else
@@ -320,6 +331,7 @@ const tour = useAssociatesRequestsTour()
             v-if="selectedRequestAssociates.length"
             side="right"
             :count="selectedRequestAssociates.length"
+            :total="table?.tableApi?.getFilteredRowModel().rows.length || 0"
             show-approve
             show-reject
             :show-restore="!!selectedRejectedIds.length"
@@ -371,11 +383,6 @@ const tour = useAssociatesRequestsTour()
           )"
         />
       </UContextMenu>
-
-      <TableSelectionFooter
-        :selected="selectedRequestAssociates.length"
-        :total="table?.tableApi?.getFilteredRowModel().rows.length || 0"
-      />
     </template>
   </UDashboardPanel>
 

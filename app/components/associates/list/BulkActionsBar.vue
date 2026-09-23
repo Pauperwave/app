@@ -13,11 +13,17 @@
 -->
 <script setup lang="ts">
 const {
-  count, side,
+  count, total, side,
   showApprove = false, showReject = false, showRestore = false, showRenew = false,
   showApproveRenewal = false
 } = defineProps<{
   count: number
+  // "N di M associati selezionati" — replaces the standalone
+  // TableSelectionFooter.vue row under the table (2026-09-23 user request:
+  // fold that info into this bar instead of a separate row, to save
+  // vertical space) — only associates/index.vue and requests.vue, the two
+  // pages this bar already covers.
+  total: number
   side: 'left' | 'right'
   showApprove?: boolean
   showReject?: boolean
@@ -28,6 +34,7 @@ const {
 
 defineEmits<{
   clear: []
+  selectAll: []
   approve: []
   reject: []
   restore: []
@@ -41,8 +48,16 @@ const { t } = useI18n()
 <template>
   <div v-if="side === 'left'" class="flex items-center gap-3 flex-wrap">
     <span class="text-sm text-muted">
-      {{ t('associate.bulkActions.selectedCount', count) }}
+      {{ t('associate.selectedRows', { selected: count, total }) }}
     </span>
+
+    <UButton
+      :label="t('associate.bulkActions.selectAll')"
+      color="neutral"
+      variant="ghost"
+      :disabled="count >= total"
+      @click="$emit('selectAll')"
+    />
 
     <UButton
       :label="t('associate.bulkActions.clearSelection')"
