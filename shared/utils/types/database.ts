@@ -1118,6 +1118,7 @@ export type Database = {
           membership_fee_payment_method: string
           one_vs_one_round_count: number
           one_vs_one_round_minutes: number
+          pre_round_wait_minutes: number
           swiss_round_count_beyond: number
           swiss_round_count_tiers: Json
           trash_retention_days: number
@@ -1133,6 +1134,7 @@ export type Database = {
           membership_fee_payment_method?: string
           one_vs_one_round_count?: number
           one_vs_one_round_minutes?: number
+          pre_round_wait_minutes?: number
           swiss_round_count_beyond?: number
           swiss_round_count_tiers?: Json
           trash_retention_days?: number
@@ -1148,6 +1150,7 @@ export type Database = {
           membership_fee_payment_method?: string
           one_vs_one_round_count?: number
           one_vs_one_round_minutes?: number
+          pre_round_wait_minutes?: number
           swiss_round_count_beyond?: number
           swiss_round_count_tiers?: Json
           trash_retention_days?: number

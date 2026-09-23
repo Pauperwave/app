@@ -9,8 +9,11 @@
 // phase sequence, same localStorage keys, same sound cues.
 export type RoundTimerPhase = 'pre' | 'round' | 'turns' | 'ended'
 
-const PRE_TIMER_MINUTES = 3
 const TURNS_TIMER_MINUTES = 15
+// Fallback only for the brief window before useSettingsQuery.ts resolves —
+// same value as the old hardcoded constant this replaced (2026-09-23 user
+// request: parametrize the "pre" phase length via /settings' Timer section).
+const DEFAULT_PRE_TIMER_MINUTES = 3
 
 export function useRoundTimerEngine(options: {
   round: number
@@ -20,6 +23,11 @@ export function useRoundTimerEngine(options: {
 }) {
   const { t } = useI18n()
   const { play, playLoop, stopLoop } = useSoundEffects()
+
+  const settings = useSettingsQuery()
+  const preTimerMinutes = computed(
+    () => settings.data.value?.preRoundWaitMinutes ?? DEFAULT_PRE_TIMER_MINUTES
+  )
 
   // Once the final phase expires, keep the alarm repeating until any key is
   // pressed — a single "complete" chime is easy to miss when nobody's
@@ -52,7 +60,7 @@ export function useRoundTimerEngine(options: {
 
   /** This phase's total duration in minutes (fixed for pre/turns, configurable + bonus for round). */
   const phaseDurationMinutes = computed(() => {
-    if (phase.value === 'pre') return PRE_TIMER_MINUTES
+    if (phase.value === 'pre') return preTimerMinutes.value
     if (phase.value === 'turns') return TURNS_TIMER_MINUTES
     if (phase.value === 'round') return toValue(options.durationMinutes)
     return 0
@@ -130,7 +138,8 @@ export function useRoundTimerEngine(options: {
   /**
    * Lets the organizer skip straight from "pre" (SISTEMATEVI) to "round"
    * (GIOCO) once everyone's already seated, instead of waiting out the full
-   * 3 minutes. Unlike advancePastExpiry's natural-expiry cascade, there's no
+   * pre-round wait (settings.timer.fields.preRoundWaitMinutes). Unlike
+   * advancePastExpiry's natural-expiry cascade, there's no
    * overflow to carry over — the phase just ends early, elapsed resets to 0.
    * Preserves whatever running/paused state "pre" was already in, rather
    * than forcing the round to auto-start.

@@ -18,12 +18,6 @@ const toast = useToast()
 const settings = useSettingsQuery()
 const { updateTournamentSettings } = useSettingsMutations()
 
-const minutesSchema = v.pipe(
-  v.number(t('settings.tournament.validation.minutes')),
-  v.integer(t('settings.tournament.validation.minutes')),
-  v.minValue(10, t('settings.tournament.validation.minutes')),
-  v.maxValue(120, t('settings.tournament.validation.minutes'))
-)
 const roundsSchema = v.pipe(
   v.number(t('settings.tournament.validation.rounds')),
   v.integer(t('settings.tournament.validation.rounds')),
@@ -31,8 +25,6 @@ const roundsSchema = v.pipe(
 )
 
 const schema = v.object({
-  commanderRoundMinutes: minutesSchema,
-  oneVsOneRoundMinutes: minutesSchema,
   commanderRoundCount: roundsSchema,
   oneVsOneRoundCount: roundsSchema,
   swissRoundCountBeyond: roundsSchema,
@@ -42,8 +34,6 @@ const schema = v.object({
 type Schema = v.InferOutput<typeof schema>
 
 const state = reactive<Partial<Schema>>({
-  commanderRoundMinutes: undefined,
-  oneVsOneRoundMinutes: undefined,
   commanderRoundCount: undefined,
   oneVsOneRoundCount: undefined,
   swissRoundCountBeyond: undefined,
@@ -57,9 +47,7 @@ const isDirty = computed(() => JSON.stringify(state) !== savedSnapshot.value)
 // Fills the form once, the first time the query resolves — not a continuous
 // sync, which would clobber an in-progress edit on a window-refocus refetch.
 watch(settings.data, (data) => {
-  if (!data || state.commanderRoundMinutes !== undefined) return
-  state.commanderRoundMinutes = data.commanderRoundMinutes
-  state.oneVsOneRoundMinutes = data.oneVsOneRoundMinutes
+  if (!data || state.commanderRoundCount !== undefined) return
   state.commanderRoundCount = data.commanderRoundCount
   state.oneVsOneRoundCount = data.oneVsOneRoundCount
   state.swissRoundCountBeyond = data.swissRoundCountBeyond
@@ -143,36 +131,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     </UPageCard>
 
     <UPageCard variant="subtle">
-      <UFormField
-        name="commanderRoundMinutes"
-        :label="$t('settings.tournament.fields.commanderRoundMinutes')"
-        :description="$t('settings.tournament.fields.commanderRoundMinutesDescription')"
-        class="flex max-sm:flex-col justify-between items-start gap-4"
-      >
-        <UInputNumber
-          v-model="state.commanderRoundMinutes"
-          :min="10"
-          :max="120"
-          :step="5"
-          class="w-48"
-        />
-      </UFormField>
-      <USeparator />
-      <UFormField
-        name="oneVsOneRoundMinutes"
-        :label="$t('settings.tournament.fields.oneVsOneRoundMinutes')"
-        :description="$t('settings.tournament.fields.oneVsOneRoundMinutesDescription')"
-        class="flex max-sm:flex-col justify-between items-start gap-4"
-      >
-        <UInputNumber
-          v-model="state.oneVsOneRoundMinutes"
-          :min="10"
-          :max="120"
-          :step="5"
-          class="w-48"
-        />
-      </UFormField>
-      <USeparator />
       <UFormField
         name="commanderRoundCount"
         :label="$t('settings.tournament.fields.commanderRoundCount')"

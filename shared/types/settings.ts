@@ -25,12 +25,21 @@ export interface SwissRoundCountTier {
 
 // Shared by useSettingsMutations.ts and update-tournament-settings.post.ts.
 export interface UpdateTournamentSettingsPayload {
-  commanderRoundMinutes: number
-  oneVsOneRoundMinutes: number
   commanderRoundCount: number
   oneVsOneRoundCount: number
   swissRoundCountTiers: SwissRoundCountTier[]
   swissRoundCountBeyond: number
+}
+
+// Shared by useSettingsMutations.ts and update-timer-settings.post.ts — split
+// out of UpdateTournamentSettingsPayload (2026-09-23 user request) into its
+// own "Timer" settings section: round durations plus the "pre" phase's
+// setup-countdown length (useRoundTimerEngine.ts's own PRE_TIMER_MINUTES,
+// previously hardcoded at 3).
+export interface UpdateTimerSettingsPayload {
+  commanderRoundMinutes: number
+  oneVsOneRoundMinutes: number
+  preRoundWaitMinutes: number
 }
 
 // /settings/members (2026-08-25 user request: wire the template's mock

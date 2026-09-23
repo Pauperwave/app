@@ -1,6 +1,7 @@
 // app\composables\settings\useSettingsMutations.ts
 import type {
-  UpdateMembershipFeePayload, UpdateTournamentSettingsPayload, UpdateTrashRetentionPayload
+  UpdateMembershipFeePayload, UpdateTimerSettingsPayload, UpdateTournamentSettingsPayload,
+  UpdateTrashRetentionPayload
 } from '#shared/types/settings'
 
 export function useSettingsMutations() {
@@ -28,5 +29,13 @@ export function useSettingsMutations() {
     onSettled: () => queryCache.invalidateQueries({ key: SETTINGS_KEY })
   })
 
-  return { updateMembershipFee, updateTrashRetention, updateTournamentSettings }
+  const updateTimerSettings = useMutation({
+    mutation: (payload: UpdateTimerSettingsPayload) =>
+      $fetch('/api/settings/update-timer-settings', { method: 'POST', body: payload }),
+    onSettled: () => queryCache.invalidateQueries({ key: SETTINGS_KEY })
+  })
+
+  return {
+    updateMembershipFee, updateTrashRetention, updateTournamentSettings, updateTimerSettings
+  }
 }

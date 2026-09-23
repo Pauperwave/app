@@ -17,7 +17,8 @@
   behavior change from the original.
 
   A 3-phase countdown sequence for a single tournament round:
-  1. "pre" — fixed 3-minute setup countdown.
+  1. "pre" — setup countdown, length set in /settings' Timer section
+     (defaults to 3 minutes, useRoundTimerEngine.ts).
   2. "round" — the configured round duration (+ any added/removed bonus minutes).
   3. "turns" — a fixed 15-minute "TURNI" (extra turns) countdown.
   Once "turns" expires, the display switches to a terminal "FINE PARTITA" state.

@@ -2936,13 +2936,9 @@
     },
     "tournament": {
       "title": "Tornei",
-      "description": "Valori usati dalla logica dei tornei: durata dei round e numero di round. Il punteggio Swiss (3/1/0 punti, minimo 0,33 negli spareggi) segue il regolamento ufficiale e non è modificabile.",
+      "description": "Valori usati dalla logica dei tornei: numero di round. Il punteggio Swiss (3/1/0 punti, minimo 0,33 negli spareggi) segue il regolamento ufficiale e non è modificabile.",
       "saveChanges": "Salva modifiche",
       "fields": {
-        "commanderRoundMinutes": "Durata round Commander (minuti)",
-        "commanderRoundMinutesDescription": "Applicata ai tornei Commander e Cubo Commander alla creazione.",
-        "oneVsOneRoundMinutes": "Durata round 1vs1 (minuti)",
-        "oneVsOneRoundMinutesDescription": "Applicata a tutti gli altri formati alla creazione. Il regolamento ufficiale consiglia 50 minuti.",
         "commanderRoundCount": "Numero di round Commander",
         "commanderRoundCountDescription": "Proposto ai tornei Commander e Cubo Commander alla creazione.",
         "oneVsOneRoundCount": "Numero di round 1vs1",
@@ -2957,13 +2953,33 @@
         "remove": "Rimuovi"
       },
       "validation": {
-        "minutes": "Inserisci una durata tra 10 e 120 minuti",
         "rounds": "Inserisci un numero intero di almeno 1"
       },
       "unsavedChanges": "Modifiche non salvate",
       "successToastTitle": "Impostazioni dei tornei aggiornate",
       "successToastDescription": "I nuovi valori verranno usati dai prossimi tornei.",
       "errorToastTitle": "Impossibile aggiornare le impostazioni dei tornei"
+    },
+    "timer": {
+      "title": "Timer",
+      "description": "Valori usati dal timer dei round: durata del round e attesa prima dell'avvio (fase SISTEMATEVI).",
+      "saveChanges": "Salva modifiche",
+      "fields": {
+        "commanderRoundMinutes": "Durata round Commander (minuti)",
+        "commanderRoundMinutesDescription": "Applicata ai tornei Commander e Cubo Commander alla creazione.",
+        "oneVsOneRoundMinutes": "Durata round 1vs1 (minuti)",
+        "oneVsOneRoundMinutesDescription": "Applicata a tutti gli altri formati alla creazione. Il regolamento ufficiale consiglia 50 minuti.",
+        "preRoundWaitMinutes": "Attesa prima dell'avvio (minuti)",
+        "preRoundWaitMinutesDescription": "Durata della fase SISTEMATEVI, prima che il round inizi davvero."
+      },
+      "validation": {
+        "minutes": "Inserisci una durata tra 10 e 120 minuti",
+        "preRoundWaitMinutes": "Inserisci un'attesa tra 0 e 30 minuti"
+      },
+      "unsavedChanges": "Modifiche non salvate",
+      "successToastTitle": "Impostazioni del timer aggiornate",
+      "successToastDescription": "I nuovi valori verranno usati dai prossimi round.",
+      "errorToastTitle": "Impossibile aggiornare le impostazioni del timer"
     },
     "membershipFee": {
       "title": "Quota associativa",
