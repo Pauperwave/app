@@ -4,17 +4,12 @@ import type { Database, Json } from '#shared/utils/types/database'
 import type { UpdateTournamentSettingsPayload } from '#shared/types/settings'
 
 const isPositiveInteger = (value: unknown) => Number.isInteger(value) && Number(value) >= 1
-const isValidMinutes = (value: unknown) =>
-  Number.isInteger(value) && Number(value) >= 10 && Number(value) <= 120
 
 export default defineEventHandler(async (event) => {
   const user = await requireAdminPermission(event)
 
   const body = await readBody<UpdateTournamentSettingsPayload>(event)
 
-  if (!isValidMinutes(body.commanderRoundMinutes) || !isValidMinutes(body.oneVsOneRoundMinutes)) {
-    throw createError({ statusCode: 400, statusMessage: 'Durata round non valida (10-120 minuti)' })
-  }
   const roundCounts = [
     body.commanderRoundCount, body.oneVsOneRoundCount, body.swissRoundCountBeyond
   ]
@@ -37,8 +32,6 @@ export default defineEventHandler(async (event) => {
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   const settings = await updatePauperwaveSettings(supabase, event, user, {
-    commander_round_minutes: body.commanderRoundMinutes,
-    one_vs_one_round_minutes: body.oneVsOneRoundMinutes,
     commander_round_count: body.commanderRoundCount,
     one_vs_one_round_count: body.oneVsOneRoundCount,
     swiss_round_count_tiers: tiers as unknown as Json,

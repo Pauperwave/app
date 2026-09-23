@@ -24,6 +24,11 @@ export interface AppSettings {
   oneVsOneRoundCount: number
   swissRoundCountTiers: SwissRoundCountTier[]
   swissRoundCountBeyond: number
+  // "Pre" phase length (useRoundTimerEngine.ts's SISTEMATEVI countdown before
+  // GIOCO starts) — was hardcoded PRE_TIMER_MINUTES = 3, parametrized
+  // 2026-09-23 (migration 20260923120000) into its own "Timer" settings
+  // section alongside the two round-duration fields above.
+  preRoundWaitMinutes: number
 }
 
 export function useSettingsQuery() {
@@ -37,7 +42,8 @@ export function useSettingsQuery() {
         .select(`
           membership_fee_amount, membership_fee_payment_method, trash_retention_days,
           commander_round_minutes, one_vs_one_round_minutes, commander_round_count,
-          one_vs_one_round_count, swiss_round_count_tiers, swiss_round_count_beyond
+          one_vs_one_round_count, swiss_round_count_tiers, swiss_round_count_beyond,
+          pre_round_wait_minutes
         `)
         .eq('id', 1)
         .single()
@@ -53,7 +59,8 @@ export function useSettingsQuery() {
         commanderRoundCount: data.commander_round_count,
         oneVsOneRoundCount: data.one_vs_one_round_count,
         swissRoundCountTiers: data.swiss_round_count_tiers as unknown as SwissRoundCountTier[],
-        swissRoundCountBeyond: data.swiss_round_count_beyond
+        swissRoundCountBeyond: data.swiss_round_count_beyond,
+        preRoundWaitMinutes: data.pre_round_wait_minutes
       }
     }
   })

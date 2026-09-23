@@ -106,6 +106,7 @@ async function onTrashRetentionSubmit(event: FormSubmitEvent<TrashRetentionSchem
 </script>
 
 <template>
+  <SettingsTimerSettingsForm v-if="can('manage-tournament-settings')" />
   <SettingsTournamentSettingsForm v-if="can('manage-tournament-settings')" />
 
   <UForm
