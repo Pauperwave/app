@@ -159,35 +159,13 @@ const columns = computed<TableColumn<SwissMatchRow>[]>(() => [
         size="lg"
       />
       <div v-else class="flex items-center gap-1.5">
-        <UTooltip
-          v-if="!row.original.current && row.original.report"
-          :text="t('tournament.single.roundManager.matchResultReportedScore', {
-            score: `${row.original.report.score.player1GamesWon}`
-              + `-${row.original.report.score.player2GamesWon}`
-          })"
-        >
-          <UBadge
-            :label="row.original.report.status === 'disputed'
-              ? t('tournament.single.roundManager.matchResultDisputed', {
-                name: fullName(row.original.report.reporter)
-              })
-              : t('tournament.single.roundManager.matchResultReported', {
-                name: fullName(row.original.report.reporter)
-              })"
-            :color="row.original.report.status === 'disputed' ? 'error' : 'info'"
-            variant="subtle"
-            size="sm"
-          />
-        </UTooltip>
-        <UBadge
-          v-else-if="row.original.current && row.original.confirmedInfo"
-          :label="t('tournament.single.roundManager.matchResultConfirmed', {
-            reporter: fullName(row.original.confirmedInfo.reporter),
-            confirmer: fullName(row.original.confirmedInfo.confirmer)
-          })"
-          color="success"
-          variant="subtle"
+        <TournamentsSinglePairingSwissMatchResultBadge
+          :current="row.original.current"
+          :report="row.original.report"
+          :confirmed-info="row.original.confirmedInfo"
           size="sm"
+          :show-pending-badge="false"
+          :show-delete-button="false"
         />
         <TournamentsSinglePairingSwissScoreButtons
           :seat="row.original.player.seat"
