@@ -2,9 +2,13 @@
 <script setup lang="ts">
 import type { MatchScore } from '~/types'
 
-const { seat, current = null } = defineProps<{
+const { seat, current = null, reported = null } = defineProps<{
   seat: 0 | 1
   current?: MatchScore | null
+  // A Telegram-submitted score still waiting for the opponent's confirm —
+  // highlighted with a lighter "soft" treatment than `current`'s solid one,
+  // so a pending selection reads as pending, not already official.
+  reported?: MatchScore | null
 }>()
 
 const emit = defineEmits<{
@@ -33,10 +37,21 @@ function selectedColor(outcome: { won: number, lost: number }): 'success' | 'err
   return 'neutral'
 }
 
-function isCurrent(outcome: { won: number, lost: number }): boolean {
-  const score = scoreFor(outcome)
-  return current?.player1GamesWon === score.player1GamesWon
-    && current?.player2GamesWon === score.player2GamesWon
+function matches(score: MatchScore | null, outcome: { won: number, lost: number }): boolean {
+  if (!score) return false
+  const target = scoreFor(outcome)
+  return score.player1GamesWon === target.player1GamesWon
+    && score.player2GamesWon === target.player2GamesWon
+}
+
+function variantFor(outcome: { won: number, lost: number }): 'solid' | 'soft' | 'outline' {
+  if (matches(current, outcome)) return 'solid'
+  if (matches(reported, outcome)) return 'soft'
+  return 'outline'
+}
+
+function colorFor(outcome: { won: number, lost: number }): 'success' | 'error' | 'neutral' {
+  return matches(current, outcome) || matches(reported, outcome) ? selectedColor(outcome) : 'neutral'
 }
 </script>
 
@@ -46,8 +61,8 @@ function isCurrent(outcome: { won: number, lost: number }): boolean {
       v-for="outcome in OUTCOMES"
       :key="`${outcome.won}-${outcome.lost}`"
       :label="`${outcome.won}-${outcome.lost}`"
-      :variant="isCurrent(outcome) ? 'solid' : 'outline'"
-      :color="isCurrent(outcome) ? selectedColor(outcome) : 'neutral'"
+      :variant="variantFor(outcome)"
+      :color="colorFor(outcome)"
       size="md"
       @click="emit('select', scoreFor(outcome))"
     />

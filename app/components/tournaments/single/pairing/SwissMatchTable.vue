@@ -182,6 +182,7 @@ const columns = computed<TableColumn<SwissMatchRow>[]>(() => [
         <TournamentsSinglePairingSwissScoreButtons
           :seat="row.original.player.seat"
           :current="row.original.current"
+          :reported="row.original.report?.status === 'pending' ? row.original.report.score : null"
           @select="score => emit('select', row.original.pairingUuid, score)"
         />
       </div>
