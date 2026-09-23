@@ -17,10 +17,7 @@ export default defineEventHandler(async (event) => {
   const { error } = await supabase.rpc('reset_commander_pairing', {
     p_pairing_uuid: pairingUuid
   })
-
-  if (error) {
-    throw createError({ statusCode: 500, statusMessage: error.message })
-  }
+  assertRoundRpcOk(error)
 
   return { success: true }
 })
