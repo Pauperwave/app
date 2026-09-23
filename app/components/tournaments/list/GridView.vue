@@ -22,24 +22,9 @@ const {
   loadingCount?: number
 }>()
 
-// One section per status, most actionable first — empty statuses are skipped.
-const STATUS_ORDER: Tournament['status'][] = [
-  'in_progress', 'registration_open', 'draft', 'completed', 'cancelled', 'external'
-]
-const sections = computed(() => STATUS_ORDER
-  .map(status => ({
-    status,
-    tournaments: tournaments.filter(tournament => tournament.status === status)
-  }))
-  .filter(section => section.tournaments.length))
-
-// The ordered list a shift-click range resolves against — the currently
-// rendered (already filtered) cards flattened in drawn order, same reasoning
-// as the table's own range (useTournamentsTableColumns.ts). Passed down to
-// each Card.vue rather than recomputed per-card.
-const range = computed(() => sections.value
-  .flatMap(section => section.tournaments)
-  .map(tournament => tournament.id))
+// One section per status, most actionable first — useTournamentStatusSections.ts.
+// Passed down to each Card.vue rather than recomputed per-card.
+const { sections, range } = useTournamentStatusSections(() => tournaments)
 </script>
 
 <template>

@@ -53,27 +53,11 @@ const {
 
 const { t } = useI18n()
 
-const isMuted = computed(() => !!tournament && (tournament.status === 'completed' || tournament.status === 'cancelled'))
-const isCancelled = computed(() => tournament?.status === 'cancelled')
-// External (shop-organized) tournaments have no acceptance/rounds/awards
-// flow — the detail page has nothing meaningful to show for them, so the
-// card isn't a link (user request, 2026-09-07).
-const isExternal = computed(() => tournament?.status === 'external')
-
-// Ctrl/Cmd+click or shift+click anywhere on the card toggles/range-selects
-// instead of navigating — same modifier convention as a file manager, lets a
-// visitor select without having to land precisely on the (small,
-// hover-revealed) checkbox in Cover.vue. No-ops while loading/without a real
-// tournament — nothing to click through to yet.
-function onCardClick(event: MouseEvent) {
-  if (!tournament) return
-  if (event.ctrlKey || event.metaKey || event.shiftKey) {
-    selection?.toggle(tournament.id, { shiftKey: event.shiftKey, range })
-    return
-  }
-  if (isExternal.value) return
-  navigateTo(tournamentDetailUrl(tournament))
-}
+const {
+  isMuted, isCancelled, isExternal, onCardClick
+} = useTournamentCardClick({
+  tournament: () => tournament, range: () => range, selection
+})
 
 function timePart(startDate: string) {
   return new Date(startDate).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })

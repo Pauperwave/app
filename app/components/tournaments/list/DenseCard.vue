@@ -29,23 +29,14 @@ const {
 
 const { t } = useI18n()
 
-const isMuted = computed(() =>
-  !!tournament && (tournament.status === 'completed' || tournament.status === 'cancelled'))
-const isCancelled = computed(() => tournament?.status === 'cancelled')
-const isExternal = computed(() => tournament?.status === 'external')
+// Same convention as Card.vue.
+const {
+  isMuted, isCancelled, isExternal, onCardClick
+} = useTournamentCardClick({
+  tournament: () => tournament, range: () => range, selection
+})
 
 const lastClickShiftKey = ref(false)
-
-// Same ctrl/cmd/shift-click-anywhere-navigates-or-selects convention as Card.vue.
-function onCardClick(event: MouseEvent) {
-  if (!tournament) return
-  if (event.ctrlKey || event.metaKey || event.shiftKey) {
-    selection?.toggle(tournament.id, { shiftKey: event.shiftKey, range })
-    return
-  }
-  if (isExternal.value) return
-  navigateTo(tournamentDetailUrl(tournament))
-}
 </script>
 
 <template>
