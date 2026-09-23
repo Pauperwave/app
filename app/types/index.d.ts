@@ -626,11 +626,22 @@ export interface SwissMatchPlayer extends SwissMatchPerson {
   dropped: SwissDropInfo | null
 }
 
+// A Telegram-submitted result still waiting for the opponent to confirm it
+// (or disputed) — tournament_match_result_reports, see
+// useTournamentMatchReportsQuery.ts. `reporter` is resolved for display the
+// same way SwissMatchPerson is (AssociateTag-ready).
+export interface SwissMatchReport {
+  reporter: SwissMatchPerson
+  status: 'pending' | 'disputed'
+  score: MatchScore
+}
+
 export interface SwissMatchRow {
   pairingUuid: string
   tableNumber: number
   player: SwissMatchPlayer
   current: MatchScore | null
+  report: SwissMatchReport | null
   // A single player sitting out: scores as a 2-0 win.
   isBye: boolean
 }

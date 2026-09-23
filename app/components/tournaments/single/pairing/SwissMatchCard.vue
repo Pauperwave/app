@@ -1,14 +1,18 @@
 <!-- app\components\tournaments\single\pairing\SwissMatchCard.vue -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
-import type { MatchScore, SwissMatchPlayer } from '~/types'
+import type { MatchScore, SwissMatchPlayer, SwissMatchReport } from '~/types'
 
 const {
-  tableNumber, players, current = null, isBye = false, search = ''
+  tableNumber, players, current = null, report = null, isBye = false, search = ''
 } = defineProps<{
   tableNumber: number
   players: SwissMatchPlayer[]
   current?: MatchScore | null
+  // A Telegram-submitted result still waiting for the opponent's confirm (or
+  // disputed) — shown instead of the generic "in attesa" badge while there's
+  // no official result yet (2026-09-23 user request).
+  report?: SwissMatchReport | null
   // A single player sitting out: scores as a 2-0 win, nothing to enter.
   isBye?: boolean
   search?: string
@@ -41,7 +45,7 @@ function dropMenuItems(player: SwissMatchPlayer): DropdownMenuItem[] {
   <UCard
     :ui="{ header: 'p-2 sm:px-3', body: 'p-2 sm:p-3 space-y-1.5' }"
     :class="isPending
-      ? 'ring-warning'
+      ? (report ? 'ring-info' : 'ring-warning')
       : current && 'opacity-75 transition-opacity hover:opacity-100'"
   >
     <template #header>
@@ -51,8 +55,27 @@ function dropMenuItems(player: SwissMatchPlayer): DropdownMenuItem[] {
             ? t('tournament.single.roundManager.byeTitle')
             : t('tournament.single.swissTablePreview.tableNumber', { n: tableNumber }) }}
         </span>
+        <UTooltip
+          v-if="isPending && report"
+          :text="t('tournament.single.roundManager.matchResultReportedScore', {
+            score: `${report.score.player1GamesWon}-${report.score.player2GamesWon}`
+          })"
+        >
+          <UBadge
+            :label="report.status === 'disputed'
+              ? t('tournament.single.roundManager.matchResultDisputed', {
+                name: report.reporter.name
+              })
+              : t('tournament.single.roundManager.matchResultReported', {
+                name: report.reporter.name
+              })"
+            :color="report.status === 'disputed' ? 'error' : 'info'"
+            variant="subtle"
+            size="md"
+          />
+        </UTooltip>
         <UBadge
-          v-if="isPending"
+          v-else-if="isPending"
           :label="t('tournament.single.roundManager.matchResultPending')"
           color="warning"
           variant="subtle"
