@@ -1,8 +1,11 @@
 // server\utils\telegram\commands\tournaments\matchReport.ts
-// 1v1 result entry: a player reports the score of their table, the opponent
-// confirms it (or says it's wrong), and only a confirmed report becomes the
-// real result. Unanswered or disputed reports wait for an organizer.
-// Who is who always comes from the chat, never from the button's payload.
+// 1v1 result entry: a player reports the score of their table and it's
+// written immediately, same as an organizer's own entry — no waiting for the
+// opponent. The opponent still gets a confirm/dispute prompt, but it's an
+// informational check, not a gate: confirming just timestamps the result,
+// disputing flags it for the organizer without reverting it (user request,
+// 2026-09-24). Who is who always comes from the chat, never from the
+// button's payload.
 import type { Bot, Context } from 'grammy'
 import type { InputRichMessage } from 'grammy/types'
 
@@ -14,7 +17,7 @@ import {
 import { answerLoadError, requireChatId } from '../callbackErrors'
 import { requireLinkedAssociate, resolveAssociateUuidByChatId, resolveChatIdByAssociateUuid } from '../account/linking'
 import { showRichStep, twoColumnFactsTable } from '../mockups/richStepHelpers'
-import { createMatchReport, disputeMatchReport, fetchLiveTable, type LiveTable } from './matchReportData'
+import { fetchLiveTable, type LiveTable } from './matchReportData'
 
 const OPEN_PREFIX = 'mropen:'
 const SUMMARY_PREFIX = 'mrsum:'
@@ -25,10 +28,10 @@ const DISPUTE_PREFIX = 'mrno:'
 const BLOCK_MESSAGES: Record<ReportBlock | RespondBlock, string> = {
   'not-a-player': 'Questo match non è tuo.',
   'match-completed': 'Il risultato di questo match è già stato registrato.',
-  'already-reported': 'Per questo match è già stato inserito un risultato.',
   'no-report': 'Non c\'è nessun risultato da confermare.',
   'own-report': 'Il risultato lo deve confermare il tuo avversario.',
-  'already-disputed': 'Questo risultato è già stato contestato: decide l\'organizzatore.'
+  'already-confirmed': 'Hai già confermato questo risultato.',
+  'already-disputed': 'Hai già contestato questo risultato: decide l\'organizzatore.'
 }
 
 function outcomeAt(index: number) {
@@ -47,10 +50,10 @@ function answerButtons(pairingUuid: string) {
   }
 }
 
-// The score as the viewer sees it, from the report stored as player1/player2
-function reportScoreLabel(table: LiveTable): string {
-  if (!table.report) return ''
-  return scoreLabelFor(table.report, table.isPlayer1)
+// The score as the viewer sees it, from the result stored as player1/player2
+function resultScoreLabel(table: LiveTable): string {
+  if (!table.result) return ''
+  return scoreLabelFor(table.result, table.isPlayer1)
 }
 
 // What /tavolo and /risultato show: where they sit and what the result says
@@ -61,23 +64,25 @@ function tableRichMessage(table: LiveTable): InputRichMessage {
     { type: 'paragraph', text: `${table.tournamentName} · Round ${table.roundNumber}\n\nGiochi contro: ${table.opponent.name}` }
   ]
 
-  if (table.pairingStatus === 'completed') {
-    blocks.push({ type: 'paragraph', text: '✅ Risultato registrato.' })
-  } else if (!table.report) {
-    blocks.push({
-      type: 'buttons',
-      buttons: [{ text: '✍️ Inserisci risultato', style: 'primary', callback_data: `${OPEN_PREFIX}${table.pairingUuid}` }]
-    })
-  } else if (table.report.status === 'disputed') {
-    blocks.push({ type: 'paragraph', text: '⚠️ Il risultato è stato contestato: decide l\'organizzatore.' })
-  } else if (table.report.reporterUuid === table.myPlayerUuid) {
+  if (!table.result) {
+    blocks.push(table.pairingStatus === 'completed'
+      ? { type: 'paragraph', text: '✅ Risultato registrato.' }
+      : {
+        type: 'buttons',
+        buttons: [{ text: '✍️ Inserisci risultato', style: 'primary', callback_data: `${OPEN_PREFIX}${table.pairingUuid}` }]
+      })
+  } else if (table.result.disputedAt) {
+    blocks.push({ type: 'paragraph', text: `⚠️ Risultato contestato (${resultScoreLabel(table)}): decide l'organizzatore.` })
+  } else if (table.result.confirmedAt) {
+    blocks.push({ type: 'paragraph', text: `✅ Risultato confermato: ${resultScoreLabel(table)}.` })
+  } else if (table.result.reporterUuid === table.myPlayerUuid) {
     blocks.push({
       type: 'paragraph',
-      text: `⏳ Hai inserito ${reportScoreLabel(table)}: aspetto la conferma di ${table.opponent.name}, altrimenti decide l'organizzatore.`
+      text: `✅ Hai inserito ${resultScoreLabel(table)}. In attesa che ${table.opponent.name} lo confermi.`
     })
   } else {
     blocks.push(
-      { type: 'paragraph', text: `⏳ ${table.opponent.name} ha inserito ${reportScoreLabel(table)} (i tuoi game per primi). È corretto?` },
+      { type: 'paragraph', text: `${table.opponent.name} ha inserito ${resultScoreLabel(table)} (i tuoi game per primi). È corretto?` },
       answerButtons(table.pairingUuid)
     )
   }
@@ -108,7 +113,7 @@ function summaryRichMessage(table: LiveTable, outcomeIndex: number): InputRichMe
         ['🆚 Avversario', table.opponent.name],
         ['🎲 Risultato', outcome.label]
       ]),
-      { type: 'paragraph', text: `${table.opponent.name} dovrà confermarlo. Lo invio?` },
+      { type: 'paragraph', text: `Il risultato verrà registrato subito, ${table.opponent.name} riceverà solo una richiesta di conferma. Lo invio?` },
       {
         type: 'buttons',
         buttons: [
@@ -165,11 +170,7 @@ async function requireReportableTable(
   const table = await requireTable(ctx, pairingUuid)
   if (!table) return null
 
-  const block = reportBlockReason({
-    pairingStatus: table.pairingStatus,
-    isParticipant: true,
-    report: table.report
-  })
+  const block = reportBlockReason({ pairingStatus: table.pairingStatus, isParticipant: true })
   if (block) {
     await alertBlock(ctx, block)
     return null
@@ -186,10 +187,9 @@ async function requireRespondableTable(
   if (!table) return null
 
   const block = respondBlockReason({
-    pairingStatus: table.pairingStatus,
     isParticipant: true,
     responderUuid: table.myPlayerUuid,
-    report: table.report
+    result: table.result
   })
   if (block) {
     await alertBlock(ctx, block)
@@ -228,23 +228,31 @@ async function handleSend(ctx: Context, pairingUuid: string, outcomeIndex: numbe
 
   const outcome = outcomeAt(outcomeIndex)
   const games = gamesFromOutcome(outcome, table.isPlayer1)
-  const created = await createMatchReport(table, games)
-  if (!created) return alertBlock(ctx, 'already-reported')
+
+  await saveMatchResult(telegramServiceSupabaseClient(), {
+    tournamentUuid: table.tournamentUuid,
+    pairingUuid: table.pairingUuid,
+    player1Uuid: table.player1Uuid,
+    player2Uuid: table.player2Uuid,
+    player1GamesWon: games.player1GamesWon,
+    player2GamesWon: games.player2GamesWon,
+    reportedByPlayerUuid: table.myPlayerUuid
+  })
 
   const opponentChatId = await resolveChatIdByAssociateUuid(table.opponent.associateUuid)
   const followUp = opponentChatId
-    ? `Ho chiesto conferma a ${table.opponent.name}: se non risponde decide l'organizzatore.`
-    : `${table.opponent.name} non ha collegato Telegram: il risultato resta in attesa dell'organizzatore.`
+    ? `Ho avvisato ${table.opponent.name}: se contesta, decide l'organizzatore.`
+    : `${table.opponent.name} non ha collegato Telegram: se il risultato è sbagliato dovrà correggerlo l'organizzatore.`
 
   await showRichStep(ctx, {
-    blocks: [{ type: 'paragraph', text: `✅ Risultato inviato: ${outcome.label}\n\n${followUp}` }]
+    blocks: [{ type: 'paragraph', text: `✅ Risultato registrato: ${outcome.label}\n\n${followUp}` }]
   })
 
   // From the opponent's side: their own games first
   const opponentGames = scoreLabelFor(games, !table.isPlayer1)
   await notifyOpponent(ctx, table, {
     blocks: [
-      { type: 'heading', size: 3, text: '🧾 Conferma risultato' },
+      { type: 'heading', size: 3, text: '🧾 Risultato inserito' },
       {
         type: 'paragraph',
         text: `Per il match del Round ${table.roundNumber} ${table.opponent.name} ha inserito ${opponentGames} (i tuoi game per primi). È corretto?`
@@ -256,26 +264,18 @@ async function handleSend(ctx: Context, pairingUuid: string, outcomeIndex: numbe
 
 async function handleConfirm(ctx: Context, pairingUuid: string) {
   const table = await requireRespondableTable(ctx, pairingUuid)
-  // respondBlockReason already returns 'no-report' when table.report is
+  // respondBlockReason already returns 'no-report' when table.result is
   // null, so this is narrowing for TS, not a reachable extra guard.
-  if (!table?.report) return
+  if (!table?.result) return
 
-  await saveMatchResult(telegramServiceSupabaseClient(), {
-    tournamentUuid: table.tournamentUuid,
-    pairingUuid: table.pairingUuid,
-    player1Uuid: table.player1Uuid,
-    player2Uuid: table.player2Uuid,
-    player1GamesWon: table.report.player1GamesWon,
-    player2GamesWon: table.report.player2GamesWon,
-    reportedByPlayerUuid: table.report.reporterUuid
-  })
+  await confirmMatchResult(telegramServiceSupabaseClient(), table.pairingUuid)
 
-  const score = reportScoreLabel(table)
+  const score = resultScoreLabel(table)
   await showRichStep(ctx, { blocks: [{ type: 'paragraph', text: `✅ Risultato confermato: ${score}` }] })
   await notifyOpponent(ctx, table, {
     blocks: [{
       type: 'paragraph',
-      text: `✅ ${table.opponent.name} ha confermato il risultato del Round ${table.roundNumber}: ${scoreLabelFor(table.report, !table.isPlayer1)}`
+      text: `✅ ${table.opponent.name} ha confermato il risultato del Round ${table.roundNumber}: ${scoreLabelFor(table.result, !table.isPlayer1)}`
     }]
   })
 }
@@ -284,14 +284,14 @@ async function handleDispute(ctx: Context, pairingUuid: string) {
   const table = await requireRespondableTable(ctx, pairingUuid)
   if (!table) return
 
-  await disputeMatchReport(table.pairingUuid)
+  await disputeMatchResult(telegramServiceSupabaseClient(), table.pairingUuid)
   await showRichStep(ctx, {
-    blocks: [{ type: 'paragraph', text: '⚠️ Risultato contestato: l\'organizzatore deciderà.' }]
+    blocks: [{ type: 'paragraph', text: '⚠️ Risultato contestato: l\'organizzatore lo verificherà.' }]
   })
   await notifyOpponent(ctx, table, {
     blocks: [{
       type: 'paragraph',
-      text: `⚠️ ${table.opponent.name} ha contestato il risultato del Round ${table.roundNumber}: l'organizzatore deciderà.`
+      text: `⚠️ ${table.opponent.name} ha contestato il risultato del Round ${table.roundNumber}: l'organizzatore lo verificherà.`
     }]
   })
 }

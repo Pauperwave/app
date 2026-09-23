@@ -2,13 +2,13 @@
 import { describe, expect, it } from 'vitest'
 import {
   gamesFromOutcome, MATCH_OUTCOMES, reportBlockReason, respondBlockReason, scoreLabelFor,
-  type PendingReport
+  type ReportedResult
 } from '#shared/utils/tournaments/matchReport'
 
-const pending: PendingReport = { reporterUuid: 'a', status: 'pending' }
+const unanswered: ReportedResult = { reporterUuid: 'a', confirmedAt: null, disputedAt: null }
 
 describe('reportBlockReason', () => {
-  const base = { pairingStatus: 'pending', isParticipant: true, report: null }
+  const base = { pairingStatus: 'pending', isParticipant: true }
 
   it('lets a participant report an open match', () => {
     expect(reportBlockReason(base)).toBeNull()
@@ -21,17 +21,12 @@ describe('reportBlockReason', () => {
   it('rejects a match that already has its result', () => {
     expect(reportBlockReason({ ...base, pairingStatus: 'completed' })).toBe('match-completed')
   })
-
-  it('rejects a second report, pending or disputed', () => {
-    expect(reportBlockReason({ ...base, report: pending })).toBe('already-reported')
-    expect(reportBlockReason({ ...base, report: { ...pending, status: 'disputed' } })).toBe('already-reported')
-  })
 })
 
 describe('respondBlockReason', () => {
-  const base = { pairingStatus: 'pending', isParticipant: true, responderUuid: 'b', report: pending }
+  const base = { isParticipant: true, responderUuid: 'b', result: unanswered }
 
-  it('lets the opponent answer a pending report', () => {
+  it('lets the opponent answer an unanswered result', () => {
     expect(respondBlockReason(base)).toBeNull()
   })
 
@@ -44,15 +39,17 @@ describe('respondBlockReason', () => {
   })
 
   it('rejects when there is nothing to answer', () => {
-    expect(respondBlockReason({ ...base, report: null })).toBe('no-report')
+    expect(respondBlockReason({ ...base, result: null })).toBe('no-report')
   })
 
-  it('rejects once the match has its result', () => {
-    expect(respondBlockReason({ ...base, pairingStatus: 'completed' })).toBe('match-completed')
+  it('rejects a result already confirmed', () => {
+    expect(respondBlockReason({ ...base, result: { ...unanswered, confirmedAt: '2026-09-24T10:00:00Z' } }))
+      .toBe('already-confirmed')
   })
 
-  it('rejects a report that is already disputed', () => {
-    expect(respondBlockReason({ ...base, report: { ...pending, status: 'disputed' } })).toBe('already-disputed')
+  it('rejects a result already disputed', () => {
+    expect(respondBlockReason({ ...base, result: { ...unanswered, disputedAt: '2026-09-24T10:00:00Z' } }))
+      .toBe('already-disputed')
   })
 })
 

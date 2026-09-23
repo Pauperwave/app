@@ -626,24 +626,17 @@ export interface SwissMatchPlayer extends SwissMatchPerson {
   dropped: SwissDropInfo | null
 }
 
-// A Telegram-submitted result still waiting for the opponent to confirm it
-// (or disputed) — tournament_match_result_reports, see
-// useTournamentMatchReportsQuery.ts. `reporter` is resolved for display the
-// same way SwissMatchPerson is (AssociateTag-ready).
-export interface SwissMatchReport {
+// Present when a saved result's own reported_by_player_uuid is set — who
+// reported it via Telegram and whether/when the opponent answered. Drives
+// SwissMatchResultBadge.vue's "Inserita da X" badge: info while unanswered,
+// success once confirmedAt is set, error once disputedAt is set (a dispute
+// flags the result for organizer review, it doesn't revert it — user
+// request, 2026-09-24).
+export interface SwissMatchTelegramInfo {
   reporter: SwissMatchPerson
-  status: 'pending' | 'disputed'
-  score: MatchScore
-}
-
-// Shown once a confirmed result's own reported_by_player_uuid is set — who
-// reported it and who (the pairing's other player) confirmed it, so the
-// header badge can read "Suggerito da X e confermato da Y" instead of
-// looking identical to a result an organizer entered directly (user
-// request, 2026-09-23).
-export interface SwissMatchConfirmedInfo {
-  reporter: SwissMatchPerson
-  confirmer: SwissMatchPerson
+  reportedAt: string
+  confirmedAt: string | null
+  disputedAt: string | null
 }
 
 export interface SwissMatchRow {
@@ -651,8 +644,7 @@ export interface SwissMatchRow {
   tableNumber: number
   player: SwissMatchPlayer
   current: MatchScore | null
-  report: SwissMatchReport | null
-  confirmedInfo: SwissMatchConfirmedInfo | null
+  telegramInfo: SwissMatchTelegramInfo | null
   // A single player sitting out: scores as a 2-0 win.
   isBye: boolean
 }

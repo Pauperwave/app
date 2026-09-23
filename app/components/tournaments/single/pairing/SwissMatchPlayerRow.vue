@@ -11,14 +11,11 @@ import type { MatchScore, SwissMatchPlayer } from '~/types'
 const {
   player,
   current = null,
-  reported = null,
   isBye = false,
   search = ''
 } = defineProps<{
   player: SwissMatchPlayer
   current?: MatchScore | null
-  // See SwissScoreButtons.vue's own `reported` prop.
-  reported?: MatchScore | null
   isBye?: boolean
   search?: string
 }>()
@@ -55,7 +52,7 @@ const dropMenuItems = computed<DropdownMenuItem[]>(() => [{
         v-if="player.dropped"
         :text="t('tournament.single.roundManager.dropBadgeTooltip', {
           round: player.dropped.roundNumber,
-          time: formatDropTime(player.dropped.droppedAt)
+          time: formatTimeOfDay(player.dropped.droppedAt)
         })"
       >
         <UBadge
@@ -81,7 +78,6 @@ const dropMenuItems = computed<DropdownMenuItem[]>(() => [{
         v-else
         :seat="player.seat"
         :current="current"
-        :reported="reported"
         @select="score => emit('select', score)"
       />
       <RowActionsMenu :items="dropMenuItems" />

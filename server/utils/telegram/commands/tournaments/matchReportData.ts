@@ -1,8 +1,8 @@
 // server\utils\telegram\commands\tournaments\matchReportData.ts
-// Reads and writes behind the 1v1 result flow (matchReport.ts): a player's open
-// table with its report, and the report itself. Service role: reports have no
-// client write policy and the pairings are looked up by the linked associate.
-import type { PendingReport, ReportStatus } from '#shared/utils/tournaments/matchReport'
+// Reads behind the 1v1 result flow (matchReport.ts): a player's open table
+// with its saved result, if any. Service role: the pairings/results are
+// looked up by the linked associate, not by an authenticated client session.
+import type { ReportedResult } from '#shared/utils/tournaments/matchReport'
 
 export interface LiveTable {
   pairingUuid: string
@@ -16,7 +16,7 @@ export interface LiveTable {
   myPlayerUuid: string
   isPlayer1: boolean
   opponent: { playerUuid: string, associateUuid: string, name: string }
-  report: (PendingReport & { player1GamesWon: number, player2GamesWon: number }) | null
+  result: (ReportedResult & { player1GamesWon: number, player2GamesWon: number }) | null
 }
 
 interface PairingRow {
@@ -78,20 +78,20 @@ export async function fetchLiveTable(
   const isPlayer1 = myPlayerUuid === pairing.player1_uuid
   const opponentPlayerUuid = isPlayer1 ? pairing.player2_uuid : pairing.player1_uuid
 
-  const [opponentResult, reportResult] = await Promise.all([
+  const [opponentResult, matchResultRow] = await Promise.all([
     supabase
       .from('players')
       .select('uuid, associate_uuid, associate:pauperwave_associates(first_name, last_name)')
       .eq('uuid', opponentPlayerUuid)
       .maybeSingle(),
     supabase
-      .from('tournament_match_result_reports')
-      .select('reporter_uuid, status, player1_games_won, player2_games_won')
+      .from('tournament_match_results')
+      .select('reported_by_player_uuid, confirmed_at, disputed_at, player1_games_won, player2_games_won')
       .eq('pairing_uuid', pairing.uuid)
       .maybeSingle()
   ])
   if (opponentResult.error) throw opponentResult.error
-  if (reportResult.error) throw reportResult.error
+  if (matchResultRow.error) throw matchResultRow.error
 
   const opponent = opponentResult.data as unknown as {
     uuid: string
@@ -100,7 +100,7 @@ export async function fetchLiveTable(
   } | null
   if (!opponent) return null
 
-  const report = reportResult.data
+  const savedResult = matchResultRow.data
   return {
     pairingUuid: pairing.uuid,
     tournamentUuid: pairing.tournament_uuid,
@@ -119,43 +119,16 @@ export async function fetchLiveTable(
         ? `${opponent.associate.first_name} ${opponent.associate.last_name}`
         : 'il tuo avversario'
     },
-    report: report
+    // A result an organizer entered directly (no reported_by_player_uuid) has
+    // nothing for the opponent to confirm/dispute — treated as no result here.
+    result: savedResult?.reported_by_player_uuid
       ? {
-        reporterUuid: report.reporter_uuid,
-        status: report.status as ReportStatus,
-        player1GamesWon: report.player1_games_won,
-        player2GamesWon: report.player2_games_won
+        reporterUuid: savedResult.reported_by_player_uuid,
+        confirmedAt: savedResult.confirmed_at,
+        disputedAt: savedResult.disputed_at,
+        player1GamesWon: savedResult.player1_games_won,
+        player2GamesWon: savedResult.player2_games_won
       }
       : null
   }
-}
-
-// False when the pairing already has a report (unique on pairing_uuid): two
-// taps or both players reporting at once, only the first one counts.
-export async function createMatchReport(
-  table: LiveTable,
-  games: { player1GamesWon: number, player2GamesWon: number }
-): Promise<boolean> {
-  const { error } = await telegramServiceSupabaseClient()
-    .from('tournament_match_result_reports')
-    .insert({
-      tournament_uuid: table.tournamentUuid,
-      pairing_uuid: table.pairingUuid,
-      reporter_uuid: table.myPlayerUuid,
-      player1_games_won: games.player1GamesWon,
-      player2_games_won: games.player2GamesWon
-    })
-
-  if (error?.code === '23505') return false
-  if (error) throw error
-  return true
-}
-
-export async function disputeMatchReport(pairingUuid: string) {
-  const { error } = await telegramServiceSupabaseClient()
-    .from('tournament_match_result_reports')
-    .update({ status: 'disputed' })
-    .eq('pairing_uuid', pairingUuid)
-    .eq('status', 'pending')
-  if (error) throw error
 }

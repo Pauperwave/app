@@ -28,11 +28,20 @@ export function useTournamentMatchResultsMutations(tournamentUuid: MaybeRefOrGet
         (current) => {
           const others = (current ?? []).filter(result => result.pairingUuid !== pairingUuid)
           // This mutation is only ever the organizer's own direct entry (the
-          // Telegram bot's confirm flow writes server-side, not through
-          // here) — reportedByPlayerUuid is always null for it.
+          // Telegram bot's own report writes server-side, not through here)
+          // — reportedByPlayerUuid/confirmedAt/disputedAt are always null
+          // for it.
           return [
             ...others,
-            { pairingUuid, player1GamesWon, player2GamesWon, reportedByPlayerUuid: null }
+            {
+              pairingUuid,
+              player1GamesWon,
+              player2GamesWon,
+              createdAt: new Date().toISOString(),
+              reportedByPlayerUuid: null,
+              confirmedAt: null,
+              disputedAt: null
+            }
           ]
         }
       )
