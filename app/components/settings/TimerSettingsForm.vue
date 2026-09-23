@@ -7,7 +7,6 @@
 -->
 <script setup lang="ts">
 import * as v from 'valibot'
-import { useEventListener } from '@vueuse/core'
 import type { FormSubmitEvent } from '@nuxt/ui'
 
 const { t } = useI18n()
@@ -43,9 +42,7 @@ const state = reactive<Partial<Schema>>({
   preRoundWaitMinutes: undefined
 })
 
-// Form values as last loaded or saved, to tell when there are unsaved edits.
-const savedSnapshot = ref('')
-const isDirty = computed(() => JSON.stringify(state) !== savedSnapshot.value)
+const { isDirty, markSaved } = useDirtyFormSnapshot(state)
 
 // Fills the form once, the first time the query resolves — not a continuous
 // sync, which would clobber an in-progress edit on a window-refocus refetch.
@@ -54,17 +51,13 @@ watch(settings.data, (data) => {
   state.commanderRoundMinutes = data.commanderRoundMinutes
   state.oneVsOneRoundMinutes = data.oneVsOneRoundMinutes
   state.preRoundWaitMinutes = data.preRoundWaitMinutes
-  savedSnapshot.value = JSON.stringify(state)
+  markSaved()
 }, { immediate: true })
-
-useEventListener('beforeunload', (event) => {
-  if (isDirty.value) event.preventDefault()
-})
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
     await updateTimerSettings.mutateAsync(event.data)
-    savedSnapshot.value = JSON.stringify(state)
+    markSaved()
     toast.add({
       title: t('settings.timer.successToastTitle'),
       description: t('settings.timer.successToastDescription'),
