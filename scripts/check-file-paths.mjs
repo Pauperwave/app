@@ -16,7 +16,13 @@ const rootDir = join(fileURLToPath(import.meta.url), '..', '..')
 const scanDirs = ['app', 'server', 'shared', 'test', 'scripts']
 const skipDirNames = new Set(['node_modules', '.nuxt', '.output', 'dist', 'coverage'])
 // Generated — regenerated via `supabase gen types`, never hand-edited (see CLAUDE.md).
-const skipFiles = new Set(['shared\\utils\\types\\database.ts'])
+// Compared against a forward-slash-joined relative path (see toPosixPath below) so this
+// matches on both Windows (backslash `relative()`) and CI's Linux runners (forward slash).
+const skipFiles = new Set(['shared/utils/types/database.ts'])
+
+function toPosixPath(relPath) {
+  return relPath.split(/[\\/]/).join('/')
+}
 const extHandlers = {
   '.vue': { pattern: /^<!--\s*(.+?)\s*-->$/, format: p => `<!-- ${p} -->` },
   '.ts': { pattern: /^\/\/\s*(.+?)\s*$/, format: p => `// ${p}` },
@@ -79,7 +85,7 @@ function fixFile(fullPath, result) {
 const shouldFix = process.argv.includes('--fix')
 const files = scanDirs
   .flatMap(dir => walk(join(rootDir, dir)))
-  .filter(fullPath => !skipFiles.has(relative(rootDir, fullPath)))
+  .filter(fullPath => !skipFiles.has(toPosixPath(relative(rootDir, fullPath))))
 
 const missing = []
 const mismatched = []
