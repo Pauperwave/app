@@ -19,7 +19,10 @@ import type { Selection } from '~/composables/useSelection'
 
 const {
   // fallow-ignore-next-line code-duplication -- see tournaments/list/Cover.vue
-  event = null, selection, range = [], loading = false
+  event = null,
+  selection,
+  range = [],
+  loading = false
 } = defineProps<{
   event?: Event | null
   selection?: Selection<number>

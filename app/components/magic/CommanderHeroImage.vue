@@ -10,7 +10,11 @@
      which only ever shows one commander (no partner slot on that page). -->
 <script setup lang="ts">
 const {
-  art1, alt1, art2 = null, alt2 = null, loading = false
+  art1,
+  alt1,
+  art2 = null,
+  alt2 = null,
+  loading = false
 } = defineProps<{
   art1: string | null
   alt1: string

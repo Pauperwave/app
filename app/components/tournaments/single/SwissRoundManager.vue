@@ -16,7 +16,11 @@ import type {
 import type { TournamentMatchResult } from '~/composables/tournaments/rounds/useTournamentMatchResultsQuery'
 
 const {
-  tournamentUuid, roundNumber, roundCount, roundDurationMinutes = 75, autoOpenAdvancePreview = false
+  tournamentUuid,
+  roundNumber,
+  roundCount,
+  roundDurationMinutes = 75,
+  autoOpenAdvancePreview = false
 } = defineProps<{
   tournamentUuid: string
   roundNumber: number

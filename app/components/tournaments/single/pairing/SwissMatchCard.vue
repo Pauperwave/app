@@ -4,7 +4,12 @@ import type { DropdownMenuItem } from '@nuxt/ui'
 import type { MatchScore, SwissMatchConfirmedInfo, SwissMatchPlayer, SwissMatchReport } from '~/types'
 
 const {
-  tableNumber, players, current = null, report = null, confirmedInfo = null, isBye = false,
+  tableNumber,
+  players,
+  current = null,
+  report = null,
+  confirmedInfo = null,
+  isBye = false,
   search = ''
 } = defineProps<{
   tableNumber: number
