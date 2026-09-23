@@ -137,6 +137,7 @@ function dropMenuItems(player: SwissMatchPlayer): DropdownMenuItem[] {
           v-else
           :seat="player.seat"
           :current="current"
+          :reported="report?.status === 'pending' ? report.score : null"
           @select="score => emit('select', score)"
         />
         <RowActionsMenu :items="dropMenuItems(player)" />
