@@ -28,9 +28,10 @@ defineShortcuts({
 // timer. Reinforces the chords in NAV_SHORTCUTS for people who already know
 // to press "g", not a first-time-discoverability affordance (that's what
 // UDashboardSearch is for). No exposed "chord pending" state on
-// defineShortcuts itself, so this is a small parallel keydown listener
-// rather than a callback into it.
-const showChordHints = ref(false)
+// defineShortcuts itself, so this uses the same shared listener as
+// useChordHintKey.ts's own "f" hint (RoundTimer.vue) rather than a callback
+// into it.
+const showChordHints = useChordHintKey('g')
 
 // item.to is typed as string | RouteLocationRaw | undefined by NavigationMenuItem,
 // and NAV_SHORTCUTS's index signature returns string | undefined under
@@ -40,16 +41,6 @@ const navChordKeys = (to: NavigationMenuItem['to']): string[] => {
   if (typeof to !== 'string') return []
   return NAV_SHORTCUTS[to]?.split('-') ?? []
 }
-
-useEventListener('keydown', (event: KeyboardEvent) => {
-  const target = event.target as HTMLElement | null
-  const usingInput = target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable
-  if (usingInput || event.metaKey || event.ctrlKey || event.altKey) {
-    return
-  }
-
-  showChordHints.value = event.key.toLowerCase() === 'g'
-})
 
 // Forces the "g" hint visible for the tour's "navigation" step instead of
 // requiring the visitor to actually press "g" mid-tour — the whole point of

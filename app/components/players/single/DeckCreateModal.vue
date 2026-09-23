@@ -96,25 +96,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           <UInput v-model="state.decklistUrl" class="w-full" />
         </UFormField>
 
-        <UCard variant="outline">
-          <div class="flex items-center gap-3">
-            <USwitch v-model="isBorrowed" />
-            <span class="font-medium">{{ t('deck.addModal.fields.isBorrowed') }}</span>
-          </div>
-        </UCard>
-
-        <UFormField
-          v-if="isBorrowed"
-          :label="t('deck.addModal.fields.lender')"
-          required
-        >
-          <USelectMenu
-            v-model="lenderUuid"
-            :items="lenderOptions"
-            value-key="value"
-            class="w-full"
-          />
-        </UFormField>
+        <PlayersSingleLenderSelectionFields
+          v-model:is-borrowed="isBorrowed"
+          v-model:lender-uuid="lenderUuid"
+          :lender-options="lenderOptions"
+        />
 
         <div class="flex justify-end gap-2">
           <UButton
