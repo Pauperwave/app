@@ -18,25 +18,7 @@ export default defineEventHandler(async (event) => {
   const { playerA, playerB } = await readBody<AvoidPairBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
 
-  const { data: players, error: playersError } = await supabase
-    .from('players')
-    .select('uuid, associate_uuid')
-    .in('associate_uuid', [playerA, playerB])
-
-  if (playersError) {
-    throw createError({ statusCode: 500, statusMessage: playersError.message })
-  }
-
-  const playerAUuid = players?.find(p => p.associate_uuid === playerA)?.uuid
-  const playerBUuid = players?.find(p => p.associate_uuid === playerB)?.uuid
-
-  if (!playerAUuid || !playerBUuid) {
-    throw createError({ statusCode: 400, statusMessage: 'Both players must be registered' })
-  }
-
-  const [playerAId, playerBId] = playerAUuid < playerBUuid
-    ? [playerAUuid, playerBUuid]
-    : [playerBUuid, playerAUuid]
+  const [playerAId, playerBId] = await resolveOrderedAvoidPairPlayers(supabase, playerA, playerB)
 
   const { error } = await supabase
     .from('player_avoid_pairs')

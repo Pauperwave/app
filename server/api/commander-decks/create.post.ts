@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
       companion_name: body.companionName,
       decklist_url: body.decklistUrl,
       is_borrowed: body.isBorrowed,
-      lender_uuid: body.isBorrowed ? body.lenderUuid : null
+      lender_uuid: lenderUuidForBorrowed(body.isBorrowed, body.lenderUuid)
     })
     .select('uuid')
     .single()
