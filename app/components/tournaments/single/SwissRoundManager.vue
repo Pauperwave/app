@@ -6,14 +6,17 @@
   tiebreaks, standings-based pairing of the next round and advance/turn-back.
   Replaces the stub RoundManager.vue for Draft (after its pod stage) and every plain-Swiss
   format — see index.vue's own #round-${i} slot and is1v1Format.
+
+  Script split into useSwissRoundData.ts/useSwissRoundSubmitHandlers.ts/
+  useSwissRoundLifecycle.ts (2026-09-24), same three-way split as
+  CommanderRoundManager.vue's own useCommanderRound* composables — see each
+  one's own file comment for why the split lands where it does. Only the
+  search/view-mode UI state and the search-filtered match-list building
+  stay here, since they mix roundData with this component's own local state.
 -->
 <script setup lang="ts">
 import type { TabsItem } from '@nuxt/ui'
-import type {
-  MatchScore, SwissMatchConfirmedInfo, SwissMatchPerson, SwissMatchPlayer, SwissMatchReport,
-  SwissMatchRow, TablePlayer
-} from '~/types'
-import type { TournamentMatchResult } from '~/composables/tournaments/rounds/useTournamentMatchResultsQuery'
+import type { SwissMatchRow } from '~/types'
 
 const {
   tournamentUuid,
@@ -41,107 +44,41 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const toast = useToast()
 
-const { data: rounds } = useTournamentRoundsQuery(() => tournamentUuid)
-const { data: pairings } = useTournamentPairingsQuery(() => tournamentUuid)
-const { data: matchResults } = useTournamentMatchResultsQuery(() => tournamentUuid)
-const { data: matchReports } = useTournamentMatchReportsQuery(() => tournamentUuid)
-const { data: registrations } = useTournamentRegistrationsQuery(() => tournamentUuid)
-// Live-updates matchResults/matchReports/pairings as the Telegram bot writes
-// to them, so an organizer watching this round sees a player's submitted
-// result — and the opponent's confirmation — without refreshing the page
-// (2026-09-23 user request).
-useTournamentMatchResultsRealtime(() => tournamentUuid)
-const {
-  liveStandings, playedPairs, byePlayerUuids, dropByPlayerUuid
-}
-  = useLiveSwissStandings(() => tournamentUuid)
-const { data: associatesData } = useAssociatesQuery()
-
-const {
-  round, isLastRoundOfTournament, pairingsForRound,
-  associatesByUuid, labelFor, associateUuidFor
-} = useRoundAndPlayerLookup({
-  rounds, pairings, registrations, associatesData, roundNumber, roundCount
+const roundData = useSwissRoundData({
+  tournamentUuid: () => tournamentUuid, roundNumber, roundCount
+})
+const submitHandlers = useSwissRoundSubmitHandlers({
+  tournamentUuid: () => tournamentUuid, roundData
+})
+const lifecycle = useSwissRoundLifecycle({
+  tournamentUuid: () => tournamentUuid,
+  roundNumber,
+  roundData,
+  autoOpenAdvancePreview: () => autoOpenAdvancePreview,
+  onTurnedBack: () => emit('turnedBack'),
+  onAdvancePreviewAutoOpened: () => emit('advancePreviewAutoOpened')
 })
 
-function personFor(playerUuid: string): SwissMatchPerson {
-  const associateUuid = associateUuidFor(playerUuid)
-  const associate = associateUuid ? associatesByUuid.value.get(associateUuid) : undefined
-  return {
-    associateUuid,
-    name: associate?.first_name ?? labelFor(playerUuid),
-    surname: associate?.last_name
-  }
-}
+const {
+  isLastRoundOfTournament, tournamentIsEnded, pairingsForRound,
+  matchResultByPairingUuid, reportByPairingUuid, confirmedInfoFor,
+  matchPlayersFor, pendingPlayerUuids, liveStandings
+} = roundData
 
-function matchPlayersFor(pairing: { playerUuids: string[] }): SwissMatchPlayer[] {
-  return pairing.playerUuids.map((playerUuid, index) => {
-    const opponentUuid = pairing.playerUuids[index === 0 ? 1 : 0]
-    return {
-      ...personFor(playerUuid),
-      seat: index === 0 ? 0 : 1,
-      playerUuid,
-      opponent: opponentUuid ? personFor(opponentUuid) : { name: '' },
-      dropped: dropByPlayerUuid.value.get(playerUuid) ?? null
-    }
-  })
-}
+const { onScoreSelect, onScoreClear, onToggleDrop } = submitHandlers
 
-// ─── Match results ──────────────────────────────────────────────────────────
-const { saveMatchResult, deleteMatchResult }
-  = useTournamentMatchResultsMutations(() => tournamentUuid)
+const {
+  advanceRoundSwiss, advancePreviewOpen, nextRoundSeedPlayers, allResultsEntered,
+  openAdvancePreview, onAdvanceConfirm, endTournament, onTurnBack
+} = lifecycle
 
-const matchResultByPairingUuid = computed(() =>
-  new Map((matchResults.value ?? []).map(result => [result.pairingUuid, result])))
-
-const reportByPairingUuid = computed<Map<string, SwissMatchReport>>(() => new Map(
-  (matchReports.value ?? []).map(report => [report.pairingUuid, {
-    reporter: personFor(report.reporterUuid),
-    status: report.status,
-    score: { player1GamesWon: report.player1GamesWon, player2GamesWon: report.player2GamesWon }
-  }])
-))
-
-// Who reported a confirmed result and who (the pairing's other player)
-// confirmed it — null for a result an organizer entered directly (no
-// reportedByPlayerUuid) or for a pairing without exactly one "other" player.
-function confirmedInfoFor(
-  pairing: { playerUuids: string[] }, result: TournamentMatchResult | undefined
-): SwissMatchConfirmedInfo | null {
-  if (!result?.reportedByPlayerUuid) return null
-  const confirmerUuid = pairing.playerUuids.find(uuid => uuid !== result.reportedByPlayerUuid)
-  if (!confirmerUuid) return null
-  return { reporter: personFor(result.reportedByPlayerUuid), confirmer: personFor(confirmerUuid) }
-}
-
-async function onScoreSelect(pairingUuid: string, score: MatchScore) {
-  const pairing = pairingsForRound.value.find(p => p.uuid === pairingUuid)
-  const [player1Uuid, player2Uuid] = pairing?.playerUuids ?? []
-  if (!player1Uuid || !player2Uuid) return
-
-  try {
-    await saveMatchResult.mutateAsync({
-      pairingUuid, player1Uuid, player2Uuid, ...score
-    })
-  } catch { /* toasted by the mutation's own onError */ }
-}
-
-function onScoreClear(pairingUuid: string) {
-  deleteMatchResult.mutate(pairingUuid)
-}
-
-// ─── Drops ──────────────────────────────────────────────────────────────────
-const { setDropped } = useTournamentDropsMutations(() => tournamentUuid)
-
-// A drop only takes effect from the next round: this round's match still counts.
-function onToggleDrop(playerUuid: string) {
-  const roundUuid = round.value?.uuid
-  if (!roundUuid) return
-
-  setDropped.mutate({
-    playerUuid,
-    roundUuid,
-    dropped: !dropByPlayerUuid.value.has(playerUuid)
+// ─── Round timer ────────────────────────────────────────────────────────────
+function handleTimerExpired() {
+  toast.add({
+    title: t('tournament.single.roundManager.timerExpiredTitle'),
+    description: t('tournament.single.roundManager.timerExpiredDescription', { round: roundNumber }),
+    color: 'warning',
+    icon: ICONS.timerOff
   })
 }
 
@@ -181,89 +118,6 @@ const matchRows = computed<SwissMatchRow[]>(() =>
       confirmedInfo,
       isBye
     }))))
-
-// ─── Round timer ────────────────────────────────────────────────────────────
-function handleTimerExpired() {
-  toast.add({
-    title: t('tournament.single.roundManager.timerExpiredTitle'),
-    description: t('tournament.single.roundManager.timerExpiredDescription', { round: roundNumber }),
-    color: 'warning',
-    icon: ICONS.timerOff
-  })
-}
-
-// ─── Advance / turn back round ──────────────────────────────────────────────
-const { advanceRoundSwiss, turnBackRoundSwiss }
-  = useTournamentSwissRoundsMutations(() => tournamentUuid)
-const advancePreviewOpen = ref(false)
-
-// The next round's pairing order: the active players (a dropped one isn't paired
-// again) ranked by the live standings, skipping rematches; with an odd count the
-// lowest-ranked player without a bye yet gets it. Unlike matchPlayersFor (used for on-screen display, keyed by
-// players.uuid same as Commander's own pairing cards),
-// SwissTablePreviewModal's confirm hands this straight to
-// advance_swiss_round's p_associate_order, which resolves against
-// players.associate_uuid — value here MUST be the associate uuid, not the
-// player uuid, or the RPC can't resolve anyone (confirmed live: "Could not
-// resolve every associate to a registered player of this tournament").
-const nextRoundSeedPlayers = computed<TablePlayer[]>(() => {
-  const rankedPlayerUuids = liveStandings.value
-    .filter(standing => !standing.dropped)
-    .map(standing => standing.playerUuid)
-  const orderedPlayerUuids = pairSwissRound(
-    rankedPlayerUuids, playedPairs.value, byePlayerUuids.value
-  )
-  return orderedPlayerUuids.flatMap((playerUuid) => {
-    const associateUuid = associateUuidFor(playerUuid)
-    return associateUuid ? [{ value: associateUuid, label: labelFor(playerUuid) }] : []
-  })
-})
-
-// The next round is paired from the standings, so every table needs its result
-// first (a bye has none to enter).
-const allResultsEntered = computed(() =>
-  pairingsForRound.value.length > 0
-  && pairingsForRound.value.every(pairing =>
-    pairing.playerUuids.length === 1 || matchResultByPairingUuid.value.has(pairing.uuid)))
-
-// Players still waiting for their table's result (a bye has none to enter).
-const pendingPlayerUuids = computed(() => pairingsForRound.value
-  .filter(pairing =>
-    pairing.playerUuids.length > 1 && !matchResultByPairingUuid.value.has(pairing.uuid))
-  .flatMap(pairing => pairing.playerUuids))
-
-const tournamentIsEnded = computed(() =>
-  isLastRoundOfTournament.value && round.value?.status === 'completed')
-
-function openAdvancePreview() {
-  advancePreviewOpen.value = true
-}
-
-async function onAdvanceConfirm(associateOrder: string[]) {
-  try {
-    await advanceRoundSwiss.mutateAsync({ currentRoundNumber: roundNumber, associateOrder })
-    advancePreviewOpen.value = false
-  } catch { /* toasted by the mutation's own onError */ }
-}
-
-async function endTournament() {
-  try {
-    await advanceRoundSwiss.mutateAsync({ currentRoundNumber: roundNumber })
-  } catch { /* toasted by the mutation's own onError */ }
-}
-
-async function onTurnBack() {
-  try {
-    await turnBackRoundSwiss.mutateAsync(roundNumber)
-    emit('turnedBack')
-  } catch { /* toasted by the mutation's own onError */ }
-}
-
-watch(() => autoOpenAdvancePreview, (value) => {
-  if (!value) return
-  advancePreviewOpen.value = true
-  emit('advancePreviewAutoOpened')
-}, { immediate: true })
 </script>
 
 <template>

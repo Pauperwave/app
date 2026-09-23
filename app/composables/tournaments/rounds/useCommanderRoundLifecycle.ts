@@ -31,7 +31,6 @@ export function useCommanderRoundLifecycle(options: {
   const { liveStandings, pairingsForRound, isPairingComplete } = roundData
 
   const { advanceRound, turnBackRound } = useTournamentRoundsMutations(tournamentUuid)
-  const advancePreviewOpen = ref(false)
 
   // Seed the next round's optimizer with the current live-standings order
   // (best rank first) — same "rank drives the seed order" idea as league's
@@ -44,36 +43,16 @@ export function useCommanderRoundLifecycle(options: {
     pairingsForRound.value.length > 0
     && pairingsForRound.value.every(p => isPairingComplete(p.uuid)))
 
-  function openAdvancePreview() {
-    advancePreviewOpen.value = true
-  }
-  async function onAdvanceConfirm(associateOrder: string[]) {
-    try {
-      await advanceRound.mutateAsync({ currentRoundNumber: roundNumber, associateOrder })
-      advancePreviewOpen.value = false
-    } catch { /* toasted by the mutation's own onError */ }
-  }
-  async function endTournament() {
-    try {
-      await advanceRound.mutateAsync({ currentRoundNumber: roundNumber })
-    } catch { /* toasted by the mutation's own onError */ }
-  }
-  async function onTurnBack() {
-    try {
-      await turnBackRound.mutateAsync(roundNumber)
-      onTurnedBack()
-    } catch { /* toasted by the mutation's own onError */ }
-  }
-
-  // index.vue flips autoOpenAdvancePreview on right after deleting round
-  // `roundNumber + 1`, asking this (the previous) round to reopen its own
-  // "next round" preview so the organizer lands straight back on the table
-  // arrangement they're meant to redo.
-  watch(() => toValue(autoOpenAdvancePreview), (value) => {
-    if (!value) return
-    advancePreviewOpen.value = true
-    onAdvancePreviewAutoOpened()
-  }, { immediate: true })
+  const {
+    advancePreviewOpen, openAdvancePreview, onAdvanceConfirm, endTournament, onTurnBack
+  } = useRoundAdvanceFlow({
+    roundNumber,
+    advance: advanceRound,
+    turnBack: turnBackRound,
+    autoOpenAdvancePreview,
+    onTurnedBack,
+    onAdvancePreviewAutoOpened
+  })
 
   return {
     advanceRound,
