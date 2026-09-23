@@ -56,7 +56,7 @@ const statusItems = computed(() => WANTED_CARD_STATUSES.map(status => ({
       }))"
     >
       <UButton
-        :label="t('wantedCard.bulkActions.markAs')"
+        :label="withCount(t('wantedCard.bulkActions.markAs'), count)"
         color="neutral"
         variant="outline"
         :trailing-icon="ICONS.chevronDown"
@@ -64,7 +64,7 @@ const statusItems = computed(() => WANTED_CARD_STATUSES.map(status => ({
     </UDropdownMenu>
 
     <UButton
-      :label="t('wantedCard.bulkActions.copyNames')"
+      :label="withCount(t('wantedCard.bulkActions.copyNames'), count)"
       :icon="ICONS.copy"
       color="neutral"
       variant="outline"
@@ -72,7 +72,7 @@ const statusItems = computed(() => WANTED_CARD_STATUSES.map(status => ({
     />
 
     <UButton
-      :label="t('wantedCard.bulkActions.refreshPrices')"
+      :label="withCount(t('wantedCard.bulkActions.refreshPrices'), count)"
       :icon="ICONS.refresh"
       color="neutral"
       variant="outline"
@@ -80,7 +80,7 @@ const statusItems = computed(() => WANTED_CARD_STATUSES.map(status => ({
     />
 
     <UButton
-      :label="t('wantedCard.contextMenu.delete')"
+      :label="withCount(t('wantedCard.contextMenu.delete'), count)"
       :icon="ICONS.delete"
       color="error"
       variant="outline"

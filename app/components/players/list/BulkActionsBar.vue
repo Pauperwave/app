@@ -32,7 +32,7 @@ const { t } = useI18n()
 
   <div v-else class="flex items-center gap-2 flex-wrap">
     <UButton
-      :label="t('player.rowActions.delete')"
+      :label="withCount(t('player.rowActions.delete'), count)"
       :icon="ICONS.delete"
       color="error"
       variant="outline"

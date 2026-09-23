@@ -46,7 +46,7 @@ const { t } = useI18n()
       color="error"
       variant="subtle"
       :icon="ICONS.delete"
-      :label="t('tournament.single.acceptancePicker.removeSelected')"
+      :label="withCount(t('tournament.single.acceptancePicker.removeSelected'), selectedCount)"
       :disabled="isMutating"
       @click="emit('removeSelected')"
     />

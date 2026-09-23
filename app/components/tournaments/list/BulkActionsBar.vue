@@ -139,7 +139,7 @@ function closeLeagueModal() {
       }))"
     >
       <UButton
-        :label="t('tournament.bulkActions.markAs')"
+        :label="withCount(t('tournament.bulkActions.markAs'), count)"
         color="neutral"
         variant="outline"
         :trailing-icon="ICONS.chevronDown"
@@ -147,7 +147,7 @@ function closeLeagueModal() {
     </UDropdownMenu>
 
     <UButton
-      :label="t('tournament.bulkActions.setImage')"
+      :label="withCount(t('tournament.bulkActions.setImage'), count)"
       :icon="ICONS.image"
       color="neutral"
       variant="outline"
@@ -155,7 +155,7 @@ function closeLeagueModal() {
     />
 
     <UButton
-      :label="t('tournament.bulkActions.setEntryFee')"
+      :label="withCount(t('tournament.bulkActions.setEntryFee'), count)"
       :icon="ICONS.euro"
       color="neutral"
       variant="outline"
@@ -163,7 +163,7 @@ function closeLeagueModal() {
     />
 
     <UButton
-      :label="t('tournament.bulkActions.setLeague')"
+      :label="withCount(t('tournament.bulkActions.setLeague'), count)"
       :icon="ICONS.standings"
       color="neutral"
       variant="outline"
@@ -171,7 +171,7 @@ function closeLeagueModal() {
     />
 
     <UButton
-      :label="t('tournament.rowActions.delete')"
+      :label="withCount(t('tournament.rowActions.delete'), count)"
       :icon="ICONS.delete"
       color="error"
       variant="outline"
