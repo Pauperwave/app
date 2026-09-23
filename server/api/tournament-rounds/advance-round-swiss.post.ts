@@ -27,10 +27,7 @@ export default defineEventHandler(async (event) => {
     p_current_round_number: currentRoundNumber,
     p_associate_order: associateOrder
   })
+  const roundUuid = unwrapRoundRpc(data, error)
 
-  if (error) {
-    throw createError({ statusCode: 500, statusMessage: error.message })
-  }
-
-  return { roundUuid: data, hasEnded: data === null }
+  return { roundUuid, hasEnded: roundUuid === null }
 })

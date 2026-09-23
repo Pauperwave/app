@@ -22,10 +22,7 @@ export default defineEventHandler(async (event) => {
     p_tournament_uuid: tournamentUuid,
     p_current_round_number: currentRoundNumber
   })
-
-  if (error) {
-    throw createError({ statusCode: 500, statusMessage: error.message })
-  }
+  assertRoundRpcOk(error)
 
   return { success: true }
 })

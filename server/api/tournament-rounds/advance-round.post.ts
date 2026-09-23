@@ -28,11 +28,8 @@ export default defineEventHandler(async (event) => {
     p_current_round_number: currentRoundNumber,
     p_associate_order: associateOrder
   })
-
-  if (error) {
-    throw createError({ statusCode: 500, statusMessage: error.message })
-  }
+  const roundUuid = unwrapRoundRpc(data, error)
 
   // null roundUuid means the tournament just ended (no next round created).
-  return { roundUuid: data, hasEnded: data === null }
+  return { roundUuid, hasEnded: roundUuid === null }
 })

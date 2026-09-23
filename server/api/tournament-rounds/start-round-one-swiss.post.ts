@@ -22,9 +22,5 @@ export default defineEventHandler(async (event) => {
     p_associate_order: associateOrder
   })
 
-  if (error) {
-    throw createError({ statusCode: 500, statusMessage: error.message })
-  }
-
-  return { roundUuid: data }
+  return { roundUuid: unwrapRoundRpc(data, error) }
 })
