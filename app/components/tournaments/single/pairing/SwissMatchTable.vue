@@ -54,14 +54,15 @@ function rowActionItems(row: SwissMatchRow): DropdownMenuItem[] {
   return items
 }
 
-// Rows still waiting for a result are tinted, the ones with a result fade back.
+// Rows still waiting for a result are tinted — a reported-but-unconfirmed
+// row gets the "info" tint (2026-09-23 user request), plain "warning" while
+// nothing's been submitted at all.
 const tableMeta = {
   class: {
     tr: (row: { original: SwissMatchRow }) => {
       if (row.original.isBye) return ''
-      return row.original.current
-        ? 'opacity-75 transition-opacity hover:opacity-100'
-        : 'bg-warning/10'
+      if (row.original.current) return 'opacity-75 transition-opacity hover:opacity-100'
+      return row.original.report ? 'bg-info/10' : 'bg-warning/10'
     }
   }
 }
@@ -157,12 +158,33 @@ const columns = computed<TableColumn<SwissMatchRow>[]>(() => [
         variant="subtle"
         size="lg"
       />
-      <TournamentsSinglePairingSwissScoreButtons
-        v-else
-        :seat="row.original.player.seat"
-        :current="row.original.current"
-        @select="score => emit('select', row.original.pairingUuid, score)"
-      />
+      <div v-else class="flex items-center gap-1.5">
+        <UTooltip
+          v-if="!row.original.current && row.original.report"
+          :text="t('tournament.single.roundManager.matchResultReportedScore', {
+            score: `${row.original.report.score.player1GamesWon}`
+              + `-${row.original.report.score.player2GamesWon}`
+          })"
+        >
+          <UBadge
+            :label="row.original.report.status === 'disputed'
+              ? t('tournament.single.roundManager.matchResultDisputed', {
+                name: row.original.report.reporter.name
+              })
+              : t('tournament.single.roundManager.matchResultReported', {
+                name: row.original.report.reporter.name
+              })"
+            :color="row.original.report.status === 'disputed' ? 'error' : 'info'"
+            variant="subtle"
+            size="sm"
+          />
+        </UTooltip>
+        <TournamentsSinglePairingSwissScoreButtons
+          :seat="row.original.player.seat"
+          :current="row.original.current"
+          @select="score => emit('select', row.original.pairingUuid, score)"
+        />
+      </div>
     </template>
     <template #actions-cell="{ row }">
       <RowActionsMenu :items="rowActionItems(row.original)" />

@@ -10,7 +10,7 @@
 <script setup lang="ts">
 import type { TabsItem } from '@nuxt/ui'
 import type {
-  MatchScore, SwissMatchPerson, SwissMatchPlayer, SwissMatchRow, TablePlayer
+  MatchScore, SwissMatchPerson, SwissMatchPlayer, SwissMatchReport, SwissMatchRow, TablePlayer
 } from '~/types'
 
 const {
@@ -38,7 +38,13 @@ const toast = useToast()
 const { data: rounds } = useTournamentRoundsQuery(() => tournamentUuid)
 const { data: pairings } = useTournamentPairingsQuery(() => tournamentUuid)
 const { data: matchResults } = useTournamentMatchResultsQuery(() => tournamentUuid)
+const { data: matchReports } = useTournamentMatchReportsQuery(() => tournamentUuid)
 const { data: registrations } = useTournamentRegistrationsQuery(() => tournamentUuid)
+// Live-updates matchResults/matchReports/pairings as the Telegram bot writes
+// to them, so an organizer watching this round sees a player's submitted
+// result — and the opponent's confirmation — without refreshing the page
+// (2026-09-23 user request).
+useTournamentMatchResultsRealtime(() => tournamentUuid)
 const {
   liveStandings, playedPairs, byePlayerUuids, dropByPlayerUuid
 }
@@ -100,6 +106,14 @@ const { saveMatchResult, deleteMatchResult }
 const matchResultByPairingUuid = computed(() =>
   new Map((matchResults.value ?? []).map(result => [result.pairingUuid, result])))
 
+const reportByPairingUuid = computed<Map<string, SwissMatchReport>>(() => new Map(
+  (matchReports.value ?? []).map(report => [report.pairingUuid, {
+    reporter: personFor(report.reporterUuid),
+    status: report.status,
+    score: { player1GamesWon: report.player1GamesWon, player2GamesWon: report.player2GamesWon }
+  }])
+))
+
 async function onScoreSelect(pairingUuid: string, score: MatchScore) {
   const pairing = pairingsForRound.value.find(p => p.uuid === pairingUuid)
   const [player1Uuid, player2Uuid] = pairing?.playerUuids ?? []
@@ -143,16 +157,26 @@ const viewModeItems = computed<TabsItem[]>(() => [
 const matchTables = computed(() => pairingsForRound.value.flatMap((pairing) => {
   const players = matchPlayersFor(pairing).filter(player =>
     matchesRoundStatusSearch(`${player.name} ${player.surname ?? ''}`, search.value))
-  return players.length ? [{ pairing, players, isBye: pairing.playerUuids.length === 1 }] : []
+  return players.length
+    ? [{
+      pairing,
+      players,
+      isBye: pairing.playerUuids.length === 1,
+      report: reportByPairingUuid.value.get(pairing.uuid) ?? null
+    }]
+    : []
 }))
 
 const matchRows = computed<SwissMatchRow[]>(() =>
-  matchTables.value.flatMap(({ pairing, players, isBye }) =>
+  matchTables.value.flatMap(({
+    pairing, players, isBye, report
+  }) =>
     players.map(player => ({
       pairingUuid: pairing.uuid,
       tableNumber: pairing.tableNumber ?? 0,
       player,
       current: matchResultByPairingUuid.value.get(pairing.uuid) ?? null,
+      report,
       isBye
     }))))
 
@@ -279,12 +303,13 @@ watch(() => autoOpenAdvancePreview, (value) => {
           class="grid grid-cols-[repeat(auto-fill,minmax(26rem,1fr))] gap-3"
         >
           <TournamentsSinglePairingSwissMatchCard
-            v-for="{ pairing, players, isBye } in matchTables"
+            v-for="{ pairing, players, isBye, report } in matchTables"
             :key="pairing.uuid"
             :table-number="pairing.tableNumber ?? 0"
             :players="players"
             :is-bye="isBye"
             :current="matchResultByPairingUuid.get(pairing.uuid)"
+            :report="report"
             :search="search"
             @select="score => onScoreSelect(pairing.uuid, score)"
             @clear="onScoreClear(pairing.uuid)"
