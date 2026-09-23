@@ -20,10 +20,26 @@ const rankByPlayerUuid = computed(() =>
 const filteredStandings = computed(() =>
   standings.filter(standing => matchesRoundStatusSearch(standing.label, search.value)))
 
+// Briefly tints a row yellow when its own points/record/tiebreaks change —
+// e.g. as a new result comes in for one of this player's tables — separate
+// from the persistent bg-warning/10 "no result yet" tint above (that one
+// never fades, this one does).
+const { flashedKeys } = useRowUpdateFlash(() => standings.map(standing => ({
+  key: standing.playerUuid,
+  signature: [
+    standing.matchPoints, standing.wins, standing.draws, standing.losses,
+    standing.omw, standing.gw, standing.ogw
+  ].join('-')
+})))
+
 const tableMeta = {
   class: {
-    tr: (row: { original: LiveSwissStanding }) =>
-      pendingPlayerUuids.includes(row.original.playerUuid) ? 'bg-warning/10' : ''
+    tr: (row: { original: LiveSwissStanding }) => {
+      if (flashedKeys.value.has(row.original.playerUuid)) {
+        return 'bg-warning/20 transition-colors duration-500'
+      }
+      return pendingPlayerUuids.includes(row.original.playerUuid) ? 'bg-warning/10' : ''
+    }
   }
 }
 
