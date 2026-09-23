@@ -29,6 +29,12 @@ const { t } = useI18n()
 // A real table (not a bye) still waiting for its result.
 const isPending = computed(() => !isBye && !current)
 
+// Full name, not just the first — two players sharing a first name (e.g.
+// two "Alessandro"s at different tables) would otherwise be indistinguishable
+// in the badge (2026-09-23 user request).
+const reporterFullName = computed(() =>
+  report ? `${report.reporter.name} ${report.reporter.surname ?? ''}`.trim() : '')
+
 // Drop is an action, not a state: the state shows next to the name as a badge.
 function dropMenuItems(player: SwissMatchPlayer): DropdownMenuItem[] {
   return [{
@@ -64,10 +70,10 @@ function dropMenuItems(player: SwissMatchPlayer): DropdownMenuItem[] {
           <UBadge
             :label="report.status === 'disputed'
               ? t('tournament.single.roundManager.matchResultDisputed', {
-                name: report.reporter.name
+                name: reporterFullName
               })
               : t('tournament.single.roundManager.matchResultReported', {
-                name: report.reporter.name
+                name: reporterFullName
               })"
             :color="report.status === 'disputed' ? 'error' : 'info'"
             variant="subtle"
