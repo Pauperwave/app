@@ -8,7 +8,6 @@
 // reactive substrate. Extracted 2026-09-18 once CommanderRoundManager.vue
 // had grown past 790 lines mixing this substrate with 5 unrelated modal
 // flows and the round lifecycle.
-import type { TablePlayer } from '~/types'
 import type { WinnerChecklistEntry } from '~/components/tournaments/single/pairing/WinnerChecklistCard.vue'
 
 export function useCommanderRoundData(options: {
@@ -28,8 +27,13 @@ export function useCommanderRoundData(options: {
   const { data: associatesData } = useAssociatesQuery()
   const { liveStandings } = useLiveCommanderStandings(tournamentUuid)
 
-  const round = computed(() => rounds.value?.find(r => r.roundNumber === roundNumber) ?? null)
-  const isLastRoundOfTournament = computed(() => roundNumber >= roundCount)
+  const {
+    round, isLastRoundOfTournament, pairingsForRound,
+    associateUuidFor, labelFor, tablePlayersFor
+  } = useRoundAndPlayerLookup({
+    rounds, pairings, registrations, associatesData, roundNumber, roundCount
+  })
+
   // Turning back round 1 doesn't return to a "previous round" (there isn't
   // one) — turn_back_commander_round resets the tournament to
   // registration_open instead, so the button needs its own label reflecting
@@ -40,37 +44,6 @@ export function useCommanderRoundData(options: {
     : t('tournament.single.roundManager.turnBackButton'))
   const roundIsCompleted = computed(() => round.value?.status === 'completed')
   const tournamentIsEnded = computed(() => isLastRoundOfTournament.value && roundIsCompleted.value)
-
-  // player_uuid -> associate uuid / display label, resolved through this
-  // tournament's own registrations (not a global players table read) — same
-  // mapping every other tournament-detail composable already gets.
-  const associateByPlayerUuid = computed(() => {
-    const map = new Map<string, string>()
-    for (const registration of registrations.value ?? []) {
-      map.set(registration.playerUuid, registration.associateUuid)
-    }
-    return map
-  })
-  const associatesByUuid = computed(() =>
-    new Map((associatesData.value ?? []).map(a => [a.uuid, a])))
-
-  function labelFor(playerUuid: string): string {
-    const associateUuid = associateByPlayerUuid.value.get(playerUuid)
-    const associate = associateUuid ? associatesByUuid.value.get(associateUuid) : undefined
-    return associate ? `${associate.first_name} ${associate.last_name}` : playerUuid
-  }
-  function associateUuidFor(playerUuid: string): string | undefined {
-    return associateByPlayerUuid.value.get(playerUuid)
-  }
-
-  const pairingsForRound = computed(() =>
-    (pairings.value ?? []).filter(p => p.roundUuid === round.value?.uuid))
-
-  function tablePlayersFor(pairing: { playerUuids: string[] }): TablePlayer[] {
-    return pairing.playerUuids.map(playerUuid => ({
-      value: playerUuid, label: labelFor(playerUuid)
-    }))
-  }
 
   function positionsFor(pairingUuid: string): Map<string, number> {
     const map = new Map<string, number>()

@@ -51,30 +51,12 @@ const {
   = useLiveSwissStandings(() => tournamentUuid)
 const { data: associatesData } = useAssociatesQuery()
 
-const round = computed(() => rounds.value?.find(r => r.roundNumber === roundNumber) ?? null)
-const isLastRoundOfTournament = computed(() => roundNumber >= roundCount)
-
-const associateByPlayerUuid = computed(() => {
-  const map = new Map<string, string>()
-  for (const registration of registrations.value ?? []) {
-    map.set(registration.playerUuid, registration.associateUuid)
-  }
-  return map
+const {
+  round, isLastRoundOfTournament, pairingsForRound,
+  associatesByUuid, labelFor, associateUuidFor
+} = useRoundAndPlayerLookup({
+  rounds, pairings, registrations, associatesData, roundNumber, roundCount
 })
-const associatesByUuid = computed(() =>
-  new Map((associatesData.value ?? []).map(a => [a.uuid, a])))
-
-function labelFor(playerUuid: string): string {
-  const associateUuid = associateByPlayerUuid.value.get(playerUuid)
-  const associate = associateUuid ? associatesByUuid.value.get(associateUuid) : undefined
-  return associate ? `${associate.first_name} ${associate.last_name}` : playerUuid
-}
-function associateUuidFor(playerUuid: string): string | undefined {
-  return associateByPlayerUuid.value.get(playerUuid)
-}
-
-const pairingsForRound = computed(() =>
-  (pairings.value ?? []).filter(p => p.roundUuid === round.value?.uuid))
 
 function personFor(playerUuid: string): SwissMatchPerson {
   const associateUuid = associateUuidFor(playerUuid)
