@@ -49,10 +49,6 @@ const decksWithPlayers = computed(() => {
   })
 })
 
-const scryfallSearchUrl = computed(() => commanderName.value
-  ? `https://scryfall.com/search?q=!"${encodeURIComponent(commanderName.value)}"`
-  : '#')
-
 useSeoMeta({ title: () => commanderName.value ?? t('commander.breadcrumb') })
 </script>
 
@@ -88,24 +84,14 @@ useSeoMeta({ title: () => commanderName.value ?? t('commander.breadcrumb') })
           </div>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <UCard
-            v-for="stat in [
-              { label: t('deck.statsPlayers'), value: stats?.playerCount ?? 0 },
-              { label: t('player.stats.matches'), value: stats?.matchCount ?? 0 },
-              { label: t('player.stats.wins'), value: stats?.winCount ?? 0 },
-              { label: t('player.stats.kills'), value: stats?.totalKills ?? 0 }
-            ]"
-            :key="stat.label"
-          >
-            <p class="text-xs text-muted uppercase mb-1">
-              {{ stat.label }}
-            </p>
-            <p class="text-2xl font-semibold">
-              {{ stat.value }}
-            </p>
-          </UCard>
-        </div>
+        <StatCardsGrid
+          :stats="[
+            { label: t('deck.statsPlayers'), value: stats?.playerCount ?? 0 },
+            { label: t('player.stats.matches'), value: stats?.matchCount ?? 0 },
+            { label: t('player.stats.wins'), value: stats?.winCount ?? 0 },
+            { label: t('player.stats.kills'), value: stats?.totalKills ?? 0 }
+          ]"
+        />
 
         <ClientOnly>
           <StatisticsCommanderWinRateChart
@@ -115,42 +101,12 @@ useSeoMeta({ title: () => commanderName.value ?? t('commander.breadcrumb') })
           />
         </ClientOnly>
 
-        <div class="space-y-3">
-          <h2 class="text-lg font-bold flex items-center gap-2">
-            <UIcon :name="ICONS.players" class="size-5 text-primary" />
-            {{ t('commander.page.decksHeading') }}
-          </h2>
-
-          <div v-if="decksWithPlayers.length" class="flex flex-wrap gap-2">
-            <NuxtLink
-              v-for="entry in decksWithPlayers"
-              :key="entry.deckUuid"
-              :to="entry.playerSlug ? `/players/${entry.playerSlug}` : undefined"
-            >
-              <UBadge
-                color="neutral"
-                variant="soft"
-                size="lg"
-                class="gap-1.5"
-              >
-                {{ entry.playerLabel ?? t('player.fallbackName') }}
-                <span v-if="entry.partnerName" class="text-muted">
-                  {{ t('commander.page.partnerSuffix', { name: entry.partnerName }) }}
-                </span>
-              </UBadge>
-            </NuxtLink>
-          </div>
-          <EmptyState v-else :message="t('commander.index.emptyList')" />
-        </div>
-
-        <UButton
-          :label="t('deck.viewOnScryfall')"
-          :icon="ICONS.externalLink"
-          variant="outline"
-          color="neutral"
-          :to="scryfallSearchUrl"
-          target="_blank"
+        <StatisticsDecksFeaturingList
+          :entries="decksWithPlayers"
+          :link-to="entry => entry.playerSlug ? `/players/${entry.playerSlug}` : undefined"
         />
+
+        <ScryfallSearchButton :name="commanderName" />
       </div>
 
       <EmptyState v-else :message="t('commander.page.notFound')" />
