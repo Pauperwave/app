@@ -1,6 +1,5 @@
 <!-- app\components\tournaments\single\pairing\SwissMatchCard.vue -->
 <script setup lang="ts">
-import type { DropdownMenuItem } from '@nuxt/ui'
 import type { MatchScore, SwissMatchConfirmedInfo, SwissMatchPlayer, SwissMatchReport } from '~/types'
 
 const {
@@ -37,26 +36,10 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-// A real table (not a bye) still waiting for its result.
+// A real table (not a bye) still waiting for its result — only used here
+// for the card's own ring color; SwissMatchResultBadge.vue derives its own
+// equivalent state from `current`/`report` directly.
 const isPending = computed(() => !isBye && !current)
-
-// Full name, not just the first — two players sharing a first name (e.g.
-// two "Alessandro"s at different tables) would otherwise be indistinguishable
-// in a badge (2026-09-23 user request).
-function fullName(person: { name: string, surname?: string }): string {
-  return `${person.name} ${person.surname ?? ''}`.trim()
-}
-
-// Drop is an action, not a state: the state shows next to the name as a badge.
-function dropMenuItems(player: SwissMatchPlayer): DropdownMenuItem[] {
-  return [{
-    label: player.dropped
-      ? t('tournament.single.roundManager.dropUndoLabel')
-      : t('tournament.single.roundManager.dropLabel'),
-    icon: ICONS.drop,
-    onSelect: () => emit('toggleDrop', player.playerUuid)
-  }]
-}
 </script>
 
 <template>
@@ -73,104 +56,26 @@ function dropMenuItems(player: SwissMatchPlayer): DropdownMenuItem[] {
             ? t('tournament.single.roundManager.byeTitle')
             : t('tournament.single.swissTablePreview.tableNumber', { n: tableNumber }) }}
         </span>
-        <UTooltip
-          v-if="isPending && report"
-          :text="t('tournament.single.roundManager.matchResultReportedScore', {
-            score: `${report.score.player1GamesWon}-${report.score.player2GamesWon}`
-          })"
-        >
-          <UBadge
-            :label="report.status === 'disputed'
-              ? t('tournament.single.roundManager.matchResultDisputed', {
-                name: fullName(report.reporter)
-              })
-              : t('tournament.single.roundManager.matchResultReported', {
-                name: fullName(report.reporter)
-              })"
-            :color="report.status === 'disputed' ? 'error' : 'info'"
-            variant="subtle"
-            size="md"
-          />
-        </UTooltip>
-        <UBadge
-          v-else-if="isPending"
-          :label="t('tournament.single.roundManager.matchResultPending')"
-          color="warning"
-          variant="subtle"
-          size="md"
+        <TournamentsSinglePairingSwissMatchResultBadge
+          v-if="!isBye"
+          :current="current"
+          :report="report"
+          :confirmed-info="confirmedInfo"
+          @clear="emit('clear')"
         />
-        <div v-else-if="current" class="flex items-center gap-1.5">
-          <UBadge
-            v-if="confirmedInfo"
-            :label="t('tournament.single.roundManager.matchResultConfirmed', {
-              reporter: fullName(confirmedInfo.reporter),
-              confirmer: fullName(confirmedInfo.confirmer)
-            })"
-            color="success"
-            variant="subtle"
-            size="md"
-          />
-          <UButton
-            :label="t('tournament.single.roundManager.matchResultDeleteLabel')"
-            :icon="ICONS.undo"
-            color="error"
-            variant="outline"
-            size="xs"
-            @click="emit('clear')"
-          />
-        </div>
       </div>
     </template>
 
-    <div
+    <TournamentsSinglePairingSwissMatchPlayerRow
       v-for="player in players"
       :key="player.playerUuid"
-      class="flex items-center justify-between gap-2"
-    >
-      <div class="flex items-center gap-1.5">
-        <AssociateTag
-          :name="player.name"
-          :surname="player.surname"
-          :associate-uuid="player.associateUuid"
-          :highlight-query="search"
-          size="md"
-          :class="player.dropped && 'opacity-60 line-through'"
-        />
-        <UTooltip
-          v-if="player.dropped"
-          :text="t('tournament.single.roundManager.dropBadgeTooltip', {
-            round: player.dropped.roundNumber,
-            time: formatDropTime(player.dropped.droppedAt)
-          })"
-        >
-          <UBadge
-            :label="t('tournament.single.roundManager.dropBadge', {
-              round: player.dropped.roundNumber
-            })"
-            color="warning"
-            variant="subtle"
-            size="sm"
-          />
-        </UTooltip>
-      </div>
-
-      <div class="flex items-center gap-1">
-        <UBadge
-          v-if="isBye"
-          :label="t('tournament.single.roundManager.byeResult')"
-          color="success"
-          variant="subtle"
-          size="lg"
-        />
-        <TournamentsSinglePairingSwissScoreButtons
-          v-else
-          :seat="player.seat"
-          :current="current"
-          :reported="report?.status === 'pending' ? report.score : null"
-          @select="score => emit('select', score)"
-        />
-        <RowActionsMenu :items="dropMenuItems(player)" />
-      </div>
-    </div>
+      :player="player"
+      :current="current"
+      :reported="report?.status === 'pending' ? report.score : null"
+      :is-bye="isBye"
+      :search="search"
+      @select="score => emit('select', score)"
+      @toggle-drop="playerUuid => emit('toggleDrop', playerUuid)"
+    />
   </UCard>
 </template>
