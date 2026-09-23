@@ -91,8 +91,13 @@ export interface Transaction
 // email, pauperwave_associate_number, is_active) — nullable throughout since
 // a view row's FK-joined columns are all optional in the generated type,
 // even though every one of these is NOT NULL in practice (a player row
-// always has an associate_uuid FK).
-export type Player = Database['public']['Views']['players_full']['Row']
+// always has an associate_uuid FK). `id` is re-narrowed to non-null: it's
+// the view's own players.id, never null in practice, and useSelection.ts's
+// row-selection generic (`T extends { id: number }`, see
+// usePlayersTableColumns.ts's selectColumn) needs it non-nullable.
+export interface Player extends Omit<Database['public']['Views']['players_full']['Row'], 'id'> {
+  id: number
+}
 
 export interface Mail {
   id: number

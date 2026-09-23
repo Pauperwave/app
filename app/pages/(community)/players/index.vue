@@ -77,14 +77,30 @@ const { data: membersData } = useMembersQuery()
 const roleByAssociateUuid = computed(() =>
   new Map((membersData.value ?? []).map(member => [member.associateUuid, member.role])))
 
-const { columns, columnHeaders } = usePlayersTableColumns(search, lastLogins, roleByAssociateUuid)
+// Checkbox selection + bulk delete (2026-09-23 user request) — useSelection.ts,
+// same as transactions/index.vue's own selectedTransactions: filtered against
+// filteredPlayers (not the raw dataset) so a selection hidden by the active
+// status tab/search isn't actionable. Not useSelectedTableRows.ts — that needs
+// a full tableApi ref (getFilteredRowModel), while `table` here is typed as
+// the lighter VisibilityTableRef for the "Mostra colonne" menu.
+const selection = useSelection<number>()
+const table = useTemplateRef<VisibilityTableRef>('table')
+const selectedPlayers = computed(() =>
+  filteredPlayers.value.filter(player => selection.isSelected(player.id)))
+const {
+  confirmOpen: bulkDeleteConfirmOpen, deleting: bulkDeleting,
+  requestDelete: requestBulkDelete, confirmDelete: confirmBulkDelete
+} = usePlayersBulkActions(selection)
+
+const { columns, columnHeaders } = usePlayersTableColumns(
+  selection, search, lastLogins, roleByAssociateUuid
+)
 const sorting = ref([{ id: 'id', desc: false }])
 
 // Same "Mostra colonne" pattern as wanted-cards/index.vue: rebuilt every time
 // the menu opens (via :items"), getAllColumns() + getCanHide() +
 // toggleVisibility(), not a direct v-model on the individual items (official
 // Nuxt UI convention, UTable docs "Column visibility" section).
-const table = useTemplateRef<VisibilityTableRef>('table')
 const columnVisibility = ref({})
 
 // "Mostra colonne" section divider: identity/status columns vs. activity
@@ -111,10 +127,21 @@ const skeletonCount = computed(() => (isPending.value ? undefined : filteredPlay
       </ListPageNavbar>
 
       <!-- Same #left toolbar placement as associates/index.vue and
-           wanted-cards/index.vue for their StatusFilterGroup. -->
-      <UDashboardToolbar>
+           wanted-cards/index.vue for their StatusFilterGroup — swapped for
+           the bulk-actions bar (same row/height) while there's a selection. -->
+      <UDashboardToolbar :ui="{ root: 'flex-wrap h-auto py-2 gap-1.5', left: 'gap-4 flex-wrap' }">
         <template #left>
-          <div id="tour-players-filters" class="flex items-center gap-4 flex-wrap">
+          <PlayersListBulkActionsBar
+            v-if="selectedPlayers.length"
+            side="left"
+            :count="selectedPlayers.length"
+            @clear="selection.clear()"
+          />
+          <div
+            v-else
+            id="tour-players-filters"
+            class="flex items-center gap-4 flex-wrap"
+          >
             <StatusFilterGroup v-model="activeStatusTab" :items="statusTabs" />
 
             <SearchInput
@@ -126,7 +153,13 @@ const skeletonCount = computed(() => (isPending.value ? undefined : filteredPlay
         </template>
 
         <template #right>
-          <div id="tour-players-actions">
+          <PlayersListBulkActionsBar
+            v-if="selectedPlayers.length"
+            side="right"
+            :count="selectedPlayers.length"
+            @delete="requestBulkDelete(selectedPlayers)"
+          />
+          <div v-else id="tour-players-actions">
             <ColumnVisibilityMenu :items="columnVisibilityItems" />
           </div>
         </template>
@@ -139,31 +172,38 @@ const skeletonCount = computed(() => (isPending.value ? undefined : filteredPlay
         :count="skeletonCount"
         :columns="columns.length"
       />
-      <UContextMenu v-else :items="tableContextMenuItems">
-        <UTable
-          ref="table"
-          v-model:sorting="sorting"
-          v-model:column-visibility="columnVisibility"
-          v-model:global-filter="search"
-          :global-filter-options="{ globalFilterFn: playersGlobalFilterFn }"
-          :data="filteredPlayers"
-          :columns="columns"
-          class="flex-1 h-80 shrink-0"
-          :ui="{ tr: 'cursor-pointer' }"
-          :loading="loading"
-          sticky="header"
-          @select="(_e, row) => navigateTo(
-            `/players/${slugify(`${row.original.first_name} ${row.original.last_name}`)}`
-          )"
-          @contextmenu="onRowContextmenu"
-        >
-          <template #empty>
-            <EmptyState
-              :message="$t('player.empty')"
-            />
-          </template>
-        </UTable>
-      </UContextMenu>
+      <template v-else>
+        <UContextMenu :items="tableContextMenuItems">
+          <UTable
+            ref="table"
+            v-model:sorting="sorting"
+            v-model:column-visibility="columnVisibility"
+            v-model:global-filter="search"
+            :global-filter-options="{ globalFilterFn: playersGlobalFilterFn }"
+            :data="filteredPlayers"
+            :columns="columns"
+            class="flex-1 h-80 shrink-0"
+            :ui="{ tr: 'cursor-pointer' }"
+            :loading="loading"
+            sticky="header"
+            @select="(_e, row) => navigateTo(
+              `/players/${slugify(`${row.original.first_name} ${row.original.last_name}`)}`
+            )"
+            @contextmenu="onRowContextmenu"
+          >
+            <template #empty>
+              <EmptyState
+                :message="$t('player.empty')"
+              />
+            </template>
+          </UTable>
+        </UContextMenu>
+
+        <TableSelectionFooter
+          :selected="selectedPlayers.length"
+          :total="filteredPlayers.length"
+        />
+      </template>
     </template>
   </UDashboardPanel>
 
@@ -182,4 +222,14 @@ const skeletonCount = computed(() => (isPending.value ? undefined : filteredPlay
       {{ deletingPlayer.first_name }} {{ deletingPlayer.last_name }}
     </p>
   </ConfirmModal>
+
+  <ConfirmModal
+    v-model:open="bulkDeleteConfirmOpen"
+    :title="$t('player.bulkActions.deleteConfirmTitle', selectedPlayers.length)"
+    :warning="$t('common.confirmDeleteWarning')"
+    :confirm-label="$t('player.rowActions.delete')"
+    :confirm-icon="ICONS.delete"
+    :loading="bulkDeleting"
+    @confirm="confirmBulkDelete"
+  />
 </template>

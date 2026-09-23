@@ -4,11 +4,13 @@ import { AssociateTag, HighlightMatch } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { Player } from '~/types'
 import type { MemberRole } from '#shared/types/settings'
+import type { Selection } from '~/composables/useSelection'
 import AssociateNumberBadge from '~/components/ui/AssociateNumberBadge.vue'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 import RoleBadge from '~/components/ui/RoleBadge.vue'
 
 export function usePlayersTableColumns(
+  selection: Selection<number>,
   search?: Ref<string>,
   // uuid (players.uuid, matching PlayerLastLogin.playerUuid) -> ISO
   // timestamp or null (never signed in, or no linked auth user). Optional,
@@ -24,6 +26,8 @@ export function usePlayersTableColumns(
   roleByAssociateUuid?: Ref<Map<string, MemberRole>>
 ) {
   const { t } = useI18n()
+
+  const selectColumn = useGroupedSelectColumn<Player>(selection)
 
   // No "Stato" column: the page only offers "Attivi"/"Non attivi" tabs (no
   // "all" view like associates' membership_request_status), so is_active
@@ -41,6 +45,7 @@ export function usePlayersTableColumns(
   }
 
   const columns: TableColumn<Player>[] = [
+    selectColumn,
     {
       accessorKey: 'id',
       header: ({ column }) => sortableHeader(t('player.columns.id'), column),
