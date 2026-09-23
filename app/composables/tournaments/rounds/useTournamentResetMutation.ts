@@ -7,22 +7,11 @@
 // this one isn't format-specific, unlike everything else in those two.
 export function useTournamentResetMutation(tournamentUuid: MaybeRefOrGetter<string>) {
   const queryCache = useQueryCache()
-  const toast = useToast()
-  const { t } = useI18n()
 
-  const resetTournament = useMutation({
-    mutation: () =>
-      $fetch('/api/tournament-rounds/reset', {
-        method: 'POST',
-        body: { tournamentUuid: toValue(tournamentUuid) }
-      }),
-    onError: (error) => {
-      toast.add({
-        title: t('tournament.single.resetErrorTitle'),
-        description: toErrorMessage(error),
-        color: 'error'
-      })
-    },
+  const resetTournament = useRoundLifecycleMutation<undefined>({
+    endpoint: '/api/tournament-rounds/reset',
+    errorTitleKey: 'tournament.single.resetErrorTitle',
+    body: () => ({ tournamentUuid: toValue(tournamentUuid) }),
     onSettled: () => {
       queryCache.invalidateQueries({ key: TOURNAMENTS_KEY })
       queryCache.invalidateQueries({ key: TOURNAMENT_ROUNDS_KEY(toValue(tournamentUuid)) })
