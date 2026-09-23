@@ -22,21 +22,8 @@ const {
   loadingCount?: number
 }>()
 
-// Same status sections/order as GridView.vue — empty statuses are skipped.
-const STATUS_ORDER: Tournament['status'][] = [
-  'in_progress', 'registration_open', 'draft', 'completed', 'cancelled', 'external'
-]
-const sections = computed(() => STATUS_ORDER
-  .map(status => ({
-    status,
-    tournaments: tournaments.filter(tournament => tournament.status === status)
-  }))
-  .filter(section => section.tournaments.length))
-
-// Flattened in drawn order so a shift-click range follows the sections.
-const range = computed(() => sections.value
-  .flatMap(section => section.tournaments)
-  .map(tournament => tournament.id))
+// Same status sections/order/range as GridView.vue — useTournamentStatusSections.ts.
+const { sections, range } = useTournamentStatusSections(() => tournaments)
 </script>
 
 <template>

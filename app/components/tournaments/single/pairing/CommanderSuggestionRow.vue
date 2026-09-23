@@ -17,25 +17,16 @@ const {
 } = defineProps<Props>()
 
 const tooltipOpen = ref(false)
-const anchor = ref({ x: 0, y: 0 })
 
 // USelectMenu's item list is a Reka listbox with its own pointer/focus
 // handling for row highlighting — nesting UTooltip's built-in hover-trigger
 // (TooltipTrigger, which listens for pointerenter/focus on the slotted
 // element) inside it never fires, the listbox swallows the events first.
 // Bypassing hover-trigger entirely — manual pointer tracking + a virtual
-// :reference anchored to the cursor + controlled v-model:open.
-const reference = computed(() => ({
-  getBoundingClientRect: () => ({
-    width: 0,
-    height: 0,
-    left: anchor.value.x,
-    right: anchor.value.x,
-    top: anchor.value.y,
-    bottom: anchor.value.y,
-    ...anchor.value
-  } as DOMRect)
-}))
+// :reference anchored to the cursor + controlled v-model:open. See
+// usePointerReference.ts's own comment for why the pointer handlers below
+// stay local instead of being folded into the composable too.
+const { anchor, reference } = usePointerReference()
 
 function handlePointerEnter(ev: PointerEvent) {
   if (!imageUrl) return
