@@ -13,8 +13,13 @@
 -->
 <script setup lang="ts">
 const {
-  count, total, side,
-  showApprove = false, showReject = false, showRestore = false, showRenew = false,
+  count,
+  total,
+  side,
+  showApprove = false,
+  showReject = false,
+  showRestore = false,
+  showRenew = false,
   showApproveRenewal = false
 } = defineProps<{
   count: number

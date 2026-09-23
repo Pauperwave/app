@@ -11,7 +11,11 @@ import type { Tournament } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 
 const {
-  tournaments, contextMenuItems, selection, loading = false, loadingCount = 12
+  tournaments,
+  contextMenuItems,
+  selection,
+  loading = false,
+  loadingCount = 12
 } = defineProps<{
   tournaments: Tournament[]
   contextMenuItems: (tournament: Tournament) => DropdownMenuItem[]
