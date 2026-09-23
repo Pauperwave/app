@@ -533,8 +533,8 @@
       "errorToastTitle": "Ripristino fallito"
     },
     "bulkActions": {
-      "selectedCount": "{count} selezionato | {count} selezionati",
       "clearSelection": "Deseleziona",
+      "selectAll": "Seleziona tutti",
       "renewModalTitle": "Rinnova {count} associato | Rinnova {count} associati",
       "renewModalReceivedByLabel": "Ricevuto da",
       "renewModalReceivedByPlaceholder": "Seleziona chi ha ricevuto il pagamento",
