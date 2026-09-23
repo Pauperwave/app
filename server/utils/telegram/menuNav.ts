@@ -31,6 +31,32 @@ export interface MenuNavTarget {
   text: InputRichMessage
 }
 
+// Same registry pattern as menuRegistry above, for the other half of
+// tournament/detail.ts's "back" button: rebuilding the exact origin view
+// (month/league/list) needs each list command's own block-rendering
+// function (calendarioBlocksFor, legaTorneiBlocks, ...) — importing those
+// directly from detail.ts is what created the circular dependency each of
+// calendario.ts/leghe.ts/iscrizioni.ts/prossimo.ts already imports torneoMenu
+// from (fallow:dead-code flagged all 4 as import cycles, 2026-09-23). Each
+// list command registers its own resolver, keyed by the origin prefix it
+// encodes into torneoMenu's own payload ('m'/'l'/'i'/'p') — detail.ts only
+// ever depends on this registry, never on the list modules themselves.
+export type BackTargetResolver = (
+  ctx: Context, origin: string, chatId: number
+) => Promise<MenuNavTarget>
+
+const backResolverRegistry = new Map<string, BackTargetResolver>()
+
+export function registerBackResolver(prefix: string, resolver: BackTargetResolver) {
+  backResolverRegistry.set(prefix, resolver)
+}
+
+export function getBackResolver(prefix: string): BackTargetResolver {
+  const resolver = backResolverRegistry.get(prefix)
+  if (!resolver) throw new Error(`Back resolver '${prefix}' was not registered via registerBackResolver()`)
+  return resolver
+}
+
 // Shared "go back to an origin view with full state restored": swap
 // ctx.match to the target's payload, pick edit-in-place vs delete+resend
 // depending on whether the message is a photo, hand back the right menu.
