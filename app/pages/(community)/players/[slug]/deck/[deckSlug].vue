@@ -26,14 +26,10 @@ const deck = computed(() => decksData.value?.find(
 const commander1Name = computed(() => deck.value?.commander1Name ?? null)
 const commander2Name = computed(() => deck.value?.commander2Name ?? null)
 
-const { commander1Data, commander2Data, loading: catalogLoading } = useCommanderCards(
-  commander1Name, commander2Name
-)
-const art1 = computed(() => getArtCrop(commander1Data.value))
-const art2 = computed(() => getArtCrop(commander2Data.value))
-
-const commanderDisplayName = computed(() => [commander1Name.value, commander2Name.value]
-  .filter(Boolean).join(' / ') || t('deck.fallbackName'))
+const {
+  commander1Data, catalogLoading, art1, art2, commanderDisplayName
+}
+  = useCommanderPairDisplay(commander1Name, commander2Name)
 
 const { data: stats } = useCommanderDeckStatsQuery(() => deck.value?.uuid)
 const { data: playersFullData } = usePlayersQuery()
