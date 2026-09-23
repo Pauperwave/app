@@ -124,6 +124,7 @@ function mieiTorneiBlocks(registrations: MyRegistration[]): InputRichMessage['bl
       text: [`${personalIcon(registrationStatus)} `, { type: 'bold', text: tournament.name }, stage]
     })
     blocks.push({ type: 'paragraph', text: `${ICONS.date} ${date}` })
+    // fallow-ignore-next-line code-duplication -- leghe.ts's own location/button block, different payload encoder
     if (tournament.location?.name) {
       blocks.push({ type: 'paragraph', text: `${ICONS.location} ${tournament.location.name}` })
     }
