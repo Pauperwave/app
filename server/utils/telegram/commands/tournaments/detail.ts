@@ -7,7 +7,13 @@
 // torneoMenu's back button rebuilds the exact origin view (month/league/
 // list) instead of using Menu's built-in back()/nav(), which can't hand the
 // target menu a fresh payload — every button therefore carries
-// `${uuid}:${origin}` so both survive a full round trip.
+// `${uuid}:${origin}` so both survive a full round trip. Rebuilding a
+// specific origin view needs that list command's own block-rendering
+// function — resolved through menuNav.ts's registerBackResolver/
+// getBackResolver registry (2026-09-23) rather than importing
+// calendarioBlocksFor/legaTorneiBlocks/iscrizioniBlocksFor/prossimoMarkdown
+// directly, which used to create a circular import with each of them (they
+// all import torneoMenu/openTournamentDetail from here).
 import type { Context } from 'grammy'
 import type { InputRichMessage } from 'grammy/types'
 import { Menu } from '@grammyjs/menu'
@@ -19,17 +25,9 @@ import type { RegistrationStatus } from './queries'
 import { NOT_LINKED_MESSAGE } from '../account/linking'
 import { answerLoadError, requireChatId } from '../callbackErrors'
 import { mapsUrl, googleCalendarUrl } from '../events/eventLinks'
-import { navigateBack, getMenu } from '../../menuNav'
-import type { MenuNavTarget } from '../../menuNav'
+import { navigateBack, getBackResolver } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
 import { ICONS } from '../../icons'
-// Circular import (calendario/leghe/iscrizioni import torneoMenu, this
-// imports their text-renderers back) — safe since only used inside async
-// handlers. Menu objects themselves come via menuNav.ts's registry instead.
-import { calendarioBlocksFor } from './calendario'
-import { legaTorneiBlocks } from './leghe'
-import { iscrizioniBlocksFor } from './iscrizioni'
-import { prossimoMarkdown } from './prossimo'
 
 export interface LocationRow {
   name: string | null
@@ -212,35 +210,26 @@ function decodeTorneoPayload(raw: string): { uuid: string, origin: string } {
   return { uuid: raw.slice(0, separator), origin: raw.slice(separator + 1) }
 }
 
-// Cheap label for the back button — the expensive part (resolveBackTarget)
-// only runs once the button is actually pressed.
-function backLabel(origin: string): string {
-  if (origin.startsWith('l')) return '« Torna alla lega'
-  if (origin === 'i') return '« Torna ai tuoi tornei'
-  if (origin === 'p') return '« Torna al prossimo torneo'
-  return '« Torna al mese'
+type BackOrigin = 'l' | 'i' | 'p' | 'm'
+
+// Origin prefixes: `l<index>` (league), `i` (iscrizioni), `p` (prossimo),
+// `m<monthOffset>` (calendario, the fallback) — the single source of truth
+// for the origin encoding, used both for the back button's own label
+// (cheap, backLabel below) and to look up which module's resolver rebuilds
+// that origin view (getBackResolver, only once the button is pressed).
+function backResolverPrefix(origin: string): BackOrigin {
+  if (origin.startsWith('l')) return 'l'
+  if (origin === 'i' || origin === 'p') return origin
+  return 'm'
 }
 
-// Rebuilds the exact origin view so "back" restores precisely where the
-// user came from. Menu instance resolved via menuNav.ts's registry
-// (getMenu), not a direct import — see that file's own comment for why.
-async function resolveBackTarget(
-  ctx: Context, origin: string, chatId: number
-): Promise<MenuNavTarget> {
-  if (origin.startsWith('l')) {
-    const index = Number(origin.slice(1))
-    const blocks = await legaTorneiBlocks(ctx, index) ?? [{ type: 'paragraph', text: `${ICONS.trophy} Lega non trovata.` }]
-    return { payload: String(index), menu: getMenu('lt'), text: { blocks } }
+function backLabel(prefix: BackOrigin): string {
+  switch (prefix) {
+    case 'l': return '« Torna alla lega'
+    case 'i': return '« Torna ai tuoi tornei'
+    case 'p': return '« Torna al prossimo torneo'
+    case 'm': return '« Torna al mese'
   }
-  if (origin === 'i') {
-    return { payload: '', menu: getMenu('isc'), text: { blocks: await iscrizioniBlocksFor(ctx, chatId) } }
-  }
-  if (origin === 'p') {
-    return { payload: '', menu: getMenu('p'), text: { markdown: await prossimoMarkdown(ctx) } }
-  }
-  const offset = Number(origin.slice(1))
-  const blocks = await calendarioBlocksFor(ctx, offset, chatId)
-  return { payload: String(offset), menu: getMenu('cal'), text: { blocks } }
 }
 
 async function handleCancelRegistration(
@@ -351,11 +340,12 @@ export const torneoMenu = new Menu<Context>('t', {
     }
   }
 
-  range.text({ text: backLabel(origin), payload }, async (ctx) => {
+  const backPrefix = backResolverPrefix(origin)
+  range.text({ text: backLabel(backPrefix), payload }, async (ctx) => {
     const buttonChatId = await requireChatId(ctx)
     if (!buttonChatId) return
     try {
-      await navigateBack(ctx, () => resolveBackTarget(ctx, origin, buttonChatId))
+      await navigateBack(ctx, () => getBackResolver(backPrefix)(ctx, origin, buttonChatId))
       await ctx.answerCallbackQuery()
     } catch {
       await answerLoadError(ctx)

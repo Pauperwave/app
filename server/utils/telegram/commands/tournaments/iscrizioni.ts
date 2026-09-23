@@ -10,7 +10,7 @@ import { stageLabel, personalIcon } from './line'
 import { fetchStageNumbers, OPEN_TOURNAMENT_STATUSES } from './queries'
 import { torneoMenu, openTournamentDetail } from './detail'
 import { requireLinkedAssociate, resolveAssociateUuidByChatId } from '../account/linking'
-import { registerMenu } from '../../menuNav'
+import { registerMenu, registerBackResolver } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
 import { ICONS } from '../../icons'
 import { registerDeepLink } from '../../deepLinks'
@@ -160,6 +160,13 @@ export const iscrizioniMenu = new Menu<Context>('isc', {
 })
 
 registerMenu('isc', iscrizioniMenu)
+
+// Rebuilds this exact list for tournament/detail.ts's "back" button — see
+// calendario.ts's own registerBackResolver comment for why this is a
+// registry, not a direct import from detail.ts.
+registerBackResolver('i', async (ctx, _origin, chatId) => ({
+  payload: '', menu: iscrizioniMenu, text: { blocks: await iscrizioniBlocksFor(ctx, chatId) }
+}))
 
 // Handles taps on mieiTorneiBlocks's own per-tournament "buttons" blocks —
 // registered before bot.use(commands) (see registerIscrizioniCommand),

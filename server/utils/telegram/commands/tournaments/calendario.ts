@@ -13,7 +13,7 @@ import type { RegistrationStatus } from './queries'
 import { SELECT_COLUMNS, torneoMenu, openTournamentDetail } from './detail'
 import type { DatedTournamentRow, TournamentRow } from './detail'
 import { answerLoadError, requireChatId } from '../callbackErrors'
-import { registerMenu } from '../../menuNav'
+import { registerMenu, registerBackResolver } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
 import { ICONS } from '../../icons'
 import { registerDeepLink } from '../../deepLinks'
@@ -222,6 +222,17 @@ async function handleCalendarioOpenButton(ctx: Context, next: () => Promise<void
 
 registerMenu('cal', calendarioMenu)
 
+// Rebuilds this exact month view for tournament/detail.ts's "back" button —
+// see menuNav.ts's own comment on why this is a registry, not a direct
+// import from detail.ts (that used to be the other half of a circular
+// dependency: detail.ts importing calendarioBlocksFor while this file
+// imports torneoMenu from detail.ts).
+registerBackResolver('m', async (ctx, origin, chatId) => {
+  const offset = Number(origin.slice(1))
+  const blocks = await calendarioBlocksFor(ctx, offset, chatId)
+  return { payload: String(offset), menu: calendarioMenu, text: { blocks } }
+})
+
 // Extracted so it can be reused verbatim by t.me/<bot>?start=calendario —
 // see deepLinks.ts.
 async function calendarioCommandHandler(ctx: Context) {
@@ -241,8 +252,9 @@ async function calendarioCommandHandler(ctx: Context) {
 registerDeepLink('calendario', calendarioCommandHandler)
 
 export function registerCalendarioCommand(bot: Bot, commands: CommandGroup<Context>) {
-  // Deferred to call time — torneoMenu's own module imports calendarioText
-  // back, so accessing torneoMenu at top level would race the circular import.
+  // Deferred to call time, not module top level — registerCalendarioCommand
+  // itself only runs once every command module has finished loading, so
+  // torneoMenu is guaranteed to be fully initialized by then.
   calendarioMenu.register(torneoMenu)
   bot.use(calendarioMenu)
 

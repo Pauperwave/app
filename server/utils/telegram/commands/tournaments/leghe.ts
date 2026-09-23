@@ -10,7 +10,7 @@ import { statusIcon, stageLabel } from './line'
 import { fetchStageNumbers } from './queries'
 import { torneoMenu, openTournamentDetail } from './detail'
 import { answerLoadError } from '../callbackErrors'
-import { registerMenu } from '../../menuNav'
+import { registerMenu, registerBackResolver } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
 import { ICONS } from '../../icons'
 import { registerDeepLink } from '../../deepLinks'
@@ -250,6 +250,16 @@ export const legheTorneiMenu = new Menu<Context>('lt', {
 
 registerMenu('lg', legheMenu)
 registerMenu('lt', legheTorneiMenu)
+
+// Rebuilds this exact league view for tournament/detail.ts's "back" button —
+// see calendario.ts's own registerBackResolver comment for why this is a
+// registry, not a direct import from detail.ts.
+registerBackResolver('l', async (ctx, origin) => {
+  const index = Number(origin.slice(1))
+  const blocks = await legaTorneiBlocks(ctx, index)
+    ?? [{ type: 'paragraph', text: `${ICONS.trophy} Lega non trovata.` }]
+  return { payload: String(index), menu: legheTorneiMenu, text: { blocks } }
+})
 
 // Handles taps on legheBlocks's own per-league "buttons" blocks — registered
 // before bot.use(commands) (see registerLegheCommand), distinct
