@@ -6,8 +6,8 @@ const { seat, current = null, reported = null } = defineProps<{
   seat: 0 | 1
   current?: MatchScore | null
   // A Telegram-submitted score still waiting for the opponent's confirm —
-  // highlighted with a lighter "soft" treatment than `current`'s solid one,
-  // so a pending selection reads as pending, not already official.
+  // highlighted "soft"+warning (never win/loss colored) so it reads as a
+  // suggestion, not `current`'s solid, win/loss-colored official result.
   reported?: MatchScore | null
 }>()
 
@@ -50,8 +50,13 @@ function variantFor(outcome: { won: number, lost: number }): 'solid' | 'soft' | 
   return 'outline'
 }
 
-function colorFor(outcome: { won: number, lost: number }): 'success' | 'error' | 'neutral' {
-  return matches(current, outcome) || matches(reported, outcome) ? selectedColor(outcome) : 'neutral'
+// A reported (not yet confirmed) score always reads as warning-yellow,
+// regardless of who's winning — win/loss coloring is reserved for an
+// actually-official result (`current`), so a suggestion never looks final.
+function colorFor(outcome: { won: number, lost: number }): 'success' | 'error' | 'warning' | 'neutral' {
+  if (matches(current, outcome)) return selectedColor(outcome)
+  if (matches(reported, outcome)) return 'warning'
+  return 'neutral'
 }
 </script>
 

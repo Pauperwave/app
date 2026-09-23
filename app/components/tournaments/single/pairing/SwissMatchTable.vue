@@ -19,7 +19,7 @@ const { t } = useI18n()
 // No initial sort: the tri-state header cycle returns to the pairings' own table order.
 const sorting = ref<{ id: string, desc: boolean }[]>([])
 
-function personSortKey(person: { name: string, surname?: string }): string {
+function fullName(person: { name: string, surname?: string }): string {
   return `${person.name} ${person.surname ?? ''}`.trim()
 }
 
@@ -77,12 +77,12 @@ const columns = computed<TableColumn<SwissMatchRow>[]>(() => [
   },
   {
     id: 'player',
-    accessorFn: row => personSortKey(row.player),
+    accessorFn: row => fullName(row.player),
     header: ({ column }) => sortableHeader(t('tournament.single.roundManager.playerColumn'), column)
   },
   {
     id: 'opponent',
-    accessorFn: row => personSortKey(row.player.opponent),
+    accessorFn: row => fullName(row.player.opponent),
     header: ({ column }) => sortableHeader(t('tournament.single.roundManager.opponentColumn'), column)
   },
   {
@@ -169,10 +169,10 @@ const columns = computed<TableColumn<SwissMatchRow>[]>(() => [
           <UBadge
             :label="row.original.report.status === 'disputed'
               ? t('tournament.single.roundManager.matchResultDisputed', {
-                name: row.original.report.reporter.name
+                name: fullName(row.original.report.reporter)
               })
               : t('tournament.single.roundManager.matchResultReported', {
-                name: row.original.report.reporter.name
+                name: fullName(row.original.report.reporter)
               })"
             :color="row.original.report.status === 'disputed' ? 'error' : 'info'"
             variant="subtle"
