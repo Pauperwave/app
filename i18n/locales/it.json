@@ -1815,7 +1815,7 @@
         "matchResultDeleteErrorTitle": "Impossibile cancellare il risultato",
         "advanceDisabledTooltip": "Completa tutti i tavoli del round per continuare",
         "matchResultPending": "Da inserire",
-        "matchResultTelegramReported": "Inserita da {name}",
+        "matchResultTelegramReported": "Inserito da {name}",
         "matchResultTelegramTooltipPending": "Inserito alle {time}, in attesa di conferma dell'avversario",
         "matchResultTelegramTooltipConfirmed": "Inserito alle {time}, confermato dall'avversario",
         "matchResultTelegramTooltipDisputed": "Inserito alle {time}, contestato dall'avversario: verifica il punteggio",

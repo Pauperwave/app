@@ -628,7 +628,7 @@ export interface SwissMatchPlayer extends SwissMatchPerson {
 
 // Present when a saved result's own reported_by_player_uuid is set — who
 // reported it via Telegram and whether/when the opponent answered. Drives
-// SwissMatchResultBadge.vue's "Inserita da X" badge: info while unanswered,
+// SwissMatchResultBadge.vue's "Inserito da X" badge: info while unanswered,
 // success once confirmedAt is set, error once disputedAt is set (a dispute
 // flags the result for organizer review, it doesn't revert it — user
 // request, 2026-09-24).

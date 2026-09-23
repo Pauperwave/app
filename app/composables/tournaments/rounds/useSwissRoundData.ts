@@ -65,7 +65,7 @@ export function useSwissRoundData(options: {
 
   // Who reported this result via Telegram and whether/when the opponent
   // answered — null for a result an organizer entered directly (no
-  // reportedByPlayerUuid). Drives SwissMatchResultBadge.vue's "Inserita da
+  // reportedByPlayerUuid). Drives SwissMatchResultBadge.vue's "Inserito da
   // X" state (user request, 2026-09-24).
   function telegramInfoFor(
     result: TournamentMatchResult | undefined

@@ -1,6 +1,6 @@
 <!-- app\components\tournaments\single\pairing\SwissMatchResultBadge.vue -->
 <!-- A table's own result status, as a badge: no result yet (plain), or a
-     result reported via Telegram — always "Inserita da X" regardless of
+     result reported via Telegram — always "Inserito da X" regardless of
      confirm/dispute state, colored info while unanswered, success once
      confirmed, error once disputed (a dispute flags the result for
      organizer review, it doesn't revert it — user request, 2026-09-24).
