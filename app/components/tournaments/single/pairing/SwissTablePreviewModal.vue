@@ -39,6 +39,17 @@ function buildTables(playerList: TablePlayer[]): TablePlayer[][] {
     .map(ids => ids.map(id => playerByValue.get(id)).filter((p): p is TablePlayer => p !== null))
 }
 
+// Builds the tables straight from the given order by default — for round 2+
+// that's already the correct standings-based pairing (1st vs 2nd, 3rd vs
+// 4th, ...) computed by swissPairing.ts's own pairSwissRound, which an
+// unconditional shuffle here used to silently discard every time the modal
+// opened (bug, user report 2026-09-24: pairings looked random even after
+// round 1). Random seating is still one click away via the "Shuffle" button
+// below, e.g. for round 1's own registration-order starting point.
+function resetTables() {
+  tables.value = buildTables(players)
+}
+
 function shuffle() {
   tables.value = buildTables([...players].sort(() => Math.random() - 0.5))
 }
@@ -46,9 +57,9 @@ function shuffle() {
 // Watches length, not the array reference itself — same as
 // PodsManager.vue's own shufflePods watcher. The parent's players prop is a
 // fresh computed array on every re-render (e.g. a query refetch after a
-// failed advance), so watching the reference would silently reshuffle the
+// failed advance), so watching the reference would silently rebuild the
 // organizer's already-arranged tables underneath them.
-watch(() => players.length, shuffle, { immediate: true })
+watch(() => players.length, resetTables, { immediate: true })
 
 const pairingSplit = computed(() => calculatePairing(players.length))
 const canPlay = computed(() => pairingSplit.value.canPlay)
