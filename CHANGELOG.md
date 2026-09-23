@@ -1,6 +1,151 @@
 # Changelog
 
 
+## v0.2.0
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.1.15...v0.2.0)
+
+### Enhancements
+
+- **tournaments:** ✨ add a "Reset" button and drop the dedicated pods step ([16e006b](https://github.com/Pauperwave/app/commit/16e006b))
+- **layout:** ✨ show the git commit hash in the version badge ([be49059](https://github.com/Pauperwave/app/commit/be49059))
+- **layout:** ✨ add a password-gated developer view (margins overlay) ([871409d](https://github.com/Pauperwave/app/commit/871409d))
+- **rulesets:** ✨ add a "Gestione" tab with full ruleset CRUD ([4bdd544](https://github.com/Pauperwave/app/commit/4bdd544))
+- **tournaments:** ✨ port commander search/autocomplete into pairing ([bc39abc](https://github.com/Pauperwave/app/commit/bc39abc))
+- **tournaments:** ✨ add per-round timer with configurable duration ([702165c](https://github.com/Pauperwave/app/commit/702165c))
+- **players:** ✨ add commander deck detail page ([9b8fcd5](https://github.com/Pauperwave/app/commit/9b8fcd5))
+- **players:** ✨ add commander deck create/edit, bracket level, and borrowing ([7697029](https://github.com/Pauperwave/app/commit/7697029))
+- **statistics:** ✨ add commander usage/win-rate analytics ([89ea775](https://github.com/Pauperwave/app/commit/89ea775))
+- **tournaments:** ✨ add prize distribution and expanded awards ([7809e4d](https://github.com/Pauperwave/app/commit/7809e4d))
+- **tournaments:** ✨ add walk-in players and payment tracking to AcceptancePicker ([3743dd8](https://github.com/Pauperwave/app/commit/3743dd8))
+- **tournaments:** ✨ add a dense grid view mode to the tournaments list ([6f6ccc9](https://github.com/Pauperwave/app/commit/6f6ccc9))
+- **tournaments:** ✨ wire round timer/prizes/live-standings into the detail page, regen shared types ([8443664](https://github.com/Pauperwave/app/commit/8443664))
+- **layout:** ✨ add sidebar badge counts for Mazzi/Comandanti ([a21d3e5](https://github.com/Pauperwave/app/commit/a21d3e5))
+- **statistics:** ✨ add grid/dense/table view modes to Mazzi and Comandanti ([43a4595](https://github.com/Pauperwave/app/commit/43a4595))
+- **i18n:** ✨ add 'actions' key to tournament locale and create i18n key checker script ([b7c41ad](https://github.com/Pauperwave/app/commit/b7c41ad))
+- **tournaments:** ✨ rework the prize distribution step ([66bc768](https://github.com/Pauperwave/app/commit/66bc768))
+- **prizes:** ✨ precise setting names, info tooltips and right-aligned chart labels ([4e1ec5d](https://github.com/Pauperwave/app/commit/4e1ec5d))
+- **layout:** ✨ show how long ago the app was updated in the version badge ([492bc69](https://github.com/Pauperwave/app/commit/492bc69))
+- **prizes:** ✨ put the non-rewarded players in a collapsible section ([385d870](https://github.com/Pauperwave/app/commit/385d870))
+- **prizes:** ✨ add a reset button next to the presets ([8756f74](https://github.com/Pauperwave/app/commit/8756f74))
+- **prizes:** ✨ disable the reset button while nothing differs from the defaults ([2b71d6d](https://github.com/Pauperwave/app/commit/2b71d6d))
+- **prizes:** ✨ add a reset button to the right of each setting ([23e8365](https://github.com/Pauperwave/app/commit/23e8365))
+- **tournaments:** ✨ let the developer view open any stepper step in production ([43135ea](https://github.com/Pauperwave/app/commit/43135ea))
+- **db:** 🗃️ add tournament settings, player drops and swiss byes ([992b9cd](https://github.com/Pauperwave/app/commit/992b9cd))
+- **ui:** ✨ highlight the search match in both name and surname of an AssociateTag ([ff1eee6](https://github.com/Pauperwave/app/commit/ff1eee6))
+- **settings:** ✨ make the tournament round rules editable in /settings ([db4eef3](https://github.com/Pauperwave/app/commit/db4eef3))
+- **tournaments:** ✨ add the official Swiss scoring and standings-based pairing ([aaa0593](https://github.com/Pauperwave/app/commit/aaa0593))
+- **tournaments:** ✨ add the data layer for 1v1 match results and drops ([42f1cf0](https://github.com/Pauperwave/app/commit/42f1cf0))
+- **tournaments:** ✨ derive live Swiss standings from results, drops and byes ([870cf7d](https://github.com/Pauperwave/app/commit/870cf7d))
+- **tournaments:** ✨ enter 1v1 results, drops and byes in the Swiss round view ([ec499dd](https://github.com/Pauperwave/app/commit/ec499dd))
+- **tournaments:** ✨ show the awards step only for Commander ([7545759](https://github.com/Pauperwave/app/commit/7545759))
+- **tournaments:** ✨ make the drop a row action in the 1v1 table ([f1a3e60](https://github.com/Pauperwave/app/commit/f1a3e60))
+- **prizes:** ✨ enforce the minimums order in the settings controls ([ac9b9d2](https://github.com/Pauperwave/app/commit/ac9b9d2))
+- **tournaments:** ✨ add a cancel button and icons to the table-preview footers ([a7e5627](https://github.com/Pauperwave/app/commit/a7e5627))
+- **settings:** ✨ set the round count per format family ([23e10a6](https://github.com/Pauperwave/app/commit/23e10a6))
+- **tournaments:** ✨ cancel a match result and flag the tables still to enter ([f07e6fe](https://github.com/Pauperwave/app/commit/f07e6fe))
+- **tournaments:** ✨ explain why the advance button is disabled ([3a95099](https://github.com/Pauperwave/app/commit/3a95099))
+- **prizes:** ✨ explain why a placement's pack step is disabled ([7f638f9](https://github.com/Pauperwave/app/commit/7f638f9))
+- **settings:** ✨ warn about unsaved tournament settings and disable save until edited ([7fb80eb](https://github.com/Pauperwave/app/commit/7fb80eb))
+- **telegram:** ✨ report a 1v1 result from the bot, confirmed by the opponent ([009e831](https://github.com/Pauperwave/app/commit/009e831))
+- **calendar:** ✨ dot leagues and events on their date range picker like tournaments ([3eb5cec](https://github.com/Pauperwave/app/commit/3eb5cec))
+- **tournaments:** ✨ group league select by status and show date span as description ([b0ca2fa](https://github.com/Pauperwave/app/commit/b0ca2fa))
+- **tournaments:** ✨ group the grid into status sections and add a status grouping to the table ([185b2e1](https://github.com/Pauperwave/app/commit/185b2e1))
+- **leagues:** ✨ group the grid into status sections and add a status grouping to the table ([5d645ed](https://github.com/Pauperwave/app/commit/5d645ed))
+- **leagues:** ✨ add an end date column and show tournaments as a progress bar in the table ([92cb67d](https://github.com/Pauperwave/app/commit/92cb67d))
+- **i18n:** 🌐 add labels for the enriched events, leagues and tournaments tables ([3fcc37c](https://github.com/Pauperwave/app/commit/3fcc37c))
+- **events:** ✨ enrich the events table with image, end date, duration, city, organizer badge and tournament progress, plus a columns menu ([6e297ba](https://github.com/Pauperwave/app/commit/6e297ba))
+- **leagues:** ✨ add image, formats and ruleset badge columns to the leagues table, plus a columns menu ([1cdaed4](https://github.com/Pauperwave/app/commit/1cdaed4))
+- **tournaments:** ✨ split date/time/duration columns, add editable fee and venue badges, a columns menu, status sections in the compact view and fix the format sort ([49c8825](https://github.com/Pauperwave/app/commit/49c8825))
+- **ui:** ✨ show a "click to edit" tooltip on editable status and ruleset badges ([2aad16f](https://github.com/Pauperwave/app/commit/2aad16f))
+- **tournaments:** ✨ make the table view's group-by and columns buttons compact by default ([9485e90](https://github.com/Pauperwave/app/commit/9485e90))
+- **players:** ✨ add checkbox selection and bulk delete to the players table ([f42f82d](https://github.com/Pauperwave/app/commit/f42f82d))
+- **settings:** ✨ split Timer settings into their own section, parametrize pre-round wait ([9952b9c](https://github.com/Pauperwave/app/commit/9952b9c))
+- **associates:** ✨ fold selection count into the bulk-actions bar, add "Seleziona tutti" ([3e0c30a](https://github.com/Pauperwave/app/commit/3e0c30a))
+- **tournaments:** ✨ show pending Telegram match reports live in the Swiss round view ([57e8035](https://github.com/Pauperwave/app/commit/57e8035))
+
+### Fixes
+
+- **tournaments:** 🐛 stop today's own tournament from vanishing from the date filter ([97ad578](https://github.com/Pauperwave/app/commit/97ad578))
+- **tournaments:** 🐛 fix the date filter's lower bound too ([f82d0d2](https://github.com/Pauperwave/app/commit/f82d0d2))
+- **tournaments:** 🐛 resolve ruleset points per-league instead of always default ([b276b43](https://github.com/Pauperwave/app/commit/b276b43))
+- **layout:** 🐛 remove environment from the version badge ([99a7a70](https://github.com/Pauperwave/app/commit/99a7a70))
+- **statistics:** 🐛 fix /statistics/decks/[slug] silently rendering the list page ([d7cdfab](https://github.com/Pauperwave/app/commit/d7cdfab))
+- **i18n:** 🐛 add missing deck.viewDetails translation ([b93adb3](https://github.com/Pauperwave/app/commit/b93adb3))
+- **prizes:** 🐛 show the tooltips on the disabled settings controls ([8888bdc](https://github.com/Pauperwave/app/commit/8888bdc))
+- **prizes:** 🐛 never give a lower placement more packs than a higher one ([b0e464f](https://github.com/Pauperwave/app/commit/b0e464f))
+- **tournaments:** 🐛 don't let the stepper open steps the tournament hasn't reached ([b8b2b09](https://github.com/Pauperwave/app/commit/b8b2b09))
+- **tournaments:** 🐛 page the match-result and drop queries with fetchAllRows ([326d7b7](https://github.com/Pauperwave/app/commit/326d7b7))
+- **prizes:** 🐛 never let a non-rewarded player get more packs than a rewarded one ([2575f60](https://github.com/Pauperwave/app/commit/2575f60))
+- **prizes:** 🐛 drop "(non assegnate)" from the reserved packs label ([ec37a20](https://github.com/Pauperwave/app/commit/ec37a20))
+- **leagues:** 🐛 dot the date picker on league tournament dates, not the league start date ([6d61cf6](https://github.com/Pauperwave/app/commit/6d61cf6))
+
+### Refactors
+
+- **tournaments:** ♻️ simplify the league-origin query param ([1f9d03b](https://github.com/Pauperwave/app/commit/1f9d03b))
+- **icons:** ♻️ centralize remaining raw i-lucide-* literals into ICONS ([0adb425](https://github.com/Pauperwave/app/commit/0adb425))
+- **tournaments:** ♻️ update kill-tracking flow for the commander pairing rewrite ([e0d6433](https://github.com/Pauperwave/app/commit/e0d6433))
+- **tournaments:** 🚚 replace VotesModal with a grid-based voting flow ([7f9d529](https://github.com/Pauperwave/app/commit/7f9d529))
+- **tournaments:** 🚚 rewrite commander pod/table pairing engine ([ef79b3f](https://github.com/Pauperwave/app/commit/ef79b3f))
+- **layout:** 🚚 extract chord-hints, nav badges, and command palette from default.vue ([1e5984d](https://github.com/Pauperwave/app/commit/1e5984d))
+- **finance:** 🚚 split row-shape types out of useFinanceSummary.ts ([51b5ad5](https://github.com/Pauperwave/app/commit/51b5ad5))
+- **tournaments:** 🚚 split composables/tournaments into subfolders ([8e75462](https://github.com/Pauperwave/app/commit/8e75462))
+- **tournaments:** 🚚 extract AcceptancePicker's row-context-menu logic ([25bb7fa](https://github.com/Pauperwave/app/commit/25bb7fa))
+- **prizes:** ♻️ split the prize logic into pure utils ([9c67804](https://github.com/Pauperwave/app/commit/9c67804))
+- **prizes:** ♻️ move the settings limits into a tested util ([aded7a4](https://github.com/Pauperwave/app/commit/aded7a4))
+- **prizes:** ♻️ move the step's state into usePrizeDistributionPage ([86dbb25](https://github.com/Pauperwave/app/commit/86dbb25))
+- **prizes:** ♻️ extract HintedNumberField for the settings controls ([fe164f7](https://github.com/Pauperwave/app/commit/fe164f7))
+- **prizes:** ♻️ extract useChangeFlash and ValueStepper from the table ([fb10d2f](https://github.com/Pauperwave/app/commit/fb10d2f))
+- **prizes:** 🔥 remove the always-100% shares total ([8cc7d93](https://github.com/Pauperwave/app/commit/8cc7d93))
+- **prizes:** 🔥 remove the "Distribuzione buste" title ([6185172](https://github.com/Pauperwave/app/commit/6185172))
+- **prizes:** ♻️ decide who gives or takes a pack by rank ([f1306f9](https://github.com/Pauperwave/app/commit/f1306f9))
+- **tournaments:** ♻️ extract the turn-back/advance buttons shared by the round managers ([bc1abf0](https://github.com/Pauperwave/app/commit/bc1abf0))
+- **prizes:** ♻️ let the prizes step take any standing with a label ([f067dd0](https://github.com/Pauperwave/app/commit/f067dd0))
+
+### Documentation
+
+- 📝 catch up PROGRESS/CHANGELOG/README, fix stale architecture docs ([a1e342f](https://github.com/Pauperwave/app/commit/a1e342f))
+- **tournaments:** 📝 document the f-t/f-c fullscreen shortcuts ([c1f2274](https://github.com/Pauperwave/app/commit/c1f2274))
+- 📝 record the 1v1 Swiss work in PROGRESS (ADR-034 to ADR-036), the changelog and the plan ([14d0a10](https://github.com/Pauperwave/app/commit/14d0a10))
+- 📝 document the tournament settings, drops and Swiss round RPCs in the architecture docs ([d561cab](https://github.com/Pauperwave/app/commit/d561cab))
+- 📝 add the missing tournament ADRs (037 to 040) and refresh the stale testing docs ([f4dbb9e](https://github.com/Pauperwave/app/commit/f4dbb9e))
+- 📝 add ADR-041 (check-in walk-ins and payments) and ADR-042 (Commander schema and pairing engine) ([b39c4bb](https://github.com/Pauperwave/app/commit/b39c4bb))
+- **prizes:** 📝 document the booster-pack distribution step ([7d31609](https://github.com/Pauperwave/app/commit/7d31609))
+- **prizes:** 📝 complete ADR-039 with the minimums order, the giver rule and the resets ([00f4c88](https://github.com/Pauperwave/app/commit/00f4c88))
+- **changelog:** 📝 add the prize distribution, stepper and version badge work ([4521eca](https://github.com/Pauperwave/app/commit/4521eca))
+- **testing:** 📝 refresh the test count and point to the prizes doc ([f4a4f59](https://github.com/Pauperwave/app/commit/f4a4f59))
+- 📝 record the round count per format family and the 1v1 round view polish ([0dd8ed9](https://github.com/Pauperwave/app/commit/0dd8ed9))
+- 📝 skip pnpm typecheck by default, keep lint as the required check ([e743ce1](https://github.com/Pauperwave/app/commit/e743ce1))
+
+### Chore
+
+- **release:** 🔖 v0.1.15 ([169ed15](https://github.com/Pauperwave/app/commit/169ed15))
+
+### Tests
+
+- **tournaments:** ✅ fix stale tournamentOrigin tests after the league-param simplification ([363ea40](https://github.com/Pauperwave/app/commit/363ea40))
+- **tournaments:** ✅ cover round timer, scoring, standings sort, and prize distribution ([5e820d7](https://github.com/Pauperwave/app/commit/5e820d7))
+- **wanted-cards:** 🐛 fix stale useWantedCardsRowActions mocks + cover canManage ([bdb8b77](https://github.com/Pauperwave/app/commit/bdb8b77))
+- ✅ cover more pure logic (ranking grid, stage numbering, pod slicing, ICS/gcal urls) ([ee9efd7](https://github.com/Pauperwave/app/commit/ee9efd7))
+- **tournaments:** ✅ cover the real pairing optimizer, Swiss stub, payments, transaction issues ([99f0fd0](https://github.com/Pauperwave/app/commit/99f0fd0))
+
+### Styles
+
+- 🎨 unify Tailwind class naming (aspect-video, mr-0!) ([2ca8f91](https://github.com/Pauperwave/app/commit/2ca8f91))
+- **prizes:** 💄 make the settings section more compact ([fb2f27f](https://github.com/Pauperwave/app/commit/fb2f27f))
+- **prizes:** 💄 make the settings section more compact" ([c1eb7a6](https://github.com/Pauperwave/app/commit/c1eb7a6))
+- **prizes:** 💄 lay the settings out as three side-by-side sections ([7628824](https://github.com/Pauperwave/app/commit/7628824))
+- **prizes:** 💄 fix the proportions of the settings spacing ([93eb09b](https://github.com/Pauperwave/app/commit/93eb09b))
+- **prizes:** 💄 make the per-field reset buttons yellow like the global reset ([22157f2](https://github.com/Pauperwave/app/commit/22157f2))
+- **ui:** 💄 use the outline variant for the reset buttons ([bb7926c](https://github.com/Pauperwave/app/commit/bb7926c))
+- **prizes:** 💄 always put the non-rewarded minimum label above its line ([a5263ed](https://github.com/Pauperwave/app/commit/a5263ed))
+- **ui:** 💄 use the pointer cursor on the info icon of HintedNumberField ([4e957b7](https://github.com/Pauperwave/app/commit/4e957b7))
+- 🎨 wrap lines over the 100 character lint limit in the list views and table columns ([8550b3b](https://github.com/Pauperwave/app/commit/8550b3b))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.1.15
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.1.14...v0.1.15)
