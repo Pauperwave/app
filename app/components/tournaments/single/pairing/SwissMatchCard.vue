@@ -1,10 +1,11 @@
 <!-- app\components\tournaments\single\pairing\SwissMatchCard.vue -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
-import type { MatchScore, SwissMatchPlayer, SwissMatchReport } from '~/types'
+import type { MatchScore, SwissMatchConfirmedInfo, SwissMatchPlayer, SwissMatchReport } from '~/types'
 
 const {
-  tableNumber, players, current = null, report = null, isBye = false, search = ''
+  tableNumber, players, current = null, report = null, confirmedInfo = null, isBye = false,
+  search = ''
 } = defineProps<{
   tableNumber: number
   players: SwissMatchPlayer[]
@@ -13,6 +14,11 @@ const {
   // disputed) — shown instead of the generic "in attesa" badge while there's
   // no official result yet (2026-09-23 user request).
   report?: SwissMatchReport | null
+  // Who reported/confirmed `current`, when it came from a Telegram report —
+  // shown as a success badge upgrading the pre-confirm "Suggerito da" one,
+  // so a player-confirmed result reads differently from one an organizer
+  // entered directly (2026-09-23 user request).
+  confirmedInfo?: SwissMatchConfirmedInfo | null
   // A single player sitting out: scores as a 2-0 win, nothing to enter.
   isBye?: boolean
   search?: string
@@ -31,9 +37,10 @@ const isPending = computed(() => !isBye && !current)
 
 // Full name, not just the first — two players sharing a first name (e.g.
 // two "Alessandro"s at different tables) would otherwise be indistinguishable
-// in the badge (2026-09-23 user request).
-const reporterFullName = computed(() =>
-  report ? `${report.reporter.name} ${report.reporter.surname ?? ''}`.trim() : '')
+// in a badge (2026-09-23 user request).
+function fullName(person: { name: string, surname?: string }): string {
+  return `${person.name} ${person.surname ?? ''}`.trim()
+}
 
 // Drop is an action, not a state: the state shows next to the name as a badge.
 function dropMenuItems(player: SwissMatchPlayer): DropdownMenuItem[] {
@@ -70,10 +77,10 @@ function dropMenuItems(player: SwissMatchPlayer): DropdownMenuItem[] {
           <UBadge
             :label="report.status === 'disputed'
               ? t('tournament.single.roundManager.matchResultDisputed', {
-                name: reporterFullName
+                name: fullName(report.reporter)
               })
               : t('tournament.single.roundManager.matchResultReported', {
-                name: reporterFullName
+                name: fullName(report.reporter)
               })"
             :color="report.status === 'disputed' ? 'error' : 'info'"
             variant="subtle"
@@ -87,15 +94,26 @@ function dropMenuItems(player: SwissMatchPlayer): DropdownMenuItem[] {
           variant="subtle"
           size="md"
         />
-        <UButton
-          v-else-if="current"
-          :label="t('tournament.single.roundManager.matchResultDeleteLabel')"
-          :icon="ICONS.undo"
-          color="error"
-          variant="outline"
-          size="xs"
-          @click="emit('clear')"
-        />
+        <div v-else-if="current" class="flex items-center gap-1.5">
+          <UBadge
+            v-if="confirmedInfo"
+            :label="t('tournament.single.roundManager.matchResultConfirmed', {
+              reporter: fullName(confirmedInfo.reporter),
+              confirmer: fullName(confirmedInfo.confirmer)
+            })"
+            color="success"
+            variant="subtle"
+            size="md"
+          />
+          <UButton
+            :label="t('tournament.single.roundManager.matchResultDeleteLabel')"
+            :icon="ICONS.undo"
+            color="error"
+            variant="outline"
+            size="xs"
+            @click="emit('clear')"
+          />
+        </div>
       </div>
     </template>
 

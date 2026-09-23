@@ -179,6 +179,16 @@ const columns = computed<TableColumn<SwissMatchRow>[]>(() => [
             size="sm"
           />
         </UTooltip>
+        <UBadge
+          v-else-if="row.original.current && row.original.confirmedInfo"
+          :label="t('tournament.single.roundManager.matchResultConfirmed', {
+            reporter: fullName(row.original.confirmedInfo.reporter),
+            confirmer: fullName(row.original.confirmedInfo.confirmer)
+          })"
+          color="success"
+          variant="subtle"
+          size="sm"
+        />
         <TournamentsSinglePairingSwissScoreButtons
           :seat="row.original.player.seat"
           :current="row.original.current"

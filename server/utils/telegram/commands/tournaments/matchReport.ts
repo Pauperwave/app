@@ -266,7 +266,8 @@ async function handleConfirm(ctx: Context, pairingUuid: string) {
     player1Uuid: table.player1Uuid,
     player2Uuid: table.player2Uuid,
     player1GamesWon: table.report.player1GamesWon,
-    player2GamesWon: table.report.player2GamesWon
+    player2GamesWon: table.report.player2GamesWon,
+    reportedByPlayerUuid: table.report.reporterUuid
   })
 
   const score = reportScoreLabel(table)

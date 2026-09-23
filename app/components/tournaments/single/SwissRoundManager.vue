@@ -10,8 +10,10 @@
 <script setup lang="ts">
 import type { TabsItem } from '@nuxt/ui'
 import type {
-  MatchScore, SwissMatchPerson, SwissMatchPlayer, SwissMatchReport, SwissMatchRow, TablePlayer
+  MatchScore, SwissMatchConfirmedInfo, SwissMatchPerson, SwissMatchPlayer, SwissMatchReport,
+  SwissMatchRow, TablePlayer
 } from '~/types'
+import type { TournamentMatchResult } from '~/composables/tournaments/rounds/useTournamentMatchResultsQuery'
 
 const {
   tournamentUuid, roundNumber, roundCount, roundDurationMinutes = 75, autoOpenAdvancePreview = false
@@ -96,6 +98,18 @@ const reportByPairingUuid = computed<Map<string, SwissMatchReport>>(() => new Ma
   }])
 ))
 
+// Who reported a confirmed result and who (the pairing's other player)
+// confirmed it — null for a result an organizer entered directly (no
+// reportedByPlayerUuid) or for a pairing without exactly one "other" player.
+function confirmedInfoFor(
+  pairing: { playerUuids: string[] }, result: TournamentMatchResult | undefined
+): SwissMatchConfirmedInfo | null {
+  if (!result?.reportedByPlayerUuid) return null
+  const confirmerUuid = pairing.playerUuids.find(uuid => uuid !== result.reportedByPlayerUuid)
+  if (!confirmerUuid) return null
+  return { reporter: personFor(result.reportedByPlayerUuid), confirmer: personFor(confirmerUuid) }
+}
+
 async function onScoreSelect(pairingUuid: string, score: MatchScore) {
   const pairing = pairingsForRound.value.find(p => p.uuid === pairingUuid)
   const [player1Uuid, player2Uuid] = pairing?.playerUuids ?? []
@@ -144,14 +158,15 @@ const matchTables = computed(() => pairingsForRound.value.flatMap((pairing) => {
       pairing,
       players,
       isBye: pairing.playerUuids.length === 1,
-      report: reportByPairingUuid.value.get(pairing.uuid) ?? null
+      report: reportByPairingUuid.value.get(pairing.uuid) ?? null,
+      confirmedInfo: confirmedInfoFor(pairing, matchResultByPairingUuid.value.get(pairing.uuid))
     }]
     : []
 }))
 
 const matchRows = computed<SwissMatchRow[]>(() =>
   matchTables.value.flatMap(({
-    pairing, players, isBye, report
+    pairing, players, isBye, report, confirmedInfo
   }) =>
     players.map(player => ({
       pairingUuid: pairing.uuid,
@@ -159,6 +174,7 @@ const matchRows = computed<SwissMatchRow[]>(() =>
       player,
       current: matchResultByPairingUuid.value.get(pairing.uuid) ?? null,
       report,
+      confirmedInfo,
       isBye
     }))))
 
@@ -285,13 +301,14 @@ watch(() => autoOpenAdvancePreview, (value) => {
           class="grid grid-cols-[repeat(auto-fill,minmax(26rem,1fr))] gap-3"
         >
           <TournamentsSinglePairingSwissMatchCard
-            v-for="{ pairing, players, isBye, report } in matchTables"
+            v-for="{ pairing, players, isBye, report, confirmedInfo } in matchTables"
             :key="pairing.uuid"
             :table-number="pairing.tableNumber ?? 0"
             :players="players"
             :is-bye="isBye"
             :current="matchResultByPairingUuid.get(pairing.uuid)"
             :report="report"
+            :confirmed-info="confirmedInfo"
             :search="search"
             @select="score => onScoreSelect(pairing.uuid, score)"
             @clear="onScoreClear(pairing.uuid)"

@@ -636,12 +636,23 @@ export interface SwissMatchReport {
   score: MatchScore
 }
 
+// Shown once a confirmed result's own reported_by_player_uuid is set — who
+// reported it and who (the pairing's other player) confirmed it, so the
+// header badge can read "Suggerito da X e confermato da Y" instead of
+// looking identical to a result an organizer entered directly (user
+// request, 2026-09-23).
+export interface SwissMatchConfirmedInfo {
+  reporter: SwissMatchPerson
+  confirmer: SwissMatchPerson
+}
+
 export interface SwissMatchRow {
   pairingUuid: string
   tableNumber: number
   player: SwissMatchPlayer
   current: MatchScore | null
   report: SwissMatchReport | null
+  confirmedInfo: SwissMatchConfirmedInfo | null
   // A single player sitting out: scores as a 2-0 win.
   isBye: boolean
 }
