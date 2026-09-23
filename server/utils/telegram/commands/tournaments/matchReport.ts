@@ -40,6 +40,15 @@ function outcomeAt(index: number) {
   return outcome
 }
 
+// SUMMARY_PREFIX/SEND_PREFIX's own callback_data always encodes a real
+// index (outcomePickRichMessage's buttons); null only ever reaches here on
+// a malformed payload.
+function requireOutcomeIndex(index: number | null): number {
+  if (index === null) throw new Error('Missing match outcome index')
+  outcomeAt(index)
+  return index
+}
+
 function answerButtons(pairingUuid: string) {
   return {
     type: 'buttons' as const,
@@ -89,16 +98,24 @@ function tableRichMessage(table: LiveTable): InputRichMessage {
   return { blocks }
 }
 
-function outcomePickRichMessage(table: LiveTable): InputRichMessage {
+// currentIndex is the outcome already picked when reopened via "✏️
+// Modifica" (null the first time, from "✍️ Inserisci risultato") — highlighted
+// ⭐/success, same pattern as mockups/risultato.ts's own pickRichMessage
+// (issue #84, 2026-09-24: this used to always render blank on Modifica).
+function outcomePickRichMessage(table: LiveTable, currentIndex: number | null): InputRichMessage {
   return {
     blocks: [
       { type: 'paragraph', text: `🎲 Risultato del match contro ${table.opponent.name}\n\nQuanti game hai vinto tu e quanti lui?` },
       {
         type: 'buttons',
-        buttons: MATCH_OUTCOMES.map((outcome, index) => ({
-          text: outcome.label,
-          callback_data: `${SUMMARY_PREFIX}${table.pairingUuid}:${index}`
-        }))
+        buttons: MATCH_OUTCOMES.map((outcome, index) => {
+          const isSelected = index === currentIndex
+          return {
+            text: `${isSelected ? '⭐ ' : ''}${outcome.label}`,
+            style: isSelected ? 'success' as const : undefined,
+            callback_data: `${SUMMARY_PREFIX}${table.pairingUuid}:${index}`
+          }
+        })
       }
     ]
   }
@@ -118,7 +135,7 @@ function summaryRichMessage(table: LiveTable, outcomeIndex: number): InputRichMe
         type: 'buttons',
         buttons: [
           { text: '✅ Invia', style: 'success', callback_data: `${SEND_PREFIX}${table.pairingUuid}:${outcomeIndex}` },
-          { text: '✏️ Modifica', style: 'danger', callback_data: `${OPEN_PREFIX}${table.pairingUuid}` }
+          { text: '✏️ Modifica', style: 'danger', callback_data: `${OPEN_PREFIX}${table.pairingUuid}:${outcomeIndex}` }
         ]
       }
     ]
@@ -208,25 +225,25 @@ async function notifyOpponent(ctx: Context, table: LiveTable, message: InputRich
   }
 }
 
-async function handleOpen(ctx: Context, pairingUuid: string) {
+async function handleOpen(ctx: Context, pairingUuid: string, currentIndex: number | null) {
   const table = await requireReportableTable(ctx, pairingUuid)
   if (!table) return
 
-  await showRichStep(ctx, outcomePickRichMessage(table))
+  await showRichStep(ctx, outcomePickRichMessage(table, currentIndex))
 }
 
-async function handleSummary(ctx: Context, pairingUuid: string, outcomeIndex: number) {
+async function handleSummary(ctx: Context, pairingUuid: string, outcomeIndex: number | null) {
   const table = await requireReportableTable(ctx, pairingUuid)
   if (!table) return
 
-  await showRichStep(ctx, summaryRichMessage(table, outcomeIndex))
+  await showRichStep(ctx, summaryRichMessage(table, requireOutcomeIndex(outcomeIndex)))
 }
 
-async function handleSend(ctx: Context, pairingUuid: string, outcomeIndex: number) {
+async function handleSend(ctx: Context, pairingUuid: string, outcomeIndex: number | null) {
   const table = await requireReportableTable(ctx, pairingUuid)
   if (!table) return
 
-  const outcome = outcomeAt(outcomeIndex)
+  const outcome = outcomeAt(requireOutcomeIndex(outcomeIndex))
   const games = gamesFromOutcome(outcome, table.isPlayer1)
 
   await saveMatchResult(telegramServiceSupabaseClient(), {
@@ -296,11 +313,15 @@ async function handleDispute(ctx: Context, pairingUuid: string) {
   })
 }
 
-// "<pairing uuid>[:<outcome index>]" after a prefix
-function parsePayload(payload: string): { pairingUuid: string, outcomeIndex: number } {
+// "<pairing uuid>[:<outcome index>]" after a prefix — the outcome index is
+// absent for the very first "✍️ Inserisci risultato" (OPEN_PREFIX, no prior
+// pick) and CONFIRM_PREFIX/DISPUTE_PREFIX (no outcome involved at all).
+function parsePayload(payload: string): { pairingUuid: string, outcomeIndex: number | null } {
   const [pairingUuid, outcome] = payload.split(':')
   if (!pairingUuid) throw new Error(`Malformed match report payload: "${payload}"`)
-  const outcomeIndex = Number(outcome ?? 0)
+  if (outcome === undefined) return { pairingUuid, outcomeIndex: null }
+
+  const outcomeIndex = Number(outcome)
   const isValidIndex = Number.isInteger(outcomeIndex)
     && outcomeIndex >= 0
     && outcomeIndex < MATCH_OUTCOMES.length
@@ -314,9 +335,9 @@ export function registerMatchReportHandlers(bot: Bot) {
   bot.on('callback_query:data', async (ctx, next) => {
     const data = ctx.callbackQuery.data
 
-    type Run = (uuid: string, outcomeIndex: number) => Promise<unknown>
+    type Run = (uuid: string, outcomeIndex: number | null) => Promise<unknown>
     const routes: [prefix: string, run: Run][] = [
-      [OPEN_PREFIX, pairingUuid => handleOpen(ctx, pairingUuid)],
+      [OPEN_PREFIX, (pairingUuid, outcomeIndex) => handleOpen(ctx, pairingUuid, outcomeIndex)],
       [SUMMARY_PREFIX, (uuid, outcomeIndex) => handleSummary(ctx, uuid, outcomeIndex)],
       [SEND_PREFIX, (uuid, outcomeIndex) => handleSend(ctx, uuid, outcomeIndex)],
       [CONFIRM_PREFIX, pairingUuid => handleConfirm(ctx, pairingUuid)],
