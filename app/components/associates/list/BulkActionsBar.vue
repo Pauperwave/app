@@ -70,7 +70,7 @@ const { t } = useI18n()
   <div v-else class="flex items-center gap-2 flex-wrap">
     <UButton
       v-if="showApprove"
-      :label="t('associate.approveModal.approve')"
+      :label="withCount(t('associate.approveModal.approve'), count)"
       :icon="ICONS.confirm"
       color="success"
       variant="subtle"
@@ -79,7 +79,7 @@ const { t } = useI18n()
 
     <UButton
       v-if="showReject"
-      :label="t('associate.rejectModal.reject')"
+      :label="withCount(t('associate.rejectModal.reject'), count)"
       :icon="ICONS.statusRejected"
       color="error"
       variant="subtle"
@@ -88,7 +88,7 @@ const { t } = useI18n()
 
     <UButton
       v-if="showRestore"
-      :label="t('associate.restoreModal.restore')"
+      :label="withCount(t('associate.restoreModal.restore'), count)"
       :icon="ICONS.undo"
       color="success"
       variant="subtle"
@@ -97,7 +97,7 @@ const { t } = useI18n()
 
     <UButton
       v-if="showRenew"
-      :label="t('associate.rowActions.renew')"
+      :label="withCount(t('associate.rowActions.renew'), count)"
       :icon="ICONS.refresh"
       color="success"
       variant="subtle"
@@ -106,7 +106,7 @@ const { t } = useI18n()
 
     <UButton
       v-if="showApproveRenewal"
-      :label="t('associate.bulkActions.approveRenewal')"
+      :label="withCount(t('associate.bulkActions.approveRenewal'), count)"
       :icon="ICONS.calendarRenew"
       color="success"
       variant="subtle"

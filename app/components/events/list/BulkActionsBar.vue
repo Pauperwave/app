@@ -48,7 +48,7 @@ const statusItems = computed(() => EVENT_STATUSES.map(status => ({
       }))"
     >
       <UButton
-        :label="t('event.bulkActions.markAs')"
+        :label="withCount(t('event.bulkActions.markAs'), count)"
         color="neutral"
         variant="outline"
         :trailing-icon="ICONS.chevronDown"
@@ -56,7 +56,7 @@ const statusItems = computed(() => EVENT_STATUSES.map(status => ({
     </UDropdownMenu>
 
     <UButton
-      :label="t('event.rowActions.delete')"
+      :label="withCount(t('event.rowActions.delete'), count)"
       :icon="ICONS.delete"
       color="error"
       variant="outline"

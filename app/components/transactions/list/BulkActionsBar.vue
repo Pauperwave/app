@@ -50,7 +50,7 @@ const typeItems = computed(() => PAYMENT_TYPES.map(type => ({
       }))"
     >
       <UButton
-        :label="t('transaction.bulkActions.changeType')"
+        :label="withCount(t('transaction.bulkActions.changeType'), count)"
         color="neutral"
         variant="outline"
         :trailing-icon="ICONS.chevronDown"
@@ -58,7 +58,7 @@ const typeItems = computed(() => PAYMENT_TYPES.map(type => ({
     </UDropdownMenu>
 
     <UButton
-      :label="t('transaction.rowActions.delete')"
+      :label="withCount(t('transaction.rowActions.delete'), count)"
       :icon="ICONS.delete"
       color="error"
       variant="outline"

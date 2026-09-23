@@ -48,7 +48,7 @@ const statusItems = computed(() => LEAGUE_STATUSES.map(status => ({
       }))"
     >
       <UButton
-        :label="t('league.bulkActions.markAs')"
+        :label="withCount(t('league.bulkActions.markAs'), count)"
         color="neutral"
         variant="outline"
         :trailing-icon="ICONS.chevronDown"
@@ -56,7 +56,7 @@ const statusItems = computed(() => LEAGUE_STATUSES.map(status => ({
     </UDropdownMenu>
 
     <UButton
-      :label="t('league.rowActions.delete')"
+      :label="withCount(t('league.rowActions.delete'), count)"
       :icon="ICONS.delete"
       color="error"
       variant="outline"
