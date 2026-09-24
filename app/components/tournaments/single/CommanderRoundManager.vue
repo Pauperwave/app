@@ -62,7 +62,7 @@ const lifecycle = useCommanderRoundLifecycle({
 
 const {
   isLastRoundOfTournament, turnBackButtonLabel, tournamentIsEnded,
-  labelFor, namePartsFor, associateUuidFor, pairingsForRound, tablePlayersFor,
+  labelFor, associateUuidFor, pairingsForRound, tablePlayersFor,
   positionsFor, killsFor, commanderDeckFor, isPairingComplete, isPairingDraw,
   hasRankingFor, hasKillsFor, hasCommanderFor, hasVotesFor, winners, liveStandings
 } = roundData
@@ -104,6 +104,12 @@ function handleTimerExpired() {
     icon: ICONS.timerOff
   })
 }
+
+// Resolved once per pairing, reused by TablesFullscreenView.vue below — it's
+// pure display, so it receives already-resolved players (same tablePlayersFor
+// output every table card gets), not a name-lookup function.
+const tablePlayersByPairingUuid = computed(() =>
+  new Map(pairingsForRound.value.map(pairing => [pairing.uuid, tablePlayersFor(pairing)])))
 
 // ─── "Tavoli" wrapper card fullscreen ───────────────────────────────────────
 // Same browser Fullscreen API pattern as StandingsSidebar.vue's own toggle —
@@ -150,7 +156,7 @@ const showFHint = useChordHintKey('f')
         <TournamentsSinglePairingTablesFullscreenView
           v-if="isTablesFullscreen"
           :pairings-for-round="pairingsForRound"
-          :name-parts-for="namePartsFor"
+          :players-by-pairing-uuid="tablePlayersByPairingUuid"
           @exit="toggleTablesFullscreen"
         />
 

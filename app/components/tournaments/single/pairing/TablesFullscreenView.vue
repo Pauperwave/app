@@ -10,10 +10,16 @@
 -->
 <script setup lang="ts">
 import type { TournamentPairing } from '~/composables/tournaments/pairing/useTournamentPairingsQuery'
+import type { TablePlayer } from '~/types'
 
-const { pairingsForRound, namePartsFor } = defineProps<{
+// playersByPairingUuid: already-resolved players (tablePlayersFor's own
+// output), not a lookup function — this component is pure display, it
+// shouldn't own how a player's name gets resolved (2026-09-24, corrected
+// after passing namePartsFor as a resolver prop: every other consumer here
+// receives plain data, not a function to call).
+const { pairingsForRound, playersByPairingUuid } = defineProps<{
   pairingsForRound: TournamentPairing[]
-  namePartsFor: (playerUuid: string) => { firstName: string, surname: string }
+  playersByPairingUuid: Map<string, TablePlayer[]>
 }>()
 
 const emit = defineEmits<{ exit: [] }>()
@@ -29,9 +35,9 @@ const { t } = useI18n()
 function tablePlayers(
   pairing: TournamentPairing
 ): { uuid: string, surname: string, initial: string }[] {
-  return pairing.playerUuids.map((uuid) => {
-    const { firstName, surname } = namePartsFor(uuid)
-    return { uuid, surname, initial: firstName ? `${firstName.charAt(0)}.` : '' }
+  return (playersByPairingUuid.get(pairing.uuid) ?? []).map((player) => {
+    const { firstName, surname } = playerNameParts(player)
+    return { uuid: player.value, surname, initial: firstName ? `${firstName.charAt(0)}.` : '' }
   })
 }
 
