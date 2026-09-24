@@ -46,6 +46,13 @@ function handleConfirm() {
   emit('confirm', getRanking())
 }
 
+// Same as league's own handleDragOver — .prevent alone (the template used)
+// already allows the drop, but setting dropEffect explicitly gives the
+// native drag cursor the correct "move" icon instead of the browser default.
+function handleDragOver(event: DragEvent) {
+  if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
+}
+
 // Same cell-highlight rule as league's own getCellClass: an empty cell
 // lights up only while a token from its own column is mid-drag, so the
 // "you can only drop back into your own lane" constraint is visible
@@ -53,7 +60,11 @@ function handleConfirm() {
 function cellClass(row: number, col: number): string {
   const base = 'h-12 rounded-md border transition-all flex items-center justify-center'
   if (grid.value[row]?.[col]) {
-    return `${base} border-default bg-default`
+    // Hover ring/shadow hints the cell is draggable, same affordance
+    // league's own getCellClass gives its occupied cells (hardcoded amber
+    // there; the semantic warning token here, matching this file's own
+    // empty-cell drag-target highlight below).
+    return `${base} border-default bg-default hover:ring-2 hover:ring-warning hover:shadow-md`
   }
   if (isDragging.value && draggedFromCol.value === col) {
     return `${base} border-dashed border-warning bg-warning/10`
@@ -93,7 +104,7 @@ function cellClass(row: number, col: number): string {
                 v-for="col in rankRange"
                 :key="`row-${row}-col-${col}`"
                 :class="cellClass(row, col)"
-                @dragover.prevent
+                @dragover.prevent="handleDragOver"
                 @drop="handleDrop(row, col)"
               >
                 <div
