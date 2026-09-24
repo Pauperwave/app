@@ -1,7 +1,7 @@
 // server\api\rulesets\update.post.ts
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
-import type { RulesetPointValues } from '~/composables/tournaments/pairing/useCommanderScoring'
+import type { RulesetPointValues } from '#shared/utils/tournaments/commanderScoring'
 
 interface UpdateRulesetBody {
   rulesetUuid: string

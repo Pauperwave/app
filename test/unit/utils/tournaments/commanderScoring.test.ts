@@ -1,9 +1,9 @@
-// test\unit\composables\tournaments\pairing\useCommanderScoring.test.ts
+// test\unit\utils\tournaments\commanderScoring.test.ts
 import { describe, expect, it } from 'vitest'
 import {
   buildPosValues, calculatePlayerTableScore, isDrawTable,
   type CommanderTableResult, type RulesetPointValues
-} from '~/composables/tournaments/pairing/useCommanderScoring'
+} from '#shared/utils/tournaments/commanderScoring'
 
 const RULESET: RulesetPointValues = {
   rank1: 8, rank2: 5, rank3: 3, rank4: 1, kill: 1, brew: 1, play: 1

@@ -13,7 +13,7 @@
 import {
   calculatePlayerTableScore, isDrawTable, buildPosValues,
   type CommanderTableResult
-} from './useCommanderScoring'
+} from '#shared/utils/tournaments/commanderScoring'
 import { compareCommanderStandings } from './useCommanderStandingsSort'
 
 export interface LiveCommanderStanding {
