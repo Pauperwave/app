@@ -2,14 +2,12 @@
 import { execSync } from 'node:child_process'
 import pkg from './package.json' with { type: 'json' }
 
-// Vercel exposes VERCEL_GIT_COMMIT_SHA but has no equivalent commit-date env
-// var, so this reads it from git directly at build time — the build's own
-// checkout always has at least its own last commit available, deep clone or
-// not. Falls back to '' (same as gitCommitSha locally) if git isn't
-// available at all (e.g. a tarball deploy with no .git).
-function gitCommitDate(): string {
+// Commit hash + date come from git at build time so they also show locally;
+// Vercel's VERCEL_GIT_COMMIT_SHA wins when set. Both fall back to '' if git
+// isn't available at all (e.g. a tarball deploy with no .git).
+function gitLog(format: string): string {
   try {
-    return execSync('git log -1 --format=%cI').toString().trim()
+    return execSync(`git log -1 --format=${format}`).toString().trim()
   } catch {
     return ''
   }
@@ -82,10 +80,8 @@ export default defineNuxtConfig({
       siteDescription: 'The Pauper League Manager',
       appVersion: pkg.version,
       appEnv: process.env.NODE_ENV ?? 'development',
-      // Vercel sets this automatically at build time (the commit it's
-      // building) — undefined locally/outside Vercel, not set by hand.
-      gitCommitSha: process.env.VERCEL_GIT_COMMIT_SHA ?? '',
-      gitCommitDate: gitCommitDate()
+      gitCommitSha: process.env.VERCEL_GIT_COMMIT_SHA ?? gitLog('%H'),
+      gitCommitDate: gitLog('%cI')
     }
   },
   alias: {
