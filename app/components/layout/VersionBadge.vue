@@ -15,8 +15,7 @@ const {
 } = useRuntimeConfig()
 
 // Same 7-char short hash convention as the Telegram bot's own /versione
-// (server/utils/telegram/commands/core.ts) — empty locally/outside Vercel,
-// since gitCommitSha itself is only set by Vercel's own build-time env var.
+// (server/utils/telegram/commands/core.ts) — empty only if git is unavailable.
 const shortSha = computed(() => gitCommitSha ? gitCommitSha.slice(0, 7) : '')
 
 const fullVersionText = computed(() => shortSha.value
