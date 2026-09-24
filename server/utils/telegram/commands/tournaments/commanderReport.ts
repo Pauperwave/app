@@ -1,11 +1,17 @@
 // server\utils\telegram\commands\tournaments\commanderReport.ts
 // Real (non-mockup) Commander pod flow: comandante, posizione, uccisioni,
-// voti — each write lands immediately, same "write now, don't wait" philosophy
-// as the 1v1 flow's own matchReport.ts. A "hub" screen (podHubMessage) shows
-// the pod's current state with a button into each picker; every pick writes
-// and returns to the hub, no linear wizard/confirm step. Replaces the old
-// MOCKUP flow (mockups/tavolo.ts's MOCK_TABLE + mockups/risultato.ts), which
-// moved to a hidden demo command (2026-09-24, see mockups/commanderDemo.ts).
+// voti. Same linear pick-then-confirm wizard mockups/risultato.ts always
+// had (it guides the player through exactly what needs collecting, in
+// order) — restored 2026-09-24 after an initial "hub" redesign was
+// rejected. The only real change from the mockup: each pick writes
+// immediately (saveCommanderPosition/recordKill/removeKillBetween/
+// castVote), same "write now, don't wait" philosophy as the 1v1 flow's own
+// matchReport.ts, instead of the mockup's everything-in-callback_data,
+// nothing-persisted-until-the-end shape. "✏️ Modifica" from the final step
+// just walks back to the position step — nothing to reset, every pick is
+// already saved. Replaces the old MOCKUP flow (mockups/tavolo.ts's
+// MOCK_TABLE + mockups/risultato.ts), which moved to a hidden demo command
+// (see mockups/commanderDemo.ts).
 import type { Bot, Context } from 'grammy'
 import type { InlineQueryResultArticle, InputRichMessage } from 'grammy/types'
 import { Menu } from '@grammyjs/menu'
@@ -60,13 +66,14 @@ function cardImageUrl(card: ScryfallCard): string | null {
 const COMMANDER_MESSAGE_PREFIX = '🎴 Comandante: '
 
 // ─── Callback payload prefixes ──────────────────────────────────────────────
-const HUB_PREFIX = 'cmdhub:'
-const POS_OPEN_PREFIX = 'cmdposop:'
 const POS_PICK_PREFIX = 'cmdpospk:'
-const KILL_OPEN_PREFIX = 'cmdklop:'
+const POS_CONFIRM_PREFIX = 'cmdposok:'
 const KILL_TOGGLE_PREFIX = 'cmdkltg:'
-const VOTE_OPEN_PREFIX = 'cmdvtop:'
+const KILL_CONFIRM_PREFIX = 'cmdklok:'
 const VOTE_PICK_PREFIX = 'cmdvtpk:'
+const VOTE_CONFIRM_PREFIX = 'cmdvtok:'
+const FINAL_DONE_PREFIX = 'cmdfdone:'
+const FINAL_EDIT_PREFIX = 'cmdfedit:'
 
 // 'me' (suicide) or an index into pod.opponents — short enough to fit
 // Telegram's callback_data limit alongside a full pairing uuid, same reason
@@ -74,40 +81,120 @@ const VOTE_PICK_PREFIX = 'cmdvtpk:'
 type KillTarget = 'me' | number
 
 function killTargetName(pod: LivePod, target: KillTarget): string {
-  return target === 'me' ? 'te stesso' : (pod.opponents[target]?.name ?? '?')
+  return target === 'me' ? 'Te stesso (suicidio)' : (pod.opponents[target]?.name ?? '?')
 }
 
 function killTargetUuid(pod: LivePod, target: KillTarget): string {
   return target === 'me' ? pod.myPlayerUuid : (pod.opponents[target]?.playerUuid ?? '')
 }
 
-// ─── Rich messages ──────────────────────────────────────────────────────────
-type PodScore = Awaited<ReturnType<typeof fetchPodScoreSummary>>
+// ─── Rich messages (pick-then-confirm, one step at a time) ─────────────────
+const POSITIONS = [1, 2, 3, 4]
 
-function podHubMessage(pod: LivePod, score: PodScore): InputRichMessage {
-  const place = pod.tableNumber === null ? '🪑 Il tuo tavolo' : `🪑 Tavolo ${pod.tableNumber}`
-  const opponentNames = pod.opponents.map(o => o.name).join(', ')
-  const voteLabel = (uuid: string | null) => uuid
-    ? (pod.opponents.find(o => o.playerUuid === uuid)?.name ?? '?')
-    : 'non ancora scelto'
+function positionRichMessage(pod: LivePod): InputRichMessage {
+  const seatCount = pod.opponents.length + 1
+  const blocks: InputRichMessage['blocks'] = [
+    { type: 'paragraph', text: '🏅 Che piazzamento hai fatto al tavolo?' },
+    {
+      type: 'buttons',
+      buttons: POSITIONS.filter(position => position <= seatCount).map((position) => {
+        const isSelected = pod.myPosition === position
+        return {
+          text: `${isSelected ? '⭐ ' : ''}${position}°`,
+          style: isSelected ? 'success' as const : undefined,
+          callback_data: `${POS_PICK_PREFIX}${pod.pairingUuid}:${position}`
+        }
+      })
+    }
+  ]
+  if (pod.myPosition !== null) {
+    blocks.push({
+      type: 'buttons',
+      buttons: [{ text: '➡️ Conferma', style: 'primary', callback_data: `${POS_CONFIRM_PREFIX}${pod.pairingUuid}` }]
+    })
+  }
+  return { blocks }
+}
+
+function killsRichMessage(pod: LivePod): InputRichMessage {
+  const targets: KillTarget[] = [...pod.opponents.map((_, index) => index), 'me']
+  const buttons = targets.map((target) => {
+    const isPicked = pod.myKilledUuids.includes(killTargetUuid(pod, target))
+    return {
+      text: `${isPicked ? '💀' : '⬜'} ${killTargetName(pod, target)}`,
+      style: isPicked ? 'danger' as const : undefined,
+      callback_data: `${KILL_TOGGLE_PREFIX}${pod.pairingUuid}:${target}`
+    }
+  })
+  return {
+    blocks: [
+      { type: 'paragraph', text: '💀 Chi hai eliminato?\n\nTocca per selezionare/deselezionare, poi conferma.' },
+      { type: 'buttons', buttons },
+      {
+        type: 'buttons',
+        buttons: [{
+          text: '➡️ Conferma uccisioni',
+          style: 'primary',
+          callback_data: `${KILL_CONFIRM_PREFIX}${pod.pairingUuid}`
+        }]
+      }
+    ]
+  }
+}
+
+function voteRichMessage(pod: LivePod, voteType: 'brew' | 'play'): InputRichMessage {
+  const heading = voteType === 'brew'
+    ? '🃏 Voto del mazzo (2 punti)\n\nA chi lo assegni?'
+    : '🎬 Voto della giocata (1 punto)\n\nA chi lo assegni?'
+  const currentUuid = voteType === 'brew' ? pod.myVoteByType.brew : pod.myVoteByType.play
+  const typeChar = voteType === 'brew' ? 'b' : 'p'
 
   const blocks: InputRichMessage['blocks'] = [
-    { type: 'heading', size: 3, text: place },
+    { type: 'paragraph', text: heading },
     {
-      type: 'paragraph',
-      text: `${pod.tournamentName} · Round ${pod.roundNumber}\n\nGiochi con: ${opponentNames}`
-    },
-    twoColumnFactsTable('Il tuo turno', [
-      ['🎴 Comandante', pod.myCommanderName ?? 'non ancora impostato'],
-      ['🏅 Posizione', pod.myPosition ? `${pod.myPosition}°` : 'non ancora inserita'],
-      ['💀 Uccisioni', pod.myKilledUuids.length ? String(pod.myKilledUuids.length) : 'nessuna'],
+      type: 'buttons',
+      buttons: pod.opponents.map((opponent, index) => {
+        const isSelected = currentUuid === opponent.playerUuid
+        return {
+          text: `${isSelected ? '⭐ ' : ''}${opponent.name}`,
+          style: isSelected ? 'success' as const : undefined,
+          callback_data: `${VOTE_PICK_PREFIX}${pod.pairingUuid}:${typeChar}:${index}`
+        }
+      })
+    }
+  ]
+  if (currentUuid !== null) {
+    blocks.push({
+      type: 'buttons',
+      buttons: [{
+        text: '➡️ Conferma',
+        style: 'primary',
+        callback_data: `${VOTE_CONFIRM_PREFIX}${pod.pairingUuid}:${typeChar}`
+      }]
+    })
+  }
+  return { blocks }
+}
+
+type PodScore = Awaited<ReturnType<typeof fetchPodScoreSummary>>
+
+function finalRichMessage(pod: LivePod, score: PodScore): InputRichMessage {
+  const voteLabel = (uuid: string | null) => uuid
+    ? (pod.opponents.find(o => o.playerUuid === uuid)?.name ?? '?')
+    : 'nessuno'
+
+  const blocks: InputRichMessage['blocks'] = [
+    { type: 'heading', size: 3, text: '🧾 Riepilogo del turno' },
+    twoColumnFactsTable('Salvato', [
+      ['🎴 Comandante', pod.myCommanderName ?? 'non impostato'],
+      ['🏅 Posizionamento', pod.myPosition ? `${pod.myPosition}°` : '-'],
+      ['💀 Uccisioni', pod.myKilledUuids.length ? String(pod.myKilledUuids.length) : 'Nessuna'],
       ['🃏 Voto mazzo', voteLabel(pod.myVoteByType.brew)],
       ['🎬 Voto giocata', voteLabel(pod.myVoteByType.play)]
     ])
   ]
-
   if (score) {
-    blocks.push(twoColumnFactsTable('Punteggio (live)', [
+    blocks.push(twoColumnFactsTable('Punteggio del turno', [
       ['🏅 Posizionamento', `${score.scoreRank} pt`],
       ['💀 Uccisioni', `${score.killScore} pt`],
       ['🃏 Voti mazzo', `${score.brewScore} pt`],
@@ -115,94 +202,14 @@ function podHubMessage(pod: LivePod, score: PodScore): InputRichMessage {
       ['Totale', `${score.totalScore} pt`]
     ]))
   }
-
   blocks.push({
     type: 'buttons',
     buttons: [
-      { text: '🏅 Posizione', callback_data: `${POS_OPEN_PREFIX}${pod.pairingUuid}` },
-      { text: '💀 Uccisioni', callback_data: `${KILL_OPEN_PREFIX}${pod.pairingUuid}` }
-    ]
-  }, {
-    type: 'buttons',
-    buttons: [
-      { text: '🃏 Voto mazzo', callback_data: `${VOTE_OPEN_PREFIX}${pod.pairingUuid}:b` },
-      { text: '🎬 Voto giocata', callback_data: `${VOTE_OPEN_PREFIX}${pod.pairingUuid}:p` }
+      { text: '✅ Fatto', style: 'success', callback_data: `${FINAL_DONE_PREFIX}${pod.pairingUuid}` },
+      { text: '✏️ Modifica', style: 'danger', callback_data: `${FINAL_EDIT_PREFIX}${pod.pairingUuid}` }
     ]
   })
-
   return { blocks }
-}
-
-const POSITIONS = [1, 2, 3, 4]
-const BACK_BUTTON = (pairingUuid: string) => (
-  { text: '⬅️ Indietro', style: 'danger' as const, callback_data: `${HUB_PREFIX}${pairingUuid}` }
-)
-
-function positionPickMessage(pod: LivePod): InputRichMessage {
-  const seatCount = pod.opponents.length + 1
-  return {
-    blocks: [
-      { type: 'paragraph', text: '🏅 Che piazzamento hai fatto al tavolo?' },
-      {
-        type: 'buttons',
-        buttons: POSITIONS.filter(position => position <= seatCount).map((position) => {
-          const isSelected = pod.myPosition === position
-          return {
-            text: `${isSelected ? '⭐ ' : ''}${position}°`,
-            style: isSelected ? 'success' as const : undefined,
-            callback_data: `${POS_PICK_PREFIX}${pod.pairingUuid}:${position}`
-          }
-        })
-      },
-      { type: 'buttons', buttons: [BACK_BUTTON(pod.pairingUuid)] }
-    ]
-  }
-}
-
-function killsPickMessage(pod: LivePod): InputRichMessage {
-  const targets: KillTarget[] = [...pod.opponents.map((_, index) => index), 'me']
-  const buttons = targets.map((target) => {
-    const isPicked = pod.myKilledUuids.includes(killTargetUuid(pod, target))
-    const name = target === 'me' ? 'Te stesso (suicidio)' : killTargetName(pod, target)
-    return {
-      text: `${isPicked ? '💀' : '⬜'} ${name}`,
-      style: isPicked ? 'danger' as const : undefined,
-      callback_data: `${KILL_TOGGLE_PREFIX}${pod.pairingUuid}:${target}`
-    }
-  })
-  return {
-    blocks: [
-      { type: 'paragraph', text: '💀 Chi hai eliminato?\n\nTocca per selezionare/deselezionare.' },
-      { type: 'buttons', buttons },
-      { type: 'buttons', buttons: [BACK_BUTTON(pod.pairingUuid)] }
-    ]
-  }
-}
-
-function votePickMessage(pod: LivePod, voteType: 'brew' | 'play'): InputRichMessage {
-  const heading = voteType === 'brew'
-    ? '🃏 Voto del mazzo\n\nA chi lo assegni?'
-    : '🎬 Voto della giocata\n\nA chi lo assegni?'
-  const currentUuid = voteType === 'brew' ? pod.myVoteByType.brew : pod.myVoteByType.play
-  const typeChar = voteType === 'brew' ? 'b' : 'p'
-
-  return {
-    blocks: [
-      { type: 'paragraph', text: heading },
-      {
-        type: 'buttons',
-        buttons: pod.opponents.map((opponent, index) => {
-          const isSelected = currentUuid === opponent.playerUuid
-          return {
-            text: `${isSelected ? '⭐ ' : ''}${opponent.name}`,
-            style: isSelected ? 'success' as const : undefined,
-            callback_data: `${VOTE_PICK_PREFIX}${pod.pairingUuid}:${typeChar}:${index}`
-          }
-        })
-      },
-      { type: 'buttons', buttons: [BACK_BUTTON(pod.pairingUuid)] }
-    ]
-  }
 }
 
 // ─── Menu (entry point from /tavolo) ────────────────────────────────────────
@@ -215,11 +222,9 @@ const commanderPodMenu = new Menu<Context>('cmdpod', {
 }).dynamic((_ctx, range) => {
   range.switchInlineCurrent('🎴 Imposta comandante', '')
   range.row()
-  range.text('✍️ Gestisci il turno', async (ctx) => {
+  range.text('✍️ Inserisci risultato', async (ctx) => {
     const pod = await requirePod(ctx)
-    if (!pod) return
-    const score = await fetchPodScoreSummary(pod)
-    await showRichStep(ctx, podHubMessage(pod, score))
+    if (pod) await showRichStep(ctx, positionRichMessage(pod))
   })
 })
 
@@ -238,11 +243,6 @@ async function requirePod(ctx: Context): Promise<LivePod | null> {
     return null
   }
   return pod
-}
-
-async function replyWithHub(ctx: Context, pod: LivePod) {
-  const score = await fetchPodScoreSummary(pod)
-  await showRichStep(ctx, podHubMessage(pod, score))
 }
 
 // /tavolo and /risultato: true if the chat's associate sits at a Commander
@@ -329,30 +329,6 @@ export function registerCommanderReportHandlers(bot: Bot) {
   bot.on('callback_query:data', async (ctx, next) => {
     const data = ctx.callbackQuery.data
 
-    if (data.startsWith(HUB_PREFIX)) {
-      if (!(await requireChatId(ctx))) return
-      try {
-        const pod = await requirePod(ctx)
-        if (pod) await replyWithHub(ctx, pod)
-      } catch (error) {
-        console.error('Commander hub handler failed:', error)
-        await answerLoadError(ctx)
-      }
-      return
-    }
-
-    if (data.startsWith(POS_OPEN_PREFIX)) {
-      if (!(await requireChatId(ctx))) return
-      try {
-        const pod = await requirePod(ctx)
-        if (pod) await showRichStep(ctx, positionPickMessage(pod))
-      } catch (error) {
-        console.error('Commander position-open handler failed:', error)
-        await answerLoadError(ctx)
-      }
-      return
-    }
-
     if (data.startsWith(POS_PICK_PREFIX)) {
       if (!(await requireChatId(ctx))) return
       try {
@@ -366,7 +342,7 @@ export function registerCommanderReportHandlers(bot: Bot) {
           position: Number(position)
         })
         const updated = await requirePod(ctx)
-        if (updated) await replyWithHub(ctx, updated)
+        if (updated) await showRichStep(ctx, positionRichMessage(updated))
       } catch (error) {
         console.error('Commander position-pick handler failed:', error)
         await answerLoadError(ctx)
@@ -374,13 +350,13 @@ export function registerCommanderReportHandlers(bot: Bot) {
       return
     }
 
-    if (data.startsWith(KILL_OPEN_PREFIX)) {
+    if (data.startsWith(POS_CONFIRM_PREFIX)) {
       if (!(await requireChatId(ctx))) return
       try {
         const pod = await requirePod(ctx)
-        if (pod) await showRichStep(ctx, killsPickMessage(pod))
+        if (pod) await showRichStep(ctx, killsRichMessage(pod))
       } catch (error) {
-        console.error('Commander kill-open handler failed:', error)
+        console.error('Commander position-confirm handler failed:', error)
         await answerLoadError(ctx)
       }
       return
@@ -409,7 +385,7 @@ export function registerCommanderReportHandlers(bot: Bot) {
           })
         }
         const updated = await requirePod(ctx)
-        if (updated) await showRichStep(ctx, killsPickMessage(updated))
+        if (updated) await showRichStep(ctx, killsRichMessage(updated))
       } catch (error) {
         console.error('Commander kill-toggle handler failed:', error)
         await answerLoadError(ctx)
@@ -417,14 +393,13 @@ export function registerCommanderReportHandlers(bot: Bot) {
       return
     }
 
-    if (data.startsWith(VOTE_OPEN_PREFIX)) {
+    if (data.startsWith(KILL_CONFIRM_PREFIX)) {
       if (!(await requireChatId(ctx))) return
       try {
-        const [, typeChar] = data.slice(VOTE_OPEN_PREFIX.length).split(':')
         const pod = await requirePod(ctx)
-        if (pod) await showRichStep(ctx, votePickMessage(pod, typeChar === 'b' ? 'brew' : 'play'))
+        if (pod) await showRichStep(ctx, voteRichMessage(pod, 'brew'))
       } catch (error) {
-        console.error('Commander vote-open handler failed:', error)
+        console.error('Commander kill-confirm handler failed:', error)
         await answerLoadError(ctx)
       }
       return
@@ -448,9 +423,45 @@ export function registerCommanderReportHandlers(bot: Bot) {
           voteType
         })
         const updated = await requirePod(ctx)
-        if (updated) await replyWithHub(ctx, updated)
+        if (updated) await showRichStep(ctx, voteRichMessage(updated, voteType))
       } catch (error) {
         console.error('Commander vote-pick handler failed:', error)
+        await answerLoadError(ctx)
+      }
+      return
+    }
+
+    if (data.startsWith(VOTE_CONFIRM_PREFIX)) {
+      if (!(await requireChatId(ctx))) return
+      try {
+        const [, typeChar] = data.slice(VOTE_CONFIRM_PREFIX.length).split(':')
+        const pod = await requirePod(ctx)
+        if (!pod) return
+        if (typeChar === 'b') {
+          await showRichStep(ctx, voteRichMessage(pod, 'play'))
+        } else {
+          const score = await fetchPodScoreSummary(pod)
+          await showRichStep(ctx, finalRichMessage(pod, score))
+        }
+      } catch (error) {
+        console.error('Commander vote-confirm handler failed:', error)
+        await answerLoadError(ctx)
+      }
+      return
+    }
+
+    if (data.startsWith(FINAL_DONE_PREFIX)) {
+      await ctx.answerCallbackQuery({ text: '✅ Dati già salvati.' }).catch(() => {})
+      return
+    }
+
+    if (data.startsWith(FINAL_EDIT_PREFIX)) {
+      if (!(await requireChatId(ctx))) return
+      try {
+        const pod = await requirePod(ctx)
+        if (pod) await showRichStep(ctx, positionRichMessage(pod))
+      } catch (error) {
+        console.error('Commander final-edit handler failed:', error)
         await answerLoadError(ctx)
       }
       return
