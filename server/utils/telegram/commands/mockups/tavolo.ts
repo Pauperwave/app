@@ -1,183 +1,30 @@
 // server\utils\telegram\commands\mockups\tavolo.ts
+// /tavolo dispatches to whichever live table the linked associate actually
+// sits at: a 1v1 (tournaments/matchReport.ts) or a Commander pod
+// (tournaments/commanderReport.ts) in a round being played. Neither found
+// means no fallback anymore — see mockups/commanderDemo.ts for the demo
+// flow this used to fall back to unconditionally (2026-09-24, user request:
+// mock data should never show up outside its own hidden demo command).
 import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
-import type { InlineQueryResultArticle, InputRichMessage } from 'grammy/types'
-import { Menu } from '@grammyjs/menu'
 
-import { risultatoMenu, openRisultato } from './risultato'
 import { replyWithLiveTable } from '../tournaments/matchReport'
+import { replyWithLiveCommanderPod } from '../tournaments/commanderReport'
 import { registerDeepLink } from '../../deepLinks'
 
-// MOCKUP (Commander only) — a Commander pod has no live pairing flow yet (see
-// docs/architecture/telegram-bot.md), so this is hardcoded sample data. A 1v1
-// table is real: tavoloCommandHandler answers it first (tournaments/matchReport.ts).
-const MOCK_TABLE = { number: 7, opponents: ['Marco Rossi', 'Giulia Bianchi', 'Luca Verdi'] }
-
-function tavoloMarkdown(): string {
-  const table = MOCK_TABLE
-  // "- " (a real markdown list item), not "• " — see core.ts's HELP_TEXT
-  // comment on why a plain bullet character still needs \n\n to break.
-  const lines = table.opponents.map(name => `- ${name}`)
-  return `## 🪑 Tavolo ${table.number}\n\nGiochi con:\n${lines.join('\n')}`
-}
-
-// Scryfall requires a descriptive User-Agent — same convention as
-// priceRefresh.ts's own, duplicated since the two call sites are unrelated.
-const SCRYFALL_USER_AGENT = 'Pauperwave-app/1.0 (Telegram bot commander search; contact: emanuelenardi.dev@gmail.com)'
-
-const MAX_COMMANDER_RESULTS = 5
-
-interface ScryfallCard {
-  name: string
-  type_line?: string
-  image_uris?: { small?: string, art_crop?: string }
-  // Modal DFCs/split cards carry images per face instead of on the card
-  // itself — cardImageUrl() below falls back to the front face's image.
-  card_faces?: { image_uris?: { art_crop?: string } }[]
-}
-
-// is:commander — Scryfall's own "can be your commander" filter. A future
-// version will curate this list in Supabase instead of querying Scryfall live.
-async function searchCommanders(query: string): Promise<ScryfallCard[]> {
-  try {
-    const response = await $fetch<{ data: ScryfallCard[] }>('https://api.scryfall.com/cards/search', {
-      query: { q: `${query} is:commander game:paper`, unique: 'cards', order: 'name' },
-      headers: { 'User-Agent': SCRYFALL_USER_AGENT, 'Accept': 'application/json' }
-    })
-    return (response.data ?? []).slice(0, MAX_COMMANDER_RESULTS)
-  } catch {
-    // /cards/search answers 404 when nothing matches — normal for a search,
-    // not an error worth surfacing differently from "no results".
-    return []
-  }
-}
-
-// Exact-name lookup for the confirmation message below — the inline query
-// result only round-trips the card's name through COMMANDER_MESSAGE_PREFIX,
-// not its image, so the full card is re-fetched here rather than threading
-// image_uris through the picked message text.
-async function fetchCommanderByName(name: string): Promise<ScryfallCard | null> {
-  try {
-    return await $fetch<ScryfallCard>('https://api.scryfall.com/cards/named', {
-      query: { exact: name },
-      headers: { 'User-Agent': SCRYFALL_USER_AGENT, 'Accept': 'application/json' }
-    })
-  } catch {
-    return null
-  }
-}
-
-// The cropped illustration, not the full card face — the confirmation
-// message is just "which commander did you pick", not a card lookup, so the
-// art alone reads better than a whole card at Telegram's photo width (user
-// request, 2026-09-24).
-function cardImageUrl(card: ScryfallCard): string | null {
-  return card.image_uris?.art_crop ?? card.card_faces?.[0]?.image_uris?.art_crop ?? null
-}
-
-// Marks a message as a commander pick from the inline-query result below
-// (checked in the message:text handler), not free-typed text.
-const COMMANDER_MESSAGE_PREFIX = '🎴 Comandante: '
-
-// autoAnswer/onMenuOutdated: false — kept for consistency, though this
-// menu has no callback_query handler at all (switchInlineCurrent is
-// client-side-only). See calendario.ts's calendarioMenu.
-const tavoloMenu = new Menu<Context>('tv', {
-  autoAnswer: false,
-  onMenuOutdated: false
-}).dynamic((_ctx, range) => {
-  // Puts the input field into inline mode on this chat (requires BotFather:
-  // /setinline) — bot.on('inline_query') answers live as the user types.
-  range.switchInlineCurrent('🎴 Imposta comandante', '')
-  range.row()
-
-  // Opens risultato.ts's own Commander flow (position + kills + votes) —
-  // user request 2026-09-07: a single entry point into result-reporting
-  // from the table view itself, instead of a separate /risultato command
-  // to remember.
-  range.submenu({ text: '✍️ Inserisci risultati', payload: '' }, 'ris', openRisultato)
-})
-
-// ctx.api, not bot.api — @grammyjs/menu can only render a menu's
-// fingerprint into reply_markup through a context's own api, not the bare
-// bot-level client (confirmed 2026-09-09 in production: "Cannot send menu
-// 'tv'! ... try to send it through bot.api?", @grammyjs/menu/out/menu.js's
-// own inline_keyboard getter). So this still needs an update's ctx, which
-// rules out a truly ctx-less server trigger (e.g. a cron job) sending this
-// exact menu until the plugin supports it — it only helps today when an
-// existing update wants to push to a *different* chatId than its own.
-export async function pushTavoloMessage(ctx: Context, chatId: number) {
-  const other = { reply_markup: tavoloMenu }
-  await ctx.api.sendRichMessage(chatId, { markdown: tavoloMarkdown() }, other)
-}
+const NO_LIVE_TABLE_TEXT = '🪑 Nessun tavolo aperto al momento per te — controlla di essere iscritto a un torneo in corso.'
 
 // Extracted so it can be reused verbatim by t.me/<bot>?start=tavolo — see
 // deepLinks.ts. Intended entry point: a QR code at the physical table,
 // scanned mid-round instead of typing /tavolo cold.
 async function tavoloCommandHandler(ctx: Context) {
-  if (!ctx.chat?.id) return
   if (await replyWithLiveTable(ctx)) return
-  await pushTavoloMessage(ctx, ctx.chat.id)
+  if (await replyWithLiveCommanderPod(ctx)) return
+  await ctx.reply(NO_LIVE_TABLE_TEXT)
 }
 
 registerDeepLink('tavolo', tavoloCommandHandler)
 
 export function registerTavoloCommand(bot: Bot, commands: CommandGroup<Context>) {
-  // Deferred to call time — same circular-import reasoning as
-  // calendario.ts's own comment (risultato.ts has no back-reference to
-  // tavolo.ts today, but registering here keeps the convention consistent).
-  tavoloMenu.register(risultatoMenu)
-  bot.use(tavoloMenu)
-
   commands.command('tavolo', 'Tavolo e avversario del turno', tavoloCommandHandler)
-
-  bot.on('inline_query', async (ctx) => {
-    // 'sender' — a private chat with the bot itself, the only place
-    // switchInlineCurrent above can trigger this. Any other chat_type
-    // (private with someone else, group, supergroup, channel) means this
-    // came from typing "@bot ..." elsewhere, outside the /tavolo flow.
-    if (ctx.inlineQuery.chat_type !== 'sender') {
-      await ctx.answerInlineQuery([], { cache_time: 0 })
-      return
-    }
-
-    const query = ctx.inlineQuery.query.trim()
-    if (query.length < 2) {
-      await ctx.answerInlineQuery([], { cache_time: 0 })
-      return
-    }
-
-    const cards = await searchCommanders(query)
-    const results: InlineQueryResultArticle[] = cards.map((card, index) => ({
-      type: 'article',
-      id: String(index),
-      title: card.name,
-      description: card.type_line,
-      thumbnail_url: card.image_uris?.small,
-      input_message_content: { message_text: `${COMMANDER_MESSAGE_PREFIX}${card.name}` }
-    }))
-    await ctx.answerInlineQuery(results, { cache_time: 0 })
-  })
-
-  // Picking an inline result posts it as a normal message here — recognized
-  // by its marker prefix rather than subscribing to chosen_inline_result
-  // (would also need BotFather's /setinlinefeedback, unnecessary in a DM).
-  bot.on('message:text', async (ctx, next) => {
-    if (!ctx.message.text.startsWith(COMMANDER_MESSAGE_PREFIX)) {
-      return next()
-    }
-
-    const name = ctx.message.text.slice(COMMANDER_MESSAGE_PREFIX.length)
-    // MOCKUP — a real implementation would persist this against the
-    // player's current pairing once tournament_pairings has a live-write
-    // flow (see docs/architecture/telegram-bot.md).
-    const card = await fetchCommanderByName(name)
-    const imageUrl = card ? cardImageUrl(card) : null
-
-    const blocks: InputRichMessage['blocks'] = []
-    if (imageUrl) blocks.push({ type: 'photo', photo: { type: 'photo', media: imageUrl } })
-    blocks.push({ type: 'paragraph', text: `✅ Comandante impostato per questo turno: ${name}` })
-
-    await ctx.replyWithRichMessage({ blocks })
-  })
 }

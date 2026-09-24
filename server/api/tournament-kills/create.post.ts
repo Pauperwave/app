@@ -13,18 +13,7 @@ export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 
   const body = await readBody<CreateKillBody>(event)
-  const supabase = serverSupabaseServiceRole<Database>(event)
-
-  const { error } = await supabase.from('tournament_kills').insert({
-    tournament_uuid: body.tournamentUuid,
-    pairing_uuid: body.pairingUuid,
-    killer_uuid: body.killerUuid,
-    killed_player_uuid: body.killedPlayerUuid
-  })
-
-  if (error) {
-    throw createError({ statusCode: 500, statusMessage: error.message })
-  }
+  await recordKill(serverSupabaseServiceRole<Database>(event), body)
 
   return { success: true }
 })
