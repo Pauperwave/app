@@ -161,6 +161,34 @@ export async function fetchLivePod(
   }
 }
 
+export interface VoteReceived {
+  voterName: string
+  brew: boolean
+  play: boolean
+}
+
+// Who voted for THIS player (not who they voted for) — feeds the
+// "Riepilogo voti ricevuti" table mockups/risultato.ts's own
+// votesReceivedTableBlock always showed, one row per opponent.
+export async function fetchVotesReceivedFor(pod: LivePod): Promise<VoteReceived[]> {
+  const supabase = telegramServiceSupabaseClient()
+  const { data, error } = await supabase
+    .from('tournament_votes')
+    .select('voter_uuid, vote_type')
+    .eq('pairing_uuid', pod.pairingUuid)
+    .eq('voted_player_uuid', pod.myPlayerUuid)
+  if (error) throw error
+
+  return pod.opponents.map((opponent) => {
+    const votes = data.filter(row => row.voter_uuid === opponent.playerUuid)
+    return {
+      voterName: opponent.name,
+      brew: votes.some(vote => vote.vote_type === 'brew'),
+      play: votes.some(vote => vote.vote_type === 'play')
+    }
+  })
+}
+
 // The whole pod's current standing, scored with the exact same formula the
 // web app uses (shared/utils/tournaments/commanderScoring.ts) — null until
 // this player has a position (calculatePlayerTableScore's own rule).
