@@ -3,7 +3,7 @@
 // flow (user request, 2026-09-17) — createRuleset/updateRuleset are
 // 'manage-rulesets' (organizer), deleteRuleset is 'delete-ruleset' (admin,
 // enforced server-side); see permissions.ts's own comment on that split.
-import type { RulesetPointValues } from '~/composables/tournaments/pairing/useCommanderScoring'
+import type { RulesetPointValues } from '#shared/utils/tournaments/commanderScoring'
 
 export interface RulesetFormPoints extends RulesetPointValues {
   participation: number

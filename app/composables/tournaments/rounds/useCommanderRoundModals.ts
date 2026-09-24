@@ -9,7 +9,7 @@
 // readability gain. Submitting a modal is a separate concern — see
 // useCommanderRoundSubmitHandlers.ts.
 import type { TablePlayer } from '~/types'
-import type { CommanderTableResult } from '../pairing/useCommanderScoring'
+import type { CommanderTableResult } from '#shared/utils/tournaments/commanderScoring'
 import type { CommanderRoundData } from './useCommanderRoundData'
 
 export function useCommanderRoundModals(options: {
