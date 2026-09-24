@@ -30,10 +30,10 @@ const MAX_COMMANDER_RESULTS = 5
 interface ScryfallCard {
   name: string
   type_line?: string
-  image_uris?: { small?: string, normal?: string }
+  image_uris?: { small?: string, art_crop?: string }
   // Modal DFCs/split cards carry images per face instead of on the card
   // itself — cardImageUrl() below falls back to the front face's image.
-  card_faces?: { image_uris?: { normal?: string } }[]
+  card_faces?: { image_uris?: { art_crop?: string } }[]
 }
 
 // is:commander — Scryfall's own "can be your commander" filter. A future
@@ -67,8 +67,12 @@ async function fetchCommanderByName(name: string): Promise<ScryfallCard | null> 
   }
 }
 
+// The cropped illustration, not the full card face — the confirmation
+// message is just "which commander did you pick", not a card lookup, so the
+// art alone reads better than a whole card at Telegram's photo width (user
+// request, 2026-09-24).
 function cardImageUrl(card: ScryfallCard): string | null {
-  return card.image_uris?.normal ?? card.card_faces?.[0]?.image_uris?.normal ?? null
+  return card.image_uris?.art_crop ?? card.card_faces?.[0]?.image_uris?.art_crop ?? null
 }
 
 // Marks a message as a commander pick from the inline-query result below
