@@ -26,6 +26,11 @@ export function useCommanderRoundData(options: {
   const { data: registrations } = useTournamentRegistrationsQuery(tournamentUuid)
   const { data: associatesData } = useAssociatesQuery()
   const { liveStandings } = useLiveCommanderStandings(tournamentUuid)
+  // Live-updates results/kills/votes/pairings as the Telegram bot writes to
+  // a pod, so an organizer watching this round sees a player's own
+  // commander/position/kills/votes without refreshing the page (2026-09-24
+  // bug report).
+  useCommanderRoundResultsRealtime(tournamentUuid)
 
   const {
     round, isLastRoundOfTournament, pairingsForRound,
