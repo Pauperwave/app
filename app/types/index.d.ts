@@ -544,6 +544,16 @@ export interface TablePlayer {
   value: string
   label: string
   seed?: number
+  // The real first-name/surname pair, when the caller building this
+  // TablePlayer has it (tablePlayersFor et al.) — lets AssociateTag-based
+  // renders use playerNameParts() instead of guessing a split from `label`,
+  // which mishandles compound surnames ("Del Piero", "De La Cruz") by
+  // treating only the label's last word as the surname (2026-09-24, ported
+  // from league's own real-surname-aware usePlayerDisplay.ts). Undefined
+  // for a TablePlayer built without a resolvable associate (falls back to
+  // the label uuid) or from a context with no structured name at all.
+  firstName?: string
+  surname?: string
 }
 
 export interface Seat {

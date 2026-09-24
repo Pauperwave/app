@@ -11,9 +11,9 @@
 <script setup lang="ts">
 import type { TournamentPairing } from '~/composables/tournaments/pairing/useTournamentPairingsQuery'
 
-const { pairingsForRound, labelFor } = defineProps<{
+const { pairingsForRound, namePartsFor } = defineProps<{
   pairingsForRound: TournamentPairing[]
-  labelFor: (playerUuid: string) => string
+  namePartsFor: (playerUuid: string) => { firstName: string, surname: string }
 }>()
 
 const emit = defineEmits<{ exit: [] }>()
@@ -30,7 +30,7 @@ function tablePlayers(
   pairing: TournamentPairing
 ): { uuid: string, surname: string, initial: string }[] {
   return pairing.playerUuids.map((uuid) => {
-    const { firstName, surname } = splitPlayerName(labelFor(uuid))
+    const { firstName, surname } = namePartsFor(uuid)
     return { uuid, surname, initial: firstName ? `${firstName.charAt(0)}.` : '' }
   })
 }

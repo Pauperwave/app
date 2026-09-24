@@ -54,7 +54,7 @@ const rows = computed<ScoreRow[]>(() => {
     .map((player): ScoreRow | null => {
       const scored = calculatePlayerTableScore(player.value, tableResults, posValues, ruleset)
       if (!scored) return null
-      const { firstName, surname } = splitPlayerName(player.label)
+      const { firstName, surname } = playerNameParts(player)
       return {
         name: firstName,
         surname,

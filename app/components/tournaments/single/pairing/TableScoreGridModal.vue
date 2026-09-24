@@ -116,8 +116,8 @@ function cellClass(row: number, col: number): string {
                 >
                   <UIcon :name="ICONS.dragHandle" class="size-4 text-muted shrink-0" />
                   <AssociateTag
-                    :name="splitPlayerName(grid[row]![col]!.label).firstName"
-                    :surname="splitPlayerName(grid[row]![col]!.label).surname"
+                    :name="playerNameParts(grid[row]![col]!).firstName"
+                    :surname="playerNameParts(grid[row]![col]!).surname"
                     :associate-uuid="grid[row]![col]!.value"
                     size="sm"
                     class="flex-1 truncate"

@@ -20,7 +20,7 @@ export function useCommanderRoundModals(options: {
   const { t } = useI18n()
   const {
     pairingsForRound, tablePlayersFor, positionsFor, killsFor, votesFor,
-    commanderDeckFor, isPairingDraw
+    commanderDeckFor, isPairingDraw, namePartsFor
   } = roundData
 
   // ─── Ranking modal ──────────────────────────────────────────────────────────
@@ -144,8 +144,10 @@ export function useCommanderRoundModals(options: {
     activeCommander.value = { pairingUuid, playerUuid }
     commanderModalOpen.value = true
   }
-  const activeCommanderPlayerName = computed(() =>
-    activeCommander.value ? roundData.labelFor(activeCommander.value.playerUuid) : '')
+  const activeCommanderNameParts = computed(() =>
+    activeCommander.value
+      ? namePartsFor(activeCommander.value.playerUuid)
+      : { firstName: '', surname: '' })
   const activeCommanderTablePlayerUuids = computed(() => {
     const current = activeCommander.value
     if (!current) return []
@@ -273,7 +275,7 @@ export function useCommanderRoundModals(options: {
     commanderModalOpen,
     activeCommander,
     openCommanderModal,
-    activeCommanderPlayerName,
+    activeCommanderNameParts,
     activeCommanderTablePlayerUuids,
     activeCommanderCurrent,
     confirmDialog,

@@ -20,6 +20,11 @@ export interface LiveCommanderStanding {
   playerUuid: string
   associateUuid: string
   label: string
+  // Real first-name/surname pair, alongside `label` (kept for existing
+  // display/search callers) — see TablePlayer.firstName/surname's own
+  // comment on why a blind split of `label` mishandles compound surnames.
+  firstName: string
+  surname: string
   score: number
   victories: number
   kills: number
@@ -58,6 +63,8 @@ export function useLiveCommanderStandings(tournamentUuid: MaybeRefOrGetter<strin
         playerUuid: registration.playerUuid,
         associateUuid: registration.associateUuid,
         label: associate ? `${associate.first_name} ${associate.last_name}` : registration.associateUuid,
+        firstName: associate?.first_name ?? registration.associateUuid,
+        surname: associate?.last_name ?? '',
         score: 0,
         victories: 0,
         kills: 0,

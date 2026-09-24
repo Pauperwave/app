@@ -14,6 +14,8 @@ export interface TournamentAward {
   playerUuid: string
   associateUuid: string
   label: string
+  firstName: string
+  surname: string
   value: number
 }
 
@@ -41,6 +43,8 @@ export function useTournamentAwards(standings: Ref<LiveCommanderStanding[]>) {
           playerUuid: standing.playerUuid,
           associateUuid: standing.associateUuid,
           label: standing.label,
+          firstName: standing.firstName,
+          surname: standing.surname,
           value
         }
       }

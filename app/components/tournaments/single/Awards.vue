@@ -31,7 +31,8 @@ const awards = useTournamentAwards(standingsRef)
         :key="award.kind"
         :kind="award.kind"
         :associate-uuid="award.associateUuid"
-        :label="award.label"
+        :first-name="award.firstName"
+        :surname="award.surname"
         :value="award.value"
       />
     </div>

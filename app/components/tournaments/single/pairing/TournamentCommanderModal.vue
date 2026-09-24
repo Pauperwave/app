@@ -13,10 +13,11 @@ import type CommanderModal from '~/components/tournaments/single/pairing/Command
 const open = defineModel<boolean>('open', { default: false })
 
 const {
-  playerUuid, playerName, commander1 = null, commander2 = null, tablePlayerUuids = []
+  playerUuid, firstName, surname, commander1 = null, commander2 = null, tablePlayerUuids = []
 } = defineProps<{
   playerUuid: string
-  playerName: string
+  firstName: string
+  surname: string
   commander1?: string | null
   commander2?: string | null
   /** Every player seated at the same table/round as `playerUuid` — see
@@ -73,8 +74,8 @@ async function onConfirmRefreshCatalog() {
   >
     <template #description>
       <AssociateTag
-        :name="splitPlayerName(playerName).firstName"
-        :surname="splitPlayerName(playerName).surname"
+        :name="firstName"
+        :surname="surname"
         :associate-uuid="playerUuid"
         size="xs"
       />
@@ -84,7 +85,7 @@ async function onConfirmRefreshCatalog() {
       <TournamentsSinglePairingCommanderModal
         ref="commanderModalRef"
         :player-uuid="playerUuid"
-        :player-name="playerName"
+        :player-name="`${firstName} ${surname}`.trim()"
         :commander1="commander1"
         :commander2="commander2"
         :table-player-uuids="tablePlayerUuids"

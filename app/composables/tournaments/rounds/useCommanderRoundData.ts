@@ -34,7 +34,7 @@ export function useCommanderRoundData(options: {
 
   const {
     round, isLastRoundOfTournament, pairingsForRound,
-    associateUuidFor, labelFor, tablePlayersFor
+    associateUuidFor, labelFor, namePartsFor, tablePlayersFor
   } = useRoundAndPlayerLookup({
     rounds, pairings, registrations, associatesData, roundNumber, roundCount
   })
@@ -127,6 +127,7 @@ export function useCommanderRoundData(options: {
     results,
     liveStandings,
     labelFor,
+    namePartsFor,
     associateUuidFor,
     pairingsForRound,
     tablePlayersFor,
