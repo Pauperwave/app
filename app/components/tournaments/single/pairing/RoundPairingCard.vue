@@ -48,25 +48,50 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const { isDeveloperView } = useDeveloperView()
 
+// "Any data at all" — used only to guard the draw toggle below (declaring a
+// draw over already-entered data, even partial, would silently discard it).
 const hasRanking = computed(() => positions.size > 0)
-// Declaring a draw over already-entered data would silently discard it —
-// only allowed on an empty table, or as a toggle from an existing draw.
 const canToggleDraw = computed(() => isDraw || (!hasRanking.value && !hasKills))
+
+// Some seats have data but the table isn't fully ranked yet — now a real,
+// common state since players self-report independently via the Telegram
+// bot, instead of an organizer filling the whole table in one sitting.
+// Previously both footer icons turned green as soon as *any* seat had data,
+// making one player's own submission look like the whole table was done
+// (user bug report, 2026-09-24).
+const hasPartialData = computed(() => hasRanking.value && !isComplete)
+
+// info (in progress, not final) rather than warning (needs attention) —
+// same convention as the 1v1 flow's own "Inserito da X, in attesa" badge:
+// blue for "something happened but isn't settled yet", not yellow.
+const rankingColor = computed(() => {
+  if (isComplete) return 'success' as const
+  return hasRanking.value ? 'info' as const : 'neutral' as const
+})
+// Kills piggyback on the same "is the table fully ranked" gate since a kill
+// count alone can't tell a genuinely-zero-kills table apart from one
+// nobody has touched yet.
+const killsColor = computed(() => {
+  if (!hasKills) return 'neutral' as const
+  return isComplete ? 'success' as const : 'info' as const
+})
 
 // Rankings/kills buttons lock while the table is marked as a draw, since
 // editing either would silently un-draw the table with no other signal —
 // same tooltip logic as league's PairingTableActions.vue.
 const rankingTooltip = computed(() => {
   if (isDraw) return t('tournament.single.roundManager.drawnTooltip')
-  return hasRanking.value
-    ? t('tournament.single.roundManager.rankingSetTooltip')
+  if (isComplete) return t('tournament.single.roundManager.rankingSetTooltip')
+  return hasPartialData.value
+    ? t('tournament.single.roundManager.rankingPartialTooltip')
     : t('tournament.single.roundManager.rankingNotSetTooltip')
 })
 const killsTooltip = computed(() => {
   if (isDraw) return t('tournament.single.roundManager.drawnTooltip')
-  return hasKills
+  if (!hasKills) return t('tournament.single.roundManager.killsNotSetTooltip')
+  return isComplete
     ? t('tournament.single.roundManager.killsSetTooltip')
-    : t('tournament.single.roundManager.killsNotSetTooltip')
+    : t('tournament.single.roundManager.killsPartialTooltip')
 })
 const drawTooltip = computed(() => {
   if (isDraw) return t('tournament.single.roundManager.drawUndoTooltip')
@@ -188,7 +213,7 @@ const drawTooltip = computed(() => {
         <UTooltip :text="rankingTooltip">
           <UButton
             class="flex-1 justify-center"
-            :color="hasRanking ? 'success' : 'neutral'"
+            :color="rankingColor"
             variant="outline"
             :icon="ICONS.standings"
             :disabled="isDraw"
@@ -199,7 +224,7 @@ const drawTooltip = computed(() => {
         <UTooltip :text="killsTooltip">
           <UButton
             class="flex-1 justify-center"
-            :color="hasKills ? 'success' : 'neutral'"
+            :color="killsColor"
             variant="outline"
             :icon="ICONS.kills"
             :disabled="isDraw"
