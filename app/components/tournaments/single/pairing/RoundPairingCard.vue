@@ -161,8 +161,8 @@ const drawTooltip = computed(() => {
         class="flex items-center gap-2 rounded bg-elevated px-2 py-1.5"
       >
         <AssociateTag
-          :name="splitPlayerName(player.label).firstName"
-          :surname="splitPlayerName(player.label).surname"
+          :name="playerNameParts(player).firstName"
+          :surname="playerNameParts(player).surname"
           :associate-uuid="associateUuidFor(player.value)"
           size="md"
           class="flex-1 truncate"

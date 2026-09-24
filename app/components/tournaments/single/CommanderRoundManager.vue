@@ -62,9 +62,9 @@ const lifecycle = useCommanderRoundLifecycle({
 
 const {
   isLastRoundOfTournament, turnBackButtonLabel, tournamentIsEnded,
-  labelFor, associateUuidFor, pairingsForRound, tablePlayersFor, positionsFor, killsFor,
-  commanderDeckFor, isPairingComplete, isPairingDraw, hasRankingFor, hasKillsFor,
-  hasCommanderFor, hasVotesFor, winners, liveStandings
+  labelFor, namePartsFor, associateUuidFor, pairingsForRound, tablePlayersFor,
+  positionsFor, killsFor, commanderDeckFor, isPairingComplete, isPairingDraw,
+  hasRankingFor, hasKillsFor, hasCommanderFor, hasVotesFor, winners, liveStandings
 } = roundData
 
 const {
@@ -74,7 +74,7 @@ const {
   activeScoresTableResults, killModalOpen, openKillModal, activeKillPlayers, activeKillEvents,
   votesModalOpen, activeVotes, openVotesModal, activeVotesSelectedPlayer, activeVotesOtherPlayers,
   activeVotesExisting, commanderNameForVotes, commanderModalOpen, activeCommander,
-  openCommanderModal, activeCommanderPlayerName, activeCommanderTablePlayerUuids,
+  openCommanderModal, activeCommanderNameParts, activeCommanderTablePlayerUuids,
   activeCommanderCurrent, requestResetTable, requestQuickFill, requestQuickFillAll, requestDraw,
   isConfirmDialogOpen, confirmDialogTableNumber, confirmDialogCopy
 } = modals
@@ -150,7 +150,7 @@ const showFHint = useChordHintKey('f')
         <TournamentsSinglePairingTablesFullscreenView
           v-if="isTablesFullscreen"
           :pairings-for-round="pairingsForRound"
-          :label-for="labelFor"
+          :name-parts-for="namePartsFor"
           @exit="toggleTablesFullscreen"
         />
 
@@ -302,7 +302,8 @@ const showFHint = useChordHintKey('f')
   <TournamentsSinglePairingTournamentCommanderModal
     v-model:open="commanderModalOpen"
     :player-uuid="activeCommander?.playerUuid ?? ''"
-    :player-name="activeCommanderPlayerName"
+    :first-name="activeCommanderNameParts.firstName"
+    :surname="activeCommanderNameParts.surname"
     :commander1="activeCommanderCurrent.commander1"
     :commander2="activeCommanderCurrent.commander2"
     :table-player-uuids="activeCommanderTablePlayerUuids"

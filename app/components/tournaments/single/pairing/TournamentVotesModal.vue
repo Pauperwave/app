@@ -73,8 +73,8 @@ const closeButtonProps: Record<string, unknown> = { tabindex: -1 }
     <template #description>
       <AssociateTag
         v-if="selectedPlayer"
-        :name="splitPlayerName(selectedPlayer.label).firstName"
-        :surname="splitPlayerName(selectedPlayer.label).surname"
+        :name="playerNameParts(selectedPlayer).firstName"
+        :surname="playerNameParts(selectedPlayer).surname"
         :associate-uuid="selectedPlayer.value"
         size="xs"
       />

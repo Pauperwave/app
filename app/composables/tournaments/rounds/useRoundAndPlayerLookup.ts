@@ -40,18 +40,30 @@ export function useRoundAndPlayerLookup(options: {
   const associatesByUuid = computed(() =>
     new Map((associatesData.value ?? []).map(a => [a.uuid, a])))
 
-  function labelFor(playerUuid: string): string {
+  function associateFor(playerUuid: string): Associate | undefined {
     const associateUuid = associateByPlayerUuid.value.get(playerUuid)
-    const associate = associateUuid ? associatesByUuid.value.get(associateUuid) : undefined
+    return associateUuid ? associatesByUuid.value.get(associateUuid) : undefined
+  }
+  function labelFor(playerUuid: string): string {
+    const associate = associateFor(playerUuid)
     return associate ? `${associate.first_name} ${associate.last_name}` : playerUuid
+  }
+  // The real first-name/surname pair (not a guessed split of labelFor's
+  // joined string) — see TablePlayer.firstName/surname's own comment.
+  function namePartsFor(playerUuid: string): { firstName: string, surname: string } {
+    const associate = associateFor(playerUuid)
+    return associate
+      ? { firstName: associate.first_name, surname: associate.last_name }
+      : { firstName: playerUuid, surname: '' }
   }
   function associateUuidFor(playerUuid: string): string | undefined {
     return associateByPlayerUuid.value.get(playerUuid)
   }
   function tablePlayersFor(pairing: { playerUuids: string[] }): TablePlayer[] {
-    return pairing.playerUuids.map(playerUuid => ({
-      value: playerUuid, label: labelFor(playerUuid)
-    }))
+    return pairing.playerUuids.map((playerUuid) => {
+      const { firstName, surname } = namePartsFor(playerUuid)
+      return { value: playerUuid, label: labelFor(playerUuid), firstName, surname }
+    })
   }
 
   return {
@@ -61,6 +73,7 @@ export function useRoundAndPlayerLookup(options: {
     associateByPlayerUuid,
     associatesByUuid,
     labelFor,
+    namePartsFor,
     associateUuidFor,
     tablePlayersFor
   }

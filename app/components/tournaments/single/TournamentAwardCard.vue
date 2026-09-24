@@ -7,11 +7,12 @@
 import type { TournamentAwardKind } from '~/composables/tournaments/prizes/useTournamentAwards'
 
 const {
-  kind, associateUuid, label, value
+  kind, associateUuid, firstName, surname, value
 } = defineProps<{
   kind: TournamentAwardKind
   associateUuid: string
-  label: string
+  firstName: string
+  surname: string
   value: number
 }>()
 
@@ -43,7 +44,6 @@ const icon = computed(() => ICON_BY_KIND[kind])
 const iconColorClass = computed(() => COLOR_BY_KIND[kind])
 const title = computed(() => t(`tournament.single.awards.${kind}.title`))
 const statLabel = computed(() => t(`tournament.single.awards.${kind}.stat`, { count: value }))
-const nameParts = computed(() => splitPlayerName(label))
 </script>
 
 <template>
@@ -63,8 +63,8 @@ const nameParts = computed(() => splitPlayerName(label))
 
     <div class="absolute bottom-0 left-0 right-0 p-3 flex items-end justify-between gap-2">
       <AssociateTag
-        :name="nameParts.firstName"
-        :surname="nameParts.surname"
+        :name="firstName"
+        :surname="surname"
         :associate-uuid="associateUuid"
         class="text-white"
       />
