@@ -1,4 +1,4 @@
-// app\composables\tournaments\pairing\useCommanderScoring.ts
+// shared\utils\tournaments\commanderScoring.ts
 // Commander round-scoring math, ported from MagicTheGathering/league's
 // shared/utils/roundScoring.ts (user request, 2026-09-15/16: copy the
 // scoring logic as-is). league embeds kill count / brew-vote / play-vote
@@ -9,6 +9,12 @@
 // advance_commander_round's SQL, migration 20260916000000, which does the
 // same aggregation server-side) — the actual formula (dense-to-skip-rank
 // conversion, draw detection) is unchanged.
+//
+// Lives in shared/ (not app/composables/) so the Telegram bot's own
+// Commander score summary (server/utils/telegram/commands/tournaments/
+// commanderReport.ts) can call the exact same formula instead of
+// reimplementing it — moved here 2026-09-24 when that real bot flow
+// replaced the mockup one.
 export interface CommanderTableResult {
   playerUuid: string
   /** Raw dense position as stored (null = no result submitted yet). */

@@ -1,12 +1,9 @@
 // server\utils\telegram\commands\mockups\risultato.ts
 import type { Bot, Context } from 'grammy'
-import type { CommandGroup } from '@grammyjs/commands'
 import type { InputRichMessage } from 'grammy/types'
 import { Menu } from '@grammyjs/menu'
 
 import { answerLoadError } from '../callbackErrors'
-import { registerDeepLink } from '../../deepLinks'
-import { replyWithLiveTable } from '../tournaments/matchReport'
 import { showRichStep, twoColumnFactsTable } from './richStepHelpers'
 
 // MOCKUP — no live-write flow yet (docs/architecture/telegram-bot.md).
@@ -350,7 +347,7 @@ function finalRichMessage(state: ResultState): InputRichMessage {
 
 // Every step is a Rich Message now — risultatoMenu's own reply_markup is
 // never attached to a message. It still has to stay registered because
-// tavolo.ts's tavoloMenu.register(risultatoMenu)/.submenu('ris', ...)
+// commanderDemo.ts's demoMenu.register(risultatoMenu)/.submenu('ris', ...)
 // needs a real Menu instance as a submenu target.
 export const risultatoMenu = new Menu<Context>('ris', {
   autoAnswer: false,
@@ -405,23 +402,13 @@ async function sendConfirmedResult(ctx: Context, state: ResultState) {
   }
 }
 
-// Shared entry point for both /risultato and tavolo.ts's own "Inserisci
-// risultati" button — the Commander mockup only, a 1v1 table is answered
-// by tournaments/matchReport.ts first.
+// Shared entry point for mockups/commanderDemo.ts's own "Inserisci
+// risultati (demo)" button — the only caller since 2026-09-24, when the
+// real Commander flow (tournaments/commanderReport.ts) replaced this as
+// /tavolo and /risultato's own default.
 export async function openRisultato(ctx: Context) {
   await showRichStep(ctx, positionRichMessage(INITIAL_STATE))
 }
-
-// Extracted so it can be reused verbatim by t.me/<bot>?start=risultato —
-// see deepLinks.ts. Not openRisultato: that one edits/answers an existing
-// callback query, which a fresh /start context doesn't have. A real 1v1
-// table wins over the Commander mockup — one command, format-detected.
-async function risultatoCommandHandler(ctx: Context) {
-  if (await replyWithLiveTable(ctx)) return
-  await ctx.replyWithRichMessage(positionRichMessage(INITIAL_STATE))
-}
-
-registerDeepLink('risultato', risultatoCommandHandler)
 
 type PrefixedStep = [prefix: string, render: (state: ResultState) => InputRichMessage]
 
@@ -443,7 +430,10 @@ async function tryHandleStep(ctx: Context, data: string, steps: PrefixedStep[]):
   return false
 }
 
-export function registerRisultatoCommand(bot: Bot, commands: CommandGroup<Context>) {
+// bot-only, no CommandGroup — this only ever wires risultatoMenu's own
+// callback_query handling now; commanderDemo.ts's hidden command is the
+// sole entry point since the real Commander flow took over /risultato.
+export function registerRisultatoMenu(bot: Bot) {
   bot.use(risultatoMenu)
 
   // Each entry re-renders the same step (a pick, still pending confirm) —
@@ -482,6 +472,4 @@ export function registerRisultatoCommand(bot: Bot, commands: CommandGroup<Contex
     }
     await next()
   })
-
-  commands.command('risultato', 'Registra il risultato del turno', risultatoCommandHandler)
 }
