@@ -96,10 +96,18 @@ export async function fetchLivePod(
   const opponentUuids = seatUuids.filter(uuid => uuid !== myPlayerUuid)
 
   const [opponentsResult, myResultRow, myKillRows, myVoteRows] = await Promise.all([
+    // .order() is load-bearing, not cosmetic: commanderReport.ts encodes a
+    // kill/vote target as an *index* into this array (to fit Telegram's
+    // callback_data limit), then re-resolves the pod from scratch on every
+    // tap. `.in()` alone has no documented ordering guarantee — without an
+    // explicit, stable sort, the same index could silently map to a
+    // different opponent between the button's render and the tap that
+    // reads it back (2026-09-27, found in a general bug-search pass).
     supabase
       .from('players')
       .select('uuid, associate_uuid, associate:pauperwave_associates(first_name, last_name)')
-      .in('uuid', opponentUuids),
+      .in('uuid', opponentUuids)
+      .order('uuid', { ascending: true }),
     supabase
       .from('tournament_round_results')
       .select('position, commander_deck_uuid, commander:commander_decks(commander_1_name, commander_2_name)')

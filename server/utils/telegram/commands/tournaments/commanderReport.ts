@@ -435,14 +435,17 @@ export function registerCommanderReportHandlers(bot: Bot) {
     if (data.startsWith(POS_PICK_PREFIX)) {
       if (!(await requireChatId(ctx))) return
       try {
-        const [, position] = data.slice(POS_PICK_PREFIX.length).split(':')
+        const payloadParts = data.slice(POS_PICK_PREFIX.length).split(':')
+        const rawPosition = payloadParts[1]
+        const position = Number(rawPosition)
+        if (!POSITIONS.includes(position)) return
         const pod = await requirePod(ctx)
         if (!pod) return
         await saveCommanderPosition(telegramServiceSupabaseClient(), {
           tournamentUuid: pod.tournamentUuid,
           pairingUuid: pod.pairingUuid,
           playerUuid: pod.myPlayerUuid,
-          position: Number(position)
+          position
         })
         const updated = await requirePod(ctx)
         if (updated) await showRichStep(ctx, positionRichMessage(updated))
@@ -468,10 +471,13 @@ export function registerCommanderReportHandlers(bot: Bot) {
     if (data.startsWith(KILL_TOGGLE_PREFIX)) {
       if (!(await requireChatId(ctx))) return
       try {
-        const [, rawTarget] = data.slice(KILL_TOGGLE_PREFIX.length).split(':')
+        const payloadParts = data.slice(KILL_TOGGLE_PREFIX.length).split(':')
+        const rawTarget = payloadParts[1]
         const target: KillTarget = rawTarget === 'me' ? 'me' : Number(rawTarget)
+        if (target !== 'me' && (!Number.isInteger(target) || target < 0)) return
         const pod = await requirePod(ctx)
         if (!pod) return
+        if (target !== 'me' && !pod.opponents[target]) return
 
         const killedPlayerUuid = killTargetUuid(pod, target)
         const supabase = telegramServiceSupabaseClient()
@@ -511,7 +517,9 @@ export function registerCommanderReportHandlers(bot: Bot) {
     if (data.startsWith(VOTE_PICK_PREFIX)) {
       if (!(await requireChatId(ctx))) return
       try {
-        const [, typeChar, rawIndex] = data.slice(VOTE_PICK_PREFIX.length).split(':')
+        const payloadParts = data.slice(VOTE_PICK_PREFIX.length).split(':')
+        const typeChar = payloadParts[1]
+        const rawIndex = payloadParts[2]
         const voteType = typeChar === 'b' ? 'brew' as const : 'play' as const
         const pod = await requirePod(ctx)
         if (!pod) return
@@ -537,7 +545,8 @@ export function registerCommanderReportHandlers(bot: Bot) {
     if (data.startsWith(VOTE_CONFIRM_PREFIX)) {
       if (!(await requireChatId(ctx))) return
       try {
-        const [, typeChar] = data.slice(VOTE_CONFIRM_PREFIX.length).split(':')
+        const payloadParts = data.slice(VOTE_CONFIRM_PREFIX.length).split(':')
+        const typeChar = payloadParts[1]
         const pod = await requirePod(ctx)
         if (!pod) return
         if (typeChar === 'b') {
