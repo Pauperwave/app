@@ -2,11 +2,15 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '#shared/utils/types/database'
 import type { RulesetPointValues } from '#shared/utils/tournaments/commanderScoring'
+import { mapRulesetPoints } from '#shared/utils/tournaments/rulesetPoints'
 
 // Same resolution as app/composables/tournaments/useRulesetPointsQuery.ts
 // (tournament -> league -> leagues.ruleset_uuid, falling back to
-// is_default) — kept in sync manually since one is a Pinia Colada query and
-// this is a plain server fetch for the Telegram bot's own score summary.
+// is_default) — the two can't fully share code (one reads already-cached
+// Pinia Colada queries, this one is a plain server fetch for the Telegram
+// bot's own score summary), but the points-row-to-RulesetPointValues
+// mapping itself is shared via mapRulesetPoints (fallow:health flagged it
+// as a clone, 2026-09-27).
 export async function fetchRulesetPoints(
   supabase: SupabaseClient<Database>, tournamentUuid: string
 ): Promise<RulesetPointValues> {
@@ -41,14 +45,5 @@ export async function fetchRulesetPoints(
     .eq('ruleset_uuid', ruleset.uuid)
   if (pointsError) throw createError({ statusCode: 500, statusMessage: pointsError.message })
 
-  const byCategory = new Map((points ?? []).map(row => [row.category, row.points]))
-  return {
-    rank1: byCategory.get('rank1') ?? 0,
-    rank2: byCategory.get('rank2') ?? 0,
-    rank3: byCategory.get('rank3') ?? 0,
-    rank4: byCategory.get('rank4') ?? 0,
-    kill: byCategory.get('kill') ?? 0,
-    brew: byCategory.get('brew') ?? 0,
-    play: byCategory.get('play') ?? 0
-  }
+  return mapRulesetPoints(points ?? [])
 }

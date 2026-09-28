@@ -3,6 +3,8 @@
 // "Gestione" management tab (user request, 2026-09-17) — separate from the
 // lighter useRulesetsQuery.ts (uuid/name only, used by select dropdowns
 // elsewhere) since this one needs the full ruleset__points join.
+import { mapRulesetPoints } from '#shared/utils/tournaments/rulesetPoints'
+
 export interface RulesetWithPoints {
   uuid: string
   name: string
@@ -33,27 +35,22 @@ export function useRulesetsWithPointsQuery() {
       if (rulesetsResponse.error) throw rulesetsResponse.error
       if (pointsResponse.error) throw pointsResponse.error
 
-      const pointsByRuleset = new Map<string, Map<string, number>>()
+      const pointsByRuleset = new Map<string, { category: string, points: number }[]>()
       for (const row of pointsResponse.data ?? []) {
-        const existing = pointsByRuleset.get(row.ruleset_uuid) ?? new Map<string, number>()
-        existing.set(row.category, row.points)
+        const existing = pointsByRuleset.get(row.ruleset_uuid) ?? []
+        existing.push({ category: row.category, points: row.points })
         pointsByRuleset.set(row.ruleset_uuid, existing)
       }
 
       return (rulesetsResponse.data ?? []).map((ruleset) => {
-        const byCategory = pointsByRuleset.get(ruleset.uuid) ?? new Map<string, number>()
+        const rows = pointsByRuleset.get(ruleset.uuid) ?? []
+        const participation = rows.find(row => row.category === 'participation')?.points ?? 0
         return {
           uuid: ruleset.uuid,
           name: ruleset.name,
           isDefault: ruleset.is_default,
-          rank1: byCategory.get('rank1') ?? 0,
-          rank2: byCategory.get('rank2') ?? 0,
-          rank3: byCategory.get('rank3') ?? 0,
-          rank4: byCategory.get('rank4') ?? 0,
-          kill: byCategory.get('kill') ?? 0,
-          brew: byCategory.get('brew') ?? 0,
-          play: byCategory.get('play') ?? 0,
-          participation: byCategory.get('participation') ?? 0
+          ...mapRulesetPoints(rows),
+          participation
         }
       })
     }

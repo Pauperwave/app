@@ -7,6 +7,7 @@
 // always read is_default unconditionally (a stub flagged in this file's own
 // prior comment and in advance_commander_round's migration).
 import type { RulesetPointValues } from '#shared/utils/tournaments/commanderScoring'
+import { mapRulesetPoints } from '#shared/utils/tournaments/rulesetPoints'
 
 export function useRulesetPointsQuery(tournamentUuid: MaybeRefOrGetter<string>) {
   const supabase = useSupabaseClient()
@@ -38,17 +39,7 @@ export function useRulesetPointsQuery(tournamentUuid: MaybeRefOrGetter<string>) 
 
       if (pointsError) throw pointsError
 
-      const byCategory = new Map((points ?? []).map(row => [row.category, row.points]))
-
-      return {
-        rank1: byCategory.get('rank1') ?? 0,
-        rank2: byCategory.get('rank2') ?? 0,
-        rank3: byCategory.get('rank3') ?? 0,
-        rank4: byCategory.get('rank4') ?? 0,
-        kill: byCategory.get('kill') ?? 0,
-        brew: byCategory.get('brew') ?? 0,
-        play: byCategory.get('play') ?? 0
-      }
+      return mapRulesetPoints(points ?? [])
     }
   })
 }
