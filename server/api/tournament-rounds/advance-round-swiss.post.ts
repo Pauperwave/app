@@ -29,5 +29,7 @@ export default defineEventHandler(async (event) => {
   })
   const roundUuid = unwrapRoundRpc(data, error)
 
-  return { roundUuid, hasEnded: roundUuid === null }
+  const notification = roundUuid === null ? null : await notifyRoundTables(roundUuid)
+
+  return { roundUuid, hasEnded: roundUuid === null, notification }
 })

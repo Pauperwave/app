@@ -18,6 +18,17 @@ export default defineEventHandler(async (event) => {
   const { registrationUuids, status } = await readBody<StatusBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
 
+  // Only a real transition to 'checked_in' is an acceptance to announce —
+  // re-sending the same batch must not message the players twice.
+  const { data: previous, error: previousError } = await supabase
+    .from('tournament_registrations')
+    .select('uuid, status')
+    .in('uuid', registrationUuids)
+
+  if (previousError) {
+    throw createError({ statusCode: 500, statusMessage: previousError.message })
+  }
+
   const { data, error } = await supabase
     .from('tournament_registrations')
     .update({
@@ -32,6 +43,17 @@ export default defineEventHandler(async (event) => {
 
   if (error) {
     throw createError({ statusCode: 500, statusMessage: error.message })
+  }
+
+  if (status === 'checked_in') {
+    const alreadyAccepted = new Set(
+      (previous ?? []).filter(registration => registration.status === 'checked_in').map(registration => registration.uuid)
+    )
+    const newlyAcceptedUuids = (data ?? [])
+      .filter(registration => !alreadyAccepted.has(registration.uuid))
+      .map(registration => registration.uuid)
+
+    await notifyRegistrationsAccepted(newlyAcceptedUuids)
   }
 
   return { registrations: data ?? [] }

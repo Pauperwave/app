@@ -31,5 +31,7 @@ export default defineEventHandler(async (event) => {
   const roundUuid = unwrapRoundRpc(data, error)
 
   // null roundUuid means the tournament just ended (no next round created).
-  return { roundUuid, hasEnded: roundUuid === null }
+  const notification = roundUuid === null ? null : await notifyRoundTables(roundUuid)
+
+  return { roundUuid, hasEnded: roundUuid === null, notification }
 })
