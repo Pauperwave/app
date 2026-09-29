@@ -35,6 +35,7 @@ Master index of all project documentation.
 | `audits/2026-09-16-app-components-composables-pages-inventory.md` | Full inventory of `app`'s own components/composables/pages — the baseline half of the app-vs-league comparison below | Onboarding |
 | `audits/2026-09-16-league-components-composables-pages-inventory.md` | Same inventory pass for the (abandoned) `MagicTheGathering/league` sibling project — comparison baseline only, not a migration target | Onboarding |
 | `audits/2026-09-16-league-vs-app-feature-comparison.md` | Feature-by-feature comparison between `league` and `app` — what `app` already covers, what's `league`-only and not being ported (see ADR-003's 2026-09-17 correction in `PROGRESS.md`: `league` is abandoned, not being absorbed) | Onboarding |
+| `audits/2026-09-29-bug-search-commander-permissions-review.md` | General bug-search pass: the unstable-opponent-ordering fix in the real Commander Telegram flow, a ruleset-points dedup, and a clean review of the 1v1/prizes/permissions areas — plus one flagged-not-fixed RLS gap (`pauperwave_wanted_cards` insert) pending a decision | Security / process |
 
 ## Not yet documented
 
