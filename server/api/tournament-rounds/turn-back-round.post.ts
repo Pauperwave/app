@@ -18,11 +18,16 @@ export default defineEventHandler(async (event) => {
   const { tournamentUuid, currentRoundNumber } = await readBody<TurnBackRoundBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
 
+  // Read before the RPC — it wipes the pairings the recipients come from.
+  const cancelledMessages = await prepareTablesCancelledMessages(tournamentUuid, currentRoundNumber)
+
   const { error } = await supabase.rpc('turn_back_commander_round', {
     p_tournament_uuid: tournamentUuid,
     p_current_round_number: currentRoundNumber
   })
   assertRoundRpcOk(error)
+
+  await notifyTelegramAssociates(cancelledMessages)
 
   return { success: true }
 })

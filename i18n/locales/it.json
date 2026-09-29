@@ -1680,6 +1680,13 @@
         "invalidCount": "Numero di giocatori non valido per formare i tavoli (i bye non sono ancora supportati)",
         "tableNumber": "Tavolo {n}"
       },
+      "playerNotification": {
+        "sentTitle": "Tavoli comunicati su Telegram",
+        "failedTitle": "Alcuni giocatori non sono stati raggiunti",
+        "sent": "Notifica inviata a {count} giocatore | Notifica inviata a {count} giocatori",
+        "notLinked": "{count} senza Telegram collegato",
+        "failed": "{count} con invio fallito"
+      },
       "resetButton": "Reset",
       "resetErrorTitle": "Impossibile resettare il torneo",
       "resetConfirmTitle": "Resettare il torneo?",

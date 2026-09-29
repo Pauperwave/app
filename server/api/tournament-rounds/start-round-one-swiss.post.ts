@@ -22,5 +22,8 @@ export default defineEventHandler(async (event) => {
     p_associate_order: associateOrder
   })
 
-  return { roundUuid: unwrapRoundRpc(data, error) }
+  const roundUuid = unwrapRoundRpc(data, error)
+  const notification = roundUuid === null ? null : await notifyRoundTables(roundUuid)
+
+  return { roundUuid, notification }
 })

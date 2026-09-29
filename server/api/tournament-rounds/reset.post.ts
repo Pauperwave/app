@@ -15,6 +15,9 @@ export default defineEventHandler(async (event) => {
   const { tournamentUuid } = await readBody<ResetTournamentBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
 
+  // Read before the RPC — it wipes the pairings the recipients come from.
+  const cancelledMessages = await prepareTablesCancelledMessages(tournamentUuid)
+
   const { error } = await supabase.rpc('reset_tournament', {
     p_tournament_uuid: tournamentUuid
   })
@@ -22,6 +25,8 @@ export default defineEventHandler(async (event) => {
   if (error) {
     throw createError({ statusCode: 500, statusMessage: error.message })
   }
+
+  await notifyTelegramAssociates(cancelledMessages)
 
   return { success: true }
 })
