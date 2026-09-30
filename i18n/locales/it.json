@@ -1704,11 +1704,11 @@
         },
         "brewer": {
           "title": "Master Brewer",
-          "stat": "{count} PT Brew"
+          "stat": "{count} punto Mazzo | {count} punti Mazzo"
         },
         "player": {
           "title": "Il Player",
-          "stat": "{count} voto Play | {count} voti Play"
+          "stat": "{count} punto giocata | {count} punti giocata"
         }
       },
       "prizeDistribution": {
