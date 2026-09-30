@@ -3,6 +3,10 @@
 
 One entry per **notable** commit, newest first, grouped by date. Each entry: the commit subject (gitmoji convention), then what/why bullets. Not every commit gets an entry anymore (see ADR-010 in `PROGRESS.md`) — mechanical ones (`style`, `chore`, trivial `refactor`) are skipped here; the complete raw index (every commit, auto-generated) lives in the root `CHANGELOG.md` via `changelogen`, never edited by hand. This file complements `PROGRESS.md` (curated ADRs and per-area status): the changelog is the annotated commit trail, `PROGRESS.md` is the distilled history — fold important outcomes there, keep the play-by-play here.
 
+## 2026-09-30 — "Nuovo associato" actually creates the associate
+
+- `fix(associates): 🐛 wire "Nuovo associato" to a real create endpoint`: `AddModal.vue`'s `onSubmit` was showing a success toast and closing the modal without ever sending the form anywhere — no mutation, no `$fetch`, nothing written to `pauperwave_associates`. Fixed with a new admin-only `server/api/associates/create.post.ts` (inserts straight as `membership_request_status: 'approved'`, unlike the public `/tesseramento` form, plus the same membership-events/associate-number side effects as `approve.post.ts`) and a `createAssociate` mutation. See ADR-046 and [issue #85](https://github.com/Pauperwave/app/issues/85).
+
 ## 2026-09-20 — 1v1 Swiss tournaments: results, standings, drops and byes; tournament rules in `/settings`
 
 - 1v1 formats get a real round view (`feat(tournaments): ✨ enter 1v1 results, drops and byes in the Swiss round view`): best-of-3 results entered from cards or a sortable, searchable table (buttons on both players' rows, green for the winner and red for the loser), the same round timer as Commander, live standings beside the tables, and the next round paired from the standings without rematches. Odd player counts can now start a tournament. See ADR-034 and ADR-036 in `PROGRESS.md`.

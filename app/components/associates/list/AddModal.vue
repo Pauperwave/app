@@ -1,12 +1,14 @@
 <!-- app\components\associates\list\AddModal.vue -->
 <script setup lang="ts">
 import type * as v from 'valibot'
+import { format } from 'date-fns'
 import type { FormSubmitEvent } from '@nuxt/ui'
 
 // Define the model to accept open state from parent
 const open = defineModel<boolean>({ default: false })
-const toast = useToast()
 const { t } = useI18n()
+const { createAssociate } = useAssociatesMutations()
+const { submitting, submitWithToast } = useSubmitWithToast()
 
 // Shared with /tesseramento (the public self-service form) — see
 // associateFormSchema.ts.
@@ -30,25 +32,26 @@ function resetForm() {
 }
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  try {
-    toast.add({
-      title: t('associate.addModal.successToastTitle'),
-      description: t('associate.addModal.successToastDescription', {
+  const edits = {
+    ...event.data,
+    born_date: format(event.data.born_date, 'yyyy-MM-dd'),
+    consent_social: event.data.consent_social ?? false
+  }
+
+  await submitWithToast(
+    () => createAssociate.mutateAsync(edits),
+    {
+      successTitle: t('associate.addModal.successToastTitle'),
+      successDescription: t('associate.addModal.successToastDescription', {
         name: `${event.data.first_name} ${event.data.last_name}`
       }),
-      color: 'success'
-    })
-    open.value = false
-    resetForm()
-  } catch (err) {
-    toast.add({
-      title: t('associate.addModal.errorToastTitle'),
-      description: t('associate.addModal.errorToastDescription', {
-        message: err instanceof Error ? err.message : String(err)
-      }),
-      color: 'error'
-    })
-  }
+      errorTitle: t('associate.addModal.errorToastTitle'),
+      onSuccess: () => {
+        open.value = false
+        resetForm()
+      }
+    }
+  )
 }
 </script>
 
@@ -80,6 +83,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             :label="$t('associate.addModal.cancel')"
             color="neutral"
             variant="subtle"
+            :disabled="submitting"
             @click="open = false; resetForm()"
           />
           <UButton
@@ -87,6 +91,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             color="primary"
             variant="solid"
             type="submit"
+            :loading="submitting"
           />
         </div>
       </UForm>
