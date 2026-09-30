@@ -19,7 +19,7 @@
 | Domain | Server routes | Notes |
 |---|---|---|
 | `wanted-cards` | `server/api/wanted-cards/**` | The original template for this pattern |
-| `associates` | `server/api/associates/**` | Also `apply`/`approve`/`reject`/`renew`/`approve-renewal`/`restore` — the membership application/renewal workflow, not just CRUD |
+| `associates` | `server/api/associates/**` | Also `create` (admin-only "Nuovo associato", `membership_request_status` set straight to `'approved'`, unlike public `apply`), `apply`/`approve`/`reject`/`renew`/`approve-renewal`/`restore` — the membership application/renewal workflow, not just CRUD |
 | `events` | `server/api/events/**` | |
 | `leagues` | `server/api/leagues/**` | Also `[id]/ruleset.post.ts` |
 | `locations` | `server/api/locations/**` | |

@@ -9,6 +9,12 @@ export function useAssociatesMutations() {
   const queryCache = useQueryCache()
   const invalidate = () => queryCache.invalidateQueries({ key: ASSOCIATES_KEY })
 
+  const createAssociate = useMutation({
+    mutation: (edits: AssociateEditsPayload) =>
+      $fetch('/api/associates/create', { method: 'POST', body: edits }),
+    onSettled: invalidate
+  })
+
   const approveAssociates = useMutation({
     mutation: (ids: number[]) =>
       $fetch('/api/associates/approve', { method: 'POST', body: { ids } }),
@@ -56,7 +62,7 @@ export function useAssociatesMutations() {
   })
 
   return {
-    approveAssociates, rejectAssociates, restoreAssociates, updateAssociate,
+    createAssociate, approveAssociates, rejectAssociates, restoreAssociates, updateAssociate,
     updateAssociateNumber, approveRenewals
   }
 }
