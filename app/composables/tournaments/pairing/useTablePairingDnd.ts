@@ -35,35 +35,32 @@ function cloneTables(tables: PairingTable[]): PairingTable[] {
 }
 
 /**
- * Rebuilds a table's 4-seat shape. `seat.id` for an occupied seat is keyed
- * by the player's own uuid, not by array position — TableCard.vue's
- * `v-for="seat in seatsModel" :key="seat.id"` needs a key stable across
- * reorders so Vue actually moves/recreates the right DOM node instead of
- * reusing the same "seat N" node and just patching its `player` prop in
- * place (same drag-tracking reasoning as league's own comment here — a
- * positional key desyncs an in-progress drag from the physical DOM node it
- * picked up). Empty seats have no entity to key by, so they keep a
- * positional id — interchangeable anyway.
+ * Rebuilds a table's seat shape — every occupied seat kept (no cap on table
+ * size, user request 2026-09-30: tables are freely resizable by drag, so a
+ * hardcoded max used to silently truncate whichever seat landed past it,
+ * looking like that player's drag had been reverted), plus exactly one
+ * trailing empty seat so there's always somewhere to drop a next player.
+ * `seat.id` for an occupied seat is keyed by the player's own uuid, not by
+ * array position — TableCard.vue's `v-for="seat in seatsModel" :key="seat.id"`
+ * needs a key stable across reorders so Vue actually moves/recreates the
+ * right DOM node instead of reusing the same "seat N" node and just patching
+ * its `player` prop in place (same drag-tracking reasoning as league's own
+ * comment here — a positional key desyncs an in-progress drag from the
+ * physical DOM node it picked up). Empty seats have no entity to key by, so
+ * they keep a positional id — interchangeable anyway.
  */
 function normalizeSeats(tableId: string, seats: Seat[]): Seat[] {
   const players = seats
     .filter(seat => seat.player !== null)
-    .slice(0, 4)
     .map(seat => ({
       id: `${tableId}-player-${seat.player!.value}`,
       player: seat.player
     }))
 
-  const normalized: Seat[] = [...players]
-
-  while (normalized.length < 4) {
-    normalized.push({
-      id: `${tableId}-empty-${normalized.length + 1}`,
-      player: null
-    })
-  }
-
-  return normalized
+  return [
+    ...players,
+    { id: `${tableId}-empty-${players.length + 1}`, player: null }
+  ]
 }
 
 /** Fisher-Yates shuffle — doesn't mutate the input array. */
@@ -101,8 +98,8 @@ function buildTablesFromOrder(tables: PairingTable[], playerOrder: string[]): Pa
 
   return tables.map((table) => {
     const occupied = table.seats.filter(seat => seat.player !== null).length
-    const nextSeats = Array.from({ length: 4 }, (_, index) => {
-      const playerId = index < occupied ? playerOrder[cursor + index] : undefined
+    const nextSeats = Array.from({ length: occupied }, (_, index) => {
+      const playerId = playerOrder[cursor + index]
       const player = playerId !== undefined ? playerMap.get(playerId) ?? null : null
 
       return {
@@ -166,12 +163,6 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
 
   const localPlayerIds = computed(() => extractPlayerIds(localTables.value))
 
-  const tableSizesValid = computed(() =>
-    localTables.value.every((table) => {
-      const players = table.seats.filter(seat => seat.player !== null).length
-      return players >= 3 && players <= 4
-    }))
-
   const noDuplicates = computed(() =>
     new Set(localPlayerIds.value).size === localPlayerIds.value.length)
 
@@ -199,8 +190,7 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
   }))
 
   const isValid = computed(() =>
-    tableSizesValid.value
-    && noDuplicates.value
+    noDuplicates.value
     && noMissingPlayers.value
     && scoreDetails.value.isValid)
 
@@ -240,7 +230,6 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
   })
 
   const previewError = computed(() => {
-    if (!tableSizesValid.value) return t('tournament.single.tablePreview.invalidTableSizes')
     if (!noDuplicates.value) return t('tournament.single.tablePreview.duplicatePlayers')
     if (!noMissingPlayers.value) return t('tournament.single.tablePreview.missingPlayers')
     if (!scoreDetails.value.isValid) return t('tournament.single.tablePreview.forbiddenPairsPresent')
@@ -270,12 +259,12 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
   /**
    * Applies a single table's seat list after a drag-and-drop update
    * (TableCard.vue's VueDraggable v-model emit) — re-runs it through
-   * normalizeSeats so the table's shape invariant (occupied seats first,
-   * padded with `player: null` placeholders up to 4) is restored
-   * immediately. Without this, dragging a player OUT of a table left it
-   * with no trailing empty placeholder — TableSeatItem.vue only renders a
-   * "drop here" target for a `player: null` seat, so a later cross-table
-   * drag would have nowhere to land even though the table wasn't full.
+   * normalizeSeats so the table's shape invariant (every occupied seat
+   * kept, exactly one trailing empty placeholder) is restored immediately.
+   * Without this, dragging a player OUT of a table left it with no
+   * trailing empty placeholder — TableSeatItem.vue only renders a "drop
+   * here" target for a `player: null` seat, so a later cross-table drag
+   * would have nowhere to land.
    */
   function updateTableSeats(tableIndex: number, seats: Seat[]) {
     const targetTable = localTables.value[tableIndex]
@@ -295,6 +284,9 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
     localTables.value = ensureTableSeatShape(cloneTables(tables))
   }
 
+  // No table size is "wrong" anymore (user request 2026-09-30, free
+  // drag-and-drop) — the badge just reports the occupied seat count, an
+  // empty table gets a neutral hint instead of the old hardcoded 3-4 error.
   function tableStatus(table: PairingTable): TableStatus {
     if (conflictingTables.value.has(table.id)) {
       return { color: 'error' as const, label: t('tournament.single.tablePreview.status.conflict') }
@@ -302,9 +294,9 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
 
     const players = table.seats.filter(seat => seat.player !== null).length
 
-    if (players === 4) return { color: 'success' as const, label: '4/4' }
-    if (players === 3) return { color: 'warning' as const, label: '3/4' }
-    return { color: 'error' as const, label: `${players}/4` }
+    return players > 0
+      ? { color: 'success' as const, label: `${players}` }
+      : { color: 'neutral' as const, label: `${players}` }
   }
 
   function addForbiddenPair(playerA: string, playerB: string) {
