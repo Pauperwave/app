@@ -485,6 +485,14 @@ Contestualmente, rimosso il banner di avviso giallo ("Questa tabella non è anco
 
 **Conseguenze:** `/tavolo` e `/risultato` non mostrano più dati fittizi in nessun caso — se non c'è un tavolo/pod reale aperto, rispondono che non c'è nulla da mostrare, invece di ripiegare sul mockup. `risultato.ts` perde la propria registrazione pubblica (`registerRisultatoCommand` → `registerRisultatoMenu`, solo wiring del menu) ma resta altrimenti intatto, riusato tale e quale dal comando demo. Chi ha già iniziato a impostare un mazzo/punteggio Commander in una sessione precedente non è interessato (nessuna riga reale esisteva ancora, essendo il flusso finora mockup).
 
+### ADR-046 — "Nuovo associato" collegato a un vero endpoint di creazione, direttamente `approved` (2026-09-30)
+
+**Contesto:** bug utente ([issue #85](https://github.com/Pauperwave/app/issues/85)) — il bottone "Nuovo associato" (`AddModal.vue`) mostrava un toast di successo e chiudeva il modal, ma `onSubmit` non chiamava nessuna mutation/endpoint: nessun dato veniva mai scritto su `pauperwave_associates`. Regressione lasciata a metà durante la migrazione al pattern BFF (`useAssociatesMutations.ts` non aveva mai avuto una `createAssociate`, e non esisteva un `server/api/associates/create.post.ts` — il solo endpoint che inserisce righe era `apply.post.ts`, il form pubblico `/tesseramento`, gated su `requireUser` + controllo email-sessione, non pensato per uno staff che aggiunge qualcun altro).
+
+**Decisione:** aggiunto `server/api/associates/create.post.ts`, admin-only (`requireAdminPermission`, stessa soglia di `[id]/update.post.ts` — "Gestire l'anagrafica soci"). A differenza di `apply.post.ts`, la riga va dritta a `membership_request_status: 'approved'` invece che `'pending'`: chi usa questo bottone è già staff che ha verificato i dati a mano, quindi replicare anche qui il doppio passaggio richiesta→approvazione sarebbe stato ridondante. Stessi effetti collaterali di `approve.post.ts` per restare indistinguibile da un "apply + approve" fatto a mano: eventi membership `requested`+`approved` registrati (`recordMembershipEvent`) e numero socio PW-#### assegnato via `next_pauperwave_associate_number`. `AddModal.vue` ora chiama la nuova mutation `createAssociate` (`useAssociatesMutations.ts`, stesso pattern `$fetch`+invalidate delle altre) tramite `useSubmitWithToast`, lo stesso helper già usato da `EditModal.vue` — toast ed errori sono ora reali, non più finti.
+
+**Conseguenze:** un associato creato da "Nuovo associato" compare subito, attivo, nella tabella principale — non più tra le Richieste. `association_date`/`payment_date` restano non impostati (come già in `approve.post.ts`, nessun codice server li scrive oggi — sembrano vestigiali rispetto a `pauperwave_associate_renewals`, la vera fonte per lo stato di tesseramento calcolato, ADR-001).
+
 ## Vedi anche
 
 - `docs/architecture/database.md` — schema, RLS, migrazioni
