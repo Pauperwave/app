@@ -493,6 +493,14 @@ Contestualmente, rimosso il banner di avviso giallo ("Questa tabella non è anco
 
 **Conseguenze:** un associato creato da "Nuovo associato" compare subito, attivo, nella tabella principale — non più tra le Richieste. `association_date`/`payment_date` restano non impostati (come già in `approve.post.ts`, nessun codice server li scrive oggi — sembrano vestigiali rispetto a `pauperwave_associate_renewals`, la vera fonte per lo stato di tesseramento calcolato, ADR-001).
 
+### ADR-047 — Aggiornamento dati dai Google Sheet (LIBRO SOCI + MODULO RICEVUTE): solo righe nuove, il DB è la fonte per lo storico (2026-09-30)
+
+**Contesto:** richiesta utente di riallineare il DB ai due Sheet operativi (esportati a mano in CSV, gli Sheet non sono scaricabili senza login Google). Ultimo import: `20260818150000_import_missing_associates_from_roster.sql` (associati) e l'import ricevute del 2026-08-23 (ultima ricevuta al 2026-08-21, 714 righe = 714 nel DB).
+
+**Decisione:** (1) **Solo righe nuove**, nessun aggiornamento di record esistenti: lo Sheet non è una fonte aggiornata per i dati storici (email, indirizzi, ecc. sono stati ritoccati a mano nel DB — es. Nicolin, Stanca, Foltran hanno email diverse nello Sheet), quindi il match è per email/CF/nome e i conflitti si ignorano. (2) **Importati 16 associati** (`approved`, `pauperwave_associate_number` null come nel precedente import) + **96 ricevute** dal 2026-08-29 (Quota associativa 2026, Draft Hobbit, Premodern tappa 9, Pauper tappa 7); `Comped` a importo 0 come da correzione del 2026-08-24. (3) **`pauperwave_associate_renewals` 2026** creata per i 13 nuovi con data di pagamento e per i 10 associati già presenti che hanno pagato la quota nel periodo (senza riga di rinnovo risulterebbero scaduti: lo stato si calcola da quella tabella, non da `payment_date`). (4) Dati sospetti ripuliti a mano su indicazione utente: telefono di Claudio Ferrara vuoto; Francesco Dellagiacoma senza indirizzo/luogo di nascita, città "Cavalese". Il suo pagamento ospite del 2026-08-19 è stato collegato al nuovo associato.
+
+**Conseguenze:** un pagamento collegato a un torneo deve essere `Tournament Fee` (`ck_payment_type_event_link`), anche per eventi come il Draft Speciale: il primo tentativo lo classificava `Event Fee` e il DB l'ha rifiutato a metà import (8 quote già scritte; lo script è stato reso idempotente e rilanciato, nessun duplicato). Stato finale: 340 associati, 810 pagamenti, 201 rinnovi 2026. Script e CSV vivono in `.scratch/sorgenti/` (gitignorato, contiene dati personali). `payment_date`/`association_date` dei 10 associati già presenti non sono stati toccati.
+
 ## Vedi anche
 
 - `docs/architecture/database.md` — schema, RLS, migrazioni
