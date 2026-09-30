@@ -1,6 +1,58 @@
 # Changelog
 
 
+## v0.3.0
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.2.2...v0.3.0)
+
+### Enhancements
+
+- **tournaments:** ✨ a Telegram-reported 1v1 result writes immediately, opponent confirm/dispute is now informational ([9aae267b](https://github.com/Pauperwave/app/commit/9aae267b))
+- **telegram:** ✨ real Commander pod flow (comandante, posizione, uccisioni, voti), mockup moved to a hidden demo command ([b484ac42](https://github.com/Pauperwave/app/commit/b484ac42))
+- **version:** ✨ show commit hash locally by reading it from git ([ed82c916](https://github.com/Pauperwave/app/commit/ed82c916))
+- **telegram:** ✨ notify players when accepted and when tables are announced or cancelled ([952755e8](https://github.com/Pauperwave/app/commit/952755e8))
+
+### Fixes
+
+- **scripts:** 🐛 make check-file-paths.mjs's database.ts skip work on Linux CI ([e1972321](https://github.com/Pauperwave/app/commit/e1972321))
+- **telegram:** 🐛 highlight the previously picked score on "✏️ Modifica" ([7ca0f351](https://github.com/Pauperwave/app/commit/7ca0f351))
+- **i18n:** 🐛 "Inserito da X", not "Inserita" — agrees with "il punteggio" ([b8375f6e](https://github.com/Pauperwave/app/commit/b8375f6e))
+- **telegram:** 🐛 send the commander's art crop, not the full card, on pick confirmation ([28ca98a2](https://github.com/Pauperwave/app/commit/28ca98a2))
+- **tournaments:** 🐛 live-update the Commander round view as the Telegram bot writes to a pod ([a3cec1df](https://github.com/Pauperwave/app/commit/a3cec1df))
+- **tournaments:** 🐛 stop the classifica/uccisioni footer icons from turning green on partial entry ([daceebc5](https://github.com/Pauperwave/app/commit/daceebc5))
+- **tournaments:** 🐛 restore league's drag affordances missing from TableScoreGridModal.vue's port ([77f64110](https://github.com/Pauperwave/app/commit/77f64110))
+- **tournaments:** 🐛 use real surname fields for Commander player names, not a guessed split ([57401697](https://github.com/Pauperwave/app/commit/57401697))
+- **telegram:** 🐛 restore exact button grids and final-screen parity with the Commander mockup ([d9473710](https://github.com/Pauperwave/app/commit/d9473710))
+- **telegram:** 🐛 unstable opponent ordering could misattribute a Commander kill/vote ([521c9281](https://github.com/Pauperwave/app/commit/521c9281))
+- **associates:** 🐛 wire "Nuovo associato" to a real create endpoint ([d60d6d6e](https://github.com/Pauperwave/app/commit/d60d6d6e))
+- **tournaments:** 🐛 let table drag-and-drop resize tables freely ([84fce4f2](https://github.com/Pauperwave/app/commit/84fce4f2))
+
+### Refactors
+
+- **scripts:** ♻️ reuse expectedPathFor() for the database.ts skip check instead of a second normalizer ([e1b9b99c](https://github.com/Pauperwave/app/commit/e1b9b99c))
+- **commander:** ♻️ move commander scoring math from app/composables to shared/utils ([a20bcd81](https://github.com/Pauperwave/app/commit/a20bcd81))
+- **telegram:** ♻️ restore the linear pick-then-confirm wizard for the real Commander flow ([c24e52b5](https://github.com/Pauperwave/app/commit/c24e52b5))
+- **tournaments:** ♻️ pass resolved players to TablesFullscreenView.vue instead of a name-lookup function ([f126912b](https://github.com/Pauperwave/app/commit/f126912b))
+- **tournaments:** ♻️ dedup the ruleset__points-row-to-RulesetPointValues mapping ([e8a5db9d](https://github.com/Pauperwave/app/commit/e8a5db9d))
+
+### Documentation
+
+- 📝 ADR-043, deterministic Swiss round 2+ pairing over WER/Companion-style randomization ([11c1881d](https://github.com/Pauperwave/app/commit/11c1881d))
+- 📝 audit doc for the 2026-09-29 bug-search pass ([bb41ad27](https://github.com/Pauperwave/app/commit/bb41ad27))
+- 📝 ADR-047 for the 2026-09-30 Google Sheet data import ([0d1a9532](https://github.com/Pauperwave/app/commit/0d1a9532))
+
+### Chore
+
+- **release:** 🔖 align package.json to v0.2.2 ([1d6f0673](https://github.com/Pauperwave/app/commit/1d6f0673))
+
+### CI
+
+- 👷 run check:paths and the test suite in ci.yml ([e11fc9ec](https://github.com/Pauperwave/app/commit/e11fc9ec))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.2.1
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.2.0...v0.2.1)
