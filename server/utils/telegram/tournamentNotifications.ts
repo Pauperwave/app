@@ -19,7 +19,7 @@ interface SeatingRow {
   player3_uuid: string | null
   player4_uuid: string | null
   round: { round_number: number }
-  tournament: { name: string }
+  tournament: { name: string, telegram_notifications_enabled: boolean }
 }
 
 interface PlayerRow {
@@ -31,7 +31,7 @@ interface PlayerRow {
 const SEATING_SELECT = `
   table_number, player1_uuid, player2_uuid, player3_uuid, player4_uuid,
   round:tournament_rounds!inner(round_number),
-  tournament:tournaments!inner(name)
+  tournament:tournaments!inner(name, telegram_notifications_enabled)
 `
 
 type SeatingScope = { roundUuid: string } | { tournamentUuid: string, roundNumber?: number }
@@ -87,6 +87,8 @@ async function bestEffort<T>(action: () => Promise<T>, fallback: T): Promise<T> 
 export function notifyRoundTables(roundUuid: string): Promise<AssociateNotifyResult | null> {
   return bestEffort(async () => {
     const seating = await fetchSeating({ roundUuid })
+    if (!seating.every(row => row.tournament.telegram_notifications_enabled)) return null
+
     const players = await fetchPlayers(seating.flatMap(seatUuids))
     const usernames = await fetchTelegramUsernames(
       [...players.values()].map(player => player.associate_uuid)
@@ -127,6 +129,8 @@ export function prepareTablesCancelledMessages(
 ): Promise<AssociateMessage[]> {
   return bestEffort(async () => {
     const seating = await fetchSeating({ tournamentUuid, roundNumber })
+    if (!seating.every(row => row.tournament.telegram_notifications_enabled)) return []
+
     const playerUuids = [...new Set(seating.flatMap(seatUuids))]
     const players = await fetchPlayers(playerUuids)
 
@@ -151,14 +155,17 @@ export function notifyRegistrationsAccepted(
 
     const { data, error } = await supabase
       .from('tournament_registrations')
-      .select('player:players!inner(associate_uuid), tournament:tournaments!inner(name)')
+      .select(`
+        player:players!inner(associate_uuid),
+        tournament:tournaments!inner(name, telegram_notifications_enabled)
+      `)
       .in('uuid', registrationUuids)
     if (error) throw error
 
-    const registrations = data as unknown as {
+    const registrations = (data as unknown as {
       player: { associate_uuid: string }
-      tournament: { name: string }
-    }[]
+      tournament: { name: string, telegram_notifications_enabled: boolean }
+    }[]).filter(registration => registration.tournament.telegram_notifications_enabled)
 
     return notifyTelegramAssociates(registrations.map(registration => ({
       associateUuid: registration.player.associate_uuid,

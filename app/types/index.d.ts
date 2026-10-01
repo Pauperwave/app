@@ -248,6 +248,8 @@ export interface Tournament {
   status: TournamentStatus
   // Pinned tournaments get their own "In evidenza" section above every status one.
   isPinned: boolean
+  // Off = no passive Telegram messages (accepted, tables, cancellations) for this tournament.
+  telegramNotificationsEnabled: boolean
   // Venue name (e.g. "Smart Lab - Centro Giovani Rovereto") — kept separate
   // from `locationAddress` (see locations table, migration 20260815100000)
   // so a maps link can use the precise address while the UI still shows the

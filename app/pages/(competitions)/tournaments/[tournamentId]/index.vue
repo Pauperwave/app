@@ -137,6 +137,13 @@ const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowAct
 
           <USeparator orientation="vertical" class="h-4" />
 
+          <TournamentsSingleTelegramNotificationsSwitch
+            v-if="tournament"
+            :tournament="tournament"
+          />
+
+          <USeparator orientation="vertical" class="h-4" />
+
           <EditIconButton
             v-if="tournament"
             :label="$t('tournament.rowActions.edit')"

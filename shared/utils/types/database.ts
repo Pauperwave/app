@@ -2360,6 +2360,7 @@ export type Database = {
           round_duration_minutes: number
           starts_at: string | null
           status: string
+          telegram_notifications_enabled: boolean
           updated_at: string
           uuid: string
         }
@@ -2393,6 +2394,7 @@ export type Database = {
           round_duration_minutes?: number
           starts_at?: string | null
           status: string
+          telegram_notifications_enabled?: boolean
           updated_at?: string
           uuid?: string
         }
@@ -2426,6 +2428,7 @@ export type Database = {
           round_duration_minutes?: number
           starts_at?: string | null
           status?: string
+          telegram_notifications_enabled?: boolean
           updated_at?: string
           uuid?: string
         }
