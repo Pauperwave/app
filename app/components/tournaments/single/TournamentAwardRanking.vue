@@ -15,16 +15,22 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <ol class="rounded-lg border border-default divide-y divide-default overflow-hidden">
-    <li
-      v-for="entry in ranking"
-      :key="entry.playerUuid"
-    >
-      <TournamentsSingleTournamentAwardRankingRow
-        :kind="kind"
-        :entry="entry"
-        @select="playerUuid => emit('selectPlayer', playerUuid)"
-      />
-    </li>
-  </ol>
+  <div class="space-y-1">
+    <p class="px-1 text-xs font-semibold uppercase tracking-wide text-muted">
+      {{ $t('tournament.single.awards.rankingTitle') }}
+    </p>
+
+    <ol class="rounded-lg border border-default divide-y divide-default overflow-hidden">
+      <li
+        v-for="entry in ranking"
+        :key="entry.playerUuid"
+      >
+        <TournamentsSingleTournamentAwardRankingRow
+          :kind="kind"
+          :entry="entry"
+          @select="playerUuid => emit('selectPlayer', playerUuid)"
+        />
+      </li>
+    </ol>
+  </div>
 </template>

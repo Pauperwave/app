@@ -14,6 +14,7 @@ export const ICONS = {
   pause: 'i-lucide-pause',
   delete: 'i-lucide-trash',
   edit: 'i-lucide-pencil-line',
+  equal: 'i-lucide-equal',
   pin: 'i-lucide-pin',
   pinOff: 'i-lucide-pin-off',
   confirm: 'i-lucide-check',
