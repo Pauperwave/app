@@ -4,34 +4,21 @@
 // league keys usage by numeric player_id and joins round_results ->
 // pairings for the played date; this app's per-round result already has
 // its own created_at (no separate pairings join needed) and keys everything
-// by player_uuid (this app's persistent players.uuid) instead.
+// by player_uuid (this app's persistent players.uuid) instead. The counting
+// itself lives in shared/utils/commanders/commanderUsage.ts (also used by
+// the Telegram bot's history).
+import {
+  buildCommanderUsageByPlayer, type CommanderUsage
+} from '#shared/utils/commanders/commanderUsage'
 import type { Database } from '#shared/utils/types/database'
 
-/** Per-commander play history for one player (ADR-027 in league): most
- *  recently played first, ties on the same calendar day broken by play count. */
-export interface CommanderUsage {
-  /** ISO `YYYY-MM-DD` (UTC) of the most recent round this commander was played in. */
-  lastPlayedDay: string
-  count: number
-}
-
-function recordUsage(usage: Map<string, CommanderUsage>, name: string | null, day: string) {
-  if (!name) return
-  const existing = usage.get(name)
-  if (!existing) {
-    usage.set(name, { lastPlayedDay: day, count: 1 })
-    return
-  }
-  existing.count += 1
-  if (day > existing.lastPlayedDay) existing.lastPlayedDay = day
-}
+export type { CommanderUsage }
 
 async function fetchCommandersUsage(
   supabase: ReturnType<typeof useSupabaseClient<Database>>,
   playerUuids: string[]
 ): Promise<Map<string, Map<string, CommanderUsage>>> {
-  const byPlayer = new Map<string, Map<string, CommanderUsage>>()
-  if (playerUuids.length === 0) return byPlayer
+  if (playerUuids.length === 0) return new Map()
 
   const { data: results, error: resultsError } = await supabase
     .from('tournament_round_results')
@@ -39,7 +26,7 @@ async function fetchCommandersUsage(
     .in('player_uuid', playerUuids)
     .not('commander_deck_uuid', 'is', null)
 
-  if (resultsError || !results || results.length === 0) return byPlayer
+  if (resultsError || !results || results.length === 0) return new Map()
 
   const deckUuids = [...new Set(
     results.map(r => r.commander_deck_uuid).filter((id): id is string => !!id)
@@ -49,23 +36,20 @@ async function fetchCommandersUsage(
     .select('uuid, commander_1_name, commander_2_name')
     .in('uuid', deckUuids)
 
-  if (decksError || !decks) return byPlayer
+  if (decksError || !decks) return new Map()
 
-  const decksByUuid = new Map(decks.map(deck => [deck.uuid, deck]))
-
-  for (const row of results) {
-    const deck = row.commander_deck_uuid ? decksByUuid.get(row.commander_deck_uuid) : undefined
-    if (!deck) continue
-    const day = row.created_at.slice(0, 10)
-    let usage = byPlayer.get(row.player_uuid)
-    if (!usage) {
-      usage = new Map()
-      byPlayer.set(row.player_uuid, usage)
-    }
-    recordUsage(usage, deck.commander_1_name, day)
-    recordUsage(usage, deck.commander_2_name, day)
-  }
-  return byPlayer
+  return buildCommanderUsageByPlayer(
+    results.map(row => ({
+      playerUuid: row.player_uuid,
+      commanderDeckUuid: row.commander_deck_uuid,
+      createdAt: row.created_at
+    })),
+    decks.map(deck => ({
+      uuid: deck.uuid,
+      commander1Name: deck.commander_1_name,
+      commander2Name: deck.commander_2_name
+    }))
+  )
 }
 
 /**
