@@ -1,4 +1,5 @@
 // app\composables\associates\useAssociatesTableColumns.ts
+import { UIcon, UTooltip } from '#components'
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { Column, Table } from '@tanstack/vue-table'
 import type { Associate } from '~/types'
@@ -250,7 +251,13 @@ export function useAssociatesTableColumns(
   const firstNameColumn: TableColumn<Associate> = {
     accessorKey: 'first_name',
     header: ({ column }) => sortableHeader(columnHeaders.first_name, column),
-    cell: ({ row }) => highlight(row.original.first_name)
+    cell: ({ row }) => h('span', { class: 'inline-flex items-center gap-1.5' }, [
+      highlight(row.original.first_name),
+      row.original.has_no_telegram
+        ? h(UTooltip, { text: t('associate.noTelegram.tooltip') }, () =>
+          h(UIcon, { name: ICONS.noTelegram, class: 'size-4 text-error' }))
+        : null
+    ])
   }
 
   const lastNameColumn: TableColumn<Associate> = {

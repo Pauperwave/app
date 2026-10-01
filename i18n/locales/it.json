@@ -388,6 +388,15 @@
     "map": {
       "missingCoordinates": "1 associato non ancora geolocalizzato | {count} associati non ancora geolocalizzati"
     },
+    "noTelegramUsername": {
+      "badge": "Senza username Telegram"
+    },
+    "noTelegram": {
+      "badge": "Senza Telegram",
+      "tooltip": "Non usa Telegram: risultati e comandante li inserisce l'organizzatore",
+      "label": "Non usa Telegram",
+      "description": "Risultati e comandante li inserisce l'organizzatore al suo posto"
+    },
     "detail": {
       "notFound": "Associato non trovato",
       "viewPlayerProfile": "Vedi il profilo giocatore",

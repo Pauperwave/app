@@ -191,6 +191,7 @@ export const ICONS = {
   bell: 'i-lucide-bell',
   info: 'i-lucide-info',
   messageCircle: 'i-lucide-message-circle',
+  noTelegram: 'i-lucide-message-circle-off',
   alignLeft: 'i-lucide-align-left',
   image: 'i-lucide-image',
   imageOff: 'i-lucide-image-off',

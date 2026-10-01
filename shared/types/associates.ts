@@ -29,4 +29,6 @@ export interface AssociateEditsPayload {
   consent_data: boolean
   consent_social: boolean
   has_read_statute: boolean
+  // Only sent by the staff edit form; the public application never sets it.
+  has_no_telegram?: boolean
 }
