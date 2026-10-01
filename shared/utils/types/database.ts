@@ -745,18 +745,21 @@ export type Database = {
           chat_id: number
           id: number
           linked_at: string
+          telegram_username: string | null
         }
         Insert: {
           associate_uuid: string
           chat_id: number
           id?: never
           linked_at?: string
+          telegram_username?: string | null
         }
         Update: {
           associate_uuid?: string
           chat_id?: number
           id?: never
           linked_at?: string
+          telegram_username?: string | null
         }
         Relationships: [
           {

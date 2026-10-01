@@ -99,7 +99,9 @@ async function recordLinkAttempt(chatId: number): Promise<boolean> {
   return true
 }
 
-async function linkChat(chatId: number, email: string): Promise<string> {
+async function linkChat(
+  chatId: number, email: string, telegramUsername: string | null
+): Promise<string> {
   const supabase = telegramServiceSupabaseClient()
 
   const { data: associate, error: associateError } = await supabase
@@ -134,7 +136,7 @@ async function linkChat(chatId: number, email: string): Promise<string> {
   const { error: linkError } = await supabase
     .from('pauperwave_associate_telegram_links')
     .upsert(
-      { associate_uuid: associate.uuid, chat_id: chatId },
+      { associate_uuid: associate.uuid, chat_id: chatId, telegram_username: telegramUsername },
       { onConflict: 'associate_uuid' }
     )
 
@@ -170,7 +172,7 @@ export function registerLinkingHandler(bot: Bot) {
       return
     }
 
-    const reply = await linkChat(chatId, text.toLowerCase())
+    const reply = await linkChat(chatId, text.toLowerCase(), ctx.from?.username ?? null)
       .catch(() => '⚠️ Errore nel collegamento, riprova più tardi.')
 
     await ctx.reply(reply)

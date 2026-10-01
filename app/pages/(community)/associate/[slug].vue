@@ -30,6 +30,16 @@ const associate = computed(() => (associates.value ?? [])
 // linked player row (players are created on first tesseramento-adjacent
 // login, not at signup), so this can legitimately be null.
 const { data: players } = usePlayersQuery()
+
+// Linked to the bot but with no Telegram username: there is no profile to link to.
+const { data: telegramLinks } = useAssociateTelegramUsernamesQuery()
+const hasNoTelegramUsername = computed(() => {
+  const current = associate.value
+  return !!current
+    && !current.has_no_telegram
+    && !!telegramLinks.value?.has(current.uuid)
+    && !telegramLinks.value.get(current.uuid)
+})
 const player = computed(() => players.value?.find(
   item => item.associate_uuid === associate.value?.uuid) ?? null)
 
@@ -204,6 +214,20 @@ const { columns: associateTransactionsColumns } = useAssociateTransactionsTableC
                 <MembershipStatusBadge :status="associate.membership_status" />
                 <AssociateNumberBadge :number="associate.pauperwave_associate_number" />
                 <AssociateTypeBadge :type="associate.associate_type" />
+                <UBadge
+                  v-if="associate.has_no_telegram"
+                  :label="$t('associate.noTelegram.badge')"
+                  :icon="ICONS.noTelegram"
+                  color="error"
+                  variant="subtle"
+                />
+                <UBadge
+                  v-else-if="hasNoTelegramUsername"
+                  :label="$t('associate.noTelegramUsername.badge')"
+                  :icon="ICONS.telegram"
+                  color="warning"
+                  variant="subtle"
+                />
               </div>
 
               <NuxtLink
