@@ -213,16 +213,27 @@ WITH CHECK (public.has_management_permissions(auth.uid()));
 ### tournaments
 
 ```sql
--- Public: non-deleted tournaments are visible to everyone
+-- Public: non-deleted tournaments are visible to everyone, except test tournaments
+-- (is_test, migration 20261001150000), which only a super_admin can see
 CREATE POLICY public_read ON public.tournaments
-FOR SELECT USING (deleted_at IS NULL);
+FOR SELECT USING (
+  deleted_at IS NULL AND (NOT is_test OR public.is_super_admin(auth.uid()))
+);
 
--- Management: full access (including soft-deleted records)
+-- Management: full access (including soft-deleted records), same test-tournament carve-out
 CREATE POLICY management_full_access ON public.tournaments
 FOR ALL
-USING (public.has_management_permissions(auth.uid()))
-WITH CHECK (public.has_management_permissions(auth.uid()));
+USING (
+  public.has_management_permissions(auth.uid())
+  AND (NOT is_test OR public.is_super_admin(auth.uid()))
+)
+WITH CHECK (
+  public.has_management_permissions(auth.uid())
+  AND (NOT is_test OR public.is_super_admin(auth.uid()))
+);
 ```
+
+Hiding is enforced only on `tournaments` itself: child tables (registrations, rounds, pairings, ...) stay readable by uuid, which nobody else can discover. Service-role code (BFF endpoints, the bot's own-registration queries) bypasses RLS and has to filter `is_test` itself, as `self-register.post.ts` does.
 
 ### tournament_registrations
 

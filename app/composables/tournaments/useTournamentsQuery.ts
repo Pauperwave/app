@@ -9,13 +9,17 @@ export const TOURNAMENTS_KEY = ['tournaments']
 // `leagues` are both real now too (2026-08-15), so event_uuid/league_uuid
 // resolve to real names — PublicCalendarPage.vue groups by eventUuid, not
 // the name, to avoid a name-collision misgrouping.
-export function useTournamentsQuery() {
+// Test tournaments (is_test) are left out by default so calendars, stats and
+// every other consumer never list them; only the tournaments list and detail
+// pages opt in. RLS hides them from everyone but super_admin regardless.
+export function useTournamentsQuery({ includeTest = false } = {}) {
   const supabase = useSupabaseClient()
 
   return useQuery({
-    key: TOURNAMENTS_KEY,
+    // Same prefix as TOURNAMENTS_KEY, so invalidating that still covers both.
+    key: includeTest ? [...TOURNAMENTS_KEY, 'including-test'] : TOURNAMENTS_KEY,
     query: async (): Promise<Tournament[]> => {
-      const { data, error } = await supabase
+      let request = supabase
         .from('tournaments')
         .select(`
           *,
@@ -26,6 +30,9 @@ export function useTournamentsQuery() {
           league:leagues(name)
         `)
         .is('deleted_at', null)
+      if (!includeTest) request = request.eq('is_test', false)
+
+      const { data, error } = await request
         .order('starts_at', { ascending: true })
         .order('id', { ascending: true })
 
@@ -54,6 +61,7 @@ export function useTournamentsQuery() {
         status: row.status as TournamentStatus,
         isPinned: row.is_pinned,
         telegramNotificationsEnabled: row.telegram_notifications_enabled,
+        isTest: row.is_test,
         location: row.location?.name ?? null,
         locationAddress: row.location
           ? `${row.location.address}, ${row.location.postal_code} ${row.location.city} ${row.location.province}, ${row.location.country}`

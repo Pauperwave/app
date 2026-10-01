@@ -1346,6 +1346,12 @@
       "description": "Avvisa i giocatori su Telegram di iscrizione accettata e tavoli (annunci e annullamenti)",
       "errorTitle": "Impossibile aggiornare le notifiche Telegram del torneo"
     },
+    "test": {
+      "label": "Torneo di test",
+      "badge": "Test",
+      "description": "Visibile solo ai super admin, escluso da calendari e statistiche. Segnandolo le notifiche Telegram si disattivano.",
+      "errorTitle": "Impossibile aggiornare il flag di test del torneo"
+    },
     "pinErrorTitle": "Impossibile aggiornare l'evidenza del torneo",
     "statusChangeErrorTitle": "Impossibile aggiornare lo stato del torneo",
     "entryFeeChangeErrorTitle": "Impossibile aggiornare la quota di iscrizione",

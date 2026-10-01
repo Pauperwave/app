@@ -250,6 +250,8 @@ export interface Tournament {
   isPinned: boolean
   // Off = no passive Telegram messages (accepted, tables, cancellations) for this tournament.
   telegramNotificationsEnabled: boolean
+  // Test tournament: only a super_admin can see it (RLS), kept out of calendars and stats.
+  isTest: boolean
   // Venue name (e.g. "Smart Lab - Centro Giovani Rovereto") — kept separate
   // from `locationAddress` (see locations table, migration 20260815100000)
   // so a maps link can use the precise address while the UI still shows the
