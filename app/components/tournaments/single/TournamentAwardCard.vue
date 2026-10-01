@@ -4,16 +4,15 @@
      player's own commander) — flavor illustrations for the award itself,
      so they don't change as standings do. -->
 <script setup lang="ts">
-import type { TournamentAwardKind } from '~/composables/tournaments/prizes/useTournamentAwards'
+import type {
+  TournamentAwardKind, TournamentAwardRankingEntry
+} from '~/composables/tournaments/prizes/useTournamentAwards'
+import { TOURNAMENT_AWARD_ICONS } from '~/utils/tournaments/tournamentAwardIcons'
 
-const {
-  kind, associateUuid, firstName, surname, value
-} = defineProps<{
+// More than one winner only for a true ex aequo (same stat and same tiebreaks).
+const { kind, winners } = defineProps<{
   kind: TournamentAwardKind
-  associateUuid: string
-  firstName: string
-  surname: string
-  value: number
+  winners: TournamentAwardRankingEntry[]
 }>()
 
 const { t } = useI18n()
@@ -25,13 +24,6 @@ const ART_URLS: Record<TournamentAwardKind, string> = {
   player: 'https://cards.scryfall.io/art/front/f/8/f8fc7a61-226c-426a-9b99-21d87aca2f6f.webp?1783931343'
 }
 
-const ICON_BY_KIND: Record<TournamentAwardKind, string> = {
-  victim: ICONS.deaths,
-  killer: ICONS.kills,
-  brewer: ICONS.brewVotes,
-  player: ICONS.playVotes
-}
-
 const COLOR_BY_KIND: Record<TournamentAwardKind, string> = {
   victim: 'text-error',
   killer: 'text-warning',
@@ -40,10 +32,12 @@ const COLOR_BY_KIND: Record<TournamentAwardKind, string> = {
 }
 
 const artUrl = computed(() => ART_URLS[kind])
-const icon = computed(() => ICON_BY_KIND[kind])
+const icon = computed(() => TOURNAMENT_AWARD_ICONS[kind])
 const iconColorClass = computed(() => COLOR_BY_KIND[kind])
 const title = computed(() => t(`tournament.single.awards.${kind}.title`))
-const statLabel = computed(() => t(`tournament.single.awards.${kind}.stat`, { count: value }))
+// Winners share the same value by definition.
+const statLabel = computed(() =>
+  t(`tournament.single.awards.${kind}.stat`, { count: winners[0]?.value ?? 0 }))
 </script>
 
 <template>
@@ -66,12 +60,14 @@ const statLabel = computed(() => t(`tournament.single.awards.${kind}.stat`, { co
       </p>
     </div>
 
-    <div class="absolute bottom-0 left-0 right-0 p-3">
+    <div class="absolute bottom-0 left-0 right-0 flex flex-col gap-1 p-3">
       <AssociateTag
-        :name="firstName"
-        :surname="surname"
-        :associate-uuid="associateUuid"
-        size="xl"
+        v-for="winner in winners"
+        :key="winner.playerUuid"
+        :name="winner.firstName"
+        :surname="winner.surname"
+        :associate-uuid="winner.associateUuid"
+        :size="winners.length > 1 ? 'md' : 'xl'"
         class="text-white"
       />
     </div>
