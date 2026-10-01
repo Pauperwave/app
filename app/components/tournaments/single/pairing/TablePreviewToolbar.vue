@@ -6,8 +6,9 @@
   analytics composable doesn't exist in this app.
 -->
 <script setup lang="ts">
-const { totalScore, loading = false } = defineProps<{
+const { totalScore, seed, loading = false } = defineProps<{
   totalScore: number
+  seed: number | null
   loading?: boolean
 }>()
 
@@ -15,6 +16,7 @@ const emit = defineEmits<{
   openSettings: []
   optimize: []
   random: []
+  applySeed: [seed: number]
 }>()
 
 const { t } = useI18n()
@@ -28,6 +30,10 @@ const { t } = useI18n()
     </div>
 
     <div class="flex flex-wrap items-center gap-2">
+      <TournamentsSinglePairingShuffleSeedField
+        :seed="seed"
+        @apply="value => emit('applySeed', value)"
+      />
       <UTooltip
         :content="{ side: 'top' }"
         :text="t('tournament.single.tablePreview.toolbar.weightsAndConstraintsTooltip')"
