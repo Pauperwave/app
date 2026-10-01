@@ -250,6 +250,8 @@ const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowAct
 
         <template #leaderboard>
           <TournamentsSingleLeaderboard
+            :tournament-uuid="tournamentUuid"
+            :commander-standings="isCommander ? liveStandings : undefined"
             :swiss-standings="is1v1Format ? liveSwissStandings : undefined"
           />
         </template>
