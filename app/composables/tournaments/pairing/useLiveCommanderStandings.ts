@@ -14,6 +14,7 @@ import {
   calculatePlayerTableScore, isDrawTable, buildPosValues,
   type CommanderTableResult
 } from '#shared/utils/tournaments/commanderScoring'
+import type { SwissDropInfo } from '~/types'
 import { compareCommanderStandings } from './useCommanderStandingsSort'
 
 export interface LiveCommanderStanding {
@@ -30,9 +31,14 @@ export interface LiveCommanderStanding {
   kills: number
   brewReceived: number
   playReceived: number
+  /** Points those votes were worth (votes x the ruleset's brew/play value). */
+  brewScore: number
+  playScore: number
   /** Times killed — feeds the "Vittima" award (useTournamentAwards.ts), not
    *  part of the score/sort itself. */
   deaths: number
+  /** Set once the player dropped: they keep their place but aren't paired any more. */
+  dropped: SwissDropInfo | null
 }
 
 export function useLiveCommanderStandings(tournamentUuid: MaybeRefOrGetter<string>) {
@@ -43,6 +49,7 @@ export function useLiveCommanderStandings(tournamentUuid: MaybeRefOrGetter<strin
   const { data: killsData } = useTournamentKillsQuery(tournamentUuid)
   const { data: votesData } = useTournamentVotesQuery(tournamentUuid)
   const { data: rulesetPoints } = useRulesetPointsQuery(tournamentUuid)
+  const dropByPlayerUuid = useDropInfoByPlayerUuid(tournamentUuid)
 
   const associateByUuid = computed(() =>
     new Map((associatesData.value ?? []).map(a => [a.uuid, a])))
@@ -70,7 +77,10 @@ export function useLiveCommanderStandings(tournamentUuid: MaybeRefOrGetter<strin
         kills: 0,
         brewReceived: 0,
         playReceived: 0,
-        deaths: 0
+        brewScore: 0,
+        playScore: 0,
+        deaths: 0,
+        dropped: dropByPlayerUuid.value.get(registration.playerUuid) ?? null
       })
     }
 
@@ -106,6 +116,8 @@ export function useLiveCommanderStandings(tournamentUuid: MaybeRefOrGetter<strin
         acc.kills += scored.numberOfKills
         acc.brewReceived += scored.brewVotesReceived
         acc.playReceived += scored.playVotesReceived
+        acc.brewScore += scored.brewScore
+        acc.playScore += scored.playScore
         acc.deaths += (killsData.value ?? [])
           .filter(k => k.pairingUuid === pairing.uuid && k.killedPlayerUuid === playerUuid).length
       }
@@ -117,5 +129,5 @@ export function useLiveCommanderStandings(tournamentUuid: MaybeRefOrGetter<strin
     return Array.from(accumulators.values()).sort(compareCommanderStandings)
   })
 
-  return { liveStandings }
+  return { liveStandings, dropByPlayerUuid }
 }

@@ -118,8 +118,9 @@ async function handleCopyStandings() {
                 :associate-uuid="standing.associateUuid"
                 :size="isFullscreen ? 'lg' : 'sm'"
                 class="font-medium truncate"
-                :class="isFullscreen ? 'text-2xl' : 'text-sm'"
+                :class="[isFullscreen ? 'text-2xl' : 'text-sm', standing.dropped && 'opacity-60']"
               />
+              <TournamentsSinglePairingDropBadge :dropped="standing.dropped" />
             </div>
             <span
               class="font-bold shrink-0"
