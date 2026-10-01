@@ -533,6 +533,8 @@ Contestualmente, rimosso il banner di avviso giallo ("Questa tabella non è anco
 
 **Conseguenze:** chi non ha uno username su Telegram, o non è collegato, non mostra alcun link. Un utente senza permessi di gestione ottiene una mappa vuota, non un errore di permessi. Lo username si aggiorna solo quando il bot lo rilegge (annunci dei tavoli, `/tavolo`) o al collegamento: può restare indietro fino al prossimo invio.
 
+**Aggiornamento 2026-10-02:** un middleware (`server/utils/telegram/usernameSync.ts`, registrato per primo in `registerCommands`) salva `from.username` a ogni update ricevuto da una chat privata collegata, con una sola `update` condizionale (scrive solo se il valore è diverso, azzera se l'username è stato rimosso). Quindi un username impostato, cambiato o tolto si riflette nell'app alla prima volta che la persona scrive al bot, senza chiamate a Telegram. Resta il limite di fondo: Telegram non notifica il cambio, quindi chi non scrive mai al bot resta com'era finché un annuncio dei tavoli non lo rilegge.
+
 ### ADR-052 — Classifica sotto ogni premio del torneo, con spareggi che dipendono dalla statistica e ex aequo (2026-10-02)
 
 **Contesto:** richiesta utente: nel passo "Premi" di un torneo Commander, sotto ogni card (La Vittima, Il Carnefice, Master Brewer, Il Player) mostrare la classifica di quella statistica. A parità di valore l'ordine era quello della classifica generale e, in ultima istanza, il confronto tra `playerUuid`: un criterio senza significato di gioco, che faceva vincere un premio a caso (esempio reale: due giocatori con 5 voti mazzo, primo chi stava meglio in classifica generale).
