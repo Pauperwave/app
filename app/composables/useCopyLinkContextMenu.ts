@@ -1,5 +1,5 @@
 // app\composables\useCopyLinkContextMenu.ts
-// Generic "Copia link" + "Copia ID" context menu, shared across events/
+// Generic "Copia link" + "Copia UUID" context menu, shared across events/
 // leagues/tournaments so each doesn't hand-roll the same two items — just a
 // route prefix and an item, no per-domain logic. Tournaments now has real
 // edit/delete infrastructure (unlike events/leagues, still pre-CRUD — see
@@ -9,9 +9,8 @@
 // growing domain-specific branches.
 // "Copia link" uses `uuid` (the public, non-enumerable identifier — an
 // auto-increment `id` in the URL would let a visitor enumerate every row by
-// walking /tournaments/1, /tournaments/2, ...); "Copia ID" intentionally
-// keeps the numeric `id`, since that's the one support/admin conversations
-// actually reference.
+// walking /tournaments/1, /tournaments/2, ...); "Copia UUID" copies the same
+// `uuid`, not the table's numeric `id` (user request, 2026-10-01).
 import type { DropdownMenuItem } from '@nuxt/ui'
 
 type LinkableItem = { id: number | string, uuid: string }
@@ -36,9 +35,9 @@ export function useCopyLinkContextMenu<T extends LinkableItem>(
         onSelect: () => copyToClipboard(`${window.location.origin}${toPath(item)}`, t('common.linkCopied'))
       },
       {
-        label: t('common.copyId'),
+        label: t('common.copyUuid'),
         icon: ICONS.copy,
-        onSelect: () => copyToClipboard(String(item.id), t('common.idCopied'))
+        onSelect: () => copyToClipboard(item.uuid, t('common.uuidCopied'))
       }
     ]
   }
