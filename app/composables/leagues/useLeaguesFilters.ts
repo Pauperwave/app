@@ -10,10 +10,10 @@ export function useLeaguesFilters(data: Ref<League[]>, search: Ref<string>) {
   // Search is name-only, applied here (not a UTable globalFilterFn) so it
   // also filters the grid view, same reasoning as useTournamentsFilters.ts.
   const filteredLeagues = computed(() => data.value.filter((league) => {
-    if (statusFilter.value !== 'all' && league.status !== statusFilter.value) return false
+    // A search looks through every league, ignoring the status filter.
     const query = search.value.trim().toLowerCase()
-    if (query && !league.name.toLowerCase().includes(query)) return false
-    return true
+    if (query) return league.name.toLowerCase().includes(query)
+    return statusFilter.value === 'all' || league.status === statusFilter.value
   }))
 
   // Counts from the full unfiltered `data`, same convention as

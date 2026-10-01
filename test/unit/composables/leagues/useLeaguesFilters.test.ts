@@ -21,6 +21,16 @@ describe('useLeaguesFilters', () => {
     expect(filteredLeagues.value.map(l => l.uuid)).toEqual(['l1'])
   })
 
+  it('searches through every league, ignoring the status filter', () => {
+    const leagues = [
+      makeLeague({ uuid: 'l1', name: 'Lega Pauper', status: 'completed' }),
+      makeLeague({ uuid: 'l2', name: 'Lega Draft', status: 'active' })
+    ]
+    const { statusFilter, filteredLeagues } = useLeaguesFilters(ref(leagues), ref('pauper'))
+    statusFilter.value = 'active'
+    expect(filteredLeagues.value.map(l => l.uuid)).toEqual(['l1'])
+  })
+
   it('filters by case-insensitive name search', () => {
     const leagues = [
       makeLeague({ uuid: 'l1', name: 'Lega Pauper' }),

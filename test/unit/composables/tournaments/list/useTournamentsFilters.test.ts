@@ -65,6 +65,22 @@ describe('useTournamentsFilters', () => {
     expect(filteredTournaments.value).toEqual([])
   })
 
+  it('searches through every tournament, ignoring the status, format and date filters', () => {
+    const tournaments = [
+      makeTournament({
+        uuid: 't1', name: 'Pauper Cup', status: 'completed', format: 'Pauper',
+        startDate: new Date(2026, 1, 1).toISOString()
+      }),
+      makeTournament({ uuid: 't2', name: 'Draft Night', format: 'Draft' })
+    ]
+    const { statusFilter, formatFilter, filteredTournaments } = useTournamentsFilters(
+      ref(tournaments), range, ref('pauper')
+    )
+    statusFilter.value = 'registration_open'
+    formatFilter.value = 'Draft'
+    expect(filteredTournaments.value.map(t => t.uuid)).toEqual(['t1'])
+  })
+
   it('filters by case-insensitive name search', () => {
     const tournaments = [
       makeTournament({ uuid: 't1', name: 'Pauper Cup' }),
