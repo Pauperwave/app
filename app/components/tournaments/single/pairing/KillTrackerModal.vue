@@ -18,14 +18,17 @@ import type { TablePlayer } from '~/types'
 
 const open = defineModel<boolean>('open', { default: false })
 
-const { players, kills } = defineProps<{
+const { players, kills, noKills } = defineProps<{
   players: TablePlayer[]
   kills: { killerUuid: string, killedPlayerUuid: string }[]
+  /** The organizer confirmed the table ended without any kill. */
+  noKills: boolean
 }>()
 
 const emit = defineEmits<{
   connect: [killerUuid: string, killedPlayerUuid: string]
   removeKill: [killerUuid: string, killedPlayerUuid: string]
+  setNoKills: [noKills: boolean]
 }>()
 
 const { t } = useI18n()
@@ -104,9 +107,35 @@ function resetAll() {
           </div>
         </div>
 
-        <p v-else class="text-sm text-muted text-center py-2">
-          {{ t('tournament.single.killTracker.noKills') }}
-        </p>
+        <div v-else-if="noKills" class="flex items-center justify-center gap-2 py-2">
+          <UBadge
+            :label="t('tournament.single.killTracker.noKillsConfirmed')"
+            :icon="ICONS.confirm"
+            color="success"
+            variant="subtle"
+          />
+          <UButton
+            :label="t('tournament.single.killTracker.noKillsUndo')"
+            color="neutral"
+            variant="ghost"
+            size="xs"
+            @click="emit('setNoKills', false)"
+          />
+        </div>
+
+        <div v-else class="flex flex-col items-center gap-2 py-2">
+          <p class="text-sm text-muted text-center">
+            {{ t('tournament.single.killTracker.noKills') }}
+          </p>
+          <UButton
+            :label="t('tournament.single.killTracker.noKillsButton')"
+            :icon="ICONS.confirm"
+            color="neutral"
+            variant="outline"
+            size="sm"
+            @click="emit('setNoKills', true)"
+          />
+        </div>
       </div>
     </template>
 

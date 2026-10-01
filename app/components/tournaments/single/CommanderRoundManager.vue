@@ -64,7 +64,8 @@ const {
   isLastRoundOfTournament, turnBackButtonLabel, tournamentIsEnded,
   labelFor, associateUuidFor, pairingsForRound, tablePlayersFor,
   positionsFor, killsFor, commanderDeckFor, isPairingComplete, isPairingDraw,
-  hasRankingFor, hasKillsFor, hasCommanderFor, hasVotesFor, winners, liveStandings
+  hasRankingFor, hasKillsFor, noKillsFor, hasCommanderFor, hasVotesFor, winners, liveStandings,
+  dropByPlayerUuid
 } = roundData
 
 const {
@@ -72,6 +73,7 @@ const {
   activeScoreTableNumber,
   scoresModalOpen, openScoresModal, activeScoresTableNumber, activeScoresPlayers,
   activeScoresTableResults, killModalOpen, openKillModal, activeKillPlayers, activeKillEvents,
+  activeKillNoKills,
   votesModalOpen, activeVotes, openVotesModal, activeVotesSelectedPlayer, activeVotesOtherPlayers,
   activeVotesExisting, commanderNameForVotes, commanderModalOpen, activeCommander,
   openCommanderModal, activeCommanderNameParts, activeCommanderTablePlayerUuids,
@@ -80,14 +82,19 @@ const {
 } = modals
 
 const {
-  saveRanking, onScoreConfirm, onKillConnect, onKillRemove, onVotesSubmit, onCommanderConfirm,
-  onConfirmDialogConfirm
+  saveRanking, onScoreConfirm, onKillConnect, onKillRemove, onNoKillsSet, onVotesSubmit,
+  onCommanderConfirm,
+  onConfirmDialogConfirm, onToggleDrop, onCommanderClear
 } = submitHandlers
 
 const {
   advanceRound, advancePreviewOpen, nextRoundSeedPlayers, allPairingsComplete,
-  openAdvancePreview, onAdvanceConfirm, endTournament, onTurnBack
+  canFormNextRoundTables, openAdvancePreview, onAdvanceConfirm, endTournament, onTurnBack
 } = lifecycle
+
+// Ending the tournament (last round) seats nobody, so only a real "next round" needs valid tables.
+const cannotFormNextRound = computed(() =>
+  !isLastRoundOfTournament.value && !canFormNextRoundTables.value)
 
 const { checked: winnersChecked, toggle: toggleWinnerChecked }
   = useWinnerChecklist(() => tournamentUuid, () => roundNumber)
@@ -138,7 +145,10 @@ const showFHint = useChordHintKey('f')
       <TournamentsSinglePairingRoundNavButtons
         :turn-back-label="turnBackButtonLabel"
         :is-last-round="isLastRoundOfTournament"
-        :advance-disabled="!allPairingsComplete"
+        :advance-disabled="!allPairingsComplete || cannotFormNextRound"
+        :advance-disabled-tooltip="allPairingsComplete && cannotFormNextRound
+          ? t('tournament.single.roundManager.advanceNotEnoughPlayersTooltip')
+          : undefined"
         :end-loading="advanceRound.isLoading.value"
         @turn-back="onTurnBack"
         @advance="openAdvancePreview"
@@ -202,11 +212,13 @@ const showFHint = useChordHintKey('f')
               :players="tablePlayersFor(pairing)"
               :positions="positionsFor(pairing.uuid)"
               :has-kills="killsFor(pairing.uuid).length > 0"
+              :no-kills="noKillsFor(pairing.uuid)"
               :has-votes="(playerUuid: string) => hasVotesFor(pairing.uuid, playerUuid)"
               :has-commander="(playerUuid: string) => !!commanderDeckFor(pairing.uuid, playerUuid)"
               :is-complete="isPairingComplete(pairing.uuid)"
               :is-draw="isPairingDraw(pairing.uuid)"
               :associate-uuid-for="associateUuidFor"
+              :dropped-for="(playerUuid: string) => dropByPlayerUuid.get(playerUuid) ?? null"
               @open-score-modal="openScoreModal(pairing.uuid)"
               @open-kill-modal="openKillModal(pairing.uuid)"
               @open-votes-modal="(playerUuid: string) => openVotesModal(pairing.uuid, playerUuid)"
@@ -217,6 +229,7 @@ const showFHint = useChordHintKey('f')
               @reset-table="requestResetTable(pairing.uuid)"
               @quick-fill="requestQuickFill(pairing.uuid)"
               @draw="requestDraw(pairing.uuid)"
+              @toggle-drop="onToggleDrop"
             />
           </div>
           <EmptyState v-else :message="t('tournament.single.roundManager.noPairings')" />
@@ -289,8 +302,10 @@ const showFHint = useChordHintKey('f')
     v-model:open="killModalOpen"
     :players="activeKillPlayers"
     :kills="activeKillEvents"
+    :no-kills="activeKillNoKills"
     @connect="onKillConnect"
     @remove-kill="onKillRemove"
+    @set-no-kills="onNoKillsSet"
   />
 
   <TournamentsSinglePairingTournamentVotesModal
@@ -314,6 +329,7 @@ const showFHint = useChordHintKey('f')
     :commander2="activeCommanderCurrent.commander2"
     :table-player-uuids="activeCommanderTablePlayerUuids"
     @submit="onCommanderConfirm"
+    @clear="onCommanderClear"
   />
 
   <TournamentsSinglePairingTablePreviewModal

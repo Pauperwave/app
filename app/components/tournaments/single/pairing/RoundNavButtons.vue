@@ -2,11 +2,13 @@
 <!-- Turn-back / advance row shared by CommanderRoundManager.vue and SwissRoundManager.vue -->
 <script setup lang="ts">
 const {
-  turnBackLabel, isLastRound, advanceDisabled = false, endLoading = false
+  turnBackLabel, isLastRound, advanceDisabled = false, advanceDisabledTooltip, endLoading = false
 } = defineProps<{
   turnBackLabel: string
   isLastRound: boolean
   advanceDisabled?: boolean
+  // Overrides the default "enter every result first" explanation.
+  advanceDisabledTooltip?: string
   endLoading?: boolean
 }>()
 
@@ -32,7 +34,7 @@ const { t } = useI18n()
 
     <!-- The wrapper span keeps hover alive while the button is disabled -->
     <UTooltip
-      :text="t('tournament.single.roundManager.advanceDisabledTooltip')"
+      :text="advanceDisabledTooltip ?? t('tournament.single.roundManager.advanceDisabledTooltip')"
       :disabled="!advanceDisabled"
     >
       <span class="inline-flex">

@@ -25,7 +25,7 @@ export function useCommanderRoundData(options: {
   const { data: votes } = useTournamentVotesQuery(tournamentUuid)
   const { data: registrations } = useTournamentRegistrationsQuery(tournamentUuid)
   const { data: associatesData } = useAssociatesQuery()
-  const { liveStandings } = useLiveCommanderStandings(tournamentUuid)
+  const { liveStandings, dropByPlayerUuid } = useLiveCommanderStandings(tournamentUuid)
   // Live-updates results/kills/votes/pairings as the Telegram bot writes to
   // a pod, so an organizer watching this round sees a player's own
   // commander/position/kills/votes without refreshing the page (2026-09-24
@@ -90,8 +90,12 @@ export function useCommanderRoundData(options: {
   function hasRankingFor(pairingUuid: string): boolean {
     return positionsFor(pairingUuid).size > 0
   }
+  // The organizer's "no kills at this table" confirmation counts as the kills being entered.
+  function noKillsFor(pairingUuid: string): boolean {
+    return pairingsForRound.value.find(p => p.uuid === pairingUuid)?.noKills ?? false
+  }
   function hasKillsFor(pairingUuid: string): boolean {
-    return killsFor(pairingUuid).length > 0
+    return killsFor(pairingUuid).length > 0 || noKillsFor(pairingUuid)
   }
   function hasCommanderFor(pairingUuid: string, playerUuid: string): boolean {
     return !!commanderDeckFor(pairingUuid, playerUuid)
@@ -126,6 +130,7 @@ export function useCommanderRoundData(options: {
     tournamentIsEnded,
     results,
     liveStandings,
+    dropByPlayerUuid,
     labelFor,
     namePartsFor,
     associateUuidFor,
@@ -138,6 +143,7 @@ export function useCommanderRoundData(options: {
     isPairingComplete,
     isPairingDraw,
     hasRankingFor,
+    noKillsFor,
     hasKillsFor,
     hasCommanderFor,
     hasVotesFor,

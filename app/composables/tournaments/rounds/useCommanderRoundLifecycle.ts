@@ -35,9 +35,16 @@ export function useCommanderRoundLifecycle(options: {
   // Seed the next round's optimizer with the current live-standings order
   // (best rank first) — same "rank drives the seed order" idea as league's
   // own pairing optimizer, just resolved through this app's associate
-  // identity instead of a numeric rank field.
+  // identity instead of a numeric rank field. A dropped player isn't seated again.
   const nextRoundSeedPlayers = computed<TablePlayer[]>(() =>
-    liveStandings.value.map(s => ({ value: s.associateUuid, label: s.label })))
+    liveStandings.value
+      .filter(standing => !standing.dropped)
+      .map(s => ({ value: s.associateUuid, label: s.label })))
+
+  // After drops, the remaining players must still split into valid tables (3-4 each, never 5).
+  const { calculatePods } = useCommanderPods()
+  const canFormNextRoundTables = computed(() =>
+    calculatePods(nextRoundSeedPlayers.value.length).canPlay)
 
   const allPairingsComplete = computed(() =>
     pairingsForRound.value.length > 0
@@ -59,6 +66,7 @@ export function useCommanderRoundLifecycle(options: {
     advancePreviewOpen,
     nextRoundSeedPlayers,
     allPairingsComplete,
+    canFormNextRoundTables,
     openAdvancePreview,
     onAdvanceConfirm,
     endTournament,
