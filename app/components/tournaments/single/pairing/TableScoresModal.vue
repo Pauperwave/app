@@ -25,8 +25,13 @@ import { AssociateTag } from '#components'
 const open = defineModel<boolean>('open', { default: false })
 
 const {
-  tableNumber, players, tableResults, ruleset
+  roundNumber,
+  tableNumber,
+  players,
+  tableResults,
+  ruleset
 } = defineProps<{
+  roundNumber: number
   tableNumber: number
   players: TablePlayer[]
   tableResults: CommanderTableResult[]
@@ -46,6 +51,9 @@ interface ScoreRow {
   playScore: number
   totalScore: number
 }
+
+const title = computed(() =>
+  t('tournament.single.roundManager.scoresModalTitle', { round: roundNumber, n: tableNumber }))
 
 const rows = computed<ScoreRow[]>(() => {
   if (!ruleset) return []
@@ -115,7 +123,7 @@ const columns: TableColumn<ScoreRow>[] = [
 <template>
   <UModal
     v-model:open="open"
-    :title="t('tournament.single.roundManager.scoresModalTitle', { n: tableNumber })"
+    :title="title"
     :ui="{ content: 'sm:max-w-2xl' }"
   >
     <template #body>
