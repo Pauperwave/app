@@ -101,6 +101,70 @@ describe('calculatePlayerTableScore', () => {
   })
 })
 
+describe('calculatePlayerTableScore on a table that is not fully ranked yet', () => {
+  const posValues = buildPosValues(RULESET)
+  const score = (playerUuid: string, results: CommanderTableResult[]) =>
+    calculatePlayerTableScore(playerUuid, results, posValues, RULESET)
+
+  it('gives no rank points to a lone last place: nobody above is known yet', () => {
+    const results = [
+      makeResult({ playerUuid: 'p1', position: 4 }),
+      makeResult({ playerUuid: 'p2' }),
+      makeResult({ playerUuid: 'p3' }),
+      makeResult({ playerUuid: 'p4' })
+    ]
+    expect(score('p1', results)?.scoreRank).toBe(0)
+  })
+
+  it('gives no rank points to a lone 2nd place with no 1st entered', () => {
+    const results = [
+      makeResult({ playerUuid: 'p1', position: 2 }),
+      makeResult({ playerUuid: 'p2' })
+    ]
+    expect(score('p1', results)?.scoreRank).toBe(0)
+  })
+
+  it('still scores a lone 1st place: nothing can be above it', () => {
+    const results = [
+      makeResult({ playerUuid: 'p1', position: 1 }),
+      makeResult({ playerUuid: 'p2' })
+    ]
+    expect(score('p1', results)?.scoreRank).toBe(8)
+  })
+
+  it('scores the entered 1st but not a 4th with 2nd and 3rd still missing', () => {
+    const results = [
+      makeResult({ playerUuid: 'p1', position: 1 }),
+      makeResult({ playerUuid: 'p2' }),
+      makeResult({ playerUuid: 'p3' }),
+      makeResult({ playerUuid: 'p4', position: 4 })
+    ]
+    expect(score('p1', results)?.scoreRank).toBe(8)
+    expect(score('p4', results)?.scoreRank).toBe(0)
+  })
+
+  it('keeps scoring kills and votes while the rank is still unresolved', () => {
+    const results = [
+      makeResult({
+        playerUuid: 'p1', position: 4, numberOfKills: 2, brewVotesReceived: 1, playVotesReceived: 1
+      }),
+      makeResult({ playerUuid: 'p2' })
+    ]
+    expect(score('p1', results)).toMatchObject({ scoreRank: 0, totalScore: 4 })
+  })
+
+  it('still scores a table whose seat was deliberately left without a placement', () => {
+    const results = [
+      makeResult({ playerUuid: 'p1', position: 1 }),
+      makeResult({ playerUuid: 'p2', position: 2 }),
+      makeResult({ playerUuid: 'p3', position: 3 }),
+      makeResult({ playerUuid: 'p4' })
+    ]
+    expect([score('p1', results), score('p2', results), score('p3', results)]
+      .map(scored => scored?.scoreRank)).toEqual([8, 5, 3])
+  })
+})
+
 describe('isDrawTable', () => {
   it('is a draw when everyone is tied for 1st with zero kills', () => {
     const results = [
