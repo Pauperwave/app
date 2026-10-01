@@ -19,10 +19,12 @@ describe('can', () => {
     expect(can('player', 'manage-tournaments')).toBe(false)
     expect(can('organizer', 'manage-members')).toBe(false)
     expect(can('admin', 'purge-trash')).toBe(false)
+    expect(can('admin', 'mark-test-tournaments')).toBe(false)
   })
 
   it('the hierarchy is strictly increasing: super_admin can do everything an admin can', () => {
     expect(can('super_admin', 'manage-roles')).toBe(true)
     expect(can('super_admin', 'purge-trash')).toBe(true)
+    expect(can('super_admin', 'mark-test-tournaments')).toBe(true)
   })
 })

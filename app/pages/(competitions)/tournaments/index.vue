@@ -27,7 +27,7 @@ const manageFormatsOpen = ref(false)
 
 const {
   data: tournamentsData, isLoading: loading, isPending, status, refetch
-} = useTournamentsQuery()
+} = useTournamentsQuery({ includeTest: true })
 const data = computed(() => tournamentsData.value ?? [])
 
 // External (shop-organized, e.g. Magman) tournaments are tracked for

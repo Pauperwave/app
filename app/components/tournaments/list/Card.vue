@@ -148,6 +148,15 @@ function timePart(startDate: string) {
           />
 
           <UBadge
+            v-if="tournament.isTest"
+            color="warning"
+            variant="subtle"
+            class="shrink-0"
+          >
+            {{ t('tournament.test.badge') }}
+          </UBadge>
+
+          <UBadge
             color="neutral"
             variant="subtle"
             :icon="ICONS.clock"

@@ -50,6 +50,9 @@ export type Permission
     // view-trash's restore, matching the existing "Eliminare
     // definitivamente" = super_admin rows in the permissions matrix.
     | 'purge-trash'
+    // Marking a tournament as "test" (2026-10-01): hides it from everyone
+    // below super_admin (RLS), so nobody else could ever undo it.
+    | 'mark-test-tournaments'
 
 export const PERMISSION_LEVEL = {
   'register-tournament': 'player',
@@ -93,7 +96,8 @@ export const PERMISSION_LEVEL = {
   // only gates whether the page/nav item is reachable at all.
   'access-settings': 'admin',
   'view-trash': 'admin',
-  'purge-trash': 'super_admin'
+  'purge-trash': 'super_admin',
+  'mark-test-tournaments': 'super_admin'
 } as const satisfies Record<Permission, AppRole>
 
 export function can(role: AppRole | undefined, permission: Permission): boolean {

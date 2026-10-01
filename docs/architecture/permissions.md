@@ -43,6 +43,7 @@ Raggruppata per dominio, riordinata 2026-08-23 (era ordinata per solo permessi c
 | Inviare email di ricevuta (quote eventi/tornei, quote associative) | 🔴 | 🔴 | 🟢 | 🟢 |
 | **Eliminare** un regolamento (ruleset) | 🔴 | 🔴 | 🟢 | 🟢 |
 | **Eliminare definitivamente** una riga da `/trash` (`purge-trash`) | 🔴 | 🔴 | 🔴 | 🟢 |
+| Segnare un torneo come "test" (`mark-test-tournaments`) — lo rende invisibile a chiunque non sia `super_admin` (RLS), calendari e bot inclusi | 🔴 | 🔴 | 🔴 | 🟢 |
 | Assegnare/modificare ruoli (`/settings/members`) | 🔴 | 🔴 | 🟡 (mai a/da `super_admin`, mai sull'account protetto) | 🟢 |
 
 ## Navigazione (visibilità pagina, non azione)

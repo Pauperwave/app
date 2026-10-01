@@ -15,12 +15,13 @@ export default defineEventHandler(async (event) => {
 
   const { data: tournament, error: tournamentError } = await supabase
     .from('tournaments')
-    .select('status, organizer:organizations(type)')
+    .select('status, is_test, organizer:organizations(type)')
     .eq('uuid', tournamentUuid)
     .is('deleted_at', null)
     .single()
 
-  if (tournamentError || !tournament) {
+  // Service role bypasses RLS, so a test tournament has to be hidden here too.
+  if (tournamentError || !tournament || tournament.is_test) {
     throw createError({ statusCode: 404, statusMessage: 'Torneo non trovato' })
   }
   // Shop organizers (Magman etc.) are reference-only — Pauperwave doesn't
