@@ -8,18 +8,24 @@ import type { Column } from '@tanstack/vue-table'
 // Extracted once this reached a 4th copy (associates, leagues, tournaments,
 // wanted-cards table columns) that had already started drifting — associates'
 // copy had the tri-state behavior, the other three didn't.
-export function sortableHeader<TData>(label: string, column: Column<TData, unknown>) {
+export function sortableHeader<TData>(
+  label: string,
+  column: Column<TData, unknown>,
+  // Optional icon before the label; the sort icon then moves to the trailing side.
+  leadingIcon?: string
+) {
   const isSorted = column.getIsSorted()
+  const sortIcon = isSorted === 'asc'
+    ? ICONS.sortAscNumeric
+    : isSorted === 'desc'
+      ? ICONS.sortDescNumeric
+      : ICONS.sortBoth
   return h(UButton, {
     label,
     color: 'neutral',
     variant: 'ghost',
     class: '-mx-2.5',
-    icon: isSorted === 'asc'
-      ? ICONS.sortAscNumeric
-      : isSorted === 'desc'
-        ? ICONS.sortDescNumeric
-        : ICONS.sortBoth,
+    ...(leadingIcon ? { leadingIcon, trailingIcon: sortIcon } : { icon: sortIcon }),
     onClick: () => {
       if (isSorted === 'asc') column.toggleSorting(true)
       else if (isSorted === 'desc') column.clearSorting()
