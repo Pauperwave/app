@@ -18,9 +18,9 @@ Per-domain inventory of row-level context-menu actions, always-visible inline ro
 | **associates — roster** (`/associates`) | — | edit (row click → modal) | renew (creates one Association Fee transaction per selected associate) | `useAssociatesRowActions.ts`, `useAssociatesBulkActions.ts` |
 | **associates — requests** (`/associates/requests`) | approve (pending rows)/restore (rejected rows)/renew (approved, not yet active)/edit | — | approve, reject (10s undo), restore | `useAssociatesRowActions.ts`, same bulk composables as roster — both pages share `AssociatesListBulkActionsBar.vue` |
 | **transactions** | edit, delete | — | delete (**no undo** — see note) | `useTransactionsRowActions.ts`, `useTransactionsBulkActions.ts` |
-| **tournaments** | copy link, copy id, edit, delete | edit (button, table+grid) | status-change, delete (10s undo) | `useCopyLinkContextMenu.ts` + page-local `tournamentContextMenuItems()`, `useTournamentsRowActions.ts`, `useTournamentsBulkActions.ts` |
-| **events** | copy link, copy id, edit, delete | edit (button, table+grid) | status-change, delete (10s undo) | `useCopyLinkContextMenu.ts` + page-local `eventContextMenuItems()`, `useEventsRowActions.ts`, `useEventsBulkActions.ts` |
-| **leagues** | copy link, copy id, edit, delete | edit (button, table+grid) | status-change, delete (10s undo) | `useCopyLinkContextMenu.ts` + page-local `leagueContextMenuItems()`, `useLeaguesRowActions.ts`, `useLeaguesBulkActions.ts` |
+| **tournaments** | copy link, copy uuid, edit, delete | edit (button, table+grid) | status-change, delete (10s undo) | `useCopyLinkContextMenu.ts` + page-local `tournamentContextMenuItems()`, `useTournamentsRowActions.ts`, `useTournamentsBulkActions.ts` |
+| **events** | copy link, copy uuid, edit, delete | edit (button, table+grid) | status-change, delete (10s undo) | `useCopyLinkContextMenu.ts` + page-local `eventContextMenuItems()`, `useEventsRowActions.ts`, `useEventsBulkActions.ts` |
+| **leagues** | copy link, copy uuid, edit, delete | edit (button, table+grid) | status-change, delete (10s undo) | `useCopyLinkContextMenu.ts` + page-local `leagueContextMenuItems()`, `useLeaguesRowActions.ts`, `useLeaguesBulkActions.ts` |
 | **locations** | — | edit (button, table+grid) | — | `useLocationsRowActions.ts` |
 | **rulesets** | — | — | — | read-only, no mutations built |
 | **players** | — | — | — | read-only, no mutations built |
@@ -33,13 +33,13 @@ Per-domain inventory of row-level context-menu actions, always-visible inline ro
 
 **Associates' bulk "Rinnova" needs a `received_by` value that can't be auto-derived.** `RECEIVER_OPTIONS` (`useTransactionFormOptions.ts`) is a hardcoded board-member name list — there's no "current logged-in user" concept in this app to default to. The bulk-renew confirm modal (`useAssociatesBulkActions.ts`) has its own required selector for it rather than guessing or silently omitting it.
 
-**Tournaments', leagues', and events' context menus compose the shared generic items with their own.** Rather than growing `useCopyLinkContextMenu.ts` a domain-specific branch, `tournaments/index.vue`/`leagues/index.vue`/`events/index.vue` each define their own `tournamentContextMenuItems()`/`leagueContextMenuItems()`/`eventContextMenuItems()` that spread `rowContextMenuItems(item)` (copy link/id) and append edit/delete, reusing `use<Domain>BulkActions.ts`'s `requestDelete` fed a single-item array rather than a separate single-delete code path. Leagues' and events' versions mirror the tournaments one file-for-file.
+**Tournaments', leagues', and events' context menus compose the shared generic items with their own.** Rather than growing `useCopyLinkContextMenu.ts` a domain-specific branch, `tournaments/index.vue`/`leagues/index.vue`/`events/index.vue` each define their own `tournamentContextMenuItems()`/`leagueContextMenuItems()`/`eventContextMenuItems()` that spread `rowContextMenuItems(item)` (copy link/uuid) and append edit/delete, reusing `use<Domain>BulkActions.ts`'s `requestDelete` fed a single-item array rather than a separate single-delete code path. Leagues' and events' versions mirror the tournaments one file-for-file.
 
 **Locations has no delete, row or bulk.** Only inline edit exists today (`useLocationsRowActions.ts`). Not evaluated as part of this pass — worth a look if locations gets more actively managed.
 
 ## Shared building blocks
 
-- **`useCopyLinkContextMenu.ts`** — generic "copy link"/"copy id" context-menu items for domains without dedicated edit/delete infra yet (events, leagues; tournaments extends it — see note above).
+- **`useCopyLinkContextMenu.ts`** — generic "copy link"/"copy uuid" context-menu items for domains without dedicated edit/delete infra yet (events, leagues; tournaments extends it — see note above).
 - **`ConfirmModal.vue`** (`components/ui/`) — the confirm step behind every destructive/bulk action. Supports a `#body` slot for item-specific context (a list of names, a thumbnail) and a `confirmDisabled` prop for confirms that need extra required input first (e.g. associates' bulk-renew "received by" selector).
 - **`useUndoableAction.ts`** — the 10-second undo-toast pattern used by wanted-cards/tournaments/associates-reject. Transactions deliberately opts out (see note above).
 - **`<Domain>ListBulkActionsBar.vue`** — one per domain (`tournaments/`, `wanted-cards/`, `transactions/`, and `associates/` which is shared across both associates pages), same "dumb component, page owns the state" shape: `side: 'left' | 'right'` swaps between a filters row and the bulk-action row in the same `UDashboardToolbar` slot, no extra row/layout shift.
