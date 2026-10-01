@@ -276,6 +276,7 @@ const showFHint = useChordHintKey('f')
 
   <TournamentsSinglePairingTableScoresModal
     v-model:open="scoresModalOpen"
+    :round-number="roundNumber"
     :table-number="activeScoresTableNumber"
     :players="activeScoresPlayers"
     :table-results="activeScoresTableResults"

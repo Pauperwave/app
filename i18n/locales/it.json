@@ -1926,7 +1926,7 @@
         "fullscreenTooltip": "Schermo intero",
         "exitFullscreenTooltip": "Esci da schermo intero",
         "scoresButtonLabel": "Punteggi",
-        "scoresModalTitle": "Punteggi tavolo {n}",
+        "scoresModalTitle": "Punteggi round {round}, tavolo {n}",
         "scoresModalEmpty": "Nessun risultato inserito per questo tavolo",
         "scoresModalPlayerColumn": "Giocatore",
         "resetTableTooltip": "Resetta tavolo",
