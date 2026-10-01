@@ -16,6 +16,9 @@ export function useEventsFilters(data: Ref<Event[]>, range: Ref<Range>, search: 
   // name-only, applied here (not a UTable globalFilterFn) so it also filters
   // the grid view.
   const filteredEvents = computed(() => data.value.filter((event) => {
+    // A search looks through every event, ignoring the status and date filters.
+    const query = search.value.trim().toLowerCase()
+    if (query) return event.name.toLowerCase().includes(query)
     if (statusFilter.value !== 'all' && event.status !== statusFilter.value) return false
     const startDate = new Date(event.startDate)
     // See useTournamentsFilters.ts's own comment — both range bounds land
@@ -26,10 +29,7 @@ export function useEventsFilters(data: Ref<Event[]>, range: Ref<Range>, search: 
     // excluded.
     const inRange = startDate >= startOfDay(range.value.start)
       && startDate <= endOfDay(range.value.end)
-    if (!inRange) return false
-    const query = search.value.trim().toLowerCase()
-    if (query && !event.name.toLowerCase().includes(query)) return false
-    return true
+    return inRange
   }))
 
   // Counts from the full unfiltered `data`, same convention as

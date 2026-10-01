@@ -26,6 +26,9 @@ export function useTournamentsFilters(
   // is name-only, applied at this data level (not a UTable globalFilterFn)
   // so it also filters the grid view, not just the table.
   const filteredTournaments = computed(() => data.value.filter((tournament) => {
+    // A search looks through every tournament, ignoring the status, format and date filters.
+    const query = search.value.trim().toLowerCase()
+    if (query) return tournament.name.toLowerCase().includes(query)
     if (statusFilter.value !== 'all' && tournament.status !== statusFilter.value) return false
     if (formatFilter.value !== 'all' && tournament.format !== formatFilter.value) return false
     const startDate = new Date(tournament.startDate)
@@ -46,10 +49,7 @@ export function useTournamentsFilters(
     const inRange = startDate >= startOfDay(range.value.start)
       && startDate <= endOfDay(range.value.end)
     // Pinned tournaments ignore the date range: that is the point of "In evidenza".
-    if (!inRange && !tournament.isPinned) return false
-    const query = search.value.trim().toLowerCase()
-    if (query && !tournament.name.toLowerCase().includes(query)) return false
-    return true
+    return inRange || tournament.isPinned
   }))
 
   // Counts from the full unfiltered `data`, same convention as

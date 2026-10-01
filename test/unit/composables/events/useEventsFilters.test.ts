@@ -38,6 +38,18 @@ describe('useEventsFilters', () => {
     expect(filteredEvents.value.map(e => e.uuid)).toEqual(['e2'])
   })
 
+  it('searches through every event, ignoring the status and date filters', () => {
+    const events = [
+      makeEvent({
+        uuid: 'e1', name: 'Commanderwave Fest', status: 'completed', startDate: new Date(2026, 1, 1).toISOString()
+      }),
+      makeEvent({ uuid: 'e2', name: 'Draft Night' })
+    ]
+    const { statusFilter, filteredEvents } = useEventsFilters(ref(events), range, ref('fest'))
+    statusFilter.value = 'published'
+    expect(filteredEvents.value.map(e => e.uuid)).toEqual(['e1'])
+  })
+
   it('filters by case-insensitive name search', () => {
     const events = [
       makeEvent({ uuid: 'e1', name: 'Commanderwave Fest' }),
