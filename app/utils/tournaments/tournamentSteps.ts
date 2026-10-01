@@ -30,3 +30,41 @@ export function resolveActiveStepSlot(
 ): string | null {
   return manualSlot && reachedSlots.includes(manualSlot) ? manualSlot : currentSlot
 }
+
+export type StepProgress
+  = | 'draft'
+    | 'registrationOpen'
+    | 'registrationClosed'
+    | 'pending'
+    | 'inProgress'
+    | 'completed'
+    | 'available'
+    | 'availablePlural'
+    | 'availableAtEnd'
+    | 'prizesSuggestion'
+
+interface StepProgressContext {
+  tournamentStatus: string | null
+  /** Status of each round that exists, by its 1-based number. */
+  roundStatusByNumber: Map<number, string>
+}
+
+// The short line under each step's title, from what the tournament has actually done so far.
+export function stepProgress(slot: string, context: StepProgressContext): StepProgress {
+  const isCompleted = context.tournamentStatus === 'completed'
+
+  if (slot === 'acceptance') {
+    if (context.tournamentStatus === 'draft') return 'draft'
+    return context.tournamentStatus === 'registration_open' ? 'registrationOpen' : 'registrationClosed'
+  }
+
+  if (slot.startsWith('round-')) {
+    const roundStatus = context.roundStatusByNumber.get(Number(slot.slice('round-'.length)))
+    if (roundStatus === 'completed') return 'completed'
+    return roundStatus === 'in_progress' ? 'inProgress' : 'pending'
+  }
+
+  if (slot === 'awards') return isCompleted ? 'availablePlural' : 'pending'
+  if (slot === 'leaderboard') return isCompleted ? 'available' : 'availableAtEnd'
+  return 'prizesSuggestion'
+}
