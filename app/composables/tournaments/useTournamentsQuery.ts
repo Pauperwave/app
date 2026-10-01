@@ -53,6 +53,7 @@ export function useTournamentsQuery() {
         format: row.format?.name ?? '',
         status: row.status as TournamentStatus,
         isPinned: row.is_pinned,
+        telegramNotificationsEnabled: row.telegram_notifications_enabled,
         location: row.location?.name ?? null,
         locationAddress: row.location
           ? `${row.location.address}, ${row.location.postal_code} ${row.location.city} ${row.location.province}, ${row.location.country}`

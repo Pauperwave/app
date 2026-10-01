@@ -40,6 +40,12 @@ export function useTournamentsMutations() {
     onSettled: invalidate
   })
 
+  const setTelegramNotifications = useMutation({
+    mutation: ({ id, enabled }: { id: number, enabled: boolean }) =>
+      $fetch(`/api/tournaments/${id}/telegram-notifications`, { method: 'POST', body: { enabled } }),
+    onSettled: invalidate
+  })
+
   const setImage = useMutation({
     mutation: ({ id, ...body }: SetTournamentImageParams) =>
       $fetch(`/api/tournaments/${id}/image`, { method: 'POST', body }),
@@ -78,7 +84,7 @@ export function useTournamentsMutations() {
   })
 
   return {
-    createTournament, updateTournament, setStatus, setPinned, setImage, setEntryFee, setLocation,
-    setLeague, deleteTournament
+    createTournament, updateTournament, setStatus, setPinned, setTelegramNotifications,
+    setImage, setEntryFee, setLocation, setLeague, deleteTournament
   }
 }

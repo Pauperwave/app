@@ -1341,6 +1341,11 @@
       "delete": "Elimina"
     },
     "pinned": "In evidenza",
+    "telegramNotifications": {
+      "label": "Notifiche Telegram",
+      "description": "Avvisa i giocatori su Telegram di iscrizione accettata e tavoli (annunci e annullamenti)",
+      "errorTitle": "Impossibile aggiornare le notifiche Telegram del torneo"
+    },
     "pinErrorTitle": "Impossibile aggiornare l'evidenza del torneo",
     "statusChangeErrorTitle": "Impossibile aggiornare lo stato del torneo",
     "entryFeeChangeErrorTitle": "Impossibile aggiornare la quota di iscrizione",
