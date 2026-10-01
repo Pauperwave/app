@@ -138,19 +138,12 @@ async function confirmImage(imageUrl: string, cardName: string | null, artist: s
 
       <!-- Card-art attribution (required alongside any Scryfall art_crop
            use, see CardArtPicker.vue) — only when set. -->
-      <UTooltip
+      <CardArtCredit
         v-else-if="tournament.imageCardName"
-        :text="tournament.imageCardArtist
-          ? t('magic.cardArtPicker.attribution', {
-            cardName: tournament.imageCardName, artist: tournament.imageCardArtist
-          })
-          : t('magic.cardArtPicker.attributionNoArtist', { cardName: tournament.imageCardName })"
+        :card-name="tournament.imageCardName"
+        :artist="tournament.imageCardArtist"
         class="min-w-0"
-      >
-        <span class="block truncate rounded bg-default/90 backdrop-blur-sm px-1.5 py-0.5 text-[10px] text-muted">
-          {{ tournament.imageCardName }}
-        </span>
-      </UTooltip>
+      />
     </div>
     <CoverFooterSkeleton v-else-if="loading" />
 
