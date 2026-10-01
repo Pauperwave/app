@@ -52,6 +52,7 @@ export function useTournamentsQuery() {
         organizerType: row.organizer?.type ?? null,
         format: row.format?.name ?? '',
         status: row.status as TournamentStatus,
+        isPinned: row.is_pinned,
         location: row.location?.name ?? null,
         locationAddress: row.location
           ? `${row.location.address}, ${row.location.postal_code} ${row.location.city} ${row.location.province}, ${row.location.country}`

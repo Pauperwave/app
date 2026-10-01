@@ -16,11 +16,26 @@ export function useTournamentContextMenuItems(
   requestDelete: (tournaments: Tournament[]) => void
 ) {
   const { t } = useI18n()
+  const toast = useToast()
+  const { setPinned } = useTournamentsMutations()
+
+  async function togglePinned(tournament: Tournament) {
+    try {
+      await setPinned.mutateAsync({ id: tournament.id, isPinned: !tournament.isPinned })
+    } catch {
+      toast.add({ title: t('tournament.pinErrorTitle'), color: 'error' })
+    }
+  }
 
   function tournamentContextMenuItems(tournament: Tournament): DropdownMenuItem[] {
     return [
       ...rowContextMenuItems(tournament),
       { type: 'separator' },
+      {
+        label: tournament.isPinned ? t('tournament.rowActions.unpin') : t('tournament.rowActions.pin'),
+        icon: tournament.isPinned ? ICONS.pinOff : ICONS.pin,
+        onSelect: () => togglePinned(tournament)
+      },
       {
         label: t('tournament.rowActions.edit'),
         icon: ICONS.edit,

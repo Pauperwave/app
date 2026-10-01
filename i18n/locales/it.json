@@ -1328,8 +1328,12 @@
     "rowActions": {
       "edit": "Modifica torneo",
       "copy": "Copia torneo",
+      "pin": "Fissa in evidenza",
+      "unpin": "Rimuovi dall'evidenza",
       "delete": "Elimina"
     },
+    "pinned": "In evidenza",
+    "pinErrorTitle": "Impossibile aggiornare l'evidenza del torneo",
     "statusChangeErrorTitle": "Impossibile aggiornare lo stato del torneo",
     "entryFeeChangeErrorTitle": "Impossibile aggiornare la quota di iscrizione",
     "locationChangeErrorTitle": "Impossibile aggiornare il luogo del torneo",
