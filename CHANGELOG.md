@@ -1,6 +1,44 @@
 # Changelog
 
 
+## v0.4.0
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.3.0...v0.4.0)
+
+### Enhancements
+
+- **tournaments:** ✨ reproducible table seating from a seed code ([4fd048a3](https://github.com/Pauperwave/app/commit/4fd048a3))
+- **associates:** ✨ flag members without Telegram ([1cf17e6c](https://github.com/Pauperwave/app/commit/1cf17e6c))
+- **associates:** ✨ show Telegram status and link to the Telegram profile ([b406e93f](https://github.com/Pauperwave/app/commit/b406e93f))
+- **tournaments:** ✨ server side of drop, "no kills" and remove-commander ([98401c0f](https://github.com/Pauperwave/app/commit/98401c0f))
+- **tournaments:** ✨ show dropped players in the live Commander standings ([2490fa8e](https://github.com/Pauperwave/app/commit/2490fa8e))
+- **tournaments:** ✨ drop, "no kills" and remove-commander in the Commander round manager ([0dbbc7cf](https://github.com/Pauperwave/app/commit/0dbbc7cf))
+- **ui:** ✨ CSV export helper and icon-capable sortable table headers ([4f69253e](https://github.com/Pauperwave/app/commit/4f69253e))
+- **tournaments:** ✨ Commander per-player report ("pagella") modal ([717ca38f](https://github.com/Pauperwave/app/commit/717ca38f))
+- **tournaments:** ✨ Commander final standings table ([dd8cbc12](https://github.com/Pauperwave/app/commit/dd8cbc12))
+- **telegram:** ✨ list one player per line with their nickname in the tables announcement ([69f7f725](https://github.com/Pauperwave/app/commit/69f7f725))
+- **telegram:** ✨ commander catalog and partner rules for the bot ([10241bef](https://github.com/Pauperwave/app/commit/10241bef))
+- **telegram:** ✨ Commander pod flow: /drop, partner commanders and history ([33fb88f3](https://github.com/Pauperwave/app/commit/33fb88f3))
+- **tournaments:** 📌 pin tournaments in an "In evidenza" section ([59e0c1df](https://github.com/Pauperwave/app/commit/59e0c1df))
+- **associates:** ✨ add Telegram status and nickname columns to the roster ([dd6a95da](https://github.com/Pauperwave/app/commit/dd6a95da))
+
+### Fixes
+
+- **tournaments:** 🐛 swap killer/player award art, reword stats, bigger aligned name on award cards ([6ea1d8ce](https://github.com/Pauperwave/app/commit/6ea1d8ce))
+- **tournaments:** 🐛 give no placement points until the seats above are known ([443ab156](https://github.com/Pauperwave/app/commit/443ab156))
+
+### Refactors
+
+- **commanders:** ♻️ share the partner rules and the commander history with the bot ([5007190a](https://github.com/Pauperwave/app/commit/5007190a))
+
+### Documentation
+
+- 📝 ADR-048..051 and changelog for the Commander drop, report and Telegram work ([cdda225c](https://github.com/Pauperwave/app/commit/cdda225c))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.3.0
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.2.2...v0.3.0)
