@@ -23,6 +23,7 @@ import { registerMatchReportHandlers } from './tournaments/matchReport'
 import { registerCommanderReportHandlers } from './tournaments/commanderReport'
 import { registerDropCommand } from './tournaments/commanderDrop'
 import { registerLinkingHandler } from './account/linking'
+import { syncTelegramUsername } from '../usernameSync'
 
 const UNKNOWN_MESSAGE_TEXT = '🤔 Non ho capito questo messaggio. Usa /help per vedere i comandi disponibili.'
 
@@ -38,6 +39,9 @@ const commands = new CommandGroup<Context>()
 // registerLinkingHandler stays last — its message:text catch-all must only
 // see messages no earlier command/prompt handler already claimed.
 export function registerCommands(bot: Bot) {
+  // First, so every update refreshes the sender's saved username before any handler runs.
+  bot.use(syncTelegramUsername)
+
   registerCoreCommands(bot, commands)
   registerClassificheCommand(bot, commands)
   registerEventiCommand(bot, commands)
