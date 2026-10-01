@@ -27,6 +27,7 @@ const {
 
 const emit = defineEmits<{
   submit: [commander1: string | null, commander2: string | null]
+  clear: []
 }>()
 
 const { t } = useI18n()
@@ -44,6 +45,11 @@ function onSubmit() {
 
 function handleSubmit(cmd1: string | null, cmd2: string | null) {
   emit('submit', cmd1, cmd2)
+  open.value = false
+}
+
+function onClear() {
+  emit('clear')
   open.value = false
 }
 
@@ -105,11 +111,21 @@ async function onConfirmRefreshCatalog() {
           :loading="isRefreshingCatalog || syncCatalog.isLoading.value"
           @click="showRefreshCatalogConfirm = true"
         />
-        <UButton
-          :label="t('common.confirm')"
-          :disabled="!canSubmit"
-          @click="onSubmit"
-        />
+        <div class="flex items-center gap-2">
+          <UButton
+            v-if="commander1"
+            :icon="ICONS.delete"
+            :label="t('tournament.single.commanderModal.removeButton')"
+            variant="outline"
+            color="error"
+            @click="onClear"
+          />
+          <UButton
+            :label="t('common.confirm')"
+            :disabled="!canSubmit"
+            @click="onSubmit"
+          />
+        </div>
       </div>
     </template>
   </UModal>

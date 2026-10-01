@@ -25,5 +25,14 @@ export function useCommanderDecksMutations(tournamentUuid: MaybeRefOrGetter<stri
     }
   })
 
-  return { selectCommander }
+  // Unlinks the commander from this round's result only; the deck itself stays.
+  const clearCommander = useMutation({
+    mutation: (payload: { pairingUuid: string, playerUuid: string }) =>
+      $fetch('/api/commander-decks/clear', { method: 'POST', body: payload }),
+    onSettled: () => {
+      queryCache.invalidateQueries({ key: TOURNAMENT_ROUND_RESULTS_KEY(toValue(tournamentUuid)) })
+    }
+  })
+
+  return { selectCommander, clearCommander }
 }

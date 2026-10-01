@@ -19,7 +19,11 @@ export function useTournamentKillsMutations(tournamentUuid: MaybeRefOrGetter<str
         method: 'POST',
         body: { tournamentUuid: toValue(tournamentUuid), ...payload }
       }),
-    onSettled: invalidate
+    // A recorded kill clears the table's "no kills" confirmation server-side.
+    onSettled: () => {
+      invalidate()
+      queryCache.invalidateQueries({ key: TOURNAMENT_PAIRINGS_KEY(toValue(tournamentUuid)) })
+    }
   })
 
   const removeKill = useMutation({
@@ -28,5 +32,14 @@ export function useTournamentKillsMutations(tournamentUuid: MaybeRefOrGetter<str
     onSettled: invalidate
   })
 
-  return { recordKill, removeKill }
+  // Confirms/retracts "no kills at this table" — lives on the pairing, so it refreshes those.
+  const setNoKills = useMutation({
+    mutation: (payload: { pairingUuid: string, noKills: boolean }) =>
+      $fetch('/api/tournament-kills/none', { method: 'POST', body: payload }),
+    onSettled: () => queryCache.invalidateQueries({
+      key: TOURNAMENT_PAIRINGS_KEY(toValue(tournamentUuid))
+    })
+  })
+
+  return { recordKill, removeKill, setNoKills }
 }

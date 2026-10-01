@@ -17,7 +17,7 @@ export function useCommanderRoundSubmitHandlers(options: {
   const { tournamentUuid, roundData, modals } = options
   const { t } = useI18n()
   const toast = useToast()
-  const { pairingsForRound } = roundData
+  const { pairingsForRound, round, dropByPlayerUuid } = roundData
 
   // ─── Ranking / draw ─────────────────────────────────────────────────────────
   const { saveRanking } = useTournamentRoundResultsMutations(tournamentUuid)
@@ -46,13 +46,33 @@ export function useCommanderRoundSubmitHandlers(options: {
     } catch { /* toasted by the mutation's own onError */ }
   }
 
+  // ─── Drop ───────────────────────────────────────────────────────────────────
+  const { setDropped } = useTournamentDropsMutations(tournamentUuid)
+
+  // A drop only takes effect from the next round: this round's table still counts.
+  function onToggleDrop(playerUuid: string) {
+    const roundUuid = round.value?.uuid
+    if (!roundUuid) return
+
+    setDropped.mutate({
+      playerUuid,
+      roundUuid,
+      dropped: !dropByPlayerUuid.value.has(playerUuid)
+    })
+  }
+
   // ─── Kills ──────────────────────────────────────────────────────────────────
-  const { recordKill, removeKill } = useTournamentKillsMutations(tournamentUuid)
+  const { recordKill, removeKill, setNoKills } = useTournamentKillsMutations(tournamentUuid)
 
   function onKillConnect(killerUuid: string, killedPlayerUuid: string) {
     const pairingUuid = modals.activeKillPairingUuid.value
     if (!pairingUuid) return
     recordKill.mutate({ pairingUuid, killerUuid, killedPlayerUuid })
+  }
+  function onNoKillsSet(noKills: boolean) {
+    const pairingUuid = modals.activeKillPairingUuid.value
+    if (!pairingUuid) return
+    setNoKills.mutate({ pairingUuid, noKills })
   }
   function onKillRemove(killerUuid: string, killedPlayerUuid: string) {
     const kill = modals.activeKillEvents.value.find(k =>
@@ -82,7 +102,7 @@ export function useCommanderRoundSubmitHandlers(options: {
   }
 
   // ─── Commander select ───────────────────────────────────────────────────────
-  const { selectCommander } = useCommanderDecksMutations(tournamentUuid)
+  const { selectCommander, clearCommander } = useCommanderDecksMutations(tournamentUuid)
 
   async function onCommanderConfirm(commander1Name: string | null, commander2Name: string | null) {
     const current = modals.activeCommander.value
@@ -91,6 +111,22 @@ export function useCommanderRoundSubmitHandlers(options: {
       await selectCommander.mutateAsync({
         pairingUuid: current.pairingUuid, playerUuid: current.playerUuid,
         commander1Name, commander2Name
+      })
+    } catch (err) {
+      toast.add({
+        title: t('tournament.single.commanderModal.errorTitle'),
+        description: toErrorMessage(err),
+        color: 'error'
+      })
+    }
+  }
+
+  async function onCommanderClear() {
+    const current = modals.activeCommander.value
+    if (!current) return
+    try {
+      await clearCommander.mutateAsync({
+        pairingUuid: current.pairingUuid, playerUuid: current.playerUuid
       })
     } catch (err) {
       toast.add({
@@ -170,14 +206,18 @@ export function useCommanderRoundSubmitHandlers(options: {
     saveRanking,
     onScoreConfirm,
     declareDraw,
+    setDropped,
+    onToggleDrop,
     recordKill,
     removeKill,
     onKillConnect,
     onKillRemove,
+    onNoKillsSet,
     castVote,
     onVotesSubmit,
     selectCommander,
     onCommanderConfirm,
+    onCommanderClear,
     resetPairing,
     undrawPairing,
     fillTable,

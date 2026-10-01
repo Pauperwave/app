@@ -19,7 +19,7 @@ export function useCommanderRoundModals(options: {
   const { tournamentUuid, roundData } = options
   const { t } = useI18n()
   const {
-    pairingsForRound, tablePlayersFor, positionsFor, killsFor, votesFor,
+    pairingsForRound, tablePlayersFor, positionsFor, killsFor, noKillsFor, votesFor,
     commanderDeckFor, isPairingDraw, namePartsFor
   } = roundData
 
@@ -86,6 +86,8 @@ export function useCommanderRoundModals(options: {
   })
   const activeKillEvents = computed(() =>
     activeKillPairingUuid.value ? killsFor(activeKillPairingUuid.value) : [])
+  const activeKillNoKills = computed(() =>
+    activeKillPairingUuid.value ? noKillsFor(activeKillPairingUuid.value) : false)
 
   // ─── Votes modal ────────────────────────────────────────────────────────────
   const votesModalOpen = ref(false)
@@ -265,6 +267,7 @@ export function useCommanderRoundModals(options: {
     openKillModal,
     activeKillPlayers,
     activeKillEvents,
+    activeKillNoKills,
     votesModalOpen,
     activeVotes,
     openVotesModal,

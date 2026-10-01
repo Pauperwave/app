@@ -9,11 +9,12 @@
   into one component instead of league's multi-file split.
 -->
 <script setup lang="ts">
-import type { TablePlayer } from '~/types'
+import type { DropdownMenuItem } from '@nuxt/ui'
+import type { SwissDropInfo, TablePlayer } from '~/types'
 
 const {
-  tableNumber, players, positions, hasKills, hasVotes, hasCommander, isComplete, isDraw,
-  associateUuidFor
+  tableNumber, players, positions, hasKills, noKills, hasVotes, hasCommander, isComplete, isDraw,
+  associateUuidFor, droppedFor
 } = defineProps<{
   tableNumber: number
   // `TablePlayer.value` here is the DB's players.uuid (player_uuid) — every
@@ -27,11 +28,14 @@ const {
   players: TablePlayer[]
   positions: Map<string, number>
   hasKills: boolean
+  // The organizer confirmed the table ended without any kill.
+  noKills: boolean
   hasVotes: (playerUuid: string) => boolean
   hasCommander: (playerUuid: string) => boolean
   isComplete: boolean
   isDraw: boolean
   associateUuidFor: (playerUuid: string) => string | undefined
+  droppedFor: (playerUuid: string) => SwissDropInfo | null
 }>()
 
 const emit = defineEmits<{
@@ -43,6 +47,7 @@ const emit = defineEmits<{
   resetTable: []
   quickFill: []
   draw: []
+  toggleDrop: [playerUuid: string]
 }>()
 
 const { t } = useI18n()
@@ -72,6 +77,7 @@ const rankingColor = computed(() => {
 // count alone can't tell a genuinely-zero-kills table apart from one
 // nobody has touched yet.
 const killsColor = computed(() => {
+  if (noKills) return 'success' as const
   if (!hasKills) return 'neutral' as const
   return isComplete ? 'success' as const : 'info' as const
 })
@@ -88,11 +94,26 @@ const rankingTooltip = computed(() => {
 })
 const killsTooltip = computed(() => {
   if (isDraw) return t('tournament.single.roundManager.drawnTooltip')
+  if (noKills) return t('tournament.single.roundManager.killsNoneTooltip')
   if (!hasKills) return t('tournament.single.roundManager.killsNotSetTooltip')
   return isComplete
     ? t('tournament.single.roundManager.killsSetTooltip')
     : t('tournament.single.roundManager.killsPartialTooltip')
 })
+// Drop is an action, not a state (the state shows as a badge next to the name). Dropping is
+// offered once the table is ranked; undoing a drop is always possible.
+function dropMenuItemsFor(playerUuid: string): DropdownMenuItem[] {
+  const dropped = droppedFor(playerUuid)
+  return [{
+    label: dropped
+      ? t('tournament.single.roundManager.dropUndoLabel')
+      : t('tournament.single.roundManager.dropLabel'),
+    icon: ICONS.drop,
+    disabled: !dropped && !isComplete,
+    onSelect: () => emit('toggleDrop', playerUuid)
+  }]
+}
+
 const drawTooltip = computed(() => {
   if (isDraw) return t('tournament.single.roundManager.drawUndoTooltip')
   return canToggleDraw.value
@@ -166,7 +187,9 @@ const drawTooltip = computed(() => {
           :associate-uuid="associateUuidFor(player.value)"
           size="md"
           class="flex-1 truncate"
+          :class="droppedFor(player.value) && 'opacity-60 line-through'"
         />
+        <TournamentsSinglePairingDropBadge :dropped="droppedFor(player.value)" with-time />
         <UBadge
           v-if="positions.get(player.value)"
           color="neutral"
@@ -205,6 +228,7 @@ const drawTooltip = computed(() => {
             @click="emit('openVotesModal', player.value)"
           />
         </UTooltip>
+        <RowActionsMenu :items="dropMenuItemsFor(player.value)" />
       </div>
     </div>
 

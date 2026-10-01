@@ -12,6 +12,8 @@ export interface TournamentPairing {
   roundUuid: string
   tableNumber: number | null
   playerUuids: string[]
+  /** The organizer confirmed the table ended without any kill. */
+  noKills: boolean
   status: 'pending' | 'playing' | 'completed'
 }
 
@@ -26,7 +28,7 @@ export function useTournamentPairingsQuery(tournamentUuid: MaybeRefOrGetter<stri
     query: async (): Promise<TournamentPairing[]> => {
       const { data, error } = await supabase
         .from('tournament_pairings')
-        .select('uuid, round_uuid, table_number, status, player1_uuid, player2_uuid, player3_uuid, player4_uuid')
+        .select('uuid, round_uuid, table_number, status, no_kills, player1_uuid, player2_uuid, player3_uuid, player4_uuid')
         .eq('tournament_uuid', toValue(tournamentUuid))
         .order('table_number', { ascending: true })
 
@@ -36,6 +38,7 @@ export function useTournamentPairingsQuery(tournamentUuid: MaybeRefOrGetter<stri
         uuid: row.uuid,
         roundUuid: row.round_uuid,
         tableNumber: row.table_number,
+        noKills: row.no_kills,
         status: row.status as TournamentPairing['status'],
         playerUuids: [row.player1_uuid, row.player2_uuid, row.player3_uuid, row.player4_uuid]
           .filter((uuid): uuid is string => uuid !== null)
