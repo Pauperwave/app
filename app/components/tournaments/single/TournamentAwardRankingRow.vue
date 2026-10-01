@@ -43,18 +43,28 @@ const valueLabel = computed(() => t(`tournament.single.awards.${kind}.stat`, { c
   <button
     type="button"
     class="group flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-sm hover:bg-elevated focus-visible:bg-elevated"
-    :class="{ 'bg-elevated': isFirst }"
     :title="t('tournament.single.roundManager.standingsDetailButton')"
     @click="emit('select', entry.playerUuid)"
   >
-    <UBadge
-      :color="isFirst ? 'primary' : 'neutral'"
-      :variant="isFirst ? 'solid' : 'subtle'"
-      size="sm"
-      class="w-7 shrink-0 justify-center tabular-nums"
+    <!-- A tied position carries an "=" next to the number, the tooltip spells it out. -->
+    <UTooltip
+      :text="t('tournament.single.awards.tied')"
+      :disabled="!entry.isTied"
     >
-      {{ entry.isTied ? `=${entry.position}` : entry.position }}
-    </UBadge>
+      <UBadge
+        :color="isFirst ? 'primary' : 'neutral'"
+        :variant="isFirst ? 'solid' : 'subtle'"
+        size="sm"
+        class="w-9 shrink-0 justify-center gap-0.5 tabular-nums"
+      >
+        {{ entry.position }}
+        <UIcon
+          v-if="entry.isTied"
+          :name="ICONS.equal"
+          class="size-3"
+        />
+      </UBadge>
+    </UTooltip>
 
     <!-- Right after the position, in a fixed-width column: values line up and there is no gap
          between the name and the value. -->
