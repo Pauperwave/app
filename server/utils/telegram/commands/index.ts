@@ -21,6 +21,7 @@ import { registerRisultatoMenu } from './mockups/risultato'
 import { registerCommanderDemoCommand } from './mockups/commanderDemo'
 import { registerMatchReportHandlers } from './tournaments/matchReport'
 import { registerCommanderReportHandlers } from './tournaments/commanderReport'
+import { registerDropCommand } from './tournaments/commanderDrop'
 import { registerLinkingHandler } from './account/linking'
 
 const UNKNOWN_MESSAGE_TEXT = '🤔 Non ho capito questo messaggio. Usa /help per vedere i comandi disponibili.'
@@ -51,6 +52,7 @@ export function registerCommands(bot: Bot) {
   registerTesseraCommand(commands)
   registerCollegamentoCommand(commands)
   registerCommanderReportHandlers(bot)
+  registerDropCommand(commands)
   registerTavoloCommand(bot, commands)
   registerRisultatoMenu(bot)
   registerCommanderDemoCommand(bot)

@@ -99,6 +99,7 @@ function helpBlocks(): InputRichMessage['blocks'] {
       type: 'paragraph',
       text: '🚧 /tavolo — tavolo, avversario del turno e comandante se presente (in lavorazione, dati di esempio)\n'
         + '🚧 /risultato — risultato del turno, Commander o 1v1 (in lavorazione, dati di esempio)\n'
+        + '/drop — lascia il torneo Commander dopo aver inserito il risultato\n'
         + '/turni — contatore dei turni aggiuntivi a fine tempo'
     },
     {
