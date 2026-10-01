@@ -20,6 +20,10 @@ type Schema = v.InferOutput<typeof schema>
 
 const state = createAssociateFormState()
 
+// Kept out of the shared form state: that one also backs the public /tesseramento form,
+// where this staff-only flag has no place.
+const hasNoTelegram = ref(false)
+
 // Refills the form state every time the modal opens on a different associate —
 // unlike AddModal.vue there is no successful submit that clears it (this one
 // always reopens on an existing record), same pattern as wanted-cards' EditModal.
@@ -43,6 +47,7 @@ watch([open, () => associate], ([isOpen, current]) => {
   state.has_read_statute = current.has_read_statute
   state.consent_data = current.consent_data
   state.consent_social = current.consent_social
+  hasNoTelegram.value = current.has_no_telegram
 }, { immediate: true })
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
@@ -51,7 +56,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   const edits = {
     ...event.data,
     born_date: format(event.data.born_date, 'yyyy-MM-dd'),
-    consent_social: event.data.consent_social ?? false
+    consent_social: event.data.consent_social ?? false,
+    has_no_telegram: hasNoTelegram.value
   }
 
   await submitWithToast(
@@ -89,6 +95,12 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
              able to retroactively toggle them off. consent_social stays editable,
              it's an ongoing marketing preference, not a one-time declaration. -->
         <AssociatesListFormFields :state="state" disable-consents />
+
+        <UCheckbox
+          v-model="hasNoTelegram"
+          :label="$t('associate.noTelegram.label')"
+          :description="$t('associate.noTelegram.description')"
+        />
 
         <!-- Actions -->
         <div class="flex justify-end gap-2">

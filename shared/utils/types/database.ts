@@ -790,6 +790,7 @@ export type Database = {
           email_address: string
           first_name: string
           has_acknowledged_surveillance_notice: boolean
+          has_no_telegram: boolean
           has_read_statute: boolean
           id: number
           last_name: string
@@ -822,6 +823,7 @@ export type Database = {
           email_address: string
           first_name: string
           has_acknowledged_surveillance_notice?: boolean
+          has_no_telegram?: boolean
           has_read_statute?: boolean
           id?: number
           last_name: string
@@ -854,6 +856,7 @@ export type Database = {
           email_address?: string
           first_name?: string
           has_acknowledged_surveillance_notice?: boolean
+          has_no_telegram?: boolean
           has_read_statute?: boolean
           id?: number
           last_name?: string
@@ -2565,6 +2568,7 @@ export type Database = {
           email_address: string | null
           first_name: string | null
           has_acknowledged_surveillance_notice: boolean | null
+          has_no_telegram: boolean | null
           has_read_statute: boolean | null
           id: number | null
           last_name: string | null
