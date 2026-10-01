@@ -22,6 +22,7 @@
   that history data exists — search "STUB:" in this file.
 -->
 <script setup lang="ts">
+import { randomShuffleSeed } from '#shared/utils/seededShuffle'
 import type { PairingWeights, TablePlayer, PairingTable } from '~/types'
 
 const open = defineModel<boolean>('open', { default: false })
@@ -121,6 +122,7 @@ watch(
 watch(open, (value) => {
   if (value) {
     hasAutoOptimized.value = false
+    shuffleSeed.value = null
     reset()
     setWeights(pairingWeights.value)
     setForbiddenPairs(avoidPairsData.value ?? [])
@@ -217,9 +219,18 @@ function optimizeNow() {
   optimizePreviewTables()
 }
 
+// The seed of the current random seating — shown so the same tables can be rebuilt later.
+const shuffleSeed = ref<number | null>(null)
+
 function randomizeNow() {
   if (loading) return
-  randomizeTables()
+  applySeed(randomShuffleSeed())
+}
+
+function applySeed(seed: number) {
+  if (loading) return
+  shuffleSeed.value = seed
+  randomizeTables(seed)
 }
 
 function handleDragStart() {
@@ -288,10 +299,12 @@ function openTableScoreBreakdown(tableIndex: number) {
       <div class="space-y-3">
         <TournamentsSinglePairingTablePreviewToolbar
           :total-score="scoreDetails.totalScore"
+          :seed="shuffleSeed"
           :loading="loading"
           @open-settings="showSettings = true"
           @optimize="optimizeNow"
           @random="randomizeNow"
+          @apply-seed="applySeed"
         />
 
         <TournamentsSinglePairingTablePreviewGrid

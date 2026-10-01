@@ -17,6 +17,7 @@
 -->
 <script lang="ts" setup>
 import { VueDraggable } from 'vue-draggable-plus'
+import { randomShuffleSeed, seededShuffle } from '#shared/utils/seededShuffle'
 import type { AcceptancePickerItem } from '~/components/tournaments/single/AcceptancePicker.vue'
 
 const { players } = defineProps<{
@@ -42,12 +43,18 @@ const podAssignments = ref<AcceptancePickerItem[][]>([])
 // Re-rolls the whole pod split from scratch — no memory of prior manual
 // drags, same "shuffle fully re-randomizes" behavior as the legacy app's own
 // "Mescola Pod" (functional spec §3.2).
-function shufflePods() {
-  const shuffledIds = [...players]
-    .map(player => player.value)
-    .sort(() => Math.random() - 0.5)
+// The seed of the current random split — shown so the same pods can be rebuilt later.
+const shuffleSeed = ref<number | null>(null)
+
+function shufflePodsWithSeed(seed: number) {
+  shuffleSeed.value = seed
+  const shuffledIds = seededShuffle(players.map(player => player.value), seed)
   podAssignments.value = buildPreviewPods(shuffledIds)
-    .map(ids => ids.map(id => players.find(player => player.value === id)!))
+    .map(ids => ids.flatMap(id => players.find(player => player.value === id) ?? []))
+}
+
+function shufflePods() {
+  shufflePodsWithSeed(randomShuffleSeed())
 }
 
 // Re-shuffles whenever the accepted-player count changes — count is what
@@ -71,7 +78,11 @@ function confirm() {
   >
     <template #body>
       <div class="flex flex-col gap-3">
-        <div class="flex justify-end">
+        <div class="flex items-center justify-end gap-2">
+          <TournamentsSinglePairingShuffleSeedField
+            :seed="shuffleSeed"
+            @apply="shufflePodsWithSeed"
+          />
           <UButton
             :label="t('tournament.single.podsManager.shuffle')"
             :icon="ICONS.shuffle"

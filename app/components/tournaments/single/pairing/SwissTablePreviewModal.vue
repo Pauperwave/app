@@ -16,6 +16,7 @@
 -->
 <script lang="ts" setup>
 import { VueDraggable } from 'vue-draggable-plus'
+import { randomShuffleSeed, seededShuffle } from '#shared/utils/seededShuffle'
 import type { TablePlayer } from '~/types'
 
 const { players, loading = false } = defineProps<{
@@ -39,6 +40,9 @@ function buildTables(playerList: TablePlayer[]): TablePlayer[][] {
     .map(ids => ids.map(id => playerByValue.get(id)).filter((p): p is TablePlayer => p !== null))
 }
 
+// The seed of the current random seating — shown so the same tables can be rebuilt later.
+const shuffleSeed = ref<number | null>(null)
+
 // Builds the tables straight from the given order by default — for round 2+
 // that's already the correct standings-based pairing (1st vs 2nd, 3rd vs
 // 4th, ...) computed by swissPairing.ts's own pairSwissRound, which an
@@ -47,11 +51,20 @@ function buildTables(playerList: TablePlayer[]): TablePlayer[][] {
 // round 1). Random seating is still one click away via the "Shuffle" button
 // below, e.g. for round 1's own registration-order starting point.
 function resetTables() {
+  shuffleSeed.value = null
   tables.value = buildTables(players)
 }
 
+function shuffleWithSeed(seed: number) {
+  shuffleSeed.value = seed
+  const playerByValue = new Map(players.map(player => [player.value, player]))
+  const shuffledPlayers = seededShuffle([...playerByValue.keys()], seed)
+    .flatMap(value => playerByValue.get(value) ?? [])
+  tables.value = buildTables(shuffledPlayers)
+}
+
 function shuffle() {
-  tables.value = buildTables([...players].sort(() => Math.random() - 0.5))
+  shuffleWithSeed(randomShuffleSeed())
 }
 
 // Watches length, not the array reference itself — same as
@@ -101,13 +114,19 @@ function confirm() {
               ? t('tournament.single.swissTablePreview.summary', { count: tables.length })
               : t('tournament.single.swissTablePreview.invalidCount') }}
           </span>
-          <UButton
-            :label="t('tournament.single.podsManager.shuffle')"
-            :icon="ICONS.shuffle"
-            color="neutral"
-            variant="outline"
-            @click="shuffle"
-          />
+          <div class="flex items-center gap-2">
+            <TournamentsSinglePairingShuffleSeedField
+              :seed="shuffleSeed"
+              @apply="shuffleWithSeed"
+            />
+            <UButton
+              :label="t('tournament.single.podsManager.shuffle')"
+              :icon="ICONS.shuffle"
+              color="neutral"
+              variant="outline"
+              @click="shuffle"
+            />
+          </div>
         </div>
 
         <div :class="['grid gap-3', tables.length <= 1 ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2']">

@@ -9,6 +9,7 @@
 // changes here — this file only tracks/validates/scores state, it has no
 // DOM/drag wiring of its own either in league or here.
 import type { BadgeProps } from '@nuxt/ui'
+import { seededShuffle } from '#shared/utils/seededShuffle'
 import type { PairingForbiddenPair, PairingWeights, PairingTable, Seat } from '~/types'
 import type { PairingPlayer, PairingHistoryEntry, PairingScoreDetails } from '~/composables/tournaments/pairing/pairingOptimizer'
 
@@ -61,16 +62,6 @@ function normalizeSeats(tableId: string, seats: Seat[]): Seat[] {
     ...players,
     { id: `${tableId}-empty-${players.length + 1}`, player: null }
   ]
-}
-
-/** Fisher-Yates shuffle — doesn't mutate the input array. */
-function shuffleArray<T>(items: T[]): T[] {
-  const result = [...items]
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[result[i], result[j]] = [result[j]!, result[i]!]
-  }
-  return result
 }
 
 function extractPlayerIds(tables: PairingTable[]): string[] {
@@ -340,9 +331,9 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
     return true
   }
 
-  /** Reassigns every seated player to a random table/seat, keeping each table's occupant count unchanged. */
-  function randomizeTables() {
-    replaceByPlayerOrder(shuffleArray(localPlayerIds.value))
+  /** Reassigns every seated player to a table/seat from `seed` (same seed + players = same tables). */
+  function randomizeTables(seed: number) {
+    replaceByPlayerOrder(seededShuffle(localPlayerIds.value, seed))
   }
 
   return {
