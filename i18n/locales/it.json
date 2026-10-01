@@ -1472,7 +1472,7 @@
       "acceptanceDescription": "Iscrizioni aperte",
       "round": "Round {n}",
       "roundPending": "In attesa",
-      "awards": "Premi",
+      "awards": "Menzioni",
       "awardsDescription": "In attesa",
       "prizes": "Distribuzione premi",
       "prizesDescription": "Suggerimento buste",
@@ -1734,7 +1734,9 @@
       "resetConfirmDescription": "Tutti i round, i tavoli, i risultati e la classifica verranno eliminati e il torneo tornerà in iscrizioni aperte.",
       "resetConfirmWarning": "Questa azione non può essere annullata.",
       "awards": {
-        "sectionTitle": "Premi Torneo",
+        "sectionTitle": "Menzioni del torneo",
+        "rankingTitle": "Classifica",
+        "tied": "Pari merito",
         "tiebreaks": {
           "deaths": "{count} morte | {count} morti",
           "kills": "{count} uccisione | {count} uccisioni",
