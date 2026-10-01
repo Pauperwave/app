@@ -88,15 +88,21 @@ export function notifyRoundTables(roundUuid: string): Promise<AssociateNotifyRes
   return bestEffort(async () => {
     const seating = await fetchSeating({ roundUuid })
     const players = await fetchPlayers(seating.flatMap(seatUuids))
+    const usernames = await fetchTelegramUsernames(
+      [...players.values()].map(player => player.associate_uuid)
+    )
 
     const messages = seating.flatMap(row => seatUuids(row).flatMap((playerUuid) => {
       const player = players.get(playerUuid)
       if (!player) return []
 
-      const opponentNames = seatUuids(row)
+      const opponents = seatUuids(row)
         .filter(uuid => uuid !== playerUuid)
         .flatMap(uuid => players.get(uuid) ?? [])
-        .map(playerName)
+        .map(opponent => ({
+          name: playerName(opponent),
+          telegramUsername: usernames.get(opponent.associate_uuid)
+        }))
 
       return [{
         associateUuid: player.associate_uuid,
@@ -104,7 +110,7 @@ export function notifyRoundTables(roundUuid: string): Promise<AssociateNotifyRes
           tournamentName: row.tournament.name,
           roundNumber: row.round.round_number,
           tableNumber: row.table_number,
-          opponentNames
+          opponents
         })
       }]
     }))
