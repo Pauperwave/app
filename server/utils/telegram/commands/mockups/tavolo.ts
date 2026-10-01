@@ -9,7 +9,7 @@ import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 
 import { replyWithLiveTable } from '../tournaments/matchReport'
-import { replyWithLiveCommanderPod } from '../tournaments/commanderReport'
+import { replyWithLiveCommanderPod } from '../tournaments/commanderPod'
 import { registerDeepLink } from '../../deepLinks'
 
 const NO_LIVE_TABLE_TEXT = '🪑 Nessun tavolo aperto al momento per te — controlla di essere iscritto a un torneo in corso.'

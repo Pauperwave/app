@@ -8,6 +8,9 @@ import {
   buildPosValues, calculatePlayerTableScore,
   type CommanderTableResult, type PlayerTableScore
 } from '#shared/utils/tournaments/commanderScoring'
+import {
+  buildCommanderUsageByPlayer, sortCommandersByRecency
+} from '#shared/utils/commanders/commanderUsage'
 
 export interface LivePodSeat {
   playerUuid: string
@@ -19,7 +22,9 @@ export interface LivePod {
   pairingUuid: string
   tournamentUuid: string
   tournamentName: string
+  roundUuid: string
   roundNumber: number
+  roundCount: number | null
   tableNumber: number | null
   pairingStatus: string
   myPlayerUuid: string
@@ -27,6 +32,11 @@ export interface LivePod {
   myPosition: number | null
   myCommanderDeckUuid: string | null
   myCommanderName: string | null
+  // The pieces of myCommanderName, for rules that depend on the first commander.
+  myCommander1Name: string | null
+  myCommander2Name: string | null
+  /** True once this player dropped from the tournament (from the next round on). */
+  myDropped: boolean
   // killedPlayerUuid values this player has already recorded this pod —
   // includes their own uuid for a self-kill (suicide).
   myKilledUuids: string[]
@@ -38,19 +48,20 @@ interface PairingRow {
   tournament_uuid: string
   table_number: number | null
   status: string
+  round_uuid: string
   player1_uuid: string | null
   player2_uuid: string | null
   player3_uuid: string | null
   player4_uuid: string | null
   round: { round_number: number }
-  tournament: { name: string }
+  tournament: { name: string, round_count: number | null }
 }
 
 const PAIRING_SELECT = `
-  uuid, tournament_uuid, table_number, status,
+  uuid, tournament_uuid, table_number, status, round_uuid,
   player1_uuid, player2_uuid, player3_uuid, player4_uuid,
   round:tournament_rounds!inner(round_number, status),
-  tournament:tournaments!inner(name, status)
+  tournament:tournaments!inner(name, status, round_count)
 `
 
 // The Commander pod (3-4 seats) this associate sits at in a round being
@@ -95,8 +106,8 @@ export async function fetchLivePod(
   if (!myPlayerUuid) return null
   const opponentUuids = seatUuids.filter(uuid => uuid !== myPlayerUuid)
 
-  const [opponentsResult, myResultRow, myKillRows, myVoteRows] = await Promise.all([
-    // .order() is load-bearing, not cosmetic: commanderReport.ts encodes a
+  const [opponentsResult, myResultRow, myKillRows, myVoteRows, myDropRow] = await Promise.all([
+    // .order() is load-bearing, not cosmetic: commanderPodMessages.ts encodes a
     // kill/vote target as an *index* into this array (to fit Telegram's
     // callback_data limit), then re-resolves the pod from scratch on every
     // tap. `.in()` alone has no documented ordering guarantee — without an
@@ -123,12 +134,19 @@ export async function fetchLivePod(
       .from('tournament_votes')
       .select('vote_type, voted_player_uuid')
       .eq('pairing_uuid', pairing.uuid)
-      .eq('voter_uuid', myPlayerUuid)
+      .eq('voter_uuid', myPlayerUuid),
+    supabase
+      .from('tournament_player_drops')
+      .select('uuid')
+      .eq('tournament_uuid', pairing.tournament_uuid)
+      .eq('player_uuid', myPlayerUuid)
+      .maybeSingle()
   ])
   if (opponentsResult.error) throw opponentsResult.error
   if (myResultRow.error) throw myResultRow.error
   if (myKillRows.error) throw myKillRows.error
   if (myVoteRows.error) throw myVoteRows.error
+  if (myDropRow.error) throw myDropRow.error
 
   const opponentsData = opponentsResult.data as unknown as {
     uuid: string
@@ -156,7 +174,9 @@ export async function fetchLivePod(
     pairingUuid: pairing.uuid,
     tournamentUuid: pairing.tournament_uuid,
     tournamentName: pairing.tournament.name,
+    roundUuid: pairing.round_uuid,
     roundNumber: pairing.round.round_number,
+    roundCount: pairing.tournament.round_count,
     tableNumber: pairing.table_number,
     pairingStatus: pairing.status,
     myPlayerUuid,
@@ -164,9 +184,73 @@ export async function fetchLivePod(
     myPosition: myResultRow.data?.position ?? null,
     myCommanderDeckUuid: myResultRow.data?.commander_deck_uuid ?? null,
     myCommanderName,
+    myCommander1Name: commander?.commander_1_name ?? null,
+    myCommander2Name: commander?.commander_2_name ?? null,
+    myDropped: myDropRow.data !== null,
     myKilledUuids: myKillRows.data.map(row => row.killed_player_uuid),
     myVoteByType: voteByType
   }
+}
+
+export interface CommanderHistoryItem {
+  name: string
+  count: number
+  lastPlayedDay: string
+}
+
+// The commanders this associate already played, most recent first — what the bot offers before
+// anything else when picking a commander (same counting and order as the website's search).
+export async function fetchCommanderHistory(
+  associateUuid: string
+): Promise<CommanderHistoryItem[]> {
+  const supabase = telegramServiceSupabaseClient()
+
+  const { data: players, error: playersError } = await supabase
+    .from('players')
+    .select('uuid')
+    .eq('associate_uuid', associateUuid)
+  if (playersError) throw playersError
+
+  const playerUuids = (players ?? []).map(player => player.uuid)
+  if (playerUuids.length === 0) return []
+
+  const { data: results, error: resultsError } = await supabase
+    .from('tournament_round_results')
+    .select('commander_deck_uuid, created_at')
+    .in('player_uuid', playerUuids)
+    .not('commander_deck_uuid', 'is', null)
+  if (resultsError) throw resultsError
+
+  const deckUuids = [...new Set(
+    results.map(row => row.commander_deck_uuid).filter((uuid): uuid is string => uuid !== null)
+  )]
+  if (deckUuids.length === 0) return []
+
+  const { data: decks, error: decksError } = await supabase
+    .from('commander_decks')
+    .select('uuid, commander_1_name, commander_2_name')
+    .in('uuid', deckUuids)
+  if (decksError) throw decksError
+
+  // Every player row of the associate counts as one history.
+  const usage = buildCommanderUsageByPlayer(
+    results.map(row => ({
+      playerUuid: associateUuid,
+      commanderDeckUuid: row.commander_deck_uuid,
+      createdAt: row.created_at
+    })),
+    decks.map(deck => ({
+      uuid: deck.uuid,
+      commander1Name: deck.commander_1_name,
+      commander2Name: deck.commander_2_name
+    }))
+  ).get(associateUuid)
+
+  return sortCommandersByRecency(usage ?? new Map()).map(entry => ({
+    name: entry.name,
+    count: entry.usage.count,
+    lastPlayedDay: entry.usage.lastPlayedDay
+  }))
 }
 
 export interface VoteReceived {
