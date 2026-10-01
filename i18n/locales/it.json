@@ -1735,6 +1735,14 @@
       "resetConfirmWarning": "Questa azione non può essere annullata.",
       "awards": {
         "sectionTitle": "Premi Torneo",
+        "tiebreaks": {
+          "deaths": "{count} morte | {count} morti",
+          "kills": "{count} uccisione | {count} uccisioni",
+          "killsPerRound": "{rate} uccisioni/round",
+          "deathsPerRound": "{rate} morti/round",
+          "rounds": "{count} round",
+          "voters": "{count} votante | {count} votanti"
+        },
         "victim": {
           "title": "La Vittima",
           "stat": "Eliminato {count} volta | Eliminato {count} volte"

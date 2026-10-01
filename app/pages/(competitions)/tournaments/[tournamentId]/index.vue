@@ -247,7 +247,11 @@ const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowAct
         </template>
 
         <template #awards>
-          <TournamentsSingleAwards v-if="isCommander" :standings="liveStandings" />
+          <TournamentsSingleAwards
+            v-if="isCommander"
+            :tournament-uuid="tournamentUuid"
+            :standings="liveStandings"
+          />
         </template>
 
         <template #prizes>

@@ -9,7 +9,8 @@
 <script setup lang="ts">
 import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/useLiveCommanderStandings'
 
-const { standings } = defineProps<{
+const { tournamentUuid, standings } = defineProps<{
+  tournamentUuid: string
   standings: LiveCommanderStanding[]
 }>()
 
@@ -17,6 +18,17 @@ const { t } = useI18n()
 
 const standingsRef = toRef(() => standings)
 const awards = useTournamentAwards(standingsRef)
+
+// The player whose "pagella" is open, same modal as the standings table's.
+const reportOpen = ref(false)
+const reportPlayerUuid = ref<string | null>(null)
+const reportPlayer = computed(() =>
+  standings.find(standing => standing.playerUuid === reportPlayerUuid.value) ?? null)
+
+function openReport(playerUuid: string) {
+  reportPlayerUuid.value = playerUuid
+  reportOpen.value = true
+}
 </script>
 
 <template>
@@ -26,15 +38,30 @@ const awards = useTournamentAwards(standingsRef)
       {{ t('tournament.single.awards.sectionTitle') }}
     </h3>
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      <TournamentsSingleTournamentAwardCard
+      <div
         v-for="award in awards"
         :key="award.kind"
-        :kind="award.kind"
-        :associate-uuid="award.associateUuid"
-        :first-name="award.firstName"
-        :surname="award.surname"
-        :value="award.value"
-      />
+        class="space-y-2"
+      >
+        <TournamentsSingleTournamentAwardCard
+          :kind="award.kind"
+          :winners="award.winners"
+        />
+
+        <TournamentsSingleTournamentAwardRanking
+          :kind="award.kind"
+          :ranking="award.ranking"
+          @select-player="openReport"
+        />
+      </div>
     </div>
+
+    <TournamentsSinglePairingCommanderPlayerReportModal
+      v-model:open="reportOpen"
+      :tournament-uuid="tournamentUuid"
+      :standings="standings"
+      :player="reportPlayer"
+      @select-player="openReport"
+    />
   </div>
 </template>

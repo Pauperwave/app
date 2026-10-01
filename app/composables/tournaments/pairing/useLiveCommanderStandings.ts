@@ -34,11 +34,25 @@ export interface LiveCommanderStanding {
   /** Points those votes were worth (votes x the ruleset's brew/play value). */
   brewScore: number
   playScore: number
+  /** Tables the player actually sat at — the denominator of the kills/deaths rates. */
+  roundsPlayed: number
+  /** Different rounds / different voters the votes came from. Only tiebreaks of the vote awards
+   *  (useTournamentAwards.ts): votes spread wide beat votes from one round or one person. */
+  brewRounds: number
+  playRounds: number
+  brewVoters: number
+  playVoters: number
   /** Times killed — feeds the "Vittima" award (useTournamentAwards.ts), not
    *  part of the score/sort itself. */
   deaths: number
   /** Set once the player dropped: they keep their place but aren't paired any more. */
   dropped: SwissDropInfo | null
+}
+
+function addToSet(setsByPlayer: Map<string, Set<string>>, playerUuid: string, value: string) {
+  const values = setsByPlayer.get(playerUuid) ?? new Set<string>()
+  values.add(value)
+  setsByPlayer.set(playerUuid, values)
 }
 
 export function useLiveCommanderStandings(tournamentUuid: MaybeRefOrGetter<string>) {
@@ -64,6 +78,10 @@ export function useLiveCommanderStandings(tournamentUuid: MaybeRefOrGetter<strin
     // registered without a standings row yet if they registered after the
     // round started — surfaced with zeroes either way).
     const accumulators = new Map<string, LiveCommanderStanding>()
+    const brewRoundsByPlayer = new Map<string, Set<string>>()
+    const playRoundsByPlayer = new Map<string, Set<string>>()
+    const brewVotersByPlayer = new Map<string, Set<string>>()
+    const playVotersByPlayer = new Map<string, Set<string>>()
     for (const registration of registrations.value ?? []) {
       const associate = associateByUuid.value.get(registration.associateUuid)
       accumulators.set(registration.playerUuid, {
@@ -79,6 +97,11 @@ export function useLiveCommanderStandings(tournamentUuid: MaybeRefOrGetter<strin
         playReceived: 0,
         brewScore: 0,
         playScore: 0,
+        roundsPlayed: 0,
+        brewRounds: 0,
+        playRounds: 0,
+        brewVoters: 0,
+        playVoters: 0,
         deaths: 0,
         dropped: dropByPlayerUuid.value.get(registration.playerUuid) ?? null
       })
@@ -118,9 +141,23 @@ export function useLiveCommanderStandings(tournamentUuid: MaybeRefOrGetter<strin
         acc.playReceived += scored.playVotesReceived
         acc.brewScore += scored.brewScore
         acc.playScore += scored.playScore
+        acc.roundsPlayed += 1
+        for (const vote of votesData.value ?? []) {
+          if (vote.pairingUuid !== pairing.uuid || vote.votedPlayerUuid !== playerUuid) continue
+          const isBrew = vote.voteType === 'brew'
+          addToSet(isBrew ? brewRoundsByPlayer : playRoundsByPlayer, playerUuid, pairing.roundUuid)
+          addToSet(isBrew ? brewVotersByPlayer : playVotersByPlayer, playerUuid, vote.voterUuid)
+        }
         acc.deaths += (killsData.value ?? [])
           .filter(k => k.pairingUuid === pairing.uuid && k.killedPlayerUuid === playerUuid).length
       }
+    }
+
+    for (const [playerUuid, acc] of accumulators) {
+      acc.brewRounds = brewRoundsByPlayer.get(playerUuid)?.size ?? 0
+      acc.playRounds = playRoundsByPlayer.get(playerUuid)?.size ?? 0
+      acc.brewVoters = brewVotersByPlayer.get(playerUuid)?.size ?? 0
+      acc.playVoters = playVotersByPlayer.get(playerUuid)?.size ?? 0
     }
 
     // LiveCommanderStanding already has every field StandingSortable needs
