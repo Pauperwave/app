@@ -26,6 +26,8 @@ function buildSchema(t: ReturnType<typeof useI18n>['t']) {
   return v.object({
     status: v.picklist(TOURNAMENT_STATUSES),
     companionCode: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
+    telegramNotificationsEnabled: v.optional(v.boolean()),
+    isTest: v.optional(v.boolean()),
     // .optional() here mirrors the pre-migration schema: "name" shows as
     // "required" in the UI (see UFormField required) but the validation
     // schema does not enforce it — a pre-existing inconsistency, left as is.

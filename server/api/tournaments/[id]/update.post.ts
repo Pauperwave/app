@@ -7,6 +7,8 @@ import type { NewTournamentPayload } from '#shared/types/tournaments'
 // fallow-ignore-next-line code-duplication -- see league.post.ts
 export default defineEventHandler(async (event) => {
   const { id, body, supabase } = await parseIdMutationRequest<NewTournamentPayload>(event)
+  // Only a super_admin can see (so also create or edit) a test tournament.
+  if (body.isTest !== undefined) await requireSuperAdminPermission(event)
 
   // Read before write, so a tournament moved between leagues (or unlinked
   // entirely) recomputes both the league it left and the one it joined —
@@ -37,7 +39,9 @@ export default defineEventHandler(async (event) => {
       companion_code: body.companionCode,
       image_url: body.imageUrl,
       image_card_name: body.imageCardName,
-      image_card_artist: body.imageCardArtist
+      image_card_artist: body.imageCardArtist,
+      telegram_notifications_enabled: body.telegramNotificationsEnabled,
+      ...(body.isTest === undefined ? {} : { is_test: body.isTest })
     })
     .eq('id', id)
     .select()

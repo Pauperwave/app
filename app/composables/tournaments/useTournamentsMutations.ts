@@ -46,12 +46,6 @@ export function useTournamentsMutations() {
     onSettled: invalidate
   })
 
-  const setTest = useMutation({
-    mutation: ({ id, isTest }: { id: number, isTest: boolean }) =>
-      $fetch(`/api/tournaments/${id}/test`, { method: 'POST', body: { isTest } }),
-    onSettled: invalidate
-  })
-
   const setImage = useMutation({
     mutation: ({ id, ...body }: SetTournamentImageParams) =>
       $fetch(`/api/tournaments/${id}/image`, { method: 'POST', body }),
@@ -91,6 +85,6 @@ export function useTournamentsMutations() {
 
   return {
     createTournament, updateTournament, setStatus, setPinned, setTelegramNotifications,
-    setTest, setImage, setEntryFee, setLocation, setLeague, deleteTournament
+    setImage, setEntryFee, setLocation, setLeague, deleteTournament
   }
 }

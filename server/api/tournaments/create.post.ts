@@ -10,6 +10,8 @@ import type { NewTournamentPayload } from '#shared/types/tournaments'
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
   const body = await readBody<NewTournamentPayload>(event)
+  // Only a super_admin can see (so also create or edit) a test tournament.
+  if (body.isTest !== undefined) await requireSuperAdminPermission(event)
 
   const supabase = serverSupabaseServiceRole<Database>(event)
 
@@ -33,7 +35,9 @@ export default defineEventHandler(async (event) => {
       companion_code: body.companionCode,
       image_url: body.imageUrl,
       image_card_name: body.imageCardName,
-      image_card_artist: body.imageCardArtist
+      image_card_artist: body.imageCardArtist,
+      telegram_notifications_enabled: body.telegramNotificationsEnabled,
+      ...(body.isTest === undefined ? {} : { is_test: body.isTest })
     })
     .select()
     .single()
