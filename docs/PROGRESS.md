@@ -541,6 +541,8 @@ Contestualmente, rimosso il banner di avviso giallo ("Questa tabella non è anco
 
 **Conseguenze:** i tre spareggi per round e votanti nascono solo dai dati già presenti (`tournament_votes.voter_uuid`, i tavoli del giocatore). "Round giocati" conta i tavoli in cui il giocatore ha un punteggio: chi ha droppato ha meno round, quindi il suo tasso per round non è penalizzato. Un premio resta omesso quando la statistica è 0 per tutti. Gli stessi criteri non sono usati nella classifica generale (`compareCommanderStandings`), che resta invariata. La riga di testo in alto sulla card ("Eliminato 3 volte") non è stata accorciata.
 
+**Aggiornamento 2026-10-02:** il passo "Premi" si chiama ora **"Menzioni"** (stringhe i18n; slot, componenti e `?step=awards` restano invariati, per non rompere i link già condivisi) e non va confuso con "Distribuzione premi", che riguarda le buste. Ogni card porta il credito dell'illustrazione (carta e artista), reso con il nuovo `CardArtCredit.vue` (`app/components/ui`), che sostituisce le copie identiche nelle copertine di eventi, leghe e tornei. Ritocchi grafici: nessuna evidenziazione della prima riga, intestazione "Classifica" sopra la lista, pari merito con il simbolo "=" accanto alla posizione e un tooltip.
+
 ## Vedi anche
 
 - `docs/architecture/database.md` — schema, RLS, migrazioni
