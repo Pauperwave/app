@@ -155,10 +155,11 @@ const search = useState('associates-search', () => '')
 
 // fallow-ignore-next-line code-duplication -- mirrors requests.vue's own (different column/query semantics per page)
 const {
-  columnHeaders, visibilityItems,
+  columnHeaders, visibilityItems, telegramUsernames,
   selectColumn, idColumn, createdAtColumn, updatedAtColumn, updatedByColumn,
   lastRenewalDateColumn, pauperwaveAssociateNumberColumn, membershipRequestStatusColumn,
-  associateTypeColumn, consentDataColumn, consentSocialColumn, hasReadStatuteColumn,
+  associateTypeColumn, consentDataColumn, consentSocialColumn,
+  telegramStatusColumn, telegramUsernameColumn, hasReadStatuteColumn,
   firstNameColumn, lastNameColumn, emailAddressColumn, phoneNumberColumn, taxCodeColumn,
   bornDateColumn, ageColumn, bornLocationColumn, bornProvinceColumn, bornStateColumn,
   residencyAddressColumn, residencyHouseNumberColumn, residencyCityColumn,
@@ -177,6 +178,9 @@ const {
     'born_date', 'residency_address', 'created_at'
   ]
 )
+
+// Also matches the Telegram nickname, read live from the bot-link map
+const globalFilterFn = createAssociatesGlobalFilterFn(uuid => telegramUsernames.value?.get(uuid))
 
 // Wires the sidebar links (/associates?status=pending|active|to_renew) to the
 // membership_status column filter. "pending_renewal" (2026-08-27) filters a
@@ -347,6 +351,8 @@ const columns: TableColumn<Associate>[] = [
   pauperwaveAssociateNumberColumn,
   consentDataColumn,
   consentSocialColumn,
+  telegramStatusColumn,
+  telegramUsernameColumn,
   hasReadStatuteColumn,
   {
     accessorKey: 'has_acknowledged_surveillance_notice',
@@ -490,7 +496,7 @@ function renderNeutralBadge(value: string) {
             v-model:column-filters="columnFilters"
             v-model:column-visibility="columnVisibility"
             v-model:global-filter="search"
-            :global-filter-options="{ globalFilterFn: associatesGlobalFilterFn }"
+            :global-filter-options="{ globalFilterFn }"
             :virtualize="{
               estimateSize: 35,
               overscan: 12
