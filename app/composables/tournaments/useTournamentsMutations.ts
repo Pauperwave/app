@@ -34,6 +34,12 @@ export function useTournamentsMutations() {
     onSettled: invalidate
   })
 
+  const setPinned = useMutation({
+    mutation: ({ id, isPinned }: { id: number, isPinned: boolean }) =>
+      $fetch(`/api/tournaments/${id}/pin`, { method: 'POST', body: { isPinned } }),
+    onSettled: invalidate
+  })
+
   const setImage = useMutation({
     mutation: ({ id, ...body }: SetTournamentImageParams) =>
       $fetch(`/api/tournaments/${id}/image`, { method: 'POST', body }),
@@ -72,7 +78,7 @@ export function useTournamentsMutations() {
   })
 
   return {
-    createTournament, updateTournament, setStatus, setImage, setEntryFee, setLocation,
+    createTournament, updateTournament, setStatus, setPinned, setImage, setEntryFee, setLocation,
     setLeague, deleteTournament
   }
 }

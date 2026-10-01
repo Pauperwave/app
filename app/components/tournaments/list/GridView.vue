@@ -48,14 +48,14 @@ const { sections, range } = useTournamentStatusSections(() => tournaments)
   />
 
   <div v-else class="flex flex-col gap-6">
-    <div v-for="section in sections" :key="section.status">
+    <div v-for="section in sections" :key="section.key">
       <div class="flex items-center gap-1.5 mb-3">
         <UBadge
-          :color="tournamentStatusColor(section.status)"
+          :color="section.color"
           variant="subtle"
-          :icon="TOURNAMENT_STATUS_ICONS[section.status]"
+          :icon="section.icon"
         >
-          {{ $t(`tournament.status.${section.status}`) }}
+          {{ section.label }}
         </UBadge>
         <UBadge
           color="neutral"

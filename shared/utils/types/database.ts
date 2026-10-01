@@ -2347,6 +2347,7 @@ export type Database = {
           image_card_artist: string | null
           image_card_name: string | null
           image_url: string | null
+          is_pinned: boolean
           league_uuid: string | null
           location_uuid: string | null
           name: string
@@ -2379,6 +2380,7 @@ export type Database = {
           image_card_artist?: string | null
           image_card_name?: string | null
           image_url?: string | null
+          is_pinned?: boolean
           league_uuid?: string | null
           location_uuid?: string | null
           name: string
@@ -2411,6 +2413,7 @@ export type Database = {
           image_card_artist?: string | null
           image_card_name?: string | null
           image_url?: string | null
+          is_pinned?: boolean
           league_uuid?: string | null
           location_uuid?: string | null
           name?: string
