@@ -1,6 +1,34 @@
 # Changelog
 
 
+## v0.5.0
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.4.0...v0.5.0)
+
+### Enhancements
+
+- **lists:** ✨ make the name search ignore the other filters ([a1550d71](https://github.com/Pauperwave/app/commit/a1550d71))
+- **tournaments:** ✨ show the round number in the table scores modal title ([3af127ba](https://github.com/Pauperwave/app/commit/3af127ba))
+- **tournaments:** ✨ copy the UUID instead of the numeric id from the context menu ([e4a13d95](https://github.com/Pauperwave/app/commit/e4a13d95))
+- **tournaments:** ✨ per-tournament switch for the passive Telegram notifications ([79577829](https://github.com/Pauperwave/app/commit/79577829))
+- **tournaments:** ✨ mark a tournament as test, visible only to super_admin ([ebd5788a](https://github.com/Pauperwave/app/commit/ebd5788a))
+
+### Fixes
+
+- **tournaments:** 🐛 do not filter pinned tournaments by the date range ([54d51dc3](https://github.com/Pauperwave/app/commit/54d51dc3))
+
+### Documentation
+
+- 📝 note that changelogen downgrades bumps below 1.0.0 ([9e5a0c26](https://github.com/Pauperwave/app/commit/9e5a0c26))
+
+### Tests
+
+- **tournaments:** ✅ cover the pinned section grouping ([3db565ae](https://github.com/Pauperwave/app/commit/3db565ae))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.4.0
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.3.0...v0.4.0)
