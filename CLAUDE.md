@@ -133,6 +133,11 @@ Not applied to a dropdown's own leaf *value-selection* items (e.g. the individua
 - **`@iconify-json/*` collection packages report as unused dependencies once every icon literal is centralized through `ICONS`** (see "Icons" above) — Nuxt Icon resolves `i-lucide-*`/`i-circle-flags-*`/etc. from those string literals at build time via its own module, not a JS import fallow's dead-dependency check can trace. Add the collection to `.fallowrc.json`'s `ignoreDependencies` (already done for `circle-flags`, `lucide`, `simple-icons`) rather than treating it as real dead code.
 - **`fallow health`'s score never moves from `health.maxCyclomatic`/`maxCognitive`/`maxCrap`/`maxUnitSize` or `health.thresholdOverrides`** — those only govern which findings are *reported* (`--complexity`/`--targets`); the score itself uses fixed internal calibration so grades stay comparable across projects. Only `health.ignore` (a blanket file exclude) actually removes a file from the score. Prefer `thresholdOverrides` with a `reason` for findings reviewed and judged legitimate (keeps the file visible with a raised ceiling, documents why) — reach for blanket `ignore` only if you also want the score itself to move.
 
+### Releases: `changelogen` downgrades every bump by one level below 1.0.0
+`pnpm release` (`changelogen --release`) picks the bump from the commit types, but while `package.json` is `0.x` it shifts it down one level (`node_modules/changelogen/dist/shared/*.mjs`, `bumpVersion`): `major` becomes minor, `minor` becomes patch. So a batch of `feat` commits (minor) gives `0.3.0` → **`0.3.1`**, not `0.4.0` — confirmed twice, 2026-10-01 (the first time was already seen and forgotten).
+
+To get a minor bump (`0.3.0` → `0.4.0`) run `pnpm exec changelogen --release --major`; `--minor` still gives a patch. If the result is wrong, undo before pushing: `git tag -d vX.Y.Z` and `git reset --hard HEAD~1` (the release commit only touches `CHANGELOG.md` and `package.json`), then rerun. Check the printed "Bumping npm package version from … to …" line before anything else. Flag the GitHub release `--prerelease` until 1.0.0.
+
 ### Types
 Shared domain types (`Associate`, `Tournament`, `Transaction`, status unions, etc.) live in `app/types/index.d.ts`. Add new domain interfaces there rather than colocating them in components.
 
