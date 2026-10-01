@@ -80,11 +80,19 @@ export function calculatePlayerTableScore(
     r.position !== null && r.position < position
   ).length
 
+  // A dense position p means p - 1 distinct positions sit above it. If those aren't entered yet
+  // (e.g. the only seat entered so far is "4th"), the effective position above is wrong — it
+  // would read as 1st — so the placement is worth nothing until the seats above are known.
+  const knownPositionsAbove = new Set(tableResults
+    .map(r => r.position)
+    .filter((other): other is number => other !== null && other < position)).size
+  const isRankResolved = knownPositionsAbove >= position - 1
+
   let rankSum = 0
   for (let i = 0; i < samePositionCount; i++) {
     rankSum += posValues[Math.min(effectivePosition + i, 4)] ?? 0
   }
-  const scoreRank = Math.floor(rankSum / samePositionCount)
+  const scoreRank = isRankResolved ? Math.floor(rankSum / samePositionCount) : 0
 
   const killScore = myResult.numberOfKills * ruleset.kill
   const brewScore = myResult.brewVotesReceived * ruleset.brew
