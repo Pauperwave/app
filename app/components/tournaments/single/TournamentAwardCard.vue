@@ -17,11 +17,29 @@ const { kind, winners } = defineProps<{
 
 const { t } = useI18n()
 
-const ART_URLS: Record<TournamentAwardKind, string> = {
-  victim: 'https://cards.scryfall.io/art/front/e/e/ee008d81-df28-49a8-917d-44f66527e469.webp?1783907079',
-  killer: 'https://cards.scryfall.io/art/front/a/c/acadf575-2076-4f0c-b66e-994898adf375.webp?1783933770',
-  brewer: 'https://cards.scryfall.io/art/front/a/c/acf6399f-f389-4b13-8563-a078a5d198f4.webp?1783910728',
-  player: 'https://cards.scryfall.io/art/front/f/8/f8fc7a61-226c-426a-9b99-21d87aca2f6f.webp?1783931343'
+// Card name and artist are shown as the credit Scryfall's art_crop guidelines require, same
+// attribution as the event covers (see CardArtPicker.vue).
+const ART: Record<TournamentAwardKind, { url: string, cardName: string, artist: string }> = {
+  victim: {
+    url: 'https://cards.scryfall.io/art/front/e/e/ee008d81-df28-49a8-917d-44f66527e469.webp?1783907079',
+    cardName: 'Victimize',
+    artist: 'Craig J Spearing'
+  },
+  killer: {
+    url: 'https://cards.scryfall.io/art/front/a/c/acadf575-2076-4f0c-b66e-994898adf375.webp?1783933770',
+    cardName: 'Murderous Redcap',
+    artist: 'Dave Allsop'
+  },
+  brewer: {
+    url: 'https://cards.scryfall.io/art/front/a/c/acf6399f-f389-4b13-8563-a078a5d198f4.webp?1783910728',
+    cardName: 'Communal Brewing',
+    artist: 'Andreia Ugrai'
+  },
+  player: {
+    url: 'https://cards.scryfall.io/art/front/f/8/f8fc7a61-226c-426a-9b99-21d87aca2f6f.webp?1783931343',
+    cardName: 'Johnny, Combo Player',
+    artist: 'Kensuke Okabayashi'
+  }
 }
 
 const COLOR_BY_KIND: Record<TournamentAwardKind, string> = {
@@ -31,7 +49,7 @@ const COLOR_BY_KIND: Record<TournamentAwardKind, string> = {
   player: 'text-success'
 }
 
-const artUrl = computed(() => ART_URLS[kind])
+const art = computed(() => ART[kind])
 const icon = computed(() => TOURNAMENT_AWARD_ICONS[kind])
 const iconColorClass = computed(() => COLOR_BY_KIND[kind])
 const title = computed(() => t(`tournament.single.awards.${kind}.title`))
@@ -42,7 +60,7 @@ const statLabel = computed(() =>
 
 <template>
   <div class="relative rounded-xl overflow-hidden border border-default shadow-lg aspect-16/10 bg-muted">
-    <ImageWithFallback :src="artUrl" :alt="title" />
+    <ImageWithFallback :src="art.url" :alt="title" />
 
     <div class="absolute inset-0 bg-linear-to-b from-black/70 via-transparent to-black/90" />
 
@@ -60,7 +78,7 @@ const statLabel = computed(() =>
       </p>
     </div>
 
-    <div class="absolute bottom-0 left-0 right-0 flex flex-col gap-1 p-3">
+    <div class="absolute bottom-0 left-0 right-0 flex flex-col gap-1 p-3 pb-7">
       <AssociateTag
         v-for="winner in winners"
         :key="winner.playerUuid"
@@ -71,5 +89,11 @@ const statLabel = computed(() =>
         class="text-white"
       />
     </div>
+
+    <CardArtCredit
+      :card-name="art.cardName"
+      :artist="art.artist"
+      class="absolute bottom-1.5 right-2 max-w-[60%]"
+    />
   </div>
 </template>
