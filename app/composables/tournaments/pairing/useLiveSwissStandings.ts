@@ -20,8 +20,7 @@ export function useLiveSwissStandings(tournamentUuid: MaybeRefOrGetter<string>) 
   const { data: associatesData } = useAssociatesQuery()
   const { data: pairings } = useTournamentPairingsQuery(tournamentUuid)
   const { data: matchResults } = useTournamentMatchResultsQuery(tournamentUuid)
-  const { data: rounds } = useTournamentRoundsQuery(tournamentUuid)
-  const { data: drops } = useTournamentDropsQuery(tournamentUuid)
+  const dropByPlayerUuid = useDropInfoByPlayerUuid(tournamentUuid)
 
   const associateByUuid = computed(() =>
     new Map((associatesData.value ?? []).map(a => [a.uuid, a])))
@@ -39,14 +38,6 @@ export function useLiveSwissStandings(tournamentUuid: MaybeRefOrGetter<string>) 
   const byePlayerUuids = computed(() => (pairings.value ?? [])
     .filter(pairing => pairing.playerUuids.length === 1)
     .flatMap(pairing => pairing.playerUuids))
-
-  const dropByPlayerUuid = computed(() => {
-    const roundNumberByUuid = new Map((rounds.value ?? []).map(r => [r.uuid, r.roundNumber]))
-    return new Map((drops.value ?? []).map(drop => [drop.playerUuid, {
-      roundNumber: roundNumberByUuid.get(drop.roundUuid) ?? 0,
-      droppedAt: drop.droppedAt
-    } satisfies SwissDropInfo]))
-  })
 
   const liveStandings = computed<LiveSwissStanding[]>(() => {
     const resultByPairingUuid = new Map(
