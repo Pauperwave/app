@@ -1,6 +1,8 @@
 // test\unit\utils\tournaments\tournamentSteps.test.ts
 import { describe, expect, it } from 'vitest'
-import { reachedStepSlots, resolveActiveStepSlot } from '~/utils/tournaments/tournamentSteps'
+import {
+  reachedStepSlots, resolveActiveStepSlot, stepProgress
+} from '~/utils/tournaments/tournamentSteps'
 
 const ALL = ['acceptance', 'round-1', 'round-2', 'round-3', 'awards', 'prizes', 'leaderboard']
 
@@ -65,5 +67,49 @@ describe('resolveActiveStepSlot', () => {
 
   it('returns null when there is neither a picked nor a current step', () => {
     expect(resolveActiveStepSlot(null, reached, null)).toBeNull()
+  })
+})
+
+describe('stepProgress', () => {
+  const noRounds = new Map<number, string>()
+
+  it('describes the acceptance step by the tournament status', () => {
+    const progress = (status: string) =>
+      stepProgress('acceptance', { tournamentStatus: status, roundStatusByNumber: noRounds })
+
+    expect(progress('draft')).toBe('draft')
+    expect(progress('registration_open')).toBe('registrationOpen')
+    expect(progress('in_progress')).toBe('registrationClosed')
+    expect(progress('completed')).toBe('registrationClosed')
+  })
+
+  it('describes a round as completed, in progress or pending', () => {
+    const rounds = new Map([[1, 'completed'], [2, 'in_progress']])
+    const progress = (slot: string) =>
+      stepProgress(slot, { tournamentStatus: 'in_progress', roundStatusByNumber: rounds })
+
+    expect(progress('round-1')).toBe('completed')
+    expect(progress('round-2')).toBe('inProgress')
+    expect(progress('round-3')).toBe('pending')
+  })
+
+  it('makes the awards and the leaderboard available once the tournament is completed', () => {
+    const progress = (slot: string, status: string) =>
+      stepProgress(slot, { tournamentStatus: status, roundStatusByNumber: noRounds })
+
+    expect(progress('awards', 'in_progress')).toBe('pending')
+    expect(progress('awards', 'completed')).toBe('availablePlural')
+    expect(progress('leaderboard', 'in_progress')).toBe('availableAtEnd')
+    expect(progress('leaderboard', 'completed')).toBe('available')
+  })
+
+  it('keeps the prizes step as a suggestion', () => {
+    expect(stepProgress('prizes', { tournamentStatus: 'completed', roundStatusByNumber: noRounds }))
+      .toBe('prizesSuggestion')
+  })
+
+  it('falls back to a neutral description while the tournament is still loading', () => {
+    expect(stepProgress('round-1', { tournamentStatus: null, roundStatusByNumber: noRounds }))
+      .toBe('pending')
   })
 })

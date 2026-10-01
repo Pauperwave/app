@@ -1469,15 +1469,22 @@
     },
     "stepper": {
       "acceptance": "Accettazione",
-      "acceptanceDescription": "Iscrizioni aperte",
       "round": "Round {n}",
-      "roundPending": "In attesa",
       "awards": "Menzioni",
-      "awardsDescription": "In attesa",
       "prizes": "Distribuzione premi",
-      "prizesDescription": "Suggerimento buste",
       "leaderboard": "Classifica",
-      "leaderboardDescription": "Disponibile a fine torneo"
+      "progress": {
+        "draft": "Bozza",
+        "registrationOpen": "Iscrizioni aperte",
+        "registrationClosed": "Iscrizioni chiuse",
+        "pending": "In attesa",
+        "inProgress": "In corso",
+        "completed": "Concluso",
+        "available": "Disponibile",
+        "availablePlural": "Disponibili",
+        "availableAtEnd": "Disponibile a fine torneo",
+        "prizesSuggestion": "Suggerimento buste"
+      }
     },
     "addModal": {
       "title": "Nuovo torneo",

@@ -10,7 +10,9 @@
 // round in the DB but never moved the stepper there).
 import type { ComputedRef } from 'vue'
 import type { Tournament } from '~/types'
-import { reachedStepSlots, resolveActiveStepSlot } from '~/utils/tournaments/tournamentSteps'
+import {
+  reachedStepSlots, resolveActiveStepSlot, stepProgress
+} from '~/utils/tournaments/tournamentSteps'
 
 export function useTournamentStepper(options: {
   tournamentUuid: MaybeRefOrGetter<string>
@@ -27,17 +29,12 @@ export function useTournamentStepper(options: {
   } = options
   const { t } = useI18n()
 
-  // Titles pair with a static description for now (e.g. "In attesa") — real
-  // per-round status (completed/in-progress/pending, based on actual
-  // tournament progress) needs round-tracking data that doesn't exist yet.
-  // See docs/TODO.md.
   // Every step the tournament can go through, whether it has reached it or not
   // (see `items` below for what is actually clickable).
   const allItems = computed(() => [
     {
       slot: 'acceptance',
       title: t('tournament.stepper.acceptance'),
-      description: t('tournament.stepper.acceptanceDescription'),
       icon: ICONS.players
     },
     // Table formation deliberately has NO dedicated stepper step (it isn't a
@@ -49,7 +46,6 @@ export function useTournamentStepper(options: {
     ...Array.from({ length: numberOfRounds.value }, (_, i) => ({
       slot: `round-${i + 1}`,
       title: t('tournament.stepper.round', { n: i + 1 }),
-      description: t('tournament.stepper.roundPending'),
       icon: ICONS.battle
     })),
     // The awards (Vittima, Carnefice, Master Brewer, Il Player) come from
@@ -58,20 +54,17 @@ export function useTournamentStepper(options: {
       ? [{
         slot: 'awards',
         title: t('tournament.stepper.awards'),
-        description: t('tournament.stepper.awardsDescription'),
         icon: ICONS.standings
       }]
       : []),
     {
       slot: 'prizes',
       title: t('tournament.stepper.prizes'),
-      description: t('tournament.stepper.prizesDescription'),
       icon: ICONS.booster
     },
     {
       slot: 'leaderboard',
       title: t('tournament.stepper.leaderboard'),
-      description: t('tournament.stepper.leaderboardDescription'),
       icon: ICONS.listOrdered
     }
   ])
@@ -112,8 +105,16 @@ export function useTournamentStepper(options: {
     import.meta.dev || isDeveloperView.value
   ))
 
+  // The line under each title follows what the tournament has actually done (stepProgress).
+  const roundStatusByNumber = computed(() =>
+    new Map((rounds.value ?? []).map(round => [round.roundNumber, round.status])))
+
   const items = computed(() => allItems.value.map(item => ({
     ...item,
+    description: t(`tournament.stepper.progress.${stepProgress(item.slot, {
+      tournamentStatus: tournament.value?.status ?? null,
+      roundStatusByNumber: roundStatusByNumber.value
+    })}`),
     disabled: !reachedSlots.value.includes(item.slot)
   })))
 
