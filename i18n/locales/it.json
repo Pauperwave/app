@@ -1349,8 +1349,7 @@
     "test": {
       "label": "Torneo di test",
       "badge": "Test",
-      "description": "Visibile solo ai super admin, escluso da calendari e statistiche. Segnandolo le notifiche Telegram si disattivano.",
-      "errorTitle": "Impossibile aggiornare il flag di test del torneo"
+      "description": "Visibile solo ai super admin, escluso da calendari e statistiche. Segnandolo le notifiche Telegram si disattivano."
     },
     "pinErrorTitle": "Impossibile aggiornare l'evidenza del torneo",
     "statusChangeErrorTitle": "Impossibile aggiornare lo stato del torneo",
@@ -1487,6 +1486,7 @@
       "tournamentData": "Dati relativi al torneo",
       "scheduling": "Pianificazione del torneo",
       "organizerData": "Dati relativi all'organizzatore",
+      "notifications": "Notifiche e visibilità",
       "visibilityOptions": {
         "public": "Pubblico",
         "private": "Privato"

@@ -10,7 +10,6 @@ const route = useRoute()
 const tournamentUuid = computed(() => route.params.tournamentId as string)
 
 const { data: tournamentsData } = useTournamentsQuery({ includeTest: true })
-const { can } = useUserRole()
 const tournament = computed(() =>
   tournamentsData.value?.find(item => item.uuid === tournamentUuid.value) ?? null)
 
@@ -144,12 +143,6 @@ const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowAct
           />
 
           <USeparator orientation="vertical" class="h-4" />
-
-          <template v-if="tournament && can('mark-test-tournaments')">
-            <TournamentsSingleTestTournamentSwitch :tournament="tournament" />
-
-            <USeparator orientation="vertical" class="h-4" />
-          </template>
 
           <EditIconButton
             v-if="tournament"

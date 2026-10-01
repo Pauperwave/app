@@ -41,6 +41,7 @@ const {
 const toast = useToast()
 const { t } = useI18n()
 
+const { can } = useUserRole()
 const { createTournament } = useTournamentsMutations()
 
 const todayString = new Date().toISOString().substring(0, 10)
@@ -66,7 +67,9 @@ function createInitialState(): TournamentFormState {
     leagueUuid: initialLeagueUuid ?? source?.leagueUuid ?? undefined,
     eventUuid: initialEventUuid ?? source?.eventUuid ?? undefined,
     entryFee: source?.entryFee ?? 5,
-    companionCode: source?.companionCode ?? undefined
+    companionCode: source?.companionCode ?? undefined,
+    telegramNotificationsEnabled: source?.telegramNotificationsEnabled ?? true,
+    isTest: source?.isTest ?? false
   }
 }
 
@@ -214,7 +217,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     companionCode: event.data.companionCode || null,
     imageUrl: image.value ?? null,
     imageCardName: imageCardName.value ?? null,
-    imageCardArtist: imageCardArtist.value ?? null
+    imageCardArtist: imageCardArtist.value ?? null,
+    telegramNotificationsEnabled: event.data.telegramNotificationsEnabled ?? true,
+    isTest: can('mark-test-tournaments') ? (event.data.isTest ?? false) : undefined
   }
 
   try {
@@ -294,6 +299,12 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             :league-options="leagueOptions"
             :event-options="eventOptions"
           />
+
+          <p class="text-lg font-semibold text-primary">
+            {{ $t('tournament.addModal.notifications') }}
+          </p>
+
+          <TournamentsFieldsNotificationsFields :state="state" />
         </div>
 
         <div class="flex justify-end gap-2">

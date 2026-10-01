@@ -24,4 +24,8 @@ export interface NewTournamentPayload {
   // whenever imageUrl is unset or wasn't picked via MagicCardArtPicker.vue.
   imageCardName: string | null
   imageCardArtist: string | null
+  telegramNotificationsEnabled: boolean
+  // Test tournament, super_admin only: the server rejects the request if it's present for anyone
+  // else, so the form leaves it undefined unless the user is allowed to set it.
+  isTest?: boolean
 }

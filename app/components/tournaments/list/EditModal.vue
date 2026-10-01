@@ -13,6 +13,7 @@ const open = defineModel<boolean>({ default: false })
 const { tournament } = defineProps<{ tournament: Tournament | null }>()
 
 const { t } = useI18n()
+const { can } = useUserRole()
 const { updateTournament } = useTournamentsMutations()
 const { submitting, submitWithToast } = useSubmitWithToast()
 
@@ -38,7 +39,9 @@ const state = reactive<TournamentFormState>({
   eventUuid: undefined,
   entryFee: undefined,
   companionCode: undefined,
-  endTime: undefined
+  endTime: undefined,
+  telegramNotificationsEnabled: true,
+  isTest: false
 })
 
 const { startDate, formattedStartDate } = useStartDateField(state, { defaultToToday: false })
@@ -90,6 +93,8 @@ watch([open, () => tournament], ([isOpen, current]) => {
   state.eventUuid = current.eventUuid ?? undefined
   state.entryFee = current.entryFee ?? 0
   state.companionCode = current.companionCode ?? undefined
+  state.telegramNotificationsEnabled = current.telegramNotificationsEnabled
+  state.isTest = current.isTest
   image.value = current.image ?? undefined
   imageCardName.value = current.imageCardName ?? undefined
   imageCardArtist.value = current.imageCardArtist ?? undefined
@@ -128,7 +133,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     companionCode: event.data.companionCode || null,
     imageUrl: image.value ?? null,
     imageCardName: imageCardName.value ?? null,
-    imageCardArtist: imageCardArtist.value ?? null
+    imageCardArtist: imageCardArtist.value ?? null,
+    telegramNotificationsEnabled: event.data.telegramNotificationsEnabled ?? true,
+    isTest: can('mark-test-tournaments') ? (event.data.isTest ?? false) : undefined
   }
 
   await submitWithToast(
@@ -193,6 +200,12 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             :league-options="leagueOptions"
             :event-options="eventOptions"
           />
+
+          <p class="text-lg font-semibold text-primary">
+            {{ $t('tournament.addModal.notifications') }}
+          </p>
+
+          <TournamentsFieldsNotificationsFields :state="state" />
         </div>
 
         <div class="flex justify-end gap-2">
