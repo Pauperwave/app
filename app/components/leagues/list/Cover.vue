@@ -95,18 +95,12 @@ const dateRangeTooltip = computed(() => {
 
     <!-- Same attribution overlay as TournamentsListCover.vue — required
          alongside any art_crop use, see CardArtPicker.vue's own comment. -->
-    <UTooltip
+    <CardArtCredit
       v-if="!loading && league && league.image && league.imageCardName"
-      :text="league.imageCardArtist
-        ? t('magic.cardArtPicker.attribution', {
-          cardName: league.imageCardName, artist: league.imageCardArtist
-        })
-        : t('magic.cardArtPicker.attributionNoArtist', { cardName: league.imageCardName })"
-    >
-      <span class="absolute bottom-2 right-2 max-w-[75%] truncate rounded bg-default/90 backdrop-blur-sm px-1.5 py-0.5 text-[10px] text-muted">
-        {{ league.imageCardName }}
-      </span>
-    </UTooltip>
+      :card-name="league.imageCardName"
+      :artist="league.imageCardArtist"
+      class="absolute bottom-2 right-2 max-w-[75%]"
+    />
     <USkeleton
       v-else-if="loading"
       class="absolute bottom-2 right-2 w-24 h-4 rounded"
