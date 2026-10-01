@@ -52,9 +52,23 @@ const avatar = computed(() => ({ src: generatePlayerAvatar(name), alt: name }))
 
 const { data: associatesData } = useAssociatesQuery()
 
+const { data: telegramUsernames } = useAssociateTelegramUsernamesQuery()
+
 const associate = computed(() => associateUuid
   ? (associatesData.value ?? []).find(a => a.uuid === associateUuid) ?? null
   : null)
+
+// Telegram, as far as the app can tell: not on it at all (error), linked to the bot but without
+// a username so there's no profile to open (warning), or a link to the profile. Someone unlinked
+// and not flagged is simply unknown.
+const hasNoTelegram = computed(() => associate.value?.has_no_telegram ?? false)
+const isLinkedToBot = computed(() =>
+  !!associateUuid && !!telegramUsernames.value?.has(associateUuid))
+const telegramUsername = computed(() => associateUuid && !hasNoTelegram.value
+  ? telegramUsernames.value?.get(associateUuid) ?? null
+  : null)
+const hasNoTelegramUsername = computed(() =>
+  !hasNoTelegram.value && isLinkedToBot.value && !telegramUsername.value)
 
 const membershipBadge = computed(() => associate.value
   ? MEMBERSHIP_STATUS_BADGE_CONFIG[associate.value.membership_status]
@@ -115,6 +129,31 @@ const membershipBadge = computed(() => associate.value
           {{ $t('common.associateTag.lastRenewal') }}:
           {{ associate.latest_renewal_year ?? $t('common.associateTag.neverRenewed') }}
         </p>
+        <UBadge
+          v-if="hasNoTelegram"
+          :label="$t('associate.noTelegram.badge')"
+          :icon="ICONS.noTelegram"
+          color="error"
+          variant="subtle"
+        />
+        <UBadge
+          v-else-if="hasNoTelegramUsername"
+          :label="$t('associate.noTelegramUsername.badge')"
+          :icon="ICONS.telegram"
+          color="warning"
+          variant="subtle"
+        />
+        <a
+          v-else-if="telegramUsername"
+          :href="`https://t.me/${telegramUsername}`"
+          :aria-label="$t('common.associateTag.openTelegram', { name })"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1.5 text-primary hover:underline"
+        >
+          <UIcon :name="ICONS.telegram" class="size-4" />
+          @{{ telegramUsername }}
+        </a>
       </div>
     </template>
   </UPopover>
