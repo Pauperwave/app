@@ -3,6 +3,16 @@
 
 One entry per **notable** commit, newest first, grouped by date. Each entry: the commit subject (gitmoji convention), then what/why bullets. Not every commit gets an entry anymore (see ADR-010 in `PROGRESS.md`) — mechanical ones (`style`, `chore`, trivial `refactor`) are skipped here; the complete raw index (every commit, auto-generated) lives in the root `CHANGELOG.md` via `changelogen`, never edited by hand. This file complements `PROGRESS.md` (curated ADRs and per-area status): the changelog is the annotated commit trail, `PROGRESS.md` is the distilled history — fold important outcomes there, keep the play-by-play here.
 
+## 2026-10-01 — Commander: drop, "no kills", final standings and player report; reproducible seating; Telegram flows
+
+- `fix(tournaments): 🐛 give no placement points until the seats above are known`: a lone 4th place was read as 1st and awarded 8 points; a dense position `p` now needs `p-1` known positions above it, otherwise the placement is worth 0 (kills and votes still count).
+- `feat(tournaments): ✨ reproducible table seating from a seed code`: the preview shuffle comes from a copyable, typeable seed (`SEC-123`); same seed over the same players always gives the same tables.
+- `feat(associates): ✨ flag members without Telegram and link to their Telegram profile`: `has_no_telegram` on associates, `telegram_username` on the links (staff-only via RLS and a column grant), a `t.me` link in the `AssociateTag` popover.
+- `refactor(commanders): ♻️ share the partner rules and the commander history with the bot`: both moved to `shared/utils`, with tests, so the bot applies the website's rules.
+- `feat(tournaments): ✨ drop, "no kills" and remove-commander in the Commander round manager`: drop from the table card, `tournament_pairings.no_kills` marker, unlink a commander from a round result; "Avanza" is blocked when the remaining players can't make 3-4 player tables.
+- `feat(tournaments): ✨ Commander final standings table and per-player report`: sortable standings with CSV copy, and a "Pagella" modal (deck, placement, kills, votes given and received, table hover).
+- `feat(telegram): ✨ Commander pod flow: /drop, partner commanders, history and nicknames`: `/drop`, partner/Background picker, history-first inline search, one player per line with nickname; `commanderReport.ts` split into five focused files.
+
 ## 2026-09-30 — "Nuovo associato" actually creates the associate
 
 - `fix(associates): 🐛 wire "Nuovo associato" to a real create endpoint`: `AddModal.vue`'s `onSubmit` was showing a success toast and closing the modal without ever sending the form anywhere — no mutation, no `$fetch`, nothing written to `pauperwave_associates`. Fixed with a new admin-only `server/api/associates/create.post.ts` (inserts straight as `membership_request_status: 'approved'`, unlike the public `/tesseramento` form, plus the same membership-events/associate-number side effects as `approve.post.ts`) and a `createAssociate` mutation. See ADR-046 and [issue #85](https://github.com/Pauperwave/app/issues/85).
