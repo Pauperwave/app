@@ -45,7 +45,8 @@ export function useTournamentsFilters(
     // still missing, this time on the lower bound).
     const inRange = startDate >= startOfDay(range.value.start)
       && startDate <= endOfDay(range.value.end)
-    if (!inRange) return false
+    // Pinned tournaments ignore the date range: that is the point of "In evidenza".
+    if (!inRange && !tournament.isPinned) return false
     const query = search.value.trim().toLowerCase()
     if (query && !tournament.name.toLowerCase().includes(query)) return false
     return true

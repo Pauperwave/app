@@ -49,6 +49,22 @@ describe('useTournamentsFilters', () => {
     expect(filteredTournaments.value.map(t => t.uuid)).toEqual(['t2'])
   })
 
+  it('keeps a pinned tournament even outside the date range', () => {
+    const tournaments = [
+      makeTournament({ uuid: 't1', isPinned: true, startDate: new Date(2026, 7, 1).toISOString() }),
+      makeTournament({ uuid: 't2', startDate: new Date(2026, 7, 1).toISOString() })
+    ]
+    const { filteredTournaments } = useTournamentsFilters(ref(tournaments), range)
+    expect(filteredTournaments.value.map(t => t.uuid)).toEqual(['t1'])
+  })
+
+  it('still applies the status filter to a pinned tournament', () => {
+    const tournaments = [makeTournament({ uuid: 't1', isPinned: true, status: 'completed' })]
+    const { statusFilter, filteredTournaments } = useTournamentsFilters(ref(tournaments), range)
+    statusFilter.value = 'registration_open'
+    expect(filteredTournaments.value).toEqual([])
+  })
+
   it('filters by case-insensitive name search', () => {
     const tournaments = [
       makeTournament({ uuid: 't1', name: 'Pauper Cup' }),
