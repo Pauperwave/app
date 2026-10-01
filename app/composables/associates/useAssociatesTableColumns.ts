@@ -1,5 +1,5 @@
 // app\composables\associates\useAssociatesTableColumns.ts
-import { UIcon, UTooltip } from '#components'
+import { UBadge, UIcon, UTooltip } from '#components'
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { Column, Table } from '@tanstack/vue-table'
 import type { Associate } from '~/types'
@@ -43,6 +43,8 @@ export const associatesColumnHeaders = (t: (key: string) => string) => ({
   pauperwave_associate_number: t('associate.columns.pauperwaveAssociateNumber'),
   consent_data: t('associate.columns.consentData'),
   consent_social: t('associate.columns.consentSocial'),
+  telegram_status: t('associate.columns.telegramStatus'),
+  telegram_username: t('associate.columns.telegramUsername'),
   has_read_statute: t('associate.columns.hasReadStatute'),
   has_acknowledged_surveillance_notice: t('associate.columns.hasAcknowledgedSurveillanceNotice'),
   first_name: t('associate.columns.firstName'),
@@ -85,6 +87,8 @@ export function useAssociatesTableColumns(
   const { t } = useI18n()
 
   const columnHeaders = associatesColumnHeaders(t)
+
+  const { data: telegramUsernames } = useAssociateTelegramUsernamesQuery()
 
   const highlight = (text: string | null) => (text && search?.value
     ? h(HighlightMatch, { text, query: search.value })
@@ -241,6 +245,46 @@ export function useAssociatesTableColumns(
     cell: ({ row }) => h(ConsentBadge, { value: row.original.consent_social })
   }
 
+  // The accessorFn only makes the column sortable; the sortingFn and the cell read the live
+  // usernames map, since TanStack caches accessor values and the map loads separately.
+  const telegramStatusColumn: TableColumn<Associate> = {
+    id: 'telegram_status',
+    accessorFn: row => getTelegramLinkState(row, telegramUsernames.value),
+    header: ({ column }) => sortableHeader(columnHeaders.telegram_status, column),
+    meta: { class: { th: 'text-center', td: 'text-center' } },
+    sortingFn: (rowA, rowB) => {
+      const stateA = getTelegramLinkState(rowA.original, telegramUsernames.value)
+      const stateB = getTelegramLinkState(rowB.original, telegramUsernames.value)
+      return TELEGRAM_LINK_STATE_CONFIG[stateA].rank - TELEGRAM_LINK_STATE_CONFIG[stateB].rank
+    },
+    cell: ({ row }) => {
+      const state = getTelegramLinkState(row.original, telegramUsernames.value)
+      const { icon, color } = TELEGRAM_LINK_STATE_CONFIG[state]
+      return h(UBadge, {
+        label: t(`associate.telegramStatus.${state}`),
+        icon,
+        color,
+        variant: 'subtle'
+      })
+    }
+  }
+
+  const telegramUsernameColumn: TableColumn<Associate> = {
+    id: 'telegram_username',
+    header: columnHeaders.telegram_username,
+    cell: ({ row }) => {
+      const username = telegramUsernames.value?.get(row.original.uuid)
+      if (!username || row.original.has_no_telegram) return ''
+      return h('a', {
+        href: `https://t.me/${username}`,
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        class: 'text-primary hover:underline',
+        onClick: (e: Event) => e.stopPropagation()
+      }, ['@', highlight(username)])
+    }
+  }
+
   const hasReadStatuteColumn: TableColumn<Associate> = {
     accessorKey: 'has_read_statute',
     header: ({ column }) => sortableHeader(columnHeaders.has_read_statute, column),
@@ -378,6 +422,7 @@ export function useAssociatesTableColumns(
 
   return {
     columnHeaders,
+    telegramUsernames,
     getColumnLabel,
     visibilityItems,
     selectColumn,
@@ -392,6 +437,8 @@ export function useAssociatesTableColumns(
     associateTypeColumn,
     consentDataColumn,
     consentSocialColumn,
+    telegramStatusColumn,
+    telegramUsernameColumn,
     hasReadStatuteColumn,
     firstNameColumn,
     lastNameColumn,

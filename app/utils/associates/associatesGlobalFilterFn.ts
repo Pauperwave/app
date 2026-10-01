@@ -34,19 +34,27 @@ function nameMatches(fullName: string, query: string): boolean {
   return normalized.split(/\s+/).some(word => levenshtein.get(word, query) <= tolerance)
 }
 
-export function associatesGlobalFilterFn(
-  row: Row<Associate>, _columnId: string, filterValue: string
-): boolean {
-  const query = filterValue.trim().toLowerCase()
-  if (!query) return true
+// The Telegram nickname lives in another table, so the roster passes a live lookup by associate uuid.
+export function createAssociatesGlobalFilterFn(
+  getTelegramUsername?: (associateUuid: string) => string | null | undefined
+) {
+  return function associatesGlobalFilterFn(
+    row: Row<Associate>, _columnId: string, filterValue: string
+  ): boolean {
+    const query = filterValue.trim().toLowerCase()
+    if (!query) return true
 
-  const {
-    first_name, last_name, email_address, phone_number, tax_code
-  } = row.original
-  const fullName = `${first_name} ${last_name}`
+    const {
+      uuid, first_name, last_name, email_address, phone_number, tax_code
+    } = row.original
+    const fullName = `${first_name} ${last_name}`
 
-  return nameMatches(fullName, query)
-    || includesQuery(email_address, query)
-    || includesQuery(phone_number, query)
-    || includesQuery(tax_code, query)
+    return nameMatches(fullName, query)
+      || includesQuery(email_address, query)
+      || includesQuery(phone_number, query)
+      || includesQuery(tax_code, query)
+      || includesQuery(getTelegramUsername?.(uuid), query)
+  }
 }
+
+export const associatesGlobalFilterFn = createAssociatesGlobalFilterFn()

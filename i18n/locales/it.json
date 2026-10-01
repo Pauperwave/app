@@ -303,6 +303,8 @@
       "pauperwaveAssociateNumber": "Tessera",
       "consentData": "Consenso dati",
       "consentSocial": "Social",
+      "telegramStatus": "Telegram",
+      "telegramUsername": "Nickname Telegram",
       "hasReadStatute": "Ha letto lo statuto",
       "hasAcknowledgedSurveillanceNotice": "Visione Privacy",
       "firstName": "Nome",
@@ -388,6 +390,12 @@
     },
     "map": {
       "missingCoordinates": "1 associato non ancora geolocalizzato | {count} associati non ancora geolocalizzati"
+    },
+    "telegramStatus": {
+      "linkedWithUsername": "Collegato",
+      "linkedWithoutUsername": "Collegato (senza nickname)",
+      "notLinked": "Non collegato",
+      "noTelegram": "Non ha Telegram"
     },
     "noTelegramUsername": {
       "badge": "Senza username Telegram"
