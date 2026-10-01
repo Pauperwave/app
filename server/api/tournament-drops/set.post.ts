@@ -18,23 +18,9 @@ export default defineEventHandler(async (event) => {
   } = await readBody<SetDropBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
 
-  const { error } = dropped
-    ? await supabase
-      .from('tournament_player_drops')
-      .upsert({
-        tournament_uuid: tournamentUuid,
-        player_uuid: playerUuid,
-        round_uuid: roundUuid
-      }, { onConflict: 'tournament_uuid,player_uuid', ignoreDuplicates: true })
-    : await supabase
-      .from('tournament_player_drops')
-      .delete()
-      .eq('tournament_uuid', tournamentUuid)
-      .eq('player_uuid', playerUuid)
-
-  if (error) {
-    throw createError({ statusCode: 500, statusMessage: error.message })
-  }
+  await setPlayerDropped(supabase, {
+    tournamentUuid, playerUuid, roundUuid, dropped
+  })
 
   return { success: true }
 })

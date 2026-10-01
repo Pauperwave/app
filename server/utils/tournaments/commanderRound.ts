@@ -63,6 +63,21 @@ export async function selectCommanderDeck(supabase: SupabaseClient<Database>, in
   return deckUuid
 }
 
+// Unlinks the player's commander from this pairing's result row only — the
+// shared commander_decks row (reused across tournaments) and the placement
+// on the same result row are left untouched.
+export async function clearCommanderDeck(supabase: SupabaseClient<Database>, input: {
+  pairingUuid: string
+  playerUuid: string
+}) {
+  const { error } = await supabase
+    .from('tournament_round_results')
+    .update({ commander_deck_uuid: null })
+    .eq('pairing_uuid', input.pairingUuid)
+    .eq('player_uuid', input.playerUuid)
+  if (error) throw createError({ statusCode: 500, statusMessage: error.message })
+}
+
 // One seat's own placement. Unlike the organizer's whole-pod upsert
 // (tournament-round-results/upsert.post.ts, which marks the pairing
 // completed unconditionally once submitted), the bot writes one player at a
@@ -130,6 +145,33 @@ export async function recordKill(supabase: SupabaseClient<Database>, input: {
     killer_uuid: input.killerUuid,
     killed_player_uuid: input.killedPlayerUuid
   })
+  if (error) throw createError({ statusCode: 500, statusMessage: error.message })
+
+  // A kill contradicts a "no kills at this table" confirmation made earlier.
+  await setPairingNoKills(supabase, { pairingUuid: input.pairingUuid, noKills: false })
+}
+
+// Confirms (or retracts) that the table ended without any kill. Only valid while the table really
+// has none — a recorded kill and the "no kills" confirmation can't both stand.
+export async function setPairingNoKills(supabase: SupabaseClient<Database>, input: {
+  pairingUuid: string
+  noKills: boolean
+}) {
+  if (input.noKills) {
+    const { count, error: countError } = await supabase
+      .from('tournament_kills')
+      .select('*', { count: 'exact', head: true })
+      .eq('pairing_uuid', input.pairingUuid)
+    if (countError) throw createError({ statusCode: 500, statusMessage: countError.message })
+    if ((count ?? 0) > 0) {
+      throw createError({ statusCode: 409, statusMessage: 'This table already has kills recorded' })
+    }
+  }
+
+  const { error } = await supabase
+    .from('tournament_pairings')
+    .update({ no_kills: input.noKills })
+    .eq('uuid', input.pairingUuid)
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
 }
 

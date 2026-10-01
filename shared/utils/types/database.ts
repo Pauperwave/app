@@ -1837,6 +1837,7 @@ export type Database = {
         Row: {
           created_at: string
           id: number
+          no_kills: boolean
           player1_uuid: string | null
           player2_uuid: string | null
           player3_uuid: string | null
@@ -1851,6 +1852,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: number
+          no_kills?: boolean
           player1_uuid?: string | null
           player2_uuid?: string | null
           player3_uuid?: string | null
@@ -1865,6 +1867,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: number
+          no_kills?: boolean
           player1_uuid?: string | null
           player2_uuid?: string | null
           player3_uuid?: string | null
