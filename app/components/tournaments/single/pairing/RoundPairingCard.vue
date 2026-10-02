@@ -56,6 +56,14 @@ const { isDeveloperView } = useDeveloperView()
 // "Any data at all" — used only to guard the draw toggle below (declaring a
 // draw over already-entered data, even partial, would silently discard it).
 const hasRanking = computed(() => positions.size > 0)
+
+function placementLabel(playerValue: string): string {
+  return t('tournament.single.roundManager.placementBadge', { n: positions.get(playerValue) })
+}
+
+function placementTooltip(playerValue: string): string {
+  return t('tournament.single.roundManager.placementTooltip', { n: positions.get(playerValue) })
+}
 const canToggleDraw = computed(() => isDraw || (!hasRanking.value && !hasKills))
 
 // Some seats have data but the table isn't fully ranked yet — now a real,
@@ -192,7 +200,7 @@ const drawTooltip = computed(() => {
           </span>
         </UTooltip>
 
-        <div class="flex min-w-0 flex-1 items-center px-2 py-1">
+        <div class="flex min-w-0 flex-1 items-center gap-1.5 px-2 py-1">
           <AssociateTag
             :name="playerNameParts(player).firstName"
             :surname="playerNameParts(player).surname"
@@ -201,18 +209,25 @@ const drawTooltip = computed(() => {
             class="truncate"
             :class="droppedFor(player.value) && 'opacity-60 line-through'"
           />
+          <TelegramStatusIcon :associate-uuid="associateUuidFor(player.value)" />
         </div>
 
         <div class="flex shrink-0 items-center gap-1.5 pe-1.5">
           <TournamentsSinglePairingDropBadge :dropped="droppedFor(player.value)" with-time />
-          <UBadge
+          <!-- Medal + "1°", so the placement can't be mistaken for the seat number on the left. -->
+          <UTooltip
             v-if="positions.get(player.value)"
-            color="neutral"
-            variant="subtle"
-            size="sm"
+            :text="placementTooltip(player.value)"
           >
-            #{{ positions.get(player.value) }}
-          </UBadge>
+            <UBadge
+              :label="placementLabel(player.value)"
+              :icon="ICONS.medal"
+              color="neutral"
+              variant="subtle"
+              size="md"
+              class="h-7"
+            />
+          </UTooltip>
           <UTooltip
             :text="hasCommander(player.value)
               ? t('tournament.single.roundManager.commanderSetTooltip')
