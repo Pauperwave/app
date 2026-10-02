@@ -13,7 +13,10 @@ const { tournamentUuid, commanderStandings, swissStandings } = defineProps<{
 
 <template>
   <div class="space-y-3">
-    <h1>{{ $t('tournament.single.leaderboardTitle') }}</h1>
+    <h2 class="flex items-center gap-2 text-lg font-semibold text-highlighted">
+      <UIcon :name="ICONS.standings" class="size-5 text-primary" />
+      {{ $t('tournament.single.leaderboardTitle') }}
+    </h2>
     <TournamentsSinglePairingCommanderStandingsTable
       v-if="commanderStandings"
       :tournament-uuid="tournamentUuid"

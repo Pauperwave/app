@@ -1850,7 +1850,7 @@
         "chartAxisY": "Buste",
         "chartTooltip": "#{rank} {label}: {packs} busta | #{rank} {label}: {packs} buste"
       },
-      "leaderboardTitle": "Classifica torneo specifico",
+      "leaderboardTitle": "Classifica del torneo",
       "participantsPlaceholder": "Partecipanti all'evento",
       "roundManager": {
         "title": "Gestione Round {round}",
