@@ -1566,6 +1566,8 @@
     "single": {
       "acceptancePicker": {
         "preRegistered": "Pre-registrati",
+        "lockedTitle": "Iscrizioni bloccate",
+        "lockedDescription": "Il torneo è iniziato: per modificare iscrizioni e pagamenti torna alle iscrizioni dal round 1.",
         "receivedByPlaceholder": "Chi riceve i pagamenti?",
         "mutationErrorTitle": "Operazione non riuscita",
         "receivedByRequiredTitle": "Seleziona chi riceve i pagamenti",

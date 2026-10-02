@@ -19,6 +19,7 @@ export default defineEventHandler(async (event) => {
 
   const { tournamentUuid, registrationUuids } = await readBody<DeleteBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
+  await assertRegistrationsEditable(supabase, tournamentUuid)
 
   const { data: registrations, error: readError } = await supabase
     .from('tournament_registrations')

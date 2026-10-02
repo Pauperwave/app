@@ -57,6 +57,7 @@ const { t } = useI18n()
     v-model:search="search"
     v-model:selected-ids="selectedIds"
     :options="options"
+    :disabled="isMutating"
     @add="emit('add')"
   />
 </template>
