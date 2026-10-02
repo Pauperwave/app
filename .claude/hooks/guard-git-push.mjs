@@ -28,7 +28,10 @@ function isLocalTag(name) {
 
 // Why a single `git push …` segment isn't a tag-only push, or null when it is.
 function rejectReason(segment) {
-  const words = segment.trim().split(/\s+/).map(word => word.replace(/^['"]|['"]$/g, ''))
+  // Shell redirections (`2>&1`, `> log.txt`) aren't push arguments: drop them and their target.
+  const words = segment.trim().split(/\s+/)
+    .map(word => word.replace(/^['"]|['"]$/g, ''))
+    .filter((word, index, all) => !/^\d*[<>]/.test(word) && !/^\d*[<>]+$/.test(all[index - 1] ?? ''))
   const pushIndex = words.indexOf('push')
   const args = words.slice(pushIndex + 1)
 
