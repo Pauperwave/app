@@ -1,6 +1,5 @@
 <!-- app\components\events\list\EditModal.vue -->
 <script setup lang="ts">
-import { CalendarDate } from '@internationalized/date'
 import type * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { Event } from '~/types'
@@ -19,15 +18,10 @@ const { submitting, submitWithToast } = useSubmitWithToast()
 const state = reactive<EventFormState>({
   name: undefined,
   status: 'draft',
-  startDate: undefined,
-  startTime: undefined,
-  endTime: undefined,
   organizerUuid: undefined,
   locationUuid: undefined,
   companionCode: undefined
 })
-
-const { startDate, formattedStartDate } = useStartDateField(state, { defaultToToday: false })
 
 // Kept out of `state`/the valibot schema (no format validation needed) —
 // same convention as TournamentsListEditModal.vue's `image`/`imageCardName`/
@@ -41,18 +35,8 @@ const imageCardArtist = ref<string | undefined>(undefined)
 watch([open, () => editingEvent], ([isOpen, current]) => {
   if (!isOpen || !current) return
 
-  const startsAt = new Date(current.startDate)
-  startDate.value = new CalendarDate(
-    startsAt.getFullYear(), startsAt.getMonth() + 1, startsAt.getDate()
-  )
-
   state.name = current.name
   state.status = current.status
-  state.startDate = current.startDate.substring(0, 10)
-  state.startTime = startsAt.toTimeString().substring(0, 5)
-  state.endTime = current.endDate
-    ? new Date(current.endDate).toTimeString().substring(0, 5)
-    : undefined
   state.organizerUuid = current.organizerUuid
   state.locationUuid = current.locationUuid ?? undefined
   state.companionCode = current.companionCode ?? undefined
@@ -70,18 +54,11 @@ type Schema = v.InferOutput<typeof schema>
 async function onSubmit(formEvent: FormSubmitEvent<Schema>) {
   if (!editingEvent) return
 
-  const startsAt = combineDateAndTime(startDate.value!, formEvent.data.startTime)
-  const endsAt = formEvent.data.endTime
-    ? combineEndDateAndTime(startsAt, startDate.value!, formEvent.data.endTime)
-    : null
-
   const payload: NewEventPayload = {
     name: formEvent.data.name ?? '',
     status: formEvent.data.status,
     locationUuid: formEvent.data.locationUuid || null,
     organizerUuid: formEvent.data.organizerUuid ?? '',
-    startsAt: startsAt.toISOString(),
-    endsAt: endsAt ? endsAt.toISOString() : null,
     companionCode: formEvent.data.companionCode || null,
     imageUrl: image.value ?? null,
     imageCardName: imageCardName.value ?? null,
@@ -152,12 +129,6 @@ async function onSubmit(formEvent: FormSubmitEvent<Schema>) {
             :icon="ICONS.calendar"
           />
         </UFormField>
-
-        <EventsFieldsSchedulingFields
-          v-model:start-date="startDate"
-          :state="state"
-          :formatted-start-date="formattedStartDate"
-        />
 
         <div class="grid grid-cols-2 gap-2">
           <!-- eslint-disable-next-line -->

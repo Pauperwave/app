@@ -20,8 +20,7 @@ export default defineEventHandler(async (event) => {
       status: body.status,
       location_uuid: body.locationUuid,
       organizer_uuid: body.organizerUuid,
-      starts_at: body.startsAt,
-      ends_at: body.endsAt,
+      // starts_at/ends_at stay null until a tournament joins the event (derivedDates.ts).
       companion_app_code: body.companionCode,
       image_url: body.imageUrl,
       image_card_name: body.imageCardName,

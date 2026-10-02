@@ -547,6 +547,14 @@ Contestualmente, rimosso il banner di avviso giallo ("Questa tabella non è anco
 
 **Aggiornamento 2026-10-02:** il passo "Premi" si chiama ora **"Menzioni"** (stringhe i18n; slot, componenti e `?step=awards` restano invariati, per non rompere i link già condivisi) e non va confuso con "Distribuzione premi", che riguarda le buste. Ogni card porta il credito dell'illustrazione (carta e artista), reso con il nuovo `CardArtCredit.vue` (`app/components/ui`), che sostituisce le copie identiche nelle copertine di eventi, leghe e tornei. Ritocchi grafici: nessuna evidenziazione della prima riga, intestazione "Classifica" sopra la lista, pari merito con il simbolo "=" accanto alla posizione e un tooltip.
 
+### ADR-053 — L'evento è una cartella di tornei: date derivate, pagina come calendario (2026-10-02)
+
+**Contesto:** il form "Nuovo evento" permetteva data di inizio e orari ma non una data di fine, e l'evento reale usato come modello (Radio Atog 2026, 2-4 ottobre) era salvato come una sola serata. Discutendone (piano `docs/plans/2026-10-02-event-page.md`), la data di fine scritta a mano si è rivelata la domanda sbagliata: le date di un evento sono quelle del suo programma.
+
+**Decisione:** (1) un evento è solo un contenitore di tornei: `events.starts_at`/`ends_at` non si scrivono più dai form (tolti da `NewEventPayload`, dallo schema e dai modali, rimosso `events/fields/SchedulingFields.vue`) e sono il minimo inizio / massimo fine dei tornei attivi collegati, come le leghe (ADR-019). `server/utils/leagueDates.ts` diventa `derivedDates.ts` con `recomputeLeagueDates` e `recomputeEventDates`, richiamate dalle scritture dei tornei (create, update per il genitore vecchio e nuovo, delete) e ora anche dal ripristino dal cestino, che prima non ricalcolava nemmeno la lega; un torneo senza fine conta con il suo inizio. (2) La pagina dell'evento è un calendario a giorni o a settimana dei suoi tornei (`DaySchedule.vue`, `eventScheduleDays.ts`), punto d'accesso rapido alle pagine dei singoli tornei.
+
+**Conseguenze:** un evento nuovo non ha date finché non gli si collega un torneo (`useEventsQuery.ts` ripiega su `created_at`, come le leghe). I 10 eventi esistenti non hanno tornei collegati e tengono le date scritte a mano finché un torneo non li tocca: nessun ricalcolo massivo, per non svuotarli. Restano da fare collegare i tornei esistenti ai loro eventi e i campi descritti nel piano (orario di registrazione, quote soci/non soci, partner, ...).
+
 ## Vedi anche
 
 - `docs/architecture/database.md` — schema, RLS, migrazioni

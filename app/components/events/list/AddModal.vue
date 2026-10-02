@@ -10,8 +10,8 @@ const open = defineModel<boolean>({ default: false })
 
 // sourceEvent is the "Copia evento" context-menu action (user request,
 // 2026-08-29), same convention as TournamentsListAddModal.vue's own
-// sourceTournament — copies every field except status (reset to draft) and
-// startDate (defaults to today, not the source's original date).
+// sourceTournament — copies every field except status (reset to draft). No dates: an event is a
+// folder of tournaments and its dates come from them (2026-10-02, derivedDates.ts).
 // hideTrigger mirrors that component too, for the same reason: this instance
 // is opened programmatically by the copy action, not its own AddButton.
 const { sourceEvent, hideTrigger = false } = defineProps<{
@@ -31,18 +31,11 @@ const {
   schema, statusOptions, locationOptions, organizerOptions
 } = useEventFormFields()
 
-const todayString = new Date().toISOString().substring(0, 10)
-
 function createInitialState(): EventFormState {
   const source = sourceEvent
   return {
     name: source?.name,
     status: 'draft',
-    startDate: todayString,
-    startTime: source ? new Date(source.startDate).toTimeString().substring(0, 5) : '20:00',
-    endTime: source?.endDate
-      ? new Date(source.endDate).toTimeString().substring(0, 5)
-      : '00:00',
     organizerUuid: source?.organizerUuid ?? undefined as unknown as string,
     locationUuid: source?.locationUuid ?? undefined,
     companionCode: source?.companionCode ?? undefined
@@ -67,8 +60,6 @@ watch(locationOptions, (options) => {
   state.locationUuid = options.find(option => option.label.startsWith('Smart Lab'))?.value
 }, { immediate: true })
 
-const { startDate, formattedStartDate, reset: resetStartDate } = useStartDateField(state)
-
 // Kept out of `state`/the valibot schema (no format validation needed) —
 // same convention as TournamentsListAddModal.vue's `image`/`imageCardName`/
 // `imageCardArtist`.
@@ -83,7 +74,6 @@ const imageCardArtist = ref<string | undefined>(undefined)
 watch(open, (isOpen) => {
   if (!isOpen || !sourceEvent) return
   Object.assign(state, createInitialState())
-  resetStartDate()
   image.value = sourceEvent.image ?? undefined
   imageCardName.value = sourceEvent.imageCardName ?? undefined
   imageCardArtist.value = sourceEvent.imageCardArtist ?? undefined
@@ -97,7 +87,6 @@ type Schema = v.InferOutput<typeof schema>
 // should preserve whatever the user typed (user decision 2026-08-20).
 function resetForm() {
   Object.assign(state, createInitialState())
-  resetStartDate()
   image.value = undefined
   imageCardName.value = undefined
   imageCardArtist.value = undefined
@@ -108,18 +97,11 @@ function resetForm() {
 
 // fallow-ignore-next-line code-duplication -- see the same comment in leagues/list/AddModal.vue
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  const startsAt = combineDateAndTime(startDate.value!, event.data.startTime)
-  const endsAt = event.data.endTime
-    ? combineEndDateAndTime(startsAt, startDate.value!, event.data.endTime)
-    : null
-
   const payload: NewEventPayload = {
     name: event.data.name ?? '',
     status: event.data.status,
     locationUuid: event.data.locationUuid || null,
     organizerUuid: event.data.organizerUuid ?? '',
-    startsAt: startsAt.toISOString(),
-    endsAt: endsAt ? endsAt.toISOString() : null,
     companionCode: event.data.companionCode || null,
     imageUrl: image.value ?? null,
     imageCardName: imageCardName.value ?? null,
@@ -213,16 +195,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               :icon="ICONS.calendar"
             />
           </UFormField>
-
-          <p class="text-lg font-semibold text-primary">
-            {{ $t('event.addModal.scheduling') }}
-          </p>
-
-          <EventsFieldsSchedulingFields
-            v-model:start-date="startDate"
-            :state="state"
-            :formatted-start-date="formattedStartDate"
-          />
 
           <p class="text-lg font-semibold text-primary">
             {{ $t('event.addModal.organizerData') }}

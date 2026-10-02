@@ -10,8 +10,8 @@ export interface NewEventPayload {
   // Required by the DB (events.organizer_uuid is NOT NULL, unlike
   // tournaments.organizer_uuid) — every event has an organizing club/group.
   organizerUuid: string
-  startsAt: string
-  endsAt: string | null
+  // No startsAt/endsAt (2026-10-02): an event is a folder of tournaments, its dates are derived
+  // from them (server/utils/derivedDates.ts).
   companionCode: string | null
   // Added 2026-08-22 alongside Card.vue/Cover.vue (issue #45) — events had
   // no way to set a cover image at all before (AddModal.vue never

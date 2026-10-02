@@ -1178,7 +1178,6 @@
       "description": "Aggiungi un nuovo evento al database",
       "openButton": "Nuovo evento",
       "eventData": "Dati relativi all'evento",
-      "scheduling": "Pianificazione dell'evento",
       "organizerData": "Dati relativi all'organizzatore",
       "statusOptions": {
         "draft": "Bozza",
@@ -1196,9 +1195,6 @@
         "namePlaceholder": "Nome dell'evento",
         "companionCode": "Codice Companion",
         "companionCodePlaceholder": "Codice (opzionale)",
-        "startDate": "Data di inizio",
-        "startTime": "Ora di inizio",
-        "endTime": "Ora di fine",
         "organizer": "Organizzatore",
         "selectOrganizer": "Seleziona organizzatore",
         "location": "Luogo",
