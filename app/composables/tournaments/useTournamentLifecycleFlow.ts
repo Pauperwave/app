@@ -98,8 +98,8 @@ export function useTournamentLifecycleFlow(options: {
   // (Commander) — only one of the two ever renders at a time (isDraft xor
   // isCommander), so one boolean is enough for either.
   const podsModalOpen = ref(false)
-  // Approved round-1 tables + seed, for the preview reopened by "Torna alle iscrizioni".
-  const lastRoundOneSeating = useLastRoundOneSeating(tournamentUuid)
+  // Approved tables per round, for the previews reopened by a turn-back.
+  const { seatingFor } = useConfirmedSeatings(tournamentUuid)
 
   // TablePreviewModal (ported from league) takes TablePlayer[] (value/label),
   // not AcceptancePickerItem's fuller shape — same associate uuid identity
@@ -206,7 +206,7 @@ export function useTournamentLifecycleFlow(options: {
     resetTournament,
     podsModalOpen,
     tablePreviewPlayers,
-    lastRoundOneSeating,
+    seatingFor,
     canOpenTablePreview,
     onStartTournamentClick,
     pendingAdvancePreviewRound,

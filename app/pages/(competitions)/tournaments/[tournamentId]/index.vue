@@ -106,7 +106,7 @@ const { items, currentStep } = useTournamentStepper({
 const {
   canStartTournament, isStartConfirmOpen, confirmStartTournament, setStatus,
   canResetTournament, isResetConfirmOpen, confirmResetTournament, resetTournament,
-  podsModalOpen, tablePreviewPlayers, lastRoundOneSeating, canOpenTablePreview,
+  podsModalOpen, tablePreviewPlayers, seatingFor, canOpenTablePreview,
   onStartTournamentClick,
   pendingAdvancePreviewRound, onRoundTurnedBack, onAdvancePreviewAutoOpened,
   onPodsConfirm, onSwissPodsConfirm, onDraftPodsConfirm, startRoundOne, startRoundOneSwiss
@@ -241,6 +241,7 @@ const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowAct
             :round-count="numberOfRounds"
             :round-duration-minutes="tournament?.roundDurationMinutes"
             :auto-open-advance-preview="pendingAdvancePreviewRound === i"
+            :next-round-seating="seatingFor(i + 1)"
             @turned-back="onRoundTurnedBack(i)"
             @advance-preview-auto-opened="onAdvancePreviewAutoOpened"
           />
@@ -323,7 +324,7 @@ const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowAct
     :players="tablePreviewPlayers"
     :tournament-uuid="tournamentUuid"
     :current-round="1"
-    :confirmed-seating="lastRoundOneSeating"
+    :confirmed-seating="seatingFor(1)"
     :loading="startRoundOne.isLoading.value"
     @confirm="onPodsConfirm"
   />

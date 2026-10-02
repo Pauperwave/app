@@ -13,8 +13,15 @@
   RoundPairingCard.vue's own comment on this split).
 -->
 <script setup lang="ts">
+import type { ConfirmedSeating } from '~/composables/tournaments/rounds/useConfirmedSeatings'
+
 const {
-  tournamentUuid, roundNumber, roundCount, roundDurationMinutes = 75, autoOpenAdvancePreview = false
+  tournamentUuid,
+  roundNumber,
+  roundCount,
+  roundDurationMinutes = 75,
+  autoOpenAdvancePreview = false,
+  nextRoundSeating = null
 } = defineProps<{
   tournamentUuid: string
   roundNumber: number
@@ -30,6 +37,8 @@ const {
    * 2026-09-18), so this round's manager needs to reopen its own
    * advancePreviewOpen on behalf of the round that just turned back into it. */
   autoOpenAdvancePreview?: boolean
+  /** Tables approved for round `roundNumber + 1` before it was turned back, reopened in its preview. */
+  nextRoundSeating?: ConfirmedSeating | null
 }>()
 
 const emit = defineEmits<{
@@ -338,6 +347,7 @@ const showFHint = useChordHintKey('f')
     :players="nextRoundSeedPlayers"
     :tournament-uuid="tournamentUuid"
     :current-round="roundNumber + 1"
+    :confirmed-seating="nextRoundSeating"
     :loading="advanceRound.isLoading.value"
     @confirm="onAdvanceConfirm"
   />
