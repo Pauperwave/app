@@ -18,14 +18,23 @@
 import { VueDraggable } from 'vue-draggable-plus'
 import { randomShuffleSeed, seededShuffle } from '#shared/utils/seededShuffle'
 import type { TablePlayer } from '~/types'
+import { seatingMatchesPlayers, type ConfirmedSeating } from '~/composables/tournaments/rounds/useConfirmedSeatings'
 
-const { players, loading = false } = defineProps<{
+const {
+  players,
+  loading = false,
+  currentRound = 1,
+  confirmedSeating = null
+} = defineProps<{
   players: TablePlayer[]
   loading?: boolean
+  currentRound?: number
+  // Tables approved for this round before a turn-back deleted it: reopened as-is (with round 1's seed).
+  confirmedSeating?: ConfirmedSeating | null
 }>()
 
 const emit = defineEmits<{
-  confirm: [associateOrder: string[]]
+  confirm: [associateOrder: string[], shuffleSeed: number | null]
 }>()
 
 const { t } = useI18n()
@@ -67,12 +76,34 @@ function shuffle() {
   shuffleWithSeed(randomShuffleSeed())
 }
 
+function restoreSeating(seating: ConfirmedSeating) {
+  const playerByValue = new Map(players.map(player => [player.value, player]))
+  shuffleSeed.value = seating.seed
+  tables.value = seating.tables.map(ids => ids.flatMap(id => playerByValue.get(id) ?? []))
+}
+
+// Approved tables first (after a turn-back), else round 1 opens on a random seeded shuffle like
+// Commander (user request, 2026-10-02) and round 2+ on the standings-based pairing.
+function initTables() {
+  const playerIds = players.map(player => player.value)
+  if (confirmedSeating && seatingMatchesPlayers(confirmedSeating, playerIds)) {
+    restoreSeating(confirmedSeating)
+  } else if (currentRound === 1) {
+    shuffle()
+  } else {
+    resetTables()
+  }
+}
+
 // Watches length, not the array reference itself — same as
 // PodsManager.vue's own shufflePods watcher. The parent's players prop is a
 // fresh computed array on every re-render (e.g. a query refetch after a
 // failed advance), so watching the reference would silently rebuild the
 // organizer's already-arranged tables underneath them.
-watch(() => players.length, resetTables, { immediate: true })
+watch(() => players.length, initTables, { immediate: true })
+watch(open, (isOpen) => {
+  if (isOpen) initTables()
+})
 
 const pairingSplit = computed(() => calculatePairing(players.length))
 const canPlay = computed(() => pairingSplit.value.canPlay)
@@ -95,7 +126,7 @@ function updateTable(tableIndex: number, value: TablePlayer[]) {
 function confirm() {
   const pairedTables = tables.value.filter(table => table.length === 2)
   const byeTables = tables.value.filter(table => table.length === 1)
-  emit('confirm', [...pairedTables, ...byeTables].flat().map(player => player.value))
+  emit('confirm', [...pairedTables, ...byeTables].flat().map(player => player.value), shuffleSeed.value)
 }
 </script>
 
@@ -114,7 +145,12 @@ function confirm() {
               ? t('tournament.single.swissTablePreview.summary', { count: tables.length })
               : t('tournament.single.swissTablePreview.invalidCount') }}
           </span>
-          <div class="flex items-center gap-2">
+          <!-- Shuffle/seed on round 1 only: later pairs follow the standings (ADR-043). -->
+          <span v-if="currentRound > 1" class="flex items-center gap-1.5 text-sm text-muted">
+            <UIcon :name="ICONS.info" class="size-4 shrink-0" />
+            {{ t('tournament.single.swissTablePreview.standingsBased') }}
+          </span>
+          <div v-else class="flex items-center gap-2">
             <TournamentsSinglePairingShuffleSeedField
               :seed="shuffleSeed"
             />
@@ -186,7 +222,7 @@ function confirm() {
     <template #footer>
       <div class="flex items-center justify-between gap-2 w-full">
         <span v-if="!isValid" class="text-sm text-error">
-          {{ t('tournament.single.tablePreview.invalidTableSizes') }}
+          {{ t('tournament.single.swissTablePreview.invalidTables') }}
         </span>
         <div class="flex gap-2 justify-end ms-auto">
           <UButton

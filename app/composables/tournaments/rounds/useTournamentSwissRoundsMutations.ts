@@ -13,10 +13,13 @@ export function useTournamentSwissRoundsMutations(tournamentUuid: MaybeRefOrGett
     queryCache.invalidateQueries({ key: TOURNAMENT_MATCH_RESULTS_KEY(toValue(tournamentUuid)) })
   }
 
-  const startRoundOneSwiss = useRoundLifecycleMutation<string[]>({
+  const startRoundOneSwiss = useRoundLifecycleMutation<{
+    associateOrder: string[]
+    shuffleSeed: number | null
+  }>({
     endpoint: '/api/tournament-rounds/start-round-one-swiss',
     errorTitleKey: 'tournament.single.podsManager.startRoundOneErrorTitle',
-    body: associateOrder => ({ tournamentUuid: toValue(tournamentUuid), associateOrder }),
+    body: payload => ({ tournamentUuid: toValue(tournamentUuid), ...payload }),
     onSettled: invalidateRoundData
   })
 

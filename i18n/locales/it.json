@@ -1650,9 +1650,11 @@
         "dropHere": "Rilascia qui",
         "emptySlot": "Posto vuoto",
         "seatTooltip": "Posto {n}",
-        "invalidTableSizes": "Ogni tavolo deve avere 3 o 4 giocatori",
-        "threeTableNotLast": "Il tavolo da 3 deve stare in fondo, dopo i tavoli da 4",
-        "threeTablesLast": "I tavoli da 3 devono stare in fondo, dopo i tavoli da 4",
+        "cardSizeWarning": "Servono 3 o 4 giocatori",
+        "cardThreeNotLastWarning": "Va dopo i tavoli da 4",
+        "tableSizeError": "Il tavolo {n} ha {count} giocatori: ne servono 3 o 4",
+        "tableThreeNotLastError": "Il tavolo {n} è da 3: va spostato dopo i tavoli da 4",
+        "moreTableErrors": "e un altro tavolo da sistemare | e altri {count} tavoli da sistemare",
         "duplicatePlayers": "Un giocatore risulta seduto a più tavoli",
         "missingPlayers": "Manca uno o più giocatori dai tavoli",
         "forbiddenPairsPresent": "Alcuni tavoli contengono una coppia da evitare",
@@ -1710,6 +1712,7 @@
           "optimize": "Ottimizza",
           "optimizeTooltip": "Ricalcola la disposizione dei tavoli con l'algoritmo",
           "random": "Randomizza",
+          "standingsBased": "Dal round 2 i tavoli sono calcolati in base ai punteggi ottenuti",
           "randomTooltip": "Mescola casualmente i giocatori tra i tavoli"
         },
         "scoreBreakdown": {
@@ -1731,7 +1734,9 @@
         "description": "Trascina i giocatori per riordinarli, poi confermare per formare le coppie",
         "summary": "{count} tavoli",
         "invalidCount": "Numero di giocatori non valido per formare i tavoli (i bye non sono ancora supportati)",
-        "tableNumber": "Tavolo {n}"
+        "tableNumber": "Tavolo {n}",
+        "invalidTables": "Ogni tavolo deve avere 2 giocatori, tranne quello del bye",
+        "standingsBased": "Dal round 2 le coppie sono calcolate in base ai punteggi ottenuti, evitando le rivincite"
       },
       "playerNotification": {
         "sentTitle": "Tavoli comunicati su Telegram",

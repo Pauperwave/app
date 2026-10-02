@@ -46,13 +46,20 @@ const seatsModel = computed({
   >
     <template #header>
       <div class="flex items-center justify-between gap-2">
-        <div class="flex items-center gap-2">
-          <UIcon :name="ICONS.tableView" class="size-4 text-primary" />
+        <div class="flex min-w-0 items-center gap-2">
+          <UIcon :name="ICONS.tableView" class="size-4 shrink-0 text-primary" />
           <span class="font-semibold text-base whitespace-nowrap">
             {{ t('tournament.single.tablePreview.tableHeading', { n: table.tableNumber }) }}
           </span>
+          <!-- One truncated line: the card keeps its height when a warning appears. -->
+          <UTooltip v-if="tableStatus.warning" :text="tableStatus.warning">
+            <span class="flex min-w-0 items-center gap-1 text-xs font-medium text-warning">
+              <UIcon :name="ICONS.warning" class="size-3.5 shrink-0" />
+              <span class="truncate">{{ tableStatus.warning }}</span>
+            </span>
+          </UTooltip>
         </div>
-        <div class="flex items-center gap-1.5">
+        <div class="flex shrink-0 items-center gap-1.5">
           <UButton
             size="xs"
             color="neutral"
@@ -74,14 +81,7 @@ const seatsModel = computed({
       </div>
     </template>
 
-    <div class="@container space-y-2">
-      <UAlert
-        v-if="tableStatus.warning"
-        :title="tableStatus.warning"
-        :icon="ICONS.warning"
-        color="warning"
-        variant="subtle"
-      />
+    <div class="@container">
       <VueDraggable
         v-model="seatsModel"
         tag="div"
