@@ -21,8 +21,9 @@ type Schema = v.InferOutput<typeof schema>
 const state = createAssociateFormState()
 
 // Kept out of the shared form state: that one also backs the public /tesseramento form,
-// where this staff-only flag has no place.
-const hasNoTelegram = ref(false)
+// where this staff-only flag has no place. Stored as has_no_telegram, shown inverted as the
+// "Usa Telegram" switch: on = uses Telegram, off = doesn't.
+const usesTelegram = ref(true)
 
 // Refills the form state every time the modal opens on a different associate —
 // unlike AddModal.vue there is no successful submit that clears it (this one
@@ -47,7 +48,7 @@ watch([open, () => associate], ([isOpen, current]) => {
   state.has_read_statute = current.has_read_statute
   state.consent_data = current.consent_data
   state.consent_social = current.consent_social
-  hasNoTelegram.value = current.has_no_telegram
+  usesTelegram.value = !current.has_no_telegram
 }, { immediate: true })
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
@@ -57,7 +58,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     ...event.data,
     born_date: format(event.data.born_date, 'yyyy-MM-dd'),
     consent_social: event.data.consent_social ?? false,
-    has_no_telegram: hasNoTelegram.value
+    has_no_telegram: !usesTelegram.value
   }
 
   await submitWithToast(
@@ -96,11 +97,12 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
              it's an ongoing marketing preference, not a one-time declaration. -->
         <AssociatesListFormFields :state="state" disable-consents />
 
-        <UCheckbox
-          v-model="hasNoTelegram"
-          :label="$t('associate.noTelegram.label')"
-          :description="$t('associate.noTelegram.description')"
-        />
+        <UFormField name="usesTelegram" :description="$t('associate.usesTelegram.description')">
+          <USwitch
+            v-model="usesTelegram"
+            :label="$t('associate.usesTelegram.label')"
+          />
+        </UFormField>
 
         <!-- Actions -->
         <div class="flex justify-end gap-2">

@@ -403,9 +403,11 @@
     },
     "noTelegram": {
       "badge": "Senza Telegram",
-      "tooltip": "Non usa Telegram: risultati e comandante li inserisce l'organizzatore",
-      "label": "Non usa Telegram",
-      "description": "Risultati e comandante li inserisce l'organizzatore al suo posto"
+      "tooltip": "Non usa Telegram: risultati e comandante li inserisce l'organizzatore"
+    },
+    "usesTelegram": {
+      "label": "Usa Telegram",
+      "description": "Spento: risultati e comandante li inserisce l'organizzatore al suo posto"
     },
     "detail": {
       "notFound": "Associato non trovato",
