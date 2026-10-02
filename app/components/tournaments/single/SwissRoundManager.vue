@@ -76,8 +76,10 @@ const roundLocked = computed(() => roundData.round.value?.status !== 'in_progres
 const { onScoreSelect, onScoreClear, onToggleDrop } = submitHandlers
 
 const {
-  advanceRoundSwiss, advancePreviewOpen, nextRoundSeedPlayers, allResultsEntered,
-  openAdvancePreview, onAdvanceConfirm, endTournament, onTurnBack
+  advanceRoundSwiss, turnBackRoundSwiss, reopenTournamentSwiss, advancePreviewOpen,
+  nextRoundSeedPlayers, allResultsEntered, openAdvancePreview, onAdvanceConfirm,
+  turnBackConfirmOpen, endConfirmOpen, requestTurnBack, requestEndTournament, endTournament,
+  onTurnBack, reopenTournament
 } = lifecycle
 
 // ─── Round timer ────────────────────────────────────────────────────────────
@@ -129,16 +131,22 @@ const matchRows = computed<SwissMatchRow[]>(() =>
 <template>
   <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,34rem)] gap-4">
     <div class="space-y-3">
-      <!-- A closed round has nothing left to advance or turn back: only the current one does. -->
+      <!-- A closed round has nothing left to advance or turn back: only the current one does, and
+           an ended tournament only offers to be reopened. -->
       <TournamentsSinglePairingRoundNavButtons
-        v-if="!roundLocked"
-        :turn-back-label="t('tournament.single.roundManager.turnBackButton')"
+        v-if="!roundLocked || tournamentIsEnded"
+        :ended="tournamentIsEnded"
+        :reopen-loading="reopenTournamentSwiss.isLoading.value"
+        :turn-back-label="roundNumber <= 1
+          ? t('tournament.single.roundManager.turnBackToRegistrationButton')
+          : t('tournament.single.roundManager.turnBackButton')"
         :is-last-round="isLastRoundOfTournament"
         :advance-disabled="!allResultsEntered"
         :end-loading="advanceRoundSwiss.isLoading.value"
-        @turn-back="onTurnBack"
+        @turn-back="requestTurnBack"
         @advance="openAdvancePreview"
-        @end-tournament="endTournament"
+        @end-tournament="requestEndTournament"
+        @reopen="reopenTournament"
       />
 
       <TournamentsSinglePairingRoundTimer
@@ -220,6 +228,16 @@ const matchRows = computed<SwissMatchRow[]>(() =>
       />
     </UCard>
   </div>
+
+  <TournamentsSinglePairingRoundLifecycleConfirms
+    v-model:turn-back-open="turnBackConfirmOpen"
+    v-model:end-open="endConfirmOpen"
+    :round-number="roundNumber"
+    :turn-back-loading="turnBackRoundSwiss.isLoading.value"
+    :end-loading="advanceRoundSwiss.isLoading.value"
+    @turn-back="onTurnBack"
+    @end="endTournament"
+  />
 
   <TournamentsSinglePairingSwissTablePreviewModal
     v-model:open="advancePreviewOpen"

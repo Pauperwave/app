@@ -1862,6 +1862,20 @@
         "turnBackButton": "Torna al round precedente",
         "turnBackToRegistrationButton": "Torna alle iscrizioni",
         "turnBackRoundErrorTitle": "Impossibile tornare al round precedente",
+        "turnBackConfirm": {
+          "title": "Tornare indietro dal round {round}?",
+          "titleFirst": "Tornare alle iscrizioni?",
+          "description": "Il round {round} viene cancellato con tavoli, risultati, uccisioni e voti, e il round {previous} torna modificabile. I giocatori che hanno già lasciato il torneo restano tali.",
+          "descriptionFirst": "Il round 1 viene cancellato con tavoli e risultati e il torneo torna alle iscrizioni, che si possono di nuovo modificare.",
+          "warning": "I giocatori ricevono su Telegram l'avviso che i tavoli sono annullati. Non si può annullare."
+        },
+        "endConfirm": {
+          "title": "Terminare il torneo?",
+          "description": "Il torneo passa a concluso e nessun round sarà più modificabile.",
+          "warning": "Potrai riaprirlo dal pulsante \"Riapri torneo\" dell'ultimo round."
+        },
+        "reopenTournamentButton": "Riapri torneo",
+        "reopenTournamentErrorTitle": "Impossibile riaprire il torneo",
         "timerExpiredTitle": "Tempo scaduto!",
         "timerExpiredDescription": "Il tempo del round {round} è terminato",
         "endTournamentButton": "Termina torneo",

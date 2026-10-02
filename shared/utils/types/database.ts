@@ -2815,6 +2815,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      reopen_tournament: {
+        Args: { p_tournament_uuid: string }
+        Returns: undefined
+      }
       reset_commander_pairing: {
         Args: { p_pairing_uuid: string }
         Returns: undefined

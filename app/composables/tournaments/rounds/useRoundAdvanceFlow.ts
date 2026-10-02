@@ -16,11 +16,13 @@ type AdvanceMutation = ReturnType<typeof useRoundLifecycleMutation<{
   tableSizes?: number[]
 }>>
 type TurnBackMutation = ReturnType<typeof useRoundLifecycleMutation<number>>
+type ReopenMutation = ReturnType<typeof useRoundLifecycleMutation<undefined>>
 
 export function useRoundAdvanceFlow(options: {
   roundNumber: number
   advance: AdvanceMutation
   turnBack: TurnBackMutation
+  reopen: ReopenMutation
   autoOpenAdvancePreview: MaybeRefOrGetter<boolean>
   // Two named callbacks rather than passing Vue's own generated `emit`
   // straight through — its overloaded type (one call signature per event
@@ -31,7 +33,7 @@ export function useRoundAdvanceFlow(options: {
   onAdvancePreviewAutoOpened: () => void
 }) {
   const {
-    roundNumber, advance, turnBack, autoOpenAdvancePreview,
+    roundNumber, advance, turnBack, reopen, autoOpenAdvancePreview,
     onTurnedBack, onAdvancePreviewAutoOpened
   } = options
 
@@ -46,15 +48,33 @@ export function useRoundAdvanceFlow(options: {
       advancePreviewOpen.value = false
     } catch { /* toasted by the mutation's own onError */ }
   }
+  // Ending the tournament and turning a round back both ask first (user request, 2026-10-03): the
+  // buttons only open the confirm, endTournament/onTurnBack run the action itself.
+  const turnBackConfirmOpen = ref(false)
+  const endConfirmOpen = ref(false)
+  function requestTurnBack() {
+    turnBackConfirmOpen.value = true
+  }
+  function requestEndTournament() {
+    endConfirmOpen.value = true
+  }
   async function endTournament() {
     try {
       await advance.mutateAsync({ currentRoundNumber: roundNumber })
+      endConfirmOpen.value = false
     } catch { /* toasted by the mutation's own onError */ }
   }
   async function onTurnBack() {
     try {
       await turnBack.mutateAsync(roundNumber)
+      turnBackConfirmOpen.value = false
       onTurnedBack()
+    } catch { /* toasted by the mutation's own onError */ }
+  }
+  // The way back from "Termina torneo": nothing is deleted, the last round is editable again.
+  async function reopenTournament() {
+    try {
+      await reopen.mutateAsync(undefined)
     } catch { /* toasted by the mutation's own onError */ }
   }
 
@@ -72,7 +92,12 @@ export function useRoundAdvanceFlow(options: {
     advancePreviewOpen,
     openAdvancePreview,
     onAdvanceConfirm,
+    turnBackConfirmOpen,
+    endConfirmOpen,
+    requestTurnBack,
+    requestEndTournament,
     endTournament,
-    onTurnBack
+    onTurnBack,
+    reopenTournament
   }
 }

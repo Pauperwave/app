@@ -45,5 +45,12 @@ export function useTournamentRoundsMutations(tournamentUuid: MaybeRefOrGetter<st
     onSettled: invalidateRoundData
   })
 
-  return { startRoundOne, advanceRound, turnBackRound }
+  const reopenTournament = useRoundLifecycleMutation<undefined>({
+    endpoint: '/api/tournament-rounds/reopen',
+    errorTitleKey: 'tournament.single.roundManager.reopenTournamentErrorTitle',
+    body: () => ({ tournamentUuid: toValue(tournamentUuid) }),
+    onSettled: invalidateRoundData
+  })
+
+  return { startRoundOne, advanceRound, turnBackRound, reopenTournament }
 }

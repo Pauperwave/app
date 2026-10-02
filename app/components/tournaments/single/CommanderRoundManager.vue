@@ -101,8 +101,10 @@ const {
 } = submitHandlers
 
 const {
-  advanceRound, advancePreviewOpen, nextRoundSeedPlayers, allPairingsComplete,
-  canFormNextRoundTables, openAdvancePreview, onAdvanceConfirm, endTournament, onTurnBack
+  advanceRound, turnBackRound, reopenMutation, advancePreviewOpen, nextRoundSeedPlayers,
+  allPairingsComplete, canFormNextRoundTables, openAdvancePreview, onAdvanceConfirm,
+  turnBackConfirmOpen, endConfirmOpen, requestTurnBack, requestEndTournament, endTournament,
+  onTurnBack, reopenTournament
 } = lifecycle
 
 // Ending the tournament (last round) seats nobody, so only a real "next round" needs valid tables.
@@ -155,9 +157,12 @@ const showFHint = useChordHintKey('f')
 <template>
   <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-4">
     <div class="space-y-3">
-      <!-- A closed round has nothing left to advance or turn back: only the current one does. -->
+      <!-- A closed round has nothing left to advance or turn back: only the current one does, and
+           an ended tournament only offers to be reopened. -->
       <TournamentsSinglePairingRoundNavButtons
-        v-if="!roundLocked"
+        v-if="!roundLocked || tournamentIsEnded"
+        :ended="tournamentIsEnded"
+        :reopen-loading="reopenMutation.isLoading.value"
         :turn-back-label="turnBackButtonLabel"
         :is-last-round="isLastRoundOfTournament"
         :advance-disabled="!allPairingsComplete || cannotFormNextRound"
@@ -165,9 +170,10 @@ const showFHint = useChordHintKey('f')
           ? t('tournament.single.roundManager.advanceNotEnoughPlayersTooltip')
           : undefined"
         :end-loading="advanceRound.isLoading.value"
-        @turn-back="onTurnBack"
+        @turn-back="requestTurnBack"
         @advance="openAdvancePreview"
-        @end-tournament="endTournament"
+        @end-tournament="requestEndTournament"
+        @reopen="reopenTournament"
       />
 
       <TournamentsSinglePairingRoundTimer
@@ -347,6 +353,16 @@ const showFHint = useChordHintKey('f')
     :table-player-uuids="activeCommanderTablePlayerUuids"
     @submit="onCommanderConfirm"
     @clear="onCommanderClear"
+  />
+
+  <TournamentsSinglePairingRoundLifecycleConfirms
+    v-model:turn-back-open="turnBackConfirmOpen"
+    v-model:end-open="endConfirmOpen"
+    :round-number="roundNumber"
+    :turn-back-loading="turnBackRound.isLoading.value"
+    :end-loading="advanceRound.isLoading.value"
+    @turn-back="onTurnBack"
+    @end="endTournament"
   />
 
   <TournamentsSinglePairingTablePreviewModal
