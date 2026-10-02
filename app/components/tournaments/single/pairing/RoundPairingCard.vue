@@ -177,7 +177,7 @@ const drawTooltip = computed(() => {
 
     <div class="space-y-1.5">
       <div
-        v-for="player in players"
+        v-for="(player, playerIndex) in players"
         :key="player.value"
         class="flex items-center gap-2 rounded bg-elevated px-2 py-1.5"
       >
@@ -189,6 +189,15 @@ const drawTooltip = computed(() => {
           class="flex-1 truncate"
           :class="droppedFor(player.value) && 'opacity-60 line-through'"
         />
+        <!-- players come in player1..player4 order, i.e. seat order -->
+        <UTooltip :text="t('tournament.single.tablePreview.seatTooltip', { n: playerIndex + 1 })">
+          <UBadge
+            :label="String(playerIndex + 1)"
+            color="primary"
+            variant="subtle"
+            class="min-w-6 justify-center font-mono tabular-nums"
+          />
+        </UTooltip>
         <TournamentsSinglePairingDropBadge :dropped="droppedFor(player.value)" with-time />
         <UBadge
           v-if="positions.get(player.value)"

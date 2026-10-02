@@ -95,9 +95,10 @@ const seatsModel = computed({
         @end="emit('dragEnd')"
       >
         <TournamentsSinglePairingTableSeatItem
-          v-for="seat in seatsModel"
+          v-for="(seat, seatIndex) in seatsModel"
           :key="seat.id"
           :seat="seat"
+          :seat-number="seatIndex + 1"
           :is-dragging="isDragging"
         />
       </VueDraggable>

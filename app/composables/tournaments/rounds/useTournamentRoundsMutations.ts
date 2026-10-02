@@ -19,6 +19,7 @@ export function useTournamentRoundsMutations(tournamentUuid: MaybeRefOrGetter<st
   const startRoundOne = useRoundLifecycleMutation<{
     associateOrder: string[]
     tableSizes: number[]
+    shuffleSeed: number | null
   }>({
     endpoint: '/api/tournament-rounds/start-round-one',
     errorTitleKey: 'tournament.single.podsManager.startRoundOneErrorTitle',

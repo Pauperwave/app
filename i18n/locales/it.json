@@ -1623,13 +1623,8 @@
       },
       "shuffleSeed": {
         "label": "Seed",
-        "placeholder": "Seed (es. SEC-123)",
-        "apply": "Applica",
         "copyTooltip": "Copia il seed",
-        "editTooltip": "Inserisci un altro seed",
-        "copiedTitle": "Seed copiato",
-        "applyTooltip": "Rimescola con questo seed: stesso seed e stessi giocatori danno sempre gli stessi tavoli",
-        "invalid": "Il seed è fatto di tre lettere e tre cifre, per esempio SEC-123"
+        "copiedTitle": "Seed copiato"
       },
       "podsManager": {
         "summary": "{count} tavoli",
@@ -1649,6 +1644,7 @@
         "dragPlayerAriaLabel": "Sposta giocatore",
         "dropHere": "Rilascia qui",
         "emptySlot": "Posto vuoto",
+        "seatTooltip": "Posto {n}",
         "invalidTableSizes": "Ogni tavolo deve avere 3 o 4 giocatori",
         "threeTableNotLast": "Il tavolo da 3 deve stare in fondo, dopo i tavoli da 4",
         "threeTablesLast": "I tavoli da 3 devono stare in fondo, dopo i tavoli da 4",

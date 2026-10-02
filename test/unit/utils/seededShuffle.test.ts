@@ -1,7 +1,7 @@
 // test\unit\utils\seededShuffle.test.ts
 import { describe, expect, it } from 'vitest'
 import {
-  MAX_SHUFFLE_SEED, formatShuffleSeed, parseShuffleSeed, randomShuffleSeed, seededShuffle
+  MAX_SHUFFLE_SEED, formatShuffleSeed, randomShuffleSeed, seededShuffle
 } from '#shared/utils/seededShuffle'
 
 const players = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
@@ -40,12 +40,6 @@ describe('formatShuffleSeed', () => {
     expect(formatShuffleSeed(MAX_SHUFFLE_SEED)).toBe('ZZZ-999')
   })
 
-  it('round-trips every kind of seed', () => {
-    for (const seed of [0, 1, 999, 1_000, 26_000, 123_456, 9_999_999, MAX_SHUFFLE_SEED]) {
-      expect(parseShuffleSeed(formatShuffleSeed(seed))).toBe(seed)
-    }
-  })
-
   it('gives a different code to every seed', () => {
     const codes = new Set(Array.from(
       { length: 5_000 },
@@ -59,29 +53,13 @@ describe('formatShuffleSeed', () => {
   })
 })
 
-describe('parseShuffleSeed', () => {
-  it('ignores case and accepts the dash being left out or replaced by a space', () => {
-    const expected = parseShuffleSeed('SEC-123')
-    expect(expected).not.toBeNull()
-    expect(parseShuffleSeed('sec-123')).toBe(expected)
-    expect(parseShuffleSeed('SEC123')).toBe(expected)
-    expect(parseShuffleSeed(' sec 123 ')).toBe(expected)
-  })
-
-  it('rejects anything that is not three letters and three digits', () => {
-    for (const value of ['', null, undefined, 'SE-123', 'SECT-123', 'SEC-12', 'SEC-1234', '123456', 'S3C-123']) {
-      expect(parseShuffleSeed(value)).toBeNull()
-    }
-  })
-})
-
 describe('randomShuffleSeed', () => {
-  it('always produces a valid, round-trippable seed', () => {
+  it('always produces a seed with a three-letter, three-digit code', () => {
     for (let i = 0; i < 50; i++) {
       const seed = randomShuffleSeed()
       expect(seed).toBeGreaterThanOrEqual(0)
       expect(seed).toBeLessThanOrEqual(MAX_SHUFFLE_SEED)
-      expect(parseShuffleSeed(formatShuffleSeed(seed))).toBe(seed)
+      expect(formatShuffleSeed(seed)).toMatch(/^[A-Z]{3}-\d{3}$/)
     }
   })
 })

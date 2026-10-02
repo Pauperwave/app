@@ -1,7 +1,7 @@
 // shared\utils\seededShuffle.ts
 // Reproducible table assignment: the same seed over the same set of players always gives the
 // same shuffle. Internally a seed is an integer; people see it as a short code such as "SEC-123"
-// (3 letters + 3 digits) that is easy to read out loud and type back in.
+// (3 letters + 3 digits) that is easy to read out loud.
 const LETTERS_COUNT = 26 ** 3
 const DIGITS_COUNT = 1_000
 
@@ -23,19 +23,6 @@ export function formatShuffleSeed(seed: number): string {
     lettersIndex % 26
   ].map(letter).join('')
   return `${letters}-${String(seed % DIGITS_COUNT).padStart(3, '0')}`
-}
-
-// Accepts "SEC-123" in any case, with the dash optional or replaced by a space.
-export function parseShuffleSeed(value: unknown): number | null {
-  const match = String(value ?? '').trim().toUpperCase().match(/^([A-Z]{3})[\s-]?(\d{3})$/)
-  if (!match) return null
-
-  const [, letters, digits] = match
-  if (!letters || !digits) return null
-
-  const lettersIndex = [...letters]
-    .reduce((total, char) => total * 26 + char.charCodeAt(0) - 65, 0)
-  return lettersIndex * DIGITS_COUNT + Number(digits)
 }
 
 // mulberry32 — small, fast, good enough for seating players.

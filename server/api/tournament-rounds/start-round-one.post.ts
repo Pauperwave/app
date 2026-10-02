@@ -12,6 +12,8 @@ interface StartRoundOneBody {
   associateOrder: string[]
   // Confirmed table sizes, in order — without them the RPC re-derives its own split and drops dragged-in resizes.
   tableSizes: number[]
+  // Seed of the shuffle the seating started from, kept so the preview can reopen on it after a turn-back.
+  shuffleSeed: number | null
 }
 
 // Delegates round-1 creation (pairings + zeroed standings + the
@@ -21,13 +23,16 @@ interface StartRoundOneBody {
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 
-  const { tournamentUuid, associateOrder, tableSizes } = await readBody<StartRoundOneBody>(event)
+  const {
+    tournamentUuid, associateOrder, tableSizes, shuffleSeed
+  } = await readBody<StartRoundOneBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   const { data, error } = await supabase.rpc('start_commander_round_one', {
     p_tournament_uuid: tournamentUuid,
     p_associate_order: associateOrder,
-    p_table_sizes: tableSizes
+    p_table_sizes: tableSizes,
+    p_shuffle_seed: shuffleSeed ?? undefined
   })
 
   const roundUuid = unwrapRoundRpc(data, error)

@@ -24,6 +24,7 @@
 <script setup lang="ts">
 import { randomShuffleSeed } from '#shared/utils/seededShuffle'
 import type { PairingWeights, TablePlayer, PairingTable } from '~/types'
+import type { ConfirmedSeating } from '~/composables/tournaments/rounds/useLastRoundOneSeating'
 
 const open = defineModel<boolean>('open', { default: false })
 
@@ -35,17 +36,20 @@ const {
   tournamentUuid,
   currentRound = 1,
   loading = false,
-  dismissible = true
+  dismissible = true,
+  confirmedSeating = null
 } = defineProps<{
   players: TablePlayer[]
   tournamentUuid: string
   currentRound?: number
   loading?: boolean
   dismissible?: boolean
+  // Round-1 tables approved before a "Torna alle iscrizioni": reopened as-is, with their seed.
+  confirmedSeating?: ConfirmedSeating | null
 }>()
 
 const emit = defineEmits<{
-  confirm: [associateOrder: string[], tableSizes: number[]]
+  confirm: [associateOrder: string[], tableSizes: number[], shuffleSeed: number | null]
   cancel: []
 }>()
 
@@ -64,10 +68,13 @@ const { addAvoidPair, removeAvoidPair } = useAvoidPairsMutations()
 const { buildPreviewPods } = useCommanderPods()
 
 function buildInitialTables(playersList: TablePlayer[]): PairingTable[] {
-  const pods = buildPreviewPods(playersList.map(player => player.value))
+  return buildTablesFromIds(buildPreviewPods(playersList.map(player => player.value)), playersList)
+}
+
+function buildTablesFromIds(tableIds: string[][], playersList: TablePlayer[]): PairingTable[] {
   const playerByValue = new Map(playersList.map(player => [player.value, player]))
 
-  return pods.map((podIds, index) => ({
+  return tableIds.map((podIds, index) => ({
     id: `round-${currentRound}-table-${index + 1}`,
     tableNumber: index + 1,
     seats: podIds.map(id => ({
@@ -134,6 +141,15 @@ watch(avoidPairsData, (pairs) => {
   setForbiddenPairs(pairs ?? [])
 })
 
+// Only reused when it seats exactly the current players; anyone added or removed since starts a fresh shuffle.
+function matchingConfirmedSeating(): ConfirmedSeating | null {
+  if (!confirmedSeating) return null
+
+  const sortedIds = (ids: string[]) => [...ids].sort().join(',')
+  const seatedIds = sortedIds(confirmedSeating.tables.flat())
+  return seatedIds === sortedIds(players.map(player => player.value)) ? confirmedSeating : null
+}
+
 // Round 1 has no history for the optimizer to use (see the STUB above), so it only kept the registration-order
 // slice — a random seed shuffles it instead (user request, 2026-10-02). Round 2+ still optimizes on standings.
 watch(
@@ -141,7 +157,11 @@ watch(
   ([isOpen, isLoading]) => {
     if (!isOpen || isLoading || hasAutoOptimized.value) return
     if (!localTables.value.length) return
-    if (currentRound === 1) {
+    const seating = matchingConfirmedSeating()
+    if (seating) {
+      restoreTables(buildTablesFromIds(seating.tables, players))
+      shuffleSeed.value = seating.seed
+    } else if (currentRound === 1) {
       applySeed(randomShuffleSeed())
     } else {
       runOptimizer(140)
@@ -166,7 +186,7 @@ const scoreItems = computed(() => [
 function handleConfirm() {
   normalizeLocalTables()
   if (!isValid.value) return
-  emit('confirm', playerOrder.value, tableSizes.value)
+  emit('confirm', playerOrder.value, tableSizes.value, shuffleSeed.value)
 }
 
 function handleCancel() {
@@ -303,7 +323,6 @@ function openTableScoreBreakdown(tableIndex: number) {
           @open-settings="showSettings = true"
           @optimize="optimizeNow"
           @random="randomizeNow"
-          @apply-seed="applySeed"
         />
 
         <TournamentsSinglePairingTablePreviewGrid
