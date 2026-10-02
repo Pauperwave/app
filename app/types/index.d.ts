@@ -570,7 +570,8 @@ export interface TablePlayerStanding {
   // 1v1 "V-P-S" record (wins-draws-losses); Commander has none.
   record?: string
   // Tiebreakers in the order they rank players, e.g. { label: 'OMW%', value: '66.7' }.
-  tiebreakers: { label: string, value: string }[]
+  // With an icon the line shows icon + value; the label stays for the tooltip.
+  tiebreakers: { label: string, value: string, icon?: string }[]
 }
 
 export interface Seat {
