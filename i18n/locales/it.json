@@ -67,7 +67,8 @@
     "associateTag": {
       "lastRenewal": "Ultimo rinnovo",
       "neverRenewed": "Mai rinnovato",
-      "openTelegram": "Apri il profilo Telegram di {name}"
+      "openTelegram": "Apri il profilo Telegram di {name}",
+      "openProfile": "Apri scheda associato"
     },
     "mockDataNotice": "Dati di esempio: questa classifica non è ancora collegata al database reale.",
     "copyLink": "Copia link",
