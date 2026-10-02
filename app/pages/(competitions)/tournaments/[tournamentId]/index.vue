@@ -70,6 +70,8 @@ const {
   data: registrationsData,
   isLoading: isRegistrationsLoading
 } = useTournamentRegistrationsQuery(tournamentUuid)
+// Registrations made through the Telegram bot appear without a refresh.
+useTournamentRegistrationsRealtime(tournamentUuid)
 const acceptedCount = computed(() =>
   (registrationsData.value ?? []).filter(r => r.status === 'checked_in').length)
 
