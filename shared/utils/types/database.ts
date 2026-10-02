@@ -2139,6 +2139,7 @@ export type Database = {
           id: number
           pairings_approved_at: string | null
           round_number: number
+          shuffle_seed: number | null
           started_at: string | null
           status: string
           tournament_uuid: string
@@ -2151,6 +2152,7 @@ export type Database = {
           id?: number
           pairings_approved_at?: string | null
           round_number: number
+          shuffle_seed?: number | null
           started_at?: string | null
           status?: string
           tournament_uuid: string
@@ -2163,6 +2165,7 @@ export type Database = {
           id?: number
           pairings_approved_at?: string | null
           round_number?: number
+          shuffle_seed?: number | null
           started_at?: string | null
           status?: string
           tournament_uuid?: string
@@ -2823,6 +2826,7 @@ export type Database = {
       start_commander_round_one: {
         Args: {
           p_associate_order: string[]
+          p_shuffle_seed?: number
           p_table_sizes?: number[]
           p_tournament_uuid: string
         }

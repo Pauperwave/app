@@ -11,6 +11,8 @@ import type { Seat } from '~/types'
 
 defineProps<{
   seat: Seat
+  // 1-based seat at the table (player1..player4 once saved).
+  seatNumber: number
   isDragging: boolean
 }>()
 
@@ -44,6 +46,15 @@ const { t } = useI18n()
         size="md"
         class="flex-1 text-left"
       />
+
+      <UTooltip :text="t('tournament.single.tablePreview.seatTooltip', { n: seatNumber })">
+        <UBadge
+          :label="String(seatNumber)"
+          color="primary"
+          variant="subtle"
+          class="min-w-6 justify-center font-mono tabular-nums"
+        />
+      </UTooltip>
 
       <UBadge
         v-if="seat.player.seed !== undefined"

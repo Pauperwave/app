@@ -98,6 +98,8 @@ export function useTournamentLifecycleFlow(options: {
   // (Commander) — only one of the two ever renders at a time (isDraft xor
   // isCommander), so one boolean is enough for either.
   const podsModalOpen = ref(false)
+  // Approved round-1 tables + seed, for the preview reopened by "Torna alle iscrizioni".
+  const lastRoundOneSeating = useLastRoundOneSeating(tournamentUuid)
 
   // TablePreviewModal (ported from league) takes TablePlayer[] (value/label),
   // not AcceptancePickerItem's fuller shape — same associate uuid identity
@@ -149,9 +151,13 @@ export function useTournamentLifecycleFlow(options: {
     pendingAdvancePreviewRound.value = null
   }
 
-  async function onPodsConfirm(associateOrder: string[], tableSizes: number[]) {
+  async function onPodsConfirm(
+    associateOrder: string[],
+    tableSizes: number[],
+    shuffleSeed: number | null
+  ) {
     try {
-      await startRoundOne.mutateAsync({ associateOrder, tableSizes })
+      await startRoundOne.mutateAsync({ associateOrder, tableSizes, shuffleSeed })
       podsModalOpen.value = false
     } catch {
       // Toasted by useTournamentRoundsMutations' own onError — nothing left to do here.
@@ -200,6 +206,7 @@ export function useTournamentLifecycleFlow(options: {
     resetTournament,
     podsModalOpen,
     tablePreviewPlayers,
+    lastRoundOneSeating,
     canOpenTablePreview,
     onStartTournamentClick,
     pendingAdvancePreviewRound,

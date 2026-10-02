@@ -8,6 +8,8 @@ export interface TournamentRound {
   status: 'scheduled' | 'preview' | 'approved' | 'in_progress' | 'completed'
   startedAt: string | null
   endedAt: string | null
+  /** Seed of the confirmed round-1 shuffle, null for optimized rounds. */
+  shuffleSeed: number | null
 }
 
 export const TOURNAMENT_ROUNDS_KEY = (tournamentUuid: string) =>
@@ -21,7 +23,7 @@ export function useTournamentRoundsQuery(tournamentUuid: MaybeRefOrGetter<string
     query: async (): Promise<TournamentRound[]> => {
       const { data, error } = await supabase
         .from('tournament_rounds')
-        .select('uuid, round_number, status, started_at, ended_at')
+        .select('uuid, round_number, status, started_at, ended_at, shuffle_seed')
         .eq('tournament_uuid', toValue(tournamentUuid))
         .order('round_number', { ascending: true })
 
@@ -32,7 +34,8 @@ export function useTournamentRoundsQuery(tournamentUuid: MaybeRefOrGetter<string
         roundNumber: row.round_number,
         status: row.status as TournamentRound['status'],
         startedAt: row.started_at,
-        endedAt: row.ended_at
+        endedAt: row.ended_at,
+        shuffleSeed: row.shuffle_seed
       }))
     }
   })

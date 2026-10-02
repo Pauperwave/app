@@ -106,7 +106,8 @@ const { items, currentStep } = useTournamentStepper({
 const {
   canStartTournament, isStartConfirmOpen, confirmStartTournament, setStatus,
   canResetTournament, isResetConfirmOpen, confirmResetTournament, resetTournament,
-  podsModalOpen, tablePreviewPlayers, canOpenTablePreview, onStartTournamentClick,
+  podsModalOpen, tablePreviewPlayers, lastRoundOneSeating, canOpenTablePreview,
+  onStartTournamentClick,
   pendingAdvancePreviewRound, onRoundTurnedBack, onAdvancePreviewAutoOpened,
   onPodsConfirm, onSwissPodsConfirm, onDraftPodsConfirm, startRoundOne, startRoundOneSwiss
 } = useTournamentLifecycleFlow({
@@ -322,6 +323,7 @@ const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowAct
     :players="tablePreviewPlayers"
     :tournament-uuid="tournamentUuid"
     :current-round="1"
+    :confirmed-seating="lastRoundOneSeating"
     :loading="startRoundOne.isLoading.value"
     @confirm="onPodsConfirm"
   />

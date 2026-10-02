@@ -16,7 +16,6 @@ const emit = defineEmits<{
   openSettings: []
   optimize: []
   random: []
-  applySeed: [seed: number]
 }>()
 
 const { t } = useI18n()
@@ -32,7 +31,6 @@ const { t } = useI18n()
     <div class="flex flex-wrap items-center gap-2">
       <TournamentsSinglePairingShuffleSeedField
         :seed="seed"
-        @apply="value => emit('applySeed', value)"
       />
       <UTooltip
         :content="{ side: 'top' }"

@@ -117,7 +117,6 @@ function confirm() {
           <div class="flex items-center gap-2">
             <TournamentsSinglePairingShuffleSeedField
               :seed="shuffleSeed"
-              @apply="shuffleWithSeed"
             />
             <UButton
               :label="t('tournament.single.podsManager.shuffle')"
