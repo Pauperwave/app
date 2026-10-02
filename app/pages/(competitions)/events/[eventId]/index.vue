@@ -1,5 +1,6 @@
 <!-- app\pages\(competitions)\events\[eventId]\index.vue -->
 <script lang="ts" setup>
+import type { TabsItem } from '@nuxt/ui'
 // fallow-ignore-file code-duplication -- see the same comment in
 // leagues/[leagueId]/index.vue
 // First real (non-mock) detail page for events (2026-08-20). Uuid-based,
@@ -40,13 +41,39 @@ const { rowContextMenuItems } = useCopyLinkContextMenu('/tournaments')
 const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowActions()
 const selection = useSelection<number>()
 
+// The event page is mainly a calendar of its tournaments (user request, 2026-10-02): a quick way into
+// each tournament's own page. "Settimana" shows every event day side by side, "Giorno" one at a time.
+const scheduleDays = computed(() =>
+  event.value ? eventScheduleDays(event.value, tournaments.value) : [])
+
+const scheduleView = ref<'day' | 'week'>('week')
+const scheduleViewItems = computed<TabsItem[]>(() => [
+  { label: t('event.detail.schedule.viewDay'), value: 'day', icon: ICONS.calendar },
+  { label: t('event.detail.schedule.viewWeek'), value: 'week', icon: ICONS.tableView }
+])
+
+const selectedDay = ref<string>()
+watch(scheduleDays, (days) => {
+  if (!selectedDay.value || !days.includes(selectedDay.value)) selectedDay.value = days[0]
+}, { immediate: true })
+const dayItems = computed<TabsItem[]>(() => scheduleDays.value.map(day => ({
+  label: new Date(`${day}T00:00:00`).toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric' }),
+  value: day
+})))
+
+const visibleDays = computed(() => scheduleView.value === 'week' || !selectedDay.value
+  ? scheduleDays.value
+  : [selectedDay.value])
+
 // DaySchedule.vue's own click-to-create (user request, 2026-08-22, "like
 // Google Calendar") — one AddModal instance reused across every slot click,
-// re-seeded each time via its initialTime prop (see that component's own
+// re-seeded each time via its initialDate/initialTime props (see that component's own
 // watch(open, ...)).
 const addModalOpen = ref(false)
+const addModalInitialDate = ref<string>()
 const addModalInitialTime = ref('20:00')
-function openAddModalAt(time: string) {
+function openAddModalAt(date: string, time: string) {
+  addModalInitialDate.value = date
   addModalInitialTime.value = time
   addModalOpen.value = true
 }
@@ -88,63 +115,69 @@ function openAddModalAt(time: string) {
       </div>
 
       <div v-else-if="event" class="flex flex-col gap-6">
-        <div class="grid items-start gap-4 sm:grid-cols-2">
-          <UCard>
-            <div class="flex flex-col gap-3">
-              <div class="flex items-start justify-between gap-3">
-                <h2 class="text-xl font-semibold truncate">
-                  {{ event.name }}
-                </h2>
-                <UBadge
-                  :color="eventStatusColor(event.status)"
-                  variant="subtle"
-                  :icon="EVENT_STATUS_ICONS[event.status]"
-                  class="shrink-0"
-                >
-                  {{ t(`event.status.${event.status}`) }}
-                </UBadge>
-              </div>
-
-              <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted">
-                <span v-if="event.organizer" class="flex items-center gap-1.5">
-                  <UIcon :name="ICONS.player" class="size-4 shrink-0" />
-                  {{ event.organizer }}
-                </span>
-                <span v-if="event.location" class="flex items-center gap-1.5">
-                  <UIcon :name="ICONS.mapPin" class="size-4 shrink-0" />
-                  {{ event.location }}
-                </span>
-              </div>
-
-              <div class="flex items-center gap-1.5 text-sm text-muted flex-wrap">
-                <UIcon :name="ICONS.calendar" class="size-4 shrink-0" />
-                {{ t('event.detail.dateRange.from') }}
-                <DateWithRelativeTooltip :iso-string="event.startDate" :time="false" />
-                <template v-if="event.endDate">
-                  {{ t('event.detail.dateRange.to') }}
-                  <DateWithRelativeTooltip :iso-string="event.endDate" :time="false" />
-                </template>
-              </div>
-
-              <p class="text-sm text-muted">
-                {{ t('event.tournamentsLabel', event.tournamentCount) }}
-              </p>
+        <UCard>
+          <div class="flex flex-col gap-3">
+            <div class="flex items-start justify-between gap-3">
+              <h2 class="text-xl font-semibold truncate">
+                {{ event.name }}
+              </h2>
+              <UBadge
+                :color="eventStatusColor(event.status)"
+                variant="subtle"
+                :icon="EVENT_STATUS_ICONS[event.status]"
+                class="shrink-0"
+              >
+                {{ t(`event.status.${event.status}`) }}
+              </UBadge>
             </div>
-          </UCard>
 
-          <UCard :ui="{ header: 'font-semibold' }">
-            <template #header>
-              {{ t('event.detail.schedule.title') }}
-            </template>
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted">
+              <span v-if="event.organizer" class="flex items-center gap-1.5">
+                <UIcon :name="ICONS.player" class="size-4 shrink-0" />
+                {{ event.organizer }}
+              </span>
+              <span v-if="event.location" class="flex items-center gap-1.5">
+                <UIcon :name="ICONS.mapPin" class="size-4 shrink-0" />
+                {{ event.location }}
+              </span>
+            </div>
 
-            <EventsSingleDaySchedule
-              :date="event.startDate"
-              :tournaments="tournaments"
-              @create-tournament="openAddModalAt"
-              @open-tournament="openEditModal"
-            />
-          </UCard>
-        </div>
+            <div class="flex items-center gap-1.5 text-sm text-muted flex-wrap">
+              <UIcon :name="ICONS.calendar" class="size-4 shrink-0" />
+              {{ t('event.detail.dateRange.from') }}
+              <DateWithRelativeTooltip :iso-string="event.startDate" :time="false" />
+              <template v-if="event.endDate">
+                {{ t('event.detail.dateRange.to') }}
+                <DateWithRelativeTooltip :iso-string="event.endDate" :time="false" />
+              </template>
+            </div>
+
+            <p class="text-sm text-muted">
+              {{ t('event.tournamentsLabel', event.tournamentCount) }}
+            </p>
+          </div>
+        </UCard>
+
+        <UCard :ui="{ header: 'flex flex-wrap items-center justify-between gap-2' }">
+          <template #header>
+            <span class="font-semibold">{{ t('event.detail.schedule.title') }}</span>
+            <div class="flex flex-wrap items-center gap-2">
+              <ViewModeTabs
+                v-if="scheduleView === 'day' && dayItems.length > 1"
+                v-model="selectedDay"
+                :items="dayItems"
+              />
+              <ViewModeTabs v-model="scheduleView" :items="scheduleViewItems" />
+            </div>
+          </template>
+
+          <EventsSingleDaySchedule
+            :days="visibleDays"
+            :tournaments="tournaments"
+            @create-tournament="openAddModalAt"
+            @edit-tournament="openEditModal"
+          />
+        </UCard>
 
         <TournamentsListGridView
           :tournaments="tournaments"
@@ -166,7 +199,7 @@ function openAddModalAt(time: string) {
     v-if="event"
     v-model="addModalOpen"
     hide-trigger
-    :initial-date="event.startDate.substring(0, 10)"
+    :initial-date="addModalInitialDate ?? event.startDate.substring(0, 10)"
     :initial-time="addModalInitialTime"
     :initial-event-uuid="event.uuid"
   />

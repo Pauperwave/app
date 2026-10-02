@@ -1249,8 +1249,11 @@
         "to": "al"
       },
       "schedule": {
-        "title": "Agenda del giorno",
-        "addAt": "Crea torneo alle {time}"
+        "title": "Programma",
+        "addAt": "Crea torneo alle {time}",
+        "edit": "Modifica {name}",
+        "viewDay": "Giorno",
+        "viewWeek": "Settimana"
       }
     },
     "participants": {
