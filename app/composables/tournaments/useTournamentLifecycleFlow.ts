@@ -149,9 +149,9 @@ export function useTournamentLifecycleFlow(options: {
     pendingAdvancePreviewRound.value = null
   }
 
-  async function onPodsConfirm(associateOrder: string[]) {
+  async function onPodsConfirm(associateOrder: string[], tableSizes: number[]) {
     try {
-      await startRoundOne.mutateAsync(associateOrder)
+      await startRoundOne.mutateAsync({ associateOrder, tableSizes })
       podsModalOpen.value = false
     } catch {
       // Toasted by useTournamentRoundsMutations' own onError — nothing left to do here.

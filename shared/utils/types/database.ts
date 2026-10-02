@@ -2702,6 +2702,7 @@ export type Database = {
         Args: {
           p_associate_order?: string[]
           p_current_round_number: number
+          p_table_sizes?: number[]
           p_tournament_uuid: string
         }
         Returns: string
@@ -2720,6 +2721,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: undefined
+      }
+      commander_table_sizes: {
+        Args: { p_count: number; p_table_sizes: number[] }
+        Returns: number[]
       }
       create_payment_with_renewal: {
         Args: {
@@ -2816,7 +2821,11 @@ export type Database = {
         Returns: undefined
       }
       start_commander_round_one: {
-        Args: { p_associate_order: string[]; p_tournament_uuid: string }
+        Args: {
+          p_associate_order: string[]
+          p_table_sizes?: number[]
+          p_tournament_uuid: string
+        }
         Returns: string
       }
       start_swiss_round_one: {

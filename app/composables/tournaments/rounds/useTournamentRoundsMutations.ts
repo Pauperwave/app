@@ -16,16 +16,20 @@ export function useTournamentRoundsMutations(tournamentUuid: MaybeRefOrGetter<st
     queryCache.invalidateQueries({ key: TOURNAMENT_STANDINGS_KEY(toValue(tournamentUuid)) })
   }
 
-  const startRoundOne = useRoundLifecycleMutation<string[]>({
+  const startRoundOne = useRoundLifecycleMutation<{
+    associateOrder: string[]
+    tableSizes: number[]
+  }>({
     endpoint: '/api/tournament-rounds/start-round-one',
     errorTitleKey: 'tournament.single.podsManager.startRoundOneErrorTitle',
-    body: associateOrder => ({ tournamentUuid: toValue(tournamentUuid), associateOrder }),
+    body: payload => ({ tournamentUuid: toValue(tournamentUuid), ...payload }),
     onSettled: invalidateRoundData
   })
 
   const advanceRound = useRoundLifecycleMutation<{
     currentRoundNumber: number
     associateOrder?: string[]
+    tableSizes?: number[]
   }>({
     endpoint: '/api/tournament-rounds/advance-round',
     errorTitleKey: 'tournament.single.roundManager.advanceRoundErrorTitle',

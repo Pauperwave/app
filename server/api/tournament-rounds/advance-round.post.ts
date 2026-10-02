@@ -9,6 +9,8 @@ interface AdvanceRoundBody {
   // for the next round, same TablePreviewModal.vue optimizer flow as round 1
   // (see start-round-one.post.ts's own comment).
   associateOrder?: string[]
+  // Confirmed table sizes for the next round, see start-round-one.post.ts.
+  tableSizes?: number[]
 }
 
 // Delegates the whole round-close/advance transition (recompute standings
@@ -19,14 +21,16 @@ interface AdvanceRoundBody {
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 
-  const { tournamentUuid, currentRoundNumber, associateOrder }
-    = await readBody<AdvanceRoundBody>(event)
+  const {
+    tournamentUuid, currentRoundNumber, associateOrder, tableSizes
+  } = await readBody<AdvanceRoundBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   const { data, error } = await supabase.rpc('advance_commander_round', {
     p_tournament_uuid: tournamentUuid,
     p_current_round_number: currentRoundNumber,
-    p_associate_order: associateOrder
+    p_associate_order: associateOrder,
+    p_table_sizes: tableSizes
   })
   const roundUuid = unwrapRoundRpc(data, error)
 

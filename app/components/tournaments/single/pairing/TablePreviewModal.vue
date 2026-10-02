@@ -45,7 +45,7 @@ const {
 }>()
 
 const emit = defineEmits<{
-  confirm: [associateOrder: string[]]
+  confirm: [associateOrder: string[], tableSizes: number[]]
   cancel: []
 }>()
 
@@ -59,10 +59,8 @@ const hasAutoOptimized = ref(false)
 const { data: avoidPairsData } = useAvoidPairsQuery()
 const { addAvoidPair, removeAvoidPair } = useAvoidPairsMutations()
 
-// Sequential slice into pods (biggest tables first) — the same "no
-// optimizer yet" starting point buildPreviewPods already gives Draft's
-// PodsManager.vue; the optimizer below immediately reshuffles this into a
-// real scored arrangement once the modal opens.
+// Sequential slice into pods (biggest tables first), same as Draft's PodsManager.vue — only a starting point,
+// replaced on open by a seeded shuffle (round 1) or the optimizer (round 2+), see the watcher below.
 const { buildPreviewPods } = useCommanderPods()
 
 function buildInitialTables(playersList: TablePlayer[]): PairingTable[] {
@@ -85,8 +83,10 @@ const {
   localTables,
   isDragging,
   isValid,
+  tableSizesValid,
   previewError,
   playerOrder,
+  tableSizes,
   tableStatus,
   setDragging,
   reset,
@@ -111,12 +111,14 @@ const {
   initialForbiddenPairs: avoidPairsData.value ?? []
 })
 
+// Keyed on the ids, not the array: upstream refetches (e.g. AssociateTag mounting on a cross-table drop) rebuild
+// an identical `players` array, and resyncing on that wiped every drag a second after the drop.
 watch(
-  () => players,
-  (playersList) => {
-    syncFromSource(buildInitialTables(playersList))
-  },
-  { deep: true }
+  () => players.map(player => player.value).join(','),
+  () => {
+    syncFromSource(buildInitialTables(players))
+    hasAutoOptimized.value = false
+  }
 )
 
 watch(open, (value) => {
@@ -133,20 +135,18 @@ watch(avoidPairsData, (pairs) => {
   setForbiddenPairs(pairs ?? [])
 })
 
-// League's current behavior runs the optimizer even at round 1 (not just
-// round 2+) — an earlier "round 1 is pure random" design was superseded
-// once cross-tournament table3Count history became available from round 1
-// onward (see the optimizer's own docs). This app has none of that history
-// yet (see the STUB above), but running the optimizer is still strictly
-// better than the initial sequential slice for the signals it DOES have
-// (novelty/strength-balance all default to neutral with zeroed input, so
-// this is a no-op today and becomes real once the history plumbing lands).
+// Round 1 has no history for the optimizer to use (see the STUB above), so it only kept the registration-order
+// slice — a random seed shuffles it instead (user request, 2026-10-02). Round 2+ still optimizes on standings.
 watch(
-  () => [open.value, loading, localTables.value.length] as const,
+  () => [open.value, loading, localTables.value.length, hasAutoOptimized.value] as const,
   ([isOpen, isLoading]) => {
     if (!isOpen || isLoading || hasAutoOptimized.value) return
     if (!localTables.value.length) return
-    runOptimizer(140)
+    if (currentRound === 1) {
+      applySeed(randomShuffleSeed())
+    } else {
+      runOptimizer(140)
+    }
     hasAutoOptimized.value = true
   }
 )
@@ -167,7 +167,14 @@ const scoreItems = computed(() => [
 function handleConfirm() {
   normalizeLocalTables()
   if (!isValid.value) return
-  emit('confirm', playerOrder.value)
+  if (!tableSizesValid.value) {
+    toast.add({
+      title: t('tournament.single.tablePreview.invalidTableSizes'),
+      color: 'warning'
+    })
+    return
+  }
+  emit('confirm', playerOrder.value, tableSizes.value)
 }
 
 function handleCancel() {

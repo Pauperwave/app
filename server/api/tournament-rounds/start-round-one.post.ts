@@ -10,6 +10,8 @@ interface StartRoundOneBody {
   // endpoint just persists whatever final order it's given, sequentially
   // sliced into pods by start_commander_round_one (migration 20260915000001).
   associateOrder: string[]
+  // Confirmed table sizes, in order — without them the RPC re-derives its own split and drops dragged-in resizes.
+  tableSizes: number[]
 }
 
 // Delegates round-1 creation (pairings + zeroed standings + the
@@ -19,12 +21,13 @@ interface StartRoundOneBody {
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 
-  const { tournamentUuid, associateOrder } = await readBody<StartRoundOneBody>(event)
+  const { tournamentUuid, associateOrder, tableSizes } = await readBody<StartRoundOneBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   const { data, error } = await supabase.rpc('start_commander_round_one', {
     p_tournament_uuid: tournamentUuid,
-    p_associate_order: associateOrder
+    p_associate_order: associateOrder,
+    p_table_sizes: tableSizes
   })
 
   const roundUuid = unwrapRoundRpc(data, error)

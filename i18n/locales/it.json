@@ -1647,7 +1647,7 @@
         "dragPlayerAriaLabel": "Sposta giocatore",
         "dropHere": "Rilascia qui",
         "emptySlot": "Posto vuoto",
-        "invalidTableSizes": "Uno o più tavoli hanno un numero di giocatori non valido",
+        "invalidTableSizes": "Ogni tavolo deve avere 3 o 4 giocatori",
         "duplicatePlayers": "Un giocatore risulta seduto a più tavoli",
         "missingPlayers": "Manca uno o più giocatori dai tavoli",
         "forbiddenPairsPresent": "Alcuni tavoli contengono una coppia da evitare",
