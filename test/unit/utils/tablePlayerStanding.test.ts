@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   commanderTablePlayerStanding, swissTablePlayerStanding
 } from '~/utils/tournaments/tablePlayerStanding'
+import { ICONS } from '~/utils/icons'
 
 describe('swissTablePlayerStanding', () => {
   it('shows points, the V-P-S record and the tiebreakers in ranking order', () => {
@@ -31,7 +32,7 @@ describe('swissTablePlayerStanding', () => {
 })
 
 describe('commanderTablePlayerStanding', () => {
-  it('shows the score and the tiebreakers in ranking order, with no record', () => {
+  it('shows the score and the tiebreakers in ranking order as icons, with no record', () => {
     const standing = commanderTablePlayerStanding(
       { score: 12, victories: 2, kills: 3, brewReceived: 1, playReceived: 0 },
       1,
@@ -42,10 +43,10 @@ describe('commanderTablePlayerStanding', () => {
       rank: 1,
       points: 12,
       tiebreakers: [
-        { label: 'Vittorie', value: '2' },
-        { label: 'Uccisioni', value: '3' },
-        { label: 'Mazzo', value: '1' },
-        { label: 'Giocata', value: '0' }
+        { label: 'Vittorie', value: '2', icon: ICONS.standings },
+        { label: 'Uccisioni', value: '3', icon: ICONS.kills },
+        { label: 'Mazzo', value: '1', icon: ICONS.brewVotes },
+        { label: 'Giocata', value: '0', icon: ICONS.playVotes }
       ]
     })
   })

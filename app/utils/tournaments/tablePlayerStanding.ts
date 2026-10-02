@@ -2,6 +2,7 @@
 // Standing summaries shown under each player in the round 2+ table previews, so the organizer
 // can see why the tables came out this way (user request, 2026-10-02).
 import type { TablePlayerStanding } from '~/types'
+import { ICONS } from '~/utils/icons'
 import type { SwissStandingStats } from '~/utils/tournaments/swissScoring'
 
 function formatPercentage(value: number): string {
@@ -34,6 +35,7 @@ interface CommanderStats {
 }
 
 // Same tiebreak order as compareCommanderStandings: score, then victories, kills, brew and play votes.
+// Shown as icons, same as CommanderStandingsTable.vue's column headers.
 export function commanderTablePlayerStanding(
   stats: CommanderStats,
   rank: number,
@@ -43,10 +45,10 @@ export function commanderTablePlayerStanding(
     rank,
     points: stats.score,
     tiebreakers: [
-      { label: labels.victories, value: String(stats.victories) },
-      { label: labels.kills, value: String(stats.kills) },
-      { label: labels.brew, value: String(stats.brewReceived) },
-      { label: labels.play, value: String(stats.playReceived) }
+      { label: labels.victories, value: String(stats.victories), icon: ICONS.standings },
+      { label: labels.kills, value: String(stats.kills), icon: ICONS.kills },
+      { label: labels.brew, value: String(stats.brewReceived), icon: ICONS.brewVotes },
+      { label: labels.play, value: String(stats.playReceived), icon: ICONS.playVotes }
     ]
   }
 }
