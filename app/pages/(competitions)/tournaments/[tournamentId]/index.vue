@@ -66,9 +66,18 @@ const is1v1Format = computed(() =>
 // the active step's content — @nuxt/ui's Stepper.vue's own `v-if` on
 // `currentStep`). Matches AcceptancePicker.vue's own sourceRowStatus()
 // mapping of `status === 'checked_in'` to "accepted".
-const { data: registrationsData } = useTournamentRegistrationsQuery(tournamentUuid)
+const {
+  data: registrationsData,
+  isLoading: isRegistrationsLoading
+} = useTournamentRegistrationsQuery(tournamentUuid)
 const acceptedCount = computed(() =>
   (registrationsData.value ?? []).filter(r => r.status === 'checked_in').length)
+
+// Same two queries AcceptancePicker builds the accepted players from (shared cache, no extra fetch):
+// "Avvia torneo" shows loading until they land, instead of looking clickable while still disabled.
+const { isLoading: isAssociatesLoading } = useAssociatesQuery()
+const isAcceptedPlayersLoading = computed(() =>
+  isRegistrationsLoading.value || isAssociatesLoading.value)
 
 const { calculateRoundCount } = useSwissRoundCount()
 const { data: settings } = useSettingsQuery()
@@ -158,6 +167,7 @@ const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowAct
               color="primary"
               variant="solid"
               size="md"
+              :loading="isAcceptedPlayersLoading"
               :disabled="!canOpenTablePreview"
               @click="onStartTournamentClick"
             >
