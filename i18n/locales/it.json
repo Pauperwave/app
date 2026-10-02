@@ -1737,7 +1737,7 @@
         "invalidCount": "Numero di giocatori non valido per formare i tavoli (i bye non sono ancora supportati)",
         "tableNumber": "Tavolo {n}",
         "invalidTables": "Ogni tavolo deve avere 2 giocatori, tranne quello del bye",
-        "standingsBased": "Dal round 2 le coppie sono calcolate in base ai punteggi ottenuti, evitando le rivincite"
+        "standingsBased": "Sistema svizzero: i giocatori sono ordinati per punti, poi OMW%, GW% e OGW%, e accoppiati in ordine (1° contro 2°, 3° contro 4°…) evitando chi si è già affrontato. Il bye va al giocatore più in basso in classifica che non l'ha ancora avuto. Niente mescolamento: con gli stessi risultati le coppie sono sempre le stesse."
       },
       "playerNotification": {
         "sentTitle": "Tavoli comunicati su Telegram",

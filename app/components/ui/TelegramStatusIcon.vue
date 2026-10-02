@@ -28,7 +28,7 @@ const COLOR_CLASS = {
   <UTooltip v-if="state" :text="t(`associate.telegramStatus.${state}`)">
     <UIcon
       :name="TELEGRAM_LINK_STATE_CONFIG[state].icon"
-      :class="['size-4 shrink-0', COLOR_CLASS[TELEGRAM_LINK_STATE_CONFIG[state].color]]"
+      :class="['size-5 shrink-0', COLOR_CLASS[TELEGRAM_LINK_STATE_CONFIG[state].color]]"
       :aria-label="t(`associate.telegramStatus.${state}`)"
     />
   </UTooltip>

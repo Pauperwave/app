@@ -146,11 +146,7 @@ function confirm() {
               : t('tournament.single.swissTablePreview.invalidCount') }}
           </span>
           <!-- Shuffle/seed on round 1 only: later pairs follow the standings (ADR-043). -->
-          <span v-if="currentRound > 1" class="flex items-center gap-1.5 text-sm text-muted">
-            <UIcon :name="ICONS.info" class="size-4 shrink-0" />
-            {{ t('tournament.single.swissTablePreview.standingsBased') }}
-          </span>
-          <div v-else class="flex items-center gap-2">
+          <div v-if="currentRound === 1" class="flex items-center gap-2">
             <TournamentsSinglePairingShuffleSeedField
               :seed="shuffleSeed"
             />
@@ -164,6 +160,12 @@ function confirm() {
             />
           </div>
         </div>
+
+        <!-- Round 2+: the pairing algorithm spelled out (ADR-043), so the organizer knows why. -->
+        <p v-if="currentRound > 1" class="flex items-start gap-1.5 text-sm text-muted">
+          <UIcon :name="ICONS.info" class="mt-0.5 size-4 shrink-0" />
+          <span>{{ t('tournament.single.swissTablePreview.standingsBased') }}</span>
+        </p>
 
         <div :class="['grid gap-3', tables.length <= 1 ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2']">
           <UCard

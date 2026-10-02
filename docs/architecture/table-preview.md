@@ -26,6 +26,7 @@ From round 2 every player gets one line under the name so the organizer can see 
 | **2+** | Optimizer over the standings ("Ottimizza") | Swiss pairing by standings, no rematches (ADR-043) |
 
 - The seed (a "SEC-123" code, `shared/utils/seededShuffle.ts`) exists on round 1 only: copyable ticket, "Usa un seed" to paste one back, "Randomizza" for a new one. Same seed + same players = same tables. From round 2 these controls are hidden.
+- From round 2 the 1v1 preview spells its algorithm out next to an info icon (sort by points, OMW%, GW%, OGW%; pair in order avoiding rematches; bye to the lowest-ranked player without one; never shuffled). Bracket shuffling like WER/Companion was considered and dropped again on 2026-10-02 (ADR-043).
 - Round 1's seed is saved on confirm (`tournament_rounds.shuffle_seed`).
 - After a turn-back, the preview reopens on the tables approved for that round (`useConfirmedSeatings.ts`), as long as the players are the same and the round before it wasn't redone. Kept for the page only: a reload after the turn-back starts over.
 
