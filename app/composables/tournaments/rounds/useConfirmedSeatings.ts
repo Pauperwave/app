@@ -8,6 +8,12 @@ export interface ConfirmedSeating {
   tables: string[][]
 }
 
+// A saved seating is only reused when it seats exactly these players; anyone added or removed starts over.
+export function seatingMatchesPlayers(seating: ConfirmedSeating, playerIds: string[]): boolean {
+  const sortedIds = (ids: string[]) => [...ids].sort().join(',')
+  return sortedIds(seating.tables.flat()) === sortedIds(playerIds)
+}
+
 interface Snapshot {
   seating: ConfirmedSeating
   // Round N's tables only make sense on top of the round N-1 they were drawn after.
@@ -33,7 +39,8 @@ export function useConfirmedSeatings(tournamentUuid: MaybeRefOrGetter<string>) {
     for (const round of rounds.value ?? []) {
       const tables = (pairings.value ?? [])
         .filter(pairing => pairing.roundUuid === round.uuid)
-        .sort((a, b) => (a.tableNumber ?? 0) - (b.tableNumber ?? 0))
+        // A 1v1 bye has no table number: it stays last, as the preview seats it.
+        .sort((a, b) => (a.tableNumber ?? Infinity) - (b.tableNumber ?? Infinity))
         .map(pairing => pairing.playerUuids
           .map(playerUuid => associateByPlayer.get(playerUuid))
           .filter((uuid): uuid is string => uuid !== undefined))

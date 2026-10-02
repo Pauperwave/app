@@ -19,17 +19,6 @@ const text = ref('')
 const parsedSeed = computed(() => parseShuffleSeed(text.value))
 const isInvalid = computed(() => text.value !== '' && parsedSeed.value === null)
 
-// Same look as the seed ticket (ShuffleSeedField.vue); the placeholder keeps the normal font.
-const inputUi = computed(() => ({
-  base: [
-    'h-8 rounded-md bg-primary/10 ring ring-inset font-mono text-sm font-bold uppercase',
-    'tracking-[0.2em] text-primary focus-visible:ring-2',
-    'placeholder:font-sans placeholder:font-normal placeholder:normal-case placeholder:tracking-normal',
-    isInvalid.value ? 'ring-error focus-visible:ring-error' : 'ring-primary/25 focus-visible:ring-primary'
-  ].join(' '),
-  leadingIcon: 'text-primary'
-}))
-
 watch(open, (isOpen) => {
   if (isOpen) text.value = ''
 })
@@ -59,15 +48,25 @@ function apply() {
         <span class="text-xs font-medium text-muted">
           {{ t('tournament.single.shuffleSeed.use') }}
         </span>
-        <UInput
-          v-model="text"
-          :icon="ICONS.shuffle"
-          :placeholder="t('tournament.single.shuffleSeed.placeholder')"
-          :aria-label="t('tournament.single.shuffleSeed.use')"
-          :ui="inputUi"
-          variant="none"
-          autofocus
-        />
+        <!-- Built like the seed ticket (ShuffleSeedField.vue), so the code looks the same. -->
+        <label
+          class="inline-flex h-8 items-center gap-2 rounded-md bg-primary/10 px-2.5 ring ring-inset transition focus-within:ring-2"
+          :class="isInvalid ? 'ring-error' : 'ring-primary/25 focus-within:ring-primary'"
+        >
+          <UIcon :name="ICONS.shuffle" class="size-4 shrink-0 text-primary" />
+          <span class="text-[10px] font-semibold uppercase tracking-wider text-muted">
+            {{ t('tournament.single.shuffleSeed.label') }}
+          </span>
+          <input
+            v-model="text"
+            :placeholder="t('tournament.single.shuffleSeed.placeholder')"
+            :aria-label="t('tournament.single.shuffleSeed.use')"
+            class="min-w-0 flex-1 bg-transparent font-mono text-sm font-bold uppercase tracking-[0.2em] text-primary outline-none placeholder:font-sans placeholder:font-normal placeholder:normal-case placeholder:tracking-normal placeholder:text-dimmed"
+            autocomplete="off"
+            spellcheck="false"
+          >
+          <UIcon :name="ICONS.paste" class="size-3.5 shrink-0 text-dimmed" />
+        </label>
         <p v-if="isInvalid" class="text-xs text-error">
           {{ t('tournament.single.shuffleSeed.invalid') }}
         </p>

@@ -6,10 +6,17 @@
   analytics composable doesn't exist in this app.
 -->
 <script setup lang="ts">
-const { totalScore, seed, loading = false } = defineProps<{
+const {
+  totalScore,
+  seed,
+  loading = false,
+  randomSeating = true
+} = defineProps<{
   totalScore: number
   seed: number | null
   loading?: boolean
+  // Round 1 only: from round 2 the tables follow the standings, so no shuffle/seed controls.
+  randomSeating?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -59,7 +66,11 @@ const { t } = useI18n()
       </UTooltip>
     </div>
 
-    <div class="flex items-center gap-1.5">
+    <span v-if="!randomSeating" class="flex items-center gap-1.5 text-sm text-muted">
+      <UIcon :name="ICONS.info" class="size-4 shrink-0" />
+      {{ t('tournament.single.tablePreview.toolbar.standingsBased') }}
+    </span>
+    <div v-else class="flex items-center gap-1.5">
       <TournamentsSinglePairingShuffleSeedField :seed="seed" />
       <TournamentsSinglePairingApplySeedPopover
         :disabled="loading"

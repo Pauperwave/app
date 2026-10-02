@@ -252,6 +252,7 @@ const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowAct
             :round-count="numberOfRounds"
             :round-duration-minutes="tournament?.roundDurationMinutes"
             :auto-open-advance-preview="pendingAdvancePreviewRound === i"
+            :next-round-seating="seatingFor(i + 1)"
             @turned-back="onRoundTurnedBack(i)"
             @advance-preview-auto-opened="onAdvancePreviewAutoOpened"
           />
@@ -333,6 +334,7 @@ const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowAct
     v-else-if="is1v1Format"
     v-model:open="podsModalOpen"
     :players="tablePreviewPlayers"
+    :confirmed-seating="seatingFor(1)"
     :loading="startRoundOneSwiss.isLoading.value"
     @confirm="onSwissPodsConfirm"
   />

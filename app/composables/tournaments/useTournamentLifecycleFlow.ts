@@ -164,9 +164,9 @@ export function useTournamentLifecycleFlow(options: {
     }
   }
 
-  async function onSwissPodsConfirm(associateOrder: string[]) {
+  async function onSwissPodsConfirm(associateOrder: string[], shuffleSeed: number | null) {
     try {
-      await startRoundOneSwiss.mutateAsync(associateOrder)
+      await startRoundOneSwiss.mutateAsync({ associateOrder, shuffleSeed })
       podsModalOpen.value = false
     } catch {
       // Toasted by useTournamentSwissRoundsMutations' own onError — nothing left to do here.

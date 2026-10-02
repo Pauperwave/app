@@ -265,10 +265,25 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
     return conflicts
   })
 
+  // Names the first table to fix, e.g. "Il tavolo 2 ha 5 giocatori: ne servono 3 o 4", plus how many more.
+  const tableRulesError = computed(() => {
+    const broken = seatedTables.value
+      .filter(entry => tableRuleViolations.value.has(entry.table.id))
+    const first = broken[0]
+    if (!first) return ''
+
+    const message = tableRuleViolations.value.get(first.table.id) === 'size'
+      ? t('tournament.single.tablePreview.tableSizeError', { n: first.table.tableNumber, count: first.size })
+      : t('tournament.single.tablePreview.tableThreeNotLastError', { n: first.table.tableNumber })
+    const others = broken.length - 1
+
+    return others > 0
+      ? `${message} ${t('tournament.single.tablePreview.moreTableErrors', { count: others }, others)}`
+      : message
+  })
+
   const previewError = computed(() => {
-    const violations = [...tableRuleViolations.value.values()]
-    if (violations.includes('size')) return t('tournament.single.tablePreview.invalidTableSizes')
-    if (violations.includes('threeNotLast')) return t('tournament.single.tablePreview.threeTablesLast')
+    if (tableRulesError.value) return tableRulesError.value
     if (!noDuplicates.value) return t('tournament.single.tablePreview.duplicatePlayers')
     if (!noMissingPlayers.value) return t('tournament.single.tablePreview.missingPlayers')
     if (!scoreDetails.value.isValid) return t('tournament.single.tablePreview.forbiddenPairsPresent')
@@ -353,14 +368,14 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
       return {
         color: 'warning' as const,
         label: `${players}`,
-        warning: t('tournament.single.tablePreview.invalidTableSizes')
+        warning: t('tournament.single.tablePreview.cardSizeWarning')
       }
     }
     if (violation === 'threeNotLast') {
       return {
         color: 'warning' as const,
         label: `${players}`,
-        warning: t('tournament.single.tablePreview.threeTableNotLast')
+        warning: t('tournament.single.tablePreview.cardThreeNotLastWarning')
       }
     }
     if (players === 0) return { color: 'neutral' as const, label: `${players}` }

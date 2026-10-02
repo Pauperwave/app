@@ -24,7 +24,7 @@
 <script setup lang="ts">
 import { randomShuffleSeed } from '#shared/utils/seededShuffle'
 import type { PairingWeights, TablePlayer, PairingTable } from '~/types'
-import type { ConfirmedSeating } from '~/composables/tournaments/rounds/useConfirmedSeatings'
+import { seatingMatchesPlayers, type ConfirmedSeating } from '~/composables/tournaments/rounds/useConfirmedSeatings'
 
 const open = defineModel<boolean>('open', { default: false })
 
@@ -144,10 +144,9 @@ watch(avoidPairsData, (pairs) => {
 // Only reused when it seats exactly the current players; anyone added or removed since starts a fresh shuffle.
 function matchingConfirmedSeating(): ConfirmedSeating | null {
   if (!confirmedSeating) return null
-
-  const sortedIds = (ids: string[]) => [...ids].sort().join(',')
-  const seatedIds = sortedIds(confirmedSeating.tables.flat())
-  return seatedIds === sortedIds(players.map(player => player.value)) ? confirmedSeating : null
+  return seatingMatchesPlayers(confirmedSeating, players.map(player => player.value))
+    ? confirmedSeating
+    : null
 }
 
 // Round 1 has no history for the optimizer to use (see the STUB above), so it only kept the registration-order
@@ -320,6 +319,7 @@ function openTableScoreBreakdown(tableIndex: number) {
           :total-score="scoreDetails.totalScore"
           :seed="shuffleSeed"
           :loading="loading"
+          :random-seating="currentRound === 1"
           @open-settings="showSettings = true"
           @optimize="optimizeNow"
           @random="randomizeNow"
@@ -342,8 +342,14 @@ function openTableScoreBreakdown(tableIndex: number) {
 
     <template #footer>
       <div class="flex items-center justify-between gap-2 w-full">
-        <span v-if="!isValid" class="text-sm text-error">{{ previewError }}</span>
-        <div class="flex gap-2 justify-end ms-auto">
+        <!-- One truncated line, full text on hover: the footer keeps its height. -->
+        <UTooltip v-if="!isValid" :text="previewError">
+          <span class="flex min-w-0 items-center gap-1.5 text-sm text-error">
+            <UIcon :name="ICONS.warning" class="size-4 shrink-0" />
+            <span class="truncate">{{ previewError }}</span>
+          </span>
+        </UTooltip>
+        <div class="flex shrink-0 gap-2 justify-end ms-auto">
           <UButton
             :label="t('common.cancel')"
             :trailing-icon="ICONS.undo"

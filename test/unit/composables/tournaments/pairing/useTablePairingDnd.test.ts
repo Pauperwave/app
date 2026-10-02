@@ -110,9 +110,9 @@ describe('table rules', () => {
 
     expect(dnd.tableSizes.value).toEqual([3, 5])
     expect(statusColors(dnd)).toEqual(['success', 'warning'])
-    expect(cardWarnings(dnd)).toEqual([undefined, 'tournament.single.tablePreview.invalidTableSizes'])
+    expect(cardWarnings(dnd)).toEqual([undefined, 'tournament.single.tablePreview.cardSizeWarning'])
     expect(dnd.isValid.value).toBe(false)
-    expect(dnd.previewError.value).toBe('tournament.single.tablePreview.invalidTableSizes')
+    expect(dnd.previewError.value).toBe('tournament.single.tablePreview.tableSizeError')
   })
 
   it('flags a table of 3 seated before a table of 4 and blocks confirm', () => {
@@ -123,9 +123,17 @@ describe('table rules', () => {
     expect(dnd.tableSizes.value).toEqual([3, 4, 4])
     expect(statusColors(dnd)).toEqual(['warning', 'success', 'success'])
     expect(cardWarnings(dnd))
-      .toEqual(['tournament.single.tablePreview.threeTableNotLast', undefined, undefined])
+      .toEqual(['tournament.single.tablePreview.cardThreeNotLastWarning', undefined, undefined])
     expect(dnd.isValid.value).toBe(false)
-    expect(dnd.previewError.value).toBe('tournament.single.tablePreview.threeTablesLast')
+    expect(dnd.previewError.value).toBe('tournament.single.tablePreview.tableThreeNotLastError')
+  })
+
+  it('names the first broken table in the footer error and counts the others', () => {
+    const dnd = useTablePairingDnd(makeTablesOfSizes([3, 4, 5]))
+
+    expect(dnd.previewError.value).toBe(
+      'tournament.single.tablePreview.tableThreeNotLastError tournament.single.tablePreview.moreTableErrors'
+    )
   })
 
   it('ignores empty tables', () => {

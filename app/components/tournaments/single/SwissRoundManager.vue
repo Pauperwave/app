@@ -17,13 +17,15 @@
 <script setup lang="ts">
 import type { TabsItem } from '@nuxt/ui'
 import type { SwissMatchRow } from '~/types'
+import type { ConfirmedSeating } from '~/composables/tournaments/rounds/useConfirmedSeatings'
 
 const {
   tournamentUuid,
   roundNumber,
   roundCount,
   roundDurationMinutes = 75,
-  autoOpenAdvancePreview = false
+  autoOpenAdvancePreview = false,
+  nextRoundSeating = null
 } = defineProps<{
   tournamentUuid: string
   roundNumber: number
@@ -34,6 +36,8 @@ const {
   // "turning back round N reopens round N-1's own next-round preview"
   // mechanism, user request 2026-09-18).
   autoOpenAdvancePreview?: boolean
+  /** Tables approved for round `roundNumber + 1` before it was turned back, reopened in its preview. */
+  nextRoundSeating?: ConfirmedSeating | null
 }>()
 
 const emit = defineEmits<{
@@ -212,7 +216,9 @@ const matchRows = computed<SwissMatchRow[]>(() =>
   <TournamentsSinglePairingSwissTablePreviewModal
     v-model:open="advancePreviewOpen"
     :players="nextRoundSeedPlayers"
+    :current-round="roundNumber + 1"
+    :confirmed-seating="nextRoundSeating"
     :loading="advanceRoundSwiss.isLoading.value"
-    @confirm="onAdvanceConfirm"
+    @confirm="associateOrder => onAdvanceConfirm(associateOrder)"
   />
 </template>

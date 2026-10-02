@@ -9,17 +9,22 @@ interface StartRoundOneSwissBody {
   // final order it's given, same "client arranges, RPC seats" split as
   // start-round-one.post.ts (Commander).
   associateOrder: string[]
+  // Seed of the shuffle the seating started from, kept so the preview can reopen on it after a turn-back.
+  shuffleSeed: number | null
 }
 
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 
-  const { tournamentUuid, associateOrder } = await readBody<StartRoundOneSwissBody>(event)
+  const {
+    tournamentUuid, associateOrder, shuffleSeed
+  } = await readBody<StartRoundOneSwissBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   const { data, error } = await supabase.rpc('start_swiss_round_one', {
     p_tournament_uuid: tournamentUuid,
-    p_associate_order: associateOrder
+    p_associate_order: associateOrder,
+    p_shuffle_seed: shuffleSeed ?? undefined
   })
 
   const roundUuid = unwrapRoundRpc(data, error)

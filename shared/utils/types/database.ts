@@ -2833,7 +2833,11 @@ export type Database = {
         Returns: string
       }
       start_swiss_round_one: {
-        Args: { p_associate_order: string[]; p_tournament_uuid: string }
+        Args: {
+          p_associate_order: string[]
+          p_shuffle_seed?: number
+          p_tournament_uuid: string
+        }
         Returns: string
       }
       turn_back_commander_round: {
