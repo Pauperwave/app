@@ -139,7 +139,7 @@ const membershipBadge = computed(() => associate.value
         <UBadge
           v-else-if="hasNoTelegramUsername"
           :label="$t('associate.noTelegramUsername.badge')"
-          :icon="ICONS.telegram"
+          :icon="ICONS.telegramNoUsername"
           color="warning"
           variant="subtle"
         />
@@ -151,7 +151,7 @@ const membershipBadge = computed(() => associate.value
           rel="noopener noreferrer"
           class="inline-flex items-center gap-1.5 text-primary hover:underline"
         >
-          <UIcon :name="ICONS.telegram" class="size-4" />
+          <UIcon :name="ICONS.telegramLinked" class="size-4" />
           @{{ telegramUsername }}
         </a>
       </div>

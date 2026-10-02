@@ -224,7 +224,7 @@ const { columns: associateTransactionsColumns } = useAssociateTransactionsTableC
                 <UBadge
                   v-else-if="hasNoTelegramUsername"
                   :label="$t('associate.noTelegramUsername.badge')"
-                  :icon="ICONS.telegram"
+                  :icon="ICONS.telegramNoUsername"
                   color="warning"
                   variant="subtle"
                 />
