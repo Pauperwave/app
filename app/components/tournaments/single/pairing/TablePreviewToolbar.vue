@@ -1,6 +1,6 @@
 <!-- app\components\tournaments\single\pairing\TablePreviewToolbar.vue -->
 <!--
-  Total-score display + settings/optimize/random buttons above the pod
+  Total-score display + optimizer and random-seating controls above the pod
   grid — ported from MagicTheGathering/league's TablePreviewToolbar.vue
   (user request, 2026-09-15). useButtonLogging calls dropped — that
   analytics composable doesn't exist in this app.
@@ -16,22 +16,20 @@ const emit = defineEmits<{
   openSettings: []
   optimize: []
   random: []
+  applySeed: [seed: number]
 }>()
 
 const { t } = useI18n()
 </script>
 
 <template>
+  <!-- Optimizer group (score, weights, optimize) | random seating group (seed, paste, shuffle). -->
   <div class="flex flex-wrap items-center justify-between gap-2">
-    <div class="text-sm text-muted">
-      {{ t('tournament.single.tablePreview.toolbar.totalScoreLabel') }}
-      <span class="font-semibold text-default">{{ totalScore.toFixed(2) }}</span>
-    </div>
-
-    <div class="flex flex-wrap items-center gap-2">
-      <TournamentsSinglePairingShuffleSeedField
-        :seed="seed"
-      />
+    <div class="flex items-center gap-2">
+      <span class="text-sm text-muted whitespace-nowrap">
+        {{ t('tournament.single.tablePreview.toolbar.totalScoreLabel') }}
+        <span class="font-semibold text-highlighted tabular-nums">{{ totalScore.toFixed(2) }}</span>
+      </span>
       <UTooltip
         :content="{ side: 'top' }"
         :text="t('tournament.single.tablePreview.toolbar.weightsAndConstraintsTooltip')"
@@ -41,10 +39,9 @@ const { t } = useI18n()
           color="neutral"
           variant="soft"
           :icon="ICONS.settings"
+          :label="t('tournament.single.tablePreview.toolbar.weightsAndConstraints')"
           @click="emit('openSettings')"
-        >
-          {{ t('tournament.single.tablePreview.toolbar.weightsAndConstraints') }}
-        </UButton>
+        />
       </UTooltip>
       <UTooltip
         :content="{ side: 'top' }"
@@ -55,12 +52,19 @@ const { t } = useI18n()
           color="neutral"
           variant="outline"
           :icon="ICONS.optimize"
+          :label="t('tournament.single.tablePreview.toolbar.optimize')"
           :disabled="loading"
           @click="emit('optimize')"
-        >
-          {{ t('tournament.single.tablePreview.toolbar.optimize') }}
-        </UButton>
+        />
       </UTooltip>
+    </div>
+
+    <div class="flex items-center gap-1.5">
+      <TournamentsSinglePairingShuffleSeedField :seed="seed" />
+      <TournamentsSinglePairingApplySeedPopover
+        :disabled="loading"
+        @apply="value => emit('applySeed', value)"
+      />
       <UTooltip
         :content="{ side: 'top' }"
         :text="t('tournament.single.tablePreview.toolbar.randomTooltip')"
@@ -70,11 +74,10 @@ const { t } = useI18n()
           color="neutral"
           variant="outline"
           :icon="ICONS.shuffle"
+          :label="t('tournament.single.tablePreview.toolbar.random')"
           :disabled="loading"
           @click="emit('random')"
-        >
-          {{ t('tournament.single.tablePreview.toolbar.random') }}
-        </UButton>
+        />
       </UTooltip>
     </div>
   </div>

@@ -118,6 +118,7 @@ function confirm() {
             <TournamentsSinglePairingShuffleSeedField
               :seed="shuffleSeed"
             />
+            <TournamentsSinglePairingApplySeedPopover @apply="shuffleWithSeed" />
             <UButton
               :label="t('tournament.single.podsManager.shuffle')"
               :icon="ICONS.shuffle"

@@ -323,6 +323,7 @@ function openTableScoreBreakdown(tableIndex: number) {
           @open-settings="showSettings = true"
           @optimize="optimizeNow"
           @random="randomizeNow"
+          @apply-seed="applySeed"
         />
 
         <TournamentsSinglePairingTablePreviewGrid

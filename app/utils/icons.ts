@@ -19,6 +19,7 @@ export const ICONS = {
   pinOff: 'i-lucide-pin-off',
   confirm: 'i-lucide-check',
   copy: 'i-lucide-copy',
+  paste: 'i-lucide-clipboard-paste',
   share: 'i-lucide-share-2',
   link: 'i-lucide-link',
   close: 'i-lucide-x',
