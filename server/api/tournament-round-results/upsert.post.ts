@@ -25,6 +25,9 @@ export default defineEventHandler(async (event) => {
 
   const { tournamentUuid, results } = await readBody<UpsertRoundResultsBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
+  for (const pairingUuid of new Set(results.map(result => result.pairingUuid))) {
+    await assertPairingEditable(supabase, pairingUuid)
+  }
 
   const { error: resultsError } = await supabase
     .from('tournament_round_results')

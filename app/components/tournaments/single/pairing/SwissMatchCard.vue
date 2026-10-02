@@ -8,7 +8,8 @@ const {
   current = null,
   telegramInfo = null,
   isBye = false,
-  search = ''
+  search = '',
+  readonly = false
 } = defineProps<{
   tableNumber: number
   players: SwissMatchPlayer[]
@@ -21,6 +22,8 @@ const {
   // A single player sitting out: scores as a 2-0 win, nothing to enter.
   isBye?: boolean
   search?: string
+  // A closed round: view only (server-enforced too).
+  readonly?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -55,6 +58,7 @@ const isPending = computed(() => !isBye && !current)
           v-if="!isBye"
           :current="current"
           :telegram-info="telegramInfo"
+          :show-delete-button="!readonly"
           @clear="emit('clear')"
         />
       </div>
@@ -67,6 +71,7 @@ const isPending = computed(() => !isBye && !current)
       :current="current"
       :is-bye="isBye"
       :search="search"
+      :readonly="readonly"
       @select="score => emit('select', score)"
       @toggle-drop="playerUuid => emit('toggleDrop', playerUuid)"
     />

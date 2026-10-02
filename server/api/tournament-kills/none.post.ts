@@ -12,7 +12,9 @@ export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 
   const { pairingUuid, noKills } = await readBody<SetNoKillsBody>(event)
-  await setPairingNoKills(serverSupabaseServiceRole<Database>(event), { pairingUuid, noKills })
+  const supabase = serverSupabaseServiceRole<Database>(event)
+  await assertPairingEditable(supabase, pairingUuid)
+  await setPairingNoKills(supabase, { pairingUuid, noKills })
 
   return { success: true }
 })

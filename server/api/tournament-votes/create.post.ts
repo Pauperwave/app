@@ -14,7 +14,9 @@ export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 
   const body = await readBody<CreateVoteBody>(event)
-  await castVote(serverSupabaseServiceRole<Database>(event), body)
+  const supabase = serverSupabaseServiceRole<Database>(event)
+  await assertPairingEditable(supabase, body.pairingUuid)
+  await castVote(supabase, body)
 
   return { success: true }
 })

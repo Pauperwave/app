@@ -13,7 +13,9 @@ export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 
   const body = await readBody<CreateKillBody>(event)
-  await recordKill(serverSupabaseServiceRole<Database>(event), body)
+  const supabase = serverSupabaseServiceRole<Database>(event)
+  await assertPairingEditable(supabase, body.pairingUuid)
+  await recordKill(supabase, body)
 
   return { success: true }
 })

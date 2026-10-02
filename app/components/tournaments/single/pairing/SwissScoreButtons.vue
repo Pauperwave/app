@@ -2,9 +2,11 @@
 <script setup lang="ts">
 import type { MatchScore } from '~/types'
 
-const { seat, current = null } = defineProps<{
+const { seat, current = null, disabled = false } = defineProps<{
   seat: 0 | 1
   current?: MatchScore | null
+  // A closed round: the result stays highlighted but can't change.
+  disabled?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -50,6 +52,7 @@ function matches(outcome: { won: number, lost: number }): boolean {
       :variant="matches(outcome) ? 'solid' : 'outline'"
       :color="matches(outcome) ? selectedColor(outcome) : 'neutral'"
       size="md"
+      :disabled="disabled"
       @click="emit('select', scoreFor(outcome))"
     />
   </div>

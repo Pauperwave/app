@@ -14,7 +14,7 @@ import type { SwissDropInfo, TablePlayer } from '~/types'
 
 const {
   tableNumber, players, positions, hasKills, noKills, hasVotes, hasCommander, isComplete, isDraw,
-  associateUuidFor, droppedFor
+  associateUuidFor, droppedFor, readonly = false
 } = defineProps<{
   tableNumber: number
   // `TablePlayer.value` here is the DB's players.uuid (player_uuid) — every
@@ -36,6 +36,8 @@ const {
   isDraw: boolean
   associateUuidFor: (playerUuid: string) => string | undefined
   droppedFor: (playerUuid: string) => SwissDropInfo | null
+  // A closed round (a later one exists, or the tournament ended): view only, server-enforced too.
+  readonly?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -161,7 +163,7 @@ const drawTooltip = computed(() => {
 
         <div class="flex-1" />
 
-        <UTooltip :text="t('tournament.single.roundManager.resetTableTooltip')">
+        <UTooltip v-if="!readonly" :text="t('tournament.single.roundManager.resetTableTooltip')">
           <UButton
             size="xs"
             variant="outline"
@@ -172,7 +174,7 @@ const drawTooltip = computed(() => {
           />
         </UTooltip>
         <UTooltip
-          v-if="isDeveloperView"
+          v-if="isDeveloperView && !readonly"
           :text="t('tournament.single.roundManager.quickFillTooltip')"
         >
           <UButton
@@ -246,6 +248,7 @@ const drawTooltip = computed(() => {
               :aria-label="t(
                 'tournament.single.roundManager.commanderAriaLabel', { name: player.label }
               )"
+              :disabled="readonly"
               @click="emit('openCommanderModal', player.value)"
             />
           </UTooltip>
@@ -262,15 +265,16 @@ const drawTooltip = computed(() => {
               :aria-label="t(
                 'tournament.single.roundManager.votesAriaLabel', { name: player.label }
               )"
+              :disabled="readonly"
               @click="emit('openVotesModal', player.value)"
             />
           </UTooltip>
-          <RowActionsMenu :items="dropMenuItemsFor(player.value)" />
+          <RowActionsMenu v-if="!readonly" :items="dropMenuItemsFor(player.value)" />
         </div>
       </div>
     </div>
 
-    <template #footer>
+    <template v-if="!readonly" #footer>
       <div class="flex gap-2">
         <UTooltip :text="rankingTooltip">
           <UButton

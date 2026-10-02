@@ -17,6 +17,7 @@ export default defineEventHandler(async (event) => {
     tournamentUuid, playerUuid, roundUuid, dropped
   } = await readBody<SetDropBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
+  await assertRoundEditable(supabase, roundUuid)
 
   await setPlayerDropped(supabase, {
     tournamentUuid, playerUuid, roundUuid, dropped

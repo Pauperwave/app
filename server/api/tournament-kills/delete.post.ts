@@ -11,6 +11,7 @@ export default defineEventHandler(async (event) => {
 
   const { killUuid } = await readBody<DeleteKillBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
+  await assertPairingRowEditable(supabase, 'tournament_kills', killUuid)
 
   const { error } = await supabase.from('tournament_kills').delete().eq('uuid', killUuid)
 

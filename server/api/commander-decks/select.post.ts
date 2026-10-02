@@ -14,6 +14,7 @@ export default defineEventHandler(async (event) => {
 
   const body = await readBody<SelectCommanderBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
+  await assertPairingEditable(supabase, body.pairingUuid)
 
   const { data: pairing, error: pairingError } = await supabase
     .from('tournament_pairings')
