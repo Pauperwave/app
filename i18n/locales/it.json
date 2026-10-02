@@ -1624,7 +1624,12 @@
       "shuffleSeed": {
         "label": "Seed",
         "copyTooltip": "Copia il seed",
-        "copiedTitle": "Seed copiato"
+        "copiedTitle": "Seed copiato",
+        "use": "Usa un seed",
+        "useTooltip": "Rimescola con un seed copiato: stesso seed e stessi giocatori danno sempre gli stessi tavoli",
+        "placeholder": "es. SEC-123",
+        "apply": "Applica",
+        "invalid": "Il seed è fatto di tre lettere e tre cifre, per esempio SEC-123"
       },
       "podsManager": {
         "summary": "{count} tavoli",
