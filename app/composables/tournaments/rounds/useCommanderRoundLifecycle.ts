@@ -51,6 +51,8 @@ export function useCommanderRoundLifecycle(options: {
       .map(entry => ({
         value: entry.standing.associateUuid,
         label: entry.standing.label,
+        firstName: entry.standing.firstName,
+        surname: entry.standing.surname,
         standing: commanderTablePlayerStanding(entry.standing, entry.rank, labels)
       }))
   })

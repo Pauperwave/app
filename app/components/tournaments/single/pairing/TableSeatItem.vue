@@ -36,11 +36,13 @@ const { t } = useI18n()
 
     <div class="flex min-w-0 flex-1 flex-col justify-center gap-0.5 px-2 py-1">
       <div class="flex min-w-0 items-center gap-1.5">
+        <!-- Same first name + bold surname split as the round cards (RoundPairingCard.vue). -->
         <AssociateTag
-          :name="seat.player.label"
+          :name="playerNameParts(seat.player).firstName"
+          :surname="playerNameParts(seat.player).surname"
           :associate-uuid="seat.player.value"
           size="md"
-          class="truncate text-left"
+          class="min-w-0 text-left break-words"
         />
         <TelegramStatusIcon :associate-uuid="seat.player.value" />
       </div>

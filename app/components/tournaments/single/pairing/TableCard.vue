@@ -81,11 +81,12 @@ const seatsModel = computed({
       </div>
     </template>
 
-    <div class="@container">
+    <!-- One seat per row: a two-column grid left too little room and clipped long names. -->
+    <div>
       <VueDraggable
         v-model="seatsModel"
         tag="div"
-        class="grid grid-cols-1 @md:grid-cols-2 gap-2"
+        class="flex flex-col gap-2"
         :group="{ name: 'pairing-seats', pull: true, put: true }"
         handle=".drag-handle"
         :animation="180"
