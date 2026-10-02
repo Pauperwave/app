@@ -70,6 +70,11 @@ const telegramUsername = computed(() => associateUuid && !hasNoTelegram.value
 const hasNoTelegramUsername = computed(() =>
   !hasNoTelegram.value && isLinkedToBot.value && !telegramUsername.value)
 
+// The associate page, where "Modifica associato" also edits the "non ha Telegram" flag.
+const profilePath = computed(() => associate.value
+  ? `/associate/${slugify(`${associate.value.first_name} ${associate.value.last_name}`)}`
+  : null)
+
 const membershipBadge = computed(() => associate.value
   ? MEMBERSHIP_STATUS_BADGE_CONFIG[associate.value.membership_status]
   : null)
@@ -154,6 +159,17 @@ const membershipBadge = computed(() => associate.value
           <UIcon :name="ICONS.telegramLinked" class="size-4" />
           @{{ telegramUsername }}
         </a>
+        <UButton
+          v-if="profilePath"
+          :to="profilePath"
+          :label="$t('common.associateTag.openProfile')"
+          :icon="ICONS.show"
+          color="neutral"
+          variant="soft"
+          size="xs"
+          block
+          class="mt-1"
+        />
       </div>
     </template>
   </UPopover>
