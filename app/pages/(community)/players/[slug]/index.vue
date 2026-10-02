@@ -148,7 +148,11 @@ const { data: commanderDecks, isLoading: commanderDecksLoading }
         </UCard>
 
         <div class="grid gap-4 sm:grid-cols-2">
-          <DetailCard :title="t('player.detail.sections.info')" :fields="infoFields">
+          <DetailCard
+            :title="t('player.detail.sections.info')"
+            :icon="ICONS.info"
+            :fields="infoFields"
+          >
             <template #before>
               <div class="flex justify-between items-center gap-4">
                 <dt class="flex items-center gap-1.5 text-muted">

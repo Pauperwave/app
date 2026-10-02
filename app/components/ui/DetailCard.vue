@@ -11,8 +11,12 @@ interface DetailField {
   value: string
 }
 
-const { title, fields, valueClass = '' } = defineProps<{
+const {
+  title, fields, valueClass = '', icon = undefined
+} = defineProps<{
   title: string
+  /** Optional icon before the title (the player profile's cards have one). */
+  icon?: string
   fields: DetailField[]
   /** Extra classes for each field's value cell (e.g. 'font-mono'). */
   valueClass?: string
@@ -22,7 +26,14 @@ const { title, fields, valueClass = '' } = defineProps<{
 <template>
   <UCard :ui="{ header: 'font-semibold' }">
     <template #header>
-      {{ title }}
+      <span class="flex items-center gap-2">
+        <UIcon
+          v-if="icon"
+          :name="icon"
+          class="size-5 shrink-0 text-primary"
+        />
+        {{ title }}
+      </span>
     </template>
     <dl class="space-y-2 text-sm">
       <slot name="before" />
