@@ -53,6 +53,9 @@ watch(() => shortcutsTour.current.value?.id, (id) => {
 
 const { navItemBadges, navItemHasWarning } = useNavBadgeCounts()
 
+// One app-wide channel: Telegram status icons update as soon as the bot links someone.
+useAssociateTelegramLinksRealtime()
+
 const mainNavGroups = useMainNavGroups(open)
 
 // Opens Gmail's compose view directly instead of mailto:, which silently
