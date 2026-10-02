@@ -183,8 +183,10 @@ export function useTournamentLifecycleFlow(options: {
   }
 
   watch(podsModalOpen, syncPreview)
-  watch(previewFromQuery, (isPreview) => {
-    if (isPreview && canOpenTablePreview.value) podsModalOpen.value = true
+  // Also waits on the accepted players: on a reload they load after the first check, which used to leave
+  // the modal closed with ?preview=1 still in the URL.
+  watch(() => previewFromQuery.value && canOpenTablePreview.value, (shouldOpen) => {
+    if (shouldOpen) podsModalOpen.value = true
   }, { immediate: true })
 
   return {
