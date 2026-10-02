@@ -1622,9 +1622,11 @@
         "tableEstimateConjunction": "e"
       },
       "shuffleSeed": {
+        "label": "Seed",
         "placeholder": "Seed (es. SEC-123)",
         "apply": "Applica",
         "copyTooltip": "Copia il seed",
+        "editTooltip": "Inserisci un altro seed",
         "copiedTitle": "Seed copiato",
         "applyTooltip": "Rimescola con questo seed: stesso seed e stessi giocatori danno sempre gli stessi tavoli",
         "invalid": "Il seed è fatto di tre lettere e tre cifre, per esempio SEC-123"
