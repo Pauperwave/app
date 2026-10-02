@@ -21,6 +21,7 @@ export default defineEventHandler(async (event) => {
 
   const { tournamentUuid, associateUuids, status = 'registered' } = await readBody<RegisterBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
+  await assertRegistrationsEditable(supabase, tournamentUuid)
 
   const { data, error } = await supabase.rpc('register_tournament_players', {
     p_tournament_uuid: tournamentUuid,

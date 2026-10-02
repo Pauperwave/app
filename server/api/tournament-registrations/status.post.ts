@@ -17,6 +17,7 @@ export default defineEventHandler(async (event) => {
 
   const { registrationUuids, status } = await readBody<StatusBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
+  await assertRegistrationsEditableByUuids(supabase, registrationUuids)
 
   // Only a real transition to 'checked_in' is an acceptance to announce —
   // re-sending the same batch must not message the players twice.

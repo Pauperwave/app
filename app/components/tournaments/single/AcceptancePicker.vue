@@ -11,9 +11,17 @@ interface Props {
   // `tournament.format` here.
   isDraft?: boolean
   is1v1?: boolean
+  // Once round 1 has started (user request, 2026-10-02): nothing here can change until a turn-back
+  // reopens registrations. The server enforces it too (server/utils/tournaments/editLocks.ts).
+  readonly?: boolean
 }
 
-const { tournamentUuid, isDraft = false, is1v1 = false } = defineProps<Props>()
+const {
+  tournamentUuid,
+  isDraft = false,
+  is1v1 = false,
+  readonly = false
+} = defineProps<Props>()
 
 const { t } = useI18n()
 
@@ -64,6 +72,9 @@ const isMutating = computed(() =>
   || setRegistrationStatus.isLoading.value
   || deleteRegistrations.isLoading.value
   || payments.setPayment.isLoading.value)
+
+// Every action off while a write is in flight, or for good once the tournament has started.
+const actionsDisabled = computed(() => readonly || isMutating.value)
 
 const associateByUuid = computed(() =>
   new Map((associatesData.value ?? []).map(associate => [associate.uuid, associate])))
@@ -334,7 +345,7 @@ const {
   testPayments: testPayments.value,
   toggleTestPayment,
   requestRemoveAccepted,
-  isMutating
+  isMutating: actionsDisabled
 })
 
 // Right-click context menus, both sides — see useAcceptancePickerRowActions.ts.
@@ -358,6 +369,15 @@ const {
 </script>
 
 <template>
+  <UAlert
+    v-if="readonly"
+    :title="t('tournament.single.acceptancePicker.lockedTitle')"
+    :description="t('tournament.single.acceptancePicker.lockedDescription')"
+    :icon="ICONS.lock"
+    color="neutral"
+    variant="subtle"
+    class="mb-3"
+  />
   <div class="flex items-start gap-2 w-full">
     <div class="flex flex-col gap-2 w-136 shrink-0">
       <div class="flex items-center justify-between gap-2 min-h-8">
@@ -371,12 +391,12 @@ const {
         v-model:selected-ids="addableSourcePlayerIds"
         :selected-count="sourceSelection.length"
         :options="addableAssociateOptions"
-        :is-mutating="isMutating"
+        :is-mutating="actionsDisabled"
         @add="addSelectedToPreRegistered"
         @remove-selected="requestRemoveSourceSelected"
       />
 
-      <UContextMenu :items="sourceTableContextMenuItems">
+      <UContextMenu :items="readonly ? [] : sourceTableContextMenuItems">
         <UTable
           ref="sourceTable"
           v-model:row-selection="sourceRowSelection"
@@ -407,7 +427,7 @@ const {
         :icon="ICONS.chevronRight"
         color="neutral"
         variant="outline"
-        :disabled="!sourceSelection.length || isMutating"
+        :disabled="!sourceSelection.length || actionsDisabled"
         @click="transferSelected"
       />
     </div>
@@ -426,6 +446,7 @@ const {
           v-model="receivedBy"
           :items="RECEIVER_OPTIONS"
           :placeholder="t('tournament.single.acceptancePicker.receivedByPlaceholder')"
+          :disabled="readonly"
           class="w-64 ms-auto"
         />
       </div>
@@ -435,12 +456,12 @@ const {
         v-model:selected-ids="addablePlayerIds"
         :selected-count="selectedAccepted.length"
         :options="addableAssociateOptions"
-        :is-mutating="isMutating"
+        :is-mutating="actionsDisabled"
         @add="addSelectedAssociates"
         @remove-selected="requestRemoveSelected"
       />
 
-      <UContextMenu :items="acceptedTableContextMenuItems">
+      <UContextMenu :items="readonly ? [] : acceptedTableContextMenuItems">
         <UTable
           ref="acceptedTable"
           v-model:row-selection="acceptedRowSelection"

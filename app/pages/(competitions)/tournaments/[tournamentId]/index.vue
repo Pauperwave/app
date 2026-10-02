@@ -46,6 +46,10 @@ const originLeague = computed(() => origin.value
 // depend on this — see acceptedCount's own comment.
 const acceptedPlayers = ref<AcceptancePickerItem[]>([])
 
+// Registrations are frozen from round 1 until a turn-back reopens them (server-enforced too).
+const registrationsLocked = computed(() =>
+  !!tournament.value && !['draft', 'registration_open'].includes(tournament.value.status))
+
 const isDraft = computed(() => tournament.value?.format === 'Draft')
 const isCommander = computed(() => tournament.value?.format === 'Commander')
 const { liveStandings } = useLiveCommanderStandings(tournamentUuid)
@@ -226,6 +230,7 @@ const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowAct
           <TournamentsSingleAcceptancePicker
             v-model:accepted="acceptedPlayers"
             :tournament-uuid="tournamentUuid"
+            :readonly="registrationsLocked"
             :is-draft="isDraft"
             :is1v1="is1v1Format"
           />

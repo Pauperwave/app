@@ -10,6 +10,7 @@
 // the normal flow.
 export default defineEventHandler(async (event) => {
   const { tournamentUuid, associateUuid, supabase } = await parseSelfRegistrationRequest(event)
+  await assertRegistrationsEditable(supabase, tournamentUuid)
 
   const { data: registration, error: findError } = await supabase
     .from('tournament_registrations')

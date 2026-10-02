@@ -33,6 +33,7 @@ export default defineEventHandler(async (event) => {
     tournamentUuid, associateUuid, method, receivedBy
   } = await readBody<PaymentBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
+  await assertRegistrationsEditable(supabase, tournamentUuid)
 
   const { data: existing, error: existingError } = await supabase
     .from('pauperwave_payments')

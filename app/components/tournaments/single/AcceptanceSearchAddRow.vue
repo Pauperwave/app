@@ -17,8 +17,9 @@ interface AssociateOption {
   label: string
 }
 
-defineProps<{
+const { options, disabled = false } = defineProps<{
   options: AssociateOption[]
+  disabled?: boolean
 }>()
 
 const emit = defineEmits<{ add: [] }>()
@@ -47,6 +48,7 @@ const { t } = useI18n()
       :search-input="{
         placeholder: t('tournament.single.acceptancePicker.addPlayersSearchPlaceholder')
       }"
+      :disabled="disabled"
       class="min-w-0"
     />
 
@@ -57,7 +59,7 @@ const { t } = useI18n()
         :label="t(
           'tournament.single.acceptancePicker.addPlayersCount', { count: selectedIds.length }
         )"
-        :disabled="!selectedIds.length"
+        :disabled="disabled || !selectedIds.length"
         class="w-36 justify-center"
         @click="emit('add')"
       />
