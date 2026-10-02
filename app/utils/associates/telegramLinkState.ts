@@ -6,9 +6,9 @@ export type TelegramLinkState = 'linkedWithUsername' | 'linkedWithoutUsername' |
 
 // Most information first: sorting ascending lists linked-with-nickname before everyone else.
 export const TELEGRAM_LINK_STATE_CONFIG: Record<TelegramLinkState, { rank: number, icon: string, color: 'success' | 'warning' | 'neutral' | 'error' }> = {
-  linkedWithUsername: { rank: 0, icon: ICONS.telegram, color: 'success' },
-  linkedWithoutUsername: { rank: 1, icon: ICONS.telegram, color: 'warning' },
-  notLinked: { rank: 2, icon: ICONS.telegram, color: 'neutral' },
+  linkedWithUsername: { rank: 0, icon: ICONS.telegramLinked, color: 'success' },
+  linkedWithoutUsername: { rank: 1, icon: ICONS.telegramNoUsername, color: 'warning' },
+  notLinked: { rank: 2, icon: ICONS.telegramNotLinked, color: 'neutral' },
   noTelegram: { rank: 3, icon: ICONS.noTelegram, color: 'error' }
 }
 
