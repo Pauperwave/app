@@ -16,7 +16,11 @@ import type { PairingPlayer, PairingHistoryEntry, PairingScoreDetails } from '~/
 export interface TableStatus {
   color: BadgeProps['color']
   label: string
+  // Why the table blocks confirm, shown on its card.
+  warning?: string
 }
+
+type TableRuleViolation = 'size' | 'threeNotLast'
 
 function cloneTables(tables: PairingTable[]): PairingTable[] {
   return tables.map(table => ({
@@ -191,27 +195,43 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
     weights: weights.value
   }))
 
-  // Only 3-4 seat tables can be saved (pairings have four player columns); empty ones are dropped.
-  // Checked on confirm only, not in isValid: drag stays free while arranging (user request, 2026-10-02).
-  const tableSizesValid = computed(() =>
-    currentTablesAsIds.value.every(table => table.length >= 3 && table.length <= 4))
+  // Seated tables in table order — empty ones are dropped on confirm.
+  const seatedTables = computed(() =>
+    [...localTables.value]
+      .sort((a, b) => a.tableNumber - b.tableNumber)
+      .map(table => ({ table, size: table.seats.filter(seat => seat.player !== null).length }))
+      .filter(entry => entry.size > 0))
+
+  // Drag stays free, but confirm needs 3-4 seat tables (pairings have four player columns)
+  // with every table of 3 after the tables of 4 (house convention, user request 2026-10-02).
+  const tableRuleViolations = computed(() => {
+    const violations = new Map<string, TableRuleViolation>()
+
+    seatedTables.value.forEach((entry, index) => {
+      const fourAfter = seatedTables.value.slice(index + 1).some(next => next.size === 4)
+
+      if (entry.size < 3 || entry.size > 4) {
+        violations.set(entry.table.id, 'size')
+      } else if (entry.size === 3 && fourAfter) {
+        violations.set(entry.table.id, 'threeNotLast')
+      }
+    })
+
+    return violations
+  })
+
+  const tableRulesValid = computed(() => tableRuleViolations.value.size === 0)
 
   const isValid = computed(() =>
-    noDuplicates.value
+    tableRulesValid.value
+    && noDuplicates.value
     && noMissingPlayers.value
     && scoreDetails.value.isValid)
 
-  // Confirmed numbering: tables of 4 first, then tables of 3 (house convention), each kept in preview order.
-  const sortedTables = computed(() =>
-    [...localTables.value]
-      .map(table => ({ table, size: table.seats.filter(seat => seat.player !== null).length }))
-      .filter(entry => entry.size > 0)
-      .sort((a, b) => b.size - a.size || a.table.tableNumber - b.table.tableNumber))
-
-  const playerOrder = computed(() => extractPlayerIds(sortedTables.value.map(entry => entry.table)))
+  const playerOrder = computed(() => extractPlayerIds(seatedTables.value.map(entry => entry.table)))
 
   // Sent with playerOrder so the server seats the confirmed tables instead of re-deriving its own split.
-  const tableSizes = computed(() => sortedTables.value.map(entry => entry.size))
+  const tableSizes = computed(() => seatedTables.value.map(entry => entry.size))
 
   const forbiddenPairMap = computed(() => {
     const map = new Set<string>()
@@ -246,6 +266,9 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
   })
 
   const previewError = computed(() => {
+    const violations = [...tableRuleViolations.value.values()]
+    if (violations.includes('size')) return t('tournament.single.tablePreview.invalidTableSizes')
+    if (violations.includes('threeNotLast')) return t('tournament.single.tablePreview.threeTablesLast')
     if (!noDuplicates.value) return t('tournament.single.tablePreview.duplicatePlayers')
     if (!noMissingPlayers.value) return t('tournament.single.tablePreview.missingPlayers')
     if (!scoreDetails.value.isValid) return t('tournament.single.tablePreview.forbiddenPairsPresent')
@@ -317,16 +340,30 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
     localTables.value = ensureTableSeatShape(cloneTables(tables))
   }
 
-  // Drag can leave any size (user request 2026-09-30); a non-empty table outside 3-4 is flagged, since it blocks confirm.
+  // Drag can leave any arrangement (user request 2026-09-30); a table breaking a confirm rule is flagged on its card.
   function tableStatus(table: PairingTable): TableStatus {
     if (conflictingTables.value.has(table.id)) {
       return { color: 'error' as const, label: t('tournament.single.tablePreview.status.conflict') }
     }
 
     const players = table.seats.filter(seat => seat.player !== null).length
+    const violation = tableRuleViolations.value.get(table.id)
 
+    if (violation === 'size') {
+      return {
+        color: 'warning' as const,
+        label: `${players}`,
+        warning: t('tournament.single.tablePreview.invalidTableSizes')
+      }
+    }
+    if (violation === 'threeNotLast') {
+      return {
+        color: 'warning' as const,
+        label: `${players}`,
+        warning: t('tournament.single.tablePreview.threeTableNotLast')
+      }
+    }
     if (players === 0) return { color: 'neutral' as const, label: `${players}` }
-    if (players < 3 || players > 4) return { color: 'warning' as const, label: `${players}` }
     return { color: 'success' as const, label: `${players}` }
   }
 
@@ -381,7 +418,6 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
     localTables,
     isDragging,
     isValid,
-    tableSizesValid,
     previewError,
     playerOrder,
     tableSizes,

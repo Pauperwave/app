@@ -1648,6 +1648,8 @@
         "dropHere": "Rilascia qui",
         "emptySlot": "Posto vuoto",
         "invalidTableSizes": "Ogni tavolo deve avere 3 o 4 giocatori",
+        "threeTableNotLast": "Il tavolo da 3 deve stare in fondo, dopo i tavoli da 4",
+        "threeTablesLast": "I tavoli da 3 devono stare in fondo, dopo i tavoli da 4",
         "duplicatePlayers": "Un giocatore risulta seduto a più tavoli",
         "missingPlayers": "Manca uno o più giocatori dai tavoli",
         "forbiddenPairsPresent": "Alcuni tavoli contengono una coppia da evitare",

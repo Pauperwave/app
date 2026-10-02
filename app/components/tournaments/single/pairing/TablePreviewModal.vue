@@ -83,7 +83,6 @@ const {
   localTables,
   isDragging,
   isValid,
-  tableSizesValid,
   previewError,
   playerOrder,
   tableSizes,
@@ -167,13 +166,6 @@ const scoreItems = computed(() => [
 function handleConfirm() {
   normalizeLocalTables()
   if (!isValid.value) return
-  if (!tableSizesValid.value) {
-    toast.add({
-      title: t('tournament.single.tablePreview.invalidTableSizes'),
-      color: 'warning'
-    })
-    return
-  }
   emit('confirm', playerOrder.value, tableSizes.value)
 }
 
