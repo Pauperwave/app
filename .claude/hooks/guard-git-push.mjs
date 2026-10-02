@@ -52,7 +52,9 @@ function rejectReason(segment) {
 }
 
 let input = ''
-process.stdin.on('data', chunk => { input += chunk })
+process.stdin.on('data', (chunk) => {
+  input += chunk
+})
 process.stdin.on('end', () => {
   const command = JSON.parse(input || '{}').tool_input?.command ?? ''
 
