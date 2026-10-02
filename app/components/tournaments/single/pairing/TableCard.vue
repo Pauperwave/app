@@ -74,7 +74,14 @@ const seatsModel = computed({
       </div>
     </template>
 
-    <div class="@container">
+    <div class="@container space-y-2">
+      <UAlert
+        v-if="tableStatus.warning"
+        :title="tableStatus.warning"
+        :icon="ICONS.warning"
+        color="warning"
+        variant="subtle"
+      />
       <VueDraggable
         v-model="seatsModel"
         tag="div"
