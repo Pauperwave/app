@@ -122,6 +122,7 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
   initialWeights?: Partial<PairingWeights>
 }) {
   const { t } = useI18n()
+  const { calculatePods } = useCommanderPods()
 
   const sourceTables = ref<PairingTable[]>(ensureTableSeatShape(cloneTables(initialTables)))
   const localTables = ref<PairingTable[]>(ensureTableSeatShape(cloneTables(initialTables)))
@@ -137,9 +138,22 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
   )
 
   const sourcePlayerIds = computed(() => extractPlayerIds(sourceTables.value))
+  const localPlayerIds = computed(() => extractPlayerIds(localTables.value))
+  const currentRound = computed(() => toValue(params?.currentRound) ?? 1)
 
-  const fallbackPlayersForScoring = computed<PairingPlayer[]>(() =>
-    sourcePlayerIds.value.map((id, index) => ({ id, rank: index + 1, score: 0, table3Count: 0 })))
+  // Source order is the standings from round 2 on; round 1 has none, so registration order must not act as strength.
+  // Listed in current seating order so the optimizer's ties keep the shown tables instead of reverting to registration order.
+  const fallbackPlayersForScoring = computed<PairingPlayer[]>(() => {
+    const rankById = new Map(sourcePlayerIds.value.map((id, index) =>
+      [id, currentRound.value > 1 ? index + 1 : 1]))
+
+    return localPlayerIds.value.map(id => ({
+      id,
+      rank: rankById.get(id) ?? 1,
+      score: 0,
+      table3Count: 0
+    }))
+  })
 
   const playersForScoring = computed(() => {
     const provided = toValue(params?.playersForScoring) ?? []
@@ -150,9 +164,6 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
   const leagueRematchCounts = computed(
     () => toValue(params?.leagueRematchCounts) ?? new Map<string, number>()
   )
-  const currentRound = computed(() => toValue(params?.currentRound) ?? 1)
-
-  const localPlayerIds = computed(() => extractPlayerIds(localTables.value))
 
   const noDuplicates = computed(() =>
     new Set(localPlayerIds.value).size === localPlayerIds.value.length)
@@ -180,13 +191,27 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
     weights: weights.value
   }))
 
+  // Only 3-4 seat tables can be saved (pairings have four player columns); empty ones are dropped.
+  // Checked on confirm only, not in isValid: drag stays free while arranging (user request, 2026-10-02).
+  const tableSizesValid = computed(() =>
+    currentTablesAsIds.value.every(table => table.length >= 3 && table.length <= 4))
+
   const isValid = computed(() =>
     noDuplicates.value
     && noMissingPlayers.value
     && scoreDetails.value.isValid)
 
-  const playerOrder = computed(() =>
-    extractPlayerIds([...localTables.value].sort((a, b) => a.tableNumber - b.tableNumber)))
+  // Confirmed numbering: tables of 4 first, then tables of 3 (house convention), each kept in preview order.
+  const sortedTables = computed(() =>
+    [...localTables.value]
+      .map(table => ({ table, size: table.seats.filter(seat => seat.player !== null).length }))
+      .filter(entry => entry.size > 0)
+      .sort((a, b) => b.size - a.size || a.table.tableNumber - b.table.tableNumber))
+
+  const playerOrder = computed(() => extractPlayerIds(sortedTables.value.map(entry => entry.table)))
+
+  // Sent with playerOrder so the server seats the confirmed tables instead of re-deriving its own split.
+  const tableSizes = computed(() => sortedTables.value.map(entry => entry.size))
 
   const forbiddenPairMap = computed(() => {
     const map = new Set<string>()
@@ -267,6 +292,23 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
     localTables.value = ensureTableSeatShape(buildTablesFromOrder(localTables.value, order))
   }
 
+  // Seats each table exactly as given (its own size too), so a drag-resized layout gets valid 3-4 tables back.
+  function replaceByTables(playerTables: string[][]) {
+    if (playerTables.length !== localTables.value.length) {
+      replaceByPlayerOrder(playerTables.flat())
+      return
+    }
+
+    const playerMap = new Map(localTables.value
+      .flatMap(table => table.seats)
+      .flatMap(seat => (seat.player ? [[seat.player.value, seat.player] as const] : [])))
+
+    localTables.value = ensureTableSeatShape(localTables.value.map((table, index) => ({
+      ...table,
+      seats: (playerTables[index] ?? []).map(id => ({ id: '', player: playerMap.get(id) ?? null }))
+    })))
+  }
+
   function cloneCurrentTables() {
     return ensureTableSeatShape(cloneTables(localTables.value))
   }
@@ -275,9 +317,7 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
     localTables.value = ensureTableSeatShape(cloneTables(tables))
   }
 
-  // No table size is "wrong" anymore (user request 2026-09-30, free
-  // drag-and-drop) — the badge just reports the occupied seat count, an
-  // empty table gets a neutral hint instead of the old hardcoded 3-4 error.
+  // Drag can leave any size (user request 2026-09-30); a non-empty table outside 3-4 is flagged, since it blocks confirm.
   function tableStatus(table: PairingTable): TableStatus {
     if (conflictingTables.value.has(table.id)) {
       return { color: 'error' as const, label: t('tournament.single.tablePreview.status.conflict') }
@@ -285,9 +325,9 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
 
     const players = table.seats.filter(seat => seat.player !== null).length
 
-    return players > 0
-      ? { color: 'success' as const, label: `${players}` }
-      : { color: 'neutral' as const, label: `${players}` }
+    if (players === 0) return { color: 'neutral' as const, label: `${players}` }
+    if (players < 3 || players > 4) return { color: 'warning' as const, label: `${players}` }
+    return { color: 'success' as const, label: `${players}` }
   }
 
   function addForbiddenPair(playerA: string, playerB: string) {
@@ -327,21 +367,24 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
 
     if (!Number.isFinite(result.totalScore)) return false
 
-    replaceByPlayerOrder(result.tables.flat())
+    replaceByTables(result.tables)
     return true
   }
 
   /** Reassigns every seated player to a table/seat from `seed` (same seed + players = same tables). */
   function randomizeTables(seed: number) {
-    replaceByPlayerOrder(seededShuffle(localPlayerIds.value, seed))
+    const shuffled = seededShuffle(localPlayerIds.value, seed)
+    replaceByTables(buildPodsFromSizes(shuffled, calculatePods(shuffled.length).tableSizes))
   }
 
   return {
     localTables,
     isDragging,
     isValid,
+    tableSizesValid,
     previewError,
     playerOrder,
+    tableSizes,
     tableStatus,
     setDragging,
     reset,

@@ -12,6 +12,8 @@
 type AdvanceMutation = ReturnType<typeof useRoundLifecycleMutation<{
   currentRoundNumber: number
   associateOrder?: string[]
+  // Commander only — the confirmed table split; Swiss pairs from the order alone.
+  tableSizes?: number[]
 }>>
 type TurnBackMutation = ReturnType<typeof useRoundLifecycleMutation<number>>
 
@@ -38,9 +40,9 @@ export function useRoundAdvanceFlow(options: {
   function openAdvancePreview() {
     advancePreviewOpen.value = true
   }
-  async function onAdvanceConfirm(associateOrder: string[]) {
+  async function onAdvanceConfirm(associateOrder: string[], tableSizes?: number[]) {
     try {
-      await advance.mutateAsync({ currentRoundNumber: roundNumber, associateOrder })
+      await advance.mutateAsync({ currentRoundNumber: roundNumber, associateOrder, tableSizes })
       advancePreviewOpen.value = false
     } catch { /* toasted by the mutation's own onError */ }
   }
