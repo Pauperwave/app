@@ -135,7 +135,10 @@ const columns: TableColumn<CommanderDeck>[] = [
 <template>
   <UCard :ui="{ header: 'font-semibold flex items-center justify-between' }">
     <template #header>
-      {{ t('player.commander.decksTitle') }}
+      <span class="flex items-center gap-2">
+        <UIcon :name="ICONS.commander" class="size-5 shrink-0 text-primary" />
+        {{ t('player.commander.decksTitle') }}
+      </span>
       <PlayersSingleDeckCreateModal v-if="playerUuid" :player-uuid="playerUuid" />
     </template>
 

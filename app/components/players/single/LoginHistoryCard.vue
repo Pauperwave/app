@@ -9,7 +9,10 @@ defineProps<{ loading: boolean, dates: string[] | undefined }>()
 <template>
   <UCard :ui="{ header: 'font-semibold' }">
     <template #header>
-      {{ $t('player.detail.loginHistory') }}
+      <span class="flex items-center gap-2">
+        <UIcon :name="ICONS.history" class="size-5 shrink-0 text-primary" />
+        {{ $t('player.detail.loginHistory') }}
+      </span>
     </template>
 
     <div v-if="loading" class="flex items-center justify-center py-8">

@@ -66,7 +66,10 @@ const columns: TableColumn<CommanderMatchHistoryRow>[] = [
 <template>
   <UCard :ui="{ header: 'font-semibold' }">
     <template #header>
-      {{ t('player.commander.matchHistoryTitle') }}
+      <span class="flex items-center gap-2">
+        <UIcon :name="ICONS.battle" class="size-5 shrink-0 text-primary" />
+        {{ t('player.commander.matchHistoryTitle') }}
+      </span>
     </template>
 
     <ListSkeleton v-if="loading" :columns="columns.length" />
