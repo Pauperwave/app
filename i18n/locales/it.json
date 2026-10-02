@@ -2545,7 +2545,8 @@
         "commander1": "Comandante",
         "commander2": "Comandante (partner)",
         "companion": "Companion",
-        "decklistUrl": "Link decklist",
+        "decklistUrl": "Decklist (link Moxfield)",
+        "decklistUrlPlaceholder": "https://moxfield.com/decks/…",
         "isBorrowed": "Mazzo in prestito",
         "lender": "Prestato da"
       },

@@ -1,11 +1,13 @@
 <!-- app\components\players\single\DeckCreateModal.vue -->
-<!-- Manual deck registration, restored from league's DeckCreateModal.vue
-     (user request, 2026-09-17) — unlike league's plain-text commander
-     inputs, this reuses TournamentsSinglePairingCommanderSearch for
-     catalog-backed autocomplete, since this app already has it. -->
+<!--
+  Manual deck registration, restored from league's DeckCreateModal.vue (user request, 2026-09-17).
+  Redone in the look and logic of the round's commander modal (user request, 2026-10-03): same wide
+  modal, same two commander pickers side by side with the partner/background rules
+  (TournamentsSinglePairingCommanderModal) and the same footer with the catalog refresh — plus the
+  fields a deck has on its own: companion, Moxfield decklist link and the borrowed-deck switch.
+-->
 <script setup lang="ts">
-import * as v from 'valibot'
-import type { FormSubmitEvent } from '@nuxt/ui'
+import type CommanderModal from '~/components/tournaments/single/pairing/CommanderModal.vue'
 
 const open = defineModel<boolean>({ default: false })
 const { playerUuid } = defineProps<{ playerUuid: string }>()
@@ -14,48 +16,47 @@ const { t } = useI18n()
 const { createDeck } = usePlayerDeckMutations(() => playerUuid)
 const { isBorrowed, lenderUuid, lenderOptions } = useLenderSelection(() => playerUuid)
 
-const schema = v.object({
-  companionName: v.optional(v.string()),
-  decklistUrl: v.optional(v.string())
-})
-type Schema = v.InferOutput<typeof schema>
+const commanderModalRef = useTemplateRef<InstanceType<typeof CommanderModal>>('commanderModalRef')
 
-const state = reactive<Schema>({ companionName: undefined, decklistUrl: undefined })
-const commander1Name = ref<string | null>(null)
-const commander2Name = ref<string | null>(null)
+const companionName = ref('')
+const decklistUrl = ref('')
 
+// A deck needs its first commander; a second one too when the first requires it (partner, background…).
 const canSubmit = computed(() => {
-  if (!commander1Name.value) return false
-  if (isBorrowed.value && !lenderUuid.value) return false
-  return true
+  const commanders = commanderModalRef.value
+  if (!commanders?.commander1 || !commanders.canSubmit) return false
+  return !isBorrowed.value || !!lenderUuid.value
 })
 
 function resetForm() {
-  state.companionName = undefined
-  state.decklistUrl = undefined
-  commander1Name.value = null
-  commander2Name.value = null
+  companionName.value = ''
+  decklistUrl.value = ''
   isBorrowed.value = false
   lenderUuid.value = undefined
 }
 
-async function onSubmit(event: FormSubmitEvent<Schema>) {
-  if (!commander1Name.value) return
+// The picker unmounts with the modal (and forgets its commanders), so the rest starts over too.
+watch(open, (isOpen) => {
+  if (!isOpen) resetForm()
+})
+
+// CommanderModal emits the chosen commanders; the deck's own fields come from here.
+async function onCommanders(commander1: string | null, commander2: string | null) {
+  if (!commander1) return
 
   try {
     await createDeck.mutateAsync({
       playerUuid,
-      commander1Name: commander1Name.value,
-      commander2Name: commander2Name.value,
-      companionName: event.data.companionName || null,
-      decklistUrl: event.data.decklistUrl || null,
+      commander1Name: commander1,
+      commander2Name: commander2,
+      companionName: companionName.value.trim() || null,
+      decklistUrl: decklistUrl.value.trim() || null,
       isBorrowed: isBorrowed.value,
       lenderUuid: isBorrowed.value ? (lenderUuid.value ?? null) : null
     })
     open.value = false
-    resetForm()
   } catch {
-    // useCommanderDecksMutations already toasts the error
+    // usePlayerDeckMutations already toasts the error
   }
 }
 </script>
@@ -63,9 +64,14 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 <template>
   <UModal
     v-model:open="open"
-    :ui="{ content: 'max-w-lg' }"
     :title="t('deck.addModal.title')"
     :description="t('deck.addModal.description')"
+    :scrollable="true"
+    :ui="{
+      content: 'w-[calc(100vw-2rem)] max-w-4xl rounded-lg shadow-lg ring ring-default',
+      body: 'flex-1 p-4 sm:p-6'
+    }"
+    :content="{ onCloseAutoFocus: (e: Event) => e.preventDefault() }"
   >
     <AddButton
       :label="t('deck.addModal.openButton')"
@@ -74,50 +80,58 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     />
 
     <template #body>
-      <UForm
-        :schema="schema"
-        :state="state"
-        class="space-y-4"
-        @submit="onSubmit"
-      >
-        <UFormField :label="t('deck.addModal.fields.commander1')" required>
-          <TournamentsSinglePairingCommanderSearch v-model="commander1Name" />
-        </UFormField>
-
-        <UFormField :label="t('deck.addModal.fields.commander2')">
-          <TournamentsSinglePairingCommanderSearch v-model="commander2Name" />
-        </UFormField>
-
-        <UFormField :label="t('deck.addModal.fields.companion')" name="companionName">
-          <UInput v-model="state.companionName" class="w-full" />
-        </UFormField>
-
-        <UFormField :label="t('deck.addModal.fields.decklistUrl')" name="decklistUrl">
-          <UInput v-model="state.decklistUrl" class="w-full" />
-        </UFormField>
-
-        <PlayersSingleLenderSelectionFields
-          v-model:is-borrowed="isBorrowed"
-          v-model:lender-uuid="lenderUuid"
-          :lender-options="lenderOptions"
+      <div class="space-y-4">
+        <TournamentsSinglePairingCommanderModal
+          ref="commanderModalRef"
+          :player-uuid="playerUuid"
+          player-name=""
+          @submit="onCommanders"
         />
 
-        <div class="flex justify-end gap-2">
+        <div class="grid gap-4 sm:grid-cols-2">
+          <UFormField :label="t('deck.addModal.fields.decklistUrl')">
+            <UInput
+              v-model="decklistUrl"
+              :icon="ICONS.link"
+              :placeholder="t('deck.addModal.fields.decklistUrlPlaceholder')"
+              class="w-full"
+            />
+          </UFormField>
+
+          <UFormField :label="t('deck.addModal.fields.companion')">
+            <UInput v-model="companionName" class="w-full" />
+          </UFormField>
+        </div>
+
+        <div class="grid items-start gap-4 sm:grid-cols-2">
+          <PlayersSingleLenderSelectionFields
+            v-model:is-borrowed="isBorrowed"
+            v-model:lender-uuid="lenderUuid"
+            :lender-options="lenderOptions"
+          />
+        </div>
+      </div>
+    </template>
+
+    <template #footer>
+      <div class="flex w-full items-center justify-between">
+        <TournamentsSinglePairingCommanderCatalogRefresh />
+        <div class="flex items-center gap-2">
           <UButton
             :label="t('deck.addModal.cancel')"
             color="neutral"
             variant="ghost"
-            @click="open = false; resetForm()"
+            @click="open = false"
           />
           <UButton
             :label="t('deck.addModal.create')"
             :icon="ICONS.confirm"
-            type="submit"
             :disabled="!canSubmit"
             :loading="createDeck.isLoading.value"
+            @click="commanderModalRef?.submit()"
           />
         </div>
-      </UForm>
+      </div>
     </template>
   </UModal>
 </template>
