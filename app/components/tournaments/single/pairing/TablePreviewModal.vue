@@ -293,7 +293,8 @@ const selectedTablePlayerRows = computed(() => {
   }))
 })
 
-const modalMaxWidth = computed(() => (localTables.value.length <= 1 ? 'max-w-3xl' : 'max-w-6xl'))
+// Slightly wider than before (user request, 2026-10-02): room for 2x2 seats with full names.
+const modalMaxWidth = computed(() => (localTables.value.length <= 1 ? 'max-w-4xl' : 'max-w-7xl'))
 
 function tableScoreForIndex(tableIndex: number): number {
   return scoreDetails.value.tableScores[tableIndex]?.total ?? 0
