@@ -52,19 +52,6 @@ function onClear() {
   emit('clear')
   open.value = false
 }
-
-// Whitelist catalog is shared/cached (useCommanderCatalogQuery) — this only
-// needs isLoading/refetch for the footer's refresh button; CommanderModal
-// itself calls the same composable for whitelists/getPartnerType.
-const { isLoading: isRefreshingCatalog } = useCommanderWhitelists()
-const { syncCatalog } = useCommanderCatalogMutations()
-
-const showRefreshCatalogConfirm = ref(false)
-
-async function onConfirmRefreshCatalog() {
-  await syncCatalog.mutateAsync()
-  showRefreshCatalogConfirm.value = false
-}
 </script>
 
 <template>
@@ -101,16 +88,7 @@ async function onConfirmRefreshCatalog() {
 
     <template #footer>
       <div class="flex w-full items-center justify-between">
-        <UButton
-          :icon="ICONS.refresh"
-          :label="isRefreshingCatalog || syncCatalog.isLoading.value
-            ? t('tournament.single.commanderModal.syncingCatalog')
-            : t('tournament.single.commanderModal.syncCatalogButton')"
-          variant="outline"
-          color="warning"
-          :loading="isRefreshingCatalog || syncCatalog.isLoading.value"
-          @click="showRefreshCatalogConfirm = true"
-        />
+        <TournamentsSinglePairingCommanderCatalogRefresh />
         <div class="flex items-center gap-2">
           <UButton
             v-if="commander1"
@@ -129,17 +107,4 @@ async function onConfirmRefreshCatalog() {
       </div>
     </template>
   </UModal>
-
-  <ConfirmModal
-    v-model:open="showRefreshCatalogConfirm"
-    :title="t('tournament.single.commanderModal.syncCatalogConfirm.title')"
-    :description="t('tournament.single.commanderModal.syncCatalogConfirm.description')"
-    :warning="t('tournament.single.commanderModal.syncCatalogConfirm.question') + '? '
-      + t('tournament.single.commanderModal.syncCatalogConfirm.warning')"
-    :confirm-label="t('tournament.single.commanderModal.syncCatalogConfirm.confirmLabel')"
-    :confirm-icon="ICONS.refresh"
-    confirm-color="warning"
-    :loading="syncCatalog.isLoading.value"
-    @confirm="onConfirmRefreshCatalog"
-  />
 </template>

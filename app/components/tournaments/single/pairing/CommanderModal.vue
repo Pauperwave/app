@@ -98,7 +98,7 @@ function submit() {
   emit('submit', commander1.value || null, commander2.value || null)
 }
 
-defineExpose({ submit, canSubmit })
+defineExpose({ submit, canSubmit, commander1 })
 </script>
 
 <template>
