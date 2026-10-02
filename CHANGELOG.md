@@ -1,6 +1,31 @@
 # Changelog
 
 
+## v0.7.0
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.6.0...v0.7.0)
+
+### Enhancements
+
+- **tournaments:** ✨ registrations are locked once round 1 has started ([b4b5b900](https://github.com/Pauperwave/app/commit/b4b5b900))
+- **tournaments:** ✨ closed rounds and finished tournaments are view only ([b4b90882](https://github.com/Pauperwave/app/commit/b4b90882))
+
+### Chore
+
+- **release:** 🔖 v0.6.0 ([5bdda4b6](https://github.com/Pauperwave/app/commit/5bdda4b6))
+- **claude:** 🔧 allow pushing release tags only, never branch commits (PreToolUse guard hook replaces the blanket deny) ([8a3d0b86](https://github.com/Pauperwave/app/commit/8a3d0b86))
+
+### Styles
+
+- **claude:** 🎨 lint the git push guard hook ([87370008](https://github.com/Pauperwave/app/commit/87370008))
+- **tournaments:** 💄 a medal for every placement, clearer silver, softer bronze ([45443f81](https://github.com/Pauperwave/app/commit/45443f81))
+- **tournaments:** 💄 back to 2x2 seats in the table preview cards, long names wrap instead of clipping ([86a0e59d](https://github.com/Pauperwave/app/commit/86a0e59d))
+- **tournaments:** 💄 slightly wider table preview modal (7xl, 4xl for a single table) ([176538b4](https://github.com/Pauperwave/app/commit/176538b4))
+
+### ❤️ Contributors
+
+- Emanuele Nardi <emanuelenardi.dev@gmail.com>
+
 ## v0.6.0
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.5.0...v0.6.0)
