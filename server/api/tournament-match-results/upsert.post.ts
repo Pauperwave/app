@@ -17,7 +17,9 @@ export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 
   const body = await readBody<UpsertMatchResultBody>(event)
-  await saveMatchResult(serverSupabaseServiceRole<Database>(event), body)
+  const supabase = serverSupabaseServiceRole<Database>(event)
+  await assertPairingEditable(supabase, body.pairingUuid)
+  await saveMatchResult(supabase, body)
 
   return { success: true }
 })

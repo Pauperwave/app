@@ -3,9 +3,11 @@
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { MatchScore, SwissMatchRow } from '~/types'
 
-const { rows, search = '' } = defineProps<{
+const { rows, search = '', readonly = false } = defineProps<{
   rows: SwissMatchRow[]
   search?: string
+  // A closed round: view only (server-enforced too).
+  readonly?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -166,12 +168,13 @@ const columns = computed<TableColumn<SwissMatchRow>[]>(() => [
         <TournamentsSinglePairingSwissScoreButtons
           :seat="row.original.player.seat"
           :current="row.original.current"
+          :disabled="readonly"
           @select="score => emit('select', row.original.pairingUuid, score)"
         />
       </div>
     </template>
     <template #actions-cell="{ row }">
-      <RowActionsMenu :items="rowActionItems(row.original)" />
+      <RowActionsMenu v-if="!readonly" :items="rowActionItems(row.original)" />
     </template>
   </UTable>
 </template>

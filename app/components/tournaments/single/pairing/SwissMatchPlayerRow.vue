@@ -12,12 +12,14 @@ const {
   player,
   current = null,
   isBye = false,
-  search = ''
+  search = '',
+  readonly = false
 } = defineProps<{
   player: SwissMatchPlayer
   current?: MatchScore | null
   isBye?: boolean
   search?: string
+  readonly?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -78,9 +80,10 @@ const dropMenuItems = computed<DropdownMenuItem[]>(() => [{
         v-else
         :seat="player.seat"
         :current="current"
+        :disabled="readonly"
         @select="score => emit('select', score)"
       />
-      <RowActionsMenu :items="dropMenuItems" />
+      <RowActionsMenu v-if="!readonly" :items="dropMenuItems" />
     </div>
   </div>
 </template>

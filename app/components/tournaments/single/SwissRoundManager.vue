@@ -69,6 +69,10 @@ const {
   matchPlayersFor, pendingPlayerUuids, liveStandings
 } = roundData
 
+// Only the round in progress can change: once the next round exists or the tournament ended,
+// this one is view only (the server refuses writes too, server/utils/tournaments/editLocks.ts).
+const roundLocked = computed(() => roundData.round.value?.status !== 'in_progress')
+
 const { onScoreSelect, onScoreClear, onToggleDrop } = submitHandlers
 
 const {
@@ -125,7 +129,9 @@ const matchRows = computed<SwissMatchRow[]>(() =>
 <template>
   <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,34rem)] gap-4">
     <div class="space-y-3">
+      <!-- A closed round has nothing left to advance or turn back: only the current one does. -->
       <TournamentsSinglePairingRoundNavButtons
+        v-if="!roundLocked"
         :turn-back-label="t('tournament.single.roundManager.turnBackButton')"
         :is-last-round="isLastRoundOfTournament"
         :advance-disabled="!allResultsEntered"
@@ -169,6 +175,7 @@ const matchRows = computed<SwissMatchRow[]>(() =>
             :current="matchResultByPairingUuid.get(pairing.uuid)"
             :telegram-info="telegramInfo"
             :search="search"
+            :readonly="roundLocked"
             @select="score => onScoreSelect(pairing.uuid, score)"
             @clear="onScoreClear(pairing.uuid)"
             @toggle-drop="onToggleDrop"
@@ -178,6 +185,7 @@ const matchRows = computed<SwissMatchRow[]>(() =>
           v-else
           :rows="matchRows"
           :search="search"
+          :readonly="roundLocked"
           @select="onScoreSelect"
           @clear="onScoreClear"
           @toggle-drop="onToggleDrop"

@@ -14,6 +14,7 @@ export default defineEventHandler(async (event) => {
 
   const { pairingUuid } = await readBody<UndrawPairingBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
+  await assertPairingEditable(supabase, pairingUuid)
 
   const { error } = await supabase.rpc('undraw_commander_pairing', {
     p_pairing_uuid: pairingUuid

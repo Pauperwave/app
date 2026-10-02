@@ -77,6 +77,10 @@ const {
   dropByPlayerUuid
 } = roundData
 
+// Only the round in progress can change: once the next round exists or the tournament ended,
+// this one is view only (the server refuses writes too, server/utils/tournaments/editLocks.ts).
+const roundLocked = computed(() => roundData.round.value?.status !== 'in_progress')
+
 const {
   rulesetPoints, scoreModalOpen, activeScorePairingUuid, openScoreModal, activeScorePlayers,
   activeScoreTableNumber,
@@ -151,7 +155,9 @@ const showFHint = useChordHintKey('f')
 <template>
   <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-4">
     <div class="space-y-3">
+      <!-- A closed round has nothing left to advance or turn back: only the current one does. -->
       <TournamentsSinglePairingRoundNavButtons
+        v-if="!roundLocked"
         :turn-back-label="turnBackButtonLabel"
         :is-last-round="isLastRoundOfTournament"
         :advance-disabled="!allPairingsComplete || cannotFormNextRound"
@@ -228,6 +234,7 @@ const showFHint = useChordHintKey('f')
               :is-draw="isPairingDraw(pairing.uuid)"
               :associate-uuid-for="associateUuidFor"
               :dropped-for="(playerUuid: string) => dropByPlayerUuid.get(playerUuid) ?? null"
+              :readonly="roundLocked"
               @open-score-modal="openScoreModal(pairing.uuid)"
               @open-kill-modal="openKillModal(pairing.uuid)"
               @open-votes-modal="(playerUuid: string) => openVotesModal(pairing.uuid, playerUuid)"

@@ -12,6 +12,7 @@ export default defineEventHandler(async (event) => {
 
   const { pairingUuid, playerUuid } = await readBody<ClearCommanderBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
+  await assertPairingEditable(supabase, pairingUuid)
 
   await clearCommanderDeck(supabase, { pairingUuid, playerUuid })
 
