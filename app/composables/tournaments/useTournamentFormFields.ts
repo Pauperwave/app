@@ -34,11 +34,17 @@ function buildSchema(t: ReturnType<typeof useI18n>['t']) {
     name: v.optional(v.pipe(v.string(t('tournament.addModal.validation.nameRequired')), v.trim())),
     description: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
     entryFee: v.pipe(v.number(), v.minValue(0, t('tournament.addModal.validation.entryFeeNegative'))),
+    entryFeeNonMember: v.optional(v.nullable(
+      v.pipe(v.number(), v.minValue(0, t('tournament.addModal.validation.entryFeeNegative')))
+    )),
+    maxEntrants: v.optional(v.nullable(v.pipe(v.number(), v.integer(), v.minValue(1)))),
+    decklistVisibility: v.optional(v.nullable(v.picklist(['public', 'secret']))),
     prizes: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
     formatUuid: v.string(),
     startDate: v.string(),
     startTime: v.string(),
     endTime: v.optional(v.string()),
+    registrationTime: v.optional(v.string()),
     roundCount: v.pipe(
       v.number(),
       v.integer(),

@@ -2339,11 +2339,13 @@ export type Database = {
           contact_name: string | null
           contact_phone: string | null
           created_at: string
+          decklist_visibility: string | null
           deleted_at: string | null
           deleted_by: string | null
           description: string | null
           ends_at: string | null
           entry_fee: number | null
+          entry_fee_non_member: number | null
           event_uuid: string | null
           format_uuid: string
           id: number
@@ -2354,11 +2356,13 @@ export type Database = {
           is_test: boolean
           league_uuid: string | null
           location_uuid: string | null
+          max_entrants: number | null
           name: string
           organizer_uuid: string | null
           participant_names: string[]
           prizes: string | null
           registered_players: number | null
+          registration_at: string | null
           round_count: number | null
           round_current: number | null
           round_duration_minutes: number
@@ -2374,11 +2378,13 @@ export type Database = {
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string
+          decklist_visibility?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
           description?: string | null
           ends_at?: string | null
           entry_fee?: number | null
+          entry_fee_non_member?: number | null
           event_uuid?: string | null
           format_uuid: string
           id?: number
@@ -2389,11 +2395,13 @@ export type Database = {
           is_test?: boolean
           league_uuid?: string | null
           location_uuid?: string | null
+          max_entrants?: number | null
           name: string
           organizer_uuid?: string | null
           participant_names?: string[]
           prizes?: string | null
           registered_players?: number | null
+          registration_at?: string | null
           round_count?: number | null
           round_current?: number | null
           round_duration_minutes?: number
@@ -2409,11 +2417,13 @@ export type Database = {
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string
+          decklist_visibility?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
           description?: string | null
           ends_at?: string | null
           entry_fee?: number | null
+          entry_fee_non_member?: number | null
           event_uuid?: string | null
           format_uuid?: string
           id?: number
@@ -2424,11 +2434,13 @@ export type Database = {
           is_test?: boolean
           league_uuid?: string | null
           location_uuid?: string | null
+          max_entrants?: number | null
           name?: string
           organizer_uuid?: string | null
           participant_names?: string[]
           prizes?: string | null
           registered_players?: number | null
+          registration_at?: string | null
           round_count?: number | null
           round_current?: number | null
           round_duration_minutes?: number

@@ -33,6 +33,13 @@ const {
 // `image`. imageCardName/imageCardArtist ride along for the same reason,
 // required attribution for image when it's a Scryfall art_crop — see
 // CardArtPicker.vue.
+const { t } = useI18n()
+
+const decklistVisibilityOptions = computed(() => (['public', 'secret'] as const).map(value => ({
+  value,
+  label: t(`tournament.decklistVisibility.${value}`)
+})))
+
 const image = defineModel<string | undefined>('image')
 const imageCardName = defineModel<string | undefined>('imageCardName')
 const imageCardArtist = defineModel<string | undefined>('imageCardArtist')
@@ -96,6 +103,47 @@ const imageCardArtist = defineModel<string | undefined>('imageCardArtist')
         :icon="ICONS.smartphone"
         class="w-42"
         @update:model-value="state.companionCode = ($event as string) || undefined"
+      />
+    </UFormField>
+  </div>
+
+  <div class="grid grid-cols-3 gap-2">
+    <UFormField
+      :label="$t('tournament.addModal.fields.entryFeeNonMember')"
+      name="entryFeeNonMember"
+    >
+      <UInputNumber
+        v-model="state.entryFeeNonMember"
+        :min="0"
+        :step="5"
+        class="w-full"
+        :icon="ICONS.euro"
+        :placeholder="$t('tournament.addModal.fields.entryFeeNonMemberPlaceholder')"
+      />
+    </UFormField>
+
+    <UFormField :label="$t('tournament.addModal.fields.maxEntrants')" name="maxEntrants">
+      <UInputNumber
+        v-model="state.maxEntrants"
+        :min="1"
+        class="w-full"
+        :icon="ICONS.players"
+        :placeholder="$t('tournament.addModal.fields.maxEntrantsPlaceholder')"
+      />
+    </UFormField>
+
+    <UFormField
+      :label="$t('tournament.addModal.fields.decklistVisibility')"
+      name="decklistVisibility"
+    >
+      <USelectMenu
+        v-model="state.decklistVisibility"
+        :items="decklistVisibilityOptions"
+        value-key="value"
+        :icon="ICONS.lock"
+        :placeholder="$t('tournament.addModal.fields.decklistVisibilityPlaceholder')"
+        clear
+        class="w-full"
       />
     </UFormField>
   </div>

@@ -34,6 +34,10 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  if (await tournamentIsFull(supabase, tournamentUuid)) {
+    throw createError({ statusCode: 409, statusMessage: 'Posti esauriti per questo torneo' })
+  }
+
   const { data, error } = await supabase.rpc('register_tournament_players', {
     p_tournament_uuid: tournamentUuid,
     p_associate_uuids: [associateUuid]

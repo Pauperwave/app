@@ -267,6 +267,13 @@ export interface Tournament {
   // supabase/migrations/20260816120000_add_locations_google_maps_url.sql.
   locationMapsUrl: string | null
   entryFee: number | null
+  // entryFee is the members' price; null here = the same price for everyone.
+  entryFeeNonMember: number | null
+  // Players, or teams for a team tournament; null = no limit.
+  maxEntrants: number | null
+  decklistVisibility: 'public' | 'secret' | null
+  // When on-site registration opens (before startDate).
+  registrationAt: string | null
   description: string | null
   prizes: string | null
   companionCode: string | null

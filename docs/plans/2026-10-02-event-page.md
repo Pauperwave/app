@@ -46,8 +46,13 @@ now its format is enough, plus an initial pod-draft phase later.
    tournaments after every tournament write (`recomputeEventDates`, `server/utils/derivedDates.ts`),
    no date/time fields in the event forms, an event with no tournaments yet has no dates.
    Still to do: link the existing tournaments to their events (data work: today none are linked).
-3. **Tournament fields** (migration): registration time for every format; member/non-member fee,
-   max entrants and decklist visibility for 1v1/Pauper.
+3. **Tournament fields (done, 2026-10-03, migration 20261003110000)**: `entry_fee_non_member`
+   (`entry_fee` is the members' price, null = same for everyone), `max_entrants` (self-registration —
+   web and Telegram bot — stops at it; an organizer can still go over), `decklist_visibility`
+   (public/secret) and `registration_at` (on-site registration time, named so it can't be mixed up
+   with a registration's `checked_in_at`). In the tournament forms, the calendar detail and filled
+   in for Radio Atog. `registration_at` is only stored and shown for now: nothing opens or closes
+   registrations by it (that would block the pre-registration the app is built around).
 4. **Event fields** (migration): tagline, edition, description, practical notes, ticket link and
    sale start, membership required + link; an `event_partners` table (name, role, logo, link, order).
 5. **Cube**: an initial pod-draft phase before the rounds.
