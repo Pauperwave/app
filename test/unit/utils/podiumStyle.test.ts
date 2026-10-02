@@ -4,19 +4,20 @@ import { podiumStyle } from '~/utils/tournaments/podiumStyle'
 import { ICONS } from '~/utils/icons'
 
 describe('podiumStyle', () => {
-  it('crowns the winner in gold', () => {
-    expect(podiumStyle(1).icon).toBe(ICONS.crown)
+  it('uses a medal for every placement, never a crown', () => {
+    for (const position of [1, 2, 3, 4, 5]) {
+      expect(podiumStyle(position).icon).toBe(ICONS.medal)
+    }
+  })
+
+  it('gives 1st, 2nd and 3rd each their own color', () => {
+    const classes = [1, 2, 3].map(position => podiumStyle(position).badgeClass)
+    expect(new Set(classes).size).toBe(3)
     expect(podiumStyle(1).textClass).toContain('text-warning')
   })
 
-  it('gives 2nd and 3rd a medal each, in different colors', () => {
-    expect(podiumStyle(2).icon).toBe(ICONS.medal)
-    expect(podiumStyle(3).icon).toBe(ICONS.medal)
-    expect(podiumStyle(2).badgeClass).not.toBe(podiumStyle(3).badgeClass)
-  })
-
-  it('shows everyone off the podium with the same muted medal', () => {
+  it('keeps everyone off the podium on one plain style, distinct from 2nd', () => {
     expect(podiumStyle(4)).toEqual(podiumStyle(0))
-    expect(podiumStyle(4).textClass).toBe('text-muted')
+    expect(podiumStyle(4).badgeClass).not.toBe(podiumStyle(2).badgeClass)
   })
 })
