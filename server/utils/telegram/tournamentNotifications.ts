@@ -98,12 +98,13 @@ export function notifyRoundTables(roundUuid: string): Promise<AssociateNotifyRes
       const player = players.get(playerUuid)
       if (!player) return []
 
-      const opponents = seatUuids(row)
-        .filter(uuid => uuid !== playerUuid)
+      // Whole table in seat order, the recipient included (a pod message shows the seating).
+      const seats = seatUuids(row)
         .flatMap(uuid => players.get(uuid) ?? [])
-        .map(opponent => ({
-          name: playerName(opponent),
-          telegramUsername: usernames.get(opponent.associate_uuid)
+        .map(seated => ({
+          name: playerName(seated),
+          telegramUsername: usernames.get(seated.associate_uuid),
+          isYou: seated.uuid === playerUuid
         }))
 
       return [{
@@ -112,7 +113,7 @@ export function notifyRoundTables(roundUuid: string): Promise<AssociateNotifyRes
           tournamentName: row.tournament.name,
           roundNumber: row.round.round_number,
           tableNumber: row.table_number,
-          opponents
+          seats
         })
       }]
     }))

@@ -24,21 +24,41 @@ export function opponentsText(opponents: TableOpponent[]): string {
   return `Giochi con:\n${opponents.map(opponent => `- ${opponentLabel(opponent)}`).join('\n')}`
 }
 
+export interface TableSeat extends TableOpponent {
+  /** The player this message is sent to. */
+  isYou: boolean
+}
+
+// A pod lists the whole table in seat order (player1..player4), the recipient marked "👉 Tu".
+function podSeatingText(seats: TableSeat[]): string {
+  const yourSeat = seats.findIndex(seat => seat.isYou) + 1
+  const lines = seats.map((seat, index) =>
+    `${index + 1}. ${seat.isYou ? '👉 Tu' : opponentLabel(seat)}`)
+  return `💺 Sei al posto ${yourSeat}\n\nAl tavolo:\n${lines.join('\n')}`
+}
+
+// `seats` is the whole table in seat order, the recipient included. A 1v1 table keeps
+// "Giochi contro: …"; a pod shows the seating (user request, 2026-10-02).
 export function tableAnnouncedMessage(input: {
   tournamentName: string
   roundNumber: number
   tableNumber: number | null
-  opponents: TableOpponent[]
+  seats: TableSeat[]
 }): string {
   const {
     tournamentName,
     roundNumber,
     tableNumber,
-    opponents
+    seats
   } = input
   const place = tableNumber === null ? '🪑 Il tuo tavolo' : `🪑 Tavolo ${tableNumber}`
   const header = `${place} · ${tournamentName} · Round ${roundNumber}`
-  return `${header}\n\n${opponentsText(opponents)}\n\nPer inserire il risultato usa /tavolo.`
+  const footer = 'Per inserire il risultato usa /tavolo.'
+
+  if (seats.length > 2) return `${header}\n${podSeatingText(seats)}\n\n${footer}`
+
+  const opponents = seats.filter(seat => !seat.isYou)
+  return `${header}\n\n${opponentsText(opponents)}\n\n${footer}`
 }
 
 export function roundTablesCancelledMessage(tournamentName: string, roundNumber: number): string {
