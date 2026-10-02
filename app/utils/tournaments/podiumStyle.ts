@@ -1,6 +1,7 @@
 // app\utils\tournaments\podiumStyle.ts
-// One podium look for a placement wherever it's shown (round report, round table cards):
-// crown on gold for the winner, silver and bronze medals, a plain muted medal after (user request, 2026-10-02).
+// One podium look for a placement wherever it's shown (round report, round table cards): a medal for
+// everyone (user request, 2026-10-02: no crown), gold/silver/bronze tints for the podium, and a plain
+// outline after it so 4th never reads like 2nd.
 import { ICONS } from '~/utils/icons'
 
 export interface PodiumStyle {
@@ -13,26 +14,26 @@ export interface PodiumStyle {
 
 const PODIUM: Record<1 | 2 | 3, PodiumStyle> = {
   1: {
-    icon: ICONS.crown,
+    icon: ICONS.medal,
     textClass: 'text-warning',
-    badgeClass: 'bg-warning/10 text-warning ring-warning/25'
+    badgeClass: 'bg-warning/10 text-warning ring-warning/30'
   },
   2: {
     icon: ICONS.medal,
     textClass: 'text-slate-500 dark:text-slate-300',
-    badgeClass: 'bg-slate-400/15 text-slate-600 ring-slate-400/40 dark:text-slate-300'
+    badgeClass: 'bg-slate-500/15 text-slate-600 ring-slate-500/40 dark:text-slate-200 dark:bg-slate-300/15'
   },
   3: {
     icon: ICONS.medal,
-    textClass: 'text-orange-700 dark:text-orange-400',
-    badgeClass: 'bg-orange-700/10 text-orange-700 ring-orange-700/25 dark:text-orange-400'
+    textClass: 'text-amber-800/80 dark:text-amber-600',
+    badgeClass: 'bg-amber-800/5 text-amber-800/80 ring-amber-800/20 dark:text-amber-600 dark:ring-amber-600/25'
   }
 }
 
 const OFF_PODIUM: PodiumStyle = {
   icon: ICONS.medal,
-  textClass: 'text-muted',
-  badgeClass: 'text-muted'
+  textClass: 'text-dimmed',
+  badgeClass: 'bg-transparent text-dimmed ring-default'
 }
 
 export function podiumStyle(position: number): PodiumStyle {

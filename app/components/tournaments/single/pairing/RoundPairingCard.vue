@@ -219,7 +219,7 @@ const drawTooltip = computed(() => {
 
         <div class="flex shrink-0 items-center gap-1.5 pe-1.5">
           <TournamentsSinglePairingDropBadge :dropped="droppedFor(player.value)" with-time />
-          <!-- Icon + "1°", so the placement can't be mistaken for the seat number on the left. -->
+          <!-- Medal + "1°", so the placement can't be mistaken for the seat number on the left. -->
           <UTooltip
             v-if="positions.get(player.value)"
             :text="placementTooltip(player.value)"

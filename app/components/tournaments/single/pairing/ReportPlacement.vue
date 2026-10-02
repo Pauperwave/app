@@ -1,5 +1,5 @@
 <!-- app\components\tournaments\single\pairing\ReportPlacement.vue -->
-<!-- A placement as icon + text ("1° posto"), in the shared podium look (podiumStyle.ts). -->
+<!-- A placement as medal + text ("1° posto"), in the shared podium look (podiumStyle.ts). -->
 <script setup lang="ts">
 const { position } = defineProps<{
   position: number
