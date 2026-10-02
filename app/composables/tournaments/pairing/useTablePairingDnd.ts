@@ -28,13 +28,8 @@ function cloneTables(tables: PairingTable[]): PairingTable[] {
     tableNumber: table.tableNumber,
     seats: table.seats.map(seat => ({
       id: seat.id,
-      player: seat.player
-        ? {
-          value: seat.player.value,
-          label: seat.player.label,
-          seed: seat.player.seed
-        }
-        : null
+      // Whole player copied (name parts, standing too), not just value/label.
+      player: seat.player ? { ...seat.player } : null
     }))
   }))
 }

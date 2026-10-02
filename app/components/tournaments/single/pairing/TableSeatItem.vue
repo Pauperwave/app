@@ -40,12 +40,18 @@ const { t } = useI18n()
         <UIcon :name="ICONS.dragHandle" class="size-4 cursor-grab hover:cursor-grab active:cursor-grabbing" />
       </button>
 
-      <AssociateTag
-        :name="seat.player.label"
-        :associate-uuid="seat.player.value"
-        size="md"
-        class="flex-1 text-left"
-      />
+      <div class="flex min-w-0 flex-1 flex-col">
+        <AssociateTag
+          :name="seat.player.label"
+          :associate-uuid="seat.player.value"
+          size="md"
+          class="text-left"
+        />
+        <TournamentsSinglePairingTablePlayerStandingLine
+          v-if="seat.player.standing"
+          :standing="seat.player.standing"
+        />
+      </div>
 
       <UTooltip :text="t('tournament.single.tablePreview.seatTooltip', { n: seatNumber })">
         <UBadge

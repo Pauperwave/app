@@ -1650,6 +1650,7 @@
         "dropHere": "Rilascia qui",
         "emptySlot": "Posto vuoto",
         "seatTooltip": "Posto {n}",
+        "standingPoints": "{points} pt",
         "cardSizeWarning": "Servono 3 o 4 giocatori",
         "cardThreeNotLastWarning": "Va dopo i tavoli da 4",
         "tableSizeError": "Il tavolo {n} ha {count} giocatori: ne servono 3 o 4",

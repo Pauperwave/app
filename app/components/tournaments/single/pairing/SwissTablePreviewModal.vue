@@ -206,12 +206,18 @@ function confirm() {
                   <UIcon :name="ICONS.dragHandle" class="size-4" />
                 </button>
 
-                <AssociateTag
-                  :name="player.label"
-                  :associate-uuid="player.value"
-                  size="md"
-                  class="flex-1 text-left"
-                />
+                <div class="flex min-w-0 flex-1 flex-col">
+                  <AssociateTag
+                    :name="player.label"
+                    :associate-uuid="player.value"
+                    size="md"
+                    class="text-left"
+                  />
+                  <TournamentsSinglePairingTablePlayerStandingLine
+                    v-if="player.standing"
+                    :standing="player.standing"
+                  />
+                </div>
               </div>
             </VueDraggable>
           </UCard>

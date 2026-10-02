@@ -49,9 +49,20 @@ export function useSwissRoundLifecycle(options: {
     const orderedPlayerUuids = pairSwissRound(
       rankedPlayerUuids, playedPairs.value, byePlayerUuids.value
     )
+    // Rank counts every player (dropped ones too), matching the standings table.
+    const rankedStandings = new Map(liveStandings.value
+      .map((standing, index) => [standing.playerUuid, { standing, rank: index + 1 }] as const))
+
     return orderedPlayerUuids.flatMap((playerUuid) => {
       const associateUuid = associateUuidFor(playerUuid)
-      return associateUuid ? [{ value: associateUuid, label: labelFor(playerUuid) }] : []
+      if (!associateUuid) return []
+
+      const ranked = rankedStandings.get(playerUuid)
+      return [{
+        value: associateUuid,
+        label: labelFor(playerUuid),
+        standing: ranked ? swissTablePlayerStanding(ranked.standing, ranked.rank) : undefined
+      }]
     })
   })
 

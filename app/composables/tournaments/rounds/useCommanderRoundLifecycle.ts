@@ -36,10 +36,24 @@ export function useCommanderRoundLifecycle(options: {
   // (best rank first) — same "rank drives the seed order" idea as league's
   // own pairing optimizer, just resolved through this app's associate
   // identity instead of a numeric rank field. A dropped player isn't seated again.
-  const nextRoundSeedPlayers = computed<TablePlayer[]>(() =>
-    liveStandings.value
-      .filter(standing => !standing.dropped)
-      .map(s => ({ value: s.associateUuid, label: s.label })))
+  // Rank counts every player (dropped ones too), matching the standings table.
+  const { t } = useI18n()
+  const nextRoundSeedPlayers = computed<TablePlayer[]>(() => {
+    const labels = {
+      victories: t('tournament.single.roundManager.standingsVictoriesHeader'),
+      kills: t('tournament.single.roundManager.standingsKillsHeader'),
+      brew: t('tournament.single.roundManager.standingsBrewHeader'),
+      play: t('tournament.single.roundManager.standingsPlayHeader')
+    }
+    return liveStandings.value
+      .map((standing, index) => ({ standing, rank: index + 1 }))
+      .filter(entry => !entry.standing.dropped)
+      .map(entry => ({
+        value: entry.standing.associateUuid,
+        label: entry.standing.label,
+        standing: commanderTablePlayerStanding(entry.standing, entry.rank, labels)
+      }))
+  })
 
   // After drops, the remaining players must still split into valid tables (3-4 each, never 5).
   const { calculatePods } = useCommanderPods()

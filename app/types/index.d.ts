@@ -560,6 +560,17 @@ export interface TablePlayer {
   // the label uuid) or from a context with no structured name at all.
   firstName?: string
   surname?: string
+  // Round 2+ only: where the player stands, shown under the name to explain the tables.
+  standing?: TablePlayerStanding
+}
+
+export interface TablePlayerStanding {
+  rank: number
+  points: number
+  // 1v1 "V-P-S" record (wins-draws-losses); Commander has none.
+  record?: string
+  // Tiebreakers in the order they rank players, e.g. { label: 'OMW%', value: '66.7' }.
+  tiebreakers: { label: string, value: string }[]
 }
 
 export interface Seat {
