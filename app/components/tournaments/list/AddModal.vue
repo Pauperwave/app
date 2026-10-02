@@ -67,6 +67,12 @@ function createInitialState(): TournamentFormState {
     leagueUuid: initialLeagueUuid ?? source?.leagueUuid ?? undefined,
     eventUuid: initialEventUuid ?? source?.eventUuid ?? undefined,
     entryFee: source?.entryFee ?? 5,
+    entryFeeNonMember: source?.entryFeeNonMember ?? undefined,
+    maxEntrants: source?.maxEntrants ?? undefined,
+    decklistVisibility: source?.decklistVisibility ?? undefined,
+    registrationTime: source?.registrationAt
+      ? new Date(source.registrationAt).toTimeString().substring(0, 5)
+      : undefined,
     companionCode: source?.companionCode ?? undefined,
     telegramNotificationsEnabled: source?.telegramNotificationsEnabled ?? true,
     isTest: source?.isTest ?? false
@@ -212,6 +218,12 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     roundCount: event.data.roundCount,
     roundDurationMinutes: event.data.roundDurationMinutes,
     entryFee: event.data.entryFee,
+    entryFeeNonMember: event.data.entryFeeNonMember ?? null,
+    maxEntrants: event.data.maxEntrants ?? null,
+    decklistVisibility: event.data.decklistVisibility ?? null,
+    registrationAt: event.data.registrationTime
+      ? combineDateAndTime(startDate.value!, event.data.registrationTime).toISOString()
+      : null,
     description: event.data.description || null,
     prizes: event.data.prizes || null,
     companionCode: event.data.companionCode || null,

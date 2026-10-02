@@ -16,6 +16,12 @@ export interface NewTournamentPayload {
   roundCount: number | null
   roundDurationMinutes: number | null
   entryFee: number | null
+  // Optional extras (migration 20261003110000): the non-members' price (entryFee is the members'),
+  // the player cap, whether decklists are public or secret, and when on-site registration opens.
+  entryFeeNonMember: number | null
+  maxEntrants: number | null
+  decklistVisibility: 'public' | 'secret' | null
+  registrationAt: string | null
   description: string | null
   prizes: string | null
   companionCode: string | null

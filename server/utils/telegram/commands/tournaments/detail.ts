@@ -279,6 +279,13 @@ async function handleRegister(
   }
   try {
     const supabase = telegramServiceSupabaseClient()
+    if (await tournamentIsFull(supabase, tournamentUuid)) {
+      await ctx.answerCallbackQuery({
+        text: 'Posti esauriti: il torneo ha raggiunto il numero massimo di iscritti.',
+        show_alert: true
+      })
+      return
+    }
     const { error } = await supabase.rpc('register_tournament_players', {
       p_tournament_uuid: tournamentUuid,
       p_associate_uuids: [associateUuid]

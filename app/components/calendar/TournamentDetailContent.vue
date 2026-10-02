@@ -52,7 +52,29 @@ const timeRange = computed(() => tournamentTimeRange(tournament.startDate, tourn
       </a>
       <p v-if="tournament.entryFee !== null" class="flex items-center gap-2">
         <UIcon :name="ICONS.euro" class="size-5 shrink-0" />
-        {{ t('tournament.columns.entryFee') }}: {{ tournament.entryFee }} €
+        <template v-if="tournament.entryFeeNonMember !== null">
+          {{ t('tournament.columns.entryFee') }}:
+          {{ t('tournament.feeMembers', { amount: tournament.entryFee }) }}
+          · {{ t('tournament.feeNonMembers', { amount: tournament.entryFeeNonMember }) }}
+        </template>
+        <template v-else>
+          {{ t('tournament.columns.entryFee') }}: {{ tournament.entryFee }} €
+        </template>
+      </p>
+      <p v-if="tournament.maxEntrants !== null" class="flex items-center gap-2">
+        <UIcon :name="ICONS.players" class="size-5 shrink-0" />
+        {{ t('tournament.maxEntrantsLabel', { count: tournament.maxEntrants }) }}
+      </p>
+      <p v-if="tournament.decklistVisibility" class="flex items-center gap-2">
+        <UIcon :name="ICONS.lock" class="size-5 shrink-0" />
+        {{ t(`tournament.decklistVisibility.${tournament.decklistVisibility}`) }}
+      </p>
+      <p v-if="tournament.registrationAt" class="flex items-center gap-2">
+        <UIcon :name="ICONS.clock" class="size-5 shrink-0" />
+        {{ t('tournament.registrationAtLabel', {
+          time: new Date(tournament.registrationAt)
+            .toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+        }) }}
       </p>
       <p v-if="tournament.prizes" class="flex items-center gap-2">
         <UIcon :name="ICONS.standings" class="size-5 shrink-0" />

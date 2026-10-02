@@ -38,6 +38,10 @@ const state = reactive<TournamentFormState>({
   leagueUuid: undefined,
   eventUuid: undefined,
   entryFee: undefined,
+  entryFeeNonMember: undefined,
+  maxEntrants: undefined,
+  decklistVisibility: undefined,
+  registrationTime: undefined,
   companionCode: undefined,
   endTime: undefined,
   telegramNotificationsEnabled: true,
@@ -92,6 +96,12 @@ watch([open, () => tournament], ([isOpen, current]) => {
   state.leagueUuid = current.leagueUuid ?? undefined
   state.eventUuid = current.eventUuid ?? undefined
   state.entryFee = current.entryFee ?? 0
+  state.entryFeeNonMember = current.entryFeeNonMember ?? undefined
+  state.maxEntrants = current.maxEntrants ?? undefined
+  state.decklistVisibility = current.decklistVisibility ?? undefined
+  state.registrationTime = current.registrationAt
+    ? new Date(current.registrationAt).toTimeString().substring(0, 5)
+    : undefined
   state.companionCode = current.companionCode ?? undefined
   state.telegramNotificationsEnabled = current.telegramNotificationsEnabled
   state.isTest = current.isTest
@@ -128,6 +138,12 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     roundCount: event.data.roundCount,
     roundDurationMinutes: event.data.roundDurationMinutes,
     entryFee: event.data.entryFee,
+    entryFeeNonMember: event.data.entryFeeNonMember ?? null,
+    maxEntrants: event.data.maxEntrants ?? null,
+    decklistVisibility: event.data.decklistVisibility ?? null,
+    registrationAt: event.data.registrationTime
+      ? combineDateAndTime(startDate.value!, event.data.registrationTime).toISOString()
+      : null,
     description: event.data.description || null,
     prizes: event.data.prizes || null,
     companionCode: event.data.companionCode || null,

@@ -24,7 +24,10 @@ const startDate = defineModel<DateValue>('startDate')
 
 // TimeValue.toString() is "HH:mm:ss" — the form state only ever stores "HH:mm",
 // same convention as OpeningHoursEditor.vue's updateTime().
-function updateTime(key: 'startTime' | 'endTime', value: TimeValue | null | undefined) {
+function updateTime(
+  key: 'startTime' | 'endTime' | 'registrationTime',
+  value: TimeValue | null | undefined
+) {
   if (!value) return
   state[key] = value.toString().slice(0, 5)
 }
@@ -72,6 +75,20 @@ function updateTime(key: 'startTime' | 'endTime', value: TimeValue | null | unde
     </div>
 
     <div class="flex gap-2">
+      <UFormField
+        :label="$t('tournament.addModal.fields.registrationTime')"
+        name="registrationTime"
+        class="flex-1"
+      >
+        <UInputTime
+          :range="false"
+          :hour-cycle="24"
+          class="w-full"
+          :model-value="state.registrationTime ? parseTime(state.registrationTime) : undefined"
+          @update:model-value="updateTime('registrationTime', $event)"
+        />
+      </UFormField>
+
       <UFormField
         :label="$t('tournament.addModal.fields.roundCount')"
         name="roundCount"
