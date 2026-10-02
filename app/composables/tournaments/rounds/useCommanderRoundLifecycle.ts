@@ -30,7 +30,8 @@ export function useCommanderRoundLifecycle(options: {
   } = options
   const { liveStandings, pairingsForRound, isPairingComplete } = roundData
 
-  const { advanceRound, turnBackRound } = useTournamentRoundsMutations(tournamentUuid)
+  const { advanceRound, turnBackRound, reopenTournament: reopenMutation }
+    = useTournamentRoundsMutations(tournamentUuid)
 
   // Seed the next round's optimizer with the current live-standings order
   // (best rank first) — same "rank drives the seed order" idea as league's
@@ -67,11 +68,13 @@ export function useCommanderRoundLifecycle(options: {
     && pairingsForRound.value.every(p => isPairingComplete(p.uuid)))
 
   const {
-    advancePreviewOpen, openAdvancePreview, onAdvanceConfirm, endTournament, onTurnBack
+    advancePreviewOpen, openAdvancePreview, onAdvanceConfirm, turnBackConfirmOpen, endConfirmOpen,
+    requestTurnBack, requestEndTournament, endTournament, onTurnBack, reopenTournament
   } = useRoundAdvanceFlow({
     roundNumber,
     advance: advanceRound,
     turnBack: turnBackRound,
+    reopen: reopenMutation,
     autoOpenAdvancePreview,
     onTurnedBack,
     onAdvancePreviewAutoOpened
@@ -79,13 +82,20 @@ export function useCommanderRoundLifecycle(options: {
 
   return {
     advanceRound,
+    turnBackRound,
+    reopenMutation,
     advancePreviewOpen,
     nextRoundSeedPlayers,
     allPairingsComplete,
     canFormNextRoundTables,
     openAdvancePreview,
     onAdvanceConfirm,
+    turnBackConfirmOpen,
+    endConfirmOpen,
+    requestTurnBack,
+    requestEndTournament,
     endTournament,
-    onTurnBack
+    onTurnBack,
+    reopenTournament
   }
 }

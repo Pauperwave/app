@@ -29,7 +29,7 @@ export function useSwissRoundLifecycle(options: {
     associateUuidFor, labelFor
   } = roundData
 
-  const { advanceRoundSwiss, turnBackRoundSwiss }
+  const { advanceRoundSwiss, turnBackRoundSwiss, reopenTournamentSwiss }
     = useTournamentSwissRoundsMutations(tournamentUuid)
 
   // The next round's pairing order: the active players (a dropped one isn't
@@ -74,11 +74,13 @@ export function useSwissRoundLifecycle(options: {
       pairing.playerUuids.length === 1 || matchResultByPairingUuid.value.has(pairing.uuid)))
 
   const {
-    advancePreviewOpen, openAdvancePreview, onAdvanceConfirm, endTournament, onTurnBack
+    advancePreviewOpen, openAdvancePreview, onAdvanceConfirm, turnBackConfirmOpen, endConfirmOpen,
+    requestTurnBack, requestEndTournament, endTournament, onTurnBack, reopenTournament
   } = useRoundAdvanceFlow({
     roundNumber,
     advance: advanceRoundSwiss,
     turnBack: turnBackRoundSwiss,
+    reopen: reopenTournamentSwiss,
     autoOpenAdvancePreview,
     onTurnedBack,
     onAdvancePreviewAutoOpened
@@ -86,12 +88,19 @@ export function useSwissRoundLifecycle(options: {
 
   return {
     advanceRoundSwiss,
+    turnBackRoundSwiss,
+    reopenTournamentSwiss,
     advancePreviewOpen,
     nextRoundSeedPlayers,
     allResultsEntered,
     openAdvancePreview,
     onAdvanceConfirm,
+    turnBackConfirmOpen,
+    endConfirmOpen,
+    requestTurnBack,
+    requestEndTournament,
     endTournament,
-    onTurnBack
+    onTurnBack,
+    reopenTournament
   }
 }
