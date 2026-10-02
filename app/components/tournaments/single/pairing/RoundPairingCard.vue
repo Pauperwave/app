@@ -176,68 +176,77 @@ const drawTooltip = computed(() => {
     </template>
 
     <div class="space-y-1.5">
+      <!-- Same player card as TableSeatItem.vue: the seat number is the ticket stub. -->
       <div
         v-for="(player, playerIndex) in players"
         :key="player.value"
-        class="flex items-center gap-2 rounded bg-elevated px-2 py-1.5"
+        class="flex min-h-11 items-stretch overflow-hidden rounded-lg bg-default ring ring-default transition hover:ring-primary/40"
       >
-        <AssociateTag
-          :name="playerNameParts(player).firstName"
-          :surname="playerNameParts(player).surname"
-          :associate-uuid="associateUuidFor(player.value)"
-          size="md"
-          class="flex-1 truncate"
-          :class="droppedFor(player.value) && 'opacity-60 line-through'"
-        />
         <!-- players come in player1..player4 order, i.e. seat order -->
         <UTooltip :text="t('tournament.single.tablePreview.seatTooltip', { n: playerIndex + 1 })">
+          <span
+            class="flex w-8 shrink-0 items-center justify-center border-e border-dashed border-primary/30 bg-primary/10 font-mono text-sm font-bold text-primary tabular-nums"
+            :aria-label="t('tournament.single.tablePreview.seatTooltip', { n: playerIndex + 1 })"
+          >
+            {{ playerIndex + 1 }}
+          </span>
+        </UTooltip>
+
+        <div class="flex min-w-0 flex-1 items-center px-2 py-1">
+          <AssociateTag
+            :name="playerNameParts(player).firstName"
+            :surname="playerNameParts(player).surname"
+            :associate-uuid="associateUuidFor(player.value)"
+            size="md"
+            class="truncate"
+            :class="droppedFor(player.value) && 'opacity-60 line-through'"
+          />
+        </div>
+
+        <div class="flex shrink-0 items-center gap-1.5 pe-1.5">
+          <TournamentsSinglePairingDropBadge :dropped="droppedFor(player.value)" with-time />
           <UBadge
-            :label="String(playerIndex + 1)"
-            color="primary"
+            v-if="positions.get(player.value)"
+            color="neutral"
             variant="subtle"
-            class="min-w-6 justify-center font-mono tabular-nums"
-          />
-        </UTooltip>
-        <TournamentsSinglePairingDropBadge :dropped="droppedFor(player.value)" with-time />
-        <UBadge
-          v-if="positions.get(player.value)"
-          color="neutral"
-          variant="subtle"
-          size="sm"
-        >
-          #{{ positions.get(player.value) }}
-        </UBadge>
-        <UTooltip
-          :text="hasCommander(player.value)
-            ? t('tournament.single.roundManager.commanderSetTooltip')
-            : t('tournament.single.roundManager.commanderNotSetTooltip')"
-        >
-          <UButton
             size="sm"
-            variant="outline"
-            :color="hasCommander(player.value) ? 'success' : 'neutral'"
-            :icon="hasCommander(player.value) ? ICONS.shieldCheck : ICONS.shieldPlus"
-            :aria-label="t(
-              'tournament.single.roundManager.commanderAriaLabel', { name: player.label }
-            )"
-            @click="emit('openCommanderModal', player.value)"
-          />
-        </UTooltip>
-        <UTooltip
-          :text="hasVotes(player.value)
-            ? t('tournament.single.roundManager.voteSetTooltip')
-            : t('tournament.single.roundManager.voteNotSetTooltip')"
-        >
-          <UButton
-            size="sm"
-            variant="outline"
-            :color="hasVotes(player.value) ? 'success' : 'neutral'"
-            :icon="hasVotes(player.value) ? ICONS.confirm : ICONS.vote"
-            :aria-label="t('tournament.single.roundManager.votesAriaLabel', { name: player.label })"
-            @click="emit('openVotesModal', player.value)"
-          />
-        </UTooltip>
-        <RowActionsMenu :items="dropMenuItemsFor(player.value)" />
+          >
+            #{{ positions.get(player.value) }}
+          </UBadge>
+          <UTooltip
+            :text="hasCommander(player.value)
+              ? t('tournament.single.roundManager.commanderSetTooltip')
+              : t('tournament.single.roundManager.commanderNotSetTooltip')"
+          >
+            <UButton
+              size="sm"
+              variant="outline"
+              :color="hasCommander(player.value) ? 'success' : 'neutral'"
+              :icon="hasCommander(player.value) ? ICONS.shieldCheck : ICONS.shieldPlus"
+              :aria-label="t(
+                'tournament.single.roundManager.commanderAriaLabel', { name: player.label }
+              )"
+              @click="emit('openCommanderModal', player.value)"
+            />
+          </UTooltip>
+          <UTooltip
+            :text="hasVotes(player.value)
+              ? t('tournament.single.roundManager.voteSetTooltip')
+              : t('tournament.single.roundManager.voteNotSetTooltip')"
+          >
+            <UButton
+              size="sm"
+              variant="outline"
+              :color="hasVotes(player.value) ? 'success' : 'neutral'"
+              :icon="hasVotes(player.value) ? ICONS.confirm : ICONS.vote"
+              :aria-label="t(
+                'tournament.single.roundManager.votesAriaLabel', { name: player.label }
+              )"
+              @click="emit('openVotesModal', player.value)"
+            />
+          </UTooltip>
+          <RowActionsMenu :items="dropMenuItemsFor(player.value)" />
+        </div>
       </div>
     </div>
 
