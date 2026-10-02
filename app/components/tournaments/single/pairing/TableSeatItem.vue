@@ -20,68 +20,64 @@ const { t } = useI18n()
 </script>
 
 <template>
+  <!-- Styled like the seed ticket (ShuffleSeedField.vue): the seat number is the ticket's stub. -->
   <div
-    class="rounded-md border transition-all"
-    :class="seat.player
-      ? 'border-default bg-default hover:ring-2 hover:ring-amber-400 hover:shadow-md'
-      : isDragging
-        ? 'border-dashed border-amber-400 bg-amber-50 animate-pulse'
-        : 'border-dashed border-default/70 bg-muted/20'"
+    v-if="seat.player"
+    class="group flex min-h-11 items-stretch overflow-hidden rounded-lg bg-default ring ring-default transition hover:shadow-sm hover:ring-primary/40"
   >
-    <div
-      v-if="seat.player"
-      class="h-full min-h-10 flex items-center gap-1.5 px-1.5 py-1"
-    >
-      <button
-        type="button"
-        class="drag-handle text-muted hover:text-default transition cursor-grab hover:cursor-grab active:cursor-grabbing"
-        :aria-label="t('tournament.single.tablePreview.dragPlayerAriaLabel')"
+    <UTooltip :text="t('tournament.single.tablePreview.seatTooltip', { n: seatNumber })">
+      <span
+        class="flex w-8 shrink-0 items-center justify-center border-e border-dashed border-primary/30 bg-primary/10 font-mono text-sm font-bold text-primary tabular-nums"
+        :aria-label="t('tournament.single.tablePreview.seatTooltip', { n: seatNumber })"
       >
-        <UIcon :name="ICONS.dragHandle" class="size-4 cursor-grab hover:cursor-grab active:cursor-grabbing" />
-      </button>
-
-      <div class="flex min-w-0 flex-1 flex-col">
-        <AssociateTag
-          :name="seat.player.label"
-          :associate-uuid="seat.player.value"
-          size="md"
-          class="text-left"
-        />
-        <TournamentsSinglePairingTablePlayerStandingLine
-          v-if="seat.player.standing"
-          :standing="seat.player.standing"
-        />
-      </div>
-
-      <UTooltip :text="t('tournament.single.tablePreview.seatTooltip', { n: seatNumber })">
-        <UBadge
-          :label="String(seatNumber)"
-          color="primary"
-          variant="subtle"
-          class="min-w-6 justify-center font-mono tabular-nums"
-        />
-      </UTooltip>
-
-      <UBadge
-        v-if="seat.player.seed !== undefined"
-        variant="subtle"
-        color="warning"
-      >
-        #{{ seat.player.seed }}
-      </UBadge>
-    </div>
-
-    <div
-      v-else
-      class="h-full min-h-10 flex items-center justify-center gap-1.5 text-base px-1.5 py-1"
-      :class="isDragging ? 'text-amber-700' : 'text-muted'"
-    >
-      <UIcon :name="ICONS.add" class="size-4" />
-      <span>
-        {{ isDragging
-          ? t('tournament.single.tablePreview.dropHere')
-          : t('tournament.single.tablePreview.emptySlot') }}
+        {{ seatNumber }}
       </span>
+    </UTooltip>
+
+    <div class="flex min-w-0 flex-1 flex-col justify-center gap-0.5 px-2 py-1">
+      <AssociateTag
+        :name="seat.player.label"
+        :associate-uuid="seat.player.value"
+        size="md"
+        class="text-left"
+      />
+      <TournamentsSinglePairingTablePlayerStandingLine
+        v-if="seat.player.standing"
+        :standing="seat.player.standing"
+      />
     </div>
+
+    <UBadge
+      v-if="seat.player.seed !== undefined"
+      variant="subtle"
+      color="warning"
+      class="self-center"
+    >
+      #{{ seat.player.seed }}
+    </UBadge>
+
+    <button
+      type="button"
+      class="drag-handle flex shrink-0 cursor-grab items-center px-1.5 text-dimmed transition group-hover:text-muted hover:text-default active:cursor-grabbing"
+      :aria-label="t('tournament.single.tablePreview.dragPlayerAriaLabel')"
+    >
+      <UIcon :name="ICONS.dragHandle" class="size-4" />
+    </button>
+  </div>
+
+  <!-- Empty seat: same footprint as a player, dashed; turns primary while dragging. -->
+  <div
+    v-else
+    class="flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-dashed px-2 text-sm transition"
+    :class="isDragging
+      ? 'border-primary/50 bg-primary/5 text-primary'
+      : 'border-default text-dimmed'"
+  >
+    <UIcon :name="ICONS.add" class="size-4" />
+    <span>
+      {{ isDragging
+        ? t('tournament.single.tablePreview.dropHere')
+        : t('tournament.single.tablePreview.emptySlot') }}
+    </span>
   </div>
 </template>
