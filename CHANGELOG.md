@@ -1,6 +1,68 @@
 # Changelog
 
 
+## v0.6.0
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.5.0...v0.6.0)
+
+### Enhancements
+
+- **tournaments:** ✨ notifications and test switches in the tournament modals ([3d994ac7](https://github.com/Pauperwave/app/commit/3d994ac7))
+- **tournaments:** ✨ ranking under each award with meaningful tiebreaks and ex aequo ([354e851e](https://github.com/Pauperwave/app/commit/354e851e))
+- **tournaments:** ✨ credit the award card illustrations ([ef8e6f9f](https://github.com/Pauperwave/app/commit/ef8e6f9f))
+- **tournaments:** ✨ ranking header, plain first row and a clearer tie marker in the awards ([aaf3f42b](https://github.com/Pauperwave/app/commit/aaf3f42b))
+- **tournaments:** ✨ rename the awards step to Menzioni ([f217209a](https://github.com/Pauperwave/app/commit/f217209a))
+- **tournaments:** ✨ derive the stepper descriptions from the tournament progress ([44dac46e](https://github.com/Pauperwave/app/commit/44dac46e))
+- **telegram:** ✨ keep the saved Telegram username current from every update the bot receives ([9bc955a0](https://github.com/Pauperwave/app/commit/9bc955a0))
+- **tournaments:** ✨ require tables of 3 last and block confirm on table rule breaks ([cea681ed](https://github.com/Pauperwave/app/commit/cea681ed))
+- **tournaments:** ✨ seed shown as a ticket, start button loading while players load ([6021afc1](https://github.com/Pauperwave/app/commit/6021afc1))
+- **tournaments:** ✨ reopen the approved round-1 tables after a turn-back, seat numbers ([d9813259](https://github.com/Pauperwave/app/commit/d9813259))
+- **tournaments:** ✨ paste a copied seed, regroup the table preview toolbar ([0082b0e7](https://github.com/Pauperwave/app/commit/0082b0e7))
+- **tournaments:** ✨ reopen the approved tables after any round's turn-back ([b706795c](https://github.com/Pauperwave/app/commit/b706795c))
+- **tournaments:** ✨ reproducible seed for 1v1 round 1, random seating on round 1 only ([9bd9d941](https://github.com/Pauperwave/app/commit/9bd9d941))
+- **tournaments:** ✨ show each player's standing under their name in the round 2+ previews ([6cf915fc](https://github.com/Pauperwave/app/commit/6cf915fc))
+- **tournaments:** ✨ compact Commander standing line with icons, document the table preview ([652c1e32](https://github.com/Pauperwave/app/commit/652c1e32))
+- **telegram:** ✨ the Commander table announcement shows the seating ([1383a144](https://github.com/Pauperwave/app/commit/1383a144))
+- **tournaments:** ✨ the table winners checklist starts collapsed ([e1aa7373](https://github.com/Pauperwave/app/commit/e1aa7373))
+- **tournaments:** ✨ icon badges for placement and drop, Telegram status next to the name ([55c08448](https://github.com/Pauperwave/app/commit/55c08448))
+- **tournaments:** ✨ spell out the 1v1 pairing algorithm, bigger Telegram status icon ([804ebce4](https://github.com/Pauperwave/app/commit/804ebce4))
+- **associates:** ✨ Telegram status icons update live when the bot links someone ([a911f9e7](https://github.com/Pauperwave/app/commit/a911f9e7))
+- **associates:** ✨ open the associate page from AssociateTag's popover ([5d60897b](https://github.com/Pauperwave/app/commit/5d60897b))
+- **tournaments:** ✨ tournament registrations update live ([fe7d360b](https://github.com/Pauperwave/app/commit/fe7d360b))
+
+### Fixes
+
+- **tournaments:** 🐛 keep dragged tables in the preview and save them as confirmed ([8e193c2f](https://github.com/Pauperwave/app/commit/8e193c2f))
+- **tournaments:** 🐛 reopen the table preview from ?preview=1 once the players have loaded ([4ba5e6e4](https://github.com/Pauperwave/app/commit/4ba5e6e4))
+- **tournaments:** 🐛 never clip player names in the table cards ([d9201ad5](https://github.com/Pauperwave/app/commit/d9201ad5))
+
+### Refactors
+
+- **ui:** ♻️ share the card art credit badge across the covers in a CardArtCredit component ([571681ed](https://github.com/Pauperwave/app/commit/571681ed))
+- **tournaments:** ♻️ one shared podium style for placements ([33bc11bc](https://github.com/Pauperwave/app/commit/33bc11bc))
+
+### Documentation
+
+- 📝 ADR-052 for the award rankings and their tiebreaks ([1c700715](https://github.com/Pauperwave/app/commit/1c700715))
+- 📝 ADR-052 update for the Menzioni rename and the shared art credit ([96bb6e67](https://github.com/Pauperwave/app/commit/96bb6e67))
+- 📝 ADR-051 update for the automatic Telegram username sync ([065a3c34](https://github.com/Pauperwave/app/commit/065a3c34))
+- 📝 ADR-043 update - bracket shuffling reconsidered and dropped, algorithm shown in the UI ([8b295ef0](https://github.com/Pauperwave/app/commit/8b295ef0))
+
+### Chore
+
+- **types:** 🔧 regenerate database types with tournaments.is_test ([a851ec91](https://github.com/Pauperwave/app/commit/a851ec91))
+
+### Styles
+
+- **tournaments:** 💄 restyle the table preview player card like the seed ticket ([f1d9c4c7](https://github.com/Pauperwave/app/commit/f1d9c4c7))
+- **tournaments:** 💄 round table cards use the same ticket-style player card ([c5557248](https://github.com/Pauperwave/app/commit/c5557248))
+- **associates:** 💄 speech-bubble icons for every Telegram status, no Telegram logo ([5e7a79fe](https://github.com/Pauperwave/app/commit/5e7a79fe))
+- **tournaments:** 💄 podium colors on the round table placement badges ([e4e957d8](https://github.com/Pauperwave/app/commit/e4e957d8))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.5.0
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.4.0...v0.5.0)
