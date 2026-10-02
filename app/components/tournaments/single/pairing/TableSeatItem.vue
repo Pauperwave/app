@@ -35,12 +35,15 @@ const { t } = useI18n()
     </UTooltip>
 
     <div class="flex min-w-0 flex-1 flex-col justify-center gap-0.5 px-2 py-1">
-      <AssociateTag
-        :name="seat.player.label"
-        :associate-uuid="seat.player.value"
-        size="md"
-        class="text-left"
-      />
+      <div class="flex min-w-0 items-center gap-1.5">
+        <AssociateTag
+          :name="seat.player.label"
+          :associate-uuid="seat.player.value"
+          size="md"
+          class="truncate text-left"
+        />
+        <TelegramStatusIcon :associate-uuid="seat.player.value" />
+      </div>
       <TournamentsSinglePairingTablePlayerStandingLine
         v-if="seat.player.standing"
         :standing="seat.player.standing"
