@@ -64,6 +64,17 @@ function placementLabel(playerValue: string): string {
 function placementTooltip(playerValue: string): string {
   return t('tournament.single.roundManager.placementTooltip', { n: positions.get(playerValue) })
 }
+
+// Podium look: crown + gold for the winner (as ReportPlacement.vue), silver and bronze medals after.
+const SILVER_CLASS = 'bg-slate-400/15 text-slate-600 ring-slate-400/40 dark:text-slate-300'
+const BRONZE_CLASS = 'bg-orange-700/10 text-orange-700 ring-orange-700/25 dark:text-orange-400'
+function placementStyle(playerValue: string) {
+  const position = positions.get(playerValue)
+  if (position === 1) return { icon: ICONS.crown, color: 'warning' as const, class: '' }
+  if (position === 2) return { icon: ICONS.medal, color: 'neutral' as const, class: SILVER_CLASS }
+  if (position === 3) return { icon: ICONS.medal, color: 'neutral' as const, class: BRONZE_CLASS }
+  return { icon: ICONS.medal, color: 'neutral' as const, class: 'text-muted' }
+}
 const canToggleDraw = computed(() => isDraw || (!hasRanking.value && !hasKills))
 
 // Some seats have data but the table isn't fully ranked yet — now a real,
@@ -214,18 +225,18 @@ const drawTooltip = computed(() => {
 
         <div class="flex shrink-0 items-center gap-1.5 pe-1.5">
           <TournamentsSinglePairingDropBadge :dropped="droppedFor(player.value)" with-time />
-          <!-- Medal + "1°", so the placement can't be mistaken for the seat number on the left. -->
+          <!-- Icon + "1°", so the placement can't be mistaken for the seat number on the left. -->
           <UTooltip
             v-if="positions.get(player.value)"
             :text="placementTooltip(player.value)"
           >
             <UBadge
               :label="placementLabel(player.value)"
-              :icon="ICONS.medal"
-              color="neutral"
+              :icon="placementStyle(player.value).icon"
+              :color="placementStyle(player.value).color"
               variant="subtle"
               size="md"
-              class="h-7"
+              :class="['h-7', placementStyle(player.value).class]"
             />
           </UTooltip>
           <UTooltip
