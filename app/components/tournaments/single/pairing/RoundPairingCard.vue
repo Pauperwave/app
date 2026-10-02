@@ -65,15 +65,9 @@ function placementTooltip(playerValue: string): string {
   return t('tournament.single.roundManager.placementTooltip', { n: positions.get(playerValue) })
 }
 
-// Podium look: crown + gold for the winner (as ReportPlacement.vue), silver and bronze medals after.
-const SILVER_CLASS = 'bg-slate-400/15 text-slate-600 ring-slate-400/40 dark:text-slate-300'
-const BRONZE_CLASS = 'bg-orange-700/10 text-orange-700 ring-orange-700/25 dark:text-orange-400'
+// Same podium look as the round report (podiumStyle.ts).
 function placementStyle(playerValue: string) {
-  const position = positions.get(playerValue)
-  if (position === 1) return { icon: ICONS.crown, color: 'warning' as const, class: '' }
-  if (position === 2) return { icon: ICONS.medal, color: 'neutral' as const, class: SILVER_CLASS }
-  if (position === 3) return { icon: ICONS.medal, color: 'neutral' as const, class: BRONZE_CLASS }
-  return { icon: ICONS.medal, color: 'neutral' as const, class: 'text-muted' }
+  return podiumStyle(positions.get(playerValue) ?? 0)
 }
 const canToggleDraw = computed(() => isDraw || (!hasRanking.value && !hasKills))
 
@@ -233,10 +227,10 @@ const drawTooltip = computed(() => {
             <UBadge
               :label="placementLabel(player.value)"
               :icon="placementStyle(player.value).icon"
-              :color="placementStyle(player.value).color"
+              color="neutral"
               variant="subtle"
               size="md"
-              :class="['h-7', placementStyle(player.value).class]"
+              :class="['h-7', placementStyle(player.value).badgeClass]"
             />
           </UTooltip>
           <UTooltip
