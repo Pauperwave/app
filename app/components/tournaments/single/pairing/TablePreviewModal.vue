@@ -24,7 +24,7 @@
 <script setup lang="ts">
 import { randomShuffleSeed } from '#shared/utils/seededShuffle'
 import type { PairingWeights, TablePlayer, PairingTable } from '~/types'
-import type { ConfirmedSeating } from '~/composables/tournaments/rounds/useLastRoundOneSeating'
+import type { ConfirmedSeating } from '~/composables/tournaments/rounds/useConfirmedSeatings'
 
 const open = defineModel<boolean>('open', { default: false })
 
@@ -44,7 +44,7 @@ const {
   currentRound?: number
   loading?: boolean
   dismissible?: boolean
-  // Round-1 tables approved before a "Torna alle iscrizioni": reopened as-is, with their seed.
+  // Tables approved for this round before a turn-back deleted it: reopened as-is (with round 1's seed).
   confirmedSeating?: ConfirmedSeating | null
 }>()
 
