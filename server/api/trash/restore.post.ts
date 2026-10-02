@@ -29,5 +29,16 @@ export default defineEventHandler(async (event) => {
   const supabase = serverSupabaseServiceRole<Database>(event)
   await restoreById(supabase, table, id)
 
+  // A restored tournament counts again towards its league's/event's derived dates (derivedDates.ts).
+  if (table === 'tournaments') {
+    const { data: restored } = await supabase
+      .from('tournaments')
+      .select('league_uuid, event_uuid')
+      .eq('id', id)
+      .single()
+    await recomputeLeagueDates(supabase, restored?.league_uuid ?? null)
+    await recomputeEventDates(supabase, restored?.event_uuid ?? null)
+  }
+
   return { restored: true }
 })

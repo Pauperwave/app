@@ -10,12 +10,12 @@ export default defineEventHandler(async (event) => {
   // Only a super_admin can see (so also create or edit) a test tournament.
   if (body.isTest !== undefined) await requireSuperAdminPermission(event)
 
-  // Read before write, so a tournament moved between leagues (or unlinked
-  // entirely) recomputes both the league it left and the one it joined —
-  // see recomputeLeagueDates.
+  // Read before write, so a tournament moved between leagues/events (or unlinked
+  // entirely) recomputes both the parent it left and the one it joined —
+  // see derivedDates.ts.
   const { data: existing } = await supabase
     .from('tournaments')
-    .select('league_uuid')
+    .select('league_uuid, event_uuid')
     .eq('id', id)
     .single()
 
@@ -57,6 +57,10 @@ export default defineEventHandler(async (event) => {
   await recomputeLeagueDates(supabase, tournament.league_uuid)
   if (existing && existing.league_uuid !== tournament.league_uuid) {
     await recomputeLeagueDates(supabase, existing.league_uuid)
+  }
+  await recomputeEventDates(supabase, tournament.event_uuid)
+  if (existing && existing.event_uuid !== tournament.event_uuid) {
+    await recomputeEventDates(supabase, existing.event_uuid)
   }
 
   return { tournament }

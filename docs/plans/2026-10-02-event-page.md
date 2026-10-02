@@ -42,10 +42,10 @@ now its format is enough, plus an initial pod-draft phase later.
 1. **Calendar view (done, 2026-10-02)**: one hour column per event day, "Giorno"/"Settimana" views,
    a tournament block links to its page and has an edit pencil, an empty slot creates a tournament
    on that day and hour (`DaySchedule.vue`, `eventScheduleDays.ts`).
-2. **Event as a folder**: derive `events.starts_at`/`ends_at` from the tournaments after every
-   tournament write (like `recomputeLeagueDates`), drop the date/time fields from the event forms,
-   handle an event with no tournaments yet (no dates), link the existing tournaments to their
-   events (data work: today none are linked).
+2. **Event as a folder (done, 2026-10-02, ADR-053)**: `events.starts_at`/`ends_at` derived from the
+   tournaments after every tournament write (`recomputeEventDates`, `server/utils/derivedDates.ts`),
+   no date/time fields in the event forms, an event with no tournaments yet has no dates.
+   Still to do: link the existing tournaments to their events (data work: today none are linked).
 3. **Tournament fields** (migration): registration time for every format; member/non-member fee,
    max entrants and decklist visibility for 1v1/Pauper.
 4. **Event fields** (migration): tagline, edition, description, practical notes, ticket link and

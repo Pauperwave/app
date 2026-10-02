@@ -1,8 +1,8 @@
 <!-- app\components\ui\StartDatePickerField.vue -->
 <!--
-  Shared "start date" UPopover + UCalendar picker, used by events/leagues
-  AddModal.vue and tournaments' SchedulingFields.vue (fallow:dupes flagged
-  the identical markup across all three — only the field label differs).
+  Shared "start date" UPopover + UCalendar picker, used by tournaments'
+  SchedulingFields.vue (events and leagues no longer have date fields: their
+  dates are derived from their tournaments, server/utils/derivedDates.ts).
   Pair with useStartDateField.ts / useTournamentFormFields.ts for the
   startDate ref + formattedStartDate computed. `highlightedDates` (issue #37
   follow-up) is wired only from tournaments today (AddModal.vue/EditModal.vue

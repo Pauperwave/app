@@ -11,9 +11,6 @@ function buildSchema(t: ReturnType<typeof useI18n>['t']) {
     status: v.picklist(EVENT_STATUSES),
     companionCode: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
     name: v.pipe(v.string(), v.trim(), v.minLength(1, t('event.addModal.validation.nameRequired'))),
-    startDate: v.string(),
-    startTime: v.string(),
-    endTime: v.optional(v.string()),
     organizerUuid: v.string(t('event.addModal.validation.nameRequired')),
     locationUuid: v.optional(v.string())
   })
