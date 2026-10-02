@@ -30,7 +30,8 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-const isOpen = ref(true)
+// Closed by default (user request, 2026-10-02): opened only when handing out prizes.
+const isOpen = ref(false)
 </script>
 
 <template>
