@@ -2,11 +2,11 @@
 import { it } from 'date-fns/locale'
 
 import type { Bot, Context } from 'grammy'
-import { GrammyError, InlineKeyboard } from 'grammy'
+import { InlineKeyboard } from 'grammy'
 import type { InputRichMessage } from 'grammy/types'
 import type { CommandGroup } from '@grammyjs/commands'
 import { ICONS } from '../icons'
-import { answerLoadError } from './callbackErrors'
+import { answerEditError } from './callbackErrors'
 import { resolveDeepLink } from '../deepLinks'
 import {
   HELP_TOPICS,
@@ -247,11 +247,7 @@ async function handleHelpTopic(ctx: Context, next: () => Promise<void>) {
     await ctx.editMessageText({ blocks: helpBlocks(view) }, { reply_markup: helpKeyboard(view) })
     await ctx.answerCallbackQuery()
   } catch (err) {
-    if (err instanceof GrammyError && err.description.includes('message is not modified')) {
-      await ctx.answerCallbackQuery()
-      return
-    }
-    await answerLoadError(ctx)
+    await answerEditError(ctx, err)
   }
 }
 
@@ -326,9 +322,7 @@ function statusCommandHandler(ctx: Context) {
 
 registerDeepLink('status', statusCommandHandler)
 
-// "message is not modified" is Telegram's error for an edit with identical content: the expected
-// outcome of most taps (no new deployment yet), so it gets a quiet answer instead of
-// answerLoadError's alert
+// Most taps change nothing (no new deployment yet): answerEditError answers those quietly
 async function handleStatusRefresh(ctx: Context, next: () => Promise<void>) {
   if (ctx.callbackQuery?.data !== STATUS_REFRESH_DATA) return next()
 
@@ -336,11 +330,7 @@ async function handleStatusRefresh(ctx: Context, next: () => Promise<void>) {
     await ctx.editMessageText({ markdown: statusText() }, { reply_markup: statusKeyboard() })
     await ctx.answerCallbackQuery({ text: '✅ Aggiornato.' })
   } catch (err) {
-    if (err instanceof GrammyError && err.description.includes('message is not modified')) {
-      await ctx.answerCallbackQuery({ text: 'Nessuna versione più recente disponibile.' })
-      return
-    }
-    await answerLoadError(ctx)
+    await answerEditError(ctx, err, 'Nessuna versione più recente disponibile.')
   }
 }
 
