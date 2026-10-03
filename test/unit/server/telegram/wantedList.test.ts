@@ -20,6 +20,7 @@ function row(id: number, overrides: Partial<WantedListRow> = {}): WantedListRow 
     treatment: [],
     copies: 1,
     cardmarket_price: null,
+    image_url: null,
     ...overrides
   }
 }

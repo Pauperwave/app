@@ -6,6 +6,7 @@ import type { CommandGroup } from '@grammyjs/commands'
 import { answerLoadError } from '../callbackErrors'
 import { NOT_LINKED_MESSAGE, resolveAssociateUuidByChatId } from '../account/linking'
 import { registerDeepLink } from '../../deepLinks'
+import { artPreview } from './priceCard'
 import {
   WANTED_LIST_CALLBACK_PREFIX,
   WANTED_LIST_PAGE_SIZE,
@@ -22,7 +23,7 @@ import {
 // two-step removal. Removal is a soft delete like the site's, so an admin can restore it from the
 // trash. Changing a request's status from here is left for later.
 
-const COLUMNS = 'id, card_name, set_code, language, treatment, copies, cardmarket_price'
+const COLUMNS = 'id, card_name, set_code, language, treatment, copies, cardmarket_price, image_url'
 const PRIVATE_ONLY_TEXT = 'Apri /cercate in privato con me: l\'elenco è personale.'
 
 type Supabase = ReturnType<typeof telegramServiceSupabaseClient>
@@ -113,7 +114,11 @@ async function handleListButton(ctx: Context, next: () => Promise<void>) {
 
     const supabase = telegramServiceSupabaseClient()
     let toast: string | undefined
-    let view: { text: string, keyboard?: ReturnType<typeof buildWantedListKeyboard> } | null = null
+    let view: {
+      text: string
+      keyboard?: ReturnType<typeof buildWantedListKeyboard>
+      imageUrl?: string | null
+    } | null = null
 
     if (callback.action !== 'list' && callback.id !== null) {
       // Only the owner's own rows are ever read or touched
@@ -122,7 +127,8 @@ async function handleListButton(ctx: Context, next: () => Promise<void>) {
       if (callback.action === 'ask' && row) {
         view = {
           text: buildRemoveConfirmText(row),
-          keyboard: buildRemoveConfirmKeyboard(row, callback.page)
+          keyboard: buildRemoveConfirmKeyboard(row, callback.page),
+          imageUrl: row.image_url
         }
       } else if (callback.action === 'remove' && row) {
         const { error } = await supabase
@@ -138,7 +144,11 @@ async function handleListButton(ctx: Context, next: () => Promise<void>) {
     }
 
     view ??= await renderPage(supabase, associateUuid, callback.page)
-    await ctx.editMessageText(view.text, { parse_mode: 'HTML', reply_markup: view.keyboard })
+    await ctx.editMessageText(view.text, {
+      parse_mode: 'HTML',
+      link_preview_options: artPreview(view.imageUrl ?? null),
+      reply_markup: view.keyboard
+    })
     await ctx.answerCallbackQuery({ text: toast })
   } catch (err) {
     // Pressing a button whose view is already shown re-renders identical content: not a failure
