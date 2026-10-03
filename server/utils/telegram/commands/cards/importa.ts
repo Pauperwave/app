@@ -13,6 +13,7 @@ import {
 } from '#shared/utils/wantedCards/wantedCardRow'
 
 import { NOT_LINKED_MESSAGE, resolveAssociateUuidByChatId } from '../account/linking'
+import { registerDeepLink } from '../../deepLinks'
 import { buildImportSummary, type ImportOutcome } from './importSummary'
 import { scryfallLookupGetter } from './scryfall'
 
@@ -138,16 +139,23 @@ async function runImport(ctx: Context, text: string) {
   })
 }
 
+function promptForList(ctx: Context) {
+  return ctx.reply(IMPORT_PROMPT, {
+    reply_markup: { force_reply: true, input_field_placeholder: '1 Erode (SOS) 15' }
+  })
+}
+
+// Reached from /help's button and ?start=importa, where ctx.match isn't a pasted list
+registerDeepLink('importa', promptForList)
+
 async function importaCommandHandler(ctx: Context) {
   const text = (ctx.match as string | undefined)?.trim()
-  if (text) {
-    await runImport(ctx, text)
+  if (!text) {
+    await promptForList(ctx)
     return
   }
 
-  await ctx.reply(IMPORT_PROMPT, {
-    reply_markup: { force_reply: true, input_field_placeholder: '1 Erode (SOS) 15' }
-  })
+  await runImport(ctx, text)
 }
 
 export function registerImportaHandlers(bot: Bot, commands: CommandGroup<Context>) {

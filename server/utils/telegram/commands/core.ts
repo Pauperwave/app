@@ -87,8 +87,8 @@ function helpBlocks(): InputRichMessage['blocks'] {
     { type: 'paragraph', text: { type: 'bold', text: '🏟️ Durante un torneo' } },
     {
       type: 'paragraph',
-      text: '🚧 /tavolo — tavolo, avversario del turno e comandante se presente (in lavorazione, dati di esempio)\n'
-        + '🚧 /risultato — risultato del turno, Commander o 1v1 (in lavorazione, dati di esempio)\n'
+      text: '/tavolo — il tuo tavolo, gli avversari del turno e il comandante\n'
+        + '/risultato — inserisci il risultato del turno, Commander o 1v1\n'
         + '/drop — lascia il torneo Commander dopo aver inserito il risultato\n'
         + '/turni — contatore dei turni aggiuntivi a fine tempo'
     },
@@ -105,8 +105,16 @@ function helpBlocks(): InputRichMessage['blocks'] {
     {
       type: 'paragraph',
       text: '/prezzo [carta] — scegli la stampa e controlla il prezzo su CardMarket e CardTrader (filtri ITA/ENG e foil), anche in chat con @bot $ carta\n'
-        + '/cercate — le carte che cerchi: vedi e togli\n'
-        + '/importa — incolla un elenco di carte da cercare (es. 1 Erode (SOS) 15)'
+        + '/cercate — le carte che cerchi: vedi e togli (serve il collegamento)\n'
+        + '/importa — incolla un elenco di carte da cercare, es. 1 Erode (SOS) 15 (serve il collegamento)'
+    },
+    {
+      type: 'buttons',
+      buttons: [
+        { text: `${ICONS.card} Prezzo`, callback_data: encodeHelpBtn('prezzo') },
+        { text: `${ICONS.wanted} Cercate`, callback_data: encodeHelpBtn('cercate') },
+        { text: '📥 Importa', callback_data: encodeHelpBtn('importa') }
+      ]
     },
 
     { type: 'paragraph', text: { type: 'bold', text: '🎰 Dadi' } },
