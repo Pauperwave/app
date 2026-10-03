@@ -2398,6 +2398,13 @@ export type Database = {
             referencedColumns: ["uuid"]
           },
           {
+            foreignKeyName: "fk_tournament_round_results_commander_deck_uuid_fkey"
+            columns: ["commander_deck_uuid"]
+            isOneToOne: false
+            referencedRelation: "player_vote_decks"
+            referencedColumns: ["deck_uuid"]
+          },
+          {
             foreignKeyName: "fk_tournament_round_results_pairing_uuid_fkey"
             columns: ["pairing_uuid"]
             isOneToOne: false
@@ -3062,6 +3069,46 @@ export type Database = {
           wins: number | null
         }
         Relationships: []
+      }
+      player_vote_decks: {
+        Row: {
+          commander_1_name: string | null
+          commander_2_name: string | null
+          deck_uuid: string | null
+          player_uuid: string | null
+          vote_type: string | null
+          votes: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_tournament_votes_voted_player_uuid_fkey"
+            columns: ["player_uuid"]
+            isOneToOne: false
+            referencedRelation: "player_stats"
+            referencedColumns: ["player_uuid"]
+          },
+          {
+            foreignKeyName: "fk_tournament_votes_voted_player_uuid_fkey"
+            columns: ["player_uuid"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_tournament_votes_voted_player_uuid_fkey"
+            columns: ["player_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_full"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_tournament_votes_voted_player_uuid_fkey"
+            columns: ["player_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["uuid"]
+          },
+        ]
       }
       players_full: {
         Row: {
