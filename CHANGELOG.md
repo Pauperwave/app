@@ -1,6 +1,56 @@
 # Changelog
 
 
+## v0.12.0
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.11.0...v0.12.0)
+
+### Enhancements
+
+- **bot:** ✨ /cercate removal confirm shows the card art ([f8ad6426](https://github.com/Pauperwave/app/commit/f8ad6426))
+
+### Fixes
+
+- **tournaments:** 🐛 section header accepts the pinned section's primary color ([104a7d9d](https://github.com/Pauperwave/app/commit/104a7d9d))
+
+### Refactors
+
+- **bot:** ♻️ extract the command group card out of the bot page ([eb69be8f](https://github.com/Pauperwave/app/commit/eb69be8f))
+- **tournaments:** ♻️ extract the list section header shared by grid and dense views ([21f3123a](https://github.com/Pauperwave/app/commit/21f3123a))
+- **bot:** ♻️ share the card-art link preview helper ([05217857](https://github.com/Pauperwave/app/commit/05217857))
+- **tournaments:** ♻️ share the realtime channel lifecycle across the three realtime composables ([0d465d6d](https://github.com/Pauperwave/app/commit/0d465d6d))
+- **tournaments:** ♻️ share the round-data invalidation across the round mutations ([bdf90f1d](https://github.com/Pauperwave/app/commit/bdf90f1d))
+- **bot:** ♻️ share the live-pod lookup between the commander pickers ([2c3b92b0](https://github.com/Pauperwave/app/commit/2c3b92b0))
+- **tournaments:** ♻️ add definePairingWriteHandler for the per-table write guard ([3ddcf6b8](https://github.com/Pauperwave/app/commit/3ddcf6b8))
+- **tournaments:** ♻️ kill and vote endpoints use definePairingWriteHandler ([5501bc80](https://github.com/Pauperwave/app/commit/5501bc80))
+- **tournaments:** ♻️ match result endpoints use definePairingWriteHandler ([9a4991e6](https://github.com/Pauperwave/app/commit/9a4991e6))
+- **tournaments:** ♻️ pairing reset endpoints use definePairingWriteHandler ([89b44654](https://github.com/Pauperwave/app/commit/89b44654))
+- **tournaments:** ♻️ commander deck endpoints use definePairingWriteHandler ([12f1601a](https://github.com/Pauperwave/app/commit/12f1601a))
+
+### Chore
+
+- **scripts:** 🔥 remove the one-off backfill-tournaments script ([2d1a5416](https://github.com/Pauperwave/app/commit/2d1a5416))
+- **fallow:** 🔇 suppress duplicate findings in the format standings pages ([51d730d4](https://github.com/Pauperwave/app/commit/51d730d4))
+- **fallow:** 🔇 suppress duplicate findings in the card hover previews ([f9c5f0fa](https://github.com/Pauperwave/app/commit/f9c5f0fa))
+- **fallow:** 🔇 suppress duplicate findings in the tournament standings tables ([99adb988](https://github.com/Pauperwave/app/commit/99adb988))
+- **fallow:** 🔇 suppress duplicate findings in the pairing composables ([9cd76ca6](https://github.com/Pauperwave/app/commit/9cd76ca6))
+- **fallow:** 🔇 suppress duplicate findings in the realtime composables ([53965299](https://github.com/Pauperwave/app/commit/53965299))
+- **fallow:** 🔇 suppress duplicate findings in the round mutations and submit handlers ([fd79fd9a](https://github.com/Pauperwave/app/commit/fd79fd9a))
+- **fallow:** 🔇 suppress duplicate findings in the bulk-action composables ([227bc42a](https://github.com/Pauperwave/app/commit/227bc42a))
+- **fallow:** 🔇 suppress duplicate findings in the deck detail pages ([5fc29e79](https://github.com/Pauperwave/app/commit/5fc29e79))
+- **fallow:** 🔇 suppress duplicate findings in the associates API ([14987cfc](https://github.com/Pauperwave/app/commit/14987cfc))
+- **fallow:** 🔇 suppress duplicate findings in the commander decks API ([6f0b95e7](https://github.com/Pauperwave/app/commit/6f0b95e7))
+- **fallow:** 🔇 suppress duplicate findings in the avoid pairs API ([445d73d2](https://github.com/Pauperwave/app/commit/445d73d2))
+- **fallow:** 🔇 suppress duplicate findings in the pairing result write API ([3ba1c36f](https://github.com/Pauperwave/app/commit/3ba1c36f))
+- **fallow:** 🔇 suppress duplicate findings in the tournament rounds API ([030099c9](https://github.com/Pauperwave/app/commit/030099c9))
+- **fallow:** 🔇 suppress duplicate findings in the card bot commands ([98cdaf47](https://github.com/Pauperwave/app/commit/98cdaf47))
+- **fallow:** 🔇 suppress duplicate findings in the tournament bot messages ([6c109da1](https://github.com/Pauperwave/app/commit/6c109da1))
+- **fallow:** 🔧 treat the vitest supabase server stub as an entry ([b784d084](https://github.com/Pauperwave/app/commit/b784d084))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.11.0
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.10.0...v0.11.0)
