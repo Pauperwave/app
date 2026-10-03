@@ -1,12 +1,16 @@
 // test\unit\server\telegram\priceCard.test.ts
 import { describe, expect, it } from 'vitest'
 import {
+  buildInlineDescription,
+  buildInlineTitle,
   buildPriceKeyboard,
   buildPriceText,
   canToggleFoil,
   decodePriceState,
   effectiveFoil,
   encodePriceState,
+  escapeHtml,
+  sortByCardmarketPrice,
   type PricePrinting,
   type PriceState
 } from '../../../../server/utils/telegram/commands/cards/priceCard'
@@ -18,12 +22,14 @@ function makePrinting(overrides: Partial<PricePrinting> = {}): PricePrinting {
     id: ID,
     name: 'Lightning Bolt',
     set: 'm10',
+    setName: 'Magic 2010',
     collectorNumber: '146',
     finishes: ['nonfoil', 'foil'],
     cardmarketPrice: 0.25,
     cardmarketFoilPrice: 1.5,
     cardmarketUrl: 'https://www.cardmarket.com/en/Magic/Products/Singles/M10/Lightning-Bolt',
     scryfallUrl: 'https://scryfall.com/card/m10/146',
+    thumbnailUrl: 'https://cards.scryfall.io/small/front/0/b/0b6b.jpg',
     ...overrides
   }
 }
@@ -76,25 +82,51 @@ describe('foil handling', () => {
   })
 })
 
+describe('inline printing list', () => {
+  it('sorts by CardMarket price with unpriced printings last', () => {
+    const cheap = makePrinting({ id: 'a', cardmarketPrice: 0.1 })
+    const dear = makePrinting({ id: 'b', cardmarketPrice: 5 })
+    const unpriced = makePrinting({ id: 'c', cardmarketPrice: null })
+    expect(sortByCardmarketPrice([unpriced, dear, cheap]).map(p => p.id)).toEqual(['a', 'b', 'c'])
+  })
+
+  it('titles a row with the set and collector number', () => {
+    expect(buildInlineTitle(makePrinting())).toBe('Lightning Bolt — M10 #146')
+  })
+
+  it('describes a row with the set name and both CardMarket prices', () => {
+    const description = buildInlineDescription(makePrinting())
+    expect(description).toContain('Magic 2010')
+    expect(description).toMatch(/CM 0,25\s€/)
+    expect(description).toMatch(/foil 1,50\s€/)
+  })
+
+  it('says when a printing has no CardMarket price', () => {
+    const description = buildInlineDescription(
+      makePrinting({ cardmarketPrice: null, cardmarketFoilPrice: null })
+    )
+    expect(description).toContain('nessun prezzo CardMarket')
+  })
+})
+
 describe('buildPriceText', () => {
   it('shows both prices for the default state', () => {
     const text = buildPriceText(makePrinting(), baseState, { price: 0.4, url: null })
-    expect(text).toContain('Lightning Bolt')
-    expect(text).toContain('M10 #146 · normale')
-    expect(text).toMatch(/CardMarket: \*\*0,25\s€\*\*$/m)
-    expect(text).toMatch(/CardTrader \(NM, tutte le lingue\): \*\*0,40\s€\*\*$/m)
+    expect(text).toContain('<b>Lightning Bolt</b>')
+    expect(text).toContain('Magic 2010 · M10 #146 · normale')
+    expect(text).toMatch(/CardMarket: <b>0,25\s€<\/b>/)
+    expect(text).toMatch(/CardTrader \(NM, tutte le lingue\): <b>0,40\s€<\/b>/)
     expect(text).not.toContain('non filtrabile')
   })
 
   it('uses the foil price and says the finish', () => {
     const text = buildPriceText(makePrinting(), { ...baseState, foil: true }, null)
-    expect(text).toContain('M10 #146 · foil')
-    expect(text).toMatch(/CardMarket: \*\*1,50\s€\*\*/)
+    expect(text).toContain('· foil')
+    expect(text).toMatch(/CardMarket: <b>1,50\s€<\/b>/)
   })
 
   it('notes that CardMarket cannot be filtered by language', () => {
     const text = buildPriceText(makePrinting(), { ...baseState, language: 'it' }, { price: 0.9, url: null })
-    expect(text).toContain('CardMarket:')
     expect(text).toContain('(non filtrabile per lingua)')
     expect(text).toContain('CardTrader (NM, italiano)')
   })
@@ -110,6 +142,18 @@ describe('buildPriceText', () => {
     const text = buildPriceText(makePrinting(), baseState, null)
     expect(text).toContain('CardTrader (NM, tutte le lingue): non disponibile')
   })
+
+  it('invites to pick a language while CardTrader is still pending', () => {
+    const text = buildPriceText(makePrinting(), baseState, 'pending')
+    expect(text).toContain('scegli una lingua')
+    expect(text).not.toContain('CardTrader (NM')
+  })
+
+  it('escapes HTML in card and set names', () => {
+    const text = buildPriceText(makePrinting({ name: 'Fire <&> Ice' }), baseState, null)
+    expect(text).toContain('Fire &lt;&amp;&gt; Ice')
+    expect(escapeHtml('a<b')).toBe('a&lt;b')
+  })
 })
 
 describe('buildPriceKeyboard', () => {
@@ -120,10 +164,15 @@ describe('buildPriceKeyboard', () => {
     expect(texts.filter(text => text.startsWith('✅'))).toHaveLength(1)
   })
 
+  it('marks no language before one has been chosen', () => {
+    const keyboard = buildPriceKeyboard(makePrinting(), baseState, null, false)
+    expect(buttonTexts(keyboard).some(text => text.startsWith('✅'))).toBe(false)
+  })
+
   it('flips the foil flag when the toggle is pressed and keeps the language', () => {
     const keyboard = buildPriceKeyboard(makePrinting(), { ...baseState, language: 'en' }, null)
     const toggle = keyboard.inline_keyboard.flat().find(button => button.text.includes('Foil'))
-    const data = 'callback_data' in (toggle ?? {}) ? (toggle as { callback_data: string }).callback_data : ''
+    const data = toggle && 'callback_data' in toggle ? toggle.callback_data : ''
     expect(decodePriceState(data)).toEqual({ scryfallId: ID, language: 'en', foil: true })
   })
 
