@@ -6,6 +6,7 @@ import type { InlineQueryResultArticle } from 'grammy/types'
 import type { ScryfallCard } from '#shared/types/scryfall'
 
 import { answerLoadError } from '../callbackErrors'
+import { registerDeepLink } from '../../deepLinks'
 import {
   PRICE_CALLBACK_PREFIX,
   PRICE_INLINE_PREFIX,
@@ -102,6 +103,9 @@ async function fetchCardtrader(
 }
 
 // /prezzo only opens the inline picker: the printing is chosen there, with its price in view
+// Reached from /help's button and ?start=prezzo, where ctx.match isn't a card name
+registerDeepLink('prezzo', ctx => ctx.reply(USAGE_TEXT))
+
 async function prezzoCommandHandler(ctx: Context) {
   const query = (ctx.match as string | undefined)?.trim()
   if (!query) {
