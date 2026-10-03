@@ -35,6 +35,29 @@ export function killTargetUuid(pod: LivePod, target: KillTarget): string {
   return target === 'me' ? pod.myPlayerUuid : (pod.opponents[target]?.playerUuid ?? '')
 }
 
+// The target a kill-toggle button carries: 'me', or the index of an opponent. Null for anything
+// else: callback_data is client-controlled, never trusted blindly.
+export function parseKillTarget(raw: string | undefined): KillTarget | null {
+  if (raw === 'me') return 'me'
+
+  return raw !== undefined && /^\d+$/.test(raw) ? Number(raw) : null
+}
+
+// Whether a parsed target is a seat of this table: yourself, or an opponent that exists
+export function isKillTarget(pod: LivePod, target: KillTarget): boolean {
+  return target === 'me' || !!pod.opponents[target]
+}
+
+// The one-letter vote type a vote button carries in callback_data, and back ('b' brew, anything
+// else play)
+export function voteTypeChar(voteType: 'brew' | 'play'): string {
+  return voteType === 'brew' ? 'b' : 'p'
+}
+
+export function voteTypeOf(typeChar: string | undefined): 'brew' | 'play' {
+  return typeChar === 'b' ? 'brew' : 'play'
+}
+
 // ─── Rich messages (pick-then-confirm, one step at a time) ─────────────────
 export const POSITIONS = [1, 2, 3, 4]
 
@@ -101,7 +124,7 @@ export function voteRichMessage(pod: LivePod, voteType: 'brew' | 'play'): InputR
     ? '🃏 Voto del mazzo (2 punti)\n\nA chi lo assegni?'
     : '🎬 Voto della giocata (1 punto)\n\nA chi lo assegni?'
   const currentUuid = voteType === 'brew' ? pod.myVoteByType.brew : pod.myVoteByType.play
-  const typeChar = voteType === 'brew' ? 'b' : 'p'
+  const typeChar = voteTypeChar(voteType)
 
   // One button per row (1xN) for deck/play votes: a shared row wrapped opponent names on narrow
   // screens

@@ -6,9 +6,9 @@ import {
   FINAL_CONFIRM_PREFIX, FINAL_REFRESH_PREFIX, KILL_CONFIRM_PREFIX, KILL_TOGGLE_PREFIX,
   POS_CONFIRM_PREFIX, POS_PICK_PREFIX, VOTE_CONFIRM_PREFIX, VOTE_PICK_PREFIX,
   dropAlreadyDoneRichMessage, dropAskRichMessage, dropConfirmRichMessage, dropDoneRichMessage,
-  finalRichMessage, isLastRound, killTargetUuid, killsRichMessage, positionRichMessage,
-  resultFactsFor, scoreSummaryTableBlock, voteRichMessage, votesReceivedTableBlock,
-  waitingForOthersRichMessage
+  finalRichMessage, isKillTarget, isLastRound, killTargetUuid, killsRichMessage, parseKillTarget,
+  positionRichMessage, resultFactsFor, scoreSummaryTableBlock, voteRichMessage,
+  voteTypeChar, voteTypeOf, votesReceivedTableBlock, waitingForOthersRichMessage
 } from '../../../../server/utils/telegram/commands/tournaments/commanderPodMessages'
 
 function makePod(overrides: Partial<LivePod> = {}): LivePod {
@@ -216,5 +216,45 @@ describe('waitingForOthersRichMessage', () => {
     expect(refresh?.callback_data).toBe(`${FINAL_REFRESH_PREFIX}pairing-1`)
     const realUuid = '0b6b4d3a-8a0e-4b6a-9c3e-5d2f4a1b7c90'
     expect(`${FINAL_REFRESH_PREFIX}${realUuid}`.length).toBeLessThanOrEqual(64)
+  })
+})
+
+describe('parseKillTarget', () => {
+  it('reads "me" and an opponent index', () => {
+    expect(parseKillTarget('me')).toBe('me')
+    expect(parseKillTarget('0')).toBe(0)
+    expect(parseKillTarget('2')).toBe(2)
+  })
+
+  it('rejects anything that is not one of the targets we send', () => {
+    expect(parseKillTarget(undefined)).toBeNull()
+    expect(parseKillTarget('')).toBeNull()
+    expect(parseKillTarget('-1')).toBeNull()
+    expect(parseKillTarget('1.5')).toBeNull()
+    expect(parseKillTarget('abc')).toBeNull()
+  })
+})
+
+describe('isKillTarget', () => {
+  it('accepts yourself and an opponent that exists', () => {
+    expect(isKillTarget(makePod(), 'me')).toBe(true)
+    expect(isKillTarget(makePod(), 0)).toBe(true)
+  })
+
+  it('rejects an opponent that is not at the table', () => {
+    expect(isKillTarget(makePod(), 9)).toBe(false)
+  })
+})
+
+describe('vote type in callback_data', () => {
+  it('round-trips both kinds', () => {
+    expect(voteTypeOf(voteTypeChar('brew'))).toBe('brew')
+    expect(voteTypeOf(voteTypeChar('play'))).toBe('play')
+  })
+
+  it('reads anything but "b" as a play vote', () => {
+    expect(voteTypeOf('p')).toBe('play')
+    expect(voteTypeOf('x')).toBe('play')
+    expect(voteTypeOf(undefined)).toBe('play')
   })
 })
