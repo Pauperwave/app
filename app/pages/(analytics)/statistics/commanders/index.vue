@@ -8,6 +8,7 @@ import type { TableColumn, TabsItem } from '@nuxt/ui'
 import { USkeleton, MagicManaCost, NuxtLink } from '#components'
 
 const { t } = useI18n()
+const { can } = useUserRole()
 
 useSeoMeta({ title: () => t('commander.breadcrumb') })
 
@@ -121,6 +122,7 @@ const isLoading = statsLoading
 
           <USeparator orientation="vertical" class="h-4" />
 
+          <CommanderCatalogRefresh v-if="can('manage-tournaments')" />
           <NotificationsBellButton />
         </template>
       </UDashboardNavbar>
