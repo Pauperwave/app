@@ -145,3 +145,4 @@ Shared domain types (`Associate`, `Tournament`, `Transaction`, status unions, et
 - `nuxt.config.ts` pre-bundles `zod` via Vite `optimizeDeps` for faster dev-server startup — keep this if zod imports change.
 - ESLint stylistic rules: no dangling commas, 1tbs brace style, max 3 attrs/line (single-line) or 1/line (multi-line) on Vue templates, `vue/no-multiple-template-root` disabled.
 - Props: per global convention, use `defineProps<Props>()` with inline destructured defaults, not `withDefaults`.
+- Comments: explain the non-obvious *why* of the code as it is now, never its history. No dates, "user request", issue/PR numbers, "ported from league", "was X before" or "fixed in...": that belongs in the commit message or `docs/PROGRESS.md`. Keep them in English, wrapped at 100 columns (the linter's `max-len`, including `<!-- -->` in templates); a `fallow-ignore-*` directive stays a single short line.
