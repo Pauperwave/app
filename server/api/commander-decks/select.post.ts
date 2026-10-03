@@ -6,6 +6,7 @@ interface SelectCommanderBody {
   pairingUuid: string
   playerUuid: string
   commander1Name: string
+  // fallow-ignore-next-line code-duplication -- same guard as the sibling handlers
   commander2Name: string | null
 }
 
