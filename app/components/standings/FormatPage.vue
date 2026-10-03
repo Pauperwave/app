@@ -10,6 +10,7 @@ interface Props {
   format: StandingsFormat
 }
 
+// fallow-ignore-next-line code-duplication -- mirrors PublicFormatPage.vue
 const { format } = defineProps<Props>()
 
 const { t } = useI18n()
@@ -21,8 +22,7 @@ useSeoMeta({ title: () => t(FORMAT_STANDINGS_BREADCRUMB_KEYS[format]) })
 // is NOT one of these: it has its own edition-picker logic. Own local search state, not part of the
 // shared composable (PublicFormatPage.vue has its own equivalent ref, as both pages call
 // useFormatStandingsPage independently). Declared before that call below since it threads through
-// to useFormatStandingsTableColumns.ts for match highlighting fallow-ignore-next-line
-// code-duplication -- see the same comment in PublicFormatPage.vue
+// to useFormatStandingsTableColumns.ts for match highlighting
 const search = ref('')
 
 const {
