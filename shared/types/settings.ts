@@ -1,17 +1,14 @@
 // shared\types\settings.ts
 import type { PaymentMethod } from '#shared/types/transactions'
 
-// Shared by app/composables/settings/useSettingsMutations.ts and
-// server/api/settings/update-membership-fee.post.ts — same shape by
-// construction (a thin pass-through to Supabase), same convention as
-// shared/types/transactions.ts's NewTransactionPayload.
+// Shared by useSettingsMutations.ts and update-membership-fee.post.ts (thin pass-through to
+// Supabase).
 export interface UpdateMembershipFeePayload {
   membershipFeeAmount: number
   membershipFeePaymentMethod: PaymentMethod
 }
 
-// Shared by useSettingsMutations.ts and update-trash-retention.post.ts —
-// same thin pass-through shape as UpdateMembershipFeePayload above.
+// Shared by useSettingsMutations.ts and update-trash-retention.post.ts.
 export interface UpdateTrashRetentionPayload {
   trashRetentionDays: number
 }
@@ -31,25 +28,17 @@ export interface UpdateTournamentSettingsPayload {
   swissRoundCountBeyond: number
 }
 
-// Shared by useSettingsMutations.ts and update-timer-settings.post.ts — split
-// out of UpdateTournamentSettingsPayload (2026-09-23 user request) into its
-// own "Timer" settings section: round durations plus the "pre" phase's
-// setup-countdown length (useRoundTimerEngine.ts's own PRE_TIMER_MINUTES,
-// previously hardcoded at 3).
+// Shared by useSettingsMutations.ts and update-timer-settings.post.ts: round durations plus
+// the "pre" phase's setup-countdown length (useRoundTimerEngine.ts's PRE_TIMER_MINUTES).
 export interface UpdateTimerSettingsPayload {
   commanderRoundMinutes: number
   oneVsOneRoundMinutes: number
   preRoundWaitMinutes: number
 }
 
-// /settings/members (2026-08-25 user request: wire the template's mock
-// roster to the real role system) — one row per current organizer/admin/
-// super_admin, not every associate or every account-linked player: 'player'
-// is never actually stored as a user_roles row (assign_role deletes it
-// instead, migration 20260817100000), so a row existing at all already
-// means "current staff". Shared by useMembersQuery.ts/useMembersMutations.ts
-// and server/api/settings/members.get.ts, same convention as
-// shared/types/players.ts's PlayerLastLogin.
+// /settings/members row: one per current organizer/admin/super_admin. 'player' is never stored
+// as a user_roles row (assign_role deletes it), so a row existing already means "current staff".
+// Shared by useMembersQuery.ts/useMembersMutations.ts and server/api/settings/members.get.ts.
 export interface Member {
   userId: string
   associateUuid: string

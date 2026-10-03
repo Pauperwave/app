@@ -1,7 +1,6 @@
 // shared\types\mtgFormats.ts
 
-// Shared by ManageModal.vue and server/api/mtg-formats/*.post.ts — same
-// thin-pass-through convention as shared/types/locations.ts.
+// Shared by ManageModal.vue and server/api/mtg-formats/*.post.ts (thin pass-through to Supabase).
 export interface NewMtgFormatPayload {
   name: string
   color?: string | null

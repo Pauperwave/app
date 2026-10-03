@@ -1,12 +1,9 @@
 // shared\utils\cittadino\bestNStandings.ts
 
-// Shared by useCittadinoFilters.ts and useFormatStandingsQuery.ts (fallow
-// dupes, 2026-08-11): both score "sum of the best N placement results over a
-// season" from a flat list of per-event placements, with a per-rank point
-// scale. What's genuinely different per format stays in each composable —
-// participation points, tie-breaks (bestSingle/eventsPlayed), and the row
-// shape itself — this only does the grouping, per-rank scoring, and
-// best-N/dropped split every format needs first.
+// Shared by useCittadinoFilters.ts and useFormatStandingsQuery.ts: "sum of the best N placements
+// over a season" from flat per-event placements. Only grouping, per-rank scoring and the
+// best-N/dropped split live here; participation points, tie-breaks and row shape stay in each
+// composable.
 
 export interface BestNPlacement {
   playerUuid: string
@@ -15,9 +12,8 @@ export interface BestNPlacement {
   rank: number
 }
 
-// The mock endpoints (server/api/cittadino.ts, server/api/standings/[format].get.ts)
-// both return this same snake_case row shape — useCittadinoQuery.ts and
-// useFormatStandingsQuery.ts mapped it to BestNPlacement identically.
+// Snake_case row returned by both mock endpoints (server/api/cittadino.ts,
+// server/api/standings/[format].get.ts)
 export interface PlacementRow {
   player_uuid: string
   player_name: string
@@ -44,10 +40,9 @@ export interface BestNResult {
 export interface BestNPlayerGroup<TResult extends BestNResult> {
   playerUuid: string
   playerName: string
-  // Every result the player has, in placement order — dropped ones included.
+  // Every result in placement order, dropped ones included
   results: TResult[]
-  // Same results sorted by points descending — bestSingle/best-N slicing both
-  // read off this without re-sorting.
+  // Same results by points descending, so bestSingle/best-N slicing needs no re-sort
   sortedByPoints: TResult[]
   resultsByEvent: Record<string, TResult>
 }

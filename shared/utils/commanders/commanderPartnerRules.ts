@@ -1,11 +1,11 @@
 // shared\utils\commanders\commanderPartnerRules.ts
 // Which cards are legal as a player's SECOND commander (partner mechanics and Backgrounds), derived
 // from the commander catalog. Lives in shared/ so the website's commander modal and the Telegram
-// bot apply exactly the same rules (extracted from useCommanderWhitelists.ts, 2026-10-01).
+// bot apply exactly the same rules.
 //
-// Known gap, kept as it was on the site (and in league): `partner_group` and `doctor` are valid
-// partner_type values the sync job can produce, but they have no whitelist here, so such a card
-// reports a non-'commander' type while getAllowedPartners returns an empty list.
+// Known gap: `partner_group` and `doctor` are valid partner_type values the sync job can produce
+// but have no whitelist here, so such a card reports a non-'commander' type while
+// getAllowedPartners returns [].
 export interface PartnerRuleCard {
   name: string
   scryfallId: string

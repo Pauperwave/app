@@ -1,6 +1,6 @@
 // shared\utils\tournaments\playerNotificationMessages.ts
-// Texts of the passive Telegram notifications a player receives without
-// sending a command (accepted at a tournament, tables announced/cancelled).
+// Texts of the passive Telegram notifications a player receives without sending a command (accepted
+// at a tournament, tables announced/cancelled).
 export function registrationAcceptedMessage(tournamentName: string): string {
   return `✅ Sei stato accettato a ${tournamentName}.`
 }
@@ -37,8 +37,8 @@ function podSeatingText(seats: TableSeat[]): string {
   return `💺 Sei al posto ${yourSeat}\n\nAl tavolo:\n${lines.join('\n')}`
 }
 
-// `seats` is the whole table in seat order, the recipient included. A 1v1 table keeps
-// "Giochi contro: …"; a pod shows the seating (user request, 2026-10-02).
+// `seats` is the whole table in seat order, the recipient included. A 1v1 table keeps "Giochi
+// contro: …"; a pod shows the seating.
 export function tableAnnouncedMessage(input: {
   tournamentName: string
   roundNumber: number
