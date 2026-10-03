@@ -1,7 +1,7 @@
 // server\api\admin\sync-commanders.post.ts
 // Incremental resync: fetches commander-eligible cards from Scryfall (paper, English,
-// legal:commander or from a draft-innovation set, Backgrounds included), diffs against
-// mtg_commanders and inserts ONLY the new rows. Never re-fetches or overwrites rows already synced, so manual corrections survive. Gated by
+// legal:commander or not yet released, Backgrounds included), diffs against mtg_commanders and
+// inserts ONLY the new rows. Never re-fetches or overwrites rows already synced, so manual corrections survive. Gated by
 // requireManagementPermission.
 //
 // The common case is scoped with `date>=<latest past released_at, minus a lookback>`, so a routine
@@ -11,9 +11,9 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
-// Draft-innovation sets (Conspiracy, Mystery Booster Commander Edition, ...) are not
-// Commander-legal, but their legendary creatures are played as commanders in their own drafts
-const SCRYFALL_BASE_QUERY = 'is:commander lang:en -is:digital (legal:commander or st:draft_innovation)'
+// Cards of a set not yet out are not Commander-legal until its release, but players already use
+// them at pre-release events: `date>now` brings them in ahead of the legality flip
+const SCRYFALL_BASE_QUERY = 'is:commander lang:en -is:digital (legal:commander or date>now)'
 const SYNC_LOOKBACK_DAYS = 30
 const SCRYFALL_USER_AGENT = 'Pauperwave (https://app.pauperwave.org, commander catalog sync)'
 // Two consecutive all-known pages before stopping, in case a release-date tie
