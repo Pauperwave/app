@@ -1,6 +1,36 @@
 # Changelog
 
 
+## v0.11.0
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.10.0...v0.11.0)
+
+### Enhancements
+
+- **players:** ✨ hover a commander in the player's decks table to preview the card ([79d55511](https://github.com/Pauperwave/app/commit/79d55511))
+- **bot:** ✨ bot page shows your link state and opens every command in Telegram ([97cfe044](https://github.com/Pauperwave/app/commit/97cfe044))
+- **bot:** ✨ bot page commands as a grid of cards, one per section with its explanation ([32c31de0](https://github.com/Pauperwave/app/commit/32c31de0))
+- **bot:** ✨ bot page lays out its cards side by side and links /supporto ([5408ed6a](https://github.com/Pauperwave/app/commit/5408ed6a))
+
+### Fixes
+
+- **bot:** 🐛 /prezzo shows the card art and no longer answers its own inline result ([fbc15df7](https://github.com/Pauperwave/app/commit/fbc15df7))
+
+### Documentation
+
+- 📝 emojis in the Telegram bot README ([496fc0d1](https://github.com/Pauperwave/app/commit/496fc0d1))
+- 📝 emojis in the main README and the site guide ([df140dfd](https://github.com/Pauperwave/app/commit/df140dfd))
+- 📝 review of the markdown docs against the code ([e9df2a58](https://github.com/Pauperwave/app/commit/e9df2a58))
+- 📝 fix two stale paths (useDashboard.ts moved, members.ts removed) ([1b9fa51a](https://github.com/Pauperwave/app/commit/1b9fa51a))
+
+### Chore
+
+- **release:** 🔖 v0.10.0 ([71065c28](https://github.com/Pauperwave/app/commit/71065c28))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.10.0
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.9.0...v0.10.0)
