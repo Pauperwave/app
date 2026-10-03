@@ -2367,6 +2367,7 @@
       },
       "decksColumns": {
         "commander": "Commander",
+        "partner": "Partner / Background",
         "companion": "Companion",
         "createdAt": "Creato il",
         "decklist": "Decklist",
