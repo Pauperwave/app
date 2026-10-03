@@ -1,11 +1,11 @@
 // server\utils\telegram\commands\cards\prezzo.ts
 import type { Bot, Context } from 'grammy'
-import { GrammyError, InlineKeyboard } from 'grammy'
+import { InlineKeyboard } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 import type { InlineQueryResultArticle } from 'grammy/types'
 import type { ScryfallCard } from '#shared/types/scryfall'
 
-import { answerLoadError } from '../callbackErrors'
+import { answerEditError } from '../callbackErrors'
 import { registerDeepLink } from '../../deepLinks'
 import {
   PRICE_CALLBACK_PREFIX,
@@ -191,12 +191,7 @@ async function handlePriceButton(ctx: Context, next: () => Promise<void>) {
     })
     await ctx.answerCallbackQuery()
   } catch (err) {
-    // Pressing the active filter again re-renders identical content: not a failure
-    if (err instanceof GrammyError && err.description.includes('message is not modified')) {
-      await ctx.answerCallbackQuery()
-      return
-    }
-    await answerLoadError(ctx)
+    await answerEditError(ctx, err)
   }
 }
 
