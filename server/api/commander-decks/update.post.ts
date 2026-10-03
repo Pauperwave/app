@@ -11,13 +11,12 @@ interface UpdateDeckBody {
   lenderUuid: string | null
 }
 
-// Updates ownership/companion/decklist fields. Excludes commander1/commander2 (changing them would
+// Updates ownership/companion/decklist fields, for the deck's owner or an admin. Excludes commander1/commander2 (changing them would
 // orphan tournament_round_results tied to the deck) and bracket_level (see set-bracket.post.ts).
 export default defineEventHandler(async (event) => {
-  await requireManagementPermission(event)
-
   const body = await readBody<UpdateDeckBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
+  await requireAdminOrDeckOwner(event, supabase, body.deckUuid)
 
   const { error } = await supabase
     .from('commander_decks')

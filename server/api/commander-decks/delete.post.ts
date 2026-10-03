@@ -10,10 +10,9 @@ interface DeleteDeckBody {
 // too): it would orphan tournament_round_results.commander_deck_uuid for every round it was used.
 // Test tournaments don't count: their results are throwaway.
 export default defineEventHandler(async (event) => {
-  await requireManagementPermission(event)
-
   const { deckUuid } = await readBody<DeleteDeckBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
+  await requireAdminOrDeckOwner(event, supabase, deckUuid)
 
   const { count, error: usageError } = await supabase
     .from('tournament_round_results')

@@ -16,10 +16,9 @@ interface CreateDeckBody {
 // Manually registers a deck, independent of select.post.ts's get-or-create (live round selection),
 // so staff can pre-register decks before a tournament.
 export default defineEventHandler(async (event) => {
-  await requireManagementPermission(event)
-
   const body = await readBody<CreateDeckBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
+  await requireAdminOrOwnPlayer(event, supabase, body.playerUuid)
 
   const { data, error } = await supabase
     .from('commander_decks')
