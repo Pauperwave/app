@@ -3,6 +3,7 @@
 // Telegram bot shows up in "Pre-registrati"/"Iscritti" without a refresh. tournament_registrations
 // is already in the supabase_realtime publication; same "invalidate, don't merge payloads" approach
 // as useTournamentMatchResultsRealtime.ts
+// fallow-ignore-next-line code-duplication -- same channel setup as its siblings
 export function useTournamentRegistrationsRealtime(tournamentUuid: MaybeRefOrGetter<string>) {
   const supabase = useSupabaseClient()
   const queryCache = useQueryCache()

@@ -4,6 +4,7 @@
 // TOURNAMENT_ROUND_RESULTS_KEY also cascades into useCommanderDecksByUuidsQuery's commander-name
 // lookup, whose key derives from the round results' commanderDeckUuid values: no commander_decks
 // subscription needed
+// fallow-ignore-next-line code-duplication -- same channel setup as its siblings
 export function useCommanderRoundResultsRealtime(tournamentUuid: MaybeRefOrGetter<string>) {
   const supabase = useSupabaseClient()
   const queryCache = useQueryCache()
@@ -34,6 +35,7 @@ export function useCommanderRoundResultsRealtime(tournamentUuid: MaybeRefOrGette
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'tournament_votes', filter: `tournament_uuid=eq.${uuid}` },
+        // fallow-ignore-next-line code-duplication -- same channel setup as its siblings
         () => queryCache.invalidateQueries({ key: TOURNAMENT_VOTES_KEY(uuid) })
       )
       .subscribe()

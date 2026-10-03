@@ -4,6 +4,7 @@
 // Supabase Realtime postgres_changes, filtered by tournament_uuid, invalidates the Pinia Colada
 // caches on any change rather than merging payloads: the query already fetches the tournament's
 // whole (small) result set, so a refetch keeps one source of truth for its shape
+// fallow-ignore-next-line code-duplication -- same channel setup as its siblings
 export function useTournamentMatchResultsRealtime(tournamentUuid: MaybeRefOrGetter<string>) {
   const supabase = useSupabaseClient()
   const queryCache = useQueryCache()
@@ -26,6 +27,7 @@ export function useTournamentMatchResultsRealtime(tournamentUuid: MaybeRefOrGett
         },
         () => {
           queryCache.invalidateQueries({ key: TOURNAMENT_MATCH_RESULTS_KEY(uuid) })
+          // fallow-ignore-next-line code-duplication -- same channel setup as its siblings
           queryCache.invalidateQueries({ key: TOURNAMENT_PAIRINGS_KEY(uuid) })
         }
       )
