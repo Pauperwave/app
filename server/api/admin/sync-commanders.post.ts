@@ -1,17 +1,20 @@
 // server\api\admin\sync-commanders.post.ts
 // Incremental resync: fetches commander-eligible cards from Scryfall (paper, English,
-// legal:commander, Backgrounds included), diffs against mtg_commanders and inserts ONLY the new
-// rows. Never re-fetches or overwrites rows already synced, so manual corrections survive. Gated by
+// legal:commander or from a draft-innovation set, Backgrounds included), diffs against
+// mtg_commanders and inserts ONLY the new rows. Never re-fetches or overwrites rows already synced, so manual corrections survive. Gated by
 // requireManagementPermission.
 //
-// The common case is scoped with `date>=<max known released_at>`, so a routine resync only pages
-// through cards released since the last sync instead of the whole ~3600-card set. released_at is
-// NULL on pre-existing rows, so the first run does one full unscoped fetch that backfills it and
-// detects new cards in the same pass.
+// The common case is scoped with `date>=<latest past released_at, minus a lookback>`, so a routine
+// resync only pages through cards released since the last sync instead of the whole ~3600-card
+// set. released_at is NULL on pre-existing rows, so the first run does one full unscoped fetch that
+// backfills it and detects new cards in the same pass.
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
-const SCRYFALL_BASE_QUERY = 'is:commander lang:en -is:digital legal:commander'
+// Draft-innovation sets (Conspiracy, Mystery Booster Commander Edition, ...) are not
+// Commander-legal, but their legendary creatures are played as commanders in their own drafts
+const SCRYFALL_BASE_QUERY = 'is:commander lang:en -is:digital (legal:commander or st:draft_innovation)'
+const SYNC_LOOKBACK_DAYS = 30
 const SCRYFALL_USER_AGENT = 'Pauperwave (https://app.pauperwave.org, commander catalog sync)'
 // Two consecutive all-known pages before stopping, in case a release-date tie
 // splits an already-known and a still-unknown card across a page boundary.
@@ -107,7 +110,7 @@ async function fetchCommanderCardsPaginated(
 interface ExistingCatalog {
   scryfallIds: Set<string>
   names: Set<string>
-  maxReleasedAt: string | null
+  latestPastReleasedAt: string | null
   rowsNeedingReleasedAt: { scryfallId: string, cardName: string }[]
 }
 
@@ -119,7 +122,8 @@ async function fetchExistingCatalog(
   const scryfallIds = new Set<string>()
   const names = new Set<string>()
   const rowsNeedingReleasedAt: { scryfallId: string, cardName: string }[] = []
-  let maxReleasedAt: string | null = null
+  let latestPastReleasedAt: string | null = null
+  const today = new Date().toISOString().slice(0, 10)
   const pageSize = 1000
   let from = 0
 
@@ -136,7 +140,7 @@ async function fetchExistingCatalog(
       scryfallIds.add(row.scryfall_id)
       names.add(row.card_name)
       if (row.released_at) {
-        if (!maxReleasedAt || row.released_at > maxReleasedAt) maxReleasedAt = row.released_at
+        latestPastReleasedAt = newerPastDate(latestPastReleasedAt, row.released_at, today)
       } else {
         rowsNeedingReleasedAt.push({ scryfallId: row.scryfall_id, cardName: row.card_name })
       }
@@ -145,7 +149,7 @@ async function fetchExistingCatalog(
     from += pageSize
   }
 
-  return { scryfallIds, names, maxReleasedAt, rowsNeedingReleasedAt }
+  return { scryfallIds, names, latestPastReleasedAt, rowsNeedingReleasedAt }
 }
 
 // Fills released_at for rows synced before it existed, matched by name against the fetch already in
@@ -264,9 +268,12 @@ export default defineEventHandler(async (event) => {
 
   const existing = await fetchExistingCatalog(supabase)
 
-  const needsFullFetch = existing.maxReleasedAt === null
+  const { latestPastReleasedAt } = existing
+  const needsFullFetch = latestPastReleasedAt === null
     || existing.rowsNeedingReleasedAt.length > BACKFILL_THRESHOLD
-  const startUrl = needsFullFetch ? buildSearchUrl() : buildSearchUrl(existing.maxReleasedAt)
+  const startUrl = needsFullFetch
+    ? buildSearchUrl()
+    : buildSearchUrl(syncWindowStart(latestPastReleasedAt, SYNC_LOOKBACK_DAYS))
 
   const { cards: fetchedCards, scanned } = await fetchCommanderCardsPaginated(
     startUrl, existing, !needsFullFetch
