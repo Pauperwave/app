@@ -10,6 +10,7 @@ const {
   data: associates, isLoading: loading, isPending, status, refetch
 } = useAssociatesQuery()
 const { t } = useI18n()
+const { can } = useUserRole()
 const toast = useToast()
 const { isModalOpen } = useModalOpenFromQuery()
 
@@ -244,7 +245,7 @@ const tour = useAssociatesRequestsTour()
         @refresh="refetch"
         @tour-start="tour.start()"
       >
-        <div id="tour-requests-add">
+        <div v-if="can('manage-members')" id="tour-requests-add">
           <AssociatesListAddModal v-model="isModalOpen" />
         </div>
 

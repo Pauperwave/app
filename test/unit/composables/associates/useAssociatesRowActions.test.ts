@@ -7,7 +7,11 @@ const approveAssociates = { mutateAsync: vi.fn() }
 const rejectAssociates = { mutateAsync: vi.fn() }
 const restoreAssociates = { mutateAsync: vi.fn() }
 
+const can = vi.hoisted(() => vi.fn())
+
 vi.mock('vue-i18n', () => ({ useI18n: () => ({ t: (key: string) => key }) }))
+// Auto-imported by the composable, so mocked as a module rather than stubbed as a global
+vi.mock('~/composables/useUserRole', () => ({ useUserRole: () => ({ can }) }))
 vi.mock('~/composables/associates/useAssociatesMutations', () => ({
   useAssociatesMutations: () => ({ approveAssociates, rejectAssociates, restoreAssociates })
 }))
@@ -27,8 +31,53 @@ function menuLabels(items: ReturnType<ReturnType<typeof useAssociatesRowActions>
   return items.map(item => ('label' in item ? item.label : '---'))
 }
 
+function itemByLabel(
+  items: ReturnType<ReturnType<typeof useAssociatesRowActions>['rowContextMenuItems']>,
+  label: string
+) {
+  return items.find(item => 'label' in item && item.label === label)
+}
+
+describe('useAssociatesRowActions permissions', () => {
+  beforeEach(() => {
+    can.mockReset().mockReturnValue(true)
+    vi.stubGlobal('useToast', () => ({ add: vi.fn() }))
+  })
+
+  it('locks editing the registry below admin (manage-members)', () => {
+    can.mockImplementation(permission => permission !== 'manage-members')
+    const { rowContextMenuItems } = useAssociatesRowActions()
+
+    const items = rowContextMenuItems(makeAssociate({}))
+
+    expect(itemByLabel(items, 'associate.rowActions.edit')).toMatchObject({ disabled: true })
+    expect(itemByLabel(items, 'associate.rowActions.editNumber')).toMatchObject({ disabled: true })
+  })
+
+  it('locks registering the membership payment below admin (manage-membership-fees)', () => {
+    can.mockImplementation(permission => permission !== 'manage-membership-fees')
+    const { rowContextMenuItems } = useAssociatesRowActions()
+
+    const items = rowContextMenuItems(makeAssociate({ membership_status: 'unpaid' }))
+
+    expect(itemByLabel(items, 'associate.rowActions.pay')).toMatchObject({ disabled: true })
+    expect(itemByLabel(items, 'associate.rowActions.edit')).toMatchObject({ disabled: false })
+  })
+
+  it('leaves everything enabled for an admin', () => {
+    const { rowContextMenuItems } = useAssociatesRowActions()
+
+    const items = rowContextMenuItems(makeAssociate({ membership_status: 'unpaid' }))
+
+    for (const label of ['associate.rowActions.edit', 'associate.rowActions.editNumber', 'associate.rowActions.pay']) {
+      expect(itemByLabel(items, label)).toMatchObject({ disabled: false })
+    }
+  })
+})
+
 describe('useAssociatesRowActions rowContextMenuItems', () => {
   beforeEach(() => {
+    can.mockReset().mockReturnValue(true)
     vi.stubGlobal('useToast', () => ({ add: vi.fn() }))
   })
 
