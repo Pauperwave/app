@@ -16,6 +16,7 @@ pnpm lint             # eslint .
 pnpm typecheck        # nuxt typecheck (vue-tsc)
 pnpm check:paths      # verify every app/server/shared source file has a correct path header
 pnpm check:paths:fix  # insert/correct those headers in place
+pnpm check:components # flag template tags that resolve to no component (needs .nuxt/components.d.ts)
 pnpm test             # vitest run
 pnpm test:watch       # vitest --watch
 pnpm test:coverage    # vitest run --coverage
