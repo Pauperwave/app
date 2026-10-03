@@ -1,11 +1,8 @@
 <!-- app\components\tournaments\fields\SchedulingFields.vue -->
-<!--
-  Extracted out of AddModal.vue/EditModal.vue (2026-08-16, fallow:dupes
-  flagged this block as a 38-line clone) — `state` is the SAME reactive
-  object the parent binds to its own <UForm :state>, mutated directly. `startDate`
-  is a separate v-model: it's a DateValue (UCalendar's own type), not a plain
-  schema field, same reason it's a separate ref in both modals already.
--->
+<!-- Extracted from AddModal.vue/EditModal.vue (fallow:dupes flagged a 38-line clone): `state`
+     is the SAME reactive object the parent binds to its <UForm :state>, mutated directly.
+     `startDate` is a separate v-model: a DateValue (UCalendar's own type), not a plain schema
+     field, like the separate ref in both modals. -->
 <!-- eslint-disable vue/no-mutating-props -- see the comment above -->
 <script setup lang="ts">
 import { parseTime } from '@internationalized/date'

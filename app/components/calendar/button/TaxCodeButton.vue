@@ -1,10 +1,7 @@
 <!-- app\components\calendar\button\TaxCodeButton.vue -->
-<!--
-  Tappable codice fiscale for /calendario, next to ContactButton.vue in
-  CalendarFooter.vue — copies the code to the clipboard on click, same
-  useCopyToClipboard pattern as the associates/players row actions (user
-  request, 2026-08-30, for tax-return 5x1000 designation purposes).
--->
+<!-- Tappable codice fiscale for /calendario, next to ContactButton.vue in CalendarFooter.vue:
+     it copies the code to the clipboard on click (the useCopyToClipboard pattern of the
+     associates/players row actions), for 5x1000 tax-return designation. -->
 <script lang="ts" setup>
 const TAX_CODE = '94047330223'
 

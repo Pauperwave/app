@@ -1,24 +1,16 @@
 <!-- app\components\magic\CardArtPicker.vue -->
-<!--
-  Standalone cover-image picker sourcing artwork directly from Scryfall
-  (2026-08-16, user request) — reuses useScryfallCardSearch.ts's name
-  typeahead + printings query (same composable as WantedCardsListAddModal.vue),
-  but selects a printing's art_crop (cropped illustration, no card frame)
-  rather than the full card image, since the result becomes a banner/cover,
-  not a card reference. Also tracks the card name/artist alongside the URL
-  (2026-08-20, migration 20260820120000) — Scryfall's API usage guidelines
-  require the artist name and copyright to be shown next to any art_crop use,
-  since the crop itself has no in-image credit (unlike the full card). Shown
-  below the picker here, and again wherever the cover ends up rendered
-  (TournamentsListCover.vue/LeaguesListCover.vue).
-
-  Printing picker is a USelectMenu with a hover-preview row
-  (CardArtPickerRow.vue/MagicCardHoverPreview), same pattern as
-  wanted-cards/FormFields.vue's "Edizione" field — replaced a raw
-  unlabeled thumbnail grid (user request, 2026-09-02: inconsistent with
-  the rest of the app, and gave no way to tell printings apart before
-  hovering).
--->
+<!-- Standalone cover-image picker sourcing artwork from Scryfall: it reuses
+     useScryfallCardSearch.ts's name typeahead + printings query (like
+     WantedCardsListAddModal.vue) but selects a printing's art_crop (cropped illustration, no
+     card frame) rather than the full card image, since the result becomes a banner/cover, not a
+     card reference. It also tracks the card name/artist alongside the URL (migration
+     20260820120000): Scryfall's API usage guidelines require the artist name and copyright next
+     to any art_crop use, as the crop has no in-image credit. Shown below the picker here and
+     wherever the cover is rendered (TournamentsListCover.vue/LeaguesListCover.vue).  The
+     printing picker is a USelectMenu with a hover-preview row
+     (CardArtPickerRow.vue/MagicCardHoverPreview), like wanted-cards/FormFields.vue's "Edizione"
+     field, replacing a raw unlabeled thumbnail grid (inconsistent with the app, with no way to
+     tell printings apart before hovering). -->
 <script setup lang="ts">
 const model = defineModel<string | undefined>()
 const cardName = defineModel<string | undefined>('cardName')
@@ -152,8 +144,8 @@ function clear() {
       </template>
     </UPopover>
 
-    <!-- Required alongside any art_crop use per Scryfall's API usage
-         guidelines — see the top-of-file comment. -->
+    <!-- Required with any art_crop use per Scryfall's API usage guidelines (see the top-of-file
+         comment) -->
     <p v-if="model && cardName" class="mt-1 text-xs text-muted truncate">
       {{ artist
         ? t('magic.cardArtPicker.attribution', { cardName, artist })

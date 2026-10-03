@@ -1,11 +1,8 @@
 <!-- app\components\cittadino\FiltersDropdown.vue -->
-<!--
-  Shared format-filter dropdown + summary text, used by
-  PublicCittadinoPage.vue and standings/cittadino/index.vue (fallow:dupes
-  flagged this as an identical clone). The internal page additionally wraps
-  this in a `#tour-cittadino-filters` id div for the onboarding tour — that
-  stays in the parent, not here.
--->
+<!-- Shared format-filter dropdown + summary text, used by PublicCittadinoPage.vue and
+     standings/cittadino/index.vue (identical in both). The internal page additionally wraps it
+     in a `#tour-cittadino-filters` id div for the onboarding tour: that stays in the parent,
+     not here. -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 

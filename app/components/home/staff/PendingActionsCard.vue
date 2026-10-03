@@ -1,7 +1,6 @@
 <!-- app\components\home\staff\PendingActionsCard.vue -->
-<!-- Split out of home/Staff.vue (2026-08-29, fallow:health) — one of six
-     self-contained dashboard card sections that had made Staff.vue's
-     template a complexity hotspot. -->
+<!-- Split out of home/Staff.vue: one of six self-contained dashboard card sections that had
+     made Staff.vue's template a complexity hotspot -->
 <script setup lang="ts">
 interface PendingAction {
   label: string

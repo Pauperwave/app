@@ -1,8 +1,7 @@
 <!-- app\components\home\staff\NextLocationCard.vue -->
-<!-- Split out of home/Staff.vue (2026-08-29, fallow:health) — see
-     PendingActionsCard.vue's own comment. `tournament` here is the soonest
-     upcoming tournament (Staff.vue's own nextTournamentLocation), read only
-     for its location fields. -->
+<!-- Split out of home/Staff.vue (fallow:health), see PendingActionsCard.vue. `tournament` is
+     the soonest upcoming tournament (Staff.vue's nextTournamentLocation), read only for its
+     location fields -->
 <script setup lang="ts">
 import type { Tournament } from '~/types'
 

@@ -1,9 +1,6 @@
 <!-- app\components\ui\DetailCard.vue -->
-<!--
-  Moved out of associates/ (2026-08-20) — always domain-agnostic (title +
-  icon-labeled fields, no associate-specific logic), and players/[playerId]
-  /index.vue needed the exact same shell.
--->
+<!-- A domain-agnostic detail shell (title + icon-labeled fields, no associate-specific logic),
+     moved out of associates/ because players/[playerId]/index.vue needs the same one. -->
 <script setup lang="ts">
 interface DetailField {
   icon: string

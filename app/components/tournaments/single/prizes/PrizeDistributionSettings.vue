@@ -1,11 +1,8 @@
 <!-- app\components\tournaments\single\prizes\PrizeDistributionSettings.vue -->
-<!--
-  Prize suggestion inputs, three columns of two: packs available / set aside,
-  guaranteed minimum for rewarded / non-rewarded players, and how many
-  placements are rewarded / the cap per placement. Same
-  UInputNumber layout as PairingWeightsSection.vue; the distribution shape
-  (presets + per-placement shares) lives next to the standings table.
--->
+<!-- Prize suggestion inputs, three columns of two: packs available / set aside, guaranteed
+     minimum for rewarded / non-rewarded players, and how many placements are rewarded / the cap
+     per placement. The same UInputNumber layout as PairingWeightsSection.vue; the distribution
+     shape (presets + per-placement shares) lives next to the standings table. -->
 <script setup lang="ts">
 import type { PrizeDistributionSettings } from '~/types'
 

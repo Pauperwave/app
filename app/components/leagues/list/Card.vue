@@ -1,21 +1,12 @@
 <!-- app\components\leagues\list\Card.vue -->
-<!--
-  Leagues' own version of TournamentsListCard.vue (2026-08-16, "make the
-  leagues cards match the tournaments cards") — same cover/checkbox/edit
-  layout and hover treatment, adapted to League's fields: a ruleset badge
-  instead of format/location, a tournament-progress bar instead of
-  players/entry-fee (leagues have neither). Status shows through the card's
-  own styling rather than a badge, same convention as Card.vue: completed
-  and cancelled both recede via opacity/saturation (2026-08-16: cancelled
-  used to keep full brightness, only the strikethrough+error title signaled
-  it — too easy to miss at a glance in a grid), cancelled additionally gets
-  the strikethrough+error title to stay distinct from "finished
-  successfully".
-
-  `loading` (2026-08-22): same per-element real-vs-USkeleton branching as
-  TournamentsListCard.vue — see that file's own comment for why this
-  replaces a separate hand-duplicated skeleton.
--->
+<!-- Leagues' own version of TournamentsListCard.vue: the same cover/checkbox/edit layout and
+     hover treatment, adapted to League's fields (a ruleset badge instead of format/location, a
+     tournament-progress bar instead of players/entry-fee). Status shows through the card's
+     styling rather than a badge, like Card.vue: completed and cancelled both recede via
+     opacity/saturation, cancelled also gets the strikethrough+error title to stay distinct from
+     "finished successfully".  `loading`: the same per-element real-vs-USkeleton branching as
+     TournamentsListCard.vue (see its comment for why this replaces a separate hand-duplicated
+     skeleton). -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { League } from '~/types'
@@ -38,8 +29,8 @@ const { t } = useI18n()
 const isMuted = computed(() => !!league && (league.status === 'completed' || league.status === 'cancelled'))
 const isCancelled = computed(() => league?.status === 'cancelled')
 
-// Same ctrl/cmd/shift-click convention as TournamentsListCard.vue. No-ops
-// while loading/without a real league — nothing to click through to yet.
+// Same ctrl/cmd/shift-click convention as TournamentsListCard.vue; no-ops while loading/without a
+// real league (nothing to click through to)
 function onCardClick(event: MouseEvent) {
   if (!league) return
   if (event.ctrlKey || event.metaKey || event.shiftKey) {
@@ -49,10 +40,9 @@ function onCardClick(event: MouseEvent) {
   navigateTo(`/leagues/${league.uuid}`)
 }
 
-// `includeYear` only matters when the two ends of the range fall in
-// different years (e.g. "Lega Estiva 2026" runs 30 luglio 2026 → 20
-// gennaio 2027) — showing the year on the end date alone would otherwise
-// misleadingly suggest the start date is also 2027.
+// `includeYear` only matters when the range ends fall in different years ("Lega Estiva 2026" runs
+// 30 luglio 2026 → 20 gennaio 2027): the year on the end date alone would suggest the start is also
+// 2027
 function longDate(isoString: string, includeYear: boolean) {
   const date = new Date(isoString)
   return date.toLocaleDateString('it-IT', includeYear
@@ -60,12 +50,10 @@ function longDate(isoString: string, includeYear: boolean) {
     : { day: '2-digit', month: 'long' })
 }
 
-// User request, 2026-08-22: the card should show both ends of the league's
-// span, not just the start (previously only discoverable via the cover
-// chip's hover tooltip — see LeaguesListCover.vue), with months spelled out
-// in full and the year appended at the end. Falls back to the league's own
-// startDate with no end half when it has no tournaments yet, same
-// "Dal X al Y" phrasing already used by LeaguesSinglePresentationCard.vue.
+// Shows both ends of the league's span (not just the start, which was only in the cover chip's
+// tooltip, see LeaguesListCover.vue), months in full and the year at the end. Falls back to the
+// league's startDate with no end half when it has no tournaments yet, with the "Dal X al Y"
+// phrasing of LeaguesSinglePresentationCard.vue
 const dateRangeLabel = computed(() => {
   if (!league) return ''
   const range = league.tournamentDateRange
@@ -79,10 +67,9 @@ const dateRangeLabel = computed(() => {
   })
 })
 
-// Capped at 2 badges + a "+N" overflow one (ADR, docs/PROGRESS.md,
-// 2026-08-22) — a league can span several formats over its lifetime, and
-// this row already shares space with the ruleset badge, unlike tournaments'
-// own single-format badge.
+// Capped at 2 badges + a "+N" overflow one (ADR, docs/PROGRESS.md): a league can span several
+// formats over its lifetime, and this row shares space with the ruleset badge, unlike tournaments'
+// single-format badge
 const MAX_VISIBLE_FORMATS = 2
 const visibleFormats = computed(() => league?.tournamentFormats.slice(0, MAX_VISIBLE_FORMATS) ?? [])
 const extraFormatCount = computed(() =>
@@ -117,9 +104,8 @@ const extraFormatCount = computed(() =>
         >
           {{ league.name }}
         </h3>
-        <!-- Width matches "Lega Invernale 2026" — see TournamentsListCard.vue's
-             own comment for why these are sized to real content, not
-             arbitrary bars. -->
+        <!-- Width matches "Lega Invernale 2026" (see TournamentsListCard.vue: sized to real
+             content, not arbitrary bars) -->
         <USkeleton v-else class="h-5 w-32 min-w-0" />
 
         <EditIconButton
@@ -157,10 +143,9 @@ const extraFormatCount = computed(() =>
           </UBadge>
           <LeaguesRulesetBadge :league="league" />
         </template>
-        <!-- Widths match "Commander" (format) + "Pauper" (ruleset). Always
-             shown while loading (not conditional on real data) since
-             LeaguesRulesetBadge itself always renders now too — see its
-             own comment for why the badge row can't collapse. -->
+        <!-- Widths match "Commander" (format) + "Pauper" (ruleset). Always shown while loading,
+             since LeaguesRulesetBadge always renders too (see its comment on why the row can't
+             collapse) -->
         <template v-else>
           <USkeleton class="h-6 w-24" />
           <USkeleton class="h-6 w-20" />

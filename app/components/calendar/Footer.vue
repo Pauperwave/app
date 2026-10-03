@@ -1,11 +1,8 @@
 <!-- app\components\calendar\Footer.vue -->
-<!--
-  Sponsor, tax code, and contact for /calendario (see PublicCalendarPage.vue),
-  one row: sponsor on the left, a flex-1 spacer, tax-code/phone buttons on
-  the right (TaxCodeButton.vue, ContactButton.vue) — layout per the user's
-  request 2026-08-14, tax code added 2026-08-30 for 5x1000 tax-return
-  designation purposes.
--->
+<!-- Sponsor, tax code and contact for /calendario (see PublicCalendarPage.vue), in one row: the
+     sponsor on the left, a flex-1 spacer, tax-code/phone buttons on the right
+     (TaxCodeButton.vue, ContactButton.vue). The tax code is there for 5x1000 tax-return
+     designation. -->
 <script lang="ts" setup></script>
 
 <template>

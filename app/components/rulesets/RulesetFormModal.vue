@@ -1,10 +1,8 @@
 <!-- app\components\rulesets\RulesetFormModal.vue -->
-<!-- Create/edit modal for scoring rulesets, restored from league's
-     RulesetFormModal.vue (user request, 2026-09-17) — this app's schema
-     normalizes point values into ruleset__points category rows instead of
-     league's flat rule_set_* columns, and adds a "participation" category
-     league never had (seeded but unused by scoring today, see
-     useCommanderScoring.ts). -->
+<!-- Create/edit modal for scoring rulesets, restored from league's RulesetFormModal.vue: this
+     app's schema normalizes point values into ruleset__points category rows instead of league's
+     flat rule_set_* columns, and adds a "participation" category league never had (seeded but
+     unused by scoring today, see useCommanderScoring.ts) -->
 <script setup lang="ts">
 import * as v from 'valibot'
 import type { RulesetWithPoints } from '~/composables/rulesets/useRulesetsWithPointsQuery'

@@ -13,13 +13,13 @@ interface Props {
    * #37) — see CalendarHighlightedDate. Omitted entirely (not just empty)
    * by every caller that hasn't opted in yet, so this stays a no-op. */
   highlightedDates?: CalendarHighlightedDate[]
-  /** Always icon-only regardless of viewport, instead of showing the
-   * formatted range as the button's own label — opt-in for pages crowded
-   * enough that the range text itself doesn't fit (transactions/index.vue,
-   * user request, 2026-08-27). The range is still readable via tooltip.
-   * Outlined (not ghost, unlike the labeled button below) to match
-   * ColumnVisibilityMenu's own icon-only style, its usual neighbor in these
-   * toolbars (user request, 2026-08-31). */
+  /**
+   * Always icon-only regardless of viewport, instead of showing the formatted range as the button's
+   * label: opt-in for pages crowded enough that the range text doesn't fit
+   * (transactions/index.vue). The range is still readable via tooltip. Outlined (not ghost, unlike
+   * the labeled button below) to match ColumnVisibilityMenu's icon-only style, its usual neighbor
+   * in these toolbars.
+   */
   iconOnly?: boolean
 }
 

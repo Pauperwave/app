@@ -1,25 +1,17 @@
 <!-- app\components\ui\CalendarHeatmap.vue -->
-<!--
-  GitHub-style contribution calendar (2026-08-20, extracted out of
-  players/[slug].vue's login-history section the moment it stopped being a
-  one-off — day-of-week rows on the left, month labels above the columns
-  they start in, weeks as columns). Hand-built with a Tailwind grid, not
-  ECharts (already installed/configured elsewhere in this app) — its SVG
-  renderer doesn't reliably resolve CSS var()/color-mix() the way real CSS
-  properties do (confirmed via claude-in-chrome: swatches rendered flat
-  black), and a calendar this size doesn't need a charting library at all.
-  bg-primary at increasing opacity per bucket — theme-integrated for free.
--->
+<!-- GitHub-style contribution calendar (extracted from players/[slug].vue's login-history section):
+     day-of-week rows on the left, month labels above the columns they start in, weeks as columns.
+     Hand-built with a Tailwind grid, not ECharts: its SVG renderer doesn't reliably resolve CSS
+     var()/color-mix() (swatches rendered flat black), and a calendar this size needs no charting
+     library. bg-primary at increasing opacity per bucket is theme-integrated for free. -->
 <script setup lang="ts">
 import { sub } from 'date-fns'
 
 interface HeatmapDay {
   date: string
   count: number
-  // Raw timestamps for this day, in the order they were passed in — shown in
-  // the tooltip (user request, 2026-08-20) instead of just the count, so the
-  // per-login-time detail that used to live only in the flat list below the
-  // chart is available here too.
+  // Raw timestamps for this day in the order passed in, shown in the tooltip (not just the count)
+  // so the per-login-time detail of the flat list is available here too
   times: string[]
 }
 
@@ -52,9 +44,15 @@ const {
   legendItems,
   highlightedDate = null
 } = defineProps<{
-  /** One ISO date/timestamp string per event (e.g. a login) — same day repeated is counted, not deduped. */
+  /**
+   * One ISO date/timestamp string per event (e.g. a login) — same day repeated is counted, not
+   * deduped.
+   */
   dates: string[]
-  /** How many trailing months the grid covers, ending today. Ignored when spanDates is true. @default 12 */
+  /**
+   * How many trailing months the grid covers, ending today. Ignored when spanDates is true.
+   * @default 12
+   */
   months?: number
   /**
    * Spans the grid from the earliest to the latest date in `dates` instead
@@ -64,9 +62,16 @@ const {
    * the past). @default false
    */
   spanDates?: boolean
-  /** i18n key for the pluralized "N <events>" tooltip/aria-label line — e.g. "{count} accesso | {count} accessi". Swap this per domain (logins vs. tournaments, ...) rather than hardcoding "accesso/accessi" here. */
+  /**
+   * i18n key for the pluralized "N <events>" tooltip/aria-label line — e.g. "{count} accesso |
+   * {count} accessi". Swap this per domain (logins vs. tournaments, ...) rather than hardcoding
+   * "accesso/accessi" here.
+   */
   countLabelKey?: string
-  /** i18n keys for the 5 legend swatch labels ("Nessun accesso" etc.) — same per-domain override as countLabelKey. */
+  /**
+   * i18n keys for the 5 legend swatch labels ("Nessun accesso" etc.) — same per-domain override as
+   * countLabelKey.
+   */
   legendLabelKeys?: LegendLabelKeys
   /**
    * Per-day color/label override, keyed by the same yyyy-MM-dd produced by
@@ -113,14 +118,11 @@ const weeks = computed<HeatmapDay[][]>(() => {
     start = sub(end, { months })
   }
 
-  // Normalized to local midnight — `start`/`end` above keep whatever exact
-  // time-of-day their source ISO string had (e.g. a tournament's starts_at).
-  // The loop below only cares about calendar days, so comparing full
-  // timestamps was an off-by-one waiting to happen: if the *last* day's
-  // source time was earlier in the day than the *first* day's (which
-  // `cursor` inherits via setDate(), see gridStart below), `cursor` on the
-  // final iteration ended up later than `end` and got excluded. Confirmed
-  // 2026-08-22, issue #42.
+  // Normalized to local midnight: `start`/`end` keep their source time-of-day (e.g. a tournament's
+  // starts_at), but the loop only cares about calendar days. Comparing full timestamps was an
+  // off-by-one: if the *last* day's time is earlier than the *first* day's (which `cursor` inherits
+  // via setDate(), see gridStart), `cursor` ended up later than `end` on the final iteration and
+  // was excluded (issue #42)
   start.setHours(0, 0, 0, 0)
   end.setHours(0, 0, 0, 0)
 
@@ -133,8 +135,8 @@ const weeks = computed<HeatmapDay[][]>(() => {
   const days: HeatmapDay[] = []
   for (const cursor = new Date(gridStart); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
     const date = toLocalDateKey(cursor)
-    // Newest first (user request, 2026-08-20) — the most recent login on a
-    // given day is the one worth seeing without scrolling the tooltip.
+    // Newest first: the most recent login of a day is the one worth seeing without scrolling the
+    // tooltip
     const times = (timesByDay.get(date) ?? []).sort().reverse()
     days.push({ date, count: times.length, times })
   }
@@ -150,9 +152,8 @@ const maxCount = computed(() => Math.max(1, ...weeks.value.flat().map(day => day
 
 const { t } = useI18n()
 
-// Single source for both the cells and the "Meno ... Più" legend below (user
-// request, 2026-08-20, "like GitHub") — same 5 buckets either way, in order,
-// so they can never drift apart.
+// Single source for both the cells and the "Meno ... Più" legend below: the same 5 buckets in
+// order, so they can't drift apart
 const LEVELS = computed(() => [
   { threshold: 0, class: 'bg-elevated', labelKey: legendLabelKeys.none },
   { threshold: 0.25, class: 'bg-primary/20', labelKey: legendLabelKeys.low },
@@ -164,10 +165,9 @@ const LEVELS = computed(() => [
 function levelFor(count: number) {
   if (count === 0) return LEVELS.value[0]!
   const ratio = count / maxCount.value
-  // Each level's own threshold is the ratio that promotes you to the *next*
-  // level (LEVELS[1].threshold = 0.25 is where "low" gives way to
-  // "mediumLow", etc.) — walk down from the top so the first level whose
-  // predecessor's threshold the ratio clears wins.
+  // Each level's own threshold is the ratio that promotes you to the *next* level
+  // (LEVELS[1].threshold = 0.25 is where "low" gives way to "mediumLow"): walk down from the top so
+  // the first level whose predecessor's threshold the ratio clears wins
   for (let i = LEVELS.value.length - 1; i >= 1; i--) {
     if (ratio > LEVELS.value[i - 1]!.threshold) return LEVELS.value[i]!
   }
@@ -213,20 +213,16 @@ const dayLabels = [0, 1, 2, 3, 4, 5, 6].map((offset) => {
   return dayFormatter.format(day)
 })
 
-// One shared, pointer-following UTooltip instead of a UPopover per cell
-// (373+ instances for a 12-month grid) — same virtual :reference technique
-// as CardHoverPreview.vue, needed here for the same reason: mounting a real
-// tooltip/popover component per cell is expensive at this count and was
-// visibly janky. A single tooltip anchored to the pointer position, with its
-// content swapped on hover, costs nothing per cell.
+// One shared, pointer-following UTooltip instead of a UPopover per cell (373+ in a 12-month grid,
+// visibly janky): the virtual :reference technique of CardHoverPreview.vue, with the content
+// swapped on hover
 const tooltipOpen = ref(false)
 const { anchor, reference } = usePointerReference()
 const hoveredDay = ref<HeatmapDay | null>(null)
 
-// Exposes which day is currently hovered/focused, keyed the same way as
-// variantByDate — lets a caller (e.g. leagues/[leagueId]/index.vue) cross-
-// highlight something else on the page that shares the same date, without
-// this component needing to know what that something else is.
+// Exposes which day is hovered/focused, keyed like variantByDate: lets a caller (e.g.
+// leagues/[leagueId]/index.vue) cross-highlight something sharing that date without this component
+// knowing what
 const hoveredDate = defineModel<string | null>('hoveredDate', { default: null })
 watch(hoveredDay, day => (hoveredDate.value = day?.date ?? null))
 
@@ -236,9 +232,8 @@ function handlePointerEnter(day: HeatmapDay, ev: PointerEvent) {
   tooltipOpen.value = true
 }
 
-// Keyboard/screen-reader path (2026-08-20) — cells were pointer-only, so
-// tabbing through the grid exposed nothing. Anchors the same shared tooltip
-// to the focused cell's own rect instead of a pointer position.
+// Keyboard/screen-reader path: cells were pointer-only. Anchors the same shared tooltip to the
+// focused cell's rect instead of a pointer position
 function handleFocus(day: HeatmapDay, ev: FocusEvent) {
   hoveredDay.value = day
   const rect = (ev.target as HTMLElement).getBoundingClientRect()
@@ -260,9 +255,8 @@ function cellAriaLabel(day: HeatmapDay): string {
 
 <template>
   <div class="flex flex-col gap-1">
-    <!-- Single shared tooltip wraps the whole grid (see the script comment
-         above tooltipOpen) — its :reference is overridden per-cell via the
-         pointer handlers below, same technique as CardHoverPreview.vue. -->
+    <!-- Single shared tooltip wraps the whole grid (see tooltipOpen above): its :reference is
+         overridden per cell by the pointer handlers below, like CardHoverPreview.vue -->
     <UTooltip
       v-model:open="tooltipOpen"
       :arrow="false"
@@ -271,13 +265,9 @@ function cellAriaLabel(day: HeatmapDay): string {
       :ui="{ content: 'bg-transparent border-0 shadow-none p-0' }"
     >
       <div class="flex gap-2 overflow-x-auto">
-        <!-- Mirrors the sibling column's own two-row structure (a month-label
-             row, then the week grid) with a matching placeholder + gap-2,
-             instead of a hand-tuned margin-top — a fixed margin drifts out of
-             sync the moment that column's own gap/row-height changes
-             (confirmed 2026-08-20: exactly this happened after the month-row
-             gap was bumped to gap-2, leaving the weekday labels 4px too
-             high). -->
+        <!-- Mirrors the sibling column's two-row structure (month-label row, then week grid) with a
+             matching placeholder + gap-2, not a hand-tuned margin-top, which drifts when that
+             column's gap/row-height changes -->
         <div class="flex flex-col gap-2 text-xs text-muted shrink-0">
           <div class="h-4" />
           <div class="flex flex-col gap-1">
@@ -324,15 +314,11 @@ function cellAriaLabel(day: HeatmapDay): string {
             </div>
           </div>
 
-          <!-- Below the grid, right-aligned to it specifically (user
-               request, 2026-08-20, "like github") — lives inside this same
-               fixed-to-content-width column, not the outer card, so on a
-               wide page it stays under the grid's own right edge instead of
-               drifting out to the card's. Two different legend shapes: the
-               default "Meno ... Più" intensity gradient (count-based
-               domains, e.g. logins), or a flat list of labeled swatches when
-               legendItems is passed (categorical domains, e.g. tournament
-               status — "how many that day" isn't the meaningful axis there). -->
+          <!-- Below the grid, right-aligned to it: inside this fixed-to-content-width column, not
+               the outer card, so on a wide page it stays under the grid's right edge. Two legend
+               shapes: the default "Meno ... Più" intensity gradient (count-based domains, e.g.
+               logins), or a flat list of labeled swatches when legendItems is passed (categorical
+               domains, e.g. tournament status) -->
           <div v-if="legendItems" class="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 pr-8 text-xs text-muted">
             <span
               v-for="item in legendItems"

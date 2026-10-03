@@ -1,19 +1,14 @@
 <!-- app\components\tournaments\single\SwissRoundManager.vue -->
-<!--
-  1v1 Swiss-format round view — Phases 1-3 of
-  docs/plans/2026-09-15-swiss-pairing-draft-1v1-plan.md: pairings (table N:
-  player A vs player B), best-of-3 match-result entry, live standings with
-  tiebreaks, standings-based pairing of the next round and advance/turn-back.
-  Replaces the stub RoundManager.vue for Draft (after its pod stage) and every plain-Swiss
-  format — see index.vue's own #round-${i} slot and is1v1Format.
-
-  Script split into useSwissRoundData.ts/useSwissRoundSubmitHandlers.ts/
-  useSwissRoundLifecycle.ts (2026-09-24), same three-way split as
-  CommanderRoundManager.vue's own useCommanderRound* composables — see each
-  one's own file comment for why the split lands where it does. Only the
-  search/view-mode UI state and the search-filtered match-list building
-  stay here, since they mix roundData with this component's own local state.
--->
+<!-- 1v1 Swiss-format round view (phases 1-3 of
+     docs/plans/2026-09-15-swiss-pairing-draft-1v1-plan.md): pairings (table N: player A vs
+     player B), best-of-3 match-result entry, live standings with tiebreaks, standings-based
+     pairing of the next round and advance/turn-back. Replaces the stub RoundManager.vue for
+     Draft (after its pod stage) and every plain-Swiss format (see index.vue's #round-${i} slot
+     and is1v1Format).  The script is split into
+     useSwissRoundData.ts/useSwissRoundSubmitHandlers.ts/useSwissRoundLifecycle.ts, like
+     CommanderRoundManager.vue's useCommanderRound* composables (see each file's comment for
+     why). Only the search/view-mode UI state and the search-filtered match-list building stay
+     here, since they mix roundData with this component's local state. -->
 <script setup lang="ts">
 import type { TabsItem } from '@nuxt/ui'
 import type { SwissMatchRow } from '~/types'
@@ -32,11 +27,12 @@ const {
   roundCount: number
   // Same tournaments.round_duration_minutes value CommanderRoundManager.vue gets.
   roundDurationMinutes?: number
-  // See CommanderRoundManager.vue's own comment on this prop (same
-  // "turning back round N reopens round N-1's own next-round preview"
-  // mechanism, user request 2026-09-18).
+  // See CommanderRoundManager.vue on this prop (the same "turning back round N reopens round N-1's
+  // next-round preview" mechanism)
   autoOpenAdvancePreview?: boolean
-  /** Tables approved for round `roundNumber + 1` before it was turned back, reopened in its preview. */
+  /**
+   * Tables approved for round `roundNumber + 1` before it was turned back, reopened in its preview.
+   */
   nextRoundSeating?: ConfirmedSeating | null
 }>()
 

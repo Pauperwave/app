@@ -1,12 +1,9 @@
 <!-- app\components\ui\PresetButtons.vue -->
-<!--
-  Generic named-preset quick-select: a group of preset buttons, an optional
-  "reset" button and a "custom" button. Extracted from the pairing and prize
-  preset buttons, which were the same markup with different options.
-  "Custom" is an inert indicator (lit when the values match no preset) unless
-  `customClickable` is set, in which case it restores the organizer's own
-  saved values and is disabled while none exist.
--->
+<!-- Generic named-preset quick-select: a group of preset buttons, an optional "reset" button
+     and a "custom" button, extracted from the pairing and prize preset buttons (the same markup
+     with different options). "Custom" is an inert indicator (lit when the values match no
+     preset) unless `customClickable` is set, in which case it restores the organizer's saved
+     values and is disabled while none exist. -->
 <script setup lang="ts" generic="Key extends string">
 const {
   options,

@@ -1,15 +1,9 @@
 <!-- app\components\tournaments\single\pairing\WinnerChecklistCard.vue -->
-<!--
-  "Vincitori tavoli" — ported from MagicTheGathering/league's
-  WinnerChecklist.vue (user request, 2026-09-17, flagged as a completely
-  missing feature: "quella è importantissima e deve essere copiata così
-  com'è con tutte le funzionalità"). One row per table winner (pod draws
-  are excluded upstream — a draw has no real winner, see
-  CommanderRoundManager.vue's own winners computed) — a checkbox marks
-  whether their booster/prize has actually been handed out. Self-hides
-  when there are no winners yet this round, same as league's own
-  `v-if="winners.length > 0"`.
--->
+<!-- "Vincitori tavoli", ported from league's WinnerChecklist.vue: one row per table winner (pod
+     draws are excluded upstream, a draw has no real winner, see CommanderRoundManager.vue's
+     winners computed), with a checkbox marking whether their booster/prize was handed out.
+     Self-hides when there are no winners yet this round, like league's `v-if="winners.length >
+     0"`. -->
 <script setup lang="ts">
 import type { TablePlayer } from '~/types'
 
@@ -30,7 +24,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-// Closed by default (user request, 2026-10-02): opened only when handing out prizes.
+// Closed by default: opened only when handing out prizes
 const isOpen = ref(false)
 </script>
 

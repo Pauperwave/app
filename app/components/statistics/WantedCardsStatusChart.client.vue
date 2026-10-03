@@ -13,11 +13,9 @@ const { chartColor } = useChartPalette()
 const totalWantedCards = computed(() => statusBreakdown.value
   .reduce((sum, point) => sum + point.count, 0))
 
-// A distinct qualitative palette, not the searching/found/abandoned
-// success-warning-neutral semantic colors badges use elsewhere — those read
-// fine as a single status pill, but stacked together as a legend/chart they
-// read as "warning vs fine vs nothing", not "three flavors of the same
-// thing", which is what this breakdown actually shows.
+// A distinct qualitative palette, not the searching/found/abandoned success-warning-neutral
+// semantic colors of badges: those read fine as a single pill, but stacked in a legend/chart they
+// read as "warning vs fine vs nothing", not "three flavors of the same thing"
 const colors = WANTED_CARD_STATUSES.map((_, i) => chartColor(i))
 const legendItems = WANTED_CARD_STATUSES.map((status, i) => ({
   name: t(`wantedCard.status.${status}`),
@@ -38,11 +36,9 @@ const xTicks = (i: number) => {
   return point ? format(point.month, 'MMM yyy') : ''
 }
 
-// VisAxis's default "nice number for the width" heuristic left this axis
-// too sparse — an explicit step keeps it readable regardless of how many
-// months of data there are: one tick per month up to a year, then every
-// 2nd/3rd month as the range grows, same reasoning as
-// AgeDistributionChart.client.vue's own xTickValues.
+// VisAxis's default "nice number for the width" heuristic left this axis too sparse: an explicit
+// step keeps it readable whatever the months of data (one tick per month up to a year, then every
+// 2nd/3rd month), like AgeDistributionChart.client.vue's xTickValues
 const xTickValues = computed(() => {
   const step = statusOverTimeSeries.value.length <= 12
     ? 1

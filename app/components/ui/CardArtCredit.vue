@@ -1,10 +1,8 @@
 <!-- app\components\ui\CardArtCredit.vue -->
-<!--
-  Credit for a Scryfall art_crop used as a cover (required alongside any use, see
-  CardArtPicker.vue): the card name as a small badge, the full credit in the tooltip. Shared by the
-  event/league/tournament covers and the tournament award cards, which each had their own copy.
-  Positioning/sizing classes come from the caller and land on the badge itself.
--->
+<!-- Credit for a Scryfall art_crop used as a cover (required with any use, see
+     CardArtPicker.vue): the card name as a small badge, the full credit in the tooltip. Shared
+     by the event/league/tournament covers and the tournament award cards. Positioning/sizing
+     classes come from the caller and land on the badge itself. -->
 <script setup lang="ts">
 defineOptions({ inheritAttrs: false })
 

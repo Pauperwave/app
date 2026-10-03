@@ -1,11 +1,6 @@
 <!-- app\components\transactions\list\AddModal.vue -->
 <script setup lang="ts">
-// fallow-ignore-file code-duplication -- UForm scaffolding + the "personal
-// info" heading mirror EditModal.vue's, but the TransactionsFieldsPayerFields
-// call right below diverges (AddModal passes presetAssociate/
-// emailPlaceholder/showClearButtons, EditModal doesn't) — same same-shaped-
-// but-parameterized call as feedback_dedup_threshold_call_sites, not worth a
-// wrapper for 5 lines of markup.
+// fallow-ignore-file code-duplication -- UForm scaffolding mirrors EditModal.vue's
 import type * as v from 'valibot'
 import { now, getLocalTimeZone, toCalendarDateTime } from '@internationalized/date'
 import type { FormSubmitEvent } from '@nuxt/ui'
@@ -14,14 +9,12 @@ import type { TransactionFormState } from '~/composables/transactions/useTransac
 
 // Define the model to accept open state from parent
 const open = defineModel<boolean>({ default: false })
-// presetAssociate: set when opened from an associate's "Rinnova" context-menu
-// action (useAssociatesRowActions.ts) — locks the payer to that associate and
-// preselects "Association Fee" instead of showing the associate/external tabs,
-// since a renewal is always for a specific, already-known associate.
-// hideTrigger: the associates pages render this component purely to host modal
-// state driven by their own context menu (same convention as
-// AssociatesListEditModal.vue, which has no trigger at all) — presetAssociate
-// alone can't signal that, since it's null until "Rinnova" is actually clicked.
+// presetAssociate: set when opened from an associate's "Rinnova" context-menu action
+// (useAssociatesRowActions.ts): locks the payer to that associate and preselects "Association Fee"
+// instead of the associate/external tabs, since a renewal is for a known associate. hideTrigger:
+// the associates pages render this component only to host modal state driven by their context menu
+// (like AssociatesListEditModal.vue); presetAssociate can't signal that, being null until "Rinnova"
+// is clicked
 const { presetAssociate = null, hideTrigger = false } = defineProps<{
   presetAssociate?: Associate | null
   hideTrigger?: boolean
@@ -40,13 +33,11 @@ function createInitialState(): TransactionFormState {
     // the browser's offset (same class of bug fixed in
     // AssociatesListEditModal.vue's born_date serialization).
     payment_datetime: toCalendarDateTime(now(getLocalTimeZone())),
-    // Present (as undefined) rather than omitted: valibot's v.object() treats a
-    // genuinely absent key differently from a key whose value is undefined —
-    // absent raises its own generic "Invalid key: Expected ... but received
-    // undefined" issue instead of running the field's actual v.number()/
-    // v.string() check, which is where our custom validation messages
-    // (amountRequired/receivedByRequired) actually live. Every other required
-    // field above already has a real default value, so it never hit this.
+    // Present (as undefined) rather than omitted: valibot's v.object() treats an absent key
+    // differently from an undefined value: absent raises its own generic "Invalid key" issue
+    // instead of running the field's v.number()/v.string() check, where our custom messages
+    // (amountRequired/receivedByRequired) live. Every other required field has a real default, so
+    // it never hit this
     payment_amount: 5,
     received_by: undefined,
     associate_uuid: undefined,
@@ -78,17 +69,13 @@ watch([open, () => presetAssociate], ([isOpen, associate]) => {
   state.payment_type = 'Association Fee'
 }, { immediate: true })
 
-// The membership fee is admin-editable (settings.membershipFeeAmount/
-// membershipFeePaymentMethod, /settings — migration 20260819100000, was a
-// hardcoded €5-via-PayPal constant until then), but always the same value
-// for every payment regardless of type (first payment and every renewal
-// alike, user decision 2026-08-12) — not just a suggestion for the Rinnova
-// flow, so this also fires when staff pick "Quota associativa" manually from
-// the generic "Nuova transazione" form. The amount field is disabled for
-// this type in the template (2026-08-14 decision) since it's a fixed bylaw
-// value, not a per-transaction choice. Watches settings.data too, not just
-// payment_type, so picking the type before the settings query resolves
-// still fills in correctly once it does.
+// The membership fee is admin-editable (settings.membershipFeeAmount/membershipFeePaymentMethod,
+// /settings, migration 20260819100000) but the same for every payment regardless of type (first
+// payment and renewals alike), not just a suggestion for the Rinnova flow: this also fires when
+// staff pick "Quota associativa" from the generic "Nuova transazione" form. The amount field is
+// disabled for this type in the template (a fixed bylaw value, not a per-transaction choice).
+// Watches settings.data too, not just payment_type, so picking the type before the settings query
+// resolves still fills in once it does
 const settings = useSettingsQuery()
 watch([() => state.payment_type, settings.data], ([type, data]) => {
   if (type !== 'Association Fee' || !data) return
@@ -96,10 +83,9 @@ watch([() => state.payment_type, settings.data], ([type, data]) => {
   state.payment_method = data.membershipFeePaymentMethod
 })
 
-// Clears any tournament/event picked before switching to a type whose field
-// is hidden (see showTournamentField/showEventField) — separate from the
-// watch above since this also covers "Donazione", which doesn't force the
-// amount/method.
+// Clears any tournament/event picked before switching to a type whose field is hidden (see
+// showTournamentField/showEventField); separate from the watch above since this also covers
+// "Donazione", which doesn't force the amount/method
 watch(showTournamentField, (visible) => {
   if (!visible) state.tournament_uuid = undefined
 })
@@ -107,23 +93,20 @@ watch(showEventField, (visible) => {
   if (!visible) state.event_uuid = undefined
 })
 
-// String, not a numeric index: UTabs' v-model always emits the item's `value` as
-// a string once the user interacts with it, even for the already-active tab —
-// comparing against the number 0 only worked before the first interaction
-// (found 2026-08-12: after clicking "Associato" once, activeTab became the
-// string '0', `newTab === 0` silently went false, and payer_is_associate flipped
-// to false, making the external-payer fields required on the associate tab too).
+// String, not a numeric index: UTabs' v-model emits the item's `value` as a string once the user
+// interacts, even for the active tab, so comparing against 0 only worked before the first
+// interaction (after clicking "Associato" once, activeTab became '0', `newTab === 0` went false and
+// payer_is_associate flipped to false, requiring the external-payer fields on the associate tab
+// too)
 const activeTab = ref('associate')
 
 watch(activeTab, (newTab) => {
   state.payer_is_associate = newTab === 'associate'
 })
 
-// The modal component stays mounted across open/close cycles (transactions/
-// index.vue always renders it) — without this, picking "Persona esterna" once
-// then closing and reopening the modal would leave that tab active on the next,
-// unrelated transaction. A fresh "Nuova transazione" should always start on
-// "Associato".
+// The modal stays mounted across open/close cycles (transactions/index.vue always renders it):
+// without this, picking "Persona esterna" then closing and reopening would leave that tab active on
+// the next, unrelated transaction. A fresh "Nuova transazione" starts on "Associato"
 watch(open, (isOpen) => {
   if (isOpen) activeTab.value = 'associate'
 })
@@ -136,12 +119,10 @@ const selectedAssociateLabel = computed(() => selectedAssociate.value
   ? `${selectedAssociate.value.first_name} ${selectedAssociate.value.last_name}`
   : undefined)
 
-// Surfaces membership_status right under the picker so staff notice, before
-// submitting, whether the selected socio actually needs this payment — e.g.
-// picking someone already "active" for a renewal would be redundant. Only
-// active/to_renew/expired are reachable here: both associateOptions and the
-// Rinnova entry point (useAssociatesRowActions.ts) only ever offer approved
-// associates.
+// Surfaces membership_status under the picker so staff notice before submitting whether the
+// selected socio needs this payment (a renewal for someone already "active" is redundant). Only
+// active/to_renew/expired are reachable: associateOptions and the Rinnova entry point
+// (useAssociatesRowActions.ts) only offer approved associates
 const membershipStatusAlert = computed(() => {
   const associate = selectedAssociate.value
   if (!associate) return null
@@ -167,12 +148,10 @@ const modalDescription = computed(() => presetAssociate
 
 const submitting = ref(false)
 
-// UModal only hides/shows, it does not unmount the form, so the state has to
-// be cleared explicitly — called on successful submit and on explicit
-// "Annulla", but deliberately NOT on the X button or an outside click, which
-// should preserve whatever the user typed (user decision 2026-08-20). The
-// [open, presetAssociate] watch above independently refills the Rinnova case
-// on next open, so this only matters for the generic "Nuova transazione" flow.
+// UModal only hides/shows and doesn't unmount the form, so the state is cleared explicitly: on
+// successful submit and on "Annulla", deliberately NOT on the X button or an outside click, which
+// preserve what the user typed. The [open, presetAssociate] watch above refills the Rinnova case on
+// next open, so this matters only for the generic "Nuova transazione" flow
 function resetForm() {
   Object.assign(state, createInitialState())
   activeTab.value = 'associate'
@@ -238,8 +217,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     :title="modalTitle"
     :description="modalDescription"
   >
-    <!-- No trigger button when opened programmatically with a preset associate
-         (Rinnova) — only the generic "+ Nuova transazione" entry point shows one. -->
+    <!-- No trigger button when opened programmatically with a preset associate (Rinnova): only the
+         generic "+ Nuova transazione" entry point shows one -->
     <AddButton
       v-if="!hideTrigger"
       :label="$t('transaction.addModal.openButton')"

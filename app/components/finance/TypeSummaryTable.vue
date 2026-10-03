@@ -18,9 +18,8 @@ const percentFormatter = new Intl.NumberFormat('it-IT', { style: 'percent', mini
 
 const sorting = ref([{ id: 'total', desc: true }])
 
-// Grand total per numeric column, own `footer` on the leftmost column instead
-// of a bare blank cell.
-// fallow-ignore-next-line code-duplication -- totals + columns array shape mirrors MethodCostTable.vue's own
+// Grand total per numeric column, own `footer` on the leftmost column instead of a blank cell.
+// fallow-ignore-next-line code-duplication -- totals + columns shape mirrors MethodCostTable.vue
 const totalCount = computed(() => columnTotal(rows, 'count'))
 const totalAmount = computed(() => columnTotal(rows, 'total'))
 

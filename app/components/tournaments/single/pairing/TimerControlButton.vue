@@ -1,12 +1,8 @@
 <!-- app\components\tournaments\single\pairing\TimerControlButton.vue -->
-<!--
-  A single RoundTimer control button. Centralizes the tooltip-vs-title +
-  size/class switch that fullscreen mode needs: a UTooltip-wrapped button
-  outside fullscreen (hover tooltip), a bare oversized button with a native
-  `title` inside fullscreen (UTooltip doesn't fit that layout). Ported
-  verbatim from MagicTheGathering/league (user request 2026-09-16, copy
-  RoundTimer.vue as-is).
--->
+<!-- A single RoundTimer control button, centralizing the tooltip-vs-title + size/class switch
+     fullscreen mode needs: a UTooltip-wrapped button outside fullscreen (hover tooltip), a bare
+     oversized button with a native `title` inside it (UTooltip doesn't fit that layout). Ported
+     verbatim from league. -->
 <script setup lang="ts">
 import type { ButtonProps } from '@nuxt/ui'
 

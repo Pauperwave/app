@@ -1,10 +1,7 @@
 <!-- app\components\calendar\card\Event.vue -->
-<!--
-  Event variant of CalendarCard.vue (see PublicCalendarPage.vue) — the
-  nested tournament list sits in the #footer slot, full-width below the
-  shared header. An Event card only exists when at least one Tournament
-  actually names it (Tournament.event, see server/api/tournaments.ts).
--->
+<!-- Event variant of CalendarCard.vue (see PublicCalendarPage.vue): the nested tournament list
+     sits in the #footer slot, full-width below the shared header. An Event card only exists
+     when at least one Tournament names it (Tournament.event). -->
 <script lang="ts" setup>
 import { format } from 'date-fns'
 import type { Event, Tournament } from '~/types'
@@ -23,10 +20,8 @@ function openDetail() {
   selection.value = { kind: 'event', event, tournaments }
 }
 
-// Tapping a specific tournament row jumps straight to its own detail
-// instead of always landing on the event overview (user request 2026-08-14)
-// — same target shape CalendarDetailSlideover.vue's own nested list already
-// opens via openTournament().
+// Tapping a tournament row jumps to its own detail instead of the event overview, with the same
+// target shape as CalendarDetailSlideover.vue's nested list (openTournament())
 function openTournamentDetail(tournament: Tournament) {
   selection.value = { kind: 'tournament', tournament }
 }
@@ -39,9 +34,8 @@ function tournamentTimeRange(tournament: Tournament): string {
   return `${start}-${end}`
 }
 
-// Per-row status checks (a v-for row, so a single page-level `computed`
-// can't target one specific tournament) — same isMuted/isCancelled
-// extraction as tournaments/list/Card.vue and leagues/list/Card.vue.
+// Per-row status checks (a v-for row, so a page-level `computed` can't target one tournament): the
+// same isMuted/isCancelled extraction as tournaments/list/Card.vue and leagues/list/Card.vue
 function isTournamentMuted(tournament: Tournament) {
   return tournament.status === 'completed' || tournament.status === 'cancelled'
 }
@@ -49,13 +43,11 @@ function isTournamentCancelled(tournament: Tournament) {
   return tournament.status === 'cancelled'
 }
 
-// No Event.participants field of its own — an event's pre-registration count
-// is the union of its tournaments' own lists (user request 2026-08-14). This
-// undercounts once real event-level registration exists (RegisterButton.vue
-// is still a placeholder, docs/TODO.md): someone can plausibly pre-register
-// to the event without registering to any specific tournament inside it, and
-// that person won't show up here. Fine today only because no such path
-// exists yet — revisit when it does.
+// No Event.participants of its own: an event's pre-registration count is the union of its
+// tournaments' lists. This undercounts once real event-level registration exists
+// (RegisterButton.vue is still a placeholder, docs/TODO.md): someone can pre-register to the event
+// without any specific tournament and won't show up here. Fine today only because no such path
+// exists yet: revisit when it does
 const participants = computed(() => tournaments.flatMap(tournament => tournament.participants))
 </script>
 

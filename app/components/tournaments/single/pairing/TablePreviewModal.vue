@@ -1,26 +1,16 @@
 <!-- app\components\tournaments\single\pairing\TablePreviewModal.vue -->
-<!--
-  Table preview modal with drag-and-drop editing, pairing constraints,
-  optimizer controls, and transparent score breakdown — ported from
-  MagicTheGathering/league's TablePreviewModal.vue (user request,
-  2026-09-15: reuse league's real drag-and-drop/optimizer UI, replacing the
-  simplified shuffle-only PodsManager.vue path for Commander).
-
-  Round-1-only for now: this modal builds its OWN initial pod split from
-  `players` (via useCommanderPods' buildPreviewPods) rather than receiving
-  an already-persisted PairingTable[] prop like league's own modal does —
-  there is nothing persisted yet before the organizer confirms (that's
-  exactly what start_commander_round_one, called on `confirm`, creates).
-  Round 2+ (re-pairing already-seated players against real standings) is
-  separate follow-up work, not covered here.
-
-  History/rank signals the real optimizer wants (playersForScoring/
-  history/leagueRematchCounts) have no cross-tournament plumbing in this
-  app yet — omitted below (useTablePairingDnd's own fallback seeds
-  rank=registration order, score=0, table3Count=0 for an empty list, same
-  as league's own zero-signal cold-start case). Wire these for real once
-  that history data exists — search "STUB:" in this file.
--->
+<!-- Table preview modal with drag-and-drop editing, pairing constraints, optimizer controls and
+     a transparent score breakdown, ported from league's TablePreviewModal.vue (league's real
+     drag-and-drop/optimizer UI, replacing the shuffle-only PodsManager.vue path for Commander).
+     Round-1-only for now: it builds its OWN initial pod split from `players` (via
+     useCommanderPods' buildPreviewPods) rather than receiving a persisted PairingTable[] like
+     league's modal, as nothing is persisted before the organizer confirms
+     (start_commander_round_one, called on `confirm`, creates it). Round 2+ re-pairing against
+     real standings is separate work.  The history/rank signals the optimizer wants
+     (playersForScoring/history/leagueRematchCounts) have no cross-tournament plumbing yet and
+     are omitted below (useTablePairingDnd's fallback seeds rank=registration order, score=0,
+     table3Count=0 for an empty list, like league's zero-signal cold start). Wire them once that
+     data exists: search "STUB:". -->
 <script setup lang="ts">
 import { randomShuffleSeed } from '#shared/utils/seededShuffle'
 import type { PairingWeights, TablePlayer, PairingTable } from '~/types'
@@ -44,7 +34,8 @@ const {
   currentRound?: number
   loading?: boolean
   dismissible?: boolean
-  // Tables approved for this round before a turn-back deleted it: reopened as-is (with round 1's seed).
+  // Tables approved for this round before a turn-back deleted it: reopened as-is (with round 1's
+  // seed).
   confirmedSeating?: ConfirmedSeating | null
 }>()
 
@@ -63,8 +54,9 @@ const hasAutoOptimized = ref(false)
 const { data: avoidPairsData } = useAvoidPairsQuery()
 const { addAvoidPair, removeAvoidPair } = useAvoidPairsMutations()
 
-// Sequential slice into pods (biggest tables first), same as Draft's PodsManager.vue — only a starting point,
-// replaced on open by a seeded shuffle (round 1) or the optimizer (round 2+), see the watcher below.
+// Sequential slice into pods (biggest tables first), same as Draft's PodsManager.vue — only a
+// starting point, replaced on open by a seeded shuffle (round 1) or the optimizer (round 2+), see
+// the watcher below.
 const { buildPreviewPods } = useCommanderPods()
 
 function buildInitialTables(playersList: TablePlayer[]): PairingTable[] {
@@ -117,8 +109,9 @@ const {
   initialForbiddenPairs: avoidPairsData.value ?? []
 })
 
-// Keyed on the ids, not the array: upstream refetches (e.g. AssociateTag mounting on a cross-table drop) rebuild
-// an identical `players` array, and resyncing on that wiped every drag a second after the drop.
+// Keyed on the ids, not the array: upstream refetches (e.g. AssociateTag mounting on a cross-table
+// drop) rebuild an identical `players` array, and resyncing on that wiped every drag a second after
+// the drop.
 watch(
   () => players.map(player => player.value).join(','),
   () => {
@@ -141,7 +134,8 @@ watch(avoidPairsData, (pairs) => {
   setForbiddenPairs(pairs ?? [])
 })
 
-// Only reused when it seats exactly the current players; anyone added or removed since starts a fresh shuffle.
+// Only reused when it seats exactly the current players; anyone added or removed since starts a
+// fresh shuffle.
 function matchingConfirmedSeating(): ConfirmedSeating | null {
   if (!confirmedSeating) return null
   return seatingMatchesPlayers(confirmedSeating, players.map(player => player.value))
@@ -149,8 +143,9 @@ function matchingConfirmedSeating(): ConfirmedSeating | null {
     : null
 }
 
-// Round 1 has no history for the optimizer to use (see the STUB above), so it only kept the registration-order
-// slice — a random seed shuffles it instead (user request, 2026-10-02). Round 2+ still optimizes on standings.
+// Round 1 has no history for the optimizer (see the STUB above), so it only kept the
+// registration-order slice: a random seed shuffles it instead. Round 2+ still optimizes on
+// standings
 watch(
   () => [open.value, loading, localTables.value.length, hasAutoOptimized.value] as const,
   ([isOpen, isLoading]) => {
@@ -255,11 +250,10 @@ function handleDragStart() {
   setDragging(true)
 }
 
-// No forced revert/swap-detection on drop — a drag can freely leave tables
-// in an intermediate, temporarily-invalid shape (e.g. moving one player
-// out of a table without immediately moving someone back). tableStatus()'s
-// per-table badge already gives live feedback; isValid/previewError gate
-// the confirm button — validity only actually matters at confirm time.
+// No forced revert/swap-detection on drop: a drag can leave tables in a temporarily invalid shape
+// (e.g. moving a player out without moving someone back). tableStatus()'s per-table badge gives
+// live feedback and isValid/previewError gate the confirm button: validity only matters at confirm
+// time
 function handleDragEnd() {
   setDragging(false)
 }
@@ -293,7 +287,7 @@ const selectedTablePlayerRows = computed(() => {
   }))
 })
 
-// Slightly wider than before (user request, 2026-10-02): room for 2x2 seats with full names.
+// Wide enough for 2x2 seats with full names
 const modalMaxWidth = computed(() => (localTables.value.length <= 1 ? 'max-w-4xl' : 'max-w-7xl'))
 
 function tableScoreForIndex(tableIndex: number): number {

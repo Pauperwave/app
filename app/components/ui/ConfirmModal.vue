@@ -1,22 +1,14 @@
 <!-- app\components\ui\ConfirmModal.vue -->
-<!--
-  Generalized confirmation modal — ported from MagicTheGathering/league's
-  ui/modal/ConfirmModal.vue (2026-08-12), simplified to what Pauperwave's
-  existing confirm dialogs actually needed: no `useButtonLogging` (analytics
-  composable that doesn't exist in this app) and no separate CancelButton/
-  ConfirmButton sub-components (only used here, own inline UButtons instead).
-  Replaces the ad-hoc "UModal + own footer buttons" block that was starting to
-  get copy-pasted (wanted-cards/index.vue's single-card delete confirm, and the
-  new bulk status/delete confirm) — one place to keep the look consistent.
-
-  Graphical style matches the original ad-hoc confirm modals (2026-08-12 user
-  feedback): no title icon; `description`/`warning` flow into UModal's own
-  native `:description` (plain muted text under the title). The default slot
-  is separate from that — it's for content *contextual to the specific
-  item(s)* being acted on (e.g. the card's thumbnail + name for a delete
-  confirm), not just more text, and only renders a `#body` region at all when
-  a caller actually passes it.
--->
+<!-- Generalized confirmation modal, ported from league's ui/modal/ConfirmModal.vue and
+     simplified to what Pauperwave's confirm dialogs need: no `useButtonLogging` (an analytics
+     composable this app doesn't have) and no CancelButton/ConfirmButton sub-components (inline
+     UButtons). Replaces the ad-hoc "UModal + own footer buttons" block that was being
+     copy-pasted (wanted-cards/index.vue's single-card delete confirm, the bulk status/delete
+     confirm): one place for a consistent look.  No title icon; `description`/`warning` flow
+     into UModal's native `:description` (plain muted text under the title). The default slot is
+     separate: it is for content *contextual to the item(s)* being acted on (e.g. the card's
+     thumbnail + name for a delete confirm), not more text, and only renders a `#body` region
+     when a caller passes it. -->
 <script setup lang="ts">
 const {
   title,
@@ -39,7 +31,10 @@ const {
   warning?: string
   confirmLabel?: string
   cancelLabel?: string
-  /** Trailing icon on the confirm button — none by default, e.g. pass ICONS.delete for a delete confirm. */
+  /**
+   * Trailing icon on the confirm button — none by default, e.g. pass ICONS.delete for a delete
+   * confirm.
+   */
   confirmIcon?: string
   cancelIcon?: string
   /** Most confirmations are destructive (delete) hence the 'error' default —

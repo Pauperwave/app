@@ -1,10 +1,7 @@
 <!-- app\components\standings\FormatBody.vue -->
-<!--
-  Shared mock-data-notice + loading/table body, used by FormatPage.vue and
-  PublicFormatPage.vue (fallow:dupes flagged this block as an identical
-  clone). No error state here, unlike cittadino/StandingsBody.vue —
-  useFormatStandingsQuery doesn't expose one.
--->
+<!-- Shared mock-data-notice + loading/table body of FormatPage.vue and PublicFormatPage.vue. No
+     error state, unlike cittadino/StandingsBody.vue: useFormatStandingsQuery doesn't expose
+     one. -->
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import type { FormatStandingRow } from '~/types'

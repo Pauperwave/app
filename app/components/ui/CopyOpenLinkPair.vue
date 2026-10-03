@@ -1,10 +1,7 @@
 <!-- app\components\ui\CopyOpenLinkPair.vue -->
-<!--
-  Shared "copy link" + "open in new tab" button pair, used wherever a page
-  links out to its own public counterpart (associates/requests.vue's
-  tesseramento link, FormatPage.vue's/cittadino's public rankings link —
-  fallow:dupes flagged this markup as an identical clone across them).
--->
+<!-- Shared "copy link" + "open in new tab" button pair, used wherever a page links out to its
+     own public counterpart (associates/requests.vue's tesseramento link,
+     FormatPage.vue's/cittadino's public rankings link). -->
 <script setup lang="ts">
 defineProps<{
   url: string

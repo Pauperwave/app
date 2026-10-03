@@ -1,10 +1,9 @@
 <!-- app\components\rulesets\FormatRulesCard.vue -->
 <script setup lang="ts">
-// Mirrors the mock leagues in server/api/standings/[format].get.ts, for display
-// only — this component doesn't fetch, it just documents what that endpoint
-// encodes. Only Commander's numbers are a real, confirmed regulation
-// (2026-08-09); Premodern and Pauper reuse them as a placeholder until their own
-// rules exist.
+// Mirrors the mock leagues in server/api/standings/[format].get.ts, for display only: this
+// component doesn't fetch, it documents what that endpoint encodes. Only Commander's numbers are a
+// real, confirmed regulation; Premodern and Pauper reuse them as a placeholder until their own
+// rules exist
 interface FormatLeagueSummary {
   name: string
   events: number

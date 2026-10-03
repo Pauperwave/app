@@ -1,9 +1,7 @@
 <!-- app\components\tournaments\StatusBadge.vue -->
-<!--
-  Thin tournament-domain wrapper around ui/StatusChangeBadge.vue (2026-08-31
-  extraction) — keeps call sites simple (:tournament="tournament") while the
-  actual dropdown/badge/error-toast logic lives once in the shared component.
--->
+<!-- Thin tournament-domain wrapper around ui/StatusChangeBadge.vue: call sites stay simple
+     (:tournament="tournament") while the dropdown/badge/error-toast logic lives once in the
+     shared component. -->
 <script setup lang="ts">
 import type { BadgeProps } from '@nuxt/ui'
 import type { Tournament } from '~/types'

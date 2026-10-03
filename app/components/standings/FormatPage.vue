@@ -1,9 +1,8 @@
 <!-- app\components\standings\FormatPage.vue -->
-<!-- Moved back out of components/public/ (2026-08-15) to fix a component-name
-     collision: components/public/PublicFormatPage.vue and a since-moved
-     components/public/FormatPage.vue both resolved to the auto-import name
-     PublicFormatPage (NUXT_B3011). This is the internal/authenticated
-     variant — see PublicFormatPage.vue's own header for the split. -->
+<!-- Internal/authenticated variant (see PublicFormatPage.vue for the split), kept out of
+     components/public/ to avoid a component-name collision:
+     components/public/PublicFormatPage.vue and a since-moved components/public/FormatPage.vue
+     both resolved to the auto-import name PublicFormatPage (NUXT_B3011). -->
 <script lang="ts" setup>
 import type { StandingsFormat } from '~/composables/standings/useFormatStandingsQuery'
 
@@ -16,18 +15,14 @@ const { format } = defineProps<Props>()
 const { t } = useI18n()
 useSeoMeta({ title: () => t(FORMAT_STANDINGS_BREADCRUMB_KEYS[format]) })
 
-// Panel id and breadcrumb i18n key both derive from `format` — the three
-// /standings/<format> pages (commander, pauper, premodern) were byte-identical
-// aside from these two strings and the `format` passed to
-// useFormatStandingsQuery, so this replaces all three page bodies.
-// /standings/cittadino is NOT one of these: it has its own edition-picker logic
-// and isn't just a format variant of this page.
-// Own local search state, not part of the shared composable — PublicFormatPage.vue
-// has its own equivalent ref rather than sharing this one (both pages call
-// useFormatStandingsPage independently). Declared before that call below
-// since it threads through to useFormatStandingsTableColumns.ts for match
-// highlighting.
-// fallow-ignore-next-line code-duplication -- see the same comment in PublicFormatPage.vue
+// Panel id and breadcrumb i18n key both derive from `format`: the three /standings/<format> pages
+// (commander, pauper, premodern) were identical aside from these two strings and the `format`
+// passed to useFormatStandingsQuery, so this replaces all three page bodies. /standings/cittadino
+// is NOT one of these: it has its own edition-picker logic. Own local search state, not part of the
+// shared composable (PublicFormatPage.vue has its own equivalent ref, as both pages call
+// useFormatStandingsPage independently). Declared before that call below since it threads through
+// to useFormatStandingsTableColumns.ts for match highlighting fallow-ignore-next-line
+// code-duplication -- see the same comment in PublicFormatPage.vue
 const search = ref('')
 
 const {
@@ -61,8 +56,8 @@ const tour = useStandingsFormatTour()
 
           <USeparator orientation="vertical" class="h-4" />
 
-          <!-- Same treatment as the period tabs in NotificationsSlideover.vue and
-               the edition tabs on /standings/cittadino. -->
+          <!-- Same treatment as the period tabs in NotificationsSlideover.vue and the edition
+               tabs on /standings/cittadino -->
           <div id="tour-standings-league-tabs">
             <UTabs
               v-model="activeLeague"
@@ -76,10 +71,9 @@ const tour = useStandingsFormatTour()
 
           <USeparator orientation="vertical" class="h-4" />
 
-          <!-- Same copy/open-link pair as associates/requests.vue's tesseramento
-               link — points at this format's public standing page
-               (/classifiche/<format>, see PublicFormatPage.vue), not this
-               internal dashboard route. -->
+          <!-- Same copy/open-link pair as associates/requests.vue's tesseramento link, pointing
+               at this format's public standing page (/classifiche/<format>, see
+               PublicFormatPage.vue), not this internal route -->
           <div id="tour-standings-public-link">
             <CopyOpenLinkPair
               :url="publicUrl"

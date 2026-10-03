@@ -1,11 +1,8 @@
 <!-- app\components\tournaments\list\BulkActionsBar.vue -->
-<!--
-  Shown only while at least one tournament is selected (useSelection.ts) —
-  shared between the table and grid views, which both feed the same
-  selection. Same shape/reasoning as WantedCardsListBulkActionsBar.vue,
-  including the "swap, don't insert a row" trick — see that file's header
-  comment.
--->
+<!-- Shown only while at least one tournament is selected (useSelection.ts), shared by the table
+     and grid views, which feed the same selection. Same shape as
+     WantedCardsListBulkActionsBar.vue, including the "swap, don't insert a row" trick (see its
+     header). -->
 <script setup lang="ts">
 import type { TournamentStatus } from '~/types'
 
@@ -50,17 +47,12 @@ function confirmEntryFee() {
   pickedEntryFee.value = undefined
 }
 
-// League picker (user request, 2026-08-22, "give the user more ways" to
-// link existing tournaments to a league): same "own modal + explicit
-// confirm" shape, but its USelectMenu is creatable — typing a name with no
-// match offers "Crea <name>", which creates the league right here (so the
-// two scenarios the user described, an existing league vs. one created
-// from the selection, both resolve to the same emit) before closing.
-// pendingCreatedLeague + a dedup-by-value computed, not a separate ref
-// re-synced by a watcher + manual pushes (that combination showed the same
-// freshly-created league twice — the watcher's replace and the manual push
-// raced instead of composing, since both mutated the same array). A pure
-// computed can't race with itself.
+// League picker: the same "own modal + explicit confirm" shape, but its USelectMenu is creatable:
+// typing a name with no match offers "Crea <name>", which creates the league here (so an existing
+// league and one created from the selection resolve to the same emit) before closing.
+// pendingCreatedLeague + a dedup-by-value computed, not a separate ref re-synced by a watcher +
+// manual pushes (which showed the freshly-created league twice: the watcher's replace and the
+// manual push raced on the same array). A pure computed can't race with itself
 const { data: existingLeagues } = useLeaguesQuery()
 const leagueOptions = computed(() => (existingLeagues.value ?? []).map(league => ({
   value: league.uuid, label: league.name

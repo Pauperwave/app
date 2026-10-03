@@ -1,10 +1,8 @@
 <!-- app\components\tournaments\LocationChangeBadge.vue -->
-<!--
-  A tournament's venue badge with a permission-gated quick-change
-  UDropdownMenu behind it — the venue counterpart of ui/StatusChangeBadge.vue.
-  Read-only LocationBadge (Maps link) when the caller lacks
-  `manage-tournaments`; with permission the badge opens the picker instead.
--->
+<!-- A tournament's venue badge with a permission-gated quick-change UDropdownMenu behind it,
+     the venue counterpart of ui/StatusChangeBadge.vue. A read-only LocationBadge (Maps link)
+     when the caller lacks `manage-tournaments`; with permission the badge opens the picker
+     instead. -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Tournament } from '~/types'
@@ -47,8 +45,8 @@ const items = computed<DropdownMenuItem[]>(() => [
 </script>
 
 <template>
-  <!-- Wrapping span, not @click.stop on UDropdownMenu: a listener there doesn't
-       reliably stop the click from reaching the table row's own @select. -->
+  <!-- Wrapping span, not @click.stop on UDropdownMenu: a listener there doesn't reliably stop
+       the click from reaching the table row's @select -->
   <span class="contents" @click.stop>
     <UTooltip
       v-if="can('manage-tournaments')"

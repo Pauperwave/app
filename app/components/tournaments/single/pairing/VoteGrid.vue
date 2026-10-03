@@ -1,6 +1,5 @@
 <!-- app\components\tournaments\single\pairing\VoteGrid.vue -->
-<!-- Ported bit-by-bit from MagicTheGathering/league (user request
-     2026-09-16), swapping TablePlayer's numeric id for this app's uuid. -->
+<!-- Ported from league, swapping TablePlayer's numeric id for this app's uuid -->
 <script setup lang="ts">
 import type { TablePlayer } from '~/types'
 

@@ -18,10 +18,9 @@ const percentFormatter = new Intl.NumberFormat('it-IT', { style: 'percent', mini
 
 const sorting = ref([{ id: 'total', desc: true }])
 
-// Grand total per numeric column, own `footer` on the leftmost column instead
-// of a bare blank cell. feeRate has no footer at all — a rate isn't a
-// summable quantity, and a blended-rate footer was tried and rejected (user
-// request, 2026-08-23): not what "totale" means for a rate column.
+// Grand total per numeric column, as the leftmost column's own `footer` instead of a blank cell.
+// feeRate has no footer: a rate isn't summable, and a blended-rate footer isn't what "totale" means
+// for a rate column
 // fallow-ignore-next-line code-duplication -- see the same comment in TypeSummaryTable.vue
 const totalCount = computed(() => columnTotal(rows, 'count'))
 const totalAmount = computed(() => columnTotal(rows, 'total'))

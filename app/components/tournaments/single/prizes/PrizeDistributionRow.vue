@@ -1,9 +1,7 @@
 <!-- app\components\tournaments\single\prizes\PrizeDistributionRow.vue -->
-<!--
-  One placement of the prize standings: rank, player, share stepper and pack
-  count. Rewarded rows have a share (buttons only, each step moves exactly one
-  pack) and an editable pack count; the others only show what they receive.
--->
+<!-- One placement of the prize standings: rank, player, share stepper and pack count. Rewarded
+     rows have a share (buttons only, each step moves exactly one pack) and an editable pack
+     count; the others only show what they receive. -->
 <script setup lang="ts">
 import type { ChangeFlash } from '~/composables/useChangeFlash'
 import type { PackStepBlocks } from '~/utils/tournaments/prizes/prizeShares'

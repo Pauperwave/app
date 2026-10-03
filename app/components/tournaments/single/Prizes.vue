@@ -1,14 +1,9 @@
 <!-- app\components\tournaments\single\Prizes.vue -->
-<!--
-  Booster-pack redistribution suggestion for the final standings, shown as
-  its own stepper step between "awards" and "leaderboard" (user request,
-  2026-09-17). Same standings source as Awards.vue (already final by the
-  time this step is reachable) — index = final placement.
-
-  Layout only: the state and the derived data live in
-  usePrizeDistributionPage. Deliberately not persisted (user decision,
-  2026-09-17): the settings reset the moment this component remounts.
--->
+<!-- Booster-pack redistribution suggestion for the final standings, its own stepper step
+     between "awards" and "leaderboard". The same standings source as Awards.vue (final by the
+     time this step is reachable): index = final placement.  Layout only: the state and derived
+     data live in usePrizeDistributionPage. Deliberately not persisted: the settings reset when
+     this component remounts. -->
 <script setup lang="ts">
 import type { PrizeStanding } from '~/composables/tournaments/prizes/usePrizeDistributionPage'
 

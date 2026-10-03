@@ -1,34 +1,20 @@
 <!-- app\components\finance\TournamentChart.client.vue -->
-<!-- Line+scatter, one point per tournament, one line per format — merges
-TournamentTrendChart.client.vue (revenue) and
-TournamentParticipantsChart.client.vue (participants) into a single
-always-mounted chart driven by a `metric` prop, rather than two separate
-components toggled with v-if. Switching components would unmount/remount the
-whole VisXYContainer, so unovis has nothing to interpolate from — the lines
-would just snap. Keeping one container alive and only changing its y
-accessor/data-derived value lets unovis actually animate each line/point to
-its new position (user request, 2026-09-03: "voglio animare le linee").
-
-Deliberately no `:data` on <VisXYContainer> — @unovis/vue's per-component
-data resolves as `container.data ?? ownData` (components/line/index.js),
-so any truthy container-level data makes every child ignore its own `:data`
-prop entirely (confirmed live via devtools: all 5 <VisLine>s rendered the
-identical container-wide path, just stacked in different colors). Leaving
-the container's data unset lets each component fall through to its own
-`:data` below — <VisLine> gets its own per-format, date-sorted subset,
-<VisScatter> gets the full sorted set.
-
-An earlier attempt fed all 5 lines the same shared full dataset with a
-per-format y accessor returning `undefined` for other formats' rows (relying
-on Line's `fallbackValue` gap-breaking). That produced a real bug of its
-own: Line's gap-optimizer only draws an `L`-connected run between two
-consecutive *defined* points in the underlying array — since tournaments of
-the same format are essentially never adjacent once sorted by date (some
-other format's tournament almost always falls between them), every point
-ended up flagged as its own isolated gap endpoint, rendering as disconnected
-`M x,y Z` dots with no visible line at all. Giving each <VisLine> its own
-already-filtered array (only that format's rows, already contiguous)
-sidesteps the gap-optimizer entirely. -->
+<!-- Line+scatter, one point per tournament, one line per format: merges
+     TournamentTrendChart.client.vue (revenue) and TournamentParticipantsChart.client.vue
+     (participants) into one always-mounted chart driven by a `metric` prop, not two components
+     toggled with v-if (which would unmount/remount the whole VisXYContainer, leaving unovis nothing
+     to interpolate from). One live container with a changing y accessor lets unovis animate each
+     line/point to its new position.  Deliberately no `:data` on <VisXYContainer>: @unovis/vue
+     resolves per-component data as `container.data ?? ownData` (components/line/index.js), so any
+     truthy container-level data makes every child ignore its own `:data` (all 5 <VisLine>s rendered
+     the identical container-wide path). With it unset each component uses its own `:data`:
+     <VisLine> a per-format, date-sorted subset, <VisScatter> the full sorted set.  Feeding all 5
+     lines the same full dataset with a per-format y accessor returning `undefined` for other
+     formats' rows (relying on Line's `fallbackValue` gap-breaking) was a real bug: Line's
+     gap-optimizer only draws an `L`-connected run between two consecutive *defined* points in the
+     array, and same-format tournaments are almost never adjacent once sorted by date, so every
+     point became an isolated `M x,y Z` dot with no line. Giving each <VisLine> its own
+     already-filtered (contiguous) array avoids it. -->
 <script setup lang="ts">
 import { eachMonthOfInterval, endOfYear, format as formatDate, startOfYear } from 'date-fns'
 import { VisXYContainer, VisLine, VisScatter, VisAxis, VisTooltip } from '@unovis/vue'
@@ -85,11 +71,9 @@ const legendItems = computed(() => formats.value.map((format, i) => ({
 // between tournaments (weeks apart, unevenly spaced) matter here, unlike
 // the evenly-bucketed month/format/type charts elsewhere on this page.
 const x = (row: FinanceTournamentSummaryRow) => new Date(row.startDate).getTime()
-// Reads `metric` fresh on every call (Vue 3.5 reactive-prop-destructure
-// transform rewrites the bare reference to __props.metric everywhere in
-// this file, not just inside computed()) — switching metric re-evaluates y
-// for the existing points, which is exactly what lets unovis animate them
-// to their new position instead of remounting.
+// Reads `metric` fresh on every call (Vue 3.5's reactive-prop-destructure transform rewrites the
+// bare reference to __props.metric everywhere, not just inside computed()): switching metric
+// re-evaluates y for the existing points, which lets unovis animate them instead of remounting
 const y = (row: FinanceTournamentSummaryRow) => (metric === 'participants' ? row.count : row.total)
 const color = (row: FinanceTournamentSummaryRow) => colorByFormat.value.get(row.format)
 
@@ -101,10 +85,8 @@ const yTicks = computed(() => (metric === 'participants'
   ? (raw: number) => Math.round(raw).toString()
   : undefined))
 
-// Spans the whole selected `year` (Jan 1 - Dec 31), same convention as
-// byMonth's own backfill (useFinanceSummary.ts) — keyed off the year
-// switcher, not the real "today", so past years show their own full season
-// instead of getting cut off at wherever "today" happens to fall.
+// Spans the whole selected `year` (Jan 1 - Dec 31), like byMonth's backfill (useFinanceSummary.ts):
+// keyed off the year switcher, not the real "today", so past years show their full season
 const xDomain = computed<[number, number]>(() => {
   const yearAnchor = new Date(year, 0, 1)
   return [startOfYear(yearAnchor).getTime(), endOfYear(yearAnchor).getTime()]
@@ -123,38 +105,29 @@ const template = (row: FinanceTournamentSummaryRow) => [
   `${row.format} · ${formatDate(new Date(row.startDate), 'd MMM yyyy')}`,
   metric === 'participants'
     ? t('finance.charts.participantsCount', { count: row.count })
-    // compedCount is a subset of count (free entries, see
-    // FinanceTournamentSummaryRow's own comment) — count - compedCount is
-    // how many actually paid, out of the tournament's total entries (user
-    // request, 2026-09-03).
+    // compedCount is a subset of count (free entries, see FinanceTournamentSummaryRow): count -
+    // compedCount is how many actually paid, out of the total entries
     : `${amountFormatter.format(row.total)} ${t('finance.charts.payingCount', {
       paying: row.count - row.compedCount,
       total: row.count
     })}`
 ].join('<br>')
 
-// VisCrosshair never picked up a valid position on this chart despite
-// explicit x/y accessors (confirmed live via devtools: hovering never
-// rendered a tooltip). VisTooltip's own `triggers` config, keyed by
-// Scatter's own point selector, fires directly off the point elements
-// instead — same fix as FormatChart.client.vue/TypeChart.client.vue, and
-// the pattern unovis' own docs recommend. Scatter binds each point's own
-// row object directly (augmented with an internal `_point` field, not
-// wrapped like StackedBar's bars), so no unwrapping is needed here.
+// VisCrosshair never picked up a valid position here despite explicit x/y accessors (hovering never
+// showed a tooltip). VisTooltip's `triggers`, keyed by Scatter's point selector, fires off the
+// point elements instead (like FormatChart.client.vue/TypeChart.client.vue, and the pattern unovis'
+// docs recommend). Scatter binds each point's own row object (plus an internal `_point` field), so
+// no unwrapping is needed
 const triggers = {
   [Scatter.selectors.point]: (row: FinanceTournamentSummaryRow) => template(row)
 }
 
-// Same reactivity gap as FormatChart.client.vue/TypeChart.client.vue's own
-// documented fix — a manual render nudge on mount avoids the scale getting
-// stuck at its default/stale domain. Explicit 0 here (not the container's
-// own animated :duration below) so the very first real paint snaps in
-// instantly instead of growing from empty — only a later metric switch
-// should animate.
-// watch on `loading`, not onMounted — see FormatChart.client.vue's own
-// comment for why (the container is hidden behind the loading skeleton
-// until then, so waiting for mount alone would miss the real chart's
-// first render).
+// Same reactivity gap as FormatChart.client.vue/TypeChart.client.vue: a manual render nudge on
+// mount keeps the scale from sticking at its stale domain. Explicit 0 here (not the container's
+// animated :duration below) so the first real paint snaps in instead of growing from empty: only a
+// later metric switch should animate. Watches `loading`, not onMounted (see
+// FormatChart.client.vue): the container is hidden behind the loading skeleton until then, so mount
+// alone would miss the real chart's first render
 const containerRef = useTemplateRef('containerRef')
 watch(() => loading, (isLoading) => {
   if (!isLoading) nextTick(() => containerRef.value?.component?.render(0))

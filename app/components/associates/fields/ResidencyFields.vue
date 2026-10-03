@@ -1,9 +1,6 @@
 <!-- app\components\associates\fields\ResidencyFields.vue -->
-<!--
-  Shared by AddModal.vue and /tesseramento — see PersonalInfoFields.vue for
-  the state-mutation rationale (same pattern, `vue/no-mutating-props`
-  disabled below for the same reason).
--->
+<!-- Shared by AddModal.vue and /tesseramento: see PersonalInfoFields.vue for the state-mutation
+     rationale (the same pattern, `vue/no-mutating-props` disabled below for the same reason). -->
 <!-- eslint-disable vue/no-mutating-props -- see PersonalInfoFields.vue -->
 <script setup lang="ts">
 // AddModal.vue's state is a full Schema (never undefined); /tesseramento's is
@@ -22,8 +19,8 @@ const { state } = defineProps<{ state: ResidencyState }>()
 
 <template>
   <!-- eslint-disable vue/no-mutating-props -- see the top-of-file comment -->
-  <!-- Own nested grid, same reasoning as PersonalInfoFields.vue/
-       BirthInfoFields.vue/MtgNicknameFields.vue — user request, 2026-08-19. -->
+  <!-- Own nested grid, for the same reason as
+       PersonalInfoFields.vue/BirthInfoFields.vue/MtgNicknameFields.vue -->
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
     <UFormField
       :label="$t('associate.addModal.fields.residencyAddress')"

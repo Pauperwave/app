@@ -1,19 +1,11 @@
 <!-- app\components\tournaments\single\pairing\KillPlayerNode.vue -->
-<!--
-  A single player chip on KillTrackerModal.vue's @vue-flow canvas — ported
-  from MagicTheGathering/league's KillPlayerNode.vue (user request,
-  2026-09-15/16: copy the kill-tracking canvas as-is, including the
-  @vue-flow/core dependency). Dropped: the "suicide" badge/handle-loop
-  support — this app's own tournament_kills table has a
-  ck_tournament_kills_no_self_kill check constraint (killer_uuid <>
-  killed_player_uuid), added earlier this session, so a self-kill can
-  never be persisted here regardless of what the canvas would allow.
-  Uses ICONS.kills/ICONS.deaths (not battle/playerLapsed) and
-  generatePlayerAvatar (already a dependency elsewhere in this app, e.g.
-  AssociateTag.vue) for the node's avatar, matching league 1:1 — an earlier
-  pass here had used different icons/no avatar (2026-09-16 "mancano delle
-  funzionalità" follow-up).
--->
+<!-- A single player chip on KillTrackerModal.vue's @vue-flow canvas, ported from league's
+     KillPlayerNode.vue (including the @vue-flow/core dependency). Dropped: the "suicide"
+     badge/handle-loop support: tournament_kills has a ck_tournament_kills_no_self_kill check
+     (killer_uuid <> killed_player_uuid), so a self-kill can never be persisted whatever the
+     canvas allows. Uses ICONS.kills/ICONS.deaths (not battle/playerLapsed) and
+     generatePlayerAvatar (also used by AssociateTag.vue) for the node's avatar, matching league
+     1:1. -->
 <script setup lang="ts">
 import { Handle, Position } from '@vue-flow/core'
 import { NodeToolbar } from '@vue-flow/node-toolbar'

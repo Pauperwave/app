@@ -1,11 +1,8 @@
 <!-- app\components\magic\CardArtPickerRow.vue -->
-<!--
-  Row for CardArtPicker.vue's printing USelectMenu — same shape as
-  wanted-cards/list/PrintingRow.vue (set name + collector number, hover
-  preview via MagicCardHoverPreview) minus the CardTrader/Cardmarket price
-  pair, which makes no sense when picking cover art rather than a card to
-  buy.
--->
+<!-- Row for CardArtPicker.vue's printing USelectMenu: the same shape as
+     wanted-cards/list/PrintingRow.vue (set name + collector number, hover preview via
+     MagicCardHoverPreview) minus the CardTrader/Cardmarket price pair, which makes no sense
+     when picking cover art rather than a card to buy. -->
 <script setup lang="ts">
 interface Props {
   label: string
@@ -17,11 +14,9 @@ const { label, collectorNumber, imageUrl } = defineProps<Props>()
 </script>
 
 <template>
-  <!-- previewWidth/Height: art_crop is a landscape crop (~626x457, unlike
-       the portrait full-card image MagicCardHoverPreview defaults to) —
-       without an override here NuxtImg crops/zooms it to fit the default
-       portrait box instead of showing the actual illustration (found
-       2026-09-02, right after the printing-selector rewrite). -->
+  <!-- previewWidth/Height: art_crop is a landscape crop (~626x457, unlike the portrait
+       full-card image MagicCardHoverPreview defaults to): without an override NuxtImg
+       crops/zooms it into the default portrait box instead of showing the illustration -->
   <MagicCardHoverPreview
     :image-url="imageUrl"
     :alt="label"

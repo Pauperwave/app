@@ -1,15 +1,10 @@
 <!-- app\components\tournaments\list\DenseCard.vue -->
-<!--
-  Single tile for DenseView.vue's dense grid — same selection/context-menu/
-  shift-click/navigation convention as Card.vue, just a much smaller tile
-  (image + date chip + status dot + name only — league link, format/time/
-  location badges, entry fee, and the edit button are dropped, they don't fit
-  at this size and the full grid view is one click away via ViewModeTabs).
-
-  `loading` mirrors Card.vue's own convention (2026-08-22): renders this same
-  card's skeleton rather than a separate DenseSkeleton.vue duplicating the
-  markup by hand, so nothing can structurally drift between the two states.
--->
+<!-- Single tile for DenseView.vue's dense grid: the same
+     selection/context-menu/shift-click/navigation convention as Card.vue, in a much smaller
+     tile (image + date chip + status dot + name only: the league link, format/time/location
+     badges, entry fee and edit button don't fit at this size, and the full grid is one click
+     away via ViewModeTabs).  `loading` mirrors Card.vue's convention: it renders this card's
+     skeleton rather than a separate DenseSkeleton.vue duplicating the markup. -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Tournament } from '~/types'

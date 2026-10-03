@@ -1,13 +1,9 @@
 <!-- app\components\finance\TournamentOverview.vue -->
-<!-- Same tabs-switch shell as FormatOverview.vue/MonthlyOverview.vue, but the
-two positions switch TournamentChart's `metric` prop (participants first,
-incassato second) rather than alternating chart vs table — the table stays
-separately visible below, unaffected by the switch (user request,
-2026-09-02: "voglio che alterni i due grafici, non il grafico e la
-tabella"). TournamentChart itself stays mounted across the switch so unovis
-animates each line/point to its new value instead of snapping (user
-request, 2026-09-03: "voglio animare le linee") — see its own header
-comment. -->
+<!-- Same tabs-switch shell as FormatOverview.vue/MonthlyOverview.vue, but the two positions
+     switch TournamentChart's `metric` prop (participants first, incassato second) instead of
+     alternating chart vs table: the table stays visible below, unaffected. TournamentChart
+     stays mounted across the switch so unovis animates each line/point to its new value instead
+     of snapping (see its header comment). -->
 <script setup lang="ts">
 import type { TabsItem } from '@nuxt/ui'
 import type { FinanceTournamentSummaryRow } from '~/composables/finance/useFinanceSummary'

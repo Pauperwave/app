@@ -1,22 +1,17 @@
 <!-- app\components\home\Staff.vue -->
-<!--
-  Home body for organizer/admin/super_admin (docs/PROGRESS.md ADR pending —
-  see the 2026-08-19 "Home" conversation): a single shared dashboard, not one
-  component per staff role — organizer/admin/super_admin differ only in
-  *which sections of the app they can reach* (access-settings, manage-roles),
-  never in what this dashboard itself shows. Every section here is real
-  data — no mock domains involved (tournaments/events/transactions are all
-  migrated, see CLAUDE.md).
--->
+<!-- Home body for organizer/admin/super_admin (docs/PROGRESS.md ADR pending): a single shared
+     dashboard, not one component per staff role, since the roles differ only in *which sections
+     of the app they can reach* (access-settings, manage-roles), never in what this dashboard
+     shows. Every section is real data (tournaments/events/transactions are all migrated, see
+     CLAUDE.md). -->
 <script setup lang="ts">
 import { isFuture, isToday } from 'date-fns'
 
 const { t } = useI18n()
 
-// wanted-cards excluded from pendingActions on purpose (user feedback,
-// 2026-08-19): staff neither moderates nor helps fulfil these requests — it's
-// a player-to-player board, nothing here is actually "pending" on staff for
-// it. Its open count still shows up below as a passive stat, not an action.
+// wanted-cards is excluded from pendingActions on purpose: staff neither moderates nor helps fulfil
+// these requests (a player-to-player board), so nothing is "pending" on staff. Its open count shows
+// below as a passive stat, not an action
 const {
   pendingAssociatesCount, associatesCount, associatesToRenewCount, wantedCardsSearchingCount
 } = useHomeActionCounts()

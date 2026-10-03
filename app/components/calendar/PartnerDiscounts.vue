@@ -1,12 +1,9 @@
 <!-- app\components\calendar\PartnerDiscounts.vue -->
-<!--
-  Sponsor/partner discount codes for /calendario (see PublicCalendarPage.vue),
-  a dedicated section between the cards timeline and CalendarFooter.vue —
-  static list (app/utils/calendar/partnerDiscounts.ts), same mock/static
-  convention as server/api/members.ts until it's worth a real table. Renders
-  nothing when the list is empty rather than showing a section with no
-  content.
--->
+<!-- Sponsor/partner discount codes for /calendario (see PublicCalendarPage.vue), a dedicated
+     section between the cards timeline and CalendarFooter.vue: a static list
+     (app/utils/calendar/partnerDiscounts.ts), the same mock/static convention as
+     server/api/members.ts until it is worth a real table. Renders nothing when the list is
+     empty. -->
 <script lang="ts" setup>
 const { t } = useI18n()
 const { copyToClipboard } = useCopyToClipboard()

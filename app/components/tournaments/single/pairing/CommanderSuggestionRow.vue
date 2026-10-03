@@ -1,6 +1,5 @@
 <!-- app\components\tournaments\single\pairing\CommanderSuggestionRow.vue -->
-<!-- Ported verbatim from MagicTheGathering/league (user request 2026-09-16:
-     copy the vote/commander insertion logic bit-by-bit). -->
+<!-- Ported verbatim from league -->
 <script setup lang="ts">
 interface Props {
   label: string
@@ -18,14 +17,12 @@ const {
 
 const tooltipOpen = ref(false)
 
-// USelectMenu's item list is a Reka listbox with its own pointer/focus
-// handling for row highlighting — nesting UTooltip's built-in hover-trigger
-// (TooltipTrigger, which listens for pointerenter/focus on the slotted
-// element) inside it never fires, the listbox swallows the events first.
-// Bypassing hover-trigger entirely — manual pointer tracking + a virtual
-// :reference anchored to the cursor + controlled v-model:open. See
-// usePointerReference.ts's own comment for why the pointer handlers below
-// stay local instead of being folded into the composable too.
+// USelectMenu's item list is a Reka listbox with its own pointer/focus handling for row
+// highlighting: nesting UTooltip's built-in hover-trigger (TooltipTrigger, listening for
+// pointerenter/focus on the slotted element) inside it never fires, as the listbox swallows the
+// events first. So it bypasses hover-trigger: manual pointer tracking + a virtual :reference
+// anchored to the cursor + controlled v-model:open. See usePointerReference.ts on why the pointer
+// handlers stay local
 const { anchor, reference } = usePointerReference()
 
 function handlePointerEnter(ev: PointerEvent) {

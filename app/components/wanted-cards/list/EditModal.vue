@@ -1,10 +1,8 @@
 <!-- app\components\wanted-cards\list\EditModal.vue -->
 
-<!--
-  A differenza di AddModal.vue non permette di cambiare il nome della carta
-  (equivarrebbe a creare una richiesta diversa) — l'edizione/stampa esatta è
-  invece modificabile con lo stesso picker Scryfall di AddModal.vue.
--->
+<!-- Unlike AddModal.vue it doesn't allow changing the card name (that would amount to creating
+     a different request); the exact edition/printing is editable with the same Scryfall picker
+     as AddModal.vue. -->
 <script setup lang="ts">
 import * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
@@ -25,25 +23,21 @@ const { submitting, submitWithToast } = useSubmitWithToast()
 // the modal opens.
 const { printings, isLoadingPrintings, fetchPrintings } = useScryfallCardSearch()
 
-// Same custom messages as AddModal.vue (see the comment there on why
-// v.pipe(v.string(msg), v.minLength(...)) covers both the never-filled field and
-// the empty string). Shared with AddModal.vue via wantedCardFormFieldsSchema — no
-// `name` field here, the card name is fixed once created.
+// Same custom messages as AddModal.vue (see why v.pipe(v.string(msg), v.minLength(...)) covers both
+// the never-filled field and the empty string), shared via wantedCardFormFieldsSchema. No `name`
+// field: the card name is fixed once created
 const schema = v.object(wantedCardFormFieldsSchema(t))
 
 type Schema = v.InferOutput<typeof schema>
 
 const state = reactive<Partial<Schema>>({})
 
-// Refills the form state every time the modal opens on a different card — unlike
-// AddModal.vue there is no successful submit that clears it (this one always
-// reopens on an existing record). fetchPrintings() only sets the query key
-// (useScryfallCardSearch.ts) and returns immediately, it does NOT wait for the
-// fetch — `await`ing it here used to be a no-op, so `printings` was still empty
-// right after and the preselect below silently failed on the first open of any
-// given session (it worked the second time only because Pinia Colada had by then
-// cached that name from the first, now-resolved query). Preselecting now happens
-// in the printings watcher below, the same pattern AddModal.vue uses.
+// Refills the form state every time the modal opens on a different card: unlike AddModal.vue no
+// successful submit clears it (this one always reopens on an existing record). fetchPrintings()
+// only sets the query key (useScryfallCardSearch.ts) and returns at once without waiting for the
+// fetch, so `await`ing it was a no-op: `printings` was empty and the preselect silently failed on
+// the first open of a session (it worked the second time only because Pinia Colada had cached that
+// name). Preselecting happens in the printings watcher below, like AddModal.vue
 watch([open, () => card], ([isOpen, currentCard]) => {
   if (!isOpen || !currentCard) return
   state.copies = currentCard.copies
@@ -55,14 +49,12 @@ watch([open, () => card], ([isOpen, currentCard]) => {
   fetchPrintings(currentCard.cardName)
 }, { immediate: true })
 
-// Runs once `printings` actually loads for the card's name — matches by comparing
-// only the base part of the URL (without the query string): the Scryfall API now
-// always appends tracking params (?utm_source=...) to the scryfall_uri it returns,
-// while some older requests (data migrated from the initial mock) have a "clean"
-// scryfallUrl saved without them — an exact string comparison would never match.
-// Guarded on the modal still being open on the same card so a stale fetch
-// resolving after the modal moved on to another card (or closed) can't clobber
-// state.printingId.
+// Runs once `printings` loads for the card's name: compares only the base of the URL (without the
+// query string), since the Scryfall API now appends tracking params (?utm_source=...) to
+// scryfall_uri while some older requests (migrated from the initial mock) have a "clean"
+// scryfallUrl: an exact comparison would never match. Guarded on the modal still being open on the
+// same card, so a stale fetch resolving after it moved on (or closed) can't clobber
+// state.printingId
 watch(printings, (list) => {
   if (!open.value || !card) return
   const currentBaseUrl = card.scryfallUrl.split('?')[0]

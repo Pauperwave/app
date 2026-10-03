@@ -1,10 +1,8 @@
 <!-- app\components\commanders\DeckCard.vue -->
-<!-- Grid card for /statistics/decks (the deck-pairing browsing hub), ported
-     from league's CommanderDeckCard.vue's aggregate-mode branch (user
-     request, 2026-09-17) — this app has no per-deck-row browsing table, so
-     it's driven by a CommanderStatsPair (the commander_stats view) rather
-     than a raw commander_decks row. Player-specific deck display stays in
-     CommanderDecksCard.vue's own table. -->
+<!-- Grid card for /statistics/decks (the deck-pairing browsing hub), ported from league's
+     CommanderDeckCard.vue's aggregate-mode branch: this app has no per-deck-row browsing table,
+     so it is driven by a CommanderStatsPair (the commander_stats view) rather than a raw
+     commander_decks row. Player-specific deck display stays in CommanderDecksCard.vue's table. -->
 <script setup lang="ts">
 import type { CommanderStatsPair } from '~/composables/commanders/useCommanderStatsQuery'
 

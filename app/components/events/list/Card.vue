@@ -1,18 +1,10 @@
 <!-- app\components\events\list\Card.vue -->
-<!--
-  Events' own version of TournamentsListCard.vue (2026-08-22, issue #45 +
-  "make presentable /events") — same cover/checkbox/edit layout and hover
-  treatment, adapted to Event's fields: a location badge instead of
-  format, a tournament-count footer instead of players/entry-fee (events
-  have neither). Status shows through the card's own styling rather than a
-  badge, same convention as leagues/tournaments: completed and cancelled
-  both recede via opacity/saturation, cancelled additionally gets the
-  strikethrough+error title.
-
-  `loading`: same per-element real-vs-USkeleton branching as
-  TournamentsListCard.vue — see that file's own comment for why this
-  replaces a separate hand-duplicated skeleton.
--->
+<!-- Events' own version of TournamentsListCard.vue: the same cover/checkbox/edit layout and
+     hover treatment, adapted to Event's fields (a location badge instead of format, a
+     tournament-count footer instead of players/entry-fee). Status shows through the card's
+     styling rather than a badge, like leagues/tournaments: completed and cancelled both recede
+     via opacity/saturation, cancelled also gets the strikethrough+error title.  `loading`: the
+     same per-element real-vs-USkeleton branching as TournamentsListCard.vue (see its comment). -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Event } from '~/types'
@@ -87,9 +79,8 @@ function timeLabel(current: Event) {
         >
           {{ event.name }}
         </h3>
-        <!-- Width matches "Torneo Regionale 2026" — see TournamentsListCard.vue's
-             own comment for why these are sized to real content, not
-             arbitrary bars. -->
+        <!-- Width matches "Torneo Regionale 2026" (see TournamentsListCard.vue: sized to real
+             content, not arbitrary bars) -->
         <USkeleton v-else class="h-5 w-3/4" />
 
         <EditIconButton

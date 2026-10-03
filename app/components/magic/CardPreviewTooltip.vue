@@ -1,11 +1,8 @@
 <!-- app\components\magic\CardPreviewTooltip.vue -->
 
-<!--
-  Nome carta che mostra l'immagine al passaggio del mouse, o a schermo intero
-  col tap su mobile. Sottile specializzazione di CardHoverPreview.vue: qui il
-  trigger è sempre il nome della carta, stilato come un link — il resto
-  (tracciamento del puntatore, tooltip, modale mobile) sta lì.
--->
+<!-- A card name that shows the image on hover, or full screen on tap on mobile. A thin
+     specialization of CardHoverPreview.vue: here the trigger is always the card name, styled as
+     a link; the rest (pointer tracking, tooltip, mobile modal) lives there. -->
 <script setup lang="ts">
 const { name, imageUrl } = defineProps<{
   name: string

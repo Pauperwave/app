@@ -1,10 +1,8 @@
 <!-- app\components\ui\RolePreviewBanner.vue -->
 <script setup lang="ts">
-// docs/architecture/roles.md §1 "view as" feature: persistent, hard-to-miss
-// while active — this only fakes what the UI shows (can()/isStaff), never
-// real data access (RLS/BFF still runs against the real, unmodified
-// auth.uid()), so a super_admin must never mistake "what I see right now"
-// for "what I can actually still do."
+// docs/architecture/roles.md §1 "view as" feature: persistent and hard to miss while active. It
+// only fakes what the UI shows (can()/isStaff), never real data access (RLS/BFF run against the
+// real auth.uid()), so a super_admin must never mistake "what I see" for "what I can still do"
 const { role, isPreviewing, setRolePreview } = useUserRole()
 const { t } = useI18n()
 </script>

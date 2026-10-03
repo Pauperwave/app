@@ -2,33 +2,27 @@
 <script setup lang="ts">
 import type { UseTourReturn } from '@nuxt/ui/composables'
 
-// hShortcut: default.vue's own <TourGuide :tour="shortcutsTour"> is mounted
-// on every page alongside whichever page-specific tour that page renders
-// (default.vue is the layout, not a page) — both instances registering a
-// bare "h" would collide, and the shortcuts tour already has its own trigger
-// (the sidebar's "Scorciatoie da tastiera" item). Opted out there via
-// :h-shortcut="false"; every page tour keeps the default (true).
+// hShortcut: default.vue's <TourGuide :tour="shortcutsTour"> is mounted on every page next to the
+// page-specific tour (default.vue is the layout), so two instances registering a bare "h" would
+// collide, and the shortcuts tour already has its own trigger (the sidebar's "Scorciatoie da
+// tastiera"). Opted out there via :h-shortcut="false"; every page tour keeps the default (true)
 const { tour, hShortcut = true } = defineProps<{ tour: UseTourReturn, hShortcut?: boolean }>()
 
-// Bare "h" starts/restarts this page's tour — same "b pattern" as
-// default.vue's sidebar-collapse shortcut (docs/architecture/shortcuts.md):
-// the active tour is page-local state useDashboard.ts can't reach, so
-// defineShortcuts is called directly from here instead. At most one page
-// tour's TourGuide is ever mounted at a time, and Nuxt UI's defineShortcuts
-// tears itself down on unmount, so navigating to another page automatically
-// swaps which tour "h" starts — no manual registry needed. Doesn't collide
-// with the existing g-h chord (Home): defineShortcuts treats a bare "h" and
-// the two-key chord "g" then "h" as distinct bindings.
+// Bare "h" starts/restarts this page's tour, the same "b pattern" as default.vue's sidebar-collapse
+// shortcut (docs/architecture/shortcuts.md): the active tour is page-local state useDashboard.ts
+// can't reach, so defineShortcuts is called from here. At most one page tour's TourGuide is mounted
+// at a time and Nuxt UI's defineShortcuts tears itself down on unmount, so navigating swaps which
+// tour "h" starts, with no registry. Doesn't collide with the g-h chord (Home): defineShortcuts
+// treats a bare "h" and the chord "g" then "h" as distinct bindings
 if (hShortcut) {
   defineShortcuts({
     h: () => tour.start()
   })
 }
 
-// Left/Right arrow keys mirror the Indietro/Avanti buttons — same
-// usingInput/modifier-key guard as default.vue's own global keydown listener,
-// so this doesn't hijack cursor movement while typing in a form field (e.g.
-// while a step is anchored to an input the visitor is actively using).
+// Left/Right arrow keys mirror the Indietro/Avanti buttons, with the same usingInput/modifier-key
+// guard as default.vue's global keydown listener, so it doesn't hijack cursor movement while typing
+// in a form field
 useEventListener('keydown', (event: KeyboardEvent) => {
   if (!tour.open.value) return
 
@@ -50,9 +44,8 @@ useEventListener('keydown', (event: KeyboardEvent) => {
 <template>
   <TourSpotlight :tour="tour" />
 
-  <!-- z-20 on content: must stay above TourSpotlight's z-10 dim overlay —
-       the content slot has z-index:auto by default, which would otherwise
-       paint below the overlay's explicit z-index. -->
+  <!-- z-20 on content: must stay above TourSpotlight's z-10 dim overlay (the content slot has
+       z-index:auto, which would paint below the overlay's explicit z-index) -->
   <UPopover
     :open="tour.open.value"
     :reference="tour.reference.value"
@@ -73,9 +66,9 @@ useEventListener('keydown', (event: KeyboardEvent) => {
             @click="tour.finish()"
           />
         </div>
-        <!-- Plain text by default; a consumer can override via #description
-             when a step's copy needs rich content (e.g. real UKbd chips
-             instead of quoted letters — see useShortcutsTour.ts). -->
+        <!-- Plain text by default; a consumer can override via #description when a step needs
+             rich content (e.g. real UKbd chips instead of quoted letters, see
+             useShortcutsTour.ts) -->
         <slot name="description" :step="tour.current.value">
           <p class="text-sm text-muted">
             {{ tour.current.value?.description }}

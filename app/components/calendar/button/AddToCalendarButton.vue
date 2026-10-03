@@ -1,24 +1,13 @@
 <!-- app\components\calendar\button\AddToCalendarButton.vue -->
-<!--
-  Device-aware "add to calendar" action, used by CalendarCard.vue for both
-  Event and Tournament cards on /calendario. A downloaded .ics is friction
-  on desktop (has to be opened/imported by hand), where a one-click web link
-  is the native path instead. Android gets the same web link — it opens the
-  Google Calendar app directly via its own intent handling for
-  calendar.google.com/calendar/render URLs, same as luma.com/Eventbrite
-  (2026-08-14 decision, replacing the earlier "mobile always downloads .ics"
-  behavior). iOS has no equivalent web-to-app handoff for Google Calendar, so
-  it keeps the .ics download, which iOS imports straight into the system
-  calendar app. See eventIcs.ts's googleCalendarUrl comment.
--->
+<!-- Device-aware "add to calendar" action, used by CalendarCard.vue for Event and Tournament
+     cards on /calendario. A downloaded .ics is friction on desktop (it has to be
+     opened/imported by hand), where a one-click web link is the native path. Android gets the
+     same web link: it opens the Google Calendar app through its intent handling for
+     calendar.google.com/calendar/render URLs, like luma.com/Eventbrite. iOS has no web-to-app
+     handoff for Google Calendar, so it keeps the .ics download, which iOS imports into the
+     system calendar app. See eventIcs.ts's googleCalendarUrl comment. -->
 <script lang="ts" setup>
-// fallow-ignore-file security-sink -- fallow flags window.open() below as a
-// possible open-redirect (CWE-601) since its target isn't a literal string.
-// Verified: googleCalendarUrl() (eventIcs.ts) always returns a hardcoded
-// https://calendar.google.com/calendar/render?... origin — the dynamic
-// parts (item.name/location/dates) only ever reach the query string via
-// URLSearchParams, which percent-encodes them, so none of them can alter
-// the scheme/origin or produce a javascript: URL.
+// fallow-ignore-file security-sink -- fixed Google origin, params encoded by URLSearchParams
 import type { CalendarIcsItem } from '~/utils/events/eventIcs'
 
 interface Props {

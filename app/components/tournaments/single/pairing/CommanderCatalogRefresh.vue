@@ -1,9 +1,8 @@
 <!-- app\components\tournaments\single\pairing\CommanderCatalogRefresh.vue -->
-<!--
-  The "Aggiorna elenco carte" button + its confirm dialog, shared by every commander picker
-  footer (TournamentCommanderModal.vue in a round, DeckCreateModal.vue on a player's profile).
-  The catalog is shared/cached (useCommanderCatalogQuery), so any picker sees the refreshed list.
--->
+<!-- The "Aggiorna elenco carte" button + its confirm dialog, shared by every commander picker
+     footer (TournamentCommanderModal.vue in a round, DeckCreateModal.vue on a player's
+     profile). The catalog is shared/cached (useCommanderCatalogQuery), so any picker sees the
+     refreshed list. -->
 <script setup lang="ts">
 const { t } = useI18n()
 

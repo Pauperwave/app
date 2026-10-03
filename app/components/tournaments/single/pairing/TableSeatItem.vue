@@ -1,11 +1,7 @@
 <!-- app\components\tournaments\single\pairing\TableSeatItem.vue -->
-<!--
-  A single seat within a TableCard — occupied (draggable, AssociateTag) or
-  empty (drop target) — ported from MagicTheGathering/league's
-  TableSeatItem.vue (user request, 2026-09-15). Commander-selection button
-  dropped (out of scope for this pass — no commander/deck data flows
-  through the round-1 pod preview yet).
--->
+<!-- A single seat within a TableCard, occupied (draggable, AssociateTag) or empty (drop
+     target), ported from league's TableSeatItem.vue. The commander-selection button is dropped:
+     no commander/deck data flows through the round-1 pod preview yet. -->
 <script setup lang="ts">
 import type { Seat } from '~/types'
 

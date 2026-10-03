@@ -4,11 +4,9 @@ interface StatusFilterItem<T extends string> {
   label: string
   value: T
   count?: number
-  // Optional per-item icon — when set, the label collapses to icon-only
-  // below `lg` (user request, 2026-08-24: transactions' type tabs running
-  // out of room before the toolbar itself wraps). Items with no icon always
-  // show their label — collapsing to a bare, unlabeled button would leave
-  // no affordance at all.
+  // Optional per-item icon: when set, the label collapses to icon-only below `lg` (transactions'
+  // type tabs ran out of room before the toolbar wrapped). Items with no icon always show their
+  // label: a bare unlabeled button would have no affordance
   icon?: string
   disabled?: boolean
 }
@@ -19,10 +17,9 @@ const modelValue = defineModel<T>()
 
 <template>
   <UFieldGroup>
-    <!-- text: undefined when there's no icon — those items always show
-         their own label, a tooltip would be redundant. lg:hidden content
-         (only when there is an icon): the label is already visible above
-         `lg`, same threshold as the collapse itself. -->
+    <!-- text: undefined when there's no icon (those items always show their label, a tooltip
+         would be redundant). lg:hidden content (only with an icon): the label is already
+         visible above `lg`, the threshold of the collapse -->
     <UTooltip
       v-for="option in items"
       :key="option.value"

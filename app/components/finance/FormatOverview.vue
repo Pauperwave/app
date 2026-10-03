@@ -1,8 +1,6 @@
 <!-- app\components\finance\FormatOverview.vue -->
-<!-- Same Grafico/Tabella merge as MonthlyOverview.vue, byFormat instead of
-byMonth (user request, 2026-08-23). Back to owning its own local switch
-(reverted 2026-08-24) — see MonthlyOverview.vue's comment for why the
-page-wide shared switch was rejected. -->
+<!-- The Grafico/Tabella merge of MonthlyOverview.vue, byFormat instead of byMonth. It owns its
+     own local switch (see MonthlyOverview.vue for why a page-wide shared switch was rejected) -->
 <script setup lang="ts">
 import type { TabsItem } from '@nuxt/ui'
 import type { FinanceFormatSummaryRow } from '~/composables/finance/useFinanceSummary'

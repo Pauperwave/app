@@ -1,8 +1,7 @@
 <!-- app\components\players\single\DeckEditModal.vue -->
-<!-- Restored from league's DeckEditModal.vue (user request, 2026-09-17) —
-     commander1/commander2 are deliberately not editable here (changing them
-     would silently orphan any tournament_round_results already tied to this
-     deck's identity, see update.post.ts). -->
+<!-- Restored from league's DeckEditModal.vue: commander1/commander2 are deliberately not
+     editable here (changing them would silently orphan any tournament_round_results tied to
+     this deck's identity, see update.post.ts) -->
 <script setup lang="ts">
 import type { CommanderDeck } from '~/composables/players/useCommanderDecksQuery'
 

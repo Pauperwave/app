@@ -6,10 +6,9 @@ import type { DroppedCardInfo } from '~/composables/wantedCards/useScryfallDragD
 
 const open = defineModel<boolean>({ default: false })
 
-// Set by wanted-cards/index.vue's Scryfall drag-and-drop (useScryfallDragDrop.ts,
-// user request 2026-08-15) — a plain prop, not part of `state`, so a second drop
-// while the modal is already open can still overwrite the name/printing fields
-// (a watch, not a one-time read on mount).
+// Set by wanted-cards/index.vue's Scryfall drag-and-drop (useScryfallDragDrop.ts): a plain prop,
+// not part of `state`, so a second drop while the modal is open can still overwrite the
+// name/printing fields (a watch, not a one-time read on mount)
 const { initialCard = null } = defineProps<{ initialCard?: DroppedCardInfo | null }>()
 
 const toast = useToast()
@@ -18,15 +17,12 @@ const { t } = useI18n()
 const { createWantedCard } = useWantedCardsMutations()
 const currentAssociate = useCurrentAssociate()
 
-// v.string(msg)/v.number(msg) also customise the TYPE error (not just constraints
-// like minLength/minValue) — previously, with Zod, a never-selected field
-// (undefined) failed the type check before even reaching .min(), showing the
-// library's generic message ("Invalid input: expected string, received undefined")
-// instead of ours (observed on "Edition" in production, 2026-08-08). Every v.pipe()
-// here covers both cases with the same message, wherever the field is required.
-// The printingId/copies/language/foil/notes/player fields come from
-// wantedCardFormFieldsSchema, shared with EditModal.vue — `name` is Add-only
-// (Edit's card name is fixed, not part of its schema).
+// v.string(msg)/v.number(msg) also customise the TYPE error (not just constraints like
+// minLength/minValue): a never-selected field (undefined) failed the type check before reaching
+// .min(), showing the library's generic message instead of ours (seen on "Edition"). Every v.pipe()
+// covers both cases with the same message. printingId/copies/language/foil/notes/player come from
+// wantedCardFormFieldsSchema, shared with EditModal.vue; `name` is Add-only (Edit's card name is
+// fixed)
 const schema = v.object({
   name: v.pipe(
     v.string(t('wantedCard.addModal.validation.nameRequired')),
@@ -47,16 +43,15 @@ const state = reactive<Partial<Schema>>({
   player: undefined
 })
 
-// Prefills "Player" with the logged-in user as soon as the modal opens — not at
-// component setup, because associates/authUser may not be resolved by then. It does
-// not overwrite a choice already made by hand (!state.player), so reopening the
-// modal after changing it does not reset it to the logged-in user.
+// Prefills "Player" with the logged-in user once the modal opens, not at setup (associates/authUser
+// may not be resolved yet). It doesn't overwrite a choice already made (!state.player), so
+// reopening after changing it keeps it
 watch([open, currentAssociate], ([isOpen, associate]) => {
   if (isOpen && associate && !state.player) state.player = associate.uuid
 })
 
-// Live Scryfall search — see the comment in useScryfallCardSearch.ts on why not a
-// local catalogue like the commanders in league.
+// Live Scryfall search (see useScryfallCardSearch.ts on why not a local catalogue like league's
+// commanders)
 const {
   query, nameSuggestions, isSuggesting, printings, isLoadingPrintings, fetchPrintings
 } = useScryfallCardSearch()
@@ -70,13 +65,11 @@ watch(() => initialCard, (card) => {
   query.value = card.name
 })
 
-// Runs once `printings` actually loads for the dropped name (fetchPrintings
-// is async, triggered by the state.name watch below) — matches on collector
-// number first (closer to a stable id than the set name, which Scryfall's
-// alt text doesn't always spell the same way as `setName`), falling back to
-// a fuzzy set-name contains-check only if that's ambiguous. Guarded on
-// initialCard.name === state.name so a manually-typed search afterwards
-// (different name, printings reloads) never triggers a stale auto-select.
+// Runs once `printings` loads for the dropped name (fetchPrintings is async, triggered by the
+// state.name watch below): matches on collector number first (closer to a stable id than the set
+// name, which Scryfall's alt text doesn't always spell like `setName`), falling back to a fuzzy
+// set-name contains-check only if ambiguous. Guarded on initialCard.name === state.name so a
+// manually typed search afterwards never triggers a stale auto-select
 watch(printings, (list) => {
   const card = initialCard
   if (!card?.collectorNumber || card.name !== state.name) return
@@ -100,10 +93,9 @@ const nameItems = computed(() => nameSuggestions.value.map(suggestion => ({
   value: suggestion.name
 })))
 
-// A card picked from the autocomplete (almost) always has several printings: as
-// soon as the name is confirmed the exact edition/artwork is chosen too, clearing
-// the previous selection (a different name invalidates the printing already
-// picked).
+// A card picked from the autocomplete almost always has several printings: once the name is
+// confirmed the exact edition/artwork is chosen too, clearing the previous selection (a different
+// name invalidates the printing)
 watch(() => state.name, (name) => {
   state.printingId = undefined
   fetchPrintings(name)
@@ -111,10 +103,9 @@ watch(() => state.name, (name) => {
 
 const submitting = ref(false)
 
-// `state` is a reactive object that persists on the component instance — UModal
-// only hides and shows, it does not unmount and remount the form — so it has to be
-// cleared explicitly after a successful submit, otherwise the next opening starts
-// from the last request entered.
+// `state` persists on the component instance (UModal only hides/shows, it doesn't unmount the
+// form), so it must be cleared explicitly after a successful submit, or the next opening starts
+// from the last request
 function resetForm() {
   state.name = undefined
   state.printingId = undefined
@@ -199,8 +190,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
                 :alt="item.label"
                 class="flex items-center gap-2 min-w-0"
               >
-                <!-- Dark background behind the symbols, as in league: the
-                     white/colorless ones would vanish on the light theme. -->
+                <!-- Dark background behind the symbols, as in league: white/colorless ones
+                     vanish on the light theme -->
                 <span v-if="item.manaCost" class="shrink-0 bg-gray-950 p-1 rounded">
                   <MagicManaCost :mana-cost="item.manaCost" size="sm" />
                 </span>

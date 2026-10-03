@@ -1,14 +1,9 @@
 <!-- app\components\leagues\list\Cover.vue -->
-<!--
-  Leagues' own version of TournamentsListCover.vue (2026-08-16, "make the
-  leagues cards match the tournaments cards") — same image/date-chip/
-  checkbox layout, adapted to League's fields. `league.image` was added
-  2026-08-16 (see the ADR in docs/PROGRESS.md on the tournaments-cascade
-  behavior) — falls back to ImageOffPlaceholder.vue when unset.
-
-  `loading` (2026-08-22): same per-element real-vs-USkeleton branching as
-  TournamentsListCover.vue — see Card.vue's own comment for why.
--->
+<!-- Leagues' own version of TournamentsListCover.vue: the same image/date-chip/checkbox layout,
+     adapted to League's fields. `league.image` (see the ADR in docs/PROGRESS.md on the
+     tournaments-cascade behavior) falls back to ImageOffPlaceholder.vue when unset.  `loading`:
+     the same per-element real-vs-USkeleton branching as TournamentsListCover.vue (see
+     Card.vue's comment). -->
 <script setup lang="ts">
 import type { League } from '~/types'
 import type { Selection } from '~/composables/useSelection'
@@ -29,15 +24,13 @@ const { t } = useI18n()
 // Same shift-click capture convention as TournamentsListCover.vue.
 const lastClickShiftKey = ref(false)
 
-// The chip shows the earliest contained tournament's date, not the league's
-// own (scheduled-at-creation) startDate, when that's known — same
-// tournaments-are-the-source-of-truth reasoning as the ADR in
-// docs/PROGRESS.md. Falls back to the league's own startDate for a league
-// with no tournaments yet.
+// The chip shows the earliest contained tournament's date, not the league's scheduled-at-creation
+// startDate, when known (tournaments are the source of truth, like the ADR in docs/PROGRESS.md);
+// falls back to the league's startDate when it has no tournaments yet
 const chipDate = computed(() => league?.tournamentDateRange?.start ?? league?.startDate ?? null)
 
-// Only worth a tooltip once there's an actual range to show — a single-day
-// (or dateless) league would just repeat the chip's own day/month.
+// Only worth a tooltip once there's an actual range: a single-day (or dateless) league would repeat
+// the chip's day/month
 const dateRangeTooltip = computed(() => {
   const range = league?.tournamentDateRange
   if (!range || range.start === range.end) return null
@@ -51,16 +44,12 @@ const dateRangeTooltip = computed(() => {
 <template>
   <div class="relative -m-3 mb-3">
     <template v-if="!loading && league">
-      <!-- No `height` prop: league.image is always a Scryfall art_crop
-           (~1.37:1), nowhere near this box's real ~2.3-3:1 rendered aspect
-           (w-full at grid-card width, fixed h-32). Forcing height="128"
-           alongside width="640" made ipx pre-crop the source to a 5:1 sliver
-           server-side, which the CSS object-cover below then cropped
-           *again* to fit the box — two mismatched crops compounding into a
-           heavily zoomed-in fragment (user report, 2026-09-14, "zoomata").
-           Requesting only `width` lets ipx resize preserving the source's
-           own aspect, so object-cover ends up doing the one crop that
-           actually matches the real box. -->
+      <!-- No `height` prop: league.image is always a Scryfall art_crop (~1.37:1), far from this
+           box's ~2.3-3:1 rendered aspect (w-full at grid-card width, fixed h-32). height="128"
+           with width="640" made ipx pre-crop the source to a 5:1 sliver server-side, which
+           object-cover then cropped *again*: two mismatched crops compounding into a heavily
+           zoomed fragment. Requesting only `width` lets ipx keep the source's aspect, so
+           object-cover does the one matching crop. -->
       <NuxtImg
         v-if="league.image"
         :src="league.image"
@@ -93,8 +82,8 @@ const dateRangeTooltip = computed(() => {
       :ui="{ base: 'bg-black' }"
     />
 
-    <!-- Same attribution overlay as TournamentsListCover.vue — required
-         alongside any art_crop use, see CardArtPicker.vue's own comment. -->
+    <!-- Same attribution overlay as TournamentsListCover.vue (required with any art_crop use,
+         see CardArtPicker.vue) -->
     <CardArtCredit
       v-if="!loading && league && league.image && league.imageCardName"
       :card-name="league.imageCardName"

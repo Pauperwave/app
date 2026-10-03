@@ -16,17 +16,15 @@ const schema = associateFormObjectSchema(t)
 
 type Schema = v.InferOutput<typeof schema>
 
-// born_date widened to Date | undefined to match BirthInfoFields.vue's shared
-// prop type (also used by /tesseramento, where the field starts unset) —
-// clearing the calendar now leaves it unset instead of silently resetting to
-// 1990-01-01; UForm's own schema validation (v.date()) still catches a
-// missing date at submit time, same as it already does on /tesseramento.
+// born_date is Date | undefined to match BirthInfoFields.vue's shared prop type (also used by
+// /tesseramento, where the field starts unset): clearing the calendar leaves it unset instead of
+// silently resetting to 1990-01-01; UForm's schema validation (v.date()) still catches a missing
+// date at submit
 const state = createAssociateFormState(new Date('1990-01-01'))
 
-// UModal only hides/shows, it does not unmount the form, so the state has to
-// be cleared explicitly — called on successful submit and on explicit
-// "Annulla", but deliberately NOT on the X button or an outside click, which
-// should preserve whatever the user typed (user decision 2026-08-20).
+// UModal only hides/shows and doesn't unmount the form, so the state is cleared explicitly: on
+// successful submit and "Annulla", deliberately NOT on the X button or an outside click, which
+// preserve what the user typed
 function resetForm() {
   Object.assign(state, createAssociateFormState(new Date('1990-01-01')))
 }

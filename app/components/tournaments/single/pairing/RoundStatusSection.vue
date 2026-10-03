@@ -1,12 +1,8 @@
 <!-- app\components\tournaments\single\pairing\RoundStatusSection.vue -->
-<!--
-  Generic collapsible sub-card used by RoundStatusCard for each of the 4
-  categories (rankings/kills/commanders/votes) — no domain logic here, just
-  the chrome (chevron collapse, progress bar, done/total counter) — ported
-  from MagicTheGathering/league's RoundStatusSection.vue (user request,
-  2026-09-19), same collapsible pattern as WinnerChecklistCard.vue/
-  StandingsSidebar.vue.
--->
+<!-- Generic collapsible sub-card used by RoundStatusCard for each of the 4 categories
+     (rankings/kills/commanders/votes): no domain logic, just the chrome (chevron collapse,
+     progress bar, done/total counter), ported from league's RoundStatusSection.vue, with the
+     collapsible pattern of WinnerChecklistCard.vue/StandingsSidebar.vue. -->
 <script setup lang="ts">
 const {
   title, icon, doneCount, totalCount, forceOpen = false

@@ -1,17 +1,10 @@
 <!-- app\components\tournaments\single\CommanderRoundManager.vue -->
-<!--
-  Commander's "round in progress" view — ported from
-  MagicTheGathering/league's PairingsCard.vue + StandingsCard.vue (user
-  request, 2026-09-15/16: copy the round-view layout as-is), replacing the
-  stub RoundManager.vue for Commander tournaments only (Draft keeps
-  rendering RoundManager.vue unchanged, out of scope for this pass — see
-  index.vue's own #round-${i} slot).
-
-  Every player identity here (pairing seats, kills, votes, commander decks)
-  is the DB's players.uuid, resolved from tournament_pairings' own columns —
-  not the associate uuid used before a round exists (see
-  RoundPairingCard.vue's own comment on this split).
--->
+<!-- Commander's "round in progress" view, ported from league's PairingsCard.vue +
+     StandingsCard.vue, replacing the stub RoundManager.vue for Commander tournaments only
+     (Draft keeps RoundManager.vue, see index.vue's #round-${i} slot).  Every player identity
+     here (pairing seats, kills, votes, commander decks) is the DB's players.uuid, resolved from
+     tournament_pairings' columns, not the associate uuid used before a round exists (see
+     RoundPairingCard.vue). -->
 <script setup lang="ts">
 import type { ConfirmedSeating } from '~/composables/tournaments/rounds/useConfirmedSeatings'
 
@@ -31,13 +24,16 @@ const {
   /** tournaments.round_duration_minutes — falls back to 75 (the same
    *  default the column itself has) for callers that don't pass it. */
   roundDurationMinutes?: number
-  /** Set by index.vue right after a "Torna al round precedente" click on
-   * round `roundNumber + 1` — turning back round N means "delete round N,
-   * then show round N-1's own next-round preview again" (user request,
-   * 2026-09-18), so this round's manager needs to reopen its own
-   * advancePreviewOpen on behalf of the round that just turned back into it. */
+  /**
+   * Set by index.vue right after a "Torna al round precedente" click on round `roundNumber + 1`:
+   * turning back round N means "delete round N, then show round N-1's next-round preview again", so
+   * this round's manager reopens its own advancePreviewOpen on behalf of the round that just turned
+   * back into it.
+   */
   autoOpenAdvancePreview?: boolean
-  /** Tables approved for round `roundNumber + 1` before it was turned back, reopened in its preview. */
+  /**
+   * Tables approved for round `roundNumber + 1` before it was turned back, reopened in its preview.
+   */
   nextRoundSeating?: ConfirmedSeating | null
 }>()
 
@@ -50,9 +46,8 @@ const { t } = useI18n()
 const toast = useToast()
 const { isDeveloperView } = useDeveloperView()
 
-// See each composable's own file comment for why the split lands here
-// (2026-09-18 refactor, once this component had grown past 790 lines mixing
-// all four of these concerns together).
+// See each composable's file comment for why the split lands here (this component had grown past
+// 790 lines mixing all four concerns)
 const roundData = useCommanderRoundData({
   tournamentUuid: () => tournamentUuid, roundNumber, roundCount
 })
@@ -114,10 +109,9 @@ const cannotFormNextRound = computed(() =>
 const { checked: winnersChecked, toggle: toggleWinnerChecked }
   = useWinnerChecklist(() => tournamentUuid, () => roundNumber)
 
-// ─── Round timer ────────────────────────────────────────────────────────────
-// TODO: still no real sync with the Telegram app (user request) — the
-// duration itself now comes from tournaments.round_duration_minutes
-// (roundDurationMinutes prop) instead of a hardcoded default.
+// ─── Round timer ──────────────────────────────────────────────────────────── TODO: still no real
+// sync with the Telegram app; the duration itself comes from tournaments.round_duration_minutes
+// (roundDurationMinutes prop)
 function handleTimerExpired() {
   toast.add({
     title: t('tournament.single.roundManager.timerExpiredTitle'),
@@ -141,10 +135,9 @@ const {
   isFullscreen: isTablesFullscreen, toggle: toggleTablesFullscreen
 } = useFullscreen(tablesRef)
 
-// "f-t" ("fullscreen tables") — state lives here, same "own the state, call
-// defineShortcuts from that component" pattern as `b`/`h` in
-// docs/architecture/shortcuts.md. RoundTimer.vue registers its own "f-c"
-// sibling the same way, for its own fullscreen state.
+// "f-t" ("fullscreen tables"): the state lives here, with the "own the state, call defineShortcuts
+// from that component" pattern of `b`/`h` in docs/architecture/shortcuts.md. RoundTimer.vue
+// registers its own "f-c" sibling for its fullscreen state
 defineShortcuts({
   'f-t': toggleTablesFullscreen
 })

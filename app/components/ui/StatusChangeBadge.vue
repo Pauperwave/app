@@ -1,13 +1,9 @@
 <!-- app\components\ui\StatusChangeBadge.vue -->
-<!--
-  A status UBadge with a permission-gated quick-change UDropdownMenu behind
-  it — extracted out of tournaments/StatusBadge.vue and leagues/StatusBadge.vue
-  (2026-08-31), which were near-byte-identical modulo the domain's status
-  union/icon map/color fn/mutation. Read-only badge (no dropdown) when the
-  caller lacks `permission`. Other call sites (the tournaments table, bulk
-  actions bar) still render their own inline version for now — swapping those
-  to this component is deferred, see docs/TODO.md.
--->
+<!-- A status UBadge with a permission-gated quick-change UDropdownMenu behind it, extracted
+     from tournaments/StatusBadge.vue and leagues/StatusBadge.vue (near-identical modulo the
+     domain's status union/icon map/color fn/mutation). A read-only badge (no dropdown) when the
+     caller lacks `permission`. Other call sites (the tournaments table, bulk actions bar) still
+     render their own inline version: swapping them is deferred, see docs/TODO.md. -->
 <script setup lang="ts" generic="T extends string">
 import type { BadgeProps, DropdownMenuItem } from '@nuxt/ui'
 

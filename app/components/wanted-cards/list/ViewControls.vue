@@ -1,12 +1,8 @@
 <!-- app\components\wanted-cards\list\ViewControls.vue -->
-<!--
-  Extracted out of wanted-cards/index.vue's #right toolbar slot (2026-08-16)
-  — see FiltersBar.vue's own header for why. "Le mie richieste" and
-  "Raggruppa per giocatore" live in FiltersBar.vue instead (2026-08-29,
-  user request) — both are filters (which rows show / how they're
-  clustered), not view controls, so they belong on the left with the rest
-  of the filters rather than here.
--->
+<!-- Extracted from wanted-cards/index.vue's #right toolbar slot (see FiltersBar.vue's header
+     for why). "Le mie richieste" and "Raggruppa per giocatore" live in FiltersBar.vue: both are
+     filters (which rows show / how they cluster), not view controls, so they belong on the left
+     with the rest of the filters. -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 

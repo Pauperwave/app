@@ -1,13 +1,9 @@
 <!-- app\components\wanted-cards\list\DenseView.vue -->
-<!--
-  Third view mode alongside table/grid (user request, 2026-08-29) — a
-  Microsoft-Store-style dense grid: small UCard tiles (image + name + price
-  only, no meta badges/notes/age/status), packing far more cards per screen
-  than GridView.vue's full-size tiles. Reuses GridView.vue's own section/
-  grouping shape (same `sections` prop, same wanted-cards/index.vue
-  gridSections computed feeds both) — sort/group state is shared between
-  grid and dense, only the per-card rendering + tile size differ.
--->
+<!-- Third view mode beside table/grid: a Microsoft-Store-style dense grid of small UCard tiles
+     (image + name + price only, no meta badges/notes/age/status), packing far more cards per
+     screen than GridView.vue's full-size tiles. Reuses GridView.vue's section/grouping shape
+     (the same `sections` prop, fed by wanted-cards/index.vue's gridSections): sort/group state
+     is shared between grid and dense, only the per-card rendering and tile size differ. -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { WantedCard } from '~/types'
@@ -29,10 +25,9 @@ const {
 
 const hasCards = computed(() => sections.some(section => section.cards.length))
 
-// Anchors the guided tour's "anatomy of a card" step (see GridView.vue's
-// own comment) on the first rendered card, whatever the active
-// section/grouping is — dense is the default view now, so this needs the
-// same anchor GridView.vue's own cards carry.
+// Anchors the guided tour's "anatomy of a card" step (see GridView.vue) on the first rendered card
+// whatever the section/grouping: dense is the default view, so it needs the anchor GridView.vue's
+// cards carry
 const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]?.id)
 
 // Same shift-click range convention as GridView.vue's own — every currently
@@ -61,8 +56,8 @@ const lastClickShiftKey = ref(false)
         </UBadge>
       </div>
 
-      <!-- Same auto-fill technique as GridView.vue's own grid, just a much
-           smaller minimum tile width for real density. -->
+      <!-- The same auto-fill technique as GridView.vue's grid, with a much smaller minimum tile
+           width for real density -->
       <div class="grid gap-2 grid-cols-[repeat(auto-fill,minmax(min(190px,40vw),1fr))]">
         <WantedCardsListDenseCard
           v-for="card in section.cards"

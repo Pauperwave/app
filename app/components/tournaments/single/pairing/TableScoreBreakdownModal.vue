@@ -1,11 +1,7 @@
 <!-- app\components\tournaments\single\pairing\TableScoreBreakdownModal.vue -->
-<!--
-  Read-only per-table score breakdown, opened from a TableCard's own score
-  button — ported from MagicTheGathering/league (user request, 2026-09-15).
-  Shares the same PairingTableScore/PairingPlayerScore the optimizer itself
-  produces, so the numbers shown here can never drift from what was
-  actually optimized for.
--->
+<!-- Read-only per-table score breakdown, opened from a TableCard's score button, ported from
+     league. It shares the PairingTableScore/PairingPlayerScore the optimizer produces, so the
+     numbers can't drift from what was optimized for. -->
 <script setup lang="ts">
 import type { TablePlayer } from '~/types'
 import type { PairingPlayerScore, PairingTableScore } from '~/composables/tournaments/pairing/pairingOptimizer'

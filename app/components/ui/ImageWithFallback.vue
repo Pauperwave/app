@@ -1,6 +1,5 @@
 <!-- app\components\ui\ImageWithFallback.vue -->
-<!-- Ported verbatim from MagicTheGathering/league (user request 2026-09-16:
-     copy the vote/commander insertion logic bit-by-bit). -->
+<!-- Ported verbatim from league -->
 <script setup lang="ts">
 interface Props {
   src: string | null

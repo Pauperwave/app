@@ -1,16 +1,12 @@
 <!-- app\components\associates\list\BulkActionsBar.vue -->
-<!--
-  Shared by both associates list views (index.vue = roster, requests.vue =
-  triage queue) — 2026-08-16, replacing requests.vue's bespoke inline bulk
-  buttons and the roster's dead selection UI (row-selection + TableSelectionFooter
-  with nothing wired to it). Same "dumb component, page owns the state" shape
-  as TournamentsListBulkActionsBar.vue/WantedCardsListBulkActionsBar.vue, but
-  one component covers two pages here since the action *set* differs (roster:
-  renew, plus approveRenewal on its own "Richieste (di rinnovo)" tab
-  (2026-08-27); requests: approve/reject/restore) rather than needing two
-  near-identical bars — each page just sets the `show*` prop for the actions
-  that apply to it.
--->
+<!-- Shared by both associates list views (index.vue = roster, requests.vue = triage queue),
+     replacing requests.vue's bespoke inline bulk buttons and the roster's dead selection UI
+     (row-selection + TableSelectionFooter with nothing wired to it). The same "dumb component,
+     page owns the state" shape as
+     TournamentsListBulkActionsBar.vue/WantedCardsListBulkActionsBar.vue, but one component
+     covers two pages since the action *set* differs (roster: renew, plus approveRenewal on its
+     "Richieste (di rinnovo)" tab; requests: approve/reject/restore): each page sets the `show*`
+     prop for the actions that apply. -->
 <script setup lang="ts">
 const {
   count,
@@ -23,11 +19,9 @@ const {
   showApproveRenewal = false
 } = defineProps<{
   count: number
-  // "N di M associati selezionati" — replaces the standalone
-  // TableSelectionFooter.vue row under the table (2026-09-23 user request:
-  // fold that info into this bar instead of a separate row, to save
-  // vertical space) — only associates/index.vue and requests.vue, the two
-  // pages this bar already covers.
+  // "N di M associati selezionati": replaces the standalone TableSelectionFooter.vue row under the
+  // table (saves vertical space), only for associates/index.vue and requests.vue, the two pages
+  // this bar covers
   total: number
   side: 'left' | 'right'
   showApprove?: boolean

@@ -1,10 +1,7 @@
 <!-- app\components\tournaments\EntryFeeBadge.vue -->
-<!--
-  A tournament's entry fee as a badge ("Gratis" or "10,00 €"), with a
-  permission-gated quick-change UPopover behind it — the number-input
-  counterpart of ui/StatusChangeBadge.vue's dropdown. Read-only badge when the
-  caller lacks `manage-tournaments`.
--->
+<!-- A tournament's entry fee as a badge ("Gratis" or "10,00 €") with a permission-gated
+     quick-change UPopover behind it, the number-input counterpart of ui/StatusChangeBadge.vue's
+     dropdown. A read-only badge when the caller lacks `manage-tournaments`. -->
 <script setup lang="ts">
 import type { Tournament } from '~/types'
 

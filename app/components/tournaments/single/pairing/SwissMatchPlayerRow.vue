@@ -1,9 +1,7 @@
 <!-- app\components\tournaments\single\pairing\SwissMatchPlayerRow.vue -->
-<!-- One player's row within a SwissMatchCard.vue table: name + drop badge,
-     score entry (or the bye result badge), drop action. Extracted out of
-     SwissMatchCard.vue (2026-09-24) alongside SwissMatchResultBadge.vue —
-     the two together are what SwissMatchCard.vue's own v-for loop rendered
-     inline before. -->
+<!-- One player's row within a SwissMatchCard.vue table: name + drop badge, score entry (or the
+     bye result badge), drop action. Extracted from SwissMatchCard.vue alongside
+     SwissMatchResultBadge.vue: together they are what its v-for loop rendered inline. -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { MatchScore, SwissMatchPlayer } from '~/types'

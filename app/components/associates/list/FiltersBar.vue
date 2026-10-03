@@ -1,14 +1,10 @@
 <!-- app\components\associates\list\FiltersBar.vue -->
-<!--
-  Extracted out of associates/index.vue's #left toolbar slot (2026-08-16),
-  same reasoning as wanted-cards/list/FiltersBar.vue — status filter and
-  search, replaced by AssociatesListBulkActionsBar while there's a
-  selection (that toggle stays in the page, only this "no selection"
-  content moved out). Reused as-is by associates/requests.vue (2026-08-19)
-  for the same search box. The consent-social dropdown that used to live
-  here was removed the same day (user request) — filtering by that is
-  still possible via the column's own header filter.
--->
+<!-- Extracted from associates/index.vue's #left toolbar slot, like
+     wanted-cards/list/FiltersBar.vue: status filter and search, replaced by
+     AssociatesListBulkActionsBar while there is a selection (that toggle stays in the page,
+     only this "no selection" content moved out). Reused as-is by associates/requests.vue for
+     the same search box. The consent-social dropdown was removed: filtering by it is still
+     possible via the column's header filter. -->
 <script setup lang="ts">
 interface StatusTab {
   label: string

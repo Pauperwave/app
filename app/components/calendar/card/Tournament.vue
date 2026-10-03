@@ -1,9 +1,7 @@
 <!-- app\components\calendar\card\Tournament.vue -->
-<!--
-  Standalone-tournament variant of CalendarCard.vue (see
-  PublicCalendarPage.vue) — format chip + time range sit in the #body slot,
-  inline next to the shared header, since there's no nested list below.
--->
+<!-- Standalone-tournament variant of CalendarCard.vue (see PublicCalendarPage.vue): the format
+     chip + time range sit in the #body slot, inline next to the shared header, as there is no
+     nested list below. -->
 <script lang="ts" setup>
 import { format } from 'date-fns'
 import type { Tournament } from '~/types'
@@ -15,10 +13,9 @@ interface Props {
 const { tournament } = defineProps<Props>()
 
 // Tournament.startDate/endDate are explicit fields (migration 20260815101000,
-// tournaments.starts_at/ends_at), not derived from roundCount — so
-// overlapping tournaments within the same event show real, distinct ranges.
-// endDate is nullable (not every tournament has one set) — falls back to a
-// dash rather than pretending there's a real end time.
+// tournaments.starts_at/ends_at), not derived from roundCount, so overlapping tournaments in the
+// same event show real, distinct ranges. endDate is nullable: it falls back to a dash rather than
+// pretending there is a real end time
 const timeRange = computed(() => {
   const start = format(new Date(tournament.startDate), 'HH:mm')
   if (!tournament.endDate) return start

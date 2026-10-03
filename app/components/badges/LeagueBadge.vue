@@ -1,11 +1,8 @@
 <!-- app\components\badges\LeagueBadge.vue -->
-<!--
-  A tournament's league as a clickable pill linking to its detail page — same
-  "single source of truth" reasoning as FormatBadge.vue/LocationBadge.vue.
-  Unlike LocationBadge.vue (an external Maps link, plain <a>), this is an
-  internal route, so it follows tournaments/list/LeagueLink.vue's own
-  button+navigateTo convention instead.
--->
+<!-- A tournament's league as a clickable pill linking to its detail page, with the same "single
+     source of truth" reasoning as FormatBadge.vue/LocationBadge.vue. Unlike LocationBadge.vue
+     (an external Maps link, plain <a>) this is an internal route, so it follows
+     tournaments/list/LeagueLink.vue's button+navigateTo convention. -->
 <script setup lang="ts">
 const { league, leagueUuid } = defineProps<{
   league: string

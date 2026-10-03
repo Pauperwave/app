@@ -1,13 +1,8 @@
 <!-- app\components\locations\list\Card.vue -->
-<!--
-  `loading` (2026-08-22): same per-element real-vs-USkeleton branching as
-  TournamentsListCard.vue — see that file's own comment for why this
-  replaces a separate hand-duplicated skeleton. Right-click menu added
-  2026-08-23 (copy link/id + edit, same as EventsListCard.vue's own
-  UContextMenu wrapper) — no selection/range wiring though, locations has no
-  bulk actions, so this stays a single file instead of splitting into its
-  own Cover.vue.
--->
+<!-- `loading`: the same per-element real-vs-USkeleton branching as TournamentsListCard.vue (see
+     its comment). Right-click menu (copy link/id + edit) like EventsListCard.vue's UContextMenu
+     wrapper, with no selection/range wiring: locations has no bulk actions, so this stays one
+     file instead of splitting into its own Cover.vue. -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Location } from '~/types'
@@ -23,26 +18,23 @@ const {
 
 const { t } = useI18n()
 
-// "Viale Trento, 47/49, 38068 Rovereto TN" — same order as the form fields
-// and the maps-preview query (2026-08-16 user request).
+// "Viale Trento, 47/49, 38068 Rovereto TN": the same order as the form fields and the maps-preview
+// query
 const addressLine = computed(() => location
   ? `${location.address}, ${location.postalCode} ${location.city} ${location.province}`
   : '')
 
-// Same "whole card navigates, interactive children stop propagation"
-// convention as LeaguesListCard.vue/TournamentsListCard.vue — the location
-// detail page (2026-08-19) is the first place to land on from this grid.
-// No-op while loading/without a real location — nothing to click through
-// to yet.
+// Same "whole card navigates, interactive children stop propagation" convention as
+// LeaguesListCard.vue/TournamentsListCard.vue (the location detail page is where it lands); no-ops
+// while loading/without a real location
 function onCardClick() {
   if (!location) return
   navigateTo(`/locations/${slugify(location.name)}`)
 }
 
-// The precise Google Maps place link takes priority over the generic
-// address-search fallback when set (see the googleMapsUrl column added
-// 2026-08-16 specifically because the address-search link isn't always
-// accurate — supabase/migrations/20260816120000_add_locations_google_maps_url.sql).
+// The precise Google Maps place link takes priority over the generic address-search fallback when
+// set (the googleMapsUrl column exists because the address-search link isn't always accurate, see
+// migration 20260816120000)
 const mapsLink = computed(() => location
   ? (location.googleMapsUrl ?? googleMapsUrl(location.address))
   : undefined)
@@ -59,21 +51,17 @@ const mapsLink = computed(() => location
       }"
       @click="onCardClick"
     >
-      <!-- Sibling of the dimmed content below, not a child — same
-           top-left-vs-top-right mirror of LocationsListLocationStatus's own
-           absolute positioning (user request, 2026-09-04). -->
+      <!-- Sibling of the dimmed content below, not a child: mirrors
+           LocationsListLocationStatus's top-left vs top-right absolute positioning -->
       <LocationsTypeBadge
         v-if="!loading && location"
         :is-shop="location.isShop"
         class="absolute top-2 left-2 z-10"
       />
 
-      <!-- Not inside the opacity-60 wrapper below: CSS opacity applies to a
-         whole subtree, a descendant can't opt back out of an ancestor's
-         opacity — the badge has to be a sibling, not a child, of the faded
-         content to render at full strength on top of it (user request,
-         2026-08-19; previously the badge announcing "closed" was itself the
-         thing getting faded out). -->
+      <!-- Not inside the opacity-60 wrapper below: CSS opacity applies to a whole subtree and a
+           descendant can't opt back out, so the badge must be a sibling of the faded content to
+           render at full strength on top of it (the "closed" badge was itself getting faded) -->
       <LocationsListLocationStatus
         v-if="!loading && location"
         :temporarily-closed="location.temporarilyClosed"
@@ -133,9 +121,9 @@ const mapsLink = computed(() => location
             :location="location"
             @click.stop
           />
-          <!-- Optional on a real card (0-5 icons, none shown at all if unset)
-             — same guess tradeoff as the footer's phone badge below: a
-             typical-looking row rather than a pixel-exact one. -->
+          <!-- Optional on a real card (0-5 icons, none if unset): the same guess tradeoff as
+               the footer's phone badge below, a typical-looking row rather than a pixel-exact
+               one -->
           <div v-else class="flex items-center gap-3 mt-2">
             <USkeleton
               v-for="n in 3"
@@ -176,9 +164,8 @@ const mapsLink = computed(() => location
             </UBadge>
           </a>
         </template>
-        <!-- Phone is optional on a real card (so this is a guess, unlike the
-           maps badge which is always present) — same tradeoff tournaments'
-           own optional location badge accepts in its skeleton. -->
+        <!-- Phone is optional on a real card (a guess, unlike the always-present maps badge):
+             the same tradeoff as tournaments' optional location badge in its skeleton -->
         <template v-else>
           <USkeleton class="h-6 w-24" />
           <USkeleton class="h-6 w-28" />

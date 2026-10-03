@@ -1,9 +1,7 @@
 <!-- app\components\events\single\Details.vue -->
-<!--
-  What the event page shows beyond its tournaments (user request, 2026-10-03, modeled on Radio
-  Atog 2026): tagline and edition, description, tickets, membership, practical notes and partners.
-  Every part is optional and disappears when empty.
--->
+<!-- What the event page shows beyond its tournaments: tagline and edition, description,
+     tickets, membership, practical notes and partners. Every part is optional and disappears
+     when empty. -->
 <script setup lang="ts">
 import { groupEventPartners } from '#shared/utils/events/eventPartners'
 import type { Event } from '~/types'

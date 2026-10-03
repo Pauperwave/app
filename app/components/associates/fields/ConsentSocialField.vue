@@ -1,12 +1,8 @@
 <!-- app\components\associates\fields\ConsentSocialField.vue -->
-<!--
-  Shared by AddModal.vue and /tesseramento — see PersonalInfoFields.vue for
-  the state-mutation rationale (same pattern, `vue/no-mutating-props`
-  disabled below for the same reason). Now links to
-  /tesseramento/informativa-privacy (2026-08-19, user request — matches
-  has_read_statute/consent_data's own link-out-to-the-real-document
-  pattern), so still identical in both forms, just no longer plain text.
--->
+<!-- Shared by AddModal.vue and /tesseramento: see PersonalInfoFields.vue for the state-mutation
+     rationale (the same pattern, `vue/no-mutating-props` disabled below for the same reason).
+     It links to /tesseramento/informativa-privacy (like has_read_statute/consent_data link out
+     to the real document), so it is identical in both forms. -->
 <!-- eslint-disable vue/no-mutating-props -- see PersonalInfoFields.vue -->
 <script setup lang="ts">
 interface ConsentSocialState {

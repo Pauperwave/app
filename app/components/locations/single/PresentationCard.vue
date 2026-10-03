@@ -1,15 +1,9 @@
 <!-- app\components\locations\single\PresentationCard.vue -->
-<!--
-  Extracted out of locations/[slug]/index.vue (2026-08-20), same convention as
-  LeaguesSinglePresentationCard.vue — the location-detail page's own header
-  card: cover image, name, edit button, address/maps link, phone, social
-  links.
-
-  `loading` (2026-08-22): same per-element real-vs-USkeleton branching as
-  LocationsListCard.vue — the detail page's top shell used to sit behind a
-  full-page spinner instead of getting its own skeleton, unlike the
-  tournaments grid below it (already fixed the same session).
--->
+<!-- Extracted from locations/[slug]/index.vue, like LeaguesSinglePresentationCard.vue: the
+     location-detail page's header card (cover image, name, edit button, address/maps link,
+     phone, social links).  `loading`: the same per-element real-vs-USkeleton branching as
+     LocationsListCard.vue (the detail page's top shell used to sit behind a full-page spinner,
+     unlike the tournaments grid below it). -->
 <script setup lang="ts">
 import type { Location } from '~/types'
 
@@ -29,10 +23,9 @@ const { t } = useI18n()
 <template>
   <UCard :ui="{ body: 'p-0 sm:p-0' }" class="overflow-hidden">
     <div class="flex flex-col sm:flex-row">
-      <!-- Sibling of the dimmed img/placeholder, not a descendant: CSS
-           opacity applies to a whole subtree, so the badge has to sit
-           outside it to render at full strength on top (same fix as
-           the grid card's own LocationsListLocationStatus). -->
+      <!-- Sibling of the dimmed img/placeholder, not a descendant: CSS opacity applies to a
+           whole subtree, so the badge sits outside it to render at full strength (like the grid
+           card's LocationsListLocationStatus) -->
       <div class="relative shrink-0 w-full sm:w-64">
         <template v-if="!loading && location">
           <NuxtImg
@@ -115,8 +108,7 @@ const { t } = useI18n()
           <UIcon :name="ICONS.phone" class="size-4 shrink-0" />
           {{ location.phone }}
         </p>
-        <!-- Optional on a real card — same guess tradeoff as the grid
-             card's own footer badges. -->
+        <!-- Optional on a real card: the same guess tradeoff as the grid card's footer badges -->
         <USkeleton v-else-if="loading" class="h-4 w-32 mt-1" />
 
         <LocationsListSocialLinks v-if="!loading && location" :location="location" />

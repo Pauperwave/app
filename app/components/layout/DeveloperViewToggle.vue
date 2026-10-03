@@ -1,26 +1,18 @@
 <!-- app\components\layout\DeveloperViewToggle.vue -->
-<!--
-  Toggles the app-wide "developer view" (margin-visualization overlay,
-  see useDeveloperView.ts/main.css's .debug-spacing) — ported from
-  MagicTheGathering/league's DeveloperViewToggle.vue (user request,
-  2026-09-18: "copia da league il tasto developer"), gated behind the same
-  hardcoded password as a speed bump, not a real auth boundary (the app
-  already sits behind Supabase auth) — just enough that an organizer's
-  screen isn't one accidental click away from a distracting debug overlay.
-
-  One button, one popover, content depends on state (user request,
-  2026-09-18: pressing it again while already unlocked should reopen the
-  popover with its settings, not immediately disable developer view) —
-  password prompt while locked, overlay switch + disable button once
-  unlocked. league instead spreads this across three components
-  (DeveloperViewToggle/DeveloperOverlayToggle/DeveloperToolbarButton) since
-  its overlay toggle is its own always-visible header button; collapsed
-  into one popover here since there's nowhere to put a second standalone
-  button without reopening the "no room" problem this was moved to fix.
--->
+<!-- Toggles the app-wide "developer view" (margin-visualization overlay, see
+     useDeveloperView.ts/main.css's .debug-spacing), ported from league's
+     DeveloperViewToggle.vue and gated behind the same hardcoded password as a speed bump, not a
+     real auth boundary (the app already sits behind Supabase auth): just enough that an
+     organizer's screen isn't one accidental click from a distracting debug overlay.  One
+     button, one popover, content by state: pressing it again while unlocked reopens the popover
+     with its settings instead of disabling developer view (password prompt while locked,
+     overlay switch + disable button once unlocked). league spreads this across three components
+     (DeveloperViewToggle/DeveloperOverlayToggle/DeveloperToolbarButton) since its overlay
+     toggle is its own header button; collapsed into one popover here since there's no room for
+     a second standalone button. -->
 <script setup lang="ts">
-// Hardcoded on purpose — see the file-level comment. Same value as league's
-// own DEVELOPER_VIEW_PASSWORD for fidelity (user request: copy as-is).
+// Hardcoded on purpose (see the file-level comment); the same value as league's
+// DEVELOPER_VIEW_PASSWORD
 const DEVELOPER_VIEW_PASSWORD = 'test'
 
 const { isDeveloperView, isOverlayEnabled } = useDeveloperView()
@@ -43,10 +35,8 @@ function confirmPassword() {
     passwordError.value = true
     return
   }
-  // Stays open on unlock (user request, 2026-09-18) — the popover's own
-  // #content branch swaps from the password prompt to the settings panel
-  // (overlay switch + disable button) in place, so the organizer can flip
-  // "Mostra margini" right away without reopening the popover.
+  // Stays open on unlock: the popover's #content swaps from the password prompt to the settings
+  // panel in place, so the organizer can flip "Mostra margini" without reopening it
   isDeveloperView.value = true
 }
 

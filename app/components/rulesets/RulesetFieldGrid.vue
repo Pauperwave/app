@@ -1,5 +1,5 @@
 <!-- app\components\rulesets\RulesetFieldGrid.vue -->
-<!-- Ported from league's RulesetFieldGrid.vue (user request, 2026-09-17). -->
+<!-- Ported from league's RulesetFieldGrid.vue -->
 <script setup lang="ts">
 interface FieldItem {
   key: string

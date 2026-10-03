@@ -1,10 +1,7 @@
 <!-- app\components\settings\TimerSettingsForm.vue -->
-<!--
-  /settings' "Timer" section — split out of TournamentSettingsForm.vue
-  (2026-09-23 user request): the round timer's own duration values (round
-  duration per format family, plus the "pre" SISTEMATEVI countdown length),
-  kept apart from the round-count/Swiss-tier values in the "Tornei" section.
--->
+<!-- /settings' "Timer" section, split from TournamentSettingsForm.vue: the round timer's
+     duration values (round duration per format family, plus the "pre" SISTEMATEVI countdown
+     length), kept apart from the round-count/Swiss-tier values of the "Tornei" section. -->
 <script setup lang="ts">
 import * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'

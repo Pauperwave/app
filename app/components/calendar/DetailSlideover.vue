@@ -1,35 +1,19 @@
 <!-- app\components\calendar\DetailSlideover.vue -->
-<!--
-  Right-side detail panel for /calendario (user request 2026-08-14, same
-  USlideover pattern as NotificationsSlideover.vue) — reads
-  useCalendarDetail.ts, written by CalendarEventCard.vue /
-  CalendarTournamentCard.vue when a card is tapped. Mounted once in
-  PublicCalendarPage.vue.
-
-  No :title/:description prop — the #header slot instead holds the
-  "full-bleed image + bottom gradient + overlaid title" hero (same style as
-  MagicTheGathering/league's CommanderArt.vue), pinned in place while #body
-  scrolls underneath it (2026-08-16 user request — previously this hero was
-  the first element of #body and scrolled away with the rest). :close="false"
-  + a custom close button on the hero itself (tournament branch) replaces
-  USlideover's own; `content: 'divide-y-0'` strips the header/body divider
-  line so the image can still sit edge-to-edge. `header: 'p-0 sm:px-0
-  min-h-0'` strips the default header's padding — both p-0 (unprefixed) AND
-  sm:px-0 are needed: SlideoverHeader's own default classes include a
-  sm:px-6 that p-0 alone doesn't cancel (different Tailwind variant
-  signature, so tailwind-merge doesn't collapse them), which left visible
-  gaps on both sides of the hero image at sm:+ (bug report, 2026-08-29,
-  "black bands") until sm:px-0 was added to match that exact signature.
-
-  Participant rows use UUser + generatePlayerAvatar() directly, not
-  AssociateTag.vue — that component always calls useAssociatesQuery()
-  internally (even without an associateUuid prop), which queries
-  pauperwave_associates_with_status with the anon Supabase client. On this
-  public, unauthenticated page that's a real exposure risk given
-  docs/BACKLOG.md's open P1 on that table's overly permissive RLS policy —
-  participants here are plain name strings anyway, not linked to an
-  associate record.
--->
+<!-- Right-side detail panel for /calendario (the USlideover pattern of NotificationsSlideover.vue):
+     reads useCalendarDetail.ts, written by CalendarEventCard.vue / CalendarTournamentCard.vue when
+     a card is tapped. Mounted once in PublicCalendarPage.vue.  No :title/:description prop: the
+     #header slot holds the "full-bleed image + bottom gradient + overlaid title" hero (like
+     league's CommanderArt.vue), pinned while #body scrolls underneath. :close="false" + a custom
+     close button on the hero (tournament branch) replaces USlideover's own; `content: 'divide-y-0'`
+     strips the header/body divider so the image sits edge-to-edge. `header: 'p-0 sm:px-0 min-h-0'`
+     strips the header padding: both p-0 AND sm:px-0 are needed, since SlideoverHeader's default
+     sm:px-6 isn't cancelled by p-0 alone (different variant signature, so tailwind-merge doesn't
+     collapse them), leaving visible gaps on both sides of the hero at sm:+ ("black bands").
+     Participant rows use UUser + generatePlayerAvatar() directly, not AssociateTag.vue: that always
+     calls useAssociatesQuery() (even without an associateUuid prop), querying
+     pauperwave_associates_with_status with the anon Supabase client, a real exposure risk on this
+     unauthenticated page given docs/BACKLOG.md's open P1 on that table's permissive RLS policy.
+     Participants here are plain name strings, not linked to an associate record. -->
 <script lang="ts" setup>
 import type { Tournament } from '~/types'
 
@@ -42,16 +26,12 @@ const isOpen = computed({
   }
 })
 
-// Mobile back-gesture support (user request 2026-08-14): without a pushed
-// history entry, swiping back while the slideover is open navigates away
-// from /calendario entirely instead of just dismissing it. Pushing a marker
-// entry when it opens means the gesture's popstate closes the slideover
-// first; `closingViaPopState` stops the resulting selection→isOpen watch
-// from calling history.back() a second time for a back that already
-// happened. Closing any other way (X button, clicking outside, selecting a
-// nested tournament) still needs that history.back() to drop the marker
-// entry, or the next real back-gesture would land on a stale one instead of
-// leaving the page.
+// Mobile back-gesture support: without a pushed history entry, swiping back while the slideover is
+// open leaves /calendario instead of dismissing it. Pushing a marker entry on open makes the
+// gesture's popstate close the slideover first; `closingViaPopState` stops the resulting
+// selection→isOpen watch from calling history.back() again for a back that already happened.
+// Closing any other way (X, clicking outside, selecting a nested tournament) still needs
+// history.back() to drop the marker entry, or the next real back-gesture would land on a stale one
 let closingViaPopState = false
 
 watch(isOpen, (open, wasOpen) => {
@@ -90,10 +70,8 @@ function openTournament(tournament: Tournament) {
       content: 'divide-y-0 overflow-hidden'
     }"
   >
-    <!-- Hero (image/gradient/title) pinned in the native #header slot
-         (2026-08-16 user request) — stays visible while the rest of the
-         details scroll underneath it in #body, instead of scrolling away
-         as it did when it was the first element of #body. -->
+    <!-- Hero (image/gradient/title) pinned in the native #header slot: it stays visible while the
+         details scroll underneath in #body -->
     <template #header="{ close }">
       <CalendarEventDetailHero
         v-if="selection?.kind === 'event'"

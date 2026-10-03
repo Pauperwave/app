@@ -1,6 +1,5 @@
 <!-- app\components\players\single\CommanderDecksCard.vue -->
-<!-- Split out of players/[slug]/index.vue (2026-08-29, fallow:health) — see
-     LoginHistoryCard.vue's own comment. -->
+<!-- Split out of players/[slug]/index.vue: see LoginHistoryCard.vue -->
 <script setup lang="ts">
 import { DateWithRelativeTooltip, EditIconButton, UBadge, UButton } from '#components'
 import type { TableColumn } from '@nuxt/ui'

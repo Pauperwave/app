@@ -1,14 +1,9 @@
 <!-- app\components\ui\ChordHint.vue -->
-<!--
-  Muted UKbd chip(s) for a keyboard shortcut hint — one chip per key, e.g.
-  ['f', 't'] renders "f" "t" side by side. Same UX as default.vue's own "g x"
-  sidebar nav hint (docs/architecture/shortcuts.md): shown from the moment
-  the chord's prefix key is pressed until the next keystroke.
-
-  Own gap-1 wrapper, independent of whatever gap the caller's own flex row
-  uses for its other children — so the keys always sit as tight together as
-  the sidebar's original hint, regardless of where they're rendered.
--->
+<!-- Muted UKbd chip(s) for a keyboard shortcut hint, one chip per key (['f', 't'] renders "f"
+     "t" side by side): the same UX as default.vue's "g x" sidebar nav hint
+     (docs/architecture/shortcuts.md), shown from the moment the chord's prefix key is pressed
+     until the next keystroke.  Own gap-1 wrapper, independent of the caller's flex row gap, so
+     the keys sit as tight as the sidebar's original hint wherever rendered. -->
 <script setup lang="ts">
 const { keys, show = true } = defineProps<{
   keys: string[]

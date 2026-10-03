@@ -1,22 +1,14 @@
 <!-- app\components\badges\FormatBadge.vue -->
-<!--
-  Single source of truth for the "format" badge's colour (Commander, Pauper,
-  Draft, ...) — shared/utils/formatColors.ts's tint, applied by overriding
-  --ui-primary locally rather than passing a Tailwind class. This app's
-  semantic colour tokens (primary/success/...) are Tailwind v4 theme values
-  that tailwind-merge's default config doesn't recognise as conflicting with
-  each other, so `:class="formatColorClass(...)"` on a plain UBadge left the
-  variant="subtle" compound's own bg-primary/10 and ring-primary/25 in place
-  alongside it. Every `subtle`-variant utility (bg-primary/*, text-primary,
-  ring-primary/*) reads from --ui-primary, so overriding just that one
-  custom property repaints bg/text/ring consistently, no class conflict to
-  resolve.
-
-  Centralized here (2026-08-16) after this exact pattern was copy-pasted
-  across four files (tournaments/list/Card.vue, calendar/card/Tournament.vue,
-  calendar/card/Event.vue, calendar/DetailSlideover.vue) — the copies had
-  already started drifting from each other.
--->
+<!-- Single source of truth for the "format" badge's color (Commander, Pauper, Draft, ...):
+     shared/utils/formatColors.ts's tint, applied by overriding --ui-primary locally rather than
+     a Tailwind class. This app's semantic color tokens are Tailwind v4 theme values that
+     tailwind-merge doesn't see as conflicting, so `:class="formatColorClass(...)"` on a plain
+     UBadge left the variant="subtle" compound's bg-primary/10 and ring-primary/25 beside it.
+     Every `subtle` utility (bg-primary/*, text-primary, ring-primary/*) reads --ui-primary, so
+     overriding that one property repaints bg/text/ring consistently, with no class conflict.
+     Centralized after this pattern was copy-pasted across four files
+     (tournaments/list/Card.vue, calendar/card/Tournament.vue, calendar/card/Event.vue,
+     calendar/DetailSlideover.vue), whose copies had started drifting. -->
 <script setup lang="ts">
 const { format, icon } = defineProps<{
   format: string

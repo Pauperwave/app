@@ -1,11 +1,8 @@
 <!-- app\components\settings\TournamentSettingsForm.vue -->
-<!--
-  /settings' "Tornei" section: the values that used to be hardcoded in the
-  tournament logic — round duration and round count per format family, and
-  the Swiss round-count tiers. Swiss scoring (3/1/0 points, the 0.33
-  tiebreak floor) is deliberately absent: it is fixed by the official Magic
-  Tournament Rules.
--->
+<!-- /settings' "Tornei" section: the values that used to be hardcoded in the tournament logic
+     (round duration and round count per format family, and the Swiss round-count tiers). Swiss
+     scoring (3/1/0 points, the 0.33 tiebreak floor) is deliberately absent: it is fixed by the
+     official Magic Tournament Rules. -->
 <script setup lang="ts">
 import * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'

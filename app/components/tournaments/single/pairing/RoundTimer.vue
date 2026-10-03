@@ -1,43 +1,22 @@
 <!-- app\components\tournaments\single\pairing\RoundTimer.vue -->
-<!-- fallow-ignore-file code-duplication -- the TimerControlButton instances in
-     the template share a prop shape (icon/color/variant/:fullscreen/:tooltip/
-     @click) but each is gated by a different phase condition and calls a
-     different handler; fallow's line-scoped ignore comment doesn't work inside
-     <template> (only // comments in <script>, tested 2026-08-03), so this is
-     file-scoped instead. -->
-<!--
-  RoundTimer
-
-  Ported 1:1 from MagicTheGathering/league's RoundTimer.vue (user request
-  2026-09-16: "bisogna copiare il timer così com'è senza modifiche"), then
-  split once porting was done (user follow-up 2026-09-17: that constraint
-  was for the porting phase only, not permanent — the countdown state
-  machine now lives in useRoundTimerEngine.ts, leaving this component with
-  just fullscreen mode, the 4 confirm dialogs, and the template). No
-  behavior change from the original.
-
-  A 3-phase countdown sequence for a single tournament round:
-  1. "pre" — setup countdown, length set in /settings' Timer section
-     (defaults to 3 minutes, useRoundTimerEngine.ts).
-  2. "round" — the configured round duration (+ any added/removed bonus minutes).
-  3. "turns" — a fixed 15-minute "TURNI" (extra turns) countdown.
-  Once "turns" expires, the display switches to a terminal "FINE PARTITA" state.
-  Each phase auto-starts the next when it expires — a single Avvia click
-  drives the whole sequence.
-
-  - Persists phase + start timestamp to localStorage keyed by round number,
-    so a page refresh resumes exactly where it left off — including
-    cascading through any phases that fully elapsed while the page was
-    closed (e.g. laptop asleep through the whole round + turns).
-  - Supports pause/resume, reset, and fullscreen mode.
-  - Emits `expired` once, when the "round" phase ends (turns begins).
-
-  TODO (2026-09-16): `durationMinutes` is a hardcoded default (75, same
-  fallback league itself uses) — this app has no per-tournament round-
-  duration column yet. Once this timer needs to sync with the Telegram app
-  (user request), that's also where a real duration source/sync mechanism
-  should be designed, not just a DB column.
--->
+<!-- fallow-ignore-file code-duplication -- the TimerControlButton instances share a prop shape
+     (icon/color/variant/:fullscreen/:tooltip/@click) but each is gated by a different phase
+     condition and calls a different handler; fallow's line-scoped ignore doesn't work inside
+     <template> (only // in <script>), so this is file-scoped -->
+<!-- RoundTimer  Ported from league's RoundTimer.vue, then split: the countdown state machine lives
+     in useRoundTimerEngine.ts, leaving this component with fullscreen mode, the 4 confirm dialogs
+     and the template.  A 3-phase countdown sequence for one tournament round: 1. "pre": setup
+     countdown, length set in /settings' Timer section (default 3 minutes, useRoundTimerEngine.ts).
+     2. "round": the configured round duration (+ any added/removed bonus minutes). 3. "turns": a
+     fixed 15-minute "TURNI" (extra turns) countdown. Once "turns" expires the display switches to a
+     terminal "FINE PARTITA" state. Each phase auto-starts the next when it expires: a single Avvia
+     click drives the whole sequence.  - Persists phase + start timestamp to localStorage keyed by
+     round number, so a refresh resumes exactly where it left off, cascading through any phases that
+     fully elapsed while the page was closed. - Supports pause/resume, reset and fullscreen mode. -
+     Emits `expired` once, when the "round" phase ends (turns begins).  TODO: `durationMinutes` is a
+     hardcoded default (75, league's fallback) as there is no per-tournament round-duration column.
+     When this timer must sync with the Telegram app, design the real duration source and sync
+     mechanism there, not just a DB column. -->
 <script setup lang="ts">
 const props = defineProps<{
   /** Total countdown duration in minutes for the "round" phase. */
@@ -92,28 +71,24 @@ defineShortcuts({
 // pressed — same mechanism/UX as default.vue's own "g" nav hint.
 const showFHint = useChordHintKey('f')
 
-// ---------------------------------------------------------------------------
-// Confirm dialogs
-// ---------------------------------------------------------------------------
-// Each of these gates a phase-transition/reset action from useRoundTimerEngine
-// behind a confirm — ConfirmModal's own @confirm doesn't close itself, so
-// each wrapper below both performs the action and closes its own dialog.
+// --------------------------------------------------------------------------- Confirm dialogs
+// --------------------------------------------------------------------------- Each gates a
+// phase-transition/reset action from useRoundTimerEngine behind a confirm: ConfirmModal's @confirm
+// doesn't close itself, so each wrapper both performs the action and closes its dialog
 
-// Resetting wipes elapsed time AND any added/removed minutes, and restarts
-// the whole pre/round/turni sequence from "pre" — destructive enough (and
-// easy to fat-finger, especially on the oversized fullscreen buttons) to
-// gate behind a confirmation. One modal instance covers both the normal and
-// fullscreen layouts, since this component renders both from the same template.
+// Resetting wipes elapsed time AND added/removed minutes and restarts the whole pre/round/turni
+// sequence from "pre": destructive and easy to fat-finger (especially on the oversized fullscreen
+// buttons), so it is confirmed. One modal covers both the normal and fullscreen layouts, which
+// render from the same template
 const showResetConfirm = ref(false)
 function confirmReset() {
   reset()
   showResetConfirm.value = false
 }
 
-// Subtracting minutes is otherwise unconfirmed (reversible via Add, unlike
-// Reset) — but a subtraction that would *immediately* expire the round is
-// the one consequential case, so it gets a lighter, warning-colored confirm
-// rather than Reset's heavier error-colored one.
+// Subtracting minutes is otherwise unconfirmed (reversible via Add, unlike Reset), but one that
+// would *immediately* expire the round is consequential, so it gets a lighter warning-colored
+// confirm than Reset's error-colored one
 const showSubtractExpireConfirm = ref(false)
 const pendingSubtractMinutes = ref(0)
 function onSubtractClick(minutes: number) {
@@ -129,10 +104,9 @@ function confirmSubtractExpire() {
   showSubtractExpireConfirm.value = false
 }
 
-// Both jump the sequence forward early (skipping SISTEMATEVI's remaining
-// time, or TURNI's) — not destructive in the "lose data" sense Reset is,
-// but consequential enough (skips the whole round or ends the game outright)
-// to gate behind a lighter confirmation too.
+// Both jump the sequence forward early (skipping SISTEMATEVI's or TURNI's remaining time): not
+// destructive like Reset, but consequential enough (skips the round or ends the game) for a lighter
+// confirmation
 const showSkipPreConfirm = ref(false)
 function confirmSkipPre() {
   skipPreTimer()
@@ -183,10 +157,8 @@ function confirmForceEndTurns() {
       />
     </UTooltip>
 
-    <!-- Icon + phase label paired in their own row so the label stays to
-         the icon's right even in fullscreen mode, where the outer
-         container is flex-col (icon/label/digits/controls would otherwise
-         stack vertically in DOM order instead). -->
+    <!-- Icon + phase label in their own row so the label stays right of the icon in fullscreen,
+         where the outer container is flex-col (they would otherwise stack in DOM order) -->
     <div class="flex items-center gap-2">
       <UIcon
         :name="ICONS.timer"
@@ -216,9 +188,8 @@ function confirmForceEndTurns() {
       {{ display }}
     </span>
 
-    <!-- Controls — two groups that wrap independently onto their own line
-         only when there isn't enough horizontal room for both, instead of
-         always stacking or letting individual buttons wrap raggedly. -->
+    <!-- Controls: two groups that wrap onto their own line only when there isn't room for both,
+         instead of always stacking or wrapping buttons raggedly -->
     <div
       class="flex"
       :class="isFullscreen ? 'flex-row gap-8' : 'flex-wrap gap-2'"

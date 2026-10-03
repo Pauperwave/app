@@ -1,10 +1,7 @@
 <!-- app\components\events\list\BulkActionsBar.vue -->
-<!--
-  Shown only while at least one event is selected (useSelection.ts) — shared
-  between the table and grid views, which both feed the same selection. Same
-  shape/reasoning as LeaguesListBulkActionsBar.vue (status + delete only, no
-  image/entry-fee actions — events has neither).
--->
+<!-- Shown only while at least one event is selected (useSelection.ts), shared by the table and
+     grid views, which feed the same selection. The same shape as LeaguesListBulkActionsBar.vue
+     (status + delete only, no image/entry-fee actions: events have neither). -->
 <script setup lang="ts">
 import type { EventStatus } from '~/types'
 

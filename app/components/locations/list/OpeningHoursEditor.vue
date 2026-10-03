@@ -13,10 +13,9 @@ const { disabled = false } = defineProps<{ disabled?: boolean }>()
 
 const { t } = useI18n()
 
-// Kept alongside `model` so a day's pickers stay populated (and rendered)
-// even while closed — model[day] is null for a closed day, but the row
-// shouldn't collapse/grow when toggling, and the previously entered times
-// shouldn't be lost if the user unchecks and rechecks the day.
+// Kept alongside `model` so a day's pickers stay populated (and rendered) while closed: model[day]
+// is null for a closed day, but the row shouldn't collapse/grow when toggling, and previously
+// entered times shouldn't be lost if the user unchecks and rechecks the day
 const draft = reactive<Record<DayOfWeek, { open: string, close: string }>>(
   Object.fromEntries(
     DAYS_OF_WEEK.map(day => [day, model.value[day] ?? { open: '09:00', close: '18:00' }])
@@ -44,10 +43,9 @@ function toggleDay(day: DayOfWeek, isOpen: boolean) {
   }
 }
 
-// Two independent (non-range) pickers rather than UInputTime's `range` mode:
-// range mode treats start/end as the same calendar day and flags close < open
-// (e.g. 17:00 -> 00:00, a venue closing after midnight) as invalid, since Time
-// values carry no day component to express "closes the next day".
+// Two independent (non-range) pickers rather than UInputTime's `range` mode: range mode treats
+// start/end as the same calendar day and flags close < open (e.g. 17:00 -> 00:00, a venue closing
+// after midnight) as invalid, since Time values carry no day component to say "closes the next day"
 function updateTime(day: DayOfWeek, key: 'open' | 'close', value: TimeValue | null | undefined) {
   if (!value) return
   // TimeValue.toString() is "HH:mm:ss" — opening_hours only ever stores "HH:mm".

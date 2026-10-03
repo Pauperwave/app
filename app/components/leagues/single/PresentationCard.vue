@@ -1,12 +1,8 @@
 <!-- app\components\leagues\single\PresentationCard.vue -->
-<!--
-  Extracted out of leagues/[leagueId]/index.vue (2026-08-20) once it stopped
-  being a one-off — the league-detail page's own header card: name, ruleset,
-  "Dal ... al ..." date range, and tournament-completion progress. No image
-  (dropped 2026-08-20, user request — this card's whole value is information
-  density, not a cover photo) and no status badge (also dropped the same
-  session, kept to name + edit button only).
--->
+<!-- Extracted from leagues/[leagueId]/index.vue: the league-detail page's header card (name,
+     ruleset, "Dal ... al ..." date range, tournament-completion progress). No image (this
+     card's value is information density, not a cover photo) and no status badge: just name +
+     edit button. -->
 <script setup lang="ts">
 import type { League } from '~/types'
 

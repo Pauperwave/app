@@ -1,10 +1,8 @@
 <!-- app\components\leagues\list\BulkActionsBar.vue -->
-<!--
-  Shown only while at least one league is selected (useSelection.ts) — shared
-  between the table and grid views, which both feed the same selection. Same
-  shape/reasoning as TournamentsListBulkActionsBar.vue, including the "swap,
-  don't insert a row" trick — see that file's header comment.
--->
+<!-- Shown only while at least one league is selected (useSelection.ts), shared by the table and
+     grid views, which feed the same selection. The same shape as
+     TournamentsListBulkActionsBar.vue, including the "swap, don't insert a row" trick (see its
+     header). -->
 <script setup lang="ts">
 import type { LeagueStatus } from '~/types'
 

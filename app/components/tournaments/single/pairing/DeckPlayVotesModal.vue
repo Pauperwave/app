@@ -1,13 +1,9 @@
 <!-- app\components\tournaments\single\pairing\DeckPlayVotesModal.vue -->
-<!--
-  Ported bit-by-bit from MagicTheGathering/league's DeckPlayVotesModal.vue
-  (user request 2026-09-16) — kept the same component name even though this
-  app's first vote category is "brew" (Miglior mazzo) rather than league's
-  "deck", since the two mean the same thing and the component itself is
-  otherwise unchanged. Swaps numeric player ids for this app's uuids and
-  Ruleset's rule_set_brew/rule_set_play columns for RulesetPointValues'
-  brew/play.
--->
+<!-- Ported from league's DeckPlayVotesModal.vue, keeping the component name though this app's
+     first vote category is "brew" (Miglior mazzo) rather than league's "deck": they mean the
+     same thing and the component is otherwise unchanged. Swaps numeric player ids for this
+     app's uuids and Ruleset's rule_set_brew/rule_set_play columns for RulesetPointValues'
+     brew/play. -->
 <script setup lang="ts">
 import type { TablePlayer } from '~/types'
 import type { RulesetPointValues } from '#shared/utils/tournaments/commanderScoring'
@@ -22,7 +18,10 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   submit: [brewVotePlayerUuid: string | null, playVotePlayerUuid: string | null]
-  /** A voted-on player has no commander recorded yet — opens the commander-assignment modal for them. */
+  /**
+   * A voted-on player has no commander recorded yet — opens the commander-assignment modal for
+   * them.
+   */
   assignCommander: [playerUuid: string]
 }>()
 

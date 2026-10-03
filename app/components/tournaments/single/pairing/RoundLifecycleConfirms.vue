@@ -1,9 +1,7 @@
 <!-- app\components\tournaments\single\pairing\RoundLifecycleConfirms.vue -->
-<!--
-  Confirm dialogs for the two round-lifecycle actions that had none (2026-10-03):
-  "Torna indietro" deletes the round with its tables and results and tells the players on Telegram,
-  "Termina torneo" closes every round. Shared by both round managers (Commander and 1v1).
--->
+<!-- Confirm dialogs for the two round-lifecycle actions that had none: "Torna indietro" deletes
+     the round with its tables and results and tells the players on Telegram, "Termina torneo"
+     closes every round. Shared by both round managers (Commander and 1v1). -->
 <script setup lang="ts">
 const turnBackOpen = defineModel<boolean>('turnBackOpen', { required: true })
 const endOpen = defineModel<boolean>('endOpen', { required: true })

@@ -1,20 +1,13 @@
 <!-- app\components\wanted-cards\FormFields.vue -->
-<!--
-  Shared by AddModal.vue and EditModal.vue: everything from the printing picker
-  down to the notes field was identical markup+logic in both (the two modals
-  only differ above this point — AddModal has a searchable card-name field,
-  EditModal shows the fixed card name as read-only text).
-
-  `state` is the SAME reactive object the parent binds to its own <UForm
-  :state> — a plain prop, deliberately mutated here on its sub-fields (not
-  copied) so the parent's schema validation sees the edits. That trips
-  vue/no-mutating-props, disabled file-wide below: a v-model (defineModel)
-  was considered instead, but the parent's `state` is a `const reactive()`
-  (required by UForm), and defineModel's two-way binding only actually works
-  through a `state = $event` reassignment the parent would never be able to
-  make — passing a mutable object prop by reference is the correct call
-  here, not a v-model.
--->
+<!-- Shared by AddModal.vue and EditModal.vue: everything from the printing picker down to the
+     notes field was identical in both (the modals differ above: AddModal has a searchable
+     card-name field, EditModal shows the fixed name as read-only text).  `state` is the SAME
+     reactive object the parent binds to its <UForm :state>: a plain prop, deliberately mutated
+     here on its sub-fields (not copied) so the parent's schema validation sees the edits. That
+     trips vue/no-mutating-props, disabled file-wide below. A v-model (defineModel) was
+     considered, but the parent's `state` is a `const reactive()` (required by UForm) and
+     defineModel's two-way binding only works through a `state = $event` reassignment the parent
+     can't make: passing a mutable object by reference is the right call. -->
 <!-- eslint-disable vue/no-mutating-props -- see the comment above -->
 <script setup lang="ts">
 import type { ScryfallPrinting } from '~/composables/useScryfallCardSearch'
@@ -55,10 +48,9 @@ const playerOptions = computed(() => (associates.value ?? [])
     value: associate.uuid
   })))
 
-// Paper printing languages still active for Magic (as of 2024: only these six,
-// after Russian/Korean/Traditional Chinese were dropped in 2022 and
-// Portuguese/Simplified Chinese in 2024). Flags from the circle-flags set, same
-// pattern as korallo.pizza's language selector.
+// Paper printing languages still active for Magic (six, after Russian/Korean/Traditional Chinese
+// were dropped in 2022 and Portuguese/Simplified Chinese in 2024). Flags from the circle-flags set,
+// like korallo.pizza's language selector
 const languageOptions = computed(() => [
   { label: t('wantedCard.languages.any'), value: 'any', icon: ICONS.languages },
   { label: t('wantedCard.languages.en'), value: 'en', icon: WANTED_CARD_LANGUAGE_ICONS.en },
@@ -71,15 +63,12 @@ const languageOptions = computed(() => [
 
 const currentLanguage = computed(() => languageOptions.value.find(l => l.value === state.language))
 
-// CardTrader price for each candidate printing in the "Edition" picker — unlike
-// cardmarketPrice (already in Scryfall's response) it has to be requested separately
-// for each one: a best-effort preview (no language/foil filter, see the comment in
-// server/api/cardtrader/price.get.ts), with the precise price arriving after saving
-// via refresh-prices. undefined = not requested yet, null = requested but no listing
-// found — a local per-printing cache, not cleared between searches: reopening the
-// same name within this modal session does not repeat the calls. Shared by both
-// Add and Edit (2026-08-10 fix: Edit was silently missing this price before the
-// two modals' printing pickers were unified into this component).
+// CardTrader price for each candidate printing in the "Edition" picker: unlike cardmarketPrice (in
+// Scryfall's response) it is requested separately per printing, as a best-effort preview (no
+// language/foil filter, see server/api/cardtrader/price.get.ts) with the precise price arriving
+// after saving via refresh-prices. undefined = not requested yet, null = requested but no listing
+// found. A local per-printing cache, not cleared between searches: reopening the same name within
+// the modal session repeats no calls. Shared by Add and Edit (Edit used to miss this price)
 const cardtraderPrices = ref<Record<string, number | null>>({})
 watch(() => printings, (list) => {
   for (const printing of list) {
@@ -104,11 +93,10 @@ const printingItems = computed(() => printings.map(printing => ({
 const selectedPrinting = computed(() =>
   printings.find(printing => printing.id === state.printingId))
 
-// "Treatment" (full art, extended art, borderless, etc.) is gone: those are all
-// properties of the specific printing, already chosen with the "Edition" selector —
-// a separate menu would be redundant. "Foil" stays, because it is a finish
-// independent of the printing (the same printing often exists both foil and
-// non-foil) — available only if the chosen printing supports it.
+// "Treatment" (full art, extended art, borderless, ...) is gone: those are properties of the
+// printing, already chosen with "Edition". "Foil" stays, as a finish independent of the printing
+// (the same printing often exists foil and non-foil), available only if the chosen printing
+// supports it
 watch(() => state.printingId, (printingId) => {
   const printing = printings.find(p => p.id === printingId)
   if (!printing?.finishes.includes('foil')) state.foil = false

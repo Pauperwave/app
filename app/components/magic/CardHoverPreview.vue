@@ -1,23 +1,13 @@
 <!-- app\components\magic\CardHoverPreview.vue -->
 
-<!--
-  Preview of a card image that follows the pointer, wrapped around whatever
-  content is passed in the slot.
-
-  The pointer is tracked by hand with a virtual :reference instead of using
-  UTooltip's built-in hover trigger: inside Reka's listbox (underneath
-  USelectMenu) pointer events are intercepted before reaching the
-  TooltipTrigger, which therefore never fires. Same workaround as
-  CommanderSuggestionRow.vue in MagicTheGathering/league and
-  magic/card/Tooltip.vue in MagicTheGathering/blog.
-
-  `mobileModal` is for cases where the trigger is something the user would tap
-  (a card name in a table): hover does not exist on touch, so the tap opens the
-  image full screen instead of doing nothing.
-
-  Attributes passed by the caller (class above all) land on the trigger, not on
-  the UTooltip — see inheritAttrs: false.
--->
+<!-- Preview of a card image that follows the pointer, wrapped around whatever content is passed
+     in the slot.  The pointer is tracked by hand with a virtual :reference instead of
+     UTooltip's built-in hover trigger: inside Reka's listbox (under USelectMenu) pointer events
+     are intercepted before reaching the TooltipTrigger, which never fires. The same workaround
+     as CommanderSuggestionRow.vue in league and magic/card/Tooltip.vue in blog.  `mobileModal`
+     is for triggers the user would tap (a card name in a table): hover doesn't exist on touch,
+     so the tap opens the image full screen instead of doing nothing.  Attributes passed by the
+     caller (class above all) land on the trigger, not the UTooltip: see inheritAttrs: false. -->
 <script setup lang="ts">
 interface Props {
   imageUrl?: string | null

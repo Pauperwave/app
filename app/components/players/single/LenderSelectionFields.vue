@@ -1,8 +1,7 @@
 <!-- app\components\players\single\LenderSelectionFields.vue -->
-<!-- The "is this deck borrowed" switch + conditional lender select, shared
-     by DeckCreateModal.vue/DeckEditModal.vue's own forms (fallow:dupes,
-     2026-09-23) — both already share the underlying state via
-     useLenderSelection.ts, this is just the markup. -->
+<!-- The "is this deck borrowed" switch + conditional lender select shared by
+     DeckCreateModal.vue/DeckEditModal.vue: both share the state via useLenderSelection.ts, this
+     is just the markup -->
 <script setup lang="ts">
 interface LenderOption {
   value: string | null

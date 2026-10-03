@@ -17,16 +17,13 @@ const { t } = useI18n()
 
 const amountFormatter = AMOUNT_FORMATTER
 
-// Chronological, not by amount (user request, 2026-08-23) — 'startDate'
-// column id, so ties within the same date still fall back to whatever
-// secondary order UTable applies.
+// Chronological, not by amount: 'startDate' column id, so ties within a date fall back to UTable's
+// secondary order
 const sorting = ref([{ id: 'startDate', desc: false }])
 
-// Grand total per numeric column, own `footer` on the leftmost column instead
-// of a bare blank cell. averageOfAverages is the mean of each row's own
-// average — not totalAmount / totalCount (the average of all transactions
-// pooled together, which would weight tournaments with more transactions
-// more heavily) — user request, 2026-08-23.
+// Grand total per numeric column, as the leftmost column's own `footer` instead of a blank cell.
+// averageOfAverages is the mean of each row's average, not totalAmount / totalCount (the pooled
+// average, which would weight tournaments with more transactions more)
 const totalCount = computed(() => columnTotal(rows, 'count'))
 const totalCompedCount = computed(() => columnTotal(rows, 'compedCount'))
 const totalAmount = computed(() => columnTotal(rows, 'total'))
@@ -40,21 +37,16 @@ const columns: TableColumn<FinanceTournamentSummaryRow>[] = [
   {
     accessorKey: 'name',
     header: ({ column }) => sortableHeader(t('finance.summary.tournament'), column),
-    // Same name across stages of the same league (e.g. every "Commander
-    // Casual" tappa) ties on the raw string alone — broken by stageNumber
-    // ascending, so "Commander Casual" 1ª/2ª/3ª/... sort in stage order
-    // instead of whatever order they happened to land in the underlying Map
-    // (user request, 2026-08-23: sorting "read as nonsensical").
+    // The same name recurs across stages of a league (every "Commander Casual" tappa) and ties on
+    // the raw string: broken by stageNumber ascending, so 1ª/2ª/3ª/... sort in stage order
     sortingFn: (rowA, rowB) => {
       const nameCompare = rowA.original.name.localeCompare(rowB.original.name)
       if (nameCompare !== 0) return nameCompare
       const stageCompare = (rowA.original.stageNumber ?? 0) - (rowB.original.stageNumber ?? 0)
       if (stageCompare !== 0) return stageCompare
-      // Same name AND same stage number can still be two different
-      // tournaments — e.g. "Commander Casual 1ª tappa" exists once in "Lega
-      // Invernale 2026" and once in "Lega Estiva 2026" (user request,
-      // 2026-08-24). League breaks the tie; standalone tournaments (no
-      // league) sort last.
+      // Same name AND stage number can still be two tournaments ("Commander Casual 1ª tappa" exists
+      // in both "Lega Invernale 2026" and "Lega Estiva 2026"): league breaks the tie; standalone
+      // tournaments (no league) sort last
       return (rowA.original.league ?? '').localeCompare(rowB.original.league ?? '')
     },
     footer: () => t('finance.summary.total'),
@@ -80,10 +72,9 @@ const columns: TableColumn<FinanceTournamentSummaryRow>[] = [
     accessorKey: 'league',
     header: ({ column }) => sortableHeader(t('finance.summary.league'), column),
     meta: { class: { td: 'whitespace-nowrap' } },
-    // Not every tournament belongs to a league (standalone tournaments have
-    // league/leagueUuid both null) — empty cell for those, not a '—'
-    // placeholder (user request, 2026-08-23).
-    // fallow-ignore-next-line code-duplication -- see the same comment in EventSummaryTable.vue
+    // Not every tournament belongs to a league (standalone ones have league/leagueUuid null): an
+    // empty cell for those, not a '—' placeholder fallow-ignore-next-line code-duplication -- see
+    // the same comment in EventSummaryTable.vue
     cell: ({ row }) => row.original.leagueUuid
       ? h(UButton, {
         to: `/leagues/${row.original.leagueUuid}`,

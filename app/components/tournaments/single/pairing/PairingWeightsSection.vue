@@ -1,9 +1,6 @@
 <!-- app\components\tournaments\single\pairing\PairingWeightsSection.vue -->
-<!--
-  Weight sliders (strengthBalance/novelty/rematch/rotateTable3/tableSize4/
-  tableSize3) for the pairing optimizer's settings modal — ported from
-  MagicTheGathering/league (user request, 2026-09-15).
--->
+<!-- Weight sliders (strengthBalance/novelty/rematch/rotateTable3/tableSize4/tableSize3) for the
+     pairing optimizer's settings modal, ported from league. -->
 <script setup lang="ts">
 import type { PairingWeights } from '~/types'
 import type { PairingPresetKind } from './PairingPresetButtons.vue'

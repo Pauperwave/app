@@ -4,15 +4,14 @@ import type { Row } from '@tanstack/vue-table'
 
 interface Props {
   tournamentUuid: string
-  // Which pod-size composable the "Iscritti (Pagato)" table-count badge uses
-  // (ideal 8/min 6 for Draft, ideal 4/min 3 for Commander, pairs of 2 for
-  // 1v1 Swiss) — parent already computes isDraft/is1v1 for its own
-  // pods/table-preview step, passed through rather than re-deriving
-  // `tournament.format` here.
+  // Which pod-size composable the "Iscritti (Pagato)" table-count badge uses (ideal 8/min 6 for
+  // Draft, ideal 4/min 3 for Commander, pairs of 2 for 1v1 Swiss): the parent already computes
+  // isDraft/is1v1 for its pods/table-preview step, so they are passed through instead of
+  // re-deriving `tournament.format`
   isDraft?: boolean
   is1v1?: boolean
-  // Once round 1 has started (user request, 2026-10-02): nothing here can change until a turn-back
-  // reopens registrations. The server enforces it too (server/utils/tournaments/editLocks.ts).
+  // Once round 1 has started nothing here can change until a turn-back reopens registrations (also
+  // enforced server-side: server/utils/tournaments/editLocks.ts)
   readonly?: boolean
 }
 
@@ -30,15 +29,13 @@ export interface AcceptancePickerItem {
   description: string
   avatar: { alt: string }
   value: string
-  // When the player pre-registered — shown as the leading column in the
-  // "Pre-registrati" list (user request, 2026-08-24).
+  // When the player pre-registered: the leading column of the "Pre-registrati" list
   preRegisteredAt: Date
 }
 
-// Real persistence, wired 2026-08-25: tournament_registrations (status:
-// 'registered'/'checked_in'/'no_show') + pauperwave_payments (Tournament
-// Fee) — see docs/PROGRESS.md for why player_uuid, not associate_uuid
-// directly (players is the tournament-identity table decks/stats hang off).
+// Real persistence: tournament_registrations (status 'registered'/'checked_in'/'no_show') +
+// pauperwave_payments (Tournament Fee); see docs/PROGRESS.md for why player_uuid, not
+// associate_uuid (players is the tournament-identity table decks/stats hang off)
 const {
   data: registrationsData,
   isLoading: isRegistrationsLoading
@@ -59,14 +56,11 @@ const {
 // combined loading flag rather than each guessing from a partial source.
 const isPickerLoading = computed(() => isRegistrationsLoading.value || isAssociatesLoading.value)
 
-// Double-click guard for both tables' row buttons (no-show/payment/remove)
-// — any of the per-row mutations in flight disables all of them, since e.g.
-// a status change resolving mid-payment-click would race the optimistic
-// caches against each other (user request, 2026-08-25). deleteRegistrations
-// re-added 2026-08-27 for "Pre-registrati"'s own bulk-remove — unlike
-// "Iscritti (Pagato)"'s remove (a checked_in -> registered status revert), a
-// pre-registration has no further status to revert to, so removing one here
-// really does mean deleting the row.
+// Double-click guard for both tables' row buttons (no-show/payment/remove): any per-row mutation in
+// flight disables all of them, since a status change resolving mid-payment-click would race the
+// optimistic caches. deleteRegistrations serves "Pre-registrati"'s bulk-remove: unlike "Iscritti
+// (Pagato)"'s remove (a checked_in -> registered revert), a pre-registration has no earlier status
+// to revert to, so removing it deletes the row
 const isMutating = computed(() =>
   registerAssociates.isLoading.value
   || setRegistrationStatus.isLoading.value
@@ -79,13 +73,10 @@ const actionsDisabled = computed(() => readonly || isMutating.value)
 const associateByUuid = computed(() =>
   new Map((associatesData.value ?? []).map(associate => [associate.uuid, associate])))
 
-// "Pre-registrati" keeps every registration forever regardless of status —
-// it represents the persistent, timestamped registration record (who
-// signed up, or was added, and when), not a queue that empties out as
-// people get processed (user request, 2026-08-24: "non vorrei perdere
-// traccia di queste persone"). Acceptance/no-show are just a status overlay
-// on top of it (sourceRowStatus below), not a removal. Sorted oldest first —
-// registration order, matching registrationOrderByValue's "static #" below.
+// "Pre-registrati" keeps every registration forever regardless of status: it is the persistent,
+// timestamped record of who signed up or was added and when, not a queue that empties as people are
+// processed. Acceptance/no-show are a status overlay on it (sourceRowStatus below), not a removal.
+// Sorted oldest first (registration order, matching registrationOrderByValue's static "#" below)
 const items = computed<AcceptancePickerItem[]>(() => (registrationsData.value ?? [])
   .map((registration) => {
     const associate = associateByUuid.value.get(registration.associateUuid)
@@ -101,13 +92,10 @@ const items = computed<AcceptancePickerItem[]>(() => (registrationsData.value ??
   .filter((item): item is AcceptancePickerItem => item !== null)
   .sort((a, b) => a.preRegisteredAt.getTime() - b.preRegisteredAt.getTime()))
 
-// Each pre-registered player's "#" is their fixed registration order, not
-// their current row position in the (possibly search-filtered, definitely
-// shrinking-as-people-get-accepted) "Pre-registrati" table — row.index would
-// renumber everyone below a removed/filtered-out row (user request,
-// 2026-08-24: "il numero a loro affidato dovrebbe essere statico").
-// `items` is already in registration order (preRegisteredAt above is built
-// from the same index), so this is just that fixed position, 1-based.
+// Each pre-registered player's "#" is their fixed registration order, not their row position in the
+// (search-filtered, shrinking) "Pre-registrati" table: row.index would renumber everyone below a
+// removed row. `items` is already in registration order (preRegisteredAt is built from the same
+// index), so this is that fixed position, 1-based
 const registrationOrderByValue = computed(() =>
   new Map(items.value.map((item, i) => [item.value, i + 1])))
 
@@ -127,10 +115,9 @@ function sourceRowStatus(item: AcceptancePickerItem): SourceRowStatus {
   return 'pending'
 }
 
-// "Iscritti (Pagato)" — exposed to the parent (the Pods step and the round-
-// count logic both need this list's size/ids) rather than kept as purely
-// internal state (user request, 2026-08-24). One-way now (server is the
-// source of truth) — the parent only ever reads this, never assigns it.
+// "Iscritti (Pagato)", exposed to the parent (the Pods step and the round-count logic need this
+// list's size/ids) rather than kept internal. One-way: the server is the source of truth and the
+// parent only reads it
 const acceptedItems = computed(() => items.value.filter(item => sourceRowStatus(item) === 'accepted'))
 const targetItems = defineModel<AcceptancePickerItem[]>('accepted', { default: () => [] })
 watch(acceptedItems, (value) => {
@@ -156,10 +143,8 @@ function setNoShow(itemsToUpdate: AcceptancePickerItem[], noShow: boolean) {
     })
 
   if (noShow) {
-    // A no-show row becomes unselectable (sourceRowSelectionOptions
-    // below), but that only blocks *future* selection — an existing
-    // checked row needs its own explicit deselect (user request,
-    // 2026-08-24).
+    // A no-show row becomes unselectable (sourceRowSelectionOptions below), but that only blocks
+    // *future* selection: an existing checked row needs its own explicit deselect
     sourceSelectionState.deselect(itemsToUpdate)
   }
 }
@@ -168,17 +153,13 @@ function toggleNoShow(item: AcceptancePickerItem) {
   setNoShow([item], sourceRowStatus(item) !== 'noShow')
 }
 
-// "Pre-registrati" as a table, not a UListbox — mirrors "Iscritti (Pagato)"'s
-// own table (select / # / time / player), plus its own no-show action (user
-// request, 2026-08-24) where the target side has payment/remove instead.
-// Accepted/no-show rows are read-only (enableRowSelection below) — once a
-// player has a status, that status is managed from its own side (acceptance
-// from "Iscritti (Pagato)", no-show via the action here), not re-selected.
+// "Pre-registrati" as a table, not a UListbox: it mirrors "Iscritti (Pagato)"'s table (select / # /
+// time / player) plus its own no-show action where the target side has payment/remove.
+// Accepted/no-show rows are read-only (enableRowSelection below): once a player has a status it is
+// managed from its own side (acceptance from "Iscritti (Pagato)", no-show via the action here).
 //
-// Both sides' row-selection (checkbox state + shift-click range-select +
-// row-click-to-select) is byte-identical — factored into useTableRowSelection
-// once "Pre-registrati" grew its own bulk-remove and needed a second copy
-// (user request, 2026-08-27).
+// Both sides' row-selection (checkbox state, shift-click range-select, row-click-to-select) is
+// identical, factored into useTableRowSelection
 const sourceSelectionState = useTableRowSelection(
   sourceItems, item => item.value, 'sourceTable'
 )
@@ -198,10 +179,9 @@ const selectedAccepted = acceptedSelectionState.selectedItems
 const acceptedRowHandler = acceptedSelectionState
 const handleAcceptedRowSelect = acceptedSelectionState.handleRowSelect
 
-// Escape clears whichever of the two tables' selections is active — same
-// guard useSelection.ts uses, shared via useEscapeToClear since these two
-// are plain row-selection refs (UTable's own shape), not a useSelection()
-// instance (user request, 2026-08-27).
+// Escape clears whichever table's selection is active, like useSelection.ts, shared via
+// useEscapeToClear since these are plain row-selection refs (UTable's shape), not a useSelection()
+// instance
 useEscapeToClear(
   () => Object.keys(sourceRowSelection.value).length > 0
     || Object.keys(acceptedRowSelection.value).length > 0,
@@ -211,19 +191,17 @@ useEscapeToClear(
   }
 )
 
-// Per-table search — the "identical lists" refactor above dropped
-// UListbox's built-in `filter`, so both tables get their own global-filter
-// search box back via SearchInput + acceptancePickerGlobalFilterFn (user
-// request, 2026-08-24: "vorrei poter ancora cercare in entrambe le liste").
+// Per-table search: both tables get their own global-filter search box via SearchInput +
+// acceptancePickerGlobalFilterFn (the "identical lists" refactor dropped UListbox's built-in
+// `filter`)
 const sourceSearch = ref('')
 const acceptedSearch = ref('')
 
-// Per-registration check-in time + payment method — keyed by item.value
-// (the associate uuid), synced from the two queries above rather than
-// mutated locally, but kept as plain reactive Records so
-// useAcceptancePickerColumns.ts's column cells (which read
-// `acceptedAt[item.value]`/`paymentMethodByPlayer[item.value]` directly, not
-// through a computed's `.value`) don't need to change at all.
+// Per-registration check-in time + payment method, keyed by item.value (the associate uuid) and
+// synced from the two queries above rather than mutated locally. Plain reactive Records, so
+// useAcceptancePickerColumns.ts's cells (reading
+// `acceptedAt[item.value]`/`paymentMethodByPlayer[item.value]` directly, not a computed's `.value`)
+// needn't change
 const acceptedAt = reactive<Record<string, Date>>({})
 watch(registrationsData, (registrations) => {
   for (const key of Object.keys(acceptedAt)) Reflect.deleteProperty(acceptedAt, key)
@@ -234,10 +212,9 @@ watch(registrationsData, (registrations) => {
   }
 }, { immediate: true })
 
-// Shared by the arrow button (whole current selection) and the
-// "Pre-registrati" context menu's "Aggiungi agli iscritti" action (user
-// request, 2026-08-24), which passes just the right-clicked row or
-// resolveContextMenuTargets()'s wider selection.
+// Shared by the arrow button (the whole selection) and the "Pre-registrati" context menu's
+// "Aggiungi agli iscritti" (just the right-clicked row, or resolveContextMenuTargets()'s wider
+// selection)
 function transferToAccepted(itemsToTransfer: AcceptancePickerItem[]) {
   const registrationUuids = resolveRegistrationUuids(itemsToTransfer)
 
@@ -259,16 +236,12 @@ const {
   addableSourcePlayerIds, addSelectedToPreRegistered
 } = useWalkInPlayers({ tournamentUuid: () => tournamentUuid, knownPlayerIds })
 
-// Confirm-before-destructive-action flow, one instance per side — extracted
-// into useRemoveConfirmFlow once both sides grew a byte-identical copy of it
-// (user request, 2026-08-27). The actual removal differs on purpose:
-// "Pre-registrati" hard-deletes via deleteRegistrations (no earlier status
-// to fall back to for a pre-registration); "Iscritti (Pagato)" reverts
-// status to 'registered' via setRegistrationStatus — NOT deleteRegistrations,
-// which used to (mistakenly) also remove the player from "Pre-registrati"
-// (bug fix, user request 2026-08-27) — kept as each side's own onConfirm
-// callback rather than a mode flag, so that bug can't resurface by
-// mis-parameterizing a shared branch.
+// Confirm-before-destructive-action flow, one instance per side (useRemoveConfirmFlow). The removal
+// differs on purpose: "Pre-registrati" hard-deletes via deleteRegistrations (no earlier status to
+// fall back to); "Iscritti (Pagato)" reverts status to 'registered' via setRegistrationStatus, NOT
+// deleteRegistrations, which also removed the player from "Pre-registrati". Kept as each side's own
+// onConfirm callback rather than a mode flag, so that bug can't resurface by mis-parameterizing a
+// shared branch
 const sourceRemove = useRemoveConfirmFlow<AcceptancePickerItem>({
   getLabel: item => item.label,
   titleKey: 'tournament.single.acceptancePicker.removePreRegisteredConfirmTitle',
@@ -325,11 +298,9 @@ const removeModalOpen = computed({
   }
 })
 
-// Table column definitions live in useAcceptancePickerColumns.ts (extracted
-// once they made up roughly half this file, user request, 2026-08-24) —
-// this call also returns paymentMethodOptions/paymentMethodLabel, reused
-// below by the accepted table's context menu so it doesn't need its own
-// copy of PAYMENT_METHOD_OPTIONS.
+// Table column definitions live in useAcceptancePickerColumns.ts (about half this file before
+// extraction); this call also returns paymentMethodOptions/paymentMethodLabel, reused below by the
+// accepted table's context menu instead of its own copy of PAYMENT_METHOD_OPTIONS
 const {
   sourceColumns, acceptedColumns, pickerTableUi, sourceTableMeta,
   paymentMethodOptions, paymentMethodLabel

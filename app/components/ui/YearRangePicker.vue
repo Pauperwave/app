@@ -1,13 +1,9 @@
 <!-- app\components\ui\YearRangePicker.vue -->
-<!--
-  A year quick-jump USelectMenu paired with an icon-only DateRangePicker,
-  gap-2 — extracted out of transactions/index.vue (2026-08-31, user request)
-  where this shape first appeared, now also used by associates/index.vue and
-  associates/requests.vue. `years` is supplied by the caller (each domain
-  computes its own "every year with at least one row, plus the current year"
-  list differently — see availableTransactionYears.ts for the shape), this
-  component only owns the year<->range two-way sync and the shared layout.
--->
+<!-- A year quick-jump USelectMenu paired with an icon-only DateRangePicker (gap-2), extracted
+     from transactions/index.vue and also used by associates/index.vue and
+     associates/requests.vue. `years` is supplied by the caller (each domain computes "every
+     year with a row, plus the current year" differently, see availableTransactionYears.ts);
+     this component only owns the year<->range two-way sync and the shared layout. -->
 <script setup lang="ts">
 import { startOfYear, endOfYear } from 'date-fns'
 import type { CalendarHighlightedDate, Range } from '~/types'
@@ -21,10 +17,9 @@ const range = defineModel<Range>({ required: true })
 
 const yearItems = computed(() => yearSelectItems(years))
 
-// Reads back a year only when `range` currently matches that exact
-// calendar-year span (blank otherwise, e.g. after picking an arbitrary range
-// from DateRangePicker itself), and writing it sets `range` to that year's
-// Jan 1 - Dec 31 — same convention transactions/index.vue had inline.
+// Reads back a year only when `range` matches that exact calendar-year span (blank otherwise, e.g.
+// after picking an arbitrary range from DateRangePicker), and writing it sets `range` to that
+// year's Jan 1 - Dec 31
 const selectedYear = computed<number | undefined>({
   get: () => {
     const { start, end } = range.value

@@ -1,10 +1,7 @@
 <!-- app\components\wanted-cards\list\GridSkeleton.vue -->
-<!--
-  Grid-mode counterpart to ListSkeleton.vue (which is table-shaped and
-  doesn't fit here) — same auto-fill/min(280px,45vw)/aspect-[5/7] layout as
-  GridView.vue's real cards, so the skeleton occupies the same footprint
-  wanted-cards/index.vue's grid view will render into.
--->
+<!-- Grid-mode counterpart to ListSkeleton.vue (table-shaped, so it doesn't fit here): the same
+     auto-fill/min(280px,45vw)/aspect-[5/7] layout as GridView.vue's real cards, so the skeleton
+     occupies the footprint wanted-cards/index.vue's grid view will render into. -->
 <script setup lang="ts">
 const { count = 12 } = defineProps<{
   count?: number

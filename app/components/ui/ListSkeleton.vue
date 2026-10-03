@@ -1,24 +1,13 @@
 <!-- app\components\ui\ListSkeleton.vue -->
-<!--
-  Placeholder for a list page's own table content while its query is loading
-  (issue #35, user request 2026-08-22) — replaces the generic spinning-icon
-  block every list page used before, which gave no sense of the page's
-  actual shape. Deliberately not the refresh button's own `:loading` spinner
-  (QueryRefreshControl.vue, kept as-is per user decision) — this is about
-  the content area, not the button.
-
-  Grid-shaped list pages don't use this component (2026-08-22, superseding
-  an earlier grid variant here): after several rounds of hand-duplicating
-  TournamentsListCard.vue's exact markup here and having it drift out of
-  sync (a missed overlay chip, a wrong badge shape, a wrong reserved
-  height — see the commit history), the more reliable pattern turned out to
-  be a `loading` prop on the real card component itself, branching per-
-  element between real content and USkeleton — see Card.vue/Cover.vue/
-  GridView.vue. One shell, so nothing can structurally drift again. A future
-  table-shaped list page can still reuse this component as-is; a future
-  grid-shaped one should follow tournaments' `loading`-prop pattern instead
-  of extending this file.
--->
+<!-- Placeholder for a list page's table content while its query loads, replacing the generic
+     spinning-icon block that gave no sense of the page's shape. Deliberately not the refresh
+     button's own `:loading` spinner (QueryRefreshControl.vue): this is about the content area,
+     not the button.  Grid-shaped list pages don't use this component: hand-duplicating
+     TournamentsListCard.vue's markup here drifted out of sync (a missed overlay chip, wrong
+     badge shape, wrong reserved height), so the reliable pattern is a `loading` prop on the
+     real card component, branching per element between real content and USkeleton (see
+     Card.vue/Cover.vue/GridView.vue). A future table-shaped list page can reuse this as-is; a
+     grid-shaped one should follow tournaments' `loading`-prop pattern. -->
 <script setup lang="ts">
 const { count = 6, columns = 5 } = defineProps<{
   /** How many placeholder rows to render. @default 6 */

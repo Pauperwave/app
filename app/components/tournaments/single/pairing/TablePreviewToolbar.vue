@@ -1,10 +1,7 @@
 <!-- app\components\tournaments\single\pairing\TablePreviewToolbar.vue -->
-<!--
-  Total-score display + optimizer and random-seating controls above the pod
-  grid — ported from MagicTheGathering/league's TablePreviewToolbar.vue
-  (user request, 2026-09-15). useButtonLogging calls dropped — that
-  analytics composable doesn't exist in this app.
--->
+<!-- Total-score display + optimizer and random-seating controls above the pod grid, ported from
+     league's TablePreviewToolbar.vue. The useButtonLogging calls are dropped (an analytics
+     composable this app doesn't have). -->
 <script setup lang="ts">
 const {
   totalScore,

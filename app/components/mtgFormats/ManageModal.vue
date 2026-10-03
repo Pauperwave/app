@@ -1,20 +1,15 @@
 <!-- app\components\mtgFormats\ManageModal.vue -->
-<!--
-  Lightweight by design (2026-08-16 user request) — mtg_formats will only
-  ever hold a handful of rows (Commander, Premodern, Pauper, Draft, ...), so
-  this is a modal reachable from the tournaments toolbar, not a full
-  /formats page+route like /locations got. Each row saves inline on blur;
-  no separate Add/Edit sub-modals. No description field: mtg_formats.description
-  exists in the schema but nothing in the app renders it (2026-08-16).
--->
+<!-- Lightweight by design: mtg_formats will only hold a handful of rows (Commander, Premodern,
+     Pauper, Draft, ...), so this is a modal reachable from the tournaments toolbar, not a full
+     /formats page+route like /locations. Each row saves inline on blur, with no separate
+     Add/Edit sub-modals. No description field: mtg_formats.description exists in the schema but
+     nothing in the app renders it. -->
 <script setup lang="ts">
 const open = defineModel<boolean>({ default: false })
 
-// Passed in by the caller (tournaments/index.vue already has every
-// tournament's formatUuid loaded) rather than queried here — lets the delete
-// button be disabled up front (and show how many tournaments use it) instead
-// of only failing after the fact on the fk_tournaments_format_uuid_fkey
-// constraint.
+// Passed in by the caller (tournaments/index.vue has every tournament's formatUuid loaded) rather
+// than queried here: lets the delete button be disabled up front (showing how many tournaments use
+// it) instead of failing on fk_tournaments_format_uuid_fkey
 const { formatUsageCounts } = defineProps<{ formatUsageCounts: Map<string, number> }>()
 
 const { t } = useI18n()
@@ -37,10 +32,9 @@ const newName = ref('')
 const deletingFormat = ref<{ id: number, name: string } | null>(null)
 const confirmDeleteOpen = ref(false)
 
-// Optimistic, UI-only: filters a format out of the visible list the instant
-// its delete is confirmed, before the real mutation (deferred behind the
-// undo window) ever runs — makes the action feel immediate instead of
-// "queued" for 10 seconds. Restored by removing the id again if undone.
+// Optimistic, UI-only: filters a format out of the list the instant its delete is confirmed, before
+// the real mutation (deferred behind the undo window) runs. Restored by removing the id again if
+// undone
 const pendingDeleteIds = ref(new Set<number>())
 const visibleFormats = computed(() =>
   (formats.value ?? []).filter(format => !pendingDeleteIds.value.has(format.id)))
@@ -55,13 +49,11 @@ function saveName(id: number, name: string) {
   })
 }
 
-// Sends the current name back unchanged alongside the new color — the BFF
-// endpoint updates both columns together (see [id]/update.post.ts), and this
-// row's `name` is always known client-side already. Uppercased here (not
-// just via the input's CSS `uppercase` class, which is display-only) so
-// what's stored/compared always matches UColorPicker's own ColorTranslator
-// output, whether the value came from dragging the picker or typing a
-// lowercase hex into the input.
+// Sends the current name back unchanged alongside the new color: the BFF endpoint updates both
+// columns together (see [id]/update.post.ts) and the row's `name` is known client-side. Uppercased
+// here (not just via the input's display-only `uppercase` class) so what is stored/compared matches
+// UColorPicker's ColorTranslator output, whether the value came from dragging the picker or typing
+// a lowercase hex
 function saveColor(id: number, name: string, color: string | undefined) {
   const edits = { name, color: color?.toUpperCase() ?? null }
   updateFormat.mutateAsync({ id, edits }).catch((err) => {
@@ -73,11 +65,10 @@ function saveColor(id: number, name: string, color: string | undefined) {
   })
 }
 
-// UColorPicker emits update:model-value on every throttled drag tick (every
-// ~50ms while dragging, per its own `throttle` prop) — v-model'ing it
-// straight to a mutation fired a request per tick, a burst of concurrent
-// writes to the same row that was surfacing as a wave of 500s. Staged in a
-// local draft instead and only persisted once, when the popover closes.
+// UColorPicker emits update:model-value on every throttled drag tick (~50ms, per its `throttle`
+// prop): v-model'ing it to a mutation fired a request per tick, a burst of concurrent writes to one
+// row surfacing as a wave of 500s. Staged in a local draft and persisted once, when the popover
+// closes
 const draftColors = reactive<Record<number, string>>({})
 
 function onColorPopoverOpenChange(
@@ -114,10 +105,9 @@ function askDelete(id: number, name: string) {
   confirmDeleteOpen.value = true
 }
 
-// Closes the modal immediately and defers the actual delete behind a
-// 10-second undo window (useUndoableAction.ts), same convention as
-// useWantedCardsRowActions.ts's confirmDelete — "loading" no longer applies
-// here, there is nothing to wait for at confirm time.
+// Closes the modal at once and defers the delete behind a 10-second undo window
+// (useUndoableAction.ts), like useWantedCardsRowActions.ts's confirmDelete: nothing to wait for at
+// confirm time
 function onConfirmDelete() {
   if (!deletingFormat.value) return
   const format = deletingFormat.value

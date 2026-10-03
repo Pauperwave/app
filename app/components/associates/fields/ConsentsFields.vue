@@ -1,12 +1,9 @@
 <!-- app\components\associates\fields\ConsentsFields.vue -->
-<!--
-  Statute + data-consent checkboxes, shared by associates/list/FormFields.vue
-  and tesseramento/ConsentsStep.vue (extracted 2026-08-29, fallow:dupes) —
-  byte-identical except `disabled`: EditModal.vue's own disableConsents locks
-  these once an associate has already made the declaration (staff shouldn't
-  retroactively toggle them off), while the public /tesseramento
-  self-service flow never disables them (the applicant hasn't declared yet).
--->
+<!-- Statute + data-consent checkboxes, shared by associates/list/FormFields.vue and
+     tesseramento/ConsentsStep.vue, identical except `disabled`: EditModal.vue's disableConsents
+     locks them once an associate has made the declaration (staff shouldn't retroactively toggle
+     them off), while the public /tesseramento flow never disables them (the applicant hasn't
+     declared yet). -->
 <!-- eslint-disable vue/no-mutating-props -- state is the caller's shared UForm state -->
 <script setup lang="ts">
 interface ConsentsFieldsState {
@@ -32,12 +29,10 @@ const { state, disabled = false } = defineProps<{
       size="lg"
     >
       <template #description>
-        <!-- External, not /tesseramento/statuto: the statute is the
-             association's own governance document, published on the blog
-             independently of this app — linking to that canonical copy
-             avoids two versions drifting apart. The icon marks it as
-             leaving the app's domain, unlike the data-consent link below
-             (still an internal page). -->
+        <!-- External, not /tesseramento/statuto: the statute is the association's governance
+             document, published on the blog independently of this app, and linking to the
+             canonical copy avoids two versions drifting. The icon marks it as leaving the app's
+             domain, unlike the data-consent link below (an internal page) -->
         <a
           href="https://blog.pauperwave.org/docs/statuto"
           target="_blank"

@@ -1,10 +1,7 @@
 <!-- app\components\wanted-cards\list\PrintingRow.vue -->
 
-<!--
-  Riga della tendina "Edizione" in AddModal.vue/EditModal.vue. L'anteprima al
-  passaggio del mouse è tutta in MagicCardHoverPreview: qui resta solo il
-  contenuto della riga.
--->
+<!-- Row of the "Edizione" dropdown in AddModal.vue/EditModal.vue. The hover preview lives
+     entirely in MagicCardHoverPreview: only the row content stays here. -->
 <script setup lang="ts">
 interface Props {
   label: string

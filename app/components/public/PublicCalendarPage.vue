@@ -1,25 +1,16 @@
 <!-- app\components\public\PublicCalendarPage.vue -->
-<!--
-  Public (no auth) counterpart to pages/(competitions)/events/index.vue,
-  backing calendario.pauperwave.org (settings/domains.vue, renamed from
-  eventi. 2026-08-14), mounted at /calendario
-  (app/pages/(public)/calendario/index.vue) — not /events (the internal
-  dashboard route) and not /calendar (a distinct, unrelated in-development
-  dashboard page, see shared/utils/publicHosts.ts). Cards are not
-  clickable — GridView.vue links to /events/<id>, the internal dashboard
-  detail page, which would just bounce an anonymous visitor to /login. The
-  internal dashboard page is untouched.
-
-  Built around a mixed timeline of Events and Tournaments, per user
-  clarification: most calendar items are standalone tournaments (e.g. a
-  single Draft night is just a Tournament with format "draft"), not an
-  "Evento" — an Event only shows up here as a grouping card when at least
-  one Tournament actually links it (tournaments.event_uuid, matched by uuid);
-  a bare Event with no linked tournaments doesn't appear at all. Rendering
-  itself lives in calendar/card/Base.vue (shared shell) and its two variants,
-  calendar/card/Event.vue / calendar/card/Tournament.vue — this component
-  only builds and filters the `filteredCards` list.
--->
+<!-- Public (no auth) counterpart to pages/(competitions)/events/index.vue, backing
+     calendario.pauperwave.org (settings/domains.vue), mounted at /calendario
+     (app/pages/(public)/calendario/index.vue): not /events (the internal dashboard route) and not
+     /calendar (an unrelated in-development dashboard page, see shared/utils/publicHosts.ts). Cards
+     are not clickable: GridView.vue links to /events/<id>, the internal detail page, which would
+     bounce an anonymous visitor to /login.  Built around a mixed timeline of Events and
+     Tournaments: most calendar items are standalone tournaments (a single Draft night is a
+     Tournament with format "draft"), not an "Evento". An Event only appears as a grouping card when
+     at least one Tournament links it (tournaments.event_uuid, matched by uuid); a bare Event with
+     no linked tournaments doesn't appear. Rendering lives in calendar/card/Base.vue (shared shell)
+     and calendar/card/Event.vue / calendar/card/Tournament.vue: this component only builds and
+     filters `filteredCards`. -->
 <script lang="ts" setup>
 import { format, startOfMonth, endOfMonth } from 'date-fns'
 import { it } from 'date-fns/locale'
@@ -32,16 +23,13 @@ useSeoMeta({
   title: () => t('event.seoTitle')
 })
 
-// Today/month-picker/city-filter row collapses to compact controls below sm
-// (user request, 2026-08-30: "today month select and tabs of calendar are
-// split in two lines" on mobile) — same breakpoint/composable as
-// leagues/[leagueId]/index.vue's own isSideBySide.
+// The today/month-picker/city-filter row collapses to compact controls below sm (same
+// breakpoint/composable as leagues/[leagueId]/index.vue's isSideBySide)
 const isCompact = useMediaQuery('(max-width: 639px)')
 
-// Scoped to a single month at a time, per user request 2026-08-13 — unlike
-// the dashboard grid (events/index.vue), which defaults to "all time". Starts
-// on the current month; the picker below (UCalendar type="month", same
-// @internationalized/date bridge as DateRangePicker.vue) jumps to another.
+// Scoped to a single month at a time, unlike the dashboard grid (events/index.vue), which defaults
+// to "all time". Starts on the current month; the picker below (UCalendar type="month", same
+// @internationalized/date bridge as DateRangePicker.vue) jumps to another
 const selectedMonth = shallowRef(startOfMonth(new Date()))
 
 const range = computed(() => ({
@@ -65,19 +53,15 @@ const { data: eventsData, isLoading: loadingEvents } = useEventsQuery()
 const { data: tournamentsData, isLoading: loadingTournaments } = useTournamentsQuery()
 const loading = computed(() => loadingEvents.value || loadingTournaments.value)
 
-// External (shop-organized, e.g. Magman) tournaments are hidden from this
-// public calendar by default — same mechanism and reasoning as
-// tournaments/index.vue's own showExternal toggle (user request, 2026-09-16).
+// External (shop-organized, e.g. Magman) tournaments are hidden from this public calendar by
+// default, like tournaments/index.vue's showExternal toggle
 const showExternal = ref(false)
 
-// Draft tournaments are always excluded, no toggle — unlike "external"
-// (a real tournament just organized by someone else, sometimes worth
-// showing), a draft is by definition not ready to be public yet. Confirmed
-// 2026-09-17: useTournamentsQuery() has no status filter at all (only
-// deleted_at), and nothing else in this component/CalendarCard*.vue was
-// hiding drafts — status was only ever used for the badge/isPast check
-// (calendar/card/Base.vue), so a draft tournament was fully visible here,
-// including on the unauthenticated calendario.pauperwave.org route.
+// Draft tournaments are always excluded, with no toggle: unlike "external" (a real tournament
+// organized by someone else), a draft is not ready to be public. useTournamentsQuery() has no
+// status filter (only deleted_at) and status is only used for the badge/isPast check
+// (calendar/card/Base.vue), so drafts would otherwise be fully visible here, including on the
+// unauthenticated calendario.pauperwave.org route
 const visibleTournamentsData = computed(() => (tournamentsData.value ?? [])
   .filter(tournament => tournament.status !== 'draft')
   .filter(tournament => showExternal.value || tournament.status !== 'external'))
@@ -107,9 +91,7 @@ function cardKey(card: CalendarCardEntry): string {
 }
 
 const cards = computed<CalendarCardEntry[]>(() => {
-  // Matched by uuid, not name (2026-08-15, both events and tournaments are
-  // real now) — a name collision between two events can't misgroup a
-  // tournament under the wrong one.
+  // Matched by uuid, not name: a name collision between two events can't misgroup a tournament
   const eventsByUuid = new Map((eventsData.value ?? []).map(event => [event.uuid, event]))
   const eventGroups = new Map<string, Tournament[]>()
   const standalone: Tournament[] = []
@@ -143,14 +125,11 @@ const monthCards = computed(() => cards.value.filter((card) => {
   return date >= range.value.start && date <= range.value.end
 }))
 
-// City filter (user request, 2026-08-29, "filter by Trento / Rovereto") —
-// 'all' sentinel, not null, same convention as useTournamentsFilters.ts's
-// own statusFilter/formatFilter. The option *list* is built from every known
-// card (cards, not monthCards) so it doesn't flicker in and out as the user
-// changes month — a month with only one active city would otherwise hide
-// the control entirely. Counts stay scoped to monthCards so the badges match
-// what's actually on screen; the "Tutte" tab gets no count badge
-// (undefined), same as every other 'all' tab in the app.
+// City filter: 'all' sentinel, not null (like useTournamentsFilters.ts's
+// statusFilter/formatFilter). The option *list* is built from every known card (cards, not
+// monthCards) so it doesn't flicker as the month changes (a month with one active city would hide
+// the control). Counts stay scoped to monthCards so badges match what's on screen; the "Tutte" tab
+// gets no count badge (undefined), like every 'all' tab
 const selectedCity = ref<'all' | string>('all')
 const cityItems = computed(() => {
   const allCities = new Set<string>()
@@ -165,11 +144,8 @@ const cityItems = computed(() => {
   }
   return [
     { label: t('event.calendarAllCities'), value: 'all' as const, count: undefined, disabled: false },
-    // A city with no events in the selected month stays listed (see the
-    // comment above the `cities` set) but disabled — user request,
-    // 2026-08-30: don't hide it (that flickers the list per month) or leave
-    // it clickable to an empty state, just make it unselectable until it
-    // has something to show.
+    // A city with no events in the selected month stays listed (see the `cities` set comment) but
+    // disabled: hiding it flickers the list per month, leaving it clickable leads to an empty state
     ...[...allCities].sort((a, b) => a.localeCompare(b))
       .map((city) => {
         const count = monthCounts.get(city) ?? 0
@@ -250,12 +226,10 @@ const filteredCards = computed(() => selectedCity.value === 'all'
         </div>
       </div>
 
-      <!-- Only shown once there's an actual choice to make (Tutte + 2+ real
-           cities) — a single-city month would just show a redundant "Tutte"
-           button next to the only real option. Collapses to a compact
-           select below sm instead of StatusFilterGroup's button row, which
-           doesn't wrap internally and would push the whole row to two
-           lines. -->
+      <!-- Only shown once there's a real choice (Tutte + 2+ cities): a single-city month would show
+           a redundant "Tutte" next to the only option. Collapses to a compact select below sm
+           instead of StatusFilterGroup's button row, which doesn't wrap and would push the row to
+           two lines. -->
       <div v-if="cityItems.length > 2" id="tour-calendar-city-filter">
         <USelectMenu
           v-if="isCompact"
@@ -269,10 +243,9 @@ const filteredCards = computed(() => selectedCity.value === 'all'
         <StatusFilterGroup v-else v-model="selectedCity" :items="cityItems" />
       </div>
 
-      <!-- External (shop-organized, not Pauperwave) tournaments are hidden
-           by default — see the showExternal comment above — this toggles
-           that filter back on, same icon-only-button convention as
-           tournaments/list/FiltersBar.vue's own toggle. -->
+      <!-- External (shop-organized, not Pauperwave) tournaments are hidden by default (see
+           showExternal above): this toggles the filter back on, like
+           tournaments/list/FiltersBar.vue's icon-only toggle -->
       <UTooltip
         :text="$t(showExternal
           ? 'event.calendarHideExternal'

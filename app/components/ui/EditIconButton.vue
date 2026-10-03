@@ -1,14 +1,10 @@
 <!-- app\components\ui\EditIconButton.vue -->
-<!--
-  The icon-only "edit" button used in every list table/card's row actions
-  (tournaments' table + grid card, leagues' table + grid card, ...) — wraps a
-  UTooltip around the button so the icon-only affordance still reads on
-  hover, previously duplicated ad hoc per call site with no tooltip at all.
-  Rendered via h() from table-column composables (see the render-functions
-  note in the root CLAUDE.md) as well as used directly in .vue templates, so
-  it stays a plain color=neutral/variant=ghost UButton underneath — no
-  slots, just label/size/click passthrough.
--->
+<!-- The icon-only "edit" button of every list table/card's row actions (tournaments', leagues',
+     ... table + grid card): a UTooltip around the button so the icon-only affordance still
+     reads on hover (it was duplicated ad hoc per call site with no tooltip). Rendered via h()
+     from table-column composables (see the render-functions note in the root CLAUDE.md) and
+     used directly in templates, so it stays a plain color=neutral/variant=ghost UButton: no
+     slots, just label/size/click passthrough. -->
 <script setup lang="ts">
 import type { ButtonProps } from '@nuxt/ui'
 

@@ -17,12 +17,10 @@ const { can } = useUserRole()
 const { updateTournament } = useTournamentsMutations()
 const { submitting, submitWithToast } = useSubmitWithToast()
 
-// Same shape as AddModal.vue's initial state — formatUuid/organizerUuid/
-// locationUuid must be present (even as undefined) or valibot's v.object()
-// raises its own generic "missing key" issue instead of running the field's
-// real check. The [open, tournament] watch below fills these immediately in
-// practice, but this keeps the object shape correct even before that watch
-// runs.
+// Same shape as AddModal.vue's initial state: formatUuid/organizerUuid/locationUuid must be present
+// (even as undefined), or valibot's v.object() raises its own generic "missing key" issue instead
+// of running the field's real check. The [open, tournament] watch below fills them in practice, but
+// this keeps the object shape correct before it runs
 const state = reactive<TournamentFormState>({
   name: undefined,
   status: 'draft',
@@ -50,9 +48,8 @@ const state = reactive<TournamentFormState>({
 
 const { startDate, formattedStartDate } = useStartDateField(state, { defaultToToday: false })
 
-// Same collision/density hint as AddModal.vue (issue #37 follow-up,
-// 2026-08-23) — excludes the tournament being edited itself, since its own
-// current date isn't a collision, it's the row this form already represents.
+// Same collision/density hint as AddModal.vue, excluding the tournament being edited (its own date
+// isn't a collision, it is the row this form represents)
 const { data: existingTournamentsData } = useTournamentsQuery()
 const highlightedDates = computed(() => (existingTournamentsData.value ?? [])
   .filter(existing => existing.id !== tournament?.id)

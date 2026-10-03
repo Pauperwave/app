@@ -5,12 +5,10 @@ interface Props {
 }
 
 const { ids } = defineProps<Props>()
-// v-model, not an internal ref + default-slot trigger (2026-08-16) — needed
-// so the shared AssociatesListBulkActionsBar's @approve can open this from
-// requests.vue, same as reject/restore's plain ConfirmModal/function already
-// work. Kept its own component (not folded into ConfirmModal.vue) since it
-// needs both a cancel AND an approve button with independent labels/colors,
-// not ConfirmModal's single confirm+cancel pair.
+// v-model, not an internal ref + default-slot trigger: the shared AssociatesListBulkActionsBar's
+// @approve must open this from requests.vue, like reject/restore's ConfirmModal/function. Its own
+// component (not folded into ConfirmModal.vue) since it needs both a cancel AND an approve button
+// with independent labels/colors, not ConfirmModal's single confirm+cancel pair
 const open = defineModel<boolean>('open', { default: false })
 
 const { t } = useI18n()

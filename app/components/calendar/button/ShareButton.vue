@@ -1,13 +1,9 @@
 <!-- app\components\calendar\button\ShareButton.vue -->
-<!--
-  Share action for /calendario's cards and detail slideover (user request
-  2026-08-14). No per-item deep link exists yet (cards aren't individually
-  routable, see PublicCalendarPage.vue's own comment on that) — shares the
-  current /calendario page URL with the item's name/date as the share text,
-  same scope limitation AddToCalendarButton.vue/eventIcs.ts already accept.
-  Web Share API on mobile/supported browsers (native share sheet), clipboard
-  copy fallback everywhere else.
--->
+<!-- Share action for /calendario's cards and detail slideover. No per-item deep link exists
+     (cards aren't individually routable, see PublicCalendarPage.vue): it shares the current
+     /calendario URL with the item's name/date as the share text, the same scope limitation as
+     AddToCalendarButton.vue/eventIcs.ts. Web Share API on mobile/supported browsers (native
+     share sheet), clipboard copy fallback elsewhere. -->
 <script lang="ts" setup>
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'

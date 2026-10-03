@@ -1,21 +1,15 @@
 <!-- app\components\public\PublicCittadinoPage.vue -->
-<!--
-  Public (no auth) counterpart to pages/(competitions)/standings/cittadino/
-  index.vue, backing cittadino.pauperwave.org (settings/domains.vue). Same
-  data composables and PublicMatrixTable, but a plain header instead of
-  UDashboardPanel/Navbar (both require the authenticated UDashboardGroup
-  context from layouts/default.vue) — see PublicFormatPage.vue for the same
-  reasoning applied to the other three rankings. The internal dashboard page
-  is untouched.
--->
+<!-- Public (no auth) counterpart to pages/(competitions)/standings/cittadino/index.vue, backing
+     cittadino.pauperwave.org (settings/domains.vue): the same data composables and
+     PublicMatrixTable, but a plain header instead of UDashboardPanel/Navbar (both need the
+     authenticated UDashboardGroup context from layouts/default.vue), as in
+     PublicFormatPage.vue. -->
 <script lang="ts" setup>
-// Declared before the useCittadinoStandingsPage call below since it threads
-// through to useCittadinoTableColumns.ts for match highlighting — same
-// search standings/cittadino/index.vue's internal counterpart got, extended
-// here 2026-08-20 (user request: no reason to withhold it from public
-// visitors, who are if anything more likely to be scanning for their own
-// name).
-// fallow-ignore-next-line code-duplication -- mirrors standings/cittadino/index.vue's own shell wiring around useCittadinoStandingsPage
+// Declared before the useCittadinoStandingsPage call since it threads through to
+// useCittadinoTableColumns.ts for match highlighting: the search the internal
+// standings/cittadino/index.vue has, extended to public visitors (who are more likely to scan for
+// their own name) fallow-ignore-next-line code-duplication -- mirrors
+// standings/cittadino/index.vue's own shell wiring around useCittadinoStandingsPage
 const search = ref('')
 
 const {

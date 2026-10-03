@@ -1,10 +1,7 @@
 <!-- app\components\tournaments\single\pairing\ForbiddenPairsSection.vue -->
-<!--
-  Global "never seat these two players together" list editor — ported from
-  MagicTheGathering/league's ForbiddenPairsSection.vue (user request,
-  2026-09-15). Player identity is the associate uuid (TablePlayer.value)
-  throughout, matching every other pairing composable in this app.
--->
+<!-- Global "never seat these two players together" list editor, ported from league's
+     ForbiddenPairsSection.vue. Player identity is the associate uuid (TablePlayer.value)
+     throughout, like every other pairing composable in this app. -->
 <script setup lang="ts">
 import type { PairingForbiddenPair, TablePlayer } from '~/types'
 

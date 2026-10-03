@@ -49,7 +49,8 @@ function copyStandingsCsv() {
   )
 }
 
-// Same colors as the award cards (TournamentAwardCard.vue); zeros fade so the real values stand out.
+// Same colors as the award cards (TournamentAwardCard.vue); zeros fade so the real values stand
+// out.
 const VALUE_COLOR_CLASS = {
   score: 'text-primary font-semibold',
   victories: 'text-primary',
