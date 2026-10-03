@@ -1,20 +1,11 @@
 // shared\utils\tournaments\commanderScoring.ts
-// Commander round-scoring math, ported from MagicTheGathering/league's
-// shared/utils/roundScoring.ts (user request, 2026-09-15/16: copy the
-// scoring logic as-is). league embeds kill count / brew-vote / play-vote
-// counts directly on its round_results row; this app normalizes those into
-// separate tables (tournament_kills/tournament_votes) instead, so the input
-// shape here is a per-player, per-pairing result already enriched with those
-// counts by the caller (see useTournamentRoundResultsQuery.ts's own join, or
-// advance_commander_round's SQL, migration 20260916000000, which does the
-// same aggregation server-side) — the actual formula (dense-to-skip-rank
-// conversion, draw detection) is unchanged.
+// Commander round-scoring math, ported unchanged from league's roundScoring.ts. Kills and votes
+// live in separate tables here (tournament_kills/tournament_votes), so the input is a per-player,
+// per-pairing result already enriched with those counts by the caller
+// (useTournamentRoundResultsQuery.ts's join, or advance_commander_round's SQL server-side).
 //
-// Lives in shared/ (not app/composables/) so the Telegram bot's own
-// Commander score summary (server/utils/telegram/commands/tournaments/
-// commanderReport.ts) can call the exact same formula instead of
-// reimplementing it — moved here 2026-09-24 when that real bot flow
-// replaced the mockup one.
+// Lives in shared/ so the Telegram bot's Commander score summary (commanderReport.ts) uses the same
+// formula.
 export interface CommanderTableResult {
   playerUuid: string
   /** Raw dense position as stored (null = no result submitted yet). */
@@ -52,9 +43,8 @@ export function buildPosValues(r: RulesetPointValues): number[] {
 }
 
 /**
- * Score a single player's result at one pod. Shared by useLiveCommanderStandings
- * (the live sidebar) and any read-only per-pod score breakdown, so the two can
- * never drift — same reasoning as league's own calculatePlayerTableScore.
+ * Scores one player's result at one pod; shared by useLiveCommanderStandings and per-pod breakdowns
+ * so they can't drift.
  */
 export function calculatePlayerTableScore(
   playerUuid: string,
@@ -68,14 +58,9 @@ export function calculatePlayerTableScore(
   const position = myResult.position
   const samePositionCount = tableResults.filter(r => r.position === position).length
 
-  // Positions are stored "dense" (useCommanderRankingGrid.ts enforces a
-  // gapless 1,1,2,3 — never a skip-rank 1,1,3,4). Standard tournament
-  // scoring needs skip-rank spacing: after a 2-way tie for 1st, the next
-  // player is effectively 3rd, since two point-slots were already consumed
-  // by the tie. Re-derive that effective starting slot from how many
-  // players rank strictly above this one instead of trusting the raw dense
-  // position — this makes 1,1,2,3 score identically to its skip-rank
-  // equivalent 1,1,3,4.
+  // Positions are stored "dense" (1,1,2,3) but scoring needs skip-rank spacing (1,1,3,4): after a
+  // 2-way tie for 1st the next player is effectively 3rd. Derive the slot from how many players
+  // rank strictly above.
   const effectivePosition = 1 + tableResults.filter(r =>
     r.position !== null && r.position < position
   ).length
@@ -113,9 +98,8 @@ export function calculatePlayerTableScore(
 }
 
 /**
- * "Patta" (draw): zero kills for everyone and everyone tied for 1st. Nobody
- * actually won the table in this case — unlike a genuine 2+-way tie for 1st
- * (which still credits every tied player a victory), a draw credits nobody.
+ * "Patta" (draw): zero kills and everyone tied for 1st. Unlike a real 2+-way tie for 1st, it
+ * credits nobody with a win.
  */
 export function isDrawTable(tableResults: CommanderTableResult[]): boolean {
   return tableResults.length > 0

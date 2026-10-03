@@ -1,10 +1,7 @@
 // shared\types\wantedCards.ts
 
-// Shared by app/composables/wantedCards/useWantedCardsMutations.ts and
-// server/api/wanted-cards/{create,[id]/update}.post.ts (fallow dupes,
-// 2026-08-12): the client mutation payload and the server body it's read into
-// are the same shape by construction — the endpoint is a thin pass-through
-// to Supabase, not an independent contract.
+// Shared by useWantedCardsMutations.ts and server/api/wanted-cards/{create,[id]/update}.post.ts:
+// the client payload and the server body are the same shape (thin pass-through to Supabase).
 
 export interface NewWantedCardPayload {
   playerAssociateUuid: string
@@ -24,9 +21,7 @@ export interface NewWantedCardPayload {
   notes: string | null
 }
 
-// The card name is fixed (changing it amounts to creating a different request), but
-// the exact edition/printing can be edited — scryfallUrl and the Scryfall data
-// derived from it (manaCost/colorIdentity/cmc/imageUrl/cardmarketPrice) change
-// together when another printing is picked. cardtraderPrice is not here: it is only
-// updated through a refresh (its own endpoint), never from the edit form.
+// The card name is fixed (renaming means a different request) but the printing can change:
+// scryfallUrl and the Scryfall data derived from it change together.
+// cardtraderPrice is excluded: it only changes through its own refresh endpoint.
 export type WantedCardEditsPayload = Omit<NewWantedCardPayload, 'cardName'>

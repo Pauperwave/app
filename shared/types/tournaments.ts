@@ -1,8 +1,7 @@
 // shared\types\tournaments.ts
 
-// Shared by app/components/tournaments/list/AddModal.vue and
-// server/api/tournaments/create.post.ts — same convention as
-// shared/types/transactions.ts (a thin pass-through to Supabase).
+// Shared by tournaments/list/AddModal.vue and server/api/tournaments/create.post.ts (thin
+// pass-through to Supabase).
 export interface NewTournamentPayload {
   name: string
   status: string
@@ -16,8 +15,8 @@ export interface NewTournamentPayload {
   roundCount: number | null
   roundDurationMinutes: number | null
   entryFee: number | null
-  // Optional extras (migration 20261003110000): the non-members' price (entryFee is the members'),
-  // the player cap, whether decklists are public or secret, and when on-site registration opens.
+  // Optional extras: the non-members' price (entryFee is the members'), the player cap,
+  // whether decklists are public or secret, and when on-site registration opens.
   entryFeeNonMember: number | null
   maxEntrants: number | null
   decklistVisibility: 'public' | 'secret' | null
@@ -26,8 +25,7 @@ export interface NewTournamentPayload {
   prizes: string | null
   companionCode: string | null
   imageUrl: string | null
-  // Scryfall art_crop attribution, see migration 20260820120000 — both null
-  // whenever imageUrl is unset or wasn't picked via MagicCardArtPicker.vue.
+  // Scryfall art_crop attribution: null unless imageUrl was picked via MagicCardArtPicker.vue
   imageCardName: string | null
   imageCardArtist: string | null
   telegramNotificationsEnabled: boolean

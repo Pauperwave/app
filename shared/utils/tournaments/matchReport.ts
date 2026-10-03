@@ -1,9 +1,7 @@
 // shared\utils\tournaments\matchReport.ts
-// A 1v1 result reported by one player via the Telegram bot: written straight
-// to tournament_match_results (same as an organizer's own entry), with the
-// opponent then asked to confirm or dispute it — a dispute flags an
-// already-saved result for organizer review, it doesn't revert it (user
-// request, 2026-09-24).
+// A 1v1 result reported by one player via the Telegram bot: saved straight to
+// tournament_match_results, then the opponent confirms or disputes it. A dispute flags the saved
+// result for organizer review, it doesn't revert it.
 export interface ReportedResult {
   reporterUuid: string
   confirmedAt: string | null

@@ -1,7 +1,7 @@
 // shared\utils\commanders\commanderUsage.ts
 // Which commanders a player has already played, and when: the "recently used" group of the
-// website's commander search, and the history the Telegram bot offers first. Shared so both
-// count and order them the same way (extracted from useCommanderUsageQuery.ts, 2026-10-01).
+// website's commander search, and the history the Telegram bot offers first. Shared so both count
+// and order them the same way.
 
 /** Per-commander play history for one player: most recent day and how many rounds. */
 export interface CommanderUsage {
