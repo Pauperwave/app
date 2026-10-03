@@ -1,22 +1,15 @@
 // app\utils\tournaments\tournamentOrigin.ts
-// A tournament's detail page can be reached from several places (the flat
-// /tournaments grid, a league's own tournament grid, eventually an event's).
-// When it belongs to a league, its link always carries a `?league=<uuid>`
-// query param — not because of *how* the visitor navigated there, but because
-// "this tournament is part of league X" is a fact about the tournament
-// itself, true regardless of entry point. The detail page reads it back to
-// show a "back to league" link the plain route params alone can't express
-// (see useBreadcrumbs.ts's own override mechanism for the same class of
-// problem). A query param, not a nested route: see docs/PROGRESS.md's
-// reasoning against nesting tournaments under /leagues/<uuid>/tournaments/
-// <uuid> — a tournament's parent is optional and polymorphic (league OR
-// event OR neither), so the canonical URL stays flat.
+// A tournament's detail page can be reached from several places (the flat /tournaments grid, a
+// league's grid, ...). When it belongs to a league its link always carries `?league=<uuid>`: "part
+// of league X" is a fact about the tournament, regardless of entry point. The detail page reads it
+// back to show a "back to league" link that route params alone can't express (see
+// useBreadcrumbs.ts's override mechanism). A query param, not a nested route (docs/PROGRESS.md): a
+// tournament's parent is optional and polymorphic (league, event or neither), so the canonical URL
+// stays flat.
 //
-// Plain `?league=<uuid>` rather than a typed `?from=league:<uuid>` (user
-// request, 2026-09-18: the latter felt noisy) — only one origin type exists
-// today, so a type prefix has nothing to disambiguate yet. Reintroduce one
-// (e.g. `?event=<uuid>`, its own separate param) if/when a second origin
-// type actually shows up, rather than designing for it now.
+// Plain `?league=<uuid>` rather than a typed `?from=league:<uuid>`: only one origin type exists, so
+// a prefix has nothing to disambiguate yet. Add a separate param (e.g. `?event=<uuid>`) if a second
+// origin appears.
 import type { Tournament } from '~/types'
 
 export type NavigationOrigin = { type: 'league', uuid: string }

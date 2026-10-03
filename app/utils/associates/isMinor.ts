@@ -1,11 +1,9 @@
 // app\utils\associates\isMinor.ts
 import { differenceInYears } from 'date-fns'
 
-// Shared between PersonalInfoFields.vue (drops the "required" indicator off
-// phone_number) and associateFormSchema.ts (mirrors the same rule in
-// validation) — an associate under 18 may not have their own phone number.
-// Defaults to false (adult, phone required) when born_date isn't known yet
-// (e.g. /tesseramento's personalInfo step, asked before birthInfo).
+// Shared by PersonalInfoFields.vue (drops phone_number's "required" indicator) and
+// associateFormSchema.ts (same rule in validation): a minor may not have their own phone. Defaults
+// to false (adult) while born_date is unknown (/tesseramento asks personalInfo first)
 export function isMinor(bornDate: Date | null | undefined): boolean {
   if (!bornDate) return false
   return differenceInYears(new Date(), bornDate) < 18

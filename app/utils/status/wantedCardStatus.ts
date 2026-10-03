@@ -11,10 +11,10 @@ export function wantedCardStatusColor(status: WantedCardStatus): StatusColor {
   return 'warning'
 }
 
-/** For compact views (grid): the status badge becomes icon-only with the label in
- * the tooltip. "Abbandonata" is the longest of the three labels and wrapped the
- * card footer, which is ~200px wide. In views with room (table) the badge stays
- * textual. */
+/**
+ * For compact views (grid): the badge becomes icon-only with the label in the tooltip, since
+ * "Abbandonata" wrapped the ~200px card footer. Views with room (table) keep the textual badge.
+ */
 export const WANTED_CARD_STATUS_ICONS: Record<WantedCardStatus, string> = {
   searching: ICONS.search,
   found: ICONS.success,

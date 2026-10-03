@@ -1,22 +1,16 @@
 // app\utils\navShortcuts.ts
 
-// Single source of truth for the "g-x" navigation chords: useDashboard.ts
-// builds its defineShortcuts config from this map, and default.vue's sidebar
-// reads it to render the "press g" hint next to each item's label. Keeping
-// both derived from one map means they can't drift apart the way two
-// hand-written lists eventually would.
+// Single source of truth for the "g-x" navigation chords: useDashboard.ts builds its
+// defineShortcuts config from this map and default.vue's sidebar reads it for the "press g" hint,
+// so the two can't drift.
 //
-// Not every nav item has a chord: Impostazioni Generali has no free
-// single-letter left (Statistiche took "s" — see
-// docs/architecture/shortcuts.md), and Mazzi/Cittadino lost theirs on
-// 2026-08-11 when "m"/"c" were reassigned to Membri/Calendario at the
-// user's request — no replacement letter was picked for them.
+// Not every nav item has a chord: Impostazioni Generali has no free letter left (see
+// docs/architecture/shortcuts.md), and Mazzi/Cittadino lost theirs when "m"/"c" went to
+// Membri/Calendario.
 //
-// "g-g" specifically is never used for anything, deliberately: OS key-repeat
-// fires multiple keydown events while "g" is held, and defineShortcuts reads
-// the last two keystrokes as a chord — so holding "g" a beat too long reads
-// as the chord "g-g" on its own. Any destination mapped there would fire
-// just from holding the prefix key, not from a real two-key press.
+// "g-g" is deliberately never used: OS key-repeat fires several keydowns while "g" is held, and
+// defineShortcuts reads the last two keystrokes as a chord, so any destination there would fire
+// just from holding the prefix key.
 export const NAV_SHORTCUTS: Record<string, string> = {
   '/associates': 'g-a',
   '/players': 'g-i',
@@ -32,7 +26,6 @@ export const NAV_SHORTCUTS: Record<string, string> = {
   '/settings/members': 'g-m',
   '/settings/permissions': 'g-p',
   '/settings/domains': 'g-d',
-  // "c" (Cestino's own first letter) is already Calendario's — "x" picked
-  // instead, no obvious second letter fit either (see shortcuts.md).
+  // "c" is already Calendario's, so "x" was picked (see shortcuts.md)
   '/trash': 'g-x'
 }

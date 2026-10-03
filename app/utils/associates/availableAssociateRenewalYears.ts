@@ -1,11 +1,9 @@
 // app\utils\associates\availableAssociateRenewalYears.ts
 import type { Associate } from '~/types'
 
-// Shared by associates/index.vue's YearRangePicker — every year with at
-// least one renewal, plus the real current year even if it's still empty,
-// sorted newest first. latest_renewal_date is nullable (an associate who
-// never renewed) — those are skipped here, not counted as "year 1970".
-// Same shape as availableTransactionYears.ts.
+// Shared by associates/index.vue's YearRangePicker: every year with a renewal plus the current
+// year, newest first. latest_renewal_date is nullable (never renewed): those are skipped, not
+// counted as "year 1970". Same shape as availableTransactionYears.ts
 export function availableAssociateRenewalYears(associates: Associate[]): number[] {
   const years = new Set(
     associates

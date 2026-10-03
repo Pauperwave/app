@@ -1,10 +1,8 @@
 // app\utils\tournaments\prizes\prizeShares.ts
-// Keeps the per-placement shares and the pack counts linked: when a placement
-// is edited, whole packs move to/from the others and the shares are derived
-// from the packs that result, so every pack stays assigned.
-//
-// A lower placement never gets more packs than a higher one (at most as many),
-// so a pack only moves when the distribution stays non-increasing.
+// Keeps the per-placement shares and pack counts linked: editing a placement moves whole packs
+// to/from the others and the shares are derived from the resulting packs, so every pack stays
+// assigned. A lower placement never gets more packs than a higher one, so a pack only moves when
+// the distribution stays non-increasing
 import type { PrizeDistributionSettings } from '~/types'
 import { computePrizeDistribution } from '~/utils/tournaments/prizes/prizeAllocation'
 import { prizeBudgetOf } from '~/utils/tournaments/prizes/prizeBudget'
@@ -26,10 +24,9 @@ function isNonIncreasing(packs: number[]): boolean {
   return packs.every((value, index) => index === 0 || value <= (packs[index - 1] ?? 0))
 }
 
-// Moves one pack to (+1) or from (-1) `rank`, or returns null if no move keeps
-// the distribution valid. Who gives or takes is decided by rank, never by
-// rounding: the highest placement that can do it without breaking the order
-// or its bounds (gives: above the minimum; takes: under the cap).
+// Moves one pack to (+1) or from (-1) `rank`, or returns null if no move keeps the distribution
+// valid. Who gives or takes is decided by rank, never rounding: the highest placement that can
+// without breaking the order or its bounds (gives: above the minimum; takes: under the cap)
 function moveOnePack(
   packs: number[],
   rank: number,
@@ -91,10 +88,9 @@ function sharesFromPacks(
   return next
 }
 
-// Keeps packs and shares linked: asks for `packs` on a placement, moves the
-// difference one pack at a time from/to the others and returns the shares
-// that reproduce that distribution. The placement stops at the closest count
-// it can reach without putting a lower placement above a higher one.
+// Asks for `packs` on a placement, moves the difference one pack at a time from/to the others and
+// returns the shares reproducing that distribution; the placement stops at the closest count it can
+// reach without putting a lower placement above a higher one
 export function sharesForPackEdit(
   rank: number,
   packs: number,

@@ -3,11 +3,9 @@ import { h } from 'vue'
 import { UButton } from '#components'
 import type { Column } from '@tanstack/vue-table'
 
-// Tri-state (none -> asc -> desc -> none), not a plain asc/desc toggle: lets a
-// column go back to the table's initial order instead of being stuck cycling.
-// Extracted once this reached a 4th copy (associates, leagues, tournaments,
-// wanted-cards table columns) that had already started drifting — associates'
-// copy had the tri-state behavior, the other three didn't.
+// Tri-state (none -> asc -> desc -> none), not a plain asc/desc toggle: a column can return to the
+// table's initial order. Extracted from four drifting copies (associates, leagues, tournaments,
+// wanted-cards); only associates had the tri-state
 export function sortableHeader<TData>(
   label: string,
   column: Column<TData, unknown>,

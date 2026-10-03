@@ -1,11 +1,8 @@
 // app\utils\tournaments\pairingPlayerColor.ts
-// Per-player color for the kill-tracking canvas — ported from
-// MagicTheGathering/league's utils/playerColor.ts (user request, 2026-09-16),
-// keyed by TablePlayer.value (the player_uuid this round's pairing rows use,
-// see RoundPairingCard.vue's own comment on that vs. associate uuid) instead
-// of a numeric player id. Cycles through Nuxt UI's semantic color tokens so
-// a player's kill edges share one color across the canvas, consistent with
-// the rest of the app's design system.
+// Per-player color for the kill-tracking canvas, ported from league's playerColor.ts and keyed by
+// TablePlayer.value (the player_uuid of this round's pairing rows, see RoundPairingCard.vue).
+// Cycles through Nuxt UI's semantic color tokens so a player's kill edges share one color across
+// the canvas.
 export type PairingPlayerColor
   = 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error'
 

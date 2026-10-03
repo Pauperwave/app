@@ -1,11 +1,10 @@
 // app\utils\tournaments\swissScoring.ts
-// Official Magic Tournament Rules scoring (MTR 3.1 and Appendix C) for
-// best-of-3 1v1 matches: win = 3, draw = 1, loss = 0 match points, ranked by
-// points, then OMW% (opponents' match-win %), GW% (game-win %) and OGW%
-// (opponents' game-win %). Every percentage is floored at 0.33, so a very weak
-// opponent doesn't punish a player. A bye counts as a 2-0 win (3 match points,
-// 2 games won) and is ignored when computing the opponents' percentages. These
-// values are fixed by the rules, deliberately not settings.
+// Official Magic Tournament Rules scoring (MTR 3.1 and Appendix C) for best-of-3 1v1 matches: win =
+// 3, draw = 1, loss = 0 match points, ranked by points, then OMW% (opponents' match-win %), GW%
+// (game-win %) and OGW% (opponents' game-win %). Percentages are floored at 0.33 so a very weak
+// opponent doesn't punish a player. A bye counts as a 2-0 win (3 points, 2 games won) and is
+// ignored in the opponents' percentages. These values are fixed by the rules, deliberately not
+// settings.
 
 export interface SwissMatch {
   player1Uuid: string

@@ -1,12 +1,10 @@
 // app\utils\tournaments\roundStatusSearch.ts
-// Ported near-verbatim from MagicTheGathering/league's roundStatusSearch.ts
-// (user request, 2026-09-19) — framework-free, unit-testable filter/search
-// helpers backing RoundStatusCard.vue's "Stato inserimento" sidebar.
+// Framework-free, unit-testable filter/search helpers for RoundStatusCard.vue's "Stato inserimento"
+// sidebar, ported from league
 
 /**
- * The status filter for RoundStatusCard.vue. No "in progress" state today —
- * there's no real-time "who is filling this in right now" data, only a
- * binary done/not-done per row (same gap league itself documents).
+ * The status filter for RoundStatusCard.vue. No "in progress" state: there is no real-time "who is
+ * filling this in" data, only done/not-done per row. /
  */
 export type RoundStatusFilter = 'all' | 'pending' | 'done'
 

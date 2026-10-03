@@ -1,7 +1,7 @@
 // app\utils\tournaments\podiumStyle.ts
-// One podium look for a placement wherever it's shown (round report, round table cards): a medal for
-// everyone (user request, 2026-10-02: no crown), gold/silver/bronze tints for the podium, and a plain
-// outline after it so 4th never reads like 2nd.
+// One podium look for a placement wherever it's shown (round report, round table cards): a medal
+// for everyone, gold/silver/bronze tints for the podium and a plain outline after it so 4th never
+// reads like 2nd.
 import { ICONS } from '~/utils/icons'
 
 export interface PodiumStyle {

@@ -1,14 +1,9 @@
 // app\utils\associates\isValidTaxCodeChecksum.ts
-// The official Italian Codice Fiscale check-digit algorithm (Agenzia delle
-// Entrate) — associateFormSchema.ts's tax_code validator previously only
-// checked shape (16 alphanumeric chars), which let a code like
-// "SNNMNLL89R21L378O" (16 chars, but a transposed/duplicated letter) through
-// as "valid". Every character (position 1-15, 1-indexed) is scored from
-// either the odd or even table depending on its position's parity, regardless
-// of whether it's a digit or letter — omocodia (the rule that swaps digits
-// for letters at set positions to disambiguate identical codes) means any of
-// those 15 positions can legitimately hold either, so both tables cover
-// digits AND letters rather than splitting by character type.
+// The official Italian Codice Fiscale check-digit algorithm (Agenzia delle Entrate); a shape-only
+// check (16 alphanumeric chars) lets through a code with a transposed/duplicated letter. Each of
+// the 15 characters is scored from the odd or even table by position parity, whether digit or
+// letter: omocodia swaps digits for letters at set positions, so both tables cover digits AND
+// letters.
 const ODD_VALUES: Record<string, number> = {
   0: 1, 1: 0, 2: 5, 3: 7, 4: 9, 5: 13, 6: 15, 7: 17, 8: 19, 9: 21,
   A: 1, B: 0, C: 5, D: 7, E: 9, F: 13, G: 15, H: 17, I: 19, J: 21, K: 2, L: 4, M: 18,

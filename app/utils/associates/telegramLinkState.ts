@@ -12,7 +12,8 @@ export const TELEGRAM_LINK_STATE_CONFIG: Record<TelegramLinkState, { rank: numbe
   noTelegram: { rank: 3, icon: ICONS.noTelegram, color: 'error' }
 }
 
-// `usernames` is the bot-link map: a missing key means not linked, a null value linked without a nickname.
+// `usernames` is the bot-link map: a missing key means not linked, a null value linked without a
+// nickname.
 export function getTelegramLinkState(
   associate: Pick<Associate, 'uuid' | 'has_no_telegram'>,
   usernames: Map<string, string | null> | undefined

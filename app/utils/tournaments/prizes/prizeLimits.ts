@@ -1,9 +1,8 @@
 // app\utils\tournaments\prizes\prizeLimits.ts
-// Bounds of the prize settings controls, so no combination that could not be
-// paid out (guaranteed minimums + reserve > total packs) or that would break
-// the placement order (a non-rewarded player with more packs than a rewarded
-// one) can be reached, and which controls sit at a bound (the UI explains why
-// the +/- is disabled).
+// Bounds of the prize settings controls, so no combination that couldn't be paid out (guaranteed
+// minimums + reserve > total packs) or would break the placement order (a non-rewarded player with
+// more packs than a rewarded one) can be reached, and which controls sit at a bound (the UI
+// explains why +/- is disabled)
 import type { PrizeDistributionSettings } from '~/types'
 import { DEFAULT_PRIZE_DISTRIBUTION_SETTINGS } from '~/utils/tournaments/prizes/prizeAllocation'
 import { prizeBudgetOf } from '~/utils/tournaments/prizes/prizeBudget'

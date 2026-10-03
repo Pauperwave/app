@@ -1,14 +1,12 @@
 // app\utils\tournaments\tournamentSteps.ts
-// Which stepper steps of a tournament are reachable: only the ones it has
-// already gotten to (its real current step and the ones before it), never the
-// ones ahead — otherwise an organizer could open, say, the prizes step of a
-// tournament that is still taking registrations. The steps ahead stay visible,
-// just not openable; the tournament only gets to them through its own buttons.
+// Which stepper steps of a tournament are reachable: only those it has reached (its current step
+// and the ones before), never the ones ahead (an organizer shouldn't open the prizes step while it
+// is taking registrations). Steps ahead stay visible but not openable; the tournament reaches them
+// through its own buttons.
 
-// The steps up to and including the tournament's real current one; a completed
-// tournament has been through all of them (awards, prizes, leaderboard).
-// `canOpenAny` lifts the restriction (development, or the developer view): every
-// step is then reachable, as a testing aid.
+// The steps up to and including the tournament's real current one (a completed tournament went
+// through all of them). `canOpenAny` lifts the restriction (development or developer view) as a
+// testing aid.
 export function reachedStepSlots(
   allSlots: string[],
   currentSlot: string | null,
@@ -21,8 +19,8 @@ export function reachedStepSlots(
   return allSlots.slice(0, Math.max(index, 0) + 1)
 }
 
-// A step picked by hand (a click, or a `?step=` link) only counts if it has been
-// reached; anything ahead falls back to the tournament's real current step.
+// A step picked by hand (click or `?step=` link) only counts if reached; anything ahead falls back
+// to the current step
 export function resolveActiveStepSlot(
   manualSlot: string | null,
   reachedSlots: string[],

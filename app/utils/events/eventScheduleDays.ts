@@ -1,7 +1,7 @@
 // app\utils\events\eventScheduleDays.ts
-// Which days an event's calendar shows (user request, 2026-10-02): every day the event spans plus
-// every day one of its tournaments starts on, so a tournament outside the event's own dates is
-// never hidden. Local "YYYY-MM-DD" keys (toLocalDateKey), sorted.
+// Which days an event's calendar shows: every day the event spans plus every day one of its
+// tournaments starts on, so a tournament outside the event's dates is never hidden. Local
+// "YYYY-MM-DD" keys (toLocalDateKey), sorted.
 
 // An end exactly at midnight belongs to the evening before (20:00 -> 00:00 is a one-day event).
 function lastDayOf(end: Date): Date {

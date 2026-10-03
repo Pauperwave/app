@@ -1,6 +1,5 @@
 // app\utils\fuzzyMatch.ts
-// Ported from MagicTheGathering/league (user request, 2026-09-16) — the
-// commander search box's autocomplete relevance ranking.
+// Fuzzy relevance ranking for the commander search box's autocomplete, ported from league
 import type { VNode } from 'vue'
 
 export interface FuzzyMatchResult {
@@ -11,14 +10,12 @@ export interface FuzzyMatchResult {
 }
 
 /**
- * Subsequence fuzzy match: every character of `query` must appear in `text`,
- * in order, but not necessarily contiguous (e.g. "arl" matches "Carlo").
- * Case-insensitive. Returns `null` when `query` doesn't match at all.
+ * Subsequence fuzzy match: every character of `query` must appear in `text`, in order, but not
+ * necessarily contiguous (e.g. "arl" matches "Carlo"). Case-insensitive. Returns `null` when
+ * `query` doesn't match at all.
  *
- * O(text.length) per call, not O(text.length * query.length): `searchFrom`
- * only ever moves forward, so each `indexOf` scans a strictly later slice of
- * `text` than the previous one — across the whole loop, every character of
- * `text` is visited by at most one of those scans.
+ * O(text.length) per call: `searchFrom` only moves forward, so each `indexOf` scans a strictly
+ * later slice of `text` /
  */
 export function fuzzyMatch(text: string, query: string): FuzzyMatchResult | null {
   const q = query.trim().toLowerCase()
@@ -44,11 +41,9 @@ export function fuzzyMatch(text: string, query: string): FuzzyMatchResult | null
 }
 
 /**
- * Splits `text` into plain-text and highlighted runs based on matched
- * indices (as returned by `fuzzyMatch`) — consecutive matched characters are
- * merged into a single `<span>` so a contiguous match renders as one
- * contiguous highlight instead of one padded span per character. Pass the
- * result as VNode children (e.g. a component's default/named slot render fn).
+ * Splits `text` into plain and highlighted runs from the matched indices (see `fuzzyMatch`);
+ * consecutive matched characters merge into one `<span>`. Pass the result as VNode children (e.g. a
+ * slot render fn). /
  */
 export function highlightFuzzyChars(text: string, indices: number[]) {
   const indexSet = new Set(indices)

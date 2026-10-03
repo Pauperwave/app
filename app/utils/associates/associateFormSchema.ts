@@ -2,17 +2,14 @@
 import * as v from 'valibot'
 import { parsePhoneNumberFromString } from 'libphonenumber-js/min'
 
-// Shared by associates/list/AddModal.vue (internal, staff-created) and
-// /tesseramento (public self-service form) — same associate record, two entry
-// points. v.string(msg)/v.number(msg) also customise the TYPE error (not just
-// constraints like minLength/minValue): a never-selected field failed the type
-// check before even reaching .min() with a generic message otherwise
-// (see the wanted-cards form schema for the same pattern).
+// Shared by associates/list/AddModal.vue (staff-created) and /tesseramento (public form): the same
+// record, two entry points. v.string(msg)/v.number(msg) also customise the TYPE error: a
+// never-selected field otherwise failed the type check with a generic message before reaching
+// .min() (same pattern as the wanted-cards form schema)
 export function associateFormSchema(t: (key: string) => string) {
   return {
-    // English values to match AssociateType ('regular' | 'sustaining') — the DB
-    // stores English, Italian display labels come from associate.types.* in
-    // it.json, never baked into the stored value itself.
+    // English values to match AssociateType: the DB stores English, Italian labels come from
+    // associate.types.* in it.json
     associate_type: v.picklist(['regular', 'sustaining']),
     first_name: v.pipe(
       v.string(t('associate.addModal.validation.firstNameTooShort')),
@@ -30,14 +27,10 @@ export function associateFormSchema(t: (key: string) => string) {
       v.email(t('associate.addModal.validation.invalidEmail')),
       v.toLowerCase()
     ),
-    // E.164 ("+393203522674"), produced by UPhoneInput — not digits-only.
-    // Existing data isn't all Italian (one row is "+43 664 3434243"), so a
-    // hardcoded country/mask was never correct; libphonenumber-js's own
-    // per-country validity check catches malformed numbers a naive length
-    // regex would miss (or wrongly reject).
-    // Required/empty enforced conditionally below (v.forward) — a minor
-    // associate may not have their own phone number, see isMinor.ts. When
-    // non-empty it still has to be a real number, regardless of age.
+    // E.164 ("+393203522674") from UPhoneInput, not digits-only: existing data isn't all Italian,
+    // and libphonenumber-js's per-country check catches malformed numbers a length regex would
+    // miss. Required/empty is enforced conditionally below (v.forward): a minor may not have their
+    // own number (isMinor.ts)
     phone_number: v.pipe(
       v.string(t('associate.addModal.validation.invalidPhoneNumber')),
       v.custom(
@@ -49,8 +42,8 @@ export function associateFormSchema(t: (key: string) => string) {
       v.string(t('associate.addModal.validation.invalidTaxCode')),
       v.trim(),
       v.regex(/^[A-Z0-9]{16}$/i, t('associate.addModal.validation.invalidTaxCode')),
-      // Shape alone (16 alphanumeric chars) lets a typo'd/transposed code
-      // through silently — see isValidTaxCodeChecksum.ts.
+      // Shape alone (16 alphanumeric chars) lets a typo'd/transposed code through, see
+      // isValidTaxCodeChecksum.ts
       v.check(isValidTaxCodeChecksum, t('associate.addModal.validation.invalidTaxCode'))
     ),
     born_location: v.pipe(
@@ -62,9 +55,8 @@ export function associateFormSchema(t: (key: string) => string) {
       v.date(t('associate.addModal.validation.birthDateNotFuture')),
       v.maxValue(new Date(), t('associate.addModal.validation.birthDateNotFuture'))
     ),
-    // Length/required enforced conditionally below (v.forward), not here —
-    // a non-Italian birth state has no Italian province, see
-    // isItalianBirthState.ts.
+    // Length/required enforced conditionally below (v.forward): a non-Italian birth state has no
+    // province (isItalianBirthState.ts)
     born_province: v.pipe(v.string(), v.trim()),
     born_state: v.pipe(
       v.string(t('associate.addModal.validation.birthStateRequired')),
@@ -76,11 +68,8 @@ export function associateFormSchema(t: (key: string) => string) {
       v.trim(),
       v.minLength(5, t('associate.addModal.validation.residencyAddressRequired'))
     ),
-    // Optional — separate field from residency_address rather than parsed out
-    // of it (Italian address formats vary too much — "Via Roma, 12", "12/A",
-    // "snc" for no number — to split reliably), matching how Italian official
-    // forms already separate "Indirizzo" and "Civico". Some real addresses
-    // genuinely have no house number ("snc"), hence optional like the DB column.
+    // Optional and separate from residency_address: Italian address formats ("Via Roma, 12",
+    // "12/A", "snc") are too varied to split reliably, and some real addresses have no number
     residency_house_number: v.nullable(v.pipe(v.string(), v.trim())),
     residency_city: v.pipe(
       v.string(t('associate.addModal.validation.residencyCityRequired')),
@@ -109,11 +98,9 @@ export function associateFormSchema(t: (key: string) => string) {
   }
 }
 
-// Wraps associateFormSchema() with cross-field rules (each v.forward attaches
-// its error to the dependent field specifically, so it still surfaces on the
-// right UFormField) — the single source of truth for AddModal.vue/
-// EditModal.vue/tesseramento, which all built this object schema themselves
-// before these rules existed.
+// Wraps associateFormSchema() with the cross-field rules (each v.forward attaches its error to the
+// dependent field so it surfaces on the right UFormField): single source of truth for
+// AddModal.vue/EditModal.vue/tesseramento
 export function associateFormObjectSchema(t: (key: string) => string) {
   return v.pipe(
     v.object(associateFormSchema(t)),

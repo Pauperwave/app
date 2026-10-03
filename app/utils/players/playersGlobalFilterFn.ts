@@ -2,11 +2,8 @@
 import type { Row } from '@tanstack/vue-table'
 import type { Player } from '~/types'
 
-// UTable globalFilterFn for /players (2026-08-19 user request, "similar
-// search" to associates' associatesGlobalFilterFn.ts) — matches first/last
-// name and email. Plain substring, no fuzzy matching: the roster this
-// searches is small and associates' Levenshtein fuzzy-match was specifically
-// about typo-tolerant real names, not requested here.
+// UTable globalFilterFn for /players: matches first/last name and email by plain substring (the
+// roster is small, so no Levenshtein typo tolerance like associatesGlobalFilterFn.ts)
 export function playersGlobalFilterFn(
   row: Row<Player>, _columnId: string, filterValue: string
 ): boolean {

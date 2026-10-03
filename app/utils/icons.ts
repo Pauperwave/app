@@ -196,7 +196,7 @@ export const ICONS = {
   info: 'i-lucide-info',
   messageCircle: 'i-lucide-message-circle',
   noTelegram: 'i-lucide-message-circle-off',
-  // An associate's Telegram status uses this speech-bubble family, never the Telegram logo (user request, 2026-10-02).
+  // An associate's Telegram status uses this speech-bubble family, never the Telegram logo
   telegramLinked: 'i-lucide-message-circle-check',
   telegramNoUsername: 'i-lucide-message-circle-warning',
   telegramNotLinked: 'i-lucide-message-circle-dashed',

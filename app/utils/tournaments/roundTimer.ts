@@ -1,7 +1,5 @@
 // app\utils\tournaments\roundTimer.ts
-// Ported verbatim from MagicTheGathering/league's app/utils/roundTimer.ts
-// + formatDuration (app/utils/time.ts), user request 2026-09-16: copy
-// RoundTimer.vue as-is.
+// Round timer math, ported from league's roundTimer.ts and formatDuration
 
 /** Total countdown duration in seconds (base minutes + any added/removed bonus minutes). */
 export function calculateTotalSeconds(durationMinutes: number, timeBonusMinutes: number): number {
@@ -18,7 +16,10 @@ export function isTimerExpired(remainingSeconds: number): boolean {
   return remainingSeconds === 0
 }
 
-/** True once the timer has been started at least once and is currently paused (not fresh, not expired). */
+/**
+ * True once the timer has been started at least once and is currently paused (not fresh, not
+ * expired).
+ */
 export function isTimerPaused(
   isRunning: boolean, hasStarted: boolean, isExpired: boolean
 ): boolean {

@@ -1,7 +1,6 @@
 // app\utils\standings\filterStandingsBySearch.ts
 // Shared by every standings page (FormatPage.vue/PublicFormatPage.vue,
-// cittadino/index.vue/PublicCittadinoPage.vue) — each filters its own
-// standings rows by the same case-insensitive player-name search.
+// cittadino/index.vue/PublicCittadinoPage.vue): a case-insensitive player-name search
 export function filterStandingsBySearch<T extends { playerName: string }>(
   standings: T[], search: string
 ): T[] {

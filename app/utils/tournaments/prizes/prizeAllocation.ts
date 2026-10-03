@@ -1,6 +1,6 @@
 // app\utils\tournaments\prizes\prizeAllocation.ts
-// Splits the packs over the ranked players: guaranteed minimums first, then
-// the bonus pool by share (with the per-placement cap), largest remainder.
+// Splits the packs over the ranked players: guaranteed minimums first, then the bonus pool by share
+// (with the per-placement cap), largest remainder.
 import type { PrizeDistributionSettings } from '~/types'
 import { prizeBudgetOf } from '~/utils/tournaments/prizes/prizeBudget'
 
@@ -61,13 +61,11 @@ function splitByShares(
   return new Map(freeRanks.map((rank, index) => [rank, packs[index] ?? 0]))
 }
 
-// Only the top `topCutoff` placements are rewarded: each gets
-// minPacksPerPlayer first, then the bonus pool is split by bonusShares (rank 0
-// = 1st place, renormalized so they need not sum to 100) with the
-// largest-remainder method. A placement capped by maxPacksPerPlayer keeps the
-// cap and its surplus goes to the others. Non-rewarded players get
-// nonRewardedMinPacks and reservedPacks are set aside — so the counts plus the
-// reserve always sum to exactly totalPacks.
+// Only the top `topCutoff` placements are rewarded: each gets minPacksPerPlayer, then the bonus
+// pool is split by bonusShares (rank 0 = 1st, renormalized so they needn't sum to 100) with the
+// largest-remainder method. A placement capped by maxPacksPerPlayer keeps the cap and its surplus
+// goes to the others. Non-rewarded players get nonRewardedMinPacks and reservedPacks are set aside,
+// so counts plus reserve sum to exactly totalPacks
 export function computePrizeDistribution(
   rankedCount: number,
   settings: PrizeDistributionSettings

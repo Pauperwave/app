@@ -4,48 +4,35 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 import { ICONS } from '~/utils/icons'
 
 const { t } = useI18n()
-// const toast = useToast()
 
 const open = ref(false)
-// Named sidebarCollapsed, not collapsed: the sidebar's own #header/#default/
-// #footer slots already destructure a scoped `collapsed` prop (see below),
-// and shadowing it here trips vue/no-template-shadow.
+// Named sidebarCollapsed, not collapsed: the sidebar slots already destructure a scoped `collapsed`
+// (vue/no-template-shadow)
 const sidebarCollapsed = ref(false)
 
-// Same official pattern as Nuxt UI's own "Control collapsed state" example on
-// the DashboardSidebar docs page: own the collapsed state as a plain ref
-// bound via v-model, then a shortcut just flips it — no need to inject Nuxt
-// UI's own (undocumented, internal-only) useDashboard() util for this.
-// <UDashboardSidebarCollapse>'s own button stays in sync automatically: it's
-// a descendant reading the same context, which now mirrors this ref.
+// Nuxt UI's documented "Control collapsed state" pattern: own the state as a ref bound via v-model
+// and let the shortcut flip it (no internal useDashboard()); <UDashboardSidebarCollapse> stays in
+// sync automatically
 defineShortcuts({
   b: () => sidebarCollapsed.value = !sidebarCollapsed.value
 })
 
-// Shows a muted "g x" hint next to each nav item's label from the moment "g"
-// is pressed until the next keystroke (whatever it is — the second key of
-// the chord, or an unrelated key that just gives up on it) — no auto-hide
-// timer. Reinforces the chords in NAV_SHORTCUTS for people who already know
-// to press "g", not a first-time-discoverability affordance (that's what
-// UDashboardSearch is for). No exposed "chord pending" state on
-// defineShortcuts itself, so this uses the same shared listener as
-// useChordHintKey.ts's own "f" hint (RoundTimer.vue) rather than a callback
-// into it.
+// Shows a muted "g x" hint next to each nav item from the moment "g" is pressed until the next
+// keystroke (no timer), reinforcing NAV_SHORTCUTS for people who already know "g". defineShortcuts
+// exposes no "chord pending" state, so this uses the shared listener of useChordHintKey.ts (like
+// RoundTimer.vue's "f" hint)
 const showChordHints = useChordHintKey('g')
 
-// item.to is typed as string | RouteLocationRaw | undefined by NavigationMenuItem,
-// and NAV_SHORTCUTS's index signature returns string | undefined under
-// noUncheckedIndexedAccess — resolving both here keeps the template's v-for
-// expression free of type-narrowing that Vue's compiler can't carry across it.
+// item.to is typed string | RouteLocationRaw | undefined and NAV_SHORTCUTS's index signature
+// returns string | undefined (noUncheckedIndexedAccess): resolving both here keeps the template's
+// v-for free of narrowing
 const navChordKeys = (to: NavigationMenuItem['to']): string[] => {
   if (typeof to !== 'string') return []
   return NAV_SHORTCUTS[to]?.split('-') ?? []
 }
 
-// Forces the "g" hint visible for the tour's "navigation" step instead of
-// requiring the visitor to actually press "g" mid-tour — the whole point of
-// that step is to show the hint, not just describe it. Reverts to the normal
-// keydown-driven behavior (hidden) the moment the tour moves off that step.
+// Forces the "g" hint visible for the tour's "navigation" step instead of requiring a real
+// keypress; reverts to the keydown-driven behavior when the tour moves on
 const shortcutsTour = useShortcutsTour()
 watch(() => shortcutsTour.current.value?.id, (id) => {
   showChordHints.value = id === 'navigation'
@@ -58,8 +45,7 @@ useAssociateTelegramLinksRealtime()
 
 const mainNavGroups = useMainNavGroups(open)
 
-// Opens Gmail's compose view directly instead of mailto:, which silently
-// no-ops when the OS has no default mail client configured.
+// Opens Gmail's compose view directly: mailto: silently no-ops without a default mail client
 const gmailComposeLink = (subject: string) => `https://mail.google.com/mail/?view=cm&fs=1&to=emanuelenardi.dev@gmail.com&su=${encodeURIComponent(subject)}`
 
 const footerNavItems = [{
@@ -98,14 +84,9 @@ const groups = useCommandPaletteGroups({ open, mainNavGroups, footerNavItems })
       }"
     >
       <template #header="{ collapsed }">
-        <!-- Developer toggle lives next to the org selector (user request,
-             2026-09-18, after the sidebar footer's UserMenu/ColorModeSwitch
-             row ran out of room) — same "flex-1 sibling" pattern the footer
-             row already uses for LayoutUserMenu. The sidebar's own `header`
-             ui override is items-start (for the expanded org-selector row),
-             but that left-pinned the stacked buttons when collapsed instead
-             of centering them like the footer's items-center default — see
-             the sidebarCollapsed-conditioned `header` key above. -->
+        <!-- Developer toggle next to the org selector (same "flex-1 sibling" pattern as the
+             footer's LayoutUserMenu). The sidebar's `header` ui override is items-start, which
+             left-pinned the stacked buttons when collapsed: see the `header` key above. -->
         <div class="flex items-center gap-1 w-full" :class="collapsed ? 'flex-col' : ''">
           <LayoutTeamsMenu :collapsed="collapsed" class="flex-1 min-w-0" />
           <LayoutDeveloperViewToggle />
@@ -113,15 +94,9 @@ const groups = useCommandPaletteGroups({ open, mainNavGroups, footerNavItems })
       </template>
 
       <template #default="{ collapsed }">
-        <!-- text-muted (user request, 2026-08-19): matched the nav items'
-             own muted icon color, which this didn't by default (UButton's
-             neutral/ghost coloring reads as full-strength, not muted).
-             tooltip: same collapsed-sidebar tooltip every UNavigationMenu
-             item already gets (via `tooltip popover` below) — wasn't passed
-             here at all, so this button silently had none.
-             label="Search" (user request, 2026-08-19): the component's own
-             default label/tooltip text is "Search..." (meant for the full
-             button with a kbd hint) — too noisy as a plain tooltip. -->
+        <!-- text-muted matches the nav items' muted icon color (UButton's ghost reads
+             full-strength). tooltip: same collapsed-sidebar tooltip as every UNavigationMenu item.
+             label="Search": the default "Search..." is too noisy as a plain tooltip. -->
         <UDashboardSearchButton
           :collapsed="collapsed"
           label="Search"
@@ -139,22 +114,10 @@ const groups = useCommandPaletteGroups({ open, mainNavGroups, footerNavItems })
             popover
           >
             <template #item-leading="{ item, active, ui: itemUi }">
-              <!-- Collapsed sidebar has no room for the trailing UBadge below,
-                   so a warning UChip dot on the icon itself stands in for it.
-                   size="sm" matches Nuxt UI's own built-in `item.chip` leading
-                   -icon-chip default (NavigationMenu.vue's linkLeadingChipSize
-                   theme key) — the bell's standalone UChip defaults to "md"
-                   because it's a different component context, not because
-                   "sm" here was wrong (reverted after briefly dropping it,
-                   2026-08-19).
-                   !mr-0: linkLeadingIcon's default mr-2 (spacing before the
-                   label) widens the chip's own bounding box, so its inset
-                   dot — positioned right-0 against that wider box — floats
-                   past the icon's actual corner instead of sitting flush on
-                   it like the bell's chip does. The label is hidden in this
-                   collapsed-only branch anyway, so the margin has no layout
-                   job left to do here (confirmed visually via claude-in
-                   -chrome, 2026-08-19). -->
+              <!-- Collapsed sidebar has no room for the trailing UBadge, so a warning UChip dot on
+                   the icon stands in. size="sm" matches Nuxt UI's built-in `item.chip` default.
+                   !mr-0: linkLeadingIcon's mr-2 widens the chip's box and floats the dot past the
+                   icon's corner; the label is hidden here anyway. -->
               <UChip
                 v-if="collapsed && navItemHasWarning(item.to)"
                 color="warning"
@@ -176,21 +139,15 @@ const groups = useCommandPaletteGroups({ open, mainNavGroups, footerNavItems })
 
             <template #item-trailing="{ item, active, ui: trailingUi }">
               <div class="flex items-center gap-1">
-                <!-- Nuxt UI's own fallback trailing content (chevron for an
-                     item with children) — lost by overriding this slot for
-                     the chord-hint/badge content below, so reproduced here
-                     for Classifiche's own dropdown trigger (2026-08-23). -->
+                <!-- Nuxt UI's fallback trailing content (chevron for items with children), lost by
+                     this slot -->
                 <UIcon
                   v-if="item.children?.length"
                   :name="ICONS.chevronDown"
                   :class="trailingUi.linkTrailingIcon({ active })"
                 />
                 <ChordHint v-if="showChordHints" :keys="navChordKeys(item.to)" />
-                <!-- Badges hidden while the "g" hint is showing (user
-                     request, 2026-08-23) — both together crowded the same
-                     trailing area, and the kbd hint is what "g" was pressed
-                     to see. Driven by NAV_BADGE_SOURCES, not a per-route
-                     v-if chain — see its own comment for why. -->
+                <!-- Badges are hidden while the "g" hint shows (both crowd the trailing area) -->
                 <template v-else>
                   <UBadge
                     v-for="(badge, badgeIndex) in navItemBadges(item.to)"
@@ -206,13 +163,9 @@ const groups = useCommandPaletteGroups({ open, mainNavGroups, footerNavItems })
           </UNavigationMenu>
         </div>
 
-        <!-- Grouped together (user request, 2026-09-18: bring the version
-             badge closer to "Scorciatoie da tastiera") — negative margin on
-             the nav menu itself rather than guessing at its own internal
-             `:ui` spacing key (see the Nuxt UI :ui-override gotcha in
-             CLAUDE.md: an override doesn't reliably cancel a
-             differently-scoped default class, so a margin from outside is
-             the safer bet here). -->
+        <!-- Negative margin on the nav menu pulls the version badge closer to "Scorciatoie da
+             tastiera": a `:ui` override wouldn't reliably cancel the differently-scoped default
+             class (see CLAUDE.md) -->
         <div class="mt-auto flex" :class="collapsed ? 'justify-center' : 'justify-start px-2.5'">
           <LayoutVersionBadge :collapsed="collapsed" />
         </div>
@@ -227,10 +180,8 @@ const groups = useCommandPaletteGroups({ open, mainNavGroups, footerNavItems })
       </template>
 
       <template #footer="{ collapsed }">
-        <!-- id anchors the shortcuts tour's "globalActions" step here since
-             this is the sidebar footer, a reasonable general anchor for
-             "these work anywhere" — n/b don't have dedicated UI in this
-             exact spot, this is just a stable target near the bottom. -->
+        <!-- id anchors the shortcuts tour's "globalActions" step: a stable target for "works
+             anywhere" -->
         <div
           id="tour-shortcuts-global"
           class="flex items-center gap-2 w-full"
@@ -250,11 +201,9 @@ const groups = useCommandPaletteGroups({ open, mainNavGroups, footerNavItems })
 
     <NotificationsSlideover />
 
-    <!-- #description overrides TourGuide's default plain-text paragraph: this
-         tour's copy interpolates real UKbd chips (matching the sidebar hint)
-         instead of quoted letters — the keypath/placeholder names come from
-         useShortcutsTour.ts's step.description. Slots unused by a given
-         step's keypath are simply ignored by <i18n-t>. -->
+    <!-- #description overrides TourGuide's plain-text paragraph so the copy can interpolate
+         UKbd chips (keypath/placeholders come from useShortcutsTour.ts's step.description);
+         unused slots are ignored by <i18n-t> -->
     <TourGuide :tour="shortcutsTour" :h-shortcut="false">
       <template #description="{ step }">
         <i18n-t

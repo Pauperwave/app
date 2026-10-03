@@ -1,10 +1,9 @@
 // app\utils\transactions\transactionPayerName.ts
 import type { Transaction } from '~/types'
 
-// Extracted out of useTransactionsTableColumns.ts's payer accessorFn
-// (2026-08-19) the moment home/Staff.vue needed the exact same derivation for
-// its recent-transactions list — a transaction's payer is either the linked
-// associate or the external payer_name/payer_surname pair, never both.
+// Shared by useTransactionsTableColumns.ts's payer accessorFn and home/Staff.vue's
+// recent-transactions list: a payer is either the linked associate or the external
+// payer_name/payer_surname pair, never both
 export function transactionPayerName(transaction: Transaction): string {
   const { associate, payer_name, payer_surname } = transaction
   return associate

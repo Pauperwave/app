@@ -7,11 +7,10 @@ import type { WantedCardLanguage } from '~/utils/wantedCards/wantedCardLanguages
 export type UserStatus = 'subscribed' | 'unsubscribed' | 'bounced'
 export type SaleStatus = 'paid' | 'failed' | 'refunded'
 
-// The color a *StatusColor() util (app/utils/status/*.ts) maps a domain
-// status onto for its UBadge/UStatusSelect — each util only ever returns a
-// subset of this union (e.g. wantedCardStatusColor never returns 'error'),
-// so this is the superset every one of them, and every consumer expecting
-// one of their return values, can share instead of re-declaring `string`.
+// The color a *StatusColor() util (app/utils/status/*.ts) maps a domain status onto for its
+// UBadge/UStatusSelect: each util returns a subset (e.g. wantedCardStatusColor never returns
+// 'error'), so this is the superset they and every consumer can share instead of re-declaring
+// `string`
 export type StatusColor = 'neutral' | 'info' | 'warning' | 'success' | 'error'
 
 export type RequestStatus = 'approved' | 'pending' | 'rejected'
@@ -20,28 +19,22 @@ export type RequestStatus = 'approved' | 'pending' | 'rejected'
 // associates/index.vue), same convention as every other status/type enum.
 export type AssociateType = 'regular' | 'sustaining'
 
-// Membership status computed by the pauperwave_associates_with_status view (never
-// stored in the DB): 'active'/'to_renew'/'expired' derive from the latest renewal
-// year in pauperwave_associate_renewals; 'unpaid' is approved but with zero
-// renewal rows ever — just submitted /tesseramento, not a lapsed membership,
-// distinguished from 'expired' 2026-08-18 (was silently conflated before);
-// for requests not yet approved it matches membership_request_status
-// ('pending'/'rejected').
+// Membership status computed by the pauperwave_associates_with_status view (never stored):
+// 'active'/'to_renew'/'expired' derive from the latest renewal year in
+// pauperwave_associate_renewals; 'unpaid' is approved with zero renewal rows ever (just submitted
+// /tesseramento, not a lapsed membership, so distinct from 'expired'); for requests not yet
+// approved it matches membership_request_status ('pending'/'rejected')
 export type MembershipStatus = RequestStatus | 'active' | 'to_renew' | 'expired' | 'unpaid'
 
-// Matches the DB check constraint (ck_tournaments_status) verbatim — adopted
-// directly instead of mapped to a UI-only vocabulary (2026-08-15 user request).
-// 'external' (2026-09-04): a tournament run by a shop organizer (Magman
-// etc.), not Pauperwave — deliberately excluded from TOURNAMENT_STATUSES
-// (app/utils/status/tournamentStatus.ts), so it's never a pickable option
-// for the club's own tournaments.
+// Matches the DB check constraint (ck_tournaments_status) verbatim, not mapped to a UI-only
+// vocabulary. 'external' is a tournament run by a shop organizer (Magman etc.), not Pauperwave:
+// deliberately excluded from TOURNAMENT_STATUSES (app/utils/status/tournamentStatus.ts), so it is
+// never a pickable option for the club's own tournaments
 export type TournamentStatus
   = 'draft' | 'registration_open' | 'in_progress' | 'completed' | 'cancelled' | 'external'
-// Matches the DB check constraint (ck_leagues_status) verbatim, same
-// convention as TournamentStatus/EventStatus (2026-08-15 user request).
+// Matches the DB check constraint (ck_leagues_status) verbatim, like TournamentStatus/EventStatus
 export type LeagueStatus = 'draft' | 'active' | 'completed' | 'cancelled'
-// Matches the DB check constraint (ck_events_status) verbatim, same
-// convention as TournamentStatus (2026-08-15 user request).
+// Matches the DB check constraint (ck_events_status) verbatim, like TournamentStatus
 export type EventStatus = 'draft' | 'published' | 'ongoing' | 'completed' | 'cancelled'
 
 type AssociateRow = Database['public']['Tables']['pauperwave_associates']['Row']
@@ -62,10 +55,9 @@ export interface Associate extends Omit<AssociateRow, 'membership_request_status
 
 type PaymentRow = Database['public']['Tables']['pauperwave_payments']['Row']
 
-// Derived from the real pauperwave_payments row (see shared/types/transactions.ts
-// for the PaymentMethod/PaymentType value unions, shared with the create
-// endpoint/mutation) — `associate` is the joined payer when associate_uuid is
-// set, null for an external (non-associate) payer.
+// Derived from the real pauperwave_payments row (see shared/types/transactions.ts for the
+// PaymentMethod/PaymentType unions shared with the create endpoint/mutation): `associate` is the
+// joined payer when associate_uuid is set, null for an external payer
 export interface Transaction
   extends Omit<PaymentRow, 'payment_type' | 'payment_method' | 'created_by' | 'updated_by'> {
   payment_type: PaymentType
@@ -76,25 +68,23 @@ export interface Transaction
     last_name: string
     pauperwave_associate_number: string | null
   } | null
-  // Resolved names (audit trail, 2026-08-18) — raw created_by/updated_by uuids
-  // are joined server-side, same convention as WantedCard.createdBy/updatedBy.
+  // Resolved names: the raw created_by/updated_by uuids are joined server-side, like
+  // WantedCard.createdBy/updatedBy
   createdBy: string
   updatedBy: string
-  // Joined from tournament_uuid/event_uuid (2026-08-23) so the "Evento" column
-  // can link to the tournament/event's own detail page — leagueUuid is what
-  // tournamentDetailUrl needs to build the right link (see its own comment).
+  // Joined from tournament_uuid/event_uuid so the "Evento" column can link to the
+  // tournament/event's detail page: leagueUuid is what tournamentDetailUrl needs for the right link
+  // (see its comment)
   tournament: { uuid: string, name: string, leagueUuid: string | null } | null
   event: { uuid: string, name: string } | null
 }
 
-// players_full joins the players table (user_id) with its associate (name,
-// email, pauperwave_associate_number, is_active) — nullable throughout since
-// a view row's FK-joined columns are all optional in the generated type,
-// even though every one of these is NOT NULL in practice (a player row
-// always has an associate_uuid FK). `id` is re-narrowed to non-null: it's
-// the view's own players.id, never null in practice, and useSelection.ts's
-// row-selection generic (`T extends { id: number }`, see
-// usePlayersTableColumns.ts's selectColumn) needs it non-nullable.
+// players_full joins the players table (user_id) with its associate (name, email,
+// pauperwave_associate_number, is_active): nullable throughout since a view row's FK-joined columns
+// are all optional in the generated type, though NOT NULL in practice (a player always has an
+// associate_uuid FK). `id` is re-narrowed to non-null: it is the view's own players.id, and
+// useSelection.ts's row-selection generic (`T extends { id: number }`, see
+// usePlayersTableColumns.ts's selectColumn) needs it non-nullable
 export interface Player extends Omit<Database['public']['Views']['players_full']['Row'], 'id'> {
   id: number
 }
@@ -108,10 +98,9 @@ export interface Mail {
   date: string
 }
 
-// The 4-tier app-level role model decided in docs/architecture/roles.md
-// (2026-08-10): player < organizer < admin < super_admin — now also the live
-// DB enum (shared/utils/types/database.ts's app_role, migration
-// 20260817090000).
+// The 4-tier app-level role model (docs/architecture/roles.md): player < organizer < admin <
+// super_admin, also the live DB enum (app_role in shared/utils/types/database.ts, migration
+// 20260817090000)
 export type AppRole = 'player' | 'organizer' | 'admin' | 'super_admin'
 
 export interface Stat {
@@ -120,10 +109,9 @@ export interface Stat {
   value: number | string
   variation: number
   formatter?: (value: number) => string
-  // Tints the icon's leading circle — defaults to primary when omitted (see
-  // AssociatesStatsCards.vue). Only 'success'/'error' are used so far, for
-  // stats that are inherently good/bad news (new signups vs. lapsed
-  // renewals) rather than neutral counts.
+  // Tints the icon's leading circle, primary when omitted (see AssociatesStatsCards.vue). Only
+  // 'success'/'error' are used, for stats that are inherently good/bad news (new signups vs lapsed
+  // renewals) rather than neutral counts
   color?: 'primary' | 'success' | 'error'
 }
 
@@ -177,25 +165,22 @@ export interface WantedCard {
   scryfallId: string | null
   setCode: string | null
   copies: number
-  // '' when the requester had no language preference (mapped from a `null`
-  // DB row, see useWantedCardsQuery.ts) — WantedCardLanguage itself never
-  // includes that case, so a stored row's real language can't be typo'd as
-  // the form-only 'any' sentinel (WantedCardLanguageFilter).
+  // '' when the requester had no language preference (a `null` DB row, see useWantedCardsQuery.ts):
+  // WantedCardLanguage never includes that case, so a stored row's language can't be typo'd as the
+  // form-only 'any' sentinel (WantedCardLanguageFilter)
   language: WantedCardLanguage | ''
   treatment: string[]
   manaCost: string
   colorIdentity: string[]
-  // Scryfall's own field (e.g. "Land", "Creature — Elf Wizard") — null for
-  // requests created before migration 20260815090000, backfilled via
-  // scripts/backfill-wanted-cards-type-line.mjs. Distinguishes a land from
-  // a colorless nonland card, which color_identity alone can't (both are []).
+  // Scryfall's own field (e.g. "Land", "Creature — Elf Wizard"), null for requests created before
+  // migration 20260815090000 and not backfilled (scripts/backfill-wanted-cards-type-line.mjs). It
+  // tells a land from a colorless nonland card, which color_identity alone can't (both are [])
   typeLine: string | null
   cmc: number
   imageUrl: string
-  // Two distinct price sources, not recomputed on every read — snapshots updated
-  // by a manual refresh or the weekly job (see server/utils/priceRefresh.ts,
-  // scripts/refresh-wanted-cards-prices.mjs). *SyncedAt stays null until a
-  // refresh has run on the row.
+  // Two distinct price sources, snapshots updated by a manual refresh or the weekly job (see
+  // server/utils/priceRefresh.ts, scripts/refresh-wanted-cards-prices.mjs), not recomputed on every
+  // read. *SyncedAt stays null until a refresh has run on the row
   cardmarketPrice: number | null
   cardmarketPriceSyncedAt: string | null
   cardtraderPrice: number | null
@@ -204,30 +189,29 @@ export interface WantedCard {
   player: string
   playerAssociateUuid: string
   // Audit trail (docs/supabase/2-database.md), names resolved client-side in
-  // useWantedCardsQuery.ts — PostgREST can't embed pauperwave_associates'
-  // self-referencing FK, but created_by/updated_by here are wanted_cards ->
-  // associates (a normal FK), so the join works directly.
+  // useWantedCardsQuery.ts: PostgREST can't embed pauperwave_associates' self-referencing FK, but
+  // created_by/updated_by here are wanted_cards -> associates (a normal FK), so the join works
+  // directly
   createdAt: string
   updatedAt: string
   createdBy: string
   updatedBy: string
 }
 
-// Backed by the real `tournaments` table (migration 20260815100000) — mapped
-// from its snake_case rows, with location/organizer/format/event resolved
-// from their FK'd tables into flat display strings, onto this camelCase
-// interface in useTournamentsQuery.ts, same convention as WantedCard above.
+// Backed by the real `tournaments` table (migration 20260815100000): mapped from its snake_case
+// rows in useTournamentsQuery.ts, with location/organizer/format/event resolved from their FK'd
+// tables into flat display strings, like WantedCard above
 export interface Tournament {
   id: number
   uuid: string
   event: string | null
-  // Matched against separately, not by `event` name (2026-08-15) — PublicCalendarPage.vue
-  // groups tournaments under their event by uuid, a name collision can't misgroup them.
+  // Matched by uuid, not by `event` name: PublicCalendarPage.vue groups tournaments under their
+  // event by uuid, so a name collision can't misgroup them
   eventUuid: string | null
   league: string | null
-  // FK uuids alongside their resolved display names above (2026-08-16) —
-  // needed to prefill TournamentsListEditModal.vue's selects, which bind by
-  // uuid (see useTournamentFormFields.ts), not by the human-readable name.
+  // FK uuids beside their resolved display names above: needed to prefill
+  // TournamentsListEditModal.vue's selects, which bind by uuid (see useTournamentFormFields.ts),
+  // not by name
   leagueUuid: string | null
   formatUuid: string
   organizerUuid: string | null
@@ -239,10 +223,10 @@ export interface Tournament {
   roundDurationMinutes: number
   registeredPlayers: number | null
   organizer: string | null
-  // 'association' | 'shop' | 'other' (organizations.type, docs/supabase/2-database.md).
-  // A 'shop' organizer (Magman etc.) is reference-only — RegisterButton.vue
-  // hides Iscriviti/Disiscriviti for these, since Pauperwave doesn't run
-  // their registrations (self-register.post.ts enforces this server-side too).
+  // 'association' | 'shop' | 'other' (organizations.type, docs/supabase/2-database.md). A 'shop'
+  // organizer (Magman etc.) is reference-only: RegisterButton.vue hides Iscriviti/Disiscriviti for
+  // these, since Pauperwave doesn't run their registrations (self-register.post.ts enforces it
+  // server-side too)
   organizerType: string | null
   format: string
   status: TournamentStatus
@@ -252,15 +236,14 @@ export interface Tournament {
   telegramNotificationsEnabled: boolean
   // Test tournament: only a super_admin can see it (RLS), kept out of calendars and stats.
   isTest: boolean
-  // Venue name (e.g. "Smart Lab - Centro Giovani Rovereto") — kept separate
-  // from `locationAddress` (see locations table, migration 20260815100000)
-  // so a maps link can use the precise address while the UI still shows the
-  // friendlier name, resolving the old "just the name of the place" TODO.
+  // Venue name (e.g. "Smart Lab - Centro Giovani Rovereto"), kept separate from `locationAddress`
+  // (see locations table, migration 20260815100000) so a maps link can use the precise address
+  // while the UI shows the friendlier name
   location: string | null
   locationAddress: string | null
-  // Split out of locationAddress (2026-08-29, PublicCalendarPage.vue's own
-  // "filter by city" — Trento/Rovereto/etc.) rather than parsed back out of
-  // that formatted string, which would be fragile.
+  // Split out of locationAddress (for PublicCalendarPage.vue's "filter by city",
+  // Trento/Rovereto/etc.) rather than parsed back out of that formatted string, which would be
+  // fragile
   locationCity: string | null
   // Precise Google Maps place link (locations.google_maps_url) — takes
   // priority over the generic address-search fallback when set, see
@@ -278,34 +261,28 @@ export interface Tournament {
   prizes: string | null
   companionCode: string | null
   image: string | null
-  // Attribution for `image` when it's a Scryfall art_crop (MagicCardArtPicker.vue,
-  // migration 20260820120000) — required alongside the crop per Scryfall's API
-  // usage guidelines. Both null whenever `image` is unset or wasn't picked
-  // through the card-art picker.
+  // Attribution for `image` when it is a Scryfall art_crop (MagicCardArtPicker.vue, migration
+  // 20260820120000), required with the crop per Scryfall's API usage guidelines. Both null whenever
+  // `image` is unset or wasn't picked through the card-art picker
   imageCardName: string | null
   imageCardArtist: string | null
   participants: string[]
-  // Distinct from `organizer` (the running club/group, e.g. "Pauperwave") —
-  // the specific person to contact about this tournament. Both optional:
-  // most tournaments have neither, only a real name implies a phone worth
-  // showing (see the Hobbit draft seed, migration 20260815100500).
+  // Distinct from `organizer` (the running club/group, e.g. "Pauperwave"): the specific person to
+  // contact about this tournament. Both optional: most tournaments have neither, and only a real
+  // name implies a phone worth showing (see the Hobbit draft seed, migration 20260815100500)
   contactName: string | null
   contactPhone: string | null
-  // Derived by useTournamentsQuery.ts (user request, 2026-08-22, issue #52)
-  // — this tournament's 1-based position within its own league, ordered by
-  // startDate; null when it has no league. Independent of whether `name`
-  // repeats — every tournament in a league gets one. Rendered as a muted
-  // superscript suffix by TournamentsStageLabel.vue in styled contexts, or
-  // via tournamentStageText() as plain text (tournamentStageLabel.ts)
-  // wherever styled markup isn't possible (select options, breadcrumbs).
+  // Derived by useTournamentsQuery.ts: this tournament's 1-based position within its league,
+  // ordered by startDate; null when it has no league. Independent of whether `name` repeats: every
+  // tournament in a league gets one. Rendered as a muted superscript suffix by
+  // TournamentsStageLabel.vue in styled contexts, or via tournamentStageText() as plain text
+  // (tournamentStageLabel.ts) where styled markup isn't possible (select options, breadcrumbs)
   stageNumber: number | null
 }
 
-// Backed by the real `leagues` table — mapped from its snake_case rows, with
-// ruleset resolved from its FK'd table, same convention as Tournament above.
-// tournamentCount/completedTournamentCount are derived (count of
-// tournaments.league_uuid = this league, and of those with status
-// 'completed'), not stored columns.
+// Backed by the real `leagues` table: mapped from its snake_case rows, with ruleset resolved from
+// its FK'd table (like Tournament above). tournamentCount/completedTournamentCount are derived
+// (count of tournaments.league_uuid = this league, and of those 'completed'), not stored columns
 export interface League {
   id: number
   uuid: string
@@ -313,38 +290,31 @@ export interface League {
   name: string
   startDate: string
   ruleset: string | null
-  // FK uuid alongside its resolved display name above (2026-08-16) — needed
-  // to prefill LeaguesListEditModal.vue's ruleset select, which binds by
-  // uuid, not by the human-readable name — same convention as Tournament's
-  // formatUuid/leagueUuid/etc.
+  // FK uuid beside its resolved display name above: needed to prefill LeaguesListEditModal.vue's
+  // ruleset select, which binds by uuid (like Tournament's formatUuid/leagueUuid/etc.)
   rulesetUuid: string | null
   image: string | null
-  // Same attribution pair as Tournament.imageCardName/imageCardArtist above —
-  // cascades onto every linked tournament's own pair alongside `image` (see
-  // server/api/leagues/[id]/update.post.ts).
+  // The same attribution pair as Tournament.imageCardName/imageCardArtist above: cascades onto
+  // every linked tournament's pair with `image` (see server/api/leagues/[id]/update.post.ts)
   imageCardName: string | null
   imageCardArtist: string | null
   tournamentCount: number
   completedTournamentCount: number
-  // Derived from the same lightweight tournaments read as
-  // tournamentCount/completedTournamentCount above (ADR, docs/PROGRESS.md,
-  // 2026-08-22) — distinct format names among this league's tournaments
-  // (any status; a cancelled tournament's format is still informative),
-  // sorted alphabetically. Empty when the league has none yet.
+  // Derived from the same lightweight tournaments read as tournamentCount/completedTournamentCount
+  // above (ADR, docs/PROGRESS.md): distinct format names among this league's tournaments (any
+  // status: a cancelled tournament's format is still informative), sorted alphabetically. Empty
+  // when the league has none yet
   tournamentFormats: string[]
-  // Earliest/latest tournament starts_at in this league — null when it has
-  // no tournaments yet (falls back to `startDate` above for display in that
-  // case). Same "tournaments are the source of truth for a league's real
-  // date span" reasoning already used ad hoc by leagues/[leagueId]/index.vue
-  // and locations/[slug]/index.vue's own heatmaps, now available wherever a
-  // League is read instead of recomputed per page.
+  // Earliest/latest tournament starts_at in this league, null when it has no tournaments yet (it
+  // falls back to `startDate` above for display). The "tournaments are the source of truth for a
+  // league's date span" reasoning of leagues/[leagueId]/index.vue and locations/[slug]/index.vue's
+  // heatmaps, available wherever a League is read
   tournamentDateRange: { start: string, end: string } | null
 }
 
-// Backed by the real `events` table — mapped from its snake_case rows, with
-// location/organizer resolved from their FK'd tables into flat display
-// strings, same convention as Tournament above. tournamentCount is derived
-// (count of tournaments.event_uuid = this event), not a stored column.
+// Backed by the real `events` table: mapped from its snake_case rows, with location/organizer
+// resolved from their FK'd tables into flat display strings (like Tournament above).
+// tournamentCount is derived (count of tournaments.event_uuid = this event), not a stored column
 export interface Event {
   id: number
   uuid: string
@@ -355,27 +325,22 @@ export interface Event {
   tournamentCount: number
   completedTournamentCount: number
   organizer: string | null
-  // FK uuids alongside their resolved display names above (2026-08-22,
-  // EventsListEditModal.vue) — needed to prefill the edit form's
-  // organizer/location selects, which bind by uuid, not by the
-  // human-readable name — same convention as Tournament's own
-  // organizerUuid/locationUuid.
+  // FK uuids beside their resolved display names above (EventsListEditModal.vue): needed to prefill
+  // the edit form's organizer/location selects, which bind by uuid (like Tournament's
+  // organizerUuid/locationUuid)
   organizerUuid: string
   locationUuid: string | null
   location: string | null
   locationAddress: string | null
   // Same reasoning as Tournament's own locationCity.
   locationCity: string | null
-  // Precise Google Maps place link (locations.google_maps_url), see
-  // Tournament's own locationMapsUrl for why this takes priority over the
-  // generic address-search fallback — added 2026-08-22 alongside
-  // Card.vue/Cover.vue (issue #45).
+  // Precise Google Maps place link (locations.google_maps_url): see Tournament's locationMapsUrl
+  // for why it takes priority over the generic address-search fallback
   locationMapsUrl: string | null
   image: string | null
-  // Attribution pair for `image` when it's a Scryfall art_crop, same as
-  // Tournament's own imageCardName/imageCardArtist (migration
-  // 20260902195719) — both null whenever image is unset or wasn't picked
-  // through the card-art picker.
+  // Attribution pair for `image` when it is a Scryfall art_crop, like Tournament's
+  // imageCardName/imageCardArtist (migration 20260902195719): both null whenever image is unset or
+  // wasn't picked through the card-art picker
   imageCardName: string | null
   imageCardArtist: string | null
   companionCode: string | null
@@ -402,15 +367,13 @@ export interface EventPartner {
 export type DayOfWeek
   = | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
 
-// null = closed that day; HH:mm strings otherwise. Always has all 7 keys
-// (OpeningHoursEditor.vue initializes every day, closed or not) rather than
-// only the open ones, so the editor never has to guess a day is unset vs.
-// deliberately closed.
+// null = closed that day; HH:mm strings otherwise. Always has all 7 keys (OpeningHoursEditor.vue
+// initializes every day, closed or not), so the editor never has to guess whether a day is unset or
+// deliberately closed
 export type OpeningHours = Record<DayOfWeek, { open: string, close: string } | null>
 
-// A tournament/event venue — previously a read-only lookup for AddModal
-// dropdowns (useLocationsQuery.ts), now also the domain type behind the
-// /locations management page (2026-08-16).
+// A tournament/event venue: a read-only lookup for AddModal dropdowns (useLocationsQuery.ts) and
+// the domain type behind the /locations management page
 export interface Location {
   id: number
   uuid: string
@@ -437,10 +400,9 @@ export interface Location {
   // only drives the "chiuso temporaneamente" badge/banner and disables (but
   // doesn't clear) the opening-hours editor.
   temporarilyClosed: boolean
-  // Distinguishes a game shop (Fantàsia, La Fenice, Magman, Timetwister
-  // Games) from a club/community venue (user request, 2026-09-04) — read-only
-  // display badge for now, no AddModal/EditModal toggle yet (same as
-  // temporarilyClosed, which also has none — set directly in the DB).
+  // Distinguishes a game shop (Fantàsia, La Fenice, Magman, Timetwister Games) from a
+  // club/community venue: a read-only display badge for now, with no AddModal/EditModal toggle
+  // (like temporarilyClosed, set directly in the DB)
   isShop: boolean
 }
 
@@ -487,11 +449,10 @@ export interface CittadinoStanding {
   resultsByEvent: Record<string, CittadinoResult>
 }
 
-// --- Per-format standings (Commander/Premodern/Pauper) mock ---------------------
-// Backed by mock data in server/api/commander-standings.ts, same convention as the
-// Cittadino types above. Best-N truncation like Cittadino, but the N is smaller
-// and per-format: Commander counts the best 4 of its 5 events (confirmed
-// 2026-08-09) — see useCommanderStandingsQuery.ts.
+// --- Per-format standings (Commander/Premodern/Pauper) mock --------------------- Backed by mock
+// data in server/api/commander-standings.ts, like the Cittadino types above. Best-N truncation like
+// Cittadino, but with a smaller per-format N: Commander counts the best 4 of its 5 events (see
+// useCommanderStandingsQuery.ts)
 
 export interface FormatStandingEvent {
   uuid: string
@@ -512,9 +473,8 @@ export interface FormatStandingResult {
   // Whether this result is among the player's best-N and therefore contributes to
   // their total — the rest stay on the row marked as dropped.
   counted: boolean
-  // Flat bonus for showing up, confirmed for Commander 2026-08-09. Unlike
-  // `points`, it is awarded for every event played regardless of `counted` — a
-  // dropped result still earned its participation point.
+  // Flat bonus for showing up (Commander). Unlike `points`, it is awarded for every event played
+  // regardless of `counted`: a dropped result still earned its participation point
   participationPoints: number
 }
 
@@ -526,10 +486,9 @@ export interface FormatStandingRow {
   resultsByEvent: Record<string, FormatStandingResult>
 }
 
-// --- Trash --------------------------------------------------------------
-// The domains that support soft delete (deleted_at) today — mirrors
-// server/utils/idRequest.ts's SoftDeletableTable union, one entry per table
-// name mapped in app/utils/trash/trashEntities.ts.
+// --- Trash -------------------------------------------------------------- The domains supporting
+// soft delete (deleted_at): mirrors server/utils/idRequest.ts's SoftDeletableTable union, one entry
+// per table name mapped in app/utils/trash/trashEntities.ts
 export type TrashEntity
   = 'tournament' | 'league' | 'event' | 'transaction' | 'wantedCard' | 'mtgFormat' | 'location'
 
@@ -552,37 +511,29 @@ export interface TrashItem {
   deletedByUuid: string | null
 }
 
-// --- Calendar day-dot hints ----------------------------------------------
-// Shared by DateRangePicker.vue's `highlightedDates` (issue #37) and
-// StartDatePickerField.vue's own (issue #37 follow-up, 2026-08-23) — one
-// entry per date to dot with a status-colored UChip + hover tooltip.
-// `color` is the domain's own status color (e.g. tournamentStatusColor()),
-// `label` is the caller's own pre-formatted hover text — both components
-// stay generic across domains rather than knowing about
-// Tournament/Event/League shapes themselves.
+// --- Calendar day-dot hints ---------------------------------------------- Shared by
+// DateRangePicker.vue's and StartDatePickerField.vue's `highlightedDates`: one entry per date to
+// dot with a status-colored UChip + hover tooltip. `color` is the domain's status color (e.g.
+// tournamentStatusColor()), `label` the caller's pre-formatted hover text: both components stay
+// generic across domains instead of knowing the Tournament/Event/League shapes
 export interface CalendarHighlightedDate {
   date: Date
   color: StatusColor
   label: string
 }
 
-// --- Commander pairing/table-preview (ported from MagicTheGathering/league,
-// 2026-09-15) ---------------------------------------------------------------
-// `TablePlayer.value` is an associate uuid (AcceptancePickerItem.value), not
-// a numeric player id like league's own TablePlayer — this app has no
-// numeric player identity to key by on the client.
+// --- Commander pairing/table-preview (ported from league) ---------------------
+// `TablePlayer.value` is an associate uuid (AcceptancePickerItem.value), not a numeric player id
+// like league's TablePlayer: this app has no numeric player identity to key by on the client
 export interface TablePlayer {
   value: string
   label: string
   seed?: number
-  // The real first-name/surname pair, when the caller building this
-  // TablePlayer has it (tablePlayersFor et al.) — lets AssociateTag-based
-  // renders use playerNameParts() instead of guessing a split from `label`,
-  // which mishandles compound surnames ("Del Piero", "De La Cruz") by
-  // treating only the label's last word as the surname (2026-09-24, ported
-  // from league's own real-surname-aware usePlayerDisplay.ts). Undefined
-  // for a TablePlayer built without a resolvable associate (falls back to
-  // the label uuid) or from a context with no structured name at all.
+  // The real first-name/surname pair, when the caller building this TablePlayer has it
+  // (tablePlayersFor et al.): lets AssociateTag-based renders use playerNameParts() instead of
+  // guessing a split from `label`, which mishandles compound surnames ("Del Piero", "De La Cruz").
+  // Undefined for a TablePlayer built without a resolvable associate (falls back to the label uuid)
+  // or from a context with no structured name
   firstName?: string
   surname?: string
   // Round 2+ only: where the player stands, shown under the name to explain the tables.
@@ -610,11 +561,10 @@ export interface PairingTable {
   seats: Seat[]
 }
 
-// Global, cross-tournament hard constraint ("never seat these two
-// together") — mirrors the player_avoid_pairs table's own canonical
-// (player_a_uuid, player_b_uuid) ordering, but unordered here (the
-// optimizer only cares about the unordered pair, ordering is a storage
-// concern handled server-side).
+// Global, cross-tournament hard constraint ("never seat these two together"): mirrors the
+// player_avoid_pairs table's canonical (player_a_uuid, player_b_uuid) ordering, but unordered here
+// (the optimizer only cares about the unordered pair, ordering is a storage concern handled
+// server-side)
 export interface PairingForbiddenPair {
   playerA: string
   playerB: string
@@ -629,16 +579,15 @@ export interface PairingWeights {
   tableSize3: number
 }
 
-// Booster-pack redistribution suggestion (Prizes.vue step) — totalPacks/
-// minPacksPerPlayer are resource inputs the organizer fills in by hand
-// (no "how many packs do we have" data exists anywhere), bonusShares is the
-// distribution "shape" the preset buttons drive. bonusShares[rank] is the
-// percent of the bonus pool (packs above the guaranteed minimum) given to
-// that placement, rank 0 = 1st place; missing ranks count as 0.
+// Booster-pack redistribution suggestion (Prizes.vue step): totalPacks/minPacksPerPlayer are
+// resource inputs the organizer fills in by hand (no "how many packs do we have" data exists),
+// bonusShares is the distribution "shape" the preset buttons drive. bonusShares[rank] is the
+// percent of the bonus pool (packs above the guaranteed minimum) given to that placement, rank 0 =
+// 1st place; missing ranks count as 0.
 //
-// nonRewardedMinPacks is what every player outside the rewarded placements
-// gets, reservedPacks are packs set aside (not assigned to anyone), and
-// maxPacksPerPlayer caps a single rewarded placement (0 = no cap).
+// nonRewardedMinPacks is what every player outside the rewarded placements gets, reservedPacks are
+// packs set aside (assigned to nobody), and maxPacksPerPlayer caps a single rewarded placement (0 =
+// no cap)
 export interface PrizeDistributionSettings {
   totalPacks: number
   minPacksPerPlayer: number
@@ -679,12 +628,10 @@ export interface SwissMatchPlayer extends SwissMatchPerson {
   dropped: SwissDropInfo | null
 }
 
-// Present when a saved result's own reported_by_player_uuid is set — who
-// reported it via Telegram and whether/when the opponent answered. Drives
-// SwissMatchResultBadge.vue's "Inserito da X" badge: info while unanswered,
-// success once confirmedAt is set, error once disputedAt is set (a dispute
-// flags the result for organizer review, it doesn't revert it — user
-// request, 2026-09-24).
+// Present when a saved result's reported_by_player_uuid is set: who reported it via Telegram and
+// whether/when the opponent answered. Drives SwissMatchResultBadge.vue's "Inserito da X" badge:
+// info while unanswered, success once confirmedAt is set, error once disputedAt is set (a dispute
+// flags the result for organizer review, it doesn't revert it)
 export interface SwissMatchTelegramInfo {
   reporter: SwissMatchPerson
   reportedAt: string

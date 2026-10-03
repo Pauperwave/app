@@ -1,8 +1,6 @@
 // app\utils\index.ts
-// The association's actual founding year — statistics charts (growth,
-// tournaments per year) plot from here, not from whatever their earliest
-// data point happens to be, so early flat/zero years aren't silently
-// dropped off the axis.
+// The association's founding year: statistics charts plot from here, not from their earliest data
+// point, so early flat years aren't dropped off the axis
 export const PAUPERWAVE_FOUNDING_YEAR = 2020
 
 export function randomInt(min: number, max: number): number {
