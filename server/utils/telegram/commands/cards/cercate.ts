@@ -27,6 +27,7 @@ async function handleWantButton(ctx: Context, next: () => Promise<void>) {
   if (!data?.startsWith(WANT_CALLBACK_PREFIX)) return next()
 
   const state = decodeWantState(data)
+  // fallow-ignore-next-line code-duplication -- callback guard mirrors the other /cercate handler
   if (!state || !ctx.from) {
     await ctx.answerCallbackQuery()
     return
