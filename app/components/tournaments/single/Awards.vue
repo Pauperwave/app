@@ -13,6 +13,7 @@ const { tournamentUuid, standings } = defineProps<{
 const { t } = useI18n()
 
 const standingsRef = toRef(() => standings)
+// fallow-ignore-next-line code-duplication -- same wiring as the other standings view
 const awards = useTournamentAwards(standingsRef)
 
 // The player whose "pagella" is open, same modal as the standings table's.

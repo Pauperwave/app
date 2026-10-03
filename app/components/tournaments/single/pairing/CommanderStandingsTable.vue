@@ -14,6 +14,7 @@ const { t } = useI18n()
 
 const search = ref('')
 // Empty = the standings' own order (rank); a header click re-sorts from there.
+// fallow-ignore-next-line code-duplication -- same wiring as the other standings view
 const sorting = ref<SortingState>([])
 
 // Filtering/sorting keeps each player's real rank, not their position in the shown list.
@@ -22,6 +23,7 @@ const rankByPlayerUuid = computed(() =>
 const filteredStandings = computed(() =>
   standings.filter(standing => matchesRoundStatusSearch(standing.label, search.value)))
 
+// fallow-ignore-next-line code-duplication -- same wiring as the other standings view
 const { copyToClipboard } = useCopyToClipboard()
 
 // The player whose "pagella" is open.
