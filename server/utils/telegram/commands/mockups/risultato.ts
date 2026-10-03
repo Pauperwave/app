@@ -385,7 +385,7 @@ async function sendConfirmedResult(ctx: Context, state: ResultState) {
 }
 
 // Entry point for commanderDemo.ts's "Inserisci risultati (demo)" button, the only caller now that
-// the real Commander flow (tournaments/commanderReport.ts) handles /tavolo and /risultato
+// the real Commander flow (tournaments/commanderReport.ts) serves /tavolo's result button
 export async function openRisultato(ctx: Context) {
   await showRichStep(ctx, positionRichMessage(INITIAL_STATE))
 }

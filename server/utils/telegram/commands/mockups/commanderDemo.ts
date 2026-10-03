@@ -1,7 +1,7 @@
 // server\utils\telegram\commands\mockups\commanderDemo.ts
 // Hidden demo of the old MOCKUP Commander flow (fake table and scoring), kept to show the
-// position/kills/votes wizard that risultato.ts implements, now that /tavolo and /risultato use the
-// real flow (commanderReport.ts). Registered with bot.command(), not the
+// position/kills/votes wizard that risultato.ts implements, now that /tavolo uses the real flow
+// (commanderReport.ts). Registered with bot.command(), not the
 // CommandGroup): reachable by command or deep link, absent from the "/" picker and /help.
 import type { Bot, Context } from 'grammy'
 import { Menu } from '@grammyjs/menu'

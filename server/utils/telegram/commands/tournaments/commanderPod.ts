@@ -43,7 +43,7 @@ export async function requirePod(ctx: Context): Promise<LivePod | null> {
   return pod
 }
 
-// /tavolo and /risultato: true if the chat's associate sits at a Commander pod being played, false
+// /tavolo: true if the chat's associate sits at a Commander pod being played, false
 // to let the caller fall back
 export async function replyWithLiveCommanderPod(ctx: Context): Promise<boolean> {
   const chatId = ctx.chat?.id
