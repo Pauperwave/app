@@ -7,7 +7,18 @@ import type { BreadcrumbItem } from '#ui/types'
 // page-supplied name beats a generic static one
 export const useBreadcrumbs = (overrides: MaybeRefOrGetter<Record<string, string>> = {}) => {
   const route = useRoute()
+  const router = useRouter()
   const { t } = useI18n()
+  const { can } = useUserRole()
+
+  // A step whose page the user isn't allowed into stays as text: a link there would only end in
+  // the 403 page. The page's own `permission` meta is what authorization.global.ts enforces.
+  function isAllowed(to: BreadcrumbItem['to']): boolean {
+    if (!to) return true
+
+    const permission = router.resolve(to).meta.permission
+    return !permission || can(permission)
+  }
 
   // Only the names worth customising (optional): first route level -> custom label.
   // Anything missing is formatted automatically (e.g. 'user-profile' -> 'User
@@ -95,7 +106,7 @@ export const useBreadcrumbs = (overrides: MaybeRefOrGetter<Record<string, string
       }
     }
 
-    return items
+    return items.map(item => (isAllowed(item.to) ? item : { ...item, to: undefined }))
   })
 
   return { breadcrumbItems }
