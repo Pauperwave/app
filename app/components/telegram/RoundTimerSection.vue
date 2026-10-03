@@ -27,7 +27,7 @@ const emit = defineEmits<{
 <template>
   <section class="flex-2 min-h-0 flex flex-col w-full">
     <div class="flex-1 min-h-0 flex items-center justify-center">
-      <p class="text-[10rem] leading-none font-bold tabular-nums">
+      <p class="text-[length:min(28vw,10rem)] leading-none font-bold tabular-nums">
         {{ label }}
       </p>
     </div>
