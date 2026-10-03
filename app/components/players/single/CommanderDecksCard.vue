@@ -1,7 +1,10 @@
 <!-- app\components\players\single\CommanderDecksCard.vue -->
 <!-- Split out of players/[slug]/index.vue: see LoginHistoryCard.vue -->
 <script setup lang="ts">
-import { DateWithRelativeTooltip, EditIconButton, UBadge, UButton } from '#components'
+import {
+  DateWithRelativeTooltip, EditIconButton, TournamentsSinglePairingCommanderDeckHover, UBadge,
+  UButton
+} from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { CommanderDeck } from '~/composables/players/useCommanderDecksQuery'
 
@@ -73,8 +76,10 @@ const columns: TableColumn<CommanderDeck>[] = [
   {
     accessorKey: 'commander1Name',
     header: t('player.commander.decksColumns.commander'),
-    cell: ({ row }) => [row.original.commander1Name, row.original.commander2Name]
-      .filter(Boolean).join(' / ')
+    cell: ({ row }) => h(TournamentsSinglePairingCommanderDeckHover, {
+      commander1Name: row.original.commander1Name,
+      commander2Name: row.original.commander2Name
+    })
   },
   {
     accessorKey: 'companionName',
