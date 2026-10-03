@@ -114,7 +114,7 @@ async function onCommanders(commander1: string | null, commander2: string | null
 
     <template #footer>
       <div class="flex w-full items-center justify-between">
-        <TournamentsSinglePairingCommanderCatalogRefresh />
+        <CommandersCatalogRefresh />
         <div class="flex items-center gap-2">
           <UButton
             :label="t('deck.addModal.cancel')"

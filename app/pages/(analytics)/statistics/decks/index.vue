@@ -157,7 +157,7 @@ useSeoMeta({ title: () => t('deck.breadcrumb') })
             :icon="sortDirection === 'asc' ? ICONS.sortAscNumeric : ICONS.sortDescNumeric"
             @click="toggleDirection"
           />
-          <CommanderCatalogRefresh v-if="can('manage-tournaments')" />
+          <CommandersCatalogRefresh v-if="can('manage-tournaments')" />
           <NotificationsBellButton />
         </template>
       </UDashboardNavbar>

@@ -122,7 +122,7 @@ const isLoading = statsLoading
 
           <USeparator orientation="vertical" class="h-4" />
 
-          <CommanderCatalogRefresh v-if="can('manage-tournaments')" />
+          <CommandersCatalogRefresh v-if="can('manage-tournaments')" />
           <NotificationsBellButton />
         </template>
       </UDashboardNavbar>
