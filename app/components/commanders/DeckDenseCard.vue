@@ -1,9 +1,8 @@
 <!-- app\components\commanders\DeckDenseCard.vue -->
-<!-- Dense grid tile for /statistics/decks (third view mode alongside
-     grid/table) — single-art thumbnail + combined name only, full detail
-     one click away via DeckCard.vue's own grid view. `pair` optional +
-     `loading` mirrors TournamentsListDenseCard.vue's convention: renders
-     this same tile's skeleton in place, not a separate skeleton component. -->
+<!-- Dense grid tile for /statistics/decks (third view mode beside grid/table): a single-art
+     thumbnail + combined name, full detail one click away via DeckCard.vue's grid view. `pair`
+     optional + `loading` mirror TournamentsListDenseCard.vue: it renders this tile's skeleton
+     in place, not a separate skeleton component. -->
 <script setup lang="ts">
 import type { CommanderStatsPair } from '~/composables/commanders/useCommanderStatsQuery'
 

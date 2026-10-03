@@ -1,9 +1,6 @@
 <!-- app\components\associates\fields\TaxCodeField.vue -->
-<!--
-  Shared by AddModal.vue and /tesseramento — see PersonalInfoFields.vue for
-  the state-mutation rationale (same pattern, `vue/no-mutating-props`
-  disabled below for the same reason).
--->
+<!-- Shared by AddModal.vue and /tesseramento: see PersonalInfoFields.vue for the state-mutation
+     rationale (the same pattern, `vue/no-mutating-props` disabled below for the same reason). -->
 <!-- eslint-disable vue/no-mutating-props -- see PersonalInfoFields.vue -->
 <script setup lang="ts">
 interface TaxCodeState {

@@ -1,6 +1,5 @@
 <!-- app\components\tournaments\single\pairing\CurrentTime.vue -->
-<!-- Ported verbatim from MagicTheGathering/league (user request 2026-09-16,
-     copy RoundTimer.vue as-is). -->
+<!-- Ported verbatim from league's RoundTimer.vue -->
 <script setup lang="ts">
 const now = ref(new Date())
 

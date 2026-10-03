@@ -1,14 +1,10 @@
 <!-- app\components\leagues\single\AddTournamentsModal.vue -->
-<!--
-  The reverse direction of TournamentsListBulkActionsBar.vue's "assign to
-  league" bulk action (user request, 2026-08-22, "give the user more ways to
-  do the same thing") — instead of selecting tournaments first and picking a
-  league, this starts from the league's own detail page and picks existing
-  tournaments to pull in. Every tournament is selectable, not just unlinked
-  ones: an already-linked tournament shows which league it currently belongs
-  to (`alreadyInLeague`) so picking it is an informed "move it here" rather
-  than a silent steal, but nothing is hidden or blocked.
--->
+<!-- The reverse of TournamentsListBulkActionsBar.vue's "assign to league" bulk action: instead
+     of selecting tournaments and picking a league, it starts from the league's detail page and
+     picks existing tournaments to pull in. Every tournament is selectable, not just unlinked
+     ones: an already-linked tournament shows which league it belongs to (`alreadyInLeague`), so
+     picking it is an informed "move it here" rather than a silent steal, but nothing is hidden
+     or blocked. -->
 <script setup lang="ts">
 import type { League } from '~/types'
 

@@ -1,12 +1,9 @@
 <!-- app\components\ui\PaymentMethodBadge.vue -->
-<!--
-  Same shape as PaymentTypeBadge.vue (icon/color from a lookup config,
-  rendered as a UBadge) — icon/color config ported from the league project's
-  payment-method badge (app/utils/paymentMethod.ts's PAYMENT_METHOD_DISPLAY +
-  useTableUtils.ts's paymentMethodCell), label translated via the same
-  transaction.addModal.paymentMethodOptions i18n keys the Add/Edit form uses
-  (PayPal/POS stay as-is — brand name / acronym, not translated).
--->
+<!-- Same shape as PaymentTypeBadge.vue (icon/color from a lookup config, rendered as a UBadge),
+     with icon/color config ported from league's payment-method badge (PAYMENT_METHOD_DISPLAY +
+     useTableUtils.ts's paymentMethodCell) and the label translated via the
+     transaction.addModal.paymentMethodOptions i18n keys the Add/Edit form uses (PayPal/POS stay
+     as-is: brand name / acronym). -->
 <script setup lang="ts">
 import type { PaymentMethod } from '#shared/types/transactions'
 
@@ -15,11 +12,9 @@ const { t } = useI18n()
 
 const badge = computed(() => PAYMENT_METHOD_BADGE_CONFIG[method] ?? { color: 'neutral' as const, icon: ICONS.help })
 
-// PayPal/Cash carry a brand hex instead of a theme token (see
-// paymentMethodBadge.ts) — Nuxt UI's `color` prop can't render an arbitrary
-// hex, so it's applied as an inline style instead, approximating the same
-// "subtle" look (tinted background + matching text/ring) the theme-token
-// badges get from the `color` prop.
+// PayPal/Cash carry a brand hex instead of a theme token (see paymentMethodBadge.ts): Nuxt UI's
+// `color` prop can't render an arbitrary hex, so it is applied as an inline style approximating the
+// "subtle" look (tinted background + matching text/ring) of theme-token badges
 const hexStyle = computed(() => {
   const hex = badge.value.hex
   if (!hex) return undefined

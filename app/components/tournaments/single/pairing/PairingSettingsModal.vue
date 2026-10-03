@@ -1,9 +1,6 @@
 <!-- app\components\tournaments\single\pairing\PairingSettingsModal.vue -->
-<!--
-  Weight-tuning + avoid-pairs settings for the pairing optimizer — ported
-  from MagicTheGathering/league's PairingSettingsModal.vue (user request,
-  2026-09-15).
--->
+<!-- Weight-tuning + avoid-pairs settings for the pairing optimizer, ported from league's
+     PairingSettingsModal.vue. -->
 <script setup lang="ts">
 import type { PairingForbiddenPair, PairingWeights, TablePlayer } from '~/types'
 import type { PairingPresetKind } from './PairingPresetButtons.vue'
@@ -67,9 +64,9 @@ const emit = defineEmits<{
       </div>
     </template>
 
-    <!-- Single "Chiudi" button, not Confirm/Cancel — every slider/pair edit
-         here applies live (weights to localStorage, pairs to the DB), there
-         is no local draft to confirm or discard. -->
+    <!-- A single "Chiudi" button, not Confirm/Cancel: every slider/pair edit applies live
+         (weights to localStorage, pairs to the DB), so there is no local draft to confirm or
+         discard -->
     <template #footer>
       <div class="flex justify-end w-full">
         <UButton

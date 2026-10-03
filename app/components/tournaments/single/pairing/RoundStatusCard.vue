@@ -1,14 +1,9 @@
 <!-- app\components\tournaments\single\pairing\RoundStatusCard.vue -->
-<!--
-  "Stato inserimento" — sidebar summary of round-entry progress: 4
-  collapsible sections (rankings/kills per table, commanders/votes per
-  player), each row clickable to open the matching modal — lets the
-  organizer see at a glance what's left to enter this round instead of
-  scanning every RoundPairingCard. Ported from MagicTheGathering/league's
-  RoundStatusCard.vue (user request, 2026-09-19: "manca completamente...
-  la card contenitrice Tavoli... e Stato inserimento"), reading from
-  useRoundStatus.ts instead of league's own Pinia stores.
--->
+<!-- "Stato inserimento": a sidebar summary of round-entry progress, 4 collapsible sections
+     (rankings/kills per table, commanders/votes per player), each row clickable to open the
+     matching modal, so the organizer sees at a glance what is left to enter this round instead
+     of scanning every RoundPairingCard. Ported from league's RoundStatusCard.vue, reading from
+     useRoundStatus.ts instead of league's Pinia stores. -->
 <script setup lang="ts">
 import type { TournamentPairing } from '~/composables/tournaments/pairing/useTournamentPairingsQuery'
 import type { RoundStatusFilter } from '~/utils/tournaments/roundStatusSearch'

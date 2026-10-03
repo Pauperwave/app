@@ -1,12 +1,9 @@
 <!-- app\components\tournaments\single\pairing\CommanderModal.vue -->
-<!--
-  Ported bit-by-bit from MagicTheGathering/league's CommanderModal.vue (user
-  request 2026-09-16: "anche comandanti", replacing this app's earlier
-  USelectMenu+create-item rewrite). Swaps numeric playerId/tablePlayerIds for
-  this app's uuid-keyed players.uuid — everything else (whitelist-driven
-  commander2 field, partner-type label, exact-partner auto-fill, the
-  Motion/AnimatePresence slide-in) is unchanged.
--->
+<!-- Ported from league's CommanderModal.vue (replacing this app's earlier
+     USelectMenu+create-item rewrite), with numeric playerId/tablePlayerIds swapped for this
+     app's uuid-keyed players.uuid: everything else (whitelist-driven commander2 field,
+     partner-type label, exact-partner auto-fill, the Motion/AnimatePresence slide-in) is
+     unchanged. -->
 <script setup lang="ts">
 const props = defineProps<{
   playerUuid: string
@@ -27,11 +24,9 @@ const emit = defineEmits<{
 const commander1 = ref(props.commander1 || '')
 const commander2 = ref(props.commander2 || '')
 
-// Whitelists — backed by a shared, cached query (useCommanderCatalogQuery):
-// fetches once app-wide, no manual load needed. isLoading/refetch for the
-// "Aggiorna elenco carte" button live in the outer TournamentCommanderModal
-// (footer), which calls this same composable — the underlying query is
-// shared/cached, so both stay in sync.
+// Whitelists come from a shared, cached query (useCommanderCatalogQuery): fetched once app-wide, no
+// manual load. isLoading/refetch for the "Aggiorna elenco carte" button live in the outer
+// TournamentCommanderModal (footer), which calls this same composable, so both stay in sync
 const {
   getPartnerType,
   getAllowedPartners,
@@ -77,13 +72,11 @@ watch(() => props.commander1, (newVal, oldVal) => {
   }
 })
 
-// "Partner with <specific card>" is a fixed, named pair — there's only ever
-// one legal commander2 once commander1 is picked, so auto-fill it instead
-// of making the player search for and pick the one card the whitelist
-// already narrowed to. Resolved entirely from the cached catalog
-// (getExactPartnerName), no DB round-trip. Non-immediate: only reacts to
-// the player actually (re)selecting commander1 in this session, not to the
-// initial value coming in from props.
+// "Partner with <specific card>" is a fixed, named pair: once commander1 is picked there is only
+// one legal commander2, so it is auto-filled instead of making the player search for the one card
+// the whitelist already narrowed to. Resolved from the cached catalog (getExactPartnerName), no DB
+// round-trip. Non-immediate: only reacts to the player (re)selecting commander1 in this session,
+// not the initial value from props
 watch(commander1, (name) => {
   if (!name) return
   const partnerName = getExactPartnerName(name)
@@ -118,8 +111,8 @@ defineExpose({ submit, canSubmit, commander1 })
         />
       </div>
 
-      <!-- Commander 2 (partner/background/doctor's companion/friends forever) —
-      slides/fades in at 50% -->
+      <!-- Commander 2 (partner/background/doctor's companion/friends forever): slides/fades in
+           at 50% -->
       <AnimatePresence>
         <Motion
           v-if="canHaveCommander2"

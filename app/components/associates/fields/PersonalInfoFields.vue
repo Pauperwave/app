@@ -1,16 +1,10 @@
 <!-- app\components\associates\fields\PersonalInfoFields.vue -->
-<!--
-  Shared by AddModal.vue and /tesseramento: first_name/last_name/phone_number
-  were identical markup in both. email_address is deliberately NOT here —
-  AddModal lets staff type it directly, /tesseramento shows it read-only
-  (already fixed by the OTP step before this point in the form) — a real
-  difference, not one worth forcing into a shared prop just to look uniform.
-
-  `state` is the SAME reactive object the parent binds to its own <UForm
-  :state> — mutated directly on its sub-fields, not copied, so the parent's
-  schema validation sees the edits (same rationale as wanted-cards'
-  FormFields.vue).
--->
+<!-- Shared by AddModal.vue and /tesseramento: first_name/last_name/phone_number were identical
+     markup in both. email_address is deliberately NOT here: AddModal lets staff type it,
+     /tesseramento shows it read-only (fixed by the OTP step before this point), a real
+     difference not worth forcing into a shared prop.  `state` is the SAME reactive object the
+     parent binds to its <UForm :state>: mutated directly on its sub-fields, not copied, so the
+     parent's schema validation sees the edits (like wanted-cards' FormFields.vue). -->
 <!-- eslint-disable vue/no-mutating-props -- see the comment above -->
 <script setup lang="ts">
 // AddModal.vue's state is a full Schema (never undefined); /tesseramento's is
@@ -25,20 +19,18 @@ interface PersonalInfoState {
 
 const { state } = defineProps<{ state: PersonalInfoState }>()
 
-// A minor may not have their own phone number (see isMinor.ts, shared with
-// associateFormSchema.ts's own cross-field validation) — defaults to
-// "required" when born_date isn't known yet (AddModal/EditModal render every
-// section on one page, so this can flip either way as the form is filled;
-// /tesseramento asks birthInfo after personalInfo, so it's always unset here).
+// A minor may not have their own phone number (see isMinor.ts, shared with associateFormSchema.ts's
+// cross-field validation): defaults to "required" when born_date isn't known yet
+// (AddModal/EditModal render every section on one page, so this can flip either way as the form is
+// filled; /tesseramento asks birthInfo after personalInfo, so it's always unset here)
 const isMinorAssociate = computed(() => isMinor(state.born_date))
 </script>
 
 <template>
   <!-- eslint-disable vue/no-mutating-props -- see the top-of-file comment -->
-  <!-- Own nested grid (not just relying on the parent's), so first/last name
-       stay side by side regardless of whether the parent lays this component
-       out in one column (AssociatesListFormFields.vue) or two
-       (/tesseramento's personalInfo step) — user request, 2026-08-19. -->
+  <!-- Own nested grid (not relying on the parent's), so first/last name stay side by side
+       whether the parent lays this out in one column (AssociatesListFormFields.vue) or two
+       (/tesseramento's personalInfo step) -->
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
     <UFormField
       :label="$t('associate.addModal.fields.firstName')"

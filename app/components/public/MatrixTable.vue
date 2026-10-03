@@ -9,17 +9,15 @@ interface Props {
   // Passed straight through to UTable's `meta` — e.g. the cittadino page uses it
   // to draw a border under the finalist cutoff row. Shape is caller-defined.
   meta?: Record<string, unknown>
-  // Position + player identity stay pinned left, the total stays pinned right, so
-  // a reader scrolling deep into a wide matrix never loses "who is this row and
-  // what is their score" — the whole reason this component exists. Column ids
-  // match the shape every standings table built so far uses (see
-  // useCittadinoTableColumns.ts); override if a format's columns differ.
+  // Position + player identity stay pinned left and the total pinned right, so a reader scrolling a
+  // wide matrix never loses "who is this row and what is their score": the reason this component
+  // exists. Column ids match the shape every standings table uses (see
+  // useCittadinoTableColumns.ts); override if a format's columns differ
   columnPinningLeft?: string[]
   columnPinningRight?: string[]
-  // Column id -> CSS colour to tint the column's hover crosshair toward, e.g. so
-  // each Cittadino event column highlights in its format's colour instead of the
-  // default neutral. Columns with no entry (or callers that don't pass this at
-  // all) keep the plain bg-elevated highlight.
+  // Column id -> CSS color to tint the column's hover crosshair toward (e.g. each Cittadino event
+  // column in its format's color). Columns with no entry, or callers that don't pass this, keep the
+  // plain bg-elevated highlight
   columnAccentColors?: Record<string, string>
 }
 
@@ -38,23 +36,19 @@ const columnPinning = ref({
   right: columnPinningRight
 })
 
-// Column half of the hover crosshair (row half is pure CSS below). UTable's
-// `meta.class.td` looks reactive — it accepts a function — but isn't: `meta` is
-// forwarded to useVueTable as `meta.value`, a snapshot taken once at mount, and
-// the callback runs inside UTable's own render scope, which Vue does not
-// re-invalidate when a ref mutated from a cell's `onMouseenter` changes
-// (confirmed against @nuxt/ui 4.10.0's Table.vue source). No amount of state
-// plumbing through `meta` fixes this without forcing the whole table to
-// re-render on every mouse move.
+// Column half of the hover crosshair (the row half is pure CSS below). UTable's `meta.class.td`
+// looks reactive (it accepts a function) but isn't: `meta` is forwarded to useVueTable as
+// `meta.value`, a snapshot taken once at mount, and the callback runs in UTable's render scope,
+// which Vue doesn't re-invalidate when a ref mutated from a cell's `onMouseenter` changes (checked
+// against @nuxt/ui 4.10.0's Table.vue). No state plumbing through `meta` fixes this without
+// re-rendering the whole table on every mouse move.
 //
-// DOM event delegation sidesteps it entirely: one listener on the wrapper
-// (not one per cell), reading `cellIndex` — which already matches visual
-// column position even with pinning, since TanStack physically reorders pinned
-// columns to the DOM edges rather than only repositioning them with CSS. The
-// matched column is painted via a <style> tag (VueUse's useStyleTag — SSR-safe
-// no-op on the server, cleans itself up on unmount), scoped to this instance by
-// a generated id: CSS has no way to parametrize `:nth-child` with a custom
-// property, so a static scoped rule can't do this on its own.
+// DOM event delegation sidesteps it: one listener on the wrapper (not per cell), reading
+// `cellIndex`, which matches the visual column position even with pinning (TanStack physically
+// reorders pinned columns to the DOM edges). The matched column is painted via a <style> tag
+// (VueUse's useStyleTag: SSR-safe no-op on the server, cleans up on unmount), scoped to this
+// instance by a generated id, since CSS can't parametrize `:nth-child` with a custom property, so a
+// static scoped rule can't do this alone
 const matrixId = `sm${useId().replace(/[^a-zA-Z0-9]/g, '')}`
 const hoveredColIndex = ref<number | null>(null)
 
@@ -74,14 +68,12 @@ const crosshairCss = computed(() => {
     ? `color-mix(in oklab, ${accent} 25%, var(--ui-bg-elevated))`
     : 'var(--ui-bg-elevated)'
 
-  // UTable sets data-pinned="false" on every unpinned cell rather than omitting
-  // the attribute, so :not([data-pinned]) matches nothing — the value has to be
-  // excluded explicitly. Pinned columns already force an opaque bg-default
-  // (below) to occlude the columns scrolling underneath them, and this rule
-  // would otherwise fight that on specificity depending on injection order.
+  // UTable sets data-pinned="false" on every unpinned cell rather than omitting it, so
+  // :not([data-pinned]) matches nothing: the value must be excluded explicitly. Pinned columns
+  // already force an opaque bg-default (below) to occlude the columns scrolling under them, and
+  // this rule would otherwise fight it on specificity depending on injection order.
   //
-  // tbody only — the header row keeps its own identity (name + date chip,
-  // already coloured by format) and doesn't need the crosshair on top of it.
+  // tbody only: the header row keeps its own identity (name + date chip, already colored by format)
   return `
     #${matrixId} tbody td:nth-child(${index + 1}):not([data-pinned="left"]):not([data-pinned="right"]) {
       background-color: ${background};
@@ -117,12 +109,11 @@ function onMouseleave() {
       :meta="meta"
       class="w-full"
       :ui="{
-        // max-h caps root's default overflow-auto so the table (not the page)
-        // scrolls, keeping the sticky header/pinned columns anchored to one
-        // scroller. rounded-lg alone won't clip sticky/pinned cells once
-        // scrolled — overflow clipping doesn't reliably apply to
-        // position:sticky descendants — hence the added clip-path, which
-        // clips at paint time regardless of positioning.
+        // max-h caps root's default overflow-auto so the table (not the page) scrolls, keeping the
+        // sticky header/pinned columns anchored to one scroller. rounded-lg alone won't clip
+        // sticky/pinned cells once scrolled (overflow clipping doesn't reliably apply to
+        // position:sticky descendants), hence the clip-path, which clips at paint time regardless
+        // of positioning
         root: 'max-h-[calc(100svh-10rem)] rounded-lg [clip-path:inset(0_round_var(--radius-lg))]',
         td: 'py-1.5 text-sm',
         th: 'py-2 align-bottom'

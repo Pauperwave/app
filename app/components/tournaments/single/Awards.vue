@@ -1,11 +1,7 @@
 <!-- app\components\tournaments\single\Awards.vue -->
-<!--
-  End-of-tournament "highlight" awards — ported from
-  MagicTheGathering/league's TournamentAwards.vue (user request 2026-09-16:
-  build this for real instead of the placeholder it was). Reads
-  useLiveCommanderStandings.ts directly (already final by the time the
-  tournament has ended) rather than a separate standings+victimCounts pair.
--->
+<!-- End-of-tournament "highlight" awards, ported from league's TournamentAwards.vue. Reads
+     useLiveCommanderStandings.ts directly (already final once the tournament has ended) rather
+     than a separate standings+victimCounts pair. -->
 <script setup lang="ts">
 import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/useLiveCommanderStandings'
 

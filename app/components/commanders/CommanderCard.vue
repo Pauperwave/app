@@ -1,9 +1,8 @@
 <!-- app\components\commanders\CommanderCard.vue -->
-<!-- Grid card for /statistics/commanders — single-commander counterpart to
-     DeckCard.vue (which is pair-oriented, for /statistics/decks). Reads
-     from the same aggregated row commanders/index.vue's table already
-     builds (catalog art/mana cost + commander_stats totals), no extra
-     query of its own. -->
+<!-- Grid card for /statistics/commanders: the single-commander counterpart to DeckCard.vue
+     (pair-oriented, for /statistics/decks). Reads the aggregated row commanders/index.vue's
+     table builds (catalog art/mana cost + commander_stats totals), with no extra query of its
+     own. -->
 <script setup lang="ts">
 interface CommanderCardRow {
   name: string

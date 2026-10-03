@@ -5,8 +5,8 @@ import type { Location } from '~/types'
 const { location } = defineProps<{ location: Location }>()
 const { t } = useI18n()
 
-// website moved here from the card footer (user request, 2026-08-19) — same
-// icon-link treatment as the other socials, not a separate badge.
+// website moved here from the card footer: the same icon-link treatment as the other socials, not a
+// separate badge
 const links = computed(() => [
   { href: location.website, icon: ICONS.globe, label: t('location.card.website') },
   { href: location.facebook, icon: ICONS.facebook, label: 'Facebook' },

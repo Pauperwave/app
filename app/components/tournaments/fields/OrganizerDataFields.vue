@@ -1,18 +1,11 @@
 <!-- app\components\tournaments\fields\OrganizerDataFields.vue -->
-<!--
-  Extracted out of AddModal.vue/EditModal.vue (2026-08-16, fallow:dupes
-  flagged this block as a 30-line clone) — `state` is the SAME reactive
-  object the parent binds to its own <UForm :state>, mutated directly.
-
-  league/event fields (2026-08-22, user request — "there is no way of
-  adding tournaments to leagues"): leagueUuid/eventUuid already round-tripped
-  through AddModal.vue/EditModal.vue's payloads and the server endpoints
-  already cascade a league change into recomputeLeagueDates (ADR-019), but
-  no form field ever set them — the i18n keys for this row
-  (fields.league/linkLeague/event/linkEvent) already existed, unused, before
-  this change. Both optional and independent, same "polymorphic parent"
-  reasoning as the root CLAUDE.md's routing section.
--->
+<!-- Extracted from AddModal.vue/EditModal.vue (fallow:dupes flagged a 30-line clone): `state`
+     is the SAME reactive object the parent binds to its <UForm :state>, mutated directly.
+     league/event fields: leagueUuid/eventUuid already round-tripped through the modals'
+     payloads and the server endpoints already cascade a league change into recomputeLeagueDates
+     (ADR-019), but no form field set them (the i18n keys
+     fields.league/linkLeague/event/linkEvent existed unused). Both are optional and independent
+     ("polymorphic parent", see the root CLAUDE.md routing section). -->
 <!-- eslint-disable vue/no-mutating-props -- see the comment above -->
 <script setup lang="ts">
 import type { SelectMenuItem } from '@nuxt/ui'

@@ -1,22 +1,16 @@
 <!-- app\components\tournaments\single\pairing\TablesFullscreenView.vue -->
-<!--
-  A dedicated big-display readout of the current round's tables — table
-  number + surnames only, meant to be read across a room (projector/TV), not
-  interacted with. Separate from RoundPairingCard.vue on purpose: that
-  component owns the editable table cards and all their modals/actions, this
-  one is pure display. Ported 1:1 from MagicTheGathering/league's
-  PairingsFullscreenView.vue (user request, 2026-09-16), adapted to this
-  app's uuid-keyed pairings/players instead of league's numeric ids.
--->
+<!-- A big-display readout of the current round's tables (table number + surnames only), meant
+     to be read across a room (projector/TV), not interacted with. Separate from
+     RoundPairingCard.vue, which owns the editable table cards and their modals/actions: this
+     one is pure display. Ported from league's PairingsFullscreenView.vue, adapted to uuid-keyed
+     pairings/players. -->
 <script setup lang="ts">
 import type { TournamentPairing } from '~/composables/tournaments/pairing/useTournamentPairingsQuery'
 import type { TablePlayer } from '~/types'
 
-// playersByPairingUuid: already-resolved players (tablePlayersFor's own
-// output), not a lookup function — this component is pure display, it
-// shouldn't own how a player's name gets resolved (2026-09-24, corrected
-// after passing namePartsFor as a resolver prop: every other consumer here
-// receives plain data, not a function to call).
+// playersByPairingUuid: already-resolved players (tablePlayersFor's output), not a lookup function:
+// this component is pure display and shouldn't own how a name is resolved (every other consumer
+// here receives plain data)
 const { pairingsForRound, playersByPairingUuid } = defineProps<{
   pairingsForRound: TournamentPairing[]
   playersByPairingUuid: Map<string, TablePlayer[]>
@@ -51,10 +45,9 @@ const columns = computed(() => Math.max(1, Math.ceil(Math.sqrt(pairingsForRound.
 
 <template>
   <div class="relative h-screen w-screen bg-default overflow-hidden">
-    <!-- Absolutely positioned, not a reserved header strip — with many
-         tables (e.g. a 40-player/10-table tournament) every row of grid height
-         matters; a dedicated header row was pushing the last grid row off
-         screen. -->
+    <!-- Absolutely positioned, not a reserved header strip: with many tables (e.g. 40
+         players/10 tables) every row of grid height matters, and a header row pushed the last
+         grid row off screen -->
     <UTooltip
       :content="{ side: 'top' }"
       :text="t('tournament.single.roundManager.exitFullscreenTooltip')"
@@ -69,27 +62,23 @@ const columns = computed(() => Math.max(1, Math.ceil(Math.sqrt(pairingsForRound.
       />
     </UTooltip>
 
-    <!-- border-dashed on the grid + each cell: visible construction lines so
-         the layout structure (columns/rows actually assigned) can be
-         inspected directly, not just guessed from the class list. -->
+    <!-- border-dashed on the grid + each cell: visible construction lines so the layout
+         (columns/rows actually assigned) can be inspected directly -->
     <div
       class="h-full w-full grid gap-2 p-4 border border-dashed border-default"
       :style="{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`, gridAutoRows: '1fr' }"
     >
-      <!-- [container-type:size] per cell (not on the page root): cqmin here
-           scales to each table's own allotted grid area, which shrinks as
-           table count grows — so text always fits its row instead of
-           overflowing/getting cut off once there are enough tables that a
-           page-relative size stops fitting. -->
+      <!-- [container-type:size] per cell (not on the page root): cqmin scales to each table's
+           own grid area, which shrinks as table count grows, so text always fits its row
+           instead of overflowing once there are many tables -->
       <div
         v-for="pairing in pairingsForRound"
         :key="pairing.uuid"
         class="flex items-start justify-start gap-[4cqmin] border border-dashed
           border-default @container-size overflow-hidden"
       >
-        <!-- Fixed min-width, right-aligned: keeps every number's right edge
-             (and the surnames starting right after it) on the same vertical
-             line down each column, regardless of 1 vs 2-digit table counts. -->
+        <!-- Fixed min-width, right-aligned: keeps every number's right edge (and the surnames
+             after it) on one vertical line per column, regardless of 1 vs 2-digit table counts -->
         <div class="text-[38cqmin] font-bold text-warning leading-none min-w-[46cqmin] text-right">
           {{ pairing.tableNumber }}
         </div>

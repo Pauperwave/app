@@ -1,10 +1,8 @@
 <!-- app\components\players\list\BulkActionsBar.vue -->
-<!--
-  Shown only while at least one player is selected (useSelection.ts) — same
-  "dumb component, page owns the state" shape as the other domains' own
-  BulkActionsBar.vue. Delete is the only bulk action here (no bulk promote:
-  promoting is a per-player decision, kept in the row context menu).
--->
+<!-- Shown only while at least one player is selected (useSelection.ts): the same "dumb
+     component, page owns the state" shape as the other domains' BulkActionsBar.vue. Delete is
+     the only bulk action (no bulk promote: promoting is a per-player decision, kept in the row
+     context menu). -->
 <script setup lang="ts">
 const { count, side } = defineProps<{ count: number, side: 'left' | 'right' }>()
 

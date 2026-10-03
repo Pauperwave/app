@@ -1,12 +1,9 @@
 <!-- app\components\finance\MonthlyTrendChart.client.vue -->
-<!-- Same StatisticsStatChartCard shell as statistics/TournamentsPerYearChart.client.vue
-and statistics/WantedCardsStatusChart.client.vue — x-axis is month instead of
-year, series are payment types instead of formats/statuses, data is the same
-byMonth rows useFinanceSummary.ts already computes for the table above (user
-request, 2026-08-23, added "after the cards"). Stacked area (VisArea), not
-VisStackedBar like those two — chosen once byMonth started backfilling every
-month in range (same request): with a full year+ of monthly data points, a
-continuous accumulated curve reads better than a wall of adjacent bars. -->
+<!-- Same StatisticsStatChartCard shell as statistics/TournamentsPerYearChart.client.vue and
+     statistics/WantedCardsStatusChart.client.vue: x-axis is month, series are payment types, data
+     is the byMonth rows useFinanceSummary.ts computes for the table above. Stacked area (VisArea),
+     not VisStackedBar like those two: with byMonth backfilling every month in range, a continuous
+     accumulated curve reads better than a wall of adjacent bars. -->
 <script setup lang="ts">
 import { VisXYContainer, VisArea, VisAxis, VisCrosshair, VisTooltip, VisPlotline } from '@unovis/vue'
 import { format } from 'date-fns'
@@ -28,9 +25,8 @@ const { chartColor } = useChartPalette()
 
 const grandTotal = computed(() => columnTotal(rows, 'grandTotal'))
 
-// Running total per type, not each month's own amount (user request,
-// 2026-08-23: "curves should be cumulative, not point-in-time") — the table
-// above keeps showing per-month totals, only the chart accumulates.
+// Running total per type, not each month's own amount ("curves should be cumulative"): the table
+// above shows per-month totals, only the chart accumulates
 const cumulativeRows = computed(() => {
   const running = Object.fromEntries(
     PAYMENT_TYPES.map(type => [type, 0])
@@ -43,14 +39,11 @@ const cumulativeRows = computed(() => {
   })
 })
 
-// Gradient fill per series (user request, 2026-08-23, referencing
-// nuxtcharts.com's area chart style) — solid color fading to transparent
-// top-to-bottom, injected via VisXYContainer's svgDefs (raw SVG markup, the
-// only way unovis takes a gradient: its `color` accessors only accept a
-// solid CSS color/string, not a gradient definition inline). `chartColor(0)`
-// is `var(--ui-primary)`, still valid inside an SVG stop-color attribute.
-// legendItems/VisCrosshair keep the solid chartColor() — a legend swatch or
-// crosshair line rendered as a gradient reads worse than a flat color.
+// Gradient fill per series (like nuxtcharts.com's area chart): solid color fading to transparent
+// top-to-bottom, injected via VisXYContainer's svgDefs (raw SVG markup, the only way unovis takes a
+// gradient: its `color` accessors only accept a solid CSS color). `chartColor(0)` is
+// `var(--ui-primary)`, valid in an SVG stop-color. legendItems/VisCrosshair keep the solid
+// chartColor(): a gradient swatch or crosshair line reads worse
 const gradientId = (i: number) => `finance-monthly-trend-gradient-${i}`
 const svgDefs = computed(() => PAYMENT_TYPES.map((_, i) => `
   <linearGradient id="${gradientId(i)}" x1="0" y1="0" x2="0" y2="1">
@@ -77,18 +70,14 @@ const xDomain = computed<[number, number]>(() => [-0.5, rows.length - 0.5])
 
 const xTicks = (i: number) => rows[i]?.label ?? ''
 
-// Dashed vertical marker at the current month (user request, 2026-08-23) —
-// no such marker existed anywhere in app/components/statistics to copy from
-// (checked, none of those charts have one), built fresh with VisPlotline.
-// -1 (not found) happens when today's month falls outside the backfilled
-// range (e.g. very old/only-future data) — the v-if on the template guards
-// against drawing a plotline at an invalid position.
+// Dashed vertical marker at the current month, built with VisPlotline (no chart in
+// app/components/statistics has one). -1 (not found) happens when today's month falls outside the
+// backfilled range; the template's v-if guards against an invalid position
 const todayIndex = computed(() => rows.findIndex(row => row.month === format(new Date(), 'yyyy-MM')))
 
-// One explicit tick per month up to a year, then thinning out — same
-// reasoning/thresholds as WantedCardsStatusChart.client.vue's own
-// xTickValues (VisAxis's default tick heuristic skips entries unpredictably
-// once there are more than a handful of months).
+// One explicit tick per month up to a year, then thinning out (like
+// WantedCardsStatusChart.client.vue's xTickValues): VisAxis's default tick heuristic skips entries
+// unpredictably past a handful of months
 const xTickValues = computed(() => {
   const step = rows.length <= 12 ? 1 : rows.length <= 24 ? 2 : 3
   return rows.map((_, i) => i).filter(i => i % step === 0)
@@ -101,33 +90,24 @@ const template = (d: FinanceMonthSummaryRow) => [
     .map(type => `${t(PAYMENT_TYPE_LABEL_KEYS[type])}: ${amountFormatter.format(d.totals[type])}`)
 ].join('<br>')
 
-// Two separate unovis/Vue-wrapper issues, both confirmed by inspecting the
-// live component instance via devtools rather than guessing:
+// Two separate unovis/Vue-wrapper issues, both confirmed by inspecting the live component instance:
 //
-// 1. Without a manual render nudge on mount, VisArea's own x/y scale stayed
-//    stuck at d3's default [0,1] domain (config/data were both already
-//    correct; the area rendered at degenerate, invisible coordinates)
-//    instead of picking up xDomain — the container's reactive update path
-//    was silently skipping the scale recompute. A :key remount was tried
-//    first and did NOT fix it (rows.length never actually changes across
-//    renders here). Calling the exposed container instance's own .render()
-//    once after mount forces that recompute.
+// 1. Without a manual render nudge on mount, VisArea's x/y scale stayed at d3's default [0,1]
+//    domain (config/data were correct, the area rendered at degenerate invisible coordinates)
+//    instead of picking up xDomain:
+//    the container's reactive update path skipped the scale recompute. A :key remount did NOT fix
+//    it (rows.length never changes across renders). Calling the exposed container's .render() once
+//    after mount forces it.
 //
-// 2. `:duration="0"` on the container: with a real transition duration,
-//    that manual render (and Vue's own subsequent reactive re-renders)
-//    fight over the same elements' opacity, which got caught stuck
-//    mid-fade at a near-zero value (confirmed via devtools: paths existed
-//    with correct geometry but a static, non-animating `opacity: 0.0067`,
-//    ruling out a merely-slow transition). Instant, non-transitioned
-//    renders sidestep the fight entirely.
+// 2. `:duration="0"` on the container: with a real transition, that manual render and Vue's
+//    reactive re-renders fight over the same elements' opacity, which got stuck mid-fade (static
+//    `opacity: 0.0067`, ruling out a slow
+//    transition). Instant renders sidestep it.
 //
-// Same "reactivity gap" class of bug AgeDistributionChart.client.vue's own
-// comment already flagged elsewhere in this library, here hitting the scale
-// and the transition instead of the data path.
-// watch on `loading`, not onMounted — see FormatChart.client.vue's own
-// comment for why (the container is hidden behind the loading skeleton
-// until then, so waiting for mount alone would miss the real chart's
-// first render).
+// The same "reactivity gap" class as AgeDistributionChart.client.vue's comment, here hitting the
+// scale and the transition instead of the data path. Watches `loading`, not onMounted (see
+// FormatChart.client.vue): the container is hidden behind the loading skeleton until then, so mount
+// alone would miss the real chart's first render
 const containerRef = useTemplateRef('containerRef')
 watch(() => loading, (isLoading) => {
   if (!isLoading) nextTick(() => containerRef.value?.component?.render(0))

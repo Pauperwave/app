@@ -1,6 +1,5 @@
 <!-- app\components\players\single\BracketPickerModal.vue -->
-<!-- Ported bit-by-bit from MagicTheGathering/league (user request
-     2026-09-16: copy the bracket power-level system, adapted to this app). -->
+<!-- Ported from league: the bracket power-level system, adapted to this app -->
 <script setup lang="ts">
 const open = defineModel<boolean>('open', { default: false })
 

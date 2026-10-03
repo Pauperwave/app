@@ -90,11 +90,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         class="space-y-2"
         @submit="onSubmit"
       >
-        <!-- has_read_statute/consent_data locked here, unlike AddModal: they are the
-             legal declarations the associate made when applying (statute read, data
-             processing consent) — staff editing the record afterwards shouldn't be
-             able to retroactively toggle them off. consent_social stays editable,
-             it's an ongoing marketing preference, not a one-time declaration. -->
+        <!-- has_read_statute/consent_data are locked here, unlike AddModal: they are the legal
+             declarations made when applying (statute read, data processing consent), which
+             staff editing the record afterwards shouldn't retroactively toggle off.
+             consent_social stays editable: it is an ongoing marketing preference, not a
+             one-time declaration. -->
         <AssociatesListFormFields :state="state" disable-consents />
 
         <UFormField name="usesTelegram" :description="$t('associate.usesTelegram.description')">

@@ -1,16 +1,10 @@
 <!-- app\components\transactions\list\PaymentInfoFields.vue -->
-<!--
-  The "Dati pagamento" field grid shared byte-for-byte between AddModal.vue
-  and EditModal.vue (extracted 2026-08-15) — must be rendered inside their
-  <UForm>, not standalone: UFormField's validation state comes from UForm's
-  own provide/inject context, which reaches through this component's
-  boundary the same as any other descendant.
-
-  `state` is a v-model (defineModel), not a plain prop: both callers pass
-  their own shallowReactive form state object for these fields to mutate
-  in place (via v-model on each UFormField below) — a plain prop would
-  trip vue/no-mutating-props for exactly that reason.
--->
+<!-- The "Dati pagamento" field grid shared by AddModal.vue and EditModal.vue: it must be
+     rendered inside their <UForm>, not standalone (UFormField's validation state comes from
+     UForm's provide/inject context, which reaches through this component's boundary like any
+     descendant).  `state` is a v-model (defineModel), not a plain prop: both callers pass their
+     own shallowReactive form state for these fields to mutate in place (v-model on each
+     UFormField below), and a plain prop would trip vue/no-mutating-props for that reason. -->
 <script setup lang="ts">
 import type { TransactionFormState } from '~/composables/transactions/useTransactionFormFields'
 

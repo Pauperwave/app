@@ -1,19 +1,11 @@
 <!-- app\components\tournaments\single\AcceptancePickerToolbarRow.vue -->
-<!--
-  Shared toolbar row for both "Pre-registrati" and "Iscritti (Pagato)" —
-  swaps between the bulk-selection bar (just "Rimuovi selezionati", once at
-  least one row is selected) and AcceptanceSearchAddRow (search + "Aggiungi
-  giocatori"). Extracted out of AcceptancePicker.vue for "Iscritti (Pagato)"
-  first (user request, 2026-08-24), then reused as-is for "Pre-registrati"
-  once that side got its own bulk-remove action too (user request,
-  2026-08-27) — same toolbar-swap pattern as associates/index.vue's
-  BulkActionsBar/FiltersBar either way, nothing accepted-specific in its
-  props/emits.
-
-  No bulk payment action (removed 2026-08-25, user request) — payment only
-  ever applies to a single row now, one real pauperwave_payments write per
-  click rather than a loop of N mutation calls with no atomicity.
--->
+<!-- Shared toolbar row for "Pre-registrati" and "Iscritti (Pagato)": it swaps between the
+     bulk-selection bar (just "Rimuovi selezionati", once a row is selected) and
+     AcceptanceSearchAddRow (search + "Aggiungi giocatori"). Extracted from
+     AcceptancePicker.vue, with the same toolbar-swap pattern as associates/index.vue's
+     BulkActionsBar/FiltersBar and nothing accepted-specific in its props/emits.  No bulk
+     payment action: payment only applies to a single row, one real pauperwave_payments write
+     per click rather than a loop of N mutation calls with no atomicity. -->
 <script setup lang="ts">
 interface AssociateOption {
   value: string

@@ -1,8 +1,7 @@
 <!-- app\components\associates\single\MembershipTimeline.vue -->
 <!-- pauperwave_associate_membership_events rendered as a UTimeline
-     (https://ui.nuxt.com/components/timeline) on /associate/[slug].vue —
-     the append-only history pauperwave_associates itself can't show, since
-     it's a single mutable row (user request, 2026-08-27). -->
+     (https://ui.nuxt.com/components/timeline) on /associate/[slug].vue: the append-only history
+     pauperwave_associates can't show, being a single mutable row -->
 <script setup lang="ts">
 import { format, parseISO } from 'date-fns'
 import type { MembershipEventType } from '#shared/types/associates'
@@ -26,8 +25,8 @@ const EVENT_TITLE_KEYS: Record<MembershipEventType, string> = {
   renewal_approved: 'associate.detail.membershipHistory.renewalApproved'
 }
 
-// Oldest-first from the query, reversed here — a timeline reads top (most
-// recent) to bottom, same convention as an activity feed.
+// Oldest-first from the query, reversed here: a timeline reads top (most recent) to bottom, like an
+// activity feed
 const timelineItems = computed(() => [...events].reverse().map(event => ({
   title: t(EVENT_TITLE_KEYS[event.eventType]),
   description: format(parseISO(event.occurredAt), 'dd/MM/yyyy HH:mm'),

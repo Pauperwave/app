@@ -1,14 +1,9 @@
 <!-- app\components\tournaments\single\pairing\StandingsSidebar.vue -->
-<!--
-  Live standings sidebar for a Commander round in progress — ported from
-  MagicTheGathering/league's StandingsCard.vue (user request, 2026-09-15/17:
-  copy the live-standings display as-is), sourced from
-  useLiveCommanderStandings.ts (see that composable's own comment on why
-  it's "live relative to a save", not "live relative to an unsaved edit"
-  like league's own store-backed version). Skips league's own
-  developer-view-only per-category points breakdown (kills/brew/play/
-  placement icons) — this app has no such dev-mode toggle to gate it behind.
--->
+<!-- Live standings sidebar for a Commander round in progress, ported from league's
+     StandingsCard.vue and sourced from useLiveCommanderStandings.ts (see its comment on why it
+     is "live relative to a save", not to an unsaved edit like league's store-backed version).
+     Skips league's developer-view-only per-category points breakdown (kills/brew/play/placement
+     icons): this app has no such dev-mode toggle to gate it. -->
 <script setup lang="ts">
 import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/useLiveCommanderStandings'
 

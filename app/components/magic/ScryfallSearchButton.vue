@@ -1,9 +1,7 @@
 <!-- app\components\magic\ScryfallSearchButton.vue -->
-<!-- "Vedi su Scryfall" outline button, linking to a Scryfall exact-name
-     search — shared by the commander/deck detail pages
-     (statistics/commanders/[commanderSlug].vue, statistics/decks/
-     [deckSlug].vue, players/[slug]/deck/[deckSlug].vue), which
-     independently duplicated this exact block (fallow:dupes, 2026-09-23). -->
+<!-- "Vedi su Scryfall" outline button linking to a Scryfall exact-name search, shared by the
+     commander/deck detail pages (statistics/commanders/[commanderSlug].vue,
+     statistics/decks/[deckSlug].vue, players/[slug]/deck/[deckSlug].vue) -->
 <script setup lang="ts">
 const { name } = defineProps<{ name: string | null }>()
 const { t } = useI18n()

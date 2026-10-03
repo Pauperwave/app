@@ -1,17 +1,13 @@
 <!-- app\components\calendar\card\Base.vue -->
-<!--
-  Shared shell for /calendario's mixed timeline (see PublicCalendarPage.vue):
-  the image/date-box, title, status badge, and location line are identical
-  whether the card represents an Event or a standalone Tournament — only the
-  body below the shared header differs, supplied by CalendarEventCard.vue /
-  CalendarTournamentCard.vue via the #body (inline, next to the header) and
-  #footer (full-width, below it) slots. The "Aggiungi al calendario" button
-  itself is AddToCalendarButton.vue, which owns its own device-aware
-  behavior. Tapping anywhere else on the card emits `select` — the two
-  variants turn that into opening CalendarDetailSlideover.vue via
-  useCalendarDetail.ts (user request 2026-08-14) — the button's own wrapper
-  stops propagation so tapping it doesn't also open the slideover.
--->
+<!-- Shared shell for /calendario's mixed timeline (see PublicCalendarPage.vue): the
+     image/date-box, title, status badge and location line are identical whether the card is an
+     Event or a standalone Tournament; only the body below the shared header differs, supplied
+     by CalendarEventCard.vue / CalendarTournamentCard.vue via the #body (inline, next to the
+     header) and #footer (full-width, below it) slots. "Aggiungi al calendario" is
+     AddToCalendarButton.vue, which owns its device-aware behavior. Tapping anywhere else emits
+     `select`, which the two variants turn into opening CalendarDetailSlideover.vue via
+     useCalendarDetail.ts; the button's wrapper stops propagation so tapping it doesn't also
+     open the slideover. -->
 <script lang="ts" setup>
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
@@ -25,15 +21,12 @@ interface Props {
   // registration yet (RegisterButton.vue's own header comment), so it never
   // passes one and the button there stays the "coming soon" placeholder.
   tournament?: Tournament | null
-  // Shared between Event and Tournament cards, which have independently
-  // evolving status vocabularies (migration 20260815100000) — only the
-  // 'completed' literal common to both is ever compared here, but the union
-  // (rather than a bare string) costs nothing: Tournament.vue/Event.vue's
-  // only two call sites already pass exactly these two types.
+  // Shared by Event and Tournament cards, which have independently evolving status vocabularies
+  // (migration 20260815100000): only the 'completed' literal common to both is compared here, but
+  // the union (not a bare string) costs nothing
   status: EventStatus | TournamentStatus
-  // Nullable (2026-08-15): not every tournament has a location_uuid set yet.
-  // locationAddress feeds the maps link when present (more precise than the
-  // venue name alone); falls back to `location` when it isn't.
+  // Nullable: not every tournament has a location_uuid yet. locationAddress feeds the maps link
+  // when present (more precise than the venue name); falls back to `location`
   location: string | null
   locationAddress?: string | null
   image: string | null
@@ -57,10 +50,9 @@ defineEmits<{ select: [] }>()
 
 const { t } = useI18n()
 
-// A completed (past) card is muted instead of colored, so the timeline
-// visually recedes as it scrolls further back. The status badge itself was
-// dropped from the header corner (2026-08-14, replaced by the share button
-// there) — status is still visible in CalendarDetailSlideover.vue.
+// A completed (past) card is muted instead of colored, so the timeline recedes as it scrolls back.
+// The status badge was dropped from the header corner (replaced by the share button): status is
+// still in CalendarDetailSlideover.vue
 const isPast = computed(() => status === 'completed')
 </script>
 
@@ -71,9 +63,8 @@ const isPast = computed(() => status === 'completed')
     @click="$emit('select')"
   >
     <div class="flex items-start gap-4">
-      <!-- Luma-inspired: a cover image (real or a placeholder icon) takes the
-           date box's spot — the date moves into a text line below the title
-           instead. -->
+      <!-- Luma-inspired: a cover image (real or placeholder icon) takes the date box's spot,
+           and the date moves into a text line below the title -->
       <div class="size-20 rounded-xl overflow-hidden shrink-0">
         <NuxtImg
           v-if="image"

@@ -1,10 +1,7 @@
 <!-- app\components\tournaments\list\DenseView.vue -->
-<!--
-  Third view mode alongside table/grid — a dense grid of small
-  DenseCard.vue tiles, packing far more tournaments per screen than
-  GridView.vue's full-size cards. Mirrors GridView.vue's own props/loading
-  shape exactly, including its one-section-per-status grouping.
--->
+<!-- Third view mode beside table/grid: a dense grid of small DenseCard.vue tiles, packing far
+     more tournaments per screen than GridView.vue's full-size cards. It mirrors GridView.vue's
+     props/loading shape exactly, including its one-section-per-status grouping. -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Tournament } from '~/types'

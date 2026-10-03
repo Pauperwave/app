@@ -1,11 +1,9 @@
 <!-- app\components\players\single\DeckCreateModal.vue -->
-<!--
-  Manual deck registration, restored from league's DeckCreateModal.vue (user request, 2026-09-17).
-  Redone in the look and logic of the round's commander modal (user request, 2026-10-03): same wide
-  modal, same two commander pickers side by side with the partner/background rules
-  (TournamentsSinglePairingCommanderModal) and the same footer with the catalog refresh — plus the
-  fields a deck has on its own: companion, Moxfield decklist link and the borrowed-deck switch.
--->
+<!-- Manual deck registration, restored from league's DeckCreateModal.vue and redone in the look
+     and logic of the round's commander modal: the same wide modal, the same two commander
+     pickers side by side with the partner/background rules
+     (TournamentsSinglePairingCommanderModal) and the same footer with the catalog refresh, plus
+     the deck's own fields (companion, Moxfield decklist link, borrowed-deck switch). -->
 <script setup lang="ts">
 import type CommanderModal from '~/components/tournaments/single/pairing/CommanderModal.vue'
 
@@ -21,7 +19,8 @@ const commanderModalRef = useTemplateRef<InstanceType<typeof CommanderModal>>('c
 const companionName = ref('')
 const decklistUrl = ref('')
 
-// A deck needs its first commander; a second one too when the first requires it (partner, background…).
+// A deck needs its first commander; a second one too when the first requires it (partner,
+// background…).
 const canSubmit = computed(() => {
   const commanders = commanderModalRef.value
   if (!commanders?.commander1 || !commanders.canSubmit) return false

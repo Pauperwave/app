@@ -1,9 +1,7 @@
 <!-- app\components\tournaments\single\prizes\PrizeDistributionChart.client.vue -->
-<!--
-  Placement -> suggested packs histogram, same VisXYContainer/VisGroupedBar
-  structure as AgeDistributionChart.client.vue, without the KDE overlay
-  (there's no continuous distribution to smooth here, just per-rank bars).
--->
+<!-- Placement -> suggested packs histogram, with the VisXYContainer/VisGroupedBar structure of
+     AgeDistributionChart.client.vue but no KDE overlay (there is no continuous distribution to
+     smooth, just per-rank bars). -->
 <script setup lang="ts">
 import {
   VisXYContainer, VisGroupedBar, VisAxis, VisCrosshair, VisPlotline, VisTooltip

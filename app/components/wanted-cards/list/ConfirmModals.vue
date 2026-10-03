@@ -1,11 +1,8 @@
 <!-- app\components\wanted-cards\list\ConfirmModals.vue -->
-<!--
-  Extracted out of wanted-cards/index.vue (2026-08-16) — the single-card
-  delete confirm and the bulk status/delete confirm, both ternary-heavy on
-  pendingAction?.type === 'delete' to share one ConfirmModal between bulk
-  status changes and bulk delete (useWantedCardsBulkActions.ts). See
-  FiltersBar.vue's own header for why this got split out.
--->
+<!-- Extracted from wanted-cards/index.vue: the single-card delete confirm and the bulk
+     status/delete confirm, both ternary-heavy on pendingAction?.type === 'delete' to share one
+     ConfirmModal between bulk status changes and bulk delete (useWantedCardsBulkActions.ts).
+     See FiltersBar.vue's header for why it was split out. -->
 <script setup lang="ts">
 import type { WantedCard } from '~/types'
 import type { PendingBulkAction } from '~/composables/wantedCards/useWantedCardsBulkActions'
@@ -37,8 +34,8 @@ const bulkConfirmOpen = defineModel<boolean>('bulkConfirmOpen', { required: true
     />
   </ConfirmModal>
 
-  <!-- Same component as the single-card delete confirm above, generalized for
-       both bulk status changes and bulk delete (useWantedCardsBulkActions.ts). -->
+  <!-- Same component as the single-card delete confirm above, generalized for bulk status
+       changes and bulk delete (useWantedCardsBulkActions.ts) -->
   <ConfirmModal
     v-model:open="bulkConfirmOpen"
     :title="pendingAction?.type === 'delete'

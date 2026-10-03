@@ -8,11 +8,9 @@ import type { League } from '~/types'
 
 const open = defineModel<boolean>({ default: false })
 
-// sourceLeague is the "Copia lega" context-menu action (user request,
-// 2026-08-29), same convention as TournamentsListAddModal.vue's own
-// sourceTournament — copies every field except status (reset to draft).
-// hideTrigger mirrors that component too: this instance is opened
-// programmatically by the copy action, not its own AddButton.
+// sourceLeague is the "Copia lega" context-menu action, like TournamentsListAddModal.vue's
+// sourceTournament: copies every field except status (reset to draft). hideTrigger mirrors that
+// component too: this instance is opened programmatically by the copy action, not its own AddButton
 const { sourceLeague, hideTrigger = false } = defineProps<{
   sourceLeague?: League | null
   hideTrigger?: boolean
@@ -41,10 +39,9 @@ const image = ref<string | undefined>(undefined)
 const imageCardName = ref<string | undefined>(undefined)
 const imageCardArtist = ref<string | undefined>(undefined)
 
-// Re-applies sourceLeague every time the modal opens, not just on mount —
-// same reasoning as TournamentsListAddModal.vue's own watch(open, ...): this
-// instance is reused across different "Copia lega" clicks while it stays
-// alive.
+// Re-applies sourceLeague every time the modal opens, not just on mount (like
+// TournamentsListAddModal.vue's watch(open, ...)): this instance is reused across different "Copia
+// lega" clicks while it stays alive
 watch(open, (isOpen) => {
   if (!isOpen || !sourceLeague) return
   Object.assign(state, createInitialState())
@@ -57,10 +54,9 @@ const { schema, statusOptions, rulesetOptions } = useLeagueFormFields()
 
 type Schema = v.InferOutput<typeof schema>
 
-// UModal only hides/shows, it does not unmount the form, so the state has to
-// be cleared explicitly — called on successful submit and on explicit
-// "Annulla", but deliberately NOT on the X button or an outside click, which
-// should preserve whatever the user typed (user decision 2026-08-20).
+// UModal only hides/shows and doesn't unmount the form, so the state is cleared explicitly: on
+// successful submit and "Annulla", deliberately NOT on the X button or an outside click, which
+// preserve what the user typed
 function resetForm() {
   Object.assign(state, createInitialState())
   image.value = undefined

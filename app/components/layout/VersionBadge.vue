@@ -27,12 +27,10 @@ const collapsedTooltipText = computed(() => updatedLabel.value
   ? `${fullVersionText.value} • ${updatedLabel.value}`
   : fullVersionText.value)
 
-// How long ago the deployed commit was made, as the one relevant unit
-// (minutes < 1h, hours < 1d, days < 1 month, ...). Empty when the commit date
-// is unknown. `now` starts null and is set on mount: the label depends on the
-// current time, which differs between the server render and the client, so
-// rendering it during SSR would cause a hydration mismatch. Ticks every
-// minute, the finest unit shown.
+// How long ago the deployed commit was made, as one relevant unit (minutes < 1h, hours < 1d, days <
+// 1 month, ...); empty when the commit date is unknown. `now` starts null and is set on mount: the
+// label depends on the current time, which differs between server render and client, so rendering
+// it during SSR would cause a hydration mismatch. Ticks every minute, the finest unit shown
 const now = ref<Date | null>(null)
 let tick: ReturnType<typeof setInterval> | undefined
 
@@ -64,11 +62,10 @@ const updatedAtText = computed(() => {
   return format(parseISO(gitCommitDate), 'd MMMM yyyy \'alle\' HH:mm', { locale: it })
 })
 
-// Expanded-only (user request, 2026-09-18) — same clipboard-with-toast
-// helper as useAssociatesRowActions.ts/usePlayersRowActions.ts, not
-// CopyLinkButton.vue's own useClipboard (that one's icon-swap-on-copied
-// feedback needs its own visible button at all times; this button only
-// shows on hover, so the toast alone is enough confirmation).
+// Expanded-only: the same clipboard-with-toast helper as
+// useAssociatesRowActions.ts/usePlayersRowActions.ts, not CopyLinkButton.vue's useClipboard (its
+// icon-swap-on-copied feedback needs a always-visible button; this one shows only on hover, so the
+// toast is enough)
 const { copyToClipboard } = useCopyToClipboard()
 function copyVersionInfo() {
   copyToClipboard(fullVersionText.value, t('versionBadge.copied'))
@@ -76,13 +73,10 @@ function copyVersionInfo() {
 </script>
 
 <template>
-  <!-- Collapsed hides the " • sha" suffix (no room) — a tooltip surfaces it
-       instead of just dropping it silently, same convention as every other
-       collapsed-sidebar control (nav items via UNavigationMenu's own
-       `tooltip`, UDashboardSearchButton, user request 2026-08-19). No copy
-       button here either — same "no room" reasoning, and there's nowhere
-       to hover-reveal it without the tooltip's own hover already owning
-       that interaction. -->
+  <!-- Collapsed hides the " • sha" suffix (no room): a tooltip surfaces it instead of dropping
+       it silently, like every other collapsed-sidebar control (nav items via UNavigationMenu's
+       `tooltip`, UDashboardSearchButton). No copy button either (no room, and the tooltip's
+       hover already owns that interaction) -->
   <UTooltip
     v-if="appVersion && collapsed"
     :text="collapsedTooltipText"
@@ -93,10 +87,8 @@ function copyVersionInfo() {
     </p>
   </UTooltip>
 
-  <!-- Expanded: a "badge" only in the sense that hovering reveals a ring +
-       a copy button (user request, 2026-09-18) — visually identical to the
-       old plain text at rest, so it doesn't look like a new heavier UI
-       element when idle. -->
+  <!-- Expanded: a "badge" only in that hovering reveals a ring + a copy button, visually
+       identical to plain text at rest so it doesn't look like a heavier UI element when idle -->
   <div
     v-else-if="appVersion"
     class="group flex items-center justify-center gap-1 rounded-md px-1.5 py-0.5

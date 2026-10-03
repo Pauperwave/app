@@ -1,12 +1,8 @@
 <!-- app\components\settings\MembersList.vue -->
-<!--
-  Wired to the real role system (2026-08-25 user request) — was the Nuxt UI
-  dashboard template's unmodified scaffold: hardcoded /api/members names, a
-  role <USelect> bound to nothing, and "Modifica"/"Rimuovi" dropdown items
-  with no handler either (neither maps to anything real in this domain —
-  dropped rather than wired up). The select now calls assign_role
-  (useMembersMutations.ts) directly on change.
--->
+<!-- Wired to the real role system (it was the Nuxt UI dashboard template's scaffold: hardcoded
+     /api/members names, a role <USelect> bound to nothing, and "Modifica"/"Rimuovi" items with
+     no handler, neither mapping to anything in this domain and so dropped). The select calls
+     assign_role (useMembersMutations.ts) directly on change. -->
 <script setup lang="ts">
 import type { Member, MemberRole } from '#shared/types/settings'
 
@@ -17,18 +13,16 @@ const toast = useToast()
 const { isSuperAdmin } = useUserRole()
 const { assignRole } = useMembersMutations()
 
-// A caller who isn't super_admin can't grant super_admin at all (assign_role
-// itself enforces this — see its migration 20260823130000) — filtered out of
-// the options here too, so the control doesn't offer a choice that would
-// just come back as a permission error.
+// A caller who isn't super_admin can't grant super_admin (assign_role enforces it, see migration
+// 20260823130000): filtered out of the options too, so the control doesn't offer a choice that
+// would come back as a permission error
 const roleOptions = computed(() => (['player', 'organizer', 'admin', 'super_admin'] as const)
   .filter(role => role !== 'super_admin' || isSuperAdmin.value)
   .map(role => ({ label: t(`settings.members.roles.${role}`), value: role, icon: ROLE_ICON[role] })))
 
-// Same reasoning, the other direction: an existing super_admin's role can
-// only be touched by another super_admin (assign_role's own guard) — a
-// role_locked row (e.g. the account owner) can never be changed by anyone.
-// Both are disabled here rather than left to fail on submit.
+// The other direction: an existing super_admin's role can only be touched by another super_admin
+// (assign_role's guard), and a role_locked row (e.g. the account owner) can never be changed. Both
+// are disabled here rather than left to fail on submit
 function isRoleSelectDisabled(member: Member) {
   return member.roleLocked || (member.role === 'super_admin' && !isSuperAdmin.value)
 }

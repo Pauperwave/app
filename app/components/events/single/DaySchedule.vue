@@ -1,11 +1,9 @@
 <!-- app\components\events\single\DaySchedule.vue -->
-<!--
-  The event page's calendar (user request, 2026-08-22, then 2026-10-02): one hour column per day —
-  a single day in "Giorno" view, every event day side by side in "Settimana" — like Google Calendar.
-  Click an empty slot to create a tournament on that day/time (seeds TournamentsListAddModal.vue's
-  initialDate/initialTime/initialEventUuid), click a tournament to go to its page, its pencil to
-  edit it. From 08:00 (or the earliest tournament) to 24:00.
--->
+<!-- The event page's calendar: one hour column per day (a single day in "Giorno" view, every
+     event day side by side in "Settimana"), like Google Calendar. Click an empty slot to create
+     a tournament on that day/time (seeds TournamentsListAddModal.vue's
+     initialDate/initialTime/initialEventUuid), click a tournament to go to its page, its pencil
+     to edit it. From 08:00 (or the earliest tournament) to 24:00. -->
 <script setup lang="ts">
 import type { Tournament } from '~/types'
 
@@ -43,10 +41,9 @@ function minutesFromStart(iso: string) {
   return (parsed.getHours() - startHour.value) * 60 + parsed.getMinutes()
 }
 
-// Falls back to a 3h block when a tournament has no endDate (same default
-// duration TournamentsListAddModal.vue's own endTime field starts at) —
-// floors at 30min so a same-time start/end doesn't collapse to an
-// unreadable sliver.
+// Falls back to a 3h block when a tournament has no endDate (the default duration of
+// TournamentsListAddModal.vue's endTime field), floored at 30min so a same-time start/end doesn't
+// collapse to an unreadable sliver
 function blockStyle(tournament: Tournament) {
   const topMinutes = minutesFromStart(tournament.startDate)
   const durationMinutes = tournament.endDate

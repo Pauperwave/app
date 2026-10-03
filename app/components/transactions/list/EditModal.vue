@@ -15,11 +15,10 @@ const { t } = useI18n()
 const { updateTransaction } = useTransactionsMutations()
 const { submitting, submitWithToast } = useSubmitWithToast()
 
-// Same reasoning as AddModal.vue's state init: payment_amount/received_by
-// must be present (even as undefined) or valibot's v.object() raises its own
-// generic "missing key" issue instead of running the field's real check.
-// The [open, transaction] watch below fills these immediately in practice,
-// but this keeps the object shape correct even before that watch runs.
+// Same as AddModal.vue's state init: payment_amount/received_by must be present (even as
+// undefined), or valibot's v.object() raises its own generic "missing key" issue instead of running
+// the field's real check. The [open, transaction] watch below fills them in practice, but this
+// keeps the object shape correct before it runs
 const state = shallowReactive<TransactionFormState>({
   payment_amount: undefined,
   received_by: undefined
@@ -57,15 +56,13 @@ const activeTab = computed({
   set: (value: string) => { state.payer_is_associate = value === 'associate' }
 })
 
-// The membership fee is admin-editable (settings.membershipFeeAmount/
-// membershipFeePaymentMethod, /settings) — same rule as AddModal.vue, applied
-// here too since editing a payment into "Association Fee" should follow it
-// just as much as creating one. Single-source watch (not settings.data too,
-// unlike AddModal.vue) is deliberate: `previous === undefined` guards the
-// initial [open, transaction] watch's fill (the transaction's own recorded
-// amount/method, which may differ from the current fee if it's changed since)
-// from being clobbered the moment settings.data resolves after the modal
-// opens — this should only ever re-apply on an actual type change by the user.
+// The membership fee is admin-editable (settings.membershipFeeAmount/membershipFeePaymentMethod,
+// /settings): the same rule as AddModal.vue, since editing a payment into "Association Fee" should
+// follow it as much as creating one. A single-source watch (not settings.data too, unlike
+// AddModal.vue) is deliberate: `previous === undefined` guards the initial [open, transaction]
+// watch's fill (the transaction's own amount/method, which may differ from the current fee) from
+// being clobbered when settings.data resolves after the modal opens: it should only re-apply on an
+// actual type change by the user
 const settings = useSettingsQuery()
 watch(() => state.payment_type, (type, previous) => {
   if (type !== 'Association Fee' || previous === undefined) return
@@ -75,10 +72,9 @@ watch(() => state.payment_type, (type, previous) => {
   state.payment_method = data.membershipFeePaymentMethod
 })
 
-// Clears any tournament/event picked before switching to a type whose field
-// is hidden (see showTournamentField/showEventField) — separate from the
-// watch above since this also covers "Donazione", which doesn't force the
-// amount/method.
+// Clears any tournament/event picked before switching to a type whose field is hidden (see
+// showTournamentField/showEventField); separate from the watch above since this also covers
+// "Donazione", which doesn't force the amount/method
 watch(showTournamentField, (visible) => {
   if (!visible) state.tournament_uuid = undefined
 })
@@ -86,10 +82,9 @@ watch(showEventField, (visible) => {
   if (!visible) state.event_uuid = undefined
 })
 
-// Traceability (user request, 2026-08-12): who created/last edited this
-// payment and when — createdBy/updatedBy are already resolved names from
-// useTransactionsQuery.ts's join (2026-08-18), '' for rows written before the
-// audit columns existed (migration 20260812150000_payments_audit_columns.sql).
+// Traceability: who created/last edited this payment and when. createdBy/updatedBy are resolved
+// names from useTransactionsQuery.ts's join, '' for rows written before the audit columns
+// (migration 20260812150000)
 const dateTimeFormatter = new Intl.DateTimeFormat('it-IT', {
   day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
 })
@@ -120,11 +115,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     receivedBy: event.data.received_by,
     tournamentUuid: event.data.tournament_uuid ?? null,
     eventUuid: event.data.event_uuid ?? null,
-    // No longer editable via this form (tournamentUuid/eventUuid above
-    // are the real link now) — passed through unchanged rather than
-    // cleared, so an edit doesn't wipe historical-import provenance text
-    // still needed elsewhere (e.g. gettoni-encoded rows,
-    // transactionGettoni.ts).
+    // No longer editable here (tournamentUuid/eventUuid are the real link): passed through
+    // unchanged rather than cleared, so an edit doesn't wipe historical-import provenance text
+    // still needed elsewhere (e.g. gettoni-encoded rows, transactionGettoni.ts)
     eventName: transaction.event_name,
     notes: event.data.notes ?? ''
   }

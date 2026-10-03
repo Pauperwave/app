@@ -1,8 +1,6 @@
 <!-- app\components\ui\StatCard.vue -->
-<!-- The icon+title+value UPageCard shape shared by /statistics'
-AssociatesStatsCards.vue and /finance's 5 summary cards — byte-identical
-except for the optional color tint, extracted 2026-08-24 rather than kept as
-two copies. -->
+<!-- The icon+title+value UPageCard shape shared by /statistics' AssociatesStatsCards.vue and
+     /finance's 5 summary cards, identical except for the optional color tint -->
 <script setup lang="ts">
 interface Props {
   icon: string
@@ -15,12 +13,11 @@ const {
   icon, title, value, color = 'primary'
 } = defineProps<Props>()
 
-// Spelled out per color (rather than built from a template string) so
-// Tailwind's static class scan can find them — an interpolated
-// `bg-${color}/10` wouldn't survive the production build. Two separate
-// slots: `leading` is the circle's background/ring, `leadingIcon` is the
-// glyph itself (UPageCard renders it as its own data-slot, not tinted by
-// the wrapper's classes — see node_modules/@nuxt/ui's PageCard.vue).
+// Spelled out per color (not built from a template string) so Tailwind's static class scan finds
+// them: an interpolated `bg-${color}/10` wouldn't survive the production build. Two slots:
+// `leading` is the circle's background/ring, `leadingIcon` is the glyph itself (UPageCard renders
+// it as its own data-slot, not tinted by the wrapper's classes, see node_modules/@nuxt/ui's
+// PageCard.vue)
 const LEADING_COLOR_CLASSES: Record<NonNullable<Props['color']>, string> = {
   primary: 'bg-primary/10 ring-primary/25',
   success: 'bg-success/10 ring-success/25',

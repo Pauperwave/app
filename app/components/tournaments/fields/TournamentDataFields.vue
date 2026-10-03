@@ -1,10 +1,7 @@
 <!-- app\components\tournaments\fields\TournamentDataFields.vue -->
-<!--
-  Extracted out of AddModal.vue/EditModal.vue (2026-08-16, fallow:dupes
-  flagged this block as a 52-line clone) — `state` is the SAME reactive
-  object the parent binds to its own <UForm :state>, mutated directly (same
-  rationale as AssociatesFieldsPersonalInfoFields.vue/LocationsFields*.vue).
--->
+<!-- Extracted from AddModal.vue/EditModal.vue (fallow:dupes flagged a 52-line clone): `state`
+     is the SAME reactive object the parent binds to its <UForm :state>, mutated directly (like
+     AssociatesFieldsPersonalInfoFields.vue/LocationsFields*.vue). -->
 <!-- eslint-disable vue/no-mutating-props -- see the comment above -->
 <script setup lang="ts">
 import type { StatusColor } from '~/types'
@@ -28,11 +25,9 @@ const {
   formatOptions: SelectOption[]
 }>()
 
-// Kept out of the valibot schema in useTournamentFormFields.ts (no format
-// validation needed) — same convention as LocationsFieldsGeneralInfoFields.vue's
-// `image`. imageCardName/imageCardArtist ride along for the same reason,
-// required attribution for image when it's a Scryfall art_crop — see
-// CardArtPicker.vue.
+// Kept out of the valibot schema in useTournamentFormFields.ts (no format validation needed), like
+// LocationsFieldsGeneralInfoFields.vue's `image`. imageCardName/imageCardArtist ride along:
+// required attribution when the image is a Scryfall art_crop (see CardArtPicker.vue)
 const { t } = useI18n()
 
 const decklistVisibilityOptions = computed(() => (['public', 'secret'] as const).map(value => ({

@@ -1,7 +1,6 @@
 <!-- app\components\tournaments\single\pairing\CommanderSearch.vue -->
-<!-- Ported bit-by-bit from MagicTheGathering/league (user request
-     2026-09-16), swapping numeric playerId/tablePlayerIds for this app's
-     uuid-keyed players.uuid. -->
+<!-- Ported from league, swapping numeric playerId/tablePlayerIds for this app's uuid-keyed
+     players.uuid -->
 <script setup lang="ts">
 const props = defineProps<{
   whitelist?: string[] | null
@@ -13,10 +12,9 @@ const props = defineProps<{
 
 const modelValue = defineModel<string | null>()
 
-// Captured once at mount, not reactive: a commander already set (modal
-// reopened on an existing entry) shouldn't yank focus/pop the dropdown open
-// on top of the illustration the user just wanted to see — only an empty
-// field (adding a new commander) should.
+// Captured once at mount, not reactive: a commander already set (modal reopened on an existing
+// entry) shouldn't yank focus or pop the dropdown open over the illustration the user wanted to
+// see: only an empty field (adding a commander) should
 const hadInitialValue = !!modelValue.value
 
 const { t } = useI18n()
@@ -40,10 +38,9 @@ const selected = computed({
   set: (v: string | undefined) => { modelValue.value = v ?? null }
 })
 
-// Fetches the full card (for CommanderCardPreview) whenever a commander is
-// picked — separate from `query`, which is only the search-box text
-// (USelectMenu shows the selected value in its own trigger button, not in
-// the search input).
+// Fetches the full card (for CommanderCardPreview) when a commander is picked: separate from
+// `query`, which is only the search-box text (USelectMenu shows the selected value in its trigger
+// button, not the search input)
 watch(modelValue, (name) => {
   if (name) handleSelect(name)
 }, { immediate: true })

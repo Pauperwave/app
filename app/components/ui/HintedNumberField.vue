@@ -1,14 +1,11 @@
 <!-- app\components\ui\HintedNumberField.vue -->
-<!--
-  Labelled number input with two tooltips: `info` (an "i" icon next to the
-  label, always available) explains what the setting does, and `hint` (on the
-  input) explains why its +/- is disabled — it shows only while it's set, so
-  the parent decides when a bound is reached. UInputNumber is wrapped in a
-  native div because it drops the listeners UTooltip's trigger passes to its
-  root (same as UChip). With `resetValue` a button to the right of the input
-  puts the field back to it (disabled while it already is): the parent passes
-  the starting value already clamped to what the other settings allow.
--->
+<!-- Labelled number input with two tooltips: `info` (an "i" icon next to the label, always
+     available) explains what the setting does, and `hint` (on the input) explains why its +/-
+     is disabled: it shows only while set, so the parent decides when a bound is reached.
+     UInputNumber is wrapped in a native div because it drops the listeners UTooltip's trigger
+     passes to its root (like UChip). With `resetValue` a button right of the input puts the
+     field back to it (disabled while it already is): the parent passes the starting value
+     already clamped to what the other settings allow. -->
 <script setup lang="ts">
 const {
   label,

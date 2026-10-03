@@ -14,10 +14,9 @@ const {
   tableNumber: number
   players: SwissMatchPlayer[]
   current?: MatchScore | null
-  // Who reported `current` via Telegram and whether the opponent answered —
-  // shown as the header badge (info/success/error), instead of looking
-  // identical to a result an organizer entered directly (2026-09-23/24 user
-  // request).
+  // Who reported `current` via Telegram and whether the opponent answered: shown as the header
+  // badge (info/success/error), instead of looking identical to a result an organizer entered
+  // directly
   telegramInfo?: SwissMatchTelegramInfo | null
   // A single player sitting out: scores as a 2-0 win, nothing to enter.
   isBye?: boolean

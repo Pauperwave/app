@@ -1,12 +1,8 @@
 <!-- app\components\tournaments\single\pairing\TournamentCommanderModal.vue -->
-<!--
-  Ported bit-by-bit from MagicTheGathering/league's TournamentCommanderModal.vue
-  (user request 2026-09-16: "anche comandanti"), replacing this app's earlier
-  CommanderSelectModal.vue. Swaps league's Pinia commandersStore for this
-  app's own commander_decks-backed flow (get-or-create per player+commander
-  combo, unchanged from before this rewrite) and gates the catalog refresh
-  behind a ConfirmModal like league's own footer does.
--->
+<!-- Ported from league's TournamentCommanderModal.vue, replacing this app's earlier
+     CommanderSelectModal.vue. Swaps league's Pinia commandersStore for this app's
+     commander_decks-backed flow (get-or-create per player+commander combo) and gates the
+     catalog refresh behind a ConfirmModal like league's footer. -->
 <script setup lang="ts">
 import type CommanderModal from '~/components/tournaments/single/pairing/CommanderModal.vue'
 

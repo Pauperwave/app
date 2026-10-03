@@ -16,12 +16,11 @@ interface Props {
 const { modelValue, defaultCountry = 'IT', name = 'phone' } = defineProps<Props>()
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 
-// Every country libphonenumber-js knows (245, even on the `min` metadata
-// build — "min" trims per-country pattern detail, not the country list
-// itself), not a curated shortlist: an association open to any nationality
-// can't hardcode who's allowed to have a phone number. USelectMenu's default
-// search input is what makes 245 items usable. Names come from Intl's own
-// region display names (no extra dependency, matches the UI's Italian copy).
+// Every country libphonenumber-js knows (245, even on the `min` build, which trims per-country
+// pattern detail, not the country list), not a curated shortlist: an association open to any
+// nationality can't hardcode who may have a phone number. USelectMenu's default search input makes
+// 245 items usable. Names come from Intl's region display names (no extra dependency, matches the
+// Italian UI)
 const countryNames = new Intl.DisplayNames(['it'], { type: 'region' })
 
 // label is the name alone (can wrap onto a second line for long ones); the
@@ -39,10 +38,9 @@ const countryItems = computed(() => getCountries()
 const country = ref<CountryCode>(defaultCountry)
 const nationalNumber = ref('')
 
-// Reparses an incoming E.164 modelValue (prefill/edit case) into the split
-// country + national-number display state. Only reacts to real external
-// changes — internal edits go straight from input to emit, not back through
-// this watcher (modelValue only updates once a number is fully valid).
+// Reparses an incoming E.164 modelValue (prefill/edit) into the split country + national-number
+// display state. Only reacts to real external changes: internal edits go from input to emit, not
+// back through this watcher (modelValue only updates once a number is fully valid)
 watch(() => modelValue, (value) => {
   if (!value) return
   const parsed = parsePhoneNumberFromString(value)
@@ -52,9 +50,8 @@ watch(() => modelValue, (value) => {
   }
 }, { immediate: true })
 
-// AsYouType applies each supported country's real formatting/grouping rules
-// (not a fixed mask — Austrian and Italian numbers don't group digits the
-// same way), and re-emits the E.164 value once the number is valid.
+// AsYouType applies each supported country's real formatting/grouping rules (not a fixed mask:
+// Austrian and Italian numbers group digits differently) and re-emits the E.164 value once valid
 function reformat(raw: string) {
   nationalNumber.value = new AsYouType(country.value).input(raw)
   const parsed = parsePhoneNumberFromString(nationalNumber.value, country.value)
@@ -68,10 +65,9 @@ watch(country, () => reformat(nationalNumber.value))
 
 <template>
   <UFieldGroup class="w-full">
-    <!-- w-auto + min-w-28: sized to fit "Italia" comfortably (the ~100%
-         common case) without truncating, but free to grow for a selected
-         country whose name doesn't fit — value's own truncate is dropped for
-         the same reason (see itemLabel above). -->
+    <!-- w-auto + min-w-28: fits "Italia" without truncating (the ~100% common case) but can
+         grow for a selected country whose name doesn't fit (value's truncate is dropped too,
+         see itemLabel above) -->
     <USelectMenu
       v-model="country"
       :items="countryItems"

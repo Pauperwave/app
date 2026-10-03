@@ -1,6 +1,5 @@
 <!-- app\components\calendar\TournamentDetailHero.vue -->
-<!-- Split out of TournamentDetailContent.vue (2026-08-16 user request) — see
-     EventDetailHero.vue's own header for why. -->
+<!-- Split out of TournamentDetailContent.vue: see EventDetailHero.vue's header for why -->
 <script setup lang="ts">
 import type { Tournament } from '~/types'
 

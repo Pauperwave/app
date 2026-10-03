@@ -1,11 +1,8 @@
 <!-- app\components\tournaments\single\pairing\RoundStatusRow.vue -->
-<!--
-  Generic clickable row shared by all 4 RoundStatusCard sections — renders
-  either a table label (rankings/kills) or a player tag (commanders/votes)
-  depending on which props are passed — ported from
-  MagicTheGathering/league's RoundStatusRow.vue (user request, 2026-09-19),
-  same visual language as WinnerChecklistCard.vue's own rows.
--->
+<!-- Generic clickable row shared by all 4 RoundStatusCard sections: it renders a table label
+     (rankings/kills) or a player tag (commanders/votes) depending on the props passed, ported
+     from league's RoundStatusRow.vue, with the visual language of WinnerChecklistCard.vue's
+     rows. -->
 <script setup lang="ts">
 const {
   done, tableNumber, playerLabel, playerUuid

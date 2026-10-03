@@ -1,9 +1,6 @@
 <!-- app\components\associates\fields\BirthInfoFields.vue -->
-<!--
-  Shared by AddModal.vue and /tesseramento — see PersonalInfoFields.vue for
-  the state-mutation rationale (same pattern, `vue/no-mutating-props`
-  disabled below for the same reason).
--->
+<!-- Shared by AddModal.vue and /tesseramento: see PersonalInfoFields.vue for the state-mutation
+     rationale (the same pattern, `vue/no-mutating-props` disabled below for the same reason). -->
 <!-- eslint-disable vue/no-mutating-props -- see PersonalInfoFields.vue -->
 <script setup lang="ts">
 import { format } from 'date-fns'
@@ -21,10 +18,9 @@ interface BirthInfoState {
 
 const { state } = defineProps<{ state: BirthInfoState }>()
 
-// A province code only makes sense for an Italian birthplace (see
-// isItalianBirthState.ts, shared with associateFormSchema.ts's own
-// cross-field validation) — the field stays visible either way (an admin may
-// still want to record it), just not mandatory for a foreign birth state.
+// A province code only makes sense for an Italian birthplace (see isItalianBirthState.ts, shared
+// with associateFormSchema.ts's cross-field validation): the field stays visible either way (an
+// admin may still want to record it), just not mandatory for a foreign birth state
 const isItalianBirth = computed(() => isItalianBirthState(state.born_state))
 
 const calendarDate = computed<CalendarDate | null>({
@@ -45,11 +41,9 @@ function formatDate(date: Date): string {
 
 <template>
   <!-- eslint-disable vue/no-mutating-props -- see the top-of-file comment -->
-  <!-- Own nested grids (not just relying on the parent's), so each pair stays
-       side by side regardless of whether the parent lays this component out
-       in one column (AssociatesListFormFields.vue) or two (/tesseramento's
-       birthInfo step) — user request, 2026-08-19, same as
-       PersonalInfoFields.vue's first/last name pairing. -->
+  <!-- Own nested grids (not relying on the parent's), so each pair stays side by side whether
+       the parent lays this out in one column (AssociatesListFormFields.vue) or two
+       (/tesseramento's birthInfo step), like PersonalInfoFields.vue's first/last name pairing -->
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
     <UFormField
       :label="$t('associate.addModal.fields.birthLocation')"
@@ -68,9 +62,8 @@ function formatDate(date: Date): string {
       name="born_date"
       required
     >
-      <!-- Hidden input for autofill and schema validation — the visible control
-           below is a UButton+UCalendar, not a native input browsers can
-           autofill on their own. -->
+      <!-- Hidden input for autofill and schema validation: the visible control below is a
+           UButton+UCalendar, not a native input browsers can autofill -->
       <input
         v-model="state.born_date"
         type="date"

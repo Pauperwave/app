@@ -1,12 +1,8 @@
 <!-- app\components\tournaments\single\prizes\PrizeDistributionTable.vue -->
-<!--
-  Standings with the packs each placement gets: the rewarded rows first, then
-  a collapsible section (closed by default) for the players outside the
-  rewards. Share and packs are linked — editing either one updates the other,
-  and the parent rebalances the rest so every pack stays assigned. Not
-  persisted — an on-screen adjustment for the organizer while handing out
-  boosters.
--->
+<!-- Standings with the packs each placement gets: the rewarded rows first, then a collapsible
+     section (closed by default) for the players outside the rewards. Share and packs are
+     linked: editing either updates the other, and the parent rebalances the rest so every pack
+     stays assigned. Not persisted: an on-screen adjustment while handing out boosters. -->
 <script setup lang="ts">
 import type { PrizeDistributionRowData } from './PrizeDistributionRow.vue'
 

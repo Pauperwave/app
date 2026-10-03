@@ -9,12 +9,10 @@ import type { EventPartnerInput } from '#shared/utils/events/eventPartners'
 
 const open = defineModel<boolean>({ default: false })
 
-// sourceEvent is the "Copia evento" context-menu action (user request,
-// 2026-08-29), same convention as TournamentsListAddModal.vue's own
-// sourceTournament — copies every field except status (reset to draft). No dates: an event is a
-// folder of tournaments and its dates come from them (2026-10-02, derivedDates.ts).
-// hideTrigger mirrors that component too, for the same reason: this instance
-// is opened programmatically by the copy action, not its own AddButton.
+// sourceEvent is the "Copia evento" context-menu action, like TournamentsListAddModal.vue's
+// sourceTournament: copies every field except status (reset to draft). No dates: an event is a
+// folder of tournaments and its dates come from them (derivedDates.ts). hideTrigger mirrors that
+// component too: this instance is opened programmatically by the copy action, not its own AddButton
 const { sourceEvent, hideTrigger = false } = defineProps<{
   sourceEvent?: Event | null
   hideTrigger?: boolean
@@ -23,10 +21,8 @@ const { sourceEvent, hideTrigger = false } = defineProps<{
 const toast = useToast()
 const { t } = useI18n()
 
-// Migrated off the name/email placeholder stub onto the real `events` table
-// (2026-08-15) — locations/organizations, see
-// useLocationsQuery.ts/useOrganizationsQuery.ts (shared with tournaments'
-// AddModal.vue).
+// Locations/organizations come from the real `events` table's lookups, see
+// useLocationsQuery.ts/useOrganizationsQuery.ts (shared with tournaments' AddModal.vue)
 const { createEvent } = useEventsMutations()
 const {
   schema, statusOptions, locationOptions, organizerOptions
@@ -37,7 +33,8 @@ function createInitialState(): EventFormState {
   return {
     name: source?.name,
     status: 'draft',
-    // A copy keeps everything but the edition and the tickets' on-sale day (they belong to the original).
+    // A copy keeps everything but the edition and the tickets' on-sale day (they belong to the
+    // original).
     tagline: source?.tagline ?? undefined,
     description: source?.description ?? undefined,
     practicalNotes: source?.practicalNotes ?? undefined,
@@ -58,13 +55,11 @@ function initialPartners(): EventPartnerInput[] {
 }
 const partners = ref<EventPartnerInput[]>(initialPartners())
 
-// Nearly every event created here is organized by Pauperwave at Smart Lab —
-// same defaulting convention as TournamentsListAddModal.vue's own (user
-// request, 2026-08-23), defaulted once each list resolves (async, off
-// useOrganizationsQuery/useLocationsQuery) and only if the field is still
-// empty so it never overrides a manual choice made before the lists finished
-// loading. `startsWith` for the location: its full display name is
-// "Smart Lab - Centro Giovani Rovereto" (see the locations seed migration).
+// Nearly every event created here is organized by Pauperwave at Smart Lab: the same defaulting as
+// TournamentsListAddModal.vue, applied once each list resolves (async, via
+// useOrganizationsQuery/useLocationsQuery) and only if the field is still empty so a manual choice
+// made before the lists loaded is never overridden. `startsWith` for the location: its display name
+// is "Smart Lab - Centro Giovani Rovereto" (see the locations seed migration)
 watch(organizerOptions, (options) => {
   if (state.organizerUuid) return
   state.organizerUuid = options.find(option => option.label === 'Pauperwave')?.value
@@ -81,10 +76,9 @@ const image = ref<string | undefined>(undefined)
 const imageCardName = ref<string | undefined>(undefined)
 const imageCardArtist = ref<string | undefined>(undefined)
 
-// Re-applies sourceEvent every time the modal opens, not just on mount —
-// same reasoning as TournamentsListAddModal.vue's own watch(open, ...): this
-// instance is reused across different "Copia evento" clicks while it stays
-// alive.
+// Re-applies sourceEvent every time the modal opens, not just on mount (like
+// TournamentsListAddModal.vue's watch(open, ...)): this instance is reused across different "Copia
+// evento" clicks while it stays alive
 watch(open, (isOpen) => {
   if (!isOpen || !sourceEvent) return
   Object.assign(state, createInitialState())
@@ -96,10 +90,9 @@ watch(open, (isOpen) => {
 
 type Schema = v.InferOutput<typeof schema>
 
-// UModal only hides/shows, it does not unmount the form, so the state has to
-// be cleared explicitly — called on successful submit and on explicit
-// "Annulla", but deliberately NOT on the X button or an outside click, which
-// should preserve whatever the user typed (user decision 2026-08-20).
+// UModal only hides/shows and doesn't unmount the form, so the state is cleared explicitly: on
+// successful submit and "Annulla", deliberately NOT on the X button or an outside click, which
+// preserve what the user typed
 function resetForm() {
   Object.assign(state, createInitialState())
   partners.value = initialPartners()

@@ -15,22 +15,18 @@ const appConfig = useAppConfig()
 const colors = ['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose']
 const neutrals = ['slate', 'gray', 'zinc', 'neutral', 'stone']
 
-// "Profilo" points at the logged-in user's own associate record — there's no
-// player detail page yet (/players is still a stub), and the associate record
-// is the closer match anyway (membership/anagrafica, not gameplay stats).
-// undefined when no matching associate exists yet, so the item just isn't a
-// link rather than pointing somewhere broken.
+// "Profilo" points at the logged-in user's own associate record: there is no player detail page yet
+// (/players is a stub), and the associate record is the closer match (membership/anagrafica, not
+// gameplay stats). undefined when no matching associate exists, so the item isn't a link rather
+// than pointing somewhere broken
 const currentAssociate = useCurrentAssociate()
 const profileLink = computed(() => currentAssociate.value
   ? `/associate/${slugify(`${currentAssociate.value.first_name} ${currentAssociate.value.last_name}`)}`
   : undefined)
 
-// Was hardcoded to a single developer's name/avatar (found 2026-08-22, issue
-// #54) — now derived from the logged-in user's own associate record, same
-// source as profileLink above. Falls back to the raw auth email (or a
-// generic label, if even that is unavailable) while currentAssociate is
-// still resolving or genuinely has no match, same convention as
-// AssociateTag.vue's own generatePlayerAvatar() for the avatar.
+// Derived from the logged-in user's own associate record (same source as profileLink above). Falls
+// back to the raw auth email (or a generic label) while currentAssociate is resolving or has no
+// match, like AssociateTag.vue's generatePlayerAvatar() for the avatar
 const authUser = useSupabaseUser()
 const userDisplayName = computed(() => {
   if (currentAssociate.value) {
@@ -49,10 +45,9 @@ const user = computed(() => ({
 
 const handleLogout = useLogout()
 
-// "View as" (2026-08-17, docs/architecture/roles.md §1): UI-only preview,
-// super_admin-only. Gated on realIsSuperAdmin (not role/isSuperAdmin),
-// so the control that exits a preview stays visible and usable even while
-// actively previewing as a lower role — see useUserRole.ts's own comment.
+// "View as" (docs/architecture/roles.md §1): UI-only preview, super_admin-only. Gated on
+// realIsSuperAdmin (not role/isSuperAdmin), so the control that exits a preview stays usable while
+// previewing a lower role (see useUserRole.ts)
 const {
   realIsSuperAdmin, isSuperAdmin, role, isPreviewing, setRolePreview
 } = useUserRole()

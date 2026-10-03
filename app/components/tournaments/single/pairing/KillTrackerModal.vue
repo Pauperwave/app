@@ -1,18 +1,12 @@
 <!-- app\components\tournaments\single\pairing\KillTrackerModal.vue -->
-<!--
-  Wraps KillFlowCanvas.vue in a modal — ported from
-  MagicTheGathering/league's TournamentKillModal.vue/KillSystemModal.vue
-  (user request, 2026-09-15/16: copy the kill-tracking flow as-is; 2026-09-16:
-  "mancano delle funzionalità" added the registered-kills badge list, its
-  per-kill remove + reset-all, and the ClientOnly/loading guard around the
-  canvas that this pass had originally dropped). Kills persist immediately
-  on connect/remove (via useTournamentKillsMutations), not staged-then-
-  confirmed — same "one real write per action" convention as
-  AcceptancePicker.vue's payment buttons, rather than league's own local
-  kills-store-then-submit staging (this app has no such store for this
-  domain) — so "Azzera" here calls removeKill for every existing kill
-  instead of just clearing an in-memory draft.
--->
+<!-- Wraps KillFlowCanvas.vue in a modal, ported from league's
+     TournamentKillModal.vue/KillSystemModal.vue (with the registered-kills badge list, its
+     per-kill remove + reset-all, and the ClientOnly/loading guard around the canvas). Kills
+     persist immediately on connect/remove (via useTournamentKillsMutations), not
+     staged-then-confirmed: the "one real write per action" convention of AcceptancePicker.vue's
+     payment buttons, instead of league's local kills-store-then-submit staging (this app has no
+     such store here), so "Azzera" calls removeKill for every existing kill rather than clearing
+     an in-memory draft. -->
 <script setup lang="ts">
 import type { TablePlayer } from '~/types'
 

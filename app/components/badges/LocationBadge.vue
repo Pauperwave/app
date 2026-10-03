@@ -1,9 +1,7 @@
 <!-- app\components\badges\LocationBadge.vue -->
-<!--
-  A tournament/event's venue as a clickable pill linking out to Google Maps —
-  extracted out of tournaments/list/Card.vue (2026-08-16), same "single
-  source of truth" reasoning as FormatBadge.vue.
--->
+<!-- A tournament/event's venue as a clickable pill linking out to Google Maps, extracted from
+     tournaments/list/Card.vue with the same "single source of truth" reasoning as
+     FormatBadge.vue. -->
 <script setup lang="ts">
 const { location, locationAddress = null, mapsUrl = null } = defineProps<{
   location: string

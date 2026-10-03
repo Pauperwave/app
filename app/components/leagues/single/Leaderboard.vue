@@ -1,15 +1,10 @@
 <!-- app\components\leagues\single\Leaderboard.vue -->
-<!--
-  PREVIEW ONLY (2026-08-20) — hardcoded mock rows, not wired to real data.
-  `tournament_standings` (the table this would actually read from) exists in
-  the schema but has 0 rows — nothing populates player_rank/player_score yet
-  (see server/api/cittadino.ts's own comment, and the P1 in docs/BACKLOG.md).
-  This exists purely so the user can see what a league-scoped "best N of
-  total tappe" summary leaderboard could look like on the detail page before
-  committing to building the real aggregation once tournament_standings is
-  actually populated. Delete this mock array and wire up a real query when
-  that data exists — don't extend this file as-is.
--->
+<!-- PREVIEW ONLY: hardcoded mock rows, not wired to real data. `tournament_standings` (the
+     table it would read) exists in the schema with 0 rows: nothing populates
+     player_rank/player_score yet (see server/api/cittadino.ts and docs/BACKLOG.md P1). It
+     exists so a league-scoped "best N of total tappe" leaderboard can be seen on the detail
+     page before building the real aggregation once tournament_standings is populated. Delete
+     this mock array and wire a real query then; don't extend this file as-is. -->
 <script setup lang="ts">
 interface MockRow {
   rank: number
@@ -19,9 +14,8 @@ interface MockRow {
   totalStages: number
 }
 
-// Generated, not hand-listed — 40 rows is enough to see how the card behaves
-// with a realistically-sized league (scroll, height vs. the sidebar cards),
-// not just a 5-row sample.
+// Generated, not hand-listed: 40 rows show how the card behaves with a realistically sized league
+// (scroll, height vs the sidebar cards), not a 5-row sample
 const FIRST_NAMES = [
   'Marco', 'Giulia', 'Luca', 'Sara', 'Davide', 'Elena', 'Matteo', 'Chiara', 'Andrea', 'Francesca',
   'Alessandro', 'Martina', 'Simone', 'Valentina', 'Riccardo', 'Giorgia', 'Federico', 'Alice', 'Nicola', 'Beatrice'

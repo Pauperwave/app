@@ -1,11 +1,8 @@
 <!-- app\components\ui\ConsentBadge.vue -->
-<!--
-  Extracted out of useAssociatesRenderers.ts's renderConsentBadge (2026-08-19)
-  so the same Sì/No badge can be used both as a table cell (h(ConsentBadge,
-  { value })) and directly in a template (associate/[slug].vue's consensi
-  section) — a plain renderer function only worked inside h()-based column
-  defs, not template markup.
--->
+<!-- Extracted from useAssociatesRenderers.ts's renderConsentBadge so the same Sì/No badge works
+     as a table cell (h(ConsentBadge, { value })) and directly in a template
+     (associate/[slug].vue's consensi section): a plain renderer function only worked inside
+     h()-based column defs. -->
 <script setup lang="ts">
 const { value } = defineProps<{ value: boolean }>()
 </script>

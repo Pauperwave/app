@@ -1,14 +1,10 @@
 <!-- app\components\tournaments\single\PlayersCountBadge.vue -->
-<!--
-  "N giocatori" + table-size breakdown ("1 tavolo da 4") shown next to
-  "Iscritti (Pagato)" — extracted out of AcceptancePicker.vue (user request,
-  2026-08-24) since it only ever needed `count` and `isDraft`, no selection/
-  table state. Ported from MagicTheGathering/league's WaitingListStats.vue,
-  generalized to Draft's ideal-8/min-6 split, Commander's ideal-4/min-3
-  split, or 1v1 Swiss's pairs-of-2 (Phase 1 of
-  docs/plans/2026-09-15-swiss-pairing-draft-1v1-plan.md) via the
-  isDraft/is1v1 props, instead of league's single Commander-only calculator.
--->
+<!-- "N giocatori" + table-size breakdown ("1 tavolo da 4") shown next to "Iscritti (Pagato)",
+     extracted from AcceptancePicker.vue since it only needs `count` and `isDraft`, no
+     selection/table state. Ported from league's WaitingListStats.vue, generalized via the
+     isDraft/is1v1 props to Draft's ideal-8/min-6 split, Commander's ideal-4/min-3 split or 1v1
+     Swiss's pairs-of-2 (phase 1 of docs/plans/2026-09-15-swiss-pairing-draft-1v1-plan.md),
+     instead of league's single Commander-only calculator. -->
 <script setup lang="ts">
 const { count, isDraft = false, is1v1 = false } = defineProps<{
   count: number
@@ -85,11 +81,10 @@ const tableEstimateLabel = computed(() => {
 </script>
 
 <template>
-  <!-- Single pill instead of a bold badge next to an equally bold plain-text
-       span (previous look, 2026-09-14 user feedback: "non mi piace tantissimo")
-       — the table breakdown now sits inside the same badge, de-emphasized
-       (font-normal + muted) after a middle-dot separator, so it reads as a
-       detail of the player count rather than a second competing headline. -->
+  <!-- A single pill instead of a bold badge next to an equally bold plain-text span: the table
+       breakdown sits inside the same badge, de-emphasized (font-normal + muted) after a
+       middle-dot separator, reading as a detail of the player count rather than a second
+       headline -->
   <UBadge
     :color="badge.color"
     :icon="ICONS.players"

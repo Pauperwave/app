@@ -1,10 +1,9 @@
 <!-- app\components\statistics\StatChartCard.vue -->
-<!-- Shared shell for every chart on /statistics — extracted 2026-08-18: the
-UCard header (title/value/caption + optional legend) and the unovis CSS-var
-style block were byte-identical across all 5 chart components. Each chart
-file now only owns its data/accessors and the VisXYContainer content, passed
-through the default slot; `width` (from useElementSize on this card) is
-exposed via the slot so the container can still size itself. -->
+<!-- Shared shell for every chart on /statistics: the UCard header (title/value/caption +
+     optional legend) and the unovis CSS-var style block were identical across all 5 chart
+     components. Each chart file only owns its data/accessors and the VisXYContainer content,
+     passed through the default slot; `width` (from useElementSize on this card) is exposed via
+     the slot so the container can size itself. -->
 <script setup lang="ts">
 import { VisBulletLegend } from '@unovis/vue'
 
@@ -23,16 +22,12 @@ interface Props {
   // defaults.
   legendBulletSize?: string
   legendLabelFontSize?: string
-  // Skeletons the value + chart body instead of rendering the default slot
-  // (user request, 2026-08-26) — every chart here computes `value`/passes
-  // `rows` synchronously off whatever the parent query currently has, so
-  // before that query resolves they briefly render with empty/zeroed data
-  // (an empty VisXYContainer, or a "0 €" value) and then pop to the real
-  // chart the instant it arrives — a jarring flash rather than a loading
-  // state. Every /finance and /statistics chart passes this now, wired to
-  // its own query's isLoading. Still optional (defaults false) since this
-  // component's contract shouldn't force a loading concept on some future
-  // chart that never has one.
+  // Skeletons the value + chart body instead of rendering the default slot: every chart computes
+  // `value`/passes `rows` synchronously from whatever the parent query has, so before it resolves
+  // they briefly render with empty/zeroed data (an empty VisXYContainer, a "0 €" value) and then
+  // pop to the real chart: a jarring flash, not a loading state. Every /finance and /statistics
+  // chart wires this to its query's isLoading. Optional (defaults false) so a future chart that
+  // never loads isn't forced to
   loading?: boolean
 }
 
@@ -75,12 +70,10 @@ const { width } = useElementSize(cardRef)
   </UCard>
 </template>
 
-<!-- Not `scoped`: the chart content itself lives in each consumer's own
-<template #default> slot content, which keeps ITS OWN component's scope
-attribute, not this one's — a `scoped` rule here would never match
-.unovis-xy-container at all. Every chart on this page wants the exact same
-theming anyway, so a plain global rule is the correct (and only working)
-way to share it. -->
+<!-- Not `scoped`: the chart content lives in each consumer's own <template #default> slot,
+     which keeps ITS component's scope attribute, so a `scoped` rule here would never match
+     .unovis-xy-container. Every chart wants the same theming, so a plain global rule is the
+     only working way to share it. -->
 <style>
 .unovis-xy-container {
   --vis-crosshair-line-stroke-color: var(--ui-primary);

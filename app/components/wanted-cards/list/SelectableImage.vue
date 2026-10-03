@@ -1,13 +1,9 @@
 <!-- app\components\wanted-cards\list\SelectableImage.vue -->
-<!--
-  Selection checkbox overlay + card image/placeholder, shared by GridCard.vue
-  and DenseCard.vue (extracted 2026-08-29, fallow:dupes flagged the two as
-  byte-identical aside from size) — a card's own tile always renders this as
-  the first thing inside its `relative group` UCard, before whatever footer
-  content that tile shows. GridCard.vue's own hover gradient (the dark
-  top-down fade behind its checkbox) stays there, not here — DenseCard.vue's
-  tile is small enough that the checkbox alone reads fine without it.
--->
+<!-- Selection checkbox overlay + card image/placeholder, shared by GridCard.vue and
+     DenseCard.vue (identical aside from size): a tile always renders it first inside its
+     `relative group` UCard, before its footer content. GridCard.vue's hover gradient (the dark
+     top-down fade behind its checkbox) stays there: DenseCard.vue's tile is small enough that
+     the checkbox alone reads fine. -->
 <script setup lang="ts">
 import type { WantedCard } from '~/types'
 import type { Selection } from '~/composables/useSelection'
@@ -17,7 +13,10 @@ const {
 } = defineProps<{
   card: WantedCard
   selection: Selection<number>
-  /** The ordered list a shift-click range resolves against — see the caller's own GridView.vue/DenseView.vue. */
+  /**
+   * The ordered list a shift-click range resolves against — see the caller's own
+   * GridView.vue/DenseView.vue.
+   */
   range: number[]
   /** Smaller checkbox/placeholder icon for DenseCard.vue's tighter tile. */
   dense?: boolean

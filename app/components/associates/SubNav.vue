@@ -2,12 +2,11 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
 
-// Shared switcher between /associates (roster, approved members only) and
-// /associates/requests (pending/rejected requests) — two sibling routes, not
-// a shared parent layout (see docs/PROGRESS.md ADR for the split): the two
-// views diverge enough in data/actions that nesting them under one layout
-// would fight more than it'd save. This component is the only thing they
-// share, rendered identically on both pages.
+// Shared switcher between /associates (roster, approved members only) and /associates/requests
+// (pending/rejected requests): two sibling routes, not a shared parent layout (see the
+// docs/PROGRESS.md ADR), as the views diverge enough in data/actions that nesting them under one
+// layout would fight more than it saves. This component is all they share, rendered identically on
+// both pages
 const { pendingCount, associatesCount }
   = defineProps<{ pendingCount: number, associatesCount: number }>()
 const { t } = useI18n()

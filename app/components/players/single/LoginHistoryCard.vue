@@ -1,7 +1,6 @@
 <!-- app\components\players\single\LoginHistoryCard.vue -->
-<!-- Split out of players/[slug]/index.vue (2026-08-29, fallow:health) — one
-     of three self-contained detail-page card sections that had made that
-     page's template a complexity hotspot. -->
+<!-- Split out of players/[slug]/index.vue: one of three self-contained detail-page card
+     sections that had made that page's template a complexity hotspot -->
 <script setup lang="ts">
 defineProps<{ loading: boolean, dates: string[] | undefined }>()
 </script>

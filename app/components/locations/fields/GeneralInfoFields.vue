@@ -1,11 +1,8 @@
 <!-- app\components\locations\fields\GeneralInfoFields.vue -->
-<!--
-  Shared by AddModal.vue/EditModal.vue — `state` is the SAME reactive object
-  the parent binds to its own <UForm :state>, mutated directly (same
-  rationale as AssociatesFieldsPersonalInfoFields.vue). `image` is a separate
-  v-model: it's kept out of the valibot schema in useLocationFormFields.ts
-  (no format validation needed), so it isn't part of `state`.
--->
+<!-- Shared by AddModal.vue/EditModal.vue: `state` is the SAME reactive object the parent binds
+     to its <UForm :state>, mutated directly (like AssociatesFieldsPersonalInfoFields.vue).
+     `image` is a separate v-model, kept out of the valibot schema in useLocationFormFields.ts
+     (no format validation needed), so it isn't part of `state`. -->
 <!-- eslint-disable vue/no-mutating-props -- see the comment above -->
 <script setup lang="ts">
 import type { LocationFormState } from '~/composables/locations/useLocationFormFields'

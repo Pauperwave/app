@@ -7,10 +7,9 @@ interface Props {
   hourCycle?: 12 | 24
 }
 
-// 24-hour clock by default (2026-08-14 decision) — Nuxt UI's UInputDate
-// defaults to a 12-hour AM/PM picker otherwise. Other UInputDate props
-// (class, disabled, size, ...) fall through automatically since this
-// component has a single root node.
+// 24-hour clock by default: Nuxt UI's UInputDate defaults to a 12-hour AM/PM picker. Other
+// UInputDate props (class, disabled, size, ...) fall through since this component has a single root
+// node
 const {
   granularity = 'minute',
   hourCycle = 24

@@ -1,16 +1,12 @@
 <!-- app\components\ui\CalendarDayChip.vue -->
-<!--
-  Shared #day slot content for DateRangePicker.vue/StartDatePickerField.vue's
-  UCalendar (extracted 2026-08-29, fallow:dupes) — dots a day with a
-  status-colored UChip + hover tooltip whenever useCalendarDayHighlights.ts's
-  eventsFor() finds events for it. The hover listeners live on this wrapping
-  `span.contents`, not on UChip itself: UChip declares `inheritAttrs: false`
-  and forwards its own $attrs into the default slot's content (reka-ui's
-  asChild `Slot`) — since that content here is bare text (`day.day`), not an
-  element, a listener put directly on `<UChip>` silently attaches to nothing
-  (see node_modules/@nuxt/ui/dist/runtime/components/Chip.vue). `display:
-  contents` keeps this span out of the cell's own layout/sizing.
--->
+<!-- Shared #day slot content for DateRangePicker.vue/StartDatePickerField.vue's UCalendar: dots
+     a day with a status-colored UChip + hover tooltip when useCalendarDayHighlights.ts's
+     eventsFor() finds events for it. The hover listeners live on this wrapping `span.contents`,
+     not UChip: UChip declares `inheritAttrs: false` and forwards its $attrs into the default
+     slot's content (reka-ui's asChild `Slot`), and since that content is bare text (`day.day`),
+     not an element, a listener on `<UChip>` attaches to nothing (see
+     node_modules/@nuxt/ui/dist/runtime/components/Chip.vue). `display: contents` keeps the span
+     out of the cell's layout/sizing. -->
 <script setup lang="ts">
 import type { DateValue } from '@internationalized/date'
 import type { CalendarHighlightedDate } from '~/types'

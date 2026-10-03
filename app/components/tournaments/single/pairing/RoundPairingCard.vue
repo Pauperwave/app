@@ -1,13 +1,8 @@
 <!-- app\components\tournaments\single\pairing\RoundPairingCard.vue -->
-<!--
-  One pod's card in the round-in-progress view — ported from
-  MagicTheGathering/league's TableCard.vue (in-progress variant)/
-  TableCardActions.vue/PairingTableActions.vue/PairingPlayerRow.vue (user
-  request, 2026-09-15/16: copy the round-view layout as-is; 2026-09-19:
-  "copia 1:1 le funzionalità della card tavolo" added the reset-table/
-  quick-fill/view-scores actions this file originally dropped), collapsed
-  into one component instead of league's multi-file split.
--->
+<!-- One pod's card in the round-in-progress view, ported from league's TableCard.vue
+     (in-progress variant)/ TableCardActions.vue/PairingTableActions.vue/PairingPlayerRow.vue
+     (including the reset-table/quick-fill/view-scores actions), collapsed into one component
+     instead of league's multi-file split. -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { SwissDropInfo, TablePlayer } from '~/types'
@@ -17,14 +12,12 @@ const {
   associateUuidFor, droppedFor, readonly = false
 } = defineProps<{
   tableNumber: number
-  // `TablePlayer.value` here is the DB's players.uuid (player_uuid) — every
-  // tournament_round_results/tournament_kills/tournament_votes/
-  // commander_decks row keys by that once a round's pairings exist, unlike
-  // the pre-round pairing/preview flow, where TablePlayer.value is the
-  // associate uuid (AcceptancePickerItem.value) — there's no player_uuid
-  // yet before start_commander_round_one creates one. `associateUuidFor`
-  // resolves player_uuid -> associate uuid, just for AssociateTag's own
-  // hover-popover feature.
+  // `TablePlayer.value` here is the DB's players.uuid (player_uuid): every
+  // tournament_round_results/tournament_kills/tournament_votes/commander_decks row keys by it once
+  // a round's pairings exist, unlike the pre-round pairing/preview flow where it is the associate
+  // uuid (AcceptancePickerItem.value), since no player_uuid exists before
+  // start_commander_round_one. `associateUuidFor` resolves player_uuid -> associate uuid, just for
+  // AssociateTag's hover popover
   players: TablePlayer[]
   positions: Map<string, number>
   hasKills: boolean
@@ -73,12 +66,9 @@ function placementStyle(playerValue: string) {
 }
 const canToggleDraw = computed(() => isDraw || (!hasRanking.value && !hasKills))
 
-// Some seats have data but the table isn't fully ranked yet — now a real,
-// common state since players self-report independently via the Telegram
-// bot, instead of an organizer filling the whole table in one sitting.
-// Previously both footer icons turned green as soon as *any* seat had data,
-// making one player's own submission look like the whole table was done
-// (user bug report, 2026-09-24).
+// Some seats have data but the table isn't fully ranked yet: a common state since players
+// self-report independently via the Telegram bot. Both footer icons turned green as soon as *any*
+// seat had data, making one player's submission look like the whole table was done
 const hasPartialData = computed(() => hasRanking.value && !isComplete)
 
 // info (in progress, not final) rather than warning (needs attention) —
@@ -97,9 +87,8 @@ const killsColor = computed(() => {
   return isComplete ? 'success' as const : 'info' as const
 })
 
-// Rankings/kills buttons lock while the table is marked as a draw, since
-// editing either would silently un-draw the table with no other signal —
-// same tooltip logic as league's PairingTableActions.vue.
+// Rankings/kills buttons lock while the table is marked as a draw, since editing either would
+// silently un-draw it with no other signal (like league's PairingTableActions.vue tooltip logic)
 const rankingTooltip = computed(() => {
   if (isDraw) return t('tournament.single.roundManager.drawnTooltip')
   if (isComplete) return t('tournament.single.roundManager.rankingSetTooltip')

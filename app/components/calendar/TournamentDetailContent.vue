@@ -1,11 +1,8 @@
 <!-- app\components\calendar\TournamentDetailContent.vue -->
-<!--
-  Extracted out of DetailSlideover.vue's `selection?.kind === 'tournament'`
-  branch (2026-08-16) — see EventDetailContent.vue's own header for why this
-  isn't a shared component with it. The hero (image/gradient/title/close
-  button) itself lives in TournamentDetailHero.vue, rendered in USlideover's
-  #header slot instead — this component is #body content only.
--->
+<!-- Extracted from DetailSlideover.vue's `selection?.kind === 'tournament'` branch (see
+     EventDetailContent.vue's header for why it isn't a shared component with it). The hero
+     (image/gradient/title/close button) lives in TournamentDetailHero.vue, rendered in
+     USlideover's #header slot: this is #body content only. -->
 <script setup lang="ts">
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'

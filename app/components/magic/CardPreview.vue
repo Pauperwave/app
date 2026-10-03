@@ -1,11 +1,9 @@
 <!-- app\components\magic\CardPreview.vue -->
 
-<!--
-  Stesso meccanismo di CardPreview.vue in MagicTheGathering/league (sezione
-  comandante): anteprima sempre visibile sotto il selettore di edizione, non
-  un tooltip/modale a comparsa — mostra fronte (e retro, se la carta è a due
-  facce) con uno sfondo a gradiente derivato dai colori della carta.
--->
+<!-- The same mechanism as league's CardPreview.vue (commander section): a preview always
+     visible under the edition selector, not a tooltip/modal that pops up, showing the front
+     (and back, for a double-faced card) on a gradient background derived from the card's
+     colors. -->
 <script setup lang="ts">
 import type { ScryfallPrinting } from '~/composables/useScryfallCardSearch'
 
@@ -20,10 +18,9 @@ const gradientStyle = computed(() => {
 </script>
 
 <template>
-  <!-- Always mounted (fading opacity, not v-if): it always reserves its space —
-       a w-64 image at a true 5:7 ratio (358px tall) — whether or not an edition
-       is selected, so the modal does not jump in height the moment one is
-       chosen. -->
+  <!-- Always mounted (fading opacity, not v-if): it reserves its space (a w-64 image at a true
+       5:7 ratio, 358px tall) whether or not an edition is selected, so the modal doesn't jump
+       in height when one is chosen -->
   <div
     class="mt-4 p-4 rounded-lg shadow-lg flex gap-4 justify-center transition-opacity"
     :class="printing ? 'opacity-100' : 'opacity-0 pointer-events-none'"

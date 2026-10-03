@@ -1,18 +1,9 @@
 <!-- app\components\events\list\Cover.vue -->
-<!--
-  Events' own version of TournamentsListCover.vue (2026-08-22, issue #45 +
-  "make presentable /events") — same image/date-chip/checkbox layout,
-  including the attribution chip since migration 20260902195719 added
-  image_card_name/image_card_artist to events (previously events had
-  neither column — user request, 2026-09-02, "reuse the same UI
-  tournaments already has").
-
-  Status badge + quick "set image" action (2026-09-02, same treatment as
-  TournamentsListCover.vue) — single flex row along the bottom edge, not
-  independently absolutely-positioned elements (badge/button/chip have
-  different natural heights, sharing only `bottom-2` doesn't put their
-  visible edges on the same line).
--->
+<!-- Events' own version of TournamentsListCover.vue: the same image/date-chip/checkbox layout,
+     including the attribution chip (events have image_card_name/image_card_artist since
+     migration 20260902195719), and the status badge + quick "set image" action in a single flex
+     row along the bottom edge, not independently absolutely-positioned elements (their natural
+     heights differ, so sharing `bottom-2` doesn't align their visible edges). -->
 <script setup lang="ts">
 import type { Event } from '~/types'
 import type { Selection } from '~/composables/useSelection'
@@ -36,11 +27,9 @@ const { t } = useI18n()
 // Same shift-click capture convention as TournamentsListCover.vue.
 const lastClickShiftKey = ref(false)
 
-// Single-event version of BulkActionsBar's "Imposta immagine" action,
-// built on the shared MagicSetImageModal — surfaced directly on a card
-// with no image yet, instead of requiring a multi-select just to add one
-// photo. Awaits its own mutation and shows a loading state, only closing
-// on success.
+// Single-event version of BulkActionsBar's "Imposta immagine", built on the shared
+// MagicSetImageModal: surfaced on a card with no image yet, instead of needing a multi-select.
+// Awaits its own mutation with a loading state and closes only on success
 const { setImage } = useEventsMutations()
 const imageModalOpen = ref(false)
 
@@ -56,13 +45,9 @@ async function confirmImage(imageUrl: string, cardName: string | null, artist: s
 <template>
   <div class="relative -m-3 mb-3">
     <template v-if="!loading && event">
-      <!-- No `height` prop — see leagues/list/Cover.vue's own comment
-           (2026-09-14 "zoomata" fix): forcing height="128" alongside
-           width="640" made ipx pre-crop the art_crop source (~1.37:1) to an
-           unrelated 5:1 sliver before object-cover cropped it *again* to
-           the box's real aspect, compounding into a heavily zoomed-in
-           fragment. Width-only lets ipx preserve the source aspect, so
-           object-cover ends up doing the one crop that matches. -->
+      <!-- No `height` prop (see leagues/list/Cover.vue): height="128" with width="640" made ipx
+           pre-crop the art_crop source (~1.37:1) to a 5:1 sliver before object-cover cropped it
+           *again*, giving a heavily zoomed fragment. Width-only lets ipx keep the source aspect -->
       <NuxtImg
         v-if="event.image"
         :src="event.image"
@@ -92,28 +77,24 @@ async function confirmImage(imageUrl: string, cardName: string | null, artist: s
       :ui="{ base: 'bg-black' }"
     />
 
-    <!-- Bottom row: status badge (left, same edge as the date chip above)
-         and either the "set image" quick action or the card-art attribution
-         chip (right) — the two are mutually exclusive, one requires the
-         other missing. -->
+    <!-- Bottom row: status badge (left, same edge as the date chip) and either the "set image"
+         quick action or the card-art attribution chip (right), mutually exclusive (one requires
+         the other missing) -->
     <div
       v-if="!loading && event"
       class="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2"
     >
-      <!-- variant="solid": a bare subtle badge floating on an arbitrary
-           photo isn't reliably legible for every status color (see
-           TournamentsListCover.vue's own note). @click.stop because
-           StatusChangeBadge's read-only branch (no manage-tournaments
-           permission) has no click handler of its own, unlike its
-           UDropdownMenu branch — without this it would bubble up to
-           Card.vue's onCardClick and navigate into the event detail. -->
+      <!-- variant="solid": a bare subtle badge on an arbitrary photo isn't legible for every
+           status color (see TournamentsListCover.vue). @click.stop because StatusChangeBadge's
+           read-only branch (no manage-tournaments permission) has no click handler, unlike its
+           UDropdownMenu branch: it would bubble to Card.vue's onCardClick and navigate into the
+           event detail -->
       <div class="shrink-0" @click.stop>
         <EventsStatusBadge :event="event" variant="solid" />
       </div>
 
-      <!-- Quick "set image" action, only when there's none yet — an
-           existing image is changed via EditModal instead, same as every
-           other field, this is just for the common "never set one" case. -->
+      <!-- Quick "set image" action, only when there's none yet: an existing image is changed
+           via EditModal like every other field -->
       <UButton
         v-if="!event.image"
         :label="t('event.bulkActions.setImage')"
@@ -125,8 +106,8 @@ async function confirmImage(imageUrl: string, cardName: string | null, artist: s
         @click.stop="imageModalOpen = true"
       />
 
-      <!-- Card-art attribution (required alongside any Scryfall art_crop
-           use, see CardArtPicker.vue) — only when set. -->
+      <!-- Card-art attribution (required with any Scryfall art_crop use, see
+           CardArtPicker.vue), only when set -->
       <CardArtCredit
         v-else-if="event.imageCardName"
         :card-name="event.imageCardName"

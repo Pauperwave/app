@@ -1,19 +1,12 @@
 <!-- app\components\tournaments\single\pairing\SwissTablePreviewModal.vue -->
-<!--
-  1v1 table-pairing preview for Swiss-format tournaments (Draft after its
-  pod stage, Pauper/Premodern/Oldschool/Sealed/Cubo Vintage) — Phase 1 of
-  docs/plans/2026-09-15-swiss-pairing-draft-1v1-plan.md.
-
-  Same visual/interaction shape as Commander's own TablePreviewModal.vue
-  (user request, 2026-09-16: "deve somigliare alla vista del commander,
-  table che è un UCard e le persone rappresentate da AssociateTag") — a
-  grid of UCards, each a cross-table VueDraggable group (like TableCard.vue/
-  TableSeatItem.vue), not Commander's own weighted drag-and-drop optimizer
-  (no scoring/standings to optimize against yet for this format, phase 3 of
-  the plan) — just free cross-table dragging + a validity check that every
-  table still has exactly 2 players (or, with an odd count, one lone player:
-  the bye).
--->
+<!-- 1v1 table-pairing preview for Swiss-format tournaments (Draft after its pod stage,
+     Pauper/Premodern/Oldschool/ Sealed/Cubo Vintage), phase 1 of
+     docs/plans/2026-09-15-swiss-pairing-draft-1v1-plan.md.  Same visual/interaction shape as
+     Commander's TablePreviewModal.vue (a grid of UCards, each a cross-table VueDraggable group
+     like TableCard.vue/TableSeatItem.vue, with people as AssociateTag), but not its weighted
+     drag-and-drop optimizer (no scoring/standings to optimize against yet for this format,
+     phase 3 of the plan): free cross-table dragging plus a check that every table still has
+     exactly 2 players (or, with an odd count, one lone player: the bye). -->
 <script lang="ts" setup>
 import { VueDraggable } from 'vue-draggable-plus'
 import { randomShuffleSeed, seededShuffle } from '#shared/utils/seededShuffle'
@@ -29,7 +22,8 @@ const {
   players: TablePlayer[]
   loading?: boolean
   currentRound?: number
-  // Tables approved for this round before a turn-back deleted it: reopened as-is (with round 1's seed).
+  // Tables approved for this round before a turn-back deleted it: reopened as-is (with round 1's
+  // seed).
   confirmedSeating?: ConfirmedSeating | null
 }>()
 
@@ -52,13 +46,11 @@ function buildTables(playerList: TablePlayer[]): TablePlayer[][] {
 // The seed of the current random seating — shown so the same tables can be rebuilt later.
 const shuffleSeed = ref<number | null>(null)
 
-// Builds the tables straight from the given order by default — for round 2+
-// that's already the correct standings-based pairing (1st vs 2nd, 3rd vs
-// 4th, ...) computed by swissPairing.ts's own pairSwissRound, which an
-// unconditional shuffle here used to silently discard every time the modal
-// opened (bug, user report 2026-09-24: pairings looked random even after
-// round 1). Random seating is still one click away via the "Shuffle" button
-// below, e.g. for round 1's own registration-order starting point.
+// Builds the tables from the given order by default: for round 2+ that is already the
+// standings-based pairing (1st vs 2nd, 3rd vs 4th, ...) from swissPairing.ts's pairSwissRound,
+// which an unconditional shuffle silently discarded every time the modal opened (pairings looked
+// random even after round 1). Random seating is one click away via the "Shuffle" button, e.g. for
+// round 1's registration-order starting point
 function resetTables() {
   shuffleSeed.value = null
   tables.value = buildTables(players)
@@ -83,7 +75,7 @@ function restoreSeating(seating: ConfirmedSeating) {
 }
 
 // Approved tables first (after a turn-back), else round 1 opens on a random seeded shuffle like
-// Commander (user request, 2026-10-02) and round 2+ on the standings-based pairing.
+// Commander and round 2+ on the standings-based pairing
 function initTables() {
   const playerIds = players.map(player => player.value)
   if (confirmedSeating && seatingMatchesPlayers(confirmedSeating, playerIds)) {
@@ -95,11 +87,10 @@ function initTables() {
   }
 }
 
-// Watches length, not the array reference itself — same as
-// PodsManager.vue's own shufflePods watcher. The parent's players prop is a
-// fresh computed array on every re-render (e.g. a query refetch after a
-// failed advance), so watching the reference would silently rebuild the
-// organizer's already-arranged tables underneath them.
+// Watches length, not the array reference (like PodsManager.vue's shufflePods watcher): the
+// parent's players prop is a fresh computed array on every re-render (e.g. a refetch after a failed
+// advance), so watching the reference would silently rebuild the organizer's already-arranged
+// tables
 watch(() => players.length, initTables, { immediate: true })
 watch(open, (isOpen) => {
   if (isOpen) initTables()
@@ -107,11 +98,9 @@ watch(open, (isOpen) => {
 
 const pairingSplit = computed(() => calculatePairing(players.length))
 const canPlay = computed(() => pairingSplit.value.canPlay)
-// Cross-table dragging (unlike the old single flat list) can leave a table
-// with the wrong seat count — every table must land back on exactly 2
-// before confirming (except the single bye of an odd count), same "every
-// table valid" gate as Commander's own TablePreviewModal.vue
-// (isValid/previewError), reusing its error copy.
+// Cross-table dragging can leave a table with the wrong seat count: every table must land back on
+// exactly 2 before confirming (except the single bye of an odd count), the same "every table valid"
+// gate as Commander's TablePreviewModal.vue (isValid/previewError), reusing its error copy
 const byeTableCount = computed(() => tables.value.filter(table => table.length === 1).length)
 const isValid = computed(() =>
   tables.value.length > 0

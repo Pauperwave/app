@@ -1,13 +1,8 @@
 <!-- app\components\wanted-cards\list\DenseCard.vue -->
-<!--
-  Single tile for DenseView.vue's dense grid — same selection/context-menu/
-  shift-click convention as GridCard.vue, just a much smaller UCard (image +
-  player (when ungrouped) + prices — card name/meta badges/notes/age
-  dropped 2026-08-29 per user feedback: too cramped at this tile size, the
-  art alone identifies the card densely enough) so many more fit per screen
-  than GridCard.vue's full tiles (user request, 2026-08-29: "usa multiple
-  UCard, sempre una griglia").
--->
+<!-- Single tile for DenseView.vue's dense grid: the same selection/context-menu/shift-click
+     convention as GridCard.vue, in a much smaller UCard (image + player (when ungrouped) +
+     prices; the card name/meta badges/notes/age are dropped: too cramped at this size, the art
+     identifies the card), so many more fit per screen than GridCard.vue's full tiles. -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { WantedCard } from '~/types'
@@ -50,10 +45,8 @@ function onCardClick(event: MouseEvent) {
         dense
       />
 
-      <!-- Card name dropped 2026-08-29 (user feedback) — the art alone
-           identifies it densely enough. Prices re-added just below the
-           player name the same day, once the tile grew from 140px to 190px
-           and had room again ("metti i prezzi sotto al nome"). -->
+      <!-- Card name dropped: the art alone identifies it densely enough. Prices sit just below
+           the player name, once the tile grew from 140px to 190px and had room -->
       <template #footer>
         <AssociateTag
           v-if="!groupedByPlayer"

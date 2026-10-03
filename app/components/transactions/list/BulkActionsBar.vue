@@ -1,11 +1,8 @@
 <!-- app\components\transactions\list\BulkActionsBar.vue -->
-<!--
-  Shown only while at least one transaction is selected (useSelection.ts) —
-  same "dumb component, page owns the state" shape as
-  TournamentsListBulkActionsBar.vue/WantedCardsListBulkActionsBar.vue,
-  including the same markStatus-style dropdown pattern, applied here to
-  payment_type instead of a status field.
--->
+<!-- Shown only while at least one transaction is selected (useSelection.ts): the same "dumb
+     component, page owns the state" shape as
+     TournamentsListBulkActionsBar.vue/WantedCardsListBulkActionsBar.vue, with the
+     markStatus-style dropdown pattern applied to payment_type instead of a status field. -->
 <script setup lang="ts">
 import { PAYMENT_TYPES } from '#shared/types/transactions'
 import type { PaymentType } from '#shared/types/transactions'

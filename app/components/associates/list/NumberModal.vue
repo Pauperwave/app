@@ -1,10 +1,9 @@
 <!-- app\components\associates\list\NumberModal.vue -->
-<!-- Own modal, opened from the row context menu — split out of EditModal.vue
-     (user request, 2026-08-27) since pauperwave_associate_number isn't part
-     of the shared application-form schema (a new applicant never sets it,
-     see approve.post.ts's auto-assignment) and needs its own real-time
-     duplicate check against every other associate's number, which the
-     shared form has no equivalent of. -->
+<!-- Own modal, opened from the row context menu and split from EditModal.vue:
+     pauperwave_associate_number isn't part of the shared application-form schema (a new
+     applicant never sets it, see approve.post.ts's auto-assignment) and needs its own real-time
+     duplicate check against every other associate's number, which the shared form has no
+     equivalent of -->
 <script setup lang="ts">
 import type { Associate } from '~/types'
 

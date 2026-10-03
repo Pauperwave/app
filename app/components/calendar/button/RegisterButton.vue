@@ -1,17 +1,12 @@
 <!-- app\components\calendar\button\RegisterButton.vue -->
-<!--
-  "Iscriviti"/"Disiscriviti" for /calendario's and /calendar's cards and
-  detail views. Shared between an anonymous audience (/calendario) and a
-  logged-in one (/calendar dashboard) — same component tree either way
-  (PublicCalendarPage.vue). Without a `tournament` prop (Event cards,
-  EventDetailContent.vue — no real event-level registration exists) this
-  stays the original placeholder toast. With one:
-  - no session -> click sends to /login (user request 2026-08-14/2026-09-02:
-    stay visible on the public page rather than hide, since an anonymous
-    visitor should be able to discover that logging in unlocks it)
-  - session -> toggles self-register/self-unregister via
-    server/api/tournament-registrations/self-*.post.ts
--->
+<!-- "Iscriviti"/"Disiscriviti" for /calendario's and /calendar's cards and detail views, shared
+     by an anonymous audience (/calendario) and a logged-in one (/calendar dashboard): the same
+     component tree either way (PublicCalendarPage.vue). Without a `tournament` prop (Event
+     cards, EventDetailContent.vue: no real event-level registration exists) it stays the
+     placeholder toast. With one: - no session -> click sends to /login (it stays visible on the
+     public page so an anonymous visitor can discover that logging in unlocks it) - session ->
+     toggles self-register/self-unregister via
+     server/api/tournament-registrations/self-*.post.ts -->
 <script setup lang="ts">
 import type { Tournament } from '~/types'
 

@@ -1,10 +1,7 @@
 <!-- app\components\ui\PaymentTypeBadge.vue -->
-<!--
-  Extracted 2026-08-19 out of useTransactionsTableColumns.ts's payment_type
-  cell, duplicated verbatim in associate/[slug].vue's embedded transactions
-  table the moment it was written — same PAYMENT_TYPE_BADGE_CONFIG lookup,
-  same h(UBadge, ...) call, in two places.
--->
+<!-- Extracted from useTransactionsTableColumns.ts's payment_type cell, which
+     associate/[slug].vue's embedded transactions table duplicated: the same
+     PAYMENT_TYPE_BADGE_CONFIG lookup and h(UBadge, ...) call. -->
 <script setup lang="ts">
 import type { PaymentType } from '#shared/types/transactions'
 

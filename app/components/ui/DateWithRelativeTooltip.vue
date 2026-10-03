@@ -1,11 +1,8 @@
 <!-- app\components\ui\DateWithRelativeTooltip.vue -->
-<!--
-  Shared "absolute date, relative time on hover" pattern — same
-  formatDistanceToNow/it locale already used by DataFreshnessIndicator.vue
-  and wantedCardAge.ts, just packaged for direct use in a table cell.
-  Renders nothing (not even a dash) when isoString is null/invalid, same as
-  the formatDateTime helpers this replaces.
--->
+<!-- Shared "absolute date, relative time on hover" pattern, using the formatDistanceToNow/it
+     locale of DataFreshnessIndicator.vue and wantedCardAge.ts, packaged for a table cell.
+     Renders nothing (not even a dash) when isoString is null/invalid, like the formatDateTime
+     helpers it replaces. -->
 <script setup lang="ts">
 import { format, formatDistanceToNow, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'

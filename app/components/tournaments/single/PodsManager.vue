@@ -1,20 +1,12 @@
 <!-- app\components\tournaments\single\PodsManager.vue -->
-<!--
-  Draft-only pod-formation modal (user request, 2026-08-24), opened by
-  tournaments/[tournamentId]/index.vue's "Avvia torneo" — only when the
-  tournament's format is Draft. Deliberately just a modal, no inline
-  trigger of its own (user request, 2026-09-18: table formation has no
-  dedicated stepper step, so there's nowhere in the page body to host an
-  inline "Formazione tavoli" button/summary either — same shape as
-  TablePreviewModal.vue/SwissTablePreviewModal.vue). Pod sizing comes from
-  useDraftPods.ts (ideal 8, min 6), already built/tested. Editing happens in
-  a modal with drag-and-drop chips.
-
-  Commander's own pod-formation step (2026-09-15) uses the ported
-  MagicTheGathering/league flow instead (TablePreviewModal.vue and friends,
-  under components/tournaments/single/pairing/) — this component stays
-  Draft-only, a preview-only toy with no persistence, unaffected by that.
--->
+<!-- Draft-only pod-formation modal, opened by tournaments/[tournamentId]/index.vue's "Avvia
+     torneo" when the format is Draft. Deliberately just a modal with no inline trigger (table
+     formation has no dedicated stepper step, so there is nowhere in the page body to host a
+     "Formazione tavoli" button/summary), like TablePreviewModal.vue/
+     SwissTablePreviewModal.vue. Pod sizing comes from useDraftPods.ts (ideal 8, min 6); editing
+     is drag-and-drop chips.  Commander's pod-formation step uses the ported league flow instead
+     (TablePreviewModal.vue and friends, under components/tournaments/single/pairing/); this
+     component stays Draft-only, a preview-only toy with no persistence. -->
 <script lang="ts" setup>
 import { VueDraggable } from 'vue-draggable-plus'
 import { randomShuffleSeed, seededShuffle } from '#shared/utils/seededShuffle'
@@ -25,12 +17,10 @@ const { players } = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  // Fired when the organizer confirms the pod arrangement — Draft's own
-  // pods still aren't persisted anywhere (out of scope, see the top-of-file
-  // comment), this is only a signal for the parent to actually start the
-  // tournament (user request, 2026-09-17: "Avvia torneo" should skip
-  // straight to this preview for every format that has a pods step, not
-  // just Commander, matching league's own "preview then start" UX).
+  // Fired when the organizer confirms the pod arrangement. Draft's pods still aren't persisted (see
+  // the top-of-file comment): this only signals the parent to start the tournament ("Avvia torneo"
+  // goes straight to this preview for every format with a pods step, like league's "preview then
+  // start")
   confirm: []
 }>()
 
@@ -40,10 +30,9 @@ const { calculatePods, buildPreviewPods } = useDraftPods()
 const open = defineModel<boolean>('open', { default: false })
 const podAssignments = ref<AcceptancePickerItem[][]>([])
 
-// Re-rolls the whole pod split from scratch — no memory of prior manual
-// drags, same "shuffle fully re-randomizes" behavior as the legacy app's own
-// "Mescola Pod" (functional spec §3.2).
-// The seed of the current random split — shown so the same pods can be rebuilt later.
+// Re-rolls the whole pod split from scratch with no memory of prior manual drags, like the legacy
+// app's "Mescola Pod" (functional spec §3.2). The seed of the current random split is shown so the
+// same pods can be rebuilt later
 const shuffleSeed = ref<number | null>(null)
 
 function shufflePodsWithSeed(seed: number) {

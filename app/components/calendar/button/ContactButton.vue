@@ -1,9 +1,6 @@
 <!-- app\components\calendar\button\ContactButton.vue -->
-<!--
-  Tappable phone number for the calendar's contact person, used in
-  CalendarFooter.vue (/calendario). First name only ("Nicola", not the
-  surname), per the user's request 2026-08-14.
--->
+<!-- Tappable phone number for the calendar's contact person, used in CalendarFooter.vue
+     (/calendario). First name only, not the surname. -->
 <script lang="ts" setup></script>
 
 <template>

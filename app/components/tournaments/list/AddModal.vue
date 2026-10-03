@@ -1,10 +1,6 @@
 <!-- app\components\tournaments\list\AddModal.vue -->
 <script setup lang="ts">
-// fallow-ignore-file code-duplication -- the payload literal's first 5
-// fields mirror EditModal.vue's, but leagueUuid/eventUuid/endsAt diverge
-// (null here vs. the existing tournament's values there) — extracting a
-// helper would need an overrides param for exactly the fields that differ,
-// not worth it for 9 shared lines.
+// fallow-ignore-file code-duplication -- payload literal mirrors EditModal.vue's, nulls differ
 import { CalendarDate } from '@internationalized/date'
 import type * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
@@ -14,18 +10,14 @@ import type { Tournament } from '~/types'
 
 const open = defineModel<boolean>({ default: false })
 
-// All four seed the form when opened from somewhere other than this
-// component's own trigger — EventsSingleDaySchedule.vue clicking an empty
-// time slot, in particular (user request, 2026-08-22, "click and create a
-// tournament in that day" like Google Calendar); initialLeagueUuid is the
-// same idea for leagues/[leagueId]/index.vue's own "Nuovo torneo" button
-// (user request, 2026-08-29). hideTrigger drops the bare AddButton in that
-// case, since the calling page is the trigger instead — same v-model:open
-// control either way. sourceTournament is the "Copia torneo" context-menu
-// action (user request, 2026-08-29) — copies every field except status
-// (reset to draft, a copy isn't already completed/cancelled) and startDate
-// (defaults to today, like a brand new tournament — the source's original
-// date is almost never what a duplicate should land on).
+// All four seed the form when opened from somewhere other than this component's own trigger:
+// EventsSingleDaySchedule.vue clicking an empty time slot ("click and create a tournament in that
+// day", like Google Calendar); initialLeagueUuid is the same for leagues/[leagueId]/index.vue's
+// "Nuovo torneo" button. hideTrigger drops the bare AddButton there, since the calling page is the
+// trigger (same v-model:open control either way). sourceTournament is the "Copia torneo"
+// context-menu action: copies every field except status (reset to draft: a copy isn't already
+// completed/cancelled) and startDate (defaults to today: the source's date is rarely right for a
+// duplicate)
 const {
   initialDate, initialTime, initialEventUuid, initialLeagueUuid, sourceTournament,
   hideTrigger = false
@@ -83,10 +75,8 @@ const state = reactive<TournamentFormState>(createInitialState())
 
 const { startDate, formattedStartDate, reset: resetStartDate } = useStartDateField(state)
 
-// Existing tournament dates as a collision/density hint on the scheduling
-// field's own calendar (issue #37 follow-up, 2026-08-23) — same query
-// tournaments/index.vue already reads, Pinia Colada caches it so this is
-// never a second network request.
+// Existing tournament dates as a collision/density hint on the scheduling field's calendar: the
+// same query tournaments/index.vue reads, cached by Pinia Colada (never a second request)
 const { data: existingTournamentsData } = useTournamentsQuery()
 const highlightedDates = computed(() => (existingTournamentsData.value ?? []).map(existing => ({
   date: new Date(existing.startDate),
@@ -101,12 +91,10 @@ const image = ref<string | undefined>(undefined)
 const imageCardName = ref<string | undefined>(undefined)
 const imageCardArtist = ref<string | undefined>(undefined)
 
-// Re-applies initialDate/initialTime/initialEventUuid/sourceTournament every
-// time the modal opens, not just on mount — EventsSingleDaySchedule.vue
-// reuses one modal instance across many slot clicks (each with a different
-// time), and "Copia torneo" likewise reuses one instance across different
-// source tournaments, so a one-shot default in createInitialState() alone
-// wouldn't update on a second click while the instance stays alive.
+// Re-applies initialDate/initialTime/initialEventUuid/sourceTournament every time the modal opens,
+// not just on mount: EventsSingleDaySchedule.vue reuses one instance across many slot clicks (each
+// with a different time), and "Copia torneo" across different source tournaments, so a one-shot
+// default in createInitialState() wouldn't update on a second click while the instance stays alive
 watch(open, (isOpen) => {
   if (!isOpen) return
   if (sourceTournament) {
@@ -130,12 +118,11 @@ const {
   leagueOptions, eventOptions
 } = useTournamentFormFields()
 
-// Nearly every tournament created here is organized by Pauperwave at Smart
-// Lab — defaulted once each list resolves (async, off useOrganizationsQuery/
-// useLocationsQuery) rather than hardcoding a uuid, and only if the field is
-// still empty so it never overrides a manual choice made before the lists
-// finished loading. `startsWith` for the location: its full display name is
-// "Smart Lab - Centro Giovani Rovereto" (see the locations seed migration).
+// Nearly every tournament created here is organized by Pauperwave at Smart Lab: defaulted once each
+// list resolves (async, via useOrganizationsQuery/useLocationsQuery) rather than hardcoding a uuid,
+// and only if the field is still empty so a manual choice made before the lists loaded is never
+// overridden. `startsWith` for the location: its display name is "Smart Lab - Centro Giovani
+// Rovereto" (see the locations seed migration)
 watch(organizerOptions, (options) => {
   if (state.organizerUuid) return
   state.organizerUuid = options.find(option => option.label === 'Pauperwave')?.value
@@ -152,14 +139,12 @@ watch(formatOptions, (options) => {
   state.formatUuid = options.find(option => option.label === 'Commander')?.value ?? state.formatUuid
 }, { immediate: true })
 
-// Live-recalculates on every format change (unlike the organizer/location/
-// format watches above, which only fill an empty field once) — roundCount
-// always has a value, so there's no "empty" state to gate on, and the whole
-// point is that switching format updates the suggested round count
-// immediately (defaultRoundCountForFormat). Skipped while copying a source
-// tournament
-// (createInitialState already seeded roundCount from it, and the format
-// watch above never overrides sourceTournament.formatUuid either).
+// Live-recalculates on every format change (unlike the organizer/location/format watches above,
+// which fill an empty field once): roundCount always has a value, so there is no "empty" state to
+// gate on, and switching format should update the suggested round count at once
+// (defaultRoundCountForFormat). Skipped while copying a source tournament (createInitialState
+// already seeded roundCount from it, and the format watch never overrides
+// sourceTournament.formatUuid)
 const { data: settings } = useSettingsQuery()
 
 // Round count and duration a format starts with (both editable in /settings).
@@ -182,12 +167,10 @@ watch(settings, (loaded, previous) => {
 
 type Schema = v.InferOutput<typeof schema>
 
-// UModal only hides/shows, it does not unmount the form, so the state has to
-// be cleared explicitly — called on successful submit and on explicit
-// "Annulla", but deliberately NOT on the X button or an outside click, which
-// should preserve whatever the user typed (user decision 2026-08-20). Reapplies
-// the same organizer/location/format defaults as the watches above, since
-// those only fire once their respective options list changes, not on reset.
+// UModal only hides/shows and doesn't unmount the form, so the state is cleared explicitly: on
+// successful submit and "Annulla", deliberately NOT on the X button or an outside click, which
+// preserve what the user typed. Reapplies the organizer/location/format defaults of the watches
+// above, since those fire only when their options list changes, not on reset
 function resetForm() {
   Object.assign(state, createInitialState())
   resetStartDate()

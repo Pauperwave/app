@@ -1,11 +1,8 @@
 <!-- app\components\locations\list\FormFields.vue -->
-<!--
-  Extracted out of AddModal.vue/EditModal.vue (fallow:dupes flagged this
-  two-column section grid as an identical 21-line block) — `state` is the
-  SAME reactive object the parent binds to its own <UForm :state>, mutated
-  directly by the field components below, same convention as
-  tournaments/fields/SchedulingFields.vue.
--->
+<!-- Extracted from AddModal.vue/EditModal.vue (fallow:dupes flagged the two-column section grid
+     as an identical 21-line block): `state` is the SAME reactive object the parent binds to its
+     <UForm :state>, mutated directly by the field components below (like
+     tournaments/fields/SchedulingFields.vue). -->
 <!-- eslint-disable vue/no-mutating-props -- see the comment above -->
 <script setup lang="ts">
 import type { LocationFormState } from '~/composables/locations/useLocationFormFields'
@@ -20,9 +17,8 @@ const openingHours = defineModel<OpeningHours>('openingHours', { required: true 
 <template>
   <!-- eslint-disable vue/no-mutating-props -- see the top-of-file comment -->
   <div class="grid grid-cols-2 gap-x-8 gap-y-6">
-    <!-- Left column: general info + position (the map preview makes
-         this column naturally taller, so it stays paired with just
-         general info rather than also carrying contacts). -->
+    <!-- Left column: general info + position (the map preview makes it naturally taller, so it
+         stays paired with just general info rather than also carrying contacts) -->
     <div class="space-y-6">
       <LocationsListFormSection :title="$t('location.addModal.sections.generalInfo')">
         <LocationsFieldsGeneralInfoFields v-model:image="image" :state="state" />

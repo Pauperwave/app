@@ -1,16 +1,11 @@
 <!-- app\components\settings\AssignRoleModal.vue -->
-<!--
-  "Invita persone" repurposed (2026-08-25 user request) — the template's own
-  email-invite framing didn't fit this app: auth is self-service OTP, staff
-  never send account invites. This searches existing associates and assigns
-  a role directly, same assign_role call as MembersList.vue's own role
-  <USelect> and usePlayersRowActions.ts's "Promuovi a" — all three stay in
-  sync since they share useMembersMutations.ts/useMembersQuery.ts.
-
-  Only account-linked associates (players.user_id not null) are searchable —
-  assign_role structurally can't run without one, same constraint as the
-  "Promuovi a" submenu's own disabled-with-explanation state.
--->
+<!-- "Invita persone" repurposed: the template's email-invite framing didn't fit this app (auth
+     is self-service OTP, staff never send account invites). This searches existing associates
+     and assigns a role directly, with the same assign_role call as MembersList.vue's role
+     <USelect> and usePlayersRowActions.ts's "Promuovi a": all three stay in sync through
+     useMembersMutations.ts/useMembersQuery.ts.  Only account-linked associates (players.user_id
+     not null) are searchable: assign_role can't run without one, the same constraint as the
+     "Promuovi a" submenu's disabled-with-explanation state. -->
 <script setup lang="ts">
 import type { MemberRole } from '#shared/types/settings'
 
@@ -44,12 +39,10 @@ const currentMember = computed(() => selectedAssociateUuid.value
   ? memberByAssociateUuid.value.get(selectedAssociateUuid.value)
   : undefined)
 
-// Assigning 'player' isn't offered here — this modal is specifically for
-// granting a role, resetting one back to 'player' already has its place on
-// the main list's own row select. super_admin filtered out for non-super-
-// admin callers, same as MembersList.vue/usePlayersRowActions.ts. The
-// selected associate's current role is disabled — picking it again would be
-// a no-op — same rule usePlayersRowActions.ts's "Promuovi a" submenu applies.
+// Assigning 'player' isn't offered: this modal grants a role, and resetting to 'player' lives on
+// the main list's row select. super_admin is filtered out for non-super-admin callers (like
+// MembersList.vue/usePlayersRowActions.ts), and the selected associate's current role is disabled
+// (picking it again is a no-op), the same rule as usePlayersRowActions.ts's "Promuovi a" submenu
 const roleOptions = computed(() => (['organizer', 'admin', 'super_admin'] as const)
   .filter(role => role !== 'super_admin' || isSuperAdmin.value)
   .map(role => ({
@@ -62,11 +55,9 @@ const roleOptions = computed(() => (['organizer', 'admin', 'super_admin'] as con
 type AssignableRole = Exclude<MemberRole, 'player'>
 const selectedRole = ref<AssignableRole | undefined>(undefined)
 
-// Reactive to the associate picker (user request, 2026-08-25) — jumping to
-// a different associate now resets the role field to reflect *their*
-// current role (or clears it if they're a plain player, since 'player'
-// isn't a selectable target here) instead of carrying over whatever was
-// picked for the previous selection.
+// Reactive to the associate picker: jumping to another associate resets the role field to *their*
+// current role (or clears it for a plain player, since 'player' isn't selectable here) instead of
+// carrying over the previous pick
 watch(selectedAssociateUuid, () => {
   const currentRole = currentMember.value?.role
   selectedRole.value = currentRole && currentRole !== 'player' ? currentRole : undefined

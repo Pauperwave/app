@@ -1,16 +1,11 @@
 <!-- app\components\tournaments\single\pairing\TableScoreGridModal.vue -->
-<!--
-  Drag-and-drop dense-rank placement entry for one pod — ported from
-  MagicTheGathering/league's TableScoreGrid.vue (user request, 2026-09-17:
-  copy the grid mechanic as-is, not a row-based reinterpretation). A
-  size×size grid: each COLUMN is a player's fixed seat, the ROW they
-  currently occupy is their rank (row 0 = 1st). Dragging only ever moves a
-  token within its own column — dropping on an occupied cell swaps the two
-  occupants (see useCommanderRankingGrid.ts's handleDrop). Native HTML5
-  drag events, not VueDraggable/Sortable.js — Sortable has no built-in
-  "confined to one column" concept, which is exactly why league itself
-  uses native drag here instead of its own usual drag-and-drop library.
--->
+<!-- Drag-and-drop dense-rank placement entry for one pod, ported from league's
+     TableScoreGrid.vue (the grid mechanic as-is, not a row-based reinterpretation). A size×size
+     grid: each COLUMN is a player's fixed seat and the ROW they occupy is their rank (row 0 =
+     1st). Dragging only moves a token within its own column; dropping on an occupied cell swaps
+     the two occupants (see useCommanderRankingGrid.ts's handleDrop). Native HTML5 drag events,
+     not VueDraggable/Sortable.js (no "confined to one column" concept), which is why league
+     itself uses native drag here. -->
 <script setup lang="ts">
 import type { TablePlayer } from '~/types'
 
@@ -46,24 +41,21 @@ function handleConfirm() {
   emit('confirm', getRanking())
 }
 
-// Same as league's own handleDragOver — .prevent alone (the template used)
-// already allows the drop, but setting dropEffect explicitly gives the
-// native drag cursor the correct "move" icon instead of the browser default.
+// Same as league's handleDragOver: .prevent alone (the template's) allows the drop, but setting
+// dropEffect explicitly gives the native drag cursor the "move" icon instead of the browser default
 function handleDragOver(event: DragEvent) {
   if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
 }
 
-// Same cell-highlight rule as league's own getCellClass: an empty cell
-// lights up only while a token from its own column is mid-drag, so the
-// "you can only drop back into your own lane" constraint is visible
-// before you even try.
+// Same cell-highlight rule as league's getCellClass: an empty cell lights up only while a token
+// from its own column is mid-drag, so the "drop back into your own lane" constraint is visible
+// before trying
 function cellClass(row: number, col: number): string {
   const base = 'h-12 rounded-md border transition-all flex items-center justify-center'
   if (grid.value[row]?.[col]) {
-    // Hover ring/shadow hints the cell is draggable, same affordance
-    // league's own getCellClass gives its occupied cells (hardcoded amber
-    // there; the semantic warning token here, matching this file's own
-    // empty-cell drag-target highlight below).
+    // Hover ring/shadow hints the cell is draggable, like league's getCellClass for occupied cells
+    // (amber there; the semantic warning token here, matching this file's empty-cell drag-target
+    // highlight)
     return `${base} border-default bg-default hover:ring-2 hover:ring-warning hover:shadow-md`
   }
   if (isDragging.value && draggedFromCol.value === col) {

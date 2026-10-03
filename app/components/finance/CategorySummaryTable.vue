@@ -9,11 +9,9 @@ import PaymentTypeBadge from '~/components/ui/PaymentTypeBadge.vue'
 const { rows, loading, pending = false } = defineProps<{
   rows: FinanceCategoryRow[]
   loading: boolean
-  // Genuine first load (no cached rows yet at all) vs. a background refetch
-  // keeping stale rows on screen — same isPending/isLoading split as
-  // tournaments/locations' own list pages (user request, 2026-08-26).
-  // Optional/defaulted since finance/index.vue is this component's only
-  // caller today and always passes it, but nothing structurally requires it.
+  // Genuine first load (no cached rows at all) vs a background refetch keeping stale rows on
+  // screen: the isPending/isLoading split of tournaments/locations' list pages. Optional/defaulted
+  // since finance/index.vue is the only caller and always passes it
   pending?: boolean
 }>()
 
@@ -21,10 +19,9 @@ const { t } = useI18n()
 
 const amountFormatter = AMOUNT_FORMATTER
 
-// Sortable like every other summary table on this page (user request,
-// 2026-08-26) — the fixed associationFee/byFormat/eventFee/tokenPurchase/
-// donation order from useFinanceSummary.ts's byCategory is still the
-// default, just no longer the only order.
+// Sortable like every other summary table here: the fixed
+// associationFee/byFormat/eventFee/tokenPurchase/donation order from useFinanceSummary.ts's
+// byCategory is the default, not the only order
 const sorting = ref([{ id: 'category', desc: false }])
 
 // Grand total per numeric column, own `footer` on the leftmost column instead
@@ -32,7 +29,7 @@ const sorting = ref([{ id: 'category', desc: false }])
 // quantity, same reasoning as MethodCostTable.vue's feeRate column.
 const totalCount = computed(() => columnTotal(rows, 'count'))
 const totalPaypal = computed(() => columnTotal(rows, 'paypalTotal'))
-// fallow-ignore-next-line code-duplication -- totalCash/Pos/Amount + columns array mirrors FormatSummaryTable.vue's own
+// fallow-ignore-next-line code-duplication -- mirrors FormatSummaryTable.vue's totals/columns
 const totalCash = computed(() => columnTotal(rows, 'cashTotal'))
 const totalPos = computed(() => columnTotal(rows, 'posTotal'))
 const totalAmount = computed(() => columnTotal(rows, 'total'))

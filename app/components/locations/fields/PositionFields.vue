@@ -1,18 +1,14 @@
 <!-- app\components\locations\fields\PositionFields.vue -->
-<!--
-  Shared by AddModal.vue/EditModal.vue — `state` is the SAME reactive object
-  the parent binds to its own <UForm :state>, mutated directly (same
-  rationale as AssociatesFieldsPersonalInfoFields.vue).
--->
+<!-- Shared by AddModal.vue/EditModal.vue: `state` is the SAME reactive object the parent binds
+     to its <UForm :state>, mutated directly (like AssociatesFieldsPersonalInfoFields.vue). -->
 <!-- eslint-disable vue/no-mutating-props -- see the comment above -->
 <script setup lang="ts">
 import type { LocationFormState } from '~/composables/locations/useLocationFormFields'
 
 const { state } = defineProps<{ state: LocationFormState }>()
 
-// "Via, CAP Città Provincia" — same order as the address line shown on the
-// card/table (2026-08-16 user request) — fed to MapPreview.vue, which
-// geocodes it via Leaflet/OpenStreetMap (no API key).
+// "Via, CAP Città Provincia": the same order as the address line shown on the card/table, fed to
+// MapPreview.vue, which geocodes it via Leaflet/OpenStreetMap (no API key)
 const addressLine = computed(() => {
   const parts = [state.address, state.postalCode, state.city, state.province, state.country]
     .filter(Boolean)
@@ -31,8 +27,7 @@ const addressLine = computed(() => {
     />
   </UFormField>
 
-  <!-- Via / CAP / Città / Provincia — same order as the composed address
-       line elsewhere (2026-08-16 user request). -->
+  <!-- Via / CAP / Città / Provincia: the same order as the composed address line elsewhere -->
   <div class="grid grid-cols-2 gap-4">
     <!-- eslint-disable-next-line -->
     <UFormField :label="$t('location.addModal.fields.postalCode')" name="postalCode" required>

@@ -1,13 +1,9 @@
 <!-- app\components\tournaments\single\pairing\TournamentVotesModal.vue -->
-<!--
-  "Miglior mazzo" / "Miglior giocata" voting — ported bit-by-bit from
-  MagicTheGathering/league's TournamentVotesModal.vue + DeckPlayVotesModal.vue
-  + VoteGrid.vue + CommanderVoteCard.vue (user request 2026-09-16: "copia
-  tutta la logica bit-by-bit dell'inserimento voti"), replacing this app's
-  earlier single-file plain-button-grid v1. Swaps league's numeric
-  player/store model for this app's uuid-keyed TablePlayer + explicit
-  existingVotes/commanderNameFor props (no Pinia stores in this app).
--->
+<!-- "Miglior mazzo" / "Miglior giocata" voting, ported from league's TournamentVotesModal.vue +
+     DeckPlayVotesModal.vue + VoteGrid.vue + CommanderVoteCard.vue, replacing this app's earlier
+     single-file plain-button-grid v1. Swaps league's numeric player/store model for this app's
+     uuid-keyed TablePlayer + explicit existingVotes/commanderNameFor props (no Pinia stores in
+     this app). -->
 <script setup lang="ts">
 import type { TablePlayer } from '~/types'
 import type { RulesetPointValues } from '#shared/utils/tournaments/commanderScoring'
@@ -44,13 +40,11 @@ function handleSubmit(brew: string | null, play: string | null) {
   open.value = false
 }
 
-// UModal's own opening autofocus (Reka UI's DialogContent, usually landing
-// on the close button or the first link in #description) is preempted here
-// to jump straight into the dialog's own content element instead — a
-// deterministic, non-flaky focus target that doesn't eat the grid's first
-// tab stop. The close button is pulled out of the tab order below
-// (`:close="{ tabindex: -1 }"`, still clickable and Escape still works) so
-// the user's first Tab lands directly on the first vote card.
+// UModal's opening autofocus (Reka UI's DialogContent, usually the close button or the first link
+// in #description) is preempted to jump into the dialog's own content element: a deterministic
+// focus target that doesn't eat the grid's first tab stop. The close button is pulled out of the
+// tab order below (`:close="{ tabindex: -1 }"`, still clickable, Escape still works) so the first
+// Tab lands on the first vote card
 function onContentOpenAutoFocus(event: Event) {
   event.preventDefault()
   ;(event.target as HTMLElement | null)?.focus()
@@ -96,9 +90,8 @@ const closeButtonProps: Record<string, unknown> = { tabindex: -1 }
 
     <template #footer>
       <div class="flex gap-2 justify-end w-full">
-        <!-- DOM order (= tab order) is Confirm-then-Cancel — pinned back to
-             its usual on-screen spot (left) via CSS `order` so this only
-             changes tab order, not the visual layout. -->
+        <!-- DOM order (= tab order) is Confirm-then-Cancel, pinned back to its usual on-screen
+             spot (left) via CSS `order`, so this only changes tab order, not the visual layout -->
         <UButton
           class="order-2"
           :label="t('common.confirm')"

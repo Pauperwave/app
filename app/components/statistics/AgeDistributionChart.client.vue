@@ -19,14 +19,12 @@ function gaussianKernel(u: number): number {
   return Math.exp(-0.5 * u * u) / Math.sqrt(2 * Math.PI)
 }
 
-// Same array the bars themselves are built from, with a `density` field
-// merged in (Gaussian KDE, bandwidth via Silverman's rule of thumb) rather
-// than a separate array passed to VisArea/VisLine via their own `data` prop —
-// a per-component `data` override left the curve components mounted with an
-// empty <path> (confirmed via devtools: the density values were correct and
-// non-empty, but the path's `d` attribute never got populated). One shared
-// array read by every child, same pattern as AssociatesGrowthChart.client.vue's
-// VisLine+VisArea, sidesteps whatever that reactivity gap is entirely.
+// The same array the bars are built from, with a `density` field merged in (Gaussian KDE, bandwidth
+// via Silverman's rule of thumb), rather than a separate array passed to VisArea/VisLine via their
+// `data` prop: a per-component `data` override left the curve components mounted with an empty
+// <path> (the density values were correct but the path's `d` never got populated). One shared array
+// read by every child, like AssociatesGrowthChart.client.vue's VisLine+VisArea, sidesteps that
+// reactivity gap
 const chartData = computed<AgeChartPoint[]>(() => {
   const samples = ageDistribution.value.flatMap(point => Array(point.count).fill(point.age))
   const n = samples.length
@@ -56,10 +54,9 @@ const densityY = (d: AgeChartPoint) => d.density
 // TournamentsPerYearChart.client.vue's own xDomain.
 const xDomain = computed<[number, number]>(() => [-0.5, chartData.value.length - 0.5])
 
-// VisAxis's default "nice number for the width" tick heuristic left this
-// axis too sparse (one bar per age, but only 2-3 labels across the whole
-// chart) — a tick every 5 years reads naturally for ages and stays legible
-// regardless of how wide the age range turns out to be.
+// VisAxis's default "nice number for the width" tick heuristic left this axis too sparse (one bar
+// per age, 2-3 labels in all): a tick every 5 years reads naturally for ages and stays legible
+// whatever the age range
 const xTicks = (i: number) => chartData.value[i]?.age.toString() ?? ''
 const xTickValues = computed(() => chartData.value
   .reduce<number[]>((indices, point, i) => {
@@ -67,11 +64,9 @@ const xTickValues = computed(() => chartData.value
     return indices
   }, []))
 
-// e.g. "35 anni (1991): 14 associati" — birth year is approximate (age is
-// whole completed years, not an exact birthdate), but explicit enough to
-// place the bar in time without a separate lookup. Relative to selectedYear,
-// not "today" — age itself is now computed as of that year (see
-// useAssociatesStatistics.ts's agesAsOfSelectedYear).
+// e.g. "35 anni (1991): 14 associati": the birth year is approximate (age is whole completed years)
+// but explicit enough to place the bar in time. Relative to selectedYear, not "today" (age is
+// computed as of that year, see useAssociatesStatistics.ts's agesAsOfSelectedYear)
 const template = (d: AgeChartPoint) => t(
   'statistic.ageDistributionTooltip',
   { age: d.age, year: selectedYear - d.age, count: d.count },

@@ -1,17 +1,12 @@
 <!-- app\components\calendar\EventDetailContent.vue -->
-<!--
-  Extracted out of DetailSlideover.vue's `selection?.kind === 'event'` branch
-  (2026-08-16, fallow:health flagged the parent's whole <template> as
-  high-complexity) — NOT a shared component with TournamentDetailContent.vue:
-  the two branches diverge right after the shared hero markup (this one
-  shows a nested tournaments list, the other shows organizer/contact/fee/
-  prizes/description), so merging them was already rejected as
-  over-abstraction (see feedback_dedup_threshold_call_sites memory). This
-  split just moves each branch's own complexity out of the parent, it
-  doesn't deduplicate anything. The hero (image/gradient/title) itself lives
-  in EventDetailHero.vue, rendered in USlideover's #header slot instead —
-  this component is #body content only.
--->
+<!-- Extracted from DetailSlideover.vue's `selection?.kind === 'event'` branch (fallow:health
+     flagged the parent's whole <template> as high-complexity): NOT a shared component with
+     TournamentDetailContent.vue, as the two branches diverge right after the shared hero markup
+     (this one shows a nested tournaments list, the other
+     organizer/contact/fee/prizes/description), so merging them would be over-abstraction. This
+     split only moves each branch's complexity out of the parent, it deduplicates nothing. The
+     hero (image/gradient/title) lives in EventDetailHero.vue, rendered in USlideover's #header
+     slot: this is #body content only. -->
 <script setup lang="ts">
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'

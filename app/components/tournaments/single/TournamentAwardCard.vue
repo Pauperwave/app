@@ -1,8 +1,6 @@
 <!-- app\components\tournaments\single\TournamentAwardCard.vue -->
-<!-- Ported bit-by-bit from MagicTheGathering/league (user request
-     2026-09-16). Fixed, hand-picked card art per award (not the winning
-     player's own commander) — flavor illustrations for the award itself,
-     so they don't change as standings do. -->
+<!-- Ported from league. Fixed, hand-picked card art per award (not the winning player's
+     commander): flavor illustrations for the award itself, so they don't change as standings do -->
 <script setup lang="ts">
 import type {
   TournamentAwardKind, TournamentAwardRankingEntry

@@ -1,19 +1,11 @@
 <!-- app\components\transactions\fields\PayerFields.vue -->
-<!--
-  Extracted out of AddModal.vue/EditModal.vue (2026-08-16) — the payer
-  picker (preset-associate card / associate-search tab / external-payer
-  tab), duplicated near-identically between the two but not byte-identical
-  (fallow:dupes didn't flag it as a clone: AddModal.vue has UClearButton
-  trailing slots and the membership-status alert, EditModal.vue has
-  neither). Both differences are preserved here as optional props/slots
-  rather than silently unified — `state` is the SAME reactive object the
-  parent binds to its own <UForm :state>, mutated directly (same rationale
-  as LocationsFields*.vue).
-
-  The uppercase-on-input tax-code transform (payerTaxCodeInput in both
-  modals previously) now lives here too, since it only ever wrapped
-  state.payer_tax_code — no reason for each modal to redeclare it.
--->
+<!-- Extracted from AddModal.vue/EditModal.vue: the payer picker (preset-associate card /
+     associate-search tab / external-payer tab), near-identical in both but not byte-identical
+     (AddModal.vue has UClearButton trailing slots and the membership-status alert,
+     EditModal.vue neither). Both differences are preserved as optional props/slots rather than
+     silently unified. `state` is the SAME reactive object the parent binds to its <UForm
+     :state>, mutated directly (like LocationsFields*.vue).  The uppercase-on-input tax-code
+     transform lives here too, since it only wraps state.payer_tax_code. -->
 <!-- eslint-disable vue/no-mutating-props -- see the comment above -->
 <script setup lang="ts">
 import type { Associate } from '~/types'

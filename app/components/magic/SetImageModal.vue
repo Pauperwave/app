@@ -1,17 +1,12 @@
 <!-- app\components\magic\SetImageModal.vue -->
-<!--
-  "Imposta immagine" modal — same MagicCardArtPicker + own confirm step
-  shape used by tournaments' and events' bulk actions bars and their
-  single-item Cover.vue quick actions (user request, 2026-09-02: shared
-  instead of duplicated per domain — originally lived under tournaments/,
-  moved here once events needed the exact same thing). Only owns the
-  picker UI and the picked-value state; the actual mutation (bulk vs.
-  single, and which domain's endpoint) stays with each caller — this only
-  emits what was picked. Doesn't auto-close on confirm either, so a caller
-  that awaits its own mutation can show `loading` and only close once it
-  actually succeeds. cardName/artist are always emitted even for domains
-  that have nowhere to store them (events) — the caller just ignores them.
--->
+<!-- "Imposta immagine" modal: the MagicCardArtPicker + own confirm step shared by tournaments'
+     and events' bulk actions bars and their single-item Cover.vue quick actions (moved here
+     from tournaments/ once events needed the same). It only owns the picker UI and the
+     picked-value state; the mutation (bulk vs single, and which domain's endpoint) stays with
+     each caller: it only emits what was picked. It doesn't auto-close on confirm, so a caller
+     awaiting its own mutation can show `loading` and close only on success. cardName/artist are
+     always emitted even for domains with nowhere to store them (events): the caller ignores
+     them. -->
 <script setup lang="ts">
 const { open, title, loading = false } = defineProps<{
   open: boolean

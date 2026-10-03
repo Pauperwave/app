@@ -1,11 +1,8 @@
 <!-- app\components\statistics\DecksFeaturingList.vue -->
-<!-- "Mazzi che lo usano" section — icon+heading, a badge per deck linking
-     to its owner, or an empty state. Shared by statistics/commanders/
-     [commanderSlug].vue and statistics/decks/[deckSlug].vue, which
-     independently duplicated this exact block (fallow:dupes, 2026-09-23).
-     `partnerName` is only ever set by the commanders page (a deck's other
-     commander) — the badge's partner-suffix span simply doesn't render
-     when it's absent. -->
+<!-- "Mazzi che lo usano" section: icon+heading, a badge per deck linking to its owner, or an
+     empty state. Shared by statistics/commanders/[commanderSlug].vue and
+     statistics/decks/[deckSlug].vue. `partnerName` is only set by the commanders page (a deck's
+     other commander): the badge's partner-suffix span doesn't render without it. -->
 <script setup lang="ts">
 interface Entry {
   deckUuid: string

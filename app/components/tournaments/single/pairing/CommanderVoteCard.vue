@@ -1,7 +1,5 @@
 <!-- app\components\tournaments\single\pairing\CommanderVoteCard.vue -->
-<!-- Ported bit-by-bit from MagicTheGathering/league (user request
-     2026-09-16), swapping the numeric playerId for this app's
-     players.uuid. -->
+<!-- Ported from league, swapping the numeric playerId for this app's players.uuid -->
 <script setup lang="ts">
 const {
   commanderName,
@@ -24,9 +22,15 @@ const {
 
 const emit = defineEmits<{
   click: []
-  /** Player has no commander recorded yet — the whole card acts as this link instead of a vote-select. */
+  /**
+   * Player has no commander recorded yet — the whole card acts as this link instead of a
+   * vote-select.
+   */
   assign: []
-  /** Arrow/Home/End pressed — parent owns the sibling list, so it resolves the target and calls focus(). */
+  /**
+   * Arrow/Home/End pressed — parent owns the sibling list, so it resolves the target and calls
+   * focus().
+   */
   navigate: [direction: 'next' | 'prev' | 'first' | 'last']
 }>()
 

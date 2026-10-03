@@ -1,14 +1,9 @@
 <!-- app\components\associates\list\FormFields.vue -->
-<!--
-  Extracted out of AddModal.vue/EditModal.vue (2026-08-19, user request — the
-  modal had grown to 7 full-width stacked sections, very tall) — same
-  two-column section layout as locations/list/FormFields.vue's own precedent.
-  Left column: associate type, personal info, birth info. Right column:
-  fiscal info, residency, consents (user request, 2026-08-19, moved fiscal
-  info here from the left column). `state` is the SAME reactive
-  object the parent binds to its own <UForm :state>, mutated directly by the
-  field components below, same convention as LocationsListFormFields.vue.
--->
+<!-- Extracted from AddModal.vue/EditModal.vue (the modal had grown to 7 full-width stacked
+     sections, very tall): the same two-column section layout as locations/list/FormFields.vue.
+     Left column: associate type, personal info, birth info. Right column: fiscal info,
+     residency, consents. `state` is the SAME reactive object the parent binds to its <UForm
+     :state>, mutated directly by the field components below (like LocationsListFormFields.vue). -->
 <!-- eslint-disable vue/no-mutating-props -- see the comment above -->
 <script setup lang="ts">
 const { state, disableConsents = false } = defineProps<{

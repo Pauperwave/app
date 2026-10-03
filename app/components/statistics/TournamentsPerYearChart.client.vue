@@ -14,11 +14,10 @@ const { chartColor } = useChartPalette()
 // useTournamentsStatistics.ts) — reused here as both the stacking order and
 // the legend order, so the biggest format is consistently first everywhere.
 const formats = computed(() => byFormatSeries.value.map(point => point.format))
-// The shared qualitative palette (useChartPalette.ts), not each format's own
-// color from useFormatColor.ts — that ties a format to the same color as its
-// badges elsewhere in the app, which sounds right but in practice several
-// formats have no color assigned yet and all fall back to the same
-// var(--ui-primary), making them indistinguishable in a stacked chart.
+// The shared qualitative palette (useChartPalette.ts), not each format's color from
+// useFormatColor.ts: that ties a format to its badge color, but several formats have no color
+// assigned yet and all fall back to var(--ui-primary), making them indistinguishable in a stacked
+// chart
 const colors = computed(() => formats.value.map((_, i) => chartColor(i)))
 const legendItems = computed(() => formats.value.map((format, i) => ({
   name: format,

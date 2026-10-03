@@ -1,11 +1,8 @@
 <!-- app\components\cittadino\StandingsBody.vue -->
-<!--
-  Shared mock-data-notice + error/loading/table body, used by
-  PublicCittadinoPage.vue and standings/cittadino/index.vue (fallow:dupes
-  flagged this block as an identical 35-line clone). Wrap with whatever
-  layout element the parent needs (UDashboardPanel's #body slot vs. a plain
-  div) — this component only owns the alert/spinner/table states.
--->
+<!-- Shared mock-data-notice + error/loading/table body of PublicCittadinoPage.vue and
+     standings/cittadino/index.vue. Wrap it with whatever layout element the parent needs
+     (UDashboardPanel's #body slot vs a plain div): this component only owns the
+     alert/spinner/table states. -->
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import type { CittadinoStanding } from '~/types'

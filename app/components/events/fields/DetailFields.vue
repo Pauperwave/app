@@ -1,11 +1,9 @@
 <!-- app\components\events\fields\DetailFields.vue -->
-<!--
-  What an event has beyond its tournaments (user request, 2026-10-03, modeled on Radio Atog 2026):
-  tagline and edition, description, practical notes, tickets, membership and partners. Shared by
-  AddModal.vue and EditModal.vue — `state` is the SAME reactive object the parent binds to its own
-  <UForm :state>, mutated directly, same as TournamentDataFields.vue; the partners are a separate
-  v-model (a list, not a schema field).
--->
+<!-- What an event has beyond its tournaments: tagline and edition, description, practical
+     notes, tickets, membership and partners. Shared by AddModal.vue and EditModal.vue: `state`
+     is the SAME reactive object the parent binds to its <UForm :state>, mutated directly (like
+     TournamentDataFields.vue); the partners are a separate v-model (a list, not a schema
+     field). -->
 <!-- eslint-disable vue/no-mutating-props -- see the comment above -->
 <script setup lang="ts">
 import type { EventFormState } from '~/composables/events/useEventFormFields'

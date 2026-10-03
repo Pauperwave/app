@@ -1,6 +1,5 @@
 <!-- app\components\home\staff\RecentTransactionsCard.vue -->
-<!-- Split out of home/Staff.vue (2026-08-29, fallow:health) — see
-     PendingActionsCard.vue's own comment. -->
+<!-- Split out of home/Staff.vue: see PendingActionsCard.vue -->
 <script setup lang="ts">
 import type { Transaction } from '~/types'
 

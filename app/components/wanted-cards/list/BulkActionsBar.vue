@@ -1,16 +1,11 @@
 <!-- app\components\wanted-cards\list\BulkActionsBar.vue -->
-<!--
-  Shown only while at least one card is selected (useSelection.ts) — shared
-  between the table and grid views, which both feed the same selection.
-  Dumb component: index.vue owns the selection/bulk-actions state, this just
-  renders the count + triggers the callbacks it's given.
-
-  No own UDashboardToolbar: swapped directly into the existing filters
-  toolbar's #left/#right (one `side` per instance) instead of inserting a
-  separate row below it — a whole extra toolbar row appearing/disappearing
-  caused a layout shift every time the selection went from empty to non-empty
-  (2026-08-13 feedback). Same toolbar row, same height, no shift.
--->
+<!-- Shown only while at least one card is selected (useSelection.ts), shared by the table and
+     grid views, which feed the same selection. A dumb component: index.vue owns the
+     selection/bulk-actions state, this renders the count and triggers the callbacks it is
+     given.  No own UDashboardToolbar: it is swapped into the existing filters toolbar's
+     #left/#right (one `side` per instance) instead of inserting a separate row, whose
+     appearing/disappearing caused a layout shift whenever the selection went from empty to
+     non-empty. Same toolbar row, same height, no shift. -->
 <script setup lang="ts">
 import type { WantedCardStatus } from '~/types'
 

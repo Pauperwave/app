@@ -1,13 +1,10 @@
 <!-- app\components\ui\ListPageNavbar.vue -->
-<!--
-  Shared UDashboardNavbar skeleton for list pages: sidebar collapse +
-  QueryRefreshControl in #trailing, then a "start tour" button in #right
-  (fallow:dupes flagged this exact block as an identical clone across
-  associates/index.vue, associates/requests.vue, locations/index.vue,
-  players/index.vue and transactions/index.vue). Whatever else a page needs
-  in #right (view mode tabs, an add-modal trigger, NotificationsBellButton…)
-  goes in the default slot, rendered right after the tour button's separator.
--->
+<!-- Shared UDashboardNavbar skeleton for list pages: sidebar collapse + QueryRefreshControl in
+     #trailing, then a "start tour" button in #right (identical across associates/index.vue,
+     associates/requests.vue, locations/index.vue, players/index.vue and
+     transactions/index.vue). Whatever else a page needs in #right (view mode tabs, an add-modal
+     trigger, NotificationsBellButton…) goes in the default slot, rendered after the tour
+     button's separator. -->
 <script setup lang="ts">
 import type { DashboardNavbarProps } from '@nuxt/ui'
 import type { DataStateStatus } from '@pinia/colada'
@@ -39,9 +36,9 @@ const emit = defineEmits<{
     <template #trailing>
       <USeparator orientation="vertical" class="h-4" />
 
-      <!-- Optional, next to the title on the left, before QueryRefreshControl
-           (unlike the default slot, rendered on the navbar's right) — used by
-           transactions/index.vue's search box (user request, 2026-08-30). -->
+      <!-- Optional, next to the title on the left, before QueryRefreshControl (unlike the
+           default slot, rendered on the navbar's right): used by transactions/index.vue's
+           search box -->
       <slot name="search" />
 
       <QueryRefreshControl

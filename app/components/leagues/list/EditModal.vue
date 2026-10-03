@@ -13,10 +13,9 @@ const { t } = useI18n()
 const { updateLeague } = useLeaguesMutations()
 const { submitting, submitWithToast } = useSubmitWithToast()
 
-// Same shape as AddModal.vue's initial state — same reasoning as
-// tournaments/list/EditModal.vue's own state literal. No startDate here
-// (2026-08-16 ADR, docs/PROGRESS.md): a league's dates are derived from its
-// tournaments, not user-editable.
+// Same shape as AddModal.vue's initial state (see tournaments/list/EditModal.vue's state literal).
+// No startDate: a league's dates are derived from its tournaments (ADR, docs/PROGRESS.md), not
+// user-editable
 const state = reactive<LeagueFormState>({
   name: undefined,
   status: 'draft',
@@ -30,8 +29,8 @@ const image = ref<string | undefined>(undefined)
 const imageCardName = ref<string | undefined>(undefined)
 const imageCardArtist = ref<string | undefined>(undefined)
 
-// Refills every time the modal opens on a (possibly new) league — same
-// convention as TournamentsListEditModal.vue's watch on its `tournament` prop.
+// Refills every time the modal opens on a (possibly new) league, like
+// TournamentsListEditModal.vue's watch on its `tournament` prop
 watch([open, () => league], ([isOpen, current]) => {
   if (!isOpen || !current) return
 

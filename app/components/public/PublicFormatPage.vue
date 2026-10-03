@@ -1,14 +1,11 @@
 <!-- app\components\public\PublicFormatPage.vue -->
-<!--
-  Public (no auth) counterpart to FormatPage.vue, backing the
-  commander/premodern/pauper.pauperwave.org subdomains (settings/domains.vue).
-  Same data composables and PublicMatrixTable, but a plain header instead
-  of UDashboardPanel/Navbar (both require the authenticated UDashboardGroup
-  context from layouts/default.vue) and no NotificationsBellButton (personal,
-  needs auth) or UDashboardSidebarCollapse (no sidebar exists on a public
-  page). FormatPage.vue itself is untouched — it still backs the internal
-  /standings/<format> dashboard routes used by logged-in staff.
--->
+<!-- Public (no auth) counterpart to FormatPage.vue, backing the
+     commander/premodern/pauper.pauperwave.org subdomains (settings/domains.vue): the same data
+     composables and PublicMatrixTable, but a plain header instead of UDashboardPanel/Navbar
+     (both need the authenticated UDashboardGroup context from layouts/default.vue), and no
+     NotificationsBellButton (personal, needs auth) or UDashboardSidebarCollapse (no sidebar on
+     a public page). FormatPage.vue still backs the internal /standings/<format> dashboard
+     routes. -->
 <script lang="ts" setup>
 import type { StandingsFormat } from '~/composables/standings/useFormatStandingsQuery'
 
@@ -18,12 +15,10 @@ interface Props {
 
 const { format } = defineProps<Props>()
 
-// Declared before the useFormatStandingsPage call below since it threads
-// through to useFormatStandingsTableColumns.ts for match highlighting —
-// same search FormatPage.vue's internal counterpart got, extended here
-// 2026-08-20 (user request: no reason to withhold it from public visitors,
-// who are if anything more likely to be scanning for their own name).
-// fallow-ignore-next-line code-duplication -- mirrors FormatPage.vue's own shell wiring around useFormatStandingsPage
+// Declared before the useFormatStandingsPage call since it threads through to
+// useFormatStandingsTableColumns.ts for match highlighting: the search FormatPage.vue has, extended
+// to public visitors (who are more likely to scan for their own name) fallow-ignore-next-line
+// code-duplication -- mirrors FormatPage.vue's own shell wiring around useFormatStandingsPage
 const search = ref('')
 
 const {
@@ -50,7 +45,7 @@ const filteredStandings = computed(() => filterStandingsBySearch(standings.value
       />
     </div>
 
-    <!-- fallow-ignore-next-line code-duplication -- summary/search/legend row mirrors FormatPage.vue's own -->
+    <!-- fallow-ignore-next-line code-duplication -- summary/search row mirrors FormatPage.vue -->
     <div class="flex items-center justify-between gap-4 flex-wrap">
       <div class="flex items-center gap-4 flex-wrap">
         <p class="text-sm text-muted">

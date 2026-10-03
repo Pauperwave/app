@@ -1,22 +1,14 @@
 <!-- app\components\tournaments\list\Card.vue -->
-<!--
-  Extracted out of GridView.vue (2026-08-16) — a single tournament's card,
-  including its own context menu and selection-checkbox wiring. GridView.vue
-  now only owns the grid layout and the shared `range` a shift-click resolves
-  against. Cover.vue (image/date chip/status dot/checkbox) and
-  LeagueLink.vue (the "tappa" text link under the title) were split out the
-  same day for SRP — this file is now the orchestrator: layout + click/
-  selection wiring only, no per-section rendering details.
-
-  `loading` (2026-08-22): renders this same card's own skeleton instead of a
-  separate ListSkeleton.vue duplicating its markup by hand. That duplication
-  was the actual root cause of a long back-and-forth getting a standalone
-  skeleton to pixel-match this component — every element here (cover, title,
-  badges, footer) is written once and only its innermost content swaps
-  between real and USkeleton, so nothing can structurally drift again. See
-  GridView.vue's own `loading`/`loadingCount` props for how N of these get
-  rendered without real tournament data.
--->
+<!-- A single tournament's card, extracted from GridView.vue, with its own context menu and
+     selection-checkbox wiring. GridView.vue only owns the grid layout and the shared `range` a
+     shift-click resolves against. Cover.vue (image/date chip/status dot/checkbox) and
+     LeagueLink.vue (the "tappa" link under the title) are split out for SRP: this file is the
+     orchestrator, layout + click/selection wiring only.  `loading` renders this card's own
+     skeleton instead of a separate ListSkeleton.vue duplicating its markup by hand (that
+     duplication made a standalone skeleton drift from the card): every element here (cover,
+     title, badges, footer) is written once and only its innermost content swaps between real
+     and USkeleton. See GridView.vue's `loading`/`loadingCount` props for how N of these render
+     without real data. -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Tournament } from '~/types'
@@ -46,10 +38,8 @@ const {
    */
   highlighted?: boolean
   /**
-   * The reverse direction — reports this card's own hover state upward so a
-   * CalendarHeatmap elsewhere on the page can ring the matching day (user
-   * request, 2026-08-20, "the other way around"). Called with the tournament
-   * on hover-in, null on hover-out.
+   * The reverse direction: reports this card's hover state upward so a CalendarHeatmap elsewhere on
+   * the page can ring the matching day. Called with the tournament on hover-in, null on hover-out.
    */
   onHoverChange?: (tournament: Tournament | null) => void
   /** Renders a skeleton in place of every piece of real content — see the
@@ -115,14 +105,11 @@ function timePart(startDate: string) {
               :league-uuid="tournament.leagueUuid"
             />
           </template>
-          <!-- space-y-1, h-5/h-4: the real <h3> (no explicit text-size
-               class) renders taller than a flat 16px bar, and two solid
-               skeleton bars with truly zero gap between them touch
-               directly — both found via live pixel measurement against
-               this exact card, 2026-08-22. LeagueLink's own wrapper is a
-               real fixed h-4, matched exactly since it isn't free-flowing
-               text. Widths sized to roughly match "Premodern&Birrino"
-               (title) and "Lega Invernale 2026" (subtitle). -->
+          <!-- space-y-1, h-5/h-4: the real <h3> (no explicit text-size class) renders taller
+               than a flat 16px bar, and two solid skeleton bars with zero gap touch (found by
+               pixel measurement against this card). LeagueLink's wrapper is a real fixed h-4,
+               matched exactly. Widths roughly match "Premodern&Birrino" (title) and "Lega
+               Invernale 2026" (subtitle). -->
           <div v-else class="space-y-1">
             <USkeleton class="h-5 w-32" />
             <USkeleton class="h-4 w-28" />
@@ -173,12 +160,9 @@ function timePart(startDate: string) {
             class="min-w-0"
           />
         </template>
-        <!-- h-6, not h-5: a real UBadge with an icon at the default "md"
-             size is size-4 icon + py-1 padding = 24px tall
-             (.nuxt/ui/badge.ts), not 20px — same live-measurement find.
-             Widths sized to roughly match real badge content instead of
-             arbitrary bars: "Commander" (format), "20:00" (time),
-             "Fàntasia" (location). -->
+        <!-- h-6, not h-5: a real UBadge with an icon at the default "md" size is size-4 icon +
+             py-1 padding = 24px (.nuxt/ui/badge.ts). Widths roughly match real content
+             ("Commander" format, "20:00" time, "Fàntasia" location), not arbitrary bars. -->
         <template v-else>
           <USkeleton class="h-6 w-24" />
           <USkeleton class="h-6 w-16" />

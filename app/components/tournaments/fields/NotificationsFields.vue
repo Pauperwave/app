@@ -1,10 +1,8 @@
 <!-- app\components\tournaments\fields\NotificationsFields.vue -->
-<!--
-  Telegram notifications + test flag for AddModal.vue/EditModal.vue — `state` is the SAME
-  reactive object the parent binds to its own <UForm :state>, mutated directly (see
-  OrganizerDataFields.vue). The test switch is super_admin only: such a tournament is
-  invisible to everyone else (RLS), and the server rejects the field for anyone below.
--->
+<!-- Telegram notifications + test flag for AddModal.vue/EditModal.vue: `state` is the SAME
+     reactive object the parent binds to its <UForm :state>, mutated directly (see
+     OrganizerDataFields.vue). The test switch is super_admin only: such a tournament is
+     invisible to everyone else (RLS), and the server rejects the field for anyone below. -->
 <!-- eslint-disable vue/no-mutating-props -- see the comment above -->
 <script setup lang="ts">
 import type { TournamentFormState } from '~/composables/tournaments/useTournamentFormFields'

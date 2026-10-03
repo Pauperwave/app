@@ -1,17 +1,12 @@
 <!-- app\components\tournaments\single\pairing\TableScoresModal.vue -->
-<!--
-  "Punteggi" — read-only per-player score breakdown for one pairing, ported
-  1:1 from MagicTheGathering/league's TableScoresModal.vue (icon-header
-  UTable columns, user request 2026-09-19/2026-09-16). Reuses
-  calculatePlayerTableScore (useCommanderScoring.ts) — the exact same
-  function useLiveCommanderStandings.ts already scores every table with, so
-  this can never drift from what the sidebar standings actually show.
-  Deck-points column dropped vs. league — this app's ruleset has no "deck"
-  scoring category (only rank/kill/brew/play, see useRulesetPointsQuery.ts).
-  League's per-category "unspecified" warning highlight has no analog here:
-  calculatePlayerTableScore returns null (row excluded) instead of a partial
-  score, so there's nothing to flag mid-row.
--->
+<!-- "Punteggi": a read-only per-player score breakdown for one pairing, ported from league's
+     TableScoresModal.vue (icon-header UTable columns). Reuses calculatePlayerTableScore
+     (useCommanderScoring.ts), the function useLiveCommanderStandings.ts scores every table
+     with, so it can't drift from the sidebar standings. The deck-points column is dropped vs
+     league (this app's ruleset has no "deck" scoring category, only rank/kill/brew/play, see
+     useRulesetPointsQuery.ts). League's per-category "unspecified" warning highlight has no
+     analog: calculatePlayerTableScore returns null (row excluded) instead of a partial score,
+     so there is nothing to flag mid-row. -->
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import type { CellContext } from '@tanstack/vue-table'

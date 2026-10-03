@@ -1,12 +1,8 @@
 <!-- app\components\ui\HighlightMatch.vue -->
-<!--
-  Wraps the first case-insensitive occurrence of `query` inside `text` in a
-  <mark> (2026-08-19, user request — every table cell fed by a search box
-  added the same day). Renders `text` plain when `query` is empty or not
-  found — covers fuzzy-only matches (associatesGlobalFilterFn.ts's name
-  fuzzy match) too, since a fuzzy match has no clean substring position to
-  highlight, only exact-substring ones do.
--->
+<!-- Wraps the first case-insensitive occurrence of `query` inside `text` in a <mark> (every
+     table cell fed by a search box). Renders `text` plain when `query` is empty or not found,
+     which also covers fuzzy-only matches (associatesGlobalFilterFn.ts's name fuzzy match): they
+     have no clean substring position to highlight. -->
 <script setup lang="ts">
 const { text, query } = defineProps<{
   text: string

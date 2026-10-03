@@ -1,12 +1,9 @@
 <!-- app\components\tournaments\single\prizes\PrizeDistributionPresetButtons.vue -->
-<!--
-  Named distribution-shape quick-select for the prize suggestion panel —
-  same shape as PairingPresetButtons.vue (user request, 2026-09-17: reuse
-  the pairing weight-preset pattern for prize redistribution). Options and
-  labels only; the markup lives in the generic <PresetButtons>. "Custom"
-  restores the organizer's last hand-edited shares (disabled until one exists);
-  "reset" puts every setting back to its starting value.
--->
+<!-- Named distribution-shape quick-select for the prize suggestion panel, the shape of
+     PairingPresetButtons.vue (the pairing weight-preset pattern reused for prizes). Options and
+     labels only: the markup lives in the generic <PresetButtons>. "Custom" restores the
+     organizer's last hand-edited shares (disabled until one exists); "reset" puts every setting
+     back to its starting value. -->
 <script setup lang="ts">
 export type PrizeDistributionPresetKind = 'flat' | 'balanced' | 'competitive' | 'custom'
 

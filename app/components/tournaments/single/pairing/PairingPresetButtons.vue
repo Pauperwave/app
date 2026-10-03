@@ -1,9 +1,6 @@
 <!-- app\components\tournaments\single\pairing\PairingPresetButtons.vue -->
-<!--
-  Named weight-preset quick-select for the pairing optimizer's settings
-  modal — ported from MagicTheGathering/league (user request, 2026-09-15).
-  Options and labels only; the markup lives in the generic <PresetButtons>.
--->
+<!-- Named weight-preset quick-select for the pairing optimizer's settings modal, ported from
+     league. Options and labels only: the markup lives in the generic <PresetButtons>. -->
 <script setup lang="ts">
 export type PairingPresetKind = 'balanced' | 'social' | 'competitive' | 'reset' | 'custom'
 

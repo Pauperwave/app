@@ -1,23 +1,14 @@
 <!-- app\components\tournaments\single\pairing\KillFlowCanvas.vue -->
-<!--
-  Node-graph kill tracker for one pod's round — ported from
-  MagicTheGathering/league's KillFlowCanvas.vue (user request, 2026-09-15/16:
-  copy the kill-tracking canvas as-is, including the @vue-flow/core
-  dependency). Props/emits-driven instead of a Pinia store (this app has no
-  such store for this domain): `kills` comes straight from
-  useTournamentKillsQuery.ts, and `connect`/`removeKill` just tell the parent
-  modal to call the real mutations — the canvas holds no state of its own.
-
-  Dropped vs. league's version: the "loopback" self-kill edge type and its
-  suicide badge — this app's tournament_kills table has a
-  ck_tournament_kills_no_self_kill check constraint (killer_uuid <>
-  killed_player_uuid, added earlier this session), so a self-kill edge could
-  never be persisted here anyway. 2026-09-16 "il codice del grafo non si
-  comporta allo stesso modo" follow-up: onConnect/onEdgeClick now validate
-  duplicate/reverse kills and toast feedback exactly like league's
-  killsStore.addKill/onEdgeClick, instead of silently emitting straight to
-  the mutation with no client-side check or confirmation.
--->
+<!-- Node-graph kill tracker for one pod's round, ported from league's KillFlowCanvas.vue
+     (including the @vue-flow/core dependency). Props/emits-driven instead of a Pinia store
+     (this app has none for this domain): `kills` comes from useTournamentKillsQuery.ts, and
+     `connect`/`removeKill` tell the parent modal to call the real mutations: the canvas holds
+     no state of its own.  Dropped vs league: the "loopback" self-kill edge type and its suicide
+     badge: tournament_kills has a ck_tournament_kills_no_self_kill check (killer_uuid <>
+     killed_player_uuid), so a self-kill edge could never be persisted. onConnect/onEdgeClick
+     validate duplicate/reverse kills and toast feedback like league's
+     killsStore.addKill/onEdgeClick, instead of emitting straight to the mutation with no
+     client-side check. -->
 <script setup lang="ts">
 import { VueFlow, MarkerType, useVueFlow, type Node, type Edge, type Connection, type EdgeMouseEvent } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
@@ -59,10 +50,9 @@ const nodeWidth = computed(() => {
   return `calc(${maxChars}ch + 4rem)`
 })
 
-// Distributes `total` nodes around a rectangle's perimeter, one side at a
-// time: each side gets a share of nodes proportional to its own length
-// (largest-remainder rounding so the shares sum to `total` exactly), then
-// spaced evenly along that side.
+// Distributes `total` nodes around a rectangle's perimeter, one side at a time: each side gets a
+// share proportional to its length (largest-remainder rounding so shares sum to `total`), spaced
+// evenly along it
 function getRectangularPosition(index: number, total: number, width = 320, height = 240) {
   const sideLengths = [width, height, width, height]
   const perimeter = sideLengths.reduce((sum, length) => sum + length, 0)
@@ -151,12 +141,10 @@ function validateConnection(connection: Connection): boolean {
     && validPlayerUuids.has(connection.target)
 }
 
-// Same duplicate/reverse-kill rejection as league's killsStore.addKill —
-// Vue Flow re-runs `isValidConnection` against every edge on every setEdges()
-// sync (not just live drag attempts), so that check only covers table
-// membership; a real kill (already present, or its exact reverse) is
-// rejected here instead, once, at the moment the user actually drags a
-// connection.
+// Same duplicate/reverse-kill rejection as league's killsStore.addKill: Vue Flow re-runs
+// `isValidConnection` against every edge on every setEdges() sync (not just live drags), so that
+// check only covers table membership; a real kill (already present, or its exact reverse) is
+// rejected here instead, once, when the user drags a connection
 function isKillPresent(killerUuid: string, killedPlayerUuid: string): boolean {
   return kills.some(k => k.killerUuid === killerUuid && k.killedPlayerUuid === killedPlayerUuid)
 }

@@ -1,17 +1,12 @@
 <!-- app\components\tournaments\single\pairing\SwissMatchResultBadge.vue -->
-<!-- A table's own result status, as a badge: no result yet (plain), or a
-     result reported via Telegram — always "Inserito da X" regardless of
-     confirm/dispute state, colored info while unanswered, success once
-     confirmed, error once disputed (a dispute flags the result for
-     organizer review, it doesn't revert it — user request, 2026-09-24).
-     Extracted out of SwissMatchCard.vue (2026-09-24) — this header logic
-     was the single largest, most stateful chunk of that file's template —
-     then reused by SwissMatchTable.vue's own result-cell (2026-09-24),
-     which had independently duplicated the same state machine at a smaller
-     size and without the "no result at all" badge (that page's own row
-     background tint already covers it) or the delete button (its own
-     "Azioni" column covers that instead).
--->
+<!-- A table's result status as a badge: no result yet (plain), or a result reported via
+     Telegram, always "Inserito da X" regardless of confirm/dispute state, colored info while
+     unanswered, success once confirmed, error once disputed (a dispute flags the result for
+     organizer review, it doesn't revert it). Extracted from SwissMatchCard.vue (the largest,
+     most stateful chunk of its template) and reused by SwissMatchTable.vue's result-cell, which
+     had duplicated the state machine at a smaller size without the "no result at all" badge
+     (that page's row background tint covers it) or the delete button (its "Azioni" column
+     covers that). -->
 <script setup lang="ts">
 import type { MatchScore, SwissMatchTelegramInfo } from '~/types'
 
@@ -40,9 +35,8 @@ defineEmits<{
 
 const { t } = useI18n()
 
-// Full name, not just the first — two players sharing a first name (e.g.
-// two "Alessandro"s at different tables) would otherwise be indistinguishable
-// in a badge (2026-09-23 user request).
+// Full name, not just the first: two players sharing a first name (e.g. two "Alessandro"s at
+// different tables) would be indistinguishable in a badge
 function fullName(person: { name: string, surname?: string }): string {
   return `${person.name} ${person.surname ?? ''}`.trim()
 }

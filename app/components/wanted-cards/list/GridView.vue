@@ -16,7 +16,10 @@ const {
   sections: GridSection[]
   contextMenuItems: (card: WantedCard) => DropdownMenuItem[]
   selection: Selection<number>
-  /** Show the status badge (Found/Searching) — only when the active tab is "All", where the filter would otherwise not make it clear. */
+  /**
+   * Show the status badge (Found/Searching) — only when the active tab is "All", where the filter
+   * would otherwise not make it clear.
+   */
   showStatus?: boolean
 }>()
 
@@ -32,12 +35,10 @@ const firstCardId = computed(() => sections.flatMap(section => section.cards)[0]
 // (top to bottom, left to right within a section).
 const range = computed(() => sections.flatMap(section => section.cards).map(card => card.id))
 
-// Captured from the checkbox's own native `click` (fires synchronously
-// before the `update:modelValue` it triggers) so a shift-click can be told
-// apart from a plain one — same convention as useWantedCardsTableColumns.ts.
-// A ref, not a plain `let`: the template assigns to this on click, and only
-// a ref's assignment is visible to Vue's template compiler (a closure
-// variable's write inside a template expression isn't observed there).
+// Captured from the checkbox's native `click` (fires synchronously before the `update:modelValue`
+// it triggers) to tell a shift-click from a plain one, like useWantedCardsTableColumns.ts. A ref,
+// not a plain `let`: the template assigns to it on click, and only a ref's assignment is visible to
+// Vue's template compiler
 const lastClickShiftKey = ref(false)
 </script>
 
@@ -60,15 +61,13 @@ const lastClickShiftKey = ref(false)
         </UBadge>
       </div>
 
-      <!-- auto-fill instead of fixed breakpoints: the cards size themselves
-           from the available space while staying close to a real MTG card's
-           proportions (63×88mm ≈ a 5:7 ratio, see aspect-[5/7] on the image).
-           280px = w-70, the same width used for the single preview in
-           CardPreviewTooltip.vue (copied from MagicTheGathering/blog's
-           magic/card/Tooltip.vue) — the same reference size for a card across
-           the whole ecosystem. min(280px,45vw) stops that minimum from forcing
-           overflow on narrow screens (mobile): there the column shrinks in
-           proportion to the viewport instead. -->
+      <!-- auto-fill instead of fixed breakpoints: cards size themselves from the available
+           space while staying close to a real MTG card's proportions (63×88mm ≈ 5:7, see
+           aspect-[5/7] on the image). 280px = w-70, the width of the single preview in
+           CardPreviewTooltip.vue (copied from blog's magic/card/Tooltip.vue): the same
+           reference size for a card across the ecosystem. min(280px,45vw) stops that minimum
+           forcing overflow on narrow screens (mobile), where the column shrinks with the
+           viewport -->
       <div class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(280px,45vw),1fr))]">
         <WantedCardsListGridCard
           v-for="card in section.cards"

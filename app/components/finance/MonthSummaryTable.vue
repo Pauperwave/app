@@ -24,10 +24,8 @@ const totalByType = computed(() => Object.fromEntries(
 ) as Record<PaymentType, number>)
 const grandTotal = computed(() => columnTotal(rows, 'grandTotal'))
 
-// Running total through each month, keyed by month regardless of the
-// table's current sort — chronological order always drives the running sum
-// even if the visible rows are sorted by a different column (user request,
-// 2026-08-24).
+// Running total through each month, keyed by month regardless of the table's sort: chronological
+// order always drives the running sum even if the visible rows are sorted by another column
 const cumulativeByMonth = computed(() => {
   const chronological = [...rows].sort((a, b) => a.month.localeCompare(b.month))
   const byMonth = new Map<string, number>()
@@ -44,9 +42,8 @@ const cumulativeByMonth = computed(() => {
 // use, so a category reads the same everywhere.
 const columns: TableColumn<FinanceMonthSummaryRow>[] = [
   {
-    // accessorFn on 'month' ("yyyy-MM"), not 'label' — sorting on the
-    // localized label ("gennaio 2026") sorted alphabetically by month name
-    // instead of chronologically (user request, 2026-08-23).
+    // accessorFn on 'month' ("yyyy-MM"), not 'label': sorting on the localized label ("gennaio
+    // 2026") sorted alphabetically by month name instead of chronologically
     id: 'label',
     accessorFn: row => row.month,
     header: ({ column }) => sortableHeader(t('finance.summary.month'), column),

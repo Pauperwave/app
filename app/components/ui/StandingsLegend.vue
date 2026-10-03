@@ -1,11 +1,8 @@
 <!-- app\components\ui\StandingsLegend.vue -->
-<!--
-  Shared "counted / dropped / absent[/ participation]" legend row, used by
-  cittadino and format standings pages (Public + internal variants —
-  fallow:dupes flagged the identical span markup across all four). Each item
-  is `{ sample, labelKey, dimmed? }`: `sample` renders highlighted unless
-  `dimmed` is set (matches the "(dropped)" and "· absent" treatment).
--->
+<!-- Shared "counted / dropped / absent[/ participation]" legend row of the cittadino and format
+     standings pages (public + internal). Each item is `{ sample, labelKey, dimmed? }`: `sample`
+     renders highlighted unless `dimmed` is set (matching the "(dropped)" and "· absent"
+     treatment). -->
 <script setup lang="ts">
 interface LegendItem {
   sample: string | number | undefined

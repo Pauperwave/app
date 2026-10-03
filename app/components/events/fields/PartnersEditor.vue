@@ -1,9 +1,7 @@
 <!-- app\components\events\fields\PartnersEditor.vue -->
-<!--
-  The event form's partners: any number of collaborators/sponsors, each with a name, a role and an
-  optional link and logo URL. The list order is the display order; blank rows are dropped on save
-  (cleanEventPartners).
--->
+<!-- The event form's partners: any number of collaborators/sponsors, each with a name, a role
+     and an optional link and logo URL. The list order is the display order; blank rows are
+     dropped on save (cleanEventPartners). -->
 <script setup lang="ts">
 import { EVENT_PARTNER_ROLES } from '#shared/utils/events/eventPartners'
 import type { EventPartnerInput } from '#shared/utils/events/eventPartners'

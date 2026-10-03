@@ -1,13 +1,9 @@
 <!-- app\components\leagues\RulesetBadge.vue -->
-<!--
-  Same permission-gated quick-change pattern as StatusBadge.vue — a ruleset
-  picker behind an otherwise plain badge (2026-08-22). Extracted so the grid
-  card's badge row always renders something instead of collapsing to zero
-  height when league.ruleset is null, which made ListCard.vue's loading
-  skeleton (always reserving a badge-sized bar there) mismatch a real card
-  with no ruleset set — this fixes the mismatch and doubles as an inline
-  "set ruleset" affordance, same idea as StatusBadge.vue's own dropdown.
--->
+<!-- The same permission-gated quick-change pattern as StatusBadge.vue: a ruleset picker behind
+     an otherwise plain badge. Extracted so the grid card's badge row always renders something
+     instead of collapsing to zero height when league.ruleset is null, which made ListCard.vue's
+     loading skeleton (always reserving a badge-sized bar) mismatch a real card with no ruleset;
+     it also doubles as an inline "set ruleset" affordance, like StatusBadge.vue's dropdown. -->
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { League } from '~/types'
@@ -49,16 +45,12 @@ const items = computed<DropdownMenuItem[]>(() => [
 </script>
 
 <template>
-  <!-- Wrapping native span, not relying on UDropdownMenu/UBadge's own attrs
-       fallthrough for @click.stop (confirmed unreliable — the click still
-       bubbled to the card's own onCardClick and navigated) — same "wrap in
-       a plain element with click.stop" fix LocationsListCard.vue's own
-       "Apri in Maps" link already uses for the same reason. `contents`:
-       a plain inline span's own line box was 3px taller than the badge
-       itself, misaligning it against its BadgesFormatBadge sibling in
-       Card.vue's row — display:contents removes the wrapper from the box
-       model entirely (it still fires/stops the click) so only the badge's
-       own box remains. -->
+  <!-- Wrapping native span, not relying on UDropdownMenu/UBadge's attrs fallthrough for
+       @click.stop (unreliable: the click still bubbled to the card's onCardClick and
+       navigated), like LocationsListCard.vue's "Apri in Maps" link. `contents`: a plain inline
+       span's line box was 3px taller than the badge, misaligning it against its
+       BadgesFormatBadge sibling in Card.vue's row; display:contents removes the wrapper from
+       the box model (it still stops the click) -->
   <span class="contents" @click.stop>
     <UTooltip
       v-if="can('manage-tournaments')"

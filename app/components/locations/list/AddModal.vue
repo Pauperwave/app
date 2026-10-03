@@ -44,10 +44,9 @@ const state = reactive<LocationFormState>(createInitialState())
 const openingHours = ref<OpeningHours>(emptyOpeningHours())
 const image = ref<string | undefined>(undefined)
 
-// UModal only hides/shows, it does not unmount the form, so the state has to
-// be cleared explicitly — called on successful submit and on explicit
-// "Annulla", but deliberately NOT on the X button or an outside click, which
-// should preserve whatever the user typed (user decision 2026-08-20).
+// UModal only hides/shows and doesn't unmount the form, so the state is cleared explicitly: on
+// successful submit and "Annulla", deliberately NOT on the X button or an outside click, which
+// preserve what the user typed
 function resetForm() {
   Object.assign(state, createInitialState())
   openingHours.value = emptyOpeningHours()

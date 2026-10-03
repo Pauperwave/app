@@ -4,7 +4,7 @@ import type { TableColumn } from '@nuxt/ui'
 import type { FinanceFormatSummaryRow } from '~/composables/finance/useFinanceSummary'
 import FormatBadge from '~/components/badges/FormatBadge.vue'
 
-// fallow-ignore-next-line code-duplication -- props/formatter/sorting scaffolding mirrors every *SummaryTable.vue
+// fallow-ignore-next-line code-duplication -- scaffolding mirrors the other summary tables
 const { rows, loading, pending = false } = defineProps<{
   rows: FinanceFormatSummaryRow[]
   loading: boolean

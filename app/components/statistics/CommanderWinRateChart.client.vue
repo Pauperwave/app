@@ -1,12 +1,8 @@
 <!-- app\components\statistics\CommanderWinRateChart.client.vue -->
-<!--
-  Win-rate donut for one commander's detail page — same idea as league's
-  TournamentAwards win-rate pie (user request 2026-09-16: copy the
-  commander pages, adapted to this app), but built with this app's actual
-  chart library (@unovis/vue, StatChartCard) instead of league's echarts —
-  every other /statistics chart already uses unovis, echarts is registered
-  in nuxt.config.ts but unused anywhere in this app.
--->
+<!-- Win-rate donut for one commander's detail page, like league's TournamentAwards win-rate pie
+     (league's commander pages, adapted), built with this app's chart library (@unovis/vue,
+     StatChartCard) instead of league's echarts: every other /statistics chart uses unovis, and
+     echarts is registered in nuxt.config.ts but unused here. -->
 <script setup lang="ts">
 import { VisSingleContainer, VisDonut } from '@unovis/vue'
 
