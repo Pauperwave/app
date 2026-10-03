@@ -6,6 +6,7 @@
 interface Stat {
   label: string
   value: number | string
+  icon?: string
 }
 
 const { stats } = defineProps<{ stats: Stat[] }>()
@@ -17,7 +18,12 @@ const { stats } = defineProps<{ stats: Stat[] }>()
       v-for="stat in stats"
       :key="stat.label"
     >
-      <p class="text-xs text-muted uppercase mb-1">
+      <p class="flex items-center gap-1.5 text-xs text-muted uppercase mb-1">
+        <UIcon
+          v-if="stat.icon"
+          :name="stat.icon"
+          class="size-4 shrink-0"
+        />
         {{ stat.label }}
       </p>
       <p class="text-2xl font-semibold">

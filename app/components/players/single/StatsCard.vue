@@ -1,7 +1,7 @@
 <!-- app\components\players\single\StatsCard.vue -->
-<!-- The "Statistiche" block of a player: tournaments, matches and wins, plus how often they were
-     the killer / the victim of a kill and how often they were voted master brewer / player. Shaped
-     like league's player profile header, on the shared StatCardsGrid. -->
+<!-- The "Statistiche" block of a player: tournaments, matches, wins and kills per match. Shaped
+     like league's player profile header, on the shared StatCardsGrid. The special mentions (killer,
+     victim, master brewer, player) are their own block: MentionsCard.vue. -->
 <script setup lang="ts">
 import type { PlayerStats } from '~/composables/players/usePlayerStatsQuery'
 
@@ -13,14 +13,10 @@ const { stats, loading } = defineProps<{
 const { t } = useI18n()
 
 const items = computed(() => [
-  { label: t('player.stats.tournaments'), value: stats?.tournamentsPlayed ?? 0 },
-  { label: t('player.stats.matches'), value: stats?.matchesPlayed ?? 0 },
-  { label: t('player.stats.wins'), value: stats?.wins ?? 0 },
-  { label: t('player.stats.averageKills'), value: stats?.averageKills ?? 0 },
-  { label: t('player.stats.killer'), value: stats?.kills ?? 0 },
-  { label: t('player.stats.victim'), value: stats?.timesKilled ?? 0 },
-  { label: t('player.stats.masterBrewer'), value: stats?.brewVotesReceived ?? 0 },
-  { label: t('player.stats.bestPlayer'), value: stats?.playVotesReceived ?? 0 }
+  { label: t('player.stats.tournaments'), value: stats?.tournamentsPlayed ?? 0, icon: ICONS.calendar },
+  { label: t('player.stats.matches'), value: stats?.matchesPlayed ?? 0, icon: ICONS.battle },
+  { label: t('player.stats.wins'), value: stats?.wins ?? 0, icon: ICONS.standings },
+  { label: t('player.stats.averageKills'), value: stats?.averageKills ?? 0, icon: ICONS.kills }
 ])
 </script>
 
@@ -36,7 +32,7 @@ const items = computed(() => [
       class="grid grid-cols-2 sm:grid-cols-4 gap-3"
     >
       <USkeleton
-        v-for="n in 8"
+        v-for="n in 4"
         :key="n"
         class="h-20"
       />
