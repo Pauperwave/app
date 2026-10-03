@@ -1,10 +1,7 @@
 // app\composables\wantedCards\useWantedCardsBulkActions.ts
-// Bulk operations over a set of selected cards (useSelection.ts).
-// No new bulk server endpoint: each op just fans the existing per-card mutation
-// out with Promise.allSettled — simple, and the selection sizes here are small
-// (a page of wanted cards), not worth a dedicated bulk endpoint for now.
-// fallow-ignore-file code-duplication -- see the same comment in
-// useTournamentsBulkActions.ts
+// Bulk operations over a set of selected cards (useSelection.ts). No bulk server endpoint: each op
+// fans the per-card mutation out with Promise.allSettled (selection sizes are small, a page of
+// wanted cards). fallow-ignore-file code-duplication -- see useTournamentsBulkActions.ts
 import type { WantedCard, WantedCardStatus } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 
@@ -19,10 +16,9 @@ export function useWantedCardsBulkActions(selection: Selection<number>) {
   const { setStatus, deleteWantedCard, refreshPrices } = useWantedCardsMutations()
   const { copy } = useClipboard()
 
-  // Status changes and deletes are destructive/state-changing enough to warrant
-  // a confirmation step (same reasoning as the existing single-card delete
-  // confirm in useWantedCardsRowActions.ts) — copy/refresh below skip it, they
-  // don't lose or change any request data.
+  // Status changes and deletes are destructive enough to warrant a confirmation (like the
+  // single-card delete in useWantedCardsRowActions.ts); copy/refresh skip it, they change no
+  // request data
   const pendingAction = ref<PendingBulkAction | null>(null)
   const confirmOpen = ref(false)
 
@@ -44,11 +40,9 @@ export function useWantedCardsBulkActions(selection: Selection<number>) {
     })
   }
 
-  // Closes the modal immediately and defers the actual mutation(s) behind a
-  // 10-second undo window (useUndoableAction.ts) — the toast shown here
-  // replaces the old inline success/failure toast, which now only fires once
-  // the window elapses and the mutations actually run (see the `commit`
-  // callback below).
+  // Closes the modal at once and defers the mutation(s) behind a 10-second undo window
+  // (useUndoableAction.ts): the toast replaces the inline success/failure toast, which only fires
+  // once the window elapses and the mutations run (see `commit` below)
   function confirmPendingAction() {
     const action = pendingAction.value
     if (!action) return

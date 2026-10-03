@@ -1,12 +1,8 @@
 // app\composables\tournaments\rounds\useCommanderRoundModals.ts
-// All modal open/selected-id state for CommanderRoundManager.vue, plus the
-// "what should this modal currently show" derived computeds — mirrors
-// league's own useTournamentModals.ts (a single flat state container for
-// every modal, not one composable per modal) rather than splitting further
-// by modal type: the alternative (a useRoundScoreModal/useRoundKillModal/...
-// per modal) would force shared logic like commanderDeckFor/positionsFor
-// lookups to be duplicated or cross-imported between them for no real
-// readability gain. Submitting a modal is a separate concern — see
+// All modal open/selected-id state for CommanderRoundManager.vue plus the "what should this modal
+// show" computeds, mirroring league's useTournamentModals.ts (one flat container, not one
+// composable per modal): splitting by modal would duplicate or cross-import shared lookups
+// (commanderDeckFor/positionsFor) for no readability gain. Submitting is separate: see
 // useCommanderRoundSubmitHandlers.ts.
 import type { TablePlayer } from '~/types'
 import type { CommanderTableResult } from '#shared/utils/tournaments/commanderScoring'
@@ -55,9 +51,8 @@ export function useCommanderRoundModals(options: {
     const pairing = pairingsForRound.value.find(p => p.uuid === activeScoresPairingUuid.value)
     return pairing ? tablePlayersFor(pairing) : []
   })
-  // Same tableResults shape useLiveCommanderStandings.ts builds per pairing —
-  // duplicated here rather than exported from there, since that composable's
-  // version is folded into its own accumulator loop, not returned standalone.
+  // Same tableResults shape useLiveCommanderStandings.ts builds per pairing, duplicated since that
+  // version is folded into its accumulator loop and not returned
   const activeScoresTableResults = computed<CommanderTableResult[]>(() => {
     const pairing = pairingsForRound.value.find(p => p.uuid === activeScoresPairingUuid.value)
     if (!pairing) return []
@@ -119,9 +114,8 @@ export function useCommanderRoundModals(options: {
       .map(v => ({ votedPlayerUuid: v.votedPlayerUuid, voteType: v.voteType }))
   })
 
-  // Every commander deck currently on record for this round, resolved to
-  // names in one batch query — feeds CommanderVoteCard's art (via
-  // commanderNameForVotes) inside the votes modal, keyed by the vote's own pairing.
+  // Every commander deck on record for this round, resolved to names in one batch query: feeds
+  // CommanderVoteCard's art (via commanderNameForVotes) in the votes modal
   const roundCommanderDeckUuids = computed(() =>
     [...new Set((roundData.results.value ?? [])
       .map(r => r.commanderDeckUuid)
@@ -164,11 +158,9 @@ export function useCommanderRoundModals(options: {
     return { commander1: deck?.commander1Name ?? null, commander2: deck?.commander2Name ?? null }
   })
 
-  // ─── Reset tavolo / quick-fill / draw confirm dialog (dev-only actions share
-  // one dialog) ────────────────────────────────────────────────────────────────
-  // One confirm dialog reused for all four actions, same state-machine shape
-  // as league's own PairingsCard.vue confirmDialog — swapping only which
-  // action handleConfirm runs, not four separate dialog instances.
+  // ─── Reset tavolo / quick-fill / draw confirm dialog (dev-only actions share one dialog) ─── One
+  // confirm dialog for all four actions, like league's PairingsCard.vue confirmDialog: only which
+  // action handleConfirm runs changes
   const confirmDialog = ref<
     { type: 'reset' | 'fill' | 'draw' | 'undraw', pairingUuid: string } | { type: 'fill-all' } | null
   >(null)
@@ -182,9 +174,8 @@ export function useCommanderRoundModals(options: {
   function requestQuickFillAll() {
     confirmDialog.value = { type: 'fill-all' }
   }
-  // "Patta" ("draw") can only be declared on an empty table, or toggled back
-  // off ("undraw") from an already-drawn one — same shared confirm dialog as
-  // reset/fill, matching league's PairingsCard.vue handleDrawTable.
+  // "Patta" (draw) can only be declared on an empty table, or toggled back ("undraw") from a drawn
+  // one; same shared dialog as reset/fill (league's handleDrawTable)
   function requestDraw(pairingUuid: string) {
     confirmDialog.value = { type: isPairingDraw(pairingUuid) ? 'undraw' : 'draw', pairingUuid }
   }

@@ -1,11 +1,8 @@
 // app\composables\useRowUpdateFlash.ts
-// Briefly flags rows whose data just changed, for a plain "just updated"
-// flash — same shape/timing as useChangeFlash.ts, but keyed by an arbitrary
-// string signature instead of a single number, since there's no single
-// up/down value to compare (e.g. a standings row changing rank/points/
-// tiebreaks all at once as a new result comes in). No gain/loss distinction
-// either: every change gets the same neutral "this just updated" tint. The
-// first signature an item is seen with never flashes, only later changes do.
+// Briefly flags rows whose data just changed ("just updated" flash), like useChangeFlash.ts but
+// keyed by an arbitrary string signature: there is no single up/down value to compare (a standings
+// row can change rank/points/tiebreaks at once). No gain/loss distinction, one neutral tint. The
+// first signature an item is seen with never flashes, only later changes
 export function useRowUpdateFlash(
   items: MaybeRefOrGetter<Array<{ key: string, signature: string }>>,
   duration = 900

@@ -1,23 +1,17 @@
 // app\composables\associates\useAssociatesRequestsTableColumns.ts
-// Extracted out of requests.vue (2026-08-16) — the column selection/order
-// was defined inline there while every other domain (locations, tournaments,
-// the roster's own useAssociatesTableColumns.ts) extracts this into its own
-// composable. Just an ordering of columns already built by
-// useAssociatesTableColumns.ts, not a second set of column definitions.
-// fallow-ignore-file code-duplication -- the destructure below necessarily
-// repeats useAssociatesTableColumns.ts's own return-statement property
-// names (it pulls out every column to reorder them below) — that's the
-// whole point of this file, not redundant code to remove.
+// Column selection/order for requests.vue, extracted like every other domain: just an ordering of
+// the columns built by useAssociatesTableColumns.ts, not a second set of definitions.
+// fallow-ignore-file code-duplication -- the destructure below repeats
+// useAssociatesTableColumns.ts's return property names (it pulls out every column to reorder them),
+// by design
 import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { Table } from '@tanstack/vue-table'
 import type { Associate } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 
-// "Mostra colonne" section dividers — ID, Stato/Richiesta/Tesseramento,
-// Consensi, Anagrafica, Nascita, Residenza, Trail (see
-// columnVisibilityGroups.ts, user request 2026-08-27). No uuid column here
-// (associates/index.vue-only), so "ID" ends up a one-item group — kept
-// anyway for the same boundary as that page.
+// "Mostra colonne" section dividers: ID, Stato/Richiesta/Tesseramento, Consensi, Anagrafica,
+// Nascita, Residenza, Trail (see columnVisibilityGroups.ts). No uuid column here (index.vue-only),
+// so "ID" is a one-item group, kept for the same boundary as that page
 const REQUESTS_VISIBILITY_SEPARATOR_BEFORE_IDS = [
   'membership_request_status', 'consent_data', 'first_name',
   'born_date', 'residency_address', 'updated_by'
@@ -51,15 +45,11 @@ export function useAssociatesRequestsTableColumns(
     membershipRequestStatusColumn,
     requestDateColumn,
     lastRenewalDateColumn,
-    // associateType before pauperwaveAssociateNumber (2026-08-29) — matches
-    // the roster's own order (associates/index.vue); this file had them
-    // swapped, the inconsistency being fixed here (user report).
+    // associateType before pauperwaveAssociateNumber, matching the roster's order
+    // (associates/index.vue)
     associateTypeColumn,
     pauperwaveAssociateNumberColumn,
-    // Consensi before personal data (user request, 2026-08-19) — matches the
-    // roster's own order (associates/index.vue), which already had this
-    // block ahead of firstNameColumn; requests.vue had it after, the
-    // inconsistency being fixed here.
+    // Consensi before personal data, matching the roster's order (associates/index.vue)
     consentDataColumn,
     consentSocialColumn,
     hasReadStatuteColumn,

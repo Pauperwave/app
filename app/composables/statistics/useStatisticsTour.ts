@@ -1,10 +1,8 @@
 // app\composables\statistics\useStatisticsTour.ts
 
-// Step order = the page's reading order (top -> bottom): navbar (start
-// button), stats row, then one step per chart — each chart tells a
-// different story, so it gets its own stop rather than being grouped with
-// its neighbors. Targets are CSS ids on real elements of the page template
-// — same convention as home/useHomeTour.ts.
+// Step order = the page's reading order (top -> bottom): navbar (start button), stats row, then one
+// step per chart (each tells a different story). Targets are CSS ids on real page elements, like
+// home/useHomeTour.ts
 export function useStatisticsTour() {
   const { t } = useI18n()
 

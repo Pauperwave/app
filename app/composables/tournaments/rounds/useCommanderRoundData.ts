@@ -1,13 +1,8 @@
 // app\composables\tournaments\rounds\useCommanderRoundData.ts
 // The shared substrate every other CommanderRoundManager.vue composable
-// (useCommanderRoundModals/useCommanderRoundSubmitHandlers/
-// useCommanderRoundLifecycle) and the template itself reads from: the raw
-// per-round queries plus every derived lookup over them (labelFor,
-// positionsFor, isPairingComplete, ...). League's own PairingsCard.vue never
-// needed an equivalent — its Pinia stores already served as this same
-// reactive substrate. Extracted 2026-09-18 once CommanderRoundManager.vue
-// had grown past 790 lines mixing this substrate with 5 unrelated modal
-// flows and the round lifecycle.
+// (useCommanderRoundModals/SubmitHandlers/Lifecycle) and the template read: the raw per-round
+// queries plus every derived lookup over them (labelFor, positionsFor, isPairingComplete, ...).
+// league's Pinia stores served this role there.
 import type { WinnerChecklistEntry } from '~/components/tournaments/single/pairing/WinnerChecklistCard.vue'
 
 export function useCommanderRoundData(options: {
@@ -26,10 +21,8 @@ export function useCommanderRoundData(options: {
   const { data: registrations } = useTournamentRegistrationsQuery(tournamentUuid)
   const { data: associatesData } = useAssociatesQuery()
   const { liveStandings, dropByPlayerUuid } = useLiveCommanderStandings(tournamentUuid)
-  // Live-updates results/kills/votes/pairings as the Telegram bot writes to
-  // a pod, so an organizer watching this round sees a player's own
-  // commander/position/kills/votes without refreshing the page (2026-09-24
-  // bug report).
+  // Live-updates results/kills/votes/pairings as the Telegram bot writes to a pod, so an organizer
+  // sees a player's input without refreshing
   useCommanderRoundResultsRealtime(tournamentUuid)
 
   const {
@@ -39,10 +32,8 @@ export function useCommanderRoundData(options: {
     rounds, pairings, registrations, associatesData, roundNumber, roundCount
   })
 
-  // Turning back round 1 doesn't return to a "previous round" (there isn't
-  // one) — turn_back_commander_round resets the tournament to
-  // registration_open instead, so the button needs its own label reflecting
-  // that different outcome.
+  // Turning back round 1 has no "previous round": turn_back_commander_round resets to
+  // registration_open, so the button needs its own label
   const isFirstRound = computed(() => roundNumber <= 1)
   const turnBackButtonLabel = computed(() => isFirstRound.value
     ? t('tournament.single.roundManager.turnBackToRegistrationButton')
@@ -83,10 +74,8 @@ export function useCommanderRoundData(options: {
     const noKills = killsFor(pairingUuid).length === 0
     return allFirst && noKills
   }
-  // Boolean "done" predicates for RoundStatusCard.vue ("Stato inserimento")
-  // — same completion signals the table cards themselves already surface
-  // (positionsFor/killsFor/commanderDeckFor/votesFor above), so the sidebar
-  // summary and the cards can never disagree on what "done" means.
+  // Boolean "done" predicates for RoundStatusCard.vue ("Stato inserimento"): the same signals the
+  // table cards surface, so they can't disagree on "done"
   function hasRankingFor(pairingUuid: string): boolean {
     return positionsFor(pairingUuid).size > 0
   }
@@ -104,9 +93,8 @@ export function useCommanderRoundData(options: {
     return votesFor(pairingUuid).some(v => v.voterUuid === playerUuid)
   }
 
-  // One entry per table that already has a real winner (position === 1,
-  // draws excluded — a draw has no actual winner, same distinction
-  // useCommanderScoring.ts's isDrawTable makes for scoring).
+  // One entry per table with a real winner (position === 1, draws excluded: a draw has no winner,
+  // like useCommanderScoring.ts's isDrawTable)
   const winners = computed<WinnerChecklistEntry[]>(() =>
     pairingsForRound.value.reduce<WinnerChecklistEntry[]>((entries, pairing) => {
       if (isPairingDraw(pairing.uuid)) return entries

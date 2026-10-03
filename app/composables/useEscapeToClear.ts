@@ -1,10 +1,8 @@
 // app\composables\useEscapeToClear.ts
-// Extracted out of useSelection.ts's own Escape handling (2026-08-27) once
-// AcceptancePicker.vue needed the identical guard for its two plain
-// Record<string, boolean> row-selection refs — UTable's own
-// v-model:row-selection shape, not a Set, so it can't just use
-// useSelection() itself here. `hasSelection`/`clear` are passed in rather
-// than assumed to be a Set, so either selection model can share this.
+// Escape-to-clear guard extracted from useSelection.ts, needed by AcceptancePicker.vue for its two
+// plain Record<string, boolean> row-selection refs (UTable's v-model:row-selection shape, not a
+// Set). `hasSelection`/`clear` are passed in rather than assuming a Set, so either selection model
+// can share it
 export function useEscapeToClear(hasSelection: () => boolean, clear: () => void) {
   useEventListener('keydown', (event: KeyboardEvent) => {
     if (event.key !== 'Escape' || !hasSelection()) return

@@ -10,23 +10,18 @@ import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue
 import RowActionsMenu from '~/components/ui/RowActionsMenu.vue'
 import type { Selection } from '~/composables/useSelection'
 
-// Pure config (depends only on t()) — extracted from the page to isolate the ~110
-// lines of column definitions from the rest of the view's logic.
-// Direct import from #components instead of resolveComponent(): the latter only
-// works reliably inside a .vue file's <script setup> block (where the compiler
-// rewrites it), not from a plain .ts file — used here it caused "Failed to resolve
-// component" at runtime.
+// Pure config (depends only on t()), extracted to isolate ~110 lines of column definitions from the
+// page's logic. Direct import from #components instead of resolveComponent(), which only works in a
+// .vue <script setup> (in a plain .ts it caused "Failed to resolve component")
 export function useWantedCardsTableColumns(
   selection: Selection<number>,
   rowContextMenuItems: (card: WantedCard) => DropdownMenuItem[]
 ) {
   const { t } = useI18n()
 
-  // Bound to the shared selectedIds Set (useSelection.ts), not UTable's own
-  // row-selection state — grouping (rows with subRows) needs a group's checkbox
-  // to reflect/drive all its subRows at once, which the id-Set model handles
-  // the same way as the plain "select all" header checkbox. See
-  // useGroupedSelectColumn.ts for the shared implementation.
+  // Bound to the shared selectedIds Set (useSelection.ts), not UTable's row-selection state:
+  // grouping needs a group's checkbox to drive all its subRows, like the "select all" header
+  // checkbox (see useGroupedSelectColumn.ts)
   const selectColumn = useGroupedSelectColumn<WantedCard>(selection)
 
   // Readable labels for the "Columns" menu — same i18n map used for the actual
@@ -77,9 +72,8 @@ export function useWantedCardsTableColumns(
     {
       accessorKey: 'cmc',
       header: ({ column }) => sortableHeader(t('wantedCard.columns.manaCost'), column),
-      // Conventional MTG collection ordering: colour group first (W, U, B, R, G,
-      // multicolour, colourless), then ascending mana cost — same algorithm as
-      // MagicTheGathering/league (colorGroupRank).
+      // Conventional MTG collection ordering: color group first (W, U, B, R, G, multicolor,
+      // colorless), then ascending mana cost (league's colorGroupRank)
       sortingFn: (rowA, rowB) => {
         const colorDiff = colorGroupRank(rowA.original.colorIdentity)
           - colorGroupRank(rowB.original.colorIdentity)
@@ -90,9 +84,8 @@ export function useWantedCardsTableColumns(
     {
       accessorKey: 'cardName',
       header: ({ column }) => sortableHeader(t('wantedCard.columns.name'), column),
-      // No more Scryfall link on click: hover does not exist on mobile, and
-      // CardPreviewTooltip already handles the tap with a full-screen modal — same
-      // behaviour as magic/card/Tooltip.vue in MagicTheGathering/blog.
+      // No Scryfall link on click: hover doesn't exist on mobile, and CardPreviewTooltip already
+      // handles the tap with a full-screen modal
       cell: ({ row }) => row.getIsGrouped()
         ? null
         : h(CardPreviewTooltip, { name: row.original.cardName, imageUrl: row.original.imageUrl })
@@ -194,11 +187,9 @@ export function useWantedCardsTableColumns(
     {
       id: 'actions',
       header: t('wantedCard.columns.actions'),
-      // Visible actions column (2026-08-18), matching leagues/locations/
-      // tournaments' convention — same items the right-click context menu
-      // already shows (rowContextMenuItems), just also reachable without
-      // knowing to right-click. null on a grouped (player-header) row, same
-      // as every other cell here — there's no single card to act on.
+      // Visible actions column, like leagues/locations/tournaments: the same items as the
+      // right-click menu (rowContextMenuItems). null on a grouped (player-header) row, like every
+      // other cell: there is no single card to act on
       cell: ({ row }) => row.getIsGrouped()
         ? null
         : h(RowActionsMenu, { items: rowContextMenuItems(row.original) })

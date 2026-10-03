@@ -1,7 +1,6 @@
 // app\composables\events\useEventsFilters.ts
-// fallow-ignore-file code-duplication -- mirrors useTournamentsFilters.ts's
-// date-range/status filter shape on purpose; expected to diverge once real
-// Supabase tables land
+// fallow-ignore-file code-duplication -- mirrors
+// useTournamentsFilters.ts's date-range/status filter shape on purpose; expected to diverge
 import { endOfDay, startOfDay } from 'date-fns'
 import type { Ref } from 'vue'
 import type { Event, EventStatus, Range } from '~/types'
@@ -11,22 +10,17 @@ export function useEventsFilters(data: Ref<Event[]>, range: Ref<Range>, search: 
 
   const statusFilter = ref<'all' | EventStatus>('all')
 
-  // Single source of truth for filtering, shared by both UTable :data and
-  // GridView :events — same reasoning as useTournamentsFilters.ts. Search is
-  // name-only, applied here (not a UTable globalFilterFn) so it also filters
-  // the grid view.
+  // Single source of truth for filtering, shared by UTable :data and GridView :events (like
+  // useTournamentsFilters.ts). Search is name-only and applied here, so it also filters the grid
   const filteredEvents = computed(() => data.value.filter((event) => {
     // A search looks through every event, ignoring the status and date filters.
     const query = search.value.trim().toLowerCase()
     if (query) return event.name.toLowerCase().includes(query)
     if (statusFilter.value !== 'all' && event.status !== statusFilter.value) return false
     const startDate = new Date(event.startDate)
-    // See useTournamentsFilters.ts's own comment — both range bounds land
-    // at an exact moment (midnight for a picked end day, "now" including
-    // today's real time-of-day for the page's own un-picked default start)
-    // rather than covering the whole day, so an event earlier/later that
-    // same day needs both bumped to start/end-of-day or it's wrongly
-    // excluded.
+    // See useTournamentsFilters.ts: both range bounds land at an exact moment (midnight for a
+    // picked end day, "now" for the un-picked default start), so both need bumping to
+    // start/end-of-day
     const inRange = startDate >= startOfDay(range.value.start)
       && startDate <= endOfDay(range.value.end)
     return inRange
@@ -44,8 +38,7 @@ export function useEventsFilters(data: Ref<Event[]>, range: Ref<Range>, search: 
     return counts
   })
 
-  // Icons reused from EVENT_STATUS_ICONS — collapse to icon-only below `lg`
-  // via StatusFilterGroup's own icon prop (user request, 2026-08-24).
+  // Icons reused from EVENT_STATUS_ICONS; icon-only below `lg` via StatusFilterGroup's icon prop
   const statusTabs = computed<
     { label: string, value: 'all' | EventStatus, count?: number, icon?: string }[]
   >(() => [

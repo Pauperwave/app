@@ -1,10 +1,7 @@
 // app\composables\useCopyToClipboard.ts
-// Extracted out of useAssociatesRowActions.ts and usePlayersRowActions.ts
-// (2026-08-29, fallow:dupes) — byte-identical copy-to-clipboard-with-toast
-// helper, already cross-referenced by comment in both ("Same clipboard
-// pattern as ...") before being pulled out here. Generic error title
-// (common.copyErrorTitle) since there's nothing domain-specific to say on
-// failure — same reasoning as the original comments.
+// Copy-to-clipboard-with-toast helper shared by useAssociatesRowActions.ts and
+// usePlayersRowActions.ts. A generic error title (common.copyErrorTitle), as there is nothing
+// domain-specific to say on failure
 export function useCopyToClipboard() {
   const { t } = useI18n()
   const toast = useToast()

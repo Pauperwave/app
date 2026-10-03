@@ -1,8 +1,7 @@
 // app\composables\rulesets\useRulesetsWithPointsQuery.ts
-// Full ruleset list with every category's point value, for the /rulesets
-// "Gestione" management tab (user request, 2026-09-17) — separate from the
-// lighter useRulesetsQuery.ts (uuid/name only, used by select dropdowns
-// elsewhere) since this one needs the full ruleset__points join.
+// Full ruleset list with every category's point value, for the /rulesets "Gestione" tab: separate
+// from the lighter useRulesetsQuery.ts (uuid/name only, for select dropdowns) since it needs the
+// ruleset__points join
 import { mapRulesetPoints } from '#shared/utils/tournaments/rulesetPoints'
 
 export interface RulesetWithPoints {

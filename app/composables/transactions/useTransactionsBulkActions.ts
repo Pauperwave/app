@@ -1,22 +1,15 @@
 // app\composables\transactions\useTransactionsBulkActions.ts
-// Bulk delete over a set of selected transactions (useSelection.ts) — same
-// shape as useTournamentsBulkActions.ts/useWantedCardsBulkActions.ts, except
-// no undo window: useTransactionsRowActions.ts's own single-row confirmDelete
-// already deliberately skips it ("a payment is a financial record, not
-// something to silently commit a few seconds after the confirm click") — the
-// same reasoning applies here, so this awaits the mutation directly instead
-// of going through useUndoableAction.ts.
+// Bulk delete over the selected transactions (useSelection.ts), like
+// useTournamentsBulkActions.ts/useWantedCardsBulkActions.ts but with no undo window: a payment is a
+// financial record (see useTransactionsRowActions.ts's confirmDelete), so this awaits the mutation
+// instead of useUndoableAction.ts
 import type { NewTransactionPayload, PaymentType } from '#shared/types/transactions'
 import type { Transaction } from '~/types'
 
-// Full-payload PATCH: update.post.ts (like the single-row EditModal.vue it
-// was built for) takes the whole NewTransactionPayload, not a partial patch,
-// and reconciles pauperwave_associate_renewals off of it — so a bulk field
-// change still has to resend every other field unchanged. Unlike
-// EditModal.vue's own mapping this preserves the row's real eventUuid
-// instead of hardcoding null: that null-out is a known simplification of the
-// form (no widget for it there), not something worth reproducing here where
-// the value's already on hand.
+// Full-payload PATCH: update.post.ts takes the whole NewTransactionPayload (not a partial) and
+// reconciles pauperwave_associate_renewals from it, so a bulk field change resends every other
+// field unchanged. Unlike EditModal.vue's mapping it preserves the row's real eventUuid instead of
+// nulling it (that is a simplification of the form, which has no widget for it)
 function transactionToPayload(
   transaction: Transaction, overrides: Partial<NewTransactionPayload> = {}
 ): NewTransactionPayload {
@@ -48,11 +41,9 @@ export function useTransactionsBulkActions() {
   const toast = useToast()
   const { deleteTransaction, updateTransaction } = useTransactionsMutations()
 
-  // Every bulk action here mutates a financial record — same "no undo
-  // window, await the mutation behind an explicit confirm" reasoning as the
-  // single-row confirmDelete in useTransactionsRowActions.ts, extended to
-  // payment-type changes since those can also flip a
-  // pauperwave_associate_renewals row server-side (update.post.ts).
+  // Every bulk action mutates a financial record: no undo window, await behind an explicit confirm
+  // (like confirmDelete in useTransactionsRowActions.ts), extended to payment-type changes since
+  // they can also flip a pauperwave_associate_renewals row server-side (update.post.ts)
   const pendingAction = ref<PendingBulkAction | null>(null)
   const confirmOpen = ref(false)
   const processing = ref(false)

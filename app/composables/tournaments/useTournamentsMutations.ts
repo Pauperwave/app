@@ -64,10 +64,9 @@ export function useTournamentsMutations() {
     onSettled: invalidate
   })
 
-  // Also invalidates leagues (not just tournaments) — recomputeLeagueDates
-  // on the server changes the affected league(s)' starts_at/ends_at, which
-  // LEAGUES_KEY-scoped queries (the leagues list/detail pages) need to pick
-  // up too, unlike setStatus/setImage/setEntryFee above.
+  // Also invalidates leagues: recomputeLeagueDates on the server changes the affected leagues'
+  // starts_at/ends_at, which LEAGUES_KEY-scoped queries (leagues list/detail) must pick up, unlike
+  // setStatus/setImage/setEntryFee above
   const setLeague = useMutation({
     mutation: ({ id, leagueUuid }: { id: number, leagueUuid: string | null }) =>
       $fetch(`/api/tournaments/${id}/league`, { method: 'POST', body: { leagueUuid } }),

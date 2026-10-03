@@ -1,11 +1,8 @@
 // app\composables\tournaments\pairing\useAvoidPairsMutations.ts
-// Pinia Colada mutations for avoid-pairs — ported from
-// MagicTheGathering/league's useAvoidPairsMutations.ts (user request,
-// 2026-09-15): $fetch to the BFF endpoints, then invalidate the avoid-pairs
-// list so the cache refetches server truth. Payload uses associate uuids
-// (matching AvoidPairsSection.vue's player picker, itself fed by the same
-// associate identity as every other pairing composable) — the BFF endpoints
-// resolve those to players.uuid before writing.
+// Pinia Colada mutations for avoid-pairs, ported from league's useAvoidPairsMutations.ts: $fetch to
+// the BFF endpoints, then invalidate the avoid-pairs list to refetch server truth. The payload uses
+// associate uuids (like AvoidPairsSection.vue's player picker and every pairing composable); the
+// BFF endpoints resolve them to players.uuid before writing
 export interface AvoidPairPayload {
   playerA: string
   playerB: string

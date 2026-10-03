@@ -1,21 +1,16 @@
 // app\composables\useColumnVisibilityItems.ts
-// Shared "Mostra colonne" dropdown-item builder, used by players/index.vue
-// and wanted-cards/index.vue (fallow:dupes flagged this computed as an
-// identical clone) — rebuilt every time the menu opens (via `:items`), the
-// official Nuxt UI pattern (UTable docs, "Column visibility" section):
-// getAllColumns() + getCanHide() + toggleVisibility(), not a direct v-model
-// on the individual items.
+// Shared "Mostra colonne" dropdown-item builder (players/index.vue, wanted-cards/index.vue),
+// rebuilt each time the menu opens (via `:items`), the official Nuxt UI pattern (UTable docs,
+// "Column visibility"): getAllColumns() + getCanHide() + toggleVisibility(), not a v-model on the
+// items
 interface VisibilityColumn {
   id: string
   getCanHide: () => boolean
   getIsVisible: () => boolean
 }
 
-// Exported: this is the actual full shape the `table` template ref needs
-// everywhere it's typed just for this composable — players/index.vue,
-// transactions/index.vue and wanted-cards/index.vue all hand-rolled their
-// own byte-identical (or near-identical, with unused extra members) copy of
-// this interface before being pointed at this one (fallow:dupes, 2026-08-29).
+// Exported: the full shape the `table` template ref needs wherever it is typed for this composable
+// (players, transactions and wanted-cards index.vue)
 export interface VisibilityTableRef {
   tableApi?: {
     getAllColumns: () => VisibilityColumn[]

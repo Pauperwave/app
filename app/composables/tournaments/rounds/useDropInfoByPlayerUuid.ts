@@ -1,6 +1,7 @@
 // app\composables\tournaments\rounds\useDropInfoByPlayerUuid.ts
 // Who dropped from a tournament, by player uuid, with the round they dropped in and when — what the
-// "Drop R{n}" badge next to a player's name shows. Shared by the Swiss and Commander live standings.
+// "Drop R{n}" badge next to a player's name shows. Shared by the Swiss and Commander live
+// standings.
 import type { SwissDropInfo } from '~/types'
 
 export function useDropInfoByPlayerUuid(tournamentUuid: MaybeRefOrGetter<string>) {

@@ -5,15 +5,13 @@ import { PAYMENT_TYPES } from '#shared/types/transactions'
 import type { PaymentType } from '#shared/types/transactions'
 import type { Range, Transaction } from '~/types'
 
-// 'errors' and 'comped' are synthetic pseudo-types, not real payment_type
-// values — 'errors' is a cross-cutting "needs manual attention" filter (see
-// needsAttention, transactionIssues.ts), 'comped' slices by payment_method
-// instead of payment_type (a comped payment can be any payment_type).
+// 'errors' and 'comped' are synthetic pseudo-types, not payment_type values: 'errors' is a
+// cross-cutting "needs manual attention" filter (see needsAttention, transactionIssues.ts),
+// 'comped' slices by payment_method (a comped payment can be any payment_type)
 export type TransactionTypeFilter = 'all' | PaymentType | 'errors' | 'comped'
 
-// typeFilter is passed in, not created here: the page keeps it synced with
-// ?type= in the URL (same convention associates/index.vue uses for its own
-// status tab), so the composable doesn't own that piece of state.
+// typeFilter is passed in: the page keeps it synced with ?type= in the URL (like
+// associates/index.vue's status tab), so this composable doesn't own it
 export function useTransactionsFilters(
   data: Ref<Transaction[]>,
   range: Ref<Range>,
@@ -24,10 +22,8 @@ export function useTransactionsFilters(
   // Single source of truth for filtering, shared by both UTable :data and any
   // future summary cards — same reasoning as useWantedCardsFilters.ts.
   const filteredTransactions = computed(() => data.value.filter((transaction) => {
-    // Bypasses the date range on purpose: these are rare, real data problems
-    // that need fixing regardless of which period happens to be selected —
-    // filtering them out because they fall outside the current range would
-    // defeat the point of a "needs attention" tab.
+    // Bypasses the date range on purpose: these are rare real data problems to fix whatever period
+    // is selected, so filtering them out would defeat a "needs attention" tab
     if (typeFilter.value === 'errors') return needsAttention(transaction)
     if (typeFilter.value === 'comped' && transaction.payment_method !== 'Comped') return false
     if (typeFilter.value !== 'all' && typeFilter.value !== 'comped'
@@ -54,10 +50,9 @@ export function useTransactionsFilters(
     return counts
   })
 
-  // Icons reused from PAYMENT_TYPE_BADGE_CONFIG (single source of truth for
-  // "which icon represents which payment type", also used by PaymentTypeBadge
-  // and the payment_type table column) — collapse to icon-only below `lg` via
-  // StatusFilterGroup's own icon prop (user request, 2026-08-24).
+  // Icons reused from PAYMENT_TYPE_BADGE_CONFIG (the single source for payment-type icons, also
+  // used by PaymentTypeBadge and the payment_type column); icon-only below `lg` via
+  // StatusFilterGroup's icon prop
   const typeTabs = computed<
     { label: string, value: TransactionTypeFilter, count?: number, icon?: string }[]
   >(() => [

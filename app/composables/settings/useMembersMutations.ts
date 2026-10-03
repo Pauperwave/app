@@ -1,13 +1,11 @@
 // app\composables\settings\useMembersMutations.ts
 import type { MemberRole } from '#shared/types/settings'
 
-// assign_role is called directly via the Supabase client, not through a BFF
-// endpoint like every other write in this app (ADR-007's "never direct
-// Supabase writes from client" convention) — it's SECURITY DEFINER and fully
-// self-guards permission internally (is_admin_or_above, role_locked, the
-// super_admin-only carve-out for granting/touching super_admin, migrations
-// 20260817100000/20260823130000/20260823140000), same precedent as
-// useUserRole.ts's own direct supabase.rpc('get_user_role', ...) call.
+// assign_role is called directly via the Supabase client, not a BFF endpoint (an exception to
+// ADR-007's "never direct Supabase writes from client"): it is SECURITY DEFINER and self-guards
+// permission (is_admin_or_above, role_locked, the super_admin-only carve-out, migrations
+// 20260817100000/20260823130000/20260823140000), like useUserRole.ts's direct
+// supabase.rpc('get_user_role', ...)
 export function useMembersMutations() {
   const supabase = useSupabaseClient()
   const queryCache = useQueryCache()

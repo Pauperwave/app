@@ -1,7 +1,6 @@
 // app\composables\finance\useFinanceSummary.ts
-// Aggregates /finance's two summary tables (by month, by payment type) off
-// the same 'transactions' Pinia Colada cache /transactions itself reads —
-// no separate fetch, no separate source of truth.
+// Aggregates /finance's two summary tables (by month, by payment type) off the same 'transactions'
+// Pinia Colada cache /transactions reads: no separate fetch or source of truth
 import { eachMonthOfInterval, endOfYear, format, startOfYear } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { PAYMENT_METHODS, PAYMENT_TYPES } from '#shared/types/transactions'
@@ -19,32 +18,25 @@ import type {
 
 export * from './financeSummaryTypes'
 
-// Shared by byFormat's own `cost` and byCategory's fixed-row aggregation
-// below. Strict uniformity, not "most frequent" — a mode picked a plausible-
-// looking but wrong number for 'Token Purchase' (gettoni are bought in
-// variable quantities per transaction — 2.50€/gettone, but a purchase of 3
-// totals 7.50€, so no single amount is "the" price; mode would just pick
-// whichever total happened to repeat most, which isn't the per-gettone cost)
-// — only show a cost when every non-Comped transaction agrees on the exact
-// same amount (user request, 2026-08-24: "mettilo solo se è sempre uguale in
-// tutte le tabelle"). All-Comped (e.g. Premodern: 116 free entries, 0 paid)
-// is still an explicit 0€, not "unknown" — only a genuinely empty category
-// (no transactions at all) stays null.
+// Shared by byFormat's `cost` and byCategory's fixed-row aggregation. Strict uniformity, not "most
+// frequent": gettoni are bought in variable quantities (2.50€ each, a purchase of 3 totals 7.50€),
+// so no single amount is "the" price and a mode would pick whichever total repeated most. A cost
+// shows only when every non-Comped transaction has the exact same amount. All-Comped (e.g.
+// Premodern: 116 free entries) is an explicit 0€; only a category with no transactions is null.
 function resolveCost(amountCounts: Map<number, number>, count: number): number | null {
   if (amountCounts.size === 1) return [...amountCounts.keys()][0]!
   if (amountCounts.size === 0) return count > 0 ? 0 : null
   return null
 }
 
-// Shared by byFormat/byType/byMethodCost — each builds a Map of rows keyed
-// by a fixed dimension (format/type/method), then needs the sum of every
-// row's own total to compute a share-of-grand-total percentage.
+// Shared by byFormat/byType/byMethodCost: each builds a Map of rows keyed by a fixed dimension,
+// then needs the sum of every row's total for a share-of-grand-total percentage
 function computeGrandTotal(rows: Iterable<{ total: number }>): number {
   return [...rows].reduce((sum, row) => sum + row.total, 0)
 }
 
-// Shared by byTournament/byFormat — both only count transactions with a
-// resolved tournament_uuid FK (see byTournament's own comment on why).
+// Shared by byTournament/byFormat: both only count transactions with a resolved tournament_uuid FK
+// (see byTournament)
 function resolveTournament(
   transaction: Transaction, tournamentsByUuid: Map<string, Tournament>
 ) {
@@ -61,8 +53,8 @@ interface PaymentMethodTotals {
   posTotal: number
 }
 
-// Shared by aggregateCategoryTransactions/byFormat — both accumulate the
-// same three payment-method sub-totals per transaction.
+// Shared by aggregateCategoryTransactions/byFormat: both accumulate the same three payment-method
+// sub-totals per transaction
 function addPaymentMethodTotal(totals: PaymentMethodTotals, transaction: Transaction) {
   if (transaction.payment_method === 'PayPal') totals.paypalTotal += transaction.payment_amount
   if (transaction.payment_method === 'Cash') totals.cashTotal += transaction.payment_amount
@@ -78,11 +70,9 @@ interface CategoryAggregate {
   total: number
 }
 
-// Shared by byCategory's associationFee/eventFee/tokenPurchase/donation rows
-// — a plain "sum this list of transactions" pass, no format/event grouping
-// (that's byFormat's job, reused verbatim for the 'format' rows instead of
-// re-aggregating here). `computeCost=false` for donation — see byCategory's
-// own comment on why a donation has no sticker price.
+// Shared by byCategory's associationFee/eventFee/tokenPurchase/donation rows: a plain "sum this
+// list" pass without format/event grouping (byFormat's result is reused for the 'format' rows).
+// `computeCost=false` for donation (no sticker price)
 function aggregateCategoryTransactions(
   categoryTransactions: Transaction[], computeCost = true
 ): CategoryAggregate {
@@ -108,25 +98,20 @@ function aggregateCategoryTransactions(
 }
 
 export function useFinanceSummary(transactions: Ref<Transaction[]>, year: Ref<number>) {
-  // Same 'tournaments' Pinia Colada key /tournaments and the transactions
-  // table's own Evento column already read — stageNumber comes pre-computed
-  // (assignTournamentStageNumbers), not re-derived here.
+  // Same 'tournaments' Pinia Colada key as /tournaments and the transactions table's Evento column;
+  // stageNumber comes pre-computed (assignTournamentStageNumbers)
   const { data: tournamentsData } = useTournamentsQuery()
   const tournamentsByUuid = computed(() =>
     new Map((tournamentsData.value ?? []).map(tournament => [tournament.uuid, tournament])))
 
-  // Same reasoning as tournamentsByUuid above, for byEvent's own startDate
-  // column (user request, 2026-08-23 — the summary tables read "a bit bare"
-  // with just name/count/total).
+  // Same reasoning as tournamentsByUuid above, for byEvent's startDate column
   const { data: eventsData } = useEventsQuery()
   const eventsByUuid = computed(() =>
     new Map((eventsData.value ?? []).map(event => [event.uuid, event])))
 
-  // Only transactions actually linked to a tournament (tournament_uuid) count
-  // here — a Tournament Fee payment whose FK match failed at import time
-  // (see .scratch/import-transactions.mjs) has no tournament to attribute it
-  // to and is excluded, same as the "Evento" column falling back to plain
-  // text for those rows.
+  // Only transactions linked to a tournament (tournament_uuid) count: a Tournament Fee whose FK
+  // match failed at import has nothing to attribute it to and is excluded, like the "Evento" column
+  // falling back to plain text
   const byTournament = computed<FinanceTournamentSummaryRow[]>(() => {
     const rows = new Map<string, FinanceTournamentSummaryRow>()
     for (const transaction of transactions.value) {
@@ -161,13 +146,10 @@ export function useFinanceSummary(transactions: Ref<Transaction[]>, year: Ref<nu
     return [...rows.values()].sort((a, b) => b.total - a.total)
   })
 
-  // Same "only rows with a resolved FK count" rule as byTournament above —
-  // event_name alone isn't enough to group by (gettoni rows reuse that field
-  // for a coin count instead of the event's real name, see
-  // parseGettoniCount), so this needs the real event.uuid FK, not just
-  // non-empty text. 'Token Purchase' rows still belong to their event's own
-  // row (rolled into gettoniCount/gettoniTotal, not count/total — see
-  // FinanceEventSummaryRow), rather than being dropped entirely.
+  // Same "only rows with a resolved FK count" rule as byTournament: event_name alone can't group
+  // (gettoni rows reuse it for a coin count, see parseGettoniCount), so this needs the real
+  // event.uuid. 'Token Purchase' rows still belong to their event's row (rolled into
+  // gettoniCount/gettoniTotal, not count/total, see FinanceEventSummaryRow)
   const byEvent = computed<FinanceEventSummaryRow[]>(() => {
     const rows = new Map<string, FinanceEventSummaryRow>()
     for (const transaction of transactions.value) {
@@ -204,11 +186,9 @@ export function useFinanceSummary(transactions: Ref<Transaction[]>, year: Ref<nu
     return [...rows.values()].sort((a, b) => b.combinedTotal - a.combinedTotal)
   })
 
-  // Direct pass over transactions.value (not byTournament.value) — computing
-  // `cost` needs the individual payment_amount per transaction across every
-  // tournament of a format, which byTournament's own per-tournament sums
-  // don't preserve. Same "only rows with a resolved tournament FK" filter as
-  // byTournament above, so the two stay numerically consistent.
+  // Direct pass over transactions.value, not byTournament.value: `cost` needs each payment_amount
+  // across every tournament of a format, which per-tournament sums don't preserve. Same "resolved
+  // tournament FK" filter as byTournament
   const byFormat = computed<FinanceFormatSummaryRow[]>(() => {
     const rows = new Map<string, FinanceFormatSummaryRow>()
     const tournamentUuidsByFormat = new Map<string, Set<string>>()
@@ -260,15 +240,10 @@ export function useFinanceSummary(transactions: Ref<Transaction[]>, year: Ref<nu
     return [...rows.values()].sort((a, b) => b.total - a.total)
   })
 
-  // The page's opening summary table (user request, 2026-08-24) — see
-  // FinanceCategoryType's own comment for why this is scalable rather than a
-  // fixed list of named tournaments/events. 'donation' passes
-  // computeCost=false to aggregateCategoryTransactions — no sticker price by
-  // nature ("Donazioni non ha un costo fisso"). Every other row's cost
-  // requires every non-Comped transaction to agree on the exact same amount
-  // ("mettilo solo se è sempre uguale in tutte le tabelle") — except
-  // 'tokenPurchase', overridden below to total/quantity instead (see
-  // FinanceCategoryRow's own `quantity` comment for why).
+  // The page's opening summary table (see FinanceCategoryType for why it is scalable). 'donation'
+  // passes computeCost=false (no sticker price); every other row's cost needs all non-Comped
+  // transactions to share one amount, except 'tokenPurchase', overridden below to total/quantity
+  // (see FinanceCategoryRow's `quantity`)
   const byCategory = computed<FinanceCategoryRow[]>(() => {
     const associationFee = aggregateCategoryTransactions(
       transactions.value.filter(transaction => transaction.payment_type === 'Association Fee')
@@ -311,11 +286,8 @@ export function useFinanceSummary(transactions: Ref<Transaction[]>, year: Ref<nu
     ]
   })
 
-  // Single pass building a Map keyed by type, same shape as byTournament/
-  // byEvent/byFormat/byMonth above — was PAYMENT_TYPES.map() with a
-  // .filter()+.reduce() per type (N full scans of transactions instead of
-  // one), only worth fixing for consistency, not performance, at this
-  // dataset size (user request, 2026-08-23).
+  // Single pass building a Map keyed by type, like byTournament/byEvent/byFormat/byMonth
+  // (consistency, not performance)
   const byType = computed<FinanceTypeSummaryRow[]>(() => {
     const rows = new Map<PaymentType, FinanceTypeSummaryRow>(
       PAYMENT_TYPES.map(type => [type, { type, count: 0, total: 0, average: 0, share: 0 }])
@@ -336,7 +308,7 @@ export function useFinanceSummary(transactions: Ref<Transaction[]>, year: Ref<nu
   const grandTotal = computed(() => byType.value.reduce((sum, row) => sum + row.total, 0))
   const grandCount = computed(() => byType.value.reduce((sum, row) => sum + row.count, 0))
 
-  // Same single-pass shape as byType above.
+  // Same single-pass shape as byType above
   const byMethodCost = computed<FinanceMethodCostRow[]>(() => {
     const rows = new Map<PaymentMethod, FinanceMethodCostRow>(
       PAYMENT_METHODS.map(method => [method, {
@@ -378,13 +350,9 @@ export function useFinanceSummary(transactions: Ref<Transaction[]>, year: Ref<nu
     }
   }
 
-  // "YYYY-MM" is both the sort key and the Map key — chronological order
-  // falls out of a plain string sort, no separate Date parsing needed.
-  // Backfilled across the whole selected `year` (user request, 2026-08-23,
-  // extended 2026-08-24 to key off the year switcher rather than always
-  // "the real current year") — a month with no transactions used to just
-  // not appear, which read as a break in the monthly trend chart instead
-  // of a real zero.
+  // "YYYY-MM" is both the sort key and the Map key (chronological order falls out of a string
+  // sort). Backfilled across the whole selected `year`, since a month with no transactions would
+  // otherwise read as a break in the trend chart
   const byMonth = computed<FinanceMonthSummaryRow[]>(() => {
     const rows = new Map<string, FinanceMonthSummaryRow>()
     for (const transaction of transactions.value) {

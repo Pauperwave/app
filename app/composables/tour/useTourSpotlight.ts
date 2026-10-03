@@ -8,16 +8,14 @@ export interface UseTourSpotlightOptions {
   /** Extra space (px) around the target's bounding rect. @default 8 */
   padding?: number
   /**
-   * CSS color for the dimmed area. Any valid CSS color works, including a
-   * theme token (e.g. `var(--ui-bg-inverted)`).
-   * @default 'rgb(0 0 0 / 0.6)'
+   * CSS color for the dimmed area, including a theme token (e.g. `var(--ui-bg-inverted)`). @default
+   * 'rgb(0 0 0 / 0.6)'
    */
   dimColor?: string
 }
 
-// reka-ui's ReferenceElement.getBoundingClientRect() can return a real
-// DOMRect or a plain object (virtual elements) — only these fields are
-// actually used here, so this avoids fighting the union type.
+// reka-ui's ReferenceElement.getBoundingClientRect() returns a real DOMRect or a plain object
+// (virtual elements): only these fields are used
 interface Rect {
   top: number
   left: number
@@ -25,12 +23,10 @@ interface Rect {
   height: number
 }
 
-// useTour (Nuxt UI) anchors only the Popover — it doesn't dim the rest of
-// the page around the highlighted element. This wraps a tour instance to
-// track the current target's bounding rect and derive a spotlight overlay
-// style, recomputed on step change, target resize (ResizeObserver, for
-// content reflow the window never sees), and window resize/scroll (capture
-// phase, since the target may live inside a scrollable container).
+// useTour (Nuxt UI) anchors only the Popover and doesn't dim the page. This wraps a tour to track
+// the target's bounding rect and derive a spotlight overlay style, recomputed on step change,
+// target resize (ResizeObserver, for reflow the window never sees) and window resize/scroll
+// (capture phase, since the target may sit in a scrollable container)
 export function useTourSpotlight(tour: UseTourReturn, options: UseTourSpotlightOptions = {}) {
   const padding = options.padding ?? DEFAULT_PADDING
   const dimColor = options.dimColor ?? DEFAULT_DIM_COLOR
@@ -46,25 +42,21 @@ export function useTourSpotlight(tour: UseTourReturn, options: UseTourSpotlightO
 
   const throttledUpdate = useThrottleFn(update, 50)
 
-  // Only real DOM elements can be observed — virtual/CSS-selector-resolved
-  // references that turn out non-Element (or the centered null-target step)
-  // just skip it.
+  // Only real DOM elements can be observed: virtual/non-Element references (or the centered
+  // null-target step) skip it
   const resizeObserver = import.meta.client ? new ResizeObserver(update) : null
   onScopeDispose(() => resizeObserver?.disconnect())
 
-  // Single watcher instead of two: re-binds the observer to the new target
-  // and recomputes the rect in the same tick, on every step change (or when
-  // the same step's target resolves to a different element, e.g. a v-if
-  // swap) — avoids two independently-ordered watcher callbacks for what is
-  // really one "target changed" event.
+  // A single watcher re-binds the observer and recomputes the rect in the same tick on every
+  // "target changed" event (step change, or the same step resolving to another element, e.g. a v-if
+  // swap), avoiding two independently-ordered watchers
   watch(
     [() => tour.index.value, () => tour.open.value, () => tour.reference.value],
     () => {
       const target = tour.reference.value
       resizeObserver?.disconnect()
-      // `Element` is a browser global, undefined during SSR — short-circuit
-      // on resizeObserver (already client-only via import.meta.client) so
-      // `instanceof Element` is never evaluated server-side.
+      // `Element` is undefined during SSR: short-circuit on resizeObserver (client-only) so
+      // `instanceof Element` never runs server-side
       if (resizeObserver && target instanceof Element) resizeObserver.observe(target)
       nextTick(update)
     },
@@ -74,22 +66,16 @@ export function useTourSpotlight(tour: UseTourReturn, options: UseTourSpotlightO
   useEventListener(window, 'resize', update)
   useEventListener(window, 'scroll', throttledUpdate, true)
 
-  // Step with no target (centered, e.g. the final one): no rectangle to punch out —
-  // instead of switching to a full-screen box with backgroundColor (a different
-  // property from boxShadow, so the CSS transition cannot interpolate between them
-  // and jumps abruptly), a zero-width box at the center of the viewport keeps the
-  // same box-shadow: the 9999px spread still covers the whole screen, while
-  // top/left/width/height stay the only properties that change, so the transition
-  // remains smooth.
+  // Step with no target (centered, e.g. the final one): instead of a full-screen box with
+  // backgroundColor (a different property from boxShadow, so the transition jumps), a zero-width
+  // box at the viewport center keeps the same box-shadow (the 9999px spread still covers the
+  // screen), so only top/left/width/height change and the transition stays smooth
   const spotlightStyle = computed(() => {
     const rect = highlightRect.value
-    // Nuxt UI's own null-target anchor (`reference.value` for a step with no
-    // `target`) is a virtual element whose getBoundingClientRect() already
-    // reports width/height 0 at the viewport center — not the `null` this
-    // composable's own `update()` returns when `reference` is genuinely
-    // absent. Padding must be skipped for that already-zero-size rect too,
-    // or the two 8px paddings turn it into a 16x16 box that `rounded-lg`
-    // renders as a circle instead of a rectangle.
+    // Nuxt UI's null-target anchor is a virtual element whose getBoundingClientRect() already
+    // reports 0 width/height at the viewport center (not the `null` update() returns when
+    // `reference` is absent): skip padding for it too, or the paddings turn it into a 16x16 box
+    // that `rounded-lg` renders as a circle
     const hasArea = rect && (rect.width > 0 || rect.height > 0)
     const box = hasArea
       ? {

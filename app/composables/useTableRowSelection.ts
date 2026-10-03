@@ -1,9 +1,8 @@
 // app\composables\useTableRowSelection.ts
-// Row-selection + shift-click range-select, extracted out of AcceptancePicker.vue
-// once "Pre-registrati" and "Iscritti (Pagato)" needed byte-identical copies of
-// it (user request, 2026-08-27) — same checkbox-header-with-indeterminate-state
-// pattern as league's own WaitingListTable. Works with any UTable-backed list
-// (takes the row items + a getRowId), nothing AcceptancePicker-specific.
+// Row-selection + shift-click range-select, extracted from AcceptancePicker.vue (both
+// "Pre-registrati" and "Iscritti (Pagato)" needed it), with the
+// checkbox-header-with-indeterminate-state pattern of league's WaitingListTable. Works with any
+// UTable-backed list (row items + a getRowId)
 import type { Row, Table } from '@tanstack/vue-table'
 
 export function useTableRowSelection<T>(
@@ -24,11 +23,9 @@ export function useTableRowSelection<T>(
       Reflect.deleteProperty(rowSelection.value, getRowId(item))
   }
 
-  // Only needed for the checkbox path — its `update:modelValue` reports the
-  // new boolean, not the click event, so the shiftKey has to be captured
-  // separately from the checkbox's own `click` (fires first). The row-click
-  // path (handleRowSelect below) gets the real Event and reads `.shiftKey`
-  // off it directly.
+  // Only for the checkbox path: its `update:modelValue` reports the new boolean, not the click
+  // event, so shiftKey is captured from the checkbox's own `click` (fires first). The row-click
+  // path (handleRowSelect) gets the real Event and reads `.shiftKey` directly
   let checkboxShiftKey = false
   let lastIndex: number | null = null
 
@@ -37,15 +34,10 @@ export function useTableRowSelection<T>(
     checkboxShiftKey = event.shiftKey
   }
 
-  // A shift-click range builds the next selection object directly off our own
-  // `rowSelection` ref and assigns it once — NOT a loop of `row.toggleSelected()`
-  // calls. UTable's row-selection is bound via v-model, and TanStack's internal
-  // table only re-syncs its state.rowSelection from that ref on the next
-  // reactive flush, not synchronously mid-function — N synchronous
-  // toggleSelected() calls in a loop each compute their patch against the same
-  // pre-loop snapshot, so only the last call's write survives. Building the
-  // whole object from `rowSelection.value` — always current, since it's our
-  // own ref — sidesteps that entirely.
+  // A shift-click range builds the next selection from our own `rowSelection` ref and assigns it
+  // once, NOT a loop of `row.toggleSelected()`: UTable's row-selection is bound via v-model and
+  // TanStack only re-syncs from that ref on the next reactive flush, so N synchronous toggles each
+  // patch the same pre-loop snapshot and only the last write survives
   function toggleRowSelection<TRow>(
     table: Table<TRow>, row: Row<TRow>, value: boolean, shiftKey: boolean
   ) {
@@ -73,10 +65,8 @@ export function useTableRowSelection<T>(
     checkboxShiftKey = false
   }
 
-  // Clicking anywhere on a row toggles its own checkbox — UTable's own
-  // `onSelect` prop already skips clicks inside a <button>/<a> (see Nuxt UI's
-  // Table.vue), so this doesn't fight the checkbox's own click handling or a
-  // row's other action buttons.
+  // Clicking a row toggles its checkbox: UTable's `onSelect` already skips clicks inside a
+  // <button>/<a> (Nuxt UI Table.vue), so it doesn't fight the checkbox or action buttons
   const tableRef = useTemplateRef<{ tableApi: Table<T> }>(tableRefName)
 
   function handleRowSelect(event: Event, row: Row<T>) {

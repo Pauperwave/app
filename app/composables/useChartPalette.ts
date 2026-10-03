@@ -1,13 +1,10 @@
 // app\composables\useChartPalette.ts
-// Qualitative palette for chart series that have no domain-specific color of
-// their own (unlike e.g. tournament formats, which already have a
-// per-format color everywhere in the app via useFormatColor.ts, or
-// membership status, whose success/warning/error/neutral badge colors carry
-// real meaning — renewed elsewhere, not just picked for this chart). Derived
-// from the app's actual primary (app.config.ts's ui.primary: 'indigo',
+// Qualitative palette for chart series with no domain-specific color (unlike tournament formats,
+// colored by useFormatColor.ts, or membership status, whose badge colors carry meaning). Derived
+// from the app's primary (app.config.ts ui.primary: 'indigo',
 // #6366F1) via TheColorAPI's triad/quad/complement schemes
-// (https://www.thecolorapi.com/scheme?hex=6366F1&mode=...), so every chart
-// using it reads as "part of this app" instead of an arbitrary color pick.
+// (https://www.thecolorapi.com/scheme?hex=6366F1&mode=...), so charts read as "part of this app"
+// instead of an arbitrary pick
 export const CHART_PALETTE = [
   'var(--ui-primary)', // indigo — the app's own primary, always first
   '#E64E54', // coral red (triad)

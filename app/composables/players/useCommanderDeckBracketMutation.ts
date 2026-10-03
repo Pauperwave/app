@@ -1,7 +1,6 @@
 // app\composables\players\useCommanderDeckBracketMutation.ts
-// Sets a deck's power-level "Bracket" rating — pairs with
-// BracketPickerModal.vue on CommanderDecksCard.vue's own table (user
-// request 2026-09-16: copy league's bracket system, adapted to this app).
+// Sets a deck's power-level "Bracket" rating: pairs with BracketPickerModal.vue on
+// CommanderDecksCard.vue's table (league's bracket system, adapted)
 export function useCommanderDeckBracketMutation(playerUuid: MaybeRefOrGetter<string | undefined>) {
   const queryCache = useQueryCache()
   const toast = useToast()

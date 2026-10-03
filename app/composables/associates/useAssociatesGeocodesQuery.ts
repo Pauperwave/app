@@ -13,11 +13,8 @@ export function useAssociatesGeocodesQuery() {
   return useQuery({
     key: ASSOCIATES_GEOCODES_KEY,
     query: async (): Promise<AssociateGeocode[]> => {
-      // PostgREST's silent 250-row cap (see fetchAllRows.ts) — a bare
-      // .select() here left the map/roster missing exactly (total - 250)
-      // geocodes once the table crossed that threshold (bug, user report
-      // 2026-08-27: "74 associati non ancora geolocalizzati" right after a
-      // full geocode run that actually succeeded for all of them).
+      // PostgREST's silent row cap (see fetchAllRows.ts): a bare .select() left the map/roster
+      // missing (total - cap) geocodes once the table crossed it
       const fetchPage = (from: number, to: number) => supabase
         .from('pauperwave_associate_geocodes')
         .select('associate_uuid, latitude, longitude')

@@ -1,8 +1,7 @@
 // app\composables\tournaments\rounds\useTournamentRoundResultsQuery.ts
-// Pinia Colada query for a Commander tournament's per-player round results
-// (placement + chosen commander deck), across every round — same
-// "tournament-wide, filter client-side" convention as
-// useTournamentPairingsQuery.ts.
+// Pinia Colada query for a Commander tournament's per-player round results (placement + chosen
+// commander deck) across every round: "tournament-wide, filter client-side" like
+// useTournamentPairingsQuery.ts
 export interface TournamentRoundResult {
   pairingUuid: string
   playerUuid: string

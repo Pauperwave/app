@@ -1,8 +1,6 @@
 // app\composables\tournaments\rounds\useTournamentRoundsMutations.ts
-// Round-lifecycle writes for Commander tournaments — round 1 (user request,
-// 2026-09-15), then advance-round/turn-back-round (2026-09-16) once round
-// 1's own read/result-entry UI existed. Same "every write goes through a
-// server/api endpoint" convention as useTournamentRegistrationsMutations.ts.
+// Round-lifecycle writes for Commander tournaments (round 1, advance-round, turn-back-round): every
+// write goes through a server/api endpoint, like useTournamentRegistrationsMutations.ts
 export function useTournamentRoundsMutations(tournamentUuid: MaybeRefOrGetter<string>) {
   const queryCache = useQueryCache()
 

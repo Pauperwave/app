@@ -1,15 +1,10 @@
 // app\composables\tournaments\pairing\useLiveCommanderStandings.ts
-// Reactive standings recomputed from the tournament's current
-// results/kills/votes — ported from MagicTheGathering/league's
-// useLiveStandings.ts (user request, 2026-09-15/16: copy the live-recompute
-// idea as-is), simplified to source from persisted (Pinia Colada-queried)
-// data rather than league's own Pinia-store-tracked unsaved local edits
-// (this app has no such store for this domain, and doesn't want one — see
-// CLAUDE.md's Pinia Colada + BFF convention). Since every result/kill/vote
-// mutation invalidates these same queries on settle, this recomputes the
-// moment a save lands — "live" relative to the round still being open
-// (before advance_commander_round formally persists into
-// tournament_standings), not live relative to an unsaved in-progress edit.
+// Reactive standings recomputed from the tournament's current results/kills/votes, ported from
+// league's useLiveStandings.ts but sourced from persisted (Pinia Colada) data instead of unsaved
+// local store edits (no such store here, see CLAUDE.md's Pinia Colada + BFF convention). Every
+// result/kill/vote mutation invalidates these queries, so it recomputes as soon as a save lands:
+// "live" relative to the open round (before advance_commander_round persists into
+// tournament_standings), not to an unsaved edit.
 import {
   calculatePlayerTableScore, isDrawTable, buildPosValues,
   type CommanderTableResult
@@ -21,9 +16,8 @@ export interface LiveCommanderStanding {
   playerUuid: string
   associateUuid: string
   label: string
-  // Real first-name/surname pair, alongside `label` (kept for existing
-  // display/search callers) — see TablePlayer.firstName/surname's own
-  // comment on why a blind split of `label` mishandles compound surnames.
+  // Real first-name/surname pair alongside `label` (kept for display/search callers): see
+  // TablePlayer.firstName/surname on why splitting `label` mishandles compound surnames
   firstName: string
   surname: string
   score: number
@@ -74,9 +68,8 @@ export function useLiveCommanderStandings(tournamentUuid: MaybeRefOrGetter<strin
 
     const posValues = buildPosValues(ruleset)
 
-    // One accumulator per registration (a player could in principle be
-    // registered without a standings row yet if they registered after the
-    // round started — surfaced with zeroes either way).
+    // One accumulator per registration (a player may have no standings row yet if they registered
+    // after the round started): shown with zeroes either way
     const accumulators = new Map<string, LiveCommanderStanding>()
     const brewRoundsByPlayer = new Map<string, Set<string>>()
     const playRoundsByPlayer = new Map<string, Set<string>>()
@@ -160,9 +153,7 @@ export function useLiveCommanderStandings(tournamentUuid: MaybeRefOrGetter<strin
       acc.playVoters = playVotersByPlayer.get(playerUuid)?.size ?? 0
     }
 
-    // LiveCommanderStanding already has every field StandingSortable needs
-    // (playerUuid/score/victories/kills/brewReceived/playReceived) — passed
-    // straight through rather than rebuilt into a separate object literal.
+    // LiveCommanderStanding already has every StandingSortable field: passed straight through
     return Array.from(accumulators.values()).sort(compareCommanderStandings)
   })
 

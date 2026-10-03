@@ -1,12 +1,10 @@
 // app\composables\layout\useBreadcrumbs.ts
 import type { BreadcrumbItem } from '#ui/types'
 
-// `overrides` maps a raw path segment (e.g. a uuid dynamic route param) to
-// its display label — for detail pages like /leagues/[leagueId], where the
-// segment is data-driven and can't be derived from the URL the way static
-// segments are (formatSegment's hyphen-split+title-case only makes sense for
-// route names, not ids). Checked before customLabels, so a page-supplied
-// name always wins over a generic static one.
+// `overrides` maps a raw path segment (e.g. a uuid route param) to its display label, for detail
+// pages like /leagues/[leagueId] where the segment is data-driven (formatSegment's
+// hyphen-split+title-case only suits route names, not ids). Checked before customLabels, so a
+// page-supplied name beats a generic static one
 export const useBreadcrumbs = (overrides: MaybeRefOrGetter<Record<string, string>> = {}) => {
   const route = useRoute()
   const { t } = useI18n()

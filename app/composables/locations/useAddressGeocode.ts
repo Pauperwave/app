@@ -1,11 +1,9 @@
 // app\composables\locations\useAddressGeocode.ts
-// Debounced client-side geocoding for the location form's live map preview
-// (2026-08-16, replacing the Google "output=embed" iframe hack — see
-// MapPreview.vue). Photon (komoot.io) rather than Nominatim: already the
-// geocoder this codebase uses for associates (scripts/geocode-associates.mjs),
-// free, no API key. Called directly from the client like Scryfall in
-// useScryfallCardSearch.ts — Photon is a public read-only API, no secret to
-// keep server-side, and browsers ignore a custom User-Agent header anyway.
+// Debounced client-side geocoding for the location form's live map preview (see MapPreview.vue).
+// Photon (komoot.io) rather than Nominatim: the geocoder already used for associates
+// (scripts/geocode-associates.mjs), free, no API key. Called from the client like Scryfall in
+// useScryfallCardSearch.ts: a public read-only API with no secret to hide, and browsers ignore a
+// custom User-Agent anyway
 interface PhotonResponse {
   features: { geometry: { coordinates: [number, number] } }[]
 }

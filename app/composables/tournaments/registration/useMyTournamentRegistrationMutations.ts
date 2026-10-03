@@ -1,9 +1,8 @@
 // app\composables\tournaments\registration\useMyTournamentRegistrationMutations.ts
-// Player self-registration/unregistration (RegisterButton.vue) — separate
-// from useTournamentRegistrationsMutations.ts (staff-facing, requires a
-// tournamentUuid up front and manages other players' rows too). Every write
-// goes through server/api/tournament-registrations/self-*.post.ts, same BFF
-// convention as the rest of the app.
+// Player self-registration/unregistration (RegisterButton.vue), separate from the staff-facing
+// useTournamentRegistrationsMutations.ts (which needs a tournamentUuid up front and manages other
+// players' rows). Every write goes through server/api/tournament-registrations/self-*.post.ts, the
+// BFF convention
 export function useMyTournamentRegistrationMutations() {
   const queryCache = useQueryCache()
   const toast = useToast()

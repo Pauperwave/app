@@ -1,11 +1,8 @@
 // app\composables\commanders\useCommanderStatsQuery.ts
-// Global aggregate stats per commander (pair), from the `commander_stats`
-// view (migration 20260919040000) — ported from
-// MagicTheGathering/league's useCommanderStats.ts (user request 2026-09-16:
-// copy the commander pages, adapted to this app). league's is a
-// MATERIALIZED view needing a manual refresh; this app's is a plain view
-// (always live), so there's no separate "single commander" query variant
-// like league's — useCommanderAggregate.ts filters this same list client-side.
+// Global aggregate stats per commander (pair) from the `commander_stats` view (migration
+// 20260919040000), ported from league's useCommanderStats.ts. league's is a MATERIALIZED view
+// needing a manual refresh; this app's is a plain (always live) view, so there is no
+// single-commander query variant: useCommanderAggregate.ts filters this list client-side
 export interface CommanderStatsPair {
   commander1Name: string
   commander2Name: string | null

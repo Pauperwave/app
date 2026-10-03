@@ -1,8 +1,7 @@
 // app\composables\commanders\useCommanderCatalogMutations.ts
-// Triggers the Scryfall resync job then refetches the cached catalog query
-// so newly-added commanders show up immediately without waiting for the
-// 30-day cache expiry — same "Aggiorna elenco carte" button behavior as
-// MagicTheGathering/league's own CommanderModal (user request, 2026-09-16).
+// Triggers the Scryfall resync job then refetches the cached catalog query, so new commanders show
+// up without waiting for the 30-day cache expiry (the "Aggiorna elenco carte" button, like league's
+// CommanderModal)
 export function useCommanderCatalogMutations() {
   const queryCache = useQueryCache()
   const toast = useToast()

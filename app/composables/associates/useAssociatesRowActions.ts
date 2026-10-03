@@ -1,8 +1,7 @@
 // app\composables\associates\useAssociatesRowActions.ts
-// Row actions (currently just "Modifica"), plus the edit-modal state they open —
-// shared by associates/index.vue, associates/requests.vue and associate/[slug].vue,
-// each calling this fresh (same convention as useWantedCardsRowActions.ts). Right-click
-// context menu on the table, not a dropdown column — same UX as wanted-cards' table.
+// Row actions (currently "Modifica") plus the edit-modal state they open, shared by
+// associates/index.vue, requests.vue and associate/[slug].vue (each calling this fresh, like
+// useWantedCardsRowActions.ts). A right-click context menu, as on wanted-cards
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Associate } from '~/types'
 
@@ -18,8 +17,7 @@ export function useAssociatesRowActions() {
     editModalOpen.value = true
   }
 
-  // Own modal, not part of the edit form (user request, 2026-08-27) — see
-  // NumberModal.vue's own header comment for why.
+  // Own modal, not part of the edit form (see NumberModal.vue)
   const editingNumberAssociate = ref<Associate | null>(null)
   const numberModalOpen = ref(false)
   function openNumberModal(associate: Associate) {
@@ -27,11 +25,9 @@ export function useAssociatesRowActions() {
     numberModalOpen.value = true
   }
 
-  // "Rinnova" opens TransactionsListAddModal preset to this associate (payload
-  // decision, 2026-08-12: renewal is recorded as an Association Fee payment, not
-  // a bare renewals-table insert) rather than mutating anything itself — the
-  // modal's own submit is what calls useTransactionsMutations' createTransaction,
-  // which in turn writes the pauperwave_associate_renewals row server-side.
+  // "Rinnova" opens TransactionsListAddModal preset to this associate (renewal is recorded as an
+  // Association Fee payment, not a bare renewals insert): the modal's submit calls
+  // createTransaction, which writes the pauperwave_associate_renewals row server-side
   const renewingAssociate = ref<Associate | null>(null)
   const renewModalOpen = ref(false)
   function openRenewModal(associate: Associate) {
@@ -39,9 +35,8 @@ export function useAssociatesRowActions() {
     renewModalOpen.value = true
   }
 
-  // Same permission as ApproveModal.vue (management only, RLS-enforced) — a
-  // non-admin sees the error in a toast instead of a silently-ignored update,
-  // same pattern as useWantedCardsRowActions.ts's changeStatus.
+  // Same permission as ApproveModal.vue (management only, RLS-enforced): a non-admin gets an error
+  // toast, like useWantedCardsRowActions.ts's changeStatus
   async function approve(associate: Associate) {
     try {
       await approveAssociates.mutateAsync([associate.id])
@@ -59,10 +54,8 @@ export function useAssociatesRowActions() {
     }
   }
 
-  // No confirm modal, unlike requests.vue's own bulk reject (10s undo toast)
-  // — same directness as approve()/restore() in this file; a single-row
-  // context-menu action was missing entirely until now (bug, user report
-  // 2026-08-27), the bulk toolbar button was the only way to reject.
+  // No confirm modal, unlike requests.vue's bulk reject (10s undo toast): same directness as
+  // approve()/restore()
   async function reject(associate: Associate) {
     try {
       await rejectAssociates.mutateAsync([associate.id])
@@ -80,9 +73,8 @@ export function useAssociatesRowActions() {
     }
   }
 
-  // Reverts a rejected request back to 'pending' — the counterpart to
-  // useAssociatesMutations.ts's rejectAssociates, same permission/error
-  // handling shape as approve() above.
+  // Reverts a rejected request to 'pending', the counterpart to rejectAssociates (same
+  // permission/error handling as approve())
   async function restore(associate: Associate) {
     try {
       await restoreAssociates.mutateAsync([associate.id])
@@ -104,16 +96,13 @@ export function useAssociatesRowActions() {
 
   function rowContextMenuItems(associate: Associate): DropdownMenuItem[] {
     return [
-      // Edit first, renew/pay last (user request, 2026-08-19) — was the
-      // reverse (edit at the bottom); approve/restore/copy stay in the
-      // middle, unchanged.
+      // Edit first, renew/pay last; approve/restore/copy stay in the middle
       {
         label: t('associate.rowActions.edit'),
         icon: ICONS.edit,
         onSelect: () => openEditModal(associate)
       },
-      // Only for approved associates — a pending/rejected request doesn't
-      // have a tesseramento number to speak of yet.
+      // Only for approved associates: a pending/rejected request has no tesseramento number yet
       ...(associate.membership_request_status === 'approved'
         ? [{
           label: t('associate.rowActions.editNumber'),
@@ -122,8 +111,7 @@ export function useAssociatesRowActions() {
         }]
         : []),
       { type: 'separator' as const },
-      // Only on the requests queue's pending rows — the roster never contains
-      // pending associates, so this simply never shows there.
+      // Only on the requests queue's pending rows (the roster never contains pending associates)
       ...(associate.membership_request_status === 'pending'
         ? [{
           label: t('associate.rowActions.approve'),
@@ -137,9 +125,8 @@ export function useAssociatesRowActions() {
           onSelect: () => reject(associate)
         }, { type: 'separator' as const }]
         : []),
-      // Only on rejected rows — undoes a reject that has already committed
-      // (unlike the 10s undo-toast on the bulk action, this is for a
-      // rejection from a previous session/page load).
+      // Only on rejected rows: undoes a rejection already committed (the bulk undo toast only
+      // covers the last 10s)
       ...(associate.membership_request_status === 'rejected'
         ? [{
           label: t('associate.rowActions.restore'),
@@ -160,13 +147,10 @@ export function useAssociatesRowActions() {
         disabled: !associate.email_address,
         onSelect: () => copyToClipboard(associate.email_address!, t('associate.rowActions.emailCopied'))
       },
-      // Only when there's actually something to pay for: approved, and not
-      // already paid up for the current year (membership_status 'active').
-      // Same handler either way (both just record an Association Fee
-      // payment) — only the label/icon change: "Rinnova" implies a lapsed
-      // membership (to_renew/expired), which is wrong wording for 'unpaid'
-      // (approved but never paid a single fee yet, see
-      // MEMBERSHIP_STATUS_BADGE_CONFIG's own comment on that status).
+      // Only when there's something to pay for: approved and not already paid for the current year
+      // (membership_status 'active'). Same handler either way (an Association Fee payment); only
+      // label/icon change: "Rinnova" implies a lapsed membership, wrong for 'unpaid' (approved,
+      // never paid a fee, see MEMBERSHIP_STATUS_BADGE_CONFIG)
       ...(associate.membership_request_status === 'approved' && associate.membership_status !== 'active'
         ? [{ type: 'separator' as const }, {
           label: associate.membership_status === 'unpaid'

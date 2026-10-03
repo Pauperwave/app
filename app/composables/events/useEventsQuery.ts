@@ -3,12 +3,10 @@ import type { Event, EventPartner, EventStatus } from '~/types'
 
 export const EVENTS_KEY = ['events']
 
-// Migrated off mock data (server/api/events.ts, removed) onto the real
-// `events` table — direct Supabase read + join, same pattern as
-// useTournamentsQuery.ts. tournamentCount is derived from a second, lightweight
-// read (just the event_uuid column) rather than a stored counter column —
-// Supabase JS has no GROUP BY, so counting client-side is simplest for the
-// handful of rows either table is expected to have.
+// A direct Supabase read + join on the real `events` table, like useTournamentsQuery.ts.
+// tournamentCount comes from a second lightweight read (just event_uuid) rather than a stored
+// counter: Supabase JS has no GROUP BY, so counting client-side is simplest for the few rows
+// expected
 export function useEventsQuery() {
   const supabase = useSupabaseClient()
 

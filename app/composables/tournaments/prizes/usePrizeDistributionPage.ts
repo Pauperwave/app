@@ -1,9 +1,7 @@
 // app\composables\tournaments\prizes\usePrizeDistributionPage.ts
-// State and derived data of the "prizes" step (Prizes.vue): the settings, the
-// distribution over the final standings, the per-placement rows, the chart
-// data and the linked share/pack edits. Not persisted (user decision,
-// 2026-09-17), except the organizer's "custom" shares — see
-// usePrizeDistributionPresets.
+// State and derived data of the "prizes" step (Prizes.vue): the settings, the distribution over the
+// final standings, the per-placement rows, the chart data and the linked share/pack edits. Not
+// persisted, except the organizer's "custom" shares (see usePrizeDistributionPresets)
 import type { PrizeDistributionSettings } from '~/types'
 import { usePrizeDistribution } from '~/composables/tournaments/prizes/usePrizeDistribution'
 import { usePrizeDistributionPresets } from '~/composables/tournaments/prizes/usePrizeDistributionPresets'

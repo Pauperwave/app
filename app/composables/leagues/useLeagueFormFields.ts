@@ -1,8 +1,7 @@
 // app\composables\leagues\useLeagueFormFields.ts
-// Extracted out of AddModal.vue (2026-08-16, EditModal.vue needs the same
-// schema + ruleset select options) — same reasoning as
-// useTournamentFormFields.ts: only the initial `state` values and submit
-// behavior differ between create and edit.
+// Extracted from AddModal.vue (EditModal.vue needs the same schema + ruleset select options), like
+// useTournamentFormFields.ts: only the initial `state` values and submit behavior differ between
+// create and edit
 import * as v from 'valibot'
 import type { InferOutput } from 'valibot'
 

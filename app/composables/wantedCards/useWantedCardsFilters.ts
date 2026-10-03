@@ -4,9 +4,9 @@ import type { WantedCard, WantedCardStatus } from '~/types'
 
 export type WantedCardColorFilter = 'all' | 'W' | 'U' | 'B' | 'G' | 'R' | 'C' | 'land'
 
-// manaCost feeds MagicManaCost (mana-font) directly — "land" has no real mana
-// symbol, {LAND} just maps to mana-font's own .ms-land icon (see ManaCost.vue,
-// it turns whatever sits between the braces into a lowercased CSS class).
+// manaCost feeds MagicManaCost (mana-font) directly: "land" has no mana symbol, so {LAND} maps to
+// mana-font's .ms-land (see ManaCost.vue, which turns whatever sits between the braces into a
+// lowercased CSS class)
 export interface ColorTab {
   label: string
   value: WantedCardColorFilter
@@ -19,14 +19,11 @@ export function useWantedCardsFilters(data: Ref<WantedCard[]>) {
   const currentAssociate = useCurrentAssociate()
 
   const cardNameFilter = ref('')
-  // "Searching" by default — cards already found or abandoned stay hidden until
-  // another tab is explicitly chosen.
+  // "Searching" by default: cards already found or abandoned stay hidden until another tab is
+  // chosen
   const statusFilter = ref<'all' | WantedCardStatus>('searching')
-  // Replaces the old language select + foil toggle (2026-08-15 user request) —
-  // color identity/land is the more useful axis for "does someone have a card
-  // I could trade for this". Multi-select (2026-08-15 follow-up): several tabs
-  // can be active together as a subset filter (cardMatchesColor below) —
-  // clicking "Tutte" clears the set back to "no filter".
+  // Color identity/land ("does someone have a card I could trade for this"). Multi-select: several
+  // tabs combine as a subset filter (cardMatchesColor below); "Tutte" clears the set
   const colorFilters = ref<Exclude<WantedCardColorFilter, 'all'>[]>([])
 
   function toggleColorFilter(value: WantedCardColorFilter) {
@@ -44,45 +41,38 @@ export function useWantedCardsFilters(data: Ref<WantedCard[]>) {
   function cardMatchesColor(card: WantedCard, selected: Exclude<WantedCardColorFilter, 'all'>[]): boolean {
     if (selected.length === 0) return true
 
-    // typeLine is null for requests created before migration 20260815090000
-    // that haven't been backfilled yet (scripts/backfill-wanted-cards-type-line.mjs)
-    // — they just never match "land", same as any other unresolved filter value.
+    // typeLine is null for requests created before migration 20260815090000 and not yet backfilled:
+    // they never match "land"
     const isLand = (card.typeLine ?? '').includes('Land')
     const colors = selected.filter((value): value is Exclude<WantedCardColorFilter, 'all' | 'C' | 'land'> =>
       value !== 'C' && value !== 'land')
     const hasColorless = selected.includes('C')
     const hasLand = selected.includes('land')
 
-    // Subset match (2026-08-15 user request): Verde+Blu must show mono-Verde,
-    // mono-Blu, AND Verde-Blu cards — never a 3rd color — so "strict" means "no
-    // colors outside the selection", not "exactly these colors". A single color
-    // selected is just the one-element case of this same rule (still excludes
-    // Verde-Blu when only Verde is picked).
+    // Subset match: Verde+Blu shows mono-Verde, mono-Blu AND Verde-Blu, never a 3rd color ("no
+    // colors outside the selection", not "exactly these"). A single color is the one-element case
+    // (Verde alone still excludes Verde-Blu)
     const colorSet: string[] = colors
     const matchesColors = colors.length > 0
       && card.colorIdentity.length > 0
       && card.colorIdentity.every(color => colorSet.includes(color))
     const matchesColorless = hasColorless && card.colorIdentity.length === 0
 
-    // Terra combined with a color/Incolore narrows to that color of land (e.g.
-    // Terra+Verde = green lands only); Terra alone still means any land — land
-    // is the one bucket that ANDs with the rest instead of OR-ing in, since
-    // "land AND green" is a meaningful, useful combination.
+    // Terra with a color/Incolore narrows to that color of land (Terra+Verde = green lands); Terra
+    // alone means any land. Land is the one bucket that ANDs with the rest instead of OR-ing, since
+    // "land AND green" is useful
     if (hasLand) {
       if (colors.length === 0 && !hasColorless) return isLand
       return isLand && (matchesColors || matchesColorless)
     }
 
-    // Without the Terra tab, Incolore stays land-exclusive (that's what Terra is
-    // for) — same reasoning as the original single-select design.
+    // Without the Terra tab, Incolore stays land-exclusive (that's what Terra is for)
     return (hasColorless && !isLand && card.colorIdentity.length === 0) || matchesColors
   }
 
-  // Single source of truth for filtering, used by both UTable :data and GridView
-  // :sections — there used to be two separate implementations (columnFilters via
-  // TanStack for the table, manual predicates for the grid) that could drift apart:
-  // it already happened with "Treatment" in the Cards view, where the facets came
-  // out empty.
+  // Single source of truth for filtering, used by both UTable :data and GridView :sections: two
+  // implementations (TanStack columnFilters for the table, manual predicates for the grid) drifted
+  // apart before ("Treatment" facets came out empty)
   const filteredCards = computed(() => data.value.filter((card) => {
     if (cardNameFilter.value
       && !card.cardName.toLowerCase().includes(cardNameFilter.value.toLowerCase())) return false
@@ -94,9 +84,8 @@ export function useWantedCardsFilters(data: Ref<WantedCard[]>) {
     return true
   }))
 
-  // Counts from the full unfiltered `data`, same convention as statusTabs below —
-  // a filter tab shows how many cards exist in each bucket overall, not how many
-  // survive the other active filters.
+  // Counts from the full unfiltered `data` (like statusTabs below): a tab shows how many cards
+  // exist in each bucket, not how many survive the other filters
   const statusCounts = computed(() => {
     const counts: Record<WantedCardStatus, number> = { searching: 0, found: 0, abandoned: 0 }
     for (const card of data.value) {
@@ -105,8 +94,8 @@ export function useWantedCardsFilters(data: Ref<WantedCard[]>) {
     return counts
   })
 
-  // Icons reused from WANTED_CARD_STATUS_ICONS — collapse to icon-only below
-  // `lg` via StatusFilterGroup's own icon prop (user request, 2026-08-24).
+  // Icons reused from WANTED_CARD_STATUS_ICONS; icon-only below `lg` via StatusFilterGroup's icon
+  // prop
   const statusTabs = computed<
     { label: string, value: 'all' | WantedCardStatus, count?: number, icon?: string }[]
   >(() => [
@@ -131,9 +120,6 @@ export function useWantedCardsFilters(data: Ref<WantedCard[]>) {
     }
   ])
 
-  // manaCost feeds MagicManaCost (mana-font) directly — "land" has no real mana
-  // symbol, {LAND} just maps to mana-font's own .ms-land icon (see ManaCost.vue,
-  // it turns whatever sits between the braces into a lowercased CSS class).
   const colorTabs: ColorTab[] = [
     { label: t('wantedCard.filters.colorAll'), value: 'all' },
     { label: t('wantedCard.filters.colorWhite'), value: 'W', manaCost: '{W}' },

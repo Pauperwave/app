@@ -1,12 +1,8 @@
 // app\composables\commanders\useCommanderUsageQuery.ts
-// Adapted from MagicTheGathering/league's useCommanderUsageQuery.ts (user
-// request 2026-09-16: copy the commander/vote insertion logic bit-by-bit).
-// league keys usage by numeric player_id and joins round_results ->
-// pairings for the played date; this app's per-round result already has
-// its own created_at (no separate pairings join needed) and keys everything
-// by player_uuid (this app's persistent players.uuid) instead. The counting
-// itself lives in shared/utils/commanders/commanderUsage.ts (also used by
-// the Telegram bot's history).
+// Adapted from league's useCommanderUsageQuery.ts: league keys usage by numeric player_id and joins
+// round_results -> pairings for the played date, while this app's round result has its own
+// created_at (no pairings join) and keys by player_uuid (players.uuid). The counting lives in
+// shared/utils/commanders/commanderUsage.ts (also used by the Telegram bot's history)
 import {
   buildCommanderUsageByPlayer, type CommanderUsage
 } from '#shared/utils/commanders/commanderUsage'

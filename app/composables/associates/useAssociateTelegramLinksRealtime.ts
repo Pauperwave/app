@@ -1,8 +1,8 @@
 // app\composables\associates\useAssociateTelegramLinksRealtime.ts
 // Refreshes every Telegram status icon live: the bot links an associate or updates their @username
-// from any message they send (user request, 2026-10-02). Mounted once in the default layout, not per
-// AssociateTag, so there is a single channel. Same "invalidate, don't merge payloads" approach as
-// useTournamentMatchResultsRealtime.ts; RLS limits the events to organizers/admins.
+// from any message they send. Mounted once in the default layout (a single channel), not per
+// AssociateTag. Same "invalidate, don't merge payloads" approach as
+// useTournamentMatchResultsRealtime.ts; RLS limits the events to organizers/admins
 export function useAssociateTelegramLinksRealtime() {
   const supabase = useSupabaseClient()
   const queryCache = useQueryCache()

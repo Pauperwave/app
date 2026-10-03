@@ -1,11 +1,8 @@
 // app\composables\tournaments\list\useTournamentContextMenuItems.ts
-// Extracted out of tournaments/index.vue and leagues/[leagueId]/index.vue
-// (2026-08-29) — both built the exact same edit/copy/delete additions on top
-// of useCopyLinkContextMenu's shared copy-link/copy-uuid items, byte-identical.
-// Not folded into useCopyLinkContextMenu.ts itself: that one stays generic
-// across every domain (events/leagues/locations/tournaments), while this is
-// tournaments-specific (edit/copy/delete require real CRUD, which only
-// tournaments has so far — see useCopyLinkContextMenu.ts's own comment).
+// Shared by tournaments/index.vue and leagues/[leagueId]/index.vue: the edit/copy/delete additions
+// on top of useCopyLinkContextMenu's copy-link/copy-uuid items. Not folded into
+// useCopyLinkContextMenu.ts, which stays generic across domains, while edit/copy/delete need real
+// CRUD, which only tournaments has
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Tournament } from '~/types'
 

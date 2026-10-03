@@ -12,30 +12,25 @@ export function useWantedCardsQuery() {
     query: async (): Promise<WantedCard[]> => {
       const { data, error } = await supabase
         .from('pauperwave_wanted_cards')
-        // Explicit hint on the FK column: since created_by/updated_by also
-        // reference pauperwave_associates, PostgREST can no longer work out on its
-        // own which of the three relations "associate" means.
+        // Explicit hint on the FK column: created_by/updated_by also reference
+        // pauperwave_associates, so PostgREST can't tell which of the three relations "associate"
+        // means
         .select(`*,
           associate:pauperwave_associates!player_associate_uuid(first_name, last_name),
           created_by_associate:pauperwave_associates!created_by(first_name, last_name),
           updated_by_associate:pauperwave_associates!updated_by(first_name, last_name)`)
         .is('deleted_at', null)
-        // `id` as a tiebreaker: without a fully deterministic ORDER BY, rows
-        // with an equal (or null) requested_at have no guaranteed order across
-        // query executions — an UPDATE (e.g. "Aggiorna prezzi", which only
-        // touches price columns, not requested_at) can physically relocate a
-        // row and visibly reshuffle the grid on refetch even though nothing
-        // about the request's own timing changed. Found 2026-08-15.
+        // `id` as a tiebreaker: without a deterministic ORDER BY, rows with an equal (or null)
+        // requested_at have no guaranteed order, and an UPDATE (e.g. "Aggiorna prezzi") can
+        // physically relocate a row and reshuffle the grid on refetch
         .order('requested_at', { ascending: false })
         .order('id', { ascending: true })
 
       if (error) throw error
 
-      // The DB's snake_case columns mapped onto the existing camelCase WantedCard
-      // interface (which grew out of the mock data) — avoids rewriting the whole UI
-      // (table columns, grid, filters) around the real column names. Nulls become
-      // the defaults the existing code already uses for optional fields (empty
-      // string, 0 for cmc).
+      // The DB's snake_case columns mapped onto the existing camelCase WantedCard interface (which
+      // grew from the mock data), avoiding a rewrite of the table, grid and filters. Nulls become
+      // the defaults the existing code uses for optional fields (empty string, 0 for cmc)
       return (data ?? []).map((row): WantedCard => ({
         id: row.id,
         date: row.requested_at ?? '',

@@ -1,7 +1,7 @@
 // app\composables\tournaments\list\useTournamentsTableColumns.ts
-// fallow-ignore-file code-duplication -- mirrors useEventsTableColumns.ts's
-// status-badge column shape on purpose; expected to diverge once real Supabase
-// tables land
+// fallow-ignore-file
+// code-duplication -- mirrors useEventsTableColumns.ts's status-badge column shape on purpose;
+// expected to diverge
 import { h } from 'vue'
 import { differenceInMinutes, format } from 'date-fns'
 import type { Row } from '@tanstack/vue-table'
@@ -15,10 +15,8 @@ import type { Tournament } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 
-// Shared by the three groupable columns (league/format/location, 2026-08-17
-// user request) — a group-header row's cell: expand chevron, the group's
-// label, and its tournament count. Sits alongside (not replacing) each
-// column's own leaf-row cell, which renders the badge instead.
+// Shared by the three groupable columns (league/format/location): a group-header row's cell (expand
+// chevron, group label, tournament count), beside each column's leaf-row badge cell
 function groupHeaderCell(row: Row<Tournament>, label: string) {
   return h('button', {
     type: 'button',
@@ -53,21 +51,17 @@ function durationLabel(startDate: string, endDate: string) {
   return rest ? `${hours}h ${rest}min` : `${hours}h`
 }
 
-// Pure config except for `selection`/`onEdit` (depends only on t() otherwise) —
-// same reasoning as useWantedCardsTableColumns.ts. Both are threaded through
-// rather than read from a composable here, since that state
-// (useSelection.ts/useTournamentsRowActions.ts) is owned by the page, not
-// this file.
+// Pure config except for `selection`/`onEdit` (otherwise only t()), like
+// useWantedCardsTableColumns.ts: both are threaded through, since that state
+// (useSelection.ts/useTournamentsRowActions.ts) is owned by the page
 export function useTournamentsTableColumns(
   selection: Selection<number>,
   onEdit: (tournament: Tournament) => void
 ) {
   const { t } = useI18n()
 
-  // Bound to the shared selectedIds Set (useSelection.ts), not UTable's own
-  // row-selection state — grouping (by league/format/location) needs a
-  // group's checkbox to reflect/drive all its subRows at once, same
-  // reasoning as useWantedCardsTableColumns.ts.
+  // Bound to the shared selectedIds Set (useSelection.ts), not UTable's row-selection state:
+  // grouping (league/format/location) needs a group's checkbox to drive all its subRows
   const selectColumn = useGroupedSelectColumn<Tournament>(selection)
 
   const columnHeaders: Record<string, string> = {
@@ -233,9 +227,8 @@ export function useTournamentsTableColumns(
     {
       id: 'actions',
       header: t('tournament.columns.actions'),
-      // stopPropagation: the row itself also navigates on click (UTable's
-      // @select, see tournaments/index.vue) — without this, clicking the
-      // edit button would open the edit modal AND navigate away underneath it.
+      // stopPropagation: the row also navigates on click (UTable's @select, see
+      // tournaments/index.vue), so the edit button would otherwise open the modal AND navigate
       cell: ({ row }) => row.getIsGrouped()
         ? null
         : h(EditIconButton, {

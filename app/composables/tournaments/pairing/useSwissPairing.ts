@@ -1,10 +1,9 @@
 // app\composables\tournaments\pairing\useSwissPairing.ts
 // 1v1 table pairing for Swiss-format tournaments (Draft after its pod stage,
-// Pauper/Premodern/Oldschool/Sealed/Cubo Vintage) — see
-// docs/plans/2026-09-15-swiss-pairing-draft-1v1-plan.md. This is the round-1
-// starting point (sequential slice, organizer reorders by hand before
-// confirming) plus the playable-count check; the standings-based pairing of the
-// later rounds is swissPairing.ts.
+// Pauper/Premodern/Oldschool/Sealed/Cubo Vintage), see
+// docs/plans/2026-09-15-swiss-pairing-draft-1v1-plan.md: the round-1 starting point (sequential
+// slice, organizer reorders before confirming) plus the playable-count check; later rounds'
+// standings-based pairing is swissPairing.ts
 export interface SwissPairingSplit {
   canPlay: boolean
   /** Tables of 2 players; with an odd count one more player sits out on a bye. */

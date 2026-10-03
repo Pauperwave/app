@@ -6,40 +6,34 @@ import type { CittadinoEvent, CittadinoStanding } from '~/types'
 import AssociateTag from '~/components/ui/AssociateTag.vue'
 
 // Column widths are declared twice on purpose: `size` feeds TanStack's
-// getStart('left')/getAfter('right'), which is how UTable computes the offset of
-// pinned columns, while the w-[…] class is what actually renders. They must agree
-// or the frozen columns overlap the scrolling ones.
+// getStart('left')/getAfter('right') (UTable's pinned column offsets) while the w-[…] class is what
+// renders. They must agree or frozen columns overlap the scrolling ones.
 const POSITION_WIDTH = 56
 const PLAYER_WIDTH = 180
 const EVENT_WIDTH = 46
 const TOTAL_WIDTH = 76
 
-// "2026-03-21" -> "21/03" — the day/month chip above each event name.
+// "2026-03-21" -> "21/03": the day/month chip above each event name
 function formatEventDate(date: string) {
   const [, month, day] = date.split('-')
   return `${day}/${month}`
 }
 
-// Direct import from #components rather than resolveComponent() — see the note in
-// CLAUDE.md: resolveComponent only works inside a .vue <script setup>.
-//
-// The hover crosshair (both row and column) is PublicMatrixTable's own
-// responsibility now — DOM event delegation there, not per-cell state here. See
-// its source for why: `meta.class.td` looked reactive but wasn't.
+// Direct import from #components rather than resolveComponent() (see CLAUDE.md: it only works in a
+// .vue <script setup>). The hover crosshair (row and column) is PublicMatrixTable's job via DOM
+// event delegation: `meta.class.td` looked reactive but wasn't.
 export function useCittadinoTableColumns(events: Ref<CittadinoEvent[]>, search?: Ref<string>) {
   const { t } = useI18n()
   const { formatColor, formatColorClass } = useFormatColor()
 
-  // A pinned column is positioned by TanStack at the sum of the preceding `size`
-  // values, but the browser lays the cell out from its own content and padding —
-  // if the two disagree even slightly, the next pinned column lands short and the
-  // scrolling rows show through the sliver between them. Locking min/max width and
-  // taking the padding down from the theme's p-4 keeps the rendered width exactly
-  // equal to the declared `size`.
+  // TanStack positions a pinned column at the sum of the preceding `size` values, but the browser
+  // lays out the cell from its own content and padding: any mismatch makes the next pinned column
+  // land short and lets scrolling rows show through. Locking min/max width and cutting the theme's
+  // p-4 padding keeps the rendered width equal to `size`.
   //
-  // Written out as literals rather than built from the *_WIDTH constants: Tailwind
-  // scans source for complete class strings, so an interpolated `w-[${n}px]` would
-  // never be generated. Keep these in sync with the constants above.
+  // Literals rather than built from the *_WIDTH constants: Tailwind only generates complete class
+  // strings, so an interpolated `w-[${n}px]` would never exist. Keep in sync with the constants
+  // above.
   const POSITION_CLASS = 'w-[56px] min-w-[56px] max-w-[56px] px-2'
   const PLAYER_CLASS = 'w-[180px] min-w-[180px] max-w-[180px] px-2'
   const COMPACT_CLASS = 'w-[60px] min-w-[60px] max-w-[60px] px-2'
@@ -52,9 +46,8 @@ export function useCittadinoTableColumns(events: Ref<CittadinoEvent[]>, search?:
       size: POSITION_WIDTH,
       header: () => h('span', { class: 'text-xs' }, t('cittadino.columns.position')),
       meta: { class: { th: POSITION_CLASS, td: `${POSITION_CLASS} tabular-nums` } },
-      // The top 16 qualify for the final (regulation §4), which is the single
-      // thing most readers are looking for — so the cutoff is the one piece of
-      // emphasis the identity columns carry.
+      // The top 16 qualify for the final (regulation §4), the main thing readers look for: the one
+      // emphasis the identity columns carry
       cell: ({ row }) => h('span', {
         class: row.original.position <= CITTADINO_FINALISTS
           ? 'font-semibold text-highlighted'
@@ -91,10 +84,9 @@ export function useCittadinoTableColumns(events: Ref<CittadinoEvent[]>, search?:
       cell: ({ row }) => String(row.original.bestSingle)
     },
 
-    // One narrow column per event — the matrix itself. The header carries a
-    // day/month chip plus the full event name rotated to read bottom-up: at 46px
-    // per column an abbreviation would be the only horizontal option, and rotating
-    // is what lets "Casual Commander #1" fit without widening the grid.
+    // One narrow column per event: the matrix itself. The header has a day/month chip plus the
+    // event name rotated to read bottom-up: at 46px per column rotating lets "Casual Commander #1"
+    // fit without widening the grid
     ...events.value.map<TableColumn<CittadinoStanding>>(event => ({
       id: event.uuid,
       size: EVENT_WIDTH,
@@ -102,29 +94,25 @@ export function useCittadinoTableColumns(events: Ref<CittadinoEvent[]>, search?:
         class: 'flex flex-col items-center gap-2 px-1 pb-1',
         title: `${event.name} · ${formatEventDate(event.date)}`
       }, [
-        // In vertical writing mode the inline axis is vertical, so max-height is
-        // what caps the text run and forces a wrap — the extra line then stacks
-        // sideways, into the column width there is room to spare in. Without the
-        // cap, "Draft Innistrad Remastered" alone sets the header height.
-        // text-start, not centered: after the 180° rotation the inline start is the
-        // bottom edge, so every name begins flush against its date chip and the
-        // whole row of labels shares one baseline instead of floating.
+        // In vertical writing mode the inline axis is vertical, so max-height caps the text run and
+        // forces a wrap sideways, into the spare column width (otherwise "Draft Innistrad
+        // Remastered" alone sets the header height). text-start, not centered: after the 180°
+        // rotation the inline start is the bottom edge, so every name starts flush against its date
+        // chip on one baseline
         h('span', {
           class: 'max-h-24 text-start text-xs font-normal leading-tight text-default [writing-mode:vertical-rl] rotate-180'
         }, event.name),
-        // Date chip last so it sits at the bottom of the bottom-aligned header:
-        // that keeps the chips on one line across all columns instead of
-        // staggering them by event-name length. Its tint encodes the format, so
-        // the legs of each league read as a block across the calendar.
+        // Date chip last so it sits at the bottom of the bottom-aligned header, keeping chips on
+        // one line across columns. Its tint encodes the format, so a league's legs read as a block
+        // across the calendar
         h('span', {
           class: [
             'rounded px-1 py-1 text-[10px] leading-none tabular-nums',
             formatColorClass(event.format)
           ],
-          // formatColorClass alone only supplies bg-primary/15 text-primary —
-          // those utilities read from --ui-primary, which nothing here overrides
-          // without this, so every chip rendered the same ambient primary colour
-          // instead of its own format's. Same fix as FormatBadge.vue's colorStyle.
+          // formatColorClass only supplies bg-primary/15 text-primary, which read --ui-primary (not
+          // overridden here), so every chip rendered the ambient primary colour instead of its
+          // format's (same fix as FormatBadge.vue's colorStyle)
           style: formatColor(event.format) ? { '--ui-primary': formatColor(event.format) } : undefined
         }, formatEventDate(event.date))
       ]),
@@ -133,10 +121,9 @@ export function useCittadinoTableColumns(events: Ref<CittadinoEvent[]>, search?:
         const result = row.original.resultsByEvent[event.uuid]
 
         const content = result
-          // Dropped results stay visible: the point of showing the whole matrix is
-          // that a reader can see why a player's results don't add up to the total.
-          // Parentheses rather than a strikethrough — most cells hold a single
-          // digit, and a line through "1" is unreadable at this column width.
+          // Dropped results stay visible so a reader can see why results don't add up to the total.
+          // Parentheses, not a strikethrough: most cells hold a single digit, and a line through
+          // "1" is unreadable at this width
           ? h('span', {
             class: result.counted ? 'font-medium text-highlighted' : 'text-dimmed',
             title: t(result.counted ? 'cittadino.cell.counted' : 'cittadino.cell.dropped', {
@@ -150,8 +137,8 @@ export function useCittadinoTableColumns(events: Ref<CittadinoEvent[]>, search?:
             title: t('cittadino.cell.absent', { event: event.name })
           }, '·')
 
-        // h-full/w-full matter: the td has p-0 so this wrapper fills the cell,
-        // otherwise the content shrinks to the digit and leaves dead space around it.
+        // h-full/w-full: the td has p-0, so this wrapper must fill the cell or the content shrinks
+        // to the digit
         return h('div', {
           class: 'flex h-full w-full items-center justify-center px-1 py-1.5'
         }, [content])
@@ -167,9 +154,8 @@ export function useCittadinoTableColumns(events: Ref<CittadinoEvent[]>, search?:
     }
   ])
 
-  // Keyed by event uuid, same id the event columns above are given — read by
-  // PublicMatrixTable to tint a hovered event column's crosshair toward its
-  // format's colour instead of the default neutral highlight.
+  // Keyed by event uuid (the id the event columns use): PublicMatrixTable tints a hovered event
+  // column's crosshair with its format colour
   const columnAccentColors = computed<Record<string, string>>(() =>
     Object.fromEntries(
       events.value

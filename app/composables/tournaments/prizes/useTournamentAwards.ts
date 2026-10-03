@@ -1,10 +1,7 @@
 // app\composables\tournaments\prizes\useTournamentAwards.ts
-// Ported from MagicTheGathering/league's useTournamentAwards.ts (user
-// request 2026-09-16: build the Awards.vue placeholder for real). Adapted
-// to LiveCommanderStanding's own fields instead of a separate
-// standings+victimCounts pair — this app's useLiveCommanderStandings.ts
-// already folds "times killed" into the same standing row (see its own
-// `deaths` field comment). Tiebreaks and ex aequo: ADR-052, docs/PROGRESS.md.
+// Ported from league's useTournamentAwards.ts, adapted to LiveCommanderStanding's fields instead of
+// a separate standings+victimCounts pair (useLiveCommanderStandings.ts folds "times killed" into
+// the same row, see its `deaths` field). Tiebreaks and ex aequo: ADR-052, docs/PROGRESS.md
 import type { LiveCommanderStanding } from '../pairing/useLiveCommanderStandings'
 
 export type TournamentAwardKind = 'victim' | 'killer' | 'brewer' | 'player'

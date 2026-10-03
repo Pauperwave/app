@@ -1,10 +1,8 @@
 // app\composables\tournaments\list\useTournamentStatusSections.ts
-// One section per status, most actionable first — empty statuses skipped —
-// plus the flattened drawn-order range a shift-click selection resolves
-// against. Shared by GridView.vue/DenseView.vue, which independently
-// duplicated this exact grouping (fallow:dupes, 2026-09-23).
-// Pinned tournaments get their own "In evidenza" section on top and are
-// left out of their status section (user request, 2026-10-01).
+// One section per status, most actionable first (empty ones skipped), plus the flattened
+// drawn-order range a shift-click selection resolves against: shared by GridView.vue/DenseView.vue.
+// Pinned tournaments get their own "In evidenza" section on top and are left out of their status
+// section
 import type { Tournament } from '~/types'
 
 const STATUS_ORDER: Tournament['status'][] = [

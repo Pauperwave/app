@@ -1,8 +1,7 @@
 // app\composables\tournaments\registration\useTournamentPaymentsQuery.ts
-// Reads this tournament's active "Tournament Fee" pauperwave_payments rows —
-// separate from useTournamentRegistrationsQuery.ts since payments key by
-// associate_uuid, not player_uuid, and live in a different table entirely
-// (server/api/tournament-registrations/payment.post.ts is what writes here).
+// Reads this tournament's active "Tournament Fee" pauperwave_payments rows, separate from
+// useTournamentRegistrationsQuery.ts: payments key by associate_uuid (not player_uuid) in another
+// table (written by tournament-registrations/payment.post.ts)
 import type { PaymentMethod } from '#shared/types/transactions'
 
 export interface TournamentPayment {

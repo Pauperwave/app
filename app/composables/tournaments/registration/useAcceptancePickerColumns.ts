@@ -1,10 +1,7 @@
 // app\composables\tournaments\registration\useAcceptancePickerColumns.ts
-// Column definitions for AcceptancePicker.vue's two tables — extracted once
-// they made up roughly half that file's length (user request, 2026-08-24),
-// same "pure config, state threaded in" shape as useTournamentsTableColumns.ts.
-// An options object, not positional params, since there are enough of them
-// (row-selection handlers, status/no-show/payment callbacks) that positional
-// args would read worse than named ones here.
+// Column definitions for AcceptancePicker.vue's two tables ("pure config, state threaded in", like
+// useTournamentsTableColumns.ts). An options object rather than positional params: there are enough
+// of them (selection handlers, status/no-show/payment callbacks)
 import { h } from 'vue'
 import { UButton, UCheckbox, UFieldGroup } from '#components'
 import type { TableColumn } from '@nuxt/ui'
@@ -29,25 +26,20 @@ export interface UseAcceptancePickerColumnsOptions {
   acceptedAt: Record<string, Date>
   paymentMethodByPlayer: Record<string, PaymentMethod | null>
   togglePaymentMethod: (item: AcceptancePickerItem, method: PaymentMethod) => void
-  // "Test" payment button — marks a player as paid for testing purposes
-  // without writing a pauperwave_payments row (user request, 2026-09-14).
-  // Kept as its own record/toggle rather than folded into paymentMethodByPlayer,
-  // since that one is synced straight from the real payments query.
+  // "Test" payment button: marks a player as paid for testing without writing a pauperwave_payments
+  // row. Its own record, not folded into paymentMethodByPlayer, which is synced from the real
+  // payments query
   testPayments: Record<string, boolean>
   toggleTestPayment: (item: AcceptancePickerItem) => void
   requestRemoveAccepted: (item: AcceptancePickerItem) => void
-  // Disables the no-show/payment/remove row buttons while their mutation is
-  // in flight — a double-click guard against firing the same write twice
-  // before the first round-trip resolves (user request, 2026-08-25).
+  // Disables the no-show/payment/remove row buttons while their mutation is in flight (double-click
+  // guard)
   isMutating: ComputedRef<boolean>
 }
 
-// Cash/POS/Comped only — the three that make sense at a live check-in desk
-// (PayPal doesn't happen at the table). Icon/color reused from
-// PAYMENT_METHOD_BADGE_CONFIG (paymentMethodBadge.ts), same source
-// PaymentMethodBadge.vue itself reads from. Returned (not just used
-// internally) since AcceptancePicker.vue's own bulk payment buttons/context
-// menu need the same list + label logic.
+// Cash/POS/Comped only: the three that make sense at a live check-in desk (PayPal doesn't happen at
+// the table). Icon/color come from PAYMENT_METHOD_BADGE_CONFIG; returned so AcceptancePicker.vue's
+// bulk payment buttons/context menu share the list
 const PAYMENT_METHOD_OPTIONS: PaymentMethod[] = ['Cash', 'POS', 'Comped']
 const PAYMENT_METHOD_LABEL_KEYS: Record<PaymentMethod, string | null> = {
   Cash: 'transaction.addModal.paymentMethodOptions.cash',
@@ -56,11 +48,9 @@ const PAYMENT_METHOD_LABEL_KEYS: Record<PaymentMethod, string | null> = {
   Comped: 'transaction.addModal.paymentMethodOptions.comped'
 }
 
-// Not a real PaymentMethod (ck_payment_method rejects anything outside
-// PAYMENT_METHODS) — deliberately not added there or to
-// PAYMENT_METHOD_BADGE_CONFIG, since both are shared with the real
-// transactions list/filters. This button only ever toggles the local
-// testPayments record, never pauperwave_payments.
+// Not a real PaymentMethod (ck_payment_method rejects it): deliberately not added to
+// PAYMENT_METHODS or PAYMENT_METHOD_BADGE_CONFIG, which the real transactions list/filters share.
+// It only toggles the local testPayments record
 const TEST_PAYMENT_BADGE = { color: 'warning' as const, icon: ICONS.flaskConical }
 
 export function useAcceptancePickerColumns(options: UseAcceptancePickerColumnsOptions) {
@@ -71,8 +61,8 @@ export function useAcceptancePickerColumns(options: UseAcceptancePickerColumnsOp
   } = options
 
   const { t } = useI18n()
-  // "Test" payment button is developer-only (user request, 2026-09-18) —
-  // a testing shortcut, not something a real check-in desk should see.
+  // The "Test" payment button is developer-only: a testing shortcut a real check-in desk shouldn't
+  // see
   const { isDeveloperView } = useDeveloperView()
 
   function paymentMethodLabel(option: PaymentMethod): string {
@@ -85,19 +75,16 @@ export function useAcceptancePickerColumns(options: UseAcceptancePickerColumnsOp
     return date.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
   }
 
-  // Date + time (not just time, unlike acceptedAt's formatTime above) — a
-  // pre-registration can be days old by the time acceptance runs, so the day
-  // matters here.
+  // Date + time (unlike acceptedAt's time-only format): a pre-registration can be days old, so the
+  // day matters
   function formatPreRegisteredAt(date: Date): string {
     return date.toLocaleString('it-IT', {
       day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
     })
   }
 
-  // Select/index/player columns are identical in shape between the two
-  // tables (only the row-selection handler and its aria-label differ) —
-  // factored out once rather than duplicated, per the "identical call
-  // sites" dedup bar.
+  // Select/index/player columns have the same shape in both tables (only the selection handler and
+  // aria-label differ)
   function createSelectColumn(
     handler: RowSelectionHandler, selectAllAriaLabel: string
   ): TableColumn<AcceptancePickerItem> {
@@ -133,8 +120,8 @@ export function useAcceptancePickerColumns(options: UseAcceptancePickerColumnsOp
     cell: ({ row }) => row.index + 1
   }
 
-  // "Pre-registrati"-only variant of indexColumn above — a static
-  // registration number instead of the live row position.
+  // "Pre-registrati"-only variant of indexColumn: a static registration number instead of the live
+  // row position
   const sourceIndexColumn: TableColumn<AcceptancePickerItem> = {
     id: 'index',
     header: '#',
@@ -142,10 +129,9 @@ export function useAcceptancePickerColumns(options: UseAcceptancePickerColumnsOp
     cell: ({ row }) => registrationOrderByValue.value.get(row.original.value)
   }
 
-  // sourceRowStatus() always resolves to 'accepted' for accepted-table rows
-  // (they're only ever rendered from targetItems, which is exactly what it
-  // checks first), so reusing it here never strikes through a name on the
-  // "Iscritti (Pagato)" side — only a "Pre-registrati" no-show does.
+  // sourceRowStatus() always resolves to 'accepted' for accepted-table rows (rendered from
+  // targetItems), so a name is never struck through on "Iscritti (Pagato)", only on a
+  // "Pre-registrati" no-show
   const playerColumnCell: TableColumn<AcceptancePickerItem>['cell'] = ({ row }) =>
     h(AssociateTag, {
       name: row.original.label,
@@ -160,9 +146,8 @@ export function useAcceptancePickerColumns(options: UseAcceptancePickerColumnsOp
     cell: playerColumnCell
   }
 
-  // "Iscritti (Pagato)"-only variant of playerColumn above — sortable, since
-  // that table (unlike "Pre-registrati", already sortable by registration
-  // time) had no way to reorder by name (user request, 2026-08-27).
+  // "Iscritti (Pagato)"-only variant of playerColumn: sortable by name ("Pre-registrati" is already
+  // sortable by registration time)
   const acceptedPlayerColumn: TableColumn<AcceptancePickerItem> = {
     accessorKey: 'label',
     header: ({ column }) =>
@@ -171,22 +156,16 @@ export function useAcceptancePickerColumns(options: UseAcceptancePickerColumnsOp
     cell: playerColumnCell
   }
 
-  // Overrides app.config.ts's app-wide table look for just these two
-  // tables — keeps the vertical cell borders, just drops the reserved
-  // scrollbar gutter these lists don't need. `table-fixed` + every column's
-  // own explicit width stop the columns reflowing/shifting horizontally as
-  // row content changes — table-layout:auto re-measures every visible
-  // row's content on each render, table-fixed locks widths to the declared
-  // ones instead.
+  // Overrides app.config.ts's table look for these two tables: keeps the vertical borders but drops
+  // the scrollbar gutter. `table-fixed` + explicit column widths stop columns shifting as content
+  // changes (table-layout:auto re-measures every render)
   const pickerTableUi = {
     root: 'border border-default rounded-lg [scrollbar-gutter:auto]',
     base: 'overflow-clip table-fixed'
   }
 
-  // Row background per status — passed to the source UTable's `:meta`
-  // prop, which Nuxt UI's Table.vue resolves per-row via
-  // `resolveValue(meta.class.tr, row)`, same mechanism as its own
-  // `data-selected` styling.
+  // Row background per status, passed to the source UTable's `:meta`: Nuxt UI's Table.vue resolves
+  // `meta.class.tr` per row (like `data-selected`)
   function sourceRowClass(item: AcceptancePickerItem): string {
     const status = sourceRowStatus(item)
     if (status === 'accepted') return 'bg-success/10 hover:bg-success/15'
@@ -197,9 +176,8 @@ export function useAcceptancePickerColumns(options: UseAcceptancePickerColumnsOp
     class: { tr: (row: Row<AcceptancePickerItem>) => sourceRowClass(row.original) }
   }
 
-  // "Pre-registrati" as a table — same shape as "Iscritti (Pagato)" below
-  // (select / # / time / player), plus its own no-show toggle where the
-  // target side has payment/remove instead.
+  // "Pre-registrati" as a table: same shape as "Iscritti (Pagato)" (select / # / time / player)
+  // plus a no-show toggle in place of payment/remove
   const sourceColumns: TableColumn<AcceptancePickerItem>[] = [
     createSelectColumn(
       sourceRowHandler, t('tournament.single.acceptancePicker.selectAllPreRegisteredAriaLabel')
@@ -209,14 +187,12 @@ export function useAcceptancePickerColumns(options: UseAcceptancePickerColumnsOp
       id: 'time',
       accessorFn: row => row.preRegisteredAt,
       sortingFn: 'datetime',
-      // sourceIndexColumn's own "#" already reflects registration order, so
-      // sorting this column is the only way to see it any other way.
+      // sourceIndexColumn's "#" already shows registration order, so sorting this column is the
+      // only way to see another order
       header: ({ column }) =>
         sortableHeader(t('tournament.single.acceptancePicker.registeredAtColumn'), column),
-      // Wider than the plain "Orario" column on the accepted table (w-20)
-      // — the sortable header's icon+label needs more room, and
-      // table-fixed (see pickerTableUi) won't let it grow past this on its
-      // own like a normal table would.
+      // Wider than "Orario" on the accepted table (w-20): the sortable header needs room, and
+      // table-fixed won't grow it
       meta: { class: { th: 'text-center w-40', td: 'text-center font-mono' } },
       cell: ({ row }) => formatPreRegisteredAt(row.original.preRegisteredAt)
     },
@@ -228,15 +204,13 @@ export function useAcceptancePickerColumns(options: UseAcceptancePickerColumnsOp
       cell: ({ row }) => {
         const item = row.original
         const status = sourceRowStatus(item)
-        // Already accepted — no-show no longer makes sense, handled from
-        // "Iscritti (Pagato)" instead.
+        // Already accepted: no-show no longer applies (handled from "Iscritti (Pagato)")
         if (status === 'accepted') return null
         return h(UButton, {
           'icon': ICONS.noShow,
           'color': status === 'noShow' ? 'error' : 'neutral',
-          // 'outline', not 'ghost' — an inactive toggle needs a visible
-          // border to be noticed at all, same active/inactive convention
-          // as the payment-method buttons below.
+          // 'outline', not 'ghost': an inactive toggle needs a visible border (same convention as
+          // the payment-method buttons)
           'variant': status === 'noShow' ? 'solid' : 'outline',
           'size': 'xs',
           'class': 'w-full justify-center',
@@ -253,9 +227,8 @@ export function useAcceptancePickerColumns(options: UseAcceptancePickerColumnsOp
     }
   ]
 
-  // "Iscritti (Pagato)" as a table, not a UListbox — same shape as
-  // MagicTheGathering/league's own registration-phase WaitingListTable.vue
-  // (# / time / player / payment method / actions).
+  // "Iscritti (Pagato)" as a table, not a UListbox (# / time / player / payment method / actions),
+  // like league's WaitingListTable.vue
   const acceptedColumns: TableColumn<AcceptancePickerItem>[] = [
     createSelectColumn(
       acceptedRowHandler, t('tournament.single.acceptancePicker.selectAllRegisteredAriaLabel')

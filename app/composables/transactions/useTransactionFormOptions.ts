@@ -1,21 +1,17 @@
 // app\composables\transactions\useTransactionFormOptions.ts
-// Shared by AddModal.vue and EditModal.vue — the select options and payment
-// schema are identical between creating and editing a transaction.
+// Shared by AddModal.vue and EditModal.vue: the select options and payment schema are identical for
+// creating and editing
 import * as v from 'valibot'
 import { CalendarDateTime } from '@internationalized/date'
 import { PAYMENT_METHODS, PAYMENT_TYPES } from '#shared/types/transactions'
 
-// The association's own membership record (used for its own admin/bookkeeping
-// purposes, not an actual payer) — excluded from payer pickers on transaction
-// forms. Matched by uuid, not name, since names can be edited freely.
-// Declared before the array-literal exports below: an export placed
-// immediately after one is silently dropped from Nuxt's auto-imports (see
-// CLAUDE.md's "Auto-imports" note, confirmed 2026-08-09 on cittadinoPoints.ts).
+// The association's own membership record (bookkeeping, not a payer): excluded from payer pickers,
+// matched by uuid since names are editable. Declared before the array-literal exports below: an
+// export right after one is dropped from Nuxt's auto-imports (see CLAUDE.md "Auto-imports")
 export const APS_PAUPERWAVE_ASSOCIATE_UUID = '8578797c-62b0-4e48-a237-3b65683a2623'
 
-// No formal "staff members" table to select from/FK against — same hardcoded
-// list the original mock form used, restored alongside received_by
-// (migration 20260812140000_add_received_by_to_payments.sql).
+// No formal "staff members" table to select from/FK against: the hardcoded list of the original
+// mock form, restored with received_by (migration 20260812140000)
 export const RECEIVER_OPTIONS = [
   'Baldo Riccardo',
   'Cazzola Marco',
@@ -32,24 +28,19 @@ export const RECEIVER_OPTIONS = [
 export function useTransactionFormOptions() {
   const { t } = useI18n()
 
-  // Real tournaments/events to link a Tournament Fee/Event Fee/Token
-  // Purchase payment to (2026-08-25 fix) — replaces EVENT_OPTIONS, a
-  // hardcoded list of free-text strings never actually tied to
-  // tournament_uuid/event_uuid, which is how "PREMODERN TAPPA 1" (raw
-  // historical event_name) ended up shown as if it were a real selection.
+  // Real tournaments/events to link a Tournament Fee/Event Fee/Token Purchase payment to, replacing
+  // the old free-text EVENT_OPTIONS never tied to tournament_uuid/event_uuid (how a raw historical
+  // event_name was shown as a real selection)
   const dateFormatter = new Intl.DateTimeFormat('it-IT', {
     day: '2-digit', month: '2-digit', year: 'numeric'
   })
 
   const { data: tournamentsData } = useTournamentsQuery()
-  // Same name recurs across every stage of a league (e.g. "Pauper" x N) —
-  // without the stage number + date as a description (USelectMenu renders it
-  // muted, under the label) same-named tournaments are indistinguishable in
-  // this dropdown (user request, 2026-08-25).
+  // The same name recurs across a league's stages ("Pauper" x N): the stage number + date as
+  // description (rendered muted) tells them apart
   const tournamentOptions = computed(() => (tournamentsData.value ?? []).map((tournament) => {
-    // Cancelled tournaments never get a stageNumber (assignTournamentStageNumbers
-    // skips them entirely) — say so explicitly instead of just omitting it,
-    // otherwise a cancelled stage looks identical to an un-leagued tournament.
+    // Cancelled tournaments never get a stageNumber (assignTournamentStageNumbers skips them): say
+    // so, or one looks like an un-leagued tournament
     const stageText = tournament.status === 'cancelled'
       ? t('tournament.status.cancelled')
       : tournament.stageNumber ? `${tournament.stageNumber}ª tappa` : null
@@ -80,29 +71,24 @@ export function useTransactionFormOptions() {
     { value: 'Comped' as const, label: t('transaction.addModal.paymentMethodOptions.comped'), icon: ICONS.heartHandshake }
   ])
 
-  // Same avatar convention as AssociateTag.vue (DiceBear, generated deterministically
-  // from the name) — RECEIVER_OPTIONS has no associate_uuid to look up (it's a
-  // hardcoded staff-name list, see the constant's own comment), so this can't
-  // reuse AssociateTag itself, only the avatar it'd produce.
+  // Same avatar convention as AssociateTag.vue (DiceBear, from the name): RECEIVER_OPTIONS has no
+  // associate_uuid, so only the avatar is reused
   const receiverOptions = computed(() => RECEIVER_OPTIONS.map(name => ({
     label: name,
     value: name,
     avatar: { src: generatePlayerAvatar(name), alt: name }
   })))
 
-  // The associate/external payer UTabs — identical between AddModal.vue and
-  // EditModal.vue (extracted 2026-08-15), only the tab's *meaning* differs
-  // (payer_is_associate toggle) which stays per-file.
+  // The associate/external payer UTabs, identical in AddModal.vue and EditModal.vue (only the
+  // payer_is_associate toggle differs, per file)
   const payerTabItems = computed(() => [
     { label: t('transaction.addModal.tabs.associate'), icon: ICONS.playerConfirmed, slot: 'associate', value: 'associate' },
     { label: t('transaction.addModal.tabs.external'), icon: ICONS.edit, slot: 'external', value: 'external' }
   ])
 
-  // v.forward(v.partialCheck([...paths], requirement, msg), [path]) is Valibot's
-  // equivalent of a .superRefine() with ctx.addIssue on a specific path:
-  // partialCheck reads several fields (here payer_is_associate + the target
-  // field) to decide whether to raise the error, and forward attaches it to the
-  // right field instead of the object root.
+  // v.forward(v.partialCheck([...paths], requirement, msg), [path]) is Valibot's .superRefine()
+  // with ctx.addIssue on a path: partialCheck reads several fields (payer_is_associate + the
+  // target) to raise the error, forward attaches it to the right field
   const schema = v.pipe(
     v.object({
       associate_uuid: v.optional(v.string()),
@@ -173,9 +159,8 @@ export function useTransactionFormOptions() {
       ),
       ['associate_uuid']
     ),
-    // Mirrors ck_payment_type_event_link (migration 20260825220000) —
-    // Tournament Fee needs tournament_uuid, Event Fee/Token Purchase need
-    // event_uuid, Association Fee/Donation need neither.
+    // Mirrors ck_payment_type_event_link: Tournament Fee needs tournament_uuid, Event Fee/Token
+    // Purchase need event_uuid, Association Fee/Donation neither
     v.forward(
       v.partialCheck(
         [['payment_type'], ['tournament_uuid']],

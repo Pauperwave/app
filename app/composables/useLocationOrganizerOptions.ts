@@ -1,7 +1,6 @@
 // app\composables\useLocationOrganizerOptions.ts
-// Shared by events/list/AddModal.vue and tournaments' useTournamentFormFields.ts
-// (fallow:dupes flagged the identical locations/organizations -> select-option
-// mapping in both places).
+// Shared by events/list/AddModal.vue and tournaments' useTournamentFormFields.ts: the
+// locations/organizations -> select-option mapping
 export function useLocationOrganizerOptions() {
   const { data: locations } = useLocationsQuery()
   const { data: organizations } = useOrganizationsQuery()

@@ -1,12 +1,7 @@
 // app\composables\tournaments\rounds\useSwissRoundLifecycle.ts
-// Advance/turn-back for one Swiss round — kept separate from
-// useSwissRoundSubmitHandlers.ts because it's a different kind of concern
-// (progressing the tournament itself, not entering data for the current
-// round). Same split, same reasoning, as
-// CommanderRoundManager.vue's own useCommanderRoundLifecycle.ts
-// (2026-09-24) — SwissRoundManager.vue mounts one instance per round (see
-// index.vue's own #round-${i} slot), so advance/turn-back necessarily stays
-// scoped to this component's own instance instead of a page-level store.
+// Advance/turn-back for one Swiss round, separate from useSwissRoundSubmitHandlers.ts (same split
+// as useCommanderRoundLifecycle.ts): SwissRoundManager.vue mounts one instance per round (see
+// index.vue's #round-${i} slot), so advance/turn-back stays scoped to it, not a page-level store
 import type { TablePlayer } from '~/types'
 import type { SwissRoundData } from './useSwissRoundData'
 
@@ -32,16 +27,11 @@ export function useSwissRoundLifecycle(options: {
   const { advanceRoundSwiss, turnBackRoundSwiss, reopenTournamentSwiss }
     = useTournamentSwissRoundsMutations(tournamentUuid)
 
-  // The next round's pairing order: the active players (a dropped one isn't
-  // paired again) ranked by the live standings, skipping rematches; with an
-  // odd count the lowest-ranked player without a bye yet gets it. Unlike
-  // matchPlayersFor (used for on-screen display, keyed by players.uuid same
-  // as Commander's own pairing cards), SwissTablePreviewModal's confirm
-  // hands this straight to advance_swiss_round's p_associate_order, which
-  // resolves against players.associate_uuid — value here MUST be the
-  // associate uuid, not the player uuid, or the RPC can't resolve anyone
-  // (confirmed live: "Could not resolve every associate to a registered
-  // player of this tournament").
+  // The next round's pairing order: active players (a dropped one isn't paired again) ranked by
+  // live standings, skipping rematches; with an odd count the lowest-ranked player without a bye
+  // gets it. Unlike matchPlayersFor (display, keyed by players.uuid), SwissTablePreviewModal's
+  // confirm hands this to advance_swiss_round's p_associate_order, which resolves against
+  // players.associate_uuid: the value MUST be the associate uuid, or the RPC can't resolve anyone
   const nextRoundSeedPlayers = computed<TablePlayer[]>(() => {
     const rankedPlayerUuids = liveStandings.value
       .filter(standing => !standing.dropped)

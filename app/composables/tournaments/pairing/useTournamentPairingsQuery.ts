@@ -1,12 +1,9 @@
 // app\composables\tournaments\pairing\useTournamentPairingsQuery.ts
-// Pinia Colada query for a Commander tournament's pairings (pods), across
-// every round — the round view filters by roundUuid client-side rather than
-// re-querying per round, same "fetch the tournament's whole small dataset
-// once" convention as useTournamentRegistrationsQuery.ts. Player uuids here
-// are `players.uuid` (playerUuid), NOT the associate uuid used elsewhere in
-// the UI — resolve via useTournamentRegistrationsQuery's own playerUuid/
-// associateUuid mapping when building display seats (see
-// useCommanderPairingTables.ts).
+// Pinia Colada query for a Commander tournament's pairings (pods) across every round: the round
+// view filters by roundUuid client-side ("fetch the tournament's whole small dataset once", like
+// useTournamentRegistrationsQuery.ts). Player uuids are `players.uuid` (playerUuid), NOT the
+// associate uuid used elsewhere in the UI: resolve via useTournamentRegistrationsQuery's
+// playerUuid/associateUuid mapping when building display seats (see useCommanderPairingTables.ts)
 export interface TournamentPairing {
   uuid: string
   roundUuid: string

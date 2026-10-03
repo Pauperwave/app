@@ -1,11 +1,9 @@
 // app\composables\players\usePlayersBulkActions.ts
-// Bulk delete over a set of selected players (useSelection.ts). No undo
-// window here — same reasoning as usePlayersRowActions.ts's own confirmDelete
-// (a player's tournament identity isn't something to silently commit deleting
-// a few seconds after the confirm click). Fans the existing per-player
-// mutation out with Promise.allSettled: players.uuid is ON DELETE RESTRICT
-// from every tournament-history table, so a player who's ever played surfaces
-// as a per-item 409 here rather than blocking the whole batch.
+// Bulk delete over the selected players (useSelection.ts), with no undo window (like
+// usePlayersRowActions.ts's confirmDelete: a player's tournament identity shouldn't be silently
+// deleted seconds later). Fans the per-player mutation out with Promise.allSettled: players.uuid is
+// ON DELETE RESTRICT from every tournament-history table, so a player who ever played surfaces as a
+// per-item 409, not a blocked batch
 import type { Player } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 

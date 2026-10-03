@@ -1,17 +1,12 @@
 // app\composables\players\usePlayersRowActions.ts
 // Right-click context menu for the "Giocatori" table, same UContextMenu +
-// contextMenuRow/onRowContextmenu/tableContextMenuItems shape as
-// useAssociatesRowActions.ts. Delete (usePlayersMutations.ts) plus the two
-// things a row click can't do: jump to the linked associate record, and copy
-// contact details.
+// contextMenuRow/onRowContextmenu/tableContextMenuItems shape as useAssociatesRowActions.ts: Delete
+// (usePlayersMutations.ts) plus jumping to the linked associate and copying contact details.
 //
-// "Promuovi a" (2026-08-25 user request) — /settings/members only lists
-// existing staff (organizer/admin/super_admin all have a user_roles row;
-// plain players don't, assign_role deletes it, see that composable's own
-// comment), so it had no path to grant a *first* role to a player. This menu
-// is that path: same assign_role call as MembersList.vue's own role
-// <USelect>, reusing useMembersQuery.ts's role/role_locked data so the two
-// surfaces never disagree about who's already staff.
+// "Promuovi a": /settings/members only lists existing staff (plain players have no user_roles row,
+// assign_role deletes it), so it had no path to grant a *first* role. This menu is that path: the
+// same assign_role call as MembersList.vue's role <USelect>, reusing useMembersQuery.ts's
+// role/role_locked data so both surfaces agree on who is staff.
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { MemberRole } from '#shared/types/settings'
 import type { Player } from '~/types'
@@ -27,9 +22,8 @@ export function usePlayersRowActions() {
   const memberByAssociateUuid = computed(() =>
     new Map((membersData.value ?? []).map(member => [member.associateUuid, member])))
 
-  // Same two guards as MembersList.vue's own isRoleSelectDisabled — an
-  // existing super_admin can only be touched by another super_admin, and a
-  // role_locked row (e.g. the account owner) never at all.
+  // Same guards as MembersList.vue's isRoleSelectDisabled: a super_admin can only be touched by
+  // another super_admin, a role_locked row (e.g. the account owner) never
   function isRoleChangeDisabled(role: MemberRole, currentRole: MemberRole, roleLocked: boolean) {
     return role === currentRole
       || roleLocked
@@ -55,13 +49,11 @@ export function usePlayersRowActions() {
 
   const { copyToClipboard } = useCopyToClipboard()
 
-  // No undo window here (unlike useWantedCardsRowActions.ts's confirmDelete)
-  // — same reasoning as useTransactionsRowActions.ts: a player's tournament
-  // identity isn't something to silently commit deleting a few seconds after
-  // the confirm click. Server-side, players.uuid is ON DELETE RESTRICT from
-  // every tournament-history table, so deleting a player who's ever actually
-  // played surfaces as a 409 here rather than succeeding — see
-  // server/api/players/[id]/delete.post.ts.
+  // No undo window (unlike useWantedCardsRowActions.ts's confirmDelete), like
+  // useTransactionsRowActions.ts: a player's tournament identity shouldn't be silently deleted
+  // seconds after confirming. players.uuid is ON DELETE RESTRICT from every tournament-history
+  // table, so deleting a player who ever played returns a 409 (see
+  // server/api/players/[id]/delete.post.ts)
   const deletingPlayer = shallowRef<Player | null>(null)
   const deleteConfirmOpen = ref(false)
   const deleting = ref(false)
@@ -114,9 +106,8 @@ export function usePlayersRowActions() {
         onSelect: () => copyToClipboard(player.email_address!, t('player.rowActions.emailCopied'))
       },
       { type: 'separator' as const },
-      // No account yet (player.user_id null) — assign_role structurally
-      // can't run without a real auth.users row, so this shows as a single
-      // disabled explanatory line instead of a submenu with no working items.
+      // No account yet (player.user_id null): assign_role can't run without an auth.users row, so a
+      // single disabled explanatory line replaces the submenu
       player.user_id
         ? {
           label: t('player.rowActions.promoteTo'),

@@ -1,7 +1,6 @@
 // app\composables\tournaments\pairing\usePairingPresets.ts
-// Named weight presets for the pairing optimizer — ported verbatim from
-// MagicTheGathering/league (user request, 2026-09-15), no player-identity
-// coupling to adapt.
+// Named weight presets for the pairing optimizer, ported verbatim from league (no player-identity
+// coupling to adapt)
 import type { Ref } from 'vue'
 import type { PairingWeights } from '~/types'
 import type { PairingPresetKind } from '~/components/tournaments/single/pairing/PairingPresetButtons.vue'

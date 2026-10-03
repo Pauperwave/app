@@ -1,8 +1,6 @@
 // app\composables\commanders\useCommanderSearch.ts
-// Ported bit-by-bit from MagicTheGathering/league's useCommanderSearch.ts
-// (user request 2026-09-16: "copia tutta la logica bit-by-bit
-// dell'inserimento voti e dell'inserimento comandanti"), swapping numeric
-// playerId/tablePlayerIds for this app's uuid-keyed players.uuid.
+// Ported from league's useCommanderSearch.ts, swapping numeric playerId/tablePlayerIds for this
+// app's uuid-keyed players.uuid
 import { fetchCommanderByName, type CommanderCard } from './useCommanderCards'
 import { useCommanderUsageQuery, type CommanderUsage } from './useCommanderUsageQuery'
 import type { Database } from '#shared/utils/types/database'
@@ -14,12 +12,18 @@ function parseManaCost(manaCost: string | null): string[] {
   return manaCost.match(/{[^}]+}/g) ?? []
 }
 
-/** A selectable commander name, or a non-interactive group heading (`type: 'label'`) for USelectMenu. */
+/**
+ * A selectable commander name, or a non-interactive group heading (`type: 'label'`) for
+ * USelectMenu.
+ */
 export interface CommanderSuggestionItem {
   type?: 'label'
   label: string
   tokens?: string[]
-  /** Fuzzy-matched character indices (into `label`) to highlight — see `fuzzyMatch` in `app/utils/fuzzyMatch.ts`. */
+  /**
+   * Fuzzy-matched character indices (into `label`) to highlight, see `fuzzyMatch` in
+   * `app/utils/fuzzyMatch.ts`.
+   */
   matchIndices?: number[]
   /** Card image, shown in a hover-preview tooltip in CommanderSearch.vue. */
   imageUrl?: string | null
@@ -28,28 +32,27 @@ export interface CommanderSuggestionItem {
 export interface UseCommanderSearchOptions {
   whitelist?: MaybeRefOrGetter<string[] | null | undefined>
   playerUuid?: MaybeRefOrGetter<string | null | undefined>
-  /** Every player seated at the same table/round as `playerUuid` — passed so
-   *  the usage lookup below batches into one shared request (see
-   *  useCommanderUsageQuery) instead of firing a query per player every
-   *  time a commander modal opens. */
+  /**
+   * Every player seated at the same table/round as `playerUuid`: passed so the usage lookup batches
+   * into one shared request  (see useCommanderUsageQuery) instead of one query per player each time
+   * a commander modal opens.
+   */
   tablePlayerUuids?: MaybeRefOrGetter<string[]>
 }
 
 /**
- * Commander autocomplete: filters the already-cached catalog client-side,
- * no query goes out per keystroke. When `playerUuid` is given, results are
- * split into a "recently used" group (commanders this player has already
- * played, per `tournament_round_results`) shown first, and the rest —
- * instead of just sorting the used ones to the top of one flat list, so
- * USelectMenu can render them as a visually separate group.
+ * Commander autocomplete: filters the already-cached catalog client-side (no query per keystroke).
+ * With `playerUuid`, results split into a "recently used" group (commanders the player already
+ * played, per `tournament_round_results`) shown first and the rest, so USelectMenu renders them as
+ * separate groups instead of one flat list. /
  */
 export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
   const supabase = useSupabaseClient<Database>()
   const { data: catalog } = useCommanderCatalogQuery()
   const { t } = useI18n()
 
-  // Batches this player's usage lookup with the rest of the table roster
-  // (if given) — see useCommanderUsageQuery's cache-sharing note.
+  // Batches this player's usage lookup with the rest of the table roster (see
+  // useCommanderUsageQuery's cache sharing)
   const usageRosterUuids = computed(() => {
     const roster = toValue(options.tablePlayerUuids) ?? []
     const playerUuid = toValue(options.playerUuid)
@@ -75,9 +78,8 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
         ? new Set(whitelist)
         : null
 
-      // Fuzzy (subsequence) match instead of a plain substring check — "arl"
-      // matches "Karlov", not just contiguous typing. Match indices are kept
-      // per name so CommanderSearch.vue can highlight them.
+      // Fuzzy (subsequence) match, not substring: "arl" matches "Karlov". Indices are kept per name
+      // so CommanderSearch.vue can highlight them
       const matches = new Map<string, FuzzyMatchResult>()
       const result = (catalog.value ?? []).filter((row) => {
         if (whitelistSet && !whitelistSet.has(row.name)) return false
@@ -93,14 +95,14 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
         ? usageByPlayer.value?.get(playerUuid)
         : undefined) ?? new Map()
 
-      // Best fuzzy match first, edhrecRank (popularity) as the tiebreaker —
-      // and the only sort when there's no query (score is 0 for everyone).
+      // Best fuzzy match first, edhrecRank (popularity) as the tiebreaker and the only sort with no
+      // query (score is 0 for all)
       const byRelevance = (a: CommanderCatalogRow, b: CommanderCatalogRow) => {
         const scoreDiff = (matches.get(b.name)?.score ?? 0) - (matches.get(a.name)?.score ?? 0)
         return scoreDiff !== 0 ? scoreDiff : (a.edhrecRank ?? 999999) - (b.edhrecRank ?? 999999)
       }
-      // "già giocati" ignores relevance/popularity entirely — most recently
-      // played day first, ties on the same day broken by play count.
+      // "Già giocati" ignores relevance/popularity: most recently played day first, ties broken by
+      // play count
       const byRecency = (a: CommanderCatalogRow, b: CommanderCatalogRow) => {
         const dayDiff = (usage.get(b.name)?.lastPlayedDay ?? '')
           .localeCompare(usage.get(a.name)?.lastPlayedDay ?? '')
@@ -115,9 +117,8 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
         imageUrl: row.imageUrl
       })
 
-      // Split BEFORE capping to 50 — a niche/unpopular commander the player
-      // has actually played must never be cut by the popularity cap before
-      // its "already used" status is even checked.
+      // Split BEFORE capping to 50: a niche commander the player has played must not be cut by the
+      // popularity cap before its "used" status is checked
       const used = result.filter(row => usage.has(row.name)).sort(byRecency).map(toItem)
       const rest = result
         .filter(row => !usage.has(row.name))
@@ -147,13 +148,10 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
     computeSuggestions(q)
   }, 150)
 
-  // Recomputes on every dependency that can change the result set: the query
-  // text, the whitelist (e.g. commander1's partner type flips, narrowing
-  // commander2's options), the catalog itself (on a cold cache the modal can
-  // open before useCommanderCatalogQuery resolves, so the first pass would
-  // otherwise filter an empty catalog), and the usage lookup (same race for
-  // useCommanderUsageQuery). Fires immediately so a short whitelist is
-  // already browsable before typing anything.
+  // Recomputes on every dependency that can change the result set: the query text, the whitelist
+  // (e.g. commander1's partner type narrowing commander2's options), the catalog and the usage
+  // lookup (on a cold cache the modal can open before they resolve, so the first pass would filter
+  // an empty one). Immediate, so a short whitelist is browsable before typing
   watch([query, () => toValue(options.whitelist), catalog, usageByPlayer], ([newQuery]) => {
     debouncedCompute(newQuery)
   }, { immediate: true })

@@ -27,9 +27,9 @@ interface FormatStandingsPayload {
   results: FormatStandingsResultRow[]
 }
 
-// Same points-by-rank scale across every format for a visually consistent mock —
-// see server/api/standings/[format].get.ts for why the rest (counted-results,
-// top-cutoff, calendar) is per-league rather than per-format or fixed here.
+// Same points-by-rank scale across every format for a consistent mock; see
+// server/api/standings/[format].get.ts for why the rest (counted-results, top-cutoff, calendar) is
+// per-league
 const POINTS_BY_RANK = [25, 18, 15, 12, 10, 8, 6, 4, 2]
 const MIN_POINTS = 1
 
@@ -40,11 +40,10 @@ function pointsForRank(rank: number): number {
   return POINTS_BY_RANK[rank - 1] ?? MIN_POINTS
 }
 
-// Backed by mock data (no Supabase table yet, see
-// server/api/standings/[format].get.ts) — shared by every /standings/<format>
-// page. `selectedLeague` is null until the user picks a tab: the endpoint
-// resolves a missing/unknown league to the current one, same pattern as
-// useCittadinoQuery.ts's `selectedEdition`.
+// Backed by mock data (no Supabase table yet, see server/api/standings/[format].get.ts), shared by
+// every /standings/<format> page. `selectedLeague` is null until a tab is picked: the endpoint
+// resolves a missing/unknown league to the current one (like useCittadinoQuery.ts's
+// `selectedEdition`)
 export function useFormatStandingsQuery(
   format: StandingsFormat,
   selectedLeague: Ref<string | null>
@@ -90,12 +89,11 @@ export function useFormatStandingsQuery(
     )
 
     const rows = groups.map<FormatStandingRow>((group) => {
-      // fallow-ignore-next-line code-duplication -- same totals logic in server/utils/telegram/commands/classifiche.ts, duplicated because this composable is Vue-only (useAsyncData/computed) and can't run in a Telegram command handler
+      // fallow-ignore-next-line code-duplication -- same totals as Telegram classifiche.ts
       const counted = group.sortedByPoints.slice(0, countedResults.value)
 
-      // Placement points only count for the player's best-N results, but the
-      // participation point is flat and unconditional — awarded for every event
-      // played, counted or dropped.
+      // Placement points only count for the best-N results, but the participation point is flat:
+      // awarded for every event played, counted or dropped
       const placementTotal = counted.reduce((sum, result) => sum + result.points, 0)
       const participationTotal = group.results
         .reduce((sum, result) => sum + result.participationPoints, 0)

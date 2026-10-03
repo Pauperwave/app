@@ -1,13 +1,9 @@
 // app\composables\tournaments\rounds\useCommanderRoundLifecycle.ts
-// Advance/turn-back for one Commander round — kept separate from
-// useCommanderRoundSubmitHandlers.ts because it's a different kind of
-// concern (progressing the tournament itself, not entering data for the
-// current round) and has no equivalent split in league's own
-// PairingsCard.vue: league had a single shared round view driven by
-// useTournamentLifecycle.ts at the page level, while this app mounts one
-// CommanderRoundManager.vue instance per round (see
-// [tournamentId]/index.vue's own #round-${i} slot), so advance/turn-back
-// necessarily stays scoped to this component's own instance instead.
+// Advance/turn-back for one Commander round, separate from useCommanderRoundSubmitHandlers.ts
+// (progressing the tournament, not entering round data). This app mounts one
+// CommanderRoundManager.vue per round (see [tournamentId]/index.vue's #round-${i} slot), unlike
+// league's single round view driven by a page-level useTournamentLifecycle.ts, so advance/turn-back
+// stays scoped to this component's instance.
 import type { TablePlayer } from '~/types'
 import type { CommanderRoundData } from './useCommanderRoundData'
 
@@ -16,11 +12,9 @@ export function useCommanderRoundLifecycle(options: {
   roundNumber: number
   roundData: CommanderRoundData
   autoOpenAdvancePreview: MaybeRefOrGetter<boolean>
-  // Two named callbacks rather than passing Vue's own generated `emit`
-  // straight through — its overloaded type (one call signature per event
-  // name) isn't structurally assignable to a plain `(event: 'a' | 'b') =>
-  // void` union-parameter type, and unifying the overloads to satisfy
-  // eslint's own unified-signatures rule breaks that assignability again.
+  // Two named callbacks rather than Vue's generated `emit`: its overloaded type isn't assignable to
+  // a plain `(event: 'a' | 'b') => void` union-parameter type, and unifying the overloads for
+  // eslint's unified-signatures rule breaks that assignability again
   onTurnedBack: () => void
   onAdvancePreviewAutoOpened: () => void
 }) {
@@ -33,11 +27,9 @@ export function useCommanderRoundLifecycle(options: {
   const { advanceRound, turnBackRound, reopenTournament: reopenMutation }
     = useTournamentRoundsMutations(tournamentUuid)
 
-  // Seed the next round's optimizer with the current live-standings order
-  // (best rank first) — same "rank drives the seed order" idea as league's
-  // own pairing optimizer, just resolved through this app's associate
-  // identity instead of a numeric rank field. A dropped player isn't seated again.
-  // Rank counts every player (dropped ones too), matching the standings table.
+  // Seed the next round's optimizer with the live-standings order (best rank first), like league's
+  // optimizer but via this app's associate identity. A dropped player isn't seated again; rank
+  // counts every player (dropped too), matching the standings table
   const { t } = useI18n()
   const nextRoundSeedPlayers = computed<TablePlayer[]>(() => {
     const labels = {

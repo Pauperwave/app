@@ -2,8 +2,8 @@
 const ROUND_MINUTES = 50
 const ROUND_SECONDS = ROUND_MINUTES * 60
 
-// Solo per comodità di test manuale (verificare onComplete/haptics senza
-// aspettare 50 minuti reali) — non pensati per l'uso normale al tavolo.
+// For manual testing only (checking onComplete/haptics without waiting 50 real minutes), not meant
+// for normal use at the table
 const TIMER_ADJUST_MINUTES = 5
 
 export function useRoundTimer() {
@@ -17,9 +17,8 @@ export function useRoundTimer() {
     return `${minutes}:${String(seconds).padStart(2, '0')}`
   })
 
-  // Il contatore turni prende il posto del timer solo dopo che è scaduto —
-  // timer.remaining parte da ROUND_SECONDS (mai 0) finché il countdown non
-  // arriva in fondo, un flag separato non serve.
+  // The turn counter replaces the timer only once it has expired: timer.remaining starts at
+  // ROUND_SECONDS (never 0) until the countdown ends, so no separate flag is needed
   const timeIsUp = computed(() => timer.remaining.value <= 0)
 
   function toggle() {
@@ -31,10 +30,9 @@ export function useRoundTimer() {
     telegramHaptic()?.impactOccurred('light')
   }
 
-  // Silenzioso di proposito (nessun haptic) — usato sia dal bottone di
-  // reset dedicato (che aggiunge il proprio haptic) sia da useMatchScore
-  // per il reset automatico a inizio partita, dove un secondo haptic
-  // sovrapposto a quello già sparato per "partita vinta" sarebbe fastidioso.
+  // Silent on purpose (no haptic): used by the dedicated reset button (which adds its own haptic)
+  // and by useMatchScore's automatic reset at match start, where a second haptic over the "match
+  // won" one would be annoying
   function reset() {
     timer.stop()
   }

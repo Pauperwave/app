@@ -10,12 +10,9 @@ export interface QuickCreateItem {
   group: 'community' | 'competitions'
 }
 
-// Single source for every "new X" quick-create shortcut (2026-08-19, user
-// request) — home/QuickCreateMenu.vue's dropdown and default.vue's Cmd+K
-// palette both map this into their own item shape instead of hand-duplicating
-// the list, so adding/reordering/removing an entry here updates both surfaces
-// at once. Found the two had already drifted before this existed: the
-// palette was missing tournament/league/event/location entirely.
+// Single source for every "new X" quick-create shortcut: home/QuickCreateMenu.vue's dropdown and
+// default.vue's Cmd+K palette both map it into their item shape, so adding/reordering/removing an
+// entry updates both
 export function useQuickCreateItems(): QuickCreateItem[] {
   const { t } = useI18n()
 

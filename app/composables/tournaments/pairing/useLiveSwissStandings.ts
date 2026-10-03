@@ -1,8 +1,7 @@
 // app\composables\tournaments\pairing\useLiveSwissStandings.ts
-// Reactive standings of a 1v1 Swiss tournament, derived from its pairings,
-// match results and drops (no persisted standings table — user decision,
-// 2026-09-20). Every result mutation invalidates and optimistically updates
-// the results query, so this recomputes the moment a score is picked.
+// Reactive standings of a 1v1 Swiss tournament, derived from its pairings, match results and drops
+// (no persisted standings table). Every result mutation invalidates and optimistically updates the
+// results query, so it recomputes as soon as a score is picked
 import type { SwissDropInfo } from '~/types'
 import {
   calculateSwissStandings, type SwissMatch, type SwissStandingStats

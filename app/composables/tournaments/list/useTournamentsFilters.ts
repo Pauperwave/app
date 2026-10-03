@@ -1,13 +1,13 @@
 // app\composables\tournaments\list\useTournamentsFilters.ts
-// fallow-ignore-file code-duplication -- mirrors useEventsFilters.ts's
-// date-range/status filter shape on purpose; expected to diverge once real
-// Supabase tables land
+// fallow-ignore-file code-duplication --
+// mirrors useEventsFilters.ts's date-range/status filter shape on purpose; expected to diverge once
+// real tables land
 import { endOfDay, startOfDay } from 'date-fns'
 import type { Ref } from 'vue'
 import type { Range, Tournament, TournamentStatus } from '~/types'
 
-// search defaults to an unused empty ref — locations/[slug]/index.vue's own
-// hosted-tournaments list only needs the range filter, not a search box.
+// search defaults to an unused empty ref: locations/[slug]/index.vue's hosted-tournaments list only
+// needs the range filter
 export function useTournamentsFilters(
   data: Ref<Tournament[]>, range: Ref<Range>, search: Ref<string> = ref('')
 ) {
@@ -15,16 +15,13 @@ export function useTournamentsFilters(
 
   const statusFilter = ref<'all' | TournamentStatus>('all')
 
-  // Format isn't a fixed enum like status — it's whatever mtg_formats rows
-  // exist (Draft, Commander, ... growing over time, see docs/BACKLOG.md) —
-  // so the filter's own option list is derived from the data instead of a
-  // hardcoded constant.
+  // Format isn't a fixed enum: it is whatever mtg_formats rows exist (growing, see
+  // docs/BACKLOG.md), so the options derive from the data
   const formatFilter = ref<'all' | string>('all')
 
-  // Single source of truth for filtering, shared by both UTable :data and
-  // GridView :tournaments — same reasoning as useWantedCardsFilters.ts. Search
-  // is name-only, applied at this data level (not a UTable globalFilterFn)
-  // so it also filters the grid view, not just the table.
+  // Single source of truth for filtering, shared by UTable :data and GridView :tournaments (like
+  // useWantedCardsFilters.ts). Search is name-only and applied at this data level, not a UTable
+  // globalFilterFn, so it also filters the grid
   const filteredTournaments = computed(() => data.value.filter((tournament) => {
     // A search looks through every tournament, ignoring the status, format and date filters.
     const query = search.value.trim().toLowerCase()
@@ -32,28 +29,18 @@ export function useTournamentsFilters(
     if (statusFilter.value !== 'all' && tournament.status !== statusFilter.value) return false
     if (formatFilter.value !== 'all' && tournament.format !== formatFilter.value) return false
     const startDate = new Date(tournament.startDate)
-    // range.value.end comes from DateRangePicker.vue's CalendarDate.toDate(),
-    // which lands at midnight of the picked end day — a tournament later
-    // that same day (they have a real time-of-day, unlike a plain calendar
-    // day) would otherwise fail this check even though its day is inside
-    // the picked range (confirmed live, 2026-09-18: today's own tournament
-    // missing from the grid with today included in the date filter).
-    //
-    // range.value.start has the exact same problem in the other direction
-    // when it's still the page's own un-picked default (`new Date()`, the
-    // literal current moment including today's real time-of-day, not
-    // midnight) — a tournament scheduled earlier today than whatever
-    // moment the page happened to load at would fail this check too
-    // (confirmed live again right after the endOfDay fix above: same day,
-    // still missing, this time on the lower bound).
+    // range.value.end comes from DateRangePicker.vue's CalendarDate.toDate(), i.e. midnight of the
+    // picked end day: a tournament later that day (it has a real time-of-day) would fail the check
+    // though its day is in range. range.value.start has the same problem the other way when it is
+    // still the page's un-picked default (`new Date()`, with today's time-of-day): a tournament
+    // earlier today fails
     const inRange = startDate >= startOfDay(range.value.start)
       && startDate <= endOfDay(range.value.end)
     // Pinned tournaments ignore the date range: that is the point of "In evidenza".
     return inRange || tournament.isPinned
   }))
 
-  // Counts from the full unfiltered `data`, same convention as
-  // useWantedCardsFilters.ts's statusTabs.
+  // Counts from the full unfiltered `data`, like useWantedCardsFilters.ts's statusTabs
   const statusCounts = computed(() => {
     const counts: Record<TournamentStatus, number> = {
       draft: 0, registration_open: 0, in_progress: 0, completed: 0, cancelled: 0, external: 0
@@ -64,8 +51,8 @@ export function useTournamentsFilters(
     return counts
   })
 
-  // Icons reused from TOURNAMENT_STATUS_ICONS — collapse to icon-only below
-  // `lg` via StatusFilterGroup's own icon prop (user request, 2026-08-24).
+  // Icons reused from TOURNAMENT_STATUS_ICONS; icon-only below `lg` via StatusFilterGroup's icon
+  // prop
   const statusTabs = computed<
     { label: string, value: 'all' | TournamentStatus, count?: number, icon?: string }[]
   >(() => [
@@ -78,8 +65,7 @@ export function useTournamentsFilters(
     }))
   ])
 
-  // Sorted alphabetically, not insertion order — new formats can appear in
-  // any order depending on when their mtg_formats row was created.
+  // Sorted alphabetically, not insertion order: new formats can appear in any order
   const formatCounts = computed(() => {
     const counts = new Map<string, number>()
     for (const tournament of data.value) {

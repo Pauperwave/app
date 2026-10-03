@@ -1,8 +1,7 @@
 // app\composables\events\useEventFormFields.ts
-// Extracted out of AddModal.vue so EditModal.vue can share it (2026-08-22,
-// same reasoning as useLeagueFormFields.ts/useTournamentFormFields.ts) —
-// only the initial `state` values and submit behavior differ between
-// create and edit.
+// Extracted from AddModal.vue so EditModal.vue shares it (like
+// useLeagueFormFields.ts/useTournamentFormFields.ts): only the initial `state` values and submit
+// behavior differ between create and edit
 import * as v from 'valibot'
 import type { InferOutput } from 'valibot'
 

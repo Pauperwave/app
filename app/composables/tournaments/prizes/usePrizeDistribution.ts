@@ -1,8 +1,6 @@
 // app\composables\tournaments\prizes\usePrizeDistribution.ts
-// Reactive wrapper around the pure prize allocation in
-// app/utils/tournaments/prizes — pure calculation, no persistence (user
-// request, 2026-09-17: "solo a schermo", the settings live in a local ref and
-// reset on remount).
+// Reactive wrapper around the pure prize allocation in app/utils/tournaments/prizes: no persistence
+// ("only on screen"), the settings live in a local ref and reset on remount
 import type { PrizeDistributionSettings } from '~/types'
 import { computePrizeDistribution } from '~/utils/tournaments/prizes/prizeAllocation'
 

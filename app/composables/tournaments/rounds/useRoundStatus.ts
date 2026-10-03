@@ -1,13 +1,9 @@
 // app\composables\tournaments\rounds\useRoundStatus.ts
-// Derives the 4 round-status lists (rankings/kills per table, commanders/
-// votes per player) backing RoundStatusCard.vue's "Stato inserimento"
-// sidebar — ported from MagicTheGathering/league's useRoundStatus.ts (user
-// request, 2026-09-19: "copia 1:1 le funzionalità della card tavolo"),
-// adapted to read from CommanderRoundManager.vue's own already-computed
-// per-pairing helpers (positionsFor/killsFor/hasCommander/hasVotes) instead
-// of league's Pinia stores — same completion predicates the table cards
-// themselves use, so the sidebar summary and the cards can never disagree
-// on what "done" means.
+// Derives the 4 round-status lists (rankings/kills per table, commanders/votes per player) backing
+// RoundStatusCard.vue's "Stato inserimento" sidebar, ported from league's useRoundStatus.ts but
+// reading CommanderRoundManager.vue's per-pairing helpers
+// (positionsFor/killsFor/hasCommander/hasVotes) instead of Pinia stores: the same completion
+// predicates the table cards use, so they can't disagree on "done"
 import type { TournamentPairing } from '../pairing/useTournamentPairingsQuery'
 
 export interface RoundStatusTableItem {

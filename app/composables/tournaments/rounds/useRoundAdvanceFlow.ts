@@ -1,14 +1,10 @@
 // app\composables\tournaments\rounds\useRoundAdvanceFlow.ts
-// Shared "advance round N / end tournament / turn back" orchestration
-// behind both round managers' own lifecycle composables
-// (useCommanderRoundLifecycle.ts/useSwissRoundLifecycle.ts) — same
-// advancePreviewOpen/openAdvancePreview/onAdvanceConfirm/endTournament/
-// onTurnBack shape and autoOpenAdvancePreview watcher, differing only in
-// which mutation (Commander vs Swiss) each calls (fallow:dupes, 2026-09-24,
-// flagged once useSwissRoundLifecycle.ts existed alongside the Commander
-// one it was modeled on). Each caller still owns its own mutation
-// composable and nextRoundSeedPlayers/allXEntered computation — only this
-// generic shell is shared.
+// Shared "advance round N / end tournament / turn back" orchestration behind
+// useCommanderRoundLifecycle.ts/useSwissRoundLifecycle.ts: the same
+// advancePreviewOpen/openAdvancePreview/onAdvanceConfirm/endTournament/onTurnBack shape and
+// autoOpenAdvancePreview watcher, differing only in which mutation (Commander vs Swiss) is called.
+// Each caller owns its mutation composable and nextRoundSeedPlayers/allXEntered; only this shell is
+// shared.
 type AdvanceMutation = ReturnType<typeof useRoundLifecycleMutation<{
   currentRoundNumber: number
   associateOrder?: string[]
@@ -24,11 +20,9 @@ export function useRoundAdvanceFlow(options: {
   turnBack: TurnBackMutation
   reopen: ReopenMutation
   autoOpenAdvancePreview: MaybeRefOrGetter<boolean>
-  // Two named callbacks rather than passing Vue's own generated `emit`
-  // straight through — its overloaded type (one call signature per event
-  // name) isn't structurally assignable to a plain `(event: 'a' | 'b') =>
-  // void` union-parameter type, and unifying the overloads to satisfy
-  // eslint's own unified-signatures rule breaks that assignability again.
+  // Two named callbacks rather than Vue's generated `emit`: its overloaded type isn't assignable to
+  // a plain `(event: 'a' | 'b') => void` union-parameter type, and unifying the overloads for
+  // eslint's unified-signatures rule breaks that assignability again
   onTurnedBack: () => void
   onAdvancePreviewAutoOpened: () => void
 }) {
@@ -48,8 +42,8 @@ export function useRoundAdvanceFlow(options: {
       advancePreviewOpen.value = false
     } catch { /* toasted by the mutation's own onError */ }
   }
-  // Ending the tournament and turning a round back both ask first (user request, 2026-10-03): the
-  // buttons only open the confirm, endTournament/onTurnBack run the action itself.
+  // Ending the tournament and turning a round back both ask first: the buttons only open the
+  // confirm, endTournament/onTurnBack run the action
   const turnBackConfirmOpen = ref(false)
   const endConfirmOpen = ref(false)
   function requestTurnBack() {
@@ -78,10 +72,9 @@ export function useRoundAdvanceFlow(options: {
     } catch { /* toasted by the mutation's own onError */ }
   }
 
-  // index.vue flips autoOpenAdvancePreview on right after deleting round
-  // `roundNumber + 1`, asking this (the previous) round to reopen its own
-  // "next round" preview so the organizer lands straight back on the table
-  // arrangement they're meant to redo.
+  // index.vue flips autoOpenAdvancePreview after deleting round `roundNumber + 1`, asking this (the
+  // previous) round to reopen its "next round" preview so the organizer lands back on the table
+  // arrangement to redo
   watch(() => toValue(autoOpenAdvancePreview), (value) => {
     if (!value) return
     advancePreviewOpen.value = true

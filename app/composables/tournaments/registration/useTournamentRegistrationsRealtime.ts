@@ -1,8 +1,8 @@
 // app\composables\tournaments\registration\useTournamentRegistrationsRealtime.ts
-// Live-updates a tournament's registrations: someone registering (or unregistering) through the Telegram
-// bot shows up in "Pre-registrati"/"Iscritti" without a refresh (user request, 2026-10-02).
-// tournament_registrations is already in the supabase_realtime publication; same "invalidate, don't merge
-// payloads" approach as useTournamentMatchResultsRealtime.ts.
+// Live-updates a tournament's registrations: someone registering (or unregistering) through the
+// Telegram bot shows up in "Pre-registrati"/"Iscritti" without a refresh. tournament_registrations
+// is already in the supabase_realtime publication; same "invalidate, don't merge payloads" approach
+// as useTournamentMatchResultsRealtime.ts
 export function useTournamentRegistrationsRealtime(tournamentUuid: MaybeRefOrGetter<string>) {
   const supabase = useSupabaseClient()
   const queryCache = useQueryCache()

@@ -1,15 +1,9 @@
 // app\composables\tournaments\useTournamentLifecycleFlow.ts
-// Every "big state transition" for a tournament as a whole — starting it
-// (all three format branches: Draft's pods-preview-only, Commander's/1v1's
-// real round-1 seating), resetting it back to registration, and routing a
-// turned-back round back into the same start-flow modal — extracted out of
-// [tournamentId]/index.vue (user request, 2026-09-18) alongside
-// useTournamentStepper.ts, once both had grown into the largest, least
-// readable parts of that page. Named after league's own
-// useTournamentLifecycle.ts, scoped down to what this app actually needs: no
-// Pinia session-store resets (this app has none, see CLAUDE.md's Pinia
-// Colada + BFF convention), just the mutations and the confirm-dialog/modal
-// state around them.
+// Every "big state transition" of a tournament: starting it (Draft's pods-preview-only, or
+// Commander's/1v1's real round-1 seating), resetting it to registration, and routing a turned-back
+// round into the same start-flow modal. Split from [tournamentId]/index.vue alongside
+// useTournamentStepper.ts; no Pinia session-store resets (see CLAUDE.md's Pinia Colada + BFF
+// convention), just the mutations and the confirm-dialog/modal state around them.
 import type { ComputedRef } from 'vue'
 import type { AcceptancePickerItem } from '~/components/tournaments/single/AcceptancePicker.vue'
 import type { Tournament, TablePlayer } from '~/types'
@@ -32,20 +26,15 @@ export function useTournamentLifecycleFlow(options: {
   const toast = useToast()
   const { t } = useI18n()
 
-  // ─── Start ────────────────────────────────────────────────────────────────
-  // "Avvio evento" flips the tournament out of registration and into play.
-  // Only offered while registration is still open; once in_progress/
-  // completed/cancelled/external there's nothing left to start.
+  // ─── Start ──────────────────────────────────────────────────────────────── "Avvio evento" flips
+  // the tournament out of registration into play; only offered while registration is open
   const { setStatus } = useTournamentsMutations()
   const canStartTournament = computed(() => tournament.value?.status === 'registration_open')
   const isStartConfirmOpen = ref(false)
 
-  // Shared by both "no pods step" formats (plain yes/no confirm dialog) and
-  // Draft's own pods-preview confirm (onDraftPodsConfirm below) — the actual
-  // status flip is identical either way, only what happens right before it
-  // (a dialog vs. a pod arrangement) differs. No manual stepper update needed
-  // here — useTournamentStepper.ts's defaultStepSlot reacts to the status
-  // change itself.
+  // Shared by both "no pods step" formats (plain confirm dialog) and Draft's pods-preview confirm
+  // (onDraftPodsConfirm): the status flip is identical. No manual stepper update:
+  // useTournamentStepper.ts's defaultStepSlot reacts to it
   async function startTournamentByStatusFlip() {
     if (!tournament.value) return
     await setStatus.mutateAsync({ id: tournament.value.id, status: 'in_progress' })
@@ -64,11 +53,9 @@ export function useTournamentLifecycleFlow(options: {
     }
   }
 
-  // ─── Reset ────────────────────────────────────────────────────────────────
-  // Wipes every round/pairing/result/standing and puts the tournament back at
-  // registration_open, for the two formats that actually have round data to
-  // wipe (Commander, 1v1 Swiss). Draft/Cubo Commander/etc. have no
-  // round-level DB state yet, so there'd be nothing for this to reset.
+  // ─── Reset ──────────────────────────────────────────────────────────────── Wipes every
+  // round/pairing/result/standing and returns to registration_open, for the two formats with round
+  // data (Commander, 1v1 Swiss); Draft/Cubo Commander have no round-level DB state to reset
   const { resetTournament } = useTournamentResetMutation(tournamentUuid)
   const isResetConfirmOpen = ref(false)
   const canResetTournament = computed(() =>
@@ -79,31 +66,25 @@ export function useTournamentLifecycleFlow(options: {
       await resetTournament.mutateAsync(undefined)
       isResetConfirmOpen.value = false
     } catch {
-      // Toasted by useTournamentResetMutation's own onError — nothing left to do here.
+      // Toasted by useTournamentResetMutation's onError
     }
   }
 
-  // ─── Table formation (pods/table-preview modal, shared by round 1 and every
-  // round's own "turn back") ─────────────────────────────────────────────────
-  // Commander's round 1 pods step's "Confirm" only persists anything for
-  // Commander (see PodsManager.vue's own comment); Draft's step stays the
-  // existing preview-only toy.
+  // ─── Table formation (pods/table-preview modal, shared by round 1 and every round's "turn back")
+  // ─── For Commander, round 1's pods "Confirm" persists (see PodsManager.vue); Draft's step stays
+  // preview-only
   const { startRoundOne } = useTournamentRoundsMutations(tournamentUuid)
-  // 1v1 Swiss's own round-1 seating (Phase 1 of
-  // docs/plans/2026-09-15-swiss-pairing-draft-1v1-plan.md) — same
-  // "client arranges, RPC seats" split as onPodsConfirm (Commander), calling
-  // the Swiss-specific RPC instead (migration 20260918000000).
+  // 1v1 Swiss round-1 seating: same "client arranges, RPC seats" split as onPodsConfirm, via the
+  // Swiss-specific RPC
   const { startRoundOneSwiss } = useTournamentSwissRoundsMutations(tournamentUuid)
-  // Shared by both PodsManager.vue (Draft) and TablePreviewModal.vue
-  // (Commander) — only one of the two ever renders at a time (isDraft xor
-  // isCommander), so one boolean is enough for either.
+  // Shared by PodsManager.vue (Draft) and TablePreviewModal.vue (Commander); only one renders at a
+  // time, so one boolean suffices
   const podsModalOpen = ref(false)
   // Approved tables per round, for the previews reopened by a turn-back.
   const { seatingFor } = useConfirmedSeatings(tournamentUuid)
 
-  // TablePreviewModal (ported from league) takes TablePlayer[] (value/label),
-  // not AcceptancePickerItem's fuller shape — same associate uuid identity
-  // either way (AcceptancePickerItem.value).
+  // TablePreviewModal takes TablePlayer[] (value/label), not AcceptancePickerItem's fuller shape:
+  // same associate uuid identity
   const tablePreviewPlayers = computed<TablePlayer[]>(() =>
     acceptedPlayers.value.map(player => ({ value: player.value, label: player.label })))
   const { calculatePods: calculateCommanderPods } = useCommanderPods()
@@ -116,13 +97,10 @@ export function useTournamentLifecycleFlow(options: {
     return true
   })
 
-  // "Avvia torneo" — for every format that forms tables before round 1 (not
-  // Commander-only), this goes straight into the pairing-preview modal
-  // (`preview=1` layered on top of the still-registration phase); the
-  // tournament doesn't actually start until the organizer confirms the pod
-  // arrangement there. "Cubo Commander" has no round-management flow at all
-  // yet, so it stays on the plain confirm dialog too, same as any other
-  // format with no table-preview concept.
+  // "Avvia torneo": every format that forms tables before round 1 goes straight into the
+  // pairing-preview modal (`preview=1` over the registration phase); the tournament only starts
+  // once the organizer confirms the arrangement. "Cubo Commander" has no round management yet and
+  // keeps the plain confirm dialog
   function onStartTournamentClick() {
     if (isDraft.value || isCommander.value || is1v1Format.value) {
       podsModalOpen.value = true
@@ -131,14 +109,10 @@ export function useTournamentLifecycleFlow(options: {
     isStartConfirmOpen.value = true
   }
 
-  // "Torna al round precedente" on round 1: once its RPC has wiped round 1
-  // back to registration_open, round 1 turning back lands the organizer on
-  // "acceptance" with the same table-preview modal "Avvia torneo" opens
-  // (there's no dedicated pods step to return to). Round 2+ instead reopens
-  // the previous round's own advancePreviewOpen — same mechanism, different
-  // destination. No manual stepper update needed in either branch —
-  // useTournamentStepper.ts's defaultStepSlot reacts to the round/status
-  // change the turn-back mutation itself already caused.
+  // "Torna al round precedente": on round 1, once its RPC has wiped it back to registration_open,
+  // the organizer lands on "acceptance" with the same table-preview modal "Avvia torneo" opens (no
+  // dedicated pods step). Round 2+ reopens the previous round's advancePreviewOpen. No manual
+  // stepper update: useTournamentStepper.ts's defaultStepSlot reacts
   const pendingAdvancePreviewRound = ref<number | null>(null)
   function onRoundTurnedBack(roundNumber: number) {
     if (roundNumber === 1) {
@@ -160,7 +134,7 @@ export function useTournamentLifecycleFlow(options: {
       await startRoundOne.mutateAsync({ associateOrder, tableSizes, shuffleSeed })
       podsModalOpen.value = false
     } catch {
-      // Toasted by useTournamentRoundsMutations' own onError — nothing left to do here.
+      // Toasted by useTournamentRoundsMutations' onError
     }
   }
 
@@ -169,13 +143,12 @@ export function useTournamentLifecycleFlow(options: {
       await startRoundOneSwiss.mutateAsync({ associateOrder, shuffleSeed })
       podsModalOpen.value = false
     } catch {
-      // Toasted by useTournamentSwissRoundsMutations' own onError — nothing left to do here.
+      // Toasted by useTournamentSwissRoundsMutations' onError
     }
   }
 
-  // Draft's own pods step has no real persistence yet (PodsManager.vue's own
-  // comment) — confirming there still needs to actually start the tournament,
-  // same status-flip start-round-one's own RPC does implicitly for Commander.
+  // Draft's pods step has no real persistence (see PodsManager.vue): confirming must still start
+  // the tournament, the status flip start-round-one's RPC does implicitly for Commander
   async function onDraftPodsConfirm() {
     try {
       await startTournamentByStatusFlip()
@@ -189,8 +162,8 @@ export function useTournamentLifecycleFlow(options: {
   }
 
   watch(podsModalOpen, syncPreview)
-  // Also waits on the accepted players: on a reload they load after the first check, which used to leave
-  // the modal closed with ?preview=1 still in the URL.
+  // Also waits on the accepted players: on a reload they load after the first check, which used to
+  // leave the modal closed with ?preview=1 still in the URL.
   watch(() => previewFromQuery.value && canOpenTablePreview.value, (shouldOpen) => {
     if (shouldOpen) podsModalOpen.value = true
   }, { immediate: true })

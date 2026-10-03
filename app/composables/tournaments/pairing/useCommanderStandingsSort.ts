@@ -1,16 +1,12 @@
 // app\composables\tournaments\pairing\useCommanderStandingsSort.ts
-// Single tie-break rule for standings, ported from MagicTheGathering/league's
-// shared/utils/standingsSort.ts (user request, 2026-09-15/16: copy as-is).
-// Order: total score, victories, kills, brew votes received, play votes
-// received, then playerUuid as a stable last resort (deterministic — avoids
-// rank flicker between otherwise-tied players on recompute).
+// Single tie-break rule for standings, ported from league's shared/utils/standingsSort.ts. Order:
+// total score, victories, kills, brew votes received, play votes received, then playerUuid as a
+// deterministic last resort (no rank flicker between tied players on recompute).
 //
-// Victories and kills come before brew/play votes on purpose (ADR-047 in
-// league): they're objective, derived directly from what happened in-game,
-// and hard to game. Vote-based criteria are assigned by other players at the
-// table — subjective, with a real "courtesy vote between friends" risk in a
-// small recurring league. When the total score ties, the criteria hardest to
-// influence socially get exhausted first.
+// Victories and kills come before brew/play votes on purpose (ADR-047 in league): they are
+// objective and hard to game, while votes are assigned by other players (subjective, with a
+// "courtesy vote between friends" risk in a small recurring league), so the criteria hardest to
+// influence socially are exhausted first
 export interface StandingSortable {
   playerUuid: string
   score: number | null

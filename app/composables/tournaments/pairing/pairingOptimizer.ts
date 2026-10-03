@@ -1,13 +1,10 @@
 // app\composables\tournaments\pairing\pairingOptimizer.ts
-// Greedy + local-swap pairing optimizer with hard constraints and transparent
-// scoring details — ported from MagicTheGathering/league's own
-// app/composables/event-pairing/pairingOptimizer.ts (user request, 2026-09-15:
-// reuse league's real optimizer, not a simplified shuffle). Player identity
-// is a string (associate uuid) here instead of league's numeric player id —
-// every other formula/weight/constraint is unchanged.
+// Greedy + local-swap pairing optimizer with hard constraints and transparent scoring details,
+// ported from league's event-pairing/pairingOptimizer.ts. Player identity is a string (associate
+// uuid) instead of league's numeric id; every other formula/weight/constraint is unchanged.
 //
-// Invariant: for every table, sum(perPlayer[p].total for p in table) === tableScore.total.
-// Each weight is applied exactly where its metric is naturally attributable:
+// Invariant: for every table, sum(perPlayer[p].total for p in table) === tableScore.total. Each
+// weight is applied exactly where its metric is naturally attributable:
 //   - strengthBalance is a table-level quantity (rank spread has no single owner), so it's
 //     weighted once in calculateStrengthBalance and heuristically redistributed to players.
 //   - novelty, rematchPenalty, rotateTable3 are naturally per-pair/per-player (a new pairing
@@ -505,7 +502,10 @@ function cloneTables(tables: string[][]): string[][] {
   return tables.map(table => [...table])
 }
 
-/** Clones `working`, swaps seat `i` of table `t1` with seat `j` of table `t2`, and scores the result. */
+/**
+ * Clones `working`, swaps seat `i` of table `t1` with seat `j` of table `t2`, and scores the
+ * result.
+ */
 function trySwapCandidate(
   working: string[][],
   t1: number,
@@ -617,14 +617,10 @@ export function optimizePairings(params: {
   const leagueRematchCounts = params.leagueRematchCounts ?? new Map<string, number>()
   const tableSizes = calculatePods(players.length).tableSizes
 
-  // calculatePods returns [] for an unplayable player count (< 3, or exactly
-  // 5 — no valid 3/4-seat split exists). Without this guard, every attempt
-  // below builds zero tables and scoreSolution([]) returns 0 (its loop never
-  // runs) — a *finite* score that beats the initial -Infinity `best`, so
-  // optimizePairings would return a spuriously "valid" empty result and the
-  // caller (runOptimizer's Number.isFinite check) would silently wipe every
-  // seat assignment via replaceByPlayerOrder([]). Real production bug in
-  // league (BACKLOG/TODO sweep) — guard kept verbatim.
+  // calculatePods returns [] for an unplayable player count (< 3, or exactly 5: no valid 3/4-seat
+  // split). Without this guard every attempt builds zero tables and scoreSolution([]) returns a
+  // *finite* 0 beating the initial -Infinity, so a spuriously "valid" empty result would make
+  // runOptimizer silently wipe every seat via replaceByPlayerOrder([])
   if (!tableSizes.length) {
     return { tables: [], totalScore: Number.NEGATIVE_INFINITY, tableScores: [] }
   }

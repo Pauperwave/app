@@ -1,14 +1,9 @@
 // app\composables\tournaments\rounds\useTournamentMatchResultsRealtime.ts
-// Live-updates SwissRoundManager.vue's own match-results/pairings queries
-// whenever the Telegram bot writes a result, or the opponent confirms/
-// disputes it (2026-09-23/24 user request: an organizer/admin watching a
-// round should see a player's submitted result live, without a manual page
-// refresh). Supabase Realtime's postgres_changes, filtered by
-// tournament_uuid, invalidates the relevant Pinia Colada caches on any
-// insert/update/delete rather than merging payloads into query state
-// directly — the existing query already fetches the tournament's whole
-// (small) result set, so a refetch is simple and keeps one source of truth
-// for the shape of that data.
+// Live-updates SwissRoundManager.vue's match-results/pairings queries when the Telegram bot writes
+// a result or the opponent confirms/disputes it, so an organizer sees it without refreshing.
+// Supabase Realtime postgres_changes, filtered by tournament_uuid, invalidates the Pinia Colada
+// caches on any change rather than merging payloads: the query already fetches the tournament's
+// whole (small) result set, so a refetch keeps one source of truth for its shape
 export function useTournamentMatchResultsRealtime(tournamentUuid: MaybeRefOrGetter<string>) {
   const supabase = useSupabaseClient()
   const queryCache = useQueryCache()

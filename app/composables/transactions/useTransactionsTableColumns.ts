@@ -32,12 +32,10 @@ export const transactionsColumnHeaders = (t: (key: string) => string) => ({
   actions: t('transaction.columns.actions')
 } as const)
 
-// selection: threaded through rather than read from a composable here, same
-// reasoning as useTournamentsTableColumns.ts/useWantedCardsTableColumns.ts —
-// that state (useSelection.ts) is owned by the page. Grouping (by payer) is
-// on here, unlike tournaments, so the select column comes from
-// useGroupedSelectColumn.ts (a group's checkbox drives all its subRows),
-// not tournaments' simpler ungrouped one.
+// selection: threaded through, not read from a composable (that state, useSelection.ts, is owned by
+// the page), like useTournamentsTableColumns.ts/useWantedCardsTableColumns.ts. Grouping (by payer)
+// is on here, so the select column comes from useGroupedSelectColumn.ts (a group's checkbox drives
+// all its subRows), not tournaments' simpler ungrouped one.
 export function useTransactionsTableColumns(
   selection: Selection<number>,
   rowContextMenuItems: (transaction: Transaction) => DropdownMenuItem[]
@@ -48,18 +46,15 @@ export function useTransactionsTableColumns(
 
   const amountFormatter = AMOUNT_FORMATTER
 
-  // Reuses the exact same league-relative stage numbering the /tournaments
-  // page itself shows (assignTournamentStageNumbers, computed once over the
-  // whole league) instead of re-deriving it here — Pinia Colada dedupes the
-  // fetch against the 'tournaments' key if that page is already open.
+  // Reuses the league-relative stage numbering /tournaments shows (assignTournamentStageNumbers)
+  // instead of re-deriving it; Pinia Colada dedupes the fetch on the 'tournaments' key
   const { data: allTournaments } = useTournamentsQuery()
   const tournamentsByUuid = computed(() =>
     new Map((allTournaments.value ?? []).map(tournament => [tournament.uuid, tournament])))
 
-  // Earliest renewal_year on record per associate — an Association Fee
-  // payment is a "Nuovo tesseramento" if its own year is that associate's
-  // earliest, a "Rinnovo" otherwise. Full history (not just latest_renewal_year),
-  // same source useAssociatesStatistics.ts's growthSeries reads.
+  // Earliest renewal_year on record per associate: an Association Fee is a "Nuovo tesseramento" if
+  // its year is the earliest, else a "Rinnovo". Full history (not just latest_renewal_year), like
+  // useAssociatesStatistics.ts's growthSeries
   const { data: associateRenewals } = useAssociateRenewalsQuery()
   const earliestRenewalYearByAssociate = computed(() => {
     const map = new Map<string, number>()
@@ -84,10 +79,8 @@ export function useTransactionsTableColumns(
     },
     {
       id: 'payer',
-      // Own accessorFn (not accessorKey) since the payer name isn't a single
-      // raw column on the row. Needed as a real accessor (not just a synthetic
-      // cell) so grouping (getGroupedRowModel) has a value to group by — same
-      // reasoning as wanted-cards' player column.
+      // Own accessorFn (the payer name isn't a single raw column): a real accessor so grouping
+      // (getGroupedRowModel) has a value to group by, like wanted-cards' player column
       accessorFn: transactionPayerName,
       header: ({ column }) => sortableHeader(columnHeaders.payer, column),
       // Sorts groups by number of transactions (subRows), not alphabetically —
@@ -131,9 +124,8 @@ export function useTransactionsTableColumns(
     },
     {
       id: 'renewalKind',
-      // Own accessorFn: not a raw column on the row. 'unlinked'/'guest' flag
-      // real data gaps (see renewalKindBadge.ts) rather than rendering blank
-      // like every other applicable/non-applicable combination would.
+      // Own accessorFn (not a raw column). 'unlinked'/'guest' flag real data gaps (see
+      // renewalKindBadge.ts) instead of rendering blank
       accessorFn: (row): RenewalKind | null => {
         if (row.payment_type !== 'Association Fee') return isUnregisteredParticipant(row) ? 'guest' : null
         if (!row.associate) return 'unlinked'
@@ -168,9 +160,8 @@ export function useTransactionsTableColumns(
       accessorKey: 'received_by',
       header: columnHeaders.received_by,
       meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap' } },
-      // No associateUuid — staff members aren't reliably resolvable to an
-      // associate record by name alone, so this is just name+avatar, no
-      // membership popover (see AssociateTag.vue).
+      // No associateUuid: staff aren't reliably resolvable to an associate by name, so just
+      // name+avatar, no membership popover (see AssociateTag.vue)
       cell: ({ row }) =>
         row.getIsGrouped() ? null : h(AssociateTag, { name: row.original.received_by })
     },
@@ -178,11 +169,8 @@ export function useTransactionsTableColumns(
       accessorKey: 'event_name',
       header: columnHeaders.event_name,
       meta: { class: { th: 'whitespace-nowrap', td: 'whitespace-nowrap' } },
-      // Same UButton for tournament/event — a plain NuxtLink+icon for the
-      // event case read as a visually different affordance than the
-      // tournament one even though both do the same thing (user request,
-      // 2026-08-23). Shared with useAssociateTransactionsTableColumns.ts's
-      // own event_name cell (2026-08-25/29).
+      // Same UButton for tournament/event: a plain NuxtLink+icon for events read as a different
+      // affordance. Shared with useAssociateTransactionsTableColumns.ts's event_name cell
       cell: ({ row }) => row.getIsGrouped()
         ? null
         : transactionEventNameCell(row.original, tournamentsByUuid)

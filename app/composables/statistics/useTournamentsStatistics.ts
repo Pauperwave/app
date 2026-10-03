@@ -4,9 +4,8 @@ export interface TournamentsByFormatPoint {
   count: number
 }
 
-// One point per year, with a count per format (not just a total) — so the
-// "hosted per year" chart can show the format breakdown within each year
-// instead of just the yearly total.
+// One point per year with a count per format (not just a total), so the "hosted per year" chart
+// shows the format breakdown
 export interface TournamentsPerYearByFormatPoint {
   year: number
   counts: Record<string, number>
@@ -16,9 +15,8 @@ export interface TournamentsPerYearByFormatPoint {
 // yet) — only tournaments that were or are actually running count.
 const HOSTED_STATUSES = ['registration_open', 'in_progress', 'completed'] as const
 
-// selectedYear drives only tournamentsThisYear — perYearByFormatSeries below
-// is a historical series and intentionally stays unaffected by it (same
-// decision as useAssociatesStatistics.ts's growthSeries).
+// selectedYear drives only tournamentsThisYear: perYearByFormatSeries is a historical series and
+// stays unaffected (like useAssociatesStatistics.ts's growthSeries)
 export function useTournamentsStatistics(
   selectedYear: Ref<number> = ref(new Date().getFullYear())
 ) {
@@ -34,10 +32,8 @@ export function useTournamentsStatistics(
       tournament => new Date(tournament.startDate).getFullYear() === selectedYear.value
     ).length)
 
-  // Sorted by count desc — a format bar chart reads better as a ranking than
-  // alphabetically, unlike perYearByFormatSeries below which has a natural
-  // (time) order to preserve. Also the canonical list+order of formats that
-  // perYearByFormatSeries stacks each year by.
+  // Sorted by count desc (a format bar chart reads better as a ranking, unlike
+  // perYearByFormatSeries' natural time order); also the canonical list+order of formats it stacks
   const byFormatSeries = computed<TournamentsByFormatPoint[]>(() => {
     const countsByFormat = new Map<string, number>()
     for (const tournament of hostedTournaments.value) {
@@ -48,12 +44,9 @@ export function useTournamentsStatistics(
       .map(([format, count]) => ({ format, count }))
   })
 
-  // One point per year since the association's actual founding year
-  // (PAUPERWAVE_FOUNDING_YEAR), zero-filled for years with no hosted
-  // tournament yet — not just the years that happen to have one, which
-  // would silently crop the axis to start wherever the data starts. Each
-  // point carries a per-format count, not just a yearly total — a per-year
-  // total split by format is strictly more informative than the total alone.
+  // One point per year since the founding year (PAUPERWAVE_FOUNDING_YEAR), zero-filled for years
+  // with no tournament (else the axis would start where the data does), each with a per-format
+  // count, not just a yearly total
   const perYearByFormatSeries = computed<TournamentsPerYearByFormatPoint[]>(() => {
     const years: number[] = []
     for (let year = PAUPERWAVE_FOUNDING_YEAR; year <= currentYear; year++) years.push(year)

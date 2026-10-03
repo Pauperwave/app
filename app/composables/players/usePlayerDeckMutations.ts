@@ -1,13 +1,9 @@
 // app\composables\players\usePlayerDeckMutations.ts
-// Manual deck create/update/delete — restores league's DeckCreateModal/
-// DeckEditModal flow (user request, 2026-09-17), separate from
-// useCommanderDeckBracketMutation.ts (already wired into
-// CommanderDecksCard.vue's bracket column) and from the round-time
-// get-or-create in server/api/commander-decks/select.post.ts. Named
-// differently from tournaments/useCommanderDecksMutations.ts (an unrelated
-// "select a commander for a round" composable) to avoid a global
-// auto-import name collision — Nuxt's composable auto-import is flat, not
-// folder-scoped, unlike component auto-import.
+// Manual deck create/update/delete (league's DeckCreateModal/DeckEditModal flow), separate from
+// useCommanderDeckBracketMutation.ts (CommanderDecksCard.vue's bracket column) and from the
+// round-time get-or-create in server/api/commander-decks/select.post.ts. Named differently from
+// tournaments/useCommanderDecksMutations.ts (an unrelated "select a commander for a round"
+// composable): Nuxt's composable auto-import is flat, not folder-scoped, so the names would collide
 export interface CreateDeckPayload {
   playerUuid: string
   commander1Name: string

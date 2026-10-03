@@ -1,16 +1,12 @@
 // app\composables\associates\useAssociatesBulkActions.ts
-// Bulk "Rinnova" for the roster's row selection (2026-08-16 — the selection
-// UI/TableSelectionFooter existed with nothing wired to it). Same
-// confirm+undo shape as useTournamentsBulkActions.ts/useWantedCardsBulkActions.ts,
-// but each renewal is a real payment record (createTransaction), not a
-// dedicated bulk endpoint — one Association Fee transaction per selected
-// associate, same as the single-row "Rinnova" (useAssociatesRowActions.ts's
-// openRenewModal) writes via TransactionsListAddModal's own submit.
+// Bulk "Rinnova" for the roster's row selection: the same confirm+undo shape as
+// useTournamentsBulkActions.ts/useWantedCardsBulkActions.ts, but each renewal is a real payment
+// (createTransaction), one Association Fee transaction per associate, like the single-row "Rinnova"
+// (openRenewModal).
 //
-// received_by has no "current logged-in user" to default to (RECEIVER_OPTIONS
-// is a hardcoded board-member list, see useTransactionFormOptions.ts) — every
-// transaction in the batch needs one, so the confirm step asks for it instead
-// of guessing.
+// received_by has no "current logged-in user" default (RECEIVER_OPTIONS is a hardcoded board-member
+// list, see useTransactionFormOptions.ts) and every transaction needs one, so the confirm step asks
+// for it.
 import type { Associate } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 
@@ -24,10 +20,8 @@ export function useAssociatesBulkActions(selection: Selection<number>) {
   // until migration 20260819100000.
   const settings = useSettingsQuery()
 
-  // shallowRef, not ref — same reason as useAssociatesRowActions.ts's
-  // contextMenuRow: Associate's optional AvatarProps field makes Vue's
-  // UnwrapRef recursion blow up TS with "Type instantiation is excessively
-  // deep" (TS2589) on a plain ref.
+  // shallowRef, not ref (like useAssociatesRowActions.ts's contextMenuRow): Associate's optional
+  // AvatarProps field makes Vue's UnwrapRef blow up TS (TS2589)
   const pendingRenewal = shallowRef<Associate[] | null>(null)
   const confirmOpen = ref(false)
   const receivedBy = ref<string | undefined>(undefined)
@@ -38,9 +32,8 @@ export function useAssociatesBulkActions(selection: Selection<number>) {
     confirmOpen.value = true
   }
 
-  // Closes the modal immediately and defers the actual transaction creation
-  // behind a 10-second undo window (useUndoableAction.ts), same as the other
-  // bulk-action composables.
+  // Closes the modal at once and defers the transaction creation behind a 10-second undo window
+  // (useUndoableAction.ts), like the other bulk-action composables
   function confirmBulkRenew() {
     const associates = pendingRenewal.value
     const receiver = receivedBy.value
@@ -82,9 +75,8 @@ export function useAssociatesBulkActions(selection: Selection<number>) {
     })
   }
 
-  // Top-level ref (not settings.data itself) so index.vue's template can bind
-  // it directly — a nested `.data` property on a plain returned object isn't
-  // auto-unwrapped by Vue's template compiler the way a top-level one is.
+  // Top-level ref (not settings.data itself) so index.vue's template binds it directly: a nested
+  // `.data` on a plain object isn't auto-unwrapped in templates
   const feeReady = computed(() => !!settings.data.value)
 
   return {

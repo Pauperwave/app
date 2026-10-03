@@ -1,8 +1,7 @@
 // app\composables\associates\useAssociateMembershipEventsQuery.ts
-// Reads pauperwave_associate_membership_events (migration 20260827100000)
-// for one associate — the append-only history behind /associate/[slug].vue's
-// timeline (user request, 2026-08-27), since pauperwave_associates itself is
-// a single mutable row with no history of its own.
+// Reads pauperwave_associate_membership_events (migration 20260827100000) for one associate: the
+// append-only history behind /associate/[slug].vue's timeline, since pauperwave_associates is a
+// single mutable row
 import type { MembershipEventType } from '#shared/types/associates'
 
 export interface AssociateMembershipEvent {

@@ -1,6 +1,6 @@
 // app\composables\rulesets\useRulesetsQuery.ts
-// Read-only lookup for leagues' AddModal — same convention as
-// useLocationsQuery.ts/useOrganizationsQuery.ts/useMtgFormatsQuery.ts.
+// Read-only lookup for leagues' AddModal, like
+// useLocationsQuery.ts/useOrganizationsQuery.ts/useMtgFormatsQuery.ts
 export const RULESETS_KEY = ['rulesets']
 
 export function useRulesetsQuery() {

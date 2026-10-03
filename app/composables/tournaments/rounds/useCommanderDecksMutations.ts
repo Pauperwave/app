@@ -1,12 +1,10 @@
 // app\composables\tournaments\rounds\useCommanderDecksMutations.ts
-// Get-or-create a commander_decks row (unique per player + commander/
-// partner combo, enforced by uq_commander_decks_single/uq_commander_decks_partner)
-// then point a round result's commander_deck_uuid at it — CommanderSelectModal.vue's
-// "Confirm" does both in one call. Reads go through the existing
-// composables/players/useCommanderDecksQuery.ts (same table, already built
-// for /players/[slug]'s own "Mazzi Commander" card) rather than a second
-// query composable for the same data — its query key (['commander-decks',
-// playerUuid]) is what gets invalidated below.
+// Get-or-create a commander_decks row (unique per player + commander/partner combo:
+// uq_commander_decks_single/uq_commander_decks_partner) then point a round result's
+// commander_deck_uuid at it: CommanderSelectModal.vue's "Confirm" does both in one call. Reads
+// reuse composables/players/useCommanderDecksQuery.ts (same table, built for /players/[slug]'s
+// "Mazzi Commander" card); its query key ['commander-decks', playerUuid] is what gets invalidated
+// below
 export function useCommanderDecksMutations(tournamentUuid: MaybeRefOrGetter<string>) {
   const queryCache = useQueryCache()
 

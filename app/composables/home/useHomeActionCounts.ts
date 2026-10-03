@@ -1,10 +1,7 @@
 // app\composables\home\useHomeActionCounts.ts
-// Extracted out of default.vue (2026-08-19), which computed these same four
-// counts to feed the sidebar's "Associati"/"Richieste"/"Wanted Cards" nav
-// badges. home/Staff.vue's "Azioni pendenti"/counters sections need the exact
-// same numbers, so both now read from here instead of duplicating the
-// filters — same 'associates'/'wanted-cards' Pinia Colada cache either way,
-// no extra fetch.
+// The four counts feeding the sidebar's "Associati"/"Richieste"/"Wanted Cards" nav badges, shared
+// with home/Staff.vue's "Azioni pendenti"/counters sections instead of duplicating the filters
+// (same 'associates'/'wanted-cards' Pinia Colada cache, no extra fetch)
 export function useHomeActionCounts() {
   const { data: associates } = useAssociatesQuery()
 

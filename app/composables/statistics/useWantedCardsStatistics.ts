@@ -12,33 +12,25 @@ export interface WantedCardsStatusOverTimePoint {
   counts: Record<WantedCardStatus, number>
 }
 
-// Derives from useWantedCardsQuery's already-cached list, same
-// "compute from data already fetched" approach as useAssociatesStatistics.ts/
-// useTournamentsStatistics.ts.
+// Derives from useWantedCardsQuery's cached list, like
+// useAssociatesStatistics.ts/useTournamentsStatistics.ts
 export function useWantedCardsStatistics() {
   const { data: wantedCards, isLoading } = useWantedCardsQuery()
 
-  // Fixed order (not sorted by count) — searching -> found/abandoned reads as
-  // the natural progression of a request, same order as
-  // WANTED_CARD_STATUSES itself.
+  // Fixed order (not by count): searching -> found/abandoned reads as a request's natural
+  // progression, like WANTED_CARD_STATUSES
   const statusBreakdown = computed<WantedCardsStatusPoint[]>(() =>
     WANTED_CARD_STATUSES.map(status => ({
       status,
       count: (wantedCards.value ?? []).filter(card => card.status === status).length
     })))
 
-  // The actual STATE of the whole pile at the end of each month — not "new
-  // requests that month, colored by where they ended up" (which is what
-  // this used to compute: a card grouped by *creation* month but colored by
-  // its *current* status tells you when it was raised, not how the pile
-  // evolved). A card counts as 'found' once its foundAt has passed (set by
-  // a DB trigger — see WantedCard's own comment in app/types/index.d.ts),
-  // 'abandoned' once its updatedAt has passed AND its current status is
-  // 'abandoned' (best-effort: there's no dedicated abandonedAt column, so
-  // the last update timestamp is used as a proxy for when it left the
-  // searching pile), and 'searching' otherwise — including every card not
-  // yet resolved as of that month, even ones that got found/abandoned
-  // later.
+  // The STATE of the whole pile at the end of each month, not "new requests that month colored by
+  // where they ended" (which tells when a card was raised, not how the pile evolved). A card is
+  // 'found' once its foundAt passed (set by a DB trigger, see WantedCard in app/types/index.d.ts),
+  // 'abandoned' once its updatedAt passed AND its status is 'abandoned' (best-effort: no
+  // abandonedAt column, so the last update proxies for leaving the pile), else 'searching',
+  // including cards found/abandoned later
   const statusOverTimeSeries = computed<WantedCardsStatusOverTimePoint[]>(() => {
     const cards = wantedCards.value ?? []
     if (!cards.length) return []

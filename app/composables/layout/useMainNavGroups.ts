@@ -1,34 +1,23 @@
 // app\composables\layout\useMainNavGroups.ts
-// Extracted out of default.vue (2026-08-16) — pure nav-config data, not
-// layout logic, was the single largest chunk of that file (~220 lines).
+// Pure nav-config data extracted from default.vue (not layout logic)
 import type { NavigationMenuItem } from '@nuxt/ui'
 
-// Nav-visibility gating added 2026-08-17 (docs/architecture/roles.md's
-// "Suggested order of work" steps 12/13, permission map decided in
-// docs/architecture/permissions.md's "Navigazione" section). `permission`
-// is stripped from every item before the final `satisfies
-// NavigationMenuItem[][]` below, so it never reaches the actual
-// UNavigationMenu component.
-// `children` redefined (not just extended) so a nested item's own
-// `permission` is typed, not just structurally allowed via
-// NavigationMenuChildItem's catch-all index signature — see the Classifiche
-// group below (2026-08-23), the first nav item with children instead of a
-// flat list. UNavigationMenu already turns `children` into an accordion
-// (expanded sidebar) or a popover flyout (collapsed sidebar, `popover`
-// prop already set in default.vue) with no extra wiring needed here.
+// Nav-visibility gating (docs/architecture/roles.md steps 12/13, permission map in
+// docs/architecture/permissions.md "Navigazione"): `permission` is stripped from every item before
+// the final `satisfies NavigationMenuItem[][]`, so it never reaches UNavigationMenu. `children` is
+// redefined (not just extended) so a nested item's `permission` is typed, not just allowed by
+// NavigationMenuChildItem's index signature. UNavigationMenu already renders `children` as an
+// accordion (expanded) or popover flyout (collapsed, `popover` set in default.vue).
 type NavItem = Omit<NavigationMenuItem, 'children'> & {
   permission?: Permission
   children?: NavItem[]
 }
 
-// Each section is its own sub-array (not one flat array with inline labels): the
-// spacing between groups (gap-1.5 on the UNavigationMenu root) stays visible even
-// with the sidebar collapsed, because it is structural between groups — unlike
-// type:'label' items, which Nuxt UI drops from the DOM entirely when collapsed is
-// true (v-if, not merely hidden).
-// Static array (not computed): UNavigationMenu highlights the active entry itself
-// by comparing `to` with the current route, and no item here depends on `route`
-// for its own state anymore.
+// Each section is its own sub-array, not one flat array with inline labels: the spacing between
+// groups (gap-1.5 on the UNavigationMenu root) stays visible when collapsed, unlike type:'label'
+// items, which Nuxt UI drops from the DOM when collapsed. A static array, not computed:
+// UNavigationMenu highlights the active entry by comparing `to` with the route, and no item depends
+// on `route` for its own state.
 export function useMainNavGroups(open: Ref<boolean>) {
   const { t } = useI18n()
   const { can } = useUserRole()
@@ -51,9 +40,8 @@ export function useMainNavGroups(open: Ref<boolean>) {
       open.value = false
     }
   }, {
-    // Moved out of the Statistiche section (2026-08-29, user request) — an
-    // overview page reads more like a dashboard than a report, so it sits
-    // right under Calendario instead.
+    // An overview page reads more like a dashboard than a report, so it sits under Calendario, not
+    // in Statistiche
     label: t('statistic.overviewBreadcrumb'),
     icon: ICONS.chartColumn,
     to: '/statistics',
@@ -140,9 +128,8 @@ export function useMainNavGroups(open: Ref<boolean>) {
       open.value = false
     }
   }, {
-    // Moved out of Classifiche (2026-08-23, same request as the dropdown
-    // change below) — a ruleset isn't a standings page, it belongs with the
-    // other competition-setup items in this section.
+    // A ruleset isn't a standings page: it belongs with the other competition-setup items in this
+    // section
     label: t('ruleset.breadcrumb'),
     icon: ICONS.rules,
     to: '/rulesets',
@@ -151,11 +138,9 @@ export function useMainNavGroups(open: Ref<boolean>) {
       open.value = false
     }
   }], [{
-    // Dropdown, not a flat label+list (user request, 2026-08-23) — four
-    // items permanently expanded took more vertical space than any other
-    // section for a set of pages used less often than tournaments/events.
-    // No standalone label item needed above it: the trigger's own label
-    // already reads "Classifiche", a separate header would be redundant.
+    // A dropdown, not a flat label+list: four permanently expanded items took more vertical space
+    // than any other section for pages used less often. No label item above it: the trigger already
+    // reads "Classifiche"
     label: t('nav.standingsSection'),
     icon: ICONS.medal,
     children: [{
@@ -211,11 +196,9 @@ export function useMainNavGroups(open: Ref<boolean>) {
     label: t('settings.layout.links.general'),
     icon: ICONS.settingsGear,
     to: '/settings',
-    // app/pages/(settings)/settings.vue is a real parent layout route for
-    // members/permissions/domains/notifications (Nuxt nested-routing
-    // convention: a file + same-named directory) — without `exact`,
-    // UNavigationMenu's default active-matching follows the route record
-    // hierarchy, so this item stayed highlighted on every settings sub-page.
+    // settings.vue is a real parent layout route for members/permissions/domains/notifications:
+    // without `exact`, UNavigationMenu's active-matching follows the route record hierarchy and
+    // this item stayed highlighted on every settings sub-page
     exact: true,
     permission: 'access-settings',
     onSelect: () => {
@@ -263,15 +246,10 @@ export function useMainNavGroups(open: Ref<boolean>) {
     }
   }]]
 
-  // A group whose every non-label item got filtered out (e.g. the whole
-  // "Impostazioni" section for a plain player) is dropped entirely, rather
-  // than showing a dangling section header with nothing underneath.
-  // `permission` isn't stripped from the surviving items — it's an extra
-  // property UNavigationMenu itself never reads, and NavItem's structural
-  // superset of NavigationMenuItem is assignable without a cast here.
-  // Children get the same permission filter as top-level items (2026-08-23,
-  // Classifiche's own Regolamenti child) — the top-level filter alone never
-  // reaches inside a `children` array.
+  // A group whose every non-label item was filtered out (e.g. "Impostazioni" for a plain player) is
+  // dropped entirely, not left as a dangling header. `permission` isn't stripped from survivors:
+  // UNavigationMenu never reads it and NavItem is assignable without a cast. Children get the same
+  // filter (the top-level one never reaches inside `children`)
   const mainNavGroups = computed<NavigationMenuItem[][]>(() => rawGroups
     .map(group => group
       .filter(item => !item.permission || can(item.permission))

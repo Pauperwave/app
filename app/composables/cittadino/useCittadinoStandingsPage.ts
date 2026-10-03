@@ -1,10 +1,7 @@
 // app\composables\cittadino\useCittadinoStandingsPage.ts
-// Shared by pages/(competitions)/standings/cittadino/index.vue (internal,
-// authenticated) and components/public/PublicCittadinoPage.vue (public,
-// backing cittadino.pauperwave.org) — same data/filters/columns/legend,
-// only the surrounding chrome (UDashboardPanel vs. plain header) and the
-// internal-only publicUrl/tour extras differ (fallow:dupes flagged the
-// whole script block as a near-identical 56-line clone).
+// Shared by standings/cittadino/index.vue (internal) and components/public/PublicCittadinoPage.vue
+// (public, cittadino.pauperwave.org): the same data/filters/columns/legend; only the surrounding
+// chrome (UDashboardPanel vs plain header) and the internal-only publicUrl/tour extras differ
 import type { TabsItem } from '@nuxt/ui'
 
 export function useCittadinoStandingsPage(search?: Ref<string>) {
@@ -14,9 +11,8 @@ export function useCittadinoStandingsPage(search?: Ref<string>) {
     title: () => t('standings.tabTitle', { format: t('cittadino.breadcrumb') })
   })
 
-  // null, not '': the endpoint resolves a missing edition to the most recent one, so
-  // no year is hardcoded here, and a null sentinel cannot collide with a legitimate
-  // edition value the way an empty string could.
+  // null, not '': the endpoint resolves a missing edition to the latest, so no year is hardcoded,
+  // and null can't collide with a real edition like '' could
   const selectedEdition = ref<string | null>(null)
 
   const {
@@ -27,9 +23,8 @@ export function useCittadinoStandingsPage(search?: Ref<string>) {
     formats, selectedFormats, isFiltered, filteredEvents: events, standings
   } = useCittadinoFilters(allEvents, placements)
 
-  // Checkbox items rather than a button group: five formats plus the colour swatch
-  // would crowd a toolbar that already carries the summary and the legend. Mirrors
-  // the "Mostra colonne" dropdown on /wanted-cards.
+  // Checkbox items rather than a button group: five formats plus the color swatch would crowd a
+  // toolbar already carrying summary and legend (like "Mostra colonne" on /wanted-cards)
   const formatItems = computed(() => formats.value.map(format => ({
     type: 'checkbox' as const,
     label: format,
@@ -59,9 +54,8 @@ export function useCittadinoStandingsPage(search?: Ref<string>) {
 
   const { columns, columnAccentColors } = useCittadinoTableColumns(events, search)
 
-  // A rule under the last qualifying row: the top-N cutoff is what most people read
-  // this table for, and a weight difference on the position number is too weak to
-  // find while scanning 46 rows.
+  // A rule under the last qualifying row: the top-N cutoff is what most readers look for, and a
+  // bolder position number is too weak to spot among 46 rows
   const tableMeta = {
     class: {
       tr: (row: { original: { position: number } }) =>
@@ -74,9 +68,8 @@ export function useCittadinoStandingsPage(search?: Ref<string>) {
   const legendCountedSample = CITTADINO_POINTS_BY_RANK[0]
   const legendDroppedSample = CITTADINO_MIN_POINTS
 
-  // Only blank the table on the very first load. A tab switch refetches, and
-  // unmounting the whole matrix for it would make the page jump; UTable's own
-  // loading bar keeps the headers and the previous edition in place instead.
+  // Only blank the table on the very first load: a tab switch refetches, and unmounting the matrix
+  // would make the page jump (UTable's loading bar keeps headers and the previous edition)
   const isInitialLoad = computed(() => loading.value && standings.value.length === 0)
 
   return {

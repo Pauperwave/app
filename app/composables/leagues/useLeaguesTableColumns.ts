@@ -30,21 +30,16 @@ function statusGroupHeaderCell(row: Row<League>, status: League['status'], label
   ])
 }
 
-// Same shape as useTournamentsTableColumns.ts — selection/onEdit threaded
-// through rather than read from a composable here, since that state
-// (useSelection.ts/useLeaguesRowActions.ts) is owned by the page, not this
-// file.
+// Same shape as useTournamentsTableColumns.ts: selection/onEdit are threaded through, since that
+// state (useSelection.ts/useLeaguesRowActions.ts) is owned by the page
 export function useLeaguesTableColumns(
   selection: Selection<number>,
   onEdit: (league: League) => void
 ) {
   const { t } = useI18n()
 
-  // No grouping in this table (unlike tournaments), but the shared
-  // implementation degrades to a plain select column when `grouping` is
-  // never wired — same convention as useTournamentsTableColumns.ts, and
-  // avoids duplicating its header/cell checkbox logic (fallow:dupes,
-  // 2026-08-17).
+  // No grouping in this table, but the shared implementation degrades to a plain select column when
+  // `grouping` isn't wired (like useTournamentsTableColumns.ts), avoiding duplicated checkbox logic
   const selectColumn = useGroupedSelectColumn<League>(selection)
 
   const columnHeaders: Record<string, string> = {
@@ -102,10 +97,8 @@ export function useLeaguesTableColumns(
     {
       accessorKey: 'startDate',
       header: ({ column }) => sortableHeader(t('league.columns.startDate'), column),
-      // Derived from its tournaments (recomputeLeagueDates, 2026-08-16 ADR),
-      // so this is effectively "when does this league's activity start" —
-      // date-only, same rationale as useLeaguesQuery.ts falling back to
-      // created_at rather than showing a time-of-day that was never real.
+      // Derived from its tournaments (recomputeLeagueDates, ADR): effectively "when the league's
+      // activity starts", date-only like useLeaguesQuery.ts falling back to created_at
       cell: ({ row }) => row.getIsGrouped()
         ? null
         : h(DateWithRelativeTooltip, { isoString: row.original.startDate, time: false })
@@ -168,9 +161,8 @@ export function useLeaguesTableColumns(
     {
       id: 'actions',
       header: t('league.columns.actions'),
-      // stopPropagation: the row itself also navigates on click (UTable's
-      // @select, see leagues/index.vue) — without this, clicking the edit
-      // button would open the edit modal AND navigate away underneath it.
+      // stopPropagation: the row also navigates on click (UTable's @select, see leagues/index.vue),
+      // so the edit button would otherwise open the modal AND navigate
       cell: ({ row }) => row.getIsGrouped()
         ? null
         : h(EditIconButton, {

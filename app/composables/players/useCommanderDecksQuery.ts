@@ -1,6 +1,6 @@
 // app\composables\players\useCommanderDecksQuery.ts
-// "Mazzi Commander" card on /players/[slug] (user request, 2026-08-27) —
-// commander_decks is public_read (RLS), no BFF needed for this read-only view.
+// "Mazzi Commander" card on /players/[slug]: commander_decks is public_read (RLS), no BFF needed
+// for this read-only view
 export interface CommanderDeck {
   uuid: string
   playerUuid: string

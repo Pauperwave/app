@@ -1,6 +1,6 @@
 // app\composables\events\useEventsTableColumns.ts
-// fallow-ignore-file code-duplication -- mirrors useLeaguesTableColumns.ts's
-// status-badge/select/actions column shape on purpose
+// fallow-ignore-file code-duplication -- mirrors
+// useLeaguesTableColumns.ts's status-badge/select/actions column shape on purpose
 import { h } from 'vue'
 import { differenceInCalendarDays } from 'date-fns'
 import type { Row } from '@tanstack/vue-table'
@@ -33,9 +33,8 @@ function statusGroupHeaderCell(row: Row<Event>, status: Event['status'], label: 
   ])
 }
 
-// selection/onEdit threaded through rather than read from a composable here,
-// since that state (useSelection.ts/useEventsRowActions.ts) is owned by the
-// page, not this file — same convention as useLeaguesTableColumns.ts.
+// selection/onEdit are threaded through, since that state (useSelection.ts/useEventsRowActions.ts)
+// is owned by the page (like useLeaguesTableColumns.ts)
 export function useEventsTableColumns(
   selection: Selection<number>,
   onEdit: (event: Event) => void

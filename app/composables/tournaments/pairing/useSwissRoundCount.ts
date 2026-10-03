@@ -1,12 +1,9 @@
 // app\composables\tournaments\pairing\useSwissRoundCount.ts
-// Swiss round-count rule for tournament.stepper's round steps — the
-// official minimum-rounds-by-player-count table (user-provided, 2026-08-31,
-// extending the 4-64 range this file already had, reverse-engineered from
-// the legacy Pauperwave Manager's own rule at
-// .scratch/2026-08-22-pauperwave-manager-functional-spec.md §4.1), same
-// "pure function wrapped in use*()" shape as its siblings useDraftPods.ts/
-// useCommanderPods.ts in this directory (user request, 2026-08-24). The table
-// lives in /settings; DEFAULT_SWISS_ROUND_COUNT_RULES is used until it loads.
+// Swiss round-count rule for the tournament stepper's round steps: the official
+// minimum-rounds-by-player-count table (4-64 and beyond, reverse-engineered from the legacy
+// Pauperwave Manager's rule), a pure function wrapped in use*() like
+// useDraftPods.ts/useCommanderPods.ts. The table lives in /settings;
+// DEFAULT_SWISS_ROUND_COUNT_RULES is used until it loads
 import type { SwissRoundCountTier } from '#shared/types/settings'
 
 export interface SwissRoundCountRules {
@@ -28,10 +25,8 @@ export const DEFAULT_SWISS_ROUND_COUNT_RULES: SwissRoundCountRules = {
 }
 
 export function useSwissRoundCount() {
-  // manualOverride wins outright when set — mirrors tournament.roundCount,
-  // an existing organizer-editable field (SchedulingFields.vue) that already
-  // covers the spec's "Numero Turni Svizzera: Auto / fixed" setting, so no
-  // new override UI is needed here.
+  // manualOverride wins when set: it mirrors the organizer-editable tournament.roundCount
+  // (SchedulingFields.vue), which already covers "Numero Turni Svizzera: Auto / fixed"
   function calculateRoundCount(
     registeredPlayers: number,
     manualOverride?: number | null,
