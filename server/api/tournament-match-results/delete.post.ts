@@ -2,6 +2,7 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
+// fallow-ignore-next-line code-duplication -- same guard as the sibling handlers
 interface DeleteMatchResultBody {
   pairingUuid: string
 }
