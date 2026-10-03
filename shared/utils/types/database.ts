@@ -107,6 +107,13 @@ export type Database = {
             referencedColumns: ["uuid"]
           },
           {
+            foreignKeyName: "commander_decks_lender_uuid_fkey"
+            columns: ["lender_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["uuid"]
+          },
+          {
             foreignKeyName: "fk_commander_decks_player"
             columns: ["player_uuid"]
             isOneToOne: false
@@ -125,6 +132,13 @@ export type Database = {
             columns: ["player_uuid"]
             isOneToOne: false
             referencedRelation: "players_full"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_commander_decks_player"
+            columns: ["player_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
             referencedColumns: ["uuid"]
           },
         ]
@@ -187,6 +201,13 @@ export type Database = {
             columns: ["player_uuid"]
             isOneToOne: false
             referencedRelation: "players_full"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_event_attendees_player_uuid_fkey"
+            columns: ["player_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
             referencedColumns: ["uuid"]
           },
         ]
@@ -1571,6 +1592,13 @@ export type Database = {
             referencedColumns: ["uuid"]
           },
           {
+            foreignKeyName: "player_avoid_pairs_player_a_uuid_fkey"
+            columns: ["player_a_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["uuid"]
+          },
+          {
             foreignKeyName: "player_avoid_pairs_player_b_uuid_fkey"
             columns: ["player_b_uuid"]
             isOneToOne: false
@@ -1589,6 +1617,13 @@ export type Database = {
             columns: ["player_b_uuid"]
             isOneToOne: false
             referencedRelation: "players_full"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "player_avoid_pairs_player_b_uuid_fkey"
+            columns: ["player_b_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
             referencedColumns: ["uuid"]
           },
         ]
@@ -1812,6 +1847,13 @@ export type Database = {
             referencedColumns: ["uuid"]
           },
           {
+            foreignKeyName: "fk_tournament_kills_killed_player_uuid_fkey"
+            columns: ["killed_player_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["uuid"]
+          },
+          {
             foreignKeyName: "fk_tournament_kills_killer_uuid_fkey"
             columns: ["killer_uuid"]
             isOneToOne: false
@@ -1830,6 +1872,13 @@ export type Database = {
             columns: ["killer_uuid"]
             isOneToOne: false
             referencedRelation: "players_full"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_tournament_kills_killer_uuid_fkey"
+            columns: ["killer_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
             referencedColumns: ["uuid"]
           },
           {
@@ -1924,6 +1973,13 @@ export type Database = {
             referencedColumns: ["uuid"]
           },
           {
+            foreignKeyName: "fk_tournament_match_results_player1_uuid_fkey"
+            columns: ["player1_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["uuid"]
+          },
+          {
             foreignKeyName: "fk_tournament_match_results_player2_uuid_fkey"
             columns: ["player2_uuid"]
             isOneToOne: false
@@ -1942,6 +1998,13 @@ export type Database = {
             columns: ["player2_uuid"]
             isOneToOne: false
             referencedRelation: "players_full"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_tournament_match_results_player2_uuid_fkey"
+            columns: ["player2_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
             referencedColumns: ["uuid"]
           },
           {
@@ -1970,6 +2033,13 @@ export type Database = {
             columns: ["reported_by_player_uuid"]
             isOneToOne: false
             referencedRelation: "players_full"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "tournament_match_results_reported_by_player_uuid_fkey"
+            columns: ["reported_by_player_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
             referencedColumns: ["uuid"]
           },
         ]
@@ -2043,6 +2113,13 @@ export type Database = {
             referencedColumns: ["uuid"]
           },
           {
+            foreignKeyName: "fk_tournament_pairings_player1_fkey"
+            columns: ["player1_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["uuid"]
+          },
+          {
             foreignKeyName: "fk_tournament_pairings_player2_fkey"
             columns: ["player2_uuid"]
             isOneToOne: false
@@ -2061,6 +2138,13 @@ export type Database = {
             columns: ["player2_uuid"]
             isOneToOne: false
             referencedRelation: "players_full"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_tournament_pairings_player2_fkey"
+            columns: ["player2_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
             referencedColumns: ["uuid"]
           },
           {
@@ -2085,6 +2169,13 @@ export type Database = {
             referencedColumns: ["uuid"]
           },
           {
+            foreignKeyName: "fk_tournament_pairings_player3_fkey"
+            columns: ["player3_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["uuid"]
+          },
+          {
             foreignKeyName: "fk_tournament_pairings_player4_fkey"
             columns: ["player4_uuid"]
             isOneToOne: false
@@ -2103,6 +2194,13 @@ export type Database = {
             columns: ["player4_uuid"]
             isOneToOne: false
             referencedRelation: "players_full"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_tournament_pairings_player4_fkey"
+            columns: ["player4_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
             referencedColumns: ["uuid"]
           },
           {
@@ -2166,6 +2264,13 @@ export type Database = {
             columns: ["player_uuid"]
             isOneToOne: false
             referencedRelation: "players_full"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "tournament_player_drops_player_uuid_fkey"
+            columns: ["player_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
             referencedColumns: ["uuid"]
           },
           {
@@ -2235,6 +2340,13 @@ export type Database = {
             columns: ["player_uuid"]
             isOneToOne: false
             referencedRelation: "players_full"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_tournament_registrations_player_uuid_fkey"
+            columns: ["player_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
             referencedColumns: ["uuid"]
           },
           {
@@ -2311,6 +2423,13 @@ export type Database = {
             columns: ["player_uuid"]
             isOneToOne: false
             referencedRelation: "players_full"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_tournament_round_results_player_uuid_fkey"
+            columns: ["player_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
             referencedColumns: ["uuid"]
           },
           {
@@ -2485,6 +2604,13 @@ export type Database = {
             referencedColumns: ["uuid"]
           },
           {
+            foreignKeyName: "fk_tournament_standings_player_uuid_fkey"
+            columns: ["player_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["uuid"]
+          },
+          {
             foreignKeyName: "fk_tournament_standings_registration_uuid_fkey"
             columns: ["registration_uuid"]
             isOneToOne: true
@@ -2568,6 +2694,13 @@ export type Database = {
             referencedColumns: ["uuid"]
           },
           {
+            foreignKeyName: "fk_tournament_votes_voted_player_uuid_fkey"
+            columns: ["voted_player_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["uuid"]
+          },
+          {
             foreignKeyName: "fk_tournament_votes_voter_uuid_fkey"
             columns: ["voter_uuid"]
             isOneToOne: false
@@ -2586,6 +2719,13 @@ export type Database = {
             columns: ["voter_uuid"]
             isOneToOne: false
             referencedRelation: "players_full"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_tournament_votes_voter_uuid_fkey"
+            columns: ["voter_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
             referencedColumns: ["uuid"]
           },
         ]
@@ -2953,6 +3093,34 @@ export type Database = {
           },
         ]
       }
+      players_public: {
+        Row: {
+          associate_uuid: string | null
+          created_at: string | null
+          first_name: string | null
+          id: number | null
+          is_active: boolean | null
+          last_name: string | null
+          user_id: string | null
+          uuid: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_players_associate_uuid_fkey"
+            columns: ["associate_uuid"]
+            isOneToOne: true
+            referencedRelation: "pauperwave_associates"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_players_associate_uuid_fkey"
+            columns: ["associate_uuid"]
+            isOneToOne: true
+            referencedRelation: "pauperwave_associates_with_status"
+            referencedColumns: ["uuid"]
+          },
+        ]
+      }
       tournament_kills_summary: {
         Row: {
           kill_count: number | null
@@ -2979,6 +3147,13 @@ export type Database = {
             columns: ["killer_uuid"]
             isOneToOne: false
             referencedRelation: "players_full"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "fk_tournament_kills_killer_uuid_fkey"
+            columns: ["killer_uuid"]
+            isOneToOne: false
+            referencedRelation: "players_public"
             referencedColumns: ["uuid"]
           },
           {
