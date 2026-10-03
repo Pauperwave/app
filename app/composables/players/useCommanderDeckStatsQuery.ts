@@ -23,8 +23,10 @@ export function useCommanderDeckStatsQuery(deckUuid: MaybeRefOrGetter<string | u
 
       const { data: results, error: resultsError } = await supabase
         .from('tournament_round_results')
-        .select('position, pairing_uuid, player_uuid')
+        .select('position, pairing_uuid, player_uuid, tournaments!inner(is_test)')
         .eq('commander_deck_uuid', uuid)
+        // Test tournaments never count towards a deck's stats
+        .eq('tournaments.is_test', false)
 
       if (resultsError) throw resultsError
       if (!results || results.length === 0) {
