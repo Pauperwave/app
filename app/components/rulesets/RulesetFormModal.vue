@@ -133,7 +133,7 @@ async function onSubmit() {
           <UInput v-model="state.name" class="w-full" />
         </UFormField>
 
-        <RulesetsFieldGrid
+        <RulesetsRulesetFieldGrid
           :heading-icon="ICONS.battle"
           :heading-text="t('ruleset.form.gameActionsHeading')"
           :items="gameActionFields"
@@ -141,7 +141,7 @@ async function onSubmit() {
           @update-field="updateField"
         />
 
-        <RulesetsFieldGrid
+        <RulesetsRulesetFieldGrid
           :heading-icon="ICONS.standings"
           :heading-text="t('ruleset.form.positionsHeading')"
           :items="rankFields"
