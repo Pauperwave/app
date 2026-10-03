@@ -9,7 +9,8 @@ interface ResetTournamentBody {
 // Wipes every round/pairing/result/standing and resets the tournament to registration_open
 // (format-agnostic: same RPC for Commander and 1v1 Swiss).
 export default defineEventHandler(async (event) => {
-  await requireManagementPermission(event)
+  // 'cancel-round': cancelling a round (or the whole tournament back to registration) is admin+
+  await requireAdminPermission(event)
 
   const { tournamentUuid } = await readBody<ResetTournamentBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
