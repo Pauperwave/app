@@ -1,12 +1,12 @@
 <!-- app\pages\(community)\telegram-bot.vue -->
 <script lang="ts" setup>
-// Informational page about the Telegram bot: what it is, how to link an account and the commands.
-// Static on purpose, open to every logged-in role (no data to load).
+// Informational page about the Telegram bot: your link state, what the bot is, how to link an
+// account and the commands, each one opening in Telegram. Open to every logged-in role.
 const { t } = useI18n()
 
 useSeoMeta({ title: () => t('telegramBot.breadcrumb') })
 
-const BOT_URL = 'https://t.me/PauperwaveBot'
+const { data: myLink, isPending: linkPending, error: linkError } = useMyTelegramLinkQuery()
 const linkSteps = ['open', 'email', 'done'] as const
 </script>
 
@@ -26,13 +26,58 @@ const linkSteps = ['open', 'email', 'done'] as const
 
     <template #body>
       <div class="flex flex-col gap-6 max-w-3xl">
+        <USkeleton
+          v-if="linkPending"
+          class="h-20 w-full"
+        />
+        <UAlert
+          v-else-if="linkError"
+          color="neutral"
+          variant="subtle"
+          :icon="ICONS.warning"
+          :title="$t('telegramBot.status.error')"
+        />
+        <UAlert
+          v-else-if="myLink?.status === 'linked'"
+          color="success"
+          variant="subtle"
+          :icon="ICONS.telegramLinked"
+          :title="$t('telegramBot.status.linked')"
+          :description="myLink.username
+            ? $t('telegramBot.status.linkedAs', { username: `@${myLink.username}` })
+            : $t('telegramBot.status.linkedDescription')"
+        />
+        <UAlert
+          v-else-if="myLink?.status === 'not-linked'"
+          color="warning"
+          variant="subtle"
+          :icon="ICONS.telegramNotLinked"
+          :title="$t('telegramBot.status.notLinked')"
+          :description="$t('telegramBot.status.notLinkedDescription')"
+          :actions="[{
+            label: $t('telegramBot.open'),
+            to: TELEGRAM_BOT_URL,
+            target: '_blank',
+            color: 'warning',
+            variant: 'solid'
+          }]"
+        />
+        <UAlert
+          v-else
+          color="neutral"
+          variant="subtle"
+          :icon="ICONS.info"
+          :title="$t('telegramBot.status.noAssociate')"
+          :description="$t('telegramBot.status.noAssociateDescription')"
+        />
+
         <UPageCard
           title="@PauperwaveBot"
           :description="$t('telegramBot.intro')"
           :icon="ICONS.telegramBot"
         >
           <UButton
-            :to="BOT_URL"
+            :to="TELEGRAM_BOT_URL"
             target="_blank"
             :icon="ICONS.telegram"
             :label="$t('telegramBot.open')"
@@ -76,7 +121,17 @@ const linkSteps = ['open', 'email', 'done'] as const
                 :key="command.name"
                 class="flex flex-wrap items-baseline gap-x-2 text-sm"
               >
-                <code class="font-mono text-highlighted">/{{ command.name }}</code>
+                <a
+                  v-if="botCommandUrl(command)"
+                  :href="botCommandUrl(command) ?? undefined"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="font-mono text-primary hover:underline"
+                >/{{ command.name }}</a>
+                <code
+                  v-else
+                  class="font-mono text-highlighted"
+                >/{{ command.name }}</code>
                 <span class="text-muted">
                   {{ $t(`telegramBot.commands.items.${command.name}`) }}
                 </span>
@@ -87,6 +142,14 @@ const linkSteps = ['open', 'email', 'done'] as const
                   size="sm"
                 >
                   {{ $t('telegramBot.commands.requiresLink') }}
+                </UBadge>
+                <UBadge
+                  v-if="!botCommandUrl(command)"
+                  color="neutral"
+                  variant="outline"
+                  size="sm"
+                >
+                  {{ $t('telegramBot.commands.chatOnly') }}
                 </UBadge>
               </li>
             </ul>
