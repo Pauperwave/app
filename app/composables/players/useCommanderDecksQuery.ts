@@ -3,6 +3,7 @@
 // for this read-only view. `tournamentsPlayed` counts real tournaments only (never test ones): a
 // deck played in one can't be deleted, like the DELETE endpoint's own check.
 import { countTournamentsByDeck } from '#shared/utils/commanders/deckUsage'
+import type { Database } from '#shared/utils/types/database'
 
 export interface CommanderDeck {
   uuid: string
@@ -19,7 +20,7 @@ export interface CommanderDeck {
 }
 
 async function fetchTournamentsPlayedByDeck(
-  supabase: ReturnType<typeof useSupabaseClient>,
+  supabase: ReturnType<typeof useSupabaseClient<Database>>,
   deckUuids: string[]
 ): Promise<Map<string, number>> {
   if (deckUuids.length === 0) return new Map()
@@ -35,7 +36,7 @@ async function fetchTournamentsPlayedByDeck(
 }
 
 export function useCommanderDecksQuery(playerUuid: MaybeRefOrGetter<string | undefined>) {
-  const supabase = useSupabaseClient()
+  const supabase = useSupabaseClient<Database>()
 
   return useQuery({
     key: () => ['commander-decks', toValue(playerUuid) ?? ''],
