@@ -18,6 +18,7 @@ export function useLiveSwissStandings(tournamentUuid: MaybeRefOrGetter<string>) 
   const { data: registrations } = useTournamentRegistrationsQuery(tournamentUuid)
   const { data: associatesData } = useAssociatesQuery()
   const { data: pairings } = useTournamentPairingsQuery(tournamentUuid)
+  // fallow-ignore-next-line code-duplication -- same query wiring as the sibling
   const { data: matchResults } = useTournamentMatchResultsQuery(tournamentUuid)
   const dropByPlayerUuid = useDropInfoByPlayerUuid(tournamentUuid)
 

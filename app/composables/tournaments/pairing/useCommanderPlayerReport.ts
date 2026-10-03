@@ -15,6 +15,7 @@ export function useCommanderPlayerReport(
   tournamentUuid: MaybeRefOrGetter<string>,
   player: MaybeRefOrGetter<LiveCommanderStanding | null>
 ) {
+  // fallow-ignore-next-line code-duplication -- round data queries mirror the sibling composable
   const { data: rounds } = useTournamentRoundsQuery(tournamentUuid)
   const { data: pairings } = useTournamentPairingsQuery(tournamentUuid)
   const { data: results } = useTournamentRoundResultsQuery(tournamentUuid)
