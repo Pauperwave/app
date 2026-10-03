@@ -105,7 +105,7 @@ const { breadcrumbItems } = useBreadcrumbs()
           ]"
         />
 
-        <ScryfallSearchButton :name="commander1Name" />
+        <MagicScryfallSearchButton :name="commander1Name" />
       </div>
 
       <EmptyState v-else-if="!decksLoading" :message="t('deck.notFound')" />

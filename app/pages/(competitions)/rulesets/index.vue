@@ -303,7 +303,7 @@ const tour = useRulesetsTour()
 
   <TourGuide :tour="tour" />
 
-  <RulesetsFormModal v-model:open="formModalOpen" :ruleset="editingRuleset" />
+  <RulesetsRulesetFormModal v-model:open="formModalOpen" :ruleset="editingRuleset" />
 
   <ConfirmModal
     v-model:open="deleteConfirmOpen"
