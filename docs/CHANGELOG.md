@@ -3,6 +3,18 @@
 
 One entry per **notable** commit, newest first, grouped by date. Each entry: the commit subject (gitmoji convention), then what/why bullets. Not every commit gets an entry anymore (see ADR-010 in `PROGRESS.md`) — mechanical ones (`style`, `chore`, trivial `refactor`) are skipped here; the complete raw index (every commit, auto-generated) lives in the root `CHANGELOG.md` via `changelogen`, never edited by hand. This file complements `PROGRESS.md` (curated ADRs and per-area status): the changelog is the annotated commit trail, `PROGRESS.md` is the distilled history — fold important outcomes there, keep the play-by-play here.
 
+## 2026-10-03 — Telegram: card prices and wanted cards, the turns Mini App follows the event clock, the bot info page; v0.10.0
+
+- `feat(bot): ✨ /prezzo`: a card's price on CardMarket and CardTrader, picking the printing through the inline mode (`@bot $ card`, one row per printing), with ITA/ENG and foil filters.
+- `feat(bot): ✨ add a printing to my wanted cards from the price message`: the active filters become the language and foil of the wanted card; "already in your list" when the same printing, language and finish exists.
+- `feat(bot): ✨ /importa pastes a card list into the wanted cards, /cercate lists and removes them`: the list parsing, the Scryfall lookup and the wanted-card row are in `shared/utils/wantedCards/` so the site can reuse them.
+- `fix(bot): 🐛 Commander result summary waits for the whole table`: the vote and score tables were sent empty when opponents hadn't finished; now it names who is missing and offers "Aggiorna" (ADR-056).
+- `feat(turni): ✨ the turns mini app follows the event round timer, read-only`, then `✨ updates live through Realtime`: new `tournament_round_timers` table, Telegram `initData` validation, vibration on change, local timer as the fallback (ADR-055). The games-won counter is gone, the digits scale with the screen width and a button turns them 90° in portrait.
+- `feat(bot): ✨ informational bot page in the sidebar`: your link state, how to link, and every command as a card per section, opening in Telegram; the deep links no longer leak the command name into `ctx.match`.
+- `feat(players): ✨ hover a commander in the player's decks table to preview the card`: reuses `CommanderDeckHover`.
+- `docs`: user-facing READMEs for the bot and the site (`docs/telegram-bot/`, `docs/site/`), emojis, a full review of `api.md`, `query-keys.md`, `database.md` (22 migrations), `postgres-functions.md` (12 functions) and `testing.md`; ADR-055/056.
+- `chore(release): 🔖 v0.10.0`.
+
 ## 2026-10-01 — Commander: drop, "no kills", final standings and player report; reproducible seating; Telegram flows
 
 - `fix(tournaments): 🐛 give no placement points until the seats above are known`: a lone 4th place was read as 1st and awarded 8 points; a dense position `p` now needs `p-1` known positions above it, otherwise the placement is worth 0 (kills and votes still count).

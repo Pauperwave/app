@@ -24,7 +24,7 @@ Ogni schermata con bottoni e navigazione (`/calendario`, `/leghe`, `/iscrizioni`
 
 | Comando/funzionalità | Accesso | Stato | Note |
 |---|---|---|---|
-| `/start` | Pubblico | 🟡 | Risponde con un messaggio di benvenuto. Non chiede ancora l'email di collegamento (vedi riga sotto). |
+| `/start` | Pubblico | 🟢 | Benvenuto che invita a scrivere l'email da socio per collegare la chat (vedi "Collegamento chat↔socio"), con i bottoni dei comandi. Con un payload (`/start <comando>`, i collegamenti `t.me/<bot>?start=<comando>`) apre direttamente quel comando. |
 | `/help` | Pubblico | 🟢 | Elenco comandi disponibili, raggruppato per dominio (`commands/core.ts`). |
 | `/status` | Pubblico | 🟢 | Liveness check, risponde "🟢 Bot operativo." con commit e data del deploy corrente. |
 | `/classifiche` | Pubblico | 🟢 | Pauper/Commander/Premodern/Cittadino: calcolo reale per tutti e quattro (riusa `groupBestNByPlayer`, `shared/utils/cittadino/bestNStandings.ts` — Cittadino con le proprie tie-break, best-11, vedi Note), **paginato 10 righe alla volta** (bottoni ◀/▶, aggiunto 2026-09-06) più link alla pagina completa sul sito e bottone "« Formati" per tornare alla scelta. |

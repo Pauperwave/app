@@ -8,6 +8,7 @@
 ## Database modifications
 
 - Schema changes go through `supabase/migrations/*.sql`, applied via `pnpm exec supabase db push --linked` — never ad-hoc DDL against the linked project without a migration file.
+- A migration can also be applied through the Supabase MCP (`apply_migration`) when `db push` isn't at hand: keep the same SQL as a file in `supabase/migrations/` either way. The version Supabase records is then the moment it was applied, not the file name's timestamp.
 - Regenerate `shared/utils/types/database.ts` after any schema change (`pnpm supabase:types`) so `Associate` and friends in `app/types/index.d.ts` stay honest about nullability and column names.
 - See `docs/architecture/database.md` for the full schema reference, RLS policies, and the Commander-vs-format-agnostic table inventory.
 

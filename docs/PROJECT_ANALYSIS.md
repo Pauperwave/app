@@ -6,6 +6,8 @@
 **Type:** Nuxt 4 Full-Stack Web Application
 
 > **⚠️ Point-in-time snapshot, not a living doc.** This is a full rewrite of the original April 2026 audit — the codebase had drifted far enough (Pinia Colada adoption, the 4-tier role system, most mock endpoints migrated to real Supabase writes) that patching individual claims stopped being worthwhile. For anything ongoing, `docs/PROGRESS.md` (ADRs) and `docs/architecture/*.md` are the current source of truth; this document will drift again as the app keeps changing.
+>
+> Since this rewrite: the Telegram bot and Mini App, the event page, 1v1 Swiss tournaments and the info pages `docs/site/README.md` / `docs/telegram-bot/README.md` (current section map and bot guide). The living references are `docs/architecture/*` and `docs/PROGRESS.md`.
 
 ---
 
@@ -412,6 +414,7 @@ Test runners are configured (vitest + Playwright), with 3 unit test files writte
 | **Scryfall** | Card data/images for Carte Cercate and card-art pickers |
 | **CardTrader** | Price lookups (cached locally, `pauperwave_cardtrader_blueprints`/`expansions`) |
 | **Nominatim/Photon** | Associate residence geocoding (map view) |
+| **Telegram Bot API** | The bot (grammY, webhook at `server/api/telegram/webhook.post.ts`) and the turns Mini App; added after this snapshot, see `docs/architecture/telegram-bot.md` and `docs/telegram-bot/README.md` |
 
 ### 11.2 Magic: The Gathering Integrations
 - **Companion App**: `companion_code` field on tournaments/events, still live
