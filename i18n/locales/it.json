@@ -1059,6 +1059,43 @@
     }
   },
   "event": {
+    "details": {
+      "title": "Dettagli dell'evento",
+      "tagline": "Sottotitolo",
+      "taglinePlaceholder": "Es. Eat, Drink, Combat, Repeat",
+      "edition": "Edizione",
+      "description": "Descrizione",
+      "practicalNotes": "Informazioni utili",
+      "practicalNotesPlaceholder": "Parcheggio, cibo, come arrivare…",
+      "ticketsTitle": "Biglietti e iscrizione",
+      "ticketsUrl": "Link ai biglietti",
+      "ticketsOnSaleOn": "In vendita dal",
+      "membershipRequired": "Tessera obbligatoria",
+      "membershipRequiredHint": "Per partecipare serve la tessera Pauperwave",
+      "membershipUrl": "Link per tesserarsi",
+      "editionLabel": "{n}ª edizione",
+      "ticketsButton": "Biglietti",
+      "ticketsOnSaleLabel": "In vendita dal {date}",
+      "membershipBadge": "Tessera obbligatoria",
+      "membershipButton": "Tesserati",
+      "practicalNotesTitle": "Informazioni utili"
+    },
+    "partners": {
+      "title": "Partner",
+      "add": "Aggiungi partner",
+      "remove": "Rimuovi partner",
+      "namePlaceholder": "Nome",
+      "linkPlaceholder": "Link (facoltativo)",
+      "logoPlaceholder": "URL del logo (facoltativo)",
+      "roles": {
+        "collaborator": "Collaboratore",
+        "sponsor": "Sponsor"
+      },
+      "groups": {
+        "collaborator": "Con la collaborazione di",
+        "sponsor": "Sponsor"
+      }
+    },
     "breadcrumb": "Eventi",
     "seoTitle": "Eventi",
     "searchPlaceholder": "Cerca per nome",

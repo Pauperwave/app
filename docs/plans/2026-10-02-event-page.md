@@ -53,8 +53,12 @@ now its format is enough, plus an initial pod-draft phase later.
    with a registration's `checked_in_at`). In the tournament forms, the calendar detail and filled
    in for Radio Atog. `registration_at` is only stored and shown for now: nothing opens or closes
    registrations by it (that would block the pre-registration the app is built around).
-4. **Event fields** (migration): tagline, edition, description, practical notes, ticket link and
-   sale start, membership required + link; an `event_partners` table (name, role, logo, link, order).
+4. **Event fields (done, 2026-10-03, migration 20261003120000)**: `tagline`, `edition`,
+   `description`, `practical_notes`, `tickets_url`, `tickets_on_sale_on`, `membership_required` +
+   `membership_url`, and the `event_partners` table (name, role collaborator/sponsor, logo URL, link,
+   position; public to read). In the event forms (`events/fields/DetailFields.vue`,
+   `PartnersEditor.vue`; saving replaces the whole partner list) and on the event page
+   (`events/single/Details.vue`). Filled in for Radio Atog.
 5. **Cube**: an initial pod-draft phase before the rounds.
 
 ## Later (wanted, not scheduled)

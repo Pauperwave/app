@@ -118,9 +118,18 @@ function openAddModalAt(date: string, time: string) {
         <UCard>
           <div class="flex flex-col gap-3">
             <div class="flex items-start justify-between gap-3">
-              <h2 class="text-xl font-semibold truncate">
-                {{ event.name }}
-              </h2>
+              <div class="min-w-0">
+                <h2 class="text-xl font-semibold truncate">
+                  {{ event.name }}
+                </h2>
+                <p v-if="event.tagline || event.edition" class="text-sm text-muted">
+                  <span v-if="event.edition" class="font-medium text-primary">
+                    {{ t('event.details.editionLabel', { n: event.edition }) }}
+                  </span>
+                  <span v-if="event.edition && event.tagline"> · </span>
+                  <span v-if="event.tagline" class="italic">{{ event.tagline }}</span>
+                </p>
+              </div>
               <UBadge
                 :color="eventStatusColor(event.status)"
                 variant="subtle"
@@ -155,6 +164,8 @@ function openAddModalAt(date: string, time: string) {
             <p class="text-sm text-muted">
               {{ t('event.tournamentsLabel', event.tournamentCount) }}
             </p>
+
+            <EventsSingleDetails :event="event" />
           </div>
         </UCard>
 

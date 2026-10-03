@@ -5,6 +5,7 @@ import type { FormSubmitEvent } from '@nuxt/ui'
 import type { NewEventPayload } from '#shared/types/events'
 import type { EventFormState } from '~/composables/events/useEventFormFields'
 import type { Event } from '~/types'
+import type { EventPartnerInput } from '#shared/utils/events/eventPartners'
 
 const open = defineModel<boolean>({ default: false })
 
@@ -36,6 +37,13 @@ function createInitialState(): EventFormState {
   return {
     name: source?.name,
     status: 'draft',
+    // A copy keeps everything but the edition and the tickets' on-sale day (they belong to the original).
+    tagline: source?.tagline ?? undefined,
+    description: source?.description ?? undefined,
+    practicalNotes: source?.practicalNotes ?? undefined,
+    ticketsUrl: source?.ticketsUrl ?? undefined,
+    membershipRequired: source?.membershipRequired ?? false,
+    membershipUrl: source?.membershipUrl ?? undefined,
     organizerUuid: source?.organizerUuid ?? undefined as unknown as string,
     locationUuid: source?.locationUuid ?? undefined,
     companionCode: source?.companionCode ?? undefined
@@ -43,6 +51,12 @@ function createInitialState(): EventFormState {
 }
 
 const state = reactive<EventFormState>(createInitialState())
+
+// A list, not a schema field: kept out of `state` like the image.
+function initialPartners(): EventPartnerInput[] {
+  return (sourceEvent?.partners ?? []).map(partner => ({ ...partner }))
+}
+const partners = ref<EventPartnerInput[]>(initialPartners())
 
 // Nearly every event created here is organized by Pauperwave at Smart Lab —
 // same defaulting convention as TournamentsListAddModal.vue's own (user
@@ -74,6 +88,7 @@ const imageCardArtist = ref<string | undefined>(undefined)
 watch(open, (isOpen) => {
   if (!isOpen || !sourceEvent) return
   Object.assign(state, createInitialState())
+  partners.value = initialPartners()
   image.value = sourceEvent.image ?? undefined
   imageCardName.value = sourceEvent.imageCardName ?? undefined
   imageCardArtist.value = sourceEvent.imageCardArtist ?? undefined
@@ -87,6 +102,7 @@ type Schema = v.InferOutput<typeof schema>
 // should preserve whatever the user typed (user decision 2026-08-20).
 function resetForm() {
   Object.assign(state, createInitialState())
+  partners.value = initialPartners()
   image.value = undefined
   imageCardName.value = undefined
   imageCardArtist.value = undefined
@@ -103,6 +119,15 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     locationUuid: event.data.locationUuid || null,
     organizerUuid: event.data.organizerUuid ?? '',
     companionCode: event.data.companionCode || null,
+    tagline: event.data.tagline || null,
+    edition: event.data.edition ?? null,
+    description: event.data.description || null,
+    practicalNotes: event.data.practicalNotes || null,
+    ticketsUrl: event.data.ticketsUrl || null,
+    ticketsOnSaleOn: event.data.ticketsOnSaleOn || null,
+    membershipRequired: event.data.membershipRequired ?? false,
+    membershipUrl: event.data.membershipRequired ? (event.data.membershipUrl || null) : null,
+    partners: partners.value,
     imageUrl: image.value ?? null,
     imageCardName: imageCardName.value ?? null,
     imageCardArtist: imageCardArtist.value ?? null
@@ -195,6 +220,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
               :icon="ICONS.calendar"
             />
           </UFormField>
+
+          <EventsFieldsDetailFields v-model:partners="partners" :state="state" />
 
           <p class="text-lg font-semibold text-primary">
             {{ $t('event.addModal.organizerData') }}

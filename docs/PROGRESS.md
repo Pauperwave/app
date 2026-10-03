@@ -555,6 +555,14 @@ Contestualmente, rimosso il banner di avviso giallo ("Questa tabella non è anco
 
 **Conseguenze:** un evento nuovo non ha date finché non gli si collega un torneo (`useEventsQuery.ts` ripiega su `created_at`, come le leghe). I 10 eventi esistenti non hanno tornei collegati e tengono le date scritte a mano finché un torneo non li tocca: nessun ricalcolo massivo, per non svuotarli. Restano da fare collegare i tornei esistenti ai loro eventi e i campi descritti nel piano (orario di registrazione, quote soci/non soci, partner, ...).
 
+### ADR-054 — Dettagli e partner dell'evento, modellati su Radio Atog 2026 (2026-10-03)
+
+**Contesto:** completando la pagina evento (ADR-053) servivano le informazioni che una pagina come quella di Radio Atog 2026 mostra oltre ai tornei: sottotitolo ed edizione, descrizione, informazioni utili, biglietti, tessera obbligatoria, partner.
+
+**Decisione:** colonne facoltative su `events` (`tagline`, `edition`, `description`, `practical_notes`, `tickets_url`, `tickets_on_sale_on`, `membership_required`, `membership_url`) e una tabella `event_partners` (qualsiasi numero di partner per evento, ruolo `collaborator`/`sponsor`, logo e link facoltativi, `position` = ordine di visualizzazione), pubblica in lettura come `events` e scrivibile dallo staff. Il form dell'evento salva la lista dei partner per intero: il server cancella le righe esistenti e inserisce quelle pulite (`replaceEventPartners`, righe senza nome scartate). La pagina evento li mostra sotto il riepilogo (`events/single/Details.vue`), ogni parte sparisce se vuota.
+
+**Conseguenze:** il salvataggio dei partner non è atomico (delete + insert): se l'insert fallisce l'evento resta senza partner finché non si risalva — accettato, il form conserva i valori. Orari di registrazione e quote dei singoli tornei restano sui tornei (migration 20261003110000), non sull'evento. Restano fuori squadre e liste (piano `docs/plans/2026-10-02-event-page.md`, "Later") e la fase di pod draft del Cubo.
+
 ## Vedi anche
 
 - `docs/architecture/database.md` — schema, RLS, migrazioni

@@ -170,22 +170,77 @@ export type Database = {
           },
         ]
       }
+      event_partners: {
+        Row: {
+          created_at: string
+          event_uuid: string
+          id: number
+          link_url: string | null
+          logo_url: string | null
+          name: string
+          position: number
+          role: string
+          updated_at: string
+          uuid: string
+        }
+        Insert: {
+          created_at?: string
+          event_uuid: string
+          id?: never
+          link_url?: string | null
+          logo_url?: string | null
+          name: string
+          position?: number
+          role: string
+          updated_at?: string
+          uuid?: string
+        }
+        Update: {
+          created_at?: string
+          event_uuid?: string
+          id?: never
+          link_url?: string | null
+          logo_url?: string | null
+          name?: string
+          position?: number
+          role?: string
+          updated_at?: string
+          uuid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_partners_event_uuid_fkey"
+            columns: ["event_uuid"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["uuid"]
+          },
+        ]
+      }
       events: {
         Row: {
           companion_app_code: string | null
           created_at: string
           deleted_at: string | null
           deleted_by: string | null
+          description: string | null
+          edition: number | null
           ends_at: string | null
           id: number
           image_card_artist: string | null
           image_card_name: string | null
           image_url: string | null
           location_uuid: string | null
+          membership_required: boolean
+          membership_url: string | null
           name: string
           organizer_uuid: string
+          practical_notes: string | null
           starts_at: string | null
           status: string
+          tagline: string | null
+          tickets_on_sale_on: string | null
+          tickets_url: string | null
           updated_at: string
           uuid: string
         }
@@ -194,16 +249,24 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           deleted_by?: string | null
+          description?: string | null
+          edition?: number | null
           ends_at?: string | null
           id?: number
           image_card_artist?: string | null
           image_card_name?: string | null
           image_url?: string | null
           location_uuid?: string | null
+          membership_required?: boolean
+          membership_url?: string | null
           name: string
           organizer_uuid: string
+          practical_notes?: string | null
           starts_at?: string | null
           status: string
+          tagline?: string | null
+          tickets_on_sale_on?: string | null
+          tickets_url?: string | null
           updated_at?: string
           uuid?: string
         }
@@ -212,16 +275,24 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           deleted_by?: string | null
+          description?: string | null
+          edition?: number | null
           ends_at?: string | null
           id?: number
           image_card_artist?: string | null
           image_card_name?: string | null
           image_url?: string | null
           location_uuid?: string | null
+          membership_required?: boolean
+          membership_url?: string | null
           name?: string
           organizer_uuid?: string
+          practical_notes?: string | null
           starts_at?: string | null
           status?: string
+          tagline?: string | null
+          tickets_on_sale_on?: string | null
+          tickets_url?: string | null
           updated_at?: string
           uuid?: string
         }
