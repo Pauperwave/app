@@ -167,6 +167,7 @@ useSeoMeta({ title: () => t('deck.breadcrumb') })
       <ListSkeleton
         v-if="viewMode === 'table' && showLoadingState"
         :columns="tableColumns.length"
+        :count="20"
       />
 
       <div

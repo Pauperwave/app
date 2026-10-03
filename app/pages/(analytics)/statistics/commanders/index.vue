@@ -139,7 +139,11 @@ const isLoading = statsLoading
     </template>
 
     <template #body>
-      <ListSkeleton v-if="viewMode === 'table' && isLoading" :columns="columns.length" />
+      <ListSkeleton
+        v-if="viewMode === 'table' && isLoading"
+        :columns="columns.length"
+        :count="20"
+      />
 
       <div
         v-else-if="viewMode !== 'table' && isLoading"
