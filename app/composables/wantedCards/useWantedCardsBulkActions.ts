@@ -35,6 +35,7 @@ export function useWantedCardsBulkActions(selection: Selection<number>) {
   function toastForFailures(succeeded: number, failed: number, successTitle: string) {
     toast.add({
       title: successTitle,
+      // fallow-ignore-next-line code-duplication -- same undo flow as the sibling
       description: failed > 0 ? t('wantedCard.bulkActions.partialFailure', failed) : undefined,
       color: failed > 0 ? 'warning' : 'success'
     })
