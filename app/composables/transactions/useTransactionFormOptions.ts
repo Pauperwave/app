@@ -56,10 +56,17 @@ export function useTransactionFormOptions() {
     value: event.uuid, label: event.name
   })))
 
+  const { can } = useUserRole()
+
   const paymentTypeOptions = computed(() => [
     { value: 'Tournament Fee' as const, label: t('transaction.addModal.paymentTypeOptions.entryFee'), icon: ICONS.standings },
     { value: 'Event Fee' as const, label: t('transaction.addModal.paymentTypeOptions.eventFee'), icon: ICONS.calendar },
-    { value: 'Association Fee' as const, label: t('transaction.addModal.paymentTypeOptions.membership'), icon: ICONS.players },
+    {
+      value: 'Association Fee' as const,
+      label: t('transaction.addModal.paymentTypeOptions.membership'),
+      icon: ICONS.players,
+      disabled: !can('manage-membership-fees')
+    },
     { value: 'Donation' as const, label: t('transaction.addModal.paymentTypeOptions.donation'), icon: ICONS.heartHandshake },
     { value: 'Token Purchase' as const, label: t('transaction.addModal.paymentTypeOptions.tokenPurchase'), icon: ICONS.coins }
   ])

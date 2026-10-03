@@ -17,10 +17,13 @@ defineEmits<{
 
 const { t } = useI18n()
 
+const { can } = useUserRole()
+
 const typeItems = computed(() => PAYMENT_TYPES.map(type => ({
   label: t(PAYMENT_TYPE_LABEL_KEYS[type]),
   icon: PAYMENT_TYPE_BADGE_CONFIG[type].icon,
-  value: type
+  value: type,
+  disabled: isMembershipFeePayment(type) && !can('manage-membership-fees')
 })))
 </script>
 
@@ -43,6 +46,7 @@ const typeItems = computed(() => PAYMENT_TYPES.map(type => ({
       :items="typeItems.map(item => ({
         label: item.label,
         icon: item.icon,
+        disabled: item.disabled,
         onSelect: () => $emit('changeType', item.value)
       }))"
     >

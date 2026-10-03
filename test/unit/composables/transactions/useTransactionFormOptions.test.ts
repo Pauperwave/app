@@ -1,7 +1,7 @@
 // test\unit\composables\transactions\useTransactionFormOptions.test.ts
 import { CalendarDateTime } from '@internationalized/date'
 import { ref } from 'vue'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as v from 'valibot'
 import { useTransactionFormOptions } from '~/composables/transactions/useTransactionFormOptions'
 
@@ -12,6 +12,15 @@ vi.mock('~/composables/tournaments/useTournamentsQuery', () => ({
 vi.mock('~/composables/events/useEventsQuery', () => ({
   useEventsQuery: () => ({ data: ref([]) })
 }))
+
+const can = vi.hoisted(() => vi.fn())
+
+// Auto-imported by the composable, so mocked as a module rather than stubbed as a global
+vi.mock('~/composables/useUserRole', () => ({ useUserRole: () => ({ can }) }))
+
+beforeEach(() => {
+  can.mockReset().mockReturnValue(true)
+})
 
 function validPayload(overrides: Record<string, unknown> = {}) {
   return {
@@ -103,6 +112,22 @@ describe('useTransactionFormOptions', () => {
     const { paymentTypeOptions, paymentMethodOptions } = useTransactionFormOptions()
     expect(paymentTypeOptions.value).toHaveLength(5)
     expect(paymentMethodOptions.value).toHaveLength(4)
+  })
+
+  it('lets an admin pick the membership fee type', () => {
+    const { paymentTypeOptions } = useTransactionFormOptions()
+
+    const membership = paymentTypeOptions.value.find(option => option.value === 'Association Fee')
+    expect(membership?.disabled).toBe(false)
+    expect(can).toHaveBeenCalledWith('manage-membership-fees')
+  })
+
+  it('disables the membership fee type for anyone below admin, and only that one', () => {
+    can.mockReturnValue(false)
+    const { paymentTypeOptions } = useTransactionFormOptions()
+
+    const disabled = paymentTypeOptions.value.filter(option => 'disabled' in option && option.disabled)
+    expect(disabled.map(option => option.value)).toEqual(['Association Fee'])
   })
 
   it('offers one receiver option per staff name, each with a generated avatar', () => {

@@ -5,11 +5,14 @@ import type { Transaction } from '~/types'
 
 const deleteTransaction = { mutateAsync: vi.fn() }
 const toastAdd = vi.fn()
+const can = vi.hoisted(() => vi.fn())
 
 vi.mock('vue-i18n', () => ({ useI18n: () => ({ t: (key: string) => key }) }))
 vi.mock('~/composables/transactions/useTransactionsMutations', () => ({
   useTransactionsMutations: () => ({ deleteTransaction })
 }))
+// Auto-imported by the composable, so mocked as a module rather than stubbed as a global
+vi.mock('~/composables/useUserRole', () => ({ useUserRole: () => ({ can }) }))
 
 function makeTransaction(overrides: Partial<Transaction>): Transaction {
   return { id: 1, ...overrides } as Transaction
@@ -19,6 +22,7 @@ describe('useTransactionsRowActions', () => {
   beforeEach(() => {
     toastAdd.mockClear()
     deleteTransaction.mutateAsync.mockReset()
+    can.mockReset().mockReturnValue(true)
     vi.stubGlobal('useToast', () => ({ add: toastAdd }))
   })
 
@@ -27,6 +31,36 @@ describe('useTransactionsRowActions', () => {
     const items = rowContextMenuItems(makeTransaction({}))
     const labels = items.map(item => ('label' in item ? item.label : '---'))
     expect(labels).toEqual(['transaction.rowActions.edit', '---', 'transaction.rowActions.delete'])
+  })
+
+  it('locks edit and delete of a membership-fee payment for anyone below admin', () => {
+    can.mockReturnValue(false)
+    const { rowContextMenuItems } = useTransactionsRowActions()
+
+    const items = rowContextMenuItems(makeTransaction({ payment_type: 'Association Fee' }))
+
+    const actions = items.filter(item => item.type !== 'separator')
+    expect(actions.map(item => item.disabled)).toEqual([true, true])
+    expect(can).toHaveBeenCalledWith('manage-membership-fees')
+  })
+
+  it('leaves a membership-fee payment actionable for an admin', () => {
+    const { rowContextMenuItems } = useTransactionsRowActions()
+
+    const items = rowContextMenuItems(makeTransaction({ payment_type: 'Association Fee' }))
+
+    expect(items.filter(item => item.type !== 'separator').map(item => item.disabled))
+      .toEqual([false, false])
+  })
+
+  it('never locks a payment of another type', () => {
+    can.mockReturnValue(false)
+    const { rowContextMenuItems } = useTransactionsRowActions()
+
+    const items = rowContextMenuItems(makeTransaction({ payment_type: 'Donation' }))
+
+    expect(items.filter(item => item.type !== 'separator').map(item => item.disabled))
+      .toEqual([false, false])
   })
 
   it('openDeleteConfirm sets the pending transaction and opens the confirm modal', () => {
