@@ -11,11 +11,9 @@ const toast = useToast()
 
 useSeoMeta({ title: () => t('settings.layout.links.general') })
 
-// 'manage-membership-fees' (admin), a stricter check than this whole page's
-// own 'access-settings' (also admin today, but access-settings only gates
-// whether the page is reachable at all — see docs/architecture/permissions.md)
-// — an organizer could theoretically reach /settings some other way in the
-// future without this section becoming editable.
+// 'manage-membership-fees' (admin), a stricter check than this page's 'access-settings' (also admin
+// today, but it only gates whether the page is reachable, see docs/architecture/permissions.md): an
+// organizer could reach /settings some other way later without this section becoming editable
 const { can } = useUserRole()
 const { paymentMethodOptions } = useTransactionFormOptions()
 
@@ -37,10 +35,8 @@ const membershipFeeState = reactive<Partial<MembershipFeeSchema>>({
   membershipFeePaymentMethod: undefined
 })
 
-// Fills the form once, the first time the query resolves — not a continuous
-// sync (no `immediate`-only guard would do that), which would clobber an
-// in-progress edit if settings.data refetches (e.g. window refocus) while
-// the admin is mid-edit.
+// Fills the form once, the first time the query resolves, not a continuous sync, which would
+// clobber an in-progress edit if settings.data refetches (e.g. on window refocus) mid-edit
 watch(settings.data, (data) => {
   if (!data || membershipFeeState.membershipFeeAmount !== undefined) return
   membershipFeeState.membershipFeeAmount = data.membershipFeeAmount
@@ -64,10 +60,9 @@ async function onMembershipFeeSubmit(event: FormSubmitEvent<MembershipFeeSchema>
   }
 }
 
-// 'purge-trash' (super_admin) — one tier above 'manage-membership-fees'
-// above: this value controls when pg_cron's purge_expired_trash() (migration
-// 20260823120000) deletes soft-deleted rows for good, same sensitivity as
-// the manual purge button on /trash itself.
+// 'purge-trash' (super_admin), one tier above 'manage-membership-fees': this value controls when
+// pg_cron's purge_expired_trash() (migration 20260823120000) deletes soft-deleted rows for good, as
+// sensitive as the manual purge button on /trash
 const trashRetentionSchema = v.object({
   trashRetentionDays: v.pipe(
     v.number(t('settings.trashRetention.validation.daysRequired')),

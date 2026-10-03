@@ -17,14 +17,10 @@ type GroupKey
   = 'finance' | 'standings' | 'tournaments' | 'locations' | 'wantedCards' | 'players'
     | 'commanderDecks' | 'membership' | 'rulesets' | 'trash' | 'roles'
 
-// Whether the row describes real, working code today — separate from the
-// role grid itself (which is the *intended* policy, docs/architecture/
-// roles.md/permissions.md). Verified by hand against server/api/* and
-// app/pages/* (2026-08-23, re-verified 2026-08-29 — five rows had drifted
-// out of sync with a route-guard fix made earlier the same session), not
-// derived automatically — keep in sync the same way the role columns
-// already are, re-check whenever a row's underlying feature actually gets
-// built/changed.
+// Whether the row describes real, working code today, separate from the role grid (the *intended*
+// policy, docs/architecture/roles.md/permissions.md). Verified by hand against server/api/* and
+// app/pages/*, not derived: keep it in sync like the role columns, re-checking whenever a row's
+// underlying feature is built/changed
 type ImplementationStatus = 'implemented' | 'partial' | 'notImplemented'
 
 interface RoleCell {
@@ -59,16 +55,12 @@ interface PermissionRow {
   superAdmin?: RoleCell
 }
 
-// Grouped by domain (reordered 2026-08-23 — was purely by increasing role,
-// which scattered same-domain rows, e.g. the four Carte Cercate rows weren't
-// consecutive; within each domain group below, still lowest-to-highest
-// role). Section order follows the sidebar nav, not docs/architecture/
-// permissions.md's own order (see the `return` below) — that file is still
-// the source of truth for the full "why" behind each row, this table is
-// just its in-app rendering, not a second decision. Keep both in sync by
-// hand until PERMISSION_LEVEL
-// (docs/architecture/roles.md) actually exists in code and this can compute
-// itself from it instead.
+// Grouped by domain (within each group still lowest-to-highest role), so same-domain rows (e.g. the
+// four Carte Cercate rows) are consecutive. Section order follows the sidebar nav, not
+// docs/architecture/permissions.md's order (see the `return` below): that file stays the source of
+// truth for the "why" behind each row, this table is its in-app rendering, not a second decision.
+// Keep both in sync by hand until PERMISSION_LEVEL (docs/architecture/roles.md) exists in code and
+// this can compute from it
 const rows = computed<PermissionRow[]>(() => {
   type RowKey
     // Finanze e transazioni
@@ -130,33 +122,25 @@ const rows = computed<PermissionRow[]>(() => {
     }
   }
 
-  // A section-header pseudo-row (bold feature text, every other column
-  // blank — see the column cell functions below) plus tagging every row in
-  // the block that follows with its theme (user request, 2026-08-29: divide
-  // the table into sections by theme, e.g. "Carte Cercate"). One table, not
-  // one per section — a separate <table> per section wouldn't share a single
-  // <colgroup>, so the "feature" column's shrink-to-fit width (see its own
-  // comment below) would independently reflow per section instead of lining
-  // up down the page.
+  // A section-header pseudo-row (bold feature text, every other column blank, see the column cell
+  // functions below) plus tagging every row of the following block with its theme (e.g. "Carte
+  // Cercate"). One table, not one per section: separate <table>s wouldn't share a <colgroup>, so
+  // the "feature" column's shrink-to-fit width (see its comment below) would reflow per section
+  // instead of lining up down the page
   const group = (key: GroupKey, items: Omit<PermissionRow, 'group'>[]): PermissionRow[] => [
     { isSection: true, group: key, feature: t(`settings.permissions.groups.${key}`) },
     ...items.map(item => ({ ...item, group: key }))
   ]
 
   // Section order follows the sidebar nav (useMainNavGroups.ts), not
-  // docs/architecture/permissions.md's own order (user request, 2026-08-29):
-  // Dashboards (Finanze) → Community (Associati/Richieste, Giocatori, then
-  // Carte Cercate) → Competizioni (Tornei/Leghe/Eventi, Luoghi, Regolamenti
-  // last) → Classifiche → Commander (Mazzi Commander) → Impostazioni
-  // (Membri → roles, Cestino last).
+  // docs/architecture/permissions.md's: Dashboards (Finanze) → Community (Associati/Richieste,
+  // Giocatori, Carte Cercate) → Competizioni (Tornei/Leghe/Eventi, Luoghi, Regolamenti last) →
+  // Classifiche → Commander (Mazzi Commander) → Impostazioni (Membri → roles, Cestino last).
   //
-  // viewFinance/viewAssociates/viewPlayers/manageLocations/manageRulesets
-  // (2026-08-29, user request — cross-referenced against the full
-  // Permission union in app/utils/permissions.ts) were briefly notImplemented:
-  // none of their pages declared `definePageMeta({ permission: ... })`, only
-  // the sidebar hid the link, so any authenticated user could open them
-  // directly by URL. Fixed the same session — all five (plus viewTrash,
-  // already guarded) are implemented now.
+  // viewFinance/viewAssociates/viewPlayers/manageLocations/manageRulesets were once notImplemented:
+  // none of their pages declared `definePageMeta({ permission: ... })`, only the sidebar hid the
+  // link, so any authenticated user could open them by URL. All five (plus viewTrash, already
+  // guarded) are implemented now
   return [
     ...group('finance', [
       row('viewFinance', 'implemented', ['none', 'full', 'full', 'full'])
@@ -224,10 +208,9 @@ const rows = computed<PermissionRow[]>(() => {
   ]
 })
 
-// Same semantic colours the rest of the app uses for status (UBadge success/
-// warning/error elsewhere) — full/partial maps onto them directly. 'none' has no
-// entry: those cells render blank (see roleColumn below), not an X — a grid mostly
-// full of "no access" icons was pure noise, the blank space already reads as "no."
+// The semantic colors of status elsewhere (UBadge success/warning/error): full/partial map onto
+// them. 'none' has no entry: those cells render blank (see roleColumn below), not an X, since a
+// grid mostly full of "no access" icons was noise
 const ACCESS_META: Record<'full' | 'partial', { icon: string, color: string }> = {
   full: { icon: ICONS.successFilled, color: 'text-success' },
   partial: { icon: ICONS.circleDot, color: 'text-warning' }
@@ -249,18 +232,16 @@ const STATUS_META: Record<ImplementationStatus, { color: 'success' | 'warning' |
   notImplemented: { color: 'error' }
 }
 
-// Two things to highlight inline in a feature description, matched together
-// so overlapping matches can't fight each other:
-// - `**word**` markers (set by hand in it.json, one per verb — e.g.
-//   "**Creare**, **modificare** tornei..." for rows with more than one verb)
-//   render as <strong>, since which words are verbs isn't reliably derivable
-//   from the Italian text alone.
-// - an in-app route mentioned inline (e.g. the "(/associates)" in "Gestire
-//   l'anagrafica soci (/associates)") renders in the same font-mono style
-//   domains.vue uses for routes — but only a path, not any "/" in running
-//   text: the lookbehind requires the slash to start right after whitespace,
-//   an opening paren, or the start of the string, so e.g.
-//   "Assegnare/modificare" (a "/" mid-word) is left as plain text.
+// Two things to highlight inline in a feature description, matched together so overlapping matches
+// can't fight:
+// - `**word**` markers (set by hand in it.json, one per verb, e.g. "**Creare**, **modificare**
+//   tornei...") render as <strong>, since which words are verbs isn't derivable from the Italian
+//   text.
+// - an in-app route mentioned inline (e.g. "(/associates)" in "Gestire l'anagrafica soci
+//   (/associates)") renders in the font-mono style domains.vue uses for routes, but only a path,
+//   not any "/" in running text:
+//   the lookbehind requires the slash right after whitespace, an opening paren or the string start,
+//   so "Assegnare/modificare" (a mid-word "/") stays plain text.
 const INLINE_PATTERN = /\*\*(.+?)\*\*|(?<=^|[\s(])\/[a-zA-Z][\w-]*(?:\/[\w-]+)*/g
 
 function renderFeature(text: string) {
@@ -307,9 +288,8 @@ function roleColumn(role: RoleKey): TableColumn<PermissionRow> {
   }
 }
 
-// Unauthenticated access (user request, 2026-08-29) — same RoleCell shape
-// and icon set as the four role columns, just keyed off `publicAccess`
-// instead of a RoleKey and with no ROLE_ICON lookup (not a real AppRole).
+// Unauthenticated access: the same RoleCell shape and icon set as the four role columns, keyed off
+// `publicAccess` instead of a RoleKey, with no ROLE_ICON lookup (not a real AppRole)
 function publicColumn(): TableColumn<PermissionRow> {
   return {
     accessorKey: 'publicAccess',
@@ -326,11 +306,10 @@ const columns: TableColumn<PermissionRow>[] = [
   {
     accessorKey: 'feature',
     header: () => t('settings.permissions.columns.feature'),
-    // w-px + whitespace-nowrap: the standard shrink-to-fit trick, so the column is
-    // exactly as wide as its longest row and no wider — without it, w-full on the
-    // table below stretches this column to fill leftover space with blank padding
-    // instead of the icon columns doing that. Deliberately no whitespace-normal
-    // wrapping either, unlike domains.vue: every row stays on one line.
+    // w-px + whitespace-nowrap: the shrink-to-fit trick, so the column is exactly as wide as its
+    // longest row: without it, w-full on the table stretches it to fill leftover space with blank
+    // padding instead of the icon columns. Deliberately no whitespace-normal wrapping, unlike
+    // domains.vue: every row stays on one line
     meta: { class: { th: 'whitespace-nowrap w-px', td: 'whitespace-nowrap w-px' } },
     cell: ({ row }) => row.original.isSection
       ? h('span', { class: 'font-semibold text-highlighted block mt-3' }, row.original.feature)
@@ -383,28 +362,22 @@ const columns: TableColumn<PermissionRow>[] = [
       class="w-full"
       :meta="{
         class: {
-          // Section rows have nothing in the other columns to divide from
-          // (blank cells either side) — meant to override the ui.tr default
-          // below per-row (user request, 2026-08-29). Nuxt UI's tv() slots
-          // concatenate meta.class.tr with :ui's own tr class rather than
-          // tailwind-merging them (confirmed via devtools: both divide-x and
-          // divide-x-0 end up in the class list at once), so plain
-          // divide-x-0 lost to divide-x on stylesheet order, not HTML class
-          // order — trailing `!` (Tailwind v4 important syntax) forces it.
+          // Section rows have nothing to divide from (blank cells either side): overrides the ui.tr
+          // default below per row. Nuxt UI's tv() slots concatenate meta.class.tr with :ui's tr
+          // class rather than tailwind-merging them (both divide-x and divide-x-0 end up in the
+          // class list), so plain divide-x-0 lost to divide-x on stylesheet order: the trailing `!`
+          // (Tailwind v4 important syntax) forces it
           tr: (row: Row<PermissionRow>) => (row.original.isSection ? 'divide-x-0!' : '')
         }
       }"
       :ui="{
         td: 'py-1.5 px-3 text-sm group-hover:bg-(--ui-bg-elevated)',
         th: 'py-1.5 px-3',
-        // Row hover via the public `ui` slot API instead of a scoped :deep()
-        // selector: no wrapper div needed, and it doesn't assume UTable's
-        // internal DOM shape (tbody > tr > td) stays the same across versions —
-        // `tr`/`td` here are UTable's own documented slot names, not a guess.
-        // Standard Tailwind group/group-hover, not an arbitrary variant: `tr`
-        // marked as the group, `td` reacts to its hover state. Plain :hover, no
-        // transition — same reasoning as PublicMatrixTable.vue for why that
-        // stays cheap at this table size.
+        // Row hover via the public `ui` slot API instead of a scoped :deep() selector: no wrapper
+        // div, and no assumption that UTable's internal DOM shape (tbody > tr > td) stays the same
+        // across versions (`tr`/`td` are UTable's documented slot names). Standard Tailwind
+        // group/group-hover, not an arbitrary variant: `tr` is the group, `td` reacts to its hover.
+        // Plain :hover, no transition, as PublicMatrixTable.vue (cheap at this size)
         tr: 'group divide-x divide-default'
       }"
     />

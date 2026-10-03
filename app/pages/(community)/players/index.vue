@@ -2,9 +2,8 @@
 <script lang="ts" setup>
 import type { VisibilityTableRef } from '~/composables/useColumnVisibilityItems'
 
-// Was nav-hidden only (sidebar gated on view-players, the route itself wide
-// open to any authenticated user) — closed 2026-08-29, see the
-// permissions.vue table's own statusNote on why this was flagged.
+// The route is gated like the sidebar link (view-players): it used to be nav-hidden only, with the
+// route open to any authenticated user (see the permissions.vue table's statusNote)
 definePageMeta({ permission: 'view-players' })
 
 const route = useRoute()
@@ -30,11 +29,10 @@ const playersStatusCounts = computed(() => {
   return counts
 })
 
-// Same StatusFilterGroup used by associates/index.vue and wanted-cards/index.vue
-// (a UFieldGroup of toggle buttons), not UTabs. Icons reused from
-// MEMBERSHIP_STATUS_BADGE_CONFIG's own active/expired (success/banned) — same
-// active-vs-not semantics as membership status — collapsing to icon-only
-// below `lg` via StatusFilterGroup's own icon prop (user request, 2026-08-24).
+// The same StatusFilterGroup as associates/index.vue and wanted-cards/index.vue (a UFieldGroup of
+// toggle buttons), not UTabs. Icons reused from MEMBERSHIP_STATUS_BADGE_CONFIG's active/expired
+// (success/banned), the same active-vs-not semantics as membership status, icon-only below `lg` via
+// StatusFilterGroup's icon prop
 const statusTabs = computed(() => [
   { label: t('player.tabs.active'), value: 'active', count: playersStatusCounts.value.active, icon: ICONS.success },
   { label: t('player.tabs.inactive'), value: 'inactive', count: playersStatusCounts.value.inactive, icon: ICONS.banned }
@@ -51,13 +49,11 @@ const filteredPlayers = computed(() => data.value.filter(
   player => (activeStatusTab.value === 'active' ? player.is_active : !player.is_active)
 ))
 
-// Same single search box as associates/index.vue (user request, 2026-08-19)
-// — see playersGlobalFilterFn.ts.
+// The same single search box as associates/index.vue (see playersGlobalFilterFn.ts)
 const search = ref('')
 
-// Own query, own cache key — last_sign_in_at lives in auth.users, not
-// players_full, so it can't ride along with usePlayersQuery.ts's own fetch
-// (server/api/players/last-logins.get.ts, 2026-08-20 user request).
+// Own query, own cache key: last_sign_in_at lives in auth.users, not players_full, so it can't ride
+// along with usePlayersQuery.ts's fetch (see server/api/players/last-logins.get.ts)
 const { data: lastLoginsData } = usePlayersLastLoginsQuery()
 const lastLogins = computed(() => new Map(
   (lastLoginsData.value ?? []).map(entry => [entry.playerUuid, entry.lastSignInAt])
@@ -70,19 +66,17 @@ const {
   deletingPlayer, deleteConfirmOpen, deleting, confirmDelete
 } = usePlayersRowActions()
 
-// Same data useMembersMutations.ts/usePlayersRowActions.ts already read for
-// the "Promuovi a" submenu — reused here for the "Ruolo" column instead of a
-// second query (user request, 2026-08-25).
+// The data useMembersMutations.ts/usePlayersRowActions.ts read for the "Promuovi a" submenu, reused
+// for the "Ruolo" column instead of a second query
 const { data: membersData } = useMembersQuery()
 const roleByAssociateUuid = computed(() =>
   new Map((membersData.value ?? []).map(member => [member.associateUuid, member.role])))
 
-// Checkbox selection + bulk delete (2026-09-23 user request) — useSelection.ts,
-// same as transactions/index.vue's own selectedTransactions: filtered against
-// filteredPlayers (not the raw dataset) so a selection hidden by the active
-// status tab/search isn't actionable. Not useSelectedTableRows.ts — that needs
-// a full tableApi ref (getFilteredRowModel), while `table` here is typed as
-// the lighter VisibilityTableRef for the "Mostra colonne" menu.
+// Checkbox selection + bulk delete via useSelection.ts, like transactions/index.vue's
+// selectedTransactions: filtered against filteredPlayers (not the raw dataset) so a selection
+// hidden by the active status tab/search isn't actionable. Not useSelectedTableRows.ts: that needs
+// a full tableApi ref (getFilteredRowModel), while `table` here is typed as the lighter
+// VisibilityTableRef of the "Mostra colonne" menu
 const selection = useSelection<number>()
 const table = useTemplateRef<VisibilityTableRef>('table')
 const selectedPlayers = computed(() =>
@@ -97,14 +91,13 @@ const { columns, columnHeaders } = usePlayersTableColumns(
 )
 const sorting = ref([{ id: 'id', desc: false }])
 
-// Same "Mostra colonne" pattern as wanted-cards/index.vue: rebuilt every time
-// the menu opens (via :items"), getAllColumns() + getCanHide() +
-// toggleVisibility(), not a direct v-model on the individual items (official
-// Nuxt UI convention, UTable docs "Column visibility" section).
+// The "Mostra colonne" pattern of wanted-cards/index.vue: rebuilt every time the menu opens (via
+// :items), getAllColumns() + getCanHide() + toggleVisibility(), not a v-model on the items (the
+// official Nuxt UI convention, UTable docs "Column visibility")
 const columnVisibility = ref({})
 
-// "Mostra colonne" section divider: identity/status columns vs. activity
-// trail (see columnVisibilityGroups.ts, user request 2026-08-27).
+// "Mostra colonne" section divider: identity/status columns vs activity trail (see
+// columnVisibilityGroups.ts)
 const columnVisibilityItems = useColumnVisibilityItems(
   table, columnVisibility, columnHeaders, ['created_at']
 )
@@ -126,9 +119,9 @@ const skeletonCount = computed(() => (isPending.value ? undefined : filteredPlay
         <NotificationsBellButton />
       </ListPageNavbar>
 
-      <!-- Same #left toolbar placement as associates/index.vue and
-           wanted-cards/index.vue for their StatusFilterGroup — swapped for
-           the bulk-actions bar (same row/height) while there's a selection. -->
+      <!-- The #left toolbar placement of associates/index.vue and wanted-cards/index.vue for
+           their StatusFilterGroup, swapped for the bulk-actions bar (same row/height) while
+           there is a selection -->
       <UDashboardToolbar :ui="{ root: 'flex-wrap h-auto py-2 gap-1.5', left: 'gap-4 flex-wrap' }">
         <template #left>
           <PlayersListBulkActionsBar

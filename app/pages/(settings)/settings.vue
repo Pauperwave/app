@@ -5,23 +5,20 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 const { t } = useI18n()
 const route = useRoute()
 
-// The domains and permissions tables are wider than the single-column forms
-// every other settings page is comfortable with — widen just those pages
-// instead of every subpage under /settings. Permissions has no cap at all: its
-// feature column stays on one line rather than wrapping (see permissions.vue),
-// so it needs whatever width that takes rather than a fixed breakpoint.
+// The domains and permissions tables are wider than the single-column forms every other settings
+// page suits: only those pages are widened, not every subpage under /settings. Permissions has no
+// cap: its feature column stays on one line rather than wrapping (see permissions.vue), so it needs
+// whatever width that takes
 const wideBodyRoutes: Record<string, string> = {
   '/settings/domains': 'lg:max-w-4xl',
   '/settings/permissions': 'w-full'
 }
 const bodyMaxWidth = computed(() => wideBodyRoutes[route.path] ?? 'lg:max-w-2xl')
 
-// Second, separate nav surface from useMainNavGroups.ts's sidebar — found
-// 2026-08-17 to be completely unfiltered, letting an organizer reach
-// /settings/members and /settings/domains just by clicking these tabs even
-// with the sidebar link hidden. All four settings pages are admin+ now
-// (access-settings), so this tabs bar only ever needs to omit itself
-// entirely for anyone below that, not filter individual links.
+// A second nav surface, separate from useMainNavGroups.ts's sidebar: it was unfiltered, letting an
+// organizer reach /settings/members and /settings/domains through these tabs with the sidebar link
+// hidden. All four settings pages are admin+ (access-settings), so this bar only needs to omit
+// itself for anyone below that, not filter individual links
 const { can } = useUserRole()
 
 const links = computed<NavigationMenuItem[][]>(() => can('access-settings')

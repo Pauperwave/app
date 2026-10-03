@@ -1,19 +1,14 @@
 <!-- app\pages\(competitions)\events\[eventId]\index.vue -->
 <script lang="ts" setup>
 import type { TabsItem } from '@nuxt/ui'
-// fallow-ignore-file code-duplication -- see the same comment in
-// leagues/[leagueId]/index.vue
-// First real (non-mock) detail page for events (2026-08-20). Uuid-based,
-// not slug-based — matches events/list/GridView.vue's own `/events/${uuid}`
-// link, not migrated to a slug like locations/leagues were.
+// fallow-ignore-file code-duplication -- see the same comment in leagues/[leagueId]/index.vue
+// The first real (non-mock) detail page for events. Uuid-based, not slug-based: it matches
+// events/list/GridView.vue's `/events/${uuid}` link, not migrated to a slug like locations/leagues.
 //
-// The left card's own status-colored heatmap (bidirectionally linked to the
-// tournament cards below, same as leagues/[leagueId]/index.vue's own) was
-// replaced 2026-08-22 by EventsSingleDaySchedule.vue's hour grid (user
-// request, "a custom calendar view of that specific day... like Google
-// Calendar I can click and create a tournament") — a day-schedule for one
-// specific day has no use for a multi-month heatmap's own hover-linking, so
-// that machinery was removed along with it rather than kept dead.
+// The left card used to have a status-colored heatmap (bidirectionally linked to the tournament
+// cards below, like leagues/[leagueId]/index.vue's), replaced by EventsSingleDaySchedule.vue's hour
+// grid ("like Google Calendar I can click and create a tournament"): a one-day schedule has no use
+// for a multi-month heatmap's hover-linking, so that machinery was removed rather than kept dead
 
 const { t } = useI18n()
 const route = useRoute()
@@ -41,8 +36,8 @@ const { rowContextMenuItems } = useCopyLinkContextMenu('/tournaments')
 const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowActions()
 const selection = useSelection<number>()
 
-// The event page is mainly a calendar of its tournaments (user request, 2026-10-02): a quick way into
-// each tournament's own page. "Settimana" shows every event day side by side, "Giorno" one at a time.
+// The event page is mainly a calendar of its tournaments: a quick way into each tournament's page.
+// "Settimana" shows every event day side by side, "Giorno" one at a time
 const scheduleDays = computed(() =>
   event.value ? eventScheduleDays(event.value, tournaments.value) : [])
 
@@ -65,10 +60,9 @@ const visibleDays = computed(() => scheduleView.value === 'week' || !selectedDay
   ? scheduleDays.value
   : [selectedDay.value])
 
-// DaySchedule.vue's own click-to-create (user request, 2026-08-22, "like
-// Google Calendar") — one AddModal instance reused across every slot click,
-// re-seeded each time via its initialDate/initialTime props (see that component's own
-// watch(open, ...)).
+// DaySchedule.vue's click-to-create ("like Google Calendar"): one AddModal instance reused across
+// every slot click, re-seeded each time via its initialDate/initialTime props (see that component's
+// watch(open, ...))
 const addModalOpen = ref(false)
 const addModalInitialDate = ref<string>()
 const addModalInitialTime = ref('20:00')

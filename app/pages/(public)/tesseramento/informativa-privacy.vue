@@ -12,9 +12,8 @@ useSeoMeta({
   robots: 'noindex, nofollow'
 })
 
-// Static, self-authored file (app/content/informativa-privacy.md) — v-html is
-// safe here, there's no user input in the render path. Same pattern as
-// informativa-dati.vue.
+// Static, self-authored file (app/content/informativa-privacy.md): v-html is safe, there is no user
+// input in the render path. The same pattern as informativa-dati.vue
 // fallow-ignore-file security-sink -- see the comment above
 const html = new MarkdownIt().render(rawContent)
 </script>

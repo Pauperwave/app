@@ -1,10 +1,8 @@
 <!-- app\pages\(community)\players\[slug]\deck\[deckSlug].vue -->
-<!-- Per-player-per-deck-instance view — ported from league's
-     pages/player/[slug]/deck/[deckSlug].vue (user request, 2026-09-17), but
-     simpler: this app's tournament_round_results links to a specific
-     commander_decks.uuid row, so stats stay correctly scoped to this exact
-     deck instance without needing a separate deck_stats view (see
-     useCommanderDeckStatsQuery.ts). -->
+<!-- Per-player-per-deck-instance view, ported from league's
+     pages/player/[slug]/deck/[deckSlug].vue but simpler: tournament_round_results links to a
+     specific commander_decks.uuid row, so stats stay scoped to this exact deck instance without
+     a separate deck_stats view (see useCommanderDeckStatsQuery.ts) -->
 <script setup lang="ts">
 definePageMeta({ permission: 'view-players' })
 

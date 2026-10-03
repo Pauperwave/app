@@ -6,11 +6,10 @@ useSeoMeta({ title: () => t('statistic.breadcrumb') })
 
 const tour = useStatisticsTour()
 
-// Drives only the point-in-time cards/chart (new signups, not-renewed,
-// tournaments hosted, renewal timing) — the multi-year charts (Crescita
-// dell'associazione, Tornei per anno) stay full historical series, unaffected
-// by this (user decision, 2026-08-26). Range is the club's actual lifespan,
-// not "years with data", since every one of those years genuinely existed.
+// Drives only the point-in-time cards/chart (new signups, not-renewed, tournaments hosted, renewal
+// timing): the multi-year charts (Crescita dell'associazione, Tornei per anno) stay full historical
+// series. The range is the club's lifespan, not "years with data", since every one of those years
+// existed
 const availableYears = computed(() => {
   const years: number[] = []
   const currentYear = new Date().getFullYear()
@@ -23,10 +22,10 @@ const availableYears = computed(() => {
 const selectedYear = ref(new Date().getFullYear())
 const yearItems = computed(() => yearSelectItems(availableYears.value))
 
-// The page has no query of its own — every chart pulls from one of these
-// three underlying queries (useAssociatesStatistics.ts/useTournamentsStatistics.ts/
-// useWantedCardsStatistics.ts), deduped by Pinia Colada's own cache key. Called again
-// here just to read/drive their status, not to trigger a second fetch.
+// The page has no query of its own: every chart pulls from one of these three underlying queries
+// (useAssociatesStatistics.ts/useTournamentsStatistics.ts/useWantedCardsStatistics.ts), deduped by
+// Pinia Colada's cache key. Called again here only to read/drive their status, not to trigger a
+// second fetch
 const {
   isLoading: associatesLoading,
   status: associatesStatus,
@@ -120,10 +119,9 @@ function refresh() {
         <StatisticsAssociatesStatsCards :selected-year="selectedYear" />
       </div>
 
-      <!-- The flagship "story" chart (monthly resolution across the whole
-      2020-2026 span) gets its own full-width row instead of sharing a
-      column — its year labels/dashed lines need the extra room more than
-      any other chart on this page. -->
+      <!-- The flagship "story" chart (monthly resolution across the whole 2020-2026 span) gets
+           its own full-width row: its year labels/dashed lines need the extra room more than
+           any other chart here -->
       <div id="tour-statistics-growth">
         <ClientOnly>
           <StatisticsAssociatesGrowthChart />
@@ -133,10 +131,9 @@ function refresh() {
         </ClientOnly>
       </div>
 
-      <!-- Grouped by domain (associates, then tournaments, then wanted cards)
-      rather than interleaved — the eye moves through one topic at a
-      time instead of bouncing between them. Each chart gets its own id so
-      the tour can step through them one at a time. -->
+      <!-- Grouped by domain (associates, then tournaments, then wanted cards) rather than
+           interleaved, so the eye moves through one topic at a time. Each chart has its own id
+           so the tour can step through them -->
       <div class="grid gap-4 lg:grid-cols-2">
         <div id="tour-statistics-age-distribution">
           <ClientOnly>

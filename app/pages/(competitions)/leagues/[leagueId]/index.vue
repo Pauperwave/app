@@ -1,17 +1,13 @@
 <!-- app\pages\(competitions)\leagues\[leagueId]\index.vue -->
 <script lang="ts" setup>
-// fallow-ignore-file code-duplication -- the UDashboardPanel/Navbar/Toolbar/
-// breadcrumb header shell (and its route-param/useBreadcrumbs/refetch wiring)
-// mirrors every other detail page (locations/[slug], events/[eventId],
-// players/[slug]); each page's #right toolbar content and body differ
-// entirely per domain, so a shared header component would need as many
-// slots/conditionals as it saves lines.
-// First real (non-mock) detail page among tournaments/leagues/events singles
-// (2026-08-16) — clicking a tournament card's league link lands here. Reuses
-// TournamentsListGridView as-is: same cards, and (2026-08-29) the same
-// edit/copy/delete context menu as /tournaments itself, just pre-filtered to
-// this league's tournaments. No bulk-selection actions bar / table toggle
-// here yet — delete/copy act on a single tournament at a time.
+// fallow-ignore-file code-duplication -- header shell mirrors every other detail page
+// The UDashboardPanel/Navbar/Toolbar/breadcrumb shell (route-param/useBreadcrumbs/refetch wiring)
+// is shared by locations/[slug], events/[eventId] and players/[slug]; each page's #right toolbar
+// and body differ per domain, so a shared header component would need as many slots/conditionals as
+// it saves lines. The first real (non-mock) detail page among tournaments/leagues/events singles: a
+// tournament card's league link lands here. It reuses TournamentsListGridView as-is (the same cards
+// and edit/copy/delete context menu as /tournaments), pre-filtered to this league's tournaments. No
+// bulk-selection bar / table toggle yet: delete/copy act on one tournament at a time.
 import type { Tournament } from '~/types'
 
 const { t } = useI18n()
@@ -24,8 +20,8 @@ const league = computed(() =>
 
 useSeoMeta({ title: () => league.value?.name ?? t('league.breadcrumb') })
 
-// Overrides the raw uuid path segment with the league's real name — see
-// useBreadcrumbs.ts's own comment on why this can't be derived from the URL.
+// Overrides the raw uuid path segment with the league's real name (see useBreadcrumbs.ts on why it
+// can't be derived from the URL)
 const { breadcrumbItems } = useBreadcrumbs(
   computed(() => (league.value ? { [leagueUuid.value]: league.value.name } : {}))
 )
@@ -42,12 +38,10 @@ const tournaments = computed(() => (tournamentsData.value ?? [])
 // heatmap's own trailing-12-months window still applies regardless.
 const tournamentDates = computed(() => tournaments.value.map(tournament => tournament.startDate))
 
-// Count-based intensity (the heatmap's own default) doesn't mean anything
-// here — a league rarely runs more than one tournament a day, so it just
-// collapses to "none" vs. "high" (user feedback, 2026-08-20: "è più una
-// questione di stato dei tornei"). Color each day by its tournament's status
-// instead, reusing the exact same status → color mapping as everywhere else
-// tournament status is shown (tournamentStatusColor/tournamentStatusBgClass).
+// Count-based intensity (the heatmap's default) is meaningless here: a league rarely runs more than
+// one tournament a day, so it collapses to "none" vs "high". Each day is colored by its
+// tournament's status instead, reusing the status → color mapping used everywhere tournament status
+// is shown (tournamentStatusColor/tournamentStatusBgClass)
 const tournamentVariantByDate = computed(() => {
   const entries = tournaments.value.map(tournament => [
     toLocalDateKey(new Date(tournament.startDate)),
@@ -61,17 +55,14 @@ const tournamentLegendItems = TOURNAMENT_STATUSES.map(status => ({
   labelKey: `tournament.status.${status}`
 }))
 
-// Hovering/focusing a heatmap day highlights that day's tournament card
-// below (user request, 2026-08-20) — keyed by the same toLocalDateKey() both
-// sides use, so no separate id lookup table is needed.
+// Hovering/focusing a heatmap day highlights that day's tournament card below, keyed by the same
+// toLocalDateKey() both sides use (no separate id lookup)
 const hoveredTournamentDate = ref<string | null>(null)
 const highlightedTournamentId = computed(() => tournaments.value.find(tournament =>
   toLocalDateKey(new Date(tournament.startDate)) === hoveredTournamentDate.value)?.id ?? null)
 
-// The reverse direction (user request, 2026-08-20, "the other way around") —
-// hovering a tournament card rings its matching heatmap day. A separate ref
-// from hoveredTournamentDate above so the two directions don't fight over
-// the same piece of state.
+// The reverse direction: hovering a tournament card rings its matching heatmap day. A separate ref
+// from hoveredTournamentDate so the two directions don't fight over one piece of state
 const hoveredCardTournament = shallowRef<Tournament | null>(null)
 function handleCardHoverChange(tournament: Tournament | null) {
   hoveredCardTournament.value = tournament
@@ -80,24 +71,22 @@ const highlightedHeatmapDate = computed(() => hoveredCardTournament.value
   ? toLocalDateKey(new Date(hoveredCardTournament.value.startDate))
   : null)
 
-// League has no endDate column of its own (app/types/index.d.ts) — the card
-// shows "Dal <league.startDate> al <last tournament's date>" instead, since
-// that's the closest real signal for when the league actually wraps up.
+// League has no endDate column (app/types/index.d.ts): the card shows "Dal <league.startDate> al
+// <last tournament's date>", the closest real signal for when the league wraps up
 const leagueEndDate = computed(() => tournamentDates.value.length
   ? [...tournamentDates.value].sort().at(-1)!
   : null)
 
-// The tournaments grid renders its own per-card skeleton (loading prop
-// below) instead of being gated behind the page-level spinner too — only
-// the league-dependent top row (presentation card/heatmap/leaderboard)
-// still waits on leagueLoading, since none of those have a skeleton yet.
-// Same isPending-vs-isLoading reasoning as tournaments/index.vue: undefined
-// (GridView's own default count) only on a genuine first load.
+// The tournaments grid renders its own per-card skeleton (loading prop below) instead of waiting
+// behind the page-level spinner: only the league-dependent top row (presentation
+// card/heatmap/leaderboard, none with a skeleton yet) waits on leagueLoading. Same
+// isPending-vs-isLoading reasoning as tournaments/index.vue: undefined (GridView's default count)
+// only on a genuine first load
 const skeletonCount = computed(() =>
   (tournamentsPending.value ? undefined : tournaments.value.length))
 
-// tableContextMenuItems/onRowContextmenu aren't needed here — this
-// league-scoped page has no table view (grid only, at least for now).
+// tableContextMenuItems/onRowContextmenu aren't needed: this league-scoped page has no table view
+// (grid only, for now)
 const { rowContextMenuItems } = useCopyLinkContextMenu<Tournament>('/tournaments')
 const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowActions()
 const selection = useSelection<number>()
@@ -105,14 +94,11 @@ const {
   requestDelete, pendingAction, confirmOpen: bulkConfirmOpen, confirmPendingAction
 } = useTournamentsBulkActions(selection)
 
-// "Copia torneo" (user request, 2026-08-29) — same reusable-instance
-// convention as tournaments/index.vue's own copy action.
+// "Copia torneo": the same reusable-instance convention as tournaments/index.vue's copy action
 const { copyModalOpen, copySourceTournament, openCopyModal } = useTournamentCopyModal()
 
-// Same edit/copy/delete additions as tournaments/index.vue's own — shared
-// via useTournamentContextMenuItems.ts (user request, 2026-08-29, "same
-// functionality as /tournaments' context menu"; extracted the same day
-// after it was first copy-pasted here byte-identical to the other page).
+// The same edit/copy/delete additions as tournaments/index.vue, shared via
+// useTournamentContextMenuItems.ts
 const { tournamentContextMenuItems } = useTournamentContextMenuItems(
   rowContextMenuItems, openEditModal, openCopyModal, requestDelete
 )
@@ -121,18 +107,14 @@ const {
   editingLeague, editModalOpen: leagueEditModalOpen, openEditModal: openLeagueEditModal
 } = useLeaguesRowActions()
 
-// Grid rows size to the *tallest* column by default — with 40 mock
-// leaderboard rows that meant the whole page grew to fit them instead of the
-// leaderboard being capped to the shorter presentation+heatmap column and
-// scrolling internally (CSS alone can't make one grid item's content bound a
-// sibling's max-height, only measurement can). Mirrors the left column's own
-// rendered height onto the leaderboard card at `sm:grid-cols-2` and up. Below
-// that the columns stack instead of sitting side by side, so there's no
-// sibling height to match — but the card still shouldn't be left to grow
-// unbounded there either, so it falls back to a fixed cap instead.
-// Rough budget for the card's own header (~3.5rem) plus 8 rows at their
-// natural py-2 height (~2.75rem each) — an estimate, not a pixel-exact
-// figure, since the rows' own height isn't fixed.
+// Grid rows size to the *tallest* column by default: with 40 mock leaderboard rows the whole page
+// grew to fit them instead of the leaderboard being capped to the shorter presentation+heatmap
+// column and scrolling internally (CSS alone can't make one grid item's content bound a sibling's
+// max-height, only measurement can). Mirrors the left column's rendered height onto the leaderboard
+// card at `sm:grid-cols-2` and up. Below that the columns stack, so there is no sibling height to
+// match, but the card shouldn't grow unbounded either, so it falls back to a fixed cap: a rough
+// budget for its header (~3.5rem) plus 8 rows at their natural py-2 height (~2.75rem each), an
+// estimate since row height isn't fixed
 const MOBILE_LEADERBOARD_MAX_HEIGHT = `${3.5 + 8 * 2.75}rem`
 
 const leftColumnRef = useTemplateRef('leftColumn')
@@ -145,17 +127,14 @@ const leaderboardMaxHeight = computed(() => isSideBySide.value && leftColumnHeig
   ? `${leftColumnHeight.value}px`
   : MOBILE_LEADERBOARD_MAX_HEIGHT)
 
-// Reverse direction of the tournaments-side "assign to league" bulk action
-// (LeaguesSingleAddTournamentsModal.vue's own comment) — only meaningful
-// once the league itself is known, same reasoning as the modal needing a
-// real `league` prop rather than the nullable computed directly.
+// The reverse of the tournaments-side "assign to league" bulk action (see
+// LeaguesSingleAddTournamentsModal.vue): only meaningful once the league is known, like the modal
+// needing a real `league` prop rather than the nullable computed
 const addTournamentsModalOpen = ref(false)
 
-// "Nuovo torneo" (user request, 2026-08-29) — distinct from the button
-// above: that one assigns *existing* tournaments to this league, this one
-// creates a brand new one already linked to it via
-// TournamentsListAddModal's own initialLeagueUuid prop (same pattern as
-// events/[eventId]/index.vue's own click-to-create AddModal).
+// "Nuovo torneo", distinct from the button above (which assigns *existing* tournaments to this
+// league): it creates a new one already linked via TournamentsListAddModal's initialLeagueUuid
+// prop, like events/[eventId]/index.vue's click-to-create AddModal
 const addTournamentModalOpen = ref(false)
 </script>
 
@@ -239,11 +218,10 @@ const addTournamentModalOpen = ref(false)
             </UCard>
           </div>
 
-          <!-- PREVIEW ONLY (2026-08-20) — see LeaguesSingleLeaderboard.vue's
-               own comment: hardcoded mock rows, not real data yet. Capped to
-               the left column's own measured height (see leaderboardMaxHeight
-               above) with an internal scroll, not left free to push the whole
-               page taller than the presentation + heatmap cards combined. -->
+          <!-- PREVIEW ONLY (see LeaguesSingleLeaderboard.vue): hardcoded mock rows, not real
+               data. Capped to the left column's measured height (see leaderboardMaxHeight
+               above) with an internal scroll, not left free to push the page taller than the
+               presentation + heatmap cards -->
           <UCard
             :style="{ maxHeight: leaderboardMaxHeight }"
             :ui="{
@@ -260,9 +238,8 @@ const addTournamentModalOpen = ref(false)
           </UCard>
         </div>
 
-        <!-- :loading is isPending, not isLoading (2026-08-22) — same fix as
-             the table/grid list pages: a background refresh keeps the real
-             cards, only a genuine first load shows the skeleton grid. -->
+        <!-- :loading is isPending, not isLoading, like the table/grid list pages: a background
+             refresh keeps the real cards, only a genuine first load shows the skeleton grid -->
         <TournamentsListGridView
           :tournaments="tournaments"
           :context-menu-items="tournamentContextMenuItems"

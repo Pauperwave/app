@@ -1,16 +1,11 @@
 <!-- app\pages\(community)\players\[slug]\index.vue -->
 <script lang="ts" setup>
-// fallow-ignore-file code-duplication -- see the same comment in
-// leagues/[leagueId]/index.vue
-// Detail page for players (2026-08-20 user request) — restructured the same
-// day to match associate/[slug].vue's own shape (avatar header card +
-// DetailCard grid) instead of the ad-hoc <dl> this started as. No edit
-// action here: players have no editing UI anywhere in the app today, they're
-// derived from their associate record. Slug-based, not uuid (also
-// 2026-08-20, reversing the original uuid choice) — the display name is
-// first_name+last_name, exactly as stable as associate/[slug].vue's own
-// slug, so there's no reason for this one route pair to be the odd one out.
-// Was nav-hidden only — see players/index.vue's own comment.
+// fallow-ignore-file code-duplication -- see the same comment in leagues/[leagueId]/index.vue
+// Detail page for players, shaped like associate/[slug].vue (avatar header card + DetailCard grid).
+// No edit action: players have no editing UI anywhere, they derive from their associate record.
+// Slug-based, not uuid: the display name is first_name+last_name, exactly as stable as
+// associate/[slug].vue's slug. The route is gated like players/index.vue (it used to be nav-hidden
+// only)
 definePageMeta({ permission: 'view-players' })
 
 interface DetailField {
@@ -26,8 +21,7 @@ const { data: playersData, isLoading: playerLoading } = usePlayersQuery()
 const player = computed(() => playersData.value?.find(
   item => slugify(`${item.first_name} ${item.last_name}`) === route.params.slug) ?? null)
 
-// first_name + last_name — same display name as the associate this player is
-// derived from (user request, 2026-08-20).
+// first_name + last_name: the same display name as the associate this player derives from
 const displayName = computed(() => player.value
   ? `${player.value.first_name} ${player.value.last_name}`
   : '')
@@ -75,10 +69,9 @@ const { data: loginHistory, isLoading: loginHistoryLoading } = usePlayerLoginHis
 
 const loading = computed(() => playerLoading.value || lastLoginsLoading.value)
 
-// "Storico Partite" + "Mazzi Commander" (user request, 2026-08-27) — shown
-// for every player, not just Commander regulars: there's no existing
-// "plays Commander" flag to gate on, and an empty state is an honest,
-// correct result for a player who's only ever played other formats.
+// "Storico Partite" + "Mazzi Commander", shown for every player, not just Commander regulars: there
+// is no "plays Commander" flag to gate on, and an empty state is an honest result for a player who
+// only played other formats
 const playerUuid = computed(() => player.value?.uuid ?? undefined)
 const { data: matchHistory, isLoading: matchHistoryLoading }
   = useCommanderMatchHistoryQuery(playerUuid)
