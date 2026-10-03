@@ -1,12 +1,14 @@
 // app\composables\tournaments\rounds\useTournamentRoundsMutations.ts
 // Round-lifecycle writes for Commander tournaments (round 1, advance-round, turn-back-round): every
 // write goes through a server/api endpoint, like useTournamentRegistrationsMutations.ts
+// fallow-ignore-next-line code-duplication -- same invalidation as the sibling
 export function useTournamentRoundsMutations(tournamentUuid: MaybeRefOrGetter<string>) {
   const queryCache = useQueryCache()
 
   // Every round-lifecycle write touches rounds/pairings/results/standings —
   // invalidate all of it rather than tracking exactly which query each
   // mutation happens to touch, since they all touch most of them anyway.
+  // fallow-ignore-next-line code-duplication -- same invalidation as the sibling
   const invalidateRoundData = () => {
     queryCache.invalidateQueries({ key: TOURNAMENTS_KEY })
     queryCache.invalidateQueries({ key: TOURNAMENT_ROUNDS_KEY(toValue(tournamentUuid)) })

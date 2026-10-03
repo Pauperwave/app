@@ -10,6 +10,7 @@ export function useTournamentResetMutation(tournamentUuid: MaybeRefOrGetter<stri
     endpoint: '/api/tournament-rounds/reset',
     errorTitleKey: 'tournament.single.resetErrorTitle',
     body: () => ({ tournamentUuid: toValue(tournamentUuid) }),
+    // fallow-ignore-next-line code-duplication -- same invalidation as the sibling
     onSettled: () => {
       queryCache.invalidateQueries({ key: TOURNAMENTS_KEY })
       queryCache.invalidateQueries({ key: TOURNAMENT_ROUNDS_KEY(toValue(tournamentUuid)) })
