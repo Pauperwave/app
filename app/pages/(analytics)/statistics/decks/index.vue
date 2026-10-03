@@ -10,6 +10,7 @@ import type { CommanderStatsPair } from '~/composables/commanders/useCommanderSt
 import type { CommanderCard } from '~/composables/commanders/useCommanderCards'
 
 const { t } = useI18n()
+const { can } = useUserRole()
 
 const viewMode = ref<'table' | 'dense' | 'grid'>('grid')
 const viewModeItems = computed<TabsItem[]>(() => [
@@ -156,6 +157,7 @@ useSeoMeta({ title: () => t('deck.breadcrumb') })
             :icon="sortDirection === 'asc' ? ICONS.sortAscNumeric : ICONS.sortDescNumeric"
             @click="toggleDirection"
           />
+          <CommanderCatalogRefresh v-if="can('manage-tournaments')" />
           <NotificationsBellButton />
         </template>
       </UDashboardNavbar>

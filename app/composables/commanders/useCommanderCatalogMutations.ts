@@ -1,7 +1,8 @@
 // app\composables\commanders\useCommanderCatalogMutations.ts
 // Triggers the Scryfall resync job then refetches the cached catalog query, so new commanders show
 // up without waiting for the 30-day cache expiry (the "Aggiorna elenco carte" button, like league's
-// CommanderModal)
+// CommanderModal). The by-name lookups behind the card images cache their misses too, so they are
+// refetched with it.
 export function useCommanderCatalogMutations() {
   const queryCache = useQueryCache()
   const toast = useToast()
@@ -26,7 +27,11 @@ export function useCommanderCatalogMutations() {
         color: 'error'
       })
     },
-    onSettled: () => queryCache.invalidateQueries({ key: COMMANDER_CATALOG_KEY })
+    onSettled: () => {
+      queryCache.invalidateQueries({ key: COMMANDER_CATALOG_KEY })
+      queryCache.invalidateQueries({ key: COMMANDERS_BY_NAMES_KEY })
+      queryCache.invalidateQueries({ key: COMMANDER_CARD_KEY })
+    }
   })
 
   return { syncCatalog }
