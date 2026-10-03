@@ -2,11 +2,20 @@
 <script setup lang="ts">
 interface Props {
   label: string
-  isActive: boolean
-  adjustMinutes: number
+  isActive?: boolean
+  adjustMinutes?: number
+  // Following the event's timer: the countdown alone, no controls
+  readonly?: boolean
+  caption?: string
 }
 
-const { label, isActive, adjustMinutes } = defineProps<Props>()
+const {
+  label,
+  isActive = false,
+  adjustMinutes = 5,
+  readonly = false,
+  caption = ''
+} = defineProps<Props>()
 
 const emit = defineEmits<{
   toggle: []
@@ -23,7 +32,17 @@ const emit = defineEmits<{
       </p>
     </div>
 
-    <div class="flex flex-col gap-2 w-full">
+    <p
+      v-if="caption"
+      class="text-sm text-muted pb-2"
+    >
+      {{ caption }}
+    </p>
+
+    <div
+      v-if="!readonly"
+      class="flex flex-col gap-2 w-full"
+    >
       <div class="flex gap-2 w-full">
         <UButton
           size="xl"

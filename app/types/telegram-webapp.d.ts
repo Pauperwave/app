@@ -8,6 +8,8 @@ interface TelegramWebAppHapticFeedback {
 }
 
 interface TelegramWebApp {
+  // The signed launch data (empty outside Telegram): the server validates it to identify the user
+  initData: string
   ready(): void
   expand(): void
   HapticFeedback: TelegramWebAppHapticFeedback

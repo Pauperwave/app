@@ -171,6 +171,7 @@ const showFHint = useChordHintKey('f')
 
       <TournamentsSinglePairingRoundTimer
         :key="roundNumber"
+        :tournament-uuid="tournamentUuid"
         :duration-minutes="roundDurationMinutes"
         :round="roundNumber"
         @expired="handleTimerExpired"

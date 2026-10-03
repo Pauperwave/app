@@ -147,6 +147,7 @@ const matchRows = computed<SwissMatchRow[]>(() =>
 
       <TournamentsSinglePairingRoundTimer
         :key="roundNumber"
+        :tournament-uuid="tournamentUuid"
         :duration-minutes="roundDurationMinutes"
         :round="roundNumber"
         @expired="handleTimerExpired"

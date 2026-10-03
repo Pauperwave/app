@@ -2203,6 +2203,53 @@ export type Database = {
           },
         ]
       }
+      tournament_round_timers: {
+        Row: {
+          is_running: boolean
+          paused_elapsed_seconds: number
+          phase: string
+          phase_started_at: string | null
+          pre_seconds: number
+          round_number: number
+          round_seconds: number
+          tournament_uuid: string
+          turns_seconds: number
+          updated_at: string
+        }
+        Insert: {
+          is_running?: boolean
+          paused_elapsed_seconds?: number
+          phase?: string
+          phase_started_at?: string | null
+          pre_seconds: number
+          round_number: number
+          round_seconds: number
+          tournament_uuid: string
+          turns_seconds: number
+          updated_at?: string
+        }
+        Update: {
+          is_running?: boolean
+          paused_elapsed_seconds?: number
+          phase?: string
+          phase_started_at?: string | null
+          pre_seconds?: number
+          round_number?: number
+          round_seconds?: number
+          tournament_uuid?: string
+          turns_seconds?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_tournament_round_timers_tournament_uuid_fkey"
+            columns: ["tournament_uuid"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["uuid"]
+          },
+        ]
+      }
       tournament_rounds: {
         Row: {
           created_at: string
