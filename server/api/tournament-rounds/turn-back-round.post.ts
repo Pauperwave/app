@@ -2,6 +2,7 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
+// fallow-ignore-next-line code-duplication -- turn-back handler mirrors the other format's handler
 interface TurnBackRoundBody {
   tournamentUuid: string
   currentRoundNumber: number
