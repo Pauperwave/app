@@ -56,6 +56,7 @@ export function useLiveCommanderStandings(tournamentUuid: MaybeRefOrGetter<strin
   const { data: resultsData } = useTournamentRoundResultsQuery(tournamentUuid)
   const { data: killsData } = useTournamentKillsQuery(tournamentUuid)
   const { data: votesData } = useTournamentVotesQuery(tournamentUuid)
+  // fallow-ignore-next-line code-duplication -- same query wiring as the sibling
   const { data: rulesetPoints } = useRulesetPointsQuery(tournamentUuid)
   const dropByPlayerUuid = useDropInfoByPlayerUuid(tournamentUuid)
 
