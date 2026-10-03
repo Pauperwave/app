@@ -30,6 +30,9 @@ jobs:
       - name: Check file path headers
         run: pnpm run check:paths
 
+      - name: Check component names
+        run: pnpm run check:components
+
       - name: Lint
         env:
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
