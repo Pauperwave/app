@@ -1,28 +1,12 @@
 // server\middleware\public-host.ts
 import { HOST_ROUTE_MAP } from '#shared/utils/publicHosts'
 
-// A same-URL rewrite (mutating event.node.req.url so the browser keeps
-// showing e.g. cittadino.pauperwave.org/ while a different page renders)
-// turned out not to work with this h3/Nitro version: h3's own dispatcher
-// (createAppEventHandler in node_modules/h3/dist/index.mjs) captures the
-// request path once, in a closure variable, before the middleware stack
-// runs, and resets event._path/event.node.req.url back to that original
-// value before *every* layer — including Nuxt's own render handler. Any
-// mutation a middleware makes to the path is silently discarded before the
-// next layer runs; only event.context survives across layers. Confirmed
-// 2026-08-13 in production: cittadino.pauperwave.org/ rendered the
-// dashboard home page (dashboard-panel-home), not /rankings/cittadino,
-// even though an earlier isPublicHost-on-context version of this file
-// correctly skipped the login redirect (context alone works, path
-// mutation doesn't).
-//
-// A real redirect sidesteps the problem entirely: the browser makes a
-// fresh request for the target URL, which auth.global.ts's publicPrefixes
-// already recognizes as public without needing any Host-based flag.
-//
-// The target is an absolute app.pauperwave.org URL (cross-domain redirect),
-// not a same-host path, so there's no risk of the target itself re-entering
-// this middleware — app.pauperwave.org isn't in HOST_ROUTE_MAP.
+// Public subdomains redirect cross-domain instead of rewriting the URL in place: h3's dispatcher
+// resets event._path/event.node.req.url to the original request path before every layer (Nuxt's
+// render handler included), so a middleware's path rewrite is silently discarded; only
+// event.context survives. A real redirect makes the browser request the target, which
+// auth.global.ts's publicPrefixes already treats as public. The target (app.pauperwave.org) isn't
+// in HOST_ROUTE_MAP, so it can't re-enter this middleware.
 export default defineEventHandler((event) => {
   const host = getHeader(event, 'host')?.toLowerCase()
   const target = host ? HOST_ROUTE_MAP[host] : undefined

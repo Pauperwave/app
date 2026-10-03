@@ -1,15 +1,9 @@
 // server\api\tournament-registrations\self-register.post.ts
 
-// Player self-registration — deliberately not requireManagementPermission
-// like register.post.ts: any logged-in user may call this, but only ever
-// for themselves. associateUuid is resolved server-side from the session
-// (resolveAuditAssociateUuid), never taken from the request body, so the
-// caller can't register anyone else. RLS already has policies named for
-// exactly this (player_own_registration/player_delete_own on
-// tournament_registrations) — this endpoint exists anyway to reuse
-// register_tournament_players' atomic get-or-create-player step (a raw
-// client-side insert would fail for a first-time registrant with no
-// players row yet).
+// Player self-registration: any logged-in user, but only for themselves (unlike register.post.ts).
+// associateUuid comes from the session (resolveAuditAssociateUuid), never the body. A BFF endpoint
+// despite the player_own_registration RLS policies, to reuse register_tournament_players' atomic
+// get-or-create (a raw insert fails for a first-time registrant with no players row).
 export default defineEventHandler(async (event) => {
   const { tournamentUuid, associateUuid, supabase } = await parseSelfRegistrationRequest(event)
 
@@ -24,9 +18,8 @@ export default defineEventHandler(async (event) => {
   if (tournamentError || !tournament || tournament.is_test) {
     throw createError({ statusCode: 404, statusMessage: 'Torneo non trovato' })
   }
-  // Shop organizers (Magman etc.) are reference-only — Pauperwave doesn't
-  // run their registrations, same rule RegisterButton.vue (client-side) and
-  // the Telegram bot's detail.ts (isExternalOrganizer) enforce.
+  // Shop organizers (Magman etc.) are reference-only: Pauperwave doesn't run their registrations,
+  // same rule as RegisterButton.vue and the Telegram bot's isExternalOrganizer
   if (tournament.status !== 'registration_open' || tournament.organizer?.type === 'shop') {
     throw createError({
       statusCode: 400,

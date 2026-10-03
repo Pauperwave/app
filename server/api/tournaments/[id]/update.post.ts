@@ -1,18 +1,15 @@
 // server\api\tournaments\[id]\update.post.ts
 import type { NewTournamentPayload } from '#shared/types/tournaments'
 
-// Same convention as create.post.ts: tournaments' RLS (management_full_access)
-// already gates writes to management users, but every write still goes
-// through a BFF endpoint rather than relying on RLS evaluated from the client.
-// fallow-ignore-next-line code-duplication -- see league.post.ts
+// Same convention as create.post.ts: RLS gates writes, every write still goes through a BFF
+// endpoint. fallow-ignore-next-line code-duplication -- see league.post.ts
 export default defineEventHandler(async (event) => {
   const { id, body, supabase } = await parseIdMutationRequest<NewTournamentPayload>(event)
   // Only a super_admin can see (so also create or edit) a test tournament.
   if (body.isTest !== undefined) await requireSuperAdminPermission(event)
 
-  // Read before write, so a tournament moved between leagues/events (or unlinked
-  // entirely) recomputes both the parent it left and the one it joined —
-  // see derivedDates.ts.
+  // Read before write so a tournament moved between leagues/events (or unlinked) recomputes both
+  // the parent it left and the one it joined (derivedDates.ts)
   const { data: existing } = await supabase
     .from('tournaments')
     .select('league_uuid, event_uuid')

@@ -1,25 +1,13 @@
 // server\api\admin\sync-commanders.post.ts
-// Incremental resync: fetches commander-eligible cards from Scryfall (paper,
-// English, legal:commander — this already covers Backgrounds too, they can
-// occupy the commander zone as a second commander), diffs against
-// mtg_commanders, and inserts ONLY the rows that are new. Never re-touches
-// or re-fetches images/text for cards already synced, and never clobbers a
-// row a previous session may have manually corrected. Ported from
-// MagicTheGathering/league's server/api/admin/sync-commanders.post.ts
-// (user request, 2026-09-16) — same incremental-fetch reasoning, gated here
-// with requireManagementPermission (league's own endpoint had no such gate;
-// every other management-only endpoint in this app does, so this closes a
-// real gap rather than copying it).
+// Incremental resync: fetches commander-eligible cards from Scryfall (paper, English,
+// legal:commander, Backgrounds included), diffs against mtg_commanders and inserts ONLY the new
+// rows. Never re-fetches or overwrites rows already synced, so manual corrections survive. Gated by
+// requireManagementPermission.
 //
-// The common-case fetch is scoped with `date>=<max known released_at>`
-// (mtg_commanders.released_at) so a routine resync — catalog only ever a
-// few weeks stale — hits Scryfall for just the cards released since the
-// last sync, instead of paginating the entire ~3600-card commander-eligible
-// result set. `released_at` starts out NULL for every pre-existing row
-// (freshly created table), so the very first run does one full unscoped
-// fetch instead: it backfills released_at for the existing catalog AND
-// detects new cards in the same pass, so it never has to be run twice.
-// Every run after that is date-scoped.
+// The common case is scoped with `date>=<max known released_at>`, so a routine resync only pages
+// through cards released since the last sync instead of the whole ~3600-card set. released_at is
+// NULL on pre-existing rows, so the first run does one full unscoped fetch that backfills it and
+// detects new cards in the same pass.
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
@@ -28,11 +16,9 @@ const SCRYFALL_USER_AGENT = 'Pauperwave (https://app.pauperwave.org, commander c
 // Two consecutive all-known pages before stopping, in case a release-date tie
 // splits an already-known and a still-unknown card across a page boundary.
 const CONSECUTIVE_KNOWN_PAGES_TO_STOP = 2
-// Above this many un-backfilled rows, a full unscoped fetch (which also
-// backfills released_at) is cheaper than trusting a date filter built from a
-// catalog that's still mostly missing it. Below it, a handful of permanent
-// stragglers (e.g. a card since removed from is:commander) can't force every
-// future run back into full-fetch mode forever.
+// Above this many rows missing released_at, a full unscoped fetch (which backfills it) beats a date
+// filter built on a mostly-empty catalog; below it, a few permanent stragglers can't force full
+// fetches forever.
 const BACKFILL_THRESHOLD = 50
 
 function buildSearchUrl(dateFrom?: string | null): string {
@@ -83,11 +69,8 @@ interface FetchResult {
 }
 
 /**
- * Paginates a Scryfall search. When `earlyStop` is true, stops once
- * `CONSECUTIVE_KNOWN_PAGES_TO_STOP` pages in a row contain nothing not
- * already in `existing` — only safe when the query is already date-scoped to
- * "recent", never during a full unscoped backfill pass (which needs every
- * card to correctly backfill released_at).
+ * Paginates a Scryfall search. With `earlyStop`, stops after `CONSECUTIVE_KNOWN_PAGES_TO_STOP`
+ * pages with nothing new: only safe on a date-scoped query, never on the full backfill pass. /
  */
 async function fetchCommanderCardsPaginated(
   startUrl: string,
@@ -128,9 +111,8 @@ interface ExistingCatalog {
   rowsNeedingReleasedAt: { scryfallId: string, cardName: string }[]
 }
 
-// mtg_commanders has unique constraints on BOTH scryfall_id and card_name —
-// a new printing of an already-catalogued card (same name, different id,
-// e.g. a reprint) must be skipped by name too, or the insert fails.
+// mtg_commanders is unique on scryfall_id AND card_name: a reprint (same name, new id) must be
+// skipped by name too
 async function fetchExistingCatalog(
   supabase: ReturnType<typeof serverSupabaseServiceRole<Database>>
 ): Promise<ExistingCatalog> {
@@ -166,12 +148,9 @@ async function fetchExistingCatalog(
   return { scryfallIds, names, maxReleasedAt, rowsNeedingReleasedAt }
 }
 
-// One-time (per row) fill of released_at for rows synced before it was
-// known, matched by name against the full fetch already in hand (not
-// scryfall_id: a pre-existing row's stored id can point to a printing this
-// fetch's `-is:digital` filter excludes, in which case Scryfall's
-// `unique=cards` picks a different — but same-named — printing as the
-// representative). No extra Scryfall requests.
+// Fills released_at for rows synced before it existed, matched by name against the fetch already in
+// hand (not by scryfall_id: the stored printing may be excluded by `-is:digital`, so Scryfall picks
+// a same-named one). No extra Scryfall requests.
 async function backfillReleasedDates(
   supabase: ReturnType<typeof serverSupabaseServiceRole<Database>>,
   rowsNeedingReleasedAt: ExistingCatalog['rowsNeedingReleasedAt'],
@@ -297,8 +276,7 @@ export default defineEventHandler(async (event) => {
     await backfillReleasedDates(supabase, existing.rowsNeedingReleasedAt, fetchedCards)
   }
 
-  // mtg_commanders is unique on card_name too — dedupe same-name printings
-  // within this batch (e.g. a handful of Un-set/promo variants).
+  // Unique on card_name too: dedupe same-name printings within this batch (Un-sets, promos)
   const seenNames = new Set<string>()
   const newCards = fetchedCards.filter((card) => {
     if (existing.scryfallIds.has(card.id) || existing.names.has(card.name)) return false
@@ -313,9 +291,8 @@ export default defineEventHandler(async (event) => {
 
   const mapped = newCards.map(mapCard)
 
-  // name -> scryfall_id for every card involved (existing rows aren't needed
-  // here since "Partner with" always targets a card printed in the same
-  // release pass as its partner — both sides are in `mapped`).
+  // name -> scryfall_id for the batch; "Partner with" always targets a card in the same release
+  // pass
   const idByName = new Map(mapped.map(row => [row.card_name, row.scryfall_id]))
 
   const insertRows = mapped.map(({ partnerTargetName: targetName, ...row }) => ({

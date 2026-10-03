@@ -3,14 +3,11 @@ interface SetTournamentLeagueBody {
   leagueUuid: string | null
 }
 
-// Dedicated partial-update endpoint (mirrors [id]/status.post.ts and
-// [id]/entry-fee.post.ts) for the bulk "assign to league" action — both the
-// tournaments-side bulk-actions bar and a league detail page's own "add
-// tournaments" picker use this, neither has the full NewTournamentPayload
-// shape update.post.ts requires. Same recompute cascade as update.post.ts:
-// a tournament moved between leagues (or unlinked) recomputes both the
-// league it left and the one it joined.
-// fallow-ignore-next-line code-duplication -- see the top-of-file comment
+// Partial update for the bulk "assign to league" action, used by the tournaments bulk bar and the
+// league page's "add tournaments" picker (neither has the full NewTournamentPayload). Same
+// recompute cascade as update.post.ts: moving or unlinking a tournament recomputes both the league
+// it left and the one it joined. fallow-ignore-next-line code-duplication -- see the top-of-file
+// comment
 export default defineEventHandler(async (event) => {
   const { id, body, supabase } = await parseIdMutationRequest<SetTournamentLeagueBody>(event)
 

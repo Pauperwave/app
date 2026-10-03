@@ -6,26 +6,17 @@ import type { PaymentMethod } from '#shared/types/transactions'
 interface PaymentBody {
   tournamentUuid: string
   associateUuid: string
-  // null clears the payment (soft-delete) — AcceptancePicker.vue's
-  // togglePaymentMethod un-toggling the same method it just set.
+  // null clears the payment (soft-delete), e.g. un-toggling the method just set
   method: PaymentMethod | null
-  // Required to create a new payment (pauperwave_payments.received_by is
-  // NOT NULL) — chosen once per check-in session from RECEIVER_OPTIONS, not
-  // per click, since these buttons have no form of their own. Not required
-  // when method is null (soft-delete doesn't touch received_by) or when
-  // updating an existing payment in place (kept from the existing row,
-  // rather than requiring re-selection for a plain method switch — though
-  // AcceptancePicker.vue does send whatever's currently selected either way).
+  // Required to create a payment (pauperwave_payments.received_by is NOT NULL); chosen once per
+  // check-in session, not per click. Not needed to clear a payment, and kept from the existing row
+  // on update.
   receivedBy?: string
 }
 
-// One "Tournament Fee" pauperwave_payments row per (tournament, associate) —
-// changing method (Cash -> POS) updates that row in place rather than
-// creating a new one + soft-deleting the old, since it's the same session's
-// correction, not a new transaction (user request, 2026-08-25). Untoggling
-// (method: null) soft-deletes it (deleted_at/deleted_by), consistent with
-// ADR-017's soft-delete convention for this table — never a hard delete of
-// financial data.
+// One "Tournament Fee" row per (tournament, associate): changing method (Cash -> POS) updates it in
+// place, being a correction rather than a new transaction. Untoggling (method: null) soft-deletes
+// it (deleted_at/deleted_by, ADR-017): financial data is never hard-deleted.
 export default defineEventHandler(async (event) => {
   const user = await requireManagementPermission(event)
 
@@ -70,8 +61,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, statusMessage: tournamentError.message })
   }
 
-  // Server-resolved, not trusting a client-sent amount — Comped is always
-  // free, everything else is the tournament's own entry fee.
+  // Server-resolved, never a client-sent amount: Comped is free, everything else is the entry fee
   const amount = method === 'Comped' ? 0 : (tournament.entry_fee ?? 0)
 
   if (existing) {

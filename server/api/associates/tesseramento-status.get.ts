@@ -2,17 +2,10 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
-// Called right after the /tesseramento OTP step resolves, before showing the
-// 9-step application form — apply.post.ts's insert-only contract 409s on any
-// existing row for this email regardless of status, which used to be the
-// ONLY signal an already-approved associate got back after filling out the
-// whole form again to renew (user request, 2026-08-27: "il form di
-// tesseramento prende in considerazione solo una nuova iscrizione ma non
-// prende in considerazione il flusso di rinnovamento"). This lets the page
-// branch before the form even renders: a genuinely new email still gets the
-// full form, an approved associate gets a one-click renewal confirmation
-// instead, and a pending/rejected one gets told plainly instead of a raw 409
-// after 9 steps.
+// Called after the /tesseramento OTP step, before the 9-step form: apply.post.ts 409s on any
+// existing row for the email, so without this an approved associate only found out after filling
+// the whole form. Lets the page branch up front: new email gets the form, approved gets one-click
+// renewal, pending/rejected get a plain message.
 export default defineEventHandler(async (event) => {
   const email = await requireUserEmail(event)
 

@@ -6,10 +6,8 @@ interface SetTournamentEntryFeeBody {
   entryFee: number
 }
 
-// Dedicated partial-update endpoint (mirrors [id]/status.post.ts and
-// [id]/image.post.ts) for the bulk "update price" action — update.post.ts
-// requires the full NewTournamentPayload shape, which the bulk-actions bar
-// doesn't have per row.
+// Partial update for the bulk "update price" action (mirrors [id]/status.post.ts): update.post.ts
+// requires the full NewTournamentPayload, which the bulk bar doesn't have per row.
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 

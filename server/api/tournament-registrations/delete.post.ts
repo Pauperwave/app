@@ -7,13 +7,9 @@ interface DeleteBody {
   registrationUuids: string[]
 }
 
-// Hard delete for tournament_registrations itself — it has no deleted_at
-// column (unlike pauperwave_payments), and a removed registration
-// genuinely shouldn't reappear anywhere. But also soft-deletes that
-// associate's "Tournament Fee" payment for this tournament, if any — fixes
-// a bug where "Rimuovi" on an accepted+paid player deleted the
-// registration but left the payment behind, pointing at a tournament they
-// were no longer registered for (user request, 2026-08-25).
+// Hard delete of the registration (no deleted_at column, and a removed one shouldn't reappear), but
+// also soft-deletes the associate's "Tournament Fee" payment for this tournament, so "Rimuovi" on a
+// paid player doesn't leave a payment for a tournament they're no longer in.
 export default defineEventHandler(async (event) => {
   const user = await requireManagementPermission(event)
 

@@ -10,10 +10,8 @@ interface UpdateDeckBody {
   lenderUuid: string | null
 }
 
-// Updates a deck's ownership/companion/decklist fields — deliberately
-// excludes commander1/commander2 (changing those would silently orphan any
-// tournament_round_results already tied to this deck's identity) and
-// bracket_level (handled by its own set-bracket.post.ts).
+// Updates ownership/companion/decklist fields. Excludes commander1/commander2 (changing them would
+// orphan tournament_round_results tied to the deck) and bracket_level (see set-bracket.post.ts).
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 

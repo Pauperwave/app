@@ -5,19 +5,16 @@ import type { Database } from '#shared/utils/types/database'
 interface AdvanceRoundBody {
   tournamentUuid: string
   currentRoundNumber: number
-  // Required unless this is the last round — the confirmed seating order
-  // for the next round, same TablePreviewModal.vue optimizer flow as round 1
-  // (see start-round-one.post.ts's own comment).
+  // Required unless this is the last round: the confirmed seating order for the next round
+  // (same TablePreviewModal.vue flow as round 1, see start-round-one.post.ts)
   associateOrder?: string[]
-  // Confirmed table sizes for the next round, see start-round-one.post.ts.
+  // Confirmed table sizes for the next round, see start-round-one.post.ts
   tableSizes?: number[]
 }
 
-// Delegates the whole round-close/advance transition (recompute standings
-// from scratch through currentRoundNumber, close the round, create the next
-// round's pairings or end the tournament) to advance_commander_round
-// (migration 20260916000000) — one Postgres transaction, not a sequence of
-// Supabase JS calls (league's own advance-round.post.ts isn't atomic here).
+// Delegates the whole round-close/advance transition (recompute standings from scratch, close the
+// round, create the next pairings or end the tournament) to advance_commander_round: one Postgres
+// transaction.
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 
@@ -34,7 +31,7 @@ export default defineEventHandler(async (event) => {
   })
   const roundUuid = unwrapRoundRpc(data, error)
 
-  // null roundUuid means the tournament just ended (no next round created).
+  // null roundUuid: the tournament just ended, no next round
   const notification = roundUuid === null ? null : await notifyRoundTables(roundUuid)
 
   return { roundUuid, hasEnded: roundUuid === null, notification }

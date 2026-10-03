@@ -1,14 +1,8 @@
 // server\api\cittadino.ts
 
-// Mock data for the Campionato Cittadino standings matrix. No Supabase table
-// exists for this yet (see the P1 entry in docs/BACKLOG.md) — this endpoint stands
-// in for what will eventually come from `tournament_standings.player_rank`, and
-// deliberately returns *raw placements only*: points, best-11 selection and final
-// ordering are computed in useCittadinoQuery.ts, which is where the real
-// aggregation will live once the data is real.
-//
-// Seeded per edition so the matrix is identical on every request — a mockup being
-// evaluated for layout must not reshuffle under the reader.
+// Mock data for the Campionato Cittadino standings matrix: no Supabase table yet (see
+// docs/BACKLOG.md P1). Returns raw placements only; points, best-11 selection and ordering are
+// computed in useCittadinoQuery.ts. Seeded per edition so the matrix is identical on every request.
 
 const FIRST_NAMES = [
   'Marco', 'Luca', 'Andrea', 'Matteo', 'Francesco', 'Alessandro', 'Davide', 'Simone',
@@ -16,8 +10,7 @@ const FIRST_NAMES = [
   'Chiara', 'Sara', 'Elisa', 'Martina', 'Anna', 'Laura', 'Silvia'
 ]
 
-// 25 surnames against 23 first names: the two lengths are coprime, so pairing them
-// by index gives 46 distinct full names without repeats.
+// 25 surnames against 23 first names (coprime lengths): index pairing gives 46 distinct full names
 const LAST_NAMES = [
   'Rossi', 'Bianchi', 'Ferrari', 'Esposito', 'Russo', 'Romano', 'Colombo', 'Ricci',
   'Marino', 'Greco', 'Bruno', 'Gallo', 'Conti', 'De Luca', 'Costa', 'Giordano',
@@ -25,18 +18,13 @@ const LAST_NAMES = [
   'Villa', 'Caruso'
 ]
 
-// Editions the archive holds, oldest first. The current one is the last.
-// 2022/2023 added 2026-08-09: the user confirmed the ranking actually started
-// then, not 2024 — real data for those two years isn't available yet (the user
-// can retrieve it), so they're mocked the same way as every other edition here
-// until it is. See docs/BACKLOG.md.
+// Editions the archive holds, oldest first (the last is current). 2022/2023 are mocked until real
+// data exists.
 const EDITIONS = ['2022', '2023', '2024', '2025', '2026']
 
-// The calendar shape, roughly two events a month: the three league formats running
-// as numbered legs, interleaved with the one-off draft/sealed events the
-// regulation also counts. Month/day are fixed; the year comes from the edition.
-// Format strings must match the keys in app/utils/cittadino/cittadinoFormats.ts — a typo
-// silently falls back to the neutral chip rather than failing.
+// Calendar shape, roughly two events a month: league formats as numbered legs plus one-off
+// draft/sealed events. Month/day are fixed, the year comes from the edition. Format strings must
+// match app/utils/cittadino/cittadinoFormats.ts (a typo silently falls back to the neutral chip).
 const CALENDAR: [monthDay: string, name: string, format: string][] = [
   ['01-10', 'Pauper #1', 'Pauper'],
   ['01-24', 'Commander #1', 'Commander'],
@@ -64,8 +52,7 @@ const CALENDAR: [monthDay: string, name: string, format: string][] = [
   ['12-19', 'Draft Innistrad Remastered', 'Draft']
 ]
 
-// Earlier editions were smaller — fewer events on the calendar and a smaller pool
-// of players, so switching tabs visibly changes the shape of the matrix.
+// Earlier editions are smaller, so switching tabs visibly changes the matrix shape
 const EDITION_SIZES: Record<string, { events: number, players: number }> = {
   2022: { events: 8, players: 16 },
   2023: { events: 11, players: 22 },
@@ -85,11 +72,10 @@ function buildEdition(edition: string) {
     format
   }))
 
-  // Regularity range produces a realistic mix of regulars (who exceed the
-  // best-11 threshold) and occasional players (who never reach it).
+  // Regularity range mixes regulars (above the best-11 threshold) with occasional players
   const players = buildMockPlayers(size.players, 'ply-', FIRST_NAMES, LAST_NAMES, rng, [0.2, 0.75])
 
-  // For each event, draw the attendees and shuffle them into a final placement.
+  // For each event, draw the attendees and shuffle them into a final placement
   // fallow-ignore-next-line code-duplication -- shared call site, see standings/[format].get.ts
   const results = events.flatMap(event => buildEventPlacements(players, event.uuid, rng))
 

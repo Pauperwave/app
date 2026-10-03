@@ -7,11 +7,9 @@ interface TurnBackRoundBody {
   currentRoundNumber: number
 }
 
-// Delegates round rollback to turn_back_commander_round (migration
-// 20260916000000) — from round 2+, cascades wipe the closing round's
-// pairings/results/kills/votes and reopen the previous round; from round 1,
-// resets the tournament back to registration_open. Standings are left alone
-// either way (the next advance-round recomputes them from scratch).
+// Delegates round rollback to turn_back_commander_round: from round 2+, wipes the closing round's
+// pairings/results/kills/votes and reopens the previous one; from round 1, resets to
+// registration_open. Standings are left alone (the next advance-round recomputes them).
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 

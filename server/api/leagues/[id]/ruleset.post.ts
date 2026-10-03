@@ -3,10 +3,8 @@ interface SetLeagueRulesetBody {
   rulesetUuid: string | null
 }
 
-// Dedicated partial-update endpoint (mirrors status.post.ts) for the
-// grid card's own inline ruleset picker (LeaguesRulesetBadge.vue,
-// 2026-08-22) — update.post.ts requires the full NewLeaguePayload shape,
-// which the card doesn't have per row.
+// Partial update for the grid card's inline ruleset picker (LeaguesRulesetBadge.vue, mirrors
+// status.post.ts): update.post.ts requires the full NewLeaguePayload.
 export default defineEventHandler(async (event) => {
   const { id, body, supabase } = await parseIdMutationRequest<SetLeagueRulesetBody>(event)
 

@@ -1,13 +1,9 @@
 // server\api\tournament-registrations\self-unregister.post.ts
 
-// Player self-unregistration, same ownership model as self-register.post.ts
-// — associateUuid resolved server-side, never from the body. Only 'registered'
-// rows can be self-removed: once staff has checked someone in (or marked a
-// no-show), undoing that is a staff decision (delete.post.ts,
-// requireManagementPermission), not a player self-service action. No
-// payment cleanup here unlike delete.post.ts — a still-'registered' (never
-// checked-in) row can't have a "Tournament Fee" payment behind it yet in
-// the normal flow.
+// Player self-unregistration, same ownership model as self-register.post.ts. Only 'registered' rows
+// can be self-removed: once staff checked someone in or marked a no-show, undoing it is a staff
+// decision (delete.post.ts). No payment cleanup: a never-checked-in row has no "Tournament Fee"
+// payment yet.
 export default defineEventHandler(async (event) => {
   const { tournamentUuid, associateUuid, supabase } = await parseSelfRegistrationRequest(event)
   await assertRegistrationsEditable(supabase, tournamentUuid)

@@ -3,10 +3,8 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 import type { NewEventPayload } from '#shared/types/events'
 
-// events' RLS (management_full_access) already gates writes to management
-// users, but every write still goes through a BFF endpoint — same convention
-// as tournaments/transactions/wanted-cards — rather than relying on RLS
-// evaluated from the client.
+// RLS (management_full_access) already gates writes, but every write goes through a BFF endpoint
+// (same as tournaments/transactions/wanted-cards) rather than RLS evaluated from the client.
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
   const body = await readBody<NewEventPayload>(event)

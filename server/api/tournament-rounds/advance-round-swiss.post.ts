@@ -5,10 +5,8 @@ import type { Database } from '#shared/utils/types/database'
 interface AdvanceRoundSwissBody {
   tournamentUuid: string
   currentRoundNumber: number
-  // Required unless this is the last round — see advance-round.post.ts
-  // (Commander)'s own comment. No standings-driven bracket pairing yet
-  // (phase 3 of the plan), so this is whatever order the organizer
-  // arranged in SwissTablePreviewModal.vue.
+  // Required unless this is the last round; no standings-driven pairing yet, so it is whatever
+  // order the organizer arranged in SwissTablePreviewModal.vue (see advance-round.post.ts)
   associateOrder?: string[]
 }
 

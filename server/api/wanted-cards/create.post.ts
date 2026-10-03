@@ -3,9 +3,8 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 import type { NewWantedCardPayload } from '#shared/types/wantedCards'
 
-// Insert is open to any authenticated user — players create their own
-// requests (see former migration 20260807200045, now enforced here instead
-// of via RLS since the service-role client bypasses it).
+// Open to any authenticated user (players create their own requests); checked here since the
+// service-role client bypasses RLS.
 export default defineEventHandler(async (event) => {
   const user = await requireUser(event)
   const body = await readBody<NewWantedCardPayload>(event)

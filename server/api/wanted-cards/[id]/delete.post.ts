@@ -1,9 +1,7 @@
 // server\api\wanted-cards\[id]\delete.post.ts
-// Soft delete (deleted_at), not a hard row delete (2026-08-16) — same
-// convention as tournaments/mtg-formats' own deleted_at columns.
-// useWantedCardsQuery.ts already filters `is('deleted_at', null)`.
-// Doesn't use parseIdRequest (management-only) — a requester can also
-// delete their own card, see requireManagementOrWantedCardOwner.
+// Soft delete (deleted_at; useWantedCardsQuery.ts filters on it), like tournaments/mtg-formats. Not
+// parseIdRequest (management-only): a requester can also delete their own card
+// (requireManagementOrWantedCardOwner).
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 

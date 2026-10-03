@@ -3,9 +3,8 @@ interface SetTournamentLocationBody {
   locationUuid: string | null
 }
 
-// Dedicated partial-update endpoint (mirrors [id]/status.post.ts and
-// [id]/entry-fee.post.ts) for the inline "change venue" badge — update.post.ts
-// requires the full NewTournamentPayload shape.
+// Partial update for the inline "change venue" badge (mirrors [id]/status.post.ts): update.post.ts
+// requires the full NewTournamentPayload.
 // fallow-ignore-next-line code-duplication -- see [id]/entry-fee.post.ts
 export default defineEventHandler(async (event) => {
   const { id, body, supabase } = await parseIdMutationRequest<SetTournamentLocationBody>(event)

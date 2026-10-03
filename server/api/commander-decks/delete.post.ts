@@ -6,10 +6,8 @@ interface DeleteDeckBody {
   deckUuid: string
 }
 
-// Blocks deleting a deck that's already been played (mirrors league's
-// client-side isDeckInUse check, enforced server-side here since this app
-// has no store to check that against) — deleting it would silently orphan
-// tournament_round_results.commander_deck_uuid for every round it was used.
+// Blocks deleting a deck already played (server-side, as there is no client store to check):
+// it would orphan tournament_round_results.commander_deck_uuid for every round it was used.
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 

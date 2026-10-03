@@ -6,9 +6,8 @@ interface SetTournamentImageBody {
   imageCardArtist: string | null
 }
 
-// Dedicated partial-update endpoint (mirrors [id]/status.post.ts) for the
-// bulk "set image" action — update.post.ts requires the full
-// NewTournamentPayload shape, which the bulk-actions bar doesn't have per row.
+// Partial update for the bulk "set image" action (mirrors [id]/status.post.ts): update.post.ts
+// requires the full NewTournamentPayload, which the bulk bar doesn't have per row.
 export default defineEventHandler(async (event) => {
   const { id, body, supabase } = await parseIdMutationRequest<SetTournamentImageBody>(event)
   const tournament = await setImageById(supabase, 'tournaments', id, body, 'Tournament image update failed')

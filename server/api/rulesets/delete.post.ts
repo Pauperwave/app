@@ -6,10 +6,8 @@ interface DeleteRulesetBody {
   rulesetUuid: string
 }
 
-// Admin-only (permissions.ts: 'delete-ruleset' is 'admin', one tier above
-// 'manage-rulesets' create/edit) — blocks deleting a ruleset still assigned
-// to a league, same "can't delete something in use" convention as
-// commander-decks/delete.post.ts.
+// Admin-only ('delete-ruleset' is one tier above 'manage-rulesets' in permissions.ts): blocks
+// deleting a ruleset still assigned to a league, like commander-decks/delete.post.ts.
 export default defineEventHandler(async (event) => {
   await requireAdminPermission(event)
 
