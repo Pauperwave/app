@@ -8,6 +8,7 @@ useSeoMeta({ title: () => t('telegramBot.breadcrumb') })
 
 const { data: myLink, isPending: linkPending, error: linkError } = useMyTelegramLinkQuery()
 const linkSteps = ['open', 'email', 'done'] as const
+const supportUrl = botCommandUrl({ name: 'supporto', requiresLink: false })
 
 // One icon per section of the command catalog (botCommands.ts)
 const groupIcons: Record<string, string> = {
@@ -36,7 +37,7 @@ const groupIcons: Record<string, string> = {
     </template>
 
     <template #body>
-      <div class="flex flex-col gap-6 max-w-5xl">
+      <div class="flex flex-col gap-6">
         <USkeleton
           v-if="linkPending"
           class="h-20 w-full"
@@ -82,36 +83,60 @@ const groupIcons: Record<string, string> = {
           :description="$t('telegramBot.status.noAssociateDescription')"
         />
 
-        <UPageCard
-          title="@PauperwaveBot"
-          :description="$t('telegramBot.intro')"
-          :icon="ICONS.telegramBot"
-        >
-          <UButton
-            :to="TELEGRAM_BOT_URL"
-            target="_blank"
-            :icon="ICONS.telegram"
-            :label="$t('telegramBot.open')"
-            class="self-start"
-          />
-        </UPageCard>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <UPageCard
+            title="@PauperwaveBot"
+            :description="$t('telegramBot.intro')"
+            :icon="ICONS.telegramBot"
+          >
+            <UButton
+              :to="TELEGRAM_BOT_URL"
+              target="_blank"
+              :icon="ICONS.telegram"
+              :label="$t('telegramBot.open')"
+              class="self-start"
+            />
+          </UPageCard>
 
-        <UPageCard
-          :title="$t('telegramBot.link.title')"
-          :description="$t('telegramBot.link.description')"
-        >
-          <ol class="list-decimal pl-5 flex flex-col gap-1 text-sm">
-            <li
-              v-for="step in linkSteps"
-              :key="step"
-            >
-              {{ $t(`telegramBot.link.steps.${step}`) }}
-            </li>
-          </ol>
-          <p class="text-sm text-muted">
-            {{ $t('telegramBot.link.note') }}
-          </p>
-        </UPageCard>
+          <UPageCard
+            :title="$t('telegramBot.link.title')"
+            :description="$t('telegramBot.link.description')"
+          >
+            <ol class="list-decimal pl-5 flex flex-col gap-1 text-sm">
+              <li
+                v-for="step in linkSteps"
+                :key="step"
+              >
+                {{ $t(`telegramBot.link.steps.${step}`) }}
+              </li>
+            </ol>
+            <p class="text-sm text-muted">
+              {{ $t('telegramBot.link.note') }}
+            </p>
+          </UPageCard>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <UPageCard
+            :title="$t('telegramBot.notifications.title')"
+            :description="$t('telegramBot.notifications.description')"
+          />
+
+          <UPageCard :title="$t('telegramBot.support.title')">
+            <template #description>
+              <i18n-t keypath="telegramBot.support.description">
+                <template #command>
+                  <a
+                    :href="supportUrl ?? undefined"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="font-mono text-primary hover:underline"
+                  >/supporto</a>
+                </template>
+              </i18n-t>
+            </template>
+          </UPageCard>
+        </div>
 
         <section class="flex flex-col gap-4">
           <div>
@@ -123,7 +148,7 @@ const groupIcons: Record<string, string> = {
             </p>
           </div>
 
-          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
             <UPageCard
               v-for="group in TELEGRAM_BOT_COMMAND_GROUPS"
               :key="group.id"
@@ -131,11 +156,11 @@ const groupIcons: Record<string, string> = {
               :description="$t(`telegramBot.commands.groupDescriptions.${group.id}`)"
               :icon="groupIcons[group.id]"
             >
-              <ul class="flex flex-col gap-2">
+              <ul class="flex flex-col divide-y divide-default">
                 <li
                   v-for="command in group.commands"
                   :key="command.name"
-                  class="flex flex-col text-sm"
+                  class="flex flex-col py-2 text-sm first:pt-0 last:pb-0"
                 >
                   <span class="flex flex-wrap items-center gap-x-2">
                     <a
@@ -174,16 +199,6 @@ const groupIcons: Record<string, string> = {
             </UPageCard>
           </div>
         </section>
-
-        <UPageCard
-          :title="$t('telegramBot.notifications.title')"
-          :description="$t('telegramBot.notifications.description')"
-        />
-
-        <UPageCard
-          :title="$t('telegramBot.support.title')"
-          :description="$t('telegramBot.support.description')"
-        />
       </div>
     </template>
   </UDashboardPanel>

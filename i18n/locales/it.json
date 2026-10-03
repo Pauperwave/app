@@ -3490,7 +3490,7 @@
     },
     "support": {
       "title": "Supporto",
-      "description": "Per bug o proposte scrivi al bot con /supporto: il messaggio arriva allo staff, che può risponderti in chat."
+      "description": "Per bug o proposte scrivi al bot con {command}: il messaggio arriva allo staff, che può risponderti in chat."
     }
   }
 }
