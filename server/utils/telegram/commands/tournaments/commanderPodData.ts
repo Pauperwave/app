@@ -212,9 +212,11 @@ export async function fetchCommanderHistory(
 
   const { data: results, error: resultsError } = await supabase
     .from('tournament_round_results')
-    .select('commander_deck_uuid, created_at')
+    .select('commander_deck_uuid, created_at, tournaments!inner(is_test)')
     .in('player_uuid', playerUuids)
     .not('commander_deck_uuid', 'is', null)
+    // Commanders played in a test tournament don't count as played
+    .eq('tournaments.is_test', false)
   if (resultsError) throw resultsError
 
   const deckUuids = [...new Set(
