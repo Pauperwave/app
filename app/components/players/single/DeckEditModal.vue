@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import type { CommanderDeck } from '~/composables/players/useCommanderDecksQuery'
 
-const open = defineModel<boolean>({ default: false })
+const open = defineModel<boolean>('open', { default: false })
 const { deck } = defineProps<{ deck: CommanderDeck | null }>()
 
 const { t } = useI18n()
