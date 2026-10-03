@@ -43,6 +43,7 @@ export function useCommanderRoundSubmitHandlers(options: {
   }
 
   // ─── Drop ───────────────────────────────────────────────────────────────────
+  // fallow-ignore-next-line code-duplication -- submit handler mirrors the other format's handlers
   const { setDropped } = useTournamentDropsMutations(tournamentUuid)
 
   // A drop only takes effect from the next round: this round's table still counts.
