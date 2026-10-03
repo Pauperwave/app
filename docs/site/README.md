@@ -37,7 +37,7 @@ Aperte a chiunque, senza accesso. Per ora tutte servite da questo progetto; i so
 |---|---|
 | `/tesseramento` | **Domanda di tesseramento** in autonomia. Si verifica prima l'email con un link; poi un modulo a passi (dati anagrafici, residenza, consensi). Un socio già registrato è indirizzato al **rinnovo**. Contiene i link allo statuto e alle informative su dati e privacy |
 | `/calendario` | Calendario pubblico di tornei ed eventi: scheda con dettaglio, aggiunta al proprio calendario, condivisione, contatto e iscrizione |
-| `/classifiche` | Le classifiche pubbliche per **Cittadino**, **Commander**, **Premodern** e **Pauper** (oggi con dati di esempio, vedi [Classifiche](#classifiche)) |
+| `/classifiche/cittadino`, `/commander`, `/premodern`, `/pauper` | Le classifiche pubbliche (oggi con dati di esempio, vedi [Classifiche](#classifiche)). La pagina indice `/classifiche`, che le raccoglie, oggi richiede l'accesso |
 | `/login` | Accesso con link via email, riservato ai soci |
 
 ## Dashboards
