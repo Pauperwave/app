@@ -109,7 +109,7 @@ Tutta la sezione è per **admin**; nel Cestino, l'eliminazione definitiva è sol
 - **Tour guidati** nelle pagine principali.
 - **Notifiche**: icona con l'elenco degli avvisi.
 - **Bot Telegram** [@PauperwaveBot](https://t.me/PauperwaveBot): classifiche, calendario, iscrizioni, risultati ai tavoli, prezzi e carte cercate dalla chat. Vedi [la guida](../telegram-bot/README.md).
-- **Mini app turni** (`/telegram/turni`): il contatore dei turni aggiuntivi, aperta dal bot.
+- **Mini app turni** (`/telegram/turni`): aperta dal bot, segue il timer del round dell'organizzatore e mostra il contatore dei turni aggiuntivi.
 - **Feedback e supporto** dal menu della barra laterale.
 
 ## Cose ancora in corso

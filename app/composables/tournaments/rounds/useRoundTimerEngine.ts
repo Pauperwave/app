@@ -10,6 +10,7 @@ const TURNS_TIMER_MINUTES = 15
 const DEFAULT_PRE_TIMER_MINUTES = 3
 
 export function useRoundTimerEngine(options: {
+  tournamentUuid: MaybeRefOrGetter<string>
   round: number
   durationMinutes: MaybeRefOrGetter<number>
   /** Fired once when the "round" phase ends and "turni" begins. */
@@ -227,6 +228,26 @@ export function useRoundTimerEngine(options: {
       elapsed.value, timeBonus.value, minutes, toValue(options.durationMinutes)
     )
   }
+
+  // Publishes the timer after every change of what the clock shows (not on every tick), so the
+  // Telegram turns Mini App can follow the event clock. Only changes publish, never the mount
+  // itself: a second device opened on a fresh timer must not overwrite one that is running.
+  // Fire-and-forget: the timer works the same if the request fails.
+  watch([phase, isRunning, timeBonus], () => {
+    $fetch('/api/tournament-rounds/timer', {
+      method: 'POST',
+      body: {
+        tournamentUuid: toValue(options.tournamentUuid),
+        roundNumber: options.round,
+        phase: phase.value,
+        isRunning: isRunning.value,
+        elapsedSeconds: elapsed.value,
+        preSeconds: preTimerMinutes.value * 60,
+        roundSeconds: calculateTotalSeconds(toValue(options.durationMinutes), timeBonus.value),
+        turnsSeconds: TURNS_TIMER_MINUTES * 60
+      }
+    }).catch(err => console.error('Publishing the round timer failed:', err))
+  })
 
   /**
    * On mount, restores a persisted start time from a previous page load: computes the current

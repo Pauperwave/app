@@ -66,7 +66,7 @@ Dal dettaglio di un torneo puoi iscriverti o disiscriverti con un bottone, se se
 
 | Comando | Cosa fa |
 |---|---|
-| `/turni` | Contatore dei 5 turni aggiuntivi da giocare allo scadere dei 50 minuti: si apre come una piccola app dentro Telegram |
+| `/turni` | Si apre come una piccola app dentro Telegram. Se sei collegato e siedi a un tavolo in corso, mostra il **conto alla rovescia del timer dell'evento**, lo stesso dell'organizzatore (non puoi fermarlo tu); quando parte la fase dei turni compare il contatore dei 5 turni aggiuntivi. Altrimenti c'è un timer a 50 minuti tutto tuo |
 | `/dado` | Un dado a 6 facce, animato |
 | `/moneta` | Testa o croce |
 | `/tira [facce]` | Un dado a N facce, per esempio `/tira 20` (se non indichi le facce, 20) |

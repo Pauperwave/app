@@ -19,6 +19,8 @@
      mechanism there, not just a DB column. -->
 <script setup lang="ts">
 const props = defineProps<{
+  /** Published with the timer state so the Telegram Mini App can follow it. */
+  tournamentUuid: string
   /** Total countdown duration in minutes for the "round" phase. */
   durationMinutes: number
   /** Round number — used to key the localStorage entry so each round has its own timer. */
@@ -38,6 +40,7 @@ const {
   start, stop, reset, skipPreTimer, forceEndTurns, addMinutes, subtractMinutes,
   wouldExpireOnSubtract
 } = useRoundTimerEngine({
+  tournamentUuid: () => props.tournamentUuid,
   round: props.round,
   durationMinutes: () => props.durationMinutes,
   onExpired: () => emit('expired')
