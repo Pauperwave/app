@@ -30,6 +30,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { can } = useUserRole()
 </script>
 
 <template>
@@ -47,6 +48,7 @@ const { t } = useI18n()
 
   <div v-else class="flex items-center justify-between">
     <UButton
+      v-if="can('cancel-round')"
       :label="turnBackLabel"
       :icon="ICONS.undo"
       color="error"
@@ -54,6 +56,7 @@ const { t } = useI18n()
       size="md"
       @click="emit('turnBack')"
     />
+    <span v-else />
 
     <!-- The wrapper span keeps hover alive while the button is disabled -->
     <UTooltip
