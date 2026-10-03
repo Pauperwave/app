@@ -3,6 +3,7 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
 interface UpdateDeckBody {
+  // fallow-ignore-next-line code-duplication -- deck write handlers kept explicit per endpoint
   deckUuid: string
   companionName: string | null
   decklistUrl: string | null
