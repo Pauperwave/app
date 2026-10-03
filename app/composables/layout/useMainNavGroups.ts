@@ -98,6 +98,13 @@ export function useMainNavGroups(open: Ref<boolean>) {
     onSelect: () => {
       open.value = false
     }
+  }, {
+    label: t('telegramBot.breadcrumb'),
+    icon: ICONS.telegramBot,
+    to: '/telegram-bot',
+    onSelect: () => {
+      open.value = false
+    }
   }], [{
     label: t('nav.competitions'),
     type: 'label'

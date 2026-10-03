@@ -3411,5 +3411,66 @@
     "logoutSuccessTitle": "Disconnesso",
     "logoutSuccessDescription": "Arrivederci!",
     "genericErrorDescription": "Si è verificato un errore. Riprova."
+  },
+  "telegramBot": {
+    "breadcrumb": "Bot Telegram",
+    "intro": "Il bot dell'associazione: dalla chat consulti calendario, leghe e classifiche, gestisci le iscrizioni, riporti i risultati al tavolo, controlli il prezzo delle carte e tieni la lista di quelle che cerchi.",
+    "open": "Apri su Telegram",
+    "link": {
+      "title": "Collega il tuo account",
+      "description": "Alcuni comandi funzionano solo dopo aver collegato la chat al tuo profilo socio.",
+      "steps": {
+        "open": "Apri il bot e premi Avvia.",
+        "email": "Scrivigli, in privato, l'indirizzo email con cui sei registrato come socio.",
+        "done": "Se corrisponde a un socio approvato, la chat viene collegata."
+      },
+      "note": "Un solo socio per chat e una sola chat per socio. Il comando /collegamento mostra lo stato, /scollegamento lo toglie."
+    },
+    "commands": {
+      "title": "Comandi",
+      "description": "I comandi con il badge \"Collegato\" richiedono il collegamento dell'account.",
+      "requiresLink": "Collegato",
+      "groups": {
+        "general": "Generale",
+        "competitions": "Classifiche, eventi e tornei",
+        "profile": "Il tuo profilo",
+        "tournament": "Durante un torneo",
+        "cards": "Carte",
+        "dice": "Dadi",
+        "support": "Supporto"
+      },
+      "items": {
+        "start": "Avvia il bot",
+        "help": "Elenco dei comandi, con i bottoni per lanciarli",
+        "status": "Verifica che il bot sia attivo",
+        "classifiche": "Classifiche per formato, con il link a quella completa sul sito",
+        "eventi": "Prossimi eventi, con data, luogo e organizzatore",
+        "calendario": "Tornei del mese raggruppati per giorno",
+        "leghe": "Leghe attive, con tornei giocati e date",
+        "prossimo": "Il prossimo torneo con iscrizioni aperte o in corso",
+        "iscrizioni": "I tornei a cui sei iscritto",
+        "tessera": "Stato del tuo tesseramento",
+        "collegamento": "Verifica se la chat è collegata a un socio",
+        "scollegamento": "Scollega la chat dal tuo profilo",
+        "tavolo": "Il tuo tavolo, gli avversari del turno e il comandante; da qui inserisci il risultato",
+        "drop": "Lascia il torneo Commander dopo aver inserito il risultato",
+        "turni": "Timer del round e contatore dei turni aggiuntivi, in una mini app",
+        "prezzo": "Prezzo di una carta su CardMarket e CardTrader, scegliendo la stampa",
+        "cercate": "Le carte che cerchi: le vedi e le togli",
+        "importa": "Incolla un elenco di carte da cercare, per esempio 1 Erode (SOS) 15",
+        "dado": "Un dado a 6 facce, animato",
+        "moneta": "Testa o croce",
+        "tira": "Un dado a N facce, per esempio /tira 20",
+        "supporto": "Scrivi allo staff: il messaggio viene inoltrato"
+      }
+    },
+    "notifications": {
+      "title": "Notifiche",
+      "description": "Se sei collegato, il bot ti scrive quando vieni accettato a un torneo, quando i tavoli sono annunciati e quando un round o un torneo viene annullato."
+    },
+    "support": {
+      "title": "Supporto",
+      "description": "Per bug o proposte scrivi al bot con /supporto: il messaggio arriva allo staff, che può risponderti in chat."
+    }
   }
 }

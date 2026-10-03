@@ -58,6 +58,7 @@ Aperte a chiunque, senza accesso. Per ora tutte servite da questo progetto; i so
 | **Associati** (`/associates`) | Organizzatore | Anagrafica dei soci con ricerca e filtri (stato del tesseramento: attivo, da rinnovare, scaduto, non pagato). Scheda del socio con dati personali, residenza, consensi e **storico dei rinnovi**; numero di tessera; vista su mappa; stato del collegamento Telegram. Modifica ed eliminazione sono per admin |
 | **Giocatori** (`/players`) | Organizzatore | I giocatori con le loro statistiche, i **mazzi Commander**, lo storico delle partite Commander e gli accessi. Ogni giocatore gestisce i propri mazzi, gli admin quelli di tutti |
 | **Carte cercate** (`/wanted-cards`) | Tutti | Le carte che i soci cercano. Si crea una richiesta scegliendo la stampa da Scryfall, con lingua, foil, copie e note; prezzi CardMarket e CardTrader. Tre viste: tabella, griglia e compatta, con filtri. Ognuno gestisce le proprie richieste (cambio di stato in *trovata* o *abbandonata*, eliminazione); lo staff gestisce quelle di tutti. Alcune azioni sono anche nel [bot](../telegram-bot/README.md) |
+| **Bot Telegram** (`/telegram-bot`) | Tutti | Pagina informativa sul bot: che cos'è, come collegare il proprio account, i comandi raggruppati (con il badge "Collegato" per quelli che lo richiedono), le notifiche e il supporto. Solo testo, nessun dato da caricare |
 
 ## Competizioni
 
