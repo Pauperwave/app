@@ -7,8 +7,18 @@ import type { Bot, Context } from 'grammy'
 import type { InlineQueryResultArticle, InputRichMessage } from 'grammy/types'
 
 import { resolveAssociateUuidByChatId } from '../account/linking'
-import { fetchCommanderHistory, fetchLivePod } from './commanderPodData'
+import { fetchCommanderHistory, fetchLivePod, type LivePod } from './commanderPodData'
 import { replyWithLiveCommanderPod } from './commanderPod'
+
+// The live pod of whoever wrote in this chat; null (after telling them) when they have none open
+async function fetchOwnPodOrReply(ctx: Context): Promise<LivePod | null> {
+  const associateUuid = ctx.chat ? await resolveAssociateUuidByChatId(ctx.chat.id) : null
+  const pod = associateUuid ? await fetchLivePod(associateUuid) : null
+  if (!pod) {
+    await ctx.reply('Non ho trovato un tavolo Commander aperto per te in questo momento.')
+  }
+  return pod
+}
 
 // ─── Commander search (Scryfall) ──────────────────────────────────────────── The same
 // is:commander live search mockups/tavolo.ts did, now ending in a real write (selectCommanderDeck)
@@ -173,15 +183,10 @@ export function registerCommanderPickerHandlers(bot: Bot) {
   // Picking an inline result posts it as a normal message, recognized by its marker prefix (as
   // mockups/tavolo.ts did)
   bot.on('message:text', async (ctx, next) => {
-    // fallow-ignore-next-line code-duplication -- same pod guard as the other handler in this file
     if (!ctx.message.text.startsWith(COMMANDER_MESSAGE_PREFIX)) return next()
 
-    const associateUuid = await resolveAssociateUuidByChatId(ctx.chat.id)
-    const pod = associateUuid ? await fetchLivePod(associateUuid) : null
-    if (!pod) {
-      await ctx.reply('Non ho trovato un tavolo Commander aperto per te in questo momento.')
-      return
-    }
+    const pod = await fetchOwnPodOrReply(ctx)
+    if (!pod) return
 
     const name = ctx.message.text.slice(COMMANDER_MESSAGE_PREFIX.length)
     const card = await fetchCommanderByName(name)
@@ -225,17 +230,11 @@ export function registerCommanderPickerHandlers(bot: Bot) {
   })
 
   // The second commander arrives the same way, from the "+" inline search.
-  // fallow-ignore-next-line code-duplication -- same guard as the other handler
   bot.on('message:text', async (ctx, next) => {
-    // fallow-ignore-next-line code-duplication -- same pod guard as the other handler in this file
     if (!ctx.message.text.startsWith(SECOND_COMMANDER_MESSAGE_PREFIX)) return next()
 
-    const associateUuid = await resolveAssociateUuidByChatId(ctx.chat.id)
-    const pod = associateUuid ? await fetchLivePod(associateUuid) : null
-    if (!pod) {
-      await ctx.reply('Non ho trovato un tavolo Commander aperto per te in questo momento.')
-      return
-    }
+    const pod = await fetchOwnPodOrReply(ctx)
+    if (!pod) return
     if (!pod.myCommander1Name) {
       await ctx.reply('Imposta prima il tuo comandante, poi potrai aggiungere il secondo.')
       return
