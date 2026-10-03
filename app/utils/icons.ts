@@ -214,6 +214,7 @@ export const ICONS = {
   facebook: 'i-simple-icons-facebook',
   instagram: 'i-simple-icons-instagram',
   telegram: 'i-simple-icons-telegram',
+  telegramBot: 'i-lucide-bot-message-square',
   whatsapp: 'i-simple-icons-whatsapp',
 
   // Wanted card print languages (circle-flags set)

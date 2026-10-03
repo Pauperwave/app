@@ -39,7 +39,7 @@ Add a path comment as the first line of every source file under `app/`, `server/
 File-based routing under `app/pages`, grouped with Nuxt route groups (parens don't affect the URL):
 - `index.vue` — home (a player view and a staff view), `calendar/`, `finance/` (a year-by-year report), `403.vue`
 - `(analytics)/statistics` — association stats, plus `statistics/decks` and `statistics/commanders` (Commander decks and commanders, with a detail page each)
-- `(community)/associates` (roster, `requests` for applications and renewals), `associate/[slug]`, `players` (with `players/[slug]` and its decks), `transactions`, `wanted-cards`
+- `(community)/associates` (roster, `requests` for applications and renewals), `associate/[slug]`, `players` (with `players/[slug]` and its decks), `transactions`, `wanted-cards`, `telegram-bot` (static info page about the bot, open to every role; not under `telegram/`, which is a public prefix)
 - `(competitions)/tournaments`, `(competitions)/leagues`, `(competitions)/events` — all flat (`tournaments/[tournamentId]`, not nested under leagues/events): a tournament's parent league/event is optional and polymorphic, so its canonical URL stays flat, with a `?league=<uuid>` query param (`app/utils/tournaments/tournamentOrigin.ts`) carrying "part of this league" for a back-link the route params alone can't express (a plain param rather than a typed `?from=league:<uuid>`, since only one origin type exists)
 - `(competitions)/locations`, `(competitions)/rulesets` — venues and scoring rulesets, gated to organizers
 - `(competitions)/standings/{cittadino,commander,premodern,pauper}` — the dashboard-side rankings (still mock-backed, see Data fetching)
