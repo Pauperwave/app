@@ -3441,6 +3441,15 @@
       "description": "Tocca un comando per aprirlo in Telegram. Quelli con il badge \"Collegato\" richiedono il collegamento dell'account.",
       "requiresLink": "Collegato",
       "chatOnly": "Solo dalla chat",
+      "groupDescriptions": {
+        "general": "I comandi di base: avviare il bot, vedere cosa sa fare e controllare che sia attivo.",
+        "competitions": "Cosa succede nell'associazione: classifiche, eventi, calendario, leghe e il prossimo torneo. Da collegato vedi anche le tue iscrizioni.",
+        "profile": "Il tuo profilo di socio: lo stato del tesseramento e il collegamento tra questa chat e il tuo account.",
+        "tournament": "Mentre giochi: il tuo tavolo con gli avversari, l'inserimento del risultato, il drop e il timer del round.",
+        "cards": "Il prezzo di una carta su CardMarket e CardTrader, e la lista delle carte che cerchi: da vedere, importare e togliere.",
+        "dice": "Per decidere chi comincia: un dado, la moneta o un dado a più facce.",
+        "support": "Scrivi allo staff direttamente dalla chat: ti risponde nello stesso posto."
+      },
       "groups": {
         "general": "Generale",
         "competitions": "Classifiche, eventi e tornei",

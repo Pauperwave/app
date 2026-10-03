@@ -148,6 +148,7 @@ export const ICONS = {
   deaths: 'i-lucide-skull',
   layers: 'i-lucide-layers',
   gameplay: 'i-lucide-gamepad-2',
+  dice: 'i-lucide-dices',
   cardSearch: 'i-lucide-scan-search',
   manaCost: 'i-lucide-gem',
   deckStats: 'i-lucide-layout-list',
