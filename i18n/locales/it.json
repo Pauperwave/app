@@ -2375,8 +2375,7 @@
       },
       "decksColumns": {
         "commander": "Commander",
-        "partner": "Partner / Background",
-        "companion": "Companion",
+        "secondary": "Partner / Background / Companion",
         "tournamentsPlayed": "Tornei",
         "createdAt": "Creato il",
         "decklist": "Decklist",

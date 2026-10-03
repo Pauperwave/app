@@ -3,7 +3,7 @@
 <script setup lang="ts">
 import {
   DateWithRelativeTooltip, EditIconButton, TournamentsSinglePairingCommanderDeckHover, UBadge,
-  UButton, UTooltip
+  UButton, UIcon, UTooltip
 } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { CommanderDeck } from '~/composables/players/useCommanderDecksQuery'
@@ -76,7 +76,7 @@ const allColumns: TableColumn<CommanderDeck>[] = [
     // An unset bracket sorts last in both directions
     accessorFn: deck => deck.bracketLevel ?? undefined,
     id: 'bracketLevel',
-    header: ({ column }) => sortableHeader(t('player.commander.decksColumns.bracket'), column),
+    header: ({ column }) => sortableHeader(t('player.commander.decksColumns.bracket'), column, ICONS.layers),
     sortUndefined: 'last',
     cell: ({ row }) => {
       if (readonly) {
@@ -96,38 +96,43 @@ const allColumns: TableColumn<CommanderDeck>[] = [
   },
   {
     accessorKey: 'commander1Name',
-    header: ({ column }) => sortableHeader(t('player.commander.decksColumns.commander'), column),
+    header: ({ column }) => sortableHeader(t('player.commander.decksColumns.commander'), column, ICONS.commander),
     cell: ({ row }) => h(TournamentsSinglePairingCommanderDeckHover, {
       commander1Name: row.original.commander1Name
     })
   },
   {
-    // The second commander slot: a partner or a background
-    accessorFn: deck => deck.commander2Name ?? undefined,
-    id: 'commander2Name',
-    header: ({ column }) => sortableHeader(t('player.commander.decksColumns.partner'), column),
+    // One slot for the three: a partner or a background (the second commander) or a companion.
+    // A deck practically never has two of them, so the companion only shows when there is no
+    // second commander.
+    accessorFn: deck => deck.commander2Name ?? deck.companionName ?? undefined,
+    id: 'secondary',
+    header: ({ column }) => sortableHeader(t('player.commander.decksColumns.secondary'), column, ICONS.players),
     sortUndefined: 'last',
-    cell: ({ row }) => (row.original.commander2Name
-      ? h(TournamentsSinglePairingCommanderDeckHover, {
-        commander1Name: row.original.commander2Name
-      })
-      : '—')
-  },
-  {
-    accessorFn: deck => deck.companionName ?? undefined,
-    id: 'companionName',
-    header: ({ column }) => sortableHeader(t('player.commander.decksColumns.companion'), column),
-    sortUndefined: 'last',
-    cell: ({ row }) => row.original.companionName ?? '—'
+    cell: ({ row }) => {
+      if (row.original.commander2Name) {
+        return h(TournamentsSinglePairingCommanderDeckHover, {
+          commander1Name: row.original.commander2Name
+        })
+      }
+      if (!row.original.companionName) return '—'
+
+      return h('span', { class: 'inline-flex items-center gap-1.5' }, [
+        h(UIcon, { name: ICONS.gameplay, class: 'size-4 shrink-0 text-muted' }),
+        row.original.companionName
+      ])
+    }
   },
   {
     accessorKey: 'tournamentsPlayed',
-    header: ({ column }) => sortableHeader(t('player.commander.decksColumns.tournamentsPlayed'), column),
+    header: ({ column }) => sortableHeader(
+      t('player.commander.decksColumns.tournamentsPlayed'), column, ICONS.battle
+    ),
     meta: { class: { th: 'text-center', td: 'text-center' } }
   },
   {
     accessorKey: 'isBorrowed',
-    header: t('player.commander.decksColumns.borrowed'),
+    header: () => iconHeader(t('player.commander.decksColumns.borrowed'), ICONS.heartHandshake),
     cell: ({ row }) => {
       if (!row.original.isBorrowed) return '—'
       const name = lenderName(row.original.lenderUuid)
@@ -137,21 +142,26 @@ const allColumns: TableColumn<CommanderDeck>[] = [
   },
   {
     accessorKey: 'createdAt',
-    header: ({ column }) => sortableHeader(t('player.commander.decksColumns.createdAt'), column),
+    header: ({ column }) => sortableHeader(
+      t('player.commander.decksColumns.createdAt'), column, ICONS.calendar
+    ),
     meta: { class: { td: 'whitespace-nowrap font-mono' } },
     cell: ({ row }) =>
       h(DateWithRelativeTooltip, { isoString: row.original.createdAt, time: false })
   },
   {
     id: 'decklist',
-    header: t('player.commander.decksColumns.decklist'),
+    header: () => iconHeader(t('player.commander.decksColumns.decklist'), ICONS.link),
     cell: ({ row }) => (row.original.decklistUrl
-      ? h('a', {
-        href: row.original.decklistUrl,
+      ? h(UButton, {
+        to: row.original.decklistUrl,
         target: '_blank',
-        rel: 'noopener noreferrer',
-        class: 'text-primary hover:underline'
-      }, t('player.commander.decksColumns.openDecklist'))
+        size: 'xs',
+        color: 'neutral',
+        variant: 'outline',
+        trailingIcon: ICONS.externalLink,
+        label: t('player.commander.decksColumns.openDecklist')
+      })
       : '—')
   },
   {
