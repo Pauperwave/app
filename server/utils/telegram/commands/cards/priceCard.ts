@@ -38,6 +38,7 @@ export interface PriceCardtrader {
 export type PriceCardtraderState = PriceCardtrader | 'pending' | null
 
 export const PRICE_CALLBACK_PREFIX = 'prz:'
+export const WANT_CALLBACK_PREFIX = 'prw:'
 export const PRICE_INLINE_PREFIX = '$'
 
 const LANGUAGES: PriceLanguage[] = ['all', 'it', 'en']
@@ -62,15 +63,24 @@ export function escapeHtml(text: string): string {
 }
 
 // Same "prefix:uuid:language:foil" shape as the other bot callbacks, well under Telegram's 64 bytes
+function encodeState(prefix: string, state: PriceState): string {
+  return `${prefix}${state.scryfallId}:${state.language}:${state.foil ? 1 : 0}`
+}
+
 export function encodePriceState(state: PriceState): string {
-  return `${PRICE_CALLBACK_PREFIX}${state.scryfallId}:${state.language}:${state.foil ? 1 : 0}`
+  return encodeState(PRICE_CALLBACK_PREFIX, state)
+}
+
+// The "add to my wanted cards" button carries the same state, under its own prefix
+export function encodeWantState(state: PriceState): string {
+  return encodeState(WANT_CALLBACK_PREFIX, state)
 }
 
 // Null for anything malformed: callback_data is client-controlled, never trusted blindly
-export function decodePriceState(data: string): PriceState | null {
-  if (!data.startsWith(PRICE_CALLBACK_PREFIX)) return null
+function decodeState(prefix: string, data: string): PriceState | null {
+  if (!data.startsWith(prefix)) return null
 
-  const parts = data.slice(PRICE_CALLBACK_PREFIX.length).split(':')
+  const parts = data.slice(prefix.length).split(':')
   const scryfallId = parts[0]
   const language = parts[1] as PriceLanguage
   const foil = parts[2]
@@ -80,6 +90,14 @@ export function decodePriceState(data: string): PriceState | null {
   if (foil !== '0' && foil !== '1') return null
 
   return { scryfallId, language, foil: foil === '1' }
+}
+
+export function decodePriceState(data: string): PriceState | null {
+  return decodeState(PRICE_CALLBACK_PREFIX, data)
+}
+
+export function decodeWantState(data: string): PriceState | null {
+  return decodeState(WANT_CALLBACK_PREFIX, data)
 }
 
 // A printing with no nonfoil finish can only be priced as foil, like the wanted-cards price refresh
@@ -176,6 +194,9 @@ export function buildPriceKeyboard(
       encodePriceState({ ...state, foil: !state.foil })
     )
   }
+
+  // Saves this printing with the chosen language and finish as a wanted card
+  keyboard.row().text(`${ICONS.wanted} Aggiungi alle mie cercate`, encodeWantState(state))
 
   keyboard.row()
   if (printing.cardmarketUrl) keyboard.url('CardMarket', printing.cardmarketUrl)

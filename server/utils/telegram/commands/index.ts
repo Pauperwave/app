@@ -14,6 +14,7 @@ import { registerSupportoCommand } from './supporto'
 import { registerDioporcoCommand } from './dioporco'
 import { registerDiceCommands } from './dice'
 import { registerPrezzoCommand } from './cards/prezzo'
+import { registerCercateHandlers } from './cards/cercate'
 import { registerTurniCommand } from './turni'
 import { registerTesseraCommand } from './account/tessera'
 import { registerCollegamentoCommand } from './account/collegamento'
@@ -51,6 +52,7 @@ export function registerCommands(bot: Bot) {
   registerDioporcoCommand(bot)
   registerDiceCommands(commands)
   registerPrezzoCommand(bot, commands)
+  registerCercateHandlers(bot)
   registerTurniCommand(commands)
   registerTesseraCommand(commands)
   registerCollegamentoCommand(commands)

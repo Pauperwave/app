@@ -7,6 +7,7 @@ import {
   buildPriceText,
   canToggleFoil,
   decodePriceState,
+  decodeWantState,
   effectiveFoil,
   encodePriceState,
   escapeHtml,
@@ -174,6 +175,13 @@ describe('buildPriceKeyboard', () => {
     const toggle = keyboard.inline_keyboard.flat().find(button => button.text.includes('Foil'))
     const data = toggle && 'callback_data' in toggle ? toggle.callback_data : ''
     expect(decodePriceState(data)).toEqual({ scryfallId: ID, language: 'en', foil: true })
+  })
+
+  it('offers to save the printing as a wanted card with the current filters', () => {
+    const keyboard = buildPriceKeyboard(makePrinting(), { ...baseState, language: 'it', foil: true }, null)
+    const add = keyboard.inline_keyboard.flat().find(button => button.text.includes('cercate'))
+    const data = add && 'callback_data' in add ? add.callback_data : ''
+    expect(decodeWantState(data)).toEqual({ scryfallId: ID, language: 'it', foil: true })
   })
 
   it('hides the foil toggle when the finish cannot be chosen', () => {

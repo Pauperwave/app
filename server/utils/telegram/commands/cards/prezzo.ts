@@ -20,11 +20,17 @@ import {
   type PriceState
 } from './priceCard'
 
+import {
+  fetchScryfallCard,
+  scryfallGet,
+  scryfallOrNull,
+  toPrinting,
+  type ScryfallCard
+} from './scryfall'
+
 import { fetchCardtraderPrice } from '../../../priceRefresh'
 import { resolveCardTraderBlueprint } from '../../../cardTrader'
 
-const SCRYFALL_API = 'https://api.scryfall.com'
-const SCRYFALL_USER_AGENT = 'Pauperwave-app/1.0 (Telegram bot card prices; contact: emanuelenardi.dev@gmail.com)'
 const NOT_FOUND_TEXT = '🤔 Non trovo questa carta. Scrivi il nome inglese, es. /prezzo Lightning Bolt.'
 const USAGE_TEXT = 'Scrivi il nome della carta per scegliere la stampa, es. /prezzo Lightning Bolt.'
 
@@ -33,65 +39,6 @@ const MAX_INLINE_RESULTS = 50
 const MIN_QUERY_LENGTH = 2
 // Prices move slowly: a short cache spares Scryfall repeated keystroke queries
 const INLINE_CACHE_SECONDS = 60
-
-interface ScryfallImageUris {
-  small?: string
-}
-
-interface ScryfallCard {
-  id: string
-  name: string
-  set: string
-  set_name: string
-  collector_number: string
-  finishes?: string[]
-  prices?: { eur?: string | null, eur_foil?: string | null }
-  purchase_uris?: { cardmarket?: string }
-  scryfall_uri: string
-  image_uris?: ScryfallImageUris
-  card_faces?: { image_uris?: ScryfallImageUris }[]
-}
-
-function scryfallGet<T>(path: string, query?: Record<string, string>) {
-  return $fetch<T>(`${SCRYFALL_API}${path}`, {
-    query,
-    headers: { 'User-Agent': SCRYFALL_USER_AGENT, 'Accept': 'application/json' }
-  })
-}
-
-function toPrice(raw: string | null | undefined): number | null {
-  const parsed = raw ? Number(raw) : NaN
-  return Number.isFinite(parsed) ? parsed : null
-}
-
-function toPrinting(card: ScryfallCard): PricePrinting {
-  // A double-faced card has its images on the faces: the front one stands in
-  const imageUris = card.image_uris ?? card.card_faces?.[0]?.image_uris
-
-  return {
-    id: card.id,
-    name: card.name,
-    set: card.set,
-    setName: card.set_name,
-    collectorNumber: card.collector_number,
-    finishes: card.finishes ?? [],
-    cardmarketPrice: toPrice(card.prices?.eur),
-    cardmarketFoilPrice: toPrice(card.prices?.eur_foil),
-    cardmarketUrl: card.purchase_uris?.cardmarket ?? null,
-    scryfallUrl: card.scryfall_uri,
-    thumbnailUrl: imageUris?.small ?? null
-  }
-}
-
-// Scryfall answers 404 for an unknown or ambiguous name: that is "not found" here, not an error
-async function scryfallOrNull<T>(request: Promise<T>): Promise<T | null> {
-  try {
-    return await request
-  } catch (err) {
-    if ((err as { statusCode?: number }).statusCode === 404) return null
-    throw err
-  }
-}
 
 // Resolves what was typed to one exact card name: fuzzy match first (typos, partial names), then
 // Scryfall's own autocomplete for fragments the fuzzy match finds ambiguous
@@ -124,7 +71,7 @@ async function findPrintings(query: string): Promise<PricePrinting[]> {
 }
 
 async function fetchPrinting(scryfallId: string): Promise<PricePrinting | null> {
-  const card = await scryfallOrNull(scryfallGet<ScryfallCard>(`/cards/${scryfallId}`))
+  const card = await fetchScryfallCard(scryfallId)
   return card ? toPrinting(card) : null
 }
 
