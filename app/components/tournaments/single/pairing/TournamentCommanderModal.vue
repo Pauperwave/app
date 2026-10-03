@@ -84,7 +84,7 @@ function onClear() {
 
     <template #footer>
       <div class="flex w-full items-center justify-between">
-        <TournamentsSinglePairingCommanderCatalogRefresh />
+        <CommandersCatalogRefresh />
         <div class="flex items-center gap-2">
           <UButton
             v-if="commander1"
