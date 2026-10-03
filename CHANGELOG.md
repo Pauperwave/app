@@ -1,6 +1,29 @@
 # Changelog
 
 
+## v0.9.0
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.8.0...v0.9.0)
+
+### Documentation
+
+- **scripts:** 📝 concise English comments, drop stale notes ([b0517f96](https://github.com/Pauperwave/app/commit/b0517f96))
+- **shared:** 📝 concise English comments, drop provenance notes ([1210e72d](https://github.com/Pauperwave/app/commit/1210e72d))
+- **server:** 📝 concise English comments across API routes and middleware ([7017bd9b](https://github.com/Pauperwave/app/commit/7017bd9b))
+- **server:** 📝 concise English comments across utils and the Telegram bot ([ec1dce3b](https://github.com/Pauperwave/app/commit/ec1dce3b))
+- **app:** 📝 concise English comments in utils, types, layouts, plugins and config ([5802f357](https://github.com/Pauperwave/app/commit/5802f357))
+- **composables:** 📝 concise English comments, translate Italian ones ([6b4fa2fd](https://github.com/Pauperwave/app/commit/6b4fa2fd))
+- **components:** 📝 concise English comments, wrap at 100 columns ([14a193b6](https://github.com/Pauperwave/app/commit/14a193b6))
+- **pages:** 📝 concise English comments, translate Italian ones ([fd460340](https://github.com/Pauperwave/app/commit/fd460340))
+- **test:** 📝 concise English comments ([97a0477c](https://github.com/Pauperwave/app/commit/97a0477c))
+- 📝 tournament origin query param is ?league=<uuid>, not ?from=league:<uuid> ([543f2789](https://github.com/Pauperwave/app/commit/543f2789))
+- **calendar:** 📝 the associates RLS risk is closed , fix the stale comment ([#3](https://github.com/Pauperwave/app/pull/3))
+- 📝 comment convention - the why, not the history, wrapped at 100 columns ([761a5d90](https://github.com/Pauperwave/app/commit/761a5d90))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.8.0
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.7.0...v0.8.0)
