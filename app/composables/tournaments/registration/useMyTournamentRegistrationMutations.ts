@@ -11,6 +11,7 @@ export function useMyTournamentRegistrationMutations() {
   const invalidate = (tournamentUuid: string) => {
     queryCache.invalidateQueries({ key: MY_TOURNAMENT_REGISTRATIONS_KEY })
     queryCache.invalidateQueries({ key: TOURNAMENT_REGISTRATIONS_KEY(tournamentUuid) })
+    queryCache.invalidateQueries({ key: TOURNAMENT_SEATS_KEY })
   }
 
   function toastError(error: unknown) {
