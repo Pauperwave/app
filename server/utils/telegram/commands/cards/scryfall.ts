@@ -1,39 +1,13 @@
 // server\utils\telegram\commands\cards\scryfall.ts
+import type { ScryfallCard } from '#shared/types/scryfall'
+import type { ScryfallGetter } from '#shared/utils/wantedCards/decklistLookup'
+import { frontImageUris, parseScryfallPrice } from '#shared/utils/wantedCards/wantedCardRow'
 import type { PricePrinting } from './priceCard'
 
-// Scryfall access shared by the card commands (/prezzo and the "cercate" button)
+// Scryfall access shared by the card commands (/prezzo, the add button, the list import)
 
 const SCRYFALL_API = 'https://api.scryfall.com'
 const SCRYFALL_USER_AGENT = 'Pauperwave-app/1.0 (Telegram bot cards; contact: emanuelenardi.dev@gmail.com)'
-
-interface ScryfallImageUris {
-  small?: string
-  normal?: string
-  large?: string
-}
-
-interface ScryfallFace {
-  mana_cost?: string
-  image_uris?: ScryfallImageUris
-}
-
-export interface ScryfallCard {
-  id: string
-  name: string
-  set: string
-  set_name: string
-  collector_number: string
-  finishes?: string[]
-  prices?: { eur?: string | null, eur_foil?: string | null }
-  purchase_uris?: { cardmarket?: string }
-  scryfall_uri: string
-  mana_cost?: string
-  color_identity?: string[]
-  type_line?: string
-  cmc?: number
-  image_uris?: ScryfallImageUris
-  card_faces?: ScryfallFace[]
-}
 
 export function scryfallGet<T>(path: string, query?: Record<string, string>) {
   return $fetch<T>(`${SCRYFALL_API}${path}`, {
@@ -52,15 +26,10 @@ export async function scryfallOrNull<T>(request: Promise<T>): Promise<T | null> 
   }
 }
 
-export function toPrice(raw: string | null | undefined): number | null {
-  const parsed = raw ? Number(raw) : NaN
-  return Number.isFinite(parsed) ? parsed : null
-}
-
-// A double-faced card has its images and mana cost on the faces: the front one stands in
-export function frontImageUris(card: ScryfallCard): ScryfallImageUris | undefined {
-  return card.image_uris ?? card.card_faces?.[0]?.image_uris
-}
+// The getter the shared lookup (decklistLookup.ts) runs on
+export const scryfallLookupGetter: ScryfallGetter = (path, query) => scryfallOrNull(
+  scryfallGet(path, query)
+)
 
 export function toPrinting(card: ScryfallCard): PricePrinting {
   return {
@@ -70,8 +39,8 @@ export function toPrinting(card: ScryfallCard): PricePrinting {
     setName: card.set_name,
     collectorNumber: card.collector_number,
     finishes: card.finishes ?? [],
-    cardmarketPrice: toPrice(card.prices?.eur),
-    cardmarketFoilPrice: toPrice(card.prices?.eur_foil),
+    cardmarketPrice: parseScryfallPrice(card.prices?.eur),
+    cardmarketFoilPrice: parseScryfallPrice(card.prices?.eur_foil),
     cardmarketUrl: card.purchase_uris?.cardmarket ?? null,
     scryfallUrl: card.scryfall_uri,
     thumbnailUrl: frontImageUris(card)?.small ?? null
