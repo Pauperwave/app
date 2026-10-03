@@ -74,7 +74,7 @@ Stato tecnico di ogni funzionalità: `docs/architecture/telegram-bot.md`. Chi vi
 
 ## Documentazione
 
-`docs/README.md` è l'indice di tutta la documentazione di progetto (architettura, schema DB, backlog, storia delle decisioni).
+Sezioni del sito e funzionalità di ciascuna: [`docs/site/README.md`](docs/site/README.md). `docs/README.md` è l'indice di tutta la documentazione di progetto (architettura, schema DB, backlog, storia delle decisioni).
 
 ## Origine
 
