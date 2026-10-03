@@ -8,6 +8,7 @@ import {
   calculatePlayerTableScore,
   isDrawTable,
   type CommanderTableResult,
+  type PlayerTableScore,
   type RulesetPointValues
 } from '#shared/utils/tournaments/commanderScoring'
 import type { SwissDropInfo } from '~/types'
@@ -168,6 +169,38 @@ function voteSourcesOf(sourcesByPlayer: Map<string, VoteSources>, playerUuid: st
   return sources
 }
 
+// One seat's score of one table, added to the player's running totals
+function addTableToStanding(
+  standing: LiveCommanderStanding,
+  scored: PlayerTableScore,
+  isDraw: boolean,
+  deaths: number
+) {
+  standing.score += scored.totalScore
+  standing.victories += scored.position === 1 && !isDraw ? 1 : 0
+  standing.kills += scored.numberOfKills
+  standing.brewReceived += scored.brewVotesReceived
+  standing.playReceived += scored.playVotesReceived
+  standing.brewScore += scored.brewScore
+  standing.playScore += scored.playScore
+  standing.roundsPlayed += 1
+  standing.deaths += deaths
+}
+
+// Where a player's votes at one table came from: the round (every vote of a table shares it) and
+// the voter
+function recordVoteSources(sources: VoteSources, votes: Vote[], roundUuid: string) {
+  for (const vote of votes) {
+    if (vote.voteType === 'brew') {
+      sources.brewRounds.add(roundUuid)
+      sources.brewVoters.add(vote.voterUuid)
+    } else {
+      sources.playRounds.add(roundUuid)
+      sources.playVoters.add(vote.voterUuid)
+    }
+  }
+}
+
 export function buildLiveCommanderStandings(input: LiveStandingsInput): LiveCommanderStanding[] {
   const { ruleset, associateByUuid, dropByPlayerUuid } = input
   const posValues = buildPosValues(ruleset)
@@ -201,26 +234,14 @@ export function buildLiveCommanderStandings(input: LiveStandingsInput): LiveComm
       const standing = standings.get(playerUuid)
       if (!scored || !standing) continue
 
-      standing.score += scored.totalScore
-      standing.victories += scored.position === 1 && !isDraw ? 1 : 0
-      standing.kills += scored.numberOfKills
-      standing.brewReceived += scored.brewVotesReceived
-      standing.playReceived += scored.playVotesReceived
-      standing.brewScore += scored.brewScore
-      standing.playScore += scored.playScore
-      standing.roundsPlayed += 1
-      standing.deaths += kills.filter(kill => kill.killedPlayerUuid === playerUuid).length
+      const deaths = kills.filter(kill => kill.killedPlayerUuid === playerUuid).length
+      addTableToStanding(standing, scored, isDraw, deaths)
 
-      for (const vote of votes.filter(vote => vote.votedPlayerUuid === playerUuid)) {
-        const sources = voteSourcesOf(sourcesByPlayer, playerUuid)
-        if (vote.voteType === 'brew') {
-          sources.brewRounds.add(pairing.roundUuid)
-          sources.brewVoters.add(vote.voterUuid)
-        } else {
-          sources.playRounds.add(pairing.roundUuid)
-          sources.playVoters.add(vote.voterUuid)
-        }
-      }
+      recordVoteSources(
+        voteSourcesOf(sourcesByPlayer, playerUuid),
+        votes.filter(vote => vote.votedPlayerUuid === playerUuid),
+        pairing.roundUuid
+      )
     }
   }
 
