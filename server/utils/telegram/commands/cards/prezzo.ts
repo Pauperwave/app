@@ -10,6 +10,7 @@ import { registerDeepLink } from '../../deepLinks'
 import {
   PRICE_CALLBACK_PREFIX,
   PRICE_INLINE_PREFIX,
+  artPreview,
   buildInlineDescription,
   buildInlineTitle,
   buildPriceKeyboard,
@@ -69,13 +70,6 @@ async function findPrintings(query: string): Promise<PricePrinting[]> {
   }))
 
   return sortByCardmarketPrice((search?.data ?? []).map(toPrinting))
-}
-
-// The card art rides on the message as a link preview: a text message can't hold a photo, and
-// this keeps editMessageText working for inline messages
-function artPreview(printing: PricePrinting) {
-  if (!printing.imageUrl) return { is_disabled: true }
-  return { url: printing.imageUrl, prefer_large_media: true, show_above_text: true }
 }
 
 async function fetchPrinting(scryfallId: string): Promise<PricePrinting | null> {
@@ -160,7 +154,7 @@ async function handlePriceInlineQuery(ctx: Context, next: () => Promise<void>) {
         input_message_content: {
           message_text: buildPriceText(printing, state, 'pending'),
           parse_mode: 'HTML',
-          link_preview_options: artPreview(printing)
+          link_preview_options: artPreview(printing.imageUrl)
         },
         reply_markup: buildPriceKeyboard(printing, state, null, false)
       }
@@ -192,7 +186,7 @@ async function handlePriceButton(ctx: Context, next: () => Promise<void>) {
     const cardtrader = await fetchCardtrader(printing, state)
     await ctx.editMessageText(buildPriceText(printing, state, cardtrader), {
       parse_mode: 'HTML',
-      link_preview_options: artPreview(printing),
+      link_preview_options: artPreview(printing.imageUrl),
       reply_markup: buildPriceKeyboard(printing, state, cardtrader?.url ?? null)
     })
     await ctx.answerCallbackQuery()
