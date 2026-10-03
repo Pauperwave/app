@@ -53,7 +53,8 @@ export default defineConfig({
       '~': resolve(_dirname, 'app'),
       '~/app': resolve(_dirname, 'app'),
       '#test': resolve(_dirname, 'test'),
-      '#shared': resolve(_dirname, 'shared')
+      '#shared': resolve(_dirname, 'shared'),
+      '#supabase/server': resolve(_dirname, 'test/stubs/supabaseServer.ts')
     }
   }
 })
