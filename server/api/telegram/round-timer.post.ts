@@ -17,9 +17,17 @@ interface RoundTimerBody {
 export default defineEventHandler(async (event): Promise<RoundTimerResponse> => {
   const { initData } = await readBody<RoundTimerBody>(event)
   const serverNowMs = Date.now()
-  const respond = (status: RoundTimerStatus, snapshot: RoundTimerSnapshot | null = null) => (
-    { status, snapshot, serverNowMs }
-  )
+  const respond = (
+    status: RoundTimerStatus,
+    snapshot: RoundTimerSnapshot | null = null,
+    table: { tournamentUuid: string, roundNumber: number } | null = null
+  ) => ({
+    status,
+    snapshot,
+    tournamentUuid: table?.tournamentUuid ?? null,
+    roundNumber: table?.roundNumber ?? null,
+    serverNowMs
+  })
 
   const user = verifyWebAppInitData(
     initData ?? '', useRuntimeConfig(event).telegramBotToken ?? '', serverNowMs
@@ -44,7 +52,7 @@ export default defineEventHandler(async (event): Promise<RoundTimerResponse> => 
   if (error) {
     throw createError({ statusCode: 500, statusMessage: error.message })
   }
-  if (!data) return respond('no-timer')
+  if (!data) return respond('no-timer', null, table)
 
   return respond('ok', {
     phase: data.phase as RoundTimerSnapshot['phase'],
@@ -54,5 +62,5 @@ export default defineEventHandler(async (event): Promise<RoundTimerResponse> => 
     preSeconds: data.pre_seconds,
     roundSeconds: data.round_seconds,
     turnsSeconds: data.turns_seconds
-  })
+  }, table)
 })
