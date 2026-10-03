@@ -13,12 +13,12 @@ interface Props {
   format: StandingsFormat
 }
 
+// fallow-ignore-next-line code-duplication -- mirrors FormatPage.vue
 const { format } = defineProps<Props>()
 
 // Declared before the useFormatStandingsPage call since it threads through to
 // useFormatStandingsTableColumns.ts for match highlighting: the search FormatPage.vue has, extended
-// to public visitors (who are more likely to scan for their own name) fallow-ignore-next-line
-// code-duplication -- mirrors FormatPage.vue's own shell wiring around useFormatStandingsPage
+// to public visitors (who are more likely to scan for their own name)
 const search = ref('')
 
 const {
