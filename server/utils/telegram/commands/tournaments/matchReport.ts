@@ -61,7 +61,7 @@ function resultScoreLabel(table: LiveTable): string {
   return scoreLabelFor(table.result, table.isPlayer1)
 }
 
-// What /tavolo and /risultato show: where they sit and what the result says
+// What /tavolo shows for a 1v1: where they sit and what the result says
 function tableRichMessage(table: LiveTable): InputRichMessage {
   const place = table.tableNumber === null ? '🪑 Il tuo tavolo' : `🪑 Tavolo ${table.tableNumber}`
   const blocks: InputRichMessage['blocks'] = [
@@ -136,7 +136,7 @@ function summaryRichMessage(table: LiveTable, outcomeIndex: number): InputRichMe
   }
 }
 
-// /tavolo and /risultato: true if the chat's associate sits at a 1v1 table
+// /tavolo: true if the chat's associate sits at a 1v1 table
 // being played (and it was answered), false to let the caller fall back
 export async function replyWithLiveTable(ctx: Context): Promise<boolean> {
   const chatId = ctx.chat?.id
