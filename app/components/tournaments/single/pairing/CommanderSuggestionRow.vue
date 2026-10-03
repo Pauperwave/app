@@ -26,6 +26,7 @@ const tooltipOpen = ref(false)
 const { anchor, reference } = usePointerReference()
 
 function handlePointerEnter(ev: PointerEvent) {
+  // fallow-ignore-next-line code-duplication -- same handlers as the sibling preview
   if (!imageUrl) return
   anchor.value = { x: ev.clientX, y: ev.clientY }
   tooltipOpen.value = true
