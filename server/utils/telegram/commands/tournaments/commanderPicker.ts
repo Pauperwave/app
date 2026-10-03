@@ -173,6 +173,7 @@ export function registerCommanderPickerHandlers(bot: Bot) {
   // Picking an inline result posts it as a normal message, recognized by its marker prefix (as
   // mockups/tavolo.ts did)
   bot.on('message:text', async (ctx, next) => {
+    // fallow-ignore-next-line code-duplication -- same pod guard as the other handler in this file
     if (!ctx.message.text.startsWith(COMMANDER_MESSAGE_PREFIX)) return next()
 
     const associateUuid = await resolveAssociateUuidByChatId(ctx.chat.id)
@@ -224,7 +225,9 @@ export function registerCommanderPickerHandlers(bot: Bot) {
   })
 
   // The second commander arrives the same way, from the "+" inline search.
+  // fallow-ignore-next-line code-duplication -- same guard as the other handler
   bot.on('message:text', async (ctx, next) => {
+    // fallow-ignore-next-line code-duplication -- same pod guard as the other handler in this file
     if (!ctx.message.text.startsWith(SECOND_COMMANDER_MESSAGE_PREFIX)) return next()
 
     const associateUuid = await resolveAssociateUuidByChatId(ctx.chat.id)

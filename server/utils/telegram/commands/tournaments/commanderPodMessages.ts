@@ -278,6 +278,7 @@ export function dropDoneRichMessage(pod: LivePod): InputRichMessage {
 export function votesReceivedTableBlock(
   votesReceived: { voterName: string, brew: boolean, play: boolean }[], score: PodScore
 ) {
+  // fallow-ignore-next-line code-duplication -- real table the risultato.ts mockup mirrors
   const cell = (value?: string) => ({ text: value, align: 'center' as const, valign: 'middle' as const })
   return {
     type: 'table' as const,
@@ -313,7 +314,9 @@ export function votesReceivedTableBlock(
 }
 
 // Same table shape as mockups/risultato.ts's scoreSummaryTableBlock
+// fallow-ignore-next-line code-duplication -- mirrored by the risultato.ts mockup
 export function scoreSummaryTableBlock(score: PodScore) {
+  // fallow-ignore-next-line code-duplication -- real table the risultato.ts mockup mirrors
   const row = (label: string, points: number) => [
     { text: label, align: 'left' as const, valign: 'middle' as const },
     { text: `${points} pt`, align: 'center' as const, valign: 'middle' as const }
