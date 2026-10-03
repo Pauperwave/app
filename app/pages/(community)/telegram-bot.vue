@@ -8,6 +8,17 @@ useSeoMeta({ title: () => t('telegramBot.breadcrumb') })
 
 const { data: myLink, isPending: linkPending, error: linkError } = useMyTelegramLinkQuery()
 const linkSteps = ['open', 'email', 'done'] as const
+
+// One icon per section of the command catalog (botCommands.ts)
+const groupIcons: Record<string, string> = {
+  general: ICONS.settingsGear,
+  competitions: ICONS.standings,
+  profile: ICONS.player,
+  tournament: ICONS.battle,
+  cards: ICONS.cardSearch,
+  dice: ICONS.dice,
+  support: ICONS.messageCircle
+}
 </script>
 
 <template>
@@ -25,7 +36,7 @@ const linkSteps = ['open', 'email', 'done'] as const
     </template>
 
     <template #body>
-      <div class="flex flex-col gap-6 max-w-3xl">
+      <div class="flex flex-col gap-6 max-w-5xl">
         <USkeleton
           v-if="linkPending"
           class="h-20 w-full"
@@ -102,59 +113,67 @@ const linkSteps = ['open', 'email', 'done'] as const
           </p>
         </UPageCard>
 
-        <UPageCard
-          :title="$t('telegramBot.commands.title')"
-          :description="$t('telegramBot.commands.description')"
-          :ui="{ container: 'gap-6' }"
-        >
-          <section
-            v-for="group in TELEGRAM_BOT_COMMAND_GROUPS"
-            :key="group.id"
-            class="flex flex-col gap-2"
-          >
-            <h3 class="text-sm font-semibold">
-              {{ $t(`telegramBot.commands.groups.${group.id}`) }}
-            </h3>
-            <ul class="flex flex-col gap-1.5">
-              <li
-                v-for="command in group.commands"
-                :key="command.name"
-                class="flex flex-wrap items-baseline gap-x-2 text-sm"
-              >
-                <a
-                  v-if="botCommandUrl(command)"
-                  :href="botCommandUrl(command) ?? undefined"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="font-mono text-primary hover:underline"
-                >/{{ command.name }}</a>
-                <code
-                  v-else
-                  class="font-mono text-highlighted"
-                >/{{ command.name }}</code>
-                <span class="text-muted">
-                  {{ $t(`telegramBot.commands.items.${command.name}`) }}
-                </span>
-                <UBadge
-                  v-if="command.requiresLink"
-                  color="neutral"
-                  variant="subtle"
-                  size="sm"
+        <section class="flex flex-col gap-4">
+          <div>
+            <h2 class="text-lg font-semibold">
+              {{ $t('telegramBot.commands.title') }}
+            </h2>
+            <p class="text-sm text-muted">
+              {{ $t('telegramBot.commands.description') }}
+            </p>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <UPageCard
+              v-for="group in TELEGRAM_BOT_COMMAND_GROUPS"
+              :key="group.id"
+              :title="$t(`telegramBot.commands.groups.${group.id}`)"
+              :description="$t(`telegramBot.commands.groupDescriptions.${group.id}`)"
+              :icon="groupIcons[group.id]"
+            >
+              <ul class="flex flex-col gap-2">
+                <li
+                  v-for="command in group.commands"
+                  :key="command.name"
+                  class="flex flex-col text-sm"
                 >
-                  {{ $t('telegramBot.commands.requiresLink') }}
-                </UBadge>
-                <UBadge
-                  v-if="!botCommandUrl(command)"
-                  color="neutral"
-                  variant="outline"
-                  size="sm"
-                >
-                  {{ $t('telegramBot.commands.chatOnly') }}
-                </UBadge>
-              </li>
-            </ul>
-          </section>
-        </UPageCard>
+                  <span class="flex flex-wrap items-center gap-x-2">
+                    <a
+                      v-if="botCommandUrl(command)"
+                      :href="botCommandUrl(command) ?? undefined"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="font-mono text-primary hover:underline"
+                    >/{{ command.name }}</a>
+                    <code
+                      v-else
+                      class="font-mono text-highlighted"
+                    >/{{ command.name }}</code>
+                    <UBadge
+                      v-if="command.requiresLink"
+                      color="neutral"
+                      variant="subtle"
+                      size="sm"
+                    >
+                      {{ $t('telegramBot.commands.requiresLink') }}
+                    </UBadge>
+                    <UBadge
+                      v-if="!botCommandUrl(command)"
+                      color="neutral"
+                      variant="outline"
+                      size="sm"
+                    >
+                      {{ $t('telegramBot.commands.chatOnly') }}
+                    </UBadge>
+                  </span>
+                  <span class="text-muted">
+                    {{ $t(`telegramBot.commands.items.${command.name}`) }}
+                  </span>
+                </li>
+              </ul>
+            </UPageCard>
+          </div>
+        </section>
 
         <UPageCard
           :title="$t('telegramBot.notifications.title')"

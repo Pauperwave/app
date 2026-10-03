@@ -36,12 +36,16 @@ describe('the commands catalog', () => {
     expect(withoutLink.map(command => command.name).sort()).toEqual(['drop', 'scollegamento'])
   })
 
-  it('has a description for every command and a title for every group', () => {
-    const { items, groups } = italian.telegramBot.commands as {
+  it('has a description for every command and a title and explanation for every group', () => {
+    const { items, groups, groupDescriptions } = italian.telegramBot.commands as {
       items: Record<string, string>
       groups: Record<string, string>
+      groupDescriptions: Record<string, string>
     }
     for (const command of commands) expect(items[command.name], command.name).toBeTruthy()
-    for (const group of TELEGRAM_BOT_COMMAND_GROUPS) expect(groups[group.id], group.id).toBeTruthy()
+    for (const group of TELEGRAM_BOT_COMMAND_GROUPS) {
+      expect(groups[group.id], group.id).toBeTruthy()
+      expect(groupDescriptions[group.id], group.id).toBeTruthy()
+    }
   })
 })
