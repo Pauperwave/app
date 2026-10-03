@@ -31,6 +31,7 @@ function makePrinting(overrides: Partial<PricePrinting> = {}): PricePrinting {
     cardmarketUrl: 'https://www.cardmarket.com/en/Magic/Products/Singles/M10/Lightning-Bolt',
     scryfallUrl: 'https://scryfall.com/card/m10/146',
     thumbnailUrl: 'https://cards.scryfall.io/small/front/0/b/0b6b.jpg',
+    imageUrl: 'https://cards.scryfall.io/normal/front/0/b/0b6b.jpg',
     ...overrides
   }
 }

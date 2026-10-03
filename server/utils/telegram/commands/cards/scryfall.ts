@@ -43,7 +43,8 @@ export function toPrinting(card: ScryfallCard): PricePrinting {
     cardmarketFoilPrice: parseScryfallPrice(card.prices?.eur_foil),
     cardmarketUrl: card.purchase_uris?.cardmarket ?? null,
     scryfallUrl: card.scryfall_uri,
-    thumbnailUrl: frontImageUris(card)?.small ?? null
+    thumbnailUrl: frontImageUris(card)?.small ?? null,
+    imageUrl: frontImageUris(card)?.normal ?? null
   }
 }
 

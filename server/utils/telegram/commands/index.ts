@@ -76,9 +76,14 @@ export function registerCommands(bot: Bot) {
   // Last of all: every handler above calls next() for messages that aren't theirs, so what remains
   // is not a recognized command, prompt reply or linking attempt. Reuses core.ts's helpbtn:
   // mechanism (handleHelpButton).
-  bot.on('message:text', ctx => ctx.reply(UNKNOWN_MESSAGE_TEXT, {
-    reply_markup: new InlineKeyboard().text('📖 Help', encodeHelpBtn('help'))
-  }))
+  bot.on('message:text', (ctx) => {
+    // A chosen inline result is posted as a message via this bot: not something the user typed
+    if (ctx.msg.via_bot?.id === ctx.me.id) return
+
+    return ctx.reply(UNKNOWN_MESSAGE_TEXT, {
+      reply_markup: new InlineKeyboard().text('📖 Help', encodeHelpBtn('help'))
+    })
+  })
 
   // Best-effort, like notify.ts's sends: a Telegram hiccup must not block the bot, it would only
   // leave the command picker stale

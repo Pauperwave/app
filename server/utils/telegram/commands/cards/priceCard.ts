@@ -27,6 +27,7 @@ export interface PricePrinting {
   cardmarketUrl: string | null
   scryfallUrl: string
   thumbnailUrl: string | null
+  imageUrl: string | null
 }
 
 export interface PriceCardtrader {
