@@ -4,9 +4,8 @@
 // Detail page for players, shaped like associate/[slug].vue (avatar header card + DetailCard grid).
 // No edit action: players have no editing UI anywhere, they derive from their associate record.
 // Slug-based, not uuid: the display name is first_name+last_name, exactly as stable as
-// associate/[slug].vue's slug. The route is gated like players/index.vue (it used to be nav-hidden
-// only)
-definePageMeta({ permission: 'view-players' })
+// associate/[slug].vue's slug. Open to every role, read-only: email, associate number, logins and
+// the deck controls are for staff only
 
 interface DetailField {
   icon: string
@@ -16,6 +15,7 @@ interface DetailField {
 
 const { t } = useI18n()
 const route = useRoute()
+const { isStaff, can, userId: currentUserId } = useUserRole()
 
 const { data: playersData, isLoading: playerLoading } = usePlayersQuery()
 const player = computed(() => playersData.value?.find(
@@ -42,11 +42,11 @@ const associateLink = computed(() => (player.value?.first_name && player.value?.
   ? `/associate/${slugify(`${player.value.first_name} ${player.value.last_name}`)}`
   : null)
 
-const { data: lastLoginsData, isLoading: lastLoginsLoading } = usePlayersLastLoginsQuery()
+const { data: lastLoginsData, isLoading: lastLoginsLoading } = usePlayersLastLoginsQuery(isStaff)
 const lastSignInAt = computed(() => lastLoginsData.value
   ?.find(entry => entry.playerUuid === player.value?.uuid)?.lastSignInAt ?? null)
 
-const infoFields = computed<DetailField[]>(() => !player.value
+const infoFields = computed<DetailField[]>(() => (!player.value || !isStaff.value)
   ? []
   : [
     ...(player.value.pauperwave_associate_number
@@ -64,10 +64,14 @@ const infoFields = computed<DetailField[]>(() => !player.value
 // Backed by the trigger-populated player_login_history table (migration
 // 20260820100000), not the admin-API-backed last-logins.get.ts above — see
 // usePlayerLoginHistoryQuery.ts's own comment on why these two are separate.
-const userId = computed(() => player.value?.user_id)
+const userId = computed(() => (isStaff.value ? player.value?.user_id : undefined))
 const { data: loginHistory, isLoading: loginHistoryLoading } = usePlayerLoginHistoryQuery(userId)
 
 const loading = computed(() => playerLoading.value || lastLoginsLoading.value)
+
+// A player edits their own decks and only views everyone else's; admins manage any
+const canEditDecks = computed(() => can('manage-all-commander-decks')
+  || (!!currentUserId.value && player.value?.user_id === currentUserId.value))
 
 // "Storico Partite" + "Mazzi Commander", shown for every player, not just Commander regulars: there
 // is no "plays Commander" flag to gate on, and an empty state is an honest result for a player who
@@ -157,7 +161,7 @@ const { data: playerStats, isLoading: playerStatsLoading } = usePlayerStatsQuery
                   <DateWithRelativeTooltip :iso-string="player.created_at" :time="false" />
                 </dd>
               </div>
-              <div class="flex justify-between items-center gap-4">
+              <div v-if="isStaff" class="flex justify-between items-center gap-4">
                 <dt class="flex items-center gap-1.5 text-muted">
                   <UIcon :name="ICONS.clock" class="size-4 shrink-0" />
                   {{ t('player.columns.lastLogin') }}
@@ -172,7 +176,7 @@ const { data: playerStats, isLoading: playerStatsLoading } = usePlayerStatsQuery
         </div>
 
         <PlayersSingleLoginHistoryCard
-          v-if="player.user_id"
+          v-if="isStaff && player.user_id"
           :loading="loginHistoryLoading"
           :dates="loginHistory"
         />
@@ -191,6 +195,7 @@ const { data: playerStats, isLoading: playerStatsLoading } = usePlayerStatsQuery
           :loading="commanderDecksLoading"
           :player-uuid="playerUuid"
           :decks="commanderDecks"
+          :readonly="!canEditDecks"
         />
       </div>
     </template>

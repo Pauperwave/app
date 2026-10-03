@@ -8,10 +8,12 @@ import {
 import type { TableColumn } from '@nuxt/ui'
 import type { CommanderDeck } from '~/composables/players/useCommanderDecksQuery'
 
-const { playerUuid, decks } = defineProps<{
+const { playerUuid, decks, readonly = false } = defineProps<{
   loading: boolean
   playerUuid: string | undefined
   decks: CommanderDeck[] | undefined
+  // Only viewing: no bracket picker, edit or delete, and no way to add a deck
+  readonly?: boolean
 }>()
 
 const { t } = useI18n()
@@ -56,25 +58,41 @@ function lenderName(lenderUuid: string | null): string | null {
   return lender ? `${lender.first_name} ${lender.last_name}` : null
 }
 
-const columns: TableColumn<CommanderDeck>[] = [
+function bracketLabel(deck: CommanderDeck): string {
+  return deck.bracketLevel
+    ? t('player.deckBracket.chipSet', {
+      level: deck.bracketLevel,
+      name: t(BRACKET_LEVELS[deck.bracketLevel - 1]!.nameKey)
+    })
+    : t('player.deckBracket.chipUnset')
+}
+
+function bracketColor(deck: CommanderDeck) {
+  return deck.bracketLevel ? BRACKET_COLORS[deck.bracketLevel] : 'neutral'
+}
+
+const allColumns: TableColumn<CommanderDeck>[] = [
   {
     // An unset bracket sorts last in both directions
     accessorFn: deck => deck.bracketLevel ?? undefined,
     id: 'bracketLevel',
     header: ({ column }) => sortableHeader(t('player.commander.decksColumns.bracket'), column),
     sortUndefined: 'last',
-    cell: ({ row }) => h(UButton, {
-      size: 'xs',
-      variant: row.original.bracketLevel ? 'soft' : 'outline',
-      color: row.original.bracketLevel ? BRACKET_COLORS[row.original.bracketLevel] : 'neutral',
-      label: row.original.bracketLevel
-        ? t('player.deckBracket.chipSet', {
-          level: row.original.bracketLevel,
-          name: t(BRACKET_LEVELS[row.original.bracketLevel - 1]!.nameKey)
-        })
-        : t('player.deckBracket.chipUnset'),
-      onClick: () => openBracketModal(row.original)
-    })
+    cell: ({ row }) => {
+      if (readonly) {
+        return row.original.bracketLevel
+          ? h(UBadge, { color: bracketColor(row.original), variant: 'soft' }, () => bracketLabel(row.original))
+          : '—'
+      }
+
+      return h(UButton, {
+        size: 'xs',
+        variant: row.original.bracketLevel ? 'soft' : 'outline',
+        color: bracketColor(row.original),
+        label: bracketLabel(row.original),
+        onClick: () => openBracketModal(row.original)
+      })
+    }
   },
   {
     accessorKey: 'commander1Name',
@@ -162,6 +180,10 @@ const columns: TableColumn<CommanderDeck>[] = [
     ])
   }
 ]
+
+const columns = computed(() => (readonly
+  ? allColumns.filter(column => column.id !== 'actions')
+  : allColumns))
 </script>
 
 <template>
@@ -171,7 +193,7 @@ const columns: TableColumn<CommanderDeck>[] = [
         <UIcon :name="ICONS.commander" class="size-5 shrink-0 text-primary" />
         {{ t('player.commander.decksTitle') }}
       </span>
-      <PlayersSingleDeckCreateModal v-if="playerUuid" :player-uuid="playerUuid" />
+      <PlayersSingleDeckCreateModal v-if="playerUuid && !readonly" :player-uuid="playerUuid" />
     </template>
 
     <ListSkeleton v-if="loading" :columns="columns.length" />

@@ -74,6 +74,7 @@ export function useUserRole() {
 
   return {
     ...query,
+    userId,
     role,
     realRole,
     isPreviewing,

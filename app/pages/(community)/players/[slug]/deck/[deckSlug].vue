@@ -4,8 +4,6 @@
      specific commander_decks.uuid row, so stats stay scoped to this exact deck instance without
      a separate deck_stats view (see useCommanderDeckStatsQuery.ts) -->
 <script setup lang="ts">
-definePageMeta({ permission: 'view-players' })
-
 const route = useRoute()
 const { t } = useI18n()
 

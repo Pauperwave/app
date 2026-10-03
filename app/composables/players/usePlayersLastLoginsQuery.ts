@@ -11,11 +11,12 @@ export const PLAYERS_LAST_LOGINS_KEY = ['players-last-logins']
 // $fetch doesn't forward the request's auth cookies to this app's API route, so
 // requireManagementPermission sees no session and 401s. useRequestFetch() forwards them server-side
 // and is a no-op wrapper around $fetch on the client.
-export function usePlayersLastLoginsQuery() {
+export function usePlayersLastLoginsQuery(enabled: MaybeRefOrGetter<boolean> = true) {
   const requestFetch = useRequestFetch()
 
   return useQuery({
     key: PLAYERS_LAST_LOGINS_KEY,
+    enabled: () => toValue(enabled),
     query: () => requestFetch<PlayerLastLogin[]>('/api/players/last-logins')
   })
 }
