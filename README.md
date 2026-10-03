@@ -62,13 +62,15 @@ pnpm run supabase:types
 
 ## Bot Telegram
 
+[@PauperwaveBot](https://t.me/PauperwaveBot) mette in chat calendario, leghe e classifiche, iscrizioni e risultati ai tavoli, prezzi delle carte (CardMarket e CardTrader) e la lista delle carte cercate. Guida per chi lo usa: [`docs/telegram-bot/README.md`](docs/telegram-bot/README.md).
+
 Webhook via Nitro/h3 (grammY). Dopo il deploy, registra l'URL con Telegram:
 
 ```bash
 pnpm telegram:set-webhook   # richiede TELEGRAM_BOT_TOKEN/TELEGRAM_WEBHOOK_SECRET/NUXT_PUBLIC_SITE_URL nel .env
 ```
 
-Comandi e stato di ogni funzionalità: `docs/architecture/telegram-bot.md`. Chi viene notificato per quale evento: `docs/architecture/telegram-notifications.md`.
+Stato tecnico di ogni funzionalità: `docs/architecture/telegram-bot.md`. Chi viene notificato per quale evento: `docs/architecture/telegram-notifications.md`.
 
 ## Documentazione
 
