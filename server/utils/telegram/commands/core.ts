@@ -167,6 +167,24 @@ async function handleHelpButton(ctx: Context, next: () => Promise<void>) {
   await ctx.answerCallbackQuery()
 }
 
+// Same wording as the dashboard's VersionBadge ("Aggiornato 14 ore fa")
+const UPDATED_UNIT_LABELS = {
+  minutes: ['minuto', 'minuti'],
+  hours: ['ora', 'ore'],
+  days: ['giorno', 'giorni'],
+  months: ['mese', 'mesi'],
+  years: ['anno', 'anni']
+} as const
+
+function updatedLabel(isoDate: string): string | null {
+  const since = timeSince(isoDate)
+  if (!since) return null
+  if (since.unit === 'now') return 'Aggiornato adesso'
+
+  const [singular, plural] = UPDATED_UNIT_LABELS[since.unit]
+  return `Aggiornato ${since.count} ${since.count === 1 ? singular : plural} fa`
+}
+
 // Reads useRuntimeConfig().public on every call, not cached at module scope: a new deployment is a
 // new cold Nitro instance, so the refresh button can surface a newer gitCommitSha once traffic
 // rolls over
@@ -178,6 +196,9 @@ function statusText(): string {
     lines.push(`🏷️ ${gitCommitSha.slice(0, 7)}`)
     if (gitCommitDate) {
       lines.push(`${ICONS.date} ${formatTelegramDate(gitCommitDate, 'd MMMM yyyy \'alle\' HH:mm', { locale: it })}`)
+
+      const updated = updatedLabel(gitCommitDate)
+      if (updated) lines.push(updated)
     }
   }
 
