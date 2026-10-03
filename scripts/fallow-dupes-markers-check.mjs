@@ -7,6 +7,7 @@ import path from 'node:path'
 import { execSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
+// fallow-ignore-next-line security-sink -- this script's own location, no external input
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
 const files = execSync('git grep -l "fallow-ignore-next-line"', { cwd: root, encoding: 'utf8' })
@@ -15,6 +16,7 @@ const files = execSync('git grep -l "fallow-ignore-next-line"', { cwd: root, enc
 
 const broken = []
 for (const file of files) {
+  // fallow-ignore-next-line security-sink -- `file` is a path git grep printed for this repo
   const lines = fs.readFileSync(path.join(root, file), 'utf8').split('\n')
   for (let i = 0; i < lines.length; i++) {
     const markerLine = lines[i].trim()
