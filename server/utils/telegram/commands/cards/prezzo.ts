@@ -3,6 +3,7 @@ import type { Bot, Context } from 'grammy'
 import { GrammyError, InlineKeyboard } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 import type { InlineQueryResultArticle } from 'grammy/types'
+import type { ScryfallCard } from '#shared/types/scryfall'
 
 import { answerLoadError } from '../callbackErrors'
 import {
@@ -24,8 +25,7 @@ import {
   fetchScryfallCard,
   scryfallGet,
   scryfallOrNull,
-  toPrinting,
-  type ScryfallCard
+  toPrinting
 } from './scryfall'
 
 import { fetchCardtraderPrice } from '../../../priceRefresh'

@@ -1,11 +1,16 @@
 // server\utils\telegram\commands\cards\cercate.ts
 import type { Bot, Context } from 'grammy'
 
+import {
+  buildWantedCardRow,
+  isAlreadyWanted,
+  wantedChoiceFor
+} from '#shared/utils/wantedCards/wantedCardRow'
+
 import { answerLoadError } from '../callbackErrors'
 import { NOT_LINKED_MESSAGE, resolveAssociateUuidByChatId } from '../account/linking'
-import { WANT_CALLBACK_PREFIX, decodeWantState, effectiveFoil, type PriceLanguage } from './priceCard'
-import { fetchScryfallCard, toPrinting } from './scryfall'
-import { buildWantedCardRow, isAlreadyWanted } from './wantedRow'
+import { WANT_CALLBACK_PREFIX, decodeWantState, wantedLanguageOf, type PriceLanguage } from './priceCard'
+import { fetchScryfallCard } from './scryfall'
 
 import { resolveCardTraderBlueprint } from '../../../cardTrader'
 
@@ -19,9 +24,9 @@ const LANGUAGE_LABELS: Record<PriceLanguage, string> = { all: 'qualsiasi lingua'
 // message posted in a group, which has no chat of its own for this update)
 async function handleWantButton(ctx: Context, next: () => Promise<void>) {
   const data = ctx.callbackQuery?.data
-  const state = data ? decodeWantState(data) : null
   if (!data?.startsWith(WANT_CALLBACK_PREFIX)) return next()
 
+  const state = decodeWantState(data)
   if (!state || !ctx.from) {
     await ctx.answerCallbackQuery()
     return
@@ -40,8 +45,11 @@ async function handleWantButton(ctx: Context, next: () => Promise<void>) {
       return
     }
 
-    const printing = toPrinting(card)
-    const choice = { language: state.language, foil: effectiveFoil(printing, state) }
+    const choice = wantedChoiceFor(card, {
+      language: wantedLanguageOf(state.language),
+      foil: state.foil,
+      copies: 1
+    })
     const supabase = telegramServiceSupabaseClient()
 
     const { data: existing, error: existingError } = await supabase
@@ -60,7 +68,7 @@ async function handleWantButton(ctx: Context, next: () => Promise<void>) {
 
     const { error } = await supabase
       .from('pauperwave_wanted_cards')
-      .insert(buildWantedCardRow(card, printing, associateUuid, choice, new Date()))
+      .insert(buildWantedCardRow(card, associateUuid, choice, new Date()))
     if (error) throw error
 
     // Warms the CardTrader cache like the website's create endpoint does; failure is silent, the
@@ -69,9 +77,8 @@ async function handleWantButton(ctx: Context, next: () => Promise<void>) {
     if (token) resolveCardTraderBlueprint(supabase, token, card.id, card.set).catch(() => {})
 
     const finish = choice.foil ? ' · foil' : ''
-    const language = LANGUAGE_LABELS[choice.language]
     await ctx.answerCallbackQuery({
-      text: `✅ Aggiunta alle tue cercate:\n${card.name} (${card.set.toUpperCase()}) · ${language}${finish}`,
+      text: `✅ Aggiunta alle tue cercate:\n${card.name} (${card.set.toUpperCase()}) · ${LANGUAGE_LABELS[state.language]}${finish}`,
       show_alert: true
     })
   } catch (err) {

@@ -1,5 +1,6 @@
 // server\utils\telegram\commands\cards\priceCard.ts
 import { InlineKeyboard } from 'grammy'
+import { isFoilOnlyPrinting } from '#shared/utils/wantedCards/wantedCardRow'
 import { ICONS } from '../../icons'
 
 // Pure part of /prezzo: the filter state carried in callback_data, the inline result of each
@@ -102,7 +103,12 @@ export function decodeWantState(data: string): PriceState | null {
 
 // A printing with no nonfoil finish can only be priced as foil, like the wanted-cards price refresh
 export function isFoilForced(printing: PricePrinting): boolean {
-  return !printing.finishes.includes('nonfoil')
+  return isFoilOnlyPrinting(printing.finishes)
+}
+
+// "Tutte" is stored as no language preference
+export function wantedLanguageOf(language: PriceLanguage): string | null {
+  return language === 'all' ? null : language
 }
 
 // The foil toggle only makes sense when the printing exists in both finishes
