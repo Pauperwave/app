@@ -1,4 +1,5 @@
 {
+  "entry": ["test/stubs/supabaseServer.ts"],
   "ignorePatterns": [
     "shared/utils/types/database.ts",
     "changelog.config.ts",
