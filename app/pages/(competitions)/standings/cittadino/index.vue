@@ -4,11 +4,9 @@ const { t } = useI18n()
 
 useSeoMeta({ title: () => t('cittadino.breadcrumb') })
 
-// Own local search state, not part of the shared composable — PublicCittadinoPage.vue
-// has its own equivalent ref rather than sharing this one (both pages call
-// useCittadinoStandingsPage independently). Declared before that call below
-// since it threads through to useCittadinoTableColumns.ts for match
-// highlighting.
+// Own local search state, not part of the shared composable (PublicCittadinoPage.vue has its own
+// equivalent ref, as both pages call useCittadinoStandingsPage independently). Declared before that
+// call since it threads through to useCittadinoTableColumns.ts for match highlighting
 // fallow-ignore-next-line code-duplication -- see the same comment in PublicCittadinoPage.vue
 const search = ref('')
 
@@ -55,10 +53,9 @@ const tour = useCittadinoTour()
 
           <USeparator orientation="vertical" class="h-4" />
 
-          <!-- Same copy/open-link pair as associates/requests.vue's
-               tesseramento link — points at the public standings page
-               (/classifiche/cittadino, see PublicCittadinoPage.vue), not this
-               internal dashboard route. -->
+          <!-- The copy/open-link pair of associates/requests.vue's tesseramento link, pointing
+               at the public standings page (/classifiche/cittadino, see
+               PublicCittadinoPage.vue), not this internal dashboard route -->
           <div id="tour-cittadino-public-link">
             <CopyOpenLinkPair
               :url="publicUrl"

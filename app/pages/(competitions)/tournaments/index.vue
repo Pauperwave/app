@@ -1,8 +1,6 @@
 <!-- app\pages\(competitions)\tournaments\index.vue -->
 <script lang="ts" setup>
-// fallow-ignore-file code-duplication -- mirrors events/index.vue and
-// leagues/index.vue's mock-driven layout on purpose; expected to diverge
-// once real Supabase tables land
+// fallow-ignore-file code-duplication -- mirrors events/index.vue and leagues/index.vue on purpose
 import { add } from 'date-fns'
 import { getGroupedRowModel } from '@tanstack/vue-table'
 import type { DropdownMenuItem, TabsItem } from '@nuxt/ui'
@@ -15,9 +13,8 @@ useSeoMeta({ title: () => t('tournament.breadcrumb') })
 
 const { isModalOpen } = useModalOpenFromQuery()
 
-// Defaults to "Prossimo anno" (matches DateRangePicker's own next-year
-// preset, 2026-08-23 — was "Tutto") — upcoming tournaments are the common
-// case to land on, not the full history back to the mock-era fixtures.
+// Defaults to "Prossimo anno" (DateRangePicker's next-year preset): upcoming tournaments are the
+// common case to land on, not the full history
 const range = shallowRef<Range>({
   start: new Date(),
   end: add(new Date(), { years: 1 })
@@ -30,11 +27,10 @@ const {
 } = useTournamentsQuery({ includeTest: true })
 const data = computed(() => tournamentsData.value ?? [])
 
-// External (shop-organized, e.g. Magman) tournaments are tracked for
-// schedule comparison, not managed by Pauperwave — no acceptance/rounds/
-// awards flow exists for them, so their detail page has nothing meaningful
-// to show. Hidden from this list by default; toggled back on via the
-// eye button next to "Gestisci formati" (user request, 2026-09-07).
+// External (shop-organized, e.g. Magman) tournaments are tracked for schedule comparison, not
+// managed by Pauperwave: no acceptance/rounds/awards flow exists for them, so their detail page has
+// nothing to show. Hidden from this list by default; toggled back on via the eye button next to
+// "Gestisci formati"
 const showExternal = ref(false)
 const visibleData = computed(() => showExternal.value
   ? data.value
@@ -49,38 +45,31 @@ const formatUsageCounts = computed(() => {
   }
   return counts
 })
-// Single search box matching tournament name — same "next to the title,
-// before the refresh control" navbar placement as transactions/index.vue's
-// own search box (user request, 2026-08-30).
+// A single search box matching tournament name, in the "next to the title, before the refresh
+// control" navbar placement of transactions/index.vue's search box
 const search = ref('')
 
 const {
   statusFilter, formatFilter, filteredTournaments, statusTabs, formatTabs
 } = useTournamentsFilters(visibleData, range, search)
 
-// Every known tournament's date + status color + hover label (unfiltered by
-// range/status/format) — issue #37, DateRangePicker.vue's own UChip
-// density hint (and its tooltip, 2026-08-23 follow-up) while picking a
-// range, not just the currently-filtered subset. Label is name + stage
-// (tournamentStageText(), "Commander Casual — 1ª tappa") rather than
-// name + status — the dot's own color already encodes status, no need to
-// repeat it (user request, 2026-08-23).
+// Every known tournament's date + status color + hover label (unfiltered by range/status/format):
+// DateRangePicker.vue's UChip density hint (and tooltip) while picking a range, not just the
+// filtered subset. The label is name + stage (tournamentStageText(), "Commander Casual — 1ª tappa")
+// rather than name + status: the dot's color already encodes status
 const tournamentDates = computed(() => visibleData.value.map(tournament => ({
   date: new Date(tournament.startDate),
   color: tournamentStatusColor(tournament.status),
   label: `${tournament.name}${tournamentStageText(tournament)}`
 })))
 
-// Year quick-jump next to DateRangePicker (YearRangePicker.vue, user
-// request, 2026-08-31).
+// Year quick-jump next to DateRangePicker (YearRangePicker.vue)
 const availableYears = computed(() => availableTournamentYears(data.value))
 
-// undefined (ListSkeleton's own default count) only on a genuine first
-// load — isPending, unlike isLoading, is false once stale data exists to
-// show a real count from, even mid-refetch (e.g. the manual refresh
-// button). User request 2026-08-22: the skeleton should render as many
-// cards as the view is actually about to show, not a fixed guess, whenever
-// that's knowable.
+// undefined (ListSkeleton's default count) only on a genuine first load: isPending, unlike
+// isLoading, is false once stale data exists to show a real count from, even mid-refetch (e.g. the
+// manual refresh). The skeleton should render as many cards as the view is about to show, not a
+// fixed guess, whenever that's knowable
 const skeletonCount = computed(() =>
   (isPending.value ? undefined : filteredTournaments.value.length))
 const {
@@ -88,9 +77,8 @@ const {
 } = useCopyLinkContextMenu<Tournament>('/tournaments')
 const { editingTournament, editModalOpen, openEditModal } = useTournamentsRowActions()
 
-// "Copia torneo" (user request, 2026-08-29) — one AddModal instance reused
-// across every copy click, re-seeded via its sourceTournament prop, same
-// convention as events/[eventId]/index.vue's own click-to-create AddModal.
+// "Copia torneo": one AddModal instance reused across every copy click, re-seeded via its
+// sourceTournament prop, like events/[eventId]/index.vue's click-to-create AddModal
 const { copyModalOpen, copySourceTournament, openCopyModal } = useTournamentCopyModal()
 
 const selection = useSelection<number>()
@@ -100,13 +88,11 @@ const {
   requestEntryFeeChange, requestLeagueChange, requestDelete, confirmPendingAction
 } = useTournamentsBulkActions(selection)
 
-// Adds edit/copy/delete to the shared copy-link/copy-id items — tournaments
-// has real CRUD (unlike events/leagues, still pre-CRUD), so this stays a
-// tournaments-specific composable rather than growing
-// useCopyLinkContextMenu.ts a domain-specific branch. Delete goes through
-// requestDelete (confirm + undo toast), same as the bulk-actions bar's
-// delete, just fed a single-item array. Shared with
-// leagues/[leagueId]/index.vue's own tournament cards (2026-08-29).
+// Adds edit/copy/delete to the shared copy-link/copy-id items: tournaments has real CRUD (unlike
+// events/leagues, still pre-CRUD), so this stays a tournaments-specific composable rather than
+// giving useCopyLinkContextMenu.ts a domain branch. Delete goes through requestDelete (confirm +
+// undo toast), like the bulk-actions bar's delete fed a single-item array. Shared with
+// leagues/[leagueId]/index.vue's tournament cards
 const { tournamentContextMenuItems } = useTournamentContextMenuItems(
   rowContextMenuItems, openEditModal, openCopyModal, requestDelete
 )
@@ -114,10 +100,9 @@ const { tournamentContextMenuItems } = useTournamentContextMenuItems(
 const tableContextMenuItems = computed<DropdownMenuItem[]>(() =>
   contextMenuRow.value ? tournamentContextMenuItems(contextMenuRow.value) : [])
 
-// Selected tournaments resolved against the currently filtered set, not the
-// full unfiltered data — same reasoning as wanted-cards/index.vue's
-// selectedCards: a tournament hidden by the active status filter shouldn't
-// be actionable even if it stayed selected from before.
+// Selected tournaments resolve against the currently filtered set, not the full data (like
+// wanted-cards/index.vue's selectedCards): a tournament hidden by the active status filter isn't
+// actionable even if still selected
 const selectedTournaments = computed(() =>
   filteredTournaments.value.filter(tournament => selection.isSelected(tournament.id)))
 
@@ -139,11 +124,9 @@ const columnVisibility = ref<Record<string, boolean>>({
 })
 const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, columnHeaders)
 
-// Table-only (unlike wanted-cards, which also groups the grid into
-// sections) — grouping is only meaningful with the table's own columns.
-// One dimension at a time (not multi-level): league/format/location are
-// each already a single flat dimension, and stacking more than one adds
-// nesting complexity nobody asked for. Off by default.
+// Table-only (unlike wanted-cards, which also groups the grid into sections): grouping only makes
+// sense with the table's columns. One dimension at a time, not multi-level (league/format/location
+// are each a flat dimension, and stacking adds nesting complexity nobody needs). Off by default
 type GroupByOption = 'none' | 'status' | 'league' | 'format' | 'location'
 const groupBy = ref<GroupByOption>('none')
 const grouping = computed(() => groupBy.value === 'none' ? [] : [groupBy.value])
@@ -154,10 +137,9 @@ const groupByItems = computed(() => [
   { label: t('tournament.filters.groupByFormat'), value: 'format' as const },
   { label: t('tournament.filters.groupByLocation'), value: 'location' as const }
 ])
-// Icon-only dropdown trigger (compact by default, user request 2026-09-21)
-// instead of a labeled USelectMenu — same checkbox-items-in-a-UDropdownMenu
-// shape as StatusChangeBadge.vue's own quick-change menu, single-select via
-// `checked: item.value === groupBy.value` standing in for a radio group.
+// An icon-only dropdown trigger (compact by default) instead of a labeled USelectMenu: the
+// checkbox-items-in-a-UDropdownMenu shape of StatusChangeBadge.vue's quick-change menu,
+// single-select via `checked: item.value === groupBy.value` standing in for a radio group
 const groupByLabel = computed(() =>
   groupByItems.value.find(item => item.value === groupBy.value)?.label ?? '')
 const groupByMenuItems = computed<DropdownMenuItem[]>(() => groupByItems.value.map(item => ({
@@ -169,9 +151,8 @@ const groupByMenuItems = computed<DropdownMenuItem[]>(() => groupByItems.value.m
 
 const tour = useTournamentsTour()
 
-// Extracted out of the template (2026-08-17) once a 4th bulk-action type
-// (entryFee) would have made the inline ternary chain in ConfirmModal's
-// :title unreadable.
+// Extracted from the template once a 4th bulk-action type (entryFee) would have made the inline
+// ternary chain in ConfirmModal's :title unreadable
 const bulkConfirmTitle = computed(() => {
   const action = pendingAction.value
   if (!action) return ''
@@ -244,10 +225,9 @@ const bulkConfirmTitle = computed(() => {
 
       <UDashboardToolbar>
         <template #left>
-          <!-- Swapped for the bulk-actions bar (same row/height) while
-               there's a selection, instead of the filters — see
-               TournamentsListBulkActionsBar.vue for why this replaces rather
-               than adds a row. -->
+          <!-- Swapped for the bulk-actions bar (same row/height) while there is a selection,
+               instead of the filters: see TournamentsListBulkActionsBar.vue for why it replaces
+               rather than adds a row -->
           <TournamentsListBulkActionsBar
             v-if="selectedTournaments.length"
             side="left"
@@ -320,10 +300,9 @@ const bulkConfirmTitle = computed(() => {
     <template #body>
       <div id="tour-tournaments-content">
         <template v-if="viewMode === 'table'">
-          <!-- ListSkeleton only for a genuine first load (isPending, no
-               cached rows yet) — a background refetch keeps the existing
-               rows and uses UTable's own :loading bar instead, same
-               convention as associates/index.vue. -->
+          <!-- ListSkeleton only for a genuine first load (isPending, no cached rows yet): a
+               background refetch keeps the rows and uses UTable's :loading bar, like
+               associates/index.vue -->
           <ListSkeleton
             v-if="isPending"
             :count="skeletonCount"
@@ -354,12 +333,10 @@ const bulkConfirmTitle = computed(() => {
           </UContextMenu>
         </template>
 
-        <!-- Grid/dense modes' own loading state lives in Card.vue/DenseCard.vue
-             now (2026-08-22) — no separate ListSkeleton grid variant, see
-             their own comments for why. :loading is isPending, not isLoading
-             (2026-08-22) — same fix as the table view above: a background
-             refresh keeps the real cards, only a genuine first load shows
-             the skeleton grid. -->
+        <!-- Grid/dense modes' loading state lives in Card.vue/DenseCard.vue (no separate
+             ListSkeleton grid variant, see their comments). :loading is isPending, not
+             isLoading, like the table view above: a background refresh keeps the real cards,
+             only a genuine first load shows the skeleton grid -->
         <TournamentsListDenseView
           v-else-if="viewMode === 'dense'"
           :tournaments="filteredTournaments"

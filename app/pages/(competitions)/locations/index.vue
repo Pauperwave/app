@@ -3,9 +3,8 @@
 import type { DropdownMenuItem, TabsItem } from '@nuxt/ui'
 import type { Location } from '~/types'
 
-// Was nav-hidden only (sidebar gated on manage-locations, the route itself
-// wide open to any authenticated user) — closed 2026-08-29, see the
-// permissions.vue table's own statusNote on why this was flagged.
+// The route is gated like the sidebar link (manage-locations): it used to be nav-hidden only, with
+// the route open to any authenticated user (see the permissions.vue table's statusNote)
 definePageMeta({ permission: 'manage-locations' })
 
 const { isModalOpen } = useModalOpenFromQuery()
@@ -41,8 +40,8 @@ function locationContextMenuItems(location: Location): DropdownMenuItem[] {
   ]
 }
 
-// TODO non è il caso di estrarre una piccola utility dato che uso lo stesso pattern in più punti?
-// mi riferisco alla grid/table buttons
+// TODO: extract a small utility for the grid/table view-mode buttons, as the same pattern repeats
+// in several places?
 const viewMode = ref<'table' | 'grid'>('grid')
 const viewModeItems = computed<TabsItem[]>(() => [
   { label: t('location.views.grid'), value: 'grid', icon: ICONS.grid },
@@ -85,12 +84,10 @@ const tour = useLocationsTour()
     <template #body>
       <div id="tour-locations-content">
         <template v-if="viewMode === 'table'">
-          <!-- ListSkeleton only for a genuine first load (isPending, no
-             cached rows yet) — a background refetch (e.g. the manual
-             refresh button) keeps the existing rows and uses UTable's own
-             :loading bar instead, same convention as associates/index.vue.
-             Swapping the whole table out on every refresh (the previous
-             behavior here) was flagged as worse UX than associates' -->
+          <!-- ListSkeleton only for a genuine first load (isPending, no cached rows yet): a
+               background refetch (e.g. the manual refresh) keeps the rows and uses UTable's
+               :loading bar, like associates/index.vue (swapping the whole table out on every
+               refresh was worse UX) -->
           <ListSkeleton
             v-if="isPending"
             :count="skeletonCount"
@@ -111,11 +108,10 @@ const tour = useLocationsTour()
           </UContextMenu>
         </template>
 
-        <!-- Grid mode's own loading state lives in GridView.vue/Card.vue —
-             no separate ListSkeleton grid variant, see their own comments.
-             :loading is isPending, not isLoading (2026-08-22) — same fix as
-             the table view above: a background refresh keeps the real
-             cards, only a genuine first load shows the skeleton grid. -->
+        <!-- Grid mode's loading state lives in GridView.vue/Card.vue (no separate ListSkeleton
+             grid variant, see their comments). :loading is isPending, not isLoading, like the
+             table view above: a background refresh keeps the real cards, only a genuine first
+             load shows the skeleton grid -->
         <LocationsListGridView
           v-else
           :locations="locations"

@@ -1,8 +1,6 @@
 <!-- app\pages\(community)\associate\[slug].vue -->
 <script setup lang="ts">
-// fallow-ignore-file code-duplication -- the UDashboardPanel navbar/toolbar/breadcrumb
-// header skeleton mirrors other detail pages (events/leagues/tournaments); these are
-// still mock-data pages, expected to change dramatically once real functionality lands
+// fallow-ignore-file code-duplication -- header skeleton mirrors other detail pages
 import { format, parseISO } from 'date-fns'
 
 interface DetailField {
@@ -25,10 +23,9 @@ const { breadcrumbItems } = useBreadcrumbs()
 const associate = computed(() => (associates.value ?? [])
   .find(item => slugify(`${item.first_name} ${item.last_name}`) === route.params.slug))
 
-// Reverse direction of players/[playerId]/index.vue's own "Vedi la scheda
-// associato" link (2026-08-20 user request) — not every associate has a
-// linked player row (players are created on first tesseramento-adjacent
-// login, not at signup), so this can legitimately be null.
+// The reverse of players/[playerId]/index.vue's "Vedi la scheda associato" link: not every
+// associate has a linked player row (players are created on the first tesseramento-adjacent login,
+// not at signup), so this can be null
 const { data: players } = usePlayersQuery()
 
 // Linked to the bot but with no Telegram username: there is no profile to link to.
@@ -93,12 +90,10 @@ const contattiFields = computed<DetailField[]>(() => !associate.value
     { icon: ICONS.mailbox, label: t('associate.columns.residencyCap'), value: associate.value.residency_cap }
   ])
 
-// pauperwave_associate_number/membership_status/associate_type don't go
-// through this list — all three render as their real badge component
-// (AssociateNumberBadge/MembershipStatusBadge/AssociateTypeBadge) in the
-// card's #before slot instead of plain translated text, same as the table
-// (bug, user report 2026-08-27: associate_type was the odd one out, still
-// plain text here despite the other two already being badges).
+// pauperwave_associate_number/membership_status/associate_type don't go through this list: all
+// three render as their real badge component
+// (AssociateNumberBadge/MembershipStatusBadge/AssociateTypeBadge) in the card's #before slot, like
+// the table
 const tesseramentoFields = computed<DetailField[]>(() => !associate.value
   ? []
   : [
@@ -107,10 +102,9 @@ const tesseramentoFields = computed<DetailField[]>(() => !associate.value
     { icon: ICONS.creditCard, label: t('associate.columns.lastRenewalDate'), value: formatDate(associate.value.latest_renewal_date) || '—' }
   ])
 
-// Boolean values, not yes/no strings — rendered via <ConsentBadge>, the same
-// component now used by the table's consent_data/consent_social/
-// has_read_statute/has_acknowledged_surveillance_notice columns
-// (useAssociatesTableColumns.ts, associates/index.vue).
+// Boolean values, not yes/no strings: rendered via <ConsentBadge>, the component also used by the
+// table's consent_data/consent_social/has_read_statute/has_acknowledged_surveillance_notice columns
+// (useAssociatesTableColumns.ts, associates/index.vue)
 const consensiFields = computed<ConsentField[]>(() => !associate.value
   ? []
   : [
@@ -120,10 +114,9 @@ const consensiFields = computed<ConsentField[]>(() => !associate.value
     { icon: ICONS.show, label: t('associate.columns.hasAcknowledgedSurveillanceNotice'), value: associate.value.has_acknowledged_surveillance_notice }
   ])
 
-// Transactions history, filtered client-side out of the same cached query
-// /transactions itself uses — no dedicated per-associate endpoint, the whole
-// table is already fetched and small enough (same reasoning as
-// useAssociatesTableColumns.ts resolving updated_by/created_by client-side).
+// Transactions history, filtered client-side out of the cached query /transactions uses: no
+// per-associate endpoint, as the whole table is already fetched and small (like
+// useAssociatesTableColumns.ts resolving updated_by/created_by client-side)
 const {
   data: transactions,
   isLoading: transactionsLoading,
@@ -134,18 +127,16 @@ const associateTransactions = computed(() => (transactions.value ?? [])
 
 const amountFormatter = AMOUNT_FORMATTER
 
-// Same league-relative stage numbering /transactions and /tournaments show
-// (assignTournamentStageNumbers) — reused here rather than re-derived, and
-// deduped against the 'tournaments' key by Pinia Colada if either page is
-// already open.
+// The league-relative stage numbering /transactions and /tournaments show
+// (assignTournamentStageNumbers), reused rather than re-derived and deduped against the
+// 'tournaments' key by Pinia Colada if either page is open
 const { data: allTournaments } = useTournamentsQuery()
 const tournamentsByUuid = computed(() =>
   new Map((allTournaments.value ?? []).map(tournament => [tournament.uuid, tournament])))
 
-// Read-only summary, not the full /transactions table columns
-// (useTransactionsTableColumns.ts) — no selection/grouping/row-actions here,
-// this is a per-associate history embedded in a bigger detail page, not a
-// management surface of its own.
+// Read-only summary, not the full /transactions table columns (useTransactionsTableColumns.ts): no
+// selection/grouping/row-actions, as this is a per-associate history in a bigger detail page, not a
+// management surface
 const { columns: associateTransactionsColumns } = useAssociateTransactionsTableColumns(
   tournamentsByUuid, amountFormatter
 )

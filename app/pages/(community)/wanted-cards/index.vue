@@ -11,11 +11,10 @@ const { t } = useI18n()
 
 useSeoMeta({ title: () => t('wantedCard.breadcrumb') })
 
-// ---- Data & tour --------------------------------------------------------
-// isPending (not isLoading): isLoading is true for any fetch in flight, including
-// background refetches after invalidateQueries (e.g. changing a card's status) —
-// that would unmount the table/grid on every mutation. isPending is only true while
-// there is still no data in the cache.
+// ---- Data & tour -------------------------------------------------------- isPending (not
+// isLoading): isLoading is true for any fetch in flight, including background refetches after
+// invalidateQueries (e.g. changing a card's status), which would unmount the table/grid on every
+// mutation. isPending is only true while the cache has no data
 const {
   data: wantedCardsData, isPending: loading, isLoading, status, refetch
 } = useWantedCardsQuery()
@@ -23,26 +22,23 @@ const data = computed(() => wantedCardsData.value ?? [])
 
 const tour = useWantedCardsTour()
 
-// ---- Add-card entry points ------------------------------------------------
-// Same "?action=create" convention as associates/requests, tournaments,
-// leagues and events (useModalOpenFromQuery) — lets the command palette's
-// "New wanted card" action land here with the Add modal already open.
+// ---- Add-card entry points ------------------------------------------------ The "?action=create"
+// convention of associates/requests, tournaments, leagues and events (useModalOpenFromQuery): lets
+// the command palette's "New wanted card" action land here with the Add modal open
 const { isModalOpen: addModalOpen } = useModalOpenFromQuery()
 
-// Drag a card image off Scryfall onto the page to open the Add modal with
-// its name pre-filled (user request 2026-08-15, useScryfallDragDrop.ts).
-// Whole document as the drop target, not a scoped template ref — a card
-// dropped anywhere on the page (not just over the table/grid) should work,
-// and a failed parse (not a Scryfall image) already does nothing either way.
+// Drag a card image off Scryfall onto the page to open the Add modal with its name pre-filled
+// (useScryfallDragDrop.ts). The whole document is the drop target, not a scoped template ref: a
+// card dropped anywhere on the page should work, and a failed parse (not a Scryfall image) does
+// nothing either way
 const draggedCard = ref<DroppedCardInfo | null>(null)
 const { isOverDropZone } = useScryfallDragDrop(() => document.body, (card) => {
   draggedCard.value = card
   addModalOpen.value = true
 })
 
-// ---- View mode (grid/table toggle) ---------------------------------------
-// Default to dense (user request, 2026-08-29) — was 'grid' until the third
-// "Compatta" mode landed, now the tighter view is the expected default.
+// ---- View mode (grid/table toggle) --------------------------------------- Defaults to dense: the
+// tighter view is the expected default now that the third "Compatta" mode exists
 const viewMode = ref<'table' | 'grid' | 'dense'>('dense')
 const viewModeItems = computed<TabsItem[]>(() => [
   { label: t('wantedCard.views.grid'), value: 'grid', icon: ICONS.grid },
@@ -50,11 +46,9 @@ const viewModeItems = computed<TabsItem[]>(() => [
   { label: t('wantedCard.views.table'), value: 'table', icon: ICONS.table }
 ])
 
-// A tour step can declare `requiresCardView: true` (see
-// useWantedCardsTour.ts's own comment) when its target only exists in grid/
-// dense — table has no per-card anchor at all. Switches away from 'table'
-// before that step becomes current, rather than the popover silently
-// failing to find its target (user request, 2026-08-29).
+// A tour step can declare `requiresCardView: true` (see useWantedCardsTour.ts) when its target only
+// exists in grid/dense (table has no per-card anchor): this switches away from 'table' before that
+// step becomes current, instead of the popover failing to find its target
 watch(() => tour.current.value, (step) => {
   if (step?.requiresCardView && viewMode.value === 'table') viewMode.value = 'dense'
 })
@@ -115,16 +109,15 @@ const grouping = ref<string[]>([])
 const sorting = ref([{ id: 'player', desc: true }])
 
 const table = useTemplateRef<VisibilityTableRef>('table')
-// "Status" hidden by default: it is already implied by the active Found/Searching tab.
-// updatedAt/createdBy/updatedBy (audit trail, added 2026-08-18): hidden by
-// default, same "not needed at a glance" reasoning as associates' own
-// traceability columns.
+// "Status" is hidden by default: it is implied by the active Found/Searching tab.
+// updatedAt/createdBy/updatedBy (audit trail) are hidden by default too, like associates'
+// traceability columns
 const columnVisibility = ref({
   status: false, createdAt: false, updatedAt: false, createdBy: false, updatedBy: false
 })
 
-// "Mostra colonne" section divider: card/request details vs. audit trail
-// (see columnVisibilityGroups.ts, user request 2026-08-27).
+// "Mostra colonne" section divider: card/request details vs audit trail (see
+// columnVisibilityGroups.ts)
 const columnVisibilityItems = useColumnVisibilityItems(
   table, columnVisibility, columnHeaders, ['createdBy']
 )
@@ -160,9 +153,8 @@ const sortedCards = computed(() => {
     else if (field === 'cardName') diff = a.cardName.localeCompare(b.cardName)
     else if (field === 'cardmarketPrice') diff = (a.cardmarketPrice ?? 0) - (b.cardmarketPrice ?? 0)
     else if (field === 'date') diff = (a.date || '').localeCompare(b.date || '')
-    // Finer than the table's "Mana" column sort (2026-08-15 user request):
-    // color count/identity in WUBRG order (e.g. White, then Black, then White-
-    // Black) as the second level, ascending mana cost as the third.
+    // Finer than the table's "Mana" column sort: color count/identity in WUBRG order (White, then
+    // Black, then White-Black) as the second level, ascending mana cost as the third
     else if (field === 'color') {
       diff = compareColorIdentity(a.colorIdentity, b.colorIdentity)
       if (diff === 0) diff = a.cmc - b.cmc
@@ -176,10 +168,9 @@ interface GridSection {
   cards: WantedCard[]
 }
 
-// Same `grouping` state as the table (the "Group by player" toggle in the "Show
-// columns" menu), translated into always-open sections with a heading rather than
-// expandable rows — there is no natural equivalent of a collapsible row in a grid
-// of visual cards.
+// The same `grouping` state as the table (the "Group by player" toggle in the "Show columns" menu),
+// as always-open sections with a heading rather than expandable rows: a grid of visual cards has no
+// natural collapsible row
 const gridSections = computed<GridSection[]>(() => {
   if (!grouping.value.length) return [{ player: null, cards: sortedCards.value }]
 
@@ -234,14 +225,12 @@ const gridSections = computed<GridSection[]>(() => {
         </template>
       </UDashboardNavbar>
 
-      <!-- UDashboardToolbar in #header, like DateRangePicker in
-           transactions/index.vue — #left/#right are the official filters/view
-           split (flex justify-between). Status and Treatment share the same
-           visual language (a UFieldGroup of toggle buttons) instead of mixing
-           UTabs (pills) with flat buttons. -->
-      <!-- flex-wrap overrides Nuxt UI's default overflow-x-auto: on mobile the
-           filters wrap onto several rows instead of ending up in a hidden
-           horizontal scroll. -->
+      <!-- UDashboardToolbar in #header, like DateRangePicker in transactions/index.vue:
+           #left/#right are the official filters/view split (flex justify-between). Status and
+           Treatment share one visual language (a UFieldGroup of toggle buttons) instead of
+           mixing UTabs (pills) with flat buttons -->
+      <!-- flex-wrap overrides Nuxt UI's default overflow-x-auto: on mobile the filters wrap
+           onto several rows instead of hiding in a horizontal scroll -->
       <UDashboardToolbar
         :ui="{
           root: 'flex-wrap h-auto py-2 gap-4',
@@ -250,19 +239,18 @@ const gridSections = computed<GridSection[]>(() => {
         }"
       >
         <template #left>
-          <!-- Swapped for the bulk-actions bar (same row/height) while there's
-               a selection, instead of the filters — see BulkActionsBar.vue for
-               why this replaces rather than adds a row. -->
+          <!-- Swapped for the bulk-actions bar (same row/height) while there is a selection,
+               instead of the filters: see BulkActionsBar.vue for why it replaces rather than
+               adds a row -->
           <WantedCardsListBulkActionsBar
             v-if="selectedCards.length"
             side="left"
             :count="selectedCards.length"
             @clear="selection.clear()"
           />
-          <!-- Wrapper with a dedicated id purely to anchor the guided tour to
-               the whole filters area (see useWantedCardsTour) — the class
-               mirrors UDashboardToolbar's ui.left (gap-4 flex-wrap) so the
-               layout stays identical, just nested one level deeper. -->
+          <!-- Wrapper with a dedicated id purely to anchor the guided tour to the whole filters
+               area (see useWantedCardsTour): the class mirrors UDashboardToolbar's ui.left
+               (gap-4 flex-wrap), so the layout is identical, nested one level deeper -->
           <div
             v-else
             id="tour-wanted-cards-filters"
@@ -292,9 +280,8 @@ const gridSections = computed<GridSection[]>(() => {
             @copy-names="bulkCopyNames(selectedCards)"
             @refresh-prices="bulkRefreshPrices(selectedCards)"
           />
-          <!-- Same reason as the #left wrapper: a dedicated id to anchor the
-               tour to the whole view area, with classes mirroring ui.right
-               (gap-4 flex-wrap). -->
+          <!-- Same as the #left wrapper: a dedicated id to anchor the tour to the whole view
+               area, with classes mirroring ui.right (gap-4 flex-wrap) -->
           <div
             v-else
             id="tour-wanted-cards-view-controls"
@@ -353,8 +340,8 @@ const gridSections = computed<GridSection[]>(() => {
     </template>
   </UDashboardPanel>
 
-  <!-- Shown while dragging a card over the page (useScryfallDragDrop.ts) —
-       purely a visual affordance, the actual drop handling doesn't need it. -->
+  <!-- Shown while dragging a card over the page (useScryfallDragDrop.ts): a visual affordance
+       only, the drop handling doesn't need it -->
   <div
     v-if="isOverDropZone"
     class="fixed inset-4 z-50 pointer-events-none flex items-center justify-center rounded-xl border-2 border-dashed border-primary bg-black/80"

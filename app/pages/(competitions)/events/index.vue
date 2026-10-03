@@ -1,8 +1,6 @@
 <!-- app\pages\(competitions)\events\index.vue -->
 <script lang="ts" setup>
-// fallow-ignore-file code-duplication -- mirrors leagues/index.vue and
-// tournaments/index.vue's mock-driven layout on purpose; expected to diverge
-// once real Supabase tables land
+// fallow-ignore-file code-duplication -- mirrors leagues/ and tournaments/index.vue on purpose
 import { add } from 'date-fns'
 import { getGroupedRowModel } from '@tanstack/vue-table'
 import type { DropdownMenuItem, TabsItem } from '@nuxt/ui'
@@ -11,8 +9,7 @@ import type { Event, Range } from '~/types'
 
 const { isModalOpen } = useModalOpenFromQuery()
 
-// Defaults to "Prossimo anno" (matches DateRangePicker's own next-year
-// preset, 2026-08-23 — was "Tutto"), same reasoning as tournaments/index.vue.
+// Defaults to "Prossimo anno" (DateRangePicker's next-year preset), like tournaments/index.vue
 const range = shallowRef<Range>({
   start: new Date(),
   end: add(new Date(), { years: 1 })
@@ -26,9 +23,8 @@ const {
   data: eventsData, isLoading: loading, isPending, status, refetch
 } = useEventsQuery()
 const data = computed(() => eventsData.value ?? [])
-// Single search box matching event name — same "next to the title, before
-// the refresh control" navbar placement as transactions/index.vue's own
-// search box (user request, 2026-08-30).
+// A single search box matching event name, in the "next to the title, before the refresh control"
+// navbar placement of transactions/index.vue's search box
 const search = ref('')
 
 const { statusFilter, filteredEvents, statusTabs } = useEventsFilters(data, range, search)
@@ -40,8 +36,7 @@ const eventDates = computed(() => data.value.map(event => ({
   label: event.name
 })))
 
-// Year quick-jump next to DateRangePicker (YearRangePicker.vue, user
-// request, 2026-08-31).
+// Year quick-jump next to DateRangePicker (YearRangePicker.vue)
 const availableYears = computed(() => availableEventYears(data.value))
 
 // undefined (ListSkeleton's/GridView's own default count) only on a genuine
@@ -51,8 +46,7 @@ const skeletonCount = computed(() => (isPending.value ? undefined : filteredEven
 const { rowContextMenuItems, onRowContextmenu, contextMenuRow } = useCopyLinkContextMenu<Event>('/events')
 const { editingEvent, editModalOpen, openEditModal } = useEventsRowActions()
 
-// "Copia evento" (user request, 2026-08-29) — same reusable-instance
-// convention as tournaments/index.vue's own copy action.
+// "Copia evento": the same reusable-instance convention as tournaments/index.vue's copy action
 const copyModalOpen = ref(false)
 const copySourceEvent = shallowRef<Event | null>(null)
 function openCopyModal(event: Event) {
@@ -67,8 +61,8 @@ const {
   requestDelete, confirmPendingAction
 } = useEventsBulkActions(selection)
 
-// Adds edit/delete to the shared copy-link/copy-id items — same reasoning as
-// leagues/index.vue's own leagueContextMenuItems().
+// Adds edit/delete to the shared copy-link/copy-id items, like leagues/index.vue's
+// leagueContextMenuItems()
 function eventContextMenuItems(event: Event): DropdownMenuItem[] {
   return [
     ...rowContextMenuItems(event),
@@ -88,8 +82,8 @@ function eventContextMenuItems(event: Event): DropdownMenuItem[] {
 const tableContextMenuItems = computed<DropdownMenuItem[]>(() =>
   contextMenuRow.value ? eventContextMenuItems(contextMenuRow.value) : [])
 
-// Selected events resolved against the currently filtered set, not the full
-// unfiltered data — same reasoning as leagues/index.vue's selectedLeagues.
+// Selected events resolve against the currently filtered set, not the full data (like
+// leagues/index.vue's selectedLeagues)
 const selectedEvents = computed(() =>
   filteredEvents.value.filter(event => selection.isSelected(event.id)))
 
@@ -106,8 +100,8 @@ const table = useTemplateRef<VisibilityTableRef>('table')
 const columnVisibility = ref<Record<string, boolean>>({ duration: false, locationCity: false })
 const columnVisibilityItems = useColumnVisibilityItems(table, columnVisibility, columnHeaders)
 
-// Table-only, off by default — same convention as leagues/index.vue's
-// groupBy; the grid view always sections by status on its own.
+// Table-only, off by default, like leagues/index.vue's groupBy; the grid view always sections by
+// status on its own
 type GroupByOption = 'none' | 'status'
 const groupBy = ref<GroupByOption>('none')
 const grouping = computed(() => groupBy.value === 'none' ? [] : [groupBy.value])
@@ -179,10 +173,9 @@ const bulkConfirmTitle = computed(() => {
 
       <UDashboardToolbar>
         <template #left>
-          <!-- Swapped for the bulk-actions bar (same row/height) while
-               there's a selection, instead of the filters — see
-               TournamentsListBulkActionsBar.vue for why this replaces rather
-               than adds a row. -->
+          <!-- Swapped for the bulk-actions bar (same row/height) while there is a selection,
+               instead of the filters: see TournamentsListBulkActionsBar.vue for why it replaces
+               rather than adds a row -->
           <EventsListBulkActionsBar
             v-if="selectedEvents.length"
             side="left"
@@ -234,10 +227,9 @@ const bulkConfirmTitle = computed(() => {
     <template #body>
       <div id="tour-events-content">
         <template v-if="viewMode === 'table'">
-          <!-- ListSkeleton only for a genuine first load (isPending, no
-               cached rows yet) — a background refetch keeps the existing
-               rows and uses UTable's own :loading bar instead, same
-               convention as associates/index.vue. -->
+          <!-- ListSkeleton only for a genuine first load (isPending, no cached rows yet): a
+               background refetch keeps the rows and uses UTable's :loading bar, like
+               associates/index.vue -->
           <ListSkeleton
             v-if="isPending"
             :count="skeletonCount"
@@ -266,11 +258,10 @@ const bulkConfirmTitle = computed(() => {
           </UContextMenu>
         </template>
 
-        <!-- Grid mode's own loading state lives in GridView.vue/Card.vue —
-             no separate ListSkeleton grid variant, see their own comments.
-             :loading is isPending, not isLoading — a background refresh
-             keeps the real cards, only a genuine first load shows the
-             skeleton grid. -->
+        <!-- Grid mode's loading state lives in GridView.vue/Card.vue (no separate ListSkeleton
+             grid variant, see their comments). :loading is isPending, not isLoading, like the
+             table view above: a background refresh keeps the real cards, only a genuine first
+             load shows the skeleton grid -->
         <EventsListGridView
           v-else
           :events="filteredEvents"

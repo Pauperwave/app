@@ -1,12 +1,8 @@
 <!-- app\pages\(analytics)\statistics\commanders\[commanderSlug].vue -->
-<!--
-  Commander detail page — ported from MagicTheGathering/league's
-  pages/commander/[commanderSlug].vue (user request 2026-09-16: copy the
-  decks/commanders/bracket features, adapted to this app). league links
-  "decks featuring this commander" to its own per-player deck detail page
-  (/player/[slug]/deck/[deckSlug]), which this app doesn't have — links to
-  the player's own /players/[slug] page instead.
--->
+<!-- Commander detail page, ported from league's pages/commander/[commanderSlug].vue (adapted to
+     this app). league links "decks featuring this commander" to its per-player deck detail page
+     (/player/[slug]/deck/[deckSlug]), which this app doesn't have: it links to the player's
+     /players/[slug] page instead. -->
 <script setup lang="ts">
 const route = useRoute()
 const commanderSlug = route.params.commanderSlug as string

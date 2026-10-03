@@ -1,18 +1,15 @@
 <!-- app\pages\telegram\turni.vue -->
 <script setup lang="ts">
-// Aiuto al tavolo durante un round Pauper/Premodern (Bo3, 50 minuti): timer,
-// punteggio partite del match e — a timer scaduto, al posto del timer stesso
-// — contatore dei turni aggiuntivi con indicazione di chi è il turno attivo.
-// Tutto stato puramente locale (nessuna persistenza/backend, nessuna
-// condivisione tra i due telefoni al tavolo per ora — vedi conversazione con
-// l'utente): aiuta i giocatori a tenere il conto, non alimenta risultati
-// ufficiali (che oggi comunque non hanno un flusso di pairing live, vedi
-// /risultato mockup). Una sola schermata, senza scroll, pensata per
-// sfruttare tutto lo spazio verticale disponibile (layout telegram.vue).
+// Table helper for a Pauper/Premodern round (Bo3, 50 minutes): timer, match game score and, once
+// the timer runs out, the extra-turns counter in place of the timer, showing whose turn is active.
+// All state is purely local (no persistence/backend, nothing shared between the two phones at the
+// table for now): it helps players keep count and feeds no official results (which have no live
+// pairing flow yet, see the /risultato mockup). A single screen without scroll, using all the
+// vertical space available (telegram.vue layout).
 //
-// Stato e logica vivono nei composable in app/composables/telegram/ (uno
-// per sezione) — questa pagina si limita a comporli e a collegare i loro
-// eventi ai rispettivi componenti presentazionali in app/components/telegram/.
+// State and logic live in the composables in app/composables/telegram/ (one per section): this page
+// only composes them and wires their events to the presentational components in
+// app/components/telegram/
 definePageMeta({ layout: 'telegram' })
 
 const roundTimer = useRoundTimer()
@@ -24,9 +21,9 @@ function onTimerReset() {
   telegramHaptic()?.impactOccurred('light')
 }
 
-// Unico modo per tornare al timer una volta scaduto: la sezione turni resta
-// visibile finché roundTimer.timeIsUp è true (vedi v-if/v-else sotto), quindi
-// il reset dei turni deve azzerare anche il timer, non solo il contatore.
+// The only way back to the timer once expired: the turns section stays visible while
+// roundTimer.timeIsUp is true (see v-if/v-else below), so resetting the turns must reset the timer
+// too, not just the counter
 function onTurnsReset() {
   extraTurns.reset()
   roundTimer.reset()

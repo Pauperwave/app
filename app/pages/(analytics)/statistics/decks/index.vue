@@ -1,9 +1,8 @@
 <!-- app\pages\(analytics)\statistics\decks\index.vue -->
-<!-- Deck-pairing browsing hub — ported from MagicTheGathering/league's
-     pages/decks/index.vue (user request, 2026-09-17: restore the feature
-     league had that never made it into this app's first commander-pages
-     port). Simpler than league's version: commander_stats already has one
-     row per unique commander pair, so there's no separate dedup step. -->
+<!-- Deck-pairing browsing hub, ported from league's pages/decks/index.vue (the feature that
+     never made it into this app's first commander-pages port). Simpler than league's:
+     commander_stats already has one row per unique commander pair, so there is no separate
+     dedup step -->
 <script setup lang="ts">
 import type { TableColumn, TabsItem } from '@nuxt/ui'
 import { NuxtLink } from '#components'

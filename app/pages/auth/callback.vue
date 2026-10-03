@@ -3,17 +3,15 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'auth' })
 
-// `useSupabaseSession` reflects the auth state synchronously from
-// `onAuthStateChange` and doesn't depend on the module's `getClaims()` call,
-// which can silently reject (no .catch()) and leave `useSupabaseUser()` stuck
-// at null even after a successful login.
+// `useSupabaseSession` reflects the auth state synchronously from `onAuthStateChange` and doesn't
+// depend on the module's `getClaims()`, which can silently reject (no .catch()) and leave
+// `useSupabaseUser()` stuck at null after a successful login
 const session = useSupabaseSession()
 const route = useRoute()
 
-// /tesseramento's OTP step passes ?redirect=/tesseramento (see its
-// emailRedirectTo) so the magic link lands the applicant back on their form
-// instead of the dashboard — defaults to '/' for every other caller (the
-// regular /login flow never sets this param).
+// /tesseramento's OTP step passes ?redirect=/tesseramento (see its emailRedirectTo) so the magic
+// link lands the applicant back on their form instead of the dashboard; defaults to '/' for every
+// other caller (the regular /login flow never sets it)
 const redirectTarget = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
 
 const failed = ref(false)

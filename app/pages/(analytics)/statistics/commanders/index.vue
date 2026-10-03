@@ -1,13 +1,8 @@
 <!-- app\pages\(analytics)\statistics\commanders\index.vue -->
-<!--
-  Commander catalog browse page — ported from MagicTheGathering/league's
-  pages/commanders/index.vue (user request 2026-09-16: copy the
-  decks/commanders/bracket features, adapted to this app), filling in what
-  was a bare title-only stub. Reads commander_stats (migration
-  20260919040000, a plain view — league's own commander_stats is a
-  MATERIALIZED view needing a manual refresh, not needed at this app's
-  scale) + the existing commander catalog (mana cost/color identity).
--->
+<!-- Commander catalog browse page, ported from league's pages/commanders/index.vue (the
+     decks/commanders/bracket features, adapted to this app). Reads commander_stats (migration
+     20260919040000, a plain view: league's is a MATERIALIZED view needing a manual refresh, not
+     needed at this app's scale) + the commander catalog (mana cost/color identity). -->
 <script setup lang="ts">
 import type { TableColumn, TabsItem } from '@nuxt/ui'
 import { USkeleton, MagicManaCost, NuxtLink } from '#components'

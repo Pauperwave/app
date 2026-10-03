@@ -3,9 +3,8 @@
 import type { TabsItem } from '@nuxt/ui'
 import type { RulesetWithPoints } from '~/composables/rulesets/useRulesetsWithPointsQuery'
 
-// Was nav-hidden only (sidebar gated on manage-rulesets, the route itself
-// wide open to any authenticated user) — closed 2026-08-29, see the
-// permissions.vue table's own statusNote on why this was flagged.
+// The route is gated like the sidebar link (manage-rulesets): it used to be nav-hidden only, with
+// the route open to any authenticated user (see the permissions.vue table's statusNote)
 definePageMeta({ permission: 'manage-rulesets' })
 
 const { t } = useI18n()
@@ -13,10 +12,9 @@ const { can } = useUserRole()
 
 useSeoMeta({ title: () => t('ruleset.breadcrumb') })
 
-// Ruleset management (user request, 2026-09-17): a "Gestione" tab alongside
-// the published-format tabs above — different kind of content (a CRUD data
-// table, not published regulation text) but genuinely ruleset-related, so it
-// stays on this page rather than moving to /settings.
+// Ruleset management: a "Gestione" tab beside the published-format tabs above, a different kind of
+// content (a CRUD data table, not published regulation text) but ruleset-related, so it stays on
+// this page rather than /settings
 const { data: rulesetsData, isLoading: rulesetsLoading } = useRulesetsWithPointsQuery()
 const { deleteRuleset } = useRulesetsMutations()
 
@@ -177,11 +175,9 @@ const tour = useRulesetsTour()
           <RulesetsFormatRulesCard v-else-if="activeTab === 'pauper'" format="pauper" />
 
           <!-- Draft/Sealed have no points-based championship (only
-               Cittadino/Commander/Premodern/Pauper do, via
-               RulesetsFormatRulesCard), so they don't share that component
-               — Draft gets its own lighter structure-only card, Sealed a
-               plain placeholder until its own rules exist (user request,
-               2026-08-23). -->
+               Cittadino/Commander/Premodern/Pauper do, via RulesetsFormatRulesCard), so they
+               don't share that component: Draft gets a lighter structure-only card, Sealed a
+               plain placeholder until its rules exist -->
           <UPageCard
             v-else-if="activeTab === 'draft'"
             :title="$t('ruleset.draft.title')"

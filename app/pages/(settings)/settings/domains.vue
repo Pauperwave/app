@@ -28,31 +28,24 @@ interface DomainRow {
   host: string
   purpose: string
   status: 'planned' | 'live' | 'temporary'
-  // The route in this Nuxt project that backs (or is planned to back) the
-  // subdomain's content — see ADR-011, every subdomain serves from here for now.
-  // `/tesseramento` is the only planned-but-unbuilt path left (see `builtRoutes`
-  // above); every other non-null route here exists as a page today. The four
-  // rankings (cittadino + one per format) moved to a dedicated `/rankings/*`
-  // prefix 2026-08-13 (was `/standings/*`, which is now the internal
-  // dashboard-only route staff reach via the sidebar), then to `/classifiche/*`
-  // 2026-09-01 to match the app's Italian-route-label convention — PublicFormatPage.vue
-  // and PublicCittadinoPage.vue back these public pages instead of
-  // FormatPage.vue/the dashboard cittadino page, since the latter two require
-  // the authenticated dashboard shell (see auth.global.ts). `calendario.`
-  // (renamed from `eventi.` 2026-08-14) moved from `/events` (the internal
-  // dashboard route) to a dedicated `/calendario` page, backed by
-  // EventsPublicCalendarPage.vue — not `/calendar`, which already exists as
-  // an unrelated in-development dashboard page (pages/calendar/index.vue,
-  // "Calendario" in the sidebar nav); distinct word, no collision.
-  // Null where the subdomain points at a different project entirely
-  // (league.pauperwave.org) or nothing is planned yet (blog.pauperwave.org).
+  // The route in this Nuxt project that backs (or is planned to back) the subdomain's content (see
+  // ADR-011: every subdomain serves from here for now). `/tesseramento` is the only
+  // planned-but-unbuilt path left (see `builtRoutes` above); every other non-null route exists as a
+  // page. The four rankings (cittadino + one per format) live under `/classifiche/*` (the app's
+  // Italian-route-label convention), not `/standings/*`, which is the internal dashboard-only route
+  // staff reach via the sidebar: PublicFormatPage.vue and PublicCittadinoPage.vue back the public
+  // pages, since FormatPage.vue and the dashboard cittadino page need the authenticated dashboard
+  // shell (see auth.global.ts). `calendario.` points at a dedicated `/calendario` page
+  // (EventsPublicCalendarPage.vue), not `/events` (the internal dashboard route) and not
+  // `/calendar` (an unrelated in-development dashboard page, pages/calendar/index.vue, "Calendario"
+  // in the sidebar nav). Null where the subdomain points at a different project
+  // (league.pauperwave.org) or nothing is planned yet (blog.pauperwave.org)
   route: string | null
 }
 
-// A reminder of the planned pauperwave.org map, not a live registry: nothing here
-// is read from DNS or from a deploy, so a row saying "live" only means someone
-// wrote that it is. See ADR-011 in docs/PROGRESS.md for why they all serve from
-// this same Nuxt project.
+// A reminder of the planned pauperwave.org map, not a live registry: nothing is read from DNS or a
+// deploy, so a row saying "live" only means someone wrote it. See ADR-011 in docs/PROGRESS.md for
+// why they all serve from this Nuxt project
 const domains = computed<DomainRow[]>(() => [
   { host: 'pauperwave.org', purpose: t('settings.domains.rows.root'), status: 'planned', route: null },
   { host: 'app.pauperwave.org', purpose: t('settings.domains.rows.app'), status: 'live', route: '/' },

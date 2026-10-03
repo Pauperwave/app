@@ -1,19 +1,13 @@
 <!-- app\pages\(competitions)\locations\[slug]\index.vue -->
 <script lang="ts" setup>
-// fallow-ignore-file code-duplication -- see the same comment in
-// leagues/[leagueId]/index.vue
-// First detail page for locations (2026-08-19 user request) — same shape as
-// leagues/[leagueId]/index.vue (the first real, non-mock single page among
-// tournaments/leagues/events): a header plus a filtered
-// TournamentsListGridView below, read+edit only, no bulk actions/table view.
-// The header is its own layout, not LocationsListCard.vue reused wholesale —
-// that component's whole click behavior is "navigate to this detail page",
-// which makes no sense as the detail page's own header (caught in review,
-// 2026-08-19). Its smaller pieces (status badge, social links, placeholder)
-// are reused directly instead. Slug-based, not uuid (2026-08-20, matching
-// associate/[slug].vue and players/[slug]/index.vue) — location names are
-// as stable as a person's name for this purpose (edited rarely, and only by
-// staff), so there's no reason for this route to be the odd one out either.
+// fallow-ignore-file code-duplication -- see the same comment in leagues/[leagueId]/index.vue
+// The first detail page for locations, shaped like leagues/[leagueId]/index.vue (a header plus a
+// filtered TournamentsListGridView below, read+edit only, no bulk actions/table view). The header
+// is its own layout, not LocationsListCard.vue reused wholesale: that component's click behavior is
+// "navigate to this detail page", which makes no sense as the detail page's own header. Its smaller
+// pieces (status badge, social links, placeholder) are reused directly. Slug-based, not uuid (like
+// associate/[slug].vue and players/[slug]/index.vue): location names are as stable as a person's
+// name for this purpose (edited rarely, only by staff)
 import { add } from 'date-fns'
 import type { Range, Tournament } from '~/types'
 
@@ -40,11 +34,10 @@ const addressLine = computed(() => location.value
   ? `${location.value.address}, ${location.value.postalCode} ${location.value.city} ${location.value.province}`
   : '')
 
-// Overrides the raw slug path segment with the location's real name —
-// location names can be multi-word/punctuated ("Smart Lab - Centro Giovani
-// Rovereto"), which useBreadcrumbs.ts's generic hyphen-split+title-case
-// fallback wouldn't round-trip cleanly (unlike a plain "First Last" person's
-// name), so this override still earns its keep even slug-based.
+// Overrides the raw slug path segment with the location's real name: names can be
+// multi-word/punctuated ("Smart Lab - Centro Giovani Rovereto"), which useBreadcrumbs.ts's generic
+// hyphen-split+title-case fallback wouldn't round-trip (unlike a plain "First Last" name), so the
+// override earns its keep even slug-based
 const { breadcrumbItems } = useBreadcrumbs(
   computed(() => (location.value ? { [route.params.slug as string]: location.value.name } : {}))
 )
@@ -56,16 +49,14 @@ const {
 const hostedTournaments = computed(() => (tournamentsData.value ?? [])
   .filter(tournament => tournament.locationUuid === location.value?.uuid))
 
-// Independent of the range picker below — the heatmap spans its own dates
-// (spanDates, same as leagues/[leagueId]/index.vue's own heatmap) rather
-// than following the range picker, so it always shows the location's full
-// hosting history regardless of what the grid underneath is filtered to.
+// Independent of the range picker below: the heatmap spans its own dates (spanDates, like
+// leagues/[leagueId]/index.vue's heatmap) rather than following the range picker, so it always
+// shows the location's full hosting history whatever the grid is filtered to
 const hostedTournamentDates = computed(() =>
   hostedTournaments.value.map(tournament => tournament.startDate))
 
-// Same reasoning as leagues/[leagueId]/index.vue's own heatmap (user
-// feedback, 2026-08-20): count-based intensity doesn't mean anything for
-// tournaments — a location rarely hosts more than one a day — status does.
+// Same as leagues/[leagueId]/index.vue's heatmap: count-based intensity is meaningless for
+// tournaments (a location rarely hosts more than one a day), status is not
 const hostedTournamentVariantByDate = computed(() => {
   const entries = hostedTournaments.value.map(tournament => [
     toLocalDateKey(new Date(tournament.startDate)),
@@ -79,13 +70,10 @@ const hostedTournamentLegendItems = TOURNAMENT_STATUSES.map(status => ({
   labelKey: `tournament.status.${status}`
 }))
 
-// Defaults to "Prossimo anno" (matches DateRangePicker's own next-year
-// preset, 2026-08-23 — was "Tutto", same as tournaments/index.vue's own
-// default change). A location with no upcoming tournaments now starts on an
-// empty grid — a deliberate tradeoff for consistency with the other list
-// pages, confirmed by user request over keeping "Tutto" here. Only the
-// range is exposed here (not status/format, useTournamentsFilters.ts's other
-// two) — this page only asked for a temporal filter, 2026-08-19.
+// Defaults to "Prossimo anno" (DateRangePicker's next-year preset, like tournaments/index.vue). A
+// location with no upcoming tournaments starts on an empty grid: a deliberate tradeoff for
+// consistency with the other list pages. Only the range is exposed (not status/format,
+// useTournamentsFilters.ts's other two): this page only needs a temporal filter
 const range = shallowRef<Range>({
   start: new Date(),
   end: add(new Date(), { years: 1 })
@@ -94,22 +82,18 @@ const {
   filteredTournaments: filteredHostedTournaments
 } = useTournamentsFilters(hostedTournaments, range)
 
-// Year quick-jump next to DateRangePicker (YearRangePicker.vue, user
-// request, 2026-08-31) — scoped to this location's own hosted tournaments,
-// same as hostedTournamentDates above.
+// Year quick-jump next to DateRangePicker (YearRangePicker.vue), scoped to this location's hosted
+// tournaments, like hostedTournamentDates above
 const availableYears = computed(() => availableTournamentYears(hostedTournaments.value))
 
-// Hovering/focusing a heatmap day highlights that day's tournament card
-// below (same as leagues/[leagueId]/index.vue). Matched against the
-// currently-filtered set, not the full history — a highlight for a card
-// that isn't actually rendered (filtered out by the range picker) would be
-// silently inert.
+// Hovering/focusing a heatmap day highlights that day's tournament card below (like
+// leagues/[leagueId]/index.vue). Matched against the currently filtered set, not the full history:
+// a highlight for a card filtered out by the range picker would be silently inert
 const hoveredTournamentDate = ref<string | null>(null)
 const highlightedTournamentId = computed(() => filteredHostedTournaments.value.find(tournament =>
   toLocalDateKey(new Date(tournament.startDate)) === hoveredTournamentDate.value)?.id ?? null)
 
-// The reverse direction (user request, 2026-08-20, "the other way around") —
-// hovering a tournament card rings its matching heatmap day.
+// The reverse direction: hovering a tournament card rings its matching heatmap day
 const hoveredCardTournament = shallowRef<Tournament | null>(null)
 function handleCardHoverChange(tournament: Tournament | null) {
   hoveredCardTournament.value = tournament
@@ -118,12 +102,10 @@ const highlightedHeatmapDate = computed(() => hoveredCardTournament.value
   ? toLocalDateKey(new Date(hoveredCardTournament.value.startDate))
   : null)
 
-// The tournaments grid renders its own per-card skeleton (loading prop
-// below) instead of being gated behind the page-level spinner too — only
-// the location-dependent shell (presentation card/heatmap/notFound) still
-// waits on locationLoading. Same isPending-vs-isLoading reasoning as
-// tournaments/index.vue: undefined (GridView's own default count) only on a
-// genuine first load.
+// The tournaments grid renders its own per-card skeleton (loading prop below) instead of waiting
+// behind the page-level spinner: only the location-dependent shell (presentation
+// card/heatmap/notFound) waits on locationLoading. Same isPending-vs-isLoading reasoning as
+// tournaments/index.vue: undefined (GridView's default count) only on a genuine first load
 const skeletonCount = computed(() =>
   (tournamentsPending.value ? undefined : filteredHostedTournaments.value.length))
 
@@ -196,12 +178,10 @@ const {
               {{ t('location.detail.tournamentActivity') }}
             </template>
 
-            <!-- Generic placeholder, not a per-cell skeleton — CalendarHeatmap
-                 has no loading prop of its own (out of scope here), so this
-                 just reserves its rendered footprint. isPending, not
-                 isLoading (2026-08-22) — same fix as the table/grid views:
-                 a background refresh keeps the real heatmap, only a
-                 genuine first load shows the placeholder. -->
+            <!-- Generic placeholder, not a per-cell skeleton: CalendarHeatmap has no loading
+                 prop of its own, so this just reserves its footprint. isPending, not isLoading,
+                 like the table/grid views: a background refresh keeps the real heatmap, only a
+                 genuine first load shows the placeholder -->
             <USkeleton v-if="locationPending" class="h-40 w-full max-w-md mx-auto" />
 
             <div v-else class="flex justify-center">

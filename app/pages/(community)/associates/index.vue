@@ -8,15 +8,13 @@ import ConsentBadge from '~/components/ui/ConsentBadge.vue'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 import MembershipStatusBadge from '~/components/ui/MembershipStatusBadge.vue'
 
-// Was nav-hidden only (sidebar gated on view-associates, the route itself
-// wide open to any authenticated user) — closed 2026-08-29, see the
-// permissions.vue table's own statusNote on why this was flagged.
+// The route is gated like the sidebar link (view-associates): it used to be nav-hidden only, with
+// the route open to any authenticated user (see the permissions.vue table's statusNote)
 definePageMeta({ permission: 'view-associates' })
 
-// Lifecycle order, not alphabetical (TanStack's default) — matches the
-// existing status tabs (Tutti/Attivi/Da rinnovare/Scaduti) and
-// MEMBERSHIP_STATUS_BADGE_CONFIG's own key order, so "Tesseramento" sorts
-// the same way an admin already thinks about the roster.
+// Lifecycle order, not alphabetical (TanStack's default): matches the status tabs (Tutti/Attivi/Da
+// rinnovare/Scaduti) and MEMBERSHIP_STATUS_BADGE_CONFIG's key order, so "Tesseramento" sorts as an
+// admin thinks about the roster
 const MEMBERSHIP_STATUS_SORT_ORDER: Record<string, number> = {
   active: 0,
   to_renew: 1,
@@ -28,22 +26,18 @@ const {
   data: associates, isLoading: loading, isPending, status, refetch
 } = useAssociatesQuery()
 const { data: geocodes, isLoading: geocodesLoading } = useAssociatesGeocodesQuery()
-// "Richieste (di rinnovo)" tab (user request, 2026-08-27) — a Set, not
-// baked into the Associate type, since it's derived from a separate table
-// (pauperwave_associate_membership_events) rather than a real column on
-// pauperwave_associates itself.
+// "Richieste (di rinnovo)" tab: a Set, not part of the Associate type, since it derives from a
+// separate table (pauperwave_associate_membership_events), not a column on pauperwave_associates
 const { data: pendingRenewalUuids } = usePendingRenewalRequestsQuery()
 const { t } = useI18n()
 
 useSeoMeta({ title: () => t('associate.breadcrumb') })
 
-// Roster = already-approved associates only. Pending/rejected requests moved
-// to /associates/requests entirely (2026-08-11 UX split) — this table used
-// to mix "people who are members" with "people asking to become one", which
-// made it easy to miss new requests buried in a status filter. pendingCount
-// is still computed from the full unfiltered list (not rosterAssociates) —
-// it feeds the SubNav badge here and the same count backs the sidebar badge
-// in default.vue, both reading the same 'associates' cache key.
+// Roster = already-approved associates only: pending/rejected requests live in /associates/requests
+// (this table used to mix members with people asking to become one, burying new requests in a
+// status filter). pendingCount is still computed from the full unfiltered list (not
+// rosterAssociates): it feeds the SubNav badge here and the sidebar badge in default.vue, both
+// reading the same 'associates' cache key
 const rosterAssociates = computed(() => (associates.value ?? []).filter(
   associate => associate.membership_request_status === 'approved'
 ))
@@ -51,11 +45,10 @@ const pendingCount = computed(() => (associates.value ?? []).filter(
   associate => associate.membership_request_status === 'pending'
 ).length)
 
-// Filters by latest_renewal_date (YearRangePicker.vue, user request,
-// 2026-08-31) — defaults to the last year, the common "who renewed recently"
-// case. An associate who never renewed (null latest_renewal_date) always
-// stays visible: excluding them because they have no date to compare would
-// hide exactly the people a "never renewed" review is looking for.
+// Filters by latest_renewal_date (YearRangePicker.vue), defaulting to the last year ("who renewed
+// recently"). An associate who never renewed (null latest_renewal_date) always stays visible:
+// excluding them for having no date would hide exactly the people a "never renewed" review looks
+// for
 const range = shallowRef<Range>({
   start: subYears(new Date(), 1),
   end: new Date()
@@ -67,10 +60,9 @@ const filteredRosterAssociates = computed(() => rosterAssociates.value.filter((a
   return date >= range.value.start && date <= range.value.end
 }))
 
-// undefined (ListSkeleton's own default count) only on a genuine first load
-// — isPending, unlike isLoading, is false once stale data exists to show a
-// real count from, even mid-refetch (e.g. the manual refresh button), same
-// convention as tournaments/locations' own list pages.
+// undefined (ListSkeleton's default count) only on a genuine first load: isPending, unlike
+// isLoading, is false once stale data exists to show a real count from, even mid-refetch (e.g. the
+// manual refresh), like tournaments/locations' list pages
 const skeletonCount = computed(() =>
   (isPending.value ? undefined : filteredRosterAssociates.value.length))
 
@@ -90,13 +82,11 @@ const {
   tableContextMenuItems, onRowContextmenu, rowContextMenuItems
 } = useAssociatesTableSetup()
 
-// Migrated off UTable's own row-selection state to the shared Set-based
-// useSelection.ts (2026-08-19) — same as transactions'/wanted-cards'/
-// tournaments'/leagues' tables, for Escape-to-clear and shift-click range
-// selection, which this table never had. Selected associates resolved
-// against the table's own filtered row model (not rosterAssociates), so a
-// selection hidden by the active status/email/consent filter isn't
-// actionable — same reasoning as wanted-cards' own selectedCards.
+// On the shared Set-based useSelection.ts instead of UTable's row-selection state, like
+// transactions'/wanted-cards'/tournaments'/leagues' tables (Escape-to-clear and shift-click range
+// selection). Selected associates resolve against the table's own filtered row model (not
+// rosterAssociates), so a selection hidden by the active status/email/consent filter isn't
+// actionable (like wanted-cards' selectedCards)
 const selection = useSelection<number>()
 const selectedRosterAssociates = useSelectedTableRows(table, selection)
 const {
@@ -104,17 +94,14 @@ const {
   requestBulkRenew, confirmBulkRenew
 } = useAssociatesBulkActions(selection)
 
-// "Approva rinnovo" on the "Richieste (di rinnovo)" tab (user request,
-// 2026-08-27) — acknowledging the request, not recording the payment (that
-// stays the existing "Rinnova" flow above), so no undo-window/confirm
-// modal: same directness as requests.vue's own bulkRestore, since approving
-// isn't destructive.
+// "Approva rinnovo" on the "Richieste (di rinnovo)" tab acknowledges the request, not the payment
+// (that stays the "Rinnova" flow above), so it has no undo-window/confirm modal: as direct as
+// requests.vue's bulkRestore, since approving isn't destructive
 const { approveRenewals } = useAssociatesMutations()
 const toast = useToast()
 
-// "Seleziona tutti" (2026-09-23 user request, replacing the standalone
-// TableSelectionFooter.vue row) — selects every currently filtered/visible
-// row, same row model selectedRosterAssociates itself resolves against.
+// "Seleziona tutti": selects every currently filtered/visible row, against the same row model
+// selectedRosterAssociates resolves against
 function selectAllRosterAssociates() {
   selection.setAll(
     (table.value?.tableApi?.getFilteredRowModel().rows ?? []).map(row => row.original.id),
@@ -139,21 +126,16 @@ async function confirmApproveRenewals() {
     })
   }
 }
-// Single search box matching name/email/phone/tax code, not a per-column
-// filter (user feedback, 2026-08-19 — replaced the email-only column filter
-// and the separate consent-social dropdown, removed the same day). UTable's
-// own globalFilter/globalFilterOptions, not a hand-rolled ref+watch pair —
-// see associatesGlobalFilterFn.ts. Declared before the columns destructure
-// below since useAssociatesTableColumns needs it to highlight matches.
-// useState (not ref) so the typed text survives navigating to
-// /associates/requests and back — a plain ref resets to '' every time this
-// page unmounts (user request, 2026-09-13). Shares its key with
-// requests.vue's own search on purpose: switching between the two pages
-// carries the same search text over, not two independently-remembered
-// values (user clarification, 2026-09-14).
+// A single search box matching name/email/phone/tax code, not a per-column filter. UTable's
+// globalFilter/globalFilterOptions, not a hand-rolled ref+watch pair (see
+// associatesGlobalFilterFn.ts). Declared before the columns destructure since
+// useAssociatesTableColumns needs it to highlight matches. useState (not ref) so the typed text
+// survives navigating to /associates/requests and back (a plain ref resets when this page
+// unmounts); it shares its key with requests.vue's search on purpose, so switching between the two
+// carries the same text over
 const search = useState('associates-search', () => '')
 
-// fallow-ignore-next-line code-duplication -- mirrors requests.vue's own (different column/query semantics per page)
+// fallow-ignore-next-line code-duplication -- mirrors requests.vue's (different columns)
 const {
   columnHeaders, visibilityItems, telegramUsernames,
   selectColumn, idColumn, createdAtColumn, updatedAtColumn, updatedByColumn,
@@ -167,12 +149,10 @@ const {
   actionsColumn
 } = useAssociatesTableColumns(
   selection, table, associates, rowContextMenuItems, search,
-  // "Mostra colonne" section dividers: ID/UUID, Stato/Tesseramento,
-  // Consensi, Anagrafica, Nascita, Residenza, Trail (see
-  // columnVisibilityGroups.ts, user request 2026-08-27) — this page has a
-  // createdAtColumn requests.vue doesn't (association requests have no
-  // "created" moment distinct from the request itself), so the Trail
-  // group's own boundary id differs (created_at here vs updated_by there).
+  // "Mostra colonne" section dividers: ID/UUID, Stato/Tesseramento, Consensi, Anagrafica, Nascita,
+  // Residenza, Trail (see columnVisibilityGroups.ts). This page has a createdAtColumn requests.vue
+  // doesn't (requests have no "created" moment distinct from the request itself), so the Trail
+  // group's boundary id differs (created_at here vs updated_by there)
   [
     'membership_request_status', 'consent_data', 'first_name',
     'born_date', 'residency_address', 'created_at'
@@ -182,25 +162,18 @@ const {
 // Also matches the Telegram nickname, read live from the bot-link map
 const globalFilterFn = createAssociatesGlobalFilterFn(uuid => telegramUsernames.value?.get(uuid))
 
-// Wires the sidebar links (/associates?status=pending|active|to_renew) to the
-// membership_status column filter. "pending_renewal" (2026-08-27) filters a
-// different column entirely — it's not a membership_status value, it's
-// derived from pauperwave_associate_membership_events (see
-// has_pending_renewal column below) — so the two filters are mutually
-// exclusive, not combined.
+// Wires the sidebar links (/associates?status=pending|active|to_renew) to the membership_status
+// column filter. "pending_renewal" filters a different column entirely: it isn't a
+// membership_status value but derives from pauperwave_associate_membership_events (see the
+// has_pending_renewal column below), so the two filters are mutually exclusive.
 //
-// Replaces columnFilters.value wholesale instead of imperatively calling
-// column.setFilterValue() on columns fetched from table.value?.tableApi —
-// that approach (still used by requests.vue, which has no
-// has_pending_renewal column to race against) mutates the TanStack table's
-// internal state directly while UTable's own v-model:column-filters
-// controls the same state declaratively from columnFilters. Confirmed
-// 2026-09-14: switching status=pending_renewal -> status=active left the
-// table still showing only the pending-renewal row — the second
-// setFilterValue call (clearing has_pending_renewal) lost the race against
-// UTable's prop-watcher re-syncing from the (still stale) columnFilters
-// ref. Assigning columnFilters.value directly makes it the one source of
-// truth, no imperative/declarative dual-write to race.
+// Replaces columnFilters.value wholesale instead of calling column.setFilterValue() on columns from
+// table.value?.tableApi (still done by requests.vue, which has no has_pending_renewal column to
+// race against): that mutates TanStack's internal state while UTable's v-model:column-filters
+// controls the same state declaratively. Switching status=pending_renewal -> status=active left the
+// table showing only the pending-renewal row: the second setFilterValue call (clearing
+// has_pending_renewal) lost the race against UTable's prop-watcher re-syncing from the still-stale
+// columnFilters ref. Assigning columnFilters.value makes it the one source of truth
 function applyMembershipStatusFilterFromQuery() {
   const status = route.query.status
   if (status === 'pending_renewal') {
@@ -230,14 +203,11 @@ const associatesStatusCounts = computed(() => {
   return counts
 })
 
-// Rendered via the generic StatusFilterGroup (also used by wanted-cards), not
-// UTabs: toggle buttons filter the table below rather than switching between
-// separate views. `count` is optional per item — StatusFilterGroup only shows
-// the nested UBadge when it's set.
-// Icons reused from MEMBERSHIP_STATUS_BADGE_CONFIG (same "single source of
-// truth for which icon represents which status" as transactions' typeTabs) —
-// collapse to icon-only below `lg` via StatusFilterGroup's own icon prop
-// (user request, 2026-08-24).
+// Rendered via the generic StatusFilterGroup (also used by wanted-cards), not UTabs: toggle buttons
+// filter the table below rather than switching views. `count` is optional per item
+// (StatusFilterGroup shows the nested UBadge only when set). Icons reused from
+// MEMBERSHIP_STATUS_BADGE_CONFIG (the single source for status icons, like transactions' typeTabs),
+// icon-only below `lg` via StatusFilterGroup's icon prop
 const statusTabs = computed(() => [
   { label: t('associate.tabs.all'), value: 'all' as const, count: undefined },
   {
@@ -280,9 +250,8 @@ const columnVisibility = ref({
   // own page (/associates/requests) — redundant on every row in the roster.
   membership_request_status: false,
   uuid: false,
-  // Audit trail (created_at/updated_at/updated_by), moved to the end of the
-  // column order 2026-08-18 — not needed at a glance, same "traceability"
-  // reasoning as requests.vue's own hidden columns and wanted-cards'.
+  // Audit trail (created_at/updated_at/updated_by), last in the column order: not needed at a
+  // glance, like requests.vue's and wanted-cards' hidden columns
   created_at: false,
   updated_at: false,
   updated_by: false,
@@ -321,10 +290,9 @@ const columns: TableColumn<Associate>[] = [
     },
     cell: ({ row }) => h(MembershipStatusBadge, { status: row.original.membership_status })
   },
-  // Purely accessorFn-derived (no real pauperwave_associates column) —
-  // backs the "Richieste (di rinnovo)" tab's own column filter
-  // (applyMembershipStatusFilterFromQuery above), and doubles as a visible
-  // at-a-glance badge on every other tab too (user request, 2026-08-27).
+  // Purely accessorFn-derived (no real pauperwave_associates column): backs the "Richieste (di
+  // rinnovo)" tab's column filter (applyMembershipStatusFilterFromQuery above), and doubles as an
+  // at-a-glance badge on every other tab
   {
     id: 'has_pending_renewal',
     accessorFn: (row: Associate) => pendingRenewalUuids.value?.has(row.uuid) ?? false,
@@ -413,8 +381,8 @@ function renderNeutralBadge(value: string) {
         <NotificationsBellButton />
       </ListPageNavbar>
 
-      <!-- Switcher shared with /associates/requests (see AssociatesSubNav) —
-           same sub-nav-row pattern as /settings. -->
+      <!-- Switcher shared with /associates/requests (see AssociatesSubNav), the same
+           sub-nav-row pattern as /settings -->
       <UDashboardToolbar>
         <div id="tour-associates-subnav" class="w-fit">
           <AssociatesSubNav
@@ -424,10 +392,9 @@ function renderNeutralBadge(value: string) {
         </div>
       </UDashboardToolbar>
 
-      <!-- Status filter, search/social/columns filters and row-actions all in one
-           toolbar row — same #left/#right split as wanted-cards' UDashboardToolbar.
-           Status is a UFieldGroup of toggle UButtons, not UTabs: this filters the
-           table below rather than switching between separate views. -->
+      <!-- Status filter, search/social/columns filters and row-actions in one toolbar row, with
+           the #left/#right split of wanted-cards' UDashboardToolbar. Status is a UFieldGroup of
+           toggle UButtons, not UTabs: it filters the table below rather than switching views -->
       <UDashboardToolbar
         v-if="viewMode === 'table'"
         :ui="{ root: 'flex-wrap h-auto py-2 gap-1.5', left: 'gap-4 flex-wrap', right: 'gap-4' }"
@@ -479,10 +446,9 @@ function renderNeutralBadge(value: string) {
 
     <template #body>
       <template v-if="viewMode === 'table'">
-        <!-- ListSkeleton only for a genuine first load (isPending, no
-             cached rows yet) — a background refetch keeps the existing
-             rows and uses UTable's own :loading bar instead, same
-             convention as tournaments/locations' own list pages. -->
+        <!-- ListSkeleton only for a genuine first load (isPending, no cached rows yet): a
+             background refetch keeps the rows and uses UTable's :loading bar, like
+             tournaments/locations' list pages -->
         <ListSkeleton
           v-if="isPending"
           :count="skeletonCount"

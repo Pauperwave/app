@@ -1,11 +1,8 @@
 <!-- app\pages\index.vue -->
-<!--
-  Role-differentiated Home (docs/PROGRESS.md ADR pending, 2026-08-19 "Home"
-  conversation): a thin entry point that decides *which* dashboard to render
-  (HomeStaff vs HomePlayer), owning none of the content itself. Shared chrome
-  (navbar, quick-create, notifications bell, tour) stays here rather than
-  duplicated into both dashboards.
--->
+<!-- Role-differentiated Home (docs/PROGRESS.md ADR pending): a thin entry point that decides
+     *which* dashboard to render (HomeStaff vs HomePlayer), owning none of the content. Shared
+     chrome (navbar, quick-create, notifications bell, tour) stays here rather than duplicated
+     into both dashboards. -->
 <script setup lang="ts">
 const { t } = useI18n()
 

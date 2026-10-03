@@ -1,8 +1,7 @@
 <!-- app\pages\finance\index.vue -->
 <script lang="ts" setup>
-// Was nav-hidden only (sidebar gated on view-finance, the route itself wide
-// open to any authenticated user) — closed 2026-08-29, see the
-// permissions.vue table's own statusNote on why this was flagged.
+// The route is gated like the sidebar link (view-finance): it used to be nav-hidden only, with the
+// route open to any authenticated user (see the permissions.vue table's statusNote)
 definePageMeta({ permission: 'view-finance' })
 
 const { t } = useI18n()
@@ -18,9 +17,8 @@ const {
 } = useTransactionsQuery()
 const transactions = computed(() => transactionsData.value ?? [])
 
-// Every year with at least one transaction, plus the real current year even
-// if it's still empty — sorted newest first (user request, 2026-08-24: "a
-// way to switch the data from 2020/2021/2022...").
+// Every year with at least one transaction, plus the current year even if empty, newest first (to
+// switch the data from 2020/2021/2022...)
 const availableYears = computed(() => availableTransactionYears(transactions.value))
 const selectedYear = ref(new Date().getFullYear())
 const yearItems = computed(() => yearSelectItems(availableYears.value))

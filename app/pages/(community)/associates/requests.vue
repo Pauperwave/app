@@ -15,19 +15,16 @@ const { isModalOpen } = useModalOpenFromQuery()
 
 useSeoMeta({ title: () => t('associate.subNav.requestsShort') })
 
-// The other half of the 2026-08-11 UX split (see associates/index.vue) —
-// everyone NOT yet approved: the triage queue an admin actually needs to act
-// on, kept out of the roster entirely instead of buried in a status filter.
+// The other half of the UX split (see associates/index.vue): everyone NOT yet approved, the triage
+// queue an admin acts on, kept out of the roster instead of buried in a status filter
 const requestAssociates = computed(() => (associates.value ?? []).filter(
   associate => associate.membership_request_status !== 'approved'
 ))
 const { pendingAssociatesCount: pendingCount, associatesCount } = useHomeActionCounts()
 
-// Filters by request_date (YearRangePicker.vue, user request, 2026-08-31) —
-// defaults wide ("all time", same ±10-year span as DateRangePicker's own
-// "Tutto" preset), unlike associates/index.vue's last-year default: this is
-// a triage queue, and a stale pending request from over a year ago is
-// exactly the kind of thing that shouldn't be hidden by default.
+// Filters by request_date (YearRangePicker.vue), defaulting wide ("all time", the ±10-year span of
+// DateRangePicker's "Tutto" preset) unlike associates/index.vue's last-year default: this is a
+// triage queue, and a stale pending request from over a year ago shouldn't be hidden by default
 const range = shallowRef<Range>({
   start: subYears(new Date(), 10),
   end: addYears(new Date(), 10)
@@ -39,10 +36,9 @@ const filteredRequestAssociates = computed(() => requestAssociates.value.filter(
   return date >= range.value.start && date <= range.value.end
 }))
 
-// undefined (ListSkeleton's own default count) only on a genuine first load
-// — isPending, unlike isLoading, is false once stale data exists to show a
-// real count from, even mid-refetch (e.g. the manual refresh button), same
-// convention as tournaments/locations' own list pages.
+// undefined (ListSkeleton's default count) only on a genuine first load: isPending, unlike
+// isLoading, is false once stale data exists to show a real count from, even mid-refetch (e.g. the
+// manual refresh), like tournaments/locations' list pages
 const skeletonCount = computed(() =>
   (isPending.value ? undefined : filteredRequestAssociates.value.length))
 
@@ -54,11 +50,9 @@ const {
   tableContextMenuItems, onRowContextmenu, rowContextMenuItems
 } = useAssociatesTableSetup()
 
-// Bulk "Rifiuta" next to the existing bulk "Approva", through ConfirmModal
-// rather than a bespoke modal like ApproveModal.vue (that one predates
-// ConfirmModal.vue). Selection migrated off UTable's own row-selection state
-// to the shared Set-based useSelection.ts (2026-08-19), same as
-// associates/index.vue and every other bulk-actions table in the app.
+// Bulk "Rifiuta" next to the bulk "Approva", through ConfirmModal rather than a bespoke modal like
+// ApproveModal.vue (which predates ConfirmModal.vue). Selection is on the shared Set-based
+// useSelection.ts, like associates/index.vue and every other bulk-actions table
 const { rejectAssociates, restoreAssociates } = useAssociatesMutations()
 const undoable = useUndoableAction()
 const rejectConfirmOpen = ref(false)
@@ -71,8 +65,7 @@ const selectedRejectedIds = computed(() => selectedRequestAssociates.value
   .filter(associate => associate.membership_request_status === 'rejected')
   .map(associate => associate.id))
 
-// "Seleziona tutti" (2026-09-23 user request, replacing the standalone
-// TableSelectionFooter.vue row) — same as associates/index.vue's own.
+// "Seleziona tutti": the same as associates/index.vue's
 function selectAllRequestAssociates() {
   selection.setAll(
     (table.value?.tableApi?.getFilteredRowModel().rows ?? []).map(row => row.original.id),
@@ -110,11 +103,10 @@ function confirmReject() {
   })
 }
 
-// Bulk "Ripristina" — the counterpart to bulk reject, for rows already
-// rejected (from a previous session/page load, unlike the reject undo-toast
-// above which only covers the last 10s). No confirm step, same directness as
-// the single-row approve() in useAssociatesRowActions.ts — reverting a
-// rejection isn't destructive, worst case it can be re-rejected.
+// Bulk "Ripristina", the counterpart to bulk reject, for rows rejected in a previous session/page
+// load (the reject undo-toast only covers the last 10s). No confirm step, as direct as the
+// single-row approve() in useAssociatesRowActions.ts: reverting a rejection isn't destructive, it
+// can be re-rejected
 async function bulkRestore() {
   const ids = selectedRejectedIds.value
   if (!ids.length) return
@@ -135,15 +127,11 @@ async function bulkRestore() {
   }
 }
 
-// Same single search box as associates/index.vue, added here 2026-08-19
-// (user request) — same associatesGlobalFilterFn.ts, matching name/email
-// /phone/tax-code. Declared before the columns destructure below since
-// useAssociatesRequestsTableColumns needs it to highlight matches.
-// useState with the SAME key as associates/index.vue's own search (not a
-// per-page key, not a plain ref) — the two pages share one search value on
-// purpose: typing a name here and switching to /associates should carry it
-// over, not just remember each page's own text independently (user
-// clarification, 2026-09-14, after the first per-page-only attempt).
+// The same single search box as associates/index.vue (associatesGlobalFilterFn.ts, matching
+// name/email/phone/tax-code), declared before the columns destructure since
+// useAssociatesRequestsTableColumns needs it to highlight matches. useState with the SAME key as
+// associates/index.vue's search (not a per-page key, not a plain ref): the two pages share one
+// search value on purpose, so a name typed here carries over when switching to /associates
 const search = useState('associates-search', () => '')
 
 // fallow-ignore-next-line code-duplication -- see associates/index.vue
@@ -155,11 +143,10 @@ function applyRequestStatusFilterFromQuery() {
   const statusColumn = table.value?.tableApi?.getColumn('membership_request_status')
   if (!statusColumn) return
   const status = route.query.status
-  // 'all' means "no filter" here (see activeStatusTab's own setter below,
-  // which writes it as a literal ?status=all rather than clearing the query
-  // param the way 'pending' does) — passed straight to setFilterValue it
-  // filtered the column for the literal string "all", which no row ever
-  // matches, silently emptying the whole table (bug, user report 2026-08-27).
+  // 'all' means "no filter" here (see activeStatusTab's setter below, which writes it as a literal
+  // ?status=all rather than clearing the query param like 'pending'): passed straight to
+  // setFilterValue it filtered for the literal string "all", which no row matches, silently
+  // emptying the table
   statusColumn.setFilterValue(
     typeof status === 'string' && status !== 'all' ? status : undefined
   )
@@ -178,10 +165,9 @@ const requestStatusCounts = computed(() => {
   return counts
 })
 
-// Default tab is 'pending', not 'all' — this page opens straight on the
-// queue that actually needs action, not a mixed pending+rejected list.
-// Icons reused from MEMBERSHIP_STATUS_BADGE_CONFIG, same as associates/index.vue's
-// own statusTabs — collapse to icon-only below `lg` (user request, 2026-08-24).
+// The default tab is 'pending', not 'all': the page opens on the queue that needs action, not a
+// mixed pending+rejected list. Icons reused from MEMBERSHIP_STATUS_BADGE_CONFIG like
+// associates/index.vue's statusTabs, icon-only below `lg`
 const statusTabs = computed(() => [
   { label: t('associate.tabs.all'), value: 'all' as const, count: undefined },
   {
@@ -211,26 +197,22 @@ const sorting = ref([{ id: 'request_date', desc: false }])
 
 const columnFilters = ref([])
 
-// Birth/residency/MTG detail stay available (toggleable) but hidden by
-// default — same "not needed at a glance" reasoning as the roster's own
-// columnVisibility, just a different set of columns qualifying. Keys must
-// match each column's accessorKey (snake_case) exactly — column visibility
-// is keyed by column id, not a display name, so camelCase keys here
-// silently match nothing and leave the column visible.
+// Birth/residency/MTG detail stay available (toggleable) but hidden by default, like the roster's
+// columnVisibility. Keys must match each column's accessorKey (snake_case) exactly: visibility is
+// keyed by column id, so camelCase keys silently match nothing and leave the column visible
 const columnVisibility = ref({
-  // Traceability/roster-preview columns (2026-08-13, matching the roster's
-  // own set) — useful but not needed at a glance while triaging the queue.
-  // id stays visible by default here too (2026-08-18), matching the roster.
+  // Traceability/roster-preview columns, matching the roster's set: useful but not needed at a
+  // glance while triaging. id stays visible by default, like the roster
   updated_at: false,
   updated_by: false,
   pauperwave_associate_number: false,
-  // Hidden by default here too (2026-08-18), matching the roster.
+  // Hidden by default, matching the roster
   associate_type: false,
   // Mandatory to submit /tesseramento — always true, redundant on every row.
   consent_data: false,
   has_read_statute: false,
-  // Visible by default here too (2026-08-19), matching the roster — age has
-  // no entry here for the same reason (no entry = visible by default).
+  // Visible by default, matching the roster (age has no entry for the same reason: no entry =
+  // visible)
   born_location: false,
   born_province: false,
   born_state: false,
@@ -241,10 +223,9 @@ const columnVisibility = ref({
   residency_cap: false
 })
 
-// Same convention as associates/index.vue: point at this deploy's own
-// /tesseramento for now, until the subdomain is wired up in DNS (docs/TODO.md).
-// Lives here, not on the roster: sharing the public form is part of the
-// request-intake workflow, not roster management.
+// Like associates/index.vue: points at this deploy's own /tesseramento until the subdomain is wired
+// up in DNS (docs/TODO.md). Lives here, not on the roster: sharing the public form is part of the
+// request-intake workflow
 const tesseramentoLink = computed(() => `${useRequestURL().origin}/tesseramento`)
 const informativaDatiLink = computed(() => `${useRequestURL().origin}/tesseramento/informativa-dati`)
 
@@ -348,10 +329,9 @@ const tour = useAssociatesRequestsTour()
     </template>
 
     <template #body>
-      <!-- ListSkeleton only for a genuine first load (isPending, no cached
-           rows yet) — a background refetch keeps the existing rows and
-           uses UTable's own :loading bar instead, same convention as
-           tournaments/locations' own list pages. -->
+      <!-- ListSkeleton only for a genuine first load (isPending, no cached rows yet): a
+           background refetch keeps the rows and uses UTable's :loading bar, like
+           tournaments/locations' list pages -->
       <ListSkeleton
         v-if="isPending"
         :count="skeletonCount"

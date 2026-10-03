@@ -1,9 +1,8 @@
 <!-- app\pages\(analytics)\statistics\decks\[deckSlug].vue -->
 <!-- Aggregate detail for one commander pairing, sibling to
-     statistics/commanders/[commanderSlug].vue — ported from league's
-     pages/deck/[deckSlug].vue (user request, 2026-09-17). Slug is
-     commander1Name-based (matching league's own limitation): a commander
-     paired with two different partners would collide, same as league. -->
+     statistics/commanders/[commanderSlug].vue, ported from league's pages/deck/[deckSlug].vue.
+     The slug is commander1Name-based (league's limitation too): a commander paired with two
+     different partners would collide -->
 <script setup lang="ts">
 const route = useRoute()
 const deckSlug = route.params.deckSlug as string

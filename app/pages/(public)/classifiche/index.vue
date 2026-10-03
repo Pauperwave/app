@@ -1,10 +1,9 @@
 <!-- app\pages\(public)\classifiche\index.vue -->
 <script lang="ts" setup>
-// Landing page for /classifiche — links out to the four per-format pages
-// (pauper/commander/premodern/cittadino), which have no shared parent page
-// of their own. Added so links to a general "classifiche" URL (e.g. the
-// Telegram bot's /classifiche command, commands/classifiche.ts) resolve to
-// something instead of 404ing.
+// Landing page for /classifiche, linking out to the four per-format pages
+// (pauper/commander/premodern/cittadino), which have no shared parent page. It lets links to a
+// general "classifiche" URL (e.g. the Telegram bot's /classifiche command) resolve instead of
+// 404ing
 definePageMeta({ layout: 'public-wide' })
 
 const { t } = useI18n()

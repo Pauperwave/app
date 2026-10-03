@@ -42,10 +42,9 @@ const tour = useCalendarPageTour()
     </template>
   </PageInDevelopment>
 
-  <!-- #description overrides TourGuide's default plain-text paragraph, same
-       convention as default.vue's shortcuts tour — the "publicLink" step's
-       {link} placeholder needs to render as a real clickable anchor, not the
-       literal domain name as plain text. -->
+  <!-- #description overrides TourGuide's default plain-text paragraph (like default.vue's
+       shortcuts tour): the "publicLink" step's {link} placeholder must render as a real
+       clickable anchor, not the domain name as plain text -->
   <TourGuide :tour="tour">
     <template #description="{ step }">
       <i18n-t

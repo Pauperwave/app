@@ -15,10 +15,9 @@ useSeoMeta({
 
 const supabase = useSupabaseClient()
 const session = useSupabaseSession()
-// useSupabaseSession()'s Session type deliberately omits `.user` — the email
-// has to come from useSupabaseUser() instead, populated async from
-// auth.getClaims() (see auth/callback.vue's comment on the same caveat), so
-// it can resolve a beat after `session` does.
+// useSupabaseSession()'s Session type omits `.user`: the email must come from useSupabaseUser(),
+// populated async from auth.getClaims() (see auth/callback.vue on the same caveat), so it can
+// resolve a beat after `session`
 const authUser = useSupabaseUser()
 const toast = useToast()
 
@@ -32,10 +31,9 @@ const state = createAssociateFormState()
 
 const associateTypeOptions = useAssociateTypeOptions()
 
-// Each step's field names, used to validate only that step on "Avanti" —
-// UForm's validate({ name: [...] }) checks named fields regardless of
-// whether they're currently rendered, so this works even though every other
-// step's UFormFields are v-if'd out at the time.
+// Each step's field names, used to validate only that step on "Avanti": UForm's validate({ name:
+// [...] }) checks named fields whether or not they are rendered, so it works though every other
+// step's UFormFields are v-if'd out
 const steps = [
   { value: 'email', title: t('tesseramento.steps.email.title'), fields: [] },
   { value: 'verify', title: t('tesseramento.steps.verify.title'), fields: [] },
@@ -45,12 +43,11 @@ const steps = [
     title: t('associate.addModal.sections.birthInfo'),
     fields: ['born_location', 'born_date', 'born_province', 'born_state']
   },
-  // After birthInfo, not before (2026-08-19): phone_number's required-ness
-  // depends on born_date (isMinor.ts — a minor may not have their own phone)
-  // — asking birth date first means that cross-field rule can actually apply
-  // when this step's "Avanti" validates phone_number, instead of always
-  // skipping it (born_date not yet known) and only catching a missing phone
-  // at the very final submit, on a step where the field isn't even visible.
+  // After birthInfo, not before: phone_number's required-ness depends on born_date (isMinor.ts: a
+  // minor may not have their own phone), so asking birth date first lets that cross-field rule
+  // apply when this step's "Avanti" validates phone_number, instead of skipping it (born_date
+  // unknown) and only catching a missing phone at the final submit, on a step where the field isn't
+  // visible
   {
     value: 'personalInfo',
     title: t('associate.addModal.sections.personalInfo'),
@@ -72,27 +69,22 @@ const steps = [
 const currentStep = ref('email')
 const stepIndex = computed(() => steps.findIndex(s => s.value === currentStep.value))
 
-// Once the email's verified, checks whether this is a brand-new applicant
-// or an already-approved associate renewing — apply.post.ts's insert-only
-// contract otherwise 409s any existing row regardless of status, which used
-// to be the only signal a returning member got back, after filling out the
-// whole 9-step form again (user request, 2026-08-27). 'renewal'/'blocked'
-// short-circuit past the step wizard entirely (see template); 'new' behaves
-// exactly as before.
+// Once the email is verified, checks whether this is a brand-new applicant or an already-approved
+// associate renewing: apply.post.ts's insert-only contract 409s any existing row regardless of
+// status, which was the only signal a returning member got, after filling out the whole 9-step form
+// again. 'renewal'/'blocked' short-circuit past the step wizard (see template); 'new' behaves as
+// before
 type TesseramentoKind = 'new' | 'renewal' | 'blocked'
 const checkingStatus = ref(false)
 const kind = ref<TesseramentoKind>('new')
 const renewalName = ref({ firstName: '', lastName: '' })
 
-// A session already existing on load (back from the magic-link redirect, or
-// a page refresh mid-flow) skips straight past email/verify — email is
-// already proven at that point. state.email_address is only in-memory,
-// though: the redirect through /auth/callback remounts this page fresh,
-// wiping it back to '' — recovered here from authUser (the actual source of
-// truth for "which email got verified"), not from local state that doesn't
-// survive the round trip. Watches both session and authUser (not just
-// session) since authUser can resolve a beat later — ||= so it's never
-// overwritten once set, from whichever of the two settles it first.
+// A session already present on load (back from the magic-link redirect, or a refresh mid-flow)
+// skips past email/verify: the email is already proven. state.email_address is only in-memory
+// though: the redirect through /auth/callback remounts this page, wiping it to '', so it is
+// recovered from authUser (the source of truth for "which email got verified"), not local state.
+// Watches both session and authUser (authUser can resolve a beat later); ||= so it is never
+// overwritten once set, by whichever settles it first
 watch([session, authUser], async ([sessionValue, user]) => {
   if (!sessionValue) return
   if (user?.email) state.email_address ||= user.email
@@ -251,15 +243,13 @@ async function onSubmit() {
   </UPageCard>
 
   <UPageCard v-else :title="$t('tesseramento.title')">
-    <!-- disabled: purely a visual progress indicator — even with `linear`, Reka
-         UI's Stepper still lets a click jump forward one step or back to any
-         completed one, bypassing goNext()'s per-step validation. Navigation is
-         only ever driven by currentStep from the Avanti/Indietro buttons.
-         title hidden (sr-only, not removed — screen readers still get it):
-         9 steps' Italian titles don't fit side by side at this page's width
-         (max-w-2xl) without overlapping, at any viewport. The step text
-         moves to a plain "Passo X di Y — Title" line below instead, same
-         convention as the guided tour's stepIndicator. -->
+    <!-- disabled: a purely visual progress indicator: even with `linear`, Reka UI's Stepper
+         lets a click jump forward one step or back to any completed one, bypassing goNext()'s
+         per-step validation. Navigation is only driven by currentStep from the Avanti/Indietro
+         buttons. title hidden (sr-only, not removed: screen readers still get it): 9 steps'
+         Italian titles don't fit side by side at this page's width (max-w-2xl) without
+         overlapping. The step text moves to a plain "Passo X di Y — Title" line below, like the
+         guided tour's stepIndicator -->
     <UStepper
       v-model="currentStep"
       disabled
