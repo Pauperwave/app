@@ -89,6 +89,12 @@ export interface Player extends Omit<Database['public']['Views']['players_full']
   id: number
 }
 
+// players_public: the same without the associate's email and number, readable by every signed-in
+// user (players_full follows the caller's own RLS, so only staff get every row)
+export interface PlayerPublic extends Omit<Database['public']['Views']['players_public']['Row'], 'id'> {
+  id: number
+}
+
 export interface Mail {
   id: number
   unread?: boolean

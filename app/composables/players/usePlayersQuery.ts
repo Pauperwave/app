@@ -1,9 +1,9 @@
 // app\composables\players\usePlayersQuery.ts
 // Pinia Colada query for the players domain (ADR-007/ADR-009, see useAssociatesQuery.ts): reads
-// players_full, a view joining the players table (user_id) with its associate (name, email,
-// pauperwave_associate_number, is_active). No mutations composable: /players is read-only for now
-// (see docs/TODO.md)
-import type { Player } from '~/types'
+// players_public, a view joining the players table (user_id) with its associate's name and
+// is_active. No email or associate number: those need usePlayersFullQuery.ts, for staff only. No
+// mutations composable beyond delete (usePlayersMutations.ts)
+import type { PlayerPublic } from '~/types'
 
 export const PLAYERS_KEY = ['players']
 
@@ -12,15 +12,15 @@ export function usePlayersQuery() {
 
   return useQuery({
     key: PLAYERS_KEY,
-    query: async (): Promise<Player[]> => {
+    query: async (): Promise<PlayerPublic[]> => {
       const { data, error } = await supabase
-        .from('players_full')
+        .from('players_public')
         .select('*')
         .order('created_at', { ascending: false })
 
       if (error) throw error
 
-      return (data ?? []) as Player[]
+      return (data ?? []) as PlayerPublic[]
     }
   })
 }
