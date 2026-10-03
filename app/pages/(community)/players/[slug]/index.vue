@@ -77,6 +77,7 @@ const { data: matchHistory, isLoading: matchHistoryLoading }
   = useCommanderMatchHistoryQuery(playerUuid)
 const { data: commanderDecks, isLoading: commanderDecksLoading }
   = useCommanderDecksQuery(playerUuid)
+const { data: playerStats, isLoading: playerStatsLoading } = usePlayerStatsQuery(playerUuid)
 </script>
 
 <template>
@@ -174,6 +175,11 @@ const { data: commanderDecks, isLoading: commanderDecksLoading }
           v-if="player.user_id"
           :loading="loginHistoryLoading"
           :dates="loginHistory"
+        />
+
+        <PlayersSingleStatsCard
+          :loading="playerStatsLoading"
+          :stats="playerStats"
         />
 
         <PlayersSingleCommanderMatchHistoryCard

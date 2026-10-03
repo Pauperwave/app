@@ -2341,14 +2341,21 @@
       "loginHistory": "Cronologia accessi",
       "loginHistoryEmpty": "Nessun accesso registrato.",
       "sections": {
-        "info": "Informazioni"
+        "info": "Informazioni",
+        "stats": "Statistiche"
       }
     },
     "stats": {
+      "tournaments": "Tornei",
       "matches": "Partite",
       "wins": "Vittorie",
       "kills": "Uccisioni",
-      "average": "Media"
+      "average": "Media",
+      "averageKills": "Uccisioni a partita",
+      "killer": "Carnefice",
+      "victim": "Vittima",
+      "masterBrewer": "Master brewer",
+      "bestPlayer": "Player"
     },
     "fallbackName": "Giocatore",
     "commander": {
