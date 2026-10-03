@@ -55,7 +55,7 @@ async function fetchCardmarketPrice(
 //
 // NB: assumes CardTrader's language codes match ours (en/it/es/fr/de/ja); a mismatch fails as a
 // silent null.
-async function fetchCardtraderPrice(
+export async function fetchCardtraderPrice(
   token: string,
   blueprintId: number,
   foil: boolean,

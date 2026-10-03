@@ -25,5 +25,11 @@ export const ICONS = {
   pauper: '👛',
   commander: '👑',
   premodern: '📜',
-  cittadino: '🎖️'
+  cittadino: '🎖️',
+  // /prezzo: card header, language filter buttons and foil toggle
+  card: '🃏',
+  languageAll: '🌐',
+  languageIt: '🇮🇹',
+  languageEn: '🇬🇧',
+  foil: '✨'
 } as const
