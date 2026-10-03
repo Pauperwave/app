@@ -62,6 +62,7 @@ for (const file of walk(join(ROOT, 'app'))) {
     .replace(/<!--[\s\S]*?-->/g, comment => comment.replace(/[^\n]/g, ' '))
   const script = [...source.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map(m => m[1]).join('\n')
   const imported = importedNames(script)
+  const scriptIdentifiers = new Set(script.match(/[A-Za-z_$][\w$]*/g))
   const reported = new Set()
 
   for (const match of markup.matchAll(/<([A-Za-z][A-Za-z0-9]*(?:-[a-z0-9]+)*)(?=[\s/>])/g)) {
@@ -73,8 +74,7 @@ for (const file of walk(join(ROOT, 'app'))) {
     const name = tag.includes('-') ? toPascal(tag) : tag
     const known = registered.has(name) || registered.has(`Lazy${name}`) || BUILTINS.has(name)
       || imported.has(name) || imported.has(tag)
-    const usedInScript = new RegExp(`\\b${name}\\b`).test(script)
-    if (known || usedInScript) continue
+    if (known || scriptIdentifiers.has(name)) continue
 
     const line = source.slice(0, template.index + 10 + match.index).split('\n').length
     problems.push(`${file.slice(ROOT.length + 1)}:${line}  <${tag}>`)

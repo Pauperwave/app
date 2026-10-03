@@ -21,7 +21,13 @@ function argValue(flag, fallback) {
   return index === -1 ? fallback : process.argv[index + 1]
 }
 
+const SEVERITIES = ['moderate', 'high', 'critical']
 const minSeverity = argValue('--min-severity', 'critical')
+// It is interpolated into a shell command below, so nothing but a known severity may get there
+if (!SEVERITIES.includes(minSeverity)) {
+  console.error(`--min-severity must be one of: ${SEVERITIES.join(', ')}`)
+  process.exit(1)
+}
 const top = Number(argValue('--top', '10'))
 const jsonPath = argValue('--json')
 const savePath = argValue('--save')
@@ -32,6 +38,7 @@ function runFallowHealth() {
     + `--min-severity ${minSeverity} --format json --quiet`
   const options = { stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 1024 * 1024 * 32 }
   try {
+    // fallow-ignore-next-line security-sink -- the only variable part is allowlisted above
     return execSync(command, options).toString('utf8')
   } catch (err) {
     if (err.stdout) return err.stdout.toString('utf8')

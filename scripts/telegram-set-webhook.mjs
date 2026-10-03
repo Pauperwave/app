@@ -17,6 +17,7 @@ if (!BOT_TOKEN || !WEBHOOK_SECRET || !SITE_URL) {
 
 const webhookUrl = new URL('/api/telegram/webhook', SITE_URL).toString()
 
+// fallow-ignore-next-line security-sink -- fixed Telegram origin, only the operator's token in the path
 const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
