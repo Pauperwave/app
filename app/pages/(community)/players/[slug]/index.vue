@@ -24,6 +24,11 @@ const { data: playersData, isLoading: playerLoading } = usePlayersQuery()
 const player = computed(() => playersData.value?.find(
   item => slugify(`${item.first_name} ${item.last_name}`) === route.params.slug) ?? null)
 
+// The associate's email and number: a separate read that only staff can make
+const { data: playersFullData } = usePlayersFullQuery(canSeePersonalData)
+const personalData = computed(() => playersFullData.value
+  ?.find(item => item.uuid === player.value?.uuid) ?? null)
+
 // first_name + last_name: the same display name as the associate this player derives from
 const displayName = computed(() => player.value
   ? `${player.value.first_name} ${player.value.last_name}`
@@ -50,18 +55,18 @@ const { data: lastLoginsData, isLoading: lastLoginsLoading }
 const lastSignInAt = computed(() => lastLoginsData.value
   ?.find(entry => entry.playerUuid === player.value?.uuid)?.lastSignInAt ?? null)
 
-const infoFields = computed<DetailField[]>(() => (!player.value || !canSeePersonalData.value)
+const infoFields = computed<DetailField[]>(() => (!personalData.value || !canSeePersonalData.value)
   ? []
   : [
-    ...(player.value.pauperwave_associate_number
+    ...(personalData.value.pauperwave_associate_number
       ? [{
         icon: ICONS.idCard,
         label: t('player.columns.pauperwaveAssociateNumber'),
-        value: player.value.pauperwave_associate_number
+        value: personalData.value.pauperwave_associate_number
       }]
       : []),
-    ...(player.value.email_address
-      ? [{ icon: ICONS.mail, label: t('player.columns.emailAddress'), value: player.value.email_address }]
+    ...(personalData.value.email_address
+      ? [{ icon: ICONS.mail, label: t('player.columns.emailAddress'), value: personalData.value.email_address }]
       : [])
   ])
 
