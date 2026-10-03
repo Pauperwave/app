@@ -9,7 +9,8 @@ interface TurnBackRoundSwissBody {
 }
 
 export default defineEventHandler(async (event) => {
-  await requireManagementPermission(event)
+  // 'cancel-round': cancelling a round (or the whole tournament back to registration) is admin+
+  await requireAdminPermission(event)
 
   const { tournamentUuid, currentRoundNumber } = await readBody<TurnBackRoundSwissBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)

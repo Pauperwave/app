@@ -12,7 +12,8 @@ interface TurnBackRoundBody {
 // pairings/results/kills/votes and reopens the previous one; from round 1, resets to
 // registration_open. Standings are left alone (the next advance-round recomputes them).
 export default defineEventHandler(async (event) => {
-  await requireManagementPermission(event)
+  // 'cancel-round': cancelling a round (or the whole tournament back to registration) is admin+
+  await requireAdminPermission(event)
 
   const { tournamentUuid, currentRoundNumber } = await readBody<TurnBackRoundBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
