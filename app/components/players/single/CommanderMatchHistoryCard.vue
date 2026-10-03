@@ -2,7 +2,7 @@
 <!-- Split out of players/[slug]/index.vue: see LoginHistoryCard.vue -->
 <script setup lang="ts">
 import { format, parseISO } from 'date-fns'
-import { NuxtLink } from '#components'
+import { NuxtLink, TournamentsSinglePairingCommanderDeckHover } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { CommanderMatchHistoryRow } from '~/composables/players/useCommanderMatchHistoryQuery'
 
@@ -15,47 +15,55 @@ function formatMatchDate(startsAt: string | null): string {
   return format(parseISO(startsAt), 'dd/MM/yyyy')
 }
 
+// A missing round, table or position sorts last in both directions
+function optionalNumber(
+  accessorKey: 'roundNumber' | 'tableNumber' | 'position',
+  label: string,
+  icon: string
+): TableColumn<CommanderMatchHistoryRow> {
+  return {
+    accessorFn: match => match[accessorKey] ?? undefined,
+    id: accessorKey,
+    header: ({ column }) => sortableHeader(label, column, icon),
+    sortUndefined: 'last',
+    meta: { class: { th: 'text-center', td: 'text-center' } },
+    cell: ({ row }) => row.original[accessorKey] ?? '—'
+  }
+}
+
 const columns: TableColumn<CommanderMatchHistoryRow>[] = [
   {
     accessorKey: 'startsAt',
-    header: t('player.commander.columns.date'),
+    header: ({ column }) => sortableHeader(t('player.commander.columns.date'), column, ICONS.calendar),
     meta: { class: { td: 'whitespace-nowrap font-mono' } },
     cell: ({ row }) => formatMatchDate(row.original.startsAt)
   },
   {
     accessorKey: 'tournamentName',
-    header: t('player.commander.columns.tournament'),
+    header: ({ column }) => sortableHeader(t('player.commander.columns.tournament'), column, ICONS.standings),
     cell: ({ row }) => h(NuxtLink, {
       to: `/tournaments/${row.original.tournamentUuid}`,
       class: 'text-primary hover:underline'
     }, () => row.original.tournamentName)
   },
+  optionalNumber('roundNumber', t('player.commander.columns.round'), ICONS.hash),
+  optionalNumber('tableNumber', t('player.commander.columns.table'), ICONS.table),
   {
-    accessorKey: 'roundNumber',
-    header: t('player.commander.columns.round'),
-    meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }) => row.original.roundNumber ?? '—'
+    accessorFn: match => match.commander1Name ?? undefined,
+    id: 'commander1Name',
+    header: ({ column }) => sortableHeader(t('player.commander.columns.commander'), column, ICONS.commander),
+    sortUndefined: 'last',
+    cell: ({ row }) => (row.original.commander1Name
+      ? h(TournamentsSinglePairingCommanderDeckHover, {
+        commander1Name: row.original.commander1Name,
+        commander2Name: row.original.commander2Name
+      })
+      : '—')
   },
-  {
-    accessorKey: 'tableNumber',
-    header: t('player.commander.columns.table'),
-    meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }) => row.original.tableNumber ?? '—'
-  },
-  {
-    accessorKey: 'commanderName',
-    header: t('player.commander.columns.commander'),
-    cell: ({ row }) => row.original.commanderName ?? '—'
-  },
-  {
-    accessorKey: 'position',
-    header: t('player.commander.columns.position'),
-    meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }) => row.original.position ?? '—'
-  },
+  optionalNumber('position', t('player.commander.columns.position'), ICONS.medal),
   {
     accessorKey: 'kills',
-    header: t('player.commander.columns.kills'),
+    header: ({ column }) => sortableHeader(t('player.commander.columns.kills'), column, ICONS.kills),
     meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) => row.original.kills
   }
