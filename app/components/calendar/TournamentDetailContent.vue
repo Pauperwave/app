@@ -11,6 +11,7 @@ import type { Tournament } from '~/types'
 const { tournament } = defineProps<{ tournament: Tournament }>()
 
 const { t } = useI18n()
+const { isFull } = useTournamentSeatsQuery()
 
 const timeRange = computed(() => tournamentTimeRange(tournament.startDate, tournament.endDate))
 </script>
@@ -61,6 +62,14 @@ const timeRange = computed(() => tournamentTimeRange(tournament.startDate, tourn
       <p v-if="tournament.maxEntrants !== null" class="flex items-center gap-2">
         <UIcon :name="ICONS.players" class="size-5 shrink-0" />
         {{ t('tournament.maxEntrantsLabel', { count: tournament.maxEntrants }) }}
+        <UBadge
+          v-if="isFull(tournament.uuid)"
+          color="error"
+          variant="subtle"
+          size="sm"
+        >
+          {{ t('tournament.full') }}
+        </UBadge>
       </p>
       <p v-if="tournament.decklistVisibility" class="flex items-center gap-2">
         <UIcon :name="ICONS.lock" class="size-5 shrink-0" />
