@@ -67,6 +67,7 @@ const PAIRING_SELECT = `
 // null)
 export async function fetchLivePod(
   associateUuid: string, pairingUuid?: string
+// fallow-ignore-next-line code-duplication -- pod lookup mirrors matchReportData.ts
 ): Promise<LivePod | null> {
   const supabase = telegramServiceSupabaseClient()
 
@@ -84,7 +85,9 @@ export async function fetchLivePod(
     .select(PAIRING_SELECT)
     .or([1, 2, 3, 4].map(seat => `player${seat}_uuid.in.(${playerList})`).join(','))
     .eq('round.status', 'in_progress')
+    // fallow-ignore-next-line code-duplication -- mirrors matchReportData.ts
     .eq('tournament.status', 'in_progress')
+    // fallow-ignore-next-line code-duplication -- pod lookup mirrors matchReportData.ts
     .not('player3_uuid', 'is', null)
   if (pairingUuid) query = query.eq('uuid', pairingUuid)
 

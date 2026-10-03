@@ -242,6 +242,7 @@ function summaryTableBlock(state: ResultState, caption: string) {
 function votesReceivedTableBlock(deckVotePoints: number, playVotePoints: number) {
   // Plain '✓' (U+2713, no variation selector): colorful emoji have a taller line-height in Telegram
   // table cells
+  // fallow-ignore-next-line code-duplication -- mockup of commanderPodMessages.ts
   const cell = (value: string | undefined) => ({
     text: value, align: 'center' as const, valign: 'middle' as const
   })
@@ -272,6 +273,7 @@ function scoreSummaryTableBlock(
   positionPoints: number, killPoints: number,
   deckVotePoints: number, playVotePoints: number, totalPoints: number
 ) {
+  // fallow-ignore-next-line code-duplication -- mockup of commanderPodMessages.ts
   const row = (label: string, points: number) => [
     { text: label, align: 'left' as const, valign: 'middle' as const },
     { text: `${points} pt`, align: 'center' as const, valign: 'middle' as const }

@@ -42,6 +42,7 @@ const PAIRING_SELECT = `
 export async function fetchLiveTable(
   associateUuid: string,
   pairingUuid?: string
+// fallow-ignore-next-line code-duplication -- report lookup mirrors commanderPodData.ts
 ): Promise<LiveTable | null> {
   const supabase = telegramServiceSupabaseClient()
 
@@ -60,7 +61,9 @@ export async function fetchLiveTable(
     .or(`player1_uuid.in.(${playerList}),player2_uuid.in.(${playerList})`)
     .eq('round.status', 'in_progress')
     .eq('tournament.status', 'in_progress')
+    // fallow-ignore-next-line code-duplication -- mirrors commanderPodData.ts
     .not('player2_uuid', 'is', null)
+    // fallow-ignore-next-line code-duplication -- report lookup mirrors commanderPodData.ts
     .is('player3_uuid', null)
   if (pairingUuid) query = query.eq('uuid', pairingUuid)
 
