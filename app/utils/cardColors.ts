@@ -1,7 +1,6 @@
 // app\utils\cardColors.ts
 
-/** Canonical WUBRG order — mono-color sorting/grouping across the app reads
- * this, not a local copy. Copied verbatim from MagicTheGathering/league. */
+/** Canonical WUBRG order: mono-color sorting/grouping reads this, not a local copy. */
 export const WUBRG_ORDER = ['W', 'U', 'B', 'R', 'G']
 
 /**
@@ -18,11 +17,9 @@ export function colorGroupRank(colorIdentity: string[]): number {
 }
 
 /**
- * Finer-grained color comparator for the wanted-cards grid's "Identità colore"
- * sort (2026-08-15 user request): mono-color cards before multicolor before
- * colorless, then — unlike colorGroupRank's single "multicolor" bucket — cards
- * with the same color count are further ordered by their actual WUBRG colors
- * (e.g. selecting White+Black sorts mono-White, then mono-Black, then WB).
+ * Finer color comparator for the wanted-cards "Identità colore" sort: mono-color, then multicolor,
+ * then colorless; unlike colorGroupRank's single multicolor bucket, same-count cards are ordered by
+ * their WUBRG colors (White+Black sorts mono-White, mono-Black, then WB). /
  */
 export function compareColorIdentity(a: string[], b: string[]): number {
   const rank = (color: string) => {
@@ -42,12 +39,9 @@ export function compareColorIdentity(a: string[], b: string[]): number {
   return 0
 }
 
-// Same colors used by MagicTheGathering/league's resolveCardColors +
-// buildGradientClass (app/utils/cardColors.ts there), but as direct CSS values
-// instead of `from-${color}` Tailwind classes built at runtime: Tailwind does not
-// generate classes that never appear literally in the source, so those dynamic
-// strings would not be scanned into the final CSS. An inline style with a CSS
-// gradient sidesteps the problem.
+// Direct CSS values instead of runtime-built `from-${color}` Tailwind classes: Tailwind doesn't
+// generate classes that never appear literally in the source, so an inline style with a CSS
+// gradient is used
 const COLOR_HEX: Record<string, string> = {
   W: '#fef3c7', // amber-100
   U: '#2563eb', // blue-600
@@ -96,9 +90,10 @@ export function resolveCardColors(card: CardColorInput): string[] {
   return Array.from(colors)
 }
 
-/** Builds a CSS gradient (for :style, not a Tailwind class) from a card's resolved
- * colors — same stepped logic as buildGradientClass in league, translated into an
- * inline linear-gradient. */
+/**
+ * Builds a CSS gradient (for :style, not a Tailwind class) from a card's resolved colors, stepped
+ * like league's buildGradientClass.
+ */
 export function buildGradientStyle(colors: string[]): string {
   const hex = (c: string) => COLOR_HEX[c] ?? COLOR_HEX.C!
 

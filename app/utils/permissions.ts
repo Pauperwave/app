@@ -1,8 +1,8 @@
 // app\utils\permissions.ts
 import type { AppRole } from '~/types'
 
-// Roles are a strict hierarchy, not independent capabilities — each level a
-// strict superset of the one below (docs/architecture/roles.md §1).
+// Roles are a strict hierarchy: each level is a superset of the one below
+// (docs/architecture/roles.md §1)
 export const ROLE_LEVEL = {
   player: 0,
   organizer: 1,
@@ -10,12 +10,10 @@ export const ROLE_LEVEL = {
   super_admin: 3
 } as const satisfies Record<AppRole, number>
 
-// Each permission declares the *minimum* role it needs, once — not every
-// role above it re-listing it. Grows incrementally as each domain gets
-// scoped (docs/architecture/roles.md's "Suggested order of work" step 13);
-// docs/architecture/permissions.md is the human-readable companion table —
-// add a row there whenever a Permission is added here, same source of
-// truth in two formats.
+// Each permission declares the *minimum* role it needs, once, instead of every role above
+// re-listing it (docs/architecture/roles.md "Suggested order of work" step 13).
+// docs/architecture/permissions.md is the human-readable companion: add a row there whenever a
+// Permission is added here.
 export type Permission
   = | 'register-tournament'
     | 'manage-tournaments'
@@ -31,27 +29,23 @@ export type Permission
     | 'delete-commander-deck'
     | 'delete-ruleset'
     | 'manage-roles'
-    // Nav-visibility permissions (2026-08-17, step 12/13): gate whether a
-    // sidebar section/page is shown at all, distinct from action-level
-    // permissions above (e.g. view-associates vs. manage-members — an
-    // organizer can see every associate's data but not edit/delete it).
+    // Nav-visibility permissions: gate whether a sidebar section/page is shown at all, distinct
+    // from the action-level ones above (an organizer can see every associate but not edit/delete
+    // them)
     | 'view-associates'
     | 'view-finance'
     | 'view-players'
     | 'manage-locations'
     | 'manage-rulesets'
     | 'access-settings'
-    // Whole /trash page (2026-08-22): viewing soft-deleted rows and restoring
-    // them, both admin-only — see docs/architecture/permissions.md's "Note"
-    // section on the soft-delete-vs-purge open question this resolves for
-    // restore specifically (soft-deleting itself stays organizer+, unchanged).
+    // Whole /trash page: viewing and restoring soft-deleted rows, both admin-only (see
+    // docs/architecture/permissions.md "Note"); soft-deleting itself stays organizer+
     | 'view-trash'
-    // Permanent deletion from /trash (2026-08-23) — one tier above
-    // view-trash's restore, matching the existing "Eliminare
-    // definitivamente" = super_admin rows in the permissions matrix.
+    // Permanent deletion from /trash: one tier above view-trash's restore ("Eliminare
+    // definitivamente" = super_admin)
     | 'purge-trash'
-    // Marking a tournament as "test" (2026-10-01): hides it from everyone
-    // below super_admin (RLS), so nobody else could ever undo it.
+    // Marking a tournament as "test": hides it from everyone below super_admin (RLS), so nobody
+    // else could undo it
     | 'mark-test-tournaments'
 
 export const PERMISSION_LEVEL = {
@@ -65,35 +59,26 @@ export const PERMISSION_LEVEL = {
   'manage-tournament-settings': 'admin',
   'manage-all-commander-decks': 'admin',
   'delete-tournaments': 'super_admin', // permanent deletion only — create/edit stays 'organizer' above
-  // Revised down to 'admin' 2026-08-23 (user request: admin gets every
-  // power except "Eliminare definitivamente") — ordinary round management
-  // stays 'organizer', via 'manage-tournaments'; also covers league's "turn
-  // back to registration" case.
+  // Revised down to 'admin' (admin has every power except "Eliminare definitivamente"); ordinary
+  // round management stays 'organizer' via 'manage-tournaments'. Also covers league's "turn back to
+  // registration"
   'cancel-round': 'admin',
-  // Revised down to 'admin' 2026-08-23, same request — distinct from
-  // 'manage-all-commander-decks' (edit/manage, already 'admin' above).
+  // Revised down to 'admin'; distinct from 'manage-all-commander-decks' (edit/manage)
   'delete-commander-deck': 'admin',
-  // Revised down to 'admin' 2026-08-23, same request.
+  // Revised down to 'admin' (admin has every power except "Eliminare definitivamente")
   'delete-ruleset': 'admin',
-  // 'admin' (not 'super_admin' only — user request 2026-08-23): admin can
-  // grant player/organizer/admin, but never super_admin, and can never
-  // touch an existing super_admin or the protected developer account
-  // (`role_locked` flag, `user_roles`). That finer-grained boundary lives
-  // in the assign_role RPC (migration 20260823130000/20260823140000), not
-  // this constant — this only gates the top-level tier, not the two
-  // exceptions. Enforced twice, not just once: MembersList.vue's role
-  // dropdown calls assign_role directly (wired 2026-08-25), which
-  // self-guards the exceptions server-side regardless of what the UI does.
+  // 'admin' can grant player/organizer/admin, never super_admin, and can't touch a super_admin or
+  // the protected developer account (`role_locked`). That finer boundary lives in the assign_role
+  // RPC (migrations 20260823130000/20260823140000), which MembersList.vue's role dropdown calls
+  // directly, so it holds regardless of the UI; this only gates the top tier
   'manage-roles': 'admin',
   'view-associates': 'organizer', // sees every associate's data; editing/deleting stays manage-members (admin)
   'view-finance': 'organizer',
   'view-players': 'organizer',
   'manage-locations': 'organizer',
   'manage-rulesets': 'organizer', // deleting a ruleset stays delete-ruleset (admin)
-  // Whole /settings section, all four pages uniformly (2026-08-17, revised
-  // down from organizer): actually assigning a role has its own finer-grained
-  // rules enforced at the assign_role RPC itself regardless of this — this
-  // only gates whether the page/nav item is reachable at all.
+  // Whole /settings section (all four pages): only gates reachability of the page/nav item;
+  // assigning a role has its own finer rules in the assign_role RPC
   'access-settings': 'admin',
   'view-trash': 'admin',
   'purge-trash': 'super_admin',

@@ -1,6 +1,6 @@
 // app\utils\tournaments\tablePlayerStanding.ts
-// Standing summaries shown under each player in the round 2+ table previews, so the organizer
-// can see why the tables came out this way (user request, 2026-10-02).
+// Standing summaries under each player in the round 2+ table previews, so the organizer sees why
+// the tables came out this way
 import type { TablePlayerStanding } from '~/types'
 import { ICONS } from '~/utils/icons'
 import type { SwissStandingStats } from '~/utils/tournaments/swissScoring'
@@ -34,8 +34,8 @@ interface CommanderStats {
   playReceived: number
 }
 
-// Same tiebreak order as compareCommanderStandings: score, then victories, kills, brew and play votes.
-// Shown as icons, same as CommanderStandingsTable.vue's column headers.
+// Same tiebreak order as compareCommanderStandings: score, then victories, kills, brew and play
+// votes. Shown as icons, same as CommanderStandingsTable.vue's column headers.
 export function commanderTablePlayerStanding(
   stats: CommanderStats,
   rank: number,

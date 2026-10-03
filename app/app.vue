@@ -18,10 +18,8 @@ useHead({
   htmlAttrs: {
     lang: 'it'
   },
-  // Every page-level useSeoMeta({ title }) now sets only its own short name
-  // (e.g. "Soci", "Eventi") — this template is what prefixes "Pauperwave | "
-  // uniformly, so the browser tab always shows which page it is instead of
-  // just the app name.
+  // Page-level useSeoMeta({ title }) sets only its own short name ("Soci", "Eventi"); this prefixes
+  // "Pauperwave | " uniformly
   titleTemplate: title => title ? `Pauperwave | ${title}` : 'Pauperwave'
 })
 
@@ -29,16 +27,10 @@ useSeoMeta({
   description: 'Gestionale della lega Pauper Pauperwave: associati, tornei, leghe, eventi, carte cercate e classifiche.'
 })
 
-// Global developer-view effect (user request, 2026-09-18) — called once
-// here rather than from DeveloperViewToggle.vue itself, so the
-// .debug-spacing class stays in sync even if that component were ever
-// rendered more than once (same "call once" precedent as league's own
-// useDeveloperViewOverlay.ts, minus the MutationObserver machinery this
-// app doesn't need — .debug-spacing is a pure CSS outline, nothing to
-// re-scan on DOM changes). Active only once both isDeveloperView AND
-// isOverlayEnabled are on, same two-tier gating as league's own
-// overlayActive computed. Wrapped in onMounted, same reason as league's
-// own version: `document` doesn't exist during SSR.
+// Global developer-view effect: called once here (not from DeveloperViewToggle.vue) so the
+// .debug-spacing class stays in sync even if that component renders more than once. Active only
+// when both isDeveloperView AND isOverlayEnabled are on; wrapped in onMounted since `document`
+// doesn't exist during SSR.
 const { isDeveloperView, isOverlayEnabled } = useDeveloperView()
 const overlayActive = computed(() => isDeveloperView.value && isOverlayEnabled.value)
 onMounted(() => {

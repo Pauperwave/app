@@ -1,10 +1,8 @@
 // app\utils\tournaments\swissPairing.ts
-// Swiss pairing by standings: the best-ranked unpaired player is matched with
-// the next-best one they haven't played yet. With an odd count the bye goes to
-// the lowest-ranked player who hasn't had one yet (nobody gets two, unless
-// everybody already had one) and is put last. When no rematch-free pairing
-// exists the ranked order is returned as-is — the organizer can still reorder
-// it in the preview.
+// Swiss pairing by standings: the best-ranked unpaired player meets the next-best one they haven't
+// played. With an odd count the bye goes to the lowest-ranked player without one yet (nobody gets
+// two unless everybody had one) and is placed last. With no rematch-free pairing the ranked order
+// is returned as-is for the organizer to reorder.
 
 const MAX_SEARCH_STEPS = 50_000
 

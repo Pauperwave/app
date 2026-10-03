@@ -2,9 +2,8 @@
 import { isFuture, isToday } from 'date-fns'
 import type { Tournament } from '~/types'
 
-// Shared by home/Player.vue and home/Staff.vue's own "upcoming" widgets.
-// "Upcoming" = today or later, not already wrapped up — same status set a
-// tournament/event never goes back to once reached.
+// Shared by home/Player.vue and home/Staff.vue's "upcoming" widgets: today or later and not wrapped
+// up (a status set a tournament never leaves)
 export function upcomingTournaments(tournaments: Tournament[], limit = 5): Tournament[] {
   return tournaments
     .filter(tournament => tournament.status !== 'completed' && tournament.status !== 'cancelled'

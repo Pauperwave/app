@@ -1,22 +1,13 @@
 // app\utils\tournaments\tournamentStageLabel.ts
 import type { Tournament } from '~/types'
 
-// Mutates each tournament's `stageNumber` in place (called once right after
-// useTournamentsQuery.ts builds the array, before it's returned) — its
-// 1-based position within its own league, ordered by startDate.
-// Independent of whether the name repeats (user request, 2026-08-22,
-// issue #52): every tournament that belongs to a league gets a stage
-// number, not just ones sharing an identical name with a sibling.
+// Mutates each tournament's `stageNumber` in place (called by useTournamentsQuery.ts before
+// returning the array): its 1-based position within its league by startDate, whether or not the
+// name repeats.
 //
-// Cancelled tournaments are skipped entirely (2026-08-22 follow-up) — a
-// cancelled stage never actually happened, so it neither gets a number
-// itself nor counts toward the ones after it. Found via "Recupero terza
-// tappa" (a makeup replay of a cancelled "Terza tappa"): counting the
-// cancelled original gave the makeup "5ª tappa" purely from chronological
-// position, reading oddly next to a name that already says "terza". Still
-// not a perfect fix — the makeup lands wherever it falls chronologically
-// among the surviving stages (here, "4ª"), not necessarily reusing "3ª" —
-// but avoids counting a stage that was voided.
+// Cancelled tournaments are skipped: a cancelled stage never happened, so it gets no number and
+// doesn't count toward later ones. A makeup replay still lands at its chronological position among
+// the surviving stages, not necessarily reusing the cancelled stage's number.
 export function assignTournamentStageNumbers(tournaments: Tournament[]): void {
   const byLeague = new Map<string, Tournament[]>()
   for (const tournament of tournaments) {
@@ -37,10 +28,8 @@ export function assignTournamentStageNumbers(tournaments: Tournament[]): void {
   }
 }
 
-// Plain-text variant for contexts that can't render styled markup (a select
-// option's label, a breadcrumb string, a share-button prop) — see
-// TournamentsStageLabel.vue for the styled (muted, superscript "a")
-// component used everywhere else.
+// Plain-text variant for contexts that can't render styled markup (select option label, breadcrumb,
+// share-button prop); see TournamentsStageLabel.vue for the styled one
 export function tournamentStageText(tournament: Tournament): string {
   return tournament.stageNumber ? ` — ${tournament.stageNumber}ª tappa` : ''
 }

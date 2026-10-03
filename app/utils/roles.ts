@@ -2,12 +2,9 @@
 import type { BadgeProps } from '@nuxt/ui'
 import type { AppRole } from '~/types'
 
-// Increasing-authority iconography — player (user) -> organizer (user with a
-// gear, "manages/operates") -> admin (shielded user) -> super_admin
-// (terminal, "Sviluppatore"). Was only defined inline in UserMenu.vue's own
-// "view as" menu (2026-08-17) until a third call site (MembersList.vue's
-// role select, usePlayersRowActions.ts's "Promuovi a" submenu) made it worth
-// extracting (2026-08-25 user request).
+// Increasing-authority iconography: player (user) -> organizer (user with a gear) -> admin
+// (shielded user) -> super_admin (terminal, "Sviluppatore"). Shared by UserMenu.vue,
+// MembersList.vue and usePlayersRowActions.ts
 export const ROLE_ICON: Record<AppRole, string> = {
   player: ICONS.player,
   organizer: ICONS.userRoundCog,
@@ -15,10 +12,8 @@ export const ROLE_ICON: Record<AppRole, string> = {
   super_admin: ICONS.terminal
 }
 
-// RoleBadge.vue used a flat `color="neutral"` for every role until now (user
-// request, 2026-08-29). Colors per user's own spec, not the ROLE_ICON
-// increasing-authority scale: super_admin ("Sviluppatore") blue, admin red,
-// organizer yellow.
+// Badge colors for RoleBadge.vue, deliberately not the ROLE_ICON authority scale: super_admin
+// ("Sviluppatore") blue, admin red, organizer yellow
 export const ROLE_COLOR: Record<AppRole, BadgeProps['color']> = {
   player: 'neutral',
   organizer: 'warning',

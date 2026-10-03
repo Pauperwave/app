@@ -1,7 +1,7 @@
 // app\utils\calendar\partnerDiscounts.ts
-// Static list for /calendario's "sconti partner" section (CalendarPartnerDiscounts.vue),
-// same mock/static convention as server/api/members.ts — revisit as a Supabase table
-// (with its own use<Domain>Query.ts) once the list grows past a handful of hand-edited entries.
+// Static list for /calendario's "sconti partner" section (CalendarPartnerDiscounts.vue), a
+// mock/static convention like server/api/members.ts: move to a Supabase table (with its own
+// use<Domain>Query.ts) once it outgrows a few hand-edited entries
 export interface PartnerDiscount {
   partner: string
   code: string

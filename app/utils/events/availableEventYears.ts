@@ -1,9 +1,8 @@
 // app\utils\events\availableEventYears.ts
 import type { Event } from '~/types'
 
-// Shared by events/index.vue's own YearRangePicker — every year with at
-// least one event, plus the real current year even if it's still empty,
-// sorted newest first. Same shape as availableTransactionYears.ts.
+// Shared by events/index.vue's YearRangePicker: every year with an event plus the current year,
+// newest first (like availableTransactionYears.ts)
 export function availableEventYears(events: Event[]): number[] {
   const years = new Set(events.map(
     event => new Date(event.startDate).getFullYear()

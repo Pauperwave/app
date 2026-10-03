@@ -1,20 +1,15 @@
 // app\utils\finance\financeSummaryColumns.ts
-// Extracted out of Category/Event/Format/Method/Tournament/TypeSummaryTable.vue
-// (2026-08-29, fallow:dupes) — every one of them repeated the same four
-// column shapes (a right-aligned running count, a right-aligned currency
-// total with a summed footer, a currency average with no footer, and a
-// percent share with a "100%" footer), differing only in accessorKey/header/
-// which total ref to sum. MonthSummaryTable.vue's per-payment-type columns
-// use accessorFn instead of accessorKey (dynamic column per PAYMENT_TYPES
-// entry), so they don't fit these signatures and stay hand-written there.
+// The four column shapes every Category/Event/Format/Method/Tournament/TypeSummaryTable.vue
+// repeated: a right-aligned count, a currency total with a summed footer, a currency average with
+// no footer and a percent share with a "100%" footer. MonthSummaryTable.vue's per-payment-type
+// columns use accessorFn (dynamic per PAYMENT_TYPES) and stay hand-written.
 import { h } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 
 const RIGHT_ALIGN_META = { class: { th: 'text-right', td: 'text-right font-mono' } } as const
 
-// Every summary table sums one or more of its own numeric columns for a
-// footer total (totalCount/totalAmount/totalCash/...) — same reduce,
-// differing only in which key.
+// Footer total of one numeric column (totalCount/totalAmount/totalCash/...): the same reduce,
+// differing only by key
 export function columnTotal<T>(rows: T[], key: Extract<keyof T, string>): number {
   return rows.reduce((sum, row) => sum + (row[key] as number), 0)
 }
@@ -51,10 +46,9 @@ export function summaryAmountColumn<T>(
   }
 }
 
-// No footer variant — an "average" column has no meaningful plain sum;
-// tables that want one compute their own (e.g. TournamentSummaryTable.vue's
-// averageOfAverages, the mean of each row's own average, not
-// totalAmount / totalCount).
+// No footer variant: an "average" column has no meaningful plain sum; tables compute their own
+// (e.g. TournamentSummaryTable.vue's averageOfAverages, the mean of each row's average, not
+// totalAmount / totalCount)
 export function summaryAverageColumn<T>(
   accessorKey: Extract<keyof T, string>,
   header: string,

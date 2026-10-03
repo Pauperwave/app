@@ -1,8 +1,7 @@
 // app\utils\tournaments\defaultRoundCount.ts
-// Round count a tournament starts with, by format family (unlike
-// useSwissRoundCount.ts's player-count-based calculation, which is a different,
-// unrelated rule). Same split as roundDuration.ts. The values live in
-// /settings; these are the ones used until they load.
+// Round count a tournament starts with, by format family (a different rule from
+// useSwissRoundCount.ts's player-count one). Same split as roundDuration.ts. The values live in
+// /settings; these are used until they load.
 export interface RoundCountRules {
   commanderRoundCount: number
   oneVsOneRoundCount: number

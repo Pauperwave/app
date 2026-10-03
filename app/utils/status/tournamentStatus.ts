@@ -13,17 +13,12 @@ export function tournamentStatusColor(status: TournamentStatus): StatusColor {
   return 'info'
 }
 
-// Same status -> color mapping as tournamentStatusColor(), spelled out as
-// literal Tailwind bg-* classes instead of a UBadge `color` prop — for
-// contexts drawing a plain colored cell (CalendarHeatmap's variantByDate),
-// not a badge.
+// Same status -> color mapping as tournamentStatusColor() as literal Tailwind bg-* classes, for
+// plain colored cells (CalendarHeatmap's variantByDate) rather than a UBadge `color` prop
 export function tournamentStatusBgClass(status: TournamentStatus): string {
-  // Not bg-neutral — that class doesn't resolve to a real color in this
-  // theme (renders fully transparent, confirmed via claude-in-chrome:
-  // getComputedStyle returned rgba(0,0,0,0)). bg-accented alone was also too
-  // close to the empty-cell bg-elevated (oklch 0.37 vs 0.274 — barely
-  // distinguishable at a 12px swatch size, user feedback 2026-08-20). A
-  // border reads more clearly than a subtle fill difference at that size.
+  // Not bg-neutral (renders transparent in this theme), and bg-accented alone is too close to the
+  // empty-cell bg-elevated at a 12px swatch: a border reads more clearly than a subtle fill
+  // difference
   if (status === 'draft' || status === 'external') return 'bg-elevated border-2 border-accented'
   if (status === 'in_progress') return 'bg-warning'
   if (status === 'completed') return 'bg-success'

@@ -2,11 +2,9 @@
 import type { Row } from '@tanstack/vue-table'
 import type { Transaction } from '~/types'
 
-// UTable globalFilterFn for /transactions — a single search box matching
-// payer name/surname, transaction id, and receipt number (user request,
-// 2026-08-24, same "one search box" pattern as associatesGlobalFilterFn.ts).
-// receipt_ref is only ever set on rows imported from the 2026 historical
-// sheet (migration 20260825230000).
+// UTable globalFilterFn for /transactions: one search box matching payer name/surname, transaction
+// id and receipt number (like associatesGlobalFilterFn.ts). receipt_ref is only set on rows
+// imported from the 2026 historical sheet (migration 20260825230000)
 const normalize = (value: string) => value.toLowerCase()
 const includesQuery = (value: string | null | undefined, query: string) =>
   !!value && normalize(value).includes(query)

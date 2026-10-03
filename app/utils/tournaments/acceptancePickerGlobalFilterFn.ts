@@ -2,9 +2,8 @@
 import type { Row } from '@tanstack/vue-table'
 import type { AcceptancePickerItem } from '~/components/tournaments/single/AcceptancePicker.vue'
 
-// Shared UTable globalFilterFn for both the "Pre-registrati" and "Iscritti
-// (Pagato)" tables in AcceptancePicker.vue — matches name and email, same
-// substring-match shape as the other domains' *GlobalFilterFn.ts files.
+// Shared UTable globalFilterFn for AcceptancePicker.vue's "Pre-registrati" and "Iscritti (Pagato)"
+// tables: name and email substring match
 export function acceptancePickerGlobalFilterFn(
   row: Row<AcceptancePickerItem>, _columnId: string, filterValue: string
 ): boolean {

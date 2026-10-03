@@ -3,38 +3,30 @@ import levenshtein from 'fast-levenshtein'
 import type { Row } from '@tanstack/vue-table'
 import type { Associate } from '~/types'
 
-// Shared UTable globalFilterFn for both associates/index.vue (roster) and
-// associates/requests.vue (queue) — a single search box matching name,
-// email, phone, and tax code (user feedback, 2026-08-19: the toolbar's
-// search only ever matched email_address). Name/surname is fuzzy-matched
-// (typo-tolerant via Levenshtein edit distance); email/phone/tax code stay
-// exact-substring — a tolerance of 1-2 chars on those produces false
-// positives fast (e.g. an email typo tolerance matching unrelated
-// addresses), so only the name gets the forgiving match.
+// Shared UTable globalFilterFn for associates/index.vue (roster) and requests.vue (queue): one
+// search box matching name, email, phone and tax code. Only the name is fuzzy (Levenshtein): a 1-2
+// char tolerance on email/phone/tax code gives false positives fast, so those stay exact-substring.
 const normalize = (value: string) => value.toLowerCase()
 const includesQuery = (value: string | null | undefined, query: string) =>
   !!value && normalize(value).includes(query)
 
-// Bails to plain substring matching under 3 characters — fuzzy matching a
-// 1-2 char query against every word matches nearly everything, which isn't
-// useful and would swamp the roster's own quick single/double-letter checks.
-// Normalizes fullName itself rather than trusting an already-lowercased
-// caller — normalize() is idempotent, so repeating it costs nothing and
-// keeps this function correct standalone (code review, 2026-08-19).
+// Plain substring matching under 3 characters: fuzzy-matching 1-2 chars matches nearly everything
+// and would swamp quick single/double-letter checks. Normalizes fullName itself (idempotent) so the
+// function is correct standalone
 function nameMatches(fullName: string, query: string): boolean {
   const normalized = normalize(fullName)
   if (normalized.includes(query)) return true
   if (query.length < 3) return false
 
-  // Multi-word queries (e.g. "john doe") fall through to the substring
-  // check above — levenshtein.get() compares single tokens, so "john"
-  // against the whole query "john doe" is a large distance and never
-  // matches per-word here.
+  // Multi-word queries (e.g. "john doe") fall through to the substring check above:
+  // levenshtein.get() compares single tokens, so a per-word comparison against the whole query is a
+  // large distance
   const tolerance = query.length <= 4 ? 1 : 2
   return normalized.split(/\s+/).some(word => levenshtein.get(word, query) <= tolerance)
 }
 
-// The Telegram nickname lives in another table, so the roster passes a live lookup by associate uuid.
+// The Telegram nickname lives in another table, so the roster passes a live lookup by associate
+// uuid.
 export function createAssociatesGlobalFilterFn(
   getTelegramUsername?: (associateUuid: string) => string | null | undefined
 ) {
