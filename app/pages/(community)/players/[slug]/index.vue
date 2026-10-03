@@ -46,9 +46,13 @@ const { breadcrumbItems } = useBreadcrumbs()
 // "Profilo" points at the associate record behind this player — same
 // reasoning as LayoutUserMenu.vue's own profileLink, and the reverse
 // direction of associate/[slug].vue's own "Vedi il profilo giocatore" link.
-const associateLink = computed(() => (player.value?.first_name && player.value?.last_name)
-  ? `/associate/${slugify(`${player.value.first_name} ${player.value.last_name}`)}`
-  : null)
+// Only for who can open that record: the associates list's viewers, or the player themselves
+const associateLink = computed(() => {
+  const canOpen = can('view-associates') || isOwnProfile.value
+  if (!canOpen || !player.value?.first_name || !player.value?.last_name) return null
+
+  return `/associate/${slugify(`${player.value.first_name} ${player.value.last_name}`)}`
+})
 
 const { data: lastLoginsData, isLoading: lastLoginsLoading }
   = usePlayersLastLoginsQuery(canSeePersonalData)
@@ -78,9 +82,11 @@ const { data: loginHistory, isLoading: loginHistoryLoading } = usePlayerLoginHis
 
 const loading = computed(() => playerLoading.value || lastLoginsLoading.value)
 
+const isOwnProfile = computed(() =>
+  !!currentUserId.value && player.value?.user_id === currentUserId.value)
+
 // A player edits their own decks and only views everyone else's; admins manage any
-const canEditDecks = computed(() => can('manage-all-commander-decks')
-  || (!!currentUserId.value && player.value?.user_id === currentUserId.value))
+const canEditDecks = computed(() => can('manage-all-commander-decks') || isOwnProfile.value)
 
 // "Storico Partite" + "Mazzi Commander", shown for every player, not just Commander regulars: there
 // is no "plays Commander" flag to gate on, and an empty state is an honest result for a player who
