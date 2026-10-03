@@ -3,6 +3,7 @@
 import type * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { Event } from '~/types'
+import type { EventPartnerInput } from '#shared/utils/events/eventPartners'
 import type { NewEventPayload } from '#shared/types/events'
 import type { EventFormState } from '~/composables/events/useEventFormFields'
 
@@ -26,6 +27,7 @@ const state = reactive<EventFormState>({
 // Kept out of `state`/the valibot schema (no format validation needed) —
 // same convention as TournamentsListEditModal.vue's `image`/`imageCardName`/
 // `imageCardArtist`.
+const partners = ref<EventPartnerInput[]>([])
 const image = ref<string | undefined>(undefined)
 const imageCardName = ref<string | undefined>(undefined)
 const imageCardArtist = ref<string | undefined>(undefined)
@@ -40,6 +42,15 @@ watch([open, () => editingEvent], ([isOpen, current]) => {
   state.organizerUuid = current.organizerUuid
   state.locationUuid = current.locationUuid ?? undefined
   state.companionCode = current.companionCode ?? undefined
+  state.tagline = current.tagline ?? undefined
+  state.edition = current.edition ?? undefined
+  state.description = current.description ?? undefined
+  state.practicalNotes = current.practicalNotes ?? undefined
+  state.ticketsUrl = current.ticketsUrl ?? undefined
+  state.ticketsOnSaleOn = current.ticketsOnSaleOn ?? undefined
+  state.membershipRequired = current.membershipRequired
+  state.membershipUrl = current.membershipUrl ?? undefined
+  partners.value = current.partners.map(partner => ({ ...partner }))
   image.value = current.image ?? undefined
   imageCardName.value = current.imageCardName ?? undefined
   imageCardArtist.value = current.imageCardArtist ?? undefined
@@ -60,6 +71,17 @@ async function onSubmit(formEvent: FormSubmitEvent<Schema>) {
     locationUuid: formEvent.data.locationUuid || null,
     organizerUuid: formEvent.data.organizerUuid ?? '',
     companionCode: formEvent.data.companionCode || null,
+    tagline: formEvent.data.tagline || null,
+    edition: formEvent.data.edition ?? null,
+    description: formEvent.data.description || null,
+    practicalNotes: formEvent.data.practicalNotes || null,
+    ticketsUrl: formEvent.data.ticketsUrl || null,
+    ticketsOnSaleOn: formEvent.data.ticketsOnSaleOn || null,
+    membershipRequired: formEvent.data.membershipRequired ?? false,
+    membershipUrl: formEvent.data.membershipRequired
+      ? (formEvent.data.membershipUrl || null)
+      : null,
+    partners: partners.value,
     imageUrl: image.value ?? null,
     imageCardName: imageCardName.value ?? null,
     imageCardArtist: imageCardArtist.value ?? null
@@ -129,6 +151,8 @@ async function onSubmit(formEvent: FormSubmitEvent<Schema>) {
             :icon="ICONS.calendar"
           />
         </UFormField>
+
+        <EventsFieldsDetailFields v-model:partners="partners" :state="state" />
 
         <div class="grid grid-cols-2 gap-2">
           <!-- eslint-disable-next-line -->

@@ -11,6 +11,14 @@ function buildSchema(t: ReturnType<typeof useI18n>['t']) {
     status: v.picklist(EVENT_STATUSES),
     companionCode: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
     name: v.pipe(v.string(), v.trim(), v.minLength(1, t('event.addModal.validation.nameRequired'))),
+    tagline: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
+    edition: v.optional(v.nullable(v.pipe(v.number(), v.integer(), v.minValue(1)))),
+    description: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
+    practicalNotes: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
+    ticketsUrl: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
+    ticketsOnSaleOn: v.optional(v.nullable(v.string())),
+    membershipRequired: v.optional(v.boolean()),
+    membershipUrl: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
     organizerUuid: v.string(t('event.addModal.validation.nameRequired')),
     locationUuid: v.optional(v.string())
   })

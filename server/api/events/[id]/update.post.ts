@@ -17,6 +17,14 @@ export default defineEventHandler(async (event) => {
       organizer_uuid: body.organizerUuid,
       // starts_at/ends_at aren't editable: derived from the tournaments (derivedDates.ts).
       companion_app_code: body.companionCode,
+      tagline: body.tagline,
+      edition: body.edition,
+      description: body.description,
+      practical_notes: body.practicalNotes,
+      tickets_url: body.ticketsUrl,
+      tickets_on_sale_on: body.ticketsOnSaleOn,
+      membership_required: body.membershipRequired,
+      membership_url: body.membershipUrl,
       image_url: body.imageUrl,
       image_card_name: body.imageCardName,
       image_card_artist: body.imageCardArtist
@@ -31,6 +39,8 @@ export default defineEventHandler(async (event) => {
       statusMessage: error?.message ?? 'Event update failed'
     })
   }
+
+  await replaceEventPartners(supabase, updated.uuid, body.partners)
 
   return { event: updated }
 })

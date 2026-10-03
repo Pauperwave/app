@@ -1,5 +1,5 @@
 // app\composables\events\useEventsQuery.ts
-import type { Event, EventStatus } from '~/types'
+import type { Event, EventPartner, EventStatus } from '~/types'
 
 export const EVENTS_KEY = ['events']
 
@@ -21,7 +21,8 @@ export function useEventsQuery() {
           .select(`
             *,
             location:locations(name, address, city, province, postal_code, country, google_maps_url),
-            organizer:organizations(name)
+            organizer:organizations(name),
+            partners:event_partners(name, role, logo_url, link_url, position)
           `)
           .is('deleted_at', null)
           .order('starts_at', { ascending: true })
@@ -66,7 +67,23 @@ export function useEventsQuery() {
         image: row.image_url,
         imageCardName: row.image_card_name,
         imageCardArtist: row.image_card_artist,
-        companionCode: row.companion_app_code
+        companionCode: row.companion_app_code,
+        tagline: row.tagline,
+        edition: row.edition,
+        description: row.description,
+        practicalNotes: row.practical_notes,
+        ticketsUrl: row.tickets_url,
+        ticketsOnSaleOn: row.tickets_on_sale_on,
+        membershipRequired: row.membership_required,
+        membershipUrl: row.membership_url,
+        partners: [...row.partners]
+          .sort((a, b) => a.position - b.position)
+          .map(partner => ({
+            name: partner.name,
+            role: partner.role as EventPartner['role'],
+            logoUrl: partner.logo_url,
+            linkUrl: partner.link_url
+          }))
       }))
     }
   })

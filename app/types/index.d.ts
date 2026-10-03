@@ -379,6 +379,24 @@ export interface Event {
   imageCardName: string | null
   imageCardArtist: string | null
   companionCode: string | null
+  // What the event page shows beyond its tournaments (migration 20261003120000), all optional.
+  tagline: string | null
+  edition: number | null
+  description: string | null
+  practicalNotes: string | null
+  ticketsUrl: string | null
+  ticketsOnSaleOn: string | null
+  membershipRequired: boolean
+  membershipUrl: string | null
+  // In display order.
+  partners: EventPartner[]
+}
+
+export interface EventPartner {
+  name: string
+  role: 'collaborator' | 'sponsor'
+  logoUrl: string | null
+  linkUrl: string | null
 }
 
 export type DayOfWeek
