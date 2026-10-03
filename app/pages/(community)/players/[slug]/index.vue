@@ -97,6 +97,7 @@ const { data: matchHistory, isLoading: matchHistoryLoading }
 const { data: commanderDecks, isLoading: commanderDecksLoading }
   = useCommanderDecksQuery(playerUuid)
 const { data: playerStats, isLoading: playerStatsLoading } = usePlayerStatsQuery(playerUuid)
+const { data: voteMedals, isLoading: voteMedalsLoading } = usePlayerVoteMedalsQuery(playerUuid)
 </script>
 
 <template>
@@ -188,17 +189,23 @@ const { data: playerStats, isLoading: playerStatsLoading } = usePlayerStatsQuery
               </div>
             </template>
           </DetailCard>
-        </div>
 
-        <PlayersSingleLoginHistoryCard
-          v-if="canSeePersonalData && player.user_id"
-          :loading="loginHistoryLoading"
-          :dates="loginHistory"
-        />
+          <PlayersSingleLoginHistoryCard
+            v-if="canSeePersonalData && player.user_id"
+            :loading="loginHistoryLoading"
+            :dates="loginHistory"
+          />
+        </div>
 
         <PlayersSingleStatsCard
           :loading="playerStatsLoading"
           :stats="playerStats"
+        />
+
+        <PlayersSingleMentionsCard
+          :loading="playerStatsLoading || voteMedalsLoading"
+          :stats="playerStats"
+          :medals="voteMedals"
         />
 
         <PlayersSingleCommanderMatchHistoryCard

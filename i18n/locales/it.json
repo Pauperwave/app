@@ -2342,7 +2342,8 @@
       "loginHistoryEmpty": "Nessun accesso registrato.",
       "sections": {
         "info": "Informazioni",
-        "stats": "Statistiche"
+        "stats": "Statistiche",
+        "mentions": "Menzioni speciali"
       }
     },
     "stats": {
