@@ -12,6 +12,7 @@ const { standings, pendingPlayerUuids = [] } = defineProps<{
 
 const { t } = useI18n()
 
+// fallow-ignore-next-line code-duplication -- same wiring as the other standings view
 const search = ref('')
 
 // Filtering keeps each player's real rank, not their position in the filtered list.
