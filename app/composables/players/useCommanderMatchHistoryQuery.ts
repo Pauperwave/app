@@ -10,7 +10,8 @@ export interface CommanderMatchHistoryRow {
   startsAt: string | null
   roundNumber: number | null
   tableNumber: number | null
-  commanderName: string | null
+  commander1Name: string | null
+  commander2Name: string | null
   position: number | null
   kills: number
 }
@@ -57,11 +58,6 @@ export function useCommanderMatchHistoryQuery(playerUuid: MaybeRefOrGetter<strin
 
       return (resultsResponse.data ?? [])
         .map((row): CommanderMatchHistoryRow => {
-          const commander = row.commander_decks
-          const commanderName = commander
-            ? [commander.commander_1_name, commander.commander_2_name].filter(Boolean).join(' / ')
-            : null
-
           return {
             id: row.id,
             tournamentUuid: row.tournament_uuid,
@@ -69,7 +65,8 @@ export function useCommanderMatchHistoryQuery(playerUuid: MaybeRefOrGetter<strin
             startsAt: row.tournaments?.starts_at ?? null,
             roundNumber: row.tournament_pairings?.tournament_rounds?.round_number ?? null,
             tableNumber: row.tournament_pairings?.table_number ?? null,
-            commanderName,
+            commander1Name: row.commander_decks?.commander_1_name ?? null,
+            commander2Name: row.commander_decks?.commander_2_name ?? null,
             position: row.position,
             kills: killsByPairing.get(row.pairing_uuid) ?? 0
           }
