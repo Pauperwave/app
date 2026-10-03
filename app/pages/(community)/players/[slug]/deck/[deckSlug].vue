@@ -42,6 +42,7 @@ const { breadcrumbItems } = useBreadcrumbs()
 </script>
 
 <template>
+  <!-- fallow-ignore-next-line code-duplication -- mirrors the other deck page -->
   <UDashboardPanel id="player-deck-detail">
     <template #header>
       <UDashboardNavbar :title="commanderDisplayName">

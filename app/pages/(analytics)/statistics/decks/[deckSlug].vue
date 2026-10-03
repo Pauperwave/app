@@ -51,6 +51,7 @@ useSeoMeta({ title: () => commanderDisplayName.value })
 </script>
 
 <template>
+  <!-- fallow-ignore-next-line code-duplication -- mirrors the other deck page -->
   <UDashboardPanel id="deck-detail">
     <template #header>
       <UDashboardNavbar :title="commanderDisplayName">
