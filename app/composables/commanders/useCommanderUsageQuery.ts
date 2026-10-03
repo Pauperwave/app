@@ -18,9 +18,11 @@ async function fetchCommandersUsage(
 
   const { data: results, error: resultsError } = await supabase
     .from('tournament_round_results')
-    .select('player_uuid, commander_deck_uuid, created_at')
+    .select('player_uuid, commander_deck_uuid, created_at, tournaments!inner(is_test)')
     .in('player_uuid', playerUuids)
     .not('commander_deck_uuid', 'is', null)
+    // Test tournaments never count as a commander played
+    .eq('tournaments.is_test', false)
 
   if (resultsError || !results || results.length === 0) return new Map()
 

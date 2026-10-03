@@ -33,15 +33,18 @@ export function useCommanderMatchHistoryQuery(playerUuid: MaybeRefOrGetter<strin
             position,
             pairing_uuid,
             tournament_uuid,
-            tournaments ( name, starts_at ),
+            tournaments!inner ( name, starts_at, is_test ),
             commander_decks ( commander_1_name, commander_2_name ),
             tournament_pairings ( table_number, tournament_rounds ( round_number ) )
           `)
-          .eq('player_uuid', uuid),
+          .eq('player_uuid', uuid)
+          // Test tournaments never show up in a player's history
+          .eq('tournaments.is_test', false),
         supabase
           .from('tournament_kills')
-          .select('pairing_uuid')
+          .select('pairing_uuid, tournaments!inner(is_test)')
           .eq('killer_uuid', uuid)
+          .eq('tournaments.is_test', false)
       ])
 
       if (resultsResponse.error) throw resultsResponse.error
