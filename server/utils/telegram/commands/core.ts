@@ -87,8 +87,7 @@ function helpBlocks(): InputRichMessage['blocks'] {
     { type: 'paragraph', text: { type: 'bold', text: '🏟️ Durante un torneo' } },
     {
       type: 'paragraph',
-      text: '/tavolo — il tuo tavolo, gli avversari del turno e il comandante\n'
-        + '/risultato — inserisci il risultato del turno, Commander o 1v1\n'
+      text: '/tavolo — il tuo tavolo, gli avversari del turno e il comandante; da qui inserisci il risultato\n'
         + '/drop — lascia il torneo Commander dopo aver inserito il risultato\n'
         + '/turni — contatore dei turni aggiuntivi a fine tempo'
     },
@@ -96,7 +95,6 @@ function helpBlocks(): InputRichMessage['blocks'] {
       type: 'buttons',
       buttons: [
         { text: '🪑 Tavolo', callback_data: encodeHelpBtn('tavolo') },
-        { text: '🏅 Risultato', callback_data: encodeHelpBtn('risultato') },
         { text: '🔢 Turni', callback_data: encodeHelpBtn('turni') }
       ]
     },
