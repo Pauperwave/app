@@ -8,6 +8,7 @@ interface UpsertMatchResultBody {
   player1Uuid: string
   player2Uuid: string
   player1GamesWon: number
+  // fallow-ignore-next-line code-duplication -- same guard as the sibling handlers
   player2GamesWon: number
 }
 

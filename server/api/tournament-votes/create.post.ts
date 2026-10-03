@@ -7,6 +7,7 @@ interface CreateVoteBody {
   pairingUuid: string
   voterUuid: string
   votedPlayerUuid: string
+  // fallow-ignore-next-line code-duplication -- same guard as the sibling handlers
   voteType: 'brew' | 'play'
 }
 

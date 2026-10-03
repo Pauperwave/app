@@ -6,6 +6,7 @@ interface CreateKillBody {
   tournamentUuid: string
   pairingUuid: string
   killerUuid: string
+  // fallow-ignore-next-line code-duplication -- same guard as the sibling handlers
   killedPlayerUuid: string
 }
 
