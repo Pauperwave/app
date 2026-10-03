@@ -98,6 +98,7 @@ async function handleListButton(ctx: Context, next: () => Promise<void>) {
   if (!data?.startsWith(WANTED_LIST_CALLBACK_PREFIX)) return next()
 
   const callback = decodeWantedListCallback(data)
+  // fallow-ignore-next-line code-duplication -- callback guard mirrors the other /cercate handler
   if (!callback || !ctx.from) {
     await ctx.answerCallbackQuery()
     return
