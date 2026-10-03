@@ -1,20 +1,15 @@
 // server\api\commander-decks\clear.post.ts
-import { serverSupabaseServiceRole } from '#supabase/server'
-import type { Database } from '#shared/utils/types/database'
+import type { PairingWriteContext } from '~~/server/utils/tournaments/definePairingWriteHandler'
 
 interface ClearCommanderBody {
   pairingUuid: string
   playerUuid: string
 }
 
-export default defineEventHandler(async (event) => {
-  await requireManagementPermission(event)
+export default definePairingWriteHandler(
+  async ({ supabase, body }: PairingWriteContext<ClearCommanderBody>) => {
+    await clearCommanderDeck(supabase, body)
 
-  const { pairingUuid, playerUuid } = await readBody<ClearCommanderBody>(event)
-  const supabase = serverSupabaseServiceRole<Database>(event)
-  await assertPairingEditable(supabase, pairingUuid)
-
-  await clearCommanderDeck(supabase, { pairingUuid, playerUuid })
-
-  return { success: true }
-})
+    return { success: true }
+  }
+)
