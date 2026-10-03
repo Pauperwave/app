@@ -15,8 +15,7 @@ describe('useCommanderPods', () => {
     expect(calculatePods(5).canPlay).toBe(false)
   })
 
-  // Cases carried over from MagicTheGathering/league's own
-  // useTableCalculator.test.ts, same algorithm.
+  // Cases carried over from league's useTableCalculator.test.ts, same algorithm
   it.each([
     [3, [3]],
     [4, [4]],
