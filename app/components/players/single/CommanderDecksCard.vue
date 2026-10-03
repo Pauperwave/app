@@ -58,8 +58,11 @@ function lenderName(lenderUuid: string | null): string | null {
 
 const columns: TableColumn<CommanderDeck>[] = [
   {
-    accessorKey: 'bracketLevel',
-    header: t('player.commander.decksColumns.bracket'),
+    // An unset bracket sorts last in both directions
+    accessorFn: deck => deck.bracketLevel ?? undefined,
+    id: 'bracketLevel',
+    header: ({ column }) => sortableHeader(t('player.commander.decksColumns.bracket'), column),
+    sortUndefined: 'last',
     cell: ({ row }) => h(UButton, {
       size: 'xs',
       variant: row.original.bracketLevel ? 'soft' : 'outline',
@@ -75,15 +78,28 @@ const columns: TableColumn<CommanderDeck>[] = [
   },
   {
     accessorKey: 'commander1Name',
-    header: t('player.commander.decksColumns.commander'),
+    header: ({ column }) => sortableHeader(t('player.commander.decksColumns.commander'), column),
     cell: ({ row }) => h(TournamentsSinglePairingCommanderDeckHover, {
-      commander1Name: row.original.commander1Name,
-      commander2Name: row.original.commander2Name
+      commander1Name: row.original.commander1Name
     })
   },
   {
-    accessorKey: 'companionName',
-    header: t('player.commander.decksColumns.companion'),
+    // The second commander slot: a partner or a background
+    accessorFn: deck => deck.commander2Name ?? undefined,
+    id: 'commander2Name',
+    header: ({ column }) => sortableHeader(t('player.commander.decksColumns.partner'), column),
+    sortUndefined: 'last',
+    cell: ({ row }) => (row.original.commander2Name
+      ? h(TournamentsSinglePairingCommanderDeckHover, {
+        commander1Name: row.original.commander2Name
+      })
+      : '—')
+  },
+  {
+    accessorFn: deck => deck.companionName ?? undefined,
+    id: 'companionName',
+    header: ({ column }) => sortableHeader(t('player.commander.decksColumns.companion'), column),
+    sortUndefined: 'last',
     cell: ({ row }) => row.original.companionName ?? '—'
   },
   {
@@ -98,7 +114,7 @@ const columns: TableColumn<CommanderDeck>[] = [
   },
   {
     accessorKey: 'createdAt',
-    header: t('player.commander.decksColumns.createdAt'),
+    header: ({ column }) => sortableHeader(t('player.commander.decksColumns.createdAt'), column),
     meta: { class: { td: 'whitespace-nowrap font-mono' } },
     cell: ({ row }) =>
       h(DateWithRelativeTooltip, { isoString: row.original.createdAt, time: false })
