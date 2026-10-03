@@ -247,7 +247,7 @@ Other shared types in `app/types/index.d.ts`: `Tournament` (`status: 'draft' | '
 KPI cards, revenue/participation chart, recent transactions, date-range/period filtering, and a quick-action trigger for creating a transaction/associate/tournament/event/league.
 
 ### 5.2 Tournament Management
-**Pages:** `/tournaments` (standalone list, filterable), `/tournaments/[tournamentId]` (detail). A tournament's parent league/event is optional and polymorphic — its canonical URL stays flat (not nested under `/leagues/.../tournaments/...`), with a `?from=league:<uuid>` query param carrying the back-link context the route params alone can't express.
+**Pages:** `/tournaments` (standalone list, filterable), `/tournaments/[tournamentId]` (detail). A tournament's parent league/event is optional and polymorphic — its canonical URL stays flat (not nested under `/leagues/.../tournaments/...`), with a `?league=<uuid>` query param carrying the back-link context the route params alone can't express.
 
 **Key components:** participant management, round manager/results entry, leaderboard, awards, registration acceptance picker — plus `rounds/single/*` for round-level pairing/results components shared across the flow.
 
