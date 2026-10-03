@@ -32,6 +32,10 @@ const { data: myRegistrations } = useMyTournamentRegistrationsQuery()
 const isRegistered = computed(() => !!tournament && (myRegistrations.value ?? [])
   .some(registration => registration.tournamentUuid === tournament.uuid))
 
+const { isFull } = useTournamentSeatsQuery()
+// Someone already in keeps their place (and can leave): only a newcomer is turned away
+const isSoldOut = computed(() => !!tournament && isFull(tournament.uuid) && !isRegistered.value)
+
 const { selfRegister, selfUnregister } = useMyTournamentRegistrationMutations()
 const isPending = computed(() => selfRegister.isLoading.value || selfUnregister.isLoading.value)
 
@@ -44,6 +48,11 @@ const canRegister = computed(() => tournament?.status === 'registration_open')
 // their registrations, so no Iscriviti/Disiscriviti at all, same rule
 // self-register.post.ts enforces server-side.
 const isExternalOrganizer = computed(() => tournament?.organizerType === 'shop')
+
+const buttonLabel = computed(() => {
+  if (isSoldOut.value) return t('tournament.full')
+  return isRegistered.value ? t('event.calendar.unregister') : t('event.calendar.register')
+})
 
 function onClick() {
   if (!tournament) {
@@ -65,13 +74,13 @@ function onClick() {
 <template>
   <UButton
     v-if="!isExternalOrganizer"
-    :label="isRegistered ? $t('event.calendar.unregister') : $t('event.calendar.register')"
-    :icon="isRegistered ? ICONS.removePlayer : ICONS.addPlayer"
+    :label="buttonLabel"
+    :icon="isSoldOut ? ICONS.lock : (isRegistered ? ICONS.removePlayer : ICONS.addPlayer)"
     :color="isRegistered ? 'neutral' : 'primary'"
     :variant="isRegistered ? 'outline' : 'solid'"
     size="sm"
     :loading="isPending"
-    :disabled="!!tournament && !!session && !canRegister && !isRegistered"
+    :disabled="isSoldOut || (!!tournament && !!session && !canRegister && !isRegistered)"
     @click="onClick"
   />
 </template>
