@@ -58,8 +58,10 @@ export function useTournamentLifecycleFlow(options: {
   // data (Commander, 1v1 Swiss); Draft/Cubo Commander have no round-level DB state to reset
   const { resetTournament } = useTournamentResetMutation(tournamentUuid)
   const isResetConfirmOpen = ref(false)
-  const canResetTournament = computed(() =>
-    (isCommander.value || is1v1Format.value) && tournament.value?.status !== 'registration_open')
+  const { can } = useUserRole()
+  const canResetTournament = computed(() => can('cancel-round')
+    && (isCommander.value || is1v1Format.value)
+    && tournament.value?.status !== 'registration_open')
 
   async function confirmResetTournament() {
     try {
