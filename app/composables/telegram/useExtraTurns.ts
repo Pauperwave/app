@@ -44,9 +44,7 @@ export function useExtraTurns() {
     }
   }
 
-  // Stub: the final turn closes the extra turns instead of advancing past TOTAL_TURNS. It will
-  // later open match-score submission (see /risultato, also still a mockup awaiting a live pairing
-  // flow for Pauper/Premodern)
+  // Stub: the final turn closes the extra turns instead of advancing past TOTAL_TURNS
   function endMatch() {
     telegramHaptic()?.notificationOccurred('success')
   }
@@ -59,8 +57,7 @@ export function useExtraTurns() {
     }
   }
 
-  // Silent on purpose (no haptic), like useRoundTimer's reset(): reused by useMatchScore for the
-  // automatic reset at match start
+  // Silent on purpose (no haptic), like useRoundTimer's reset(): the page adds its own
   function reset() {
     turn.value = 1
   }

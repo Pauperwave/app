@@ -30,9 +30,7 @@ export function useRoundTimer() {
     telegramHaptic()?.impactOccurred('light')
   }
 
-  // Silent on purpose (no haptic): used by the dedicated reset button (which adds its own haptic)
-  // and by useMatchScore's automatic reset at match start, where a second haptic over the "match
-  // won" one would be annoying
+  // Silent on purpose (no haptic): the callers (the page's reset buttons) add their own
   function reset() {
     timer.stop()
   }
