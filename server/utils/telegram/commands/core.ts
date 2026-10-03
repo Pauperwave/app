@@ -102,7 +102,7 @@ function helpBlocks(): InputRichMessage['blocks'] {
     },
 
     { type: 'paragraph', text: { type: 'bold', text: `${ICONS.card} Carte` } },
-    { type: 'paragraph', text: '/prezzo [carta] — prezzo su CardMarket e CardTrader, con filtri ITA/ENG e foil' },
+    { type: 'paragraph', text: '/prezzo [carta] — scegli la stampa e controlla il prezzo su CardMarket e CardTrader (filtri ITA/ENG e foil), anche in chat con @bot $ carta' },
 
     { type: 'paragraph', text: { type: 'bold', text: '🎰 Dadi' } },
     {

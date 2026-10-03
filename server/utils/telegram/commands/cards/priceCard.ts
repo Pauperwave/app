@@ -2,7 +2,9 @@
 import { InlineKeyboard } from 'grammy'
 import { ICONS } from '../../icons'
 
-// Pure part of /prezzo: the filter state carried in callback_data and the message built from it
+// Pure part of /prezzo: the filter state carried in callback_data, the inline result of each
+// printing and the message built from them. Messages are HTML: an inline message can't be a rich
+// message, and plain HTML text is edited the same way whoever sent it.
 
 export type PriceLanguage = 'all' | 'it' | 'en'
 
@@ -16,12 +18,14 @@ export interface PricePrinting {
   id: string
   name: string
   set: string
+  setName: string
   collectorNumber: string
   finishes: string[]
   cardmarketPrice: number | null
   cardmarketFoilPrice: number | null
   cardmarketUrl: string | null
   scryfallUrl: string
+  thumbnailUrl: string | null
 }
 
 export interface PriceCardtrader {
@@ -29,7 +33,12 @@ export interface PriceCardtrader {
   url: string | null
 }
 
+// 'pending': CardTrader hasn't been asked yet (an inline result can't wait for it), a language
+// button press fetches it
+export type PriceCardtraderState = PriceCardtrader | 'pending' | null
+
 export const PRICE_CALLBACK_PREFIX = 'prz:'
+export const PRICE_INLINE_PREFIX = '$'
 
 const LANGUAGES: PriceLanguage[] = ['all', 'it', 'en']
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
@@ -47,6 +56,10 @@ const LANGUAGE_NAMES: Record<PriceLanguage, string> = {
 }
 
 const euroFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
+
+export function escapeHtml(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
 
 // Same "prefix:uuid:language:foil" shape as the other bot callbacks, well under Telegram's 64 bytes
 export function encodePriceState(state: PriceState): string {
@@ -89,13 +102,35 @@ export function cardmarketPriceOf(printing: PricePrinting, foil: boolean): numbe
 }
 
 function formatPrice(price: number | null, emptyText: string): string {
-  return price === null ? emptyText : `**${euroFormatter.format(price)}**`
+  return price === null ? emptyText : `<b>${euroFormatter.format(price)}</b>`
+}
+
+// Cheapest printing first, printings with no CardMarket price last (ties keep Scryfall's order)
+export function sortByCardmarketPrice(printings: PricePrinting[]): PricePrinting[] {
+  const rank = (printing: PricePrinting) => printing.cardmarketPrice ?? Number.POSITIVE_INFINITY
+  return [...printings].sort((a, b) => rank(a) - rank(b))
+}
+
+export function buildInlineTitle(printing: PricePrinting): string {
+  return `${printing.name} — ${printing.set.toUpperCase()} #${printing.collectorNumber}`
+}
+
+// What the inline list shows per printing, so the cheapest/right one can be picked at a glance
+export function buildInlineDescription(printing: PricePrinting): string {
+  const prices: string[] = []
+  if (printing.cardmarketPrice !== null) {
+    prices.push(`CM ${euroFormatter.format(printing.cardmarketPrice)}`)
+  }
+  if (printing.cardmarketFoilPrice !== null) {
+    prices.push(`foil ${euroFormatter.format(printing.cardmarketFoilPrice)}`)
+  }
+  return `${printing.setName} · ${prices.length ? prices.join(' · ') : 'nessun prezzo CardMarket'}`
 }
 
 export function buildPriceText(
   printing: PricePrinting,
   state: PriceState,
-  cardtrader: PriceCardtrader | null
+  cardtrader: PriceCardtraderState
 ): string {
   const foil = effectiveFoil(printing, state)
   const finish = foil ? 'foil' : 'normale'
@@ -104,27 +139,31 @@ export function buildPriceText(
     + (state.language === 'all' ? '' : ' (non filtrabile per lingua)')
 
   const cardtraderLabel = `CardTrader (NM, ${LANGUAGE_NAMES[state.language]})`
-  const cardtraderLine = cardtrader
-    ? `${cardtraderLabel}: ${formatPrice(cardtrader.price, 'nessuna offerta')}`
-    : `${cardtraderLabel}: non disponibile`
+  let cardtraderLine = `${cardtraderLabel}: non disponibile`
+  if (cardtrader === 'pending') {
+    cardtraderLine = 'CardTrader: scegli una lingua qui sotto per controllarlo'
+  } else if (cardtrader) {
+    cardtraderLine = `${cardtraderLabel}: ${formatPrice(cardtrader.price, 'nessuna offerta')}`
+  }
 
   return [
-    `## ${ICONS.card} ${printing.name}`,
-    `${printing.set.toUpperCase()} #${printing.collectorNumber} · ${finish}`,
+    `${ICONS.card} <b>${escapeHtml(printing.name)}</b>`,
+    `${escapeHtml(printing.setName)} · ${printing.set.toUpperCase()} #${printing.collectorNumber} · ${finish}`,
     cardmarketLine,
     cardtraderLine
-  ].join('\n\n')
+  ].join('\n')
 }
 
 export function buildPriceKeyboard(
   printing: PricePrinting,
   state: PriceState,
-  cardtraderUrl: string | null
+  cardtraderUrl: string | null,
+  languageChosen = true
 ): InlineKeyboard {
   const keyboard = new InlineKeyboard()
 
   for (const language of LANGUAGES) {
-    const active = state.language === language
+    const active = languageChosen && state.language === language
     keyboard.text(
       `${active ? '✅ ' : ''}${LANGUAGE_LABELS[language]}`,
       encodePriceState({ ...state, language })
