@@ -1,8 +1,7 @@
 // server\utils\telegram\commands\tournaments\commanderReport.ts
-// Real (non-mockup) Commander pod flow in Telegram: comandante, posizione, uccisioni, voti, drop.
-// It replaced the old mockup flow (mockups/tavolo.ts's MOCK_TABLE + mockups/risultato.ts), which
-// moved to a hidden demo command (mockups/commanderDemo.ts). The user flow is deliberately the
-// mockup's (2026-09-24); the difference is that every pick writes immediately.
+// Real Commander pod flow in Telegram: comandante, posizione, uccisioni, voti, drop. It replaced
+// the mockup (mockups/tavolo.ts's MOCK_TABLE + mockups/risultato.ts, now a hidden demo in
+// mockups/commanderDemo.ts), keeping its user flow but writing every pick immediately.
 //
 // This file only wires the pieces together, in the order their handlers must run:
 //   commanderPod.ts          the table message, its menu and the live-pod lookup

@@ -1,26 +1,18 @@
 // server\utils\telegram\commands\tournaments\queries.ts
 
-// Supabase queries shared across more than one command (calendario, leghe,
-// iscrizioni, prossimo all need stage numbers/registration status).
+// Supabase queries shared by more than one command (calendario, leghe, iscrizioni, prossimo)
 
-// "Currently relevant" tournament statuses — shared by calendario.ts,
-// prossimo.ts and iscrizioni.ts, previously duplicated under three
-// different names in each. Excludes 'external' (shop-organized
-// tournaments, see isExternalOrganizer in detail.ts) — bot schedule views
+// "Currently relevant" tournament statuses, shared by calendario.ts, prossimo.ts and iscrizioni.ts.
+// Excludes 'external' (shop-organized, see isExternalOrganizer in detail.ts): bot schedule views
 // stay Pauperwave-only.
 export const OPEN_TOURNAMENT_STATUSES = ['registration_open', 'in_progress']
 
-// Mirrors app/utils/tournaments/tournamentStageLabel.ts's
-// assignTournamentStageNumbers: 1-based position within its league by start
-// date, cancelled stages skipped. Needs each league's full history (not
-// just the open/upcoming rows a caller already fetched), so this is a
-// separate query rather than reusing a caller's own rows.
+// Mirrors assignTournamentStageNumbers (app/utils/tournaments/tournamentStageLabel.ts): 1-based
+// position within its league by start date, cancelled stages skipped. Needs each league's full
+// history, so it is a separate query from the caller's rows.
 //
-// leagueUuids scopes the scan to the league(s) the caller actually cares
-// about — every call site knows this upfront (a specific league, a single
-// tournament's own league, or the set of leagues appearing in a page of
-// results). Omit it only when genuinely unknown; an unscoped call re-scans
-// every league's entire history and gets more expensive as it grows.
+// leagueUuids scopes the scan to the leagues the caller cares about; omit it only when unknown,
+// since an unscoped call re-scans every league's history and grows more expensive.
 export async function fetchStageNumbers(leagueUuids?: string[]): Promise<Map<string, number>> {
   if (leagueUuids?.length === 0) return new Map()
 
@@ -75,8 +67,8 @@ export async function fetchRegistrationStatus(
   return data?.status === 'checked_in' ? 'checked_in' : (data ? 'registered' : null)
 }
 
-// Batched variant of the above for a whole list of tournaments
-// (calendario.ts's month view) — one query instead of one per tournament.
+// Batched variant of the above for a whole list (calendario.ts's month view): one query instead of
+// one per tournament
 export async function fetchRegistrationStatuses(
   tournamentUuids: string[], associateUuid: string
 ): Promise<Map<string, RegistrationStatus>> {

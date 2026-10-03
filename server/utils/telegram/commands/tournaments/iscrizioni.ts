@@ -61,8 +61,7 @@ async function fetchMyTournaments(associateUuid: string): Promise<MyRegistration
     .filter((row): row is RegistrationRow & { tournament: RawTournamentRow } =>
       row.tournament !== null && row.tournament.starts_at !== null)
 
-  // Scoped to only the leagues this associate is actually registered in —
-  // see queries.ts's own comment on why.
+  // Only the leagues this associate is registered in (see queries.ts)
   const leagueUuids = [...new Set(
     rows.map(row => row.tournament.league_uuid).filter(uuid => uuid !== null)
   )]
@@ -70,31 +69,26 @@ async function fetchMyTournaments(associateUuid: string): Promise<MyRegistration
 
   return rows
     .map((row): MyRegistration => ({
-      // Same normalization as queries.ts's own fetchRegistrationStatuses —
-      // any row present here is either checked in or plain registered.
+      // Same normalization as queries.ts's fetchRegistrationStatuses: present means checked in or
+      // registered
       registrationStatus: row.status === 'checked_in' ? 'checked_in' : 'registered',
       tournament: { ...row.tournament, stageNumber: stageNumbers.get(row.tournament.uuid) ?? null }
     }))
     .sort((a, b) => a.tournament.starts_at.localeCompare(b.tournament.starts_at))
 }
 
-// The command handler and iscrizioniMenu's own .dynamic() re-render both
-// run fetchMyTournaments within the same update — memoizing by ctx dedupes
-// it. See perContextCache.ts.
+// The command handler and iscrizioniMenu's .dynamic() both run fetchMyTournaments in one update:
+// memoizing by ctx dedupes it. See perContextCache.ts
 const memoize = createPerContextCache<{ registrations: Promise<MyRegistration[]> }>()
 
 function cachedFetchMyTournaments(ctx: Context, associateUuid: string): Promise<MyRegistration[]> {
   return memoize(ctx, 'registrations', () => fetchMyTournaments(associateUuid))
 }
 
-// A button right under each tournament, embedded as its own "buttons"
-// block in the rich message body — not a Menu-managed reply_markup — same
-// "buttons near their own content" pattern as calendario.ts's own list
-// (user request 2026-09-09, applied here too so /iscrizioni matches).
-// Handled by a plain bot.on('callback_query:data', ...) below (see
-// registerIscrizioniCommand) rather than @grammyjs/menu. No origin to
-// encode in the payload (unlike calendario.ts's month offset) — this list
-// only ever has one shape, so the uuid alone is enough.
+// A button under each tournament, as a "buttons" block in the rich message body (not a Menu
+// reply_markup), like calendario.ts; handled by a plain bot.on('callback_query:data') (see
+// registerIscrizioniCommand). No origin in the payload: this list has one shape, so the uuid is
+// enough.
 const ISC_OPEN_PREFIX = 'iscopen:'
 
 function encodeIscOpenPayload(uuid: string): string {
@@ -124,7 +118,7 @@ function mieiTorneiBlocks(registrations: MyRegistration[]): InputRichMessage['bl
       text: [`${personalIcon(registrationStatus)} `, { type: 'bold', text: tournament.name }, stage]
     })
     blocks.push({ type: 'paragraph', text: `${ICONS.date} ${date}` })
-    // fallow-ignore-next-line code-duplication -- leghe.ts's own location/button block, different payload encoder
+    // fallow-ignore-next-line code-duplication -- leghe.ts's location/button block, other encoder
     if (tournament.location?.name) {
       blocks.push({ type: 'paragraph', text: `${ICONS.location} ${tournament.location.name}` })
     }
@@ -138,9 +132,8 @@ function mieiTorneiBlocks(registrations: MyRegistration[]): InputRichMessage['bl
   return blocks
 }
 
-// Exported so tournament/detail.ts's "back" button can rebuild this view.
-// Falls back to "not linked" for the practically unreachable case of a
-// chat that unlinked mid-session.
+// Exported so detail.ts's "back" button can rebuild this view. Falls back to "not linked" for a
+// chat that unlinked mid-session
 export async function iscrizioniBlocksFor(ctx: Context, chatId: number): Promise<InputRichMessage['blocks']> {
   const associateUuid = await resolveAssociateUuidByChatId(chatId)
   if (!associateUuid) return [{ type: 'paragraph', text: 'Devi prima collegare il tuo account.' }]
@@ -149,12 +142,8 @@ export async function iscrizioniBlocksFor(ctx: Context, chatId: number): Promise
   return mieiTorneiBlocks(registrations)
 }
 
-// No buttons of its own any more (see ISC_OPEN_PREFIX above) — kept only
-// so torneoMenu's send permission gets installed for this update (via
-// .register() below) and so the "back" target from a detail view still has
-// a reply_markup to hand back. Same reasoning as calendarioMenu keeping
-// its .register(torneoMenu) despite calendarioMenu's own per-tournament
-// buttons having moved inline too.
+// No buttons of its own (see ISC_OPEN_PREFIX): kept so torneoMenu's send permission is installed
+// (via .register()) and detail.ts's back target has a reply_markup, like calendarioMenu
 export const iscrizioniMenu = new Menu<Context>('isc', {
   autoAnswer: false,
   onMenuOutdated: false
@@ -162,16 +151,13 @@ export const iscrizioniMenu = new Menu<Context>('isc', {
 
 registerMenu('isc', iscrizioniMenu)
 
-// Rebuilds this exact list for tournament/detail.ts's "back" button — see
-// calendario.ts's own registerBackResolver comment for why this is a
-// registry, not a direct import from detail.ts.
+// Rebuilds this list for detail.ts's "back" button (a registry, see calendario.ts)
 registerBackResolver('i', async (ctx, _origin, chatId) => ({
   payload: '', menu: iscrizioniMenu, text: { blocks: await iscrizioniBlocksFor(ctx, chatId) }
 }))
 
-// Handles taps on mieiTorneiBlocks's own per-tournament "buttons" blocks —
-// registered before bot.use(commands) (see registerIscrizioniCommand),
-// distinct callback_data prefix so it only ever claims its own presses.
+// Handles taps on mieiTorneiBlocks's per-tournament "buttons" blocks; registered before
+// bot.use(commands), own callback_data prefix
 async function handleIscOpenButton(ctx: Context, next: () => Promise<void>) {
   const data = ctx.callbackQuery?.data
   if (!data?.startsWith(ISC_OPEN_PREFIX)) return next()
@@ -180,9 +166,8 @@ async function handleIscOpenButton(ctx: Context, next: () => Promise<void>) {
   await openTournamentDetail(ctx, uuid, 'i')
 }
 
-// Extracted so it can be reused verbatim by t.me/<bot>?start=iscrizioni —
-// see deepLinks.ts. A "apri nel bot" button on the web app's own
-// registrations page is the intended entry point (2026-09-08).
+// Extracted for reuse by t.me/<bot>?start=iscrizioni (deepLinks.ts); the web registrations page's
+// "apri nel bot" button is the entry point
 async function iscrizioniCommandHandler(ctx: Context) {
   try {
     const associateUuid = await requireLinkedAssociate(ctx)
@@ -201,13 +186,11 @@ async function iscrizioniCommandHandler(ctx: Context) {
 registerDeepLink('iscrizioni', iscrizioniCommandHandler)
 
 export function registerIscrizioniCommand(bot: Bot, commands: CommandGroup<Context>) {
-  // Deferred to call time, not module top level — see calendario.ts's own
-  // comment on why.
+  // Deferred to call time, see calendario.ts
   iscrizioniMenu.register(torneoMenu)
   bot.use(iscrizioniMenu)
 
-  // Registered before bot.use(commands) — same reasoning as
-  // calendario.ts's own handleCalendarioOpenButton registration.
+  // Registered before bot.use(commands), like calendario.ts
   bot.on('callback_query:data', handleIscOpenButton)
 
   commands.command('iscrizioni', 'I tornei a cui sei iscritto', iscrizioniCommandHandler)

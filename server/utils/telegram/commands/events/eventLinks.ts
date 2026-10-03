@@ -1,7 +1,6 @@
 // server\utils\telegram\commands\events\eventLinks.ts
 
-// Shared between tournament/detail.ts and eventi.ts — both build the same
-// "maps link + Google Calendar link" pair.
+// Shared by detail.ts and eventi.ts: the same "maps link + Google Calendar link" pair
 
 export interface MapsAddress {
   address: string | null
@@ -12,8 +11,8 @@ export interface MapsAddress {
   google_maps_url: string | null
 }
 
-// google_maps_url (precise place link) takes priority over a generic
-// address search, same precedence as TournamentDetailContent.vue.
+// google_maps_url (precise place link) takes priority over a generic address search, like
+// TournamentDetailContent.vue
 export function mapsUrl(location: MapsAddress): string | null {
   if (location.google_maps_url) return location.google_maps_url
   if (!location.address) return null
@@ -31,9 +30,8 @@ export interface CalendarEventInput {
   description?: string | null
 }
 
-// Google Calendar's "render" endpoint accepts a prefilled event via query
-// params — no auth, no backend needed. Missing endsAt falls back to a
-// 4-hour block rather than omitting the button.
+// Google Calendar's "render" endpoint takes a prefilled event via query params (no auth or
+// backend). A missing endsAt falls back to a 4-hour block rather than omitting the button.
 export function googleCalendarUrl(input: CalendarEventInput): string {
   const start = new Date(input.startsAt)
   const end = input.endsAt ? new Date(input.endsAt) : new Date(start.getTime() + 4 * 60 * 60 * 1000)

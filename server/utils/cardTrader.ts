@@ -4,8 +4,7 @@ import type { H3Event } from 'h3'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '#shared/utils/types/database'
 
-// Magic: the Gathering only for now — see docs/PROGRESS.md, CardTrader feasibility
-// study 2026-08-08.
+// Magic: the Gathering only for now (see docs/PROGRESS.md, CardTrader feasibility study)
 const MTG_GAME_ID = 1
 const CARDTRADER_API_BASE = 'https://api.cardtrader.com/api/v2'
 
@@ -28,25 +27,21 @@ export interface CardTraderResolution {
   url: string | null
 }
 
-// The exact code is the common case (a base-set printing): trying it first avoids
-// downloading the sibling expansions' exports.
+// The exact code is the common case (a base-set printing): trying it first avoids downloading the
+// sibling expansions' exports
 function orderExactFirst(expansions: { id: number, code: string }[], setCode: string): number[] {
   return [...expansions]
     .sort((a, b) => Number(b.code === setCode) - Number(a.code === setCode))
     .map(expansion => expansion.id)
 }
 
-// CardTrader offers no search by name: the expansion_id has to be resolved from the
-// set_code first, then the whole blueprint set downloaded and filtered by
-// scryfall_id. The expansion list is cached in full (compact, reused on every
-// lookup) — see migration 20260808110000.
+// CardTrader has no search by name: the expansion_id is resolved from the set_code, then the whole
+// blueprint set is downloaded and filtered by scryfall_id. The expansion list is cached in full
+// (see migration 20260808110000).
 //
-// A Scryfall set does not map 1:1 onto a CardTrader expansion though: they split it
-// by prefixing the code — dsk (base), cdsk (Collectors), adsk (Art Series), pdsk
-// (Promos), predsk (Prerelease). Boosterfun/showcase printings, which Scryfall keeps
-// under the same `dsk` with a high collector number, therefore live in `cdsk`:
-// searching the exact code only missed them every time, silently. Hence the list of
-// candidates instead of a single id.
+// A Scryfall set maps onto several CardTrader expansions, split by code prefix: dsk (base), cdsk
+// (Collectors), adsk (Art Series), pdsk (Promos), predsk (Prerelease). Showcase printings live in
+// `cdsk`, which an exact-code search silently missed, hence a list of candidates.
 async function resolveExpansionIds(
   supabase: SupabaseClient<Database>,
   token: string,
@@ -98,21 +93,16 @@ async function cacheAndReturn(
   return { blueprintId: match.id, url: `https://www.cardtrader.com/en/cards/${match.id}` }
 }
 
-// CardTrader does not always backfill a blueprint's scryfall_id right after a set
-// releases: confirmed 2026-08-11 on "Commander: Marvel Super Heroes" (msc, released
-// 2026-06-26), where over half of its 338 blueprints — including "Stilt-Man,
-// Towering Terror" — still had scryfall_id: null. The name match below is the
-// fallback for that gap.
+// CardTrader doesn't always backfill a blueprint's scryfall_id right after a set releases (e.g.
+// over half of "Commander: Marvel Super Heroes"), so the name match below is the fallback
 async function fetchScryfallCardName(scryfallId: string): Promise<string | null> {
   const card = await $fetch<{ name?: string }>(`https://api.scryfall.com/cards/${scryfallId}`)
   return card.name ?? null
 }
 
-// Resolves scryfallId + setCode into the CardTrader card page id, caching only the
-// row that was found (not the set's whole export, see migration 20260808110000 and
-// the comment in resolve.get.ts) — used both by the on-demand lookup (clicking
-// "Search on CardTrader") and by the background prefetch when a wanted card is
-// created or edited.
+// Resolves scryfallId + setCode into the CardTrader card page id, caching only the row found (not
+// the set's whole export, see resolve.get.ts); used by the on-demand lookup and the prefetch on
+// create/edit
 export async function resolveCardTraderBlueprint(
   supabase: SupabaseClient<Database>,
   token: string,
@@ -157,10 +147,9 @@ export async function resolveCardTraderBlueprint(
   return { blueprintId: null, url: null }
 }
 
-// Shared by resolve.get.ts and price.get.ts: same query validation and
-// service-role/token setup, only what to do when the token is missing differs
-// (resolve treats it as a hard error, price degrades to a null price) — left to
-// each endpoint rather than folded in here.
+// Shared by resolve.get.ts and price.get.ts: same query validation and service-role/token setup;
+// what to do without a token differs (resolve: hard error, price: null price) and stays in each
+// endpoint
 export async function resolveCardTraderRequestContext(event: H3Event) {
   await requireUser(event)
 

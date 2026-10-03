@@ -65,11 +65,8 @@ async function fetchLeagueTournaments(leagueUuid: string): Promise<LeagueTournam
   return data as LeagueTournamentDetailRow[]
 }
 
-// Neither cache below actually dedupes a same-update repeat right now —
-// legheBlocks and legaTorneiBlocks never both run in one update, so each
-// of cachedFetchActiveLeagues/cachedFetchLeagueDetail is only ever called
-// once per update today. Kept anyway per perContextCache.ts's own pattern:
-// cheap insurance if that changes, not a proven current savings.
+// Neither cache dedupes a same-update repeat today (legheBlocks and legaTorneiBlocks never both run
+// in one update); kept per perContextCache.ts as cheap insurance, not a proven saving.
 interface LeagueDetail {
   tournaments: LeagueTournamentDetailRow[]
   stageNumbers: Map<string, number>
@@ -84,12 +81,8 @@ function cachedFetchActiveLeagues(ctx: Context): Promise<ActiveLeagueRow[]> {
   return memoize(ctx, 'leagues', () => fetchActiveLeagues())
 }
 
-// Keyed by leagueUuid, not a single fixed cache slot — resolveBackTarget
-// and handleLgOpenButton each only ever resolve one league per update
-// today, but keying by id means that stays true even if a future caller
-// needs two different leagues' detail in the same update, instead of the
-// second call silently reusing the first's cached rows. Confirmed
-// 2026-09-12 code review.
+// Keyed by leagueUuid, not a single slot: a caller needing two leagues in one update must get two
+// real fetches
 function cachedFetchLeagueDetail(ctx: Context, leagueUuid: string): Promise<LeagueDetail> {
   const cache = memoize(ctx, 'leagueDetails', () => new Map())
   let entry = cache.get(leagueUuid)
@@ -106,9 +99,8 @@ function cachedFetchLeagueDetail(ctx: Context, leagueUuid: string): Promise<Leag
   return entry
 }
 
-// leagues[]'s own index stands in for the league's uuid in callback
-// payloads — a torneo button already carries the tournament's own uuid, no
-// room left in the 64-byte cap for a second full one.
+// The index in leagues[] stands in for the league uuid in callback payloads: a torneo button
+// already carries a tournament uuid, leaving no room in the 64-byte cap for a second
 const LG_OPEN_PREFIX = 'lgopen:'
 
 function encodeLgOpenPayload(index: number): string {
@@ -131,10 +123,8 @@ function decodeLtOpenPayload(data: string): { uuid: string, index: number } {
   return { uuid: rest.slice(0, separator), index: Number(rest.slice(separator + 1)) }
 }
 
-// A button right under each league, embedded as its own "buttons" block in
-// the rich message body — not a Menu-managed reply_markup — same "buttons
-// near their own content" pattern as calendario.ts's own list (user
-// request 2026-09-09, applied to leghe.ts's two screens too).
+// A button under each league, as a "buttons" block in the rich message body (not a Menu
+// reply_markup), like calendario.ts
 async function legheBlocks(ctx: Context): Promise<InputRichMessage['blocks']> {
   const leagues = await cachedFetchActiveLeagues(ctx)
   if (!leagues.length) return [{ type: 'paragraph', text: `${ICONS.trophy} Nessuna lega attiva al momento.` }]
@@ -173,8 +163,8 @@ async function legheBlocks(ctx: Context): Promise<InputRichMessage['blocks']> {
   return blocks
 }
 
-// Exported so tournament/detail.ts's "back" button can rebuild this exact
-// list. Returns null for an out-of-range index (stale/tampered callback data).
+// Exported so detail.ts's "back" button can rebuild this list. Returns null for an out-of-range
+// index (stale/tampered data)
 export async function legaTorneiBlocks(ctx: Context, index: number): Promise<InputRichMessage['blocks'] | null> {
   const leagues = await cachedFetchActiveLeagues(ctx)
   const league = leagues[index]
@@ -199,7 +189,7 @@ export async function legaTorneiBlocks(ctx: Context, index: number): Promise<Inp
       type: 'paragraph',
       text: [`${statusIcon(tournament.status)} `, { type: 'bold', text: tournament.name }]
     })
-    // fallow-ignore-next-line code-duplication -- iscrizioni.ts's own location/button block, different payload encoder
+    // fallow-ignore-next-line code-duplication -- iscrizioni.ts's location/button block
     if (tournament.location?.name) {
       blocks.push({ type: 'paragraph', text: `${ICONS.location} ${tournament.location.name}` })
     }
@@ -213,28 +203,24 @@ export async function legaTorneiBlocks(ctx: Context, index: number): Promise<Inp
   return blocks
 }
 
-// No buttons of its own any more (see LG_OPEN_PREFIX above) — kept only so
-// legheTorneiMenu's/torneoMenu's send permission gets installed for this
-// update, matching iscrizioniMenu's own reasoning (detail.ts's back button
-// still needs a reply_markup to hand this list).
+// No buttons of its own (see LG_OPEN_PREFIX): kept so legheTorneiMenu's/torneoMenu's send
+// permission is installed and detail.ts's back button has a reply_markup (like iscrizioniMenu)
 const legheMenu = new Menu<Context>('lg', {
   autoAnswer: false,
   onMenuOutdated: false
 })
 
-// Only the "back to leghe" button lives here now — per-tournament "open
-// detail" buttons are inline rich-message "buttons" blocks (see
-// legaTorneiBlocks above), not Menu-managed reply_markup.
+// Only the "back to leghe" button lives here: per-tournament buttons are inline blocks (see
+// legaTorneiBlocks)
 export const legheTorneiMenu = new Menu<Context>('lt', {
   autoAnswer: false,
   onMenuOutdated: false
 }).dynamic(async (ctx, range) => {
-  // || not ?? — see calendario.ts's own comment on why.
+  // || not ??, see calendario.ts
   const index = Number(ctx.match || '0')
 
-  // payload: String(index) (not omitted) — same bug class as classifiche.ts's
-  // "« Formati": an empty payload never reaches ctx.match, so this would
-  // silently fall back to league 0 (or crash if row counts differ).
+  // payload: String(index), not omitted: an empty payload never reaches ctx.match and would fall
+  // back to league 0 (same as classifiche.ts "« Formati")
   range.row().back({
     text: '« Torna alle leghe',
     payload: String(index)
@@ -252,9 +238,7 @@ export const legheTorneiMenu = new Menu<Context>('lt', {
 registerMenu('lg', legheMenu)
 registerMenu('lt', legheTorneiMenu)
 
-// Rebuilds this exact league view for tournament/detail.ts's "back" button —
-// see calendario.ts's own registerBackResolver comment for why this is a
-// registry, not a direct import from detail.ts.
+// Rebuilds this league view for detail.ts's "back" button (a registry, see calendario.ts)
 registerBackResolver('l', async (ctx, origin) => {
   const index = Number(origin.slice(1))
   const blocks = await legaTorneiBlocks(ctx, index)
@@ -262,9 +246,8 @@ registerBackResolver('l', async (ctx, origin) => {
   return { payload: String(index), menu: legheTorneiMenu, text: { blocks } }
 })
 
-// Handles taps on legheBlocks's own per-league "buttons" blocks — registered
-// before bot.use(commands) (see registerLegheCommand), distinct
-// callback_data prefix so it only ever claims its own presses.
+// Handles taps on legheBlocks's per-league "buttons" blocks; registered before bot.use(commands),
+// own callback_data prefix
 async function handleLgOpenButton(ctx: Context, next: () => Promise<void>) {
   const data = ctx.callbackQuery?.data
   if (!data?.startsWith(LG_OPEN_PREFIX)) return next()
@@ -276,9 +259,8 @@ async function handleLgOpenButton(ctx: Context, next: () => Promise<void>) {
       await ctx.answerCallbackQuery({ text: 'Lega non trovata', show_alert: true })
       return
     }
-    // Sets ctx.match before editing so legheTorneiMenu's own .dynamic()
-    // (re-run by grammY right after, to build the reply_markup) reads the
-    // right index — same pattern as tournament/detail.ts's openTournamentDetail.
+    // Set ctx.match before editing so legheTorneiMenu's .dynamic() reads the right index (as in
+    // openTournamentDetail)
     ctx.match = String(index)
     await ctx.editMessageText({ blocks }, { reply_markup: legheTorneiMenu })
     await ctx.answerCallbackQuery()
@@ -287,7 +269,7 @@ async function handleLgOpenButton(ctx: Context, next: () => Promise<void>) {
   }
 }
 
-// Handles taps on legaTorneiBlocks's own per-tournament "buttons" blocks.
+// Handles taps on legaTorneiBlocks's per-tournament "buttons" blocks
 async function handleLtOpenButton(ctx: Context, next: () => Promise<void>) {
   const data = ctx.callbackQuery?.data
   if (!data?.startsWith(LT_OPEN_PREFIX)) return next()
@@ -296,8 +278,7 @@ async function handleLtOpenButton(ctx: Context, next: () => Promise<void>) {
   await openTournamentDetail(ctx, uuid, `l${index}`)
 }
 
-// Extracted so it can be reused verbatim by t.me/<bot>?start=leghe — see
-// deepLinks.ts.
+// Extracted for reuse by t.me/<bot>?start=leghe (deepLinks.ts)
 async function legheCommandHandler(ctx: Context) {
   try {
     const blocks = await legheBlocks(ctx)
@@ -312,13 +293,12 @@ async function legheCommandHandler(ctx: Context) {
 registerDeepLink('leghe', legheCommandHandler)
 
 export function registerLegheCommand(bot: Bot, commands: CommandGroup<Context>) {
-  // Deferred to call time — see calendario.ts's own comment on why.
+  // Deferred to call time, see calendario.ts
   legheMenu.register(legheTorneiMenu)
   legheTorneiMenu.register(torneoMenu)
   bot.use(legheMenu)
 
-  // Registered before bot.use(commands) — same reasoning as calendario.ts's
-  // own handleCalendarioOpenButton registration.
+  // Registered before bot.use(commands), like calendario.ts
   bot.on('callback_query:data', handleLgOpenButton)
   bot.on('callback_query:data', handleLtOpenButton)
 

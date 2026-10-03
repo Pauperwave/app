@@ -3,16 +3,15 @@ import type { Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 import { registerDeepLink } from '../deepLinks'
 
-// Telegram's own sendDice generates the result server-side (verifiably
-// fair — the bot can't fake it) and renders as a real animated die
-// client-side, so a classic d6 needs no RNG of our own at all.
+// Telegram's sendDice generates the result server-side (verifiably fair) and renders an animated
+// die, so a classic d6 needs no RNG of our own
 async function dadoCommandHandler(ctx: Context) {
   await ctx.replyWithDice('🎲')
 }
 
 registerDeepLink('dado', dadoCommandHandler)
 
-// Telegram has no native "coin flip" dice type — this one needs our own RNG.
+// Telegram has no native coin-flip dice type, so this one needs our own RNG
 async function monetaCommandHandler(ctx: Context) {
   const result = Math.random() < 0.5 ? 'Testa' : 'Croce'
   await ctx.replyWithRichMessage({ markdown: `🪙 ${result}!` })
@@ -23,10 +22,8 @@ registerDeepLink('moneta', monetaCommandHandler)
 const DEFAULT_DIE_SIDES = 20
 const MAX_DIE_SIDES = 1000
 
-// /tira [facce] — Telegram's dice types cap at 6 faces (🎯/🏀/⚽/🎳; 🎰 is a
-// 64-value slot machine, not a die), so anything bigger — a d20 for the
-// handful of MTG cards/rules that call for one, d100, ... — needs our own
-// RNG. Defaults to d20 with no argument, the actual MTG use case.
+// /tira [facce]: Telegram's dice types cap at 6 faces (🎰 is a slot machine, not a die), so anything
+// bigger (d20, d100, ...) needs our own RNG. Defaults to d20, the actual MTG use case.
 async function tiraCommandHandler(ctx: Context) {
   const raw = (ctx.match as string | undefined)?.trim()
   const sides = raw ? Number(raw) : DEFAULT_DIE_SIDES

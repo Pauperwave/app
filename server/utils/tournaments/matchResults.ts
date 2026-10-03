@@ -1,9 +1,8 @@
 // server\utils\tournaments\matchResults.ts
-// Writing a 1v1 result: shared by the organizer's endpoint and the Telegram
-// bot's own report (which now writes immediately, same as an organizer's
-// entry — user request, 2026-09-24). confirmMatchResult/disputeMatchResult
-// are the opponent's answer to a Telegram-reported score; a dispute flags
-// the already-saved result for organizer review, it doesn't revert it.
+// Writing a 1v1 result: shared by the organizer's endpoint and the Telegram bot's report (written
+// at once, like an organizer's entry). confirmMatchResult/disputeMatchResult are the opponent's
+// answer to a Telegram-reported score; a dispute flags the saved result for organizer review
+// without reverting it.
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '#shared/utils/types/database'
 
@@ -14,16 +13,13 @@ export interface MatchResultInput {
   player2Uuid: string
   player1GamesWon: number
   player2GamesWon: number
-  // Set only when this result came from a player's own Telegram report —
-  // null/omitted for one an organizer entered directly, so the UI can tell
-  // the two apart (user request, 2026-09-23).
+  // Set only for a result from a player's own Telegram report (null/omitted when an organizer
+  // entered it), so the UI can tell them apart
   reportedByPlayerUuid?: string | null
 }
 
-// Invalid best-of-3 scores are rejected by ck_tournament_match_results_score.
-// Always resets confirmed_at/disputed_at to null: any write here — a fresh
-// Telegram report or an organizer overwriting a prior score — is a new
-// score that hasn't been answered yet.
+// Invalid best-of-3 scores are rejected by ck_tournament_match_results_score. Always resets
+// confirmed_at/disputed_at: any write here is a new score nobody has answered yet.
 export async function saveMatchResult(supabase: SupabaseClient<Database>, input: MatchResultInput) {
   const { error: resultError } = await supabase
     .from('tournament_match_results')

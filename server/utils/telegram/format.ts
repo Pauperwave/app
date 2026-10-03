@@ -1,15 +1,10 @@
 // server\utils\telegram\format.ts
 
-// Re-exported so `fmt` auto-imports bot-wide (same pattern as
-// telegramServiceSupabaseClient in supabaseClient.ts). `FormattedString`
-// still needs an explicit import in every commands/*.ts that uses it — used
-// as both a value and a type, and Nuxt auto-import only covers the value side.
+// Re-exported so `fmt` auto-imports bot-wide. `FormattedString` still needs an explicit import
+// where used (value and type; auto-import only covers the value).
 //
-// FormattedString builds messages as plain text + an `entities` array
-// instead of a markdown string + `parse_mode` — raw dynamic values never
-// need escaping, since nothing is parsed as markup. `.b()`/`.link()`/
-// `.plain()` build a message piece by piece; `ctx.reply(fs.text, {
-// entities: fs.entities })` / `ctx.replyWithPhoto(url, { caption: fs.caption,
-// caption_entities: fs.caption_entities })` are the two send shapes used
-// everywhere — never `parse_mode`, incompatible with passing `entities`.
+// FormattedString builds messages as plain text + an `entities` array instead of markdown +
+// `parse_mode`, so raw dynamic values never need escaping. Send with `ctx.reply(fs.text, {
+// entities: fs.entities })` or `ctx.replyWithPhoto(url, { caption: fs.caption, caption_entities:
+// fs.caption_entities })`, never `parse_mode` (incompatible with `entities`).
 export { FormattedString, fmt } from '@grammyjs/parse-mode'

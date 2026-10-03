@@ -7,9 +7,8 @@ interface BulkMembershipStatusBody {
   ids: number[]
 }
 
-// Shared by approve.post.ts/reject.post.ts/restore.post.ts (fallow:dupes
-// flagged these as an identical 22-line clone) — same bulk update, only the
-// target membership_request_status and the error-message noun differ.
+// Shared by approve/reject/restore.post.ts: the same bulk update, differing only by target
+// membership_request_status and the error noun
 export async function bulkUpdateMembershipRequestStatus(
   event: H3Event,
   status: 'approved' | 'rejected' | 'pending',

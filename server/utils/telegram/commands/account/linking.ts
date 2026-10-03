@@ -1,14 +1,13 @@
 // server\utils\telegram\commands\account\linking.ts
 import type { Bot, Context } from 'grammy'
 
-// No conversation state: Nitro is serverless, so an in-memory "waiting for
-// this chat's email" flag wouldn't survive a cold start. Instead, any
-// plain-text message that looks like an email is treated as a linking
-// attempt — simpler, at the cost of not requiring a reply to a specific prompt.
+// No conversation state: Nitro is serverless, so an in-memory "waiting for email" flag wouldn't
+// survive a cold start. Any plain-text message that looks like an email is treated as a linking
+// attempt instead.
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-// A chat can only register the associate it's linked to — same resolution
-// self-register.post.ts does from a web session, keyed by chat_id instead.
+// A chat can only register the associate it's linked to (as self-register.post.ts does from a web
+// session)
 export async function resolveAssociateUuidByChatId(chatId: number): Promise<string | null> {
   const supabase = telegramServiceSupabaseClient()
 
@@ -22,10 +21,8 @@ export async function resolveAssociateUuidByChatId(chatId: number): Promise<stri
   return data?.associate_uuid ?? null
 }
 
-// Reverse of resolveAssociateUuidByChatId — needed wherever the server (not
-// an incoming Telegram update) is the one initiating contact, e.g. pushing a
-// pairing notification once tournament_pairings gets a live-write flow: the
-// trigger knows the associate_uuid, not the chat_id.
+// Reverse of resolveAssociateUuidByChatId, for server-initiated contact (e.g. a pairing
+// notification: the trigger knows the associate_uuid, not the chat_id)
 export async function resolveChatIdByAssociateUuid(associateUuid: string): Promise<number | null> {
   const supabase = telegramServiceSupabaseClient()
 
@@ -39,12 +36,12 @@ export async function resolveChatIdByAssociateUuid(associateUuid: string): Promi
   return data?.chat_id ?? null
 }
 
-// Same literal message tessera.ts, iscrizioni.ts, and tournament/detail.ts's
-// iscrivi: handler all show for a personal action before linking an account.
+// Shown by tessera.ts, iscrizioni.ts and detail.ts's iscrivi: handler for a personal action before
+// linking
 export const NOT_LINKED_MESSAGE = 'Devi prima collegare il tuo account: scrivimi la tua email da socio.'
 
-// Shared "get chatId, resolve it, bail out with NOT_LINKED_MESSAGE" prelude
-// — callers still catch this function's own Supabase-error throw themselves.
+// Shared "get chatId, resolve it, else NOT_LINKED_MESSAGE" prelude; callers still catch its
+// Supabase-error throw
 export async function requireLinkedAssociate(ctx: Context): Promise<string | null> {
   const chatId = ctx.chat?.id
   if (!chatId) return null
@@ -57,26 +54,19 @@ export async function requireLinkedAssociate(ctx: Context): Promise<string | nul
   return associateUuid
 }
 
-// Rate-limits linking attempts per chat — without this, any chat could
-// brute-force/enumerate member emails by typing many in a row and reading
-// the bot's different responses (not found / already linked elsewhere /
-// success). One row per attempt (see the migration's own comment for why),
-// so this is a plain "how many in the last N minutes" range query.
+// Rate-limits linking attempts per chat: otherwise a chat could enumerate member emails by typing
+// many and reading the different replies. One row per attempt, counted over the last N minutes.
 const MAX_LINK_ATTEMPTS = 1
 const LINK_ATTEMPT_WINDOW_MINUTES = 1
 
-// Returns false (and does not record a new attempt) once the window's
-// already full — fails closed on its own Supabase errors, since silently
-// allowing every attempt through on an infra hiccup would defeat the point
-// of a rate limit specifically meant to resist abuse.
+// Returns false (recording nothing) once the window is full. Fails closed on Supabase errors:
+// allowing everything through on an infra hiccup would defeat the rate limit
 async function recordLinkAttempt(chatId: number): Promise<boolean> {
   const supabase = telegramServiceSupabaseClient()
   const windowStart = new Date(Date.now() - LINK_ATTEMPT_WINDOW_MINUTES * 60_000).toISOString()
 
-  // Table-wide cleanup (not just this chat's own rows) — every attempt,
-  // from any chat, sweeps out anything stale, so a chat that never tries
-  // again doesn't leave an orphaned row behind forever. Cheap enough at
-  // this bot's scale to skip a separate cron job for it.
+  // Table-wide cleanup: every attempt from any chat sweeps stale rows, so no separate cron is
+  // needed at this scale
   await supabase
     .from('pauperwave_telegram_link_attempts')
     .delete()
@@ -117,20 +107,17 @@ async function linkChat(
       + 'Controlla di averla scritta correttamente, oppure contatta un admin.'
   }
 
-  // Refuse to silently steal the link away from whatever chat already has
-  // it — the upsert below is keyed on associate_uuid alone (onConflict),
-  // so without this check it would just transfer the link here with no
-  // trace. An email address isn't a secret, so anyone who knows (or
-  // guesses) a member's registered email could otherwise hijack their
-  // link by typing it into a different chat.
+  // Refuse to take the link from a chat that already has it: the upsert below is keyed on
+  // associate_uuid alone, and an email isn't a secret, so anyone knowing it could otherwise hijack
+  // the link
   const existingChatId = await resolveChatIdByAssociateUuid(associate.uuid)
   if (existingChatId !== null && existingChatId !== chatId) {
     return '⚠️ Questa email è già collegata a un\'altra chat. '
       + 'Se è la tua email e hai perso l\'accesso a quella chat, contatta un admin per scollegarla.'
   }
 
-  // Delete any existing row first — upsert on associate_uuid alone can't
-  // also resolve a conflict on chat_id's own unique constraint.
+  // Delete any existing row first: an upsert on associate_uuid can't also resolve a chat_id unique
+  // conflict
   await supabase.from('pauperwave_associate_telegram_links').delete().eq('chat_id', chatId)
 
   const { error: linkError } = await supabase
@@ -146,9 +133,8 @@ async function linkChat(
 }
 
 export function registerLinkingHandler(bot: Bot) {
-  // Registered last (commands/index.ts) so every /command is matched by its
-  // own handler first — this only ever sees plain-text messages nothing
-  // else claimed.
+  // Registered last (commands/index.ts) so every /command matches its own handler first; this only
+  // sees unclaimed plain text
   bot.on('message:text', async (ctx, next) => {
     const text = ctx.message.text.trim()
 
@@ -165,9 +151,8 @@ export function registerLinkingHandler(bot: Bot) {
       return
     }
     if (!allowed) {
-      // Not interpolating MAX_LINK_ATTEMPTS/LINK_ATTEMPT_WINDOW_MINUTES into
-      // this text — at 1/1 "1 tentativo ogni 1 minuti" reads wrong, and a
-      // generic message doesn't need updating if those values change again.
+      // Limits aren't interpolated: "1 tentativo ogni 1 minuti" reads wrong, and a generic text
+      // survives changes
       await ctx.reply('⚠️ Troppi tentativi di collegamento. Riprova tra qualche minuto.')
       return
     }

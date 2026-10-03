@@ -13,9 +13,8 @@ import { fetchLivePod, type LivePod } from './commanderPodData'
 import { positionRichMessage } from './commanderPodMessages'
 
 // ─── Menu (entry point from /tavolo) ────────────────────────────────────────
-// autoAnswer/onMenuOutdated: false — same reasoning as tavoloMenu's own
-// comment (mockups/tavolo.ts): every .dynamic() here reads live data, the
-// plugin's own staleness heuristic would false-positive on every render.
+// autoAnswer/onMenuOutdated: false, like tavoloMenu (mockups/tavolo.ts): every .dynamic() reads
+// live data, so the staleness heuristic would false-positive
 export const commanderPodMenu = new Menu<Context>('cmdpod', {
   autoAnswer: false,
   onMenuOutdated: false
@@ -28,9 +27,8 @@ export const commanderPodMenu = new Menu<Context>('cmdpod', {
   })
 })
 
-// Resolves the caller's own live pod fresh from the chat — every handler
-// below re-fetches rather than trusting anything threaded through a
-// callback_data payload, same reasoning as matchReport.ts's own requireTable.
+// Resolves the caller's live pod fresh from the chat: every handler re-fetches instead of trusting
+// callback_data (like matchReport.ts's requireTable)
 export async function requirePod(ctx: Context): Promise<LivePod | null> {
   const associateUuid = await requireLinkedAssociate(ctx)
   if (!associateUuid) {
@@ -45,8 +43,8 @@ export async function requirePod(ctx: Context): Promise<LivePod | null> {
   return pod
 }
 
-// /tavolo and /risultato: true if the chat's associate sits at a Commander
-// pod being played, false to let the caller fall back further.
+// /tavolo and /risultato: true if the chat's associate sits at a Commander pod being played, false
+// to let the caller fall back
 export async function replyWithLiveCommanderPod(ctx: Context): Promise<boolean> {
   const chatId = ctx.chat?.id
   if (!chatId) return false

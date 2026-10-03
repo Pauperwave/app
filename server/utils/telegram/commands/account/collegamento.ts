@@ -24,13 +24,8 @@ async function fetchAssociateIdentity(associateUuid: string): Promise<AssociateI
   return data
 }
 
-// Read-only check for "is this chat linked, and to whom" — distinct from
-// actually linking (linking.ts's email-in-plain-text flow, triggered by
-// /start). Useful when a chat isn't sure whether it already linked, or
-// wants to confirm which socio it's linked as before relying on a
-// personal command (/tessera, /iscrizioni).
-// Extracted so it can be reused verbatim by t.me/<bot>?start=collegamento —
-// see deepLinks.ts.
+// Read-only check of "is this chat linked, and to whom", distinct from linking (linking.ts's email
+// flow, via /start). Extracted for reuse by t.me/<bot>?start=collegamento (deepLinks.ts)
 async function collegamentoCommandHandler(ctx: Context) {
   if (!ctx.chat?.id) return
 
@@ -51,7 +46,7 @@ async function collegamentoCommandHandler(ctx: Context) {
 
     const lines = [`✅ Questa chat è collegata${name ? ` a ${name}` : ''}.`]
     if (email) lines.push(email)
-    // \n\n, not \n — see core.ts's HELP_TEXT comment on Rich Message markdown.
+    // \n\n, not \n: see core.ts on Rich Message markdown
     await ctx.replyWithRichMessage({ markdown: lines.join('\n\n') })
   } catch {
     await ctx.replyWithRichMessage({
@@ -62,10 +57,9 @@ async function collegamentoCommandHandler(ctx: Context) {
 
 registerDeepLink('collegamento', collegamentoCommandHandler)
 
-// Opposite of /collegamento — removes this chat's row from
-// pauperwave_associate_telegram_links, same table linkChat() (linking.ts)
-// upserts into. Extracted so it can be reused verbatim by
-// t.me/<bot>?start=scollegamento — see deepLinks.ts.
+// Opposite of /collegamento: removes this chat's row from pauperwave_associate_telegram_links (the
+// table linkChat() upserts into). Extracted for reuse by t.me/<bot>?start=scollegamento
+// (deepLinks.ts)
 async function scollegamentoCommandHandler(ctx: Context) {
   if (!ctx.chat?.id) return
 

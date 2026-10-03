@@ -18,8 +18,7 @@ import { createPerContextCache } from '../../perContextCache'
 import { ICONS } from '../../icons'
 import { registerDeepLink } from '../../deepLinks'
 
-// Fetched once per render, filtered by month client-side — keeps the
-// callback handler stateless (no need to remember what a user was viewing).
+// Fetched once per render and filtered by month client-side, keeping the callback handler stateless
 const MAX_ROWS = 200
 
 async function fetchUpcomingTournaments(): Promise<DatedTournamentRow[]> {
@@ -38,15 +37,14 @@ async function fetchUpcomingTournaments(): Promise<DatedTournamentRow[]> {
   const rows = (data as TournamentRow[])
     .filter((row): row is TournamentRow & { starts_at: string } => row.starts_at !== null)
 
-  // Scoped to only the leagues actually appearing on this page, instead of
-  // every league's full history — see queries.ts's own comment on why.
+  // Only the leagues appearing on this page, not every league's history (see queries.ts)
   const leagueUuids = [...new Set(rows.map(row => row.league_uuid).filter(uuid => uuid !== null))]
   const stageNumbers = await fetchStageNumbers(leagueUuids)
   return rows.map(row => ({ ...row, stageNumber: stageNumbers.get(row.uuid) ?? null }))
 }
 
-// Empty map for an unlinked chat — every personalIcon() lookup then falls
-// back to its own "not registered" default, same as leghe.ts's own pattern.
+// Empty map for an unlinked chat: personalIcon() then falls back to its "not registered" default
+// (like leghe.ts)
 async function fetchRegistrations(
   rows: DatedTournamentRow[], chatId: number
 ): Promise<Map<string, RegistrationStatus>> {
@@ -55,9 +53,8 @@ async function fetchRegistrations(
   return fetchRegistrationStatuses(rows.map(row => row.uuid), associateUuid)
 }
 
-// The initial command handler and calendarioMenu's own .dynamic() re-render
-// both run these two queries within the same update — memoizing by ctx
-// halves the query count on every /calendario open. See perContextCache.ts.
+// The command handler and calendarioMenu's .dynamic() both run these queries in one update:
+// memoizing by ctx halves them. See perContextCache.ts
 const memoize = createPerContextCache<{
   rows: Promise<DatedTournamentRow[]>
   registrations: Promise<Map<string, RegistrationStatus>>
@@ -77,8 +74,8 @@ function monthLabel(month: Date): string {
   return format(month, 'MMMM yyyy', { locale: it })
 }
 
-// formatTelegramDate (not plain format) — date comes from a timestamptz
-// and this runs on a UTC server, so it must read out in Italy's timezone.
+// formatTelegramDate, not plain format: the date is a timestamptz and the server runs in UTC, so it
+// must read in Italy's timezone
 function dayLabel(date: Date): string {
   const label = formatTelegramDate(date, 'EEEE d MMMM', { locale: it })
   return label.charAt(0).toUpperCase() + label.slice(1)
@@ -100,13 +97,10 @@ function groupByDay(rows: DatedTournamentRow[]): DayGroup[] {
   return [...groups.values()].sort((a, b) => a.day.getTime() - b.day.getTime())
 }
 
-// A button right under each tournament, embedded as its own "buttons"
-// block in the rich message body — not a Menu-managed reply_markup — so
-// it sits next to the tournament it opens instead of in one long list at
-// the very end of the message. User request 2026-09-09 ("avere tutti
-// quei bottoni in fondo non è il massimo a livello di UX"). Handled by a
-// plain bot.on('callback_query:data', ...) below (see registerCalendarioCommand)
-// rather than @grammyjs/menu, which only manages reply_markup buttons.
+// A button under each tournament, as a "buttons" block in the rich message body (not a Menu
+// reply_markup), so it sits next to its tournament instead of in one list at the end. Handled by a
+// plain bot.on('callback_query:data') (see registerCalendarioCommand), since @grammyjs/menu only
+// manages reply_markup.
 const CAL_OPEN_PREFIX = 'calopen:'
 
 function encodeCalOpenPayload(uuid: string, origin: string): string {
@@ -119,9 +113,8 @@ function decodeCalOpenPayload(data: string): { uuid: string, origin: string } {
   return { uuid: rest.slice(0, separator), origin: rest.slice(separator + 1) }
 }
 
-// `month` is a "Rome wall-clock" Date (see nowInRome()) — start/end must
-// convert back to real instants before comparing against row.starts_at, or
-// the month boundary would be off by Italy's UTC offset again.
+// `month` is a "Rome wall-clock" Date (see nowInRome()): convert back to real instants before
+// comparing with row.starts_at, or the boundary is off by Italy's UTC offset
 function calendarioBlocks(
   rows: DatedTournamentRow[], month: Date,
   registrations: Map<string, RegistrationStatus>, monthOffset: number
@@ -163,8 +156,7 @@ function calendarioBlocks(
   return blocks
 }
 
-// Exported so tournament/detail.ts's "back" button can rebuild this exact
-// month view — see menuNav.ts's comment on this circular import.
+// Exported so detail.ts's "back" button can rebuild this month view (see menuNav.ts)
 export async function calendarioBlocksFor(
   ctx: Context, monthOffset: number, chatId: number
 ): Promise<InputRichMessage['blocks']> {
@@ -174,20 +166,15 @@ export async function calendarioBlocksFor(
   return calendarioBlocks(rows, month, registrations, monthOffset)
 }
 
-// Only the month-nav buttons live here now — per-tournament "open detail"
-// buttons are inline rich-message "buttons" blocks (see calendarioBlocks),
-// not Menu-managed reply_markup, so they sit right under their own
-// tournament instead of in one long list at the end of the message.
-// onMenuOutdated: false — this re-fetches live data every render, so the
-// plugin's staleness fingerprint legitimately differs across renders.
+// Only the month-nav buttons live here; per-tournament buttons are inline rich-message blocks (see
+// calendarioBlocks). onMenuOutdated: false: live data is re-fetched every render, so the staleness
+// fingerprint legitimately differs.
 export const calendarioMenu = new Menu<Context>('cal', {
   autoAnswer: false,
   onMenuOutdated: false
 }).dynamic((ctx, range) => {
-  // || not ?? — ctx.match is '' (not undefined) for a bare /calendario, and
-  // ?? doesn't substitute on '' (harmless here since Number('') === 0, but
-  // this exact gap did break a multi-field payload elsewhere — see
-  // risultato.ts's own comment on why).
+  // || not ??: ctx.match is '' (not undefined) for a bare /calendario; same gap as in
+  // risultato.ts's decodeResultState
   const monthOffset = Number(ctx.match || '0')
 
   range
@@ -209,9 +196,8 @@ async function monthNav(ctx: Context & { match: string }) {
   }
 }
 
-// Handles taps on calendarioBlocks's own per-tournament "buttons" blocks —
-// registered before bot.use(commands) (see registerCalendarioCommand),
-// distinct callback_data prefix so it only ever claims its own presses.
+// Handles taps on calendarioBlocks's per-tournament "buttons" blocks; registered before
+// bot.use(commands), own callback_data prefix so it only claims its own presses
 async function handleCalendarioOpenButton(ctx: Context, next: () => Promise<void>) {
   const data = ctx.callbackQuery?.data
   if (!data?.startsWith(CAL_OPEN_PREFIX)) return next()
@@ -222,19 +208,15 @@ async function handleCalendarioOpenButton(ctx: Context, next: () => Promise<void
 
 registerMenu('cal', calendarioMenu)
 
-// Rebuilds this exact month view for tournament/detail.ts's "back" button —
-// see menuNav.ts's own comment on why this is a registry, not a direct
-// import from detail.ts (that used to be the other half of a circular
-// dependency: detail.ts importing calendarioBlocksFor while this file
-// imports torneoMenu from detail.ts).
+// Rebuilds this month view for detail.ts's "back" button; a registry (see menuNav.ts) to avoid a
+// circular import
 registerBackResolver('m', async (ctx, origin, chatId) => {
   const offset = Number(origin.slice(1))
   const blocks = await calendarioBlocksFor(ctx, offset, chatId)
   return { payload: String(offset), menu: calendarioMenu, text: { blocks } }
 })
 
-// Extracted so it can be reused verbatim by t.me/<bot>?start=calendario —
-// see deepLinks.ts.
+// Extracted for reuse by t.me/<bot>?start=calendario (deepLinks.ts)
 async function calendarioCommandHandler(ctx: Context) {
   if (!ctx.chat?.id) return
 
@@ -252,15 +234,12 @@ async function calendarioCommandHandler(ctx: Context) {
 registerDeepLink('calendario', calendarioCommandHandler)
 
 export function registerCalendarioCommand(bot: Bot, commands: CommandGroup<Context>) {
-  // Deferred to call time, not module top level — registerCalendarioCommand
-  // itself only runs once every command module has finished loading, so
-  // torneoMenu is guaranteed to be fully initialized by then.
+  // Deferred to call time: registerCalendarioCommand only runs once every command module has
+  // loaded, so torneoMenu is initialized
   calendarioMenu.register(torneoMenu)
   bot.use(calendarioMenu)
 
-  // Registered before bot.use(commands) in commands/index.ts's ordering
-  // doesn't matter here — callback_query:data isn't dispatched by
-  // CommandGroup at all, so there's no load-bearing order versus it.
+  // Order vs bot.use(commands) doesn't matter: CommandGroup never dispatches callback_query:data
   bot.on('callback_query:data', handleCalendarioOpenButton)
 
   commands.command('calendario', 'Prossimi tornei', calendarioCommandHandler)

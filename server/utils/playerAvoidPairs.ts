@@ -1,10 +1,7 @@
 // server\utils\playerAvoidPairs.ts
-// Resolves two associates (the client-side identity every pairing
-// composable uses) to their players.uuid, then normalizes into (min, max)
-// order — the DB CHECK constraint (player_a_uuid < player_b_uuid) enforces
-// exactly one canonical row per unordered pair. Shared by
-// player-avoid-pairs/create.post.ts and .../delete.post.ts, which
-// independently duplicated this exact resolution (fallow:dupes, 2026-09-23).
+// Resolves two associates (the client-side pairing identity) to players.uuid and normalizes them to
+// (min, max) order: the CHECK (player_a_uuid < player_b_uuid) allows one row per unordered pair.
+// Shared by player-avoid-pairs/create.post.ts and delete.post.ts.
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '#shared/utils/types/database'
 

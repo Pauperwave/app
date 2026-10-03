@@ -1,8 +1,8 @@
 // server\utils\telegram\commanderCatalog.ts
 // The commander catalog (mtg_commanders, via get_commander_catalog()) for the bot: the partner
 // rules the website applies (shared/utils/commanders/commanderPartnerRules.ts) plus what a
-// second-commander inline result needs. ~3000 rows and it only changes on a resync, so it is kept in
-// memory for a few minutes per warm instance instead of being read on every message.
+// second-commander inline result needs. ~3000 rows and it only changes on a resync, so it is kept
+// in memory for a few minutes per warm instance instead of being read on every message.
 import {
   createPartnerRules, type PartnerRuleCard
 } from '#shared/utils/commanders/commanderPartnerRules'
