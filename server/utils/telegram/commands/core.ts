@@ -10,9 +10,12 @@ import { answerLoadError } from './callbackErrors'
 import { resolveDeepLink } from '../deepLinks'
 import {
   HELP_TOPICS,
+  decodeHelpTopicCallback,
+  encodeHelpTopicCallback,
   helpTopicPayload,
   parseHelpTopic,
-  type HelpTopic
+  type HelpTopic,
+  type HelpView
 } from '#shared/utils/telegram/helpTopics'
 
 // Quick-launch buttons for the most-used commands, embedded as inline "buttons" blocks after their
@@ -171,31 +174,85 @@ const HELP_SECTIONS: Record<HelpTopic, () => Blocks> = {
 
 const TOPIC_NAMES = HELP_TOPICS.join(', ')
 
-function helpBlocks(): Blocks {
+const HELP_TOPIC_BUTTONS: Record<HelpTopic, string> = {
+  generale: '⚙️ Generale',
+  classifiche: `${ICONS.trophy} Classifiche`,
+  tornei: '🎲 Tornei',
+  iscrizioni: `${ICONS.ticket} Iscrizioni`,
+  carte: `${ICONS.card} Carte`,
+  dadi: '🎰 Dadi',
+  account: '👤 Account'
+}
+
+const HELP_BUTTONS_PER_ROW = 3
+
+// Plain InlineKeyboard, not a Menu: the whole state is in callback_data, so there is no
+// registration-order dependency (see statusKeyboard). The shown view is marked, and "Tutto" brings
+// the full message back.
+function helpKeyboard(active: HelpView): InlineKeyboard {
+  const buttons = [
+    ...HELP_TOPICS.map(topic => ({ view: topic as HelpView, label: HELP_TOPIC_BUTTONS[topic] })),
+    { view: 'all' as HelpView, label: '📖 Tutto' }
+  ]
+
+  const keyboard = new InlineKeyboard()
+  buttons.forEach(({ view, label }, index) => {
+    keyboard.text(view === active ? `• ${label}` : label, encodeHelpTopicCallback(view))
+    if ((index + 1) % HELP_BUTTONS_PER_ROW === 0) keyboard.row()
+  })
+  return keyboard
+}
+
+function helpBlocks(view: HelpView): Blocks {
+  if (view !== 'all') return HELP_SECTIONS[view]()
+
   return [
     { type: 'heading', size: 3, text: 'Comandi disponibili' },
     ...HELP_TOPICS.flatMap(topic => HELP_SECTIONS[topic]()),
-    { type: 'paragraph', text: `Per una sola sezione: /help <argomento>, tra ${TOPIC_NAMES}.` }
+    {
+      type: 'paragraph',
+      text: `Per una sola sezione usa i bottoni qui sotto, oppure /help <argomento>: ${TOPIC_NAMES}.`
+    }
   ]
 }
 
-function helpTopicBlocks(topic: HelpTopic): Blocks {
-  return [
-    ...HELP_SECTIONS[topic](),
-    { type: 'paragraph', text: 'Tutti i comandi: /help' }
-  ]
+function replyWithHelp(ctx: Context, view: HelpView) {
+  return ctx.replyWithRichMessage(
+    { blocks: helpBlocks(view) },
+    { reply_markup: helpKeyboard(view) }
+  )
 }
 
 // /help [argomento]: no argument shows everything, a topic only its section
 function helpCommandHandler(ctx: Context) {
   const argument = typeof ctx.match === 'string' ? ctx.match.trim() : ''
-  if (!argument) return ctx.replyWithRichMessage({ blocks: helpBlocks() })
+  if (!argument) return replyWithHelp(ctx, 'all')
 
   const topic = parseHelpTopic(argument)
   if (!topic) {
-    return ctx.reply(`Non conosco l'argomento «${argument}». Prova con: ${TOPIC_NAMES}.`)
+    return ctx.reply(`Non conosco l'argomento «${argument}». Prova con: ${TOPIC_NAMES}.`, {
+      reply_markup: helpKeyboard('all')
+    })
   }
-  return ctx.replyWithRichMessage({ blocks: helpTopicBlocks(topic) })
+  return replyWithHelp(ctx, topic)
+}
+
+// The bottom buttons swap the message's content in place; like the status refresh, an edit that
+// changes nothing (the shown view tapped again) is not a failure
+async function handleHelpTopic(ctx: Context, next: () => Promise<void>) {
+  const view = decodeHelpTopicCallback(ctx.callbackQuery?.data ?? '')
+  if (!view) return next()
+
+  try {
+    await ctx.editMessageText({ blocks: helpBlocks(view) }, { reply_markup: helpKeyboard(view) })
+    await ctx.answerCallbackQuery()
+  } catch (err) {
+    if (err instanceof GrammyError && err.description.includes('message is not modified')) {
+      await ctx.answerCallbackQuery()
+      return
+    }
+    await answerLoadError(ctx)
+  }
 }
 
 // Extracted for reuse by t.me/<bot>?start=help (deepLinks.ts), where ctx.match is already cleared
@@ -203,9 +260,7 @@ registerDeepLink('help', helpCommandHandler)
 
 // One deep link per topic, for the /telegram-bot page's per-card buttons
 for (const topic of HELP_TOPICS) {
-  registerDeepLink(helpTopicPayload(topic), ctx => ctx.replyWithRichMessage({
-    blocks: helpTopicBlocks(topic)
-  }))
+  registerDeepLink(helpTopicPayload(topic), ctx => replyWithHelp(ctx, topic))
 }
 
 async function handleHelpButton(ctx: Context, next: () => Promise<void>) {
@@ -318,4 +373,5 @@ export function registerCoreCommands(bot: Bot, commands: CommandGroup<Context>) 
 
   // Not Menu-managed, so no registration-order dependency on bot.use(commands) (see statusKeyboard)
   bot.on('callback_query:data', handleStatusRefresh)
+  bot.on('callback_query:data', handleHelpTopic)
 }
