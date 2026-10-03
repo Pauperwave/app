@@ -38,9 +38,8 @@ async function fetchNextTournament(): Promise<NextTournamentRow | null> {
   return data as NextTournamentRow | null
 }
 
-// The command handler and prossimoMenu's own .dynamic() re-render both run
-// fetchNextTournament within the same update — memoizing by ctx dedupes it.
-// See perContextCache.ts.
+// The command handler and prossimoMenu's .dynamic() both run fetchNextTournament in one update:
+// memoizing by ctx dedupes it. See perContextCache.ts
 const memoize = createPerContextCache<{ row: Promise<NextTournamentRow | null> }>()
 
 function cachedFetchNextTournament(ctx: Context): Promise<NextTournamentRow | null> {
@@ -59,10 +58,8 @@ function nextTournamentMessage(
   return fmt`🎲 ${FormattedString.b('Prossimo torneo')}\n\n${header}\n${ICONS.date} ${date}${location}\n\n👇🏻 Tocca per i dettagli`
 }
 
-// Markdown twin of nextTournamentMessage, for the Rich Message reply only
-// (see prossimoCommandHandler) — kept separate rather than reused, since
-// tournament/detail.ts's "back" button still needs the FormattedString
-// version above to edit a plain text message, not a rich one.
+// Markdown twin of nextTournamentMessage, for the Rich Message reply only: detail.ts's "back"
+// button still needs the FormattedString version to edit a plain text message
 function nextTournamentMarkdown(row: NextTournamentRow | null, stageNumber: number | null): string {
   if (!row || !row.starts_at) return '🎲 Nessun torneo in programma al momento.'
 
@@ -70,10 +67,7 @@ function nextTournamentMarkdown(row: NextTournamentRow | null, stageNumber: numb
   const stage = stageLabel(stageNumber)
   const location = row.location?.name ? `\n\n${ICONS.location} ${row.location.name}` : ''
 
-  // \n\n, not \n — in Rich Message markdown mode a single \n is a soft
-  // break (collapsed, like standard Markdown), not a real line break. See
-  // core.ts's own comment on this. The name/date and date/location lines
-  // below were previously running together on the same visual line.
+  // \n\n, not \n: in Rich Message markdown mode a single \n is a soft break (see core.ts)
   return `## 🎲 Prossimo torneo\n\n${statusIcon(row.status)} **${row.name}**${stage}\n\n${ICONS.date} ${date}${location}`
 }
 
@@ -81,8 +75,7 @@ async function fetchNextTournamentWithStage(
   ctx: Context
 ): Promise<{ row: NextTournamentRow | null, stageNumber: number | null }> {
   const row = await cachedFetchNextTournament(ctx)
-  // Scoped to this tournament's own league (or none) — see queries.ts's
-  // own comment on why.
+  // Scoped to this tournament's league (or none), see queries.ts
   const stageNumbers = await fetchStageNumbers(row?.league_uuid ? [row.league_uuid] : [])
   return { row, stageNumber: row ? stageNumbers.get(row.uuid) ?? null : null }
 }
@@ -92,23 +85,17 @@ export async function prossimoText(ctx: Context): Promise<FormattedString> {
   return nextTournamentMessage(row, stageNumber)
 }
 
-// Rich Message (markdown) twin of prossimoText — registered as this
-// module's 'p' back-resolver below (see calendario.ts's own
-// registerBackResolver comment). Kept as a separate exported function (not
-// a flag on prossimoText) since the two return different Telegram message
-// shapes, not just different formatting of the same one.
+// Rich Message (markdown) twin of prossimoText, registered as the 'p' back-resolver below; separate
+// because the two return different Telegram message shapes, not just different formatting
 export async function prossimoMarkdown(ctx: Context): Promise<string> {
   const { row, stageNumber } = await fetchNextTournamentWithStage(ctx)
   return nextTournamentMarkdown(row, stageNumber)
 }
 
-// Single-button "menu" — only ever shows the one next tournament, but still
-// needs a real Menu instance both to open torneoMenu's detail view (a
-// submenu press) and to serve as the "back" target from there (see the
-// registerBackResolver('p', ...) call below).
-// autoAnswer: false — the button delegates to openTournamentDetail, which
-// answers the callback itself. onMenuOutdated: false — see calendario.ts's
-// calendarioMenu for why.
+// Single-button "menu": needed as a real Menu instance to open torneoMenu's detail (a submenu
+// press) and as the "back" target from there (see registerBackResolver('p', ...)). autoAnswer:
+// false: the button delegates to openTournamentDetail, which answers the callback itself.
+// onMenuOutdated: false: see calendario.ts's calendarioMenu.
 export const prossimoMenu = new Menu<Context>('p', {
   autoAnswer: false,
   onMenuOutdated: false
@@ -124,15 +111,12 @@ export const prossimoMenu = new Menu<Context>('p', {
 
 registerMenu('p', prossimoMenu)
 
-// Rebuilds this exact view for tournament/detail.ts's "back" button — see
-// calendario.ts's own registerBackResolver comment for why this is a
-// registry, not a direct import from detail.ts.
+// Rebuilds this view for detail.ts's "back" button (a registry, see calendario.ts)
 registerBackResolver('p', async ctx => ({
   payload: '', menu: prossimoMenu, text: { markdown: await prossimoMarkdown(ctx) }
 }))
 
-// Extracted so it can be reused verbatim by t.me/<bot>?start=prossimo —
-// see deepLinks.ts.
+// Extracted for reuse by t.me/<bot>?start=prossimo (deepLinks.ts)
 async function prossimoCommandHandler(ctx: Context) {
   try {
     const markdown = await prossimoMarkdown(ctx)
@@ -148,7 +132,7 @@ async function prossimoCommandHandler(ctx: Context) {
 registerDeepLink('prossimo', prossimoCommandHandler)
 
 export function registerProssimoCommand(bot: Bot, commands: CommandGroup<Context>) {
-  // Deferred to call time — see calendario.ts's own comment on why.
+  // Deferred to call time, see calendario.ts
   prossimoMenu.register(torneoMenu)
   bot.use(prossimoMenu)
 

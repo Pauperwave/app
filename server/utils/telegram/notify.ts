@@ -5,22 +5,19 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 import type { AssociateNotifyResult } from '#shared/types/notifications'
 
-// Chat ids are Telegram's, not this app's user/associate ids — the caller
-// must already know which chat to target. Returns the sent Message so
-// callers needing its message_id (e.g. supporto.ts's reply-thread mapping)
-// don't have to call bot.api.sendMessage themselves.
+// Chat ids are Telegram's, not this app's ids: the caller must know which chat to target. Returns
+// the sent Message for callers needing its message_id (e.g. supporto.ts's reply-thread mapping).
 export async function sendTelegramMessage(chatId: number | string, text: string) {
   const bot = useTelegramBot()
   return bot.api.sendMessage(chatId, text)
 }
 
-// Recipients resolved from the database, not a hardcoded chat id — a static
-// env var wouldn't follow role changes. The join lives in
-// get_admin_telegram_chat_ids() (Postgres function) since user_roles and
-// players both reference auth.users independently, no FK to embed across.
+// Recipients come from the database (a static env var wouldn't follow role changes). The join lives
+// in the get_admin_telegram_chat_ids() Postgres function, since user_roles and players reference
+// auth.users independently.
 //
-// Best-effort: a Telegram/DB hiccup here must never fail a request that
-// already succeeded (e.g. a tesseramento application) — errors are logged.
+// Best-effort: a Telegram/DB hiccup must never fail a request that already succeeded; errors are
+// logged.
 async function notifyByRole(event: H3Event, text: string, roles?: ('admin' | 'super_admin')[]) {
   const supabase = serverSupabaseServiceRole<Database>(event)
 
@@ -40,14 +37,13 @@ async function notifyByRole(event: H3Event, text: string, roles?: ('admin' | 'su
   }
 }
 
-// Domain events an admin/organizer needs to act on (new tesseramento or
-// renewal request) — both roles, the default of get_admin_telegram_chat_ids().
+// Domain events an admin/organizer must act on (new tesseramento or renewal request): both roles,
+// the function's default
 export async function notifyTelegramAdmins(event: H3Event, text: string) {
   await notifyByRole(event, text)
 }
 
-// Technical errors — super_admin only, a single point of accountability
-// instead of spreading system alerts across every admin.
+// Technical errors: super_admin only, one point of accountability instead of alerting every admin
 export async function notifyTelegramSuperAdmins(event: H3Event, text: string) {
   await notifyByRole(event, text, ['super_admin'])
 }
@@ -57,9 +53,9 @@ export interface AssociateMessage {
   text: string
 }
 
-// Passive per-player notifications. One text per associate (a table
-// announcement differs for everyone), unlinked associates are counted, not
-// errors. Never throws — the caller's write already succeeded.
+// Passive per-player notifications: one text per associate (a table announcement differs for
+// everyone), unlinked associates are counted, not errors. Never throws: the caller's write already
+// succeeded.
 export async function notifyTelegramAssociates(
   messages: AssociateMessage[]
 ): Promise<AssociateNotifyResult> {

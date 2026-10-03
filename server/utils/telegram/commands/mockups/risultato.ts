@@ -6,20 +6,20 @@ import { Menu } from '@grammyjs/menu'
 import { answerLoadError } from '../callbackErrors'
 import { showRichStep, twoColumnFactsTable } from './richStepHelpers'
 
-// MOCKUP — no live-write flow yet (docs/architecture/telegram-bot.md).
-// Commander itself is set separately, at round start, via /tavolo.
+// MOCKUP: no live-write flow yet (docs/architecture/telegram-bot.md); Commander is set at round
+// start via /tavolo
 const MOCK_OPPONENTS = ['Marco Rossi', 'Giulia Bianchi', 'Luca Verdi']
 
-// Kill targets include yourself — Commander has real self-kill cases
-// (suicide). Vote targets stay MOCK_OPPONENTS-only.
+// Kill targets include yourself (Commander has real suicide cases); vote targets stay
+// MOCK_OPPONENTS-only
 const SELF_KILL_TARGET = 'Te stesso (suicidio)'
 const MOCK_KILL_TARGETS = [...MOCK_OPPONENTS, SELF_KILL_TARGET]
 const POSITION_LABELS = Array.from({ length: MOCK_OPPONENTS.length + 1 }, (_, i) => `${i + 1}°`)
 
 const NONE = '-'
 
-// killMask: one bit per MOCK_KILL_TARGETS index — round-trips through a
-// callback payload more compactly than a list of indices.
+// killMask: one bit per MOCK_KILL_TARGETS index, more compact in a callback payload than a list of
+// indices
 interface ResultState {
   position: number | null
   positionConfirmed: boolean
@@ -55,12 +55,9 @@ function encodeResultState(state: ResultState): string {
   ].join(':')
 }
 
-// Every caller wraps this in a try/catch that falls back to
-// answerLoadError() on a bad payload — but that catch only fires if this
-// actually throws. `Number(undefined)` is NaN, not an error, so a
-// too-short/garbled payload used to decode into a silently-wrong
-// ResultState instead of tripping that catch. Confirmed 2026-09-12 code
-// review. Validate shape/parse results explicitly instead.
+// Callers fall back to answerLoadError() when this throws, but `Number(undefined)` is NaN, not an
+// error: validate shape and parsed numbers explicitly so a garbled payload can't decode into a
+// wrong ResultState.
 function decodeResultState(raw: string): ResultState {
   const parts = raw.split(':')
   if (parts.length !== 8) throw new Error(`Malformed result state payload: "${raw}"`)
@@ -96,8 +93,7 @@ function killedNames(killMask: number): string[] {
   return MOCK_KILL_TARGETS.filter((_, index) => (killMask & (1 << index)) !== 0)
 }
 
-// No slashes — never matches @grammyjs/menu's own id/row/col/payload
-// format, so it just no-ops instead of misreading these. None may prefix
+// No slashes, so it never matches @grammyjs/menu's id/row/col/payload format. None may prefix
 // another (startsWith() would misroute the longer one).
 const POSITION_PICK_PREFIX = 'rkpositionpick:'
 const POSITION_CONFIRM_PREFIX = 'rkpositionok:'
@@ -123,8 +119,8 @@ function killButton(state: ResultState, name: string, index: number) {
 
 const KILLS_ROW_SIZE = 2
 
-// Multiselect, so it keeps its own toggle+confirm shape instead of the
-// single-pick pickRichMessage() below. 2x2 grid: one buttons block per row.
+// Multiselect, so it keeps its own toggle+confirm shape instead of pickRichMessage(); 2x2 grid, one
+// buttons block per row
 function killsRichMessage(state: ResultState): InputRichMessage {
   const buttons = MOCK_KILL_TARGETS.map((name, index) => killButton(state, name, index))
   const buttonRows = []
@@ -148,12 +144,10 @@ function killsRichMessage(state: ResultState): InputRichMessage {
   }
 }
 
-// Shared pick-then-confirm shape for every single-pick step (position,
-// deck vote, play vote): picking re-renders the same message with that
-// option highlighted and a Conferma button added; only Conferma advances.
-// oneRowPerOption: true for name-labeled options (opponents) — a single
-// shared row got cramped/wrapped names on narrow screens; short labels
-// (position's "1°"–"4°") stay on one row instead.
+// Pick-then-confirm shape for every single-pick step (position, deck vote, play vote): picking
+// re-renders the message with that option highlighted and a Conferma button; only Conferma
+// advances. oneRowPerOption: for name-labeled options, since a shared row wrapped on narrow
+// screens.
 function pickRichMessage(
   heading: string,
   labels: string[],
@@ -167,8 +161,7 @@ function pickRichMessage(
   const optionButtons = labels.map((label, index) => {
     const isSelected = selectedIndex === index
     return {
-      // ⭐ not ✅ — that already means "completed"/"registered"
-      // elsewhere (tournaments/line.ts).
+      // ⭐ not ✅, which means "completed"/"registered" elsewhere (tournaments/line.ts)
       text: `${isSelected ? '⭐' : ''} ${label}`.trim(),
       style: isSelected ? 'success' as const : undefined,
       callback_data: `${pickPrefix}${encodeResultState(buildPickedState(index))}`
@@ -233,9 +226,8 @@ function playVoteRichMessage(state: ResultState): InputRichMessage {
   )
 }
 
-// Same table shape shown in both finalRichMessage (pre-confirm) and
-// sendConfirmedResult (post-confirm) — one row per fact instead of a
-// paragraph of arrow-separated lines, matching the votes/score tables.
+// Table shown in both finalRichMessage (pre-confirm) and sendConfirmedResult (post-confirm), one
+// row per fact
 function summaryTableBlock(state: ResultState, caption: string) {
   const kills = killedNames(state.killMask)
   return twoColumnFactsTable(caption, [
@@ -246,12 +238,10 @@ function summaryTableBlock(state: ResultState, caption: string) {
   ])
 }
 
-// MOCKUP — which opponents voted for the deck/play is hardcoded sample
-// data, same as the rest of this file's mock pairing.
+// MOCKUP: which opponents voted for the deck/play is hardcoded sample data
 function votesReceivedTableBlock(deckVotePoints: number, playVotePoints: number) {
-  // Plain '✓' (U+2713, no emoji variation selector) rather than '⭐️' or a
-  // colorful emoji — those render with a taller line-height in Telegram's
-  // table cells and visibly stretch the whole row.
+  // Plain '✓' (U+2713, no variation selector): colorful emoji have a taller line-height in Telegram
+  // table cells
   const cell = (value: string | undefined) => ({
     text: value, align: 'center' as const, valign: 'middle' as const
   })
@@ -308,8 +298,8 @@ function scoreSummaryTableBlock(
   }
 }
 
-// Modifica keeps every pick as-is, only resetting the *Confirmed flags —
-// each step then shows its previous choice pre-highlighted instead of blank.
+// Modifica keeps every pick and only resets the *Confirmed flags, so each step shows its previous
+// choice highlighted
 function editState(state: ResultState): ResultState {
   return {
     ...state,
@@ -345,44 +335,36 @@ function finalRichMessage(state: ResultState): InputRichMessage {
   }
 }
 
-// Every step is a Rich Message now — risultatoMenu's own reply_markup is
-// never attached to a message. It still has to stay registered because
-// commanderDemo.ts's demoMenu.register(risultatoMenu)/.submenu('ris', ...)
-// needs a real Menu instance as a submenu target.
+// Every step is a Rich Message, so risultatoMenu's reply_markup is never attached; it stays
+// registered only as the submenu target of commanderDemo.ts's demoMenu.
 export const risultatoMenu = new Menu<Context>('ris', {
   autoAnswer: false,
   onMenuOutdated: false
 }).dynamic(() => {})
 
-// MOCKUP scoring — no real point system exists yet for 1v1 formats
-// (docs/architecture/telegram-bot.md's own Note on this). Placeholder
-// values only, to preview the shape of a per-round score summary.
+// MOCKUP scoring: no real point system exists yet for 1v1 formats
+// (docs/architecture/telegram-bot.md); placeholder values
 const POSITION_POINTS: Record<number, number> = { 1: 8, 2: 6, 3: 4, 4: 2 }
 const KILL_POINTS = 1
 const DECK_VOTE_POINTS = 2
 const PLAY_VOTE_POINTS = 1
-// MOCKUP — stands in for "how many opponents actually voted for you",
-// which needs the pairing-live flow to know for real.
+// MOCKUP: stands in for "how many opponents voted for you", which needs the live pairing flow
 const MOCK_DECK_VOTES_RECEIVED = 1
 const MOCK_PLAY_VOTES_RECEIVED = 2
 
 async function sendConfirmedResult(ctx: Context, state: ResultState) {
   try {
-    // MOCKUP — a real implementation would insert into
-    // tournament_round_results.position, tournament_kills (one row per
-    // kill) and tournament_votes (one row per vote) once there's a live
-    // pairing_uuid to attach them to.
+    // MOCKUP: a real version would insert tournament_round_results.position, tournament_kills and
+    // tournament_votes against a live pairing_uuid
     const positionPoints = POSITION_POINTS[state.position ?? 0] ?? 0
     const killPoints = killedNames(state.killMask).length * KILL_POINTS
     const deckVotePoints = MOCK_DECK_VOTES_RECEIVED * DECK_VOTE_POINTS
     const playVotePoints = MOCK_PLAY_VOTES_RECEIVED * PLAY_VOTE_POINTS
     const totalPoints = positionPoints + killPoints + deckVotePoints + playVotePoints
 
-    // MOCKUP — both tables only send once here for preview purposes; a real
-    // implementation would send them once every player at the table has
-    // submitted their own result. All four calls are independent, so they
-    // run concurrently. Two separate messages, not two blocks in one —
-    // gives each table its own full width instead of sharing a message.
+    // MOCKUP: both tables are sent once here for preview; a real version would send them once every
+    // player has submitted. The four calls are independent, so concurrent; two messages, so each
+    // table gets full width
     await Promise.all([
       ctx.editMessageText({
         blocks: [summaryTableBlock(state, 'Risultato inviato')]
@@ -402,20 +384,17 @@ async function sendConfirmedResult(ctx: Context, state: ResultState) {
   }
 }
 
-// Shared entry point for mockups/commanderDemo.ts's own "Inserisci
-// risultati (demo)" button — the only caller since 2026-09-24, when the
-// real Commander flow (tournaments/commanderReport.ts) replaced this as
-// /tavolo and /risultato's own default.
+// Entry point for commanderDemo.ts's "Inserisci risultati (demo)" button, the only caller now that
+// the real Commander flow (tournaments/commanderReport.ts) handles /tavolo and /risultato
 export async function openRisultato(ctx: Context) {
   await showRichStep(ctx, positionRichMessage(INITIAL_STATE))
 }
 
 type PrefixedStep = [prefix: string, render: (state: ResultState) => InputRichMessage]
 
-// Shared by richSteps (re-renders the same pending step) and transitions
-// (hands off to the *next* step) below — same decode/render/catch shape,
-// only the table differs. Returns whether a prefix matched, so the caller
-// can fall through to try the next table.
+// Shared by richSteps (re-render the pending step) and transitions (hand off to the next step):
+// same decode/render/catch shape, different table. Returns whether a prefix matched so the caller
+// can try the next table.
 async function tryHandleStep(ctx: Context, data: string, steps: PrefixedStep[]): Promise<boolean> {
   for (const [prefix, render] of steps) {
     if (!data.startsWith(prefix)) continue
@@ -430,14 +409,13 @@ async function tryHandleStep(ctx: Context, data: string, steps: PrefixedStep[]):
   return false
 }
 
-// bot-only, no CommandGroup — this only ever wires risultatoMenu's own
-// callback_query handling now; commanderDemo.ts's hidden command is the
-// sole entry point since the real Commander flow took over /risultato.
+// Bot-only, no CommandGroup: wires risultatoMenu's callback_query handling; commanderDemo.ts's
+// hidden command is the only entry point
 export function registerRisultatoMenu(bot: Bot) {
   bot.use(risultatoMenu)
 
-  // Each entry re-renders the same step (a pick, still pending confirm) —
-  // the *_CONFIRM_PREFIX handlers below hand off to the next step instead.
+  // Each entry re-renders the same step (a pick, still pending confirm); the *_CONFIRM_PREFIX
+  // handlers hand off
   const richSteps: PrefixedStep[] = [
     [POSITION_PICK_PREFIX, positionRichMessage],
     [KILL_TOGGLE_PREFIX, killsRichMessage],
@@ -445,8 +423,8 @@ export function registerRisultatoMenu(bot: Bot) {
     [PLAY_VOTE_PICK_PREFIX, playVoteRichMessage]
   ]
 
-  // Each of these hands off to a *different* step's Rich Message —
-  // prefix -> [decode offset, next render] pairs, same shape as richSteps.
+  // Each hands off to a different step's Rich Message: prefix -> [decode offset, next render], like
+  // richSteps
   const transitions: PrefixedStep[] = [
     [POSITION_CONFIRM_PREFIX, killsRichMessage],
     [KILL_CONFIRM_PREFIX, deckVoteRichMessage],

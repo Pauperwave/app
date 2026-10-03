@@ -3,13 +3,10 @@ import type { Context } from 'grammy'
 import type { InputRichMessage } from 'grammy/types'
 import type { Menu } from '@grammyjs/menu'
 
-// Named-menu registry — lets a shared detail menu's "back" button look up a
-// list-menu instance by id without importing it directly, breaking the
-// natural circular dependency (calendario.ts needs torneoMenu to go
-// forward; torneoMenu needs calendario.ts's menu+text to go back).
-//
-// Not generic over Context flavors — every menu in this bot uses plain
-// grammy Context, so a generic here would only add variance headaches.
+// Named-menu registry: lets a shared detail menu's "back" button find a list menu by id without
+// importing it, breaking the circular dependency (calendario.ts needs torneoMenu to go forward,
+// torneoMenu needs calendario.ts to go back). Not generic over Context flavors: every menu here
+// uses plain grammy Context.
 const menuRegistry = new Map<string, Menu<Context>>()
 
 export function registerMenu(id: string, menu: Menu<Context>) {
@@ -25,22 +22,16 @@ export function getMenu(id: string): Menu<Context> {
 export interface MenuNavTarget {
   payload: string
   menu: Menu<Context>
-  // markdown or blocks — both are valid InputRichMessage shapes on the same
-  // interface (not a discriminated union), so callers can hand back either
-  // without navigateBack needing to branch on which one it got.
+  // Markdown or blocks: both are InputRichMessage shapes on the same interface, so navigateBack
+  // needn't branch
   text: InputRichMessage
 }
 
-// Same registry pattern as menuRegistry above, for the other half of
-// tournament/detail.ts's "back" button: rebuilding the exact origin view
-// (month/league/list) needs each list command's own block-rendering
-// function (calendarioBlocksFor, legaTorneiBlocks, ...) — importing those
-// directly from detail.ts is what created the circular dependency each of
-// calendario.ts/leghe.ts/iscrizioni.ts/prossimo.ts already imports torneoMenu
-// from (fallow:dead-code flagged all 4 as import cycles, 2026-09-23). Each
-// list command registers its own resolver, keyed by the origin prefix it
-// encodes into torneoMenu's own payload ('m'/'l'/'i'/'p') — detail.ts only
-// ever depends on this registry, never on the list modules themselves.
+// Same registry pattern for the other half of detail.ts's "back" button: rebuilding the origin view
+// needs each list command's block-rendering function, and importing them from detail.ts created
+// import cycles (calendario/leghe/iscrizioni/prossimo import torneoMenu from it). Each list command
+// registers a resolver keyed by the origin prefix ('m'/'l'/'i'/'p') in torneoMenu's payload;
+// detail.ts only depends on this registry.
 export type BackTargetResolver = (
   ctx: Context, origin: string, chatId: number
 ) => Promise<MenuNavTarget>
@@ -57,10 +48,9 @@ export function getBackResolver(prefix: string): BackTargetResolver {
   return resolver
 }
 
-// Shared "go back to an origin view with full state restored": swap
-// ctx.match to the target's payload, pick edit-in-place vs delete+resend
-// depending on whether the message is a photo, hand back the right menu.
-// Only *which* target to resolve differs per caller (resolveTarget).
+// Shared "go back to an origin view with full state restored": swap ctx.match to the target's
+// payload, edit in place or delete+resend depending on whether the message is a photo, return the
+// right menu. Only which target to resolve differs per caller (resolveTarget).
 export async function navigateBack(
   ctx: Context & { match?: string }, resolveTarget: () => Promise<MenuNavTarget>
 ) {

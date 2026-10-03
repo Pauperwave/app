@@ -4,11 +4,8 @@ import type { H3Event } from 'h3'
 import type { JwtPayload, SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '#shared/utils/types/database'
 
-// Shared request-parsing prologue for /[id]/update.post.ts endpoints
-// (fallow:dupes flagged this as an identical clone across associates/
-// locations/mtg-formats/tournaments/wanted-cards) — auth check, numeric
-// route id, typed body, and a service-role client, in the order every one
-// of these handlers needs them.
+// Shared request-parsing prologue for /[id]/update.post.ts endpoints: auth check, numeric route id,
+// typed body and a service-role client.
 export async function parseIdMutationRequest<T>(event: H3Event) {
   const user = await requireManagementPermission(event)
   const id = Number(getRouterParam(event, 'id'))
@@ -18,7 +15,7 @@ export async function parseIdMutationRequest<T>(event: H3Event) {
   return { user, id, body, supabase }
 }
 
-// Same prologue, without a body — shared by /[id]/delete.post.ts endpoints.
+// Same prologue without a body, for /[id]/delete.post.ts endpoints
 export async function parseIdRequest(event: H3Event) {
   const user = await requireManagementPermission(event)
   const id = Number(getRouterParam(event, 'id'))
@@ -27,10 +24,8 @@ export async function parseIdRequest(event: H3Event) {
   return { user, id, supabase }
 }
 
-// Shared by self-register.post.ts/self-unregister.post.ts (fallow:dupes,
-// 2026-09-03) — both take the same { tournamentUuid } body and need the
-// caller's own associate uuid (never one from the body, see each call
-// site's own comment on why), so this is the whole self-service prologue.
+// Shared by self-register.post.ts/self-unregister.post.ts: same { tournamentUuid } body plus the
+// caller's own associate uuid (never taken from the body), i.e. the whole self-service prologue
 export async function parseSelfRegistrationRequest(event: H3Event) {
   const user = await requireUser(event)
   const { tournamentUuid } = await readBody<{ tournamentUuid: string }>(event)
@@ -40,23 +35,17 @@ export async function parseSelfRegistrationRequest(event: H3Event) {
   return { tournamentUuid, associateUuid, supabase }
 }
 
-// Every table that supports soft delete today — shared by softDeleteById and
-// restoreById below, and by server/api/trash/restore.post.ts's whitelist
-// check (app/types/index.d.ts's TrashEntity is the client-side mirror of
-// this same set, mapped 1:1 in app/utils/trash/trashEntities.ts).
+// Every table supporting soft delete; shared by softDeleteById, restoreById and
+// trash/restore.post.ts's whitelist (TrashEntity in app/types/index.d.ts mirrors it, see
+// app/utils/trash/trashEntities.ts)
 export type SoftDeletableTable
   = | 'mtg_formats' | 'tournaments' | 'leagues' | 'events'
     | 'pauperwave_payments' | 'pauperwave_wanted_cards' | 'locations'
 
-// Shared body for /[id]/delete.post.ts endpoints that soft-delete (2026-08-16
-// fallow:dupes flagged mtg-formats/tournaments/wanted-cards' delete handlers
-// as identical once parseIdRequest already covered the prologue — every one
-// of these now differs only by table name) — see the deleted_at convention
-// note in each domain's own useQuery.ts. Also stamps deleted_by (2026-08-23,
-// migration 20260823110000) via the same resolveAuditAssociateUuid helper
-// created_by/updated_by already use — a dedicated column, not a reused
-// updated_by, so restoring a row later doesn't leave a stale "deleted by"
-// value sitting in what's supposed to be the edit-history column.
+// Shared body for soft-deleting /[id]/delete.post.ts endpoints (differing only by table name; see
+// each domain's useQuery.ts for the deleted_at filter). Also stamps deleted_by via
+// resolveAuditAssociateUuid, in its own column so restoring a row doesn't leave a stale "deleted
+// by" in updated_by.
 export async function softDeleteById(
   event: H3Event,
   user: JwtPayload,
@@ -79,9 +68,8 @@ export async function softDeleteById(
   }
 }
 
-// Mirror of softDeleteById (clears deleted_at/deleted_by instead of setting
-// them) — the Trash page's restore action, server/api/trash/restore.post.ts.
-// No "restored_by" column: out of scope, only who deleted is tracked.
+// Mirror of softDeleteById (clears deleted_at/deleted_by): the Trash page's restore. No
+// "restored_by": only who deleted is tracked
 export async function restoreById(
   supabase: SupabaseClient<Database>,
   table: SoftDeletableTable,
@@ -100,13 +88,8 @@ export async function restoreById(
   }
 }
 
-// Hard delete, restricted to rows already soft-deleted (guards against a
-// stray call purging a live row) — the "permanently delete" tier above
-// restoreById, server/api/trash/purge.post.ts. Also used by
-// scripts/purge-expired-trash.mjs's own 60-day retention job, which
-// duplicates this WHERE shape directly since Nitro auto-imports don't
-// resolve from a standalone Node script (same reason as every other
-// scripts/*.mjs, see refresh-wanted-cards-prices.mjs's file header).
+// Hard delete, only for rows already soft-deleted (guards against purging a live row): the
+// "permanently delete" tier above restoreById (trash/purge.post.ts)
 export async function purgeById(
   supabase: SupabaseClient<Database>,
   table: SoftDeletableTable,
@@ -126,12 +109,8 @@ export async function purgeById(
   }
 }
 
-// Shared by /[id]/status.post.ts endpoints (fallow:dupes, 2026-08-17
-// flagged tournaments'/leagues' own status.post.ts as a byte-identical
-// 17-line clone) — same table-name-as-parameter shape as softDeleteById,
-// for the "update one column, 500 on failure, return the row" pattern
-// the bulk "mark as" action needs instead of the full *update.post.ts
-// payload shape.
+// Shared by /[id]/status.post.ts endpoints: same table-name-as-parameter shape as softDeleteById,
+// for "update one column, 500 on failure, return the row" (the bulk "mark as" action)
 export async function updateStatusById(
   supabase: SupabaseClient<Database>,
   table: 'tournaments' | 'leagues' | 'events',
@@ -155,11 +134,8 @@ export async function updateStatusById(
   return data
 }
 
-// Shared by /events/[id]/image.post.ts and /tournaments/[id]/image.post.ts
-// (fallow:dupes, 2026-09-03 flagged an 18-line clone) — same "update one
-// row, 500 on failure, return it" shape as updateStatusById, for the
-// single-row "set image" quick action (BulkActionsBar's bulk version and
-// list/Cover.vue's own single-row one).
+// Shared by /events/[id]/image.post.ts and /tournaments/[id]/image.post.ts: same shape as
+// updateStatusById, for the single-row "set image" quick action
 export async function setImageById(
   supabase: SupabaseClient<Database>,
   table: 'tournaments' | 'events',
@@ -188,13 +164,9 @@ export async function setImageById(
   return data
 }
 
-// Shared by /associates/[id]/update.post.ts and update-number.post.ts
-// (fallow:dupes, 2026-08-30 flagged a byte-identical 15-line clone) — same
-// "update one row, 500 on failure, return it" shape as updateStatusById, but
-// admin-gated (requireAdminPermission, not requireManagementPermission —
-// parseIdMutationRequest above doesn't fit here, see each call site's own
-// comment for why) and fixed to pauperwave_associates, the only table this
-// admin-only "Gestire l'anagrafica soci" permission governs today.
+// Shared by /associates/[id]/update.post.ts and update-number.post.ts: same shape as
+// updateStatusById but admin-gated (requireAdminPermission) and fixed to pauperwave_associates, the
+// only table "Gestire l'anagrafica soci" governs
 export async function updateAssociateById(
   event: H3Event,
   id: number,

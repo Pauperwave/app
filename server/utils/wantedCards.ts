@@ -3,17 +3,12 @@ import type { H3Event } from 'h3'
 import type { JwtPayload, PostgrestError, SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '#shared/utils/types/database'
 
-// Shared by server/api/wanted-cards/create.post.ts and .../[id]/update.post.ts
-// (fallow dupes, 2026-08-12): both a Supabase write followed by the same
-// error-check, then the same background CardTrader prefetch.
+// Shared by wanted-cards/create.post.ts and [id]/update.post.ts: a Supabase write, the same error
+// check, then the background CardTrader prefetch
 
-// Status changes and deletes are no longer management-only (2026-09-05, user
-// request, matching the /visibilita-adjacent bot feature that lets a linked
-// chat mark/delete its own wanted-card requests): a requester can manage
-// their own card even without has_management_permissions, but everyone else
-// still needs it, same as before. Full edits (update.post.ts,
-// refresh-prices.post.ts) are deliberately NOT covered by this — those stay
-// requireManagementPermission-only, out of scope for this change.
+// Status changes and deletes aren't management-only: a requester can manage their own card (the bot
+// lets a linked chat mark/delete its own requests), everyone else needs has_management_permissions.
+// Full edits (update.post.ts, refresh-prices.post.ts) stay requireManagementPermission-only.
 export async function requireManagementOrWantedCardOwner(
   event: H3Event, supabase: SupabaseClient<Database>, id: number
 ): Promise<JwtPayload> {
@@ -49,10 +44,8 @@ export function ensureWantedCardRow<T>(
   return data
 }
 
-// Warms the CardTrader cache (server/utils/cardTrader.ts) so the "Search on
-// CardTrader" button finds the row ready instead of waiting for the resolve
-// on click. Does not block the response — failure is silent, and the
-// on-demand resolve will retry anyway.
+// Warms the CardTrader cache (server/utils/cardTrader.ts) so "Search on CardTrader" finds the row
+// ready. Doesn't block the response and fails silently: the on-demand resolve retries anyway.
 export function prefetchCardTraderBlueprint(
   event: H3Event,
   supabase: SupabaseClient<Database>,

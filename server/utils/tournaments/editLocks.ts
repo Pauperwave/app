@@ -1,9 +1,10 @@
 // server\utils\tournaments\editLocks.ts
-// Write guards for tournament data (user request, 2026-10-02):
+// Write guards for tournament data:
 // - registrations ("Accettazione") are frozen once round 1 starts, until a turn-back reopens them;
-// - a round's data (results, kills, votes, commanders, drops, pairing resets) is writable only while
-//   that round is the one in progress, so a previous round or a finished tournament can't change.
-// The UI hides these actions too; this is what actually enforces it.
+// - a round's data (results, kills, votes, commanders, drops, pairing resets) is writable only
+//   while that
+//   round is in progress, so a previous round or a finished tournament can't change. The UI hides
+//   these actions too; this is what enforces it.
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '#shared/utils/types/database'
 

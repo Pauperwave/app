@@ -1,21 +1,15 @@
 // server\utils\tournaments\commanderRound.ts
-// Writing a Commander pod's own data — shared by the organizer's endpoints
-// (server/api/commander-decks/select.post.ts, tournament-round-results/
-// upsert.post.ts, tournament-kills/*, tournament-votes/*) and the Telegram
-// bot's real self-service flow (commands/tournaments/commanderReport.ts,
-// 2026-09-24, replacing the old mockup). Each caller supplies its own
-// authorization gate (requireManagementPermission for the organizer path,
-// "is this player seated at this pairing" for the bot path) before calling.
+// Writing a Commander pod's data, shared by the organizer's endpoints (commander-decks/select,
+// tournament-round-results/upsert, tournament-kills/*, tournament-votes/*) and the Telegram bot's
+// self-service flow (commanderReport.ts). Each caller applies its own authorization first
+// (requireManagementPermission, or "is this player seated at this pairing").
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '#shared/utils/types/database'
 
-// Get-or-create the player's commander_decks row for this exact commander/
-// partner combo (uq_commander_decks_single/uq_commander_decks_partner
-// already enforce "one deck per player per combo"), then point this
-// pairing's round result at it. Upserts the result row instead of a plain
-// update — nothing pre-creates a placeholder tournament_round_results row
-// when a pod pairing is made, so an update-only write silently no-ops if
-// this is the player's first interaction with their pod this round.
+// Get-or-create the player's commander_decks row for this commander/partner combo
+// (uq_commander_decks_single/ uq_commander_decks_partner enforce one deck per combo), then point
+// this pairing's round result at it. Upserts, since nothing pre-creates the
+// tournament_round_results row: an update-only write would silently no-op.
 export async function selectCommanderDeck(supabase: SupabaseClient<Database>, input: {
   tournamentUuid: string
   pairingUuid: string
@@ -63,9 +57,8 @@ export async function selectCommanderDeck(supabase: SupabaseClient<Database>, in
   return deckUuid
 }
 
-// Unlinks the player's commander from this pairing's result row only — the
-// shared commander_decks row (reused across tournaments) and the placement
-// on the same result row are left untouched.
+// Unlinks the commander from this pairing's result row only; the shared commander_decks row and the
+// placement are untouched
 export async function clearCommanderDeck(supabase: SupabaseClient<Database>, input: {
   pairingUuid: string
   playerUuid: string
@@ -78,11 +71,9 @@ export async function clearCommanderDeck(supabase: SupabaseClient<Database>, inp
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
 }
 
-// One seat's own placement. Unlike the organizer's whole-pod upsert
-// (tournament-round-results/upsert.post.ts, which marks the pairing
-// completed unconditionally once submitted), the bot writes one player at a
-// time — the pairing only completes once every seat has a position, checked
-// by maybeCompletePairing.
+// One seat's placement. Unlike the organizer's whole-pod upsert (which completes the pairing at
+// once), the bot writes one player at a time: the pairing completes once every seat has a position
+// (maybeCompletePairing)
 export async function saveCommanderPosition(supabase: SupabaseClient<Database>, input: {
   tournamentUuid: string
   pairingUuid: string
@@ -102,10 +93,9 @@ export async function saveCommanderPosition(supabase: SupabaseClient<Database>, 
   await maybeCompletePairing(supabase, input.pairingUuid)
 }
 
-// Every real seat (player1..4uuid, however many are non-null) has a saved
-// position — marks the pairing completed, same rule the organizer's own
-// upsert endpoint applies unconditionally, just re-checked here since a
-// self-service write only ever covers one seat.
+// Marks the pairing completed once every real seat (player1..4uuid, however many are non-null) has
+// a position: the organizer's upsert does it unconditionally, but a self-service write only covers
+// one seat
 async function maybeCompletePairing(supabase: SupabaseClient<Database>, pairingUuid: string) {
   const { data: pairing, error: pairingError } = await supabase
     .from('tournament_pairings')
@@ -147,12 +137,11 @@ export async function recordKill(supabase: SupabaseClient<Database>, input: {
   })
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
 
-  // A kill contradicts a "no kills at this table" confirmation made earlier.
+  // A kill contradicts an earlier "no kills at this table" confirmation
   await setPairingNoKills(supabase, { pairingUuid: input.pairingUuid, noKills: false })
 }
 
-// Confirms (or retracts) that the table ended without any kill. Only valid while the table really
-// has none — a recorded kill and the "no kills" confirmation can't both stand.
+// Confirms (or retracts) that the table ended without any kill; only valid while it has none
 export async function setPairingNoKills(supabase: SupabaseClient<Database>, input: {
   pairingUuid: string
   noKills: boolean
@@ -175,9 +164,8 @@ export async function setPairingNoKills(supabase: SupabaseClient<Database>, inpu
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
 }
 
-// By the killer/killed pair rather than a uuid — the bot's own multiselect
-// (mirroring the old mockup's killMask UX) toggles a kill on/off from a
-// re-rendered button grid, never resolves/holds a row uuid client-side.
+// By killer/killed pair rather than a uuid: the bot's multiselect toggles kills from a re-rendered
+// button grid and never holds a row uuid
 export async function removeKillBetween(supabase: SupabaseClient<Database>, input: {
   pairingUuid: string
   killerUuid: string
@@ -192,9 +180,8 @@ export async function removeKillBetween(supabase: SupabaseClient<Database>, inpu
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
 }
 
-// Single-select per category — replaces any existing vote of this type by
-// this voter for this pairing before inserting the new one, same rule as
-// tournament-votes/create.post.ts.
+// Single-select per category: replaces this voter's existing vote of this type for the pairing
+// (like tournament-votes/create.post.ts)
 export async function castVote(supabase: SupabaseClient<Database>, input: {
   tournamentUuid: string
   pairingUuid: string

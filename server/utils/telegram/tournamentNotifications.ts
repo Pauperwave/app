@@ -1,8 +1,7 @@
 // server\utils\telegram\tournamentNotifications.ts
-// Passive Telegram notifications for tournament events (accepted, tables
-// announced/cancelled) — the player doesn't send /tavolo to find out. Every
-// entry point is best-effort: the write it follows has already succeeded, so
-// a failure here is logged and never propagates.
+// Passive Telegram notifications for tournament events (accepted, tables announced/cancelled), so
+// the player needn't send /tavolo. Every entry point is best-effort: the write it follows already
+// succeeded, so a failure is logged and never propagates.
 import {
   registrationAcceptedMessage, roundTablesCancelledMessage, tableAnnouncedMessage,
   tournamentResetMessage
@@ -122,9 +121,8 @@ export function notifyRoundTables(roundUuid: string): Promise<AssociateNotifyRes
   }, null)
 }
 
-// Split from the send because the RPCs that cancel tables wipe the pairings:
-// the recipients have to be read before, and sent after the RPC succeeds.
-// roundNumber omitted = whole tournament (reset).
+// Split from the send because the RPCs that cancel tables wipe the pairings: recipients are read
+// before and sent after the RPC succeeds. roundNumber omitted = whole tournament (reset)
 export function prepareTablesCancelledMessages(
   tournamentUuid: string, roundNumber?: number
 ): Promise<AssociateMessage[]> {
@@ -146,8 +144,8 @@ export function prepareTablesCancelledMessages(
   }, [])
 }
 
-// Called for registrations that just moved to 'checked_in' — see
-// tournament-registrations/status.post.ts.
+// Called for registrations that just moved to 'checked_in'
+// (tournament-registrations/status.post.ts)
 export function notifyRegistrationsAccepted(
   registrationUuids: string[]
 ): Promise<AssociateNotifyResult | null> {

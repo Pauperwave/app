@@ -1,10 +1,8 @@
 // server\utils\telegram\commands\mockups\commanderDemo.ts
-// Hidden demo of the old MOCKUP Commander flow (fake table, fake scoring
-// formula) — kept only to show the shape of the position/kills/votes wizard
-// risultato.ts implements, now that /tavolo and /risultato use the real
-// DB-backed flow (tournaments/commanderReport.ts, 2026-09-24). Registered
-// reachable by typing the command or its deep link while staying out of the
-// "/" picker and /help.
+// Hidden demo of the old MOCKUP Commander flow (fake table and scoring), kept to show the
+// position/kills/votes wizard that risultato.ts implements, now that /tavolo and /risultato use the
+// real flow (commanderReport.ts). Registered with bot.command(), not the
+// CommandGroup): reachable by command or deep link, absent from the "/" picker and /help.
 import type { Bot, Context } from 'grammy'
 import { Menu } from '@grammyjs/menu'
 
@@ -19,9 +17,8 @@ function demoMarkdown(): string {
     + '_Dati di esempio — nessuna scrittura reale, vedi il tavolo vero con /tavolo._'
 }
 
-// autoAnswer/onMenuOutdated: false — same reasoning as risultatoMenu's own
-// comment (dynamic content re-read live, the plugin's staleness heuristic
-// would false-positive).
+// autoAnswer/onMenuOutdated: false, like risultatoMenu: dynamic content is re-read live, so the
+// staleness heuristic would false-positive
 const demoMenu = new Menu<Context>('cmddemo', {
   autoAnswer: false,
   onMenuOutdated: false

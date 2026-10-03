@@ -1,9 +1,7 @@
 // server\utils\telegram\commands\tournaments\commanderPodData.ts
-// Reads behind the real Commander pod flow (commanderReport.ts): a player's
-// open pod (3-4 seats), their own saved result/commander, and the pod's live
-// score summary. Service role: looked up by the linked associate, not an
-// authenticated client session — same pattern as matchReportData.ts's own
-// fetchLiveTable, just for a 3-4-seat pairing instead of a 1v1 one.
+// Reads behind the real Commander pod flow (commanderReport.ts): a player's open pod (3-4 seats),
+// their saved result/commander and the pod's live score summary. Service role, looked up by the
+// linked associate; the 3-4-seat counterpart of matchReportData.ts's fetchLiveTable.
 import {
   buildPosValues, calculatePlayerTableScore,
   type CommanderTableResult, type PlayerTableScore
@@ -32,13 +30,12 @@ export interface LivePod {
   myPosition: number | null
   myCommanderDeckUuid: string | null
   myCommanderName: string | null
-  // The pieces of myCommanderName, for rules that depend on the first commander.
+  // The pieces of myCommanderName, for rules depending on the first commander
   myCommander1Name: string | null
   myCommander2Name: string | null
   /** True once this player dropped from the tournament (from the next round on). */
   myDropped: boolean
-  // killedPlayerUuid values this player has already recorded this pod —
-  // includes their own uuid for a self-kill (suicide).
+  // killedPlayerUuid values already recorded this pod, including their own uuid for a self-kill
   myKilledUuids: string[]
   myVoteByType: { brew: string | null, play: string | null }
 }
@@ -64,10 +61,9 @@ const PAIRING_SELECT = `
   tournament:tournaments!inner(name, status, round_count)
 `
 
-// The Commander pod (3-4 seats) this associate sits at in a round being
-// played, or the given pairing if they are at it — the mirror-image filter
-// of matchReportData.ts's fetchLiveTable (player3_uuid not null instead of
-// null).
+// The Commander pod (3-4 seats) this associate sits at in a round being played, or the given
+// pairing if they are at it: the mirror of matchReportData.ts's fetchLiveTable (player3_uuid not
+// null)
 export async function fetchLivePod(
   associateUuid: string, pairingUuid?: string
 ): Promise<LivePod | null> {
@@ -107,13 +103,9 @@ export async function fetchLivePod(
   const opponentUuids = seatUuids.filter(uuid => uuid !== myPlayerUuid)
 
   const [opponentsResult, myResultRow, myKillRows, myVoteRows, myDropRow] = await Promise.all([
-    // .order() is load-bearing, not cosmetic: commanderPodMessages.ts encodes a
-    // kill/vote target as an *index* into this array (to fit Telegram's
-    // callback_data limit), then re-resolves the pod from scratch on every
-    // tap. `.in()` alone has no documented ordering guarantee — without an
-    // explicit, stable sort, the same index could silently map to a
-    // different opponent between the button's render and the tap that
-    // reads it back (2026-09-27, found in a general bug-search pass).
+    // .order() is load-bearing: commanderPodMessages.ts encodes a kill/vote target as an index into
+    // this array and re-resolves the pod on every tap, and `.in()` alone has no ordering guarantee,
+    // so an index could map to a different opponent between render and tap
     supabase
       .from('players')
       .select('uuid, associate_uuid, associate:pauperwave_associates(first_name, last_name)')
@@ -198,8 +190,8 @@ export interface CommanderHistoryItem {
   lastPlayedDay: string
 }
 
-// The commanders this associate already played, most recent first — what the bot offers before
-// anything else when picking a commander (same counting and order as the website's search).
+// The commanders this associate already played, most recent first: offered before anything else
+// when picking (same order as the website)
 export async function fetchCommanderHistory(
   associateUuid: string
 ): Promise<CommanderHistoryItem[]> {
@@ -232,7 +224,7 @@ export async function fetchCommanderHistory(
     .in('uuid', deckUuids)
   if (decksError) throw decksError
 
-  // Every player row of the associate counts as one history.
+  // Every player row of the associate counts as one history
   const usage = buildCommanderUsageByPlayer(
     results.map(row => ({
       playerUuid: associateUuid,
@@ -259,9 +251,8 @@ export interface VoteReceived {
   play: boolean
 }
 
-// Who voted for THIS player (not who they voted for) — feeds the
-// "Riepilogo voti ricevuti" table mockups/risultato.ts's own
-// votesReceivedTableBlock always showed, one row per opponent.
+// Who voted for THIS player (not who they voted for): feeds the "Riepilogo voti ricevuti" table,
+// one row per opponent
 export async function fetchVotesReceivedFor(pod: LivePod): Promise<VoteReceived[]> {
   const supabase = telegramServiceSupabaseClient()
   const { data, error } = await supabase
@@ -281,9 +272,8 @@ export async function fetchVotesReceivedFor(pod: LivePod): Promise<VoteReceived[
   })
 }
 
-// The whole pod's current standing, scored with the exact same formula the
-// web app uses (shared/utils/tournaments/commanderScoring.ts) — null until
-// this player has a position (calculatePlayerTableScore's own rule).
+// The pod's current standing, scored with the web app's formula (shared commanderScoring.ts); null
+// until this player has a position
 export async function fetchPodScoreSummary(pod: LivePod): Promise<PlayerTableScore | null> {
   const supabase = telegramServiceSupabaseClient()
   const seatUuids = [pod.myPlayerUuid, ...pod.opponents.map(o => o.playerUuid)]

@@ -23,9 +23,8 @@ function scopeLabel(scope: StandingsScope): string {
   return scope === 'cittadino' ? 'Cittadino' : FORMAT_LABELS[scope]
 }
 
-// Same per-rank point scale as useFormatStandingsQuery.ts — duplicated
-// since that composable is Vue-only and can't run in a bot handler. Only
-// the pure grouping step (groupBestNByPlayer/toBestNPlacement) is shared.
+// Same per-rank point scale as useFormatStandingsQuery.ts, duplicated since that composable is
+// Vue-only; only the pure grouping (groupBestNByPlayer/toBestNPlacement) is shared
 const POINTS_BY_RANK = [25, 18, 15, 12, 10, 8, 6, 4, 2]
 const MIN_POINTS = 1
 
@@ -53,8 +52,8 @@ interface CittadinoPayload {
   }[]
 }
 
-// Cittadino has its own counted-results cutoff and tie-breaks (best single
-// result, then events played) — mirrors useCittadinoFilters.ts.
+// Cittadino has its own counted-results cutoff and tie-breaks (best single, then events played):
+// mirrors useCittadinoFilters.ts
 const CITTADINO_COUNTED_RESULTS = 11
 
 interface StandingsRow {
@@ -107,8 +106,7 @@ async function fetchCittadinoRows(): Promise<StandingsRow[]> {
     }
   })
 
-  // Same tie-break order as useCittadinoFilters.ts: total, then best single
-  // result, then events played.
+  // Same tie-break order as useCittadinoFilters.ts: total, best single result, events played
   rows.sort((a, b) =>
     b.total - a.total || b.bestSingle - a.bestSingle || b.eventsPlayed - a.eventsPlayed
   )
@@ -120,19 +118,16 @@ function fetchRows(scope: StandingsScope): Promise<StandingsRow[]> {
   return scope === 'cittadino' ? fetchCittadinoRows() : fetchFormatRows(scope)
 }
 
-// showStandings and classificaMenu's own .dynamic() re-render both call
-// fetchRows for the same scope within the same update (a button press
-// always carries one fixed scope) — memoizing by ctx dedupes what would
-// otherwise be two HTTP round-trips to /api/standings or /api/cittadino
-// per pagination click. See perContextCache.ts.
+// showStandings and classificaMenu's .dynamic() both call fetchRows for the same scope in one
+// update: memoizing by ctx saves a /api/standings or /api/cittadino round-trip per pagination
+// click. See perContextCache.ts
 const memoize = createPerContextCache<{ rows: Promise<StandingsRow[]> }>()
 
 function cachedFetchRows(ctx: Context, scope: StandingsScope): Promise<StandingsRow[]> {
   return memoize(ctx, 'rows', () => fetchRows(scope))
 }
 
-// A full 40+ player table isn't useful to read in a chat bubble, hence
-// pagination instead of showing everything at once.
+// A full 40+ player table isn't readable in a chat bubble, hence pagination
 const PAGE_SIZE = 10
 
 function standingsMarkdown(
@@ -166,8 +161,8 @@ function decodeStandingsPayload(raw: string): { scope: StandingsScope, page: num
   return { scope, page: Number(raw.slice(separator + 1)) }
 }
 
-// Reached from every format/Cittadino button on classificheMenu below.
-// autoAnswer/onMenuOutdated: false — see calendario.ts's calendarioMenu.
+// Reached from every format/Cittadino button on classificheMenu. autoAnswer/onMenuOutdated: false,
+// see calendario.ts
 const classificaMenu = new Menu<Context>('classifica-menu', {
   autoAnswer: false,
   onMenuOutdated: false
@@ -197,9 +192,8 @@ const classificaMenu = new Menu<Context>('classifica-menu', {
 
   const siteUrl = useRuntimeConfig().public.siteUrl
   range.row().url('Apri pagina completa', `${siteUrl}/classifiche/${scope}`)
-  // payload: raw (not omitted) — an empty payload never reaches ctx.match,
-  // so this dynamic()'s own `if (!raw) return` guard would render zero
-  // buttons and crash the plugin's row/col lookup on press.
+  // payload: raw, not omitted: an empty payload never reaches ctx.match, so the `if (!raw) return`
+  // guard would render no buttons and crash on press
   range.row().back({
     text: '« Formati',
     payload: raw
@@ -225,7 +219,7 @@ async function showStandings(ctx: Context & { match: string }) {
   }
 }
 
-// autoAnswer/onMenuOutdated: false — see calendario.ts's calendarioMenu.
+// autoAnswer/onMenuOutdated: false, see calendario.ts
 const classificheMenu = new Menu<Context>('classifiche-menu', {
   autoAnswer: false,
   onMenuOutdated: false
@@ -255,8 +249,7 @@ const classificheMenu = new Menu<Context>('classifiche-menu', {
 
 classificheMenu.register(classificaMenu)
 
-// Extracted so it can be reused verbatim by t.me/<bot>?start=classifiche —
-// see deepLinks.ts.
+// Extracted for reuse by t.me/<bot>?start=classifiche (deepLinks.ts)
 function classificheCommandHandler(ctx: Context) {
   const siteUrl = useRuntimeConfig().public.siteUrl
   const other = { reply_markup: classificheMenu }

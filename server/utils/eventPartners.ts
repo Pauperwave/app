@@ -1,6 +1,7 @@
 // server\utils\eventPartners.ts
 // Saves an event's partners as the whole list the form sent (event_partners, migration
-// 20261003120000): the old rows go, the cleaned ones are inserted in order (array order = display order).
+// 20261003120000): the old rows go, the cleaned ones are inserted in order (array order = display
+// order).
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '#shared/utils/types/database'
 import { cleanEventPartners } from '#shared/utils/events/eventPartners'

@@ -1,6 +1,7 @@
 // server\utils\telegram\commands\tournaments\commanderDrop.ts
 // Leaving a Commander tournament from Telegram: the /drop command and the confirm/cancel/undo
-// buttons. A drop takes effect from the next round (see ADR-048). Messages: commanderPodMessages.ts.
+// buttons. A drop takes effect from the next round (see ADR-048). Messages:
+// commanderPodMessages.ts.
 import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 

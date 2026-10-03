@@ -10,10 +10,8 @@ import { resolveAssociateUuidByChatId } from '../account/linking'
 import { fetchCommanderHistory, fetchLivePod } from './commanderPodData'
 import { replyWithLiveCommanderPod } from './commanderPod'
 
-// ─── Commander search (Scryfall) ────────────────────────────────────────────
-// Same is:commander live search mockups/tavolo.ts used to do — only the
-// destination changed (a real write via selectCommanderDeck instead of just
-// echoing a confirmation).
+// ─── Commander search (Scryfall) ──────────────────────────────────────────── The same
+// is:commander live search mockups/tavolo.ts did, now ending in a real write (selectCommanderDeck)
 const SCRYFALL_USER_AGENT = 'Pauperwave-app/1.0 (Telegram bot commander search; contact: emanuelenardi.dev@gmail.com)'
 const MAX_COMMANDER_RESULTS = 5
 
@@ -69,7 +67,8 @@ const SECOND_COMMANDER_KIND: Record<string, string> = {
   companion: 'un Companion'
 }
 
-// The partner rules need the catalog; if it can't be read the commander is still saved as a plain one.
+// The partner rules need the catalog; if it can't be read the commander is still saved as a plain
+// one.
 async function loadPartnerRules() {
   try {
     return await fetchCommanderCatalog()
@@ -79,8 +78,8 @@ async function loadPartnerRules() {
   }
 }
 
-// The commanders this player already played that match what was typed, as inline results. History is
-// a nicety: if it can't be read, the search still works without it.
+// The commanders this player already played that match what was typed, as inline results. History
+// is a nicety: if it can't be read, the search still works without it.
 async function commanderHistoryResults(
   ctx: Context, search: string
 ): Promise<InlineQueryResultArticle[]> {
@@ -151,7 +150,7 @@ export function registerCommanderPickerHandlers(bot: Bot) {
       return
     }
 
-    // The commanders already played come first — an empty query shows just those.
+    // The commanders already played come first; an empty query shows just those
     const historyResults = await commanderHistoryResults(ctx, query)
     if (query.length < 2) {
       await ctx.answerInlineQuery(historyResults, { cache_time: 0 })
@@ -171,8 +170,8 @@ export function registerCommanderPickerHandlers(bot: Bot) {
     await ctx.answerInlineQuery([...historyResults, ...searchResults], { cache_time: 0 })
   })
 
-  // Picking an inline result posts it as a normal message — recognized by
-  // its marker prefix, same convention as mockups/tavolo.ts used to.
+  // Picking an inline result posts it as a normal message, recognized by its marker prefix (as
+  // mockups/tavolo.ts did)
   bot.on('message:text', async (ctx, next) => {
     if (!ctx.message.text.startsWith(COMMANDER_MESSAGE_PREFIX)) return next()
 
@@ -209,7 +208,8 @@ export function registerCommanderPickerHandlers(bot: Bot) {
     })
     await ctx.replyWithRichMessage({ blocks })
 
-    // Any other pairing (Partner, Background, Friends forever, ...) is picked from the compatible cards.
+    // Any other pairing (Partner, Background, Friends forever, ...) is picked from the compatible
+    // cards.
     const secondKind = SECOND_COMMANDER_KIND[partnerRules?.rules.getPartnerType(name) ?? '']
     const hasCompatibleCards = (partnerRules?.rules.getAllowedPartners(name).length ?? 0) > 0
     if (!exactPartner && secondKind && hasCompatibleCards) {

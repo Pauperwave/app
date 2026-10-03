@@ -26,17 +26,14 @@ import { syncTelegramUsername } from '../usernameSync'
 
 const UNKNOWN_MESSAGE_TEXT = '🤔 Non ho capito questo messaggio. Usa /help per vedere i comandi disponibili.'
 
-// Single CommandGroup (@grammyjs/commands) shared by every register*Command
-// — derives Telegram's own "/" picker (setCommands, below) directly from
-// what's registered here, so the two can't drift apart.
+// Single CommandGroup (@grammyjs/commands) shared by every register*Command: Telegram's "/" picker
+// (setCommands, below) is derived from it, so the two can't drift
 const commands = new CommandGroup<Context>()
 
-// Ordering is load-bearing: each register*Command's own bot.use(<menu>)
-// must run before bot.use(commands), or a command replying with a Menu
-// renders nothing (CommandGroup dispatches synchronously, before the
-// menu's own reply_markup-rendering middleware has run for that update).
-// registerLinkingHandler stays last — its message:text catch-all must only
-// see messages no earlier command/prompt handler already claimed.
+// Ordering is load-bearing: each register*Command's bot.use(<menu>) must run before
+// bot.use(commands), or a command replying with a Menu renders nothing (CommandGroup dispatches
+// before the menu's reply_markup middleware runs). registerLinkingHandler stays last: its
+// message:text catch-all must only see unclaimed messages.
 export function registerCommands(bot: Bot) {
   // First, so every update refreshes the sender's saved username before any handler runs.
   bot.use(syncTelegramUsername)
@@ -64,24 +61,19 @@ export function registerCommands(bot: Bot) {
 
   registerLinkingHandler(bot)
 
-  // Registered after every register*Command above — see registerHelpButtonHandler's
-  // own comment on why it can't run before the bot.use(<menu>) calls those
-  // functions make (a /help button reusing a command whose reply needs its
-  // own menu would otherwise fail to send).
+  // After every register*Command: see registerHelpButtonHandler for why it can't run before their
+  // bot.use(<menu>) calls
   registerHelpButtonHandler(bot)
 
-  // Registered last of all — every other handler above calls next() when a
-  // message isn't theirs to handle, so anything still unclaimed here is
-  // genuinely not a recognized command, prompt reply, or linking attempt.
-  // Reuses core.ts's own helpbtn: mechanism (handleHelpButton, registered
-  // bot-wide) instead of a separate callback_query handler just for this.
+  // Last of all: every handler above calls next() for messages that aren't theirs, so what remains
+  // is not a recognized command, prompt reply or linking attempt. Reuses core.ts's helpbtn:
+  // mechanism (handleHelpButton).
   bot.on('message:text', ctx => ctx.reply(UNKNOWN_MESSAGE_TEXT, {
     reply_markup: new InlineKeyboard().text('📖 Help', encodeHelpBtn('help'))
   }))
 
-  // Best-effort, same reasoning as notify.ts's own best-effort sends — a
-  // Telegram hiccup here must never block the bot instance from being
-  // usable, it would just leave the command-picker menu stale.
+  // Best-effort, like notify.ts's sends: a Telegram hiccup must not block the bot, it would only
+  // leave the command picker stale
   commands.setCommands(bot)
     .catch(err => console.error('Failed to sync Telegram command list:', err))
 }

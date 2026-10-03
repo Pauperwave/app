@@ -9,25 +9,19 @@ import { ICONS } from '../icons'
 import { answerLoadError } from './callbackErrors'
 import { resolveDeepLink } from '../deepLinks'
 
-// Quick-launch buttons for a few of the most-used commands, embedded as
-// inline "buttons" blocks right after the category they belong to — same
-// "buttons near their own content" pattern as calendario.ts's per-tournament
-// button, not a Menu-managed reply_markup. Handled by a plain
-// bot.on('callback_query:data', ...) below (helpbtn: prefix), reusing each
-// command's own deep-link handler (deepLinks.ts) instead of a separate
-// import per button.
+// Quick-launch buttons for the most-used commands, embedded as inline "buttons" blocks after their
+// category (like calendario.ts's per-tournament button, not a Menu reply_markup). Handled by a
+// plain bot.on('callback_query:data') (helpbtn: prefix) reusing each command's deep-link handler
+// (deepLinks.ts).
 const HELP_BTN_PREFIX = 'helpbtn:'
 
-// Exported so other commands can send a button that opens
-// one of these deep links too, without duplicating the whole
-// prefix/handler mechanism below.
+// Exported so other commands can send a button opening one of these deep links
 export function encodeHelpBtn(payload: string): string {
   return `${HELP_BTN_PREFIX}${payload}`
 }
 
-// blocks, not markdown — same reasoning as helpBlocks()'s own comment
-// below, plus it lets the four commands mentioned here (iscrizioni,
-// tessera, collegamento, help) carry their own quick-launch buttons.
+// blocks, not markdown (see helpBlocks), so its four mentioned commands can carry quick-launch
+// buttons
 function startBlocks(): InputRichMessage['blocks'] {
   return [
     { type: 'paragraph', text: 'Ciao! Sono il bot di Pauperwave 👋🏻' },
@@ -54,13 +48,9 @@ function startBlocks(): InputRichMessage['blocks'] {
   ]
 }
 
-// blocks, not markdown — a block's `text` is structured RichText, not
-// parsed markdown, so a plain "\n" is a literal line break here (unlike
-// markdown mode, where it's a soft break that gets collapsed — see
-// git history on this file for that whole saga). No "- " list marker
-// needed either, which is what broke Telegram's own tap-to-run bot_command
-// detection on "/command" mentions in the previous markdown version
-// (confirmed 2026-09-09).
+// blocks, not markdown: a block's `text` is structured RichText, so "\n" is a literal line break,
+// and no "- " list marker is needed (it broke Telegram's tap-to-run bot_command detection on
+// "/command" mentions)
 function helpBlocks(): InputRichMessage['blocks'] {
   return [
     { type: 'heading', size: 3, text: 'Comandi disponibili' },
@@ -147,8 +137,7 @@ function helpBlocks(): InputRichMessage['blocks'] {
   ]
 }
 
-// Extracted so it can be reused verbatim by t.me/<bot>?start=help — see
-// deepLinks.ts.
+// Extracted for reuse by t.me/<bot>?start=help (deepLinks.ts)
 function helpCommandHandler(ctx: Context) {
   return ctx.replyWithRichMessage({ blocks: helpBlocks() })
 }
@@ -164,11 +153,9 @@ async function handleHelpButton(ctx: Context, next: () => Promise<void>) {
   await ctx.answerCallbackQuery()
 }
 
-// Reads useRuntimeConfig().public fresh on every call (not cached at
-// module scope) — that's the whole point of the refresh button below: a
-// new deployment means a new cold Nitro instance with its own build-time
-// config, so re-reading it can actually surface a newer gitCommitSha
-// once Vercel has rolled traffic over to it.
+// Reads useRuntimeConfig().public on every call, not cached at module scope: a new deployment is a
+// new cold Nitro instance, so the refresh button can surface a newer gitCommitSha once traffic
+// rolls over
 function statusText(): string {
   const { gitCommitSha, gitCommitDate } = useRuntimeConfig().public
   const lines = ['🟢 Bot operativo.']
@@ -180,35 +167,28 @@ function statusText(): string {
     }
   }
 
-  // \n\n, not \n — in Rich Message markdown mode a single \n is a soft
-  // break (collapsed, like standard Markdown), not a real line break.
+  // \n\n, not \n: in Rich Message markdown mode a single \n is a soft break (collapsed)
   return lines.join('\n\n')
 }
 
 const STATUS_REFRESH_DATA = 'statusrefresh'
 
-// Plain grammy InlineKeyboard, not @grammyjs/menu — a single static
-// refresh button doesn't need submenu/dynamic-range features, and skips
-// the whole "must be reachable via bot.use()/.register() for this exact
-// update" registration-order class of gotcha documented elsewhere in this
-// file (see registerHelpButtonHandler's own comment).
+// Plain grammy InlineKeyboard, not @grammyjs/menu: one static refresh button needs no
+// submenu/dynamic features and avoids the registration-order gotcha (see registerHelpButtonHandler)
 function statusKeyboard(): InlineKeyboard {
   return new InlineKeyboard().text('🔄 Aggiorna', STATUS_REFRESH_DATA)
 }
 
-// Extracted so it can be reused verbatim by t.me/<bot>?start=status — see
-// deepLinks.ts.
+// Extracted for reuse by t.me/<bot>?start=status (deepLinks.ts)
 function statusCommandHandler(ctx: Context) {
   return ctx.replyWithRichMessage({ markdown: statusText() }, { reply_markup: statusKeyboard() })
 }
 
 registerDeepLink('status', statusCommandHandler)
 
-// "Bad Request: message is not modified" is Telegram's own error for an
-// edit whose content is byte-identical to what's already there — the
-// expected outcome of most taps here (no new deployment yet), not a real
-// failure, so it gets its own quiet answer instead of answerLoadError's
-// alert.
+// "message is not modified" is Telegram's error for an edit with identical content: the expected
+// outcome of most taps (no new deployment yet), so it gets a quiet answer instead of
+// answerLoadError's alert
 async function handleStatusRefresh(ctx: Context, next: () => Promise<void>) {
   if (ctx.callbackQuery?.data !== STATUS_REFRESH_DATA) return next()
 
@@ -224,26 +204,17 @@ async function handleStatusRefresh(ctx: Context, next: () => Promise<void>) {
   }
 }
 
-// Registered separately from registerCoreCommands, and called last of all
-// (see commands/index.ts) — @grammyjs/menu installs each menu's own
-// "permission to send this menu" via ctx.api.config.use(...) *inside its
-// own middleware*, once per update (confirmed 2026-09-09 in
-// @grammyjs/menu/out/menu.js:570). handleHelpButton never calls next(), so
-// registering it before a later command's bot.use(itsMenu) would skip that
-// menu's middleware entirely for this update, and reusing that command's
-// deep-link handler here (which sends a message with that menu as
-// reply_markup) would fail with "Cannot send menu 'x'! ... try to send it
-// through bot.api?" — exactly what happened when this lived inside
-// registerCoreCommands, called first.
+// Registered separately and called last (see commands/index.ts): each Menu installs its "permission
+// to send this menu" inside its own middleware, once per update. handleHelpButton never calls
+// next(), so registering it before another command's bot.use(itsMenu) would skip that menu for this
+// update, and reusing its deep-link handler would fail with "Cannot send menu 'x'!".
 export function registerHelpButtonHandler(bot: Bot) {
   bot.on('callback_query:data', handleHelpButton)
 }
 
 export function registerCoreCommands(bot: Bot, commands: CommandGroup<Context>) {
-  // Telegram delivers t.me/<bot>?start=<payload> as "/start <payload>" —
-  // ctx.match is the payload itself. A recognized one (see deepLinks.ts,
-  // populated by each register*Command that opts in) takes over from the
-  // plain welcome text, landing the user directly on that view.
+  // t.me/<bot>?start=<payload> arrives as "/start <payload>" (ctx.match is the payload): a
+  // recognized one (deepLinks.ts) replaces the welcome text and lands the user on that view
   commands.command('start', 'Avvia il bot', async (ctx) => {
     const handler = ctx.match ? resolveDeepLink(ctx.match) : undefined
     if (handler) {
@@ -257,7 +228,6 @@ export function registerCoreCommands(bot: Bot, commands: CommandGroup<Context>) 
 
   commands.command('status', 'Stato del bot', statusCommandHandler)
 
-  // Not Menu-managed, so no registration-order dependency on bot.use(commands)
-  // — see statusKeyboard's own comment on why a plain InlineKeyboard was used.
+  // Not Menu-managed, so no registration-order dependency on bot.use(commands) (see statusKeyboard)
   bot.on('callback_query:data', handleStatusRefresh)
 }

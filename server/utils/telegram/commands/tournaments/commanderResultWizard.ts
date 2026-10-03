@@ -156,10 +156,9 @@ export function registerCommanderResultHandlers(bot: Bot) {
       try {
         const pod = await requirePod(ctx)
         if (!pod) return
-        // Nothing left to write — every pick already saved as it happened.
-        // Same as mockups/risultato.ts's own sendConfirmedResult: edit down
-        // to the plain summary, then send the votes-received and score
-        // tables as their own messages (each gets its own full width).
+        // Nothing left to write: every pick was saved as it happened. Like mockups/risultato.ts's
+        // sendConfirmedResult, edit down to the plain summary, then send votes-received and score
+        // as their own messages (full width each)
         const [votesReceived, score] = await Promise.all([
           fetchVotesReceivedFor(pod), fetchPodScoreSummary(pod)
         ])

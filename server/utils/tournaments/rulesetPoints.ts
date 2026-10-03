@@ -4,13 +4,9 @@ import type { Database } from '#shared/utils/types/database'
 import type { RulesetPointValues } from '#shared/utils/tournaments/commanderScoring'
 import { mapRulesetPoints } from '#shared/utils/tournaments/rulesetPoints'
 
-// Same resolution as app/composables/tournaments/useRulesetPointsQuery.ts
-// (tournament -> league -> leagues.ruleset_uuid, falling back to
-// is_default) — the two can't fully share code (one reads already-cached
-// Pinia Colada queries, this one is a plain server fetch for the Telegram
-// bot's own score summary), but the points-row-to-RulesetPointValues
-// mapping itself is shared via mapRulesetPoints (fallow:health flagged it
-// as a clone, 2026-09-27).
+// Same resolution as useRulesetPointsQuery.ts (tournament -> league -> leagues.ruleset_uuid, else
+// is_default). They can't share code (cached Pinia Colada queries vs a plain server fetch for the
+// bot), but the points-row-to-RulesetPointValues mapping is shared via mapRulesetPoints.
 export async function fetchRulesetPoints(
   supabase: SupabaseClient<Database>, tournamentUuid: string
 ): Promise<RulesetPointValues> {

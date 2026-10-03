@@ -1,9 +1,8 @@
 // server\utils\mockPlacements.ts
 
-// Shared by server/api/cittadino.ts and server/api/standings/[format].get.ts
-// (fallow dupes, 2026-08-12): both mock which players "show up" to an event —
-// filtered by a per-player regularity probability, then Fisher-Yates shuffled
-// into a final placement order.
+// Shared by server/api/cittadino.ts and standings/[format].get.ts: mocks which players "show up" to
+// an event (per-player regularity probability), then Fisher-Yates shuffles them into a placement
+// order into a final placement order.
 
 export function createRng(seed: number) {
   let state = seed
@@ -19,8 +18,8 @@ interface MockPlayer {
   regularity: number
 }
 
-// `regularityRange` is [min, spread] — regularity is `min + rng() * spread`,
-// i.e. each player's chance of showing up at any given event.
+// `regularityRange` is [min, spread]: regularity is `min + rng() * spread`, each player's chance of
+// showing up
 export function buildMockPlayers(
   count: number,
   uuidPrefix: string,

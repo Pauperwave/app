@@ -1,10 +1,8 @@
 // server\utils\transactionPayload.ts
 import type { NewTransactionPayload } from '#shared/types/transactions'
 
-// Shared by transactions/create.post.ts and transactions/[id]/update.post.ts
-// (fallow:dupes flagged this as an identical clone) — same
-// pauperwave_payments' own ck_payer_info constraint, checked here too so a
-// violation surfaces as a clear 400, not a raw Postgres error message.
+// Shared by transactions/create.post.ts and [id]/update.post.ts: pauperwave_payments' ck_payer_info
+// checked here too, so a violation surfaces as a clear 400 instead of a raw Postgres error
 export function validatePayerInfo(body: NewTransactionPayload) {
   const hasPayerInfo = !!(body.payerName && body.payerSurname && body.payerEmail)
   if (!body.associateUuid && !hasPayerInfo) {
@@ -15,8 +13,8 @@ export function validatePayerInfo(body: NewTransactionPayload) {
   }
 }
 
-// Field mapping shared by the same two endpoints — callers spread their own
-// auditColumnsForInsert/auditColumnsForUpdate on top.
+// Field mapping shared by the same endpoints; callers spread their own
+// auditColumnsForInsert/ForUpdate on top
 export function buildTransactionFields(body: NewTransactionPayload) {
   return {
     associate_uuid: body.associateUuid,

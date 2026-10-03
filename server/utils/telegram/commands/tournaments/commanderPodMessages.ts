@@ -22,9 +22,8 @@ export const DROP_CONFIRM_PREFIX = 'cmddropok:'
 export const DROP_CANCEL_PREFIX = 'cmddropno:'
 export const DROP_UNDO_PREFIX = 'cmddropundo:'
 
-// 'me' (suicide) or an index into pod.opponents — short enough to fit
-// Telegram's callback_data limit alongside a full pairing uuid, same reason
-// matchReport.ts encodes an outcome index instead of a score pair.
+// 'me' (suicide) or an index into pod.opponents: short enough for callback_data next to a pairing
+// uuid (as matchReport.ts does)
 export type KillTarget = 'me' | number
 
 function killTargetName(pod: LivePod, target: KillTarget): string {
@@ -63,8 +62,7 @@ export function positionRichMessage(pod: LivePod): InputRichMessage {
   return { blocks }
 }
 
-// 2x2 grid, same as mockups/risultato.ts's own killsRichMessage
-// (KILLS_ROW_SIZE) — not one flat row.
+// 2x2 grid, like mockups/risultato.ts's killsRichMessage, not one flat row
 const KILLS_ROW_SIZE = 2
 
 export function killsRichMessage(pod: LivePod): InputRichMessage {
@@ -104,9 +102,8 @@ export function voteRichMessage(pod: LivePod, voteType: 'brew' | 'play'): InputR
   const currentUuid = voteType === 'brew' ? pod.myVoteByType.brew : pod.myVoteByType.play
   const typeChar = voteType === 'brew' ? 'b' : 'p'
 
-  // One button per row (1xN), same as mockups/risultato.ts's own
-  // pickRichMessage(..., oneRowPerOption: true) for deck/play votes — a
-  // shared row wrapped opponent names on narrow screens.
+  // One button per row (1xN) for deck/play votes: a shared row wrapped opponent names on narrow
+  // screens
   const optionRows: InputRichMessage['blocks'] = pod.opponents.map((opponent, index) => {
     const isSelected = currentUuid === opponent.playerUuid
     return {
@@ -137,9 +134,8 @@ export function voteRichMessage(pod: LivePod, voteType: 'brew' | 'play'): InputR
 
 type PodScore = Awaited<ReturnType<typeof fetchPodScoreSummary>>
 
-// Names of who this player killed this pod, "Te stesso" for the suicide
-// target — mockups/risultato.ts's own summaryTableBlock shows the names
-// joined by comma, not a bare count.
+// Names of who this player killed ("Te stesso" for suicide), joined by comma like
+// mockups/risultato.ts, not a bare count
 function killedNamesFor(pod: LivePod): string[] {
   return pod.myKilledUuids.map((uuid) => {
     if (uuid === pod.myPlayerUuid) return 'Te stesso'
@@ -147,9 +143,8 @@ function killedNamesFor(pod: LivePod): string[] {
   })
 }
 
-// Same 4 rows as mockups/risultato.ts's own summaryTableBlock — comandante
-// deliberately excluded, it's never part of this wizard there either (set
-// separately via /tavolo's own inline search, before entering it).
+// Same 4 rows as mockups/risultato.ts's summaryTableBlock; the commander is never part of this
+// wizard (set earlier via /tavolo)
 export function resultFactsFor(pod: LivePod): [label: string, value: string][] {
   const killed = killedNamesFor(pod)
   const voteLabel = (uuid: string | null) => uuid
@@ -163,10 +158,8 @@ export function resultFactsFor(pod: LivePod): [label: string, value: string][] {
   ]
 }
 
-// Pre-confirm: same shape as mockups/risultato.ts's own finalRichMessage —
-// summary + "Confermi?" + Conferma/Modifica. Data's already saved (every
-// pick wrote immediately), so Conferma here only sends the same two
-// follow-up tables the mockup sends, it doesn't write anything new.
+// Pre-confirm: summary + "Confermi?" + Conferma/Modifica. Data is already saved (every pick writes
+// at once), so Conferma only sends the two follow-up tables
 export function finalRichMessage(pod: LivePod): InputRichMessage {
   return {
     blocks: [
@@ -184,11 +177,9 @@ export function finalRichMessage(pod: LivePod): InputRichMessage {
   }
 }
 
-// ─── Drop (leave the tournament) ────────────────────────────────────────────
-// Offered after the result is confirmed, as its own message so the result
-// summary above stays intact. A drop takes effect from the next round: this
-// round's result still counts and the player stays in the standings.
-// Pointless on the last round, so the prompt isn't sent there.
+// ─── Drop (leave the tournament) ──────────────────────────────────────────── Offered after the
+// result is confirmed, as its own message so the summary stays intact. A drop takes effect from the
+// next round (this round still counts), so it is pointless on the last round and not sent there.
 export function isLastRound(pod: LivePod): boolean {
   return pod.roundCount !== null && pod.roundNumber >= pod.roundCount
 }
@@ -257,9 +248,8 @@ export function dropDoneRichMessage(pod: LivePod): InputRichMessage {
   }
 }
 
-// Same table shape as mockups/risultato.ts's own votesReceivedTableBlock —
-// one row per opponent with a ✓ in the categories they voted for this
-// player, totals bold in the last row.
+// One row per opponent with a ✓ in the categories they voted for this player, totals bold in the
+// last row
 export function votesReceivedTableBlock(
   votesReceived: { voterName: string, brew: boolean, play: boolean }[], score: PodScore
 ) {
@@ -297,7 +287,7 @@ export function votesReceivedTableBlock(
   }
 }
 
-// Same table shape as mockups/risultato.ts's own scoreSummaryTableBlock.
+// Same table shape as mockups/risultato.ts's scoreSummaryTableBlock
 export function scoreSummaryTableBlock(score: PodScore) {
   const row = (label: string, points: number) => [
     { text: label, align: 'left' as const, valign: 'middle' as const },

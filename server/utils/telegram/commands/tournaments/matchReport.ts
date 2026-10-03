@@ -1,11 +1,8 @@
 // server\utils\telegram\commands\tournaments\matchReport.ts
-// 1v1 result entry: a player reports the score of their table and it's
-// written immediately, same as an organizer's own entry — no waiting for the
-// opponent. The opponent still gets a confirm/dispute prompt, but it's an
-// informational check, not a gate: confirming just timestamps the result,
-// disputing flags it for the organizer without reverting it (user request,
-// 2026-09-24). Who is who always comes from the chat, never from the
-// button's payload.
+// 1v1 result entry: a player reports their table's score and it is written at once, like an
+// organizer's entry. The opponent still gets a confirm/dispute prompt, but only informational:
+// confirming timestamps the result, disputing flags it for the organizer without reverting it. Who
+// is who always comes from the chat, never the payload.
 import type { Bot, Context } from 'grammy'
 import type { InputRichMessage } from 'grammy/types'
 
@@ -40,9 +37,8 @@ function outcomeAt(index: number) {
   return outcome
 }
 
-// SUMMARY_PREFIX/SEND_PREFIX's own callback_data always encodes a real
-// index (outcomePickRichMessage's buttons); null only ever reaches here on
-// a malformed payload.
+// SUMMARY_PREFIX/SEND_PREFIX buttons always encode a real index; null only reaches here on a
+// malformed payload
 function requireOutcomeIndex(index: number | null): number {
   if (index === null) throw new Error('Missing match outcome index')
   outcomeAt(index)
@@ -98,10 +94,8 @@ function tableRichMessage(table: LiveTable): InputRichMessage {
   return { blocks }
 }
 
-// currentIndex is the outcome already picked when reopened via "✏️
-// Modifica" (null the first time, from "✍️ Inserisci risultato") — highlighted
-// ⭐/success, same pattern as mockups/risultato.ts's own pickRichMessage
-// (issue #84, 2026-09-24: this used to always render blank on Modifica).
+// currentIndex is the outcome already picked when reopened via "✏️ Modifica" (null the first time),
+// highlighted ⭐/success like mockups/risultato.ts's pickRichMessage
 function outcomePickRichMessage(table: LiveTable, currentIndex: number | null): InputRichMessage {
   return {
     blocks: [
@@ -178,9 +172,8 @@ async function alertBlock(ctx: Context, block: ReportBlock | RespondBlock) {
   await ctx.answerCallbackQuery({ text: BLOCK_MESSAGES[block], show_alert: true }).catch(() => {})
 }
 
-// requireTable + a reportBlockReason check, alerting and returning null if
-// blocked — shared by handleOpen/handleSummary/handleSend, which
-// independently duplicated this exact pair of calls.
+// requireTable + a reportBlockReason check (alerting and returning null if blocked), shared by
+// handleOpen/handleSummary/handleSend
 async function requireReportableTable(
   ctx: Context, pairingUuid: string
 ): Promise<LiveTable | null> {
@@ -195,8 +188,8 @@ async function requireReportableTable(
   return table
 }
 
-// Same as requireReportableTable, for the opponent's confirm/dispute side —
-// shared by handleConfirm/handleDispute.
+// Same as requireReportableTable, for the opponent's confirm/dispute side
+// (handleConfirm/handleDispute)
 async function requireRespondableTable(
   ctx: Context, pairingUuid: string
 ): Promise<LiveTable | null> {
@@ -281,8 +274,8 @@ async function handleSend(ctx: Context, pairingUuid: string, outcomeIndex: numbe
 
 async function handleConfirm(ctx: Context, pairingUuid: string) {
   const table = await requireRespondableTable(ctx, pairingUuid)
-  // respondBlockReason already returns 'no-report' when table.result is
-  // null, so this is narrowing for TS, not a reachable extra guard.
+  // respondBlockReason already returns 'no-report' when table.result is null: this only narrows for
+  // TS
   if (!table?.result) return
 
   await confirmMatchResult(telegramServiceSupabaseClient(), table.pairingUuid)
@@ -313,9 +306,8 @@ async function handleDispute(ctx: Context, pairingUuid: string) {
   })
 }
 
-// "<pairing uuid>[:<outcome index>]" after a prefix — the outcome index is
-// absent for the very first "✍️ Inserisci risultato" (OPEN_PREFIX, no prior
-// pick) and CONFIRM_PREFIX/DISPUTE_PREFIX (no outcome involved at all).
+// "<pairing uuid>[:<outcome index>]" after a prefix; the index is absent for OPEN_PREFIX (no prior
+// pick) and CONFIRM_PREFIX/DISPUTE_PREFIX
 function parsePayload(payload: string): { pairingUuid: string, outcomeIndex: number | null } {
   const [pairingUuid, outcome] = payload.split(':')
   if (!pairingUuid) throw new Error(`Malformed match report payload: "${payload}"`)

@@ -1,23 +1,16 @@
 // server\utils\telegram\perContextCache.ts
 import type { Context } from 'grammy'
 
-// A command's handler and its own Menu.dynamic() re-render both run within
-// the same webhook update, sharing the same `ctx` reference (`.dynamic()`
-// re-runs on every render, including the one grammY triggers right after a
-// reply/editMessageText with a `reply_markup` to build the buttons) —
-// caching a fetch by ctx (garbage-collected once the update finishes)
-// dedupes a query/request that would otherwise run twice per update.
-// Generalized out of tournament/detail.ts's original hand-rolled WeakMap.
+// A command's handler and its Menu.dynamic() re-render run in the same webhook update and share one
+// `ctx` (.dynamic() re-runs on every render, including the one grammY triggers after a reply with a
+// reply_markup). Caching a fetch by ctx (garbage-collected after the update) dedupes what would
+// otherwise run twice.
 interface PerContextCache<T extends Record<string, unknown>> {
   <K extends keyof T>(ctx: Context, key: K, fetch: () => T[K]): T[K]
-  // Overwrites an already-memoized value for this ctx — for a mutation
-  // that invalidates a value cached earlier in the same update (grammY's
-  // own button-press matching re-runs .dynamic() *before* calling the
-  // pressed button's handler, which can memoize a pre-mutation value that
-  // a later ctx.menu.update() would otherwise reuse stale). See
-  // tournament/detail.ts's handleRegister/handleCancelRegistration for the
-  // concrete case this was added for (confirmed 2026-09-11 — the
-  // Iscriviti/Annulla button wasn't flipping after a successful action).
+  // Overwrites an already-memoized value for this ctx, for a mutation invalidating something cached
+  // earlier in the update: grammY re-runs .dynamic() BEFORE the pressed button's handler, which can
+  // memoize a pre-mutation value that a later ctx.menu.update() would reuse stale (see detail.ts's
+  // handleRegister/handleCancelRegistration)
   set<K extends keyof T>(ctx: Context, key: K, value: T[K]): void
 }
 

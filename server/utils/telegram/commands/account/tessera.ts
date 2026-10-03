@@ -30,9 +30,8 @@ const STATUS_LABEL: Record<string, string> = {
 async function fetchAssociateStatus(associateUuid: string): Promise<AssociateStatusRow | null> {
   const supabase = telegramServiceSupabaseClient()
 
-  // pauperwave_associates_with_status (not the base table) — it's the one
-  // computing membership_status/latest_renewal_* from the renewals history,
-  // same source the app's own /associates page reads (useAssociatesQuery.ts).
+  // pauperwave_associates_with_status (not the base table) computes
+  // membership_status/latest_renewal_* from the renewals history, like useAssociatesQuery.ts
   const { data, error } = await supabase
     .from('pauperwave_associates_with_status')
     .select('first_name, membership_status, pauperwave_associate_number, latest_renewal_date, latest_renewal_year')
@@ -59,14 +58,12 @@ function tesseraMarkdown(row: AssociateStatusRow): string {
     lines.push(`Ultimo rinnovo: ${date}${year}`)
   }
 
-  // \n\n, not \n — see core.ts's HELP_TEXT comment on why a single newline
-  // doesn't produce a line break in Rich Message markdown.
+  // \n\n, not \n: see core.ts on Rich Message markdown
   return lines.join('\n\n')
 }
 
-// Extracted so it can be reused verbatim by t.me/<bot>?start=tessera — see
-// deepLinks.ts. Intended entry point: a renewal-reminder message/email
-// linking straight to the player's own membership status.
+// Extracted for reuse by t.me/<bot>?start=tessera (deepLinks.ts); meant to be linked from a renewal
+// reminder
 async function tesseraCommandHandler(ctx: Context) {
   try {
     const associateUuid = await requireLinkedAssociate(ctx)

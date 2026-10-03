@@ -3,14 +3,12 @@ import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 import { registerDeepLink } from '../deepLinks'
 
-// ForceReply guarantees the user's next message replies to this exact one —
-// matching its text recognizes a support message with zero server-side
-// state (same stateless reasoning as linking.ts).
+// ForceReply makes the next message reply to this one: matching its text recognizes a support
+// message with no server-side state (like linking.ts)
 const SUPPORT_PROMPT = 'Scrivimi il messaggio da inoltrare allo staff — rispondi a questo messaggio con quello che vuoi segnalare.'
 
-// Telegram usernames are optional — many members never set one, so a linked
-// associate's registered name (already on file from tesseramento) is a more
-// reliable identifier than asking every member to add a @username first.
+// Telegram usernames are optional, so the registered name from tesseramento is a more reliable
+// identifier
 async function resolveAssociateName(associateUuid: string): Promise<string | null> {
   const supabase = telegramServiceSupabaseClient()
 
@@ -24,8 +22,7 @@ async function resolveAssociateName(associateUuid: string): Promise<string | nul
   return `${data.first_name} ${data.last_name}`
 }
 
-// Only super_admin (not admin+super_admin like notifyTelegramAdmins) — one
-// point of accountability, same reasoning as notifyTelegramSuperAdmins.
+// Only super_admin (not admin+super_admin like notifyTelegramAdmins): one point of accountability
 async function notifySuperAdminsOfSupportRequest(
   chatId: number, username: string | undefined, message: string
 ) {
@@ -49,9 +46,8 @@ async function notifySuperAdminsOfSupportRequest(
   const results = await Promise.allSettled(
     (chatIds ?? []).map(async (adminChatId) => {
       const sent = await sendTelegramMessage(adminChatId, text)
-      // Only way to later resolve "which member is this admin's reply for" —
-      // Telegram has no notion of a conversation thread across two separate
-      // chats, so this is the sole link between the two.
+      // The only link between member and admin chats: Telegram has no conversation thread across
+      // two chats
       const { error: threadError } = await supabase
         .from('pauperwave_telegram_support_threads')
         .insert({
@@ -71,11 +67,9 @@ async function notifySuperAdminsOfSupportRequest(
   }
 }
 
-// Reverse direction of notifySuperAdminsOfSupportRequest — an admin's reply
-// (Telegram reply-to-message) to a forwarded 🆘 notification gets relayed
-// back to the member's own chat. Not gated on the admin's role: only a
-// super_admin's chat could ever hold a matching row here, since only they
-// receive the original forward.
+// Reverse of notifySuperAdminsOfSupportRequest: an admin's reply to a forwarded 🆘 notification is
+// relayed to the member's chat. Not gated on role: only a super_admin's chat can hold a matching
+// row
 async function relaySupportReplyIfMatched(ctx: Context, next: () => Promise<void>) {
   const replyToMessageId = ctx.message?.reply_to_message?.message_id
   if (!replyToMessageId || !ctx.chat || !ctx.message?.text) {
@@ -106,12 +100,9 @@ async function relaySupportReplyIfMatched(ctx: Context, next: () => Promise<void
   }
 }
 
-// Extracted so it can be reused verbatim by t.me/<bot>?start=supporto —
-// see deepLinks.ts. NOT a Rich Message on purpose: a message sent via
-// sendRichMessage has no .text field (RichMessageMessage carries
-// .rich_message instead — see @grammyjs/types/message.d.ts), so
-// ctx.message.reply_to_message?.text below would never match SUPPORT_PROMPT
-// again and the whole force-reply correlation would silently break.
+// Extracted for reuse by t.me/<bot>?start=supporto (deepLinks.ts). NOT a Rich Message: those have
+// no .text (they carry .rich_message), so reply_to_message?.text would never match SUPPORT_PROMPT
+// and the force-reply correlation would break
 async function supportoCommandHandler(ctx: Context) {
   await ctx.reply(SUPPORT_PROMPT, {
     reply_markup: {
@@ -126,14 +117,11 @@ registerDeepLink('supporto', supportoCommandHandler)
 export function registerSupportoCommand(bot: Bot, commands: CommandGroup<Context>) {
   commands.command('supporto', 'Inoltra un messaggio allo staff', supportoCommandHandler)
 
-  // Registered before the member-side handler below — an admin's reply
-  // never matches SUPPORT_PROMPT, so ordering between the two doesn't
-  // matter for correctness, but checking the DB-backed thread first avoids
-  // relying on that always staying true.
+  // Before the member-side handler: an admin's reply never matches SUPPORT_PROMPT, but checking the
+  // DB-backed thread first doesn't rely on that
   bot.on('message:text', relaySupportReplyIfMatched)
 
-  // Registered before linking.ts's catch-all — only acts on replies to
-  // SUPPORT_PROMPT, calling next() otherwise.
+  // Before linking.ts's catch-all: only acts on replies to SUPPORT_PROMPT, else next()
   bot.on('message:text', async (ctx, next) => {
     if (ctx.message.reply_to_message?.text !== SUPPORT_PROMPT) {
       return next()

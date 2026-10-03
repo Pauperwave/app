@@ -1,19 +1,13 @@
 // server\utils\telegram\commands\tournaments\detail.ts
 
-// A single tournament's detail view (message + registration actions),
-// shared by calendario.ts, leghe.ts, iscrizioni.ts and prossimo.ts — split
-// out of calendario.ts (2026-09-03) once it grew too large.
+// A single tournament's detail view (message + registration actions), shared by calendario.ts,
+// leghe.ts, iscrizioni.ts and prossimo.ts.
 //
-// torneoMenu's back button rebuilds the exact origin view (month/league/
-// list) instead of using Menu's built-in back()/nav(), which can't hand the
-// target menu a fresh payload — every button therefore carries
-// `${uuid}:${origin}` so both survive a full round trip. Rebuilding a
-// specific origin view needs that list command's own block-rendering
-// function — resolved through menuNav.ts's registerBackResolver/
-// getBackResolver registry (2026-09-23) rather than importing
-// calendarioBlocksFor/legaTorneiBlocks/iscrizioniBlocksFor/prossimoMarkdown
-// directly, which used to create a circular import with each of them (they
-// all import torneoMenu/openTournamentDetail from here).
+// torneoMenu's back button rebuilds the exact origin view (month/league/list) rather than using
+// Menu's back()/nav(), which can't pass a fresh payload: every button carries `${uuid}:${origin}`.
+// The origin view comes from menuNav.ts's registerBackResolver/getBackResolver registry, since
+// importing each list command directly would create a circular import (they all import
+// torneoMenu/openTournamentDetail).
 import type { Context } from 'grammy'
 import type { InputRichMessage } from 'grammy/types'
 import { Menu } from '@grammyjs/menu'
@@ -81,31 +75,22 @@ async function fetchTournament(uuid: string): Promise<DatedTournamentRow | null>
   const row = data as TournamentRow | null
   if (!row?.starts_at) return null
 
-  // Scoped to this tournament's own league (or none) — see queries.ts's
-  // own comment on why fetchStageNumbers takes a league filter.
+  // Scoped to this tournament's league (or none), see queries.ts's fetchStageNumbers
   const stageNumbers = await fetchStageNumbers(row.league_uuid ? [row.league_uuid] : [])
   return { ...row, starts_at: row.starts_at, stageNumber: stageNumbers.get(row.uuid) ?? null }
 }
 
-// openTournamentDetail() and torneoMenu's own .dynamic() both fetch the
-// tournament row within the same update (once for the message text, once
-// for the buttons) — memoizing by ctx halves that query. associateUuid/
-// registration are only ever needed by .dynamic() (for the button label)
-// and by the register/cancel handlers it wires up, but share the same
-// per-ctx cache since a registration action re-triggers .dynamic() within
-// the same update. See perContextCache.ts for why this works.
+// openTournamentDetail() and torneoMenu's .dynamic() both fetch the row within one update (text,
+// then buttons): memoizing per ctx halves the queries. associateUuid/registration are shared too,
+// since a registration action re-triggers .dynamic() in the same update. See perContextCache.ts.
 const memoize = createPerContextCache<{
   tournaments: Map<string, Promise<DatedTournamentRow | null>>
   associateUuid: Promise<string | null>
   registration: Promise<RegistrationStatus>
 }>()
 
-// Keyed by uuid (not a single fixed cache slot) — today's callers only
-// ever resolve one uuid per update, so a fixed key would have worked too,
-// but that's an implicit assumption, not a guarantee. Keying by uuid means
-// a future caller resolving two different tournaments in the same update
-// gets two real fetches instead of the second silently reusing the
-// first's cached row. Confirmed 2026-09-12 code review.
+// Keyed by uuid, not a single slot: a caller resolving two tournaments in one update must get two
+// real fetches
 function cachedFetchTournament(ctx: Context, uuid: string): Promise<DatedTournamentRow | null> {
   const cache = memoize(ctx, 'tournaments', () => new Map())
   let entry = cache.get(uuid)
@@ -126,21 +111,12 @@ function cachedFetchRegistrationStatus(
   return memoize(ctx, 'registration', () => fetchRegistrationStatus(uuid, associateUuid))
 }
 
-// A photo block (when the tournament has one) lives inside the same rich
-// message as the text — not a separate replyWithPhoto — so the whole view,
-// image included, can be edited in place instead of deleted and resent.
-// Confirmed 2026-09-09: InputRichBlockPhoto exists specifically for this;
-// editMessageText already supports editing text<->rich_message on one
-// message, so folding the photo into a block removes the old text/photo
-// message-type mismatch that forced a delete+recreate.
+// A photo block (when the tournament has one) lives inside the same rich message as the text, so
+// the whole view can be edited in place instead of deleted and resent (InputRichBlockPhoto).
 //
-// One `paragraph` block per line, not a single block with a joined string —
-// a block's `text` is structured RichText, not a markdown string: it's
-// never parsed, so a literal "**bold**"/"[text](url)" shows up as-is
-// instead of rendering. Bold/links need real RichTextBold/RichTextUrl
-// nodes (confirmed 2026-09-09 from the actual bot output). Splitting into
-// one block per line also sidesteps the whole \n-vs-\n\n markdown-mode
-// question entirely — blocks space themselves apart on their own.
+// One `paragraph` block per line: a block's `text` is structured RichText, never parsed as
+// markdown, so bold/links need real RichTextBold/RichTextUrl nodes, and per-line blocks avoid the
+// \n-vs-\n\n question.
 function tournamentDetailBlocks(row: DatedTournamentRow): InputRichMessage['blocks'] {
   const blocks: InputRichMessage['blocks'] = []
   if (row.image_url) blocks.push({ type: 'photo', photo: { type: 'photo', media: row.image_url } })
@@ -155,15 +131,11 @@ function tournamentDetailBlocks(row: DatedTournamentRow): InputRichMessage['bloc
   blocks.push({ type: 'paragraph', text: `${ICONS.date} ${date}${endTime}` })
 
   const mapUrl = row.location ? mapsUrl(row.location) : null
-  // Plain text, not a link — the "Direzioni" button just below already
-  // covers this exact URL, so a second inline hyperlink was redundant.
+  // Plain text, not a link: the "Direzioni" button below already covers the URL
   if (row.location?.name) blocks.push({ type: 'paragraph', text: `${ICONS.location} ${row.location.name}` })
 
-  // Direzioni/Aggiungi al calendario as inline URL buttons right next to
-  // the date/location they relate to, not stacked in torneoMenu's own
-  // reply_markup at the bottom — same "buttons near their own content"
-  // reasoning as calendario.ts's per-tournament button. Plain UrlButtons
-  // need no callback_query handling at all (Telegram opens them directly).
+  // Direzioni/Aggiungi al calendario as inline URL buttons next to the date/location they relate to
+  // (like calendario.ts); plain UrlButtons need no callback handling
   const calendarUrl = googleCalendarUrl({
     name: row.name,
     startsAt: row.starts_at,
@@ -191,16 +163,13 @@ function tournamentDetailBlocks(row: DatedTournamentRow): InputRichMessage['bloc
   return blocks
 }
 
-// Shop organizers (Magman etc.) show up for schedule visibility, but
-// registration is their own business — Iscriviti/Annulla/check-in only
-// ever manages tournament_registrations for the club's own tournaments.
+// Shop organizers (Magman etc.) are listed for visibility only: registration is their own business
 function isExternalOrganizer(row: DatedTournamentRow): boolean {
   return row.organizer?.type === 'shop'
 }
 
-// Payload shared by every torneoMenu button: `${uuid}:${origin}`. `origin`
-// is a compact token identifying where to go back to: `m<monthOffset>`,
-// `l<leagueIndex>`, `i` (iscrizioni), or `p` (prossimo).
+// Payload shared by every torneoMenu button: `${uuid}:${origin}`, where `origin` is a compact token
+// for the back target: `m<monthOffset>`, `l<leagueIndex>`, `i` (iscrizioni) or `p` (prossimo)
 function encodeTorneoPayload(uuid: string, origin: string): string {
   return `${uuid}:${origin}`
 }
@@ -212,11 +181,9 @@ function decodeTorneoPayload(raw: string): { uuid: string, origin: string } {
 
 type BackOrigin = 'l' | 'i' | 'p' | 'm'
 
-// Origin prefixes: `l<index>` (league), `i` (iscrizioni), `p` (prossimo),
-// `m<monthOffset>` (calendario, the fallback) — the single source of truth
-// for the origin encoding, used both for the back button's own label
-// (cheap, backLabel below) and to look up which module's resolver rebuilds
-// that origin view (getBackResolver, only once the button is pressed).
+// Origin prefixes (`l<index>`, `i`, `p`, `m<monthOffset>` as fallback): the single source of truth
+// for the origin encoding, used for the back button label (backLabel) and to find the resolver
+// (getBackResolver)
 function backResolverPrefix(origin: string): BackOrigin {
   if (origin.startsWith('l')) return 'l'
   if (origin === 'i' || origin === 'p') return origin
@@ -258,8 +225,7 @@ async function handleCancelRegistration(
     const { error } = await supabase.from('tournament_registrations').delete().eq('uuid', existing.uuid)
     if (error) throw error
 
-    // See perContextCache.ts's own comment on why this overwrite is needed
-    // before ctx.menu.update() can re-render with the right button.
+    // Overwrite needed before ctx.menu.update() re-renders the button, see perContextCache.ts
     memoize.set(ctx, 'registration', Promise.resolve(null))
     ctx.menu.update()
     await ctx.answerCallbackQuery({ text: '✅ Iscrizione annullata.' })
@@ -271,8 +237,7 @@ async function handleCancelRegistration(
 async function handleRegister(
   ctx: Context & MenuFlavor, tournamentUuid: string, associateUuid: string | null
 ) {
-  // associateUuid already resolved by the caller — only the "not linked"
-  // alert needs to happen here.
+  // associateUuid is already resolved by the caller: only the "not linked" alert is needed here
   if (!associateUuid) {
     await ctx.answerCallbackQuery({ text: NOT_LINKED_MESSAGE, show_alert: true })
     return
@@ -292,8 +257,7 @@ async function handleRegister(
     })
     if (error) throw error
 
-    // See perContextCache.ts's own comment on why this overwrite is needed
-    // before ctx.menu.update() can re-render with the right button.
+    // Overwrite needed before ctx.menu.update() re-renders the button, see perContextCache.ts
     memoize.set(ctx, 'registration', Promise.resolve('registered'))
     ctx.menu.update()
     await ctx.answerCallbackQuery({ text: '✅ Iscrizione confermata!' })
@@ -302,9 +266,8 @@ async function handleRegister(
   }
 }
 
-// autoAnswer: false — every button below answers with its own confirmation/
-// error text, which would race with Menu's default no-args auto-answer.
-// onMenuOutdated: false — see calendario.ts's calendarioMenu for why.
+// autoAnswer: false: every button answers with its own text, which would race Menu's auto-answer.
+// onMenuOutdated: false: see calendario.ts's calendarioMenu.
 export const torneoMenu = new Menu<Context>('t', {
   autoAnswer: false,
   onMenuOutdated: false
@@ -314,7 +277,7 @@ export const torneoMenu = new Menu<Context>('t', {
   if (!raw || !chatId) return
   const { uuid, origin } = decodeTorneoPayload(raw)
 
-  // Independent of each other — parallelized instead of two sequential awaits.
+  // Independent, so run in parallel
   const [tournament, associateUuid] = await Promise.all([
     cachedFetchTournament(ctx, uuid),
     cachedResolveAssociateUuid(ctx, chatId)
@@ -335,8 +298,7 @@ export const torneoMenu = new Menu<Context>('t', {
         })
       })
     } else if (registration === 'registered' && associateUuid) {
-      // associateUuid already resolved above (registration only comes back
-      // non-null when it was truthy) — no need to re-query it here.
+      // associateUuid is already resolved above (registration is only non-null when it was truthy)
       const linkedAssociateUuid = associateUuid
       range.text(
         { text: '❌ Annulla iscrizione', payload },
@@ -360,13 +322,12 @@ export const torneoMenu = new Menu<Context>('t', {
   })
 })
 
-// Registered once here, unconditionally — torneoMenu is a singleton shared
-// by four parents, not tied to any single register*Command's bot.use().
+// Registered unconditionally: torneoMenu is shared by four parents, not tied to one
+// register*Command's bot.use()
 registerMenu('t', torneoMenu)
 
-// Opens the detail view fresh from a list (calendario/leghe/iscrizioni's
-// own submenu buttons call this); torneoMenu's own internal buttons stay
-// on the same message and never need it.
+// Opens the detail view fresh from a list (calendario/leghe/iscrizioni submenu buttons);
+// torneoMenu's own buttons edit in place
 export async function openTournamentDetail(ctx: Context, uuid: string, origin: string) {
   const chatId = await requireChatId(ctx)
   if (!chatId) return

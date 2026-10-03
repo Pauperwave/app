@@ -4,14 +4,10 @@ import type { H3Event } from 'h3'
 import type { JwtPayload } from '@supabase/supabase-js'
 import type { Database } from '#shared/utils/types/database'
 
-// Generic created_by/updated_by population, meant to be reused as-is by any
-// table that follows the same convention (pauperwave_wanted_cards,
-// pauperwave_associates, pauperwave_payments; associate_renewals still
-// pending — see docs/BACKLOG.md). Resolves the acting user's pauperwave_associates.uuid via
-// email match (same resolution used client-side for "My requests") so
-// created_by/updated_by can reference associates directly — displaying "who"
-// in the UI is then a plain join, never an admin-API call to resolve an auth
-// user id to a name.
+// Generic created_by/updated_by population for any table following the convention (wanted_cards,
+// associates, payments; associate_renewals pending, see docs/BACKLOG.md). Resolves the acting
+// user's pauperwave_associates.uuid by email (as client-side "My requests" does), so showing "who"
+// is a plain join, never an admin-API call.
 export async function resolveAuditAssociateUuid(
   event: H3Event,
   user: JwtPayload
@@ -28,9 +24,8 @@ export async function resolveAuditAssociateUuid(
   return data?.uuid ?? null
 }
 
-// Shared by self-register.post.ts/self-unregister.post.ts: both need the
-// caller's own associate uuid (never one from the request body) and a
-// consistent 403 when the account isn't linked to a socio.
+// Shared by self-register.post.ts/self-unregister.post.ts: the caller's own associate uuid (never
+// from the body) and a consistent 403 when not linked
 export async function requireOwnAssociateUuid(event: H3Event, user: JwtPayload): Promise<string> {
   const associateUuid = await resolveAuditAssociateUuid(event, user)
   if (!associateUuid) {
@@ -47,10 +42,9 @@ export async function auditColumnsForInsert(event: H3Event, user: JwtPayload) {
   return { created_by: associateUuid, updated_by: associateUuid }
 }
 
-// updated_at is also set by a DB trigger (set_updated_at, see migration
-// 20260808063237) as a safety net for writes outside the BFF — setting it
-// here too is redundant but harmless, and keeps this helper self-sufficient
-// for tables that don't have that trigger yet.
+// updated_at is also set by the set_updated_at DB trigger as a safety net for writes outside the
+// BFF; setting it here is redundant but keeps the helper self-sufficient for tables without the
+// trigger
 export async function auditColumnsForUpdate(event: H3Event, user: JwtPayload) {
   const associateUuid = await resolveAuditAssociateUuid(event, user)
   return { updated_by: associateUuid, updated_at: new Date().toISOString() }
