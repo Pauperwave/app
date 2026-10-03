@@ -9,12 +9,12 @@ const { group } = defineProps<Props>()
 
 const groupIcons: Record<string, string> = {
   general: ICONS.settingsGear,
-  competitions: ICONS.standings,
-  profile: ICONS.player,
-  tournament: ICONS.battle,
+  rankings: ICONS.standings,
+  tournaments: ICONS.battle,
+  registrations: ICONS.ticket,
   cards: ICONS.cardSearch,
   dice: ICONS.dice,
-  support: ICONS.messageCircle
+  account: ICONS.player
 }
 </script>
 
@@ -23,7 +23,21 @@ const groupIcons: Record<string, string> = {
     :title="$t(`telegramBot.commands.groups.${group.id}`)"
     :description="$t(`telegramBot.commands.groupDescriptions.${group.id}`)"
     :icon="groupIcons[group.id]"
+    :ui="{ title: 'pr-10' }"
   >
+    <UTooltip :text="$t('telegramBot.commands.helpTopic')">
+      <UButton
+        :to="botHelpTopicUrl(group)"
+        target="_blank"
+        :icon="ICONS.telegram"
+        :aria-label="$t('telegramBot.commands.helpTopic')"
+        color="neutral"
+        variant="ghost"
+        size="sm"
+        class="absolute top-3 right-3"
+      />
+    </UTooltip>
+
     <ul class="flex flex-col divide-y divide-default">
       <li
         v-for="command in group.commands"
