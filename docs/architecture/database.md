@@ -35,7 +35,7 @@ An `admin` (elevated authorization) is very likely *also* a `players` row (they 
 
 **Open question, not verified: does every associate get a `players` row, or only those who actually compete?** No migration in this repo's tracked history creates `players` rows (same pre-existing-schema situation as `user_roles`, adopted retroactively — see "Migrations" above), and no application code in `app/`/`server/` inserts into `players` either — nothing auto-provisions one on associate approval or on first login, as far as this codebase shows. Needs a live-data check (row counts, or associates with no matching `players.associate_uuid`) before assuming either "every associate has one" or "only competitors do."
 
-## RLS policies (as of 2026-08-05, wanted_cards row added 2026-08-08, catch-all associates policy dropped 2026-08-22)
+## RLS policies (as of 2026-08-05, wanted_cards row added 2026-08-08, catch-all associates policy dropped 2026-08-22, Telegram links/round timers/event partners added 2026-10-03)
 
 | Table | Policy | Role | Effect |
 |---|---|---|---|
@@ -45,6 +45,10 @@ An `admin` (elevated authorization) is very likely *also* a `players` row (they 
 | `pauperwave_associate_renewals` | `player_own_renewals` | `public` | `SELECT` only, own record via `players.user_id` — **no blanket `authenticated` policy exists**, unlike the table above |
 | `pauperwave_wanted_cards` | `Authenticated users can read wanted cards` | `authenticated` | `SELECT`, `USING (true)` |
 | `pauperwave_wanted_cards` | `Management can insert/update/delete wanted cards` | `authenticated` | `has_management_permissions(auth.uid())` for update/delete; insert is open to any authenticated user (separate policy) |
+| `pauperwave_associate_telegram_links` | `Management can read telegram usernames` | `authenticated` | `SELECT` for `has_management_permissions(auth.uid())`, with a column-level grant that leaves `chat_id` out (a player's own link state goes through `GET /api/telegram/my-link`) |
+| `tournament_round_timers` | `management_full_access` | `public` | `has_management_permissions(auth.uid())` |
+| `tournament_round_timers` | `public_read` | `public` | `SELECT`, `USING (true)` — no personal data; the turns Mini App listens through Realtime without a Supabase login |
+| `event_partners` | `management_full_access` + `public_read` | `public` | the usual pair: management write, public read (shown on the public event page) |
 
 **Note:** for `pauperwave_wanted_cards`, these RLS policies are no longer the actual enforcement point for writes — the app talks to this table exclusively through a BFF layer using the service-role key (bypasses RLS entirely), which re-implements the same checks server-side (`server/utils/serverAuth.ts`, see ADR-007/008 in `docs/PROGRESS.md` and `docs/architecture/api.md`). The policies above still gate any *other* client (Supabase dashboard, a future direct client-side write) but are effectively redundant with the BFF for this app's own traffic.
 
@@ -66,14 +70,15 @@ An `admin` (elevated authorization) is very likely *also* a `players` row (they 
 | `tournament_votes` | 🔴 Commander | `vote_type` — "play/brew" vote mechanic specific to Commander pods |
 | `tournament_round_results` | 🔴 Commander | has FK `commander_deck_uuid` |
 | `tournament_standings` | 🟡 Mixed | generic ranking columns (`player_score`, `player_rank`, `player_victories`) but also `votes_brew_received`/`votes_play_received` — a Commander concept mixed into an otherwise reusable table |
-| `tournaments` | 🟢 Agnostic | no Commander-specific columns |
+| `tournaments` | 🟢 Agnostic | no Commander-specific columns; also `is_pinned`, `is_test`, `telegram_notifications_enabled`, entry fee for non-members, `max_entrants`, `decklist_visibility`, `registration_at` |
 | `tournament_registrations` | 🟢 Agnostic | |
-| `tournament_rounds` | 🟢 Agnostic | `round_number`/`status`/timestamps only |
+| `tournament_rounds` | 🟢 Agnostic | `round_number`/`status`/timestamps, plus `shuffle_seed` (the confirmed round-1 seating) |
 | `tournament_round_timers` | 🟢 Agnostic | The organizer's round timer (phase, start instant or paused elapsed, phase lengths), one row per `(tournament_uuid, round_number)`, so the Telegram turns Mini App can follow it. Writes are staff-only; reads are public (no personal data) because the Mini App listens to it through Realtime without a Supabase login |
 | `mtg_formats` | 🟢 Agnostic | the format registry itself — seeded (`Commander`, `Pauper`, `Draft`, ...) and user-editable via `mtgFormats/ManageModal.vue`, including a `color` column (ADR-016) |
 | `players` | 🟢 Agnostic | |
 | `leagues` | 🟢 Agnostic | |
-| `events` | 🟢 Agnostic | |
+| `events` | 🟢 Agnostic | also the page details (`tagline`, `edition`, `description`, `practical_notes`, tickets and membership columns) |
+| `event_partners` | 🟢 Agnostic | collaborators and sponsors of an event, in display order |
 | `event_attendees` | 🟢 Agnostic | |
 | `locations` | 🟢 Agnostic | renamed from `event_locations`; also grew social/contact columns (`facebook_url`, `google_maps_url`, `instagram_url`, `telegram_url`, `whatsapp_url`, `opening_hours` jsonb, `image_url`, `temporarily_closed`) — corrected 2026-08-17 |
 | `organizations` | 🟢 Agnostic | |
@@ -181,3 +186,25 @@ The project's migration history was adopted retroactively on 2026-08-05: 21 pre-
 | `20260920010000_swiss_drops_and_byes.sql` | New `tournament_player_drops` table; `ck_tournament_pairings_player_count` accepts a single-player pairing (a bye); `start_swiss_round_one`/`advance_swiss_round` accept odd counts — see ADR-036 |
 | `20260920020000_drop_swiss_scoring_settings.sql` | Drops the Swiss win/draw points and tiebreak-floor columns added by the first migration of the day — scoring is fixed by the official rules, not a setting (ADR-034) |
 | `20260920030000_round_count_by_format_family.sql` | Round count per format family like the round minutes: adds `one_vs_one_round_count` (4), renames `default_round_count` to `commander_round_count` (2), drops the per-format `round_count_by_format` map — see ADR-035 |
+| `20260921000000_tournament_match_result_reports.sql` | New `tournament_match_result_reports` table: a 1v1 result reported through the Telegram bot, waiting for the opponent's confirmation (retired by `20260924100000`) |
+| `20260923120000_pre_round_wait_minutes.sql` | `pauperwave_settings.pre_round_wait_minutes` (default 3) — the length of the round timer's setup countdown, previously hardcoded in `useRoundTimerEngine.ts` |
+| `20260923130000_realtime_match_results.sql` | Adds `tournament_match_results` and `tournament_match_result_reports` to the `supabase_realtime` publication, so organizers see a Telegram-submitted result live |
+| `20260923140000_match_result_reported_by.sql` | `tournament_match_results.reported_by_player_uuid` — which player reported a result through the bot (null when staff entered it) |
+| `20260924100000_telegram_result_writes_immediately.sql` | A Telegram-reported 1v1 result is written straight to `tournament_match_results`; adds `confirmed_at`/`disputed_at` (the opponent's answer no longer gates whether the score counts) and drops `tournament_match_result_reports` |
+| `20260924110000_allow_commander_self_kills.sql` | Allows a self-kill (killer = victim) in `tournament_kills`, scored like any other kill |
+| `20261001100000_add_associate_has_no_telegram.sql` | `pauperwave_associates.has_no_telegram` — associates who don't use Telegram, whose results and commander the organizer enters; also exposed by `pauperwave_associates_with_status` |
+| `20261001110000_add_pairing_no_kills.sql` | `tournament_pairings.no_kills` — confirms a Commander table ended without any kill (zero `tournament_kills` rows can't tell "none" from "not entered yet") |
+| `20261001120000_add_telegram_link_username.sql` | `pauperwave_associate_telegram_links.telegram_username`; staff may read the username only (column-level grant + RLS), never the `chat_id` |
+| `20261001130000_add_tournament_is_pinned.sql` | `tournaments.is_pinned` — pinned tournaments get their own "In evidenza" section on `/tournaments` |
+| `20261001140000_add_tournament_telegram_notifications_enabled.sql` | `tournaments.telegram_notifications_enabled` (default true) — per-tournament switch for the passive Telegram notifications (`docs/architecture/telegram-notifications.md`) |
+| `20261001150000_add_tournament_is_test.sql` | `tournaments.is_test` — test tournaments visible to `super_admin` only, enforced in RLS (so calendars and the bot's discovery commands never show them) |
+| `20261002100000_commander_rpcs_explicit_table_sizes.sql` | `start_commander_round_one`/`advance_commander_round` take the confirmed table sizes (`p_table_sizes`) instead of re-deriving them, so an organizer's custom seating survives |
+| `20261002110000_tournament_rounds_shuffle_seed.sql` | `tournament_rounds.shuffle_seed` — the seed of the confirmed round-1 seating, so the preview can reopen on it after "Torna alle iscrizioni" |
+| `20261002120000_start_swiss_round_one_shuffle_seed.sql` | `start_swiss_round_one` stores the same round-1 seed for 1v1 tournaments |
+| `20261002130000_realtime_associate_telegram_links.sql` | Adds `pauperwave_associate_telegram_links` to the `supabase_realtime` publication (the Telegram status icons update live; RLS limits the events to staff) |
+| `20261002140000_turn_back_reopens_previous_round.sql` | Turning back round N now reopens round N−1 (it stayed `completed`), and a tournament that had ended goes back in progress |
+| `20261003100000_round_lifecycle_drops_and_reopen.sql` | Turning back a round moves its drops to the round that reopens instead of cascading them away; adds `reopen_tournament` ("Termina torneo" had no way back) |
+| `20261003110000_tournament_fees_capacity_decklists.sql` | `tournaments`: `entry_fee_non_member`, `max_entrants`, `decklist_visibility`, `registration_at` |
+| `20261003120000_event_details_and_partners.sql` | `events`: `tagline`, `edition`, `description`, `practical_notes`, `tickets_url`, `tickets_on_sale_on`, `membership_required`, `membership_url`; new `event_partners` table (collaborators and sponsors per event, `public_read` + management write) |
+| `20261003130000_tournament_round_timers.sql` | New `tournament_round_timers` table — the organizer's round timer, so the Telegram turns Mini App follows the event clock; staff-only write |
+| `20261003140000_tournament_round_timers_realtime.sql` | `public_read` on `tournament_round_timers` (no personal data; the Mini App has no Supabase login) and Realtime on it |

@@ -19,6 +19,9 @@ Chi viene notificato, per quale evento, e da dove — compagno di `telegram-bot.
 | Iscrizione accettata | `server/api/tournament-registrations/status.post.ts` | Il giocatore accettato, se collegato | `notifyRegistrationsAccepted()` (`tournamentNotifications.ts`) | 🟢 |
 | Tavoli annunciati (avvio/avanzamento round) | `server/api/tournament-rounds/{start-round-one,advance-round}[-swiss].post.ts` | Ogni giocatore seduto, se collegato | `notifyRoundTables()` | 🟢 |
 | Tavoli annullati (torna indietro / reset) | `server/api/tournament-rounds/{turn-back-round,turn-back-round-swiss,reset}.post.ts` | Ogni giocatore del round (o del torneo, per il reset), se collegato | `prepareTablesCancelledMessages()` + `notifyTelegramAssociates()` | 🟢 |
+| Risultato 1v1 da confermare | `server/utils/telegram/commands/tournaments/matchReport.ts` (quando un giocatore invia il risultato dal bot) | L'avversario, se collegato ("✅ Confermo" / "❌ Non è corretto") | `ctx.api.sendRichMessage()` | 🟢 |
+| Messaggio di supporto (`/supporto`) | `server/utils/telegram/commands/supporto.ts` | `super_admin` collegati | `sendTelegramMessage()` | 🟢 |
+| Risposta dello staff al supporto | `server/utils/telegram/commands/supporto.ts` (reply a quel messaggio) | Il socio che ha scritto | `sendTelegramMessage()` | 🟢 |
 | ~~Fallimento tecnico: pagamento scritto ma rinnovo non aggiornato~~ | ~~`server/api/transactions/create.post.ts`, `[id]/update.post.ts`~~ | ~~Solo `super_admin` collegati~~ | ~~`notifyTelegramSuperAdmins()`~~ | ⚪ risolto 2026-09-02 con le RPC transazionali, vedi Note |
 
 ## Note

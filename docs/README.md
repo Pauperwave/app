@@ -11,7 +11,8 @@ Master index of all project documentation.
 | `AGENTS.md` | Core requirements and conventions for agents working in this repo, incl. the BFF write pattern | Required reading for all agents |
 | `architecture/database.md` | Supabase schema, migrations, RLS policies, membership-status model, Commander-vs-format-agnostic table inventory, `created_by`/`updated_by` audit columns | Database ops |
 | `architecture/api.md` | `server/api/*` inventory: BFF pattern (reads client-side, writes through `server/api/*` with `serverSupabaseServiceRole`), which routes are real vs. mock | API reference |
-| `architecture/testing.md` | Current state (runner configured, zero tests written), what a first test pass should prioritize | Test reference |
+| `architecture/postgres-functions.md` | Every Postgres function the app calls or relies on: roles and permissions, tournament registration, the Swiss and Commander round lifecycle, transactional payments and renewals, housekeeping | Database ops / RPC reference |
+| `architecture/testing.md` | Current state (132 unit test files, no component or e2e tests yet), what to test next | Test reference |
 | `architecture/roles.md` | The role hierarchy (`player`/`organizer`/`admin`/`super_admin`) and the three-layer client role-awareness pattern (resolution → route/nav gating → in-page adaptation) as actually implemented, and why none of it is real security on its own | Roles/permissions reference |
 | `architecture/permissions.md` | Human-readable 🟢🟡🔴 role × feature matrix — the reference table for "who can do what," companion to `roles.md`'s implementation | Roles/permissions reference |
 | `architecture/shortcuts.md` | Full keyboard-shortcut map (`g-x` navigation chords + global toggles), why there are two `defineShortcuts` call sites, and how to add a new one | UI reference |
@@ -34,12 +35,14 @@ Master index of all project documentation.
 | `audits/2026-08-16-fallow-health-review.md` | Follow-up `fallow:health` review: what got fixed since 2026-08-12 (GridView.vue, DetailSlideover.vue, tesseramento/index.vue partially), fresh score/targets, and why the 4 remaining refactoring targets are false economy or deliberately deferred | Process |
 | `plans/2026-08-18-testing-coverage-plan.md` | Concrete, tiered list of what to unit/e2e test first, superseding `architecture/testing.md`'s own stale priority list | Test reference |
 | `plans/2026-10-02-event-page.md` | The event entity and page modeled on Radio Atog 2026: an event is a folder of tournaments (dates derived from them), the page is a day/week calendar hub, the fields Radio Atog needs and where they go, and the steps (calendar view done) | Events reference |
+| `plans/2026-09-15-swiss-pairing-draft-1v1-plan.md` | Build plan for Swiss pairing of the Draft and 1v1 formats (ADR-043 and the 1v1 entries of `PROGRESS.md` record what was built) | Planning history |
 | `audits/2026-08-18-associates-csv-reconciliation.md` | Categorized review of the 171 field conflicts between the DB and the historical Google Form roster — what's safe to fix, what's already correct, what needs asking the associate directly | Data model |
 | `audits/2026-08-24-finance-payment-amount-corrections.md` | One-off `payment_amount` mismatches found while building `/finance`'s category summary, confirmed with the user and fixed directly in `pauperwave_payments` | Data model |
 | `audits/2026-09-16-app-components-composables-pages-inventory.md` | Full inventory of `app`'s own components/composables/pages — the baseline half of the app-vs-league comparison below | Onboarding |
 | `audits/2026-09-16-league-components-composables-pages-inventory.md` | Same inventory pass for the (abandoned) `MagicTheGathering/league` sibling project — comparison baseline only, not a migration target | Onboarding |
 | `audits/2026-09-16-league-vs-app-feature-comparison.md` | Feature-by-feature comparison between `league` and `app` — what `app` already covers, what's `league`-only and not being ported (see ADR-003's 2026-09-17 correction in `PROGRESS.md`: `league` is abandoned, not being absorbed) | Onboarding |
 | `audits/2026-09-29-bug-search-commander-permissions-review.md` | General bug-search pass: the unstable-opponent-ordering fix in the real Commander Telegram flow, a ruleset-points dedup, and a clean review of the 1v1/prizes/permissions areas — plus one flagged-not-fixed RLS gap (`pauperwave_wanted_cards` insert) pending a decision | Security / process |
+| `supabase/1-roles.md` … `6-mtg-commanders-sync.md` | Six design docs carried over from the original app backup (roles and `app_role`, schema domains, RLS policies, useful SQL queries, store architecture, the commanders sync). **Legacy**: written before the app's own schema work, partly drifted (see the 2026-08-09 audit); `architecture/database.md` and `architecture/postgres-functions.md` are the current references | Background only |
 
 ## Not yet documented
 

@@ -22,6 +22,10 @@ Most are `SECURITY DEFINER` — they run with the privileges of the function's o
   - [`start_swiss_round_one`](#start_swiss_round_onep_tournament_uuid-uuid-p_associate_order-uuid-returns-uuid)
   - [`advance_swiss_round`](#advance_swiss_roundp_tournament_uuid-uuid-p_current_round_number-smallint-p_associate_order-uuid-default-null-returns-uuid)
   - [`turn_back_swiss_round`](#turn_back_swiss_roundp_tournament_uuid-uuid-p_current_round_number-smallint-returns-void)
+- [Tournament rounds (Commander pods)](#tournament-rounds-commander-pods)
+- [Tournament lifecycle](#tournament-lifecycle)
+- [Payments & renewals (transactional)](#payments--renewals-transactional)
+- [Associates, commanders and Telegram](#associates-commanders-and-telegram)
 - [Auditing & housekeeping](#auditing--housekeeping)
   - [`log_player_login`](#log_player_login-returns-trigger)
   - [`purge_expired_trash`](#purge_expired_trash-returns-void)
@@ -188,11 +192,11 @@ Not `SECURITY DEFINER` (unlike the role functions above) — it relies on the ca
 
 ## Tournament rounds (1v1 Swiss)
 
-Migrations `20260918000000` (created) and `20260920010000` (odd counts / byes). The Commander equivalents (`start_commander_round_one`, `advance_commander_round`, ...) are not documented here yet. All three run through `server/api/tournament-rounds/*-swiss.post.ts` with the service role; none has an explicit permission check of its own — the endpoint's `requireManagementPermission` is the boundary.
+Migrations `20260918000000` (created) and `20260920010000` (odd counts / byes). The Commander equivalents are in the next section. All three run through `server/api/tournament-rounds/*-swiss.post.ts` with the service role; none has an explicit permission check of its own — the endpoint's `requireManagementPermission` is the boundary.
 
-### `start_swiss_round_one(p_tournament_uuid uuid, p_associate_order uuid[]) returns uuid`
+### `start_swiss_round_one(p_tournament_uuid uuid, p_associate_order uuid[], p_shuffle_seed int default null) returns uuid`
 
-Creates round 1 (`in_progress`) and seats the associates in the order given — two by two, table 1 first — then moves the tournament to `in_progress`. With an odd count the **last** associate of the order gets the bye: a pairing with `player2_uuid` and `table_number` null and status `completed`. Raises if fewer than 2 associates are given or if any of them isn't a registered player of the tournament. Returns the round uuid.
+Creates round 1 (`in_progress`) and seats the associates in the order given — two by two, table 1 first — then moves the tournament to `in_progress`. With an odd count the **last** associate of the order gets the bye: a pairing with `player2_uuid` and `table_number` null and status `completed`. Raises if fewer than 2 associates are given or if any of them isn't a registered player of the tournament. Returns the round uuid. `p_shuffle_seed` is stored on the round (`tournament_rounds.shuffle_seed`, migration `20261002120000`) so the table preview can reopen on the approved seating.
 
 ### `advance_swiss_round(p_tournament_uuid uuid, p_current_round_number smallint, p_associate_order uuid[] default null) returns uuid`
 
@@ -200,7 +204,83 @@ Completes the current round. Past the tournament's `round_count` it marks the to
 
 ### `turn_back_swiss_round(p_tournament_uuid uuid, p_current_round_number smallint) returns void`
 
-Deletes the given round; the cascades wipe its pairings, match results and drops. Turning back round 1 deletes every round and puts the tournament back to `registration_open`.
+Deletes the given round; the cascades wipe its pairings and match results. Since `20261002140000`/`20261003100000` the drops recorded in it move to round N−1 before the delete (they used to cascade away, silently putting a player who left back in the next pairing), round N−1 reopens (`in_progress`) and a tournament that had ended goes back in progress. Turning back round 1 deletes every round and puts the tournament back to `registration_open`.
+
+## Tournament rounds (Commander pods)
+
+Same lifecycle as the 1v1 functions above, for pods of 3-4 seats (`tournament_pairings.player1_uuid`…`player4_uuid`). All run through `server/api/tournament-rounds/*.post.ts` (the non-`-swiss` endpoints).
+
+### `start_commander_round_one(p_tournament_uuid uuid, p_associate_order uuid[], p_table_sizes int[] default null) returns uuid`
+
+Creates round 1 and seats the associates pod by pod in the order given. `p_table_sizes` is the table sizes the organizer confirmed in the preview; null derives them from the player count (`commander_table_sizes`). Since `20261002100000` a custom seating (players dragged into differently-sized tables) is no longer silently discarded.
+
+### `advance_commander_round(p_tournament_uuid uuid, p_current_round_number smallint, p_associate_order uuid[] default null, p_table_sizes int[] default null) returns uuid`
+
+Completes the current round and seats the next one, like `advance_swiss_round`; past the tournament's round count it marks the tournament `completed`.
+
+### `turn_back_commander_round(p_tournament_uuid uuid, p_current_round_number smallint) returns void`
+
+Same behavior as `turn_back_swiss_round` (drops move to the reopened round N−1, a finished tournament goes back in progress).
+
+### `commander_table_sizes(p_count int, p_table_sizes int[]) returns int[]`
+
+The shared validation/fallback of the two functions above: returns `p_table_sizes` when it is valid for `p_count` players, otherwise the derived split (`[4,4,…,3]`).
+
+### `reset_commander_pairing(p_pairing_uuid uuid) returns void`
+
+"Reset tavolo": clears one pairing's entered data (ranking, kills, votes) without touching the pairing or its seats. Leaves `commander_decks` alone (a player's deck record is reusable across rounds).
+
+### `undraw_commander_pairing(p_pairing_uuid uuid) returns void`
+
+"Annulla patta": clears only the pairing's ranking and kills, restoring the empty state a draw can only be declared from.
+
+## Tournament lifecycle
+
+### `reset_tournament(p_tournament_uuid uuid) returns void`
+
+The navbar "Reset": wipes every round, pairing, result and standing of a tournament and puts it back to `registration_open`. Format-agnostic (Commander and 1v1 key off the same `tournament_rounds`/`tournament_pairings`); the cascades do the rest.
+
+### `reopen_tournament(p_tournament_uuid uuid) returns void`
+
+The way back from "Termina torneo" (migration `20261003100000`): puts a completed tournament and its last round back in progress without deleting anything.
+
+## Payments & renewals (transactional)
+
+Migration `20260902105738`. Payment create/update/delete used to write `pauperwave_payments` and then, in a second non-transactional call, touch `pauperwave_associate_renewals`: a failure between the two left a payment recorded without its renewal. These functions do both in one transaction (`server/api/transactions/*`).
+
+### `create_payment_with_renewal(p_associate_uuid uuid, p_payer_name text, …) returns table (…)`
+
+Inserts the payment and, for an `'Association Fee'`, makes sure the renewal exists (`ensure_payment_renewal`).
+
+### `update_payment_with_renewal(p_id bigint, p_associate_uuid uuid, …) returns table (…)`
+
+Updates the payment and keeps the renewals consistent with the new associate/date/type (`ensure_payment_renewal` for the new one, `remove_stale_payment_renewal` for the old).
+
+### `delete_payment_with_renewal(p_id bigint, p_deleted_by uuid) returns void`
+
+Soft-deletes the payment and removes the renewal it alone justified.
+
+### `ensure_payment_renewal(p_associate_uuid uuid, p_payment_date timestamptz) returns boolean`
+
+Creates the renewal row for the payment's year if it is missing; true when it created one.
+
+### `remove_stale_payment_renewal(p_associate_uuid uuid, p_payment_date timestamptz, p_exclude_payment_id bigint default null) returns void`
+
+Removes the renewal for that year when no other (non-deleted) Association Fee payment of the associate still backs it.
+
+## Associates, commanders and Telegram
+
+### `next_pauperwave_associate_number() returns text`
+
+The next value of the sequence behind `pauperwave_associate_number`, called when an application is approved (migration `20260827120000`).
+
+### `get_commander_catalog() returns json`
+
+The whole `mtg_commanders` catalog as one JSON value (`json_agg`), so PostgREST's `db.max_rows` cap never truncates it (the catalog is ~3000+ rows). Read by `useCommanderCatalogQuery.ts`.
+
+### `get_admin_telegram_chat_ids(p_roles app_role[] default array['admin', 'super_admin']) returns setof bigint`
+
+The Telegram chat ids of the linked associates holding one of the roles. Domain events go to `admin`+`super_admin`, technical errors to `super_admin` only (`docs/architecture/telegram-notifications.md`).
 
 ## Auditing & housekeeping
 
