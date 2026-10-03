@@ -52,11 +52,9 @@ export async function requireManagementPermission(event: H3Event) {
   return user
 }
 
-// Stricter than requireManagementPermission: admin or above, via the is_admin_or_above RPC, for
-// financial/bylaw-level writes where 'manage-membership-fees' is admin-only
-// (app/utils/permissions.ts)
-export async function requireAdminPermission(event: H3Event) {
-  const user = await requireUser(event)
+// Boolean variant of the is_admin_or_above check, shared by requireAdminPermission and
+// deckAccess.ts's requireAdminOrOwnPlayer (which tries it first without throwing)
+export async function hasAdminPermission(event: H3Event, user: JwtPayload): Promise<boolean> {
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   const { data: allowed, error } = await supabase.rpc('is_admin_or_above', {
@@ -70,7 +68,16 @@ export async function requireAdminPermission(event: H3Event) {
     })
   }
 
-  if (!allowed) {
+  return !!allowed
+}
+
+// Stricter than requireManagementPermission: admin or above, via the is_admin_or_above RPC, for
+// financial/bylaw-level writes where 'manage-membership-fees' is admin-only
+// (app/utils/permissions.ts)
+export async function requireAdminPermission(event: H3Event) {
+  const user = await requireUser(event)
+
+  if (!await hasAdminPermission(event, user)) {
     throw createError({
       statusCode: 403,
       statusMessage: 'Permessi di amministrazione richiesti'
