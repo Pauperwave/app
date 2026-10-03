@@ -9,6 +9,7 @@ export function useAssociatesRowActions() {
   const { t } = useI18n()
   const toast = useToast()
   const { approveAssociates, rejectAssociates, restoreAssociates } = useAssociatesMutations()
+  const { can } = useUserRole()
 
   const editingAssociate = ref<Associate | null>(null)
   const editModalOpen = ref(false)
@@ -100,6 +101,8 @@ export function useAssociatesRowActions() {
       {
         label: t('associate.rowActions.edit'),
         icon: ICONS.edit,
+        // The registry is admin territory ('manage-members'); organizers triage requests only
+        disabled: !can('manage-members'),
         onSelect: () => openEditModal(associate)
       },
       // Only for approved associates: a pending/rejected request has no tesseramento number yet
@@ -107,6 +110,7 @@ export function useAssociatesRowActions() {
         ? [{
           label: t('associate.rowActions.editNumber'),
           icon: ICONS.idCard,
+          disabled: !can('manage-members'),
           onSelect: () => openNumberModal(associate)
         }]
         : []),
@@ -158,6 +162,8 @@ export function useAssociatesRowActions() {
             : t('associate.rowActions.renew'),
           icon: associate.membership_status === 'unpaid' ? ICONS.receipt : ICONS.refresh,
           color: 'success' as const,
+          // Registers an Association Fee payment: 'manage-membership-fees', like the endpoint
+          disabled: !can('manage-membership-fees'),
           onSelect: () => openRenewModal(associate)
         }]
         : [])
