@@ -1,11 +1,10 @@
 <!-- app\pages\telegram\turni.vue -->
 <script setup lang="ts">
-// Table helper for a Pauper/Premodern round (Bo3, 50 minutes): timer, match game score and, once
-// the timer runs out, the extra-turns counter in place of the timer, showing whose turn is active.
-// All state is purely local (no persistence/backend, nothing shared between the two phones at the
-// table for now): it helps players keep count and feeds no official results (which have no live
-// pairing flow yet, see the /risultato mockup). A single screen without scroll, using all the
-// vertical space available (telegram.vue layout).
+// Table helper for a Pauper/Premodern round (50 minutes): the round timer and, once it runs out,
+// the extra-turns counter in place of the timer, showing whose turn is active. All state is
+// purely local (no persistence/backend, nothing shared between the two phones at the table) and
+// feeds no official results. A single screen without scroll, using all the vertical space
+// available (telegram.vue layout).
 //
 // State and logic live in the composables in app/composables/telegram/ (one per section): this page
 // only composes them and wires their events to the presentational components in
@@ -14,7 +13,6 @@ definePageMeta({ layout: 'telegram' })
 
 const roundTimer = useRoundTimer()
 const extraTurns = useExtraTurns()
-const matchScore = useMatchScore()
 
 function onTimerReset() {
   roundTimer.reset()
@@ -43,18 +41,6 @@ useHead({
 
 <template>
   <div class="h-full w-full flex flex-col gap-2 text-center">
-    <div class="landscape:hidden flex-1 min-h-0 flex flex-col gap-2">
-      <TelegramMatchScoreSection
-        :my-games-won="matchScore.myGamesWon.value"
-        :opponent-games-won="matchScore.opponentGamesWon.value"
-        :match-winner="matchScore.matchWinner.value"
-        @win="matchScore.winGame"
-        @reset="matchScore.reset"
-      />
-
-      <USeparator />
-    </div>
-
     <TelegramRoundTimerSection
       v-if="!roundTimer.timeIsUp.value"
       :label="roundTimer.label.value"
