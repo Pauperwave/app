@@ -1,5 +1,7 @@
 // app\utils\telegram\botCommands.ts
 
+import { helpTopicPayload, type HelpTopic } from '#shared/utils/telegram/helpTopics'
+
 export const TELEGRAM_BOT_URL = 'https://t.me/PauperwaveBot'
 
 interface BotCommand {
@@ -17,12 +19,24 @@ export function botCommandUrl(command: BotCommand): string | null {
   return payload === '' ? TELEGRAM_BOT_URL : `${TELEGRAM_BOT_URL}?start=${payload}`
 }
 
-// The bot's commands as shown on the /telegram-bot info page, in the order of /help. The
-// descriptions are in i18n (telegramBot.commands.items.<name>); the source of truth for what each
-// command does is docs/telegram-bot/README.md.
-export const TELEGRAM_BOT_COMMAND_GROUPS: { id: string, commands: BotCommand[] }[] = [
+interface BotCommandGroup {
+  id: string
+  // The /help section this card mirrors: its button opens that section in Telegram
+  helpTopic: HelpTopic
+  commands: BotCommand[]
+}
+
+export function botHelpTopicUrl(group: BotCommandGroup): string {
+  return `${TELEGRAM_BOT_URL}?start=${helpTopicPayload(group.helpTopic)}`
+}
+
+// The bot's commands as shown on the /telegram-bot info page, one card per /help section and in
+// its order. The descriptions are in i18n (telegramBot.commands.items.<name>); the source of truth
+// for what each command does is docs/telegram-bot/README.md.
+export const TELEGRAM_BOT_COMMAND_GROUPS: BotCommandGroup[] = [
   {
     id: 'general',
+    helpTopic: 'generale',
     commands: [
       { name: 'start', requiresLink: false, startPayload: '' },
       { name: 'help', requiresLink: false },
@@ -30,34 +44,31 @@ export const TELEGRAM_BOT_COMMAND_GROUPS: { id: string, commands: BotCommand[] }
     ]
   },
   {
-    id: 'competitions',
+    id: 'rankings',
+    helpTopic: 'classifiche',
+    commands: [{ name: 'classifiche', requiresLink: false }]
+  },
+  {
+    id: 'tournaments',
+    helpTopic: 'tornei',
     commands: [
-      { name: 'classifiche', requiresLink: false },
       { name: 'eventi', requiresLink: false },
       { name: 'calendario', requiresLink: false },
       { name: 'leghe', requiresLink: false },
       { name: 'prossimo', requiresLink: false },
-      { name: 'iscrizioni', requiresLink: true }
-    ]
-  },
-  {
-    id: 'profile',
-    commands: [
-      { name: 'tessera', requiresLink: true },
-      { name: 'collegamento', requiresLink: false },
-      { name: 'scollegamento', requiresLink: true, startPayload: null }
-    ]
-  },
-  {
-    id: 'tournament',
-    commands: [
       { name: 'tavolo', requiresLink: true },
       { name: 'drop', requiresLink: true, startPayload: null },
       { name: 'turni', requiresLink: false }
     ]
   },
   {
+    id: 'registrations',
+    helpTopic: 'iscrizioni',
+    commands: [{ name: 'iscrizioni', requiresLink: true }]
+  },
+  {
     id: 'cards',
+    helpTopic: 'carte',
     commands: [
       { name: 'prezzo', requiresLink: false },
       { name: 'cercate', requiresLink: true },
@@ -66,6 +77,7 @@ export const TELEGRAM_BOT_COMMAND_GROUPS: { id: string, commands: BotCommand[] }
   },
   {
     id: 'dice',
+    helpTopic: 'dadi',
     commands: [
       { name: 'dado', requiresLink: false },
       { name: 'moneta', requiresLink: false },
@@ -73,7 +85,13 @@ export const TELEGRAM_BOT_COMMAND_GROUPS: { id: string, commands: BotCommand[] }
     ]
   },
   {
-    id: 'support',
-    commands: [{ name: 'supporto', requiresLink: false }]
+    id: 'account',
+    helpTopic: 'account',
+    commands: [
+      { name: 'tessera', requiresLink: true },
+      { name: 'collegamento', requiresLink: false },
+      { name: 'scollegamento', requiresLink: true, startPayload: null },
+      { name: 'supporto', requiresLink: false }
+    ]
   }
 ]
