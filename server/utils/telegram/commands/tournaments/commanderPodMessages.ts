@@ -17,6 +17,7 @@ export const VOTE_PICK_PREFIX = 'cmdvtpk:'
 export const VOTE_CONFIRM_PREFIX = 'cmdvtok:'
 export const FINAL_CONFIRM_PREFIX = 'cmdfok:'
 export const FINAL_EDIT_PREFIX = 'cmdfedit:'
+export const FINAL_REFRESH_PREFIX = 'cmdfrf:'
 export const DROP_ASK_PREFIX = 'cmddrop:'
 export const DROP_CONFIRM_PREFIX = 'cmddropok:'
 export const DROP_CANCEL_PREFIX = 'cmddropno:'
@@ -172,6 +173,30 @@ export function finalRichMessage(pod: LivePod): InputRichMessage {
           { text: '✅ Conferma', style: 'success', callback_data: `${FINAL_CONFIRM_PREFIX}${pod.pairingUuid}` },
           { text: '✏️ Modifica', style: 'danger', callback_data: `${FINAL_EDIT_PREFIX}${pod.pairingUuid}` }
         ]
+      }
+    ]
+  }
+}
+
+// Shown after confirming while others at the table are still filling in their result; the refresh
+// button re-checks and sends the tables once nobody is pending
+export function waitingForOthersRichMessage(
+  pod: LivePod,
+  pendingNames: string[]
+): InputRichMessage {
+  return {
+    blocks: [
+      {
+        type: 'paragraph',
+        text: `⏳ Mancano ancora: ${pendingNames.join(', ')}.\n\nQuando avranno inserito posizione e voti, `
+          + 'premi Aggiorna per ricevere i riepiloghi dei voti e del punteggio.'
+      },
+      {
+        type: 'buttons',
+        buttons: [{
+          text: '🔄 Aggiorna',
+          callback_data: `${FINAL_REFRESH_PREFIX}${pod.pairingUuid}`
+        }]
       }
     ]
   }
