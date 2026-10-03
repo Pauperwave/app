@@ -7,12 +7,11 @@ interface SetBracketBody {
   bracketLevel: number
 }
 
-// Sets a deck's power-level "Bracket" rating (1-5)
+// Sets a deck's power-level "Bracket" rating (1-5); its owner or an admin
 export default defineEventHandler(async (event) => {
-  await requireManagementPermission(event)
-
   const { deckUuid, bracketLevel } = await readBody<SetBracketBody>(event)
   const supabase = serverSupabaseServiceRole<Database>(event)
+  await requireAdminOrDeckOwner(event, supabase, deckUuid)
 
   const { error } = await supabase
     .from('commander_decks')
