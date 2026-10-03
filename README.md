@@ -1,10 +1,10 @@
-# Pauperwave
+# 🌊 Pauperwave
 
 Gestionale Nuxt 4 per l'associazione **Pauperwave**: tesseramenti/rinnovi, incassi, e organizzazione di tornei multi-formato (Commander, Premodern, Draft, Pauper, ecc.).
 
 Stack: Nuxt 4 · Vue 3.5 · Nuxt UI · Supabase (Postgres + RLS) · TypeScript.
 
-## Setup
+## 📦 Setup
 
 ```bash
 pnpm install
@@ -12,13 +12,13 @@ pnpm install
 
 Richiede un `.env` con le variabili del progetto Supabase collegato (`NUXT_PUBLIC_SUPABASE_URL`, `NUXT_PUBLIC_SUPABASE_KEY`, `NUXT_SUPABASE_SECRET_KEY`), il token CardTrader (`CARDTRADER_API_TOKEN`) e, per il bot Telegram, `TELEGRAM_BOT_TOKEN`/`TELEGRAM_WEBHOOK_SECRET` (vedi sotto).
 
-## Sviluppo
+## 💻 Sviluppo
 
 ```bash
 pnpm dev            # dev server su http://localhost:3000
 ```
 
-## Build e produzione
+## 🚢 Build e produzione
 
 ```bash
 pnpm build
@@ -27,7 +27,7 @@ pnpm preview        # preview locale della build di produzione
 
 Vedi la [documentazione di deploy Nuxt](https://nuxt.com/docs/getting-started/deployment) per il deploy effettivo.
 
-## Qualità del codice
+## ✅ Qualità del codice
 
 ```bash
 pnpm lint             # eslint . — 0 warning/0 errori richiesti
@@ -40,7 +40,7 @@ pnpm fallow:health    # audit complessità/hotspot
 pnpm fallow:security  # candidati di sicurezza (richiedono verifica manuale)
 ```
 
-## Test
+## 🧪 Test
 
 ```bash
 pnpm test             # vitest run
@@ -50,7 +50,7 @@ pnpm test:e2e         # playwright test
 pnpm test:e2e:headed  # playwright test, headed + rallentato
 ```
 
-## Supabase
+## 💾 Supabase
 
 Le migration vivono in `supabase/migrations/` (`YYYYMMDDHHMMSS_descrizione.sql`). Dopo ogni modifica allo schema, rigenera i tipi TypeScript:
 
@@ -60,7 +60,7 @@ pnpm run supabase:types
 
 `shared/utils/types/database.ts` è generato: non va editato a mano.
 
-## Bot Telegram
+## 🤖 Bot Telegram
 
 [@PauperwaveBot](https://t.me/PauperwaveBot) mette in chat calendario, leghe e classifiche, iscrizioni e risultati ai tavoli, prezzi delle carte (CardMarket e CardTrader) e la lista delle carte cercate. Guida per chi lo usa: [`docs/telegram-bot/README.md`](docs/telegram-bot/README.md).
 
@@ -72,10 +72,10 @@ pnpm telegram:set-webhook   # richiede TELEGRAM_BOT_TOKEN/TELEGRAM_WEBHOOK_SECRE
 
 Stato tecnico di ogni funzionalità: `docs/architecture/telegram-bot.md`. Chi viene notificato per quale evento: `docs/architecture/telegram-notifications.md`.
 
-## Documentazione
+## 📚 Documentazione
 
 Sezioni del sito e funzionalità di ciascuna: [`docs/site/README.md`](docs/site/README.md). `docs/README.md` è l'indice di tutta la documentazione di progetto (architettura, schema DB, backlog, storia delle decisioni).
 
-## Origine
+## 🌱 Origine
 
 Questo progetto nasce dal [Nuxt Dashboard Template](https://github.com/nuxt-ui-templates/dashboard) di Nuxt UI.
