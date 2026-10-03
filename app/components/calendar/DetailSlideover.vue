@@ -10,9 +10,9 @@
      sm:px-6 isn't cancelled by p-0 alone (different variant signature, so tailwind-merge doesn't
      collapse them), leaving visible gaps on both sides of the hero at sm:+ ("black bands").
      Participant rows use UUser + generatePlayerAvatar() directly, not AssociateTag.vue: that always
-     calls useAssociatesQuery() (even without an associateUuid prop), querying
-     pauperwave_associates_with_status with the anon Supabase client, a real exposure risk on this
-     unauthenticated page given docs/BACKLOG.md's open P1 on that table's permissive RLS policy.
+     calls useAssociatesQuery() (even without an associateUuid prop), which queries
+     pauperwave_associates_with_status. For an anonymous visitor RLS returns no rows, so on this
+     public page it would be a useless request.
      Participants here are plain name strings, not linked to an associate record. -->
 <script lang="ts" setup>
 import type { Tournament } from '~/types'
