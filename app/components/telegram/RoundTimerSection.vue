@@ -22,14 +22,32 @@ const emit = defineEmits<{
   reset: []
   adjust: [deltaMinutes: number]
 }>()
+
+// Remembered on the phone. Turns the digits 90 degrees so they can use the screen's height:
+// a phone lying on the table is read from a distance. Only applied in portrait (the toggle is
+// hidden in landscape, where the digits already have room), so turning the phone sideways
+// brings them upright and the choice returns when it is portrait again.
+const isRotated = useLocalStorage('telegram-timer-rotated', false)
 </script>
 
 <template>
   <section class="flex-2 min-h-0 flex flex-col w-full">
-    <div class="flex-1 min-h-0 flex items-center justify-center">
-      <p class="text-[length:min(28vw,10rem)] leading-none font-bold tabular-nums">
+    <div class="relative flex-1 min-h-0 flex items-center justify-center [container-type:size]">
+      <p
+        class="text-[length:min(28vw,10rem)] leading-none font-bold tabular-nums"
+        :class="isRotated && 'portrait:[writing-mode:vertical-rl] portrait:text-[length:min(34cqh,90cqw)]'"
+      >
         {{ label }}
       </p>
+
+      <UButton
+        :icon="ICONS.rotateClockwise"
+        color="neutral"
+        variant="ghost"
+        class="absolute top-0 right-0 landscape:hidden"
+        :aria-label="isRotated ? 'Raddrizza il timer' : 'Ruota il timer'"
+        @click="isRotated = !isRotated"
+      />
     </div>
 
     <p
