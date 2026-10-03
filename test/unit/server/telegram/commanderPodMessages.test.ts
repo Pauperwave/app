@@ -3,11 +3,12 @@ import { describe, expect, it } from 'vitest'
 import type { LivePod } from '../../../../server/utils/telegram/commands/tournaments/commanderPodData'
 import {
   DROP_ASK_PREFIX, DROP_CANCEL_PREFIX, DROP_CONFIRM_PREFIX, DROP_UNDO_PREFIX,
-  FINAL_CONFIRM_PREFIX, KILL_CONFIRM_PREFIX, KILL_TOGGLE_PREFIX,
+  FINAL_CONFIRM_PREFIX, FINAL_REFRESH_PREFIX, KILL_CONFIRM_PREFIX, KILL_TOGGLE_PREFIX,
   POS_CONFIRM_PREFIX, POS_PICK_PREFIX, VOTE_CONFIRM_PREFIX, VOTE_PICK_PREFIX,
   dropAlreadyDoneRichMessage, dropAskRichMessage, dropConfirmRichMessage, dropDoneRichMessage,
   finalRichMessage, isLastRound, killTargetUuid, killsRichMessage, positionRichMessage,
-  resultFactsFor, scoreSummaryTableBlock, voteRichMessage, votesReceivedTableBlock
+  resultFactsFor, scoreSummaryTableBlock, voteRichMessage, votesReceivedTableBlock,
+  waitingForOthersRichMessage
 } from '../../../../server/utils/telegram/commands/tournaments/commanderPodMessages'
 
 function makePod(overrides: Partial<LivePod> = {}): LivePod {
@@ -201,5 +202,19 @@ describe('follow-up tables', () => {
 
   it('shows zeros when the score is not available yet', () => {
     expect(JSON.stringify(scoreSummaryTableBlock(null).cells.at(-1))).toContain('0 pt')
+  })
+})
+
+describe('waitingForOthersRichMessage', () => {
+  it('names who is still missing', () => {
+    const message = waitingForOthersRichMessage(makePod(), ['Anna', 'Bruno'])
+    expect(JSON.stringify(message.blocks)).toContain('Mancano ancora: Anna, Bruno')
+  })
+
+  it('offers a refresh carrying the pairing, within the callback_data limit', () => {
+    const [refresh] = buttonsOf(waitingForOthersRichMessage(makePod(), ['Anna']))
+    expect(refresh?.callback_data).toBe(`${FINAL_REFRESH_PREFIX}pairing-1`)
+    const realUuid = '0b6b4d3a-8a0e-4b6a-9c3e-5d2f4a1b7c90'
+    expect(`${FINAL_REFRESH_PREFIX}${realUuid}`.length).toBeLessThanOrEqual(64)
   })
 })

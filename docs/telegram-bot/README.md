@@ -128,7 +128,7 @@ Se sei collegato e siedi a un tavolo di un torneo in corso:
 
 - **`/tavolo`**: mostra torneo, round e avversari. Nei tavoli Commander ha anche il bottone per **impostare il tuo comandante** (cercandolo con la modalità inline di Telegram). Il bottone **✍️ Inserisci risultato** apre l'inserimento del risultato del turno:
   - **1 contro 1**: scegli l'esito dal tuo punto di vista (2-0, 2-1, 1-2, 0-2), controlli il riepilogo e invii. Il risultato è subito valido e l'avversario riceve un messaggio per confermarlo (✅ Confermo) o contestarlo (❌ Non è corretto). Una contestazione non annulla il risultato: lo segnala all'organizzatore per la revisione.
-  - **Commander (3-4 giocatori)**: un passo alla volta, posizione, uccisioni, voto al mazzo e voto alla giocata, poi il riepilogo. Ogni scelta viene salvata subito.
+  - **Commander (3-4 giocatori)**: un passo alla volta, posizione, uccisioni, voto al mazzo e voto alla giocata, poi il riepilogo. Ogni scelta viene salvata subito. I riepiloghi dei voti ricevuti e del punteggio arrivano quando **tutti** i giocatori del tavolo hanno inserito posizione e voti; se qualcuno manca, il bot ti dice chi e il bottone 🔄 Aggiorna li invia appena ha finito.
 - **`/drop`**: lasci il torneo Commander, dopo aver inserito il risultato.
 - **`/turni`**: il contatore dei turni aggiuntivi.
 

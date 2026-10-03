@@ -9,6 +9,7 @@ import {
 import {
   buildCommanderUsageByPlayer, sortCommandersByRecency
 } from '#shared/utils/commanders/commanderUsage'
+import { pendingSeatNames } from './commanderPodCompletion'
 
 export interface LivePodSeat {
   playerUuid: string
@@ -307,4 +308,31 @@ export async function fetchPodScoreSummary(pod: LivePod): Promise<PlayerTableSco
   }))
 
   return calculatePlayerTableScore(pod.myPlayerUuid, tableResults, buildPosValues(ruleset), ruleset)
+}
+
+// Names of the seats (this player included) that haven't set a position and cast both votes
+// yet: the follow-up tables wait until this is empty
+export async function fetchPendingSeatNames(pod: LivePod): Promise<string[]> {
+  const supabase = telegramServiceSupabaseClient()
+  const [positions, votes] = await Promise.all([
+    supabase
+      .from('tournament_round_results')
+      .select('player_uuid')
+      .eq('pairing_uuid', pod.pairingUuid)
+      .not('position', 'is', null),
+    supabase
+      .from('tournament_votes')
+      .select('voter_uuid, vote_type')
+      .eq('pairing_uuid', pod.pairingUuid)
+  ])
+  if (positions.error) throw positions.error
+  if (votes.error) throw votes.error
+
+  const seats = [
+    { playerUuid: pod.myPlayerUuid, name: 'Tu' },
+    ...pod.opponents.map(({ playerUuid, name }) => ({ playerUuid, name }))
+  ]
+  const positioned = new Set(positions.data.map(row => row.player_uuid))
+
+  return pendingSeatNames(seats, positioned, votes.data)
 }

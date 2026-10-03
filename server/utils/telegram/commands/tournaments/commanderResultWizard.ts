@@ -4,19 +4,33 @@
 // (saveCommanderPosition / recordKill / removeKillBetween / castVote), so confirming on the final
 // screen only sends the follow-up tables and writes nothing new, and "Modifica" just walks back to
 // the position step. The messages themselves are in commanderPodMessages.ts.
-import type { Bot } from 'grammy'
+import type { Bot, Context } from 'grammy'
 
 import { answerLoadError, requireChatId } from '../callbackErrors'
 import { editRichMessage, showRichStep, twoColumnFactsTable } from '../mockups/richStepHelpers'
-import { fetchPodScoreSummary, fetchVotesReceivedFor } from './commanderPodData'
+import {
+  fetchPendingSeatNames, fetchPodScoreSummary, fetchVotesReceivedFor, type LivePod
+} from './commanderPodData'
 import { requirePod } from './commanderPod'
 import {
-  FINAL_CONFIRM_PREFIX, FINAL_EDIT_PREFIX, KILL_CONFIRM_PREFIX, KILL_TOGGLE_PREFIX,
+  FINAL_CONFIRM_PREFIX, FINAL_EDIT_PREFIX, FINAL_REFRESH_PREFIX, KILL_CONFIRM_PREFIX,
+  KILL_TOGGLE_PREFIX,
   POSITIONS, POS_CONFIRM_PREFIX, POS_PICK_PREFIX, VOTE_CONFIRM_PREFIX, VOTE_PICK_PREFIX,
   dropAskRichMessage, finalRichMessage, isLastRound, killTargetUuid, killsRichMessage,
   positionRichMessage, resultFactsFor, scoreSummaryTableBlock, voteRichMessage,
-  votesReceivedTableBlock, type KillTarget
+  votesReceivedTableBlock, waitingForOthersRichMessage, type KillTarget
 } from './commanderPodMessages'
+
+// Both tables read every seat's picks, so they are only sent once the whole table has finished
+async function sendFollowUpTables(ctx: Context, pod: LivePod) {
+  const [votesReceived, score] = await Promise.all([
+    fetchVotesReceivedFor(pod), fetchPodScoreSummary(pod)
+  ])
+  await Promise.all([
+    ctx.replyWithRichMessage({ blocks: [votesReceivedTableBlock(votesReceived, score)] }),
+    ctx.replyWithRichMessage({ blocks: [scoreSummaryTableBlock(score)] })
+  ])
+}
 
 export function registerCommanderResultHandlers(bot: Bot) {
   bot.on('callback_query:data', async (ctx, next) => {
@@ -156,23 +170,46 @@ export function registerCommanderResultHandlers(bot: Bot) {
       try {
         const pod = await requirePod(ctx)
         if (!pod) return
-        // Nothing left to write: every pick was saved as it happened. Like mockups/risultato.ts's
-        // sendConfirmedResult, edit down to the plain summary, then send votes-received and score
-        // as their own messages (full width each)
-        const [votesReceived, score] = await Promise.all([
-          fetchVotesReceivedFor(pod), fetchPodScoreSummary(pod)
-        ])
+        // Nothing left to write: every pick was saved as it happened. Edit down to the plain
+        // summary, then send votes-received and score as their own messages (full width each),
+        // or say who is still missing
+        const pending = await fetchPendingSeatNames(pod)
         await Promise.all([
           editRichMessage(ctx, {
             blocks: [twoColumnFactsTable('Risultato inviato', resultFactsFor(pod))]
           }),
-          ctx.replyWithRichMessage({ blocks: [votesReceivedTableBlock(votesReceived, score)] }),
-          ctx.replyWithRichMessage({ blocks: [scoreSummaryTableBlock(score)] }),
           ctx.answerCallbackQuery()
         ])
+        if (pending.length) {
+          await ctx.replyWithRichMessage(waitingForOthersRichMessage(pod, pending))
+        } else {
+          await sendFollowUpTables(ctx, pod)
+        }
         if (!isLastRound(pod)) await ctx.replyWithRichMessage(dropAskRichMessage(pod))
       } catch (error) {
         console.error('Commander final-confirm handler failed:', error)
+        await answerLoadError(ctx)
+      }
+      return
+    }
+
+    if (data.startsWith(FINAL_REFRESH_PREFIX)) {
+      if (!(await requireChatId(ctx))) return
+      try {
+        const pod = await requirePod(ctx)
+        if (!pod) return
+        const pending = await fetchPendingSeatNames(pod)
+        if (pending.length) {
+          await ctx.answerCallbackQuery({ text: `⏳ Mancano ancora: ${pending.join(', ')}` })
+          return
+        }
+        await Promise.all([
+          editRichMessage(ctx, { blocks: [{ type: 'paragraph', text: '✅ Tutti hanno finito.' }] }),
+          ctx.answerCallbackQuery()
+        ])
+        await sendFollowUpTables(ctx, pod)
+      } catch (error) {
+        console.error('Commander refresh handler failed:', error)
         await answerLoadError(ctx)
       }
       return
