@@ -1,6 +1,42 @@
 # Changelog
 
 
+## v0.10.0
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.9.0...v0.10.0)
+
+### Enhancements
+
+- **bot:** ✨ add a printing to my wanted cards from the price message ([5306a23e](https://github.com/Pauperwave/app/commit/5306a23e))
+- **bot:** ✨ /importa pastes a card list into the wanted cards, /cercate lists and removes them ([34ea8d65](https://github.com/Pauperwave/app/commit/34ea8d65))
+- **bot:** ✨ /help lists the card commands with quick-launch buttons, /tavolo and /risultato no longer marked as examples ([628b41c8](https://github.com/Pauperwave/app/commit/628b41c8))
+- **turni:** ✨ the turns mini app follows the event round timer, read-only ([560cc443](https://github.com/Pauperwave/app/commit/560cc443))
+- **turni:** ✨ the mini app timer updates live through Realtime, with a safety re-read ([ff6831f4](https://github.com/Pauperwave/app/commit/ff6831f4))
+- **bot:** ✨ informational Telegram bot page in the sidebar ([a9002f71](https://github.com/Pauperwave/app/commit/a9002f71))
+- **turni:** ✨ button to turn the timer digits 90 degrees in portrait ([2eea0433](https://github.com/Pauperwave/app/commit/2eea0433))
+
+### Fixes
+
+- **bot:** 🐛 /help and README no longer list a /risultato command that doesn't exist ([dc2651fe](https://github.com/Pauperwave/app/commit/dc2651fe))
+- **bot:** 🐛 Commander result summary waits for the whole table before sending the vote and score tables ([a2cb2737](https://github.com/Pauperwave/app/commit/a2cb2737))
+- **turni:** 🐛 the timer digits scale with the screen width instead of overflowing in portrait ([297fd3ac](https://github.com/Pauperwave/app/commit/297fd3ac))
+
+### Refactors
+
+- **turni:** ♻️ drop the games-won counter from the turns mini app ([317c68fc](https://github.com/Pauperwave/app/commit/317c68fc))
+
+### Documentation
+
+- 📝 user-facing README for the Telegram bot, linked from the main README ([6cd75994](https://github.com/Pauperwave/app/commit/6cd75994))
+- 📝 site sections and features guide ([c857c334](https://github.com/Pauperwave/app/commit/c857c334))
+- 📝 /tavolo rows no longer present a /risultato command that doesn't exist ([270aab7c](https://github.com/Pauperwave/app/commit/270aab7c))
+- 📝 CLAUDE.md lists every page group, layout and public path ([8af1bfe5](https://github.com/Pauperwave/app/commit/8af1bfe5))
+- 📝 site guide: /classifiche index is not public ([7c91c571](https://github.com/Pauperwave/app/commit/7c91c571))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.9.0
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.8.0...v0.9.0)
