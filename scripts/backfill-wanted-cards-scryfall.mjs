@@ -1,33 +1,25 @@
 // scripts\backfill-wanted-cards-scryfall.mjs
-// One-off batch job: wanted cards created before migration 20260808120000 only have
-// scryfall_url, not scryfall_id/set_code (which the CardTrader resolver needs, see
-// server/utils/cardTrader.ts and the 2026-08-08 feasibility study in
-// docs/PROGRESS.md). scryfall_url has the form
-// scryfall.com/card/{set}/{collector_number}[/{lang}]/{slug} — set+number (+lang
-// when present, for the non-English printings migrated from the initial mock) are
-// extracted from it and Scryfall is called for the exact id.
+// One-off batch job: wanted cards created before migration 20260808120000 only have scryfall_url,
+// but the CardTrader resolver (server/utils/cardTrader.ts) needs scryfall_id/set_code. Set, number
+// and optional lang are parsed from the URL, then Scryfall is queried for the exact id.
 //
 // Re-runnable: it only updates rows whose scryfall_id is still null.
 //
 // Usage:
 //   node --env-file=.env scripts/backfill-wanted-cards-scryfall.mjs
 
-// fallow-ignore-file security-sink -- the fetch() call (fallow security, ssrf
-// candidate) always hits a hardcoded api.scryfall.com host; only the path segment
-// is built from card data, the host is never attacker-controllable, and this is an
-// offline admin script anyway, not an HTTP-reachable endpoint
+// fallow-ignore-file security-sink -- fixed api.scryfall.com host, only the path is card data
 import { createSupabaseAdminClient, sleep } from './lib/supabaseAdminClient.mjs'
 
 const supabase = createSupabaseAdminClient()
 
-// Scryfall asks for at most 10 requests/sec and a "polite" delay between calls:
+// Scryfall asks for at most 10 requests/sec:
 // https://scryfall.com/docs/api#rate-limits-and-good-citizenship
 const REQUEST_DELAY_MS = 100
 
-// Segments after "/card/": [set, collectorNumber, lang?, slug] — lang is only
-// present for non-English printings (e.g. "usg/321/it/culla-di-gea-..."). It has to
-// be isolated as a whole segment (not the first 2 characters of the slug, which by
-// sheer coincidence can be two lowercase letters, e.g. "appa-...").
+// Segments after "/card/": [set, collectorNumber, lang?, slug]; lang only exists for non-English
+// printings and must be matched as a whole segment, since a slug can also start with two lowercase
+// letters.
 function parseScryfallUrl(url) {
   const path = new URL(url).pathname
   const segments = path.split('/').filter(Boolean)

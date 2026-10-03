@@ -1,8 +1,6 @@
 // scripts\check-i18n-keys.mjs
-// One-off audit: find every t('...')/$t('...') call in app/ and server/
-// (excluding dynamic keys built via template literals or variables) and
-// check each literal key resolves against i18n/locales/it.json. Not wired
-// into package.json scripts -- ad hoc, run directly with `node`.
+// Ad hoc audit (not in package.json): checks every literal t('...')/$t('...') key in app/ and
+// server/ resolves against i18n/locales/it.json.
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, extname } from 'node:path'
 
@@ -40,9 +38,7 @@ function walk(dir, files = []) {
 const locale = JSON.parse(readFileSync(LOCALE_PATH, 'utf8'))
 const definedKeys = flattenKeys(locale)
 
-// Matches t('x.y.z'), t("x.y.z"), $t('x.y.z') -- literal string args only.
-// Skips template-literal/variable keys (t(`...`), t(someVar)) since those
-// can't be statically resolved here.
+// Literal-key calls only; template-literal/variable keys can't be resolved statically
 const CALL_PATTERN = /\$?\bt\(\s*['"]([a-zA-Z0-9_.]+)['"]/g
 
 const missing = new Map()

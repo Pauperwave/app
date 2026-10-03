@@ -1,15 +1,16 @@
 // scripts\fallow-health-report.mjs
-// Human-readable summary of `fallow health` — score/grade + penalty
-// breakdown, top refactoring targets, top churn/complexity hotspots, and
-// critical-severity complexity findings grouped by file. Written for the
-// same reason as fallow-dupes-report.mjs (2026-08-16): avoid hand-rolling a
-// throwaway parse script every time this gets checked.
+// Human-readable summary of `fallow health`: score/grade + penalty breakdown, top refactoring
+// targets, churn/complexity hotspots and critical complexity findings.
 //
 // Usage:
-//   node scripts/fallow-health-report.mjs                    run fallow health fresh, report to stdout
-//   node scripts/fallow-health-report.mjs --min-severity high lower the complexity-findings floor (default critical)
-//   node scripts/fallow-health-report.mjs --top 5             limit targets/hotspots lists (default 10)
-//   node scripts/fallow-health-report.mjs --json path.json    report from a previously-saved capture
+//   node scripts/fallow-health-report.mjs                    run fallow health fresh, report to
+//   stdout
+//   node scripts/fallow-health-report.mjs --min-severity high lower the complexity-findings floor
+//   (default critical)
+//   node scripts/fallow-health-report.mjs --top 5             limit targets/hotspots lists (default
+//   10)
+//   node scripts/fallow-health-report.mjs --json path.json    report from a previously-saved
+//   capture
 //   node scripts/fallow-health-report.mjs --save path.json    also write the raw JSON capture there
 
 import { execSync } from 'node:child_process'
@@ -25,9 +26,7 @@ const top = Number(argValue('--top', '10'))
 const jsonPath = argValue('--json')
 const savePath = argValue('--save')
 
-// fallow exits 1 when it finds issues (the normal case here, not a real
-// error) — execSync throws on that, so the JSON has to be pulled off the
-// thrown error's own stdout instead of the successful return value.
+// fallow exits 1 when it finds issues (normal), so read the JSON from the thrown error's stdout
 function runFallowHealth() {
   const command = `npx fallow health --score --hotspots --targets --complexity `
     + `--min-severity ${minSeverity} --format json --quiet`
@@ -66,11 +65,8 @@ for (const h of d.hotspots.slice(0, top)) {
   console.log(`${h.score}  ${h.path}  (${h.commits} commits, trend: ${h.trend})`)
 }
 
-// With 0% test coverage (no tests exist yet in this project), CRAP score
-// (complexity * (1 - coverage)^2) pushes nearly every function above the
-// "critical" severity floor regardless of how complex it actually is — so
-// this list is capped and sorted by cyclomatic complexity, the metric that
-// actually reflects "hard to follow", not by count-per-file.
+// With little test coverage the CRAP score pushes nearly every function to "critical",
+// so the list is capped and sorted by cyclomatic complexity instead.
 console.log(`\n--- top ${top} ${minSeverity}+ findings (by cyclomatic complexity) ---`)
 const worst = [...d.findings].sort((a, b) => b.cyclomatic - a.cyclomatic).slice(0, top)
 for (const f of worst) {

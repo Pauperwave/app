@@ -1,9 +1,7 @@
 // scripts\telegram-set-webhook.mjs
-// One-off: registers this deployment's /api/telegram/webhook endpoint with
-// Telegram. Re-run whenever NUXT_PUBLIC_SITE_URL, TELEGRAM_BOT_TOKEN, or
-// TELEGRAM_WEBHOOK_SECRET changes (e.g. rotating the secret, or first setup
-// on a new environment) — Telegram keeps the last-registered URL/secret
-// until told otherwise, it doesn't pick up env changes on its own.
+// Registers this deployment's /api/telegram/webhook endpoint with Telegram. Re-run whenever
+// NUXT_PUBLIC_SITE_URL, TELEGRAM_BOT_TOKEN or TELEGRAM_WEBHOOK_SECRET changes: Telegram keeps the
+// last-registered URL/secret and never picks up env changes itself.
 //
 // Usage:
 //   node --env-file=.env scripts/telegram-set-webhook.mjs

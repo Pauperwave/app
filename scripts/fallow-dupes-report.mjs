@@ -1,10 +1,6 @@
 // scripts\fallow-dupes-report.mjs
-// Human-readable summary of `fallow dupes` clone groups — written after
-// several sessions of hand-rolling a throwaway parse script for the same
-// JSON shape (2026-08-16). Sorts groups by line count (biggest duplication
-// first) and prints each group's fingerprint + every instance's file:line
-// range, so a cleanup pass can work top-down without re-parsing the raw
-// `fallow dupes --format json` output by hand each time.
+// Human-readable summary of `fallow dupes` clone groups, biggest first, with each group's
+// fingerprint and every instance's file:line range.
 //
 // Usage:
 //   node scripts/fallow-dupes-report.mjs                 run fallow dupes fresh, report to stdout
@@ -24,9 +20,7 @@ const minLines = Number(argValue('--min-lines') ?? 0)
 const jsonPath = argValue('--json')
 const savePath = argValue('--save')
 
-// fallow exits 1 when it finds error-severity issues (e.g. a --threshold
-// breach) — not a real failure here, so the JSON has to be pulled off the
-// thrown error's own stdout instead of the successful return value.
+// fallow exits 1 on error-severity issues (not a failure): read the JSON from the error's stdout
 function runFallowDupes() {
   const options = { stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 1024 * 1024 * 32 }
   try {
