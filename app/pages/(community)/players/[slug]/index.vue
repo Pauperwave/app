@@ -4,8 +4,8 @@
 // Detail page for players, shaped like associate/[slug].vue (avatar header card + DetailCard grid).
 // No edit action: players have no editing UI anywhere, they derive from their associate record.
 // Slug-based, not uuid: the display name is first_name+last_name, exactly as stable as
-// associate/[slug].vue's slug. Open to every role, read-only: email, associate number, logins and
-// the deck controls are for staff only
+// associate/[slug].vue's slug. Open to every role, read-only: email, associate number and logins
+// need 'view-players', and the deck controls follow the deck permissions
 
 interface DetailField {
   icon: string
@@ -15,7 +15,10 @@ interface DetailField {
 
 const { t } = useI18n()
 const route = useRoute()
-const { isStaff, can, userId: currentUserId } = useUserRole()
+const { can, userId: currentUserId } = useUserRole()
+
+// Email, associate number and logins are what the players list shows: 'view-players'
+const canSeePersonalData = computed(() => can('view-players'))
 
 const { data: playersData, isLoading: playerLoading } = usePlayersQuery()
 const player = computed(() => playersData.value?.find(
@@ -42,11 +45,12 @@ const associateLink = computed(() => (player.value?.first_name && player.value?.
   ? `/associate/${slugify(`${player.value.first_name} ${player.value.last_name}`)}`
   : null)
 
-const { data: lastLoginsData, isLoading: lastLoginsLoading } = usePlayersLastLoginsQuery(isStaff)
+const { data: lastLoginsData, isLoading: lastLoginsLoading }
+  = usePlayersLastLoginsQuery(canSeePersonalData)
 const lastSignInAt = computed(() => lastLoginsData.value
   ?.find(entry => entry.playerUuid === player.value?.uuid)?.lastSignInAt ?? null)
 
-const infoFields = computed<DetailField[]>(() => (!player.value || !isStaff.value)
+const infoFields = computed<DetailField[]>(() => (!player.value || !canSeePersonalData.value)
   ? []
   : [
     ...(player.value.pauperwave_associate_number
@@ -64,7 +68,7 @@ const infoFields = computed<DetailField[]>(() => (!player.value || !isStaff.valu
 // Backed by the trigger-populated player_login_history table (migration
 // 20260820100000), not the admin-API-backed last-logins.get.ts above — see
 // usePlayerLoginHistoryQuery.ts's own comment on why these two are separate.
-const userId = computed(() => (isStaff.value ? player.value?.user_id : undefined))
+const userId = computed(() => (canSeePersonalData.value ? player.value?.user_id : undefined))
 const { data: loginHistory, isLoading: loginHistoryLoading } = usePlayerLoginHistoryQuery(userId)
 
 const loading = computed(() => playerLoading.value || lastLoginsLoading.value)
@@ -161,7 +165,7 @@ const { data: playerStats, isLoading: playerStatsLoading } = usePlayerStatsQuery
                   <DateWithRelativeTooltip :iso-string="player.created_at" :time="false" />
                 </dd>
               </div>
-              <div v-if="isStaff" class="flex justify-between items-center gap-4">
+              <div v-if="canSeePersonalData" class="flex justify-between items-center gap-4">
                 <dt class="flex items-center gap-1.5 text-muted">
                   <UIcon :name="ICONS.clock" class="size-4 shrink-0" />
                   {{ t('player.columns.lastLogin') }}
@@ -176,7 +180,7 @@ const { data: playerStats, isLoading: playerStatsLoading } = usePlayerStatsQuery
         </div>
 
         <PlayersSingleLoginHistoryCard
-          v-if="isStaff && player.user_id"
+          v-if="canSeePersonalData && player.user_id"
           :loading="loginHistoryLoading"
           :dates="loginHistory"
         />
