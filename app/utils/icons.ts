@@ -76,6 +76,7 @@ export const ICONS = {
   shieldCheck: 'i-lucide-shield-check',
   tag: 'i-lucide-tag',
   rotateBack: 'i-lucide-rotate-ccw',
+  rotateClockwise: 'i-lucide-rotate-cw-square',
   userStar: 'i-lucide-user-star',
   vote: 'i-lucide-star',
 
