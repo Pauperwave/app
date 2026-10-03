@@ -1,6 +1,6 @@
 // app\utils\sortableTableHeader.ts
 import { h } from 'vue'
-import { UButton } from '#components'
+import { UButton, UIcon } from '#components'
 import type { Column } from '@tanstack/vue-table'
 
 // Tri-state (none -> asc -> desc -> none), not a plain asc/desc toggle: a column can return to the
@@ -30,4 +30,12 @@ export function sortableHeader<TData>(
       else column.toggleSorting(false)
     }
   })
+}
+
+// A column header that isn't sortable but carries the same leading icon as its sortable siblings
+export function iconHeader(label: string, icon: string) {
+  return h('span', { class: 'inline-flex items-center gap-1.5' }, [
+    h(UIcon, { name: icon, class: 'size-4 shrink-0' }),
+    label
+  ])
 }
