@@ -15,6 +15,7 @@
     "check:paths": "node scripts/check-file-paths.mjs",
     "check:paths:fix": "node scripts/check-file-paths.mjs --fix",
     "check:i18n": "node scripts/check-i18n-keys.mjs",
+    "check:components": "node scripts/check-component-names.mjs",
     "supabase:types": "supabase gen types typescript --project-id uggrolzdntoamclgnzrt --schema public > shared/utils/types/database.ts",
     "geocode:associates": "node --env-file=.env scripts/geocode-associates.mjs",
     "geocode:missing": "node --env-file=.env scripts/list-missing-geocodes.mjs",
