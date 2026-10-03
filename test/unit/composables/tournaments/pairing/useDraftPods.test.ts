@@ -22,7 +22,7 @@ describe('useDraftPods', () => {
     }
   })
 
-  // Every case from the user's own worked examples (2026-08-24).
+  // Every case from the worked examples
   it.each([
     [12, [6, 6]],
     [13, [7, 6]],

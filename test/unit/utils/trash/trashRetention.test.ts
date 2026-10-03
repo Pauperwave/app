@@ -19,7 +19,7 @@ describe('trashRetentionInfo', () => {
   })
 
   it('is warning within 7 days of expiry', () => {
-    // 54 days before "now" (2026-09-01), leaving 6 of the 60-day window.
+    // 54 days before "now", leaving 6 of the 60-day window
     const deletedAt = new Date(2026, 6, 9).toISOString()
     const info = trashRetentionInfo(deletedAt, 60)
     expect(info.daysRemaining).toBe(6)
