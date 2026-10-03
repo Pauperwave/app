@@ -1,16 +1,12 @@
 // app\composables\useScryfallCardSearch.ts
-// Live Scryfall card search for "New request" — no local catalogue (unlike
-// MagicTheGathering/league's useCommanderSearch, which filters an already synced
-// commander table client-side): building a shared catalogue would mean modelling
-// every single printing of every card (~110-120k rows according to Scryfall's bulk
-// data), not just the name — more work than it is worth until the commanders need
-// it too. See the TODO in docs/TODO.md.
+// Live Scryfall card search for "New request", with no local catalogue (unlike league's
+// useCommanderSearch, which filters an already synced commander table): a shared catalogue would
+// mean modelling every printing of every card (~110-120k rows per Scryfall's bulk data), more work
+// than it is worth until commanders need it too (see docs/TODO.md).
 //
-// Two phases, same UI pattern as CommanderSearch.vue (USelectMenu + search-term +
-// debounce): 1) autocomplete on the name (lightweight, strings only), 2) once a
-// name is picked, every existing printing of that card, so the exact edition and
-// artwork can be chosen — which is why the live search beat a catalogue storing a
-// single printing per name.
+// Two phases, like CommanderSearch.vue (USelectMenu + search-term + debounce): 1) name autocomplete
+// (strings only), 2) once a name is picked, every printing of that card, so the exact edition and
+// artwork can be chosen
 
 export interface ScryfallPrinting {
   id: string
@@ -20,27 +16,24 @@ export interface ScryfallPrinting {
   collectorNumber: string
   typeLine: string
   imageUrl: string | null
-  // Cropped illustration only (no card frame/text) — used by CardArtPicker.vue
-  // for cover-image selection, where the full card frame would look wrong.
+  // Cropped illustration only (no frame/text), used by CardArtPicker.vue for cover-image selection
   artCropUrl: string | null
-  // Required alongside any artCropUrl use per Scryfall's API usage
-  // guidelines (the crop itself carries no in-image credit) — see
-  // CardArtPicker.vue.
+  // Required with any artCropUrl use per Scryfall's API guidelines (the crop has no in-image
+  // credit), see CardArtPicker.vue
   artist: string | null
   manaCost: string
   colorIdentity: string[]
   cmc: number
   scryfallUrl: string
-  // Transform/modal DFCs (two faces, each with its own image) — not split cards
-  // (e.g. Fire // Ice), which share a single image.
+  // Transform/modal DFCs (two faces, each with its own image), not split cards (Fire // Ice), which
+  // share one image
   isDoubleFaced: boolean
   backImageUrl: string | null
   backManaCost: string | null
-  // "nonfoil" | "foil" | "etched" — which finishes exist for THIS specific
-  // printing (not every printing has a foil version).
+  // "nonfoil" | "foil" | "etched": the finishes THIS printing exists in
   finishes: string[]
-  // Non-foil price of this specific printing in EUR (null when Scryfall has none
-  // for it — happens with very rare or very new printings).
+  // Non-foil price of this printing in EUR (null when Scryfall has none, e.g. very rare or very new
+  // printings)
   price: number | null
 }
 
@@ -74,16 +67,12 @@ function parsePrice(value: string | null | undefined): number | null {
   return Number.isFinite(parsed) ? parsed : null
 }
 
-// Flagged cyclomatic 26, but every point is a ??/?. operator (no if/switch/
-// loop anywhere) reflecting Scryfall's genuinely inconsistent card-face
-// shape (a double-faced card stores image/mana-cost on the *face*, not the
-// card — see the comment below). Splitting into smaller functions would
-// just redistribute the same ??/?. chains across more functions, not
-// reduce them.
-// fallow-ignore-next-line complexity
+// Flagged cyclomatic 26, but every point is a ??/?. (no if/switch/loop) reflecting Scryfall's
+// inconsistent card-face shape (a double-faced card stores image/mana-cost on the *face*):
+// splitting would only spread the same chains across functions fallow-ignore-next-line complexity
 function toPrinting(card: ScryfallApiCard): ScryfallPrinting {
-  // Double-faced cards (transform/modal) carry image_uris on the individual face,
-  // not on the card — the first face stands in as the representative one.
+  // Double-faced cards carry image_uris on the face, not the card: the first face stands in as
+  // representative
   const frontFace = card.image_uris ? card : card.card_faces?.[0]
   const backFace = !card.image_uris ? card.card_faces?.[1] : undefined
   const isDoubleFaced = !!backFace?.image_uris
@@ -118,8 +107,8 @@ export interface ScryfallCardSuggestion {
   imageUrl: string | null
 }
 
-// /cards/search returns ~175 results per page: a typeahead only needs the first
-// few, the user narrows the rest by carrying on typing.
+// /cards/search returns ~175 results per page: a typeahead needs the first few, the user narrows by
+// typing on
 const SUGGESTION_LIMIT = 20
 
 export function useScryfallCardSearch() {
@@ -127,12 +116,9 @@ export function useScryfallCardSearch() {
   const nameSuggestions = ref<ScryfallCardSuggestion[]>([])
   const isSuggesting = ref(false)
 
-  // /cards/search rather than /cards/autocomplete: the latter returns strings
-  // only, while the mana cost is needed alongside the name (same pattern as
-  // CommanderSuggestionRow.vue in league, which reads it from a local catalogue
-  // instead of the API). The full search syntax also works here, so `game:paper`
-  // excludes Alchemy cards — digital only, not playable in paper — replacing the
-  // client-side filter on their "A-" name prefix that autocomplete required.
+  // /cards/search rather than /cards/autocomplete (strings only): the mana cost is needed with the
+  // name. The full search syntax also works, so `game:paper` excludes digital-only Alchemy cards
+  // (instead of filtering their "A-" prefix client-side)
   async function fetchSuggestions(q: string) {
     const trimmed = q.trim()
     if (trimmed.length < 2) {
@@ -147,16 +133,16 @@ export function useScryfallCardSearch() {
       })
       nameSuggestions.value = (response.data ?? []).slice(0, SUGGESTION_LIMIT).map(card => ({
         name: card.name,
-        // Double-faced cards have no top-level mana_cost/image_uris: they sit on
-        // the front face, as in toPrinting().
+        // Double-faced cards have no top-level mana_cost/image_uris: they sit on the front face, as
+        // in toPrinting()
         manaCost: card.mana_cost || card.card_faces?.[0]?.mana_cost || '',
         imageUrl: card.image_uris?.normal
           ?? card.card_faces?.[0]?.image_uris?.normal
           ?? null
       }))
     } catch {
-      // /cards/search answers 404 when no card matches: for a typeahead that is
-      // normal while typing, not an error.
+      // /cards/search answers 404 when nothing matches: normal for a typeahead while typing, not an
+      // error
       nameSuggestions.value = []
     } finally {
       isSuggesting.value = false
@@ -166,11 +152,9 @@ export function useScryfallCardSearch() {
   const debouncedFetchSuggestions = useDebounceFn(fetchSuggestions, 200)
   watch(query, q => debouncedFetchSuggestions(q))
 
-  // Each printing row only shows its image on hover (see PrintingRow.vue) —
-  // without preloading here, the first hover on every printing starts empty and
-  // the network delay shows. The preload runs in the background and does not block
-  // the UI: if it fails (slow network, printing without an image) the hover still
-  // falls back to normal lazy loading.
+  // Each printing row shows its image on hover (see PrintingRow.vue): without preloading, the first
+  // hover starts empty. It runs in the background without blocking the UI; on failure the hover
+  // falls back to normal lazy loading
   function preloadImages(list: ScryfallPrinting[]) {
     if (import.meta.server) return
     for (const printing of list) {
@@ -180,20 +164,17 @@ export function useScryfallCardSearch() {
     }
   }
 
-  // Name of the card whose printings are shown — it drives the query below rather
-  // than being passed straight from fetchPrintings() as before: this lets Pinia
-  // Colada keep already-seen printings cached (RAM + localStorage via
-  // PiniaColadaCachePersister in colada.options.ts), with no new Scryfall call
-  // when the user returns to a name searched in this session or an earlier one.
+  // Name of the card whose printings are shown: it drives the query below so Pinia Colada keeps
+  // seen printings cached (RAM + localStorage via PiniaColadaCachePersister in colada.options.ts),
+  // with no new Scryfall call on return to a searched name
   const selectedCardName = ref<string>()
 
   const { data: printingsData, isLoading: isLoadingPrintings } = useQuery({
     key: () => ['scryfall-printings', selectedCardName.value ?? ''],
     enabled: () => !!selectedCardName.value,
     query: async (): Promise<ScryfallPrinting[]> => {
-      // game:paper excludes digital-only printings (Arena/MTGO, Alchemy included)
-      // — Scryfall's full search syntax works here, unlike /cards/autocomplete
-      // above.
+      // game:paper excludes digital-only printings (Arena/MTGO, Alchemy): the full search syntax
+      // works here, unlike /cards/autocomplete
       const response = await $fetch<{ data: ScryfallApiCard[] }>('https://api.scryfall.com/cards/search', {
         query: { q: `!"${selectedCardName.value}" game:paper`, unique: 'prints', order: 'released', dir: 'desc' }
       })

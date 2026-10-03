@@ -1,14 +1,10 @@
 // app\composables\tournaments\list\useTournamentsBulkActions.ts
-// Bulk operations over a set of selected tournaments (useSelection.ts) — same
-// shape as useWantedCardsBulkActions.ts: no dedicated bulk server endpoint,
-// each op fans the existing per-tournament mutation out with Promise.allSettled.
-// fallow-ignore-file code-duplication -- requestStatusChange/requestDelete/
-// toastForFailures mirror useWantedCardsBulkActions.ts's shape, but the
-// entity/status types, i18n key prefix, and mutation functions all differ
-// per domain (wanted-cards also has two extra bulk actions this domain
-// doesn't need) — same same-shaped-but-parameterized call as
-// feedback_dedup_threshold_call_sites; a shared factory would need as many
-// parameters as it removes duplication.
+// Bulk operations over a set of selected tournaments (useSelection.ts), like
+// useWantedCardsBulkActions.ts: no bulk server endpoint, each op fans the per-tournament mutation
+// out with Promise.allSettled.
+// fallow-ignore-file code-duplication -- same shape as useWantedCardsBulkActions.ts, but
+// entity/status types, i18n prefix and mutations differ per domain: a shared factory would need as
+// many parameters as it removes
 import type { Tournament, TournamentStatus } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 
@@ -74,9 +70,8 @@ export function useTournamentsBulkActions(selection: Selection<number>) {
     })
   }
 
-  // Closes the modal immediately and defers the actual mutation(s) behind a
-  // 10-second undo window (useUndoableAction.ts), same as
-  // useWantedCardsBulkActions.ts.
+  // Closes the modal at once and defers the mutation(s) behind a 10-second undo window
+  // (useUndoableAction.ts), like useWantedCardsBulkActions.ts
   function confirmPendingAction() {
     const action = pendingAction.value
     if (!action) return

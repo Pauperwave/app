@@ -3,11 +3,9 @@ import type { Ref } from 'vue'
 import type { CittadinoEvent, CittadinoPlacement, CittadinoStanding } from '~/types'
 import { groupBestNByPlayer } from '#shared/utils/cittadino/bestNStandings'
 
-// Owns the format filter *and* the scoring, because the two cannot be separated:
-// hiding a column while leaving the totals computed over every format would show
-// a matrix whose rows visibly do not add up to their own total. Filtering to
-// "Pauper" therefore answers "what would the standings be over the Pauper events
-// alone", which is the only reading where the numbers stay honest.
+// Owns the format filter *and* the scoring, since they can't be separated: hiding a column while
+// totals stay computed over every format would show rows that don't add up to their total.
+// Filtering to "Pauper" answers "what would the standings be over the Pauper events alone"
 export function useCittadinoFilters(
   events: Ref<CittadinoEvent[]>,
   placements: Ref<CittadinoPlacement[]>
@@ -17,9 +15,8 @@ export function useCittadinoFilters(
 
   const selectedFormats = ref<string[]>([])
 
-  // An empty selection means "no filter" rather than "nothing": that keeps the
-  // default state correct before the calendar has loaded, and makes clearing the
-  // filter the same action as deselecting everything.
+  // An empty selection means "no filter", not "nothing": the default is correct before the calendar
+  // loads, and clearing equals deselecting everything
   const isFiltered = computed(() =>
     selectedFormats.value.length > 0 && selectedFormats.value.length < formats.value.length
   )
@@ -40,9 +37,8 @@ export function useCittadinoFilters(
       visiblePlacements, cittadinoPointsForRank, CITTADINO_COUNTED_RESULTS
     )
 
-    // "Verranno conteggiati solo i migliori 11 punteggi" — the total is the sum
-    // of the best N results, not of everything played, and the rest stay on the
-    // row marked as dropped so the matrix can show why they don't add up.
+    // "Verranno conteggiati solo i migliori 11 punteggi": the total is the sum of the best N
+    // results, the rest stay on the row marked as dropped so the matrix shows why they don't add up
     const rows = groups.map<CittadinoStanding>((group) => {
       const bestResults = group.sortedByPoints.slice(0, CITTADINO_COUNTED_RESULTS)
 
@@ -57,10 +53,9 @@ export function useCittadinoFilters(
       }
     })
 
-    // First tie-break is the regulation's: "a parità di punteggio passa chi ha
-    // fatto il punteggio più alto in singolo evento". The second — more events
-    // played — is ours, not the written regulation's: see ADR-012 in
-    // docs/PROGRESS.md for why it was needed and that it still has to be ratified.
+    // First tie-break is the regulation's ("a parità di punteggio passa chi ha fatto il punteggio
+    // più alto in singolo evento"); the second, more events played, is ours, not in the written
+    // regulation (ADR-012, docs/PROGRESS.md: still to be ratified)
     rows.sort((a, b) =>
       b.total - a.total
       || b.bestSingle - a.bestSingle

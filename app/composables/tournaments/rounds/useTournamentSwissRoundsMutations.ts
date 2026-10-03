@@ -1,8 +1,7 @@
 // app\composables\tournaments\rounds\useTournamentSwissRoundsMutations.ts
-// Round-lifecycle writes for 1v1 Swiss-format tournaments — same shape as
-// useTournamentRoundsMutations.ts (Commander), separate endpoints because
-// the backing RPCs are separate (start_swiss_round_one vs
-// start_commander_round_one, see migration 20260918000000).
+// Round-lifecycle writes for 1v1 Swiss tournaments: the same shape as
+// useTournamentRoundsMutations.ts (Commander) with separate endpoints, since the backing RPCs are
+// separate (start_swiss_round_one vs start_commander_round_one, see migration 20260918000000)
 export function useTournamentSwissRoundsMutations(tournamentUuid: MaybeRefOrGetter<string>) {
   const queryCache = useQueryCache()
 

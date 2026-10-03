@@ -1,15 +1,10 @@
 // app\composables\layout\useCommandPaletteGroups.ts
-// Extracted out of default.vue (2026-09-18) — builds UDashboardSearch's
-// group list (quick-create actions, nav links, associate search, sign-out,
-// view-source), same "pure data, not layout logic" split as
-// useMainNavGroups.ts/useNavBadgeCounts.ts.
+// Builds UDashboardSearch's group list (quick-create actions, nav links, associate search,
+// sign-out, view-source), a "pure data, not layout logic" split like useMainNavGroups.ts
 import type { CommandPaletteItem, NavigationMenuItem } from '@nuxt/ui'
 
-// The CommandPalette/DashboardSearch doesn't support nested children arrays,
-// it only shows flat lists. Each item in the items array should be a
-// selectable command, not a group with children — so a nav item with
-// children is flattened into itself plus one entry per child, prefixed with
-// the parent's own label for context.
+// The CommandPalette/DashboardSearch only shows flat lists, so a nav item with children is
+// flattened into itself plus one entry per child, prefixed with the parent's label
 function flattenForSearch(items: NavigationMenuItem[][]): CommandPaletteItem[] {
   return items.flat().filter(item => item.type !== 'label' && !item.disabled).flatMap((item) => {
     const parent: CommandPaletteItem = {
@@ -44,16 +39,10 @@ export function useCommandPaletteGroups(options: {
   // feeds the "associates" search group below, no extra fetch.
   const { data: associates } = useAssociatesQuery()
 
-  // "New …" items reuse the same "?action=create" convention as
-  // home/QuickCreateMenu.vue — landing on the list page with its Add modal
-  // already open, instead of a modal owned by the palette itself. Mapped
-  // from useQuickCreateItems.ts, the single source both surfaces read from
-  // (2026-08-19, user request) — the two had already drifted before that
-  // existed (this list was missing tournament/league/event/location
-  // entirely). Nested under a single "Create new" item's `children` array so
-  // the palette drills into a submenu (CommandPalette.vue's native
-  // `navigate`/back behavior) rather than listing every quick-create flat in
-  // the actions group.
+  // "New …" items reuse home/QuickCreateMenu.vue's "?action=create" convention (the list page opens
+  // with its Add modal), mapped from useQuickCreateItems.ts, the single source both surfaces read.
+  // Nested under one "Create new" item's `children` so the palette drills into a submenu
+  // (CommandPalette.vue's native `navigate`/back) instead of listing every quick-create flat
   const quickCreateItems = useQuickCreateItems()
   const handleLogout = useLogout()
 

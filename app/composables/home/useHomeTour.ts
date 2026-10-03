@@ -1,17 +1,11 @@
 // app\composables\home\useHomeTour.ts
 import type { Ref } from 'vue'
 
-// One step per chart/section (issue #55, user request 2026-08-22) — was a
-// single coarse step covering the whole dashboard body, too shallow to
-// actually explain anything. Same convention as useStatisticsTour.ts:
-// step order = the page's own reading order (top-left -> bottom-right),
-// targets are CSS ids on real elements of home/Staff.vue/home/Player.vue.
-// `steps` stays a computed (not a plain array) since useTour's own `steps`
-// param accepts a getter (toValue-unwrapped internally) — the quick-create
-// step and the staff/player section split only exist for the resolved role,
-// and isStaff can flip mid-session via "view as" (useUserRole.ts), so the
-// tour must react to it rather than freeze at whichever role was active
-// when the tour was first built.
+// One step per chart/section, like useStatisticsTour.ts: step order = the page's reading order
+// (top-left -> bottom-right), targets are CSS ids on real elements of
+// home/Staff.vue/home/Player.vue. `steps` stays a computed: useTour's `steps` accepts a getter, and
+// the quick-create step and staff/player split depend on the resolved role, which can flip
+// mid-session via "view as" (useUserRole.ts)
 export function useHomeTour(isStaff: Ref<boolean>) {
   const { t } = useI18n()
 

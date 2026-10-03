@@ -1,11 +1,7 @@
 // app\composables\tournaments\useRulesetPointsQuery.ts
-// Reads a tournament's effective ruleset point values — resolves
-// tournament -> league -> leagues.ruleset_uuid (both already exist in the
-// schema and were simply never wired together, user request 2026-09-17),
-// falling back to whichever ruleset has is_default = true when the
-// tournament has no league or the league has no ruleset assigned. Previously
-// always read is_default unconditionally (a stub flagged in this file's own
-// prior comment and in advance_commander_round's migration).
+// Reads a tournament's effective ruleset point values: tournament -> league ->
+// leagues.ruleset_uuid, falling back to the is_default ruleset when the tournament has no league or
+// the league has no ruleset assigned
 import type { RulesetPointValues } from '#shared/utils/tournaments/commanderScoring'
 import { mapRulesetPoints } from '#shared/utils/tournaments/rulesetPoints'
 

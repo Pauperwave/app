@@ -1,11 +1,8 @@
 // app\composables\tournaments\pairing\usePairingWeights.ts
-// Per-tournament localStorage persistence for the pairing optimizer's
-// weight sliders — ported from MagicTheGathering/league's
-// pairingPreferences.ts (getPairingWeights/savePairingWeights), rebuilt on
-// VueUse's useStorage (already this app's convention for local-only state,
-// see AcceptancePicker.vue's testPayments) instead of hand-rolled
-// localStorage get/set. tournamentUuid replaces league's numeric
-// tournamentId as the per-tournament storage key.
+// Per-tournament localStorage persistence for the pairing optimizer's weight sliders, ported from
+// league's pairingPreferences.ts but built on VueUse's useStorage (this app's local-only state
+// convention, see AcceptancePicker.vue's testPayments) instead of hand-rolled get/set;
+// tournamentUuid is the per-tournament storage key
 import type { PairingWeights } from '~/types'
 // Explicit import, not auto-import — see CLAUDE.md's useStorage
 // auto-import-collision note (Nitro's server-side useStorage shadows

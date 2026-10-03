@@ -6,14 +6,12 @@ import type { TrashItem } from '~/types'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 import AssociateTag from '~/components/ui/AssociateTag.vue'
 
-// No selection/bulk-restore column, unlike useEventsTableColumns.ts's
-// pattern — a Trash page is a low-traffic admin tool, one row restored at a
-// time is enough for now (YAGNI).
+// No selection/bulk-restore column, unlike useEventsTableColumns.ts: a Trash page is a low-traffic
+// admin tool, one row at a time is enough (YAGNI).
 //
-// canPurge (the 'purge-trash' permission, super_admin-only) gates whether
-// the "Elimina permanentemente" button renders at all — an admin below
-// super_admin can see this table (view-trash) and restore rows, but not
-// purge them, so the column would otherwise show a button that 403s.
+// canPurge (the super_admin-only 'purge-trash' permission) gates the "Elimina permanentemente"
+// button: an admin below super_admin can view and restore but not purge, so it would otherwise show
+// a button that 403s
 export function useTrashTableColumns(
   onRestore: (item: TrashItem) => void,
   onPurge: (item: TrashItem) => void,
@@ -54,9 +52,8 @@ export function useTrashTableColumns(
         : '—'
     },
     {
-      // Not a real data field on TrashItem (deletedAt already is) — a
-      // derived countdown, sortable on the same computed number rather than
-      // on deletedAt again, so "closest to being purged" sorts correctly.
+      // A derived countdown (not a TrashItem field), sortable on the computed number so "closest to
+      // being purged" sorts correctly
       id: 'daysRemaining',
       accessorFn: row => trashRetentionInfo(row.deletedAt, retentionDays()).daysRemaining,
       header: ({ column }) => sortableHeader(t('trash.columns.daysRemaining'), column),
@@ -74,9 +71,8 @@ export function useTrashTableColumns(
     {
       id: 'actions',
       header: t('trash.columns.actions'),
-      // Labeled + outline, same style already used for every other
-      // "undo"-flavored action in the app (ICONS.undo + variant: 'outline',
-      // see useUndoableAction.ts's toast action) — 2026-08-23 user request.
+      // Labeled + outline, like every other "undo"-flavored action (ICONS.undo + variant:
+      // 'outline', see useUndoableAction.ts's toast action)
       cell: ({ row }) => h('div', { class: 'flex gap-2 justify-start' }, [
         h(UButton, {
           label: t('trash.restore'),

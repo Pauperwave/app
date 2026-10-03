@@ -17,10 +17,8 @@ export function useThemeTransition() {
       Math.max(x, window.innerWidth - x),
       Math.max(y, window.innerHeight - y)
     )
-    // Same fallback as browsers without View Transitions support — on
-    // mobile, the address bar can hide/show mid-animation, which throws off
-    // the reveal circle's coverage (user report, 2026-08-30). Skip the
-    // animated reveal there entirely rather than compensating for it.
+    // Same fallback as browsers without View Transitions: on mobile the address bar can hide/show
+    // mid-animation, throwing off the reveal circle's coverage, so skip the animated reveal there
     if (!document.startViewTransition || isMobile) {
       isDark.value = !isDark.value
       return

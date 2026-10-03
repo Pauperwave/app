@@ -1,14 +1,10 @@
 // app\composables\tournaments\registration\useTournamentRegistrationsMutations.ts
-// Every write goes through a server/api endpoint holding the service-role
-// key (same convention as useWantedCardsMutations.ts). Optimistic updates on
-// the three per-row actions (status, delete, payment) — the ones staff click
-// repeatedly while working a check-in desk — via queryCache.setQueryData in
-// onMutate, rolled back in onError; registerAssociates stays invalidate-only
-// (a deliberate, multi-select action, not a rapid-click one, so the extra
-// optimistic-state complexity isn't worth it there). Every mutation reports
-// failures via toast — previously fire-and-forget, so a failed write (RLS,
-// network) left the UI silently out of sync with no feedback at all (user
-// request, 2026-08-25).
+// Every write goes through a server/api endpoint holding the service-role key (like
+// useWantedCardsMutations.ts). The three per-row actions staff click repeatedly at a check-in desk
+// (status, delete, payment) update optimistically via queryCache.setQueryData in onMutate, rolled
+// back in onError; registerAssociates stays invalidate-only (a deliberate multi-select action, not
+// worth the complexity). Every mutation reports failures via toast, so a failed write (RLS,
+// network) doesn't leave the UI silently out of sync
 import type { PaymentMethod } from '#shared/types/transactions'
 import type { TournamentRegistration } from './useTournamentRegistrationsQuery'
 import type { TournamentPayment } from './useTournamentPaymentsQuery'

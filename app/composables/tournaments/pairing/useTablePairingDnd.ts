@@ -1,13 +1,8 @@
 // app\composables\tournaments\pairing\useTablePairingDnd.ts
-// State and validation layer for table drag-and-drop plus pairing
-// constraints/scoring — ported from MagicTheGathering/league's own
-// app/composables/tables/useTableDnd.ts (user request, 2026-09-15). Player
-// identity is a string (associate uuid) throughout instead of league's
-// numeric player id; drag-and-drop itself is handled by TableCard.vue via
-// vue-draggable-plus (already this app's DnD convention, see
-// PodsManager.vue) rather than league's own VueDraggable usage needing any
-// changes here — this file only tracks/validates/scores state, it has no
-// DOM/drag wiring of its own either in league or here.
+// State and validation layer for table drag-and-drop plus pairing constraints/scoring, ported from
+// league's useTableDnd.ts. Player identity is a string (associate uuid) instead of league's numeric
+// id. Drag-and-drop itself is wired by TableCard.vue via vue-draggable-plus (see PodsManager.vue);
+// this file only tracks, validates and scores state.
 import type { BadgeProps } from '@nuxt/ui'
 import { seededShuffle } from '#shared/utils/seededShuffle'
 import type { PairingForbiddenPair, PairingWeights, PairingTable, Seat } from '~/types'
@@ -35,19 +30,13 @@ function cloneTables(tables: PairingTable[]): PairingTable[] {
 }
 
 /**
- * Rebuilds a table's seat shape — every occupied seat kept (no cap on table
- * size, user request 2026-09-30: tables are freely resizable by drag, so a
- * hardcoded max used to silently truncate whichever seat landed past it,
- * looking like that player's drag had been reverted), plus exactly one
- * trailing empty seat so there's always somewhere to drop a next player.
- * `seat.id` for an occupied seat is keyed by the player's own uuid, not by
- * array position — TableCard.vue's `v-for="seat in seatsModel" :key="seat.id"`
- * needs a key stable across reorders so Vue actually moves/recreates the
- * right DOM node instead of reusing the same "seat N" node and just patching
- * its `player` prop in place (same drag-tracking reasoning as league's own
- * comment here — a positional key desyncs an in-progress drag from the
- * physical DOM node it picked up). Empty seats have no entity to key by, so
- * they keep a positional id — interchangeable anyway.
+ * Rebuilds a table's seat shape: every occupied seat is kept (no cap on table size: tables are
+ * freely resizable by drag, and a hardcoded max silently truncated the seat past it, looking like a
+ * reverted drag), plus exactly one trailing empty seat so there is always somewhere to drop. An
+ * occupied `seat.id` is keyed by the player's uuid, not array position: TableCard.vue's `v-for ...
+ * :key="seat.id"` needs a key stable across reorders, or Vue patches the same "seat N" node in
+ * place and desyncs an in-progress drag from the DOM node it picked up. Empty seats keep a
+ * positional id (interchangeable). /
  */
 function normalizeSeats(tableId: string, seats: Seat[]): Seat[] {
   const players = seats
@@ -105,11 +94,9 @@ function buildTablesFromOrder(tables: PairingTable[], playerOrder: string[]): Pa
 }
 
 /**
- * Scoring inputs are `MaybeRefOrGetter` on purpose: every one of them is fed
- * by an async Pinia Colada query, and this composable's caller builds its
- * options object once in `setup()`. Passing plain values would capture
- * whatever had resolved at that instant — pass getters (`() => x`) so
- * `toValue` re-reads them as the queries resolve.
+ * Scoring inputs are `MaybeRefOrGetter` on purpose: each is fed by an async Pinia Colada query
+ * while the caller builds its options once in `setup()`, so plain values would capture whatever had
+ * resolved by then. Pass getters (`() => x`) so `toValue` re-reads them as the queries resolve. /
  */
 export function useTablePairingDnd(initialTables: PairingTable[], params?: {
   playersForScoring?: MaybeRefOrGetter<PairingPlayer[]>
@@ -140,8 +127,9 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
   const localPlayerIds = computed(() => extractPlayerIds(localTables.value))
   const currentRound = computed(() => toValue(params?.currentRound) ?? 1)
 
-  // Source order is the standings from round 2 on; round 1 has none, so registration order must not act as strength.
-  // Listed in current seating order so the optimizer's ties keep the shown tables instead of reverting to registration order.
+  // Source order is the standings from round 2 on; round 1 has none, so registration order must not
+  // act as strength. Listed in current seating order so the optimizer's ties keep the shown tables
+  // instead of reverting to registration order.
   const fallbackPlayersForScoring = computed<PairingPlayer[]>(() => {
     const rankById = new Map(sourcePlayerIds.value.map((id, index) =>
       [id, currentRound.value > 1 ? index + 1 : 1]))
@@ -190,15 +178,15 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
     weights: weights.value
   }))
 
-  // Seated tables in table order — empty ones are dropped on confirm.
+  // Seated tables in table order (empty ones are dropped on confirm)
   const seatedTables = computed(() =>
     [...localTables.value]
       .sort((a, b) => a.tableNumber - b.tableNumber)
       .map(table => ({ table, size: table.seats.filter(seat => seat.player !== null).length }))
       .filter(entry => entry.size > 0))
 
-  // Drag stays free, but confirm needs 3-4 seat tables (pairings have four player columns)
-  // with every table of 3 after the tables of 4 (house convention, user request 2026-10-02).
+  // Drag stays free, but confirm needs 3-4 seat tables (pairings have four player columns), with
+  // every table of 3 after the tables of 4 (house convention)
   const tableRuleViolations = computed(() => {
     const violations = new Map<string, TableRuleViolation>()
 
@@ -225,7 +213,8 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
 
   const playerOrder = computed(() => extractPlayerIds(seatedTables.value.map(entry => entry.table)))
 
-  // Sent with playerOrder so the server seats the confirmed tables instead of re-deriving its own split.
+  // Sent with playerOrder so the server seats the confirmed tables instead of re-deriving its own
+  // split.
   const tableSizes = computed(() => seatedTables.value.map(entry => entry.size))
 
   const forbiddenPairMap = computed(() => {
@@ -260,7 +249,8 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
     return conflicts
   })
 
-  // Names the first table to fix, e.g. "Il tavolo 2 ha 5 giocatori: ne servono 3 o 4", plus how many more.
+  // Names the first table to fix, e.g. "Il tavolo 2 ha 5 giocatori: ne servono 3 o 4", plus how
+  // many more.
   const tableRulesError = computed(() => {
     const broken = seatedTables.value
       .filter(entry => tableRuleViolations.value.has(entry.table.id))
@@ -306,14 +296,10 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
   }
 
   /**
-   * Applies a single table's seat list after a drag-and-drop update
-   * (TableCard.vue's VueDraggable v-model emit) — re-runs it through
-   * normalizeSeats so the table's shape invariant (every occupied seat
-   * kept, exactly one trailing empty placeholder) is restored immediately.
-   * Without this, dragging a player OUT of a table left it with no
-   * trailing empty placeholder — TableSeatItem.vue only renders a "drop
-   * here" target for a `player: null` seat, so a later cross-table drag
-   * would have nowhere to land.
+   * Applies one table's seat list after a drag-and-drop update (TableCard.vue's VueDraggable
+   * v-model emit), re-running normalizeSeats to restore the shape invariant (occupied seats kept,
+   * one trailing empty placeholder). Otherwise dragging a player OUT left no placeholder, and
+   * TableSeatItem.vue renders a "drop here" target only for a `player: null` seat. /
    */
   function updateTableSeats(tableIndex: number, seats: Seat[]) {
     const targetTable = localTables.value[tableIndex]
@@ -325,7 +311,8 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
     localTables.value = ensureTableSeatShape(buildTablesFromOrder(localTables.value, order))
   }
 
-  // Seats each table exactly as given (its own size too), so a drag-resized layout gets valid 3-4 tables back.
+  // Seats each table exactly as given (its own size too), so a drag-resized layout gets valid 3-4
+  // tables back.
   function replaceByTables(playerTables: string[][]) {
     if (playerTables.length !== localTables.value.length) {
       replaceByPlayerOrder(playerTables.flat())
@@ -350,7 +337,7 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
     localTables.value = ensureTableSeatShape(cloneTables(tables))
   }
 
-  // Drag can leave any arrangement (user request 2026-09-30); a table breaking a confirm rule is flagged on its card.
+  // Drag can leave any arrangement; a table breaking a confirm rule is flagged on its card
   function tableStatus(table: PairingTable): TableStatus {
     if (conflictingTables.value.has(table.id)) {
       return { color: 'error' as const, label: t('tournament.single.tablePreview.status.conflict') }
@@ -418,7 +405,9 @@ export function useTablePairingDnd(initialTables: PairingTable[], params?: {
     return true
   }
 
-  /** Reassigns every seated player to a table/seat from `seed` (same seed + players = same tables). */
+  /**
+   * Reassigns every seated player to a table/seat from `seed` (same seed + players = same tables).
+   */
   function randomizeTables(seed: number) {
     const shuffled = seededShuffle(localPlayerIds.value, seed)
     replaceByTables(buildPodsFromSizes(shuffled, calculatePods(shuffled.length).tableSizes))

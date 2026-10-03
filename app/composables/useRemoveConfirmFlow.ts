@@ -1,13 +1,10 @@
 // app\composables\useRemoveConfirmFlow.ts
-// Confirm-before-destructive-action flow, extracted out of AcceptancePicker.vue
-// once "Pre-registrati" and "Iscritti (Pagato)" each grew a byte-identical copy
-// of it (user request, 2026-08-27) — same ConfirmModal-driving shape every
-// other destructive action in this app uses. The actual removal (hard delete
-// vs status revert) is passed in as onConfirm, not baked into this composable
-// — the two sides run genuinely different mutations, and parameterizing that
-// as a mode: 'delete' | 'revert' flag would just relocate the bug this file
-// already fixed once (2026-08-27: hard-deleting "Iscritti (Pagato)" rows also
-// silently removed them from "Pre-registrati").
+// Confirm-before-destructive-action flow extracted from AcceptancePicker.vue ("Pre-registrati" and
+// "Iscritti (Pagato)" had identical copies), the ConfirmModal-driving shape every destructive
+// action uses. The removal itself (hard delete vs status revert) is passed in as onConfirm: the two
+// sides run genuinely different mutations, and a mode: 'delete' | 'revert' flag would relocate the
+// bug already fixed once (hard-deleting "Iscritti (Pagato)" rows also silently removed them from
+// "Pre-registrati")
 export interface UseRemoveConfirmFlowOptions<T> {
   onConfirm: (items: T[]) => void
   getLabel: (item: T) => string

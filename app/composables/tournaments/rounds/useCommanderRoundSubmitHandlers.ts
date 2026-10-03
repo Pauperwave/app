@@ -1,11 +1,8 @@
 // app\composables\tournaments\rounds\useCommanderRoundSubmitHandlers.ts
-// Every modal-submit / dev quick-action mutation for CommanderRoundManager.vue
-// — mirrors league's own useTournamentSubmitHandlers.ts (all "what happens on
-// submit" handlers live in one composable, not split per modal) plus the
-// dev-only reset/quick-fill/draw actions, which league split into its own
-// PairingsCard.vue confirm-dialog state machine but this app keeps alongside
-// the other handlers since there's no separate Pinia-store-backed component
-// to own them here.
+// Every modal-submit / dev quick-action mutation for CommanderRoundManager.vue, like league's
+// useTournamentSubmitHandlers.ts (all submit handlers in one composable), plus the dev-only
+// reset/quick-fill/draw actions, which league kept in PairingsCard.vue's confirm-dialog state
+// machine
 import type { CommanderRoundData } from './useCommanderRoundData'
 import type { CommanderRoundModals } from './useCommanderRoundModals'
 
@@ -33,9 +30,8 @@ export function useCommanderRoundSubmitHandlers(options: {
     } catch { /* toasted by the mutation's own onError */ }
   }
 
-  // "Patta" — zero kills, everyone tied for 1st (see useCommanderScoring.ts's
-  // isDrawTable). Only offered on an empty table or to toggle an existing
-  // draw back off (canToggleDraw in RoundPairingCard.vue).
+  // "Patta": zero kills, everyone tied for 1st (see isDrawTable in useCommanderScoring.ts); only
+  // offered on an empty table or to toggle a draw off (canToggleDraw in RoundPairingCard.vue)
   async function declareDraw(pairingUuid: string) {
     const pairing = pairingsForRound.value.find(p => p.uuid === pairingUuid)
     if (!pairing) return
@@ -140,11 +136,9 @@ export function useCommanderRoundSubmitHandlers(options: {
   // ─── Reset / quick-fill / draw confirm dialog (dev-only) ────────────────────
   const { resetPairing, undrawPairing } = useTournamentPairingResetMutation(tournamentUuid)
 
-  // "Compila" test-fill — sequential ranking, one kill, catalog's top
-  // commander for everyone, circular votes. Picks a real commander (not a
-  // fake name) so the filled table renders actual card art like a real entry
-  // would — same "most popular first" order CommanderSearch.vue shows for an
-  // empty query.
+  // "Compila" test-fill: sequential ranking, one kill, the catalog's top commander for everyone,
+  // circular votes. A real commander (not a fake name) so the table renders real art, in the "most
+  // popular first" order CommanderSearch.vue shows for an empty query
   const { data: commanderCatalog } = useCommanderCatalogQuery()
   const firstCommanderName = computed(() => {
     const sorted = [...(commanderCatalog.value ?? [])]

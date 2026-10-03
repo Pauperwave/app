@@ -1,11 +1,7 @@
 // app\composables\tournaments\rounds\useSwissRoundData.ts
-// The shared substrate SwissRoundManager.vue's own submit-handlers and
-// lifecycle composables (and the template itself) read from: the raw
-// per-round queries plus every derived lookup over them (personFor,
-// matchPlayersFor, telegramInfoFor, pendingPlayerUuids, ...). Same split as
-// CommanderRoundManager.vue's own useCommanderRoundData.ts (2026-09-24,
-// once SwissRoundManager.vue had grown to mix all of this with the submit
-// handlers and the advance/turn-back lifecycle in one 367-line file).
+// The shared substrate SwissRoundManager.vue's submit-handlers/lifecycle composables and template
+// read: the raw per-round queries plus every derived lookup (personFor, matchPlayersFor,
+// telegramInfoFor, pendingPlayerUuids, ...), the same split as useCommanderRoundData.ts
 import type { SwissMatchPerson, SwissMatchPlayer, SwissMatchTelegramInfo } from '~/types'
 import type { TournamentMatchResult } from './useTournamentMatchResultsQuery'
 
@@ -20,10 +16,8 @@ export function useSwissRoundData(options: {
   const { data: pairings } = useTournamentPairingsQuery(tournamentUuid)
   const { data: matchResults } = useTournamentMatchResultsQuery(tournamentUuid)
   const { data: registrations } = useTournamentRegistrationsQuery(tournamentUuid)
-  // Live-updates matchResults/pairings as the Telegram bot writes to them, so
-  // an organizer watching this round sees a player's submitted result — and
-  // the opponent's confirmation/dispute — without refreshing the page
-  // (2026-09-23/24 user request).
+  // Live-updates matchResults/pairings as the Telegram bot writes, so an organizer sees a submitted
+  // result and the opponent's confirmation/dispute without refreshing
   useTournamentMatchResultsRealtime(tournamentUuid)
   const {
     liveStandings, playedPairs, byePlayerUuids, dropByPlayerUuid
@@ -63,10 +57,9 @@ export function useSwissRoundData(options: {
   const matchResultByPairingUuid = computed(() =>
     new Map((matchResults.value ?? []).map(result => [result.pairingUuid, result])))
 
-  // Who reported this result via Telegram and whether/when the opponent
-  // answered — null for a result an organizer entered directly (no
-  // reportedByPlayerUuid). Drives SwissMatchResultBadge.vue's "Inserito da
-  // X" state (user request, 2026-09-24).
+  // Who reported this result via Telegram and whether/when the opponent answered; null for an
+  // organizer-entered result (no reportedByPlayerUuid). Drives SwissMatchResultBadge.vue's
+  // "Inserito da X" state
   function telegramInfoFor(
     result: TournamentMatchResult | undefined
   ): SwissMatchTelegramInfo | null {

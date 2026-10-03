@@ -12,28 +12,21 @@ import RoleBadge from '~/components/ui/RoleBadge.vue'
 export function usePlayersTableColumns(
   selection: Selection<number>,
   search?: Ref<string>,
-  // uuid (players.uuid, matching PlayerLastLogin.playerUuid) -> ISO
-  // timestamp or null (never signed in, or no linked auth user). Optional,
-  // same reasoning as `search` — a plain column-def function shouldn't force
-  // every caller to also fetch usePlayersLastLoginsQuery.ts.
+  // players.uuid (matching PlayerLastLogin.playerUuid) -> ISO timestamp or null (never signed in /
+  // no linked auth user). Optional like `search`: a column-def function shouldn't force callers to
+  // fetch usePlayersLastLoginsQuery.ts
   lastLogins?: Ref<Map<string, string | null>>,
-  // associate_uuid -> role, from useMembersQuery.ts (which only returns rows
-  // for organizer/admin/super_admin — assign_role deletes the user_roles row
-  // entirely for 'player', see that composable's own comment). Missing from
-  // the map means 'player', same default useMembersQuery.get.ts's server
-  // endpoint would apply if this player had a row there at all (user
-  // request, 2026-08-25).
+  // associate_uuid -> role, from useMembersQuery.ts (only organizer/admin/super_admin rows:
+  // assign_role deletes the user_roles row for 'player'). Missing from the map means 'player'
   roleByAssociateUuid?: Ref<Map<string, MemberRole>>
 ) {
   const { t } = useI18n()
 
   const selectColumn = useGroupedSelectColumn<Player>(selection)
 
-  // No "Stato" column: the page only offers "Attivi"/"Non attivi" tabs (no
-  // "all" view like associates' membership_request_status), so is_active
-  // would repeat the same badge on every row of any given tab — same
-  // reasoning as transactions/index.vue hiding its payment_type column while
-  // a single type tab is active, just permanent here since there's no "all".
+  // No "Stato" column: the page only has "Attivi"/"Non attivi" tabs (no "all"), so is_active would
+  // repeat one badge on every row of a tab (like transactions/index.vue hiding payment_type under a
+  // single type tab, but permanent)
   const columnHeaders: Record<string, string> = {
     id: t('player.columns.id'),
     name: t('player.columns.name'),
@@ -60,8 +53,7 @@ export function usePlayersTableColumns(
     {
       accessorKey: 'name',
       header: ({ column }) => sortableHeader(t('player.columns.name'), column),
-      // first_name + last_name — same display name as the associate this
-      // player is derived from (user request, 2026-08-20).
+      // first_name + last_name: the same display name as the associate this player derives from
       cell: ({ row }) => h(AssociateTag, {
         name: `${row.original.first_name} ${row.original.last_name}`,
         associateUuid: row.original.associate_uuid,

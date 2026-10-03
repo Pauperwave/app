@@ -1,10 +1,8 @@
 // app\composables\tournaments\registration\useMyTournamentRegistrationsQuery.ts
-// Every tournament_registrations row for the logged-in user's own player —
-// one query for the whole /calendario|/calendar timeline instead of one per
-// card (useTournamentRegistrationsQuery.ts is per-tournament, meant for the
-// staff management page where only one tournament is open at a time). Reads
-// directly via client Supabase (public_read RLS policy on
-// tournament_registrations), no BFF needed for this read.
+// Every tournament_registrations row for the logged-in user's own player: one query for the whole
+// /calendario|/calendar timeline instead of one per card (useTournamentRegistrationsQuery.ts is
+// per-tournament, for the staff page with one tournament open). Reads via client Supabase
+// (public_read RLS on tournament_registrations), no BFF
 export interface MyTournamentRegistration {
   tournamentUuid: string
   status: 'registered' | 'checked_in' | 'no_show'

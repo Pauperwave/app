@@ -1,26 +1,16 @@
 // app\composables\tournaments\pairing\useCommanderRankingGrid.ts
 import type { TablePlayer } from '~/types'
-// Drag-and-drop dense-rank grid state for TableScoreGridModal.vue — ported
-// from MagicTheGathering/league's useRankingGrid.ts (user request,
-// 2026-09-15/16/17: copy the ranking-entry logic AND the grid mechanic
-// as-is, not a row-based reinterpretation — an earlier pass here remodeled
-// this as N draggable rank rows, which lost league's actual "each player
-// has a fixed column/lane, only moves vertically within it" structure and
-// was called out as not faithful).
+// Drag-and-drop dense-rank grid state for TableScoreGridModal.vue, ported from league's
+// useRankingGrid.ts (ranking-entry logic and grid mechanic as-is: each player has a fixed lane and
+// only moves vertically within it, not a row-based reinterpretation).
 //
-// Model: a size×size grid where each COLUMN is a fixed player seat (never
-// changes) and the ROW a player currently occupies is their rank (row 0 =
-// 1st). A drag only ever moves a token within its own column — dropping
-// onto an occupied cell swaps the two occupants (same swap semantics as
-// league's handleDrop). Native HTML5 drag events (draggable/dragstart/
-// dragover/drop/dragend), not VueDraggable/Sortable.js — Sortable has no
-// built-in "confined to one list-of-one column" concept, native drag events
-// are what league itself uses for exactly this reason.
+// Model: a size×size grid where each COLUMN is a fixed player seat and the ROW a player occupies is
+// their rank (row 0 = 1st). A drag only moves a token within its own column; dropping onto an
+// occupied cell swaps the two occupants (like league's handleDrop). Native HTML5 drag events, not
+// VueDraggable/Sortable.js (no "confined to one list-of-one column" concept), as league does.
 //
-// Validation rule unchanged: the set of occupied rows must be a gapless
-// sequence starting from row 0 (e.g. rows [0,0,1,2] used is valid — two
-// players tied at rank 1, then rank 2, then rank 3 — but [0,0,2,3] with an
-// empty row 1 is not).
+// Validation: the set of occupied rows must be gapless from row 0 (rows [0,0,1,2] is valid: two
+// tied at rank 1, then 2, then 3; [0,0,2,3] with an empty row 1 is not).
 export function useCommanderRankingGrid(players: () => TablePlayer[]) {
   const gridSize = computed(() => (players().length === 3 ? 3 : 4))
   const rankRange = computed(() => Array.from({ length: gridSize.value }, (_, i) => i))

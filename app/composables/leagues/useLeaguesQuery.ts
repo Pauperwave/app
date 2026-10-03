@@ -11,9 +11,8 @@ interface LeagueTournamentRow {
   format: { name: string } | null
 }
 
-// Formats include every tournament regardless of status (ADR,
-// docs/PROGRESS.md, 2026-08-22) — unlike the progress counters above, a
-// cancelled tournament's format is still real history.
+// Formats include every tournament regardless of status (ADR, docs/PROGRESS.md): unlike the
+// progress counters above, a cancelled tournament's format is still real history
 function tournamentFormatsByLeague(tournaments: LeagueTournamentRow[]) {
   const formats = new Map<string, Set<string>>()
   for (const row of tournaments) {
@@ -25,9 +24,8 @@ function tournamentFormatsByLeague(tournaments: LeagueTournamentRow[]) {
   return formats
 }
 
-// Same "every tournament regardless of status" reasoning as
-// tournamentFormatsByLeague above — a cancelled tournament's date is still
-// real history for the league's own date-range display.
+// Same "every tournament regardless of status" reasoning as tournamentFormatsByLeague: a cancelled
+// tournament's date is still real history for the league's date range
 function tournamentDateRangesByLeague(tournaments: LeagueTournamentRow[]) {
   const dateRanges = new Map<string, { start: string, end: string }>()
   for (const row of tournaments) {
@@ -41,11 +39,9 @@ function tournamentDateRangesByLeague(tournaments: LeagueTournamentRow[]) {
   return dateRanges
 }
 
-// Migrated off mock data (server/api/leagues.ts, removed) onto the real
-// `leagues` table — direct Supabase read + join, same pattern as
-// useEventsQuery.ts. tournamentCount/completedTournamentCount are derived
-// from a second, lightweight tournaments read (league_uuid + status only),
-// same reasoning as useEventsQuery.ts's tournamentCount.
+// A direct Supabase read + join on the real `leagues` table, like useEventsQuery.ts.
+// tournamentCount/completedTournamentCount come from a second lightweight tournaments read
+// (league_uuid + status only), as in useEventsQuery.ts's tournamentCount
 export function useLeaguesQuery() {
   const supabase = useSupabaseClient()
 
@@ -78,9 +74,8 @@ export function useLeaguesQuery() {
         uuid: row.uuid,
         status: row.status as LeagueStatus,
         name: row.name,
-        // starts_at is nullable at the DB level but every insert sets it
-        // (see AddModal.vue) — created_at is only a fallback for rows
-        // predating that, so EditModal.vue's date picker always has a value.
+        // starts_at is nullable in the DB but every insert sets it (see AddModal.vue): created_at
+        // only falls back for older rows, so EditModal.vue's date picker always has a value
         startDate: row.starts_at ?? row.created_at,
         ruleset: row.ruleset?.name ?? null,
         rulesetUuid: row.ruleset_uuid,

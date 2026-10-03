@@ -1,12 +1,9 @@
 // app\composables\tournaments\registration\useTournamentRegistrationsQuery.ts
-// Pinia Colada query for a tournament's registrations (ADR-007 pattern, see
-// useWantedCardsQuery.ts) — reads client -> Supabase directly, writes go
-// through server/api/tournament-registrations/*.post.ts. Embeds `players`
-// (not `players_full`) since PostgREST embed relies on the real FK
-// (tournament_registrations.player_uuid -> players.uuid) — resolving the
-// associate's name/email is left to whoever's already holding
-// useAssociatesQuery.ts's cache (AcceptancePicker.vue), rather than
-// duplicating that join here.
+// Pinia Colada query for a tournament's registrations (ADR-007, see useWantedCardsQuery.ts): reads
+// go client -> Supabase, writes through server/api/tournament-registrations/*.post.ts. Embeds
+// `players` (not `players_full`) since the PostgREST embed relies on the real FK (player_uuid ->
+// players.uuid); the associate's name/email is left to whoever holds useAssociatesQuery.ts's cache
+// (AcceptancePicker.vue) rather than duplicating that join
 export interface TournamentRegistration {
   uuid: string
   status: 'registered' | 'checked_in' | 'no_show'

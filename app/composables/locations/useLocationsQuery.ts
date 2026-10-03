@@ -1,9 +1,7 @@
 // app\composables\locations\useLocationsQuery.ts
-// Reused across every domain's AddModal that needs to pick a venue
-// (tournaments today, events/leagues once those migrate too) — same
-// reasoning as useOrganizationsQuery.ts/useMtgFormatsQuery.ts. Also backs
-// the /locations management page (2026-08-16), hence the full mapped
-// Location[] rather than a lookup-only subset.
+// Reused by every domain's AddModal that picks a venue (like
+// useOrganizationsQuery.ts/useMtgFormatsQuery.ts); also backs the /locations management page, hence
+// the full mapped Location[] rather than a lookup-only subset
 import type { Location } from '~/types'
 
 export const LOCATIONS_KEY = ['locations']

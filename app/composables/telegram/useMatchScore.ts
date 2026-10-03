@@ -3,9 +3,9 @@ import type { Player } from './telegramTypes'
 
 const GAMES_TO_WIN_MATCH = 2
 
-// Il round di 50 minuti copre l'intero match Bo3 (fino a 3 partite), non
-// una singola partita — winGame quindi non tocca timer/turni aggiuntivi,
-// vanno resettati solo esplicitamente dai loro stessi bottoni di reset.
+// The 50-minute round covers the whole Bo3 match (up to 3 games), not a single game: winGame
+// therefore doesn't touch the timer/extra turns, which are only reset explicitly by their own reset
+// buttons
 export function useMatchScore() {
   const myGamesWon = ref(0)
   const opponentGamesWon = ref(0)

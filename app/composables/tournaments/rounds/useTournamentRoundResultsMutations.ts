@@ -1,10 +1,7 @@
 // app\composables\tournaments\rounds\useTournamentRoundResultsMutations.ts
-// Per-pairing placement entry — ported from MagicTheGathering/league's
-// upsertRoundResult flow (TableScoreGrid's "Confirm" -> savePairingRankings)
-// (user request, 2026-09-15/16: copy the score-entry logic as-is). One
-// upsert per player per pairing, same ON CONFLICT (pairing_uuid, player_uuid)
-// DO UPDATE shape as league's own atomic upsert (this app's
-// uq_tournament_round_results_unique_player_per_pairing constraint).
+// Per-pairing placement entry, ported from league's upsertRoundResult flow (TableScoreGrid's
+// "Confirm" -> savePairingRankings): one upsert per player per pairing, ON CONFLICT (pairing_uuid,
+// player_uuid) DO UPDATE (uq_tournament_round_results_unique_player_per_pairing)
 export interface RoundResultPayload {
   pairingUuid: string
   playerUuid: string

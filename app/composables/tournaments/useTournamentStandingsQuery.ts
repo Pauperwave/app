@@ -1,9 +1,8 @@
 // app\composables\tournaments\useTournamentStandingsQuery.ts
-// Pinia Colada query for a Commander tournament's persisted standings
-// (written by advance_commander_round, migration 20260916000000) — same
-// "tournament-wide" convention as useTournamentPairingsQuery.ts. See
-// useLiveCommanderStandings.ts for the reactive recompute shown while a
-// round is still in progress (before the next advance-round persists here).
+// Pinia Colada query for a Commander tournament's persisted standings (written by
+// advance_commander_round, migration 20260916000000), "tournament-wide" like
+// useTournamentPairingsQuery.ts. See useLiveCommanderStandings.ts for the reactive recompute shown
+// while a round is in progress
 export interface TournamentStanding {
   uuid: string
   registrationUuid: string

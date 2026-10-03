@@ -1,16 +1,13 @@
 // app\composables\wantedCards\useWantedCardsRowActions.ts
-// fallow-ignore-file security-sink -- the win.location.href assignments (fallow
-// security, open-redirect candidates) only ever receive a hardcoded cardtrader.com/
-// cardmarket URL built with encodeURIComponent, or the url field from our own
-// /api/cardtrader/resolve response (server-constructed, not user input); window.open
-// calls use card.scryfallUrl/cardMarketSearchUrl, both derived from Scryfall data and
-// the card name, not arbitrary user-supplied URLs
+// fallow-ignore-file security-sink -- the
+// win.location.href assignments only receive a hardcoded cardtrader.com/cardmarket URL
+// (encodeURIComponent) or the url of our own /api/cardtrader/resolve; window.open uses
+// Scryfall-derived URLs
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { WantedCard, WantedCardStatus } from '~/types'
 
-// Everything about "row actions" (status change, edit, delete) — shared between
-// the table's context menu and the grid's, plus the state of the two modals those
-// actions open.
+// Everything about "row actions" (status change, edit, delete), shared by the table's and the
+// grid's context menus, plus the state of the two modals they open
 export function useWantedCardsRowActions() {
   const { t } = useI18n()
   const toast = useToast()
@@ -19,11 +16,9 @@ export function useWantedCardsRowActions() {
   const { isStaff } = useUserRole()
   const currentAssociate = useCurrentAssociate()
 
-  // Status change and delete are allowed for management OR the request's own
-  // owner (server/utils/wantedCards.ts's requireManagementOrWantedCardOwner,
-  // 2026-09-05 user request) — checked here too so the menu doesn't offer an
-  // action that will just 403, unlike edit/refresh-prices below which stay
-  // management-only.
+  // Status change and delete are allowed for management OR the request's owner
+  // (requireManagementOrWantedCardOwner): checked here too so the menu doesn't offer an action that
+  // would 403, unlike edit/refresh-prices which stay management-only
   function canManage(card: WantedCard): boolean {
     return isStaff.value || card.playerAssociateUuid === currentAssociate.value?.uuid
   }
@@ -54,10 +49,8 @@ export function useWantedCardsRowActions() {
     deleteConfirmOpen.value = true
   }
 
-  // Closes the modal immediately and defers the actual delete behind a
-  // 10-second undo window (useUndoableAction.ts) instead of awaiting the
-  // mutation on confirm — "loading" no longer applies here, there is nothing
-  // to wait for at confirm time.
+  // Closes the modal at once and defers the delete behind a 10-second undo window
+  // (useUndoableAction.ts): nothing to await at confirm time
   function confirmDelete() {
     if (!deletingCard.value) return
     const card = deletingCard.value
@@ -103,23 +96,17 @@ export function useWantedCardsRowActions() {
     }
   }
 
-  // CardMarket search URL — no API, just the same query a user would type by hand
-  // into the site's search bar.
+  // CardMarket search URL: no API, just the query a user would type into the site's search bar
   function cardMarketSearchUrl(name: string) {
     return `https://www.cardmarket.com/en/Magic/Products/Search?searchString=${encodeURIComponent(name)}`
   }
 
-  // CardTrader offers no reliable search by name (see the 2026-08-08 feasibility
-  // study, docs/PROGRESS.md) — the direct link to the card page is resolved via
-  // server/api/cardtrader/resolve.get.ts, which normally reads from the cache
-  // already warmed in the background when the wanted card was created or edited
-  // (server/utils/cardTrader.ts). The window is opened BEFORE the fetch
-  // (synchronously, on the click) and its location set afterwards: opening it only
-  // once the fetch resolves would be stopped by the popup blocker, which requires a
-  // synchronous open inside the user gesture. NO 'noopener' here: with that flag
-  // window.open always returns null (by design — it is what drops the window.opener
-  // reference), so the window could no longer be redirected after the fetch and the
-  // tab would stay blank forever (bug observed in manual testing on 2026-08-08).
+  // CardTrader has no reliable search by name (docs/PROGRESS.md feasibility study): the card page
+  // link is resolved by server/api/cardtrader/resolve.get.ts, normally from the cache warmed when
+  // the card was created/edited (server/utils/cardTrader.ts). The window is opened synchronously on
+  // the click and its location set after the fetch: opening it after would hit the popup blocker.
+  // NO 'noopener': with it window.open returns null (it drops window.opener), so the tab could not
+  // be redirected and stayed blank
   async function openCardTraderSearch(card: WantedCard) {
     const fallbackUrl = `https://www.cardtrader.com/cards?name=${encodeURIComponent(card.cardName)}`
     const win = window.open('', '_blank')
@@ -139,10 +126,9 @@ export function useWantedCardsRowActions() {
     }
   }
 
-  // Same permission as changeStatus/confirmDelete (management only, see
-  // refresh-prices.post.ts) — requires scryfallId/setCode to be populated (they are
-  // missing only on requests created before migration 20260808120000 and never
-  // edited since).
+  // Same permission as changeStatus/confirmDelete (management only, see refresh-prices.post.ts);
+  // needs scryfallId/setCode, missing only on requests created before migration 20260808120000 and
+  // never edited since
   async function refreshCardPrices(card: WantedCard) {
     try {
       await refreshPrices.mutateAsync(card.id)
@@ -156,12 +142,10 @@ export function useWantedCardsRowActions() {
     }
   }
 
-  // Shared between the table's context menu and the grid cards'. Status-change and
-  // delete are hidden (not just disabled) for a card the viewer neither manages nor
-  // owns — canManage() mirrors requireManagementOrWantedCardOwner server-side,
-  // avoiding a menu item that would just 403. Edit/refresh-prices stay
-  // management-only regardless of ownership, out of scope for the 2026-09-05 change
-  // — see migration 20260807190720 and the TODO in docs/TODO.md.
+  // Shared by the table's context menu and the grid cards'. Status-change and delete are hidden
+  // (not disabled) for a card the viewer neither manages nor owns (canManage() mirrors
+  // requireManagementOrWantedCardOwner, avoiding a 403). Edit/refresh-prices stay management-only
+  // regardless of ownership (see migration 20260807190720 and docs/TODO.md)
   function rowContextMenuItems(card: WantedCard): DropdownMenuItem[] {
     const manageable = canManage(card)
 

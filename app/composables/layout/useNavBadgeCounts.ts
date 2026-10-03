@@ -1,30 +1,27 @@
 // app\composables\layout\useNavBadgeCounts.ts
-// Extracted out of default.vue (2026-09-18) — the sidebar nav's own trailing
-// badge counts (10 Pinia Colada queries + the source table), same "pure
-// data, not layout logic" split as useMainNavGroups.ts.
+// The sidebar nav's trailing badge counts (10 Pinia Colada queries + the source table), a "pure
+// data, not layout logic" split like useMainNavGroups.ts
 import type { NavigationMenuItem } from '@nuxt/ui'
 
 interface NavBadgeSource {
   to: string
   count: ComputedRef<number>
   color: 'warning' | 'neutral'
-  // Most badges are a plain always-shown total; only the "needs action"
-  // ones (pending requests, lapsing memberships, open wanted cards) hide
-  // themselves at zero instead of showing an empty "0".
+  // Most badges are an always-shown total; only the "needs action" ones (pending requests, lapsing
+  // memberships, open wanted cards) hide at zero
   hideWhenZero?: boolean
 }
 
 export function useNavBadgeCounts() {
-  // Feeds the "Associati"/"Richieste"/"Wanted Cards" nav badges — same
-  // counts home/Staff.vue's dashboard sections use, shared via this
-  // composable rather than duplicated (2026-08-19).
+  // Feeds the "Associati"/"Richieste"/"Wanted Cards" badges: the same counts home/Staff.vue uses,
+  // shared rather than duplicated
   const {
     pendingAssociatesCount, associatesCount, associatesToRenewCount, wantedCardsSearchingCount
   } = useHomeActionCounts()
 
-  // Same 'players'/'transactions'/'tournaments'/'leagues'/'events'/
-  // 'locations' Pinia Colada keys as each domain's own index.vue — plain
-  // totals, no extra fetch.
+  // Same Pinia Colada keys as each domain's index.vue
+  // ('players'/'transactions'/'tournaments'/'leagues'/'events'/'locations'): plain totals, no extra
+  // fetch
   const { data: players } = usePlayersQuery()
   const playersCount = computed(() => (players.value ?? []).length)
 
@@ -43,18 +40,15 @@ export function useNavBadgeCounts() {
   const { data: locations } = useLocationsQuery()
   const locationsCount = computed(() => (locations.value ?? []).length)
 
-  // "Mazzi"/"Comandanti" both read the same `commander_stats` list (same
-  // Pinia Colada key, no extra fetch): decksCount is one row per commander
-  // pair, commandersCount is every distinct individual commander name across
-  // both slots (getAllCommanderNames, same helper commanders/index.vue uses).
+  // "Mazzi"/"Comandanti" read the same `commander_stats` list (same key, no extra fetch):
+  // decksCount is one row per commander pair, commandersCount is every distinct commander name
+  // across both slots (getAllCommanderNames, as in commanders/index.vue)
   const { data: commanderStats } = useAllCommanderStats()
   const decksCount = computed(() => (commanderStats.value ?? []).length)
   const commandersCount = computed(() => getAllCommanderNames(commanderStats.value ?? []).length)
 
-  // One entry per nav-item badge (some items, like /associates, carry two at
-  // once: the plain roster count and a separate warning count) — collapses
-  // what used to be nine near-identical <UBadge v-if="item.to === '/x'">
-  // blocks in default.vue's template into one v-for.
+  // One entry per nav-item badge (some items, like /associates, carry two: the roster count and a
+  // warning count), replacing nine near-identical <UBadge v-if> blocks in default.vue
   const sources: NavBadgeSource[] = [
     { to: '/associates/requests', count: pendingAssociatesCount, color: 'warning', hideWhenZero: true },
     { to: '/associates', count: associatesCount, color: 'neutral' },
@@ -76,9 +70,8 @@ export function useNavBadgeCounts() {
       .map(source => ({ label: source.count.value, color: source.color }))
   }
 
-  // Which nav items carry a warning-colored badge in the expanded sidebar —
-  // reused to swap in a plain warning UChip dot on the icon when the sidebar
-  // is collapsed (the trailing UBadge itself has nowhere to render).
+  // Which nav items carry a warning badge when expanded: reused to show a warning UChip dot on the
+  // icon when collapsed (the UBadge has nowhere to render)
   const navItemHasWarning = (to: NavigationMenuItem['to']) =>
     navItemBadges(to).some(badge => badge.color === 'warning')
 

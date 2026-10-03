@@ -1,9 +1,8 @@
 // app\composables\associates\useAssociatesQuery.ts
-// Pinia Colada query for the associates list (mirrors league's usePlayersQuery,
-// ADR-007/ADR-009) — successor of the 'associates' useAsyncData wrapper. Reads stay
-// client -> Supabase; the shared query cache is what fixes the /associates <->
-// /associates/requests refetch-on-every-mount lag useAsyncData had (confirmed via
-// network trace 2026-08-11).
+// Pinia Colada query for the associates list (mirrors league's usePlayersQuery, ADR-007/ADR-009),
+// successor of the 'associates' useAsyncData wrapper. Reads go client -> Supabase; the shared query
+// cache fixes the refetch-on-every-mount lag useAsyncData had between /associates and
+// /associates/requests
 import type { Associate } from '~/types'
 
 export const ASSOCIATES_KEY = ['associates']

@@ -1,14 +1,15 @@
 // app\composables\tournaments\rounds\useConfirmedSeatings.ts
-// The last confirmed seating of every round, still held after a turn-back deletes that round, so the table
-// preview reopens on the approved tables (and round 1's seed) instead of a fresh draw (user request, 2026-10-02).
-// Lives for the page only: a reload after the turn-back finds the round gone and starts over.
+// The last confirmed seating of every round, kept after a turn-back deletes that round, so the
+// table preview reopens on the approved tables (and round 1's seed) instead of a fresh draw. Lives
+// for the page only: a reload after the turn-back finds the round gone and starts over
 export interface ConfirmedSeating {
   seed: number | null
   // Associate uuids per table, in table order, each table in seat order.
   tables: string[][]
 }
 
-// A saved seating is only reused when it seats exactly these players; anyone added or removed starts over.
+// A saved seating is only reused when it seats exactly these players; anyone added or removed
+// starts over.
 export function seatingMatchesPlayers(seating: ConfirmedSeating, playerIds: string[]): boolean {
   const sortedIds = (ids: string[]) => [...ids].sort().join(',')
   return sortedIds(seating.tables.flat()) === sortedIds(playerIds)
@@ -53,7 +54,8 @@ export function useConfirmedSeatings(tournamentUuid: MaybeRefOrGetter<string>) {
     }
   })
 
-  // Dropped once the round before it was redone (new uuid): those tables were drawn on other results.
+  // Dropped once the round before it was redone (new uuid): those tables were drawn on other
+  // results.
   function seatingFor(roundNumber: number): ConfirmedSeating | null {
     const snapshot = snapshots.value[roundNumber]
     if (!snapshot) return null

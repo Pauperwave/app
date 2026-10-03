@@ -1,18 +1,12 @@
 // app\composables\tour\useShortcutsTour.ts
 
-// Two steps, targeting ids set on default.vue's own sidebar markup (not a
-// page): the nav menu (for the "g-x" chords) and the footer row (for the
-// bare-letter global actions n/t/b, all wired up right there). Each step's
-// `id` field (arbitrary passthrough per useTour) lets default.vue watch
-// `tour.current.value?.id` and force the "press g" hint visible for the
-// duration of the navigation step, so the tour actually demonstrates it
-// instead of just describing it.
+// Two steps targeting ids on default.vue's sidebar markup: the nav menu (the "g-x" chords) and the
+// footer row (the bare-letter global actions n/t/b). Each step's `id` (arbitrary passthrough per
+// useTour) lets default.vue watch `tour.current.value?.id` and force the "press g" hint visible
+// during the navigation step.
 //
-// `description` holds the i18n KEYPATH, not the resolved string (unlike
-// `title`): the key/value pairs it interpolates (g1, a, n, ...) are meant to
-// render as real UKbd chips, matching the sidebar's own hint, not plain
-// quoted letters — so TourGuide.vue resolves it via <i18n-t> instead of a
-// plain t() call here.
+// `description` holds the i18n KEYPATH, not the resolved string (unlike `title`): its key/value
+// pairs (g1, a, n, ...) render as real UKbd chips, so TourGuide.vue resolves it via <i18n-t>
 export function useShortcutsTour() {
   const { t } = useI18n()
 

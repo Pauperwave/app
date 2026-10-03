@@ -1,12 +1,10 @@
 // app\composables\ui\useSoundEffects.ts
-// Ported verbatim from MagicTheGathering/league (user request 2026-09-16,
-// copy RoundTimer.vue as-is) — uisfx is already a dependency here too.
+// Ported from league (uisfx is already a dependency here too)
 import { createUISFX, type CueName, type PlayingSFX, type UISFXPlayer } from 'uisfx'
 
-// Module-scope singleton: one AudioContext for the whole app, lazily created
-// on first use (never on the server — Web Audio doesn't exist there, and
-// creating an AudioContext before a user gesture is blocked by browsers
-// anyway). Sounds are synthesized locally by uisfx, no audio-file fetches.
+// Module-scope singleton: one AudioContext for the whole app, created lazily on first use (never on
+// the server, where Web Audio doesn't exist, and browsers block one before a user gesture). Sounds
+// are synthesized locally by uisfx, no audio-file fetches
 let player: UISFXPlayer | null = null
 
 function getPlayer(): UISFXPlayer | null {

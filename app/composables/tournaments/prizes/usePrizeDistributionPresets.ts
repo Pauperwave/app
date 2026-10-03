@@ -1,9 +1,8 @@
 // app\composables\tournaments\prizes\usePrizeDistributionPresets.ts
-// Named distribution-shape presets for the prize suggestion — only touch
-// bonusShares, never topCutoff (rewarded placements) or the resource inputs
-// (totalPacks/minPacksPerPlayer). Same selectedPreset/apply pattern as
-// usePairingPresets.ts. The "custom" preset is the organizer's own shares,
-// remembered in localStorage (not per tournament) so it can be restored.
+// Named distribution-shape presets for the prize suggestion: they only touch bonusShares, never
+// topCutoff or the resource inputs (totalPacks/minPacksPerPlayer). Same selectedPreset/apply
+// pattern as usePairingPresets.ts. The "custom" preset is the organizer's own shares, kept in
+// localStorage (not per tournament) so it can be restored
 import type { Ref } from 'vue'
 import type { PrizeDistributionSettings } from '~/types'
 import type { PrizeDistributionPresetKind } from '~/components/tournaments/single/prizes/PrizeDistributionPresetButtons.vue'

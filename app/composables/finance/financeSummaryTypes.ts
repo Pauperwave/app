@@ -1,8 +1,6 @@
 // app\composables\finance\financeSummaryTypes.ts
-// Row shapes returned by useFinanceSummary.ts, split out 2026-09-17 once that
-// file (mostly these types) had grown to 547 lines — imported directly by
-// every finance/*SummaryTable.vue, *Chart.client.vue and *Overview.vue
-// component, not just the composable itself.
+// Row shapes returned by useFinanceSummary.ts, imported by every finance/*SummaryTable.vue,
+// *Chart.client.vue and *Overview.vue
 import type { PaymentMethod, PaymentType } from '#shared/types/transactions'
 
 export interface FinanceTypeSummaryRow {
@@ -10,11 +8,8 @@ export interface FinanceTypeSummaryRow {
   count: number
   total: number
   average: number
-  // Share of this table's own grand total, 0-1 — not app-wide grandTotal
-  // (payment types other than 'Event'/'Tournament Fee' etc. all belong to
-  // the same total here, so the two happen to coincide today, but this is
-  // computed locally to avoid a circular dependency on the exported
-  // grandTotal computed, which itself derives from byType).
+  // Share of this table's own grand total, 0-1: computed locally to avoid a circular dependency on
+  // the exported grandTotal (which derives from byType)
   share: number
 }
 
@@ -34,14 +29,11 @@ export interface FinanceTournamentSummaryRow {
   format: string
   startDate: string
   count: number
-  // Transactions paid via the 'Comped' method (payment_method, not
-  // payment_type — a free/comped entry is still a Tournament Fee, just
-  // waived) — a subset of `count`, not a separate transaction category.
+  // Transactions paid via 'Comped' (payment_method, not payment_type: a waived Tournament Fee is
+  // still a Tournament Fee): a subset of `count`
   compedCount: number
-  // Sum of payment_amount for transactions paid via 'Cash'/'POS' respectively
-  // — subsets of `total`, mirroring compedCount above, rolled up into
-  // FinanceFormatSummaryRow's own cashTotal/posTotal (user request,
-  // 2026-08-24: add Contanti/Pos columns to the byFormat table).
+  // Sum of payment_amount for 'Cash'/'POS' transactions: subsets of `total`, rolled up into
+  // FinanceFormatSummaryRow's cashTotal/posTotal
   cashTotal: number
   posTotal: number
   total: number
@@ -55,11 +47,9 @@ export interface FinanceEventSummaryRow {
   count: number
   total: number
   average: number
-  // 'Token Purchase' transactions linked to this event (event_uuid) via the
-  // gettoni stand run alongside it — sold on the same day, so their revenue
-  // belongs to the event's own take even though they're a distinct
-  // payment_type from 'Event Fee' (user request, 2026-08-24: Commanderwave
-  // Fest's gettoni sales should count towards the event's total).
+  // 'Token Purchase' transactions linked to this event (event_uuid): gettoni are sold alongside it
+  // on the same day, so their revenue counts toward the event's take though they are a distinct
+  // payment_type from 'Event Fee'
   gettoniCount: number
   gettoniTotal: number
   // total + gettoniTotal
@@ -68,8 +58,8 @@ export interface FinanceEventSummaryRow {
 
 export interface FinanceFormatSummaryRow {
   format: string
-  // Distinct tournaments, not transactions — a single tournament can have
-  // several payments (multiple entry fees), so this differs from `count`.
+  // Distinct tournaments, not transactions: one tournament can have several payments, so this
+  // differs from `count`
   tournamentCount: number
   count: number
   // Sum of the underlying transactions' paypalTotal/cashTotal/posTotal.
@@ -79,43 +69,31 @@ export interface FinanceFormatSummaryRow {
   total: number
   average: number
   share: number
-  // Most common payment_amount among this format's non-Comped transactions
-  // — see byCategory's own comment for the full "sticker price" reasoning
-  // (reused as-is by byCategory's own format rows, added here 2026-08-24 so
-  // that reuse is literal, not a re-derivation).
+  // Most common payment_amount among this format's non-Comped transactions (see byCategory's
+  // "sticker price" reasoning, reused by its format rows)
   cost: number | null
 }
 
-// The page's opening summary table (user request, 2026-08-24) — scalable on
-// purpose, no hardcoded tournament/event names: `associationFee`/`eventFee`/
-// `tokenPurchase`/`donation` are fixed payment_type buckets, but the
-// tournament-format rows come straight from byFormat below (one row per
-// format that actually has a tournament this year) — a new mtg_format never
-// needs a code change here, it just shows up. "Tutti gli eventi" deliberately
-// stays one combined bucket across every named event rather than a row per
-// event (which is what byEvent below is already for) — same reasoning that
-// killed the earlier hardcoded "Commanderfest"/"Draft Speciale" rows.
+// The page's opening summary table. Scalable on purpose, no hardcoded tournament/event names:
+// `associationFee`/`eventFee`/ `tokenPurchase`/`donation` are fixed payment_type buckets, while
+// tournament-format rows come from byFormat (one per format with a tournament this year), so a new
+// mtg_format needs no code change. "Tutti gli eventi" stays one combined bucket (byEvent below is
+// the per-event view).
 export type FinanceCategoryType = 'associationFee' | 'format' | 'eventFee' | 'tokenPurchase' | 'donation'
 
 export interface FinanceCategoryRow {
   type: FinanceCategoryType
-  // Only set when type === 'format' — the tournament format name (Pauper,
-  // Commander, ...), both this row's label (via FormatBadge) and its
-  // byFormat lookup key.
+  // Only set when type === 'format': the format name (Pauper, Commander, ...), both this row's
+  // label (via FormatBadge) and its byFormat lookup key
   format?: string
   count: number
-  // Only set (non-null) when type === 'tokenPurchase' — gettoni are bought
-  // in variable quantities per transaction (parsed from event_name, see
-  // parseGettoniCount), so `count` alone (purchases made) doesn't say how
-  // many tokens were actually sold. Every other row has no separate
-  // "quantity" concept from its own transaction count (user request,
-  // 2026-08-24).
+  // Only set (non-null) when type === 'tokenPurchase': gettoni are bought in variable quantities
+  // (parsed from event_name, see parseGettoniCount), so `count` (purchases) doesn't say how many
+  // tokens were sold
   quantity: number | null
-  // See FinanceFormatSummaryRow's own `cost` comment. For 'tokenPurchase'
-  // specifically this is total/quantity (the real per-gettone price),
-  // computed in byCategory rather than via resolveCost — resolveCost looks
-  // at the per-transaction amount, which varies with quantity purchased, so
-  // it would (correctly) never find a single uniform amount here.
+  // See FinanceFormatSummaryRow's `cost`. For 'tokenPurchase' it is total/quantity (the real
+  // per-gettone price), computed in byCategory: resolveCost looks at per-transaction amounts, which
+  // vary with quantity, and would never find a uniform one
   cost: number | null
   paypalTotal: number
   cashTotal: number
@@ -123,10 +101,8 @@ export interface FinanceCategoryRow {
   total: number
 }
 
-// Every fixed (non-format) row maps 1:1 onto an existing PaymentType, so its
-// badge is just PaymentTypeBadge — no separate label/icon config to maintain
-// here (2026-08-24, replacing an earlier hand-rolled UBadge fallback that
-// existed only because the old rows didn't line up with a PaymentType 1:1).
+// Every fixed (non-format) row maps 1:1 onto a PaymentType, so its badge is just PaymentTypeBadge,
+// with no separate label/icon config
 export const FINANCE_CATEGORY_PAYMENT_TYPE: Record<Exclude<FinanceCategoryType, 'format'>, PaymentType> = {
   associationFee: 'Association Fee',
   eventFee: 'Event Fee',
@@ -138,10 +114,8 @@ export interface FinanceMethodCostRow {
   method: PaymentMethod
   count: number
   total: number
-  // Share of this table's own grand total, 0-1 — same locally-scoped
-  // reasoning as FinanceTypeSummaryRow/FinanceFormatSummaryRow's own share
-  // (user request, 2026-08-23: "percentuale sul totale fra contanti, pos e
-  // paypal").
+  // Share of this table's own grand total, 0-1: locally scoped like
+  // FinanceTypeSummaryRow/FinanceFormatSummaryRow's share
   share: number
   feeRate: number
   fee: number

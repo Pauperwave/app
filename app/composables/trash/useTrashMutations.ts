@@ -1,11 +1,9 @@
 // app\composables\trash\useTrashMutations.ts
 import type { TrashEntity } from '~/types'
 
-// Restoring an item can affect any of the 7 domain list queries it came
-// from, not just TRASH_KEY — fanned out across all of them here rather than
-// each domain's own mutations file, since a single Trash page mixes several
-// domains (same "BFF endpoint is the write, invalidate on settle" pattern
-// as useEventsMutations.ts).
+// Restoring an item can affect any of the 7 domain list queries it came from, not just TRASH_KEY:
+// fanned out across all of them here, since one Trash page mixes several domains ("BFF endpoint is
+// the write, invalidate on settle", like useEventsMutations.ts)
 export function useTrashMutations() {
   const queryCache = useQueryCache()
   const invalidate = () => {

@@ -1,10 +1,8 @@
 // app\composables\commanders\useCommanderCatalogQuery.ts
-// One cached fetch of the whole mtg_commanders catalog via the
-// get_commander_catalog() RPC (migration 20260917000000) — ported from
-// MagicTheGathering/league's useCommanderCatalogQuery.ts (user request,
-// 2026-09-16). A plain `.select()` here would get silently truncated to
-// PostgREST's 1000-row cap (the catalog is ~3000+ rows); the RPC wraps the
-// whole result in json_agg so PostgREST sees exactly one row.
+// One cached fetch of the whole mtg_commanders catalog via the get_commander_catalog() RPC
+// (migration 20260917000000), ported from league. A plain `.select()` would be silently truncated
+// to PostgREST's 1000-row cap (the catalog is ~3000+ rows); the RPC wraps the result in json_agg so
+// PostgREST sees one row
 import type { Database } from '#shared/utils/types/database'
 
 export interface CommanderCatalogRow {
@@ -23,12 +21,9 @@ export interface CommanderCatalogRow {
 
 export const COMMANDER_CATALOG_KEY = ['commander-catalog']
 
-// A month — the catalog only changes after a Scryfall resync or a manual
-// correction, no reason to refetch on every commander-modal open. Unlike
-// league (which opts specific queries into its cache-persister plugin),
-// this app's colada.options.ts persists every query by default except a
-// short PERSISTENCE_EXCLUDED_KEYS list — 'commander-catalog' isn't in it,
-// so it's persisted automatically, no per-query wiring needed here.
+// A month: the catalog only changes after a Scryfall resync or manual correction. This app's
+// colada.options.ts persists every query except a short PERSISTENCE_EXCLUDED_KEYS list, which
+// doesn't include 'commander-catalog', so it is persisted with no per-query wiring
 const CATALOG_CACHE_TIME = 30 * 24 * 60 * 60 * 1000
 
 interface CommanderCatalogRawRow {

@@ -1,8 +1,6 @@
 // app\composables\commanders\useCommanderPairDisplay.ts
-// Catalog art + display name for a (possibly partnered) commander pair —
-// shared by statistics/decks/[deckSlug].vue and players/.../deck/
-// [deckSlug].vue, which independently duplicated this exact resolution
-// (fallow:dupes, 2026-09-23).
+// Catalog art + display name for a (possibly partnered) commander pair, shared by
+// statistics/decks/[deckSlug].vue and players/.../deck/[deckSlug].vue
 export function useCommanderPairDisplay(
   commander1Name: Ref<string | null> | ComputedRef<string | null>,
   commander2Name: Ref<string | null> | ComputedRef<string | null>

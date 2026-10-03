@@ -1,8 +1,6 @@
 // app\composables\commanders\useCommanderCards.ts
-// Ported verbatim from MagicTheGathering/league (user request 2026-09-16:
-// copy the commander/vote insertion logic bit-by-bit) — the mtg_commanders
-// table and every one of its columns were already ported 1:1 (migration
-// 20260917000000), so this needed no adaptation beyond the import path.
+// Ported from league: the mtg_commanders table and its columns were already ported 1:1 (migration
+// 20260917000000), so only the import path changed
 import * as v from 'valibot'
 import type { Database } from '#shared/utils/types/database'
 

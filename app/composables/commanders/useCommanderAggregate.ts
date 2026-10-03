@@ -1,7 +1,6 @@
 // app\composables\commanders\useCommanderAggregate.ts
-// Ported bit-by-bit from MagicTheGathering/league's
-// useCommanderAggregate.ts (user request 2026-09-16: copy the commander
-// pages, adapted to this app's camelCase CommanderStatsPair shape).
+// Ported from league's useCommanderAggregate.ts, adapted to this app's camelCase CommanderStatsPair
+// shape
 import type { CommanderStatsPair } from './useCommanderStatsQuery'
 
 export interface SingleCommanderAggregate {

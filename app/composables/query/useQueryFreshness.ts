@@ -1,12 +1,10 @@
 // app\composables\query\useQueryFreshness.ts
 import type { DataStateStatus } from '@pinia/colada'
 
-// Pinia Colada's own cache entry does track a `when` timestamp internally
-// (queryCache.getEntries()[0].when), but the entry object is created via
-// markRaw() — reactivity is deliberately skipped there for cache performance, so
-// reading it in a computed would never trigger a re-render. Tracking our own
-// timestamp off the query's public (reactive) isLoading/status refs avoids
-// depending on that non-reactive internal.
+// Pinia Colada's cache entry tracks a `when` timestamp (queryCache.getEntries()[0].when), but the
+// entry is markRaw()ed (no reactivity, for cache performance), so reading it in a computed would
+// never re-render. Tracking our own timestamp off the query's public isLoading/status refs avoids
+// that non-reactive internal
 export function useQueryFreshness(isLoading: Ref<boolean>, status: Ref<DataStateStatus>) {
   const lastUpdatedAt = ref<Date | null>(null)
 
@@ -16,10 +14,9 @@ export function useQueryFreshness(isLoading: Ref<boolean>, status: Ref<DataState
     }
   })
 
-  // Data already sitting in the cache when this runs (e.g. a second page reusing
-  // the same query key) never fires the transition above — Colada doesn't expose
-  // exactly when it was fetched without reading the raw internals mentioned above,
-  // so "now" is treated as close enough rather than left blank.
+  // Data already in the cache when this runs (e.g. a second page reusing the query key) never fires
+  // the transition above, and Colada doesn't expose when it was fetched without the raw internals:
+  // "now" is close enough
   if (!isLoading.value && status.value === 'success' && !lastUpdatedAt.value) {
     lastUpdatedAt.value = new Date()
   }

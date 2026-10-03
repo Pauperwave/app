@@ -13,20 +13,14 @@ import HighlightMatch from '~/components/ui/HighlightMatch.vue'
 import MembershipRequestStatusBadge from '~/components/ui/MembershipRequestStatusBadge.vue'
 import RowActionsMenu from '~/components/ui/RowActionsMenu.vue'
 
-// Shared between associates/index.vue (roster) and associates/requests.vue
-// (pending/rejected queue) — every column except the roster-only ones
-// (uuid/created_at/membership_status/association_date/
-// has_acknowledged_surveillance_notice) was byte-identical in both files
-// (fallow dupes, 2026-08-11), same root cause as useAssociatesRenderers.ts:
-// the two pages share one Associate table shape, not two. id/updated_at/
-// updated_by/latest_renewal_date/pauperwave_associate_number moved from roster-only
-// to shared 2026-08-13 (user request — requests.vue was showing fewer
-// columns than the roster for no real reason on these five).
+// Shared by associates/index.vue (roster) and associates/requests.vue (pending/rejected queue):
+// both pages share one Associate table shape, so every column except the roster-only ones
+// (uuid/created_at/membership_status/association_date/ has_acknowledged_surveillance_notice) is
+// identical. id/updated_at/updated_by/latest_renewal_date/pauperwave_associate_number are shared
+// too, so requests.vue shows what the roster does.
 //
-// Two real inconsistencies surfaced while merging: born_location and
-// residency_city were sortable on the roster but plain text on requests —
-// unified to plain text here (sorting free text like a city/birthplace name
-// alphabetically isn't a useful operation), matching requests' version.
+// born_location and residency_city are plain text (not sortable): alphabetically sorting a
+// free-text place isn't useful.
 
 export const associatesColumnHeaders = (t: (key: string) => string) => ({
   id: t('associate.columns.id'),
@@ -73,15 +67,12 @@ export function useAssociatesTableColumns(
   table: Ref<{ tableApi: Table<Associate> } | null>,
   associates: Ref<Associate[] | undefined>,
   rowContextMenuItems: (associate: Associate) => DropdownMenuItem[],
-  // Highlights the search box's own match in the columns it actually
-  // searches (2026-08-19, user request) — optional since not every page
-  // using these columns has a search box (none did until associatesGlobal
-  // FilterFn.ts existed).
+  // Highlights the search box's match in the columns it searches; optional since not every page
+  // using these columns has a search box
   search?: Ref<string>,
-  // "Mostra colonne" section dividers (Consensi/Anagrafica/Residenza/Trail,
-  // see columnVisibilityGroups.ts) — opt-in, each caller passes its own
-  // column-id boundaries since associates/index.vue and requests.vue don't
-  // order these columns identically (user request, 2026-08-27).
+  // "Mostra colonne" section dividers (see columnVisibilityGroups.ts): opt-in, each caller passes
+  // its own column-id boundaries since index.vue and requests.vue don't order these columns
+  // identically
   visibilitySeparatorBeforeIds?: string[]
 ) {
   const { t } = useI18n()
@@ -94,12 +85,9 @@ export function useAssociatesTableColumns(
     ? h(HighlightMatch, { text, query: search.value })
     : text)
 
-  // updated_by/created_by are associate uuids (audit trail pattern,
-  // docs/supabase/2-database.md) — PostgREST can't embed a self-referencing
-  // FK (confirmed: pauperwave_associates!updated_by fails with "no
-  // relationship found" even with the constraint-name hint), so resolved
-  // client-side instead, against the full associates list already fetched
-  // on both pages that use these columns — no extra query needed.
+  // updated_by/created_by are associate uuids (audit trail, docs/supabase/2-database.md): PostgREST
+  // can't embed a self-referencing FK ("no relationship found"), so names resolve client-side
+  // against the associates list already fetched
   const associateNameByUuid = computed(() => new Map(
     (associates.value ?? []).map(associate => [associate.uuid, `${associate.first_name} ${associate.last_name}`])
   ))
@@ -133,18 +121,15 @@ export function useAssociatesTableColumns(
 
   const visibilityItems = computed(() => getVisibilityItems())
 
-  // Bound to the shared selectedIds Set (useSelection.ts), not UTable's own
-  // row-selection state — same migration as transactions'/wanted-cards' own
-  // table columns, for the same reasons (Escape-to-clear, shift-click range
-  // selection) plus grouping-readiness even though this table doesn't group
-  // today.
+  // Bound to the shared selectedIds Set (useSelection.ts), not UTable's row-selection state, like
+  // transactions'/wanted-cards' columns (Escape-to-clear, shift-click range selection,
+  // grouping-readiness)
   const selectColumn = useGroupedSelectColumn<Associate>(selection)
 
-  // Shared with associates/index.vue since 2026-08-13 (was inline there only) —
-  // requests.vue shows these too now: id/updated_at/updated_by for traceability
-  // on a request under review, latest_renewal_date/pauperwave_associate_number to
-  // preview what a pending request would get once approved (the number is
-  // potential/unassigned until then, same shared "Tessera" label as the roster).
+  // Shared with associates/index.vue: requests.vue shows id/updated_at/updated_by for traceability
+  // on a request under review, and latest_renewal_date/pauperwave_associate_number to preview what
+  // a pending request would get once approved (the number is unassigned until then, same "Tessera"
+  // label as the roster)
   const idColumn: TableColumn<Associate> = {
     accessorKey: 'id',
     header: ({ column }) => sortableHeader(columnHeaders.id, column),
@@ -152,9 +137,8 @@ export function useAssociatesTableColumns(
     cell: ({ row }) => row.original.id
   }
 
-  // Formalized 2026-08-18 out of an inline literal in index.vue — same
-  // grouping as updatedAtColumn/updatedByColumn below (audit trail, hidden
-  // by default, moved to the end of both pages' column order).
+  // Same grouping as updatedAtColumn/updatedByColumn below (audit trail, hidden by default, last in
+  // both pages' column order)
   const createdAtColumn: TableColumn<Associate> = {
     accessorKey: 'created_at',
     header: ({ column }) => sortableHeader(columnHeaders.created_at, column),
@@ -179,12 +163,10 @@ export function useAssociatesTableColumns(
     }
   }
 
-  // Latest renewal date (2026-08-18), not pauperwave_associates.payment_date — that
-  // column is a one-time snapshot from initial signup, never updated on renewal, so
-  // it silently went stale for anyone who has since renewed. This reads the view's
-  // aggregated pauperwave_associate_renewals date instead (migration
-  // 20260818120000_add_latest_renewal_date_to_associates_view.sql), same source as
-  // AssociateTag.vue's "Ultimo rinnovo" popover (which shows just the year).
+  // Latest renewal date, not pauperwave_associates.payment_date: that is a one-time signup snapshot
+  // never updated on renewal. Reads the view's aggregated pauperwave_associate_renewals date
+  // (migration 20260818120000), like AssociateTag.vue's "Ultimo rinnovo" popover (which shows just
+  // the year)
   const lastRenewalDateColumn: TableColumn<Associate> = {
     accessorKey: 'latest_renewal_date',
     header: ({ column }) => sortableHeader(columnHeaders.latest_renewal_date, column),
@@ -320,12 +302,9 @@ export function useAssociatesTableColumns(
     accessorKey: 'phone_number',
     header: columnHeaders.phone_number,
     meta: { class: { td: 'font-mono whitespace-nowrap' } },
-    // Highlighted against the formatted display string, not the raw digits
-    // the search actually matched against — formatPhoneNumber() inserts
-    // spacing, so a query that matched the raw field can legitimately fail
-    // to find itself in the formatted one and just render unhighlighted
-    // (HighlightMatch.vue's own not-found fallback), same as a fuzzy-only
-    // name match.
+    // Highlighted against the formatted string, not the raw digits the search matched:
+    // formatPhoneNumber() inserts spacing, so a raw match can fail to find itself and render
+    // unhighlighted (HighlightMatch.vue's not-found fallback), like a fuzzy-only name match
     cell: ({ row }) => highlight(formatPhoneNumber(row.original.phone_number))
   }
 
@@ -344,12 +323,10 @@ export function useAssociatesTableColumns(
       h(DateWithRelativeTooltip, { isoString: row.original.born_date, time: false })
   }
 
-  // Computed by pauperwave_associates_with_status (migration
-  // 20260818160000), not client-side anymore — same DB-level mechanism the
-  // birthday-notification backlog item (docs/BACKLOG.md) and /statistics'
-  // median-age stat both read. Plain number, no DateWithRelativeTooltip:
-  // that component's hover tooltip makes sense for an absolute date needing
-  // relative context, not for an age that's already the "how long ago" answer.
+  // Computed by pauperwave_associates_with_status (migration 20260818160000), the same DB-level
+  // source as the birthday-notification backlog item and /statistics' median-age stat. A plain
+  // number: a relative-date tooltip fits an absolute date, not an age that already is the "how long
+  // ago" answer
   const ageColumn: TableColumn<Associate> = {
     accessorKey: 'age',
     header: ({ column }) => sortableHeader(columnHeaders.age, column),
@@ -411,9 +388,8 @@ export function useAssociatesTableColumns(
     cell: ({ row }) => row.original.residency_cap
   }
 
-  // Visible actions column (2026-08-18), matching leagues/locations/tournaments'
-  // convention — same items the right-click context menu already shows
-  // (rowContextMenuItems), just also reachable without knowing to right-click.
+  // Visible actions column, like leagues/locations/tournaments: the same items as the right-click
+  // menu (rowContextMenuItems)
   const actionsColumn: TableColumn<Associate> = {
     id: 'actions',
     header: columnHeaders.actions,

@@ -3,15 +3,12 @@ import type { Tournament, TournamentStatus } from '~/types'
 
 export const TOURNAMENTS_KEY = ['tournaments']
 
-// Migrated off mock data (server/api/tournaments.ts, removed) onto the real
-// `tournaments` table (migration 20260815100000/20260815101000) — direct
-// Supabase read + join, same pattern as useWantedCardsQuery.ts. `events` and
-// `leagues` are both real now too (2026-08-15), so event_uuid/league_uuid
-// resolve to real names — PublicCalendarPage.vue groups by eventUuid, not
-// the name, to avoid a name-collision misgrouping.
-// Test tournaments (is_test) are left out by default so calendars, stats and
-// every other consumer never list them; only the tournaments list and detail
-// pages opt in. RLS hides them from everyone but super_admin regardless.
+// A direct Supabase read + join on the real `tournaments` table (migrations
+// 20260815100000/20260815101000), like useWantedCardsQuery.ts. event_uuid/league_uuid resolve to
+// real names; PublicCalendarPage.vue groups by eventUuid, not the name, to avoid a name-collision
+// misgrouping. Test tournaments (is_test) are left out by default so calendars, stats and other
+// consumers never list them; only the tournaments list and detail pages opt in (RLS hides them from
+// all but super_admin)
 export function useTournamentsQuery({ includeTest = false } = {}) {
   const supabase = useSupabaseClient()
 

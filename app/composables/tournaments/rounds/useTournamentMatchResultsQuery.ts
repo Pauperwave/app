@@ -1,17 +1,15 @@
 // app\composables\tournaments\rounds\useTournamentMatchResultsQuery.ts
-// Pinia Colada query for a 1v1 tournament's best-of-3 match results, across
-// every round — same "tournament-wide, filter client-side" convention as
-// useTournamentPairingsQuery.ts.
+// Pinia Colada query for a 1v1 tournament's best-of-3 match results, across every round — same
+// "tournament-wide, filter client-side" convention as useTournamentPairingsQuery.ts.
 export interface TournamentMatchResult {
   pairingUuid: string
   player1GamesWon: number
   player2GamesWon: number
   createdAt: string
-  // Set when this result came from a player's own Telegram report — null for
-  // one an organizer entered directly (migration 20260923140000, user
-  // request 2026-09-23). confirmedAt/disputedAt are the opponent's answer to
-  // that report, both null until they respond (migration 20260924100000,
-  // user request 2026-09-24) — the score itself is never reverted by either.
+  // Set when this result came from a player's own Telegram report; null for an organizer's direct
+  // entry (migration 20260923140000). confirmedAt/disputedAt are the opponent's answer to that
+  // report, both null until they respond (migration 20260924100000); the score is never reverted by
+  // either
   reportedByPlayerUuid: string | null
   confirmedAt: string | null
   disputedAt: string | null

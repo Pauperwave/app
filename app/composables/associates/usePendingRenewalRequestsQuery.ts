@@ -1,10 +1,8 @@
 // app\composables\associates\usePendingRenewalRequestsQuery.ts
-// The set of associate uuids with an open, unresolved renewal request —
-// "Richieste (di rinnovo)" tab on /associates (user request, 2026-08-27).
-// renew.post.ts never flips membership_request_status, so this is entirely
-// derived from pauperwave_associate_membership_events: an associate has an
-// open renewal request iff their most recent renewal_requested/
-// renewal_approved event is renewal_requested.
+// The set of associate uuids with an open renewal request ("Richieste (di rinnovo)" tab on
+// /associates). renew.post.ts never flips membership_request_status, so this derives entirely from
+// pauperwave_associate_membership_events: a request is open iff the associate's latest
+// renewal_requested/renewal_approved event is renewal_requested
 export const PENDING_RENEWAL_REQUESTS_KEY = ['pending-renewal-requests']
 
 export function usePendingRenewalRequestsQuery() {

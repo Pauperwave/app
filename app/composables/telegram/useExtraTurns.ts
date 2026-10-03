@@ -8,8 +8,8 @@ function otherPlayer(player: Player): Player {
 }
 
 export function useExtraTurns() {
-  // Chi gioca il turno 1 — impostabile dal tavolo prima di iniziare, poi si
-  // alterna da sé ad ogni turno successivo.
+  // Who plays turn 1: settable at the table before starting, then it alternates on its own every
+  // turn
   const startingPlayer = ref<Player>('me')
 
   const turn = ref(1)
@@ -18,9 +18,9 @@ export function useExtraTurns() {
     turn.value % 2 === 1 ? startingPlayer.value : otherPlayer(startingPlayer.value)
   ))
 
-  // Quali numeri di turno toccano a chi (es. 1→3→5 a chi inizia, 2→4
-  // all'altro) — mostrato sotto ogni quadrante "Io"/"Avversario" per
-  // chiarire a colpo d'occhio la sequenza, non solo il turno corrente.
+  // Which turn numbers belong to whom (e.g. 1→3→5 for the starter, 2→4 for the other), shown under
+  // each "Io"/"Avversario" quadrant to make the sequence clear at a glance, not just the current
+  // turn
   const turnsByPlayer = computed<Record<Player, number[]>>(() => {
     const sequences: Record<Player, number[]> = { me: [], opponent: [] }
     for (let candidate = 1; candidate <= TOTAL_TURNS; candidate++) {
@@ -44,10 +44,9 @@ export function useExtraTurns() {
     }
   }
 
-  // Stub: il turno finale chiude i turni aggiuntivi invece di avanzare oltre
-  // TOTAL_TURNS — in futuro aprirà l'invio del punteggio del match (vedi
-  // /risultato, oggi anch'esso un mockup in attesa di un flusso di pairing
-  // live per Pauper/Premodern).
+  // Stub: the final turn closes the extra turns instead of advancing past TOTAL_TURNS. It will
+  // later open match-score submission (see /risultato, also still a mockup awaiting a live pairing
+  // flow for Pauper/Premodern)
   function endMatch() {
     telegramHaptic()?.notificationOccurred('success')
   }
@@ -60,9 +59,8 @@ export function useExtraTurns() {
     }
   }
 
-  // Silenzioso di proposito (nessun haptic) — stesso motivo di
-  // useRoundTimer's reset(): riusato da useMatchScore per il reset
-  // automatico a inizio partita.
+  // Silent on purpose (no haptic), like useRoundTimer's reset(): reused by useMatchScore for the
+  // automatic reset at match start
   function reset() {
     turn.value = 1
   }

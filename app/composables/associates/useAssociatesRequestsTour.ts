@@ -1,9 +1,8 @@
 // app\composables\associates\useAssociatesRequestsTour.ts
 
-// Scoped to /associates/requests — the triage queue, distinct from
-// useAssociatesTour.ts (the roster's own tour). Step order = the page's
-// reading order (top-left -> bottom-right): navbar (add, public links),
-// sub-nav, toolbar (status filter), then the table itself.
+// Scoped to /associates/requests (the triage queue), distinct from useAssociatesTour.ts (the
+// roster). Step order = the page's reading order (top-left -> bottom-right): navbar (add, public
+// links), sub-nav, toolbar (status filter), then the table
 export function useAssociatesRequestsTour() {
   const { t } = useI18n()
 

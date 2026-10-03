@@ -1,8 +1,7 @@
 // app\composables\tournaments\useTournamentFormFields.ts
-// Extracted out of AddModal.vue/EditModal.vue — schema + the lookup-table
-// select options (locations/organizations/mtg_formats) are identical between
-// create and edit, only the initial `state` values and submit behavior
-// differ. Same reasoning as useTransactionFormFields.ts.
+// Extracted from AddModal.vue/EditModal.vue: the schema and the lookup-table select options
+// (locations/organizations/mtg_formats) are identical for create and edit (like
+// useTransactionFormFields.ts)
 import * as v from 'valibot'
 import type { InferOutput } from 'valibot'
 import type { SelectMenuItem } from '@nuxt/ui'
@@ -28,9 +27,8 @@ function buildSchema(t: ReturnType<typeof useI18n>['t']) {
     companionCode: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
     telegramNotificationsEnabled: v.optional(v.boolean()),
     isTest: v.optional(v.boolean()),
-    // .optional() here mirrors the pre-migration schema: "name" shows as
-    // "required" in the UI (see UFormField required) but the validation
-    // schema does not enforce it — a pre-existing inconsistency, left as is.
+    // .optional() mirrors the pre-migration schema: "name" shows "required" in the UI but isn't
+    // enforced (pre-existing inconsistency, left as is)
     name: v.optional(v.pipe(v.string(t('tournament.addModal.validation.nameRequired')), v.trim())),
     description: v.optional(v.nullable(v.pipe(v.string(), v.trim()))),
     entryFee: v.pipe(v.number(), v.minValue(0, t('tournament.addModal.validation.entryFeeNegative'))),
@@ -53,15 +51,10 @@ function buildSchema(t: ReturnType<typeof useI18n>['t']) {
     roundDurationMinutes: v.pipe(v.number(), v.minValue(10), v.maxValue(120)),
     organizerUuid: v.optional(v.string()),
     locationUuid: v.optional(v.string()),
-    // Both optional and mutually independent (CLAUDE.md: "a tournament's
-    // parent league/event is optional and polymorphic") — nothing stops a
-    // tournament from having neither, or in principle both, though the UI
-    // doesn't currently offer a reason to pick both at once. Nullable (not
-    // just optional, unlike organizerUuid/locationUuid above): USelectMenu's
-    // `clear` button sets the model value to null, not undefined, and the
-    // whole point of that button is letting a tournament be unlinked from
-    // its league/event again — validation has to accept the value the UI
-    // actually produces.
+    // Both optional and independent (CLAUDE.md: a tournament's parent league/event is optional and
+    // polymorphic). Nullable, not just optional (unlike organizerUuid/locationUuid): USelectMenu's
+    // `clear` sets null, not undefined, and validation must accept what the UI produces so a
+    // tournament can be unlinked
     leagueUuid: v.optional(v.nullable(v.string())),
     eventUuid: v.optional(v.nullable(v.string()))
   })

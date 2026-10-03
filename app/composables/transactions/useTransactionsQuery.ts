@@ -1,8 +1,7 @@
 // app\composables\transactions\useTransactionsQuery.ts
-// Pinia Colada query for the transactions domain (ADR-007/ADR-009 pattern, see
-// useAssociatesQuery.ts) — reads stay client -> Supabase (RLS-gated by
-// management_full_access/player_own_payments), writes go through the BFF
-// (server/api/transactions/create.post.ts).
+// Pinia Colada query for the transactions domain (ADR-007/ADR-009, see useAssociatesQuery.ts):
+// reads go client -> Supabase (RLS-gated by management_full_access/player_own_payments), writes
+// through the BFF (server/api/transactions/create.post.ts)
 import type { PaymentMethod, PaymentType } from '#shared/types/transactions'
 import type { Transaction } from '~/types'
 
@@ -17,10 +16,8 @@ export function useTransactionsQuery() {
       const fetchPage = (from: number, to: number) => supabase
         .from('pauperwave_payments')
         // Explicit hint on each FK column: created_by/updated_by also reference
-        // pauperwave_associates now (migration
-        // 20260812150000_payments_audit_columns.sql), so PostgREST can no
-        // longer work out on its own which of the three relations "associate"
-        // means — same fix as useWantedCardsQuery.ts.
+        // pauperwave_associates (migration 20260812150000), so PostgREST can't tell which of the
+        // three relations "associate" means (as in useWantedCardsQuery.ts)
         .select(`
           *,
           associate:pauperwave_associates!associate_uuid(uuid, first_name, last_name, pauperwave_associate_number),
@@ -30,11 +27,9 @@ export function useTransactionsQuery() {
           event:events(uuid, name)
         `)
         .is('deleted_at', null)
-        // id (unique, unlike payment_date which has plenty of ties) is both
-        // the requested default sort and, incidentally, the only column that
-        // makes pagination below stable — ties on the order column have no
-        // guaranteed order across separate .range() requests, which could
-        // otherwise skip or duplicate a row at a page boundary.
+        // id (unique, unlike payment_date) is the requested default sort and the only column making
+        // the pagination below stable: ties on the order column have no guaranteed order across
+        // .range() requests and could skip or duplicate a row
         .order('id', { ascending: false })
         .range(from, to)
 

@@ -1,9 +1,8 @@
 // app\composables\commanders\useCommanderWhitelists.ts
-// Ported from MagicTheGathering/league (user request, 2026-09-16) — decides
-// which cards are legal as a player's SECOND commander (partner mechanics
-// and Backgrounds), derived from the cached catalog. The rules themselves
-// live in shared/utils/commanders/commanderPartnerRules.ts (also used by the
-// Telegram bot); this only feeds them the cached catalog.
+// Decides which cards are legal as a player's SECOND commander (partner mechanics and Backgrounds),
+// derived from the cached catalog (ported from league). The rules live in
+// shared/utils/commanders/commanderPartnerRules.ts (also used by the Telegram bot); this only feeds
+// them the catalog
 import { createPartnerRules } from '#shared/utils/commanders/commanderPartnerRules'
 
 export function useCommanderWhitelists() {

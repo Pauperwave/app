@@ -1,10 +1,7 @@
 // app\composables\tournaments\rounds\useSwissRoundSubmitHandlers.ts
-// Entering data for the current Swiss round: a table's score, a player's
-// drop. Kept separate from useSwissRoundLifecycle.ts because it's a
-// different kind of concern (data entry, not progressing the tournament
-// itself) — same split as CommanderRoundManager.vue's own
-// useCommanderRoundSubmitHandlers.ts/useCommanderRoundLifecycle.ts pair
-// (2026-09-24).
+// Entering data for the current Swiss round (a table's score, a player's drop), separate from
+// useSwissRoundLifecycle.ts (data entry vs progressing the tournament): the same split as
+// useCommanderRoundSubmitHandlers.ts/useCommanderRoundLifecycle.ts
 import type { MatchScore } from '~/types'
 import type { SwissRoundData } from './useSwissRoundData'
 

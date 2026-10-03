@@ -1,19 +1,14 @@
 // app\composables\tournaments\pairing\useAvoidPairsQuery.ts
 import type { PairingForbiddenPair } from '~/types'
 
-// Pinia Colada query for the globally-fixed avoid-pairs list — ported from
-// MagicTheGathering/league's useAvoidPairsQuery.ts (user request,
-// 2026-09-15). Reads stay client -> Supabase (writes go through
-// useAvoidPairsMutations.ts's BFF endpoints), same convention as every
-// other use<Domain>Query.ts in this app.
+// Pinia Colada query for the globally-fixed avoid-pairs list, ported from league's
+// useAvoidPairsQuery.ts. Reads go client -> Supabase (writes via useAvoidPairsMutations.ts's BFF
+// endpoints).
 //
-// player_avoid_pairs.player_a_uuid/player_b_uuid key by players.uuid (player
-// identity), but every other pairing/pods composable in this app
-// (AcceptancePickerItem.value, TablePlayer.value, PodsManager.vue) uses the
-// associate uuid as the client-side identity instead — resolved here via
-// usePlayersQuery's own player_uuid <-> associate_uuid mapping rather than
-// a PostgREST embed (player_avoid_pairs has two FKs to the same `players`
-// table, which would need an explicit relationship-hint to disambiguate).
+// player_avoid_pairs keys by players.uuid, but every other pairing/pods composable
+// (AcceptancePickerItem.value, TablePlayer.value, PodsManager.vue) uses the associate uuid:
+// resolved here via usePlayersQuery's player_uuid <-> associate_uuid mapping, not a PostgREST embed
+// (two FKs to `players` would need a relationship hint)
 export const AVOID_PAIRS_KEY = ['avoid-pairs']
 
 export function useAvoidPairsQuery() {

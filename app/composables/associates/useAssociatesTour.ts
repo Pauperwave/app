@@ -1,10 +1,9 @@
 // app\composables\associates\useAssociatesTour.ts
 
-// Scoped to /associates (the roster) — /associates/requests is a sibling
-// route with its own tour, not covered here (see SubNav.vue's own comment
-// on why the two pages don't share a layout). Step order = the page's
-// reading order (top-left -> bottom-right): navbar (view mode), sub-nav,
-// toolbar (filters left, actions right), then the table itself.
+// Scoped to /associates (the roster): /associates/requests is a sibling route with its own tour
+// (see SubNav.vue on why the two don't share a layout). Step order = the page's reading order
+// (top-left -> bottom-right): navbar (view mode), sub-nav, toolbar (filters left, actions right),
+// then the table
 export function useAssociatesTour() {
   const { t } = useI18n()
 

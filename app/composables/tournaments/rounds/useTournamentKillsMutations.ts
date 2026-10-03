@@ -1,7 +1,6 @@
 // app\composables\tournaments\rounds\useTournamentKillsMutations.ts
-// Kill-tracking writes — ported from MagicTheGathering/league's kill flow
-// (KillFlowCanvas.vue -> savePairingKills) (user request, 2026-09-15/16:
-// copy the kill-tracking logic as-is, including the @vue-flow/core canvas).
+// Kill-tracking writes, ported from league's kill flow (KillFlowCanvas.vue -> savePairingKills),
+// including the @vue-flow/core canvas
 export interface KillPayload {
   pairingUuid: string
   killerUuid: string

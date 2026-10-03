@@ -1,9 +1,7 @@
 // app\composables\tournaments\rounds\useRoundAndPlayerLookup.ts
-// Shared substrate for both round-manager views (CommanderRoundManager.vue's
-// own useCommanderRoundData.ts, and SwissRoundManager.vue) — which round is
-// current, which pairings belong to it, and the player_uuid -> associate
-// uuid/display-label lookup every table/card needs. Extracted 2026-09-23
-// (fallow:dupes) once both had independently grown the exact same block.
+// Shared substrate for both round-manager views (useCommanderRoundData.ts and
+// SwissRoundManager.vue): which round is current, which pairings belong to it, and the player_uuid
+// -> associate uuid/display-label lookup every table/card needs
 import type { Associate, TablePlayer } from '~/types'
 import type { TournamentRound } from '~/composables/tournaments/rounds/useTournamentRoundsQuery'
 import type { TournamentPairing } from '~/composables/tournaments/pairing/useTournamentPairingsQuery'

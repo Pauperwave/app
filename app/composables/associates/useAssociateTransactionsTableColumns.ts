@@ -1,8 +1,5 @@
 // app\composables\associates\useAssociateTransactionsTableColumns.ts
-// Extracted out of associate/[slug].vue (2026-08-29) — every other domain's
-// table columns already live in their own use<Domain>TableColumns.ts
-// (useTournamentsTableColumns.ts, useTransactionsTableColumns.ts, ...), this
-// one was the odd one out, still inline in the detail page.
+// Extracted from associate/[slug].vue, like every other domain's use<Domain>TableColumns.ts
 import { h } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import type { Transaction, Tournament } from '~/types'
@@ -11,15 +8,11 @@ import {
   UBadge, UButton
 } from '#components'
 
-// Read-only summary, not the full /transactions table columns
-// (useTransactionsTableColumns.ts) — no selection/grouping/row-actions here,
-// this is a per-associate history embedded in a bigger detail page, not a
-// management surface of its own. event_name/gettoni cells DO reuse that
-// table's own rendering logic though (2026-08-25 fix) — this had drifted
-// into just dumping row.original.event_name as raw text, which for
-// historical imports meant literally showing strings like "PAUPER TAPPA 6"
-// instead of the resolved tournament + stage number, and never splitting
-// out gettoni-encoded rows into their own badge at all.
+// Read-only summary, not the full /transactions columns (useTransactionsTableColumns.ts): no
+// selection/grouping/row-actions, as this is a per-associate history in a detail page.
+// event_name/gettoni cells DO reuse that table's rendering: dumping row.original.event_name showed
+// raw strings ("PAUPER TAPPA 6") instead of the resolved tournament + stage number, and never split
+// gettoni rows into their own badge
 export function useAssociateTransactionsTableColumns(
   tournamentsByUuid: ComputedRef<Map<string, Tournament>>,
   amountFormatter: Intl.NumberFormat
@@ -64,12 +57,9 @@ export function useAssociateTransactionsTableColumns(
     },
     {
       id: 'league',
-      // Only ever set for a Tournament Fee row whose tournament belongs to a
-      // league (a tournament's league is optional/polymorphic, see the
-      // project's own routing convention) — resolved the same way stageNumber
-      // above is, off tournamentsByUuid rather than the transaction's own
-      // embedded tournament sub-object, which only carries leagueUuid, not
-      // the resolved name (user request, 2026-08-27).
+      // Only set for a Tournament Fee whose tournament belongs to a league (a tournament's league
+      // is optional/polymorphic): resolved off tournamentsByUuid like stageNumber above, since the
+      // transaction's embedded tournament only carries leagueUuid, not the name
       accessorFn: (row) => {
         const uuid = row.tournament?.uuid
         return uuid ? tournamentsByUuid.value.get(uuid)?.league ?? null : null
@@ -109,9 +99,8 @@ export function useAssociateTransactionsTableColumns(
     {
       accessorKey: 'notes',
       header: t('transaction.columns.notes'),
-      // parseTransactionNotes() only handles the unknown-email marker now —
-      // the receipt number moved to its own receipt_ref column (migration
-      // 20260825230000), read directly above instead of parsed out of notes.
+      // parseTransactionNotes() only handles the unknown-email marker; the receipt number is the
+      // receipt_ref column (migration 20260825230000)
       cell: ({ row }) => transactionNotesCell(row.original.notes, t('transaction.columns.unknownEmailTooltip'))
     }
   ]

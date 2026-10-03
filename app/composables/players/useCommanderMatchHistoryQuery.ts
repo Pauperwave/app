@@ -1,10 +1,8 @@
 // app\composables\players\useCommanderMatchHistoryQuery.ts
-// "Storico Partite" card on /players/[slug] (user request, 2026-08-27) —
-// reads tournament_round_results directly (public_read RLS, no BFF needed
-// for this read-only view), joined via real FKs to the tournament/round/
-// pairing/commander-deck it belongs to. Kills are a separate query
-// (tournament_kills has no direct FK back to tournament_round_results,
-// only to the shared pairing_uuid) merged in client-side by pairing.
+// "Storico Partite" card on /players/[slug]: reads tournament_round_results directly (public_read
+// RLS, no BFF for a read-only view), joined via real FKs to the
+// tournament/round/pairing/commander-deck. Kills are a separate query (tournament_kills has no FK
+// back to tournament_round_results, only the shared pairing_uuid) merged client-side by pairing
 export interface CommanderMatchHistoryRow {
   id: number
   tournamentUuid: string

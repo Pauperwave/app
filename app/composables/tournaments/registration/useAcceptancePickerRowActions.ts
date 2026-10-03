@@ -1,22 +1,16 @@
 // app\composables\tournaments\registration\useAcceptancePickerRowActions.ts
-// Right-click context-menu item builders for AcceptancePicker.vue's two
-// tables, extracted alongside useAcceptancePickerColumns.ts (same "pure
-// config, state threaded in" shape) — the component used to hand-roll its
-// own contextMenuRow/onRowContextmenu/tableContextMenuItems wiring for both
-// tables instead of calling the shared useRowContextMenu.ts composable
-// already used by useWantedCardsRowActions.ts/useTransactionsRowActions.ts/
-// useAssociatesRowActions.ts for exactly this.
+// Right-click context-menu item builders for AcceptancePicker.vue's two tables, extracted with
+// useAcceptancePickerColumns.ts ("pure config, state threaded in"). Wiring comes from the shared
+// useRowContextMenu.ts, like useWantedCardsRowActions.ts and the other row-actions composables.
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { PaymentMethod } from '#shared/types/transactions'
 import type { AcceptancePickerItem } from '~/components/tournaments/single/AcceptancePicker.vue'
 
 type SourceRowStatus = 'pending' | 'accepted' | 'noShow'
 
-// Right-clicking a row that's part of the current multi-selection acts on
-// the whole selection, not just that one row (user request, 2026-08-24: "the
-// contextual menu actions should work on every selected item") — same
-// "clicked row decides the target action, selection decides the scope"
-// convention for both tables' context menus below.
+// Right-clicking a row in the current multi-selection acts on the whole selection, not just that
+// row: "clicked row decides the target action, selection decides the scope" for both tables'
+// context menus below.
 function resolveContextMenuTargets<T extends AcceptancePickerItem>(
   clicked: T, selection: T[]
 ): T[] {
@@ -37,9 +31,8 @@ export interface UseAcceptancePickerRowActionsOptions {
   setPaymentMethod: (item: AcceptancePickerItem, method: PaymentMethod | null) => void
   testPayments: Record<string, boolean>
   toggleTestPaymentForTargets: (items: AcceptancePickerItem[]) => void
-  // Named distinctly from useAcceptancePickerColumns.ts's own
-  // requestRemoveAccepted (single item, for the visible row button) — this
-  // one is bulk-aware, fed resolveContextMenuTargets' wider selection.
+  // Distinct from useAcceptancePickerColumns.ts's requestRemoveAccepted (single item, visible row
+  // button): bulk-aware, fed resolveContextMenuTargets' wider selection
   requestRemoveAcceptedTargets: (items: AcceptancePickerItem[]) => void
 }
 
@@ -51,14 +44,12 @@ export function useAcceptancePickerRowActions(options: UseAcceptancePickerRowAct
   } = options
 
   const { t } = useI18n()
-  // "Test" payment button is developer-only (user request, 2026-09-18) —
-  // a testing shortcut, not something a real check-in desk should see.
+  // The "Test" payment button is developer-only: a testing shortcut a real check-in desk shouldn't
+  // see
   const { isDeveloperView } = useDeveloperView()
 
-  // "Pre-registrati" side (user request, 2026-08-24) — mirrors the visible
-  // no-show toggle button; empty for an already-accepted row (nothing left
-  // to do from this side, same as the button's own
-  // `if (status === 'accepted') return null`).
+  // "Pre-registrati" side: mirrors the visible no-show toggle; empty for an already-accepted row
+  // (like the button's `if (status === 'accepted') return null`)
   function sourceRowContextMenuItems(item: AcceptancePickerItem): DropdownMenuItem[] {
     const status = sourceRowStatus(item)
     if (status === 'accepted') return []
@@ -67,10 +58,8 @@ export function useAcceptancePickerRowActions(options: UseAcceptancePickerRowAct
     const markAsNoShow = status !== 'noShow'
 
     return [
-      // Only for pending rows — a no-show shouldn't be silently accepted
-      // without first clearing that status (user request, 2026-08-24:
-      // "Aggiungi l'azione di 'Aggiunta agli iscritti'"), same single-item
-      // vs. whole-selection scope as the no-show action below.
+      // Only for pending rows: a no-show shouldn't be silently accepted without clearing that
+      // status. Same single-item vs whole-selection scope as the no-show action below
       ...(status === 'pending'
         ? [{
           label: targets.length > 1
@@ -104,13 +93,10 @@ export function useAcceptancePickerRowActions(options: UseAcceptancePickerRowAct
     tableContextMenuItems: sourceTableContextMenuItems
   } = useRowContextMenu(sourceRowContextMenuItems)
 
-  // "Iscritti (Pagato)" side (user request, 2026-08-24) — mirrors the
-  // visible payment-method buttons + remove button. Real payment methods
-  // stay single-row (see setPaymentMethod's own comment); "Pagamento test"
-  // and remove are both bulk-aware (resolveContextMenuTargets) — remove
-  // because it's already one batched network call, "Pagamento test" because
-  // it never touches the network at all (see toggleTestPaymentForTargets's
-  // own comment).
+  // "Iscritti (Pagato)" side: mirrors the visible payment-method and remove buttons. Real payment
+  // methods stay single-row (see setPaymentMethod); "Pagamento test" and remove are bulk-aware
+  // (resolveContextMenuTargets), since remove is already one batched call and "Pagamento test"
+  // never touches the network (see toggleTestPaymentForTargets)
   function acceptedRowContextMenuItems(item: AcceptancePickerItem): DropdownMenuItem[] {
     const method = paymentMethodByPlayer[item.value] ?? null
     const targets = resolveContextMenuTargets(item, selectedAccepted.value)

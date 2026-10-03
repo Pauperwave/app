@@ -1,13 +1,9 @@
 // app\composables\events\useEventsBulkActions.ts
-// Bulk operations over a set of selected events (useSelection.ts) — same
-// shape as useLeaguesBulkActions.ts: no dedicated bulk server endpoint, each
-// op fans the existing per-event mutation out with Promise.allSettled.
-// fallow-ignore-file code-duplication -- requestStatusChange/requestDelete/
-// toastForFailures mirror useLeaguesBulkActions.ts's shape, but the
-// entity/status types, i18n key prefix, and mutation functions all differ
-// per domain — same same-shaped-but-parameterized call as
-// feedback_dedup_threshold_call_sites; a shared factory would need as many
-// parameters as it removes duplication.
+// Bulk operations over a set of selected events (useSelection.ts), like useLeaguesBulkActions.ts:
+// no bulk server endpoint, each op fans the per-event mutation out with Promise.allSettled.
+// fallow-ignore-file code-duplication -- same shape as useLeaguesBulkActions.ts, but entity/status
+// types, i18n prefix and mutations differ per domain: a shared factory would need as many
+// parameters as it removes
 import type { Event, EventStatus } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 
@@ -21,8 +17,8 @@ export function useEventsBulkActions(selection: Selection<number>) {
   const undoable = useUndoableAction()
   const { setStatus, deleteEvent } = useEventsMutations()
 
-  // Both actions are destructive/state-changing enough to warrant a
-  // confirmation step, same reasoning as useLeaguesBulkActions.ts.
+  // Both actions are destructive/state-changing enough to warrant a confirmation, like
+  // useLeaguesBulkActions.ts
   const pendingAction = ref<PendingBulkAction | null>(null)
   const confirmOpen = ref(false)
 
@@ -44,9 +40,8 @@ export function useEventsBulkActions(selection: Selection<number>) {
     })
   }
 
-  // Closes the modal immediately and defers the actual mutation(s) behind a
-  // 10-second undo window (useUndoableAction.ts), same as
-  // useLeaguesBulkActions.ts.
+  // Closes the modal at once and defers the mutation(s) behind a 10-second undo window
+  // (useUndoableAction.ts), like useLeaguesBulkActions.ts
   function confirmPendingAction() {
     const action = pendingAction.value
     if (!action) return

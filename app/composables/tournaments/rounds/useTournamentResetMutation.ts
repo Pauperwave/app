@@ -1,10 +1,8 @@
 // app\composables\tournaments\rounds\useTournamentResetMutation.ts
-// "Reset" button on the tournament detail navbar (user request,
-// 2026-09-18) — wipes every round/pairing/result/standing for a
-// tournament, format-agnostic (Commander and 1v1 Swiss both key off the
-// same tables). Its own composable rather than folding into
-// useTournamentRoundsMutations.ts/useTournamentSwissRoundsMutations.ts —
-// this one isn't format-specific, unlike everything else in those two.
+// "Reset" button on the tournament detail navbar: wipes every round/pairing/result/standing,
+// format-agnostic (Commander and 1v1 Swiss use the same tables). Its own composable rather than
+// part of useTournamentRoundsMutations.ts/useTournamentSwissRoundsMutations.ts, as it isn't
+// format-specific
 export function useTournamentResetMutation(tournamentUuid: MaybeRefOrGetter<string>) {
   const queryCache = useQueryCache()
 

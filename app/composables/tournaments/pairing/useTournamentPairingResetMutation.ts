@@ -1,9 +1,7 @@
 // app\composables\tournaments\pairing\useTournamentPairingResetMutation.ts
-// "Reset tavolo" (user request, 2026-09-19, ported from league's
-// PairingsCard.vue) — clears one pairing's ranking/kills/votes.
-// "Annulla Patta" (user request, 2026-09-16, league it.json audit) added
-// alongside it — same invalidation shape, narrower clear (see
-// undraw-pairing.post.ts).
+// "Reset tavolo" (ported from league's PairingsCard.vue) clears one pairing's ranking/kills/votes;
+// "Annulla Patta" has the same invalidation shape with a narrower clear (see
+// undraw-pairing.post.ts)
 export function useTournamentPairingResetMutation(tournamentUuid: MaybeRefOrGetter<string>) {
   const queryCache = useQueryCache()
   const toast = useToast()

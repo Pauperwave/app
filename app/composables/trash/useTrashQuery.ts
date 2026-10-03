@@ -3,10 +3,8 @@ import type { TrashEntity, TrashItem } from '~/types'
 
 export const TRASH_KEY = ['trash']
 
-// `deletedBy` mirrors Transaction's own createdBy/updatedBy resolution
-// (useTransactionsQuery.ts) — '' when unknown (soft-deleted before the
-// deleted_by column existed, migration 20260823110000) rather than null,
-// same convention.
+// `deletedBy` mirrors Transaction's createdBy/updatedBy resolution (useTransactionsQuery.ts): ''
+// when unknown (soft-deleted before the deleted_by column, migration 20260823110000), not null
 type AssociateNameRow = { first_name: string, last_name: string } | null
 
 function toTrashItem(
@@ -24,12 +22,10 @@ function toTrashItem(
   }
 }
 
-// One read per soft-deletable table (server/utils/idRequest.ts's
-// SoftDeletableTable union), run in parallel and merged into a single list —
-// same "combine several Supabase reads into one derived shape" pattern as
-// useEventsQuery.ts's events+tournaments join. pauperwave_payments has no
-// single "name" column, so its label falls back through payer name -> event
-// name -> a bare id, same fallback order the receipts flow already uses.
+// One read per soft-deletable table (idRequest.ts's SoftDeletableTable union), run in parallel and
+// merged into one list, like useEventsQuery.ts's events+tournaments join. pauperwave_payments has
+// no single "name" column, so its label falls back payer name -> event name -> bare id (the
+// receipts flow's order)
 export function useTrashQuery() {
   const supabase = useSupabaseClient()
 

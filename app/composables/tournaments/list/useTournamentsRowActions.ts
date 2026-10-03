@@ -1,8 +1,7 @@
 // app\composables\tournaments\list\useTournamentsRowActions.ts
-// Edit-modal state for the visible "Modifica" button on the grid card and the
-// table's "Azioni" column — unlike useCopyLinkContextMenu.ts's right-click
-// menu, these are always-visible buttons, so this stays a separate, minimal
-// composable rather than folding edit into that one's dropdown items.
+// Edit-modal state for the visible "Modifica" button on the grid card and the table's "Azioni"
+// column: always-visible buttons, so a separate minimal composable rather than items in
+// useCopyLinkContextMenu.ts's right-click menu
 import type { Tournament } from '~/types'
 
 export function useTournamentsRowActions() {

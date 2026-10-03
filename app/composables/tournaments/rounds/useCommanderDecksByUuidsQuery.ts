@@ -1,8 +1,7 @@
 // app\composables\tournaments\rounds\useCommanderDecksByUuidsQuery.ts
-// Batch commander-deck-name lookup by uuid — lets CommanderRoundManager.vue
-// resolve "which commander is player X currently playing this round" (for
-// TournamentVotesModal's CommanderVoteCard art) from the deck uuids already
-// on tournament_round_results, without a per-player round-trip.
+// Batch commander-deck-name lookup by uuid: lets CommanderRoundManager.vue resolve "which commander
+// is player X playing this round" (for TournamentVotesModal's CommanderVoteCard art) from the deck
+// uuids already on tournament_round_results, without a per-player round-trip
 export interface CommanderDeckNames {
   commander1Name: string
   commander2Name: string | null

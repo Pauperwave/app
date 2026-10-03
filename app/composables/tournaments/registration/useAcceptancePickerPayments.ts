@@ -1,13 +1,7 @@
 // app\composables\tournaments\registration\useAcceptancePickerPayments.ts
-// Payment-method tracking for AcceptancePicker.vue's "Iscritti (Pagato)"
-// table — extracted 2026-09-18 alongside useWalkInPlayers.ts, once
-// AcceptancePicker.vue had grown to 719 lines. Unlike CommanderRoundManager.vue
-// (several independent modal flows sharing one component), this one is a
-// single cohesive dual-table widget with genuinely intertwined selection/
-// search/remove-confirm logic across both tables — see the component's own
-// comments on cross-table bug fixes — so only the two concerns that don't
-// touch that intertwined core (payments here, walk-in adds in the sibling
-// composable) were pulled out; the rest stays in the component on purpose.
+// Payment-method tracking for AcceptancePicker.vue's "Iscritti (Pagato)" table, extracted with
+// useWalkInPlayers.ts. The rest of the component's dual-table selection/search/remove-confirm logic
+// is genuinely intertwined across both tables, so it stays there on purpose.
 import type { PaymentMethod } from '#shared/types/transactions'
 import { useStorage } from '@vueuse/core'
 import type { AcceptancePickerItem } from '~/components/tournaments/single/AcceptancePicker.vue'
@@ -32,32 +26,24 @@ export function useAcceptancePickerPayments(options: {
     }
   }, { immediate: true })
 
-  // "Test" payment button — marks a player as paid for testing purposes
-  // without writing a pauperwave_payments row. Kept out of
-  // paymentMethodByPlayer/pauperwave_payments entirely ('test' isn't a real
-  // PaymentMethod, ck_payment_method would reject it), but persisted to
-  // localStorage via VueUse's useStorage (survive a reload without needing
-  // an actual DB write) rather than a plain reactive() — keyed per
-  // tournament so different tournaments' test marks don't collide.
+  // "Test" payment button: marks a player as paid for testing without writing a pauperwave_payments
+  // row. Kept out of paymentMethodByPlayer ('test' isn't a PaymentMethod, ck_payment_method would
+  // reject it) and persisted to localStorage via VueUse's useStorage so it survives a reload, keyed
+  // per tournament so marks don't collide
   const testPayments = useStorage<Record<string, boolean>>(
     () => `tournament-test-payments-${toValue(tournamentUuid)}`, {}
   )
 
-  // Who's running the check-in desk right now — required to record a *new*
-  // pauperwave_payments row (received_by is NOT NULL, and there's no
-  // "current logged-in user" to default it to, same gap already flagged in
-  // useAssociatesBulkActions.ts). Chosen once per session from
-  // RECEIVER_OPTIONS, not per click — these payment buttons have no form of
-  // their own.
+  // Who's running the check-in desk: required to record a *new* payment (received_by is NOT NULL,
+  // with no "current user" default, as in useAssociatesBulkActions.ts). Chosen once per session
+  // from RECEIVER_OPTIONS, not per click (these buttons have no form)
   const receivedBy = ref<string | undefined>(undefined)
 
-  // Payment is single-row only (one real pauperwave_payments write per
-  // click, no loop of N mutation calls with no atomicity between them).
+  // Payment is single-row only: one real pauperwave_payments write per click, no loop of N calls
+  // without atomicity
   function setPaymentMethod(item: AcceptancePickerItem, method: PaymentMethod | null) {
-    // Only a brand-new payment strictly needs receivedBy server-side (an
-    // update to an existing row keeps its own) — but this session-wide
-    // desk-staff selection is still worth nudging for up front, since
-    // silently omitting it on every subsequent click would be confusing.
+    // Only a brand-new payment strictly needs receivedBy server-side (an update keeps its own), but
+    // nudging for the session-wide desk-staff choice up front beats silently omitting it
     if (method !== null && !paymentMethodByPlayer[item.value] && !receivedBy.value) {
       toast.add({
         title: t('tournament.single.acceptancePicker.receivedByRequiredTitle'),
@@ -83,21 +69,16 @@ export function useAcceptancePickerPayments(options: {
       Reflect.deleteProperty(testPayments.value, item.value)
       return
     }
-    // Mutually exclusive with a real payment method — a row shouldn't show
-    // both a live "Cash" and the "Test" state active at once.
+    // Mutually exclusive with a real payment method: a row shouldn't show both "Cash" and "Test"
+    // active
     if (paymentMethodByPlayer[item.value]) setPaymentMethod(item, null)
     testPayments.value[item.value] = true
   }
 
-  // Bulk-aware context-menu variant — unlike real payment methods
-  // (deliberately kept single-row, see setPaymentMethod's own comment),
-  // "Pagamento test" is pure client-side localStorage state, not a
-  // pauperwave_payments write, so there's no atomicity/error-class concern
-  // looping over it. Same "clicked row decides the action, selection
-  // decides the scope" convention as the component's own
-  // resolveContextMenuTargets — every target ends up in the same on/off
-  // state as the clicked row's own next value, rather than each toggling
-  // independently off whatever its own prior state was.
+  // Bulk-aware context-menu variant: unlike real payments (single-row, see setPaymentMethod),
+  // "Pagamento test" is client-side localStorage state with no atomicity concern. Same "clicked row
+  // decides the action, selection decides the scope" convention as resolveContextMenuTargets: every
+  // target ends in the same on/off state as the clicked row's next value
   function toggleTestPaymentForTargets(items: AcceptancePickerItem[]) {
     const [anchor] = items
     if (!anchor) return

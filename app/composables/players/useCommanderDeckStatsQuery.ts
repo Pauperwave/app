@@ -1,11 +1,9 @@
 // app\composables\players\useCommanderDeckStatsQuery.ts
-// Per-deck-instance stats for /players/[slug]/deck/[deckSlug].vue — unlike
-// league's name-based deck_stats table, this app's tournament_round_results
-// links to a specific commander_decks row via commander_deck_uuid, so a
-// deck's stats stay correctly scoped to that exact instance regardless of
-// who currently owns/borrows it (no separate "deck_stats" view needed).
-// Same win/average definitions as commander_stats (migration
-// 20260919040000): win = position 1, average = mean kill count per match.
+// Per-deck-instance stats for /players/[slug]/deck/[deckSlug].vue: unlike league's name-based
+// deck_stats table, tournament_round_results links to a specific commander_decks row
+// (commander_deck_uuid), so stats stay scoped to that instance whoever owns/borrows it. Same
+// win/average definitions as commander_stats (migration 20260919040000): win = position 1, average
+// = mean kill count per match
 export interface CommanderDeckStats {
   matchCount: number
   winCount: number

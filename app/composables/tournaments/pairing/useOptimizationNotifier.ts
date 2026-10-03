@@ -1,7 +1,6 @@
 // app\composables\tournaments\pairing\useOptimizationNotifier.ts
-// Toast feedback around the pairing optimizer's "Ottimizza"/"Risolvi
-// conflitti" actions — ported from MagicTheGathering/league verbatim
-// (generic, no player-identity coupling, user request 2026-09-15).
+// Toast feedback around the pairing optimizer's "Ottimizza"/"Risolvi conflitti" actions, ported
+// verbatim from league (generic, no player-identity coupling)
 import type { Ref } from 'vue'
 import type { PairingTable } from '~/types'
 import type { PairingScoreDetails } from '~/composables/tournaments/pairing/pairingOptimizer'

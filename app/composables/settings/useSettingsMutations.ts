@@ -7,10 +7,8 @@ import type {
 export function useSettingsMutations() {
   const queryCache = useQueryCache()
 
-  // Same BFF convention as useWantedCardsMutations.ts — the server/api
-  // endpoint (holding the service-role key) is the authorization boundary
-  // (requireAdminPermission, server/utils/serverAuth.ts), not RLS evaluated
-  // from the client.
+  // Same BFF convention as useWantedCardsMutations.ts: the server/api endpoint (service-role key)
+  // is the authorization boundary (requireAdminPermission, serverAuth.ts), not RLS from the client
   const updateMembershipFee = useMutation({
     mutation: (payload: UpdateMembershipFeePayload) =>
       $fetch('/api/settings/update-membership-fee', { method: 'POST', body: payload }),

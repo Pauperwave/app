@@ -1,9 +1,8 @@
 // app\composables\transactions\useTransactionsMutations.ts
-// Pinia Colada mutation for the transactions domain (ADR-007/ADR-009 pattern, see
-// useWantedCardsMutations.ts). Invalidates both the transactions list and the
-// associates one, since an "Association Fee" payment can flip an associate's
-// derived membership_status via the renewal it writes
-// (server/api/transactions/create.post.ts).
+// Pinia Colada mutation for the transactions domain (ADR-007/ADR-009, see
+// useWantedCardsMutations.ts). Invalidates both the transactions and associates lists, since an
+// "Association Fee" payment can flip an associate's derived membership_status via the renewal it
+// writes (server/api/transactions/create.post.ts)
 import type { NewTransactionPayload } from '#shared/types/transactions'
 
 export function useTransactionsMutations() {

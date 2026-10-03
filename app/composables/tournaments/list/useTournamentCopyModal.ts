@@ -1,9 +1,6 @@
 // app\composables\tournaments\list\useTournamentCopyModal.ts
-// Extracted out of tournaments/index.vue and leagues/[leagueId]/index.vue
-// (2026-08-29) — both had this exact ref/function trio for the "Copia
-// torneo" context-menu action, byte-identical, so it moved here rather than
-// staying duplicated a third time once events/[eventId]/index.vue gets the
-// same treatment.
+// Shared by tournaments/index.vue and leagues/[leagueId]/index.vue: the ref/function trio of the
+// "Copia torneo" context-menu action (events/[eventId]/index.vue will use it too)
 import type { Tournament } from '~/types'
 
 export function useTournamentCopyModal() {
