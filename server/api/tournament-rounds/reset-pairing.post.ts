@@ -1,25 +1,19 @@
 // server\api\tournament-rounds\reset-pairing.post.ts
-import { serverSupabaseServiceRole } from '#supabase/server'
-import type { Database } from '#shared/utils/types/database'
+import type { PairingWriteContext } from '~~/server/utils/tournaments/definePairingWriteHandler'
 
-// fallow-ignore-next-line code-duplication -- same guard as the sibling handlers
 interface ResetPairingBody {
   pairingUuid: string
 }
 
 // Clears one pairing's entered data (ranking, kills, votes) — migration
 // 20260919000000. "Reset tavolo", ported from league (PairingsCard.vue).
-export default defineEventHandler(async (event) => {
-  await requireManagementPermission(event)
+export default definePairingWriteHandler(
+  async ({ supabase, body }: PairingWriteContext<ResetPairingBody>) => {
+    const { error } = await supabase.rpc('reset_commander_pairing', {
+      p_pairing_uuid: body.pairingUuid
+    })
+    assertRoundRpcOk(error)
 
-  const { pairingUuid } = await readBody<ResetPairingBody>(event)
-  const supabase = serverSupabaseServiceRole<Database>(event)
-  await assertPairingEditable(supabase, pairingUuid)
-
-  const { error } = await supabase.rpc('reset_commander_pairing', {
-    p_pairing_uuid: pairingUuid
-  })
-  assertRoundRpcOk(error)
-
-  return { success: true }
-})
+    return { success: true }
+  }
+)
