@@ -1,7 +1,6 @@
 // scripts\list-missing-geocodes.mjs
-// Lists associates with no cached geocode row (pauperwave_associate_geocodes),
-// and their address on file — useful to spot data-entry issues (typos,
-// missing addresses) before/after running scripts/geocode-associates.mjs.
+// Lists associates with no cached geocode row and their address on file, to spot typos or missing
+// addresses around scripts/geocode-associates.mjs.
 //
 // Usage:
 //   node scripts/list-missing-geocodes.mjs

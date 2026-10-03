@@ -1,11 +1,7 @@
 // scripts\fallow-dupes-markers-check.mjs
-// fallow's suppress-line mechanism only recognizes a `fallow-ignore-next-line`
-// comment when it is a single physical line sitting immediately above the
-// flagged code (see 2026-08-29 fallow:dupes triage session) — a marker split
-// across multiple comment lines, or separated from the code by another
-// comment, silently fails to suppress with no warning from `fallow dupes`
-// itself. This script catches that shape so it doesn't need re-discovering
-// by hand next time.
+// fallow only honors a `fallow-ignore-next-line` marker that
+// is a single comment line directly above the flagged code; a split or separated marker silently
+// fails. This script catches that shape.
 import fs from 'node:fs'
 import path from 'node:path'
 import { execSync } from 'node:child_process'
@@ -25,10 +21,8 @@ for (const file of files) {
     const isHtmlComment = markerLine.startsWith('<!--')
     const isJsComment = markerLine.startsWith('//')
 
-    // Only an actual directive counts — the marker keyword must open the
-    // comment's own content, not just appear somewhere in a sentence (e.g.
-    // this file's own header explains the marker by name, in prose, which
-    // used to false-positive as a broken marker on itself).
+    // The keyword must open the comment, not just appear in prose (this file's header would
+    // false-positive)
     const content = markerLine
       .replace(/^<!--\s*/, '')
       .replace(/\s*-->$/, '')

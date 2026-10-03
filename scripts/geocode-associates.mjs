@@ -1,31 +1,23 @@
 // scripts\geocode-associates.mjs
-// One-off batch job: geocodes every associate's residency address and caches
-// the result in pauperwave_associate_geocodes. Re-run any time to fill in
-// associates added since the last run — already-geocoded associates are
-// skipped.
+// Batch job: geocodes every associate's residency address into pauperwave_associate_geocodes.
+// Re-runnable: already-geocoded associates are skipped.
 //
-// Tries multiple free, no-API-key providers/query variants in order, from
-// most to least precise, since Nominatim often misses Italian frazioni/
-// località names or exact house numbers:
-//   1. Nominatim, full address, restricted to Italy
-//   2. Nominatim, full address, unrestricted (handles associates actually
-//      residing abroad)
-//   3. Nominatim, address without house number, restricted to Italy
-//   4. Nominatim, city + province only, restricted to Italy (coarse fallback)
-//   5. Photon (Komoot), full address (different OSM index, sometimes matches
-//      where Nominatim doesn't)
+// Tries free providers/query variants from most to least precise (Nominatim often misses frazioni
+// or house numbers):
+//   1. Nominatim, full address, Italy only
+//   2. Nominatim, full address, unrestricted (associates living abroad)
+//   3. Nominatim, no house number, Italy only
+//   4. Nominatim, city + province only, Italy only (coarse fallback)
+//   5. Photon (Komoot), full address (different OSM index)
 //
-// Nominatim usage policy requires max 1 request/sec and a real User-Agent
-// identifying the app: https://operations.osmfoundation.org/policies/nominatim/
-// Photon has no published rate limit but is used politely (same delay).
+// Nominatim policy: max 1 request/sec and a real User-Agent:
+// https://operations.osmfoundation.org/policies/nominatim/ Photon has no published limit but gets
+// the same delay.
 //
 // Usage:
 //   node scripts/geocode-associates.mjs
 
-// fallow-ignore-file security-sink -- the fetch() calls (fallow security, ssrf
-// candidates) always hit a hardcoded Nominatim/Photon host; only the query string
-// is built from associate address data, the host is never attacker-controllable,
-// and this is an offline admin script anyway, not an HTTP-reachable endpoint
+// fallow-ignore-file security-sink -- fixed Nominatim/Photon hosts, only the query is address data
 import { createSupabaseAdminClient, sleep } from './lib/supabaseAdminClient.mjs'
 import { fetchAssociatesAndGeocodedUuids } from './lib/associateGeocodeQueries.mjs'
 

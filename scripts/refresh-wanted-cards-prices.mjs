@@ -1,27 +1,17 @@
 // scripts\refresh-wanted-cards-prices.mjs
-// One-off/scheduled batch job (weekly via .github/workflows/
-// refresh-wanted-cards-prices.yml): refreshes cardmarket_price and
-// cardtrader_price for every wanted card still "searching" (see the 2026-08-08
-// discussion in docs/PROGRESS.md — they are snapshots, not live prices, which is
-// why a periodic refresh is needed instead of recomputing on every read).
+// Weekly batch job (.github/workflows/refresh-wanted-cards-prices.yml): refreshes the
+// cardmarket_price/cardtrader_price snapshots of every wanted card still "searching".
 //
-// It duplicates the logic of server/utils/cardTrader.ts and
-// server/utils/priceRefresh.ts rather than importing it: those modules are
-// auto-imported by Nitro inside the Nuxt runtime and cannot be resolved from a
-// standalone node script (the same reason geocode-associates.mjs does not reuse
-// server-side code).
+// Duplicates server/utils/cardTrader.ts and server/utils/priceRefresh.ts on purpose: those rely on
+// Nitro auto-imports and can't be resolved from a standalone node script.
 //
 // Usage:
 //   node --env-file=.env scripts/refresh-wanted-cards-prices.mjs
-//   node --env-file=.env scripts/refresh-wanted-cards-prices.mjs --all   (include found/abandoned too)
+//   node --env-file=.env scripts/refresh-wanted-cards-prices.mjs --all   (include found/abandoned
+//   too)
 
-// fallow-ignore-file code-duplication -- mirrors server/utils/cardTrader.ts and
-// server/utils/priceRefresh.ts on purpose, see the file header comment above
-// fallow-ignore-file security-sink -- the fetch() calls (fallow security, ssrf
-// candidates) always hit a hardcoded api.scryfall.com/cardtrader host; only the
-// path segment or query string is built from card data, the host is never
-// attacker-controllable, and this is an offline admin script anyway, not an
-// HTTP-reachable endpoint
+// fallow-ignore-file code-duplication -- mirrors the server utils on purpose, see the header above
+// fallow-ignore-file security-sink -- fixed Scryfall/CardTrader hosts, path/query are card data
 import { createSupabaseAdminClient, sleep } from './lib/supabaseAdminClient.mjs'
 
 const CARDTRADER_API_TOKEN = process.env.CARDTRADER_API_TOKEN
@@ -35,18 +25,13 @@ const MTG_GAME_ID = 1
 const CARDTRADER_API_BASE = 'https://api.cardtrader.com/api/v2'
 const SCRYFALL_USER_AGENT = 'Pauperwave-app/1.0 (wanted-cards weekly price refresh; contact: emanuelenardi.dev@gmail.com)'
 
-// Scryfall asks for at most 10 requests/sec and a "polite" delay between calls:
-// https://scryfall.com/docs/api#rate-limits-and-good-citizenship. CardTrader has a
-// 10 req/sec limit on the marketplace/products endpoint — the same delay works for
-// both calls made per row.
+// Scryfall (https://scryfall.com/docs/api#rate-limits-and-good-citizenship) and CardTrader's
+// marketplace/products endpoint both allow 10 req/sec; one delay covers both calls per row
 const REQUEST_DELAY_MS = 150
 
-// The finish has to be inferred from the printing, not just from the request's
-// treatment: foil-only printings exist (Pramikon, Sky Rampart in c19; Duskmourn's
-// Japanese showcases) where prices.eur is null by construction and the price lives
-// in prices.eur_foil. Reading only .eur returned null on those cards — and the same
-// effectiveFoil is needed by CardTrader, which would otherwise filter on
-// mtg_foil=false for a card that never existed in non-foil.
+// The finish is inferred from the printing, not just the requested treatment: foil-only
+// printings have prices.eur null and the price in prices.eur_foil. The same effectiveFoil
+// is reused for CardTrader, which would otherwise filter on mtg_foil=false for a foil-only card.
 async function fetchCardmarketPrice(scryfallId, wantsFoil) {
   const response = await fetch(`https://api.scryfall.com/cards/${scryfallId}`, {
     headers: { 'User-Agent': SCRYFALL_USER_AGENT, 'Accept': 'application/json' }
@@ -70,11 +55,9 @@ function orderExactFirst(expansions, setCode) {
     .map(expansion => expansion.id)
 }
 
-// A Scryfall set does not map 1:1 onto a CardTrader expansion: they split it by
-// prefixing the code — dsk (base), cdsk (Collectors), adsk (Art Series), pdsk
-// (Promos), predsk (Prerelease). Boosterfun/showcase printings, which Scryfall keeps
-// under the same `dsk` with a high collector number, therefore live in `cdsk`:
-// searching the exact code only missed them every time.
+// A Scryfall set maps onto several CardTrader expansions, split by code prefix: dsk (base),
+// cdsk (Collectors), adsk (Art Series), pdsk (Promos), predsk (Prerelease). Showcase printings
+// therefore live in `cdsk`, which an exact-code search always missed.
 async function resolveExpansionIds(setCode) {
   // `%dsk` covers both the exact code and the prefixed siblings.
   const { data: cached } = await supabase
@@ -107,14 +90,9 @@ async function resolveExpansionIds(setCode) {
   )
 }
 
-// CardTrader does not always backfill a blueprint's scryfall_id right after a set
-// releases (confirmed 2026-08-11 on "Commander: Marvel Super Heroes", msc — over
-// half of its 338 blueprints, including "Stilt-Man, Towering Terror", still had
-// scryfall_id: null) — the name match below is the fallback for that gap. Mirrors
-// server/utils/cardTrader.ts's resolveCardTraderBlueprint, which this script's own
-// header comment says it duplicates but this fallback was missing until 2026-09-02
-// (found investigating #51 "Stilt-Man" and #64 "Price of Glory" both stuck with no
-// cardtrader_price and no cached blueprint row).
+// CardTrader doesn't always backfill a blueprint's scryfall_id right after a set releases, so the
+// name match below is the fallback. Mirrors resolveCardTraderBlueprint in
+// server/utils/cardTrader.ts.
 async function fetchScryfallCardName(scryfallId) {
   const response = await fetch(`https://api.scryfall.com/cards/${scryfallId}`, {
     headers: { 'User-Agent': SCRYFALL_USER_AGENT, 'Accept': 'application/json' }
@@ -170,12 +148,8 @@ async function resolveBlueprintId(scryfallId, setCode) {
   return null
 }
 
-// Language is filtered here and no longer via query param (hardcoded
-// `language=en`): that default made the two prices incomparable, because
-// Scryfall/CardMarket quote the product in any language while we asked for English
-// copies only. On a japanshowcase printing (e.g. Enduring Vitality dsk/394) the
-// difference was 4× — scarce in English, not a lookup error. `language` null =
-// "Any": no filter, global minimum.
+// `language` null = "Any": no filter, global minimum. Forcing English made the price
+// incomparable with Scryfall/CardMarket, which quote any language.
 async function fetchCardtraderPrice(blueprintId, foil, language) {
   const response = await fetch(
     `${CARDTRADER_API_BASE}/marketplace/products?blueprint_id=${blueprintId}`,
@@ -195,9 +169,7 @@ async function fetchCardtraderPrice(blueprintId, foil, language) {
 }
 
 async function main() {
-  // --all: include found/abandoned too — for an occasional one-off run (e.g. after
-  // backfilling scryfall_id/set_code on old requests), not for the weekly cron,
-  // which stays targeted at active searches only.
+  // --all also includes found/abandoned: for one-off runs, not the weekly cron
   const includeAllStatuses = process.argv.includes('--all')
 
   let query = supabase
@@ -221,8 +193,7 @@ async function main() {
     const wantsFoil = row.treatment.includes('foil')
     let cardmarketPrice = null
     let cardtraderPrice = null
-    // Fall back to the treatment when Scryfall does not answer: better than
-    // nothing, and it is how the job behaved before it knew about finishes.
+    // Fall back to the requested treatment when Scryfall doesn't answer
     let effectiveFoil = wantsFoil
 
     try {
