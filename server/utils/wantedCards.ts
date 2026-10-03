@@ -6,8 +6,8 @@ import type { Database } from '#shared/utils/types/database'
 // Shared by wanted-cards/create.post.ts and [id]/update.post.ts: a Supabase write, the same error
 // check, then the background CardTrader prefetch
 
-// Status changes and deletes aren't management-only: a requester can manage their own card (the bot
-// lets a linked chat mark/delete its own requests), everyone else needs has_management_permissions.
+// Status changes and deletes aren't management-only: a requester can manage their own card,
+// everyone else needs has_management_permissions.
 // Full edits (update.post.ts, refresh-prices.post.ts) stay requireManagementPermission-only.
 export async function requireManagementOrWantedCardOwner(
   event: H3Event, supabase: SupabaseClient<Database>, id: number
