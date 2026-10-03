@@ -39,6 +39,13 @@ export interface PriceCardtrader {
 // button press fetches it
 export type PriceCardtraderState = PriceCardtrader | 'pending' | null
 
+// The card art rides on a text message as a link preview: a text message can't hold a photo, and
+// this keeps editMessageText working for inline messages
+export function artPreview(imageUrl: string | null) {
+  if (!imageUrl) return { is_disabled: true }
+  return { url: imageUrl, prefer_large_media: true, show_above_text: true }
+}
+
 export const PRICE_CALLBACK_PREFIX = 'prz:'
 export const WANT_CALLBACK_PREFIX = 'prw:'
 export const PRICE_INLINE_PREFIX = '$'
