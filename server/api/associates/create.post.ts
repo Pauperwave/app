@@ -11,6 +11,7 @@ export default defineEventHandler(async (event) => {
 
   const body = await readBody<AssociateEditsPayload>(event)
 
+  // fallow-ignore-next-line code-duplication -- mirrors the sibling endpoint
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   const { data: existing } = await supabase
