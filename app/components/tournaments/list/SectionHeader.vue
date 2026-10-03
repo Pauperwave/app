@@ -1,9 +1,11 @@
 <!-- app\components\tournaments\list\SectionHeader.vue -->
 <script setup lang="ts">
+import type { BadgeProps } from '@nuxt/ui'
+
 // Status badge plus tournament count heading a GridView.vue/DenseView.vue section
 interface Props {
   label: string
-  color: ReturnType<typeof tournamentStatusColor>
+  color: BadgeProps['color']
   icon: string
   count: number
 }
