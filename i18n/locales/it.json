@@ -2369,6 +2369,7 @@
         "commander": "Commander",
         "partner": "Partner / Background",
         "companion": "Companion",
+        "tournamentsPlayed": "Tornei",
         "createdAt": "Creato il",
         "decklist": "Decklist",
         "openDecklist": "Apri decklist",
@@ -2631,6 +2632,8 @@
       "successToastTitle": "Mazzo aggiornato",
       "errorToastTitle": "Impossibile aggiornare il mazzo"
     },
+    "deleteTooltip": "Elimina il mazzo",
+    "deleteInUseTooltip": "Questo mazzo è già stato usato in un torneo: non si può eliminare",
     "deleteConfirm": {
       "title": "Eliminare il mazzo?",
       "description": "Questa azione non può essere annullata.",

@@ -3,7 +3,7 @@
 <script setup lang="ts">
 import {
   DateWithRelativeTooltip, EditIconButton, TournamentsSinglePairingCommanderDeckHover, UBadge,
-  UButton
+  UButton, UTooltip
 } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { CommanderDeck } from '~/composables/players/useCommanderDecksQuery'
@@ -103,6 +103,11 @@ const columns: TableColumn<CommanderDeck>[] = [
     cell: ({ row }) => row.original.companionName ?? '—'
   },
   {
+    accessorKey: 'tournamentsPlayed',
+    header: ({ column }) => sortableHeader(t('player.commander.decksColumns.tournamentsPlayed'), column),
+    meta: { class: { th: 'text-center', td: 'text-center' } }
+  },
+  {
     accessorKey: 'isBorrowed',
     header: t('player.commander.decksColumns.borrowed'),
     cell: ({ row }) => {
@@ -140,13 +145,20 @@ const columns: TableColumn<CommanderDeck>[] = [
         size: 'xs',
         onClick: () => openEditModal(row.original)
       }),
-      h(UButton, {
+      h(UTooltip, {
+        text: row.original.tournamentsPlayed > 0
+          ? t('deck.deleteInUseTooltip')
+          : t('deck.deleteTooltip')
+      }, () => h(UButton, {
         icon: ICONS.delete,
         size: 'xs',
         color: 'error',
         variant: 'ghost',
+        ...{ 'aria-label': t('deck.deleteTooltip') },
+        // A deck played in a tournament can't be deleted: the endpoint refuses it as well
+        disabled: row.original.tournamentsPlayed > 0,
         onClick: () => requestDelete(row.original)
-      })
+      }))
     ])
   }
 ]
