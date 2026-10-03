@@ -19,6 +19,24 @@ export function helpTopicPayload(topic: HelpTopic): string {
   return `help_${topic}`
 }
 
+// What a help message can show: a single section or all of them
+export type HelpView = HelpTopic | 'all'
+
+const HELP_TOPIC_CALLBACK_PREFIX = 'helptopic:'
+
+// callback_data of the buttons under /help that switch the message to another view
+export function encodeHelpTopicCallback(view: HelpView): string {
+  return `${HELP_TOPIC_CALLBACK_PREFIX}${view}`
+}
+
+// Null for anything that isn't one of ours: callback_data is client-controlled
+export function decodeHelpTopicCallback(data: string): HelpView | null {
+  if (!data.startsWith(HELP_TOPIC_CALLBACK_PREFIX)) return null
+
+  const view = data.slice(HELP_TOPIC_CALLBACK_PREFIX.length)
+  return view === 'all' ? 'all' : parseHelpTopic(view)
+}
+
 // Declared last: an export right after an array literal is dropped from Nuxt's auto-imports
 export const HELP_TOPICS = [
   'generale',
