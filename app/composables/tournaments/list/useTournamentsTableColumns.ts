@@ -1,9 +1,7 @@
 // app\composables\tournaments\list\useTournamentsTableColumns.ts
-// fallow-ignore-file
-// code-duplication -- mirrors useEventsTableColumns.ts's status-badge column shape on purpose;
-// expected to diverge
+// fallow-ignore-file code-duplication -- status-badge column mirrors useEventsTableColumns.ts
 import { h } from 'vue'
-import { differenceInMinutes, format } from 'date-fns'
+import { format } from 'date-fns'
 import type { Row } from '@tanstack/vue-table'
 import {
   BadgesEventBadge, BadgesFormatBadge, BadgesLeagueBadge, BadgesOrganizerBadge,
@@ -32,23 +30,10 @@ function groupHeaderCell(row: Row<Tournament>, label: string) {
   ])
 }
 
-// Grouped rows sort by size (subRows); leaf rows have none, so a plain
-// subRows compare left them all tied — sort those alphabetically, empty last.
-function sortGroupsBySizeElseText(rowA: Row<Tournament>, rowB: Row<Tournament>, columnId: string) {
-  if (rowA.getIsGrouped() && rowB.getIsGrouped()) return rowA.subRows.length - rowB.subRows.length
-  const valueA = rowA.getValue<string | null>(columnId) ?? ''
-  const valueB = rowB.getValue<string | null>(columnId) ?? ''
-  if (!valueA || !valueB) return valueA ? -1 : valueB ? 1 : 0
-  return valueA.localeCompare(valueB, 'it')
-}
-
-// "2h 30min" / "45min" — minutes rounded down, derived from start/end.
-function durationLabel(startDate: string, endDate: string) {
-  const minutes = differenceInMinutes(new Date(endDate), new Date(startDate))
-  const hours = Math.floor(minutes / 60)
-  const rest = minutes % 60
-  if (!hours) return `${rest}min`
-  return rest ? `${hours}h ${rest}min` : `${hours}h`
+// The league column's leaf cell: the league badge, or nothing for a tournament outside any league
+function leagueBadge(tournament: Tournament) {
+  if (!tournament.league || !tournament.leagueUuid) return null
+  return h(BadgesLeagueBadge, { league: tournament.league, leagueUuid: tournament.leagueUuid })
 }
 
 // Pure config except for `selection`/`onEdit` (otherwise only t()), like
@@ -107,12 +92,9 @@ export function useTournamentsTableColumns(
       // Sorts groups by number of tournaments (subRows), same reasoning as
       // useWantedCardsTableColumns.ts's player column.
       sortingFn: sortGroupsBySizeElseText,
-      cell: ({ row, getValue }) => {
-        const league = getValue<string | null>()
-        if (row.getIsGrouped()) return groupHeaderCell(row, league ?? t('tournament.columns.noLeague'))
-        if (!league || !row.original.leagueUuid) return null
-        return h(BadgesLeagueBadge, { league, leagueUuid: row.original.leagueUuid })
-      }
+      cell: ({ row, getValue }) => row.getIsGrouped()
+        ? groupHeaderCell(row, getValue<string | null>() ?? t('tournament.columns.noLeague'))
+        : leagueBadge(row.original)
     },
     {
       accessorKey: 'event',
