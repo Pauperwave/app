@@ -8,6 +8,12 @@ import type { CommandGroup } from '@grammyjs/commands'
 import { ICONS } from '../icons'
 import { answerLoadError } from './callbackErrors'
 import { resolveDeepLink } from '../deepLinks'
+import {
+  HELP_TOPICS,
+  helpTopicPayload,
+  parseHelpTopic,
+  type HelpTopic
+} from '#shared/utils/telegram/helpTopics'
 
 // Quick-launch buttons for the most-used commands, embedded as inline "buttons" blocks after their
 // category (like calendario.ts's per-tournament button, not a Menu reply_markup). Handled by a
@@ -48,24 +54,28 @@ function startBlocks(): InputRichMessage['blocks'] {
   ]
 }
 
+type Blocks = NonNullable<InputRichMessage['blocks']>
+
 // blocks, not markdown: a block's `text` is structured RichText, so "\n" is a literal line break,
 // and no "- " list marker is needed (it broke Telegram's tap-to-run bot_command detection on
 // "/command" mentions)
-function helpBlocks(): InputRichMessage['blocks'] {
-  return [
-    { type: 'heading', size: 3, text: 'Comandi disponibili' },
-
+const HELP_SECTIONS: Record<HelpTopic, () => Blocks> = {
+  generale: () => [
     { type: 'paragraph', text: { type: 'bold', text: '⚙️ Generale' } },
     {
       type: 'paragraph',
       text: '/start — avvia il bot\n/help — mostra questo messaggio\n/status — mostra lo stato corrente del bot'
     },
-    { type: 'buttons', buttons: [{ text: '🟢 Status', callback_data: encodeHelpBtn('status') }] },
+    { type: 'buttons', buttons: [{ text: '🟢 Status', callback_data: encodeHelpBtn('status') }] }
+  ],
 
+  classifiche: () => [
     { type: 'paragraph', text: { type: 'bold', text: `${ICONS.trophy} Classifiche` } },
     { type: 'paragraph', text: '/classifiche — classifiche per formato' },
-    { type: 'buttons', buttons: [{ text: `${ICONS.trophy} Classifiche`, callback_data: encodeHelpBtn('classifiche') }] },
+    { type: 'buttons', buttons: [{ text: `${ICONS.trophy} Classifiche`, callback_data: encodeHelpBtn('classifiche') }] }
+  ],
 
+  tornei: () => [
     { type: 'paragraph', text: { type: 'bold', text: '🎲 Tornei e leghe' } },
     {
       type: 'paragraph',
@@ -80,10 +90,6 @@ function helpBlocks(): InputRichMessage['blocks'] {
       ]
     },
 
-    { type: 'paragraph', text: { type: 'bold', text: `${ICONS.ticket} Le mie iscrizioni` } },
-    { type: 'paragraph', text: '/iscrizioni — i tornei a cui sei iscritto' },
-    { type: 'buttons', buttons: [{ text: `${ICONS.ticket} Iscrizioni`, callback_data: encodeHelpBtn('iscrizioni') }] },
-
     { type: 'paragraph', text: { type: 'bold', text: '🏟️ Durante un torneo' } },
     {
       type: 'paragraph',
@@ -97,8 +103,16 @@ function helpBlocks(): InputRichMessage['blocks'] {
         { text: '🪑 Tavolo', callback_data: encodeHelpBtn('tavolo') },
         { text: '🔢 Turni', callback_data: encodeHelpBtn('turni') }
       ]
-    },
+    }
+  ],
 
+  iscrizioni: () => [
+    { type: 'paragraph', text: { type: 'bold', text: `${ICONS.ticket} Le mie iscrizioni` } },
+    { type: 'paragraph', text: '/iscrizioni — i tornei a cui sei iscritto' },
+    { type: 'buttons', buttons: [{ text: `${ICONS.ticket} Iscrizioni`, callback_data: encodeHelpBtn('iscrizioni') }] }
+  ],
+
+  carte: () => [
     { type: 'paragraph', text: { type: 'bold', text: `${ICONS.card} Carte` } },
     {
       type: 'paragraph',
@@ -113,8 +127,10 @@ function helpBlocks(): InputRichMessage['blocks'] {
         { text: `${ICONS.wanted} Cercate`, callback_data: encodeHelpBtn('cercate') },
         { text: '📥 Importa', callback_data: encodeHelpBtn('importa') }
       ]
-    },
+    }
+  ],
 
+  dadi: () => [
     { type: 'paragraph', text: { type: 'bold', text: '🎰 Dadi' } },
     {
       type: 'paragraph',
@@ -127,8 +143,10 @@ function helpBlocks(): InputRichMessage['blocks'] {
         { text: '🪙 Moneta', callback_data: encodeHelpBtn('moneta') },
         { text: '🔢 Tira', callback_data: encodeHelpBtn('tira') }
       ]
-    },
+    }
+  ],
 
+  account: () => [
     { type: 'paragraph', text: { type: 'bold', text: '👤 Account' } },
     {
       type: 'paragraph',
@@ -151,12 +169,44 @@ function helpBlocks(): InputRichMessage['blocks'] {
   ]
 }
 
-// Extracted for reuse by t.me/<bot>?start=help (deepLinks.ts)
-function helpCommandHandler(ctx: Context) {
-  return ctx.replyWithRichMessage({ blocks: helpBlocks() })
+const TOPIC_NAMES = HELP_TOPICS.join(', ')
+
+function helpBlocks(): Blocks {
+  return [
+    { type: 'heading', size: 3, text: 'Comandi disponibili' },
+    ...HELP_TOPICS.flatMap(topic => HELP_SECTIONS[topic]()),
+    { type: 'paragraph', text: `Per una sola sezione: /help <argomento>, tra ${TOPIC_NAMES}.` }
+  ]
 }
 
+function helpTopicBlocks(topic: HelpTopic): Blocks {
+  return [
+    ...HELP_SECTIONS[topic](),
+    { type: 'paragraph', text: 'Tutti i comandi: /help' }
+  ]
+}
+
+// /help [argomento]: no argument shows everything, a topic only its section
+function helpCommandHandler(ctx: Context) {
+  const argument = typeof ctx.match === 'string' ? ctx.match.trim() : ''
+  if (!argument) return ctx.replyWithRichMessage({ blocks: helpBlocks() })
+
+  const topic = parseHelpTopic(argument)
+  if (!topic) {
+    return ctx.reply(`Non conosco l'argomento «${argument}». Prova con: ${TOPIC_NAMES}.`)
+  }
+  return ctx.replyWithRichMessage({ blocks: helpTopicBlocks(topic) })
+}
+
+// Extracted for reuse by t.me/<bot>?start=help (deepLinks.ts), where ctx.match is already cleared
 registerDeepLink('help', helpCommandHandler)
+
+// One deep link per topic, for the /telegram-bot page's per-card buttons
+for (const topic of HELP_TOPICS) {
+  registerDeepLink(helpTopicPayload(topic), ctx => ctx.replyWithRichMessage({
+    blocks: helpTopicBlocks(topic)
+  }))
+}
 
 async function handleHelpButton(ctx: Context, next: () => Promise<void>) {
   const data = ctx.callbackQuery?.data

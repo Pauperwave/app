@@ -21,7 +21,7 @@ Funziona con qualunque account Telegram. Alcune funzioni richiedono di collegare
 ## 🚀 Per iniziare
 
 1. Apri [@PauperwaveBot](https://t.me/PauperwaveBot) e premi **Avvia** (`/start`).
-2. `/help` mostra tutti i comandi, con i bottoni per lanciarli al volo.
+2. `/help` mostra tutti i comandi, con i bottoni per lanciarli al volo. Per una sola sezione usa `/help <argomento>`: `generale`, `classifiche`, `tornei`, `iscrizioni`, `carte`, `dadi` o `account` (anche `supporto`).
 3. I comandi marcati *(collegato)* qui sotto funzionano solo dopo il collegamento.
 
 I comandi di consultazione (classifiche, eventi, calendario, leghe, prezzi, dadi) sono pubblici: non serve essere soci.
@@ -145,5 +145,5 @@ Se non hai collegato Telegram non ricevi nulla: nessun errore, semplicemente non
 ## 🆘 Aiuto e segnalazioni
 
 - 💬 **`/supporto`**: il bot ti chiede di scrivere il messaggio e lo inoltra allo staff, con il tuo nome se sei collegato. Lo staff può risponderti direttamente, e la risposta ti arriva in chat come *"Risposta dallo staff"*.
-- 📖 `/help` ricorda in ogni momento i comandi disponibili.
+- 📖 `/help` ricorda in ogni momento i comandi disponibili; `/help carte`, `/help tornei` e gli altri mostrano solo la loro sezione.
 - 🐛 Per bug o proposte sul bot, apri una [issue](https://github.com/Pauperwave/app/issues) nel repository.
