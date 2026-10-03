@@ -24,6 +24,10 @@ export type RoundTimerStatus = 'ok' | 'unlinked' | 'no-table' | 'no-timer'
 export interface RoundTimerResponse {
   status: RoundTimerStatus
   snapshot: RoundTimerSnapshot | null
+  // The round the player sits at, also while its timer has no row yet, so the reader can listen
+  // for it; null without a live table
+  tournamentUuid: string | null
+  roundNumber: number | null
   // The server clock, so the reader ticks on it and not on its own device's
   serverNowMs: number
 }
