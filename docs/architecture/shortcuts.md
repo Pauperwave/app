@@ -4,7 +4,7 @@
 
 All shortcuts are registered via Nuxt UI's `defineShortcuts`. Two separate call sites, by design (see "Why two call sites" below):
 
-- `app/composables/useDashboard.ts` — navigation (`g-x` chords) and the one global toggle that doesn't need the sidebar's own state (`n`).
+- `app/composables/layout/useDashboard.ts` — navigation (`g-x` chords) and the one global toggle that doesn't need the sidebar's own state (`n`).
 - `app/layouts/default.vue` — `b`, the one shortcut that needs the sidebar's `collapsed` state directly (see "Sidebar collapse" below).
 - `app/components/tournaments/single/CommanderRoundManager.vue` — `f-t`, toggles the tables fullscreen view (state lives in that component's own `useFullscreen`).
 - `app/components/tournaments/single/pairing/RoundTimer.vue` — `f-c`, toggles the countdown timer's own fullscreen view (same reasoning, separate `useFullscreen` instance).
