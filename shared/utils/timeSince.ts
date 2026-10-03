@@ -1,4 +1,4 @@
-// app\utils\timeSince.ts
+// shared\utils\timeSince.ts
 // "How long ago" as ONE relevant unit (minutes under an hour, hours under a day, days under a
 // month, months under a year, then years), whole units only (floored) unlike date-fns'
 // formatDistanceToNow ("circa 2 ore"). Returns a unit + count so the caller formats it with its own

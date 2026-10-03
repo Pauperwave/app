@@ -1,6 +1,6 @@
 // test\unit\utils\timeSince.test.ts
 import { describe, expect, it } from 'vitest'
-import { timeSince } from '~/utils/timeSince'
+import { timeSince } from '#shared/utils/timeSince'
 
 const NOW = new Date('2026-09-19T12:00:00Z')
 
