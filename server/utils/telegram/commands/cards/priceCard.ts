@@ -1,0 +1,147 @@
+// server\utils\telegram\commands\cards\priceCard.ts
+import { InlineKeyboard } from 'grammy'
+import { ICONS } from '../../icons'
+
+// Pure part of /prezzo: the filter state carried in callback_data and the message built from it
+
+export type PriceLanguage = 'all' | 'it' | 'en'
+
+export interface PriceState {
+  scryfallId: string
+  language: PriceLanguage
+  foil: boolean
+}
+
+export interface PricePrinting {
+  id: string
+  name: string
+  set: string
+  collectorNumber: string
+  finishes: string[]
+  cardmarketPrice: number | null
+  cardmarketFoilPrice: number | null
+  cardmarketUrl: string | null
+  scryfallUrl: string
+}
+
+export interface PriceCardtrader {
+  price: number | null
+  url: string | null
+}
+
+export const PRICE_CALLBACK_PREFIX = 'prz:'
+
+const LANGUAGES: PriceLanguage[] = ['all', 'it', 'en']
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+
+const LANGUAGE_LABELS: Record<PriceLanguage, string> = {
+  all: `${ICONS.languageAll} Tutte`,
+  it: `${ICONS.languageIt} ITA`,
+  en: `${ICONS.languageEn} ENG`
+}
+
+const LANGUAGE_NAMES: Record<PriceLanguage, string> = {
+  all: 'tutte le lingue',
+  it: 'italiano',
+  en: 'inglese'
+}
+
+const euroFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
+
+// Same "prefix:uuid:language:foil" shape as the other bot callbacks, well under Telegram's 64 bytes
+export function encodePriceState(state: PriceState): string {
+  return `${PRICE_CALLBACK_PREFIX}${state.scryfallId}:${state.language}:${state.foil ? 1 : 0}`
+}
+
+// Null for anything malformed: callback_data is client-controlled, never trusted blindly
+export function decodePriceState(data: string): PriceState | null {
+  if (!data.startsWith(PRICE_CALLBACK_PREFIX)) return null
+
+  const parts = data.slice(PRICE_CALLBACK_PREFIX.length).split(':')
+  const scryfallId = parts[0]
+  const language = parts[1] as PriceLanguage
+  const foil = parts[2]
+
+  if (parts.length !== 3 || !scryfallId || !UUID_PATTERN.test(scryfallId)) return null
+  if (!LANGUAGES.includes(language)) return null
+  if (foil !== '0' && foil !== '1') return null
+
+  return { scryfallId, language, foil: foil === '1' }
+}
+
+// A printing with no nonfoil finish can only be priced as foil, like the wanted-cards price refresh
+export function isFoilForced(printing: PricePrinting): boolean {
+  return !printing.finishes.includes('nonfoil')
+}
+
+// The foil toggle only makes sense when the printing exists in both finishes
+export function canToggleFoil(printing: PricePrinting): boolean {
+  const hasFoil = printing.finishes.includes('foil') || printing.finishes.includes('etched')
+  return hasFoil && !isFoilForced(printing)
+}
+
+export function effectiveFoil(printing: PricePrinting, state: PriceState): boolean {
+  return isFoilForced(printing) || (state.foil && canToggleFoil(printing))
+}
+
+export function cardmarketPriceOf(printing: PricePrinting, foil: boolean): number | null {
+  return foil ? printing.cardmarketFoilPrice : printing.cardmarketPrice
+}
+
+function formatPrice(price: number | null, emptyText: string): string {
+  return price === null ? emptyText : `**${euroFormatter.format(price)}**`
+}
+
+export function buildPriceText(
+  printing: PricePrinting,
+  state: PriceState,
+  cardtrader: PriceCardtrader | null
+): string {
+  const foil = effectiveFoil(printing, state)
+  const finish = foil ? 'foil' : 'normale'
+
+  const cardmarketLine = `CardMarket: ${formatPrice(cardmarketPriceOf(printing, foil), 'non disponibile')}`
+    + (state.language === 'all' ? '' : ' (non filtrabile per lingua)')
+
+  const cardtraderLabel = `CardTrader (NM, ${LANGUAGE_NAMES[state.language]})`
+  const cardtraderLine = cardtrader
+    ? `${cardtraderLabel}: ${formatPrice(cardtrader.price, 'nessuna offerta')}`
+    : `${cardtraderLabel}: non disponibile`
+
+  return [
+    `## ${ICONS.card} ${printing.name}`,
+    `${printing.set.toUpperCase()} #${printing.collectorNumber} · ${finish}`,
+    cardmarketLine,
+    cardtraderLine
+  ].join('\n\n')
+}
+
+export function buildPriceKeyboard(
+  printing: PricePrinting,
+  state: PriceState,
+  cardtraderUrl: string | null
+): InlineKeyboard {
+  const keyboard = new InlineKeyboard()
+
+  for (const language of LANGUAGES) {
+    const active = state.language === language
+    keyboard.text(
+      `${active ? '✅ ' : ''}${LANGUAGE_LABELS[language]}`,
+      encodePriceState({ ...state, language })
+    )
+  }
+
+  if (canToggleFoil(printing)) {
+    keyboard.row().text(
+      `${ICONS.foil} Foil: ${state.foil ? 'sì' : 'no'}`,
+      encodePriceState({ ...state, foil: !state.foil })
+    )
+  }
+
+  keyboard.row()
+  if (printing.cardmarketUrl) keyboard.url('CardMarket', printing.cardmarketUrl)
+  if (cardtraderUrl) keyboard.url('CardTrader', cardtraderUrl)
+  keyboard.url('Scryfall', printing.scryfallUrl)
+
+  return keyboard
+}
