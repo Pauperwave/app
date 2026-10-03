@@ -3416,6 +3416,16 @@
     "breadcrumb": "Bot Telegram",
     "intro": "Il bot dell'associazione: dalla chat consulti calendario, leghe e classifiche, gestisci le iscrizioni, riporti i risultati al tavolo, controlli il prezzo delle carte e tieni la lista di quelle che cerchi.",
     "open": "Apri su Telegram",
+    "status": {
+      "linked": "Collegato a Telegram",
+      "linkedAs": "La tua chat è collegata al tuo profilo socio, come {username}.",
+      "linkedDescription": "La tua chat è collegata al tuo profilo socio.",
+      "notLinked": "Non ancora collegato",
+      "notLinkedDescription": "Apri il bot e scrivigli la tua email da socio: collega la chat e sblocca i comandi personali.",
+      "noAssociate": "Nessun socio associato",
+      "noAssociateDescription": "Questo account non risulta associato a un socio, quindi il bot non può riconoscerti.",
+      "error": "Non riesco a leggere lo stato del collegamento adesso."
+    },
     "link": {
       "title": "Collega il tuo account",
       "description": "Alcuni comandi funzionano solo dopo aver collegato la chat al tuo profilo socio.",
@@ -3428,8 +3438,9 @@
     },
     "commands": {
       "title": "Comandi",
-      "description": "I comandi con il badge \"Collegato\" richiedono il collegamento dell'account.",
+      "description": "Tocca un comando per aprirlo in Telegram. Quelli con il badge \"Collegato\" richiedono il collegamento dell'account.",
       "requiresLink": "Collegato",
+      "chatOnly": "Solo dalla chat",
       "groups": {
         "general": "Generale",
         "competitions": "Classifiche, eventi e tornei",

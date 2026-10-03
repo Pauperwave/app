@@ -232,6 +232,9 @@ export function registerCoreCommands(bot: Bot, commands: CommandGroup<Context>) 
   commands.command('start', 'Avvia il bot', async (ctx) => {
     const handler = ctx.match ? resolveDeepLink(ctx.match) : undefined
     if (handler) {
+      // The payload only names the command: handlers read ctx.match as their own argument
+      // (/tira's faces, /calendario's month), so it must look like the bare command
+      ctx.match = ''
       await handler(ctx)
       return
     }
