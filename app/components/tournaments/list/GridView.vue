@@ -1,5 +1,6 @@
 <!-- app\components\tournaments\list\GridView.vue -->
 <script setup lang="ts">
+// fallow-ignore-file code-duplication -- the loading/section shell mirrors DenseView.vue
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Tournament } from '~/types'
 import type { Selection } from '~/composables/useSelection'
@@ -49,22 +50,12 @@ const { sections, range } = useTournamentStatusSections(() => tournaments)
 
   <div v-else class="flex flex-col gap-6">
     <div v-for="section in sections" :key="section.key">
-      <div class="flex items-center gap-1.5 mb-3">
-        <UBadge
-          :color="section.color"
-          variant="subtle"
-          :icon="section.icon"
-        >
-          {{ section.label }}
-        </UBadge>
-        <UBadge
-          color="neutral"
-          variant="subtle"
-          size="sm"
-        >
-          {{ section.tournaments.length }}
-        </UBadge>
-      </div>
+      <TournamentsListSectionHeader
+        :label="section.label"
+        :color="section.color"
+        :icon="section.icon"
+        :count="section.tournaments.length"
+      />
 
       <div class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(280px,90vw),1fr))]">
         <TournamentsListCard

@@ -3,6 +3,7 @@
      more tournaments per screen than GridView.vue's full-size cards. It mirrors GridView.vue's
      props/loading shape exactly, including its one-section-per-status grouping. -->
 <script setup lang="ts">
+// fallow-ignore-file code-duplication -- the loading/section shell mirrors GridView.vue
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Tournament } from '~/types'
 import type { Selection } from '~/composables/useSelection'
@@ -43,22 +44,12 @@ const { sections, range } = useTournamentStatusSections(() => tournaments)
 
   <div v-else class="flex flex-col gap-6">
     <div v-for="section in sections" :key="section.key">
-      <div class="flex items-center gap-1.5 mb-3">
-        <UBadge
-          :color="section.color"
-          variant="subtle"
-          :icon="section.icon"
-        >
-          {{ section.label }}
-        </UBadge>
-        <UBadge
-          color="neutral"
-          variant="subtle"
-          size="sm"
-        >
-          {{ section.tournaments.length }}
-        </UBadge>
-      </div>
+      <TournamentsListSectionHeader
+        :label="section.label"
+        :color="section.color"
+        :icon="section.icon"
+        :count="section.tournaments.length"
+      />
 
       <div class="grid gap-3 grid-cols-[repeat(auto-fill,minmax(min(180px,42vw),1fr))]">
         <TournamentsListDenseCard
