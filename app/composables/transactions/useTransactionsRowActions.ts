@@ -9,6 +9,7 @@ export function useTransactionsRowActions() {
   const { t } = useI18n()
   const toast = useToast()
   const { deleteTransaction } = useTransactionsMutations()
+  const { can } = useUserRole()
 
   const editingTransaction = shallowRef<Transaction | null>(null)
   const editModalOpen = ref(false)
@@ -45,10 +46,14 @@ export function useTransactionsRowActions() {
   }
 
   function rowContextMenuItems(transaction: Transaction): DropdownMenuItem[] {
+    // A membership-fee payment is only for admins: the endpoints refuse an organizer
+    const locked = isMembershipFeePayment(transaction.payment_type) && !can('manage-membership-fees')
+
     return [
       {
         label: t('transaction.rowActions.edit'),
         icon: ICONS.edit,
+        disabled: locked,
         onSelect: () => openEditModal(transaction)
       },
       { type: 'separator' },
@@ -56,6 +61,7 @@ export function useTransactionsRowActions() {
         label: t('transaction.rowActions.delete'),
         icon: ICONS.delete,
         color: 'error',
+        disabled: locked,
         onSelect: () => openDeleteConfirm(transaction)
       }
     ]
