@@ -37,23 +37,28 @@ Add a path comment as the first line of every source file under `app/`, `server/
 
 ### Routing & pages
 File-based routing under `app/pages`, grouped with Nuxt route groups (parens don't affect the URL):
-- `(analytics)/statistics` — stats & deck analytics
-- `(community)/associates`, `(community)/transactions` — members & finances
+- `index.vue` — home (a player view and a staff view), `calendar/`, `finance/` (a year-by-year report), `403.vue`
+- `(analytics)/statistics` — association stats, plus `statistics/decks` and `statistics/commanders` (Commander decks and commanders, with a detail page each)
+- `(community)/associates` (roster, `requests` for applications and renewals), `associate/[slug]`, `players` (with `players/[slug]` and its decks), `transactions`, `wanted-cards`
 - `(competitions)/tournaments`, `(competitions)/leagues`, `(competitions)/events` — all flat (`tournaments/[tournamentId]`, not nested under leagues/events): a tournament's parent league/event is optional and polymorphic, so its canonical URL stays flat, with a `?league=<uuid>` query param (`app/utils/tournaments/tournamentOrigin.ts`) carrying "part of this league" for a back-link the route params alone can't express (a plain param rather than a typed `?from=league:<uuid>`, since only one origin type exists)
-- `(settings)/settings` — general/members/notifications/security tabs
+- `(competitions)/locations`, `(competitions)/rulesets` — venues and scoring rulesets, gated to organizers
+- `(competitions)/standings/{cittadino,commander,premodern,pauper}` — the dashboard-side rankings (still mock-backed, see Data fetching)
+- `(settings)/settings` — general, profile, members, permissions, domains and notifications tabs; `(settings)/trash` is the soft-delete trash
+- `(public)` — unauthenticated pages: `tesseramento` (membership application, plus the statute and privacy notices), `calendario`, `classifiche/*` (public rankings, also mock-backed)
+- `telegram/turni.vue` — the Telegram Mini App for the extra-turns counter
 - `auth/callback.vue`, `login.vue` — auth flow pages (use the `auth` layout, not `default`)
 
-Two layouts: `default.vue` (sidebar + navbar + toolbar dashboard shell) and `auth.vue` (centered, for login/callback).
+Five layouts: `default.vue` (sidebar + navbar + toolbar dashboard shell), `auth.vue` (centered, for login/callback), `public.vue` (centered, narrow: tesseramento), `public-wide.vue` (centered, wider: calendario and the public rankings) and `telegram.vue` (no chrome, for the Mini App).
 
 ### Components
-Feature-based organization under `app/components/<domain>/`, mirroring the page domains (`associates`, `tournaments`, `leagues`, `events`, `transactions`, `home`, `settings`). Within a domain, `list/` holds list-view + CRUD modal components, `single/` holds detail-view components.
+Feature-based organization under `app/components/<domain>/`, mirroring the page domains (`associates`, `players`, `tournaments`, `leagues`, `events`, `locations`, `rulesets`, `transactions`, `wanted-cards`, `finance`, `statistics`, `standings`, `home`, `settings`, ...). Within a domain, `list/` holds list-view + CRUD modal components, `single/` holds detail-view components.
 
 `app/components/inputs` and `app/components/ui` are registered in `nuxt.config.ts` with `pathPrefix: false`, so components there are auto-imported *without* a folder prefix (e.g. `<TaxCodeInput>`, not `<InputsTaxCodeInput>`; `<ConfirmModal>`, not `<UiConfirmModal>`). `ui/` is for generic, single-purpose primitives whose names are already unique (`AddButton`, `ConfirmModal`, `StatusFilterGroup`, ...) — domain folders (`tournaments/`, `locations/`, ...) keep the default prefixed behavior on purpose, since `AddModal.vue`/`GridView.vue`/etc. repeat by design across domains and need the prefix to stay distinguishable.
 
 ### Auth
 Supabase magic-link (OTP) auth via `@nuxtjs/supabase`:
 1. `login.vue` posts to `server/api/check-associate.post.ts` to verify the email exists in `pauperwave_associates` before calling `supabase.auth.signInWithOtp`.
-2. `app/middleware/auth.global.ts` is a global route middleware — it redirects unauthenticated users to `/login` and keeps a hardcoded public-page allowlist (`/login`, `/auth/callback`, `/logout`) that must be updated whenever a new unauthenticated route is added.
+2. `app/middleware/auth.global.ts` is a global route middleware — it redirects unauthenticated users to `/login` and keeps a hardcoded public allowlist (exact paths `/login`, `/auth/callback`, `/logout`, plus prefixes such as `/tesseramento`, `/calendario`, `/classifiche/<format>` and `/telegram`) that must be updated whenever a new unauthenticated route is added.
 3. `auth/callback.vue` completes the Supabase session exchange.
 
 `nuxt.config.ts` also configures `@nuxtjs/supabase`'s own `redirectOptions`/`exclude` — when adding public routes, keep that list and the middleware's `publicPages` array in sync.
