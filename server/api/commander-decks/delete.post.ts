@@ -6,8 +6,9 @@ interface DeleteDeckBody {
   deckUuid: string
 }
 
-// Blocks deleting a deck already played (server-side, as there is no client store to check):
-// it would orphan tournament_round_results.commander_deck_uuid for every round it was used.
+// Blocks deleting a deck already played in a real tournament (the deck table disables the button
+// too): it would orphan tournament_round_results.commander_deck_uuid for every round it was used.
+// Test tournaments don't count: their results are throwaway.
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 
@@ -16,8 +17,9 @@ export default defineEventHandler(async (event) => {
 
   const { count, error: usageError } = await supabase
     .from('tournament_round_results')
-    .select('id', { count: 'exact', head: true })
+    .select('id, tournaments!inner(is_test)', { count: 'exact', head: true })
     .eq('commander_deck_uuid', deckUuid)
+    .eq('tournaments.is_test', false)
 
   if (usageError) {
     throw createError({ statusCode: 500, statusMessage: usageError.message })
