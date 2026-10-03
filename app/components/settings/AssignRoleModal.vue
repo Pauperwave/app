@@ -15,7 +15,7 @@ const { t } = useI18n()
 const toast = useToast()
 const { isSuperAdmin } = useUserRole()
 const { assignRole } = useMembersMutations()
-const { data: playersData } = usePlayersQuery()
+const { data: playersData } = usePlayersFullQuery()
 const { data: membersData } = useMembersQuery()
 
 const associateOptions = computed(() => (playersData.value ?? [])

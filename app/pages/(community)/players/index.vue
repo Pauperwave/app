@@ -14,7 +14,7 @@ useSeoMeta({ title: () => t('player.breadcrumb') })
 
 const {
   data: playersData, isLoading: loading, isPending, status, refetch
-} = usePlayersQuery()
+} = usePlayersFullQuery()
 const data = computed(() => playersData.value ?? [])
 
 // Real counts per status, same convention as associatesStatusCounts in
