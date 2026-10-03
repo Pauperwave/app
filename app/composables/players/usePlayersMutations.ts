@@ -7,7 +7,10 @@ export function usePlayersMutations() {
 
   const deletePlayer = useMutation({
     mutation: (id: number) => $fetch(`/api/players/${id}/delete`, { method: 'POST' }),
-    onSettled: () => queryCache.invalidateQueries({ key: PLAYERS_KEY })
+    onSettled: () => {
+      queryCache.invalidateQueries({ key: PLAYERS_KEY })
+      queryCache.invalidateQueries({ key: PLAYERS_FULL_KEY })
+    }
   })
 
   return { deletePlayer }
