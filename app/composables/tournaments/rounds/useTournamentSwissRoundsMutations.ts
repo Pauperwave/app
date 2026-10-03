@@ -2,16 +2,11 @@
 // Round-lifecycle writes for 1v1 Swiss tournaments: the same shape as
 // useTournamentRoundsMutations.ts (Commander) with separate endpoints, since the backing RPCs are
 // separate (start_swiss_round_one vs start_commander_round_one, see migration 20260918000000)
-// fallow-ignore-next-line code-duplication -- same invalidation as the sibling
 export function useTournamentSwissRoundsMutations(tournamentUuid: MaybeRefOrGetter<string>) {
-  const queryCache = useQueryCache()
-
-  const invalidateRoundData = () => {
-    queryCache.invalidateQueries({ key: TOURNAMENTS_KEY })
-    queryCache.invalidateQueries({ key: TOURNAMENT_ROUNDS_KEY(toValue(tournamentUuid)) })
-    queryCache.invalidateQueries({ key: TOURNAMENT_PAIRINGS_KEY(toValue(tournamentUuid)) })
-    queryCache.invalidateQueries({ key: TOURNAMENT_MATCH_RESULTS_KEY(toValue(tournamentUuid)) })
-  }
+  const invalidateRoundData = useInvalidateRoundData(
+    tournamentUuid,
+    TOURNAMENT_MATCH_RESULTS_KEY
+  )
 
   const startRoundOneSwiss = useRoundLifecycleMutation<{
     associateOrder: string[]
