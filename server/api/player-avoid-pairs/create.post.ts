@@ -5,6 +5,7 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
+// fallow-ignore-next-line code-duplication -- avoid-pair handlers kept explicit per endpoint
 interface AvoidPairBody {
   playerA: string
   playerB: string
