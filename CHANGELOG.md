@@ -1,6 +1,41 @@
 # Changelog
 
 
+## v0.8.0
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.7.0...v0.8.0)
+
+### Enhancements
+
+- **events:** ✨ the event page's calendar spans every event day, day or week view ([e1492ebb](https://github.com/Pauperwave/app/commit/e1492ebb))
+- **events:** ✨ an event is a folder of tournaments, its dates derive from them ([46745be5](https://github.com/Pauperwave/app/commit/46745be5))
+- **associates:** ✨ "Usa Telegram" switch instead of the "non usa Telegram" checkbox ([612195c1](https://github.com/Pauperwave/app/commit/612195c1))
+- **players:** ✨ "Nuovo mazzo" opens a modal like the round's commander picker ([e3c4ed88](https://github.com/Pauperwave/app/commit/e3c4ed88))
+- **tournaments:** ✨ non-member fee, max entrants, decklist visibility and registration time ([5825a59b](https://github.com/Pauperwave/app/commit/5825a59b))
+- **events:** ✨ event details and partners, modeled on Radio Atog 2026 ([60f4a3a0](https://github.com/Pauperwave/app/commit/60f4a3a0))
+
+### Fixes
+
+- **claude:** 🐛 the git push guard ignores shell redirections like 2>&1 ([a6b951e2](https://github.com/Pauperwave/app/commit/a6b951e2))
+- **tournaments:** 🐛 round lifecycle audit - confirms, drops kept on turn-back, reopen an ended tournament ([ac31873a](https://github.com/Pauperwave/app/commit/ac31873a))
+
+### Documentation
+
+- 📝 event page plan modeled on Radio Atog 2026 ([ae545ab0](https://github.com/Pauperwave/app/commit/ae545ab0))
+
+### Chore
+
+- **release:** 🔖 v0.7.0 ([98cb8303](https://github.com/Pauperwave/app/commit/98cb8303))
+
+### Styles
+
+- **tournaments:** 💄 the tournament leaderboard title gets a trophy icon and a plainer name ([f041de69](https://github.com/Pauperwave/app/commit/f041de69))
+- **players:** 💄 icons in the player profile's card headers (info, match history, Commander decks, login history) ([6783b275](https://github.com/Pauperwave/app/commit/6783b275))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.7.0
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.6.0...v0.7.0)
