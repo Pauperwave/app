@@ -7,15 +7,9 @@ export default defineEventHandler(async (event) => {
   const body = await readBody<NewTransactionPayload>(event)
   validatePayerInfo(body)
 
-  // Association Fee payments renew a member's tesseramento status
-  // (create_payment_with_renewal RPC below) — treated the same as "gestire
-  // l'anagrafica soci" (admin), not routine event/tournament payment
-  // registration (organizer). See docs/architecture/permissions.md's
-  // "Gestire le quote associative" row (admin-only) — this endpoint
-  // previously enforced only requireManagementPermission for every payment
-  // type, letting an organizer create Association Fee payments via the API
-  // even though the matrix reserves that to admin (found via audit,
-  // 2026-08-30).
+  // Association Fee payments renew a member's tesseramento, so they need the same tier as "gestire
+  // l'anagrafica soci" (admin), not routine organizer payment registration
+  // (docs/architecture/permissions.md, "Gestire le quote associative").
   const user = body.paymentType === 'Association Fee'
     ? await requireAdminPermission(event)
     : await requireManagementPermission(event)
@@ -23,16 +17,12 @@ export default defineEventHandler(async (event) => {
   const supabase = serverSupabaseServiceRole<Database>(event)
   const createdBy = await resolveAuditAssociateUuid(event, user)
 
-  // Payment write + renewal reconciliation happen in one Postgres
-  // transaction (create_payment_with_renewal, migration 20260902105738) —
-  // previously two separate Supabase JS calls, where a failure in the
-  // second could leave the payment recorded with no matching renewal.
+  // Payment write + renewal reconciliation in one Postgres transaction
+  // (create_payment_with_renewal).
   //
-  // Cast: Postgres function parameters carry no introspectable nullability
-  // (unlike table columns' information_schema.is_nullable), so the
-  // generated Args type shows plain `string` even for params backed by
-  // nullable columns (associateUuid, payerName, ...) — verified these
-  // accept null at runtime (tested directly against the function).
+  // Cast: function params carry no introspectable nullability, so the generated Args type says
+  // `string` even for params backed by nullable columns (associateUuid, payerName, ...), which
+  // accept null at runtime
   const { data, error } = await supabase.rpc('create_payment_with_renewal', {
     p_associate_uuid: body.associateUuid,
     p_payer_name: body.payerName,

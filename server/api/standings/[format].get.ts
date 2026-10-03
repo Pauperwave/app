@@ -1,18 +1,12 @@
 // server\api\standings\[format].get.ts
 
-// Mock data for the per-format standings pages (/standings/commander,
-// /standings/premodern, /standings/pauper), same convention as
-// server/api/cittadino.ts: no Supabase table exists for this yet, raw placements
-// only — points and final ordering are computed in useFormatStandingsQuery.ts.
+// Mock data for the per-format standings pages (/standings/commander, /premodern, /pauper), like
+// server/api/cittadino.ts: no Supabase table yet, raw placements only (points and ordering are
+// computed in useFormatStandingsQuery.ts). Replaced by a real query once league data exists.
 //
-// Unlike Cittadino's yearly editions, each format runs several seasonal "leghe" a
-// year (2026-08-09: "Lega Estiva 2025", "Lega Invernale 2026", "Lega Estiva
-// 2026", …) and — the important part — each league has its own regulation:
-// counted-results and top-cutoff are per LEAGUE, not per format. Once real league
-// data exists (historical leagues to come later, per the user) this file goes
-// away in favour of a real query.
-//
-// Seeded per league so the matrix is identical on every request.
+// Unlike Cittadino's yearly editions, each format runs several seasonal leagues a year, and
+// counted-results and top-cutoff are per LEAGUE, not per format. Seeded per league so the matrix is
+// identical on every request.
 
 const FIRST_NAMES = [
   'Marco', 'Luca', 'Andrea', 'Matteo', 'Francesco', 'Alessandro', 'Davide', 'Simone',
@@ -31,17 +25,14 @@ interface FormatLeague {
   playerCount: number
   countedResults: number
   topCutoff: number
-  // Flat bonus for showing up, awarded per event played regardless of whether
-  // that placement's score is counted — confirmed for Commander (2026-08-09).
+  // Flat bonus per event played, whether or not that placement's score is counted (Commander)
   participationPoints: number
   events: [date: string, name: string][]
 }
 
-// Oldest first — the last entry in each format's list is the current league,
-// resolved when no `?league=` (or an unknown one) is requested. Only the current
-// league's calendar (5 events, best-4, top-8) was confirmed with real dates
-// (2026-08-09); the two historical ones per format are fictional, deliberately
-// scored under different regulations to show that leagues aren't uniform.
+// Oldest first; the last entry is the current league, used when `?league=` is missing or unknown.
+// Only the current league's calendar (5 events, best-4, top-8) is real: the historical ones are
+// fictional, scored under different regulations to show leagues aren't uniform.
 const LEAGUES: Partial<Record<string, FormatLeague[]>> = {
   commander: [
     {

@@ -6,9 +6,8 @@ interface SetEventImageBody {
   imageCardArtist: string | null
 }
 
-// Dedicated partial-update endpoint (mirrors tournaments/[id]/image.post.ts)
-// for the single-event "set image" quick action — update.post.ts requires
-// the full NewEventPayload shape.
+// Partial update for the "set image" quick action (mirrors tournaments/[id]/image.post.ts):
+// update.post.ts requires the full NewEventPayload.
 export default defineEventHandler(async (event) => {
   const { id, body, supabase } = await parseIdMutationRequest<SetEventImageBody>(event)
   const eventRow = await setImageById(supabase, 'events', id, body, 'Event image update failed')

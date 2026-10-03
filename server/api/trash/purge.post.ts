@@ -13,11 +13,8 @@ const PURGEABLE_TABLES: SoftDeletableTable[] = [
   'pauperwave_payments', 'pauperwave_wanted_cards', 'locations'
 ]
 
-// super_admin-only (requireSuperAdminPermission) — one tier above restore's
-// requireAdminPermission, matching the "Eliminare definitivamente" row in
-// docs/architecture/permissions.md (user request, 2026-08-23: a manual purge
-// button on /trash, alongside the 60-day auto-purge in
-// scripts/purge-expired-trash.mjs).
+// super_admin-only: one tier above restore, matching "Eliminare definitivamente" in
+// docs/architecture/permissions.md. The manual counterpart of the scheduled purge_expired_trash().
 export default defineEventHandler(async (event) => {
   await requireSuperAdminPermission(event)
   const { table, id } = await readBody<PurgeBody>(event)

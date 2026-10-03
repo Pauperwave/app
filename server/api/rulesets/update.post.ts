@@ -9,10 +9,8 @@ interface UpdateRulesetBody {
   points: RulesetPointValues & { participation: number }
 }
 
-// Updates a ruleset's name and every category's point value. Doesn't touch
-// is_default — flipping the default ruleset is a separate, rarer action
-// with wider blast radius (every league with no ruleset of its own falls
-// back to whichever one is_default), left out of this first pass.
+// Updates a ruleset's name and every category's point value. Doesn't touch is_default: changing the
+// default affects every league without its own ruleset, so it's a separate action.
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 

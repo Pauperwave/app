@@ -9,9 +9,7 @@ interface StatusBody {
   status: RegistrationStatus
 }
 
-// Batch, not one request per row — same "one write, not N" reasoning as
-// AcceptancePicker.vue's own removeAcceptedItems/transferToAccepted, just at
-// the network layer instead of a single component's local state.
+// Batch, not one request per row: one write instead of N, like AcceptancePicker.vue's local state
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 
@@ -19,8 +17,8 @@ export default defineEventHandler(async (event) => {
   const supabase = serverSupabaseServiceRole<Database>(event)
   await assertRegistrationsEditableByUuids(supabase, registrationUuids)
 
-  // Only a real transition to 'checked_in' is an acceptance to announce —
-  // re-sending the same batch must not message the players twice.
+  // Only a real transition to 'checked_in' is announced: re-sending the same batch must not message
+  // twice
   const { data: previous, error: previousError } = await supabase
     .from('tournament_registrations')
     .select('uuid, status')
@@ -34,9 +32,7 @@ export default defineEventHandler(async (event) => {
     .from('tournament_registrations')
     .update({
       status,
-      // Only 'checked_in' has a meaningful timestamp — reverting to
-      // 'registered' or marking 'no_show' clears it rather than leaving a
-      // stale check-in time from a previous, now-undone acceptance.
+      // Only 'checked_in' has a timestamp: other statuses clear a stale check-in time
       checked_in_at: status === 'checked_in' ? new Date().toISOString() : null
     })
     .in('uuid', registrationUuids)

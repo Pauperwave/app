@@ -7,19 +7,12 @@ interface UpsertRoundResultsBody {
   results: { pairingUuid: string, playerUuid: string, position: number }[]
 }
 
-// One upsert call for a whole pod's placements at once — TableScoreGridModal.vue's
-// "Confirm" submits every seat's rank together, same atomic-per-pod write as
-// league's own upsertRoundResult (ON CONFLICT (pairing_uuid, player_uuid) DO UPDATE).
+// One upsert for a whole pod's placements (TableScoreGridModal.vue "Confirm" submits every seat's
+// rank together), ON CONFLICT (pairing_uuid, player_uuid) DO UPDATE.
 //
-// Deliberately simpler completion rule than league's own isTableComplete
-// (which also requires every seat's commander + vote to be set before a
-// pairing counts as "complete"): here, a pairing is marked completed as
-// soon as its ranking is submitted. Requiring kills/votes/commander too
-// would block advancing a round on organizers remembering to fill in every
-// optional field for every pod at a live event — the ranking is the only
-// input the scoring math actually needs. Safe to do unconditionally here
-// because TableScoreGridModal only ever submits once every seat has a
-// placement (isValidFormation requires all seats filled).
+// Simpler completion rule than league's isTableComplete: a pairing is completed as soon as its
+// ranking is submitted, since kills/votes/commander are optional and would block advancing a live
+// round. Safe because the modal only submits once every seat has a placement (isValidFormation).
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 

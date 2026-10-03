@@ -3,12 +3,9 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 import type { NewLeaguePayload } from '#shared/types/leagues'
 
-// leagues' RLS (management_full_access) already gates writes to management
-// users, but every write still goes through a BFF endpoint — same convention
-// as tournaments/events/transactions/wanted-cards.
-// No starts_at/ends_at here (2026-08-16 ADR, docs/PROGRESS.md): a new league
-// has no tournaments yet, so both stay null until recomputeLeagueDates runs
-// off the first tournament created under it.
+// RLS (management_full_access) already gates writes, but every write goes through a BFF endpoint
+// (same as tournaments/events/transactions/wanted-cards).
+// No starts_at/ends_at: they stay null until recomputeLeagueDates runs for the first tournament.
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
   const body = await readBody<NewLeaguePayload>(event)

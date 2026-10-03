@@ -6,16 +6,10 @@ interface ApproveRenewalBody {
   ids: number[]
 }
 
-// /associates' "Richieste (di rinnovo)" tab — acknowledges a renewal
-// request without touching membership_request_status at all (that field
-// never left 'approved' in the first place, see renew.post.ts). Separate
-// from recording the actual Association Fee payment (the existing "Rinnova"
-// action, which opens the transaction form) — approving the renewal REQUEST
-// and recording the PAYMENT stay two distinct staff actions, same
-// separation already in place for a first-time application (approve.post.ts
-// vs. a later payment). Re-validates each id actually has an open, unresolved
-// renewal_requested event server-side rather than trusting the client's
-// selection, since the id could be stale by the time this runs.
+// /associates "Richieste (di rinnovo)" tab: acknowledges a renewal request without touching
+// membership_request_status (it stays 'approved', see renew.post.ts). Separate from recording the
+// Association Fee payment ("Rinnova"), like first-time applications. Re-validates server-side that
+// each id has an open renewal_requested event, since the client's selection may be stale.
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 
@@ -47,10 +41,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, statusMessage: eventsError.message })
   }
 
-  // Ascending order + last-write-wins means each entry ends up holding that
-  // associate's most recent renewal event — only 'renewal_requested' there
-  // means the renewal is still open (see usePendingRenewalRequestsQuery.ts,
-  // same derivation client-side).
+  // Ascending order + last-write-wins keeps each associate's latest renewal event; only
+  // 'renewal_requested' means still open (same derivation as usePendingRenewalRequestsQuery.ts)
   const latestEventByAssociate = new Map<string, string>()
   for (const row of events ?? []) latestEventByAssociate.set(row.associate_uuid, row.event_type)
 

@@ -13,11 +13,8 @@ const RESTORABLE_TABLES: SoftDeletableTable[] = [
   'pauperwave_payments', 'pauperwave_wanted_cards', 'locations'
 ]
 
-// Admin-only (requireAdminPermission) — stricter than the organizer+ gate on
-// the softDeleteById endpoints it mirrors, since restoring is a new
-// capability being introduced here, not a loosening of the existing delete
-// gate (see the open question in docs/architecture/permissions.md's "Note"
-// section, resolved this way for restore specifically).
+// Admin-only: stricter than the organizer+ gate on the softDeleteById endpoints it mirrors, since
+// restoring is a new capability (see docs/architecture/permissions.md "Note").
 export default defineEventHandler(async (event) => {
   await requireAdminPermission(event)
   const { table, id } = await readBody<RestoreBody>(event)
@@ -29,7 +26,8 @@ export default defineEventHandler(async (event) => {
   const supabase = serverSupabaseServiceRole<Database>(event)
   await restoreById(supabase, table, id)
 
-  // A restored tournament counts again towards its league's/event's derived dates (derivedDates.ts).
+  // A restored tournament counts again towards its league's/event's derived dates
+  // (derivedDates.ts).
   if (table === 'tournaments') {
     const { data: restored } = await supabase
       .from('tournaments')

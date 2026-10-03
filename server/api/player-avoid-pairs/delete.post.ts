@@ -1,9 +1,6 @@
 // server\api\player-avoid-pairs\delete.post.ts
-// BFF: remove a globally-fixed avoid-pair — ported from
-// MagicTheGathering/league's avoid-pairs/delete.post.ts (user request,
-// 2026-09-15). Resolves associate uuids to players.uuid and normalizes
-// order the same way create.post.ts does, since the DB row is always
-// stored with player_a_uuid < player_b_uuid.
+// BFF: removes a globally-fixed avoid-pair. Resolves associate uuids and normalizes order like
+// create.post.ts, since rows are stored with player_a_uuid < player_b_uuid.
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 

@@ -1,11 +1,7 @@
 // server\api\players\[id]\delete.post.ts
-// Hard delete, not soft — players has no deleted_at column (unlike the
-// SoftDeletableTable set in idRequest.ts). Every table that hangs off a
-// player (event_attendees, commander_decks, tournament_registrations/
-// pairings/standings/round_results/votes/kills) has its player_uuid FK set
-// ON DELETE RESTRICT, so Postgres itself refuses to delete a player with any
-// real tournament history — surfaced here as a 409 the client can show a
-// specific message for, instead of a raw 500.
+// Hard delete: players has no deleted_at (unlike SoftDeletableTable in idRequest.ts). Every table
+// hanging off a player has its player_uuid FK ON DELETE RESTRICT, so Postgres refuses to delete one
+// with tournament history; surfaced as a 409 the client can explain instead of a raw 500.
 export default defineEventHandler(async (event) => {
   const { id, supabase } = await parseIdRequest(event)
 

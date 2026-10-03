@@ -3,9 +3,8 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 import type { NewLocationPayload } from '#shared/types/locations'
 
-// Same convention as tournaments/create.post.ts: every write goes through a
-// BFF endpoint (requireManagementPermission is the authorization boundary),
-// not RLS evaluated from the client.
+// Same convention as tournaments/create.post.ts: writes go through a BFF endpoint
+// (requireManagementPermission is the authorization boundary), not RLS from the client.
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
   const body = await readBody<NewLocationPayload>(event)

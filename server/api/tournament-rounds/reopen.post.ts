@@ -6,8 +6,9 @@ interface ReopenTournamentBody {
   tournamentUuid: string
 }
 
-// The way back from "Termina torneo" (migration 20261003100000): puts a completed tournament and its
-// last round back in progress, deleting nothing — format-agnostic, same RPC for Commander and 1v1.
+// The way back from "Termina torneo" (migration 20261003100000): puts a completed tournament and
+// its last round back in progress, deleting nothing — format-agnostic, same RPC for Commander and
+// 1v1.
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 

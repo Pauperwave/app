@@ -8,10 +8,8 @@ interface CreateRulesetBody {
   points: RulesetPointValues & { participation: number }
 }
 
-// Restores a real ruleset editor (user request, 2026-09-17) — league had one
-// (RulesetFormModal.vue) backed by flat columns on the ruleset row; this
-// app's schema normalizes point values into ruleset__points (category rows),
-// so creating a ruleset means one insert plus 8 category rows.
+// Ruleset editor: point values live in ruleset__points (category rows), so creating a ruleset
+// means one insert plus 8 category rows.
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 

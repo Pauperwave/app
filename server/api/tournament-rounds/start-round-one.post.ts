@@ -4,22 +4,19 @@ import type { Database } from '#shared/utils/types/database'
 
 interface StartRoundOneBody {
   tournamentUuid: string
-  // Associate uuids in the seating order confirmed by
-  // TablePreviewModal.vue (ported league's pairing optimizer runs
-  // client-side even at round 1, see that component's own comment) — this
-  // endpoint just persists whatever final order it's given, sequentially
-  // sliced into pods by start_commander_round_one (migration 20260915000001).
+  // Associate uuids in the seating order confirmed by TablePreviewModal.vue; the RPC
+  // (start_commander_round_one) just slices it sequentially into pods
   associateOrder: string[]
-  // Confirmed table sizes, in order — without them the RPC re-derives its own split and drops dragged-in resizes.
+  // Confirmed table sizes, in order — without them the RPC re-derives its own split and drops
+  // dragged-in resizes.
   tableSizes: number[]
-  // Seed of the shuffle the seating started from, kept so the preview can reopen on it after a turn-back.
+  // Seed of the shuffle the seating started from, kept so the preview can reopen on it after a
+  // turn-back.
   shuffleSeed: number | null
 }
 
-// Delegates round-1 creation (pairings + zeroed standings + the
-// tournament's registration_open -> in_progress flip) to a single RPC so
-// the whole thing is one Postgres transaction — see the migration's own
-// comment for why (same reasoning as tournament-registrations/register.post.ts).
+// Delegates round-1 creation (pairings, zeroed standings, registration_open -> in_progress) to one
+// RPC so it is a single Postgres transaction, like tournament-registrations/register.post.ts.
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 

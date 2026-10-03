@@ -3,11 +3,9 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 import type { UpdateTrashRetentionPayload } from '#shared/types/settings'
 
-// super_admin-only (requireSuperAdminPermission) — stricter than the
-// membership fee's requireAdminPermission next to it, matching
-// 'purge-trash' (app/utils/permissions.ts): this value controls when
-// purge_expired_trash() (migration 20260823120000) deletes data for good,
-// same tier as the manual purge button itself.
+// super_admin-only, stricter than the membership fee next to it: this value decides when
+// purge_expired_trash() deletes data for good, same tier as 'purge-trash'
+// (app/utils/permissions.ts).
 export default defineEventHandler(async (event) => {
   const user = await requireSuperAdminPermission(event)
 

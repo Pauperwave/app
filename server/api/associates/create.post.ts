@@ -3,14 +3,9 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 import type { AssociateEditsPayload } from '#shared/types/associates'
 
-// "Nuovo associato" (AddModal.vue) — admin-only direct add, unlike apply.post.ts
-// (the public /tesseramento form, requireUser + self-email check only). Here
-// staff is entering someone else's data directly, so the row goes straight to
-// membership_request_status 'approved' instead of landing in Associati >
-// Richieste — skipping a redundant self-approval step for a member staff
-// already vetted by hand. Mirrors approve.post.ts's own side effects (number
-// assignment, membership events) so a direct add ends up indistinguishable
-// from apply + approve.
+// "Nuovo associato" (AddModal.vue): admin-only direct add, unlike the public apply.post.ts. Staff
+// enters vetted data, so the row skips the requests queue and goes straight to 'approved'. Mirrors
+// approve.post.ts's side effects (number assignment, membership events).
 export default defineEventHandler(async (event) => {
   const user = await requireAdminPermission(event)
 
@@ -54,8 +49,7 @@ export default defineEventHandler(async (event) => {
   await recordMembershipEvent(supabase, data.uuid, 'requested')
   await recordMembershipEvent(supabase, data.uuid, 'approved')
 
-  // Same "assign if missing" as approve.post.ts — every new row is missing
-  // one, so this always fires here.
+  // Same "assign if missing" as approve.post.ts; always fires here since new rows have no number
   const { data: number, error: numberError } = await supabase.rpc(
     'next_pauperwave_associate_number'
   )

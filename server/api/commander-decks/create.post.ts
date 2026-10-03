@@ -12,10 +12,8 @@ interface CreateDeckBody {
   lenderUuid: string | null
 }
 
-// Manually registers a deck for a player, independent of the get-or-create
-// flow in select.post.ts (which only fires during live round-commander
-// selection) — restores league's DeckCreateModal flow so staff can
-// pre-register a deck before a tournament (user request, 2026-09-17).
+// Manually registers a deck, independent of select.post.ts's get-or-create (live round selection),
+// so staff can pre-register decks before a tournament.
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 
@@ -37,8 +35,8 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (error) {
-    // uq_commander_decks_single / uq_commander_decks_partner — this player
-    // already has a deck for this exact commander/partner combo.
+    // uq_commander_decks_single / uq_commander_decks_partner: the player already has this
+    // commander/partner combo
     const statusCode = error.code === '23505' ? 409 : 500
     throw createError({ statusCode, statusMessage: error.message })
   }

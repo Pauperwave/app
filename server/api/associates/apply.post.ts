@@ -3,12 +3,9 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 import type { AssociateEditsPayload } from '#shared/types/associates'
 
-// The /tesseramento public form's BFF endpoint — gated by requireUser (a valid
-// OTP-verified Supabase session), not requireManagementPermission: the whole
-// point is that the submitter is NOT staff, often not even an existing
-// associate yet. The OTP step (see /tesseramento's "email"/"verifica" steps)
-// is the anti-abuse gate in place of a captcha/rate-limit, since it already
-// proves control of a real inbox before this endpoint is ever reachable.
+// Public /tesseramento form endpoint: gated by requireUser (OTP-verified session), not
+// requireManagementPermission, since the submitter is usually not staff. The OTP step proves
+// control of a real inbox and acts as the anti-abuse gate instead of a captcha/rate limit.
 export default defineEventHandler(async (event) => {
   const user = await requireUser(event)
 

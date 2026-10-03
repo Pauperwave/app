@@ -1,10 +1,8 @@
 // server\api\events\[id]\update.post.ts
 import type { NewEventPayload } from '#shared/types/events'
 
-// Same convention as leagues/tournaments' own [id]/update.post.ts: events'
-// RLS (management_full_access) already gates writes to management users,
-// but every write still goes through a BFF endpoint rather than relying on
-// RLS evaluated from the client.
+// Same convention as leagues/tournaments update.post.ts: RLS already gates writes to management,
+// but every write goes through a BFF endpoint rather than RLS evaluated from the client.
 export default defineEventHandler(async (event) => {
   const { id, body, supabase } = await parseIdMutationRequest<NewEventPayload>(event)
 

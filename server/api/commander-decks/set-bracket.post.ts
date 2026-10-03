@@ -7,9 +7,7 @@ interface SetBracketBody {
   bracketLevel: number
 }
 
-// Sets a deck's power-level "Bracket" rating (1-5, migration
-// 20260919030000) — ported from league's deck.bracket flow, adapted to this
-// app's commander_decks table.
+// Sets a deck's power-level "Bracket" rating (1-5)
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 

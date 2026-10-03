@@ -4,12 +4,11 @@ import type { Database } from '#shared/utils/types/database'
 
 interface StartRoundOneSwissBody {
   tournamentUuid: string
-  // Associate uuids already paired up sequentially (seat 1 vs 2, 3 vs 4, ...)
-  // by SwissTablePreviewModal.vue — this endpoint just persists whatever
-  // final order it's given, same "client arranges, RPC seats" split as
-  // start-round-one.post.ts (Commander).
+  // Associate uuids already paired sequentially (seat 1 vs 2, 3 vs 4, ...) by
+  // SwissTablePreviewModal.vue; the client arranges, the RPC seats (as in start-round-one.post.ts)
   associateOrder: string[]
-  // Seed of the shuffle the seating started from, kept so the preview can reopen on it after a turn-back.
+  // Seed of the shuffle the seating started from, kept so the preview can reopen on it after a
+  // turn-back.
   shuffleSeed: number | null
 }
 

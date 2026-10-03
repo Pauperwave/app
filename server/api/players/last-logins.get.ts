@@ -3,18 +3,11 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 import type { PlayerLastLogin } from '#shared/types/players'
 
-// This is a deliberate, narrow exception to the "never call the Supabase
-// admin API to resolve auth data" convention (docs/PROGRESS.md ADR-008,
-// docs/architecture/database.md's own migration notes) — that convention is
-// about resolving *display names* via auth.users, which pauperwave_associates
-// already has a substitute for (the created_by/updated_by FK retarget those
-// docs describe). last_sign_in_at has no equivalent anywhere in the public
-// schema; auth.users is genuinely the only source of truth for it.
-//
-// listUsers() (paginated, not getUserById() per player) avoids N admin-API
-// round trips for N players — cheap at this club's scale (a few hundred
-// auth users at most), and the whole point of a BFF endpoint over a direct
-// client query anyway: auth.users isn't reachable via PostgREST/RLS at all.
+// Deliberate, narrow exception to the "never call the Supabase admin API for auth data" convention
+// (ADR-008, docs/architecture/database.md): that is about display names, which
+// pauperwave_associates substitutes. last_sign_in_at exists only in auth.users, unreachable via
+// PostgREST/RLS. Paginated listUsers() avoids one admin-API call per player; cheap at this club's
+// scale.
 const PAGE_SIZE = 200
 
 export default defineEventHandler(async (event): Promise<PlayerLastLogin[]> => {

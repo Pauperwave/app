@@ -2,14 +2,10 @@
 import { createClient } from '@supabase/supabase-js'
 import { serverSupabaseServiceRole } from '#supabase/server'
 
-// Dev-only: mints a real Supabase session for a designated test associate,
-// so browser automation (claude-in-chrome) can reach authenticated routes
-// without a real magic-link email round trip. 404s outside dev — `import.
-// meta.dev` is compiled away in a production build, so this whole handler
-// (and its service-role usage) doesn't ship. Requires DEV_TEST_ASSOCIATE_EMAIL
-// in .env (git-ignored, local only) — an existing approved associate to sign
-// in as. Uses the same generateLink + verifyOtp round trip Supabase itself
-// does for a magic link, just without sending the email.
+// Dev-only: mints a real Supabase session for a test associate so browser automation can reach
+// authenticated routes without a magic-link email. 404s outside dev (`import.meta.dev` is compiled
+// out of production builds). Needs DEV_TEST_ASSOCIATE_EMAIL in .env: an existing approved
+// associate. Same generateLink + verifyOtp round trip as a real magic link, minus the email.
 export default defineEventHandler(async (event) => {
   if (!import.meta.dev) {
     throw createError({ statusCode: 404, statusMessage: 'Not Found' })
@@ -38,10 +34,8 @@ export default defineEventHandler(async (event) => {
   }
 
   const config = useRuntimeConfig(event)
-  // A plain anon client, not the service-role one above — verifyOtp is a
-  // regular auth operation and must run as the anon role to get back a real
-  // user session (the service-role client above has persistSession/
-  // autoRefreshToken disabled and isn't meant to hold a user session at all).
+  // Plain anon client: verifyOtp must run as the anon role to return a user session
+  // (the service-role client above has persistSession/autoRefreshToken disabled)
   const anonClient = createClient(config.public.supabase.url, config.public.supabase.key)
 
   const { data: verifyData, error: verifyError } = await anonClient.auth.verifyOtp({

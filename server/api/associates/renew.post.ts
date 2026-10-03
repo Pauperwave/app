@@ -2,14 +2,10 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
-// The /tesseramento renewal step's confirm action. Does NOT touch
-// membership_request_status at all (reworked 2026-08-27, user request) — an
-// approved associate stays 'approved' through a renewal request, they never
-// re-enter /associates/requests' new-applicant triage queue. "Has an open
-// renewal request" is a derived state instead (usePendingRenewalRequestsQuery.ts:
-// latest of this associate's renewal_requested/renewal_approved events is
-// renewal_requested), surfaced as its own tab on /associates rather than a
-// status flip on the row.
+// /tesseramento renewal confirm action. Leaves membership_request_status alone: an approved
+// associate stays 'approved' and never re-enters the new-applicant queue. "Open renewal request" is
+// derived from the latest renewal event (usePendingRenewalRequestsQuery.ts) and shown in its own
+// /associates tab.
 export default defineEventHandler(async (event) => {
   const email = await requireUserEmail(event)
 

@@ -4,18 +4,16 @@ import type { Database } from '#shared/utils/types/database'
 import type { NewTransactionPayload } from '#shared/types/transactions'
 
 export default defineEventHandler(async (event) => {
-  // Not parseIdMutationRequest (shared by other domains at a fixed
-  // organizer tier) — this endpoint needs a conditional check, see below.
+  // Not parseIdMutationRequest (fixed organizer tier): this endpoint needs a conditional check, see
+  // below
   const user = await requireUser(event)
   const id = Number(getRouterParam(event, 'id'))
   const body = await readBody<NewTransactionPayload>(event)
   validatePayerInfo(body)
   const supabase = serverSupabaseServiceRole<Database>(event)
 
-  // Needed only to decide the permission tier below (admin vs. organizer) —
-  // update_payment_with_renewal re-reads the previous row itself, inside the
-  // same transaction as the write, so there's no risk of it going stale
-  // between this check and the RPC call.
+  // Only to pick the permission tier below; update_payment_with_renewal re-reads the row itself in
+  // its transaction
   const { data: previousPayment, error: previousError } = await supabase
     .from('pauperwave_payments')
     .select('payment_type')
@@ -29,10 +27,8 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Same admin-vs-organizer split as create.post.ts, checked against BOTH
-  // the old and new payment type — an organizer editing a payment INTO or
-  // OUT OF "Association Fee" is still touching membership-fee territory
-  // either way (found via audit, 2026-08-30).
+  // Same admin-vs-organizer split as create.post.ts, checked against the old AND new payment type:
+  // moving a payment into or out of "Association Fee" touches membership-fee territory either way
   if (previousPayment.payment_type === 'Association Fee' || body.paymentType === 'Association Fee') {
     await requireAdminPermission(event)
   } else {
@@ -41,15 +37,10 @@ export default defineEventHandler(async (event) => {
 
   const updatedBy = await resolveAuditAssociateUuid(event, user)
 
-  // Payment write + stale-renewal cleanup + renewal reconciliation all
-  // happen in one Postgres transaction (update_payment_with_renewal,
-  // migration 20260902105738) — previously three separate Supabase JS
-  // calls, where a failure partway through could leave the payment updated
-  // but the renewal rows out of sync with it.
+  // Payment write + stale-renewal cleanup + renewal reconciliation in one Postgres transaction
+  // (update_payment_with_renewal).
   //
-  // Cast: see the same comment in create.post.ts — Postgres function args
-  // have no introspectable nullability, the generated Args type is wrong
-  // here for the columns that are genuinely nullable.
+  // Cast: see create.post.ts; the generated Args type is wrong for genuinely nullable columns
   const { data, error } = await supabase.rpc('update_payment_with_renewal', {
     p_id: id,
     p_associate_uuid: body.associateUuid,

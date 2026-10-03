@@ -6,9 +6,7 @@ interface UndrawPairingBody {
   pairingUuid: string
 }
 
-// Undoes a "Patta" declaration — clears ranking + kills only, leaving
-// commander/vote data untouched (migration 20260919010000). Ported from
-// league's tournamentStore.undrawPairing.
+// Undoes a "Patta" declaration: clears ranking + kills only, commander/vote data stay
 export default defineEventHandler(async (event) => {
   await requireManagementPermission(event)
 
