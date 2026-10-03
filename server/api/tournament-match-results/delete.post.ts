@@ -1,37 +1,31 @@
 // server\api\tournament-match-results\delete.post.ts
-import { serverSupabaseServiceRole } from '#supabase/server'
-import type { Database } from '#shared/utils/types/database'
+import type { PairingWriteContext } from '~~/server/utils/tournaments/definePairingWriteHandler'
 
-// fallow-ignore-next-line code-duplication -- same guard as the sibling handlers
 interface DeleteMatchResultBody {
   pairingUuid: string
 }
 
 // Removes one table's result and puts the pairing back to pending.
-export default defineEventHandler(async (event) => {
-  await requireManagementPermission(event)
+export default definePairingWriteHandler(
+  async ({ supabase, body }: PairingWriteContext<DeleteMatchResultBody>) => {
+    const { error: resultError } = await supabase
+      .from('tournament_match_results')
+      .delete()
+      .eq('pairing_uuid', body.pairingUuid)
 
-  const { pairingUuid } = await readBody<DeleteMatchResultBody>(event)
-  const supabase = serverSupabaseServiceRole<Database>(event)
-  await assertPairingEditable(supabase, pairingUuid)
+    if (resultError) {
+      throw createError({ statusCode: 500, statusMessage: resultError.message })
+    }
 
-  const { error: resultError } = await supabase
-    .from('tournament_match_results')
-    .delete()
-    .eq('pairing_uuid', pairingUuid)
+    const { error: statusError } = await supabase
+      .from('tournament_pairings')
+      .update({ status: 'pending' })
+      .eq('uuid', body.pairingUuid)
 
-  if (resultError) {
-    throw createError({ statusCode: 500, statusMessage: resultError.message })
+    if (statusError) {
+      throw createError({ statusCode: 500, statusMessage: statusError.message })
+    }
+
+    return { success: true }
   }
-
-  const { error: statusError } = await supabase
-    .from('tournament_pairings')
-    .update({ status: 'pending' })
-    .eq('uuid', pairingUuid)
-
-  if (statusError) {
-    throw createError({ statusCode: 500, statusMessage: statusError.message })
-  }
-
-  return { success: true }
-})
+)

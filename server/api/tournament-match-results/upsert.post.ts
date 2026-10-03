@@ -1,6 +1,5 @@
 // server\api\tournament-match-results\upsert.post.ts
-import { serverSupabaseServiceRole } from '#supabase/server'
-import type { Database } from '#shared/utils/types/database'
+import type { PairingWriteContext } from '~~/server/utils/tournaments/definePairingWriteHandler'
 
 interface UpsertMatchResultBody {
   tournamentUuid: string
@@ -8,19 +7,15 @@ interface UpsertMatchResultBody {
   player1Uuid: string
   player2Uuid: string
   player1GamesWon: number
-  // fallow-ignore-next-line code-duplication -- same guard as the sibling handlers
   player2GamesWon: number
 }
 
 // The pairing is marked completed right away, same rule as the Commander
 // round-results upsert; a pending player report for it is dropped.
-export default defineEventHandler(async (event) => {
-  await requireManagementPermission(event)
+export default definePairingWriteHandler(
+  async ({ supabase, body }: PairingWriteContext<UpsertMatchResultBody>) => {
+    await saveMatchResult(supabase, body)
 
-  const body = await readBody<UpsertMatchResultBody>(event)
-  const supabase = serverSupabaseServiceRole<Database>(event)
-  await assertPairingEditable(supabase, body.pairingUuid)
-  await saveMatchResult(supabase, body)
-
-  return { success: true }
-})
+    return { success: true }
+  }
+)
