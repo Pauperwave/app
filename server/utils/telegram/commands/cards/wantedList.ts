@@ -13,6 +13,7 @@ export interface WantedListRow {
   treatment: string[]
   copies: number
   cardmarket_price: number | null
+  image_url: string | null
 }
 
 export const WANTED_LIST_PAGE_SIZE = 8
