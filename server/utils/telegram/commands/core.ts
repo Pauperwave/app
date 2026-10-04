@@ -119,7 +119,7 @@ const HELP_SECTIONS: Record<HelpTopic, () => Blocks> = {
     { type: 'paragraph', text: { type: 'bold', text: `${ICONS.card} Carte` } },
     {
       type: 'paragraph',
-      text: '/prezzo [carta] — scegli la stampa e controlla il prezzo su CardMarket e CardTrader (filtri ITA/ENG e foil), anche in chat con @bot $ carta\n'
+      text: '/prezzo [carta] — scegli la stampa e controlla il prezzo su CardMarket e CardTrader (filtri ITA/ENG e foil), anche in chat con @bot € carta\n'
         + '/cercate — le carte che cerchi: vedi e togli (serve il collegamento)\n'
         + '/importa — incolla un elenco di carte da cercare, es. 1 Erode (SOS) 15 (serve il collegamento)'
     },

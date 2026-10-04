@@ -142,7 +142,7 @@ async function handlePriceNameReply(ctx: Context, next: () => Promise<void>) {
   await offerPrintingPicker(ctx, text)
 }
 
-// Inline mode, "$ <name>": one result per printing. The posted message already carries the
+// Inline mode, "€ <name>": one result per printing. The posted message already carries the
 // CardMarket price (known from Scryfall) and the filter buttons; CardTrader is fetched on a press,
 // since an inline result can't wait for it.
 async function handlePriceInlineQuery(ctx: Context, next: () => Promise<void>) {

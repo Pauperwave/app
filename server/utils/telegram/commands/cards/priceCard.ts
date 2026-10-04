@@ -48,7 +48,7 @@ export function artPreview(imageUrl: string | null) {
 
 export const PRICE_CALLBACK_PREFIX = 'prz:'
 export const WANT_CALLBACK_PREFIX = 'prw:'
-export const PRICE_INLINE_PREFIX = '$'
+export const PRICE_INLINE_PREFIX = '€'
 
 const LANGUAGES: PriceLanguage[] = ['all', 'it', 'en']
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
