@@ -47,7 +47,8 @@ export const TELEGRAM_BOT_COMMAND_GROUPS: BotCommandGroup[] = [
       { name: 'start', requiresLink: false, startPayload: '' },
       { name: 'help', requiresLink: false },
       { name: 'status', requiresLink: false },
-      { name: 'crediti', requiresLink: false }
+      { name: 'crediti', requiresLink: false },
+      { name: 'dona', requiresLink: false }
     ]
   },
   {

@@ -68,13 +68,14 @@ const HELP_SECTIONS: Record<HelpTopic, () => Blocks> = {
     {
       type: 'paragraph',
       text: '/start — avvia il bot\n/help — mostra questo messaggio\n/status — mostra lo stato corrente del bot\n'
-        + '/crediti — chi ha realizzato il bot'
+        + '/crediti — chi ha realizzato il bot\n/dona — sostieni lo sviluppo del bot e del sito'
     },
     {
       type: 'buttons',
       buttons: [
         { text: `${ICONS.online} Status`, callback_data: encodeHelpBtn('status') },
-        { text: `${ICONS.credits} Crediti`, callback_data: encodeHelpBtn('crediti') }
+        { text: `${ICONS.credits} Crediti`, callback_data: encodeHelpBtn('crediti') },
+        { text: `${ICONS.heart} Dona`, callback_data: encodeHelpBtn('dona') }
       ]
     }
   ],

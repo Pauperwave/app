@@ -22,6 +22,7 @@ import { registerTurniCommand } from './turni'
 import { registerTesseraCommand } from './account/tessera'
 import { registerMenzioniCommand } from './account/menzioni'
 import { registerCreditiCommand } from './crediti'
+import { registerDonaCommand } from './dona'
 import { registerCollegamentoCommand } from './account/collegamento'
 import { registerTavoloCommand } from './mockups/tavolo'
 import { registerRisultatoMenu } from './mockups/risultato'
@@ -65,6 +66,7 @@ export function registerCommands(bot: Bot) {
   registerTesseraCommand(commands)
   registerMenzioniCommand(commands)
   registerCreditiCommand(commands)
+  registerDonaCommand(commands)
   registerCollegamentoCommand(commands)
   registerCommanderReportHandlers(bot)
   registerDropCommand(commands)

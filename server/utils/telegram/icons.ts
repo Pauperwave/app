@@ -68,6 +68,7 @@ export const ICONS = {
   rocket: '🚀',
   victim: '⚰️',
   credits: '🙌',
+  heart: '❤️',
   organizer: '🏢',
   write: '✍️',
   skull: '💀',
