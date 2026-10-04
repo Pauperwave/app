@@ -67,9 +67,16 @@ const HELP_SECTIONS: Record<HelpTopic, () => Blocks> = {
     { type: 'paragraph', text: { type: 'bold', text: `${ICONS.settings} Generale` } },
     {
       type: 'paragraph',
-      text: '/start — avvia il bot\n/help — mostra questo messaggio\n/status — mostra lo stato corrente del bot'
+      text: '/start — avvia il bot\n/help — mostra questo messaggio\n/status — mostra lo stato corrente del bot\n'
+        + '/crediti — chi ha realizzato il bot'
     },
-    { type: 'buttons', buttons: [{ text: `${ICONS.online} Status`, callback_data: encodeHelpBtn('status') }] }
+    {
+      type: 'buttons',
+      buttons: [
+        { text: `${ICONS.online} Status`, callback_data: encodeHelpBtn('status') },
+        { text: `${ICONS.credits} Crediti`, callback_data: encodeHelpBtn('crediti') }
+      ]
+    }
   ],
 
   classifiche: () => [
@@ -155,14 +162,16 @@ const HELP_SECTIONS: Record<HelpTopic, () => Blocks> = {
       type: 'paragraph',
       text: '/collegamento — verifica se questa chat è collegata a un socio\n'
         + '/scollegamento — scollega questa chat dal tuo profilo socio\n'
-        + '/tessera — stato del tuo tesseramento'
+        + '/tessera — stato del tuo tesseramento\n'
+        + '/menzioni — le tue menzioni speciali: carnefice, vittima, master brewer e player (serve il collegamento)'
     },
     {
       type: 'buttons',
       buttons: [
         { text: `${ICONS.link} Collegamento`, callback_data: encodeHelpBtn('collegamento') },
         { text: `${ICONS.unlink} Scollegamento`, callback_data: encodeHelpBtn('scollegamento') },
-        { text: `${ICONS.membershipCard} Tessera`, callback_data: encodeHelpBtn('tessera') }
+        { text: `${ICONS.membershipCard} Tessera`, callback_data: encodeHelpBtn('tessera') },
+        { text: `${ICONS.medal} Menzioni`, callback_data: encodeHelpBtn('menzioni') }
       ]
     },
 
