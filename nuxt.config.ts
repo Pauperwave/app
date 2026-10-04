@@ -74,6 +74,9 @@ export default defineNuxtConfig({
     // see docs/architecture/telegram-bot.md, decision 2026-09-02.
     telegramBotToken: process.env.TELEGRAM_BOT_TOKEN,
     telegramWebhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET,
+    // Server-only. Shared with .github/workflows/deploy-notice.yml, which tells the super admins on
+    // Telegram when a production deployment finishes (api/internal/deploy-notice.post.ts).
+    deployNoticeSecret: process.env.DEPLOY_NOTICE_SECRET,
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
       siteName: 'Pauperwave',

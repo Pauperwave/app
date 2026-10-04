@@ -1,0 +1,53 @@
+name: Deploy notice
+
+# Tells the super admins on Telegram when Vercel finishes a production deployment. Vercel's GitHub
+# integration sends the repository_dispatch event; the endpoint ignores anything not in production.
+# Like any repository_dispatch workflow it only runs from the default branch: workflow_dispatch is
+# there to try it by hand.
+on:
+  repository_dispatch:
+    types:
+      - vercel.deployment.success
+  workflow_dispatch:
+
+jobs:
+  notify:
+    if: github.event_name == 'workflow_dispatch' || github.event.client_payload.environment == 'production'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Look up the commit message
+        id: commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.client_payload.git.sha || github.sha }}
+        run: |
+          message=$(gh api "repos/${{ github.repository }}/commits/$SHA" --jq '.commit.message | split("\n")[0]' || true)
+          echo "message=$message" >> "$GITHUB_OUTPUT"
+
+      - name: Tell the super admins
+        env:
+          NOTICE_SECRET: ${{ secrets.DEPLOY_NOTICE_SECRET }}
+          SITE_URL: https://app.pauperwave.org
+          ENVIRONMENT: ${{ github.event.client_payload.environment || 'production' }}
+          DEPLOY_URL: ${{ github.event.client_payload.url || 'https://app.pauperwave.org' }}
+          REF: ${{ github.event.client_payload.git.ref || github.ref_name }}
+          SHA: ${{ github.event.client_payload.git.sha || github.sha }}
+          MESSAGE: ${{ steps.commit.outputs.message }}
+        run: |
+          if [ -z "$NOTICE_SECRET" ]; then
+            echo "DEPLOY_NOTICE_SECRET is not set" >&2
+            exit 1
+          fi
+
+          jq -n \
+            --arg environment "$ENVIRONMENT" \
+            --arg url "$DEPLOY_URL" \
+            --arg ref "$REF" \
+            --arg sha "$SHA" \
+            --arg message "$MESSAGE" \
+            '{ environment: $environment, url: $url, ref: $ref, sha: $sha, message: $message }' \
+            | curl --fail-with-body --silent --show-error \
+              --request POST "$SITE_URL/api/internal/deploy-notice" \
+              --header "content-type: application/json" \
+              --header "x-deploy-notice-secret: $NOTICE_SECRET" \
+              --data-binary @-
