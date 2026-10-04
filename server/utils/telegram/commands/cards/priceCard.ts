@@ -180,7 +180,8 @@ export function buildPriceText(
 
   return [
     `${ICONS.card} <b>${escapeHtml(printing.name)}</b>`,
-    `${escapeHtml(printing.setName)} · ${printing.set.toUpperCase()} #${printing.collectorNumber} · ${finish}`,
+    `${escapeHtml(printing.setName)} · ${printing.set.toUpperCase()} #${printing.collectorNumber}`,
+    `Lingua: ${LANGUAGE_NAMES[state.language]} · Variante: ${finish}`,
     cardmarketLine,
     cardtraderLine
   ].join('\n')

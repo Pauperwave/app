@@ -115,7 +115,8 @@ describe('buildPriceText', () => {
   it('shows both prices for the default state', () => {
     const text = buildPriceText(makePrinting(), baseState, { price: 0.4, url: null })
     expect(text).toContain('<b>Lightning Bolt</b>')
-    expect(text).toContain('Magic 2010 · M10 #146 · normale')
+    expect(text).toContain('Magic 2010 · M10 #146')
+    expect(text).toContain('Lingua: tutte le lingue · Variante: normale')
     expect(text).toMatch(/CardMarket: <b>0,25\s€<\/b>/)
     expect(text).toMatch(/CardTrader \(NM, tutte le lingue\): <b>0,40\s€<\/b>/)
     expect(text).not.toContain('non filtrabile')
@@ -123,7 +124,7 @@ describe('buildPriceText', () => {
 
   it('uses the foil price and says the finish', () => {
     const text = buildPriceText(makePrinting(), { ...baseState, foil: true }, null)
-    expect(text).toContain('· foil')
+    expect(text).toContain('Variante: foil')
     expect(text).toMatch(/CardMarket: <b>1,50\s€<\/b>/)
   })
 
