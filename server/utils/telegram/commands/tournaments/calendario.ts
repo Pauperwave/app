@@ -15,7 +15,7 @@ import type { DatedTournamentRow, TournamentRow } from './detail'
 import { answerLoadError, requireChatId } from '../callbackErrors'
 import { registerMenu, registerBackResolver } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 import { registerDeepLink } from '../../deepLinks'
 
 // Fetched once per render and filtered by month client-side, keeping the callback handler stateless

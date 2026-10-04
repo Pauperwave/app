@@ -4,7 +4,7 @@ import { it } from 'date-fns/locale'
 import { FormattedString } from '@grammyjs/parse-mode'
 
 import type { RegistrationStatus } from './queries'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 // Single source for how a tournament reads in a Telegram list line, shared by leghe.ts and
 // calendario.ts

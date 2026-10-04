@@ -27,7 +27,7 @@ import { registerCommanderReportHandlers } from './tournaments/commanderReport'
 import { registerDropCommand } from './tournaments/commanderDrop'
 import { registerLinkingHandler } from './account/linking'
 import { syncTelegramUsername } from '../usernameSync'
-import { ICONS } from '../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 const UNKNOWN_MESSAGE_TEXT = `${ICONS.thinking} Non ho capito questo messaggio. Usa /help per vedere i comandi disponibili.`
 

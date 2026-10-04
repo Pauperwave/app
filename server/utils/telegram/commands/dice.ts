@@ -2,7 +2,7 @@
 import type { Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 import { registerDeepLink } from '../deepLinks'
-import { ICONS } from '../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 // Telegram's sendDice generates the result server-side (verifiably fair) and renders an animated
 // die, so a classic d6 needs no RNG of our own

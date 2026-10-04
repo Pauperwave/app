@@ -18,7 +18,7 @@ import {
   pageCount,
   type WantedListRow
 } from './wantedList'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 // /cercate: the associate's own active wanted cards (status 'searching'), a page at a time, with a
 // two-step removal. Removal is a soft delete like the site's, so an admin can restore it from the

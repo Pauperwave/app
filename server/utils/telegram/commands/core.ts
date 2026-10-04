@@ -5,7 +5,7 @@ import type { Bot, Context } from 'grammy'
 import { InlineKeyboard } from 'grammy'
 import type { InputRichMessage } from 'grammy/types'
 import type { CommandGroup } from '@grammyjs/commands'
-import { ICONS } from '../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 import { answerEditError } from './callbackErrors'
 import { resolveDeepLink } from '../deepLinks'
 import {

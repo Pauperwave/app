@@ -1,7 +1,7 @@
 // server\utils\telegram\commands\cards\wantedList.ts
 import { InlineKeyboard } from 'grammy'
 import { escapeHtml } from './priceCard'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 // Pure part of /cercate: the page of wanted cards, the confirm screen and the callbacks that move
 // between them

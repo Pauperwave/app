@@ -1,7 +1,7 @@
 // server\api\associates\renew.post.ts
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
-import { ICONS } from '../../utils/telegram/icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 // /tesseramento renewal confirm action. Leaves membership_request_status alone: an approved
 // associate stays 'approved' and never re-enters the new-applicant queue. "Open renewal request" is

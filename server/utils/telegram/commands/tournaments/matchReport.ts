@@ -15,7 +15,7 @@ import { answerLoadError, requireChatId } from '../callbackErrors'
 import { requireLinkedAssociate, resolveAssociateUuidByChatId, resolveChatIdByAssociateUuid } from '../account/linking'
 import { showRichStep, twoColumnFactsTable } from '../mockups/richStepHelpers'
 import { fetchLiveTable, type LiveTable } from './matchReportData'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 const OPEN_PREFIX = 'mropen:'
 const SUMMARY_PREFIX = 'mrsum:'

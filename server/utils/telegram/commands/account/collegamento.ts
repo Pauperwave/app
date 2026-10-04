@@ -4,7 +4,7 @@ import type { CommandGroup } from '@grammyjs/commands'
 
 import { resolveAssociateUuidByChatId } from './linking'
 import { registerDeepLink } from '../../deepLinks'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 interface AssociateIdentity {
   first_name: string | null

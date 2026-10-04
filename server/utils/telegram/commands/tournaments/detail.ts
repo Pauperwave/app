@@ -21,7 +21,7 @@ import { answerLoadError, requireChatId } from '../callbackErrors'
 import { mapsUrl, googleCalendarUrl } from '../events/eventLinks'
 import { navigateBack, getBackResolver } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 export interface LocationRow {
   name: string | null

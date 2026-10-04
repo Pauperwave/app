@@ -9,7 +9,7 @@ import { fetchStageNumbers, OPEN_TOURNAMENT_STATUSES } from './queries'
 import { torneoMenu, openTournamentDetail } from './detail'
 import { registerMenu, registerBackResolver } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 import { registerDeepLink } from '../../deepLinks'
 
 interface NextTournamentRow {

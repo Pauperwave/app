@@ -2,7 +2,7 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 import type { AssociateEditsPayload } from '#shared/types/associates'
-import { ICONS } from '../../utils/telegram/icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 // Public /tesseramento form endpoint: gated by requireUser (OTP-verified session), not
 // requireManagementPermission, since the submitter is usually not staff. The OTP step proves

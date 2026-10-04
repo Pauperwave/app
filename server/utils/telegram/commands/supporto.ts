@@ -2,7 +2,7 @@
 import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 import { registerDeepLink } from '../deepLinks'
-import { ICONS } from '../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 // ForceReply makes the next message reply to this one: matching its text recognizes a support
 // message with no server-side state (like linking.ts)

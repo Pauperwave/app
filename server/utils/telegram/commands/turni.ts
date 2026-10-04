@@ -3,7 +3,7 @@ import type { Context } from 'grammy'
 import { InlineKeyboard } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 import { registerDeepLink } from '../deepLinks'
-import { ICONS } from '../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 // Not a @grammyjs/menu Menu: one static button opening a Mini App needs no submenu/dynamic features
 // (like core.ts's statusKeyboard)

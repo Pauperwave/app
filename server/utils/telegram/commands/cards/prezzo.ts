@@ -32,7 +32,7 @@ import {
 
 import { fetchCardtraderPrice } from '../../../priceRefresh'
 import { resolveCardTraderBlueprint } from '../../../cardTrader'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 const NOT_FOUND_TEXT = `${ICONS.thinking} Non trovo questa carta. Scrivi il nome inglese, es. /prezzo Lightning Bolt.`
 const USAGE_TEXT = 'Scrivi il nome della carta per scegliere la stampa, es. /prezzo Lightning Bolt.'

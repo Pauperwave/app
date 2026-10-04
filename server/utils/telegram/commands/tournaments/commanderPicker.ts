@@ -9,7 +9,7 @@ import type { InlineQueryResultArticle, InputRichMessage } from 'grammy/types'
 import { resolveAssociateUuidByChatId } from '../account/linking'
 import { fetchCommanderHistory, fetchLivePod, type LivePod } from './commanderPodData'
 import { replyWithLiveCommanderPod } from './commanderPod'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 // The live pod of whoever wrote in this chat; null (after telling them) when they have none open
 async function fetchOwnPodOrReply(ctx: Context): Promise<LivePod | null> {

@@ -16,7 +16,7 @@ import { NOT_LINKED_MESSAGE, resolveAssociateUuidByChatId } from '../account/lin
 import { registerDeepLink } from '../../deepLinks'
 import { buildImportSummary, type ImportOutcome } from './importSummary'
 import { scryfallLookupGetter } from './scryfall'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 // Importing a pasted card list into the wanted cards. Stateless like the support flow: the command
 // answers with a ForceReply prompt and the next message, a reply to exactly that prompt, is the

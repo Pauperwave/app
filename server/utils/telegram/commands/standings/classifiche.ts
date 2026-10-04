@@ -5,7 +5,7 @@ import { Menu } from '@grammyjs/menu'
 
 import { answerLoadError } from '../callbackErrors'
 import { createPerContextCache } from '../../perContextCache'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 import { registerDeepLink } from '../../deepLinks'
 
 import { groupBestNByPlayer, toBestNPlacement } from '#shared/utils/cittadino/bestNStandings'

@@ -15,7 +15,7 @@ import {
   dropAlreadyDoneRichMessage, dropAskRichMessage, dropCancelledRichMessage,
   dropConfirmRichMessage, dropDoneRichMessage, isLastRound
 } from './commanderPodMessages'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 // /drop: the same confirmation the post-result prompt leads to, but reachable any time — with the
 // same rules (a Commander pod being played, result already entered, not the last round).

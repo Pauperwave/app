@@ -1,6 +1,6 @@
 // server\utils\telegram\commands\account\linking.ts
 import type { Bot, Context } from 'grammy'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 // No conversation state: Nitro is serverless, so an in-memory "waiting for email" flag wouldn't
 // survive a cold start. Any plain-text message that looks like an email is treated as a linking

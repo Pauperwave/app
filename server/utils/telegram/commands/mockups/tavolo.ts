@@ -8,7 +8,7 @@ import type { CommandGroup } from '@grammyjs/commands'
 import { replyWithLiveTable } from '../tournaments/matchReport'
 import { replyWithLiveCommanderPod } from '../tournaments/commanderPod'
 import { registerDeepLink } from '../../deepLinks'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 const NO_LIVE_TABLE_TEXT = `${ICONS.table} Nessun tavolo aperto al momento per te — controlla di essere iscritto a un torneo in corso.`
 

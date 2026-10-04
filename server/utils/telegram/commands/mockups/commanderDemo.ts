@@ -8,7 +8,7 @@ import { Menu } from '@grammyjs/menu'
 
 import { openRisultato, risultatoMenu } from './risultato'
 import { registerDeepLink } from '../../deepLinks'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 const MOCK_TABLE = { number: 7, opponents: ['Marco Rossi', 'Giulia Bianchi', 'Luca Verdi'] }
 

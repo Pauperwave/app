@@ -1,7 +1,7 @@
 // server\utils\telegram\commands\cards\priceCard.ts
 import { InlineKeyboard } from 'grammy'
 import { isFoilOnlyPrinting } from '#shared/utils/wantedCards/wantedCardRow'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 // Pure part of /prezzo: the filter state carried in callback_data, the inline result of each
 // printing and the message built from them. Messages are HTML: an inline message can't be a rich

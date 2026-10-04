@@ -11,7 +11,7 @@ import { registerDeepLink } from '../../deepLinks'
 import { showRichStep } from '../mockups/richStepHelpers'
 import { fetchLivePod, type LivePod } from './commanderPodData'
 import { positionRichMessage } from './commanderPodMessages'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 // ─── Menu (entry point from /tavolo) ────────────────────────────────────────
 // autoAnswer/onMenuOutdated: false, like tavoloMenu (mockups/tavolo.ts): every .dynamic() reads

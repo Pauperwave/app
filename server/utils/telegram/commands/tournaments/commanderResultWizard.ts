@@ -24,7 +24,7 @@ import {
   killsRichMessage, parseKillTarget, positionRichMessage, resultFactsFor, scoreSummaryTableBlock,
   voteRichMessage, voteTypeOf, votesReceivedTableBlock, waitingForOthersRichMessage
 } from './commanderPodMessages'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 type Next = () => Promise<void>
 

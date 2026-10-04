@@ -50,6 +50,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      '~~': _dirname,
       '~': resolve(_dirname, 'app'),
       '~/app': resolve(_dirname, 'app'),
       '#test': resolve(_dirname, 'test'),

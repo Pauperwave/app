@@ -12,7 +12,7 @@ import { torneoMenu, openTournamentDetail } from './detail'
 import { answerLoadError } from '../callbackErrors'
 import { registerMenu, registerBackResolver } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 import { registerDeepLink } from '../../deepLinks'
 
 import { tournamentProgressByLeague } from '#shared/utils/leagues/tournamentProgressByLeague'

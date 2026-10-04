@@ -11,7 +11,7 @@ import { mapsUrl, googleCalendarUrl } from './eventLinks'
 import type { MapsAddress } from './eventLinks'
 import { navigateBack } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 import { registerDeepLink } from '../../deepLinks'
 
 interface EventRow {

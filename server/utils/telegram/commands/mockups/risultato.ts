@@ -5,7 +5,7 @@ import { Menu } from '@grammyjs/menu'
 
 import { answerLoadError } from '../callbackErrors'
 import { showRichStep, twoColumnFactsTable } from './richStepHelpers'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 // MOCKUP: no live-write flow yet (docs/architecture/telegram-bot.md); Commander is set at round
 // start via /tavolo

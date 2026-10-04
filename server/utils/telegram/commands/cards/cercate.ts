@@ -13,7 +13,7 @@ import { WANT_CALLBACK_PREFIX, decodeWantState, wantedLanguageOf, type PriceLang
 import { fetchScryfallCard } from './scryfall'
 
 import { resolveCardTraderBlueprint } from '../../../cardTrader'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 const NOT_FOUND_TEXT = `${ICONS.thinking} Non trovo più questa carta.`
 const ALREADY_WANTED_TEXT = `${ICONS.info} È già nel tuo elenco.`

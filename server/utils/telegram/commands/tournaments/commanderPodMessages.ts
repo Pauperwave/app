@@ -7,7 +7,7 @@ import type { InputRichMessage } from 'grammy/types'
 
 import { twoColumnFactsTable } from '../mockups/richStepHelpers'
 import type { fetchPodScoreSummary, LivePod } from './commanderPodData'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 
 // ─── Callback payload prefixes ──────────────────────────────────────────────
 export const POS_PICK_PREFIX = 'cmdpospk:'

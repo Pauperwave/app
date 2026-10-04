@@ -6,7 +6,7 @@ import type { Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 
 import { requireLinkedAssociate } from './linking'
-import { ICONS } from '../../icons'
+import { ICONS } from '~~/server/utils/telegram/icons'
 import { registerDeepLink } from '../../deepLinks'
 
 interface AssociateStatusRow {
