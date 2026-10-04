@@ -1,6 +1,38 @@
 # Changelog
 
 
+## v0.15.0
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.14.0...v0.15.0)
+
+### Enhancements
+
+- **bot:** ✨ /cercate shows the mana cost as colored dots instead of Scryfall notation ([5ecdda94](https://github.com/Pauperwave/app/commit/5ecdda94))
+- **bot:** ✨ /dona thanks and links PayPal to support the bot and site development ([9c456a11](https://github.com/Pauperwave/app/commit/9c456a11))
+- **bot:** ✨ /cercate shows the mana cost as plain letters and links each card name to Scryfall ([1e3ce8cb](https://github.com/Pauperwave/app/commit/1e3ce8cb))
+- **players:** ✨ special mentions count the tournaments won, from one tournament_award_winners view ([6b6299c0](https://github.com/Pauperwave/app/commit/6b6299c0))
+- **statistics:** ✨ the commanders table shows the card on hover and opens the commander from any part of the row ([3e388a6c](https://github.com/Pauperwave/app/commit/3e388a6c))
+- **bot:** ✨ a 1v1 table is announced and shown as the same card, with the result and timer buttons ([0d2ef3d4](https://github.com/Pauperwave/app/commit/0d2ef3d4))
+- **turni:** ✨ the turns screen shows the players' first names instead of Io and Avversario ([ad5f5359](https://github.com/Pauperwave/app/commit/ad5f5359))
+- **wanted-cards:** ✨ refresh prices from the context menu acts on the whole selection and shows how many cards ([62a7c9b8](https://github.com/Pauperwave/app/commit/62a7c9b8))
+- **login:** ✨ a phone sees a notice that the dashboard is not optimized for it, with a Naviga comunque button ([e84a649e](https://github.com/Pauperwave/app/commit/e84a649e))
+
+### Fixes
+
+- **bot:** 🐛 the messages to the other player of a 1v1 table name who acted, not who receives them ([c12382dc](https://github.com/Pauperwave/app/commit/c12382dc))
+
+### Refactors
+
+- **bot:** ♻️ /cercate drops the mana cost from its rows ([426b5ef4](https://github.com/Pauperwave/app/commit/426b5ef4))
+
+### Chore
+
+- **db:** 🔧 drop player_vote_decks and trim player_stats to what the statistics tiles use ([6b0adda0](https://github.com/Pauperwave/app/commit/6b0adda0))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.14.0
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.13.0...v0.14.0)
