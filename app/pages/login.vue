@@ -14,6 +14,11 @@ useSeoMeta({
   description: t('login.seoDescription')
 })
 
+// The dashboard is not optimized for phones yet: a phone sees a notice first, with a way through
+const { isMobile } = useDevice()
+const proceedAnyway = ref(false)
+const showMobileNotice = computed(() => isMobile && !proceedAnyway.value)
+
 const supabase = useSupabaseClient()
 const toast = useToast()
 
@@ -106,7 +111,33 @@ const sendMagicLink = async (payload: FormSubmitEvent<Schema>) => {
 </script>
 
 <template>
+  <div
+    v-if="showMobileNotice"
+    class="flex flex-col items-center gap-4 text-center"
+  >
+    <UIcon
+      :name="ICONS.smartphone"
+      class="size-10 text-primary"
+    />
+    <h1 class="text-xl font-semibold">
+      {{ $t('login.mobileNotice.title') }}
+    </h1>
+    <p class="text-muted text-sm">
+      {{ $t('login.mobileNotice.description') }}
+    </p>
+    <UButton
+      color="neutral"
+      variant="outline"
+      size="lg"
+      block
+      @click="proceedAnyway = true"
+    >
+      {{ $t('login.mobileNotice.proceed') }}
+    </UButton>
+  </div>
+
   <UAuthForm
+    v-else
     :fields="fields"
     :schema="schema"
     :title="$t('login.welcomeBack')"

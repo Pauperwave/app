@@ -3327,6 +3327,11 @@
     "welcomeBack": "Bentornato",
     "description": "Utilizza l'email associata al tuo account Pauperwave.",
     "submitButton": "Invia link per accedere",
+    "mobileNotice": {
+      "title": "Meglio dal computer",
+      "description": "La dashboard non è ancora ottimizzata per il cellulare: l'accesso da telefono potrebbe essere scomodo. Ti consigliamo di usare un computer.",
+      "proceed": "Naviga comunque"
+    },
     "callback": {
       "invalidLink": "Link non valido o scaduto. Richiedi un nuovo link di accesso.",
       "backToLogin": "Torna al login",
