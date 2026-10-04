@@ -223,10 +223,13 @@ function replyWithHelp(ctx: Context, view: HelpView) {
   )
 }
 
-// /help [argomento]: no argument shows everything, a topic only its section
+// /help [argomento]: no argument opens the tournaments section, the one most players come for;
+// "Tutto" under it shows everything
+const DEFAULT_HELP_TOPIC: HelpTopic = 'tornei'
+
 function helpCommandHandler(ctx: Context) {
   const argument = typeof ctx.match === 'string' ? ctx.match.trim() : ''
-  if (!argument) return replyWithHelp(ctx, 'all')
+  if (!argument) return replyWithHelp(ctx, DEFAULT_HELP_TOPIC)
 
   const topic = parseHelpTopic(argument)
   if (!topic) {

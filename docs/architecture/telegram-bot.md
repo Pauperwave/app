@@ -25,7 +25,7 @@ Ogni schermata con bottoni e navigazione (`/calendario`, `/leghe`, `/iscrizioni`
 | Comando/funzionalità | Accesso | Stato | Note |
 |---|---|---|---|
 | `/start` | Pubblico | 🟢 | Benvenuto che invita a scrivere l'email da socio per collegare la chat (vedi "Collegamento chat↔socio"), con i bottoni dei comandi. Con un payload (`/start <comando>`, i collegamenti `t.me/<bot>?start=<comando>`) apre direttamente quel comando. |
-| `/help` | Pubblico | 🟢 | Elenco comandi disponibili, raggruppato per dominio (`commands/core.ts`). |
+| `/help` | Pubblico | 🟢 | Elenco comandi disponibili, raggruppato per dominio (`commands/core.ts`); senza argomento si apre sulla sezione Tornei, con "Tutto" per vederle tutte. |
 | `/status` | Pubblico | 🟢 | Liveness check, risponde "🟢 Bot operativo." con commit e data del deploy corrente. |
 | `/classifiche` | Pubblico | 🟢 | Pauper/Commander/Premodern/Cittadino: calcolo reale per tutti e quattro (riusa `groupBestNByPlayer`, `shared/utils/cittadino/bestNStandings.ts` — Cittadino con le proprie tie-break, best-11, vedi Note), **paginato 10 righe alla volta** (bottoni ◀/▶, aggiunto 2026-09-06) più link alla pagina completa sul sito e bottone "« Formati" per tornare alla scelta. |
 | `/eventi` | Pubblico | 🟢 | Prossimi 8 eventi `published`/`ongoing`, letti direttamente da `events` via client anon (`commands/events/eventi.ts`). Ogni evento apre un dettaglio (data completa, location con link maps, organizzatore, immagine se assegnata — foto con caption come `/calendario`), con 🧭 Direzioni e 🗓️ Aggiungi al calendario. Nessuna azione di iscrizione — `EventParticipants.vue` è ancora un placeholder, gli eventi non hanno un flusso di partecipazione self-service come i tornei. |
