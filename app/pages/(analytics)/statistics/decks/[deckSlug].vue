@@ -102,7 +102,10 @@ useSeoMeta({ title: () => commanderDisplayName.value })
             : undefined"
         />
 
-        <MagicScryfallSearchButton :name="commander1Name" />
+        <div class="flex flex-wrap gap-2">
+          <MagicScryfallSearchButton :name="commander1Name" />
+          <MagicEdhrecButton :name="commander1Name" />
+        </div>
       </div>
 
       <EmptyState v-else :message="t('deck.notFound')" />

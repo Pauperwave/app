@@ -102,7 +102,10 @@ useSeoMeta({ title: () => commanderName.value ?? t('commander.breadcrumb') })
           :link-to="entry => entry.playerSlug ? `/players/${entry.playerSlug}` : undefined"
         />
 
-        <MagicScryfallSearchButton :name="commanderName" />
+        <div class="flex flex-wrap gap-2">
+          <MagicScryfallSearchButton :name="commanderName" />
+          <MagicEdhrecButton :name="commanderName" />
+        </div>
       </div>
 
       <EmptyState v-else :message="t('commander.page.notFound')" />
