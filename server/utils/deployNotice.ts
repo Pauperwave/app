@@ -55,15 +55,19 @@ export function isDeployNoticeSecretValid(
   return timingSafeEqual(digest(provided), digest(expected))
 }
 
-// HTML (parse_mode 'HTML'): the commit sits in a monospace block under the heading
+// HTML (parse_mode 'HTML'): the heading, then the branch and short hash as inline code, then the
+// commit message as plain text
 export function buildDeployNoticeText(notice: DeployNotice): string {
   const heading = `${ICONS.rocket} Deploy in produzione completato`
 
   const commit = [notice.ref, notice.sha?.slice(0, SHORT_SHA_LENGTH)]
     .filter(part => part !== null && part !== undefined)
     .join(' · ')
-  const lines = [commit || null, notice.message].filter(line => line !== null)
+  const lines = [
+    commit ? `<code>${escapeHtml(commit)}</code>` : null,
+    notice.message ? escapeHtml(notice.message) : null
+  ].filter(line => line !== null)
   if (lines.length === 0) return heading
 
-  return `${heading}\n<pre>${escapeHtml(lines.join('\n'))}</pre>`
+  return `${heading}\n\n${lines.join('\n')}`
 }

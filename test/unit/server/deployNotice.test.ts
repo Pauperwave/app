@@ -82,9 +82,9 @@ describe('isDeployNoticeSecretValid', () => {
 })
 
 describe('buildDeployNoticeText', () => {
-  it('puts the branch, the short hash and the commit message in a block under the heading', () => {
+  it('puts the branch and short hash as inline code, then the commit message, after a blank line', () => {
     expect(buildDeployNoticeText(VALID)).toBe(
-      '🚀 Deploy in produzione completato\n<pre>main · fa1eade\nUpdate about page</pre>'
+      '🚀 Deploy in produzione completato\n\n<code>main · fa1eade</code>\nUpdate about page'
     )
   })
 
@@ -99,12 +99,17 @@ describe('buildDeployNoticeText', () => {
 
   it('leaves out the commit lines that are missing', () => {
     const text = buildDeployNoticeText({ ...VALID, ref: null, sha: null })
-    expect(text).toBe('🚀 Deploy in produzione completato\n<pre>Update about page</pre>')
+    expect(text).toBe('🚀 Deploy in produzione completato\n\nUpdate about page')
   })
 
   it('shows just the branch when there is no commit hash', () => {
     const text = buildDeployNoticeText({ ...VALID, sha: null, message: null })
-    expect(text).toBe('🚀 Deploy in produzione completato\n<pre>main</pre>')
+    expect(text).toBe('🚀 Deploy in produzione completato\n\n<code>main</code>')
+  })
+
+  it('escapes the branch name too', () => {
+    const text = buildDeployNoticeText({ ...VALID, ref: 'feat/<x>', sha: null, message: null })
+    expect(text).toContain('<code>feat/&lt;x&gt;</code>')
   })
 
   it('is only the heading when nothing is known about the commit', () => {
