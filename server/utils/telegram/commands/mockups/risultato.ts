@@ -339,7 +339,7 @@ function finalRichMessage(state: ResultState): InputRichMessage {
 }
 
 // Every step is a Rich Message, so risultatoMenu's reply_markup is never attached; it stays
-// registered only as the submenu target of commanderDemo.ts's demoMenu.
+// registered only as the submenu target of demo.ts's commanderDemoMenu.
 export const risultatoMenu = new Menu<Context>('ris', {
   autoAnswer: false,
   onMenuOutdated: false
@@ -387,7 +387,7 @@ async function sendConfirmedResult(ctx: Context, state: ResultState) {
   }
 }
 
-// Entry point for commanderDemo.ts's "Inserisci risultati (demo)" button, the only caller now that
+// Entry point for demo.ts's "Inserisci risultati (demo)" button, the only caller now that
 // the real Commander flow (tournaments/commanderReport.ts) serves /tavolo's result button
 export async function openRisultato(ctx: Context) {
   await showRichStep(ctx, positionRichMessage(INITIAL_STATE))

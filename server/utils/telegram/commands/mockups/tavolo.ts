@@ -1,7 +1,7 @@
 // server\utils\telegram\commands\mockups\tavolo.ts
 // /tavolo dispatches to the live table the linked associate sits at: a 1v1 (matchReport.ts) or a
 // Commander pod (commanderReport.ts) in a round being played. With neither there is no fallback:
-// mock data stays inside the hidden demo command (mockups/commanderDemo.ts).
+// mock data stays inside the hidden demo command (mockups/demo.ts).
 import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 

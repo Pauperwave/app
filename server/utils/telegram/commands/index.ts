@@ -23,7 +23,7 @@ import { registerTesseraCommand } from './account/tessera'
 import { registerCollegamentoCommand } from './account/collegamento'
 import { registerTavoloCommand } from './mockups/tavolo'
 import { registerRisultatoMenu } from './mockups/risultato'
-import { registerCommanderDemoCommand } from './mockups/commanderDemo'
+import { registerDemoCommand } from './mockups/demo'
 import { registerMatchReportHandlers } from './tournaments/matchReport'
 import { registerCommanderReportHandlers } from './tournaments/commanderReport'
 import { registerDropCommand } from './tournaments/commanderDrop'
@@ -66,7 +66,7 @@ export function registerCommands(bot: Bot) {
   registerDropCommand(commands)
   registerTavoloCommand(bot, commands)
   registerRisultatoMenu(bot)
-  registerCommanderDemoCommand(bot)
+  registerDemoCommand(bot)
   registerMatchReportHandlers(bot)
 
   // After every other inline handler: it answers the queries none of them claimed
