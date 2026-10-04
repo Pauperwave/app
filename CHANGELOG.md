@@ -1,6 +1,109 @@
 # Changelog
 
 
+## v0.13.0
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.12.0...v0.13.0)
+
+### Enhancements
+
+- **bot:** ✨ /status shows how long ago the bot was updated ([71562293](https://github.com/Pauperwave/app/commit/71562293))
+- **bot:** ✨ add the help topics shared by the bot and the info page ([dbc829d5](https://github.com/Pauperwave/app/commit/dbc829d5))
+- **bot:** ✨ /help takes a topic and shows only that section ([53efc201](https://github.com/Pauperwave/app/commit/53efc201))
+- **bot:** ✨ bot page cards follow the help topics and open them in Telegram ([ed3b24d4](https://github.com/Pauperwave/app/commit/ed3b24d4))
+- **commanders:** ✨ refresh the commander catalog from the statistics pages ([156e9b64](https://github.com/Pauperwave/app/commit/156e9b64))
+- **players:** ✨ sortable deck table with a Partner / Background column ([00a2e5b6](https://github.com/Pauperwave/app/commit/00a2e5b6))
+- **stats:** ✨ stats views skip test tournaments, and a player_stats view for the player page ([2939539f](https://github.com/Pauperwave/app/commit/2939539f))
+- **decks:** ✨ count the real tournaments a deck was played in, and block deleting a played deck ([0c3718d6](https://github.com/Pauperwave/app/commit/0c3718d6))
+- **decks:** ✨ a deck played in a tournament has its delete button disabled, with a tooltip ([d0b6d042](https://github.com/Pauperwave/app/commit/d0b6d042))
+- **players:** ✨ player page gets a Statistiche block, with how often they were killer, victim, master brewer and player ([6b341e94](https://github.com/Pauperwave/app/commit/6b341e94))
+- **decks:** ✨ a player manages their own decks through the BFF, anyone else's needs an admin ([81768498](https://github.com/Pauperwave/app/commit/81768498))
+- **decks:** ✨ deck create, update, delete and bracket endpoints accept the deck's owner ([e2d8dcb4](https://github.com/Pauperwave/app/commit/e2d8dcb4))
+- **players:** ✨ player and deck pages are open to every role: own decks editable, the rest read-only ([8cc50d12](https://github.com/Pauperwave/app/commit/8cc50d12))
+- **bot:** ✨ help view callbacks shared by the bot ([5d587efb](https://github.com/Pauperwave/app/commit/5d587efb))
+- **bot:** ✨ /help gets bottom buttons that switch the message to a single section ([32677e35](https://github.com/Pauperwave/app/commit/32677e35))
+- **stats:** ✨ player_vote_decks view: which deck earned each brew and play vote ([84e51504](https://github.com/Pauperwave/app/commit/84e51504))
+- **players:** ✨ vote medals: the decks that earned a player's brew and play votes ([a9ce257b](https://github.com/Pauperwave/app/commit/a9ce257b))
+- **players:** ✨ icons on the player's statistic cards ([a17f108f](https://github.com/Pauperwave/app/commit/a17f108f))
+- **players:** ✨ special mentions block: killer, victim, master brewer and player, with the decks as medals ([80f169cd](https://github.com/Pauperwave/app/commit/80f169cd))
+- **players:** ✨ player page shows the mentions, with the login history beside the info card ([f37c8592](https://github.com/Pauperwave/app/commit/f37c8592))
+- **tables:** ✨ iconHeader, a plain column header with the same leading icon as the sortable ones ([0dabe929](https://github.com/Pauperwave/app/commit/0dabe929))
+- **players:** ✨ match history: sortable columns with icons and a hoverable commander ([2432b8ca](https://github.com/Pauperwave/app/commit/2432b8ca))
+- **players:** ✨ deck table: header icons, one Partner / Background / Companion column, decklist as a button ([4559a91a](https://github.com/Pauperwave/app/commit/4559a91a))
+- **tournaments:** ✨ one cached read of the places taken in every capped tournament ([a4d6f5e6](https://github.com/Pauperwave/app/commit/a4d6f5e6))
+- **calendar:** ✨ a full tournament says "Posti esauriti" on the detail and on the register button ([03bcb7e8](https://github.com/Pauperwave/app/commit/03bcb7e8))
+
+### Fixes
+
+- **bot:** 🐛 bot page link state no longer 401s on a direct load ([f64856c7](https://github.com/Pauperwave/app/commit/f64856c7))
+- **i18n:** 🐛 move the tournament fee, cap and decklist labels into the tournament namespace ([8933da37](https://github.com/Pauperwave/app/commit/8933da37))
+- **commanders:** 🐛 catalog sync no longer skips cards released before a future-dated set ([bfc8276d](https://github.com/Pauperwave/app/commit/bfc8276d))
+- **layout:** 🐛 going back restores the page's scroll inside the dashboard panel ([15fe6629](https://github.com/Pauperwave/app/commit/15fe6629))
+- **commanders:** 🐛 sync pre-release commanders by date instead of by set type ([75f18a54](https://github.com/Pauperwave/app/commit/75f18a54))
+- **commanders:** 🐛 catalog refresh button resolved to a component that doesn't exist ([7c904ad0](https://github.com/Pauperwave/app/commit/7c904ad0))
+- **statistics:** 🐛 table skeletons fill the page like the tables they stand in for ([7af1a917](https://github.com/Pauperwave/app/commit/7af1a917))
+- **players:** 🐛 deck edit modal closes after saving the decklist link or the loan ([b217298e](https://github.com/Pauperwave/app/commit/b217298e))
+- **stats:** 🐛 test tournaments no longer feed commander usage, deck stats or match history ([da9a69cb](https://github.com/Pauperwave/app/commit/da9a69cb))
+- **decks:** 🐛 type the by-deck usage lookup with the Database client ([5c62b9e2](https://github.com/Pauperwave/app/commit/5c62b9e2))
+- **bot:** 🐛 the commander history in the picker ignores test tournaments ([53415bdb](https://github.com/Pauperwave/app/commit/53415bdb))
+- **security:** 🔒️ players_public view for names, and players_full locked to the caller's own RLS ([3d2d0edb](https://github.com/Pauperwave/app/commit/3d2d0edb))
+- **security:** 🔒️ the player list every role reads no longer carries email or associate number ([87118f3a](https://github.com/Pauperwave/app/commit/87118f3a))
+- **security:** 🔒️ only staff-facing pages read players_full ([b7060544](https://github.com/Pauperwave/app/commit/b7060544))
+- **transactions:** 🐛 the UI offers membership-fee payments only to admins, as the endpoints require ([03d25f87](https://github.com/Pauperwave/app/commit/03d25f87))
+- **transactions:** 🐛 deleting a membership-fee payment needs an admin, like creating or editing one ([c98fa006](https://github.com/Pauperwave/app/commit/c98fa006))
+- **tournaments:** 🐛 cancelling a round or resetting a tournament needs an admin, as 'cancel-round' says ([13bdfbc7](https://github.com/Pauperwave/app/commit/13bdfbc7))
+- **tournaments:** 🐛 the turn-back and reset controls follow 'cancel-round' ([e1ac1551](https://github.com/Pauperwave/app/commit/e1ac1551))
+- **associates:** 🐛 editing the registry and registering a membership payment follow manage-members and manage-membership-fees ([f4e83a6a](https://github.com/Pauperwave/app/commit/f4e83a6a))
+- **components:** 🐛 the ruleset form modal and the Scryfall search button were referenced by a name that doesn't exist ([b2937661](https://github.com/Pauperwave/app/commit/b2937661))
+- **layout:** 🐛 a breadcrumb step the user can't open stays as text instead of leading to the 403 page ([76151f04](https://github.com/Pauperwave/app/commit/76151f04))
+- **players:** 🐛 the player page links the associate record only to who can open it ([ce4da150](https://github.com/Pauperwave/app/commit/ce4da150))
+
+### Refactors
+
+- **players:** ♻️ personal data on the player page follows view-players, not a role check ([7a27a1b2](https://github.com/Pauperwave/app/commit/7a27a1b2))
+- **bot:** ♻️ share the not-modified handling after a failed message edit ([4b0e516b](https://github.com/Pauperwave/app/commit/4b0e516b))
+- **tournaments:** ♻️ the player-cap rule lives in shared code, used by the endpoints and the interface ([f0cd3901](https://github.com/Pauperwave/app/commit/f0cd3901))
+- **tournaments:** ♻️ the table's sort and duration helpers move to utils, with tests ([ca6b14d0](https://github.com/Pauperwave/app/commit/ca6b14d0))
+- **calendar:** ♻️ split the tournament detail into facts, terms and participants ([3afec6cf](https://github.com/Pauperwave/app/commit/3afec6cf))
+- **standings:** ♻️ buildLiveCommanderStandings: the live Commander scoring as a pure, tested function ([10096db2](https://github.com/Pauperwave/app/commit/10096db2))
+- **standings:** ♻️ useLiveCommanderStandings only feeds the queries' data to the builder ([c036ec06](https://github.com/Pauperwave/app/commit/c036ec06))
+- **standings:** ♻️ split the builder's per-seat accumulation and vote sources into their own functions ([8e36ace5](https://github.com/Pauperwave/app/commit/8e36ace5))
+- **bot:** ♻️ the result wizard's callback parsing and step helpers, with tests ([de3d4116](https://github.com/Pauperwave/app/commit/de3d4116))
+- **bot:** ♻️ one handler per callback in the Commander result wizard ([a498b824](https://github.com/Pauperwave/app/commit/a498b824))
+- **commanders:** ♻️ the catalog sync rules as pure, tested functions: search plan, new cards, partner types, rows ([62785b46](https://github.com/Pauperwave/app/commit/62785b46))
+- **commanders:** ♻️ the catalog sync's database access in its own module, with tests ([0a40e081](https://github.com/Pauperwave/app/commit/0a40e081))
+- **commanders:** ♻️ sync-commanders is only the handler now ([ade3e7d7](https://github.com/Pauperwave/app/commit/ade3e7d7))
+- **tables:** ♻️ the status cell is the domain's StatusBadge, and the group header cell is shared ([9851dd0c](https://github.com/Pauperwave/app/commit/9851dd0c))
+- **types:** ♻️ no duplicated auto-imports: the standing type from its util, the catalog types renamed ([3c274aad](https://github.com/Pauperwave/app/commit/3c274aad))
+- **tesseramento:** ♻️ the wizard's flow in a tested composable, the page keeps the template ([3d548210](https://github.com/Pauperwave/app/commit/3d548210))
+- **finance:** ♻️ the summary tables as pure functions, with their own tests ([b8880621](https://github.com/Pauperwave/app/commit/b8880621))
+- **rulesets:** ♻️ one card per tab, the page only switches between them ([686b5278](https://github.com/Pauperwave/app/commit/686b5278))
+- **settings:** ♻️ the permissions table's rows, text parsing and columns out of the page, with tests ([a5724ce4](https://github.com/Pauperwave/app/commit/a5724ce4))
+- **associates:** ♻️ the associate page as four cards, its fields built by a tested util ([533454e7](https://github.com/Pauperwave/app/commit/533454e7))
+- **associates:** ♻️ the roster's status tabs and filters in a tested composable ([07697e41](https://github.com/Pauperwave/app/commit/07697e41))
+- **tesseramento:** ♻️ the step list as a util, checked against the form's fields ([ad9c289d](https://github.com/Pauperwave/app/commit/ad9c289d))
+
+### Documentation
+
+- 📝 list check:components among the project commands ([334add3e](https://github.com/Pauperwave/app/commit/334add3e))
+
+### Chore
+
+- **scripts:** 🔧 check:components flags template tags that resolve to no component ([b9b80a31](https://github.com/Pauperwave/app/commit/b9b80a31))
+- **scripts:** 🔒️ triage the fallow security candidates: allowlist a shell argument, drop a dynamic regex, document the safe sinks ([e243bf50](https://github.com/Pauperwave/app/commit/e243bf50))
+
+### Tests
+
+- **tesseramento:** ✅ the public endpoints: session email, duplicates, renewal, application ([7e05dfe3](https://github.com/Pauperwave/app/commit/7e05dfe3))
+
+### CI
+
+- 👷 fail the build on a component tag that resolves to nothing ([439d41bb](https://github.com/Pauperwave/app/commit/439d41bb))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.12.0
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.11.0...v0.12.0)
