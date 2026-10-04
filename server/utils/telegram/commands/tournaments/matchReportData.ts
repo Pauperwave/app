@@ -14,6 +14,8 @@ export interface LiveTable {
   player1Uuid: string
   player2Uuid: string
   myPlayerUuid: string
+  /** The viewer's own name: what the opponent reads when the viewer acts on the result. */
+  myName: string
   isPlayer1: boolean
   opponent: { playerUuid: string, associateUuid: string, name: string }
   result: (ReportedResult & { player1GamesWon: number, player2GamesWon: number }) | null
@@ -48,12 +50,16 @@ export async function fetchLiveTable(
 
   const { data: players, error: playersError } = await supabase
     .from('players')
-    .select('uuid')
+    .select('uuid, associate:pauperwave_associates(first_name, last_name)')
     .eq('associate_uuid', associateUuid)
   if (playersError) throw playersError
 
   const playerList = (players ?? []).map(player => player.uuid).join(',')
   if (!playerList) return null
+
+  // The players of one associate share their name, which the opponent is told when this player acts
+  const me = (players?.[0]?.associate ?? null) as { first_name: string, last_name: string } | null
+  const myName = me ? `${me.first_name} ${me.last_name}` : 'il tuo avversario'
 
   let query = supabase
     .from('tournament_pairings')
@@ -114,6 +120,7 @@ export async function fetchLiveTable(
     player1Uuid: pairing.player1_uuid,
     player2Uuid: pairing.player2_uuid,
     myPlayerUuid,
+    myName,
     isPlayer1,
     opponent: {
       playerUuid: opponent.uuid,

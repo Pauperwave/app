@@ -15,6 +15,7 @@ import { answerLoadError, requireChatId } from '../callbackErrors'
 import { requireLinkedAssociate, resolveAssociateUuidByChatId, resolveChatIdByAssociateUuid } from '../account/linking'
 import { showRichStep, twoColumnFactsTable } from '../mockups/richStepHelpers'
 import { fetchLiveTable, type LiveTable } from './matchReportData'
+import { confirmedNoticeText, disputedNoticeText, reportedNoticeText } from './matchNotices'
 import {
   OPEN_RESULT_PREFIX, matchTableHeader, openResultButton, timerButton
 } from './matchTableMessage'
@@ -283,7 +284,7 @@ async function handleSend(ctx: Context, pairingUuid: string, outcomeIndex: numbe
       { type: 'heading', size: 3, text: `${ICONS.receipt} Risultato inserito` },
       {
         type: 'paragraph',
-        text: `Per il match del Round ${table.roundNumber} ${table.opponent.name} ha inserito ${opponentGames} (i tuoi game per primi). È corretto?`
+        text: reportedNoticeText(table.myName, table.roundNumber, opponentGames)
       },
       answerButtons(table.pairingUuid)
     ]
@@ -303,7 +304,11 @@ async function handleConfirm(ctx: Context, pairingUuid: string) {
   await notifyOpponent(ctx, table, {
     blocks: [{
       type: 'paragraph',
-      text: `${ICONS.success} ${table.opponent.name} ha confermato il risultato del Round ${table.roundNumber}: ${scoreLabelFor(table.result, !table.isPlayer1)}`
+      text: confirmedNoticeText(
+        table.myName,
+        table.roundNumber,
+        scoreLabelFor(table.result, !table.isPlayer1)
+      )
     }]
   })
 }
@@ -319,7 +324,7 @@ async function handleDispute(ctx: Context, pairingUuid: string) {
   await notifyOpponent(ctx, table, {
     blocks: [{
       type: 'paragraph',
-      text: `${ICONS.warning} ${table.opponent.name} ha contestato il risultato del Round ${table.roundNumber}: l'organizzatore lo verificherà.`
+      text: disputedNoticeText(table.myName, table.roundNumber)
     }]
   })
 }
