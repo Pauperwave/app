@@ -11,6 +11,7 @@ import { registerDeepLink } from '../../deepLinks'
 import { showRichStep } from '../mockups/richStepHelpers'
 import { fetchLivePod, type LivePod } from './commanderPodData'
 import { positionRichMessage } from './commanderPodMessages'
+import { COMMANDER_QUERY_PREFIX } from '../../inlinePrefixes'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
 // ─── Menu (entry point from /tavolo) ────────────────────────────────────────
@@ -20,7 +21,7 @@ export const commanderPodMenu = new Menu<Context>('cmdpod', {
   autoAnswer: false,
   onMenuOutdated: false
 }).dynamic((_ctx, range) => {
-  range.switchInlineCurrent(`${ICONS.commanderCard} Imposta comandante`, '')
+  range.switchInlineCurrent(`${ICONS.commanderCard} Imposta comandante`, `${COMMANDER_QUERY_PREFIX} `)
   range.row()
   range.text(`${ICONS.write} Inserisci risultato`, async (ctx) => {
     const pod = await requirePod(ctx)

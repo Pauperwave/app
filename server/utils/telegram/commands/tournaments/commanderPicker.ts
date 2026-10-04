@@ -9,6 +9,7 @@ import type { InlineQueryResultArticle, InputRichMessage } from 'grammy/types'
 import { resolveAssociateUuidByChatId } from '../account/linking'
 import { fetchCommanderHistory, fetchLivePod, type LivePod } from './commanderPodData'
 import { replyWithLiveCommanderPod } from './commanderPod'
+import { COMMANDER_QUERY_PREFIX, SECOND_COMMANDER_QUERY_PREFIX } from '../../inlinePrefixes'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
 // The live pod of whoever wrote in this chat; null (after telling them) when they have none open
@@ -62,8 +63,6 @@ function cardImageUrl(card: ScryfallCard): string | null {
 
 const COMMANDER_MESSAGE_PREFIX = `${ICONS.commanderCard} Comandante: `
 const SECOND_COMMANDER_MESSAGE_PREFIX = `${ICONS.commanderCard} Secondo comandante: `
-// An inline query starting with "+" searches the cards compatible with the commander already set.
-const SECOND_COMMANDER_QUERY_PREFIX = '+'
 const MAX_SECOND_COMMANDER_RESULTS = 20
 const MAX_HISTORY_RESULTS = 15
 
@@ -154,14 +153,20 @@ export function registerCommanderPickerHandlers(bot: Bot) {
   bot.on('inline_query', async (ctx, next) => {
     if (ctx.inlineQuery.chat_type !== 'sender') return next()
 
-    const query = ctx.inlineQuery.query.trim()
+    const rawQuery = ctx.inlineQuery.query.trim()
 
-    if (query.startsWith(SECOND_COMMANDER_QUERY_PREFIX)) {
-      await answerSecondCommanderQuery(ctx, query.slice(SECOND_COMMANDER_QUERY_PREFIX.length))
+    // "+ text" searches the cards compatible with the commander already set
+    if (rawQuery.startsWith(SECOND_COMMANDER_QUERY_PREFIX)) {
+      await answerSecondCommanderQuery(ctx, rawQuery.slice(SECOND_COMMANDER_QUERY_PREFIX.length))
       return
     }
 
-    // The commanders already played come first; an empty query shows just those
+    // Anything else is not a commander search: the hints answer it
+    if (!rawQuery.startsWith(COMMANDER_QUERY_PREFIX)) return next()
+
+    const query = rawQuery.slice(COMMANDER_QUERY_PREFIX.length).trim()
+
+    // The commanders already played come first; an empty search shows just those
     const historyResults = await commanderHistoryResults(ctx, query)
     if (query.length < 2) {
       await ctx.answerInlineQuery(historyResults, { cache_time: 0 })

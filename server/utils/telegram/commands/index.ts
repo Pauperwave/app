@@ -12,6 +12,7 @@ import { registerProssimoCommand } from './tournaments/prossimo'
 import { registerIscrizioniCommand } from './tournaments/iscrizioni'
 import { registerSupportoCommand } from './supporto'
 import { registerTestCommand } from './test'
+import { registerInlineHints } from './inlineHints'
 import { registerDiceCommands } from './dice'
 import { registerPrezzoCommand } from './cards/prezzo'
 import { registerCercateHandlers } from './cards/cercate'
@@ -67,6 +68,9 @@ export function registerCommands(bot: Bot) {
   registerRisultatoMenu(bot)
   registerCommanderDemoCommand(bot)
   registerMatchReportHandlers(bot)
+
+  // After every other inline handler: it answers the queries none of them claimed
+  registerInlineHints(bot)
 
   bot.use(commands)
 
