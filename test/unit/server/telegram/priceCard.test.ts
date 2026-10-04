@@ -175,11 +175,9 @@ describe('buildPriceMessage text', () => {
     expect(text).not.toContain('Variante')
   })
 
-  it('opens with the card art when the printing has one', () => {
-    const withArt = buildPriceMessage(makePrinting(), baseState, null)
-    expect(blocksOf(withArt)[0]?.type).toBe('photo')
-    const withoutArt = buildPriceMessage(makePrinting({ imageUrl: null }), baseState, null)
-    expect(blocksOf(withoutArt).some(block => block.type === 'photo')).toBe(false)
+  it('carries no photo block, which an inline result rejects when it is a URL', () => {
+    const message = buildPriceMessage(makePrinting(), baseState, null)
+    expect(blocksOf(message).some(block => block.type === 'photo')).toBe(false)
   })
 
   it('notes that CardMarket cannot be filtered by language', () => {

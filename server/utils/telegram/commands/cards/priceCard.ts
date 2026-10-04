@@ -199,12 +199,8 @@ export function buildPriceMessage(
     })
   }
 
-  const blocks: Blocks = []
-  if (printing.imageUrl) {
-    blocks.push({ type: 'photo', photo: { type: 'photo', media: printing.imageUrl } })
-  }
-
-  blocks.push(
+  // No card art: an inline result only accepts already uploaded files, a Scryfall URL is rejected
+  const blocks: Blocks = [
     {
       type: 'paragraph',
       text: [
@@ -214,7 +210,7 @@ export function buildPriceMessage(
     },
     { type: 'buttons', buttons: filterButtons },
     { type: 'paragraph', text: [cardmarketLine, '\n', cardtraderLine] }
-  )
+  ]
 
   return { blocks }
 }
