@@ -1,5 +1,6 @@
 // server\utils\telegram\commands\cards\priceCard.ts
 import { InlineKeyboard } from 'grammy'
+import type { InputRichMessage } from 'grammy/types'
 import { isFoilOnlyPrinting } from '#shared/utils/wantedCards/wantedCardRow'
 import { escapeHtml } from '../../html'
 import { ICONS } from '~~/server/utils/telegram/icons'
@@ -192,6 +193,14 @@ export function buildInlineDescription(printing: PricePrinting): string {
   return `${printing.setName} · ${prices.length ? prices.join(' · ') : 'nessun prezzo CardMarket'}`
 }
 
+function cardmarketNote(state: PriceState): string {
+  return state.language === 'all' ? '' : ' (non filtrabile per lingua)'
+}
+
+function cardtraderCondition(state: PriceState): string {
+  return `(NM, ${LANGUAGE_NAMES[state.language]})`
+}
+
 export function buildPriceText(
   printing: PricePrinting,
   state: PriceState,
@@ -202,9 +211,9 @@ export function buildPriceText(
 
   const cardmarketLine = `${STORE_NAME_CARDMARKET}: `
     + formatPrice(cardmarketPriceOf(printing, foil), 'non disponibile')
-    + (state.language === 'all' ? '' : ' (non filtrabile per lingua)')
+    + cardmarketNote(state)
 
-  const cardtraderLabel = `${STORE_NAME_CARDTRADER} (NM, ${LANGUAGE_NAMES[state.language]})`
+  const cardtraderLabel = `${STORE_NAME_CARDTRADER} ${cardtraderCondition(state)}`
   let cardtraderLine = `${cardtraderLabel}: non disponibile`
   if (cardtrader === 'pending') {
     cardtraderLine = `${cardtraderLabel}: controllo in corso…`
@@ -268,4 +277,48 @@ export function buildPriceKeyboard(
   keyboard.url('Scryfall', printing.scryfallUrl)
 
   return keyboard
+}
+
+// Rich message of the same price view, for a message the bot sends itself (an inline one can't carry
+// the photo): card art on top, store links as buttons inside the message. Callers add the keyboard.
+export function buildPriceRichMessage(
+  printing: PricePrinting,
+  state: PriceState,
+  cardtrader: PriceCardtraderState
+): InputRichMessage {
+  const foil = effectiveFoil(printing, state)
+  const finish = foil ? 'foil' : 'normale'
+  const storeName = (name: string) => ({ type: 'bold' as const, text: { type: 'underline' as const, text: name } })
+  const price = (value: number | null, emptyText: string) => (
+    value === null ? emptyText : { type: 'bold' as const, text: euroFormatter.format(value) }
+  )
+
+  let cardtraderValue: ReturnType<typeof price> = 'non disponibile'
+  if (cardtrader === 'pending') cardtraderValue = 'controllo in corso…'
+  else if (cardtrader) cardtraderValue = price(cardtrader.price, 'nessuna offerta')
+
+  const buttons = [
+    ...(printing.cardmarketUrl ? [{ text: 'CardMarket', url: cardmarketUrlFor(printing, state.language) ?? printing.cardmarketUrl }] : []),
+    ...(cardtrader && cardtrader !== 'pending' && cardtrader.url ? [{ text: 'CardTrader', url: cardtrader.url }] : []),
+    { text: 'Scryfall', url: printing.scryfallUrl }
+  ]
+
+  return {
+    blocks: [
+      ...(printing.imageUrl
+        ? [{ type: 'photo' as const, photo: { type: 'photo' as const, media: printing.imageUrl } }]
+        : []),
+      { type: 'paragraph', text: [`${ICONS.card} `, { type: 'bold', text: printing.name }] },
+      { type: 'paragraph', text: `${printing.setName} · ${printing.set.toUpperCase()} #${printing.collectorNumber} · ${finish}` },
+      {
+        type: 'paragraph',
+        text: [storeName('CardMarket'), ': ', price(cardmarketPriceOf(printing, foil), 'non disponibile'), cardmarketNote(state)]
+      },
+      {
+        type: 'paragraph',
+        text: [storeName('CardTrader'), ` ${cardtraderCondition(state)}: `, cardtraderValue]
+      },
+      { type: 'buttons', buttons }
+    ]
+  }
 }

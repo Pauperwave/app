@@ -143,27 +143,10 @@ export function priceStateOf(row: WantedListRow, scryfallId: string): PriceState
   return { scryfallId, language, foil: row.treatment.includes('foil') }
 }
 
-export interface RowStoreLinks {
-  cardmarketUrl: string | null
-  cardtraderUrl: string | null
-  scryfallUrl: string
-}
-
-export function buildRowActionsKeyboard(
-  row: WantedListRow,
-  page: number,
-  links: RowStoreLinks | null = null
-): InlineKeyboard {
-  const keyboard = new InlineKeyboard()
+export function buildRowActionsKeyboard(row: WantedListRow, page: number): InlineKeyboard {
+  return new InlineKeyboard()
     .text(`${ICONS.found} Segna come trovata`, encodeWantedListCallback({ action: 'found', id: row.id, page }))
     .text(`${ICONS.trash} Togli`, encodeWantedListCallback({ action: 'remove', id: row.id, page }))
     .row()
-
-  if (links) {
-    if (links.cardmarketUrl) keyboard.url('CardMarket', links.cardmarketUrl)
-    if (links.cardtraderUrl) keyboard.url('CardTrader', links.cardtraderUrl)
-    keyboard.url('Scryfall', links.scryfallUrl).row()
-  }
-
-  return keyboard.text(`${ICONS.back} Indietro`, encodeWantedListCallback({ action: 'list', id: null, page }))
+    .text(`${ICONS.back} Indietro`, encodeWantedListCallback({ action: 'list', id: null, page }))
 }

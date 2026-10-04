@@ -111,17 +111,6 @@ describe('card actions', () => {
     expect(data).toEqual(['cer:f:7:2', 'cer:x:7:2', 'cer:l:2'])
   })
 
-  it('adds the store links between the actions and the back button', () => {
-    const keyboard = buildRowActionsKeyboard(row(7), 2, {
-      cardmarketUrl: 'https://cm.test',
-      cardtraderUrl: null,
-      scryfallUrl: 'https://scryfall.test'
-    })
-    const lines = keyboard.inline_keyboard.map(line => line.map(button => button.text))
-    expect(lines).toHaveLength(3)
-    expect(lines[1]).toEqual(['CardMarket', 'Scryfall'])
-  })
-
   it('prices the row as its language and finish', () => {
     const id = '11111111-1111-1111-1111-111111111111'
     expect(priceStateOf(row(7, { language: 'it', treatment: ['foil'] }), id))

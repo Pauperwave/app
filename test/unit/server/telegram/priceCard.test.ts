@@ -4,6 +4,7 @@ import {
   buildInlineDescription,
   buildInlineTitle,
   buildPriceKeyboard,
+  buildPriceRichMessage,
   buildPriceText,
   canToggleFoil,
   cardmarketUrlFor,
@@ -271,5 +272,32 @@ describe('cardmarketUrlFor', () => {
 
   it('has no link when the printing has none', () => {
     expect(cardmarketUrlFor(makePrinting({ cardmarketUrl: null }), 'it')).toBeNull()
+  })
+})
+
+describe('buildPriceRichMessage', () => {
+  const state: PriceState = { scryfallId: ID, language: 'it', foil: false }
+
+  it('puts the card art first and the store links in a buttons block', () => {
+    const printing = makePrinting({
+      imageUrl: 'https://img.test/a.jpg',
+      cardmarketUrl: 'https://cm.test/p?x=1'
+    })
+    const blocks = buildPriceRichMessage(printing, state, { price: 2, url: 'https://ct.test' }).blocks ?? []
+
+    expect(blocks[0]).toMatchObject({ type: 'photo' })
+    expect(blocks.at(-1)).toEqual({
+      type: 'buttons',
+      buttons: [
+        { text: 'CardMarket', url: 'https://cm.test/p?x=1&language=5' },
+        { text: 'CardTrader', url: 'https://ct.test' },
+        { text: 'Scryfall', url: printing.scryfallUrl }
+      ]
+    })
+  })
+
+  it('has no photo block without art', () => {
+    const blocks = buildPriceRichMessage(makePrinting({ imageUrl: null }), state, null).blocks ?? []
+    expect(blocks.some(block => block.type === 'photo')).toBe(false)
   })
 })

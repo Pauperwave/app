@@ -1,12 +1,13 @@
 // server\utils\telegram\commands\cards\elenco.ts
-import type { Bot, Context } from 'grammy'
+import type { Bot, Context, InlineKeyboard } from 'grammy'
 import { GrammyError } from 'grammy'
+import type { InputRichMessage } from 'grammy/types'
 import type { CommandGroup } from '@grammyjs/commands'
 
 import { answerLoadError } from '../callbackErrors'
 import { NOT_LINKED_MESSAGE, resolveAssociateUuidByChatId } from '../account/linking'
 import { registerDeepLink } from '../../deepLinks'
-import { artPreview, buildPriceText, cardmarketUrlFor } from './priceCard'
+import { artPreview, buildPriceRichMessage } from './priceCard'
 import { fetchCardtrader, fetchPrinting } from './prezzo'
 import {
   WANTED_LIST_CALLBACK_PREFIX,
@@ -28,6 +29,11 @@ import { ICONS } from '~~/server/utils/telegram/icons'
 
 const COLUMNS = 'id, scryfall_id, card_name, set_code, language, treatment, copies, cardmarket_price, image_url'
 const PRIVATE_ONLY_TEXT = 'Apri /cercate in privato con me: l\'elenco è personale.'
+
+// An HTML message (the list, or the plain question) or a rich one (a card's detail)
+type View
+  = | { text: string, keyboard?: InlineKeyboard, imageUrl?: string | null }
+    | { rich: InputRichMessage, keyboard: InlineKeyboard }
 
 type Supabase = ReturnType<typeof telegramServiceSupabaseClient>
 
@@ -97,14 +103,12 @@ async function fetchOwnRow(supabase: Supabase, associateUuid: string, id: number
   return data as WantedListRow | null
 }
 
-// The card's detail: the same prices as the "€ name" message for the row's printing, language and
-// finish. Without a printing to look up (or if Scryfall fails) it falls back to the plain question.
-async function buildRowDetail(row: WantedListRow, page: number) {
-  const fallback = {
-    text: buildRowActionsText(row),
-    keyboard: buildRowActionsKeyboard(row, page),
-    imageUrl: row.image_url
-  }
+// The card's detail: a rich message with the same prices as the "€ name" one, for the row's
+// printing, language and finish. Without a printing to look up (or if Scryfall fails) it falls back
+// to the plain question.
+async function buildRowDetail(row: WantedListRow, page: number): Promise<View> {
+  const keyboard = buildRowActionsKeyboard(row, page)
+  const fallback = { text: buildRowActionsText(row), keyboard, imageUrl: row.image_url }
   if (!row.scryfall_id) return fallback
 
   try {
@@ -114,15 +118,8 @@ async function buildRowDetail(row: WantedListRow, page: number) {
     const state = priceStateOf(row, row.scryfall_id)
     const cardtrader = await fetchCardtrader(printing, state)
 
-    return {
-      text: buildPriceText(printing, state, cardtrader),
-      keyboard: buildRowActionsKeyboard(row, page, {
-        cardmarketUrl: cardmarketUrlFor(printing, state.language),
-        cardtraderUrl: cardtrader?.url ?? null,
-        scryfallUrl: printing.scryfallUrl
-      }),
-      imageUrl: printing.imageUrl ?? row.image_url
-    }
+    const withArt = { ...printing, imageUrl: printing.imageUrl ?? row.image_url }
+    return { rich: buildPriceRichMessage(withArt, state, cardtrader), keyboard }
   } catch (err) {
     console.error('/cercate price lookup failed:', err)
     return fallback
@@ -149,11 +146,7 @@ async function handleListButton(ctx: Context, next: () => Promise<void>) {
 
     const supabase = telegramServiceSupabaseClient()
     let toast: string | undefined
-    let view: {
-      text: string
-      keyboard?: ReturnType<typeof buildWantedListKeyboard>
-      imageUrl?: string | null
-    } | null = null
+    let view: View | null = null
 
     if (callback.action !== 'list' && callback.id !== null) {
       // Only the owner's own rows are ever read or touched
@@ -183,11 +176,15 @@ async function handleListButton(ctx: Context, next: () => Promise<void>) {
     }
 
     view ??= await renderPage(supabase, associateUuid, callback.page)
-    await ctx.editMessageText(view.text, {
-      parse_mode: 'HTML',
-      link_preview_options: artPreview(view.imageUrl ?? null),
-      reply_markup: view.keyboard
-    })
+    if ('rich' in view) {
+      await ctx.editMessageText(view.rich, { reply_markup: view.keyboard })
+    } else {
+      await ctx.editMessageText(view.text, {
+        parse_mode: 'HTML',
+        link_preview_options: artPreview(view.imageUrl ?? null),
+        reply_markup: view.keyboard
+      })
+    }
     await ctx.answerCallbackQuery({ text: toast })
   } catch (err) {
     // Pressing a button whose view is already shown re-renders identical content: not a failure
