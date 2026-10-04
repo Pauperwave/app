@@ -16,6 +16,7 @@ import { NOT_LINKED_MESSAGE, resolveAssociateUuidByChatId } from '../account/lin
 import { registerDeepLink } from '../../deepLinks'
 import { buildImportSummary, type ImportOutcome } from './importSummary'
 import { scryfallLookupGetter } from './scryfall'
+import { refreshWantedCardPrices } from '../../../priceRefresh'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
 // Importing a pasted card list into the wanted cards. Stateless like the support flow: the command
@@ -44,6 +45,43 @@ interface ExistingWanted {
   scryfall_id: string | null
   language: string | null
   treatment: string[]
+}
+
+interface InsertedWanted {
+  id: number
+  scryfall_id: string | null
+  set_code: string | null
+  treatment: string[]
+  language: string | null
+  cardmarket_price: number | null
+}
+
+// A lookup can come back without the EUR price that a read of the same card a moment later has, and
+// the row would stay without one until someone refreshes it. Those rows get a second try, CardMarket
+// only: CardTrader for each row would not fit the webhook's time budget.
+async function fillMissingCardmarketPrices(
+  supabase: ReturnType<typeof telegramServiceSupabaseClient>,
+  inserted: InsertedWanted[]
+) {
+  for (const row of inserted) {
+    if (row.cardmarket_price !== null || !row.scryfall_id || !row.set_code) continue
+
+    const { cardmarketPrice } = await refreshWantedCardPrices(
+      supabase, undefined, row.scryfall_id, row.set_code, row.treatment.includes('foil'), row.language
+    )
+    if (cardmarketPrice !== null) {
+      const { error } = await supabase
+        .from('pauperwave_wanted_cards')
+        .update({
+          cardmarket_price: cardmarketPrice,
+          cardmarket_price_synced_at: new Date().toISOString()
+        })
+        .eq('id', row.id)
+      if (error) console.error('Card list import: saving a CardMarket price failed:', error)
+    }
+
+    await sleep(SCRYFALL_DELAY_MS)
+  }
 }
 
 async function runImport(ctx: Context, text: string) {
@@ -128,10 +166,15 @@ async function runImport(ctx: Context, text: string) {
   }
 
   if (rows.length) {
-    const { error } = await supabase.from('pauperwave_wanted_cards').insert(rows)
+    const { data: inserted, error } = await supabase
+      .from('pauperwave_wanted_cards')
+      .insert(rows)
+      .select('id, scryfall_id, set_code, treatment, language, cardmarket_price')
     if (error) {
       console.error('Card list import: insert failed:', error)
       for (const outcome of addedOutcomes) outcome.status = 'error'
+    } else {
+      await fillMissingCardmarketPrices(supabase, inserted ?? [])
     }
   }
 
