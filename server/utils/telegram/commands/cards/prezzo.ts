@@ -35,7 +35,7 @@ import { resolveCardTraderBlueprint } from '../../../cardTrader'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
 const NOT_FOUND_TEXT = `${ICONS.thinking} Non trovo questa carta. Scrivi il nome inglese, es. /prezzo Lightning Bolt.`
-const USAGE_TEXT = 'Scrivi il nome della carta per scegliere la stampa, es. /prezzo Lightning Bolt.'
+const PRICE_PROMPT = 'Scrivi il nome della carta per scegliere la stampa, es. Lightning Bolt: rispondi a questo messaggio.'
 
 // Telegram shows at most 50 inline results
 const MAX_INLINE_RESULTS = 50
@@ -106,19 +106,40 @@ async function fetchCardtrader(
 
 // /prezzo only opens the inline picker: the printing is chosen there, with its price in view
 // Reached from /help's button and ?start=prezzo, where ctx.match isn't a card name
-registerDeepLink('prezzo', ctx => ctx.reply(USAGE_TEXT))
+registerDeepLink('prezzo', promptForName)
+
+// A forced reply, so the next message is the card name: the bot has no memory between updates, the
+// prompt text itself is what recognizes the answer (see registerPrezzoCommand)
+function promptForName(ctx: Context) {
+  return ctx.reply(PRICE_PROMPT, {
+    reply_markup: { force_reply: true, input_field_placeholder: 'Lightning Bolt' }
+  })
+}
+
+function offerPrintingPicker(ctx: Context, query: string) {
+  return ctx.reply(`${ICONS.card} Scegli la stampa di «${query}» per vederne il prezzo.`, {
+    reply_markup: new InlineKeyboard()
+      .switchInlineCurrent(`${ICONS.searchPrint} Scegli la stampa`, `${PRICE_INLINE_PREFIX} ${query}`)
+  })
+}
 
 async function prezzoCommandHandler(ctx: Context) {
   const query = (ctx.match as string | undefined)?.trim()
   if (!query) {
-    await ctx.reply(USAGE_TEXT)
+    await promptForName(ctx)
     return
   }
 
-  await ctx.reply(`${ICONS.card} Scegli la stampa di «${query}» per vederne il prezzo.`, {
-    reply_markup: new InlineKeyboard()
-      .switchInlineCurrent(`${ICONS.searchPrint} Scegli la stampa`, `${PRICE_INLINE_PREFIX} ${query}`)
-  })
+  await offerPrintingPicker(ctx, query)
+}
+
+// Before bot.use(commands) and the linking catch-all: it only acts on a reply to its own prompt
+async function handlePriceNameReply(ctx: Context, next: () => Promise<void>) {
+  const text = ctx.message?.text?.trim()
+  const repliesToPrompt = ctx.message?.reply_to_message?.text === PRICE_PROMPT
+  if (!text || text.startsWith('/') || !repliesToPrompt) return next()
+
+  await offerPrintingPicker(ctx, text)
 }
 
 // Inline mode, "$ <name>": one result per printing. The posted message already carries the
@@ -200,6 +221,7 @@ export function registerPrezzoCommand(bot: Bot, commands: CommandGroup<Context>)
   // Before the commander picker's catch-all inline handler, which answers every other query
   bot.on('inline_query', handlePriceInlineQuery)
   bot.on('callback_query:data', handlePriceButton)
+  bot.on('message:text', handlePriceNameReply)
   commands.command(
     'prezzo',
     'Prezzo di una carta su CardMarket e CardTrader — es. /prezzo Lightning Bolt',
