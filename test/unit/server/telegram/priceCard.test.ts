@@ -12,7 +12,6 @@ import {
   decodeWantState,
   effectiveFoil,
   encodePriceState,
-  escapeHtml,
   sortByCardmarketPrice,
   type PricePrinting,
   type PriceState
@@ -155,7 +154,6 @@ describe('buildPriceText', () => {
   it('escapes HTML in card and set names', () => {
     const text = buildPriceText(makePrinting({ name: 'Fire <&> Ice' }), baseState, null)
     expect(text).toContain('Fire &lt;&amp;&gt; Ice')
-    expect(escapeHtml('a<b')).toBe('a&lt;b')
   })
 })
 

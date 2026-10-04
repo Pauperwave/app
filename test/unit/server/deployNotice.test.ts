@@ -9,7 +9,6 @@ import {
 
 const VALID = {
   environment: 'production',
-  url: 'https://app-abc123.vercel.app',
   ref: 'main',
   sha: 'fa1eade47b73733d6312d5abfad33ce9e4068081',
   message: 'Update about page'
@@ -20,15 +19,18 @@ describe('parseDeployNotice', () => {
     expect(parseDeployNotice(VALID)).toEqual(VALID)
   })
 
+  it('ignores fields it does not know, like the deployment url an older workflow sent', () => {
+    expect(parseDeployNotice({ ...VALID, url: 'https://app-abc123.vercel.app' })).toEqual(VALID)
+  })
+
   it('keeps only the first line of a commit message', () => {
     const notice = parseDeployNotice({ ...VALID, message: 'Fix a thing\n\nLong explanation' })
     expect(notice?.message).toBe('Fix a thing')
   })
 
   it('treats the commit details as optional', () => {
-    const notice = parseDeployNotice({ environment: 'production', url: VALID.url })
-    expect(notice).toEqual({
-      environment: 'production', url: VALID.url, ref: null, sha: null, message: null
+    expect(parseDeployNotice({ environment: 'production' })).toEqual({
+      environment: 'production', ref: null, sha: null, message: null
     })
   })
 
@@ -47,10 +49,8 @@ describe('parseDeployNotice', () => {
     ['nothing', undefined],
     ['a string', 'production'],
     ['an empty object', {}],
-    ['no environment', { url: VALID.url }],
-    ['no url', { environment: 'production' }],
-    ['a url that is not https', { environment: 'production', url: 'http://app.vercel.app' }],
-    ['an environment that is not text', { environment: 1, url: VALID.url }]
+    ['a blank environment', { environment: '  ' }],
+    ['an environment that is not text', { environment: 1 }]
   ])('rejects %s', (_label, body) => {
     expect(parseDeployNotice(body)).toBeNull()
   })
@@ -58,8 +58,7 @@ describe('parseDeployNotice', () => {
 
 describe('isProductionDeploy', () => {
   it('only accepts production, whatever its case', () => {
-    const notice = parseDeployNotice(VALID)
-    expect(notice && isProductionDeploy(notice)).toBe(true)
+    expect(isProductionDeploy(VALID)).toBe(true)
     expect(isProductionDeploy({ ...VALID, environment: 'Production' })).toBe(true)
     expect(isProductionDeploy({ ...VALID, environment: 'preview' })).toBe(false)
   })
@@ -83,24 +82,33 @@ describe('isDeployNoticeSecretValid', () => {
 })
 
 describe('buildDeployNoticeText', () => {
-  it('says what was deployed, from which commit, and where', () => {
-    const notice = parseDeployNotice(VALID)
-    expect(notice && buildDeployNoticeText(notice)).toBe(
-      '🚀 Deploy in produzione completato\nmain · fa1eade\nUpdate about page\nhttps://app-abc123.vercel.app'
+  it('puts the branch, the short hash and the commit message in a block under the heading', () => {
+    expect(buildDeployNoticeText(VALID)).toBe(
+      '🚀 Deploy in produzione completato\n<pre>main · fa1eade\nUpdate about page</pre>'
     )
   })
 
+  it('has no link to the deployment', () => {
+    expect(buildDeployNoticeText(VALID)).not.toContain('http')
+  })
+
+  it('escapes what Telegram would read as HTML in the commit message', () => {
+    const text = buildDeployNoticeText({ ...VALID, message: 'fix <b> & more' })
+    expect(text).toContain('fix &lt;b&gt; &amp; more')
+  })
+
   it('leaves out the commit lines that are missing', () => {
-    const text = buildDeployNoticeText({
-      environment: 'production', url: VALID.url, ref: null, sha: null, message: null
-    })
-    expect(text).toBe(`🚀 Deploy in produzione completato\n${VALID.url}`)
+    const text = buildDeployNoticeText({ ...VALID, ref: null, sha: null })
+    expect(text).toBe('🚀 Deploy in produzione completato\n<pre>Update about page</pre>')
   })
 
   it('shows just the branch when there is no commit hash', () => {
-    const text = buildDeployNoticeText({
-      environment: 'production', url: VALID.url, ref: 'main', sha: null, message: null
-    })
-    expect(text.split('\n')[1]).toBe('main')
+    const text = buildDeployNoticeText({ ...VALID, sha: null, message: null })
+    expect(text).toBe('🚀 Deploy in produzione completato\n<pre>main</pre>')
+  })
+
+  it('is only the heading when nothing is known about the commit', () => {
+    const text = buildDeployNoticeText({ environment: 'production', ref: null, sha: null, message: null })
+    expect(text).toBe('🚀 Deploy in produzione completato')
   })
 })

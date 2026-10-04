@@ -1,6 +1,7 @@
 // server\utils\telegram\commands\cards\priceCard.ts
 import { InlineKeyboard } from 'grammy'
 import { isFoilOnlyPrinting } from '#shared/utils/wantedCards/wantedCardRow'
+import { escapeHtml } from '../../html'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
 // Pure part of /prezzo: the filter state carried in callback_data, the inline result of each
@@ -68,10 +69,6 @@ const LANGUAGE_NAMES: Record<PriceLanguage, string> = {
 }
 
 const euroFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
-
-export function escapeHtml(text: string): string {
-  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-}
 
 // Same "prefix:uuid:language:foil" shape as the other bot callbacks, well under Telegram's 64 bytes
 function encodeState(prefix: string, state: PriceState): string {

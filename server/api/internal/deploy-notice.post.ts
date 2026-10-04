@@ -15,6 +15,6 @@ export default defineEventHandler(async (event) => {
   }
   if (!isProductionDeploy(notice)) return { sent: false }
 
-  await notifyTelegramSuperAdmins(event, buildDeployNoticeText(notice))
+  await notifyTelegramSuperAdmins(event, buildDeployNoticeText(notice), { parse_mode: 'HTML' })
   return { sent: true }
 })

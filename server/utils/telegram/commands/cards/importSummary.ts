@@ -1,6 +1,6 @@
 // server\utils\telegram\commands\cards\importSummary.ts
 import type { DecklistEntry } from '#shared/utils/wantedCards/decklist'
-import { escapeHtml } from './priceCard'
+import { escapeHtml } from '../../html'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
 // Pure part of the card list import: what happened to each pasted line and the message that says it

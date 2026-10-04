@@ -1,5 +1,6 @@
 // server\utils\deployNotice.ts
 import { createHash, timingSafeEqual } from 'node:crypto'
+import { escapeHtml } from '~~/server/utils/telegram/html'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
 // What .github/workflows/deploy-notice.yml posts once Vercel reports a finished deployment, and how
@@ -7,7 +8,6 @@ import { ICONS } from '~~/server/utils/telegram/icons'
 
 export interface DeployNotice {
   environment: string
-  url: string
   ref: string | null
   sha: string | null
   message: string | null
@@ -29,12 +29,10 @@ export function parseDeployNotice(body: unknown): DeployNotice | null {
 
   const fields = body as Record<string, unknown>
   const environment = optionalText(fields.environment)
-  const url = optionalText(fields.url)
-  if (!environment || !url?.startsWith('https://')) return null
+  if (!environment) return null
 
   return {
     environment,
-    url,
     ref: optionalText(fields.ref),
     sha: optionalText(fields.sha),
     message: optionalText(fields.message)?.split('\n')[0] ?? null
@@ -57,15 +55,15 @@ export function isDeployNoticeSecretValid(
   return timingSafeEqual(digest(provided), digest(expected))
 }
 
+// HTML (parse_mode 'HTML'): the commit sits in a monospace block under the heading
 export function buildDeployNoticeText(notice: DeployNotice): string {
+  const heading = `${ICONS.rocket} Deploy in produzione completato`
+
   const commit = [notice.ref, notice.sha?.slice(0, SHORT_SHA_LENGTH)]
     .filter(part => part !== null && part !== undefined)
     .join(' · ')
+  const lines = [commit || null, notice.message].filter(line => line !== null)
+  if (lines.length === 0) return heading
 
-  return [
-    `${ICONS.rocket} Deploy in produzione completato`,
-    commit || null,
-    notice.message,
-    notice.url
-  ].filter(line => line !== null).join('\n')
+  return `${heading}\n<pre>${escapeHtml(lines.join('\n'))}</pre>`
 }

@@ -29,7 +29,6 @@ jobs:
           NOTICE_SECRET: ${{ secrets.DEPLOY_NOTICE_SECRET }}
           SITE_URL: https://app.pauperwave.org
           ENVIRONMENT: ${{ github.event.client_payload.environment || 'production' }}
-          DEPLOY_URL: ${{ github.event.client_payload.url || 'https://app.pauperwave.org' }}
           REF: ${{ github.event.client_payload.git.ref || github.ref_name }}
           SHA: ${{ github.event.client_payload.git.sha || github.sha }}
           MESSAGE: ${{ steps.commit.outputs.message }}
@@ -41,11 +40,10 @@ jobs:
 
           jq -n \
             --arg environment "$ENVIRONMENT" \
-            --arg url "$DEPLOY_URL" \
             --arg ref "$REF" \
             --arg sha "$SHA" \
             --arg message "$MESSAGE" \
-            '{ environment: $environment, url: $url, ref: $ref, sha: $sha, message: $message }' \
+            '{ environment: $environment, ref: $ref, sha: $sha, message: $message }' \
             | curl --fail-with-body --silent --show-error \
               --request POST "$SITE_URL/api/internal/deploy-notice" \
               --header "content-type: application/json" \
