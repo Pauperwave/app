@@ -37,13 +37,16 @@ export function useEventTimer() {
     }
 
     try {
+      const requestedAtMs = Date.now()
       const response = await $fetch<RoundTimerResponse>('/api/telegram/round-timer', {
         method: 'POST',
         body: { initData }
       })
       status.value = response.status
       snapshot.value = response.snapshot
-      clockOffsetMs.value = response.serverNowMs - Date.now()
+      // The server stamped its clock mid-request: compare it with the midpoint of the round trip,
+      // not with the arrival time, or a slow response makes the timer lag by half of it
+      clockOffsetMs.value = response.serverNowMs - (requestedAtMs + Date.now()) / 2
       if (response.tournamentUuid !== null && response.roundNumber !== null) {
         listenTo(response.tournamentUuid, response.roundNumber)
       }
