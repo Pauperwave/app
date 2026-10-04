@@ -2,16 +2,17 @@
 import type { Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 
-import { groupVoteMedals } from '#shared/utils/commanders/voteMedals'
+import { summarizeMentions } from '#shared/utils/players/playerMentions'
 
 import { requireLinkedAssociate } from './linking'
-import { buildMentionsMessage, type PlayerMentions } from './mentionsMessage'
+import { buildMentionsMessage } from './mentionsMessage'
 import { registerDeepLink } from '../../deepLinks'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
-// From the player_stats and player_vote_decks views, which already leave test tournaments out. An
-// associate can have more than one player row: their counts add up.
-async function fetchMentions(associateUuid: string): Promise<PlayerMentions> {
+// From tournament_award_winners, one row per tournament won, which already leaves out tournaments
+// that aren't completed and test ones. An associate can have more than one player row: their
+// mentions add up.
+async function fetchMentions(associateUuid: string) {
   const supabase = telegramServiceSupabaseClient()
 
   const { data: players, error: playersError } = await supabase
@@ -21,40 +22,15 @@ async function fetchMentions(associateUuid: string): Promise<PlayerMentions> {
   if (playersError) throw playersError
 
   const playerUuids = (players ?? []).map(player => player.uuid)
-  const mentions: PlayerMentions = {
-    kills: 0, timesKilled: 0, brewVotes: 0, playVotes: 0, medals: { brew: [], play: [] }
-  }
-  if (playerUuids.length === 0) return mentions
+  if (playerUuids.length === 0) return summarizeMentions([])
 
-  const [stats, votes] = await Promise.all([
-    supabase.from('player_stats').select('kills, times_killed, brew_votes_received, play_votes_received')
-      .in('player_uuid', playerUuids),
-    supabase.from('player_vote_decks')
-      .select('deck_uuid, commander_1_name, commander_2_name, vote_type, votes')
-      .in('player_uuid', playerUuids)
-  ])
-  if (stats.error) throw stats.error
-  if (votes.error) throw votes.error
+  const { data: winners, error } = await supabase
+    .from('tournament_award_winners')
+    .select('award, deck_uuid, commander_1_name, commander_2_name')
+    .in('player_uuid', playerUuids)
+  if (error) throw error
 
-  for (const row of stats.data ?? []) {
-    mentions.kills += row.kills ?? 0
-    mentions.timesKilled += row.times_killed ?? 0
-    mentions.brewVotes += row.brew_votes_received ?? 0
-    mentions.playVotes += row.play_votes_received ?? 0
-  }
-
-  const voteRows = (votes.data ?? []).flatMap(row => (row.deck_uuid && row.commander_1_name
-    ? [{
-      deckUuid: row.deck_uuid,
-      commander1Name: row.commander_1_name,
-      commander2Name: row.commander_2_name,
-      voteType: row.vote_type ?? '',
-      votes: Number(row.votes ?? 0)
-    }]
-    : []))
-  mentions.medals = groupVoteMedals(voteRows)
-
-  return mentions
+  return summarizeMentions(winners ?? [])
 }
 
 // Extracted for reuse by t.me/<bot>?start=menzioni (deepLinks.ts)

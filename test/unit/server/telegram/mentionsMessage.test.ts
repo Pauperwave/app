@@ -1,25 +1,26 @@
 // test\unit\server\telegram\mentionsMessage.test.ts
 import { describe, expect, it } from 'vitest'
-import type { VoteMedal } from '../../../../shared/utils/commanders/voteMedals'
+import type { MentionDeck, PlayerMentions } from '../../../../shared/utils/players/playerMentions'
 import {
   buildMentionsMessage,
-  decksLine,
-  type PlayerMentions
+  decksLine
 } from '../../../../server/utils/telegram/commands/account/mentionsMessage'
 
-function medal(name: string, votes: number, partner: string | null = null): VoteMedal {
-  return { deckUuid: `deck-${name}`, commander1Name: name, commander2Name: partner, votes }
+function deck(name: string, mentions: number, partner: string | null = null): MentionDeck {
+  return { deckUuid: `deck-${name}`, commander1Name: name, commander2Name: partner, mentions }
 }
 
 const MENTIONS: PlayerMentions = {
-  kills: 7,
-  timesKilled: 3,
-  brewVotes: 3,
-  playVotes: 1,
-  medals: {
-    brew: [medal('Winota, Joiner of Forces', 2), medal('Krenko, Mob Boss', 1)],
-    play: [medal('Tymna the Weaver', 1, 'Thrasios, Triton Hero')]
-  }
+  killer: 7,
+  victim: 3,
+  brewer: 3,
+  player: 1,
+  brewerDecks: [deck('Winota, Joiner of Forces', 2), deck('Krenko, Mob Boss', 1)],
+  playerDecks: [deck('Tymna the Weaver', 1, 'Thrasios, Triton Hero')]
+}
+
+const NONE: PlayerMentions = {
+  killer: 0, victim: 0, brewer: 0, player: 0, brewerDecks: [], playerDecks: []
 }
 
 type Message = ReturnType<typeof buildMentionsMessage>
@@ -43,11 +44,11 @@ function textOf(message: Message): string {
 
 describe('decksLine', () => {
   it('lists the decks with how many times each earned the mention', () => {
-    expect(decksLine([medal('Winota', 2), medal('Krenko', 1)])).toBe('Winota ×2 · Krenko')
+    expect(decksLine([deck('Winota', 2), deck('Krenko', 1)])).toBe('Winota ×2 · Krenko')
   })
 
   it('shows both commanders of a pair', () => {
-    expect(decksLine([medal('Tymna', 1, 'Thrasios')])).toBe('Tymna / Thrasios')
+    expect(decksLine([deck('Tymna', 1, 'Thrasios')])).toBe('Tymna / Thrasios')
   })
 
   it('has nothing to say when no deck earned it', () => {
@@ -55,7 +56,7 @@ describe('decksLine', () => {
   })
 
   it('cuts a long list and says how many were left out', () => {
-    const many = ['A', 'B', 'C', 'D', 'E', 'F', 'G'].map(name => medal(name, 1))
+    const many = ['A', 'B', 'C', 'D', 'E', 'F', 'G'].map(name => deck(name, 1))
     expect(decksLine(many)).toBe('A · B · C · D · E · e altri 2')
   })
 })
@@ -77,16 +78,13 @@ describe('buildMentionsMessage', () => {
     expect(text).toMatch(/Carnefice: 7\n\S+ Vittima: 3\n/)
   })
 
-  it('explains where mentions come from when there are none yet', () => {
-    const none: PlayerMentions = {
-      kills: 0, timesKilled: 0, brewVotes: 0, playVotes: 0, medals: { brew: [], play: [] }
-    }
-    const text = textOf(buildMentionsMessage(none))
+  it('explains how to get a mention when there are none yet', () => {
+    const text = textOf(buildMentionsMessage(NONE))
     expect(text).toContain('Carnefice: 0')
-    expect(text).toContain('Non hai ancora nessuna menzione')
+    expect(text).toContain('arrivando primo in una classifica a fine torneo')
   })
 
   it('does not say there is nothing once there is something', () => {
-    expect(textOf(buildMentionsMessage(MENTIONS))).not.toContain('Non hai ancora nessuna menzione')
+    expect(textOf(buildMentionsMessage(MENTIONS))).not.toContain('Nessuna menzione per ora')
   })
 })

@@ -2,9 +2,9 @@
 <!-- The decks that earned a mention (master brewer, player) and how many times each, like medals:
      the commander (hover for the card) and a count badge. -->
 <script setup lang="ts">
-import type { VoteMedal } from '#shared/utils/commanders/voteMedals'
+import type { MentionDeck } from '#shared/utils/players/playerMentions'
 
-defineProps<{ medals: VoteMedal[] }>()
+defineProps<{ medals: MentionDeck[] }>()
 </script>
 
 <template>
@@ -26,7 +26,7 @@ defineProps<{ medals: VoteMedal[] }>()
         variant="subtle"
         size="sm"
       >
-        ×{{ medal.votes }}
+        ×{{ medal.mentions }}
       </UBadge>
     </li>
   </ul>

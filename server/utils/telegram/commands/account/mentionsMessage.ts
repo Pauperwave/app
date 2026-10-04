@@ -1,47 +1,44 @@
 // server\utils\telegram\commands\account\mentionsMessage.ts
 import type { InputRichMessage } from 'grammy/types'
-import type { VoteMedal, VoteMedals } from '#shared/utils/commanders/voteMedals'
+import type { MentionDeck, PlayerMentions } from '#shared/utils/players/playerMentions'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
 // Pure part of /menzioni: a player's special mentions, the same four as the "Menzioni speciali"
-// block of their page on the site: how often they were the killer or the victim of a kill, and how
-// often they were voted master brewer or best player, the last two with the decks that earned them.
-
-export interface PlayerMentions {
-  kills: number
-  timesKilled: number
-  brewVotes: number
-  playVotes: number
-  medals: VoteMedals
-}
+// block of their page on the site: in how many tournaments they came first as the killer, the
+// victim, the master brewer and the player, the last two with the decks that earned them.
 
 // The decks listed under a mention, most decorated first: more than this is a wall of text
 const MAX_DECKS_LISTED = 5
 
-function deckLabel(medal: VoteMedal): string {
-  const commanders = medal.commander2Name
-    ? `${medal.commander1Name} / ${medal.commander2Name}`
-    : medal.commander1Name
-  return medal.votes > 1 ? `${commanders} ×${medal.votes}` : commanders
+function deckLabel(deck: MentionDeck): string {
+  const commanders = deck.commander2Name
+    ? `${deck.commander1Name} / ${deck.commander2Name}`
+    : deck.commander1Name
+  return deck.mentions > 1 ? `${commanders} ×${deck.mentions}` : commanders
 }
 
 // "Winota ×2 · Krenko", with how many more were left out; null when no deck earned it
-export function decksLine(medals: VoteMedal[]): string | null {
-  if (medals.length === 0) return null
+export function decksLine(decks: MentionDeck[]): string | null {
+  if (decks.length === 0) return null
 
-  const listed = medals.slice(0, MAX_DECKS_LISTED).map(deckLabel).join(' · ')
-  const hidden = medals.length - MAX_DECKS_LISTED
+  const listed = decks.slice(0, MAX_DECKS_LISTED).map(deckLabel).join(' · ')
+  const hidden = decks.length - MAX_DECKS_LISTED
   return hidden > 0 ? `${listed} · e altri ${hidden}` : listed
 }
 
-function mentionLine(icon: string, label: string, count: number, decks: VoteMedal[] = []): string {
+function mentionLine(
+  icon: string,
+  label: string,
+  count: number,
+  decks: MentionDeck[] = []
+): string {
   const header = `${icon} ${label}: ${count}`
   const list = decksLine(decks)
   return list ? `${header}\n${list}` : header
 }
 
 export function buildMentionsMessage(mentions: PlayerMentions): InputRichMessage {
-  const hasAny = mentions.kills + mentions.timesKilled + mentions.brewVotes + mentions.playVotes > 0
+  const hasAny = mentions.killer + mentions.victim + mentions.brewer + mentions.player > 0
 
   return {
     blocks: [
@@ -49,17 +46,17 @@ export function buildMentionsMessage(mentions: PlayerMentions): InputRichMessage
       {
         type: 'paragraph',
         text: [
-          mentionLine(ICONS.skull, 'Carnefice', mentions.kills),
-          mentionLine(ICONS.victim, 'Vittima', mentions.timesKilled)
+          mentionLine(ICONS.skull, 'Carnefice', mentions.killer),
+          mentionLine(ICONS.victim, 'Vittima', mentions.victim)
         ].join('\n')
       },
-      { type: 'paragraph', text: mentionLine(ICONS.card, 'Master brewer', mentions.brewVotes, mentions.medals.brew) },
-      { type: 'paragraph', text: mentionLine(ICONS.playVote, 'Player', mentions.playVotes, mentions.medals.play) },
+      { type: 'paragraph', text: mentionLine(ICONS.card, 'Master brewer', mentions.brewer, mentions.brewerDecks) },
+      { type: 'paragraph', text: mentionLine(ICONS.playVote, 'Player', mentions.player, mentions.playerDecks) },
       ...(hasAny
         ? []
         : [{
           type: 'paragraph' as const,
-          text: 'Non hai ancora nessuna menzione: arrivano dai tornei Commander, tra uccisioni e voti.'
+          text: 'Nessuna menzione per ora: si ottiene arrivando primo in una classifica a fine torneo Commander.'
         }])
     ]
   }

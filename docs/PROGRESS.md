@@ -579,6 +579,14 @@ Contestualmente, rimosso il banner di avviso giallo ("Questa tabella non è anco
 
 **Conseguenze:** nessuna notifica automatica quando l'ultimo giocatore finisce (servirebbe salvare chi sta aspettando: una modifica al database non fatta); chi conferma sa chi manca, gli altri non vengono avvisati. I collegamenti diretti (`?start=<comando>`) azzerano `ctx.match` prima di lanciare il comando, altrimenti `/tira`, `/calendario` e `/leghe` leggevano il nome del comando come argomento; `/drop` e `/scollegamento` non hanno un link sulla pagina `/telegram-bot` perché agiscono subito.
 
+### ADR-057 — Le menzioni speciali contano i primi posti, da una sola view (2026-10-05)
+
+**Contesto:** il blocco "Menzioni speciali" della pagina giocatore e `/menzioni` sommavano **tutte** le uccisioni, le morti e i voti mazzo/giocata ricevuti. Ma una menzione è un riconoscimento di fine torneo: va a chi arriva primo nella classifica del premio (`step=awards`, ADR-052), non a chi ha accumulato voti in un torneo in cui ha vinto un altro.
+
+**Decisione:** la menzione conta i tornei in cui si è **primi** in quel premio (carnefice, vittima, master brewer, player), pari merito compreso. Lo decide l'unica view `tournament_award_winners` (migrazione `20261004220000`), una riga per vincitore di un torneo concluso e non di test, che replica in SQL ordinamento e spareggi di `useTournamentAwards.ts`. Per master brewer e player la riga porta anche il mazzo che ha preso più voti in quel torneo, così le medaglie dei mazzi contano quante volte un mazzo ha fatto vincere. Chi legge (sito e bot) prende le righe del giocatore e le somma con `summarizeMentions` (`shared/utils/players/playerMentions.ts`): niente altre view, niente tabelle materializzate. Le statistiche del mazzo (`/statistics/decks/...`) restano quelle intere, indipendenti dalla classifica dei voti.
+
+**Conseguenze:** il calcolo è in tempo reale e costa pochi millisecondi (4,5 ms su 18 abbinamenti, 42 uccisioni, 138 voti): se un giorno la pagina rallentasse si può rivalutare una view materializzata. Se la classifica dei premi cambia (spareggi, regole), la view e `useTournamentAwards.ts` vanno aggiornate insieme. Le colonne di `player_stats` sulle uccisioni e sui voti non servono più alle menzioni; la view `player_vote_decks` non è più letta da nessuno e si toglie con una migrazione dopo il deploy di questo codice.
+
 ## Vedi anche
 
 - `docs/architecture/database.md` — schema, RLS, migrazioni

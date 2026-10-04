@@ -1,14 +1,12 @@
 <!-- app\components\players\single\MentionsCard.vue -->
-<!-- The special mentions of a player: how often they were the killer or the victim of a kill, and
-     how often they were voted master brewer or player, the last two with the decks that earned
-     them. -->
+<!-- The special mentions of a player: in how many tournaments they came first in each of the
+     end-of-tournament awards (killer, victim, master brewer, player), the last two with the decks
+     that earned them. -->
 <script setup lang="ts">
-import type { PlayerStats } from '~/composables/players/usePlayerStatsQuery'
-import type { VoteMedals } from '#shared/utils/commanders/voteMedals'
+import type { PlayerMentions } from '#shared/utils/players/playerMentions'
 
-const { stats, medals, loading } = defineProps<{
-  stats: PlayerStats | undefined
-  medals: VoteMedals | undefined
+const { mentions, loading } = defineProps<{
+  mentions: PlayerMentions | undefined
   loading: boolean
 }>()
 
@@ -40,30 +38,30 @@ const { t } = useI18n()
       <PlayersSingleMentionTile
         :icon="ICONS.kills"
         :label="t('player.stats.killer')"
-        :count="stats?.kills ?? 0"
+        :count="mentions?.killer ?? 0"
         color="error"
       />
       <PlayersSingleMentionTile
         :icon="ICONS.deaths"
         :label="t('player.stats.victim')"
-        :count="stats?.timesKilled ?? 0"
+        :count="mentions?.victim ?? 0"
         color="neutral"
       />
       <PlayersSingleMentionTile
         :icon="ICONS.brewVote"
         :label="t('player.stats.masterBrewer')"
-        :count="stats?.brewVotesReceived ?? 0"
+        :count="mentions?.brewer ?? 0"
         color="success"
       >
-        <PlayersSingleDeckMedals :medals="medals?.brew ?? []" />
+        <PlayersSingleDeckMedals :medals="mentions?.brewerDecks ?? []" />
       </PlayersSingleMentionTile>
       <PlayersSingleMentionTile
         :icon="ICONS.vote"
         :label="t('player.stats.bestPlayer')"
-        :count="stats?.playVotesReceived ?? 0"
+        :count="mentions?.player ?? 0"
         color="warning"
       >
-        <PlayersSingleDeckMedals :medals="medals?.play ?? []" />
+        <PlayersSingleDeckMedals :medals="mentions?.playerDecks ?? []" />
       </PlayersSingleMentionTile>
     </div>
   </section>

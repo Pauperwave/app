@@ -2405,6 +2405,13 @@ export type Database = {
             referencedColumns: ["deck_uuid"]
           },
           {
+            foreignKeyName: "fk_tournament_round_results_commander_deck_uuid_fkey"
+            columns: ["commander_deck_uuid"]
+            isOneToOne: false
+            referencedRelation: "tournament_award_winners"
+            referencedColumns: ["deck_uuid"]
+          },
+          {
             foreignKeyName: "fk_tournament_round_results_pairing_uuid_fkey"
             columns: ["pairing_uuid"]
             isOneToOne: false
@@ -3167,6 +3174,17 @@ export type Database = {
             referencedColumns: ["uuid"]
           },
         ]
+      }
+      tournament_award_winners: {
+        Row: {
+          award: string | null
+          commander_1_name: string | null
+          commander_2_name: string | null
+          deck_uuid: string | null
+          player_uuid: string | null
+          tournament_uuid: string | null
+        }
+        Relationships: []
       }
       tournament_kills_summary: {
         Row: {
