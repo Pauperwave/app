@@ -1,6 +1,7 @@
 // app\utils\telegram\botCommands.ts
 
 import { helpTopicPayload, type HelpTopic } from '#shared/utils/telegram/helpTopics'
+import { tournamentLinkPayload } from '#shared/utils/telegram/tournamentLink'
 
 export const TELEGRAM_BOT_URL = 'https://t.me/PauperwaveBot'
 
@@ -28,6 +29,11 @@ interface BotCommandGroup {
 
 export function botHelpTopicUrl(group: BotCommandGroup): string {
   return `${TELEGRAM_BOT_URL}?start=${helpTopicPayload(group.helpTopic)}`
+}
+
+// Opens the tournament's detail view in the bot, where a player can register
+export function tournamentTelegramUrl(tournamentUuid: string): string {
+  return `${TELEGRAM_BOT_URL}?start=${tournamentLinkPayload(tournamentUuid)}`
 }
 
 // The bot's commands as shown on the /telegram-bot info page, one card per /help section and in

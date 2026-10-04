@@ -19,8 +19,10 @@ import type { RegistrationStatus } from './queries'
 import { NOT_LINKED_MESSAGE } from '../account/linking'
 import { answerLoadError, requireChatId } from '../callbackErrors'
 import { mapsUrl, googleCalendarUrl } from '../events/eventLinks'
+import { registerDeepLinkPrefix } from '../../deepLinks'
 import { navigateBack, getBackResolver } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
+import { TOURNAMENT_LINK_PREFIX, isTournamentUuid } from '#shared/utils/telegram/tournamentLink'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
 export interface LocationRow {
@@ -168,8 +170,12 @@ function isExternalOrganizer(row: DatedTournamentRow): boolean {
   return row.organizer?.type === 'shop'
 }
 
+// Origin of a detail view opened from a t.me link: there is no list to go back to
+const LINK_ORIGIN = 'd'
+
 // Payload shared by every torneoMenu button: `${uuid}:${origin}`, where `origin` is a compact token
-// for the back target: `m<monthOffset>`, `l<leagueIndex>`, `i` (iscrizioni) or `p` (prossimo)
+// for the back target: `m<monthOffset>`, `l<leagueIndex>`, `i` (iscrizioni), `p` (prossimo) or `d`
+// (a t.me link, no back target)
 function encodeTorneoPayload(uuid: string, origin: string): string {
   return `${uuid}:${origin}`
 }
@@ -309,6 +315,8 @@ export const torneoMenu = new Menu<Context>('t', {
     }
   }
 
+  if (origin === LINK_ORIGIN) return
+
   const backPrefix = backResolverPrefix(origin)
   range.text({ text: backLabel(backPrefix), payload }, async (ctx) => {
     const buttonChatId = await requireChatId(ctx)
@@ -325,6 +333,26 @@ export const torneoMenu = new Menu<Context>('t', {
 // Registered unconditionally: torneoMenu is shared by four parents, not tied to one
 // register*Command's bot.use()
 registerMenu('t', torneoMenu)
+
+// t.me/<bot>?start=torneo_<uuid>: the detail view as a new message, with the registration button,
+// for a player who opened a link to the tournament. /start has already cleared ctx.match, which the
+// menu reads to know the tournament, so it is set again here.
+async function openTournamentFromLink(ctx: Context, argument: string) {
+  const uuid = isTournamentUuid(argument) ? argument.toLowerCase() : null
+  const tournament = uuid ? await cachedFetchTournament(ctx, uuid) : null
+  if (!uuid || !tournament) {
+    await ctx.reply('Non trovo questo torneo: il link potrebbe essere scaduto.')
+    return
+  }
+
+  ctx.match = encodeTorneoPayload(uuid, LINK_ORIGIN)
+  await ctx.replyWithRichMessage(
+    { blocks: tournamentDetailBlocks(tournament) },
+    { reply_markup: torneoMenu }
+  )
+}
+
+registerDeepLinkPrefix(TOURNAMENT_LINK_PREFIX, openTournamentFromLink)
 
 // Opens the detail view fresh from a list (calendario/leghe/iscrizioni submenu buttons);
 // torneoMenu's own buttons edit in place

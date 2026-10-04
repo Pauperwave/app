@@ -14,6 +14,7 @@ export function useTournamentContextMenuItems(
 ) {
   const { t } = useI18n()
   const toast = useToast()
+  const { copyToClipboard } = useCopyToClipboard()
   const { setPinned } = useTournamentsMutations()
 
   async function togglePinned(tournament: Tournament) {
@@ -27,6 +28,14 @@ export function useTournamentContextMenuItems(
   function tournamentContextMenuItems(tournament: Tournament): DropdownMenuItem[] {
     return [
       ...rowContextMenuItems(tournament),
+      {
+        label: t('tournament.rowActions.copyTelegramLink'),
+        icon: ICONS.telegram,
+        onSelect: () => copyToClipboard(
+          tournamentTelegramUrl(tournament.uuid),
+          t('tournament.telegramLinkCopied')
+        )
+      },
       { type: 'separator' },
       {
         label: tournament.isPinned ? t('tournament.rowActions.unpin') : t('tournament.rowActions.pin'),

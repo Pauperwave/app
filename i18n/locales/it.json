@@ -1384,6 +1384,7 @@
     "rowActions": {
       "edit": "Modifica torneo",
       "copy": "Copia torneo",
+      "copyTelegramLink": "Copia link Telegram",
       "pin": "Fissa in evidenza",
       "unpin": "Rimuovi dall'evidenza",
       "delete": "Elimina"
@@ -1400,6 +1401,7 @@
       "description": "Visibile solo ai super admin, escluso da calendari e statistiche. Segnandolo le notifiche Telegram si disattivano."
     },
     "pinErrorTitle": "Impossibile aggiornare l'evidenza del torneo",
+    "telegramLinkCopied": "Link Telegram copiato negli appunti",
     "statusChangeErrorTitle": "Impossibile aggiornare lo stato del torneo",
     "entryFeeChangeErrorTitle": "Impossibile aggiornare la quota di iscrizione",
     "locationChangeErrorTitle": "Impossibile aggiornare il luogo del torneo",

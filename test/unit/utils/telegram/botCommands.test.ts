@@ -4,7 +4,8 @@ import italian from '../../../../i18n/locales/it.json'
 import {
   TELEGRAM_BOT_COMMAND_GROUPS,
   TELEGRAM_BOT_URL,
-  botCommandUrl
+  botCommandUrl,
+  tournamentTelegramUrl
 } from '../../../../app/utils/telegram/botCommands'
 
 const commands = TELEGRAM_BOT_COMMAND_GROUPS.flatMap(group => group.commands)
@@ -47,5 +48,12 @@ describe('the commands catalog', () => {
       expect(groups[group.id], group.id).toBeTruthy()
       expect(groupDescriptions[group.id], group.id).toBeTruthy()
     }
+  })
+})
+
+describe('tournamentTelegramUrl', () => {
+  it('opens the tournament through the bot\'s start payload', () => {
+    const uuid = '0b6b4d3a-8a0e-4b6a-9c3e-5d2f4a1b7c90'
+    expect(tournamentTelegramUrl(uuid)).toBe(`${TELEGRAM_BOT_URL}?start=torneo_${uuid}`)
   })
 })
