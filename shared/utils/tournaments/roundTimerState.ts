@@ -21,9 +21,17 @@ export interface RoundTimerSnapshot {
 // Why the Mini App has no event timer to follow (it then falls back to its own local one)
 export type RoundTimerStatus = 'ok' | 'unlinked' | 'no-table' | 'no-timer'
 
+// First names of the two players of a 1v1 table, for the turns Mini App to say whose turn it is
+export interface RoundTimerNames {
+  me: string
+  opponent: string
+}
+
 export interface RoundTimerResponse {
   status: RoundTimerStatus
   snapshot: RoundTimerSnapshot | null
+  // Null without a live 1v1 table (a Commander pod has no single opponent) or without both names
+  names: RoundTimerNames | null
   // The round the player sits at, also while its timer has no row yet, so the reader can listen
   // for it; null without a live table
   tournamentUuid: string | null

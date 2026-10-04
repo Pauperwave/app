@@ -1,10 +1,11 @@
 // server\api\telegram\round-timer.post.ts
 import type {
-  RoundTimerResponse, RoundTimerSnapshot, RoundTimerStatus
+  RoundTimerNames, RoundTimerResponse, RoundTimerSnapshot, RoundTimerStatus
 } from '#shared/utils/tournaments/roundTimerState'
 import { resolveAssociateUuidByChatId } from '../../utils/telegram/commands/account/linking'
 import { fetchLiveTable } from '../../utils/telegram/commands/tournaments/matchReportData'
 import { fetchLivePod } from '../../utils/telegram/commands/tournaments/commanderPodData'
+import { tableNames } from '../../utils/telegram/tableNames'
 import { verifyWebAppInitData } from '../../utils/telegram/webAppAuth'
 
 interface RoundTimerBody {
@@ -20,10 +21,12 @@ export default defineEventHandler(async (event): Promise<RoundTimerResponse> => 
   const respond = (
     status: RoundTimerStatus,
     snapshot: RoundTimerSnapshot | null = null,
-    table: { tournamentUuid: string, roundNumber: number } | null = null
+    table: { tournamentUuid: string, roundNumber: number } | null = null,
+    names: RoundTimerNames | null = null
   ) => ({
     status,
     snapshot,
+    names,
     tournamentUuid: table?.tournamentUuid ?? null,
     roundNumber: table?.roundNumber ?? null,
     serverNowMs
@@ -43,6 +46,9 @@ export default defineEventHandler(async (event): Promise<RoundTimerResponse> => 
   const table = await fetchLiveTable(associateUuid) ?? await fetchLivePod(associateUuid)
   if (!table) return respond('no-table')
 
+  // A pod has no single opponent to name
+  const names = 'opponent' in table ? tableNames(table) : null
+
   const { data, error } = await telegramServiceSupabaseClient()
     .from('tournament_round_timers')
     .select('*')
@@ -52,7 +58,7 @@ export default defineEventHandler(async (event): Promise<RoundTimerResponse> => 
   if (error) {
     throw createError({ statusCode: 500, statusMessage: error.message })
   }
-  if (!data) return respond('no-timer', null, table)
+  if (!data) return respond('no-timer', null, table, names)
 
   return respond('ok', {
     phase: data.phase as RoundTimerSnapshot['phase'],
@@ -62,5 +68,5 @@ export default defineEventHandler(async (event): Promise<RoundTimerResponse> => 
     preSeconds: data.pre_seconds,
     roundSeconds: data.round_seconds,
     turnsSeconds: data.turns_seconds
-  }, table)
+  }, table, names)
 })

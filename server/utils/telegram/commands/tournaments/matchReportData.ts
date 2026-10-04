@@ -16,8 +16,10 @@ export interface LiveTable {
   myPlayerUuid: string
   /** The viewer's own name: what the opponent reads when the viewer acts on the result. */
   myName: string
+  /** Their first name alone, for where the full one is too long (the turns Mini App). */
+  myFirstName: string | null
   isPlayer1: boolean
-  opponent: { playerUuid: string, associateUuid: string, name: string }
+  opponent: { playerUuid: string, associateUuid: string, name: string, firstName: string | null }
   result: (ReportedResult & { player1GamesWon: number, player2GamesWon: number }) | null
 }
 
@@ -60,6 +62,7 @@ export async function fetchLiveTable(
   // The players of one associate share their name, which the opponent is told when this player acts
   const me = (players?.[0]?.associate ?? null) as { first_name: string, last_name: string } | null
   const myName = me ? `${me.first_name} ${me.last_name}` : 'il tuo avversario'
+  const myFirstName = me?.first_name ?? null
 
   let query = supabase
     .from('tournament_pairings')
@@ -121,10 +124,12 @@ export async function fetchLiveTable(
     player2Uuid: pairing.player2_uuid,
     myPlayerUuid,
     myName,
+    myFirstName,
     isPlayer1,
     opponent: {
       playerUuid: opponent.uuid,
       associateUuid: opponent.associate_uuid,
+      firstName: opponent.associate?.first_name ?? null,
       name: opponent.associate
         ? `${opponent.associate.first_name} ${opponent.associate.last_name}`
         : 'il tuo avversario'

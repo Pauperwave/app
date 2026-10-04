@@ -19,7 +19,7 @@ export function useExtraTurns() {
   ))
 
   // Which turn numbers belong to whom (e.g. 1→3→5 for the starter, 2→4 for the other), shown under
-  // each "Io"/"Avversario" quadrant to make the sequence clear at a glance, not just the current
+  // each player's quadrant to make the sequence clear at a glance, not just the current
   // turn
   const turnsByPlayer = computed<Record<Player, number[]>>(() => {
     const sequences: Record<Player, number[]> = { me: [], opponent: [] }

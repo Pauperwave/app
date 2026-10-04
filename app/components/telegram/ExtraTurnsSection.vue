@@ -7,10 +7,20 @@ interface Props {
   activePlayer: 'me' | 'opponent'
   turnsByPlayer: Record<'me' | 'opponent', number[]>
   startingPlayer: 'me' | 'opponent'
+  // First names of the two players when the screen knows the table, else the generic labels
+  myName?: string
+  opponentName?: string
 }
 
 const {
-  turn, totalTurns, isLastTurn, activePlayer, turnsByPlayer, startingPlayer
+  turn,
+  totalTurns,
+  isLastTurn,
+  activePlayer,
+  turnsByPlayer,
+  startingPlayer,
+  myName = 'Io',
+  opponentName = 'Avversario'
 } = defineProps<Props>()
 
 const emit = defineEmits<{
@@ -56,7 +66,7 @@ const emit = defineEmits<{
         :class="activePlayer === 'opponent' ? 'bg-primary text-inverted' : 'bg-elevated text-muted'"
         @click="emit('action')"
       >
-        <span class="text-6xl font-bold">Avversario</span>
+        <span class="max-w-full truncate px-2 text-6xl font-bold">{{ opponentName }}</span>
         <span class="flex gap-2 text-5xl tabular-nums">
           <template
             v-for="(t, i) in turnsByPlayer.opponent"
@@ -74,7 +84,7 @@ const emit = defineEmits<{
         :class="activePlayer === 'me' ? 'bg-primary text-inverted' : 'bg-elevated text-muted'"
         @click="emit('action')"
       >
-        <span class="text-6xl font-bold">Io</span>
+        <span class="max-w-full truncate px-2 text-6xl font-bold">{{ myName }}</span>
         <span class="flex gap-2 text-5xl tabular-nums">
           <template
             v-for="(t, i) in turnsByPlayer.me"

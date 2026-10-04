@@ -1,7 +1,7 @@
 // app\composables\telegram\useEventTimer.ts
 import {
   formatRemaining, resolveRoundTimer,
-  type RoundTimerResponse, type RoundTimerSnapshot, type RoundTimerStatus
+  type RoundTimerNames, type RoundTimerResponse, type RoundTimerSnapshot, type RoundTimerStatus
 } from '#shared/utils/tournaments/roundTimerState'
 
 // Realtime tells the page when the organizer changes the timer; this slower re-read is only the
@@ -24,6 +24,8 @@ export function useEventTimer() {
 
   const status = ref<EventTimerStatus>('loading')
   const snapshot = ref<RoundTimerSnapshot | null>(null)
+  // First names of the two players of the table, for the turns screen; null away from a 1v1 table
+  const names = ref<RoundTimerNames | null>(null)
   // Server clock minus this device's, from the last response
   const clockOffsetMs = ref(0)
   const now = useNow({ interval: 1000 })
@@ -52,6 +54,7 @@ export function useEventTimer() {
       const receivedAtMs = Date.now()
       status.value = response.status
       snapshot.value = response.snapshot
+      names.value = response.names
       // The server stamped its clock mid-request: compare it with the midpoint of the round trip,
       // not with the arrival time, or a slow response makes the timer lag by half of it
       clockOffsetMs.value = response.serverNowMs - (requestedAtMs + receivedAtMs) / 2
@@ -133,6 +136,7 @@ export function useEventTimer() {
     isLoading: computed(() => status.value === 'loading'),
     isSynced,
     resolved,
-    label
+    label,
+    names
   }
 }

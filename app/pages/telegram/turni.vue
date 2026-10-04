@@ -82,6 +82,8 @@ useHead({
       :active-player="extraTurns.activePlayer.value"
       :turns-by-player="extraTurns.turnsByPlayer.value"
       :starting-player="extraTurns.startingPlayer.value"
+      :my-name="eventTimer.names.value?.me"
+      :opponent-name="eventTimer.names.value?.opponent"
       @set-starting-player="extraTurns.setStartingPlayer"
       @action="extraTurns.action"
       @reset="onTurnsReset"
