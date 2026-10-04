@@ -15,9 +15,11 @@ import { answerLoadError, requireChatId } from '../callbackErrors'
 import { requireLinkedAssociate, resolveAssociateUuidByChatId, resolveChatIdByAssociateUuid } from '../account/linking'
 import { showRichStep, twoColumnFactsTable } from '../mockups/richStepHelpers'
 import { fetchLiveTable, type LiveTable } from './matchReportData'
+import {
+  OPEN_RESULT_PREFIX, matchTableHeader, openResultButton, timerButton
+} from './matchTableMessage'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
-const OPEN_PREFIX = 'mropen:'
 const SUMMARY_PREFIX = 'mrsum:'
 const SEND_PREFIX = 'mrsend:'
 const CONFIRM_PREFIX = 'mrok:'
@@ -62,21 +64,26 @@ function resultScoreLabel(table: LiveTable): string {
   return scoreLabelFor(table.result, table.isPlayer1)
 }
 
-// What /tavolo shows for a 1v1: where they sit and what the result says
-function tableRichMessage(table: LiveTable): InputRichMessage {
-  const place = table.tableNumber === null ? `${ICONS.table} Il tuo tavolo` : `${ICONS.table} Tavolo ${table.tableNumber}`
-  const blocks: InputRichMessage['blocks'] = [
-    { type: 'heading', size: 3, text: place },
-    { type: 'paragraph', text: `${table.tournamentName} · Round ${table.roundNumber}\n\nGiochi contro: ${table.opponent.name}` }
-  ]
+// What /tavolo shows for a 1v1: where they sit, against whom, and what the result says. The table
+// card is the one the tables announcement pushes (matchTableMessage.ts); the timer button is on
+// every state, since the table only exists while its round is being played.
+function tableRichMessage(
+  table: LiveTable,
+  opponentUsername: string | undefined,
+  siteUrl: string
+): InputRichMessage {
+  const blocks: NonNullable<InputRichMessage['blocks']> = matchTableHeader({
+    tableNumber: table.tableNumber,
+    tournamentName: table.tournamentName,
+    roundNumber: table.roundNumber,
+    opponent: { name: table.opponent.name, telegramUsername: opponentUsername }
+  })
+  const timer = timerButton(siteUrl)
 
   if (!table.result) {
     blocks.push(table.pairingStatus === 'completed'
       ? { type: 'paragraph', text: `${ICONS.success} Risultato registrato.` }
-      : {
-        type: 'buttons',
-        buttons: [{ text: `${ICONS.write} Inserisci risultato`, style: 'primary', callback_data: `${OPEN_PREFIX}${table.pairingUuid}` }]
-      })
+      : { type: 'buttons', buttons: [openResultButton(table.pairingUuid), timer] })
   } else if (table.result.disputedAt) {
     blocks.push({ type: 'paragraph', text: `${ICONS.warning} Risultato contestato (${resultScoreLabel(table)}): decide l'organizzatore.` })
   } else if (table.result.confirmedAt) {
@@ -91,6 +98,11 @@ function tableRichMessage(table: LiveTable): InputRichMessage {
       { type: 'paragraph', text: `${table.opponent.name} ha inserito ${resultScoreLabel(table)} (i tuoi game per primi). È corretto?` },
       answerButtons(table.pairingUuid)
     )
+  }
+
+  // The first state above already carries the timer next to its button
+  if (table.result || table.pairingStatus === 'completed') {
+    blocks.push({ type: 'buttons', buttons: [timer] })
   }
   return { blocks }
 }
@@ -130,7 +142,7 @@ function summaryRichMessage(table: LiveTable, outcomeIndex: number): InputRichMe
         type: 'buttons',
         buttons: [
           { text: `${ICONS.success} Invia`, style: 'success', callback_data: `${SEND_PREFIX}${table.pairingUuid}:${outcomeIndex}` },
-          { text: `${ICONS.edit} Modifica`, style: 'danger', callback_data: `${OPEN_PREFIX}${table.pairingUuid}:${outcomeIndex}` }
+          { text: `${ICONS.edit} Modifica`, style: 'danger', callback_data: `${OPEN_RESULT_PREFIX}${table.pairingUuid}:${outcomeIndex}` }
         ]
       }
     ]
@@ -149,7 +161,12 @@ export async function replyWithLiveTable(ctx: Context): Promise<boolean> {
   const table = await fetchLiveTable(associateUuid)
   if (!table) return false
 
-  await ctx.replyWithRichMessage(tableRichMessage(table))
+  const usernames = await fetchTelegramUsernames([table.opponent.associateUuid])
+  await ctx.replyWithRichMessage(tableRichMessage(
+    table,
+    usernames.get(table.opponent.associateUuid),
+    useRuntimeConfig().public.siteUrl
+  ))
   return true
 }
 
@@ -307,7 +324,7 @@ async function handleDispute(ctx: Context, pairingUuid: string) {
   })
 }
 
-// "<pairing uuid>[:<outcome index>]" after a prefix; the index is absent for OPEN_PREFIX (no prior
+// "<pairing uuid>[:<outcome index>]" after a prefix; the index is absent for OPEN_RESULT_PREFIX (no prior
 // pick) and CONFIRM_PREFIX/DISPUTE_PREFIX
 function parsePayload(payload: string): { pairingUuid: string, outcomeIndex: number | null } {
   const [pairingUuid, outcome] = payload.split(':')
@@ -330,7 +347,7 @@ export function registerMatchReportHandlers(bot: Bot) {
 
     type Run = (uuid: string, outcomeIndex: number | null) => Promise<unknown>
     const routes: [prefix: string, run: Run][] = [
-      [OPEN_PREFIX, (pairingUuid, outcomeIndex) => handleOpen(ctx, pairingUuid, outcomeIndex)],
+      [OPEN_RESULT_PREFIX, (uuid, outcomeIndex) => handleOpen(ctx, uuid, outcomeIndex)],
       [SUMMARY_PREFIX, (uuid, outcomeIndex) => handleSummary(ctx, uuid, outcomeIndex)],
       [SEND_PREFIX, (uuid, outcomeIndex) => handleSend(ctx, uuid, outcomeIndex)],
       [CONFIRM_PREFIX, pairingUuid => handleConfirm(ctx, pairingUuid)],

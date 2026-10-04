@@ -3,15 +3,17 @@
 // the player needn't send /tavolo. Every entry point is best-effort: the write it follows already
 // succeeded, so a failure is logged and never propagates.
 import {
-  registrationAcceptedMessage, roundTablesCancelledMessage, tableAnnouncedMessage,
+  podAnnouncedMessage, registrationAcceptedMessage, roundTablesCancelledMessage,
   tournamentResetMessage
 } from '#shared/utils/tournaments/playerNotificationMessages'
 
 import type { AssociateNotifyResult } from '#shared/types/notifications'
 
+import { matchTableMessage } from './commands/tournaments/matchTableMessage'
 import { notifyTelegramAssociates, type AssociateMessage } from './notify'
 
 interface SeatingRow {
+  uuid: string
   table_number: number | null
   player1_uuid: string | null
   player2_uuid: string | null
@@ -28,7 +30,7 @@ interface PlayerRow {
 }
 
 const SEATING_SELECT = `
-  table_number, player1_uuid, player2_uuid, player3_uuid, player4_uuid,
+  uuid, table_number, player1_uuid, player2_uuid, player3_uuid, player4_uuid,
   round:tournament_rounds!inner(round_number),
   tournament:tournaments!inner(name, telegram_notifications_enabled)
 `
@@ -82,7 +84,8 @@ async function bestEffort<T>(action: () => Promise<T>, fallback: T): Promise<T> 
   }
 }
 
-// Each seated player is told their own table and who they play with.
+// Each seated player is told their own table and who they play with: a 1v1 gets the table card,
+// with the buttons to enter the result and open the timer; a pod gets the seating as text.
 export function notifyRoundTables(roundUuid: string): Promise<AssociateNotifyResult | null> {
   return bestEffort(async () => {
     const seating = await fetchSeating({ roundUuid })
@@ -93,7 +96,9 @@ export function notifyRoundTables(roundUuid: string): Promise<AssociateNotifyRes
       [...players.values()].map(player => player.associate_uuid)
     )
 
-    const messages = seating.flatMap(row => seatUuids(row).flatMap((playerUuid) => {
+    const siteUrl = useRuntimeConfig().public.siteUrl
+
+    const messageFor = (row: SeatingRow, playerUuid: string): AssociateMessage[] => {
       const player = players.get(playerUuid)
       if (!player) return []
 
@@ -106,17 +111,35 @@ export function notifyRoundTables(roundUuid: string): Promise<AssociateNotifyRes
           isYou: seated.uuid === playerUuid
         }))
 
+      if (seats.length > 2) {
+        return [{
+          associateUuid: player.associate_uuid,
+          text: podAnnouncedMessage({
+            tournamentName: row.tournament.name,
+            roundNumber: row.round.round_number,
+            tableNumber: row.table_number,
+            seats
+          })
+        }]
+      }
+
+      // Alone at the table (a bye): nobody to play against and nothing to report
+      const opponent = seats.find(seat => !seat.isYou)
+      if (!opponent) return []
+
       return [{
         associateUuid: player.associate_uuid,
-        text: tableAnnouncedMessage({
+        rich: matchTableMessage({
+          pairingUuid: row.uuid,
+          tableNumber: row.table_number,
           tournamentName: row.tournament.name,
           roundNumber: row.round.round_number,
-          tableNumber: row.table_number,
-          seats
-        })
+          opponent
+        }, siteUrl)
       }]
-    }))
+    }
 
+    const messages = seating.flatMap(row => seatUuids(row).flatMap(uuid => messageFor(row, uuid)))
     return notifyTelegramAssociates(messages)
   }, null)
 }

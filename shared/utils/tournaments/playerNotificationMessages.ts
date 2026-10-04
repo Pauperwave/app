@@ -37,9 +37,10 @@ function podSeatingText(seats: TableSeat[]): string {
   return `💺 Sei al posto ${yourSeat}\n\nAl tavolo:\n${lines.join('\n')}`
 }
 
-// `seats` is the whole table in seat order, the recipient included. A 1v1 table keeps "Giochi
-// contro: …"; a pod shows the seating.
-export function tableAnnouncedMessage(input: {
+// The announcement of a pod, as text: the whole table in seat order, the recipient included. A 1v1
+// table is announced with its own card instead, buttons and all (server/utils/telegram/commands/
+// tournaments/matchTableMessage.ts).
+export function podAnnouncedMessage(input: {
   tournamentName: string
   roundNumber: number
   tableNumber: number | null
@@ -55,10 +56,7 @@ export function tableAnnouncedMessage(input: {
   const header = `${place} · ${tournamentName} · Round ${roundNumber}`
   const footer = 'Per inserire il risultato usa /tavolo.'
 
-  if (seats.length > 2) return `${header}\n${podSeatingText(seats)}\n\n${footer}`
-
-  const opponents = seats.filter(seat => !seat.isYou)
-  return `${header}\n\n${opponentsText(opponents)}\n\n${footer}`
+  return `${header}\n${podSeatingText(seats)}\n\n${footer}`
 }
 
 export function roundTablesCancelledMessage(tournamentName: string, roundNumber: number): string {

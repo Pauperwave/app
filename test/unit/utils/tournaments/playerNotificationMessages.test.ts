@@ -1,33 +1,17 @@
 // test\unit\utils\tournaments\playerNotificationMessages.test.ts
 import { describe, expect, it } from 'vitest'
 import {
-  registrationAcceptedMessage, roundTablesCancelledMessage, tableAnnouncedMessage,
+  podAnnouncedMessage, registrationAcceptedMessage, roundTablesCancelledMessage,
   tournamentResetMessage
 } from '#shared/utils/tournaments/playerNotificationMessages'
 
-describe('tableAnnouncedMessage', () => {
+describe('podAnnouncedMessage', () => {
   const base = { tournamentName: 'Commander Night', roundNumber: 2, tableNumber: 3 }
   const you = { name: 'Io Stesso', isYou: true }
-
-  it('names the single opponent of a 1v1 table', () => {
-    const text = tableAnnouncedMessage({ ...base, seats: [you, { name: 'Mario Rossi', isYou: false }] })
-
-    expect(text).toContain('🪑 Tavolo 3 · Commander Night · Round 2')
-    expect(text).toContain('Giochi contro: Mario Rossi')
-    expect(text).not.toContain('posto')
-  })
-
-  it('adds the nickname to a single opponent too', () => {
-    const text = tableAnnouncedMessage({
-      ...base,
-      seats: [{ name: 'Mario Rossi', telegramUsername: 'mario', isYou: false }, you]
-    })
-
-    expect(text).toContain('Giochi contro: Mario Rossi (@mario)')
-  })
+  const others = [{ name: 'A A', isYou: false }, { name: 'B B', isYou: false }, { name: 'C C', isYou: false }]
 
   it('shows a pod in seat order, with the recipient\'s own seat marked', () => {
-    const text = tableAnnouncedMessage({
+    const text = podAnnouncedMessage({
       ...base,
       seats: [
         { name: 'A A', telegramUsername: 'alpha', isYou: false },
@@ -52,10 +36,10 @@ describe('tableAnnouncedMessage', () => {
   })
 
   it('falls back to a generic place when there is no table number', () => {
-    const text = tableAnnouncedMessage({
+    const text = podAnnouncedMessage({
       ...base,
       tableNumber: null,
-      seats: [you, { name: 'A A', isYou: false }]
+      seats: [you, ...others]
     })
 
     expect(text).toContain('🪑 Il tuo tavolo · Commander Night · Round 2')

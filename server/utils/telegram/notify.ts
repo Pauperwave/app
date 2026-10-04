@@ -1,5 +1,6 @@
 // server\utils\telegram\notify.ts
 import type { H3Event } from 'h3'
+import type { InputRichMessage } from 'grammy/types'
 
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
@@ -14,6 +15,13 @@ export async function sendTelegramMessage(
 ) {
   const bot = useTelegramBot()
   return bot.api.sendMessage(chatId, text, options)
+}
+
+// A rich message (blocks, with buttons) for a chat: only the Telegram Bot API can push it, a Menu
+// can't be sent this way
+export async function sendTelegramRichMessage(chatId: number | string, message: InputRichMessage) {
+  const bot = useTelegramBot()
+  return bot.api.sendRichMessage(chatId, message)
 }
 
 // Plain text unless the caller says its text is HTML (escaped with html.ts's escapeHtml)
@@ -66,10 +74,10 @@ export async function notifyTelegramSuperAdmins(
   await notifyByRole(event, text, ['super_admin'], options)
 }
 
-export interface AssociateMessage {
-  associateUuid: string
-  text: string
-}
+// What one associate is sent: a plain text, or a rich message when it carries buttons
+interface PlainContent { text: string }
+interface RichContent { rich: InputRichMessage }
+export type AssociateMessage = { associateUuid: string } & (PlainContent | RichContent)
 
 // Passive per-player notifications: one text per associate (a table announcement differs for
 // everyone), unlinked associates are counted, not errors. Never throws: the caller's write already
@@ -93,11 +101,13 @@ export async function notifyTelegramAssociates(
   const chatIdByAssociate = new Map((links ?? []).map(link => [link.associate_uuid, link.chat_id]))
   const linkedMessages = messages.flatMap((message) => {
     const chatId = chatIdByAssociate.get(message.associateUuid)
-    return chatId === undefined ? [] : [{ chatId, text: message.text }]
+    return chatId === undefined ? [] : [{ chatId, message }]
   })
 
   const results = await Promise.allSettled(
-    linkedMessages.map(message => sendTelegramMessage(message.chatId, message.text))
+    linkedMessages.map(({ chatId, message }) => ('rich' in message
+      ? sendTelegramRichMessage(chatId, message.rich)
+      : sendTelegramMessage(chatId, message.text)))
   )
   const rejected = results.filter(result => result.status === 'rejected')
   for (const result of rejected) {
