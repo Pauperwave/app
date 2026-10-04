@@ -103,7 +103,7 @@ const emit = defineEmits<{
 
       <UButton
         size="xl"
-        color="neutral"
+        color="error"
         variant="subtle"
         class="h-16"
         :icon="ICONS.rotateBack"
