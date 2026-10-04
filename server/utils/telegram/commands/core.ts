@@ -134,7 +134,7 @@ const HELP_SECTIONS: Record<HelpTopic, () => Blocks> = {
   ],
 
   dadi: () => [
-    { type: 'paragraph', text: { type: 'bold', text: '🎰 Dadi' } },
+    { type: 'paragraph', text: { type: 'bold', text: `${ICONS.dice} Dadi` } },
     {
       type: 'paragraph',
       text: '/dado — un dado a 6 facce (animato)\n/moneta — testa o croce\n/tira [facce] — un dado a N facce (default 20)'
@@ -180,7 +180,7 @@ const HELP_TOPIC_BUTTONS: Record<HelpTopic, string> = {
   tornei: `${ICONS.medal} Tornei`,
   iscrizioni: `${ICONS.ticket} Iscrizioni`,
   carte: `${ICONS.card} Carte`,
-  dadi: '🎰 Dadi',
+  dadi: `${ICONS.dice} Dadi`,
   account: '👤 Account'
 }
 

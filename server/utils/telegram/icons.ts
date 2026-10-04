@@ -15,6 +15,7 @@ export const ICONS = {
   // League headers, classifica headers and prize lines share one trophy glyph
   trophy: '🏆',
   medal: '🏅',
+  dice: '🎲',
   date: '🗓️',
   location: '📍',
   calendar: '📅',
