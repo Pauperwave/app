@@ -24,7 +24,7 @@ import { ICONS } from '~~/server/utils/telegram/icons'
 // number opens that card's actions: mark it found, or remove it. Removal is a soft delete like the
 // site's, so an admin can restore it from the trash.
 
-const COLUMNS = 'id, card_name, set_code, language, treatment, copies, cardmarket_price, image_url'
+const COLUMNS = 'id, card_name, mana_cost, set_code, language, treatment, copies, cardmarket_price, image_url'
 const PRIVATE_ONLY_TEXT = 'Apri /cercate in privato con me: l\'elenco è personale.'
 
 type Supabase = ReturnType<typeof telegramServiceSupabaseClient>

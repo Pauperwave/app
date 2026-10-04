@@ -16,6 +16,7 @@ function row(id: number, overrides: Partial<WantedListRow> = {}): WantedListRow 
   return {
     id,
     card_name: `Card ${id}`,
+    mana_cost: null,
     set_code: 'm10',
     language: null,
     treatment: [],
@@ -59,6 +60,16 @@ describe('buildWantedListText', () => {
     const text = buildWantedListText([detailed], 1, WANTED_LIST_PAGE_SIZE + 1)
     expect(text).toContain(`${WANTED_LIST_PAGE_SIZE + 1}. <b>Card 1</b> (M10) · ×2 · IT · foil · CM`)
     expect(text).toContain('Pagina 2 di 2')
+  })
+
+  it('puts the mana cost between the number and the name', () => {
+    const text = buildWantedListText([row(1, { mana_cost: '{2}{R}' })], 0, 1)
+    expect(text).toContain('1. {2}{R} <b>Card 1</b>')
+  })
+
+  it('leaves the cost out for a card without one', () => {
+    const text = buildWantedListText([row(1, { mana_cost: null })], 0, 1)
+    expect(text).toContain('1. <b>Card 1</b>')
   })
 
   it('escapes HTML in a card name', () => {

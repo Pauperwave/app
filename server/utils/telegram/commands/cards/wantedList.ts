@@ -9,6 +9,8 @@ import { ICONS } from '~~/server/utils/telegram/icons'
 export interface WantedListRow {
   id: number
   card_name: string
+  // Scryfall notation like "{2}{R}", null for a land or a card with no cost
+  mana_cost: string | null
   set_code: string | null
   language: string | null
   treatment: string[]
@@ -75,7 +77,10 @@ function describeRow(row: WantedListRow, position: number): string {
     row.cardmarket_price !== null ? `CM ${euroFormatter.format(row.cardmarket_price)}` : null
   ].filter(detail => detail !== null)
 
-  return `${position}. <b>${escapeHtml(row.card_name)}</b> ${details.join(' · ')}`.trimEnd()
+  // The mana cost sits between the number and the name, when the card has one
+  const cost = row.mana_cost ? `${escapeHtml(row.mana_cost)} ` : ''
+
+  return `${position}. ${cost}<b>${escapeHtml(row.card_name)}</b> ${details.join(' · ')}`.trimEnd()
 }
 
 export function pageCount(total: number): number {
