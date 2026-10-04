@@ -33,5 +33,5 @@ export const ICONS = {
   languageEn: '🇬🇧',
   foil: '✨',
   // "Aggiungi alle mie cercate" button
-  wanted: '➕'
+  wanted: '🔍'
 } as const
