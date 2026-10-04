@@ -152,7 +152,7 @@ async function legheBlocks(ctx: Context): Promise<InputRichMessage['blocks']> {
     const dateRange = start && end ? `${start} → ${end}` : start ? `dal ${start}` : 'data da definire'
 
     blocks.push({ type: 'paragraph', text: { type: 'bold', text: `${ICONS.trophy} ${league.name}` } })
-    if (total > 0) blocks.push({ type: 'paragraph', text: `📊 ${done}/${total} tappe` })
+    if (total > 0) blocks.push({ type: 'paragraph', text: `${ICONS.stats} ${done}/${total} tappe` })
     blocks.push({ type: 'paragraph', text: `${ICONS.date} ${dateRange}` })
     blocks.push({
       type: 'buttons',
@@ -285,7 +285,7 @@ async function legheCommandHandler(ctx: Context) {
     await ctx.replyWithRichMessage({ blocks }, { reply_markup: legheMenu })
   } catch {
     await ctx.replyWithRichMessage({
-      markdown: '⚠️ Non sono riuscito a recuperare le leghe, riprova più tardi.'
+      markdown: `${ICONS.warning} Non sono riuscito a recuperare le leghe, riprova più tardi.`
     })
   }
 }

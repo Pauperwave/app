@@ -16,6 +16,7 @@ import { NOT_LINKED_MESSAGE, resolveAssociateUuidByChatId } from '../account/lin
 import { registerDeepLink } from '../../deepLinks'
 import { buildImportSummary, type ImportOutcome } from './importSummary'
 import { scryfallLookupGetter } from './scryfall'
+import { ICONS } from '../../icons'
 
 // Importing a pasted card list into the wanted cards. Stateless like the support flow: the command
 // answers with a ForceReply prompt and the next message, a reply to exactly that prompt, is the
@@ -23,7 +24,7 @@ import { scryfallLookupGetter } from './scryfall'
 // without the prompt.
 
 const IMPORT_PROMPT = 'Incolla l\'elenco delle carte da cercare, una per riga (es. 1 Erode (SOS) 15): rispondi a questo messaggio.'
-const NO_CARDS_TEXT = '🤔 Non ho riconosciuto nessuna carta. Scrivi una carta per riga, es. 1 Erode (SOS) 15.'
+const NO_CARDS_TEXT = `${ICONS.thinking} Non ho riconosciuto nessuna carta. Scrivi una carta per riga, es. 1 Erode (SOS) 15.`
 const PRIVATE_ONLY_TEXT = 'Scrivimi in privato per importare il tuo elenco.'
 
 // Each line is a Scryfall request and a webhook has a time budget: a long list is cut
@@ -66,7 +67,7 @@ async function runImport(ctx: Context, text: string) {
 
   const entries = parsed.entries.slice(0, MAX_IMPORT_LINES)
   const skipped = parsed.entries.length - entries.length
-  const pending = await ctx.reply(`⏳ Cerco ${entries.length} carte…`)
+  const pending = await ctx.reply(`${ICONS.pending} Cerco ${entries.length} carte…`)
 
   const supabase = telegramServiceSupabaseClient()
   const { data: existingRows, error: existingError } = await supabase
@@ -172,7 +173,7 @@ export function registerImportaHandlers(bot: Bot, commands: CommandGroup<Context
       await runImport(ctx, text)
     } catch (err) {
       console.error('Card list import failed:', err)
-      await ctx.reply('⚠️ Non riesco a importare l\'elenco adesso. Riprova tra poco.')
+      await ctx.reply(`${ICONS.warning} Non riesco a importare l'elenco adesso. Riprova tra poco.`)
     }
   })
 
@@ -184,7 +185,7 @@ export function registerImportaHandlers(bot: Bot, commands: CommandGroup<Context
         await importaCommandHandler(ctx)
       } catch (err) {
         console.error('/importa failed:', err)
-        await ctx.reply('⚠️ Non riesco a importare l\'elenco adesso. Riprova tra poco.')
+        await ctx.reply(`${ICONS.warning} Non riesco a importare l'elenco adesso. Riprova tra poco.`)
       }
     }
   )

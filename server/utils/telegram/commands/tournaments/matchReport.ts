@@ -15,6 +15,7 @@ import { answerLoadError, requireChatId } from '../callbackErrors'
 import { requireLinkedAssociate, resolveAssociateUuidByChatId, resolveChatIdByAssociateUuid } from '../account/linking'
 import { showRichStep, twoColumnFactsTable } from '../mockups/richStepHelpers'
 import { fetchLiveTable, type LiveTable } from './matchReportData'
+import { ICONS } from '../../icons'
 
 const OPEN_PREFIX = 'mropen:'
 const SUMMARY_PREFIX = 'mrsum:'
@@ -49,8 +50,8 @@ function answerButtons(pairingUuid: string) {
   return {
     type: 'buttons' as const,
     buttons: [
-      { text: '✅ Confermo', style: 'success' as const, callback_data: `${CONFIRM_PREFIX}${pairingUuid}` },
-      { text: '❌ Non è corretto', style: 'danger' as const, callback_data: `${DISPUTE_PREFIX}${pairingUuid}` }
+      { text: `${ICONS.success} Confermo`, style: 'success' as const, callback_data: `${CONFIRM_PREFIX}${pairingUuid}` },
+      { text: `${ICONS.failure} Non è corretto`, style: 'danger' as const, callback_data: `${DISPUTE_PREFIX}${pairingUuid}` }
     ]
   }
 }
@@ -63,7 +64,7 @@ function resultScoreLabel(table: LiveTable): string {
 
 // What /tavolo shows for a 1v1: where they sit and what the result says
 function tableRichMessage(table: LiveTable): InputRichMessage {
-  const place = table.tableNumber === null ? '🪑 Il tuo tavolo' : `🪑 Tavolo ${table.tableNumber}`
+  const place = table.tableNumber === null ? `${ICONS.table} Il tuo tavolo` : `${ICONS.table} Tavolo ${table.tableNumber}`
   const blocks: InputRichMessage['blocks'] = [
     { type: 'heading', size: 3, text: place },
     { type: 'paragraph', text: `${table.tournamentName} · Round ${table.roundNumber}\n\nGiochi contro: ${table.opponent.name}` }
@@ -71,19 +72,19 @@ function tableRichMessage(table: LiveTable): InputRichMessage {
 
   if (!table.result) {
     blocks.push(table.pairingStatus === 'completed'
-      ? { type: 'paragraph', text: '✅ Risultato registrato.' }
+      ? { type: 'paragraph', text: `${ICONS.success} Risultato registrato.` }
       : {
         type: 'buttons',
-        buttons: [{ text: '✍️ Inserisci risultato', style: 'primary', callback_data: `${OPEN_PREFIX}${table.pairingUuid}` }]
+        buttons: [{ text: `${ICONS.write} Inserisci risultato`, style: 'primary', callback_data: `${OPEN_PREFIX}${table.pairingUuid}` }]
       })
   } else if (table.result.disputedAt) {
-    blocks.push({ type: 'paragraph', text: `⚠️ Risultato contestato (${resultScoreLabel(table)}): decide l'organizzatore.` })
+    blocks.push({ type: 'paragraph', text: `${ICONS.warning} Risultato contestato (${resultScoreLabel(table)}): decide l'organizzatore.` })
   } else if (table.result.confirmedAt) {
-    blocks.push({ type: 'paragraph', text: `✅ Risultato confermato: ${resultScoreLabel(table)}.` })
+    blocks.push({ type: 'paragraph', text: `${ICONS.success} Risultato confermato: ${resultScoreLabel(table)}.` })
   } else if (table.result.reporterUuid === table.myPlayerUuid) {
     blocks.push({
       type: 'paragraph',
-      text: `✅ Hai inserito ${resultScoreLabel(table)}. In attesa che ${table.opponent.name} lo confermi.`
+      text: `${ICONS.success} Hai inserito ${resultScoreLabel(table)}. In attesa che ${table.opponent.name} lo confermi.`
     })
   } else {
     blocks.push(
@@ -99,13 +100,13 @@ function tableRichMessage(table: LiveTable): InputRichMessage {
 function outcomePickRichMessage(table: LiveTable, currentIndex: number | null): InputRichMessage {
   return {
     blocks: [
-      { type: 'paragraph', text: `🎲 Risultato del match contro ${table.opponent.name}\n\nQuanti game hai vinto tu e quanti lui?` },
+      { type: 'paragraph', text: `${ICONS.dice} Risultato del match contro ${table.opponent.name}\n\nQuanti game hai vinto tu e quanti lui?` },
       {
         type: 'buttons',
         buttons: MATCH_OUTCOMES.map((outcome, index) => {
           const isSelected = index === currentIndex
           return {
-            text: `${isSelected ? '⭐ ' : ''}${outcome.label}`,
+            text: `${isSelected ? `${ICONS.selected} ` : ''}${outcome.label}`,
             style: isSelected ? 'success' as const : undefined,
             callback_data: `${SUMMARY_PREFIX}${table.pairingUuid}:${index}`
           }
@@ -119,17 +120,17 @@ function summaryRichMessage(table: LiveTable, outcomeIndex: number): InputRichMe
   const outcome = outcomeAt(outcomeIndex)
   return {
     blocks: [
-      { type: 'heading', size: 3, text: '🧾 Riepilogo risultato' },
+      { type: 'heading', size: 3, text: `${ICONS.receipt} Riepilogo risultato` },
       twoColumnFactsTable('Da inviare', [
-        ['🆚 Avversario', table.opponent.name],
-        ['🎲 Risultato', outcome.label]
+        [`${ICONS.versus} Avversario`, table.opponent.name],
+        [`${ICONS.dice} Risultato`, outcome.label]
       ]),
       { type: 'paragraph', text: `Il risultato verrà registrato subito, ${table.opponent.name} riceverà solo una richiesta di conferma. Lo invio?` },
       {
         type: 'buttons',
         buttons: [
-          { text: '✅ Invia', style: 'success', callback_data: `${SEND_PREFIX}${table.pairingUuid}:${outcomeIndex}` },
-          { text: '✏️ Modifica', style: 'danger', callback_data: `${OPEN_PREFIX}${table.pairingUuid}:${outcomeIndex}` }
+          { text: `${ICONS.success} Invia`, style: 'success', callback_data: `${SEND_PREFIX}${table.pairingUuid}:${outcomeIndex}` },
+          { text: `${ICONS.edit} Modifica`, style: 'danger', callback_data: `${OPEN_PREFIX}${table.pairingUuid}:${outcomeIndex}` }
         ]
       }
     ]
@@ -255,14 +256,14 @@ async function handleSend(ctx: Context, pairingUuid: string, outcomeIndex: numbe
     : `${table.opponent.name} non ha collegato Telegram: se il risultato è sbagliato dovrà correggerlo l'organizzatore.`
 
   await showRichStep(ctx, {
-    blocks: [{ type: 'paragraph', text: `✅ Risultato registrato: ${outcome.label}\n\n${followUp}` }]
+    blocks: [{ type: 'paragraph', text: `${ICONS.success} Risultato registrato: ${outcome.label}\n\n${followUp}` }]
   })
 
   // From the opponent's side: their own games first
   const opponentGames = scoreLabelFor(games, !table.isPlayer1)
   await notifyOpponent(ctx, table, {
     blocks: [
-      { type: 'heading', size: 3, text: '🧾 Risultato inserito' },
+      { type: 'heading', size: 3, text: `${ICONS.receipt} Risultato inserito` },
       {
         type: 'paragraph',
         text: `Per il match del Round ${table.roundNumber} ${table.opponent.name} ha inserito ${opponentGames} (i tuoi game per primi). È corretto?`
@@ -281,11 +282,11 @@ async function handleConfirm(ctx: Context, pairingUuid: string) {
   await confirmMatchResult(telegramServiceSupabaseClient(), table.pairingUuid)
 
   const score = resultScoreLabel(table)
-  await showRichStep(ctx, { blocks: [{ type: 'paragraph', text: `✅ Risultato confermato: ${score}` }] })
+  await showRichStep(ctx, { blocks: [{ type: 'paragraph', text: `${ICONS.success} Risultato confermato: ${score}` }] })
   await notifyOpponent(ctx, table, {
     blocks: [{
       type: 'paragraph',
-      text: `✅ ${table.opponent.name} ha confermato il risultato del Round ${table.roundNumber}: ${scoreLabelFor(table.result, !table.isPlayer1)}`
+      text: `${ICONS.success} ${table.opponent.name} ha confermato il risultato del Round ${table.roundNumber}: ${scoreLabelFor(table.result, !table.isPlayer1)}`
     }]
   })
 }
@@ -296,12 +297,12 @@ async function handleDispute(ctx: Context, pairingUuid: string) {
 
   await disputeMatchResult(telegramServiceSupabaseClient(), table.pairingUuid)
   await showRichStep(ctx, {
-    blocks: [{ type: 'paragraph', text: '⚠️ Risultato contestato: l\'organizzatore lo verificherà.' }]
+    blocks: [{ type: 'paragraph', text: `${ICONS.warning} Risultato contestato: l'organizzatore lo verificherà.` }]
   })
   await notifyOpponent(ctx, table, {
     blocks: [{
       type: 'paragraph',
-      text: `⚠️ ${table.opponent.name} ha contestato il risultato del Round ${table.roundNumber}: l'organizzatore lo verificherà.`
+      text: `${ICONS.warning} ${table.opponent.name} ha contestato il risultato del Round ${table.roundNumber}: l'organizzatore lo verificherà.`
     }]
   })
 }

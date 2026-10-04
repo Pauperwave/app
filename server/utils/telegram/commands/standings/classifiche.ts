@@ -178,13 +178,13 @@ const classificaMenu = new Menu<Context>('classifica-menu', {
     const navRow = range.row()
     if (page > 0) {
       navRow.text({
-        text: '◀ Pagina prec.',
+        text: `${ICONS.previous} Pagina prec.`,
         payload: encodeStandingsPayload(scope, page - 1)
       }, showStandings)
     }
     if (hasNext) {
       navRow.text({
-        text: 'Pagina succ. ▶',
+        text: `Pagina succ. ${ICONS.following}`,
         payload: encodeStandingsPayload(scope, page + 1)
       }, showStandings)
     }

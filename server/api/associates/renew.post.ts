@@ -1,6 +1,7 @@
 // server\api\associates\renew.post.ts
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
+import { ICONS } from '../../utils/telegram/icons'
 
 // /tesseramento renewal confirm action. Leaves membership_request_status alone: an approved
 // associate stays 'approved' and never re-enters the new-applicant queue. "Open renewal request" is
@@ -29,7 +30,7 @@ export default defineEventHandler(async (event) => {
 
   await notifyTelegramAdmins(
     event,
-    `🔄 Richiesta di rinnovo tesseramento: ${associate.first_name} ${associate.last_name}`
+    `${ICONS.refresh} Richiesta di rinnovo tesseramento: ${associate.first_name} ${associate.last_name}`
   )
 
   return { associate }

@@ -18,6 +18,7 @@ import {
   pageCount,
   type WantedListRow
 } from './wantedList'
+import { ICONS } from '../../icons'
 
 // /cercate: the associate's own active wanted cards (status 'searching'), a page at a time, with a
 // two-step removal. Removal is a soft delete like the site's, so an admin can restore it from the
@@ -137,7 +138,7 @@ async function handleListButton(ctx: Context, next: () => Promise<void>) {
           .eq('id', row.id)
           .eq('player_associate_uuid', associateUuid)
         if (error) throw error
-        toast = '🗑 Tolta dalle tue cercate.'
+        toast = `${ICONS.trash} Tolta dalle tue cercate.`
       } else {
         toast = 'Questa carta non è più nel tuo elenco.'
       }
@@ -168,7 +169,7 @@ export function registerElencoCommand(bot: Bot, commands: CommandGroup<Context>)
       await elencoCommandHandler(ctx)
     } catch (err) {
       console.error('/cercate failed:', err)
-      await ctx.reply('⚠️ Non riesco a caricare l\'elenco adesso. Riprova tra poco.')
+      await ctx.reply(`${ICONS.warning} Non riesco a caricare l'elenco adesso. Riprova tra poco.`)
     }
   })
 }

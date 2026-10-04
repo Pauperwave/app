@@ -2,6 +2,7 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 import type { AssociateEditsPayload } from '#shared/types/associates'
+import { ICONS } from '../../utils/telegram/icons'
 
 // Public /tesseramento form endpoint: gated by requireUser (OTP-verified session), not
 // requireManagementPermission, since the submitter is usually not staff. The OTP step proves
@@ -56,7 +57,7 @@ export default defineEventHandler(async (event) => {
 
   await notifyTelegramAdmins(
     event,
-    `📋 Nuova domanda di tesseramento: ${data.first_name} ${data.last_name}`
+    `${ICONS.application} Nuova domanda di tesseramento: ${data.first_name} ${data.last_name}`
   )
 
   return { associate: data }

@@ -18,13 +18,13 @@ interface AssociateStatusRow {
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  active: '✅ Attivo',
-  to_renew: '⚠️ Da rinnovare',
-  expired: '❌ Scaduto',
+  active: `${ICONS.success} Attivo`,
+  to_renew: `${ICONS.warning} Da rinnovare`,
+  expired: `${ICONS.failure} Scaduto`,
   unpaid: `${ICONS.fee} Quota non pagata`,
-  pending: '⏳ Richiesta in attesa di approvazione',
-  approved: '✅ Approvato',
-  rejected: '❌ Richiesta rifiutata'
+  pending: `${ICONS.pending} Richiesta in attesa di approvazione`,
+  approved: `${ICONS.success} Approvato`,
+  rejected: `${ICONS.failure} Richiesta rifiutata`
 }
 
 async function fetchAssociateStatus(associateUuid: string): Promise<AssociateStatusRow | null> {
@@ -71,14 +71,14 @@ async function tesseraCommandHandler(ctx: Context) {
 
     const row = await fetchAssociateStatus(associateUuid)
     if (!row) {
-      await ctx.replyWithRichMessage({ markdown: '⚠️ Non trovo il tuo tesseramento, contatta un admin.' })
+      await ctx.replyWithRichMessage({ markdown: `${ICONS.warning} Non trovo il tuo tesseramento, contatta un admin.` })
       return
     }
 
     await ctx.replyWithRichMessage({ markdown: tesseraMarkdown(row) })
   } catch {
     await ctx.replyWithRichMessage({
-      markdown: '⚠️ Non sono riuscito a recuperare il tuo tesseramento, riprova più tardi.'
+      markdown: `${ICONS.warning} Non sono riuscito a recuperare il tuo tesseramento, riprova più tardi.`
     })
   }
 }

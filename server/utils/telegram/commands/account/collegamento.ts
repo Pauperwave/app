@@ -4,6 +4,7 @@ import type { CommandGroup } from '@grammyjs/commands'
 
 import { resolveAssociateUuidByChatId } from './linking'
 import { registerDeepLink } from '../../deepLinks'
+import { ICONS } from '../../icons'
 
 interface AssociateIdentity {
   first_name: string | null
@@ -33,7 +34,7 @@ async function collegamentoCommandHandler(ctx: Context) {
     const associateUuid = await resolveAssociateUuidByChatId(ctx.chat.id)
     if (!associateUuid) {
       await ctx.replyWithRichMessage({
-        markdown: '❌ Questa chat non è collegata a nessun socio.\n\n'
+        markdown: `${ICONS.failure} Questa chat non è collegata a nessun socio.\n\n`
           + 'Scrivimi la tua email da socio per collegarla.\n\n'
           + 'Se non ti ricordi l\'email puoi scrivere a /supporto.'
       })
@@ -44,13 +45,13 @@ async function collegamentoCommandHandler(ctx: Context) {
     const name = identity ? `${identity.first_name ?? ''} ${identity.last_name ?? ''}`.trim() : null
     const email = identity?.email_address
 
-    const lines = [`✅ Questa chat è collegata${name ? ` a ${name}` : ''}.`]
+    const lines = [`${ICONS.success} Questa chat è collegata${name ? ` a ${name}` : ''}.`]
     if (email) lines.push(email)
     // \n\n, not \n: see core.ts on Rich Message markdown
     await ctx.replyWithRichMessage({ markdown: lines.join('\n\n') })
   } catch {
     await ctx.replyWithRichMessage({
-      markdown: '⚠️ Non sono riuscito a verificare il collegamento, riprova più tardi.'
+      markdown: `${ICONS.warning} Non sono riuscito a verificare il collegamento, riprova più tardi.`
     })
   }
 }
@@ -66,7 +67,7 @@ async function scollegamentoCommandHandler(ctx: Context) {
   try {
     const associateUuid = await resolveAssociateUuidByChatId(ctx.chat.id)
     if (!associateUuid) {
-      await ctx.replyWithRichMessage({ markdown: '❌ Questa chat non è collegata a nessun socio.' })
+      await ctx.replyWithRichMessage({ markdown: `${ICONS.failure} Questa chat non è collegata a nessun socio.` })
       return
     }
 
@@ -78,11 +79,11 @@ async function scollegamentoCommandHandler(ctx: Context) {
     if (error) throw error
 
     await ctx.replyWithRichMessage({
-      markdown: '✅ Chat scollegata.\n\nScrivimi di nuovo la tua email da socio per ricollegarla.'
+      markdown: `${ICONS.success} Chat scollegata.\n\nScrivimi di nuovo la tua email da socio per ricollegarla.`
     })
   } catch {
     await ctx.replyWithRichMessage({
-      markdown: '⚠️ Non sono riuscito a scollegare la chat, riprova più tardi.'
+      markdown: `${ICONS.warning} Non sono riuscito a scollegare la chat, riprova più tardi.`
     })
   }
 }

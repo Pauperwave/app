@@ -178,8 +178,8 @@ export const calendarioMenu = new Menu<Context>('cal', {
   const monthOffset = Number(ctx.match || '0')
 
   range
-    .text({ text: '◀ Mese prec.', payload: String(monthOffset - 1) }, monthNav)
-    .text({ text: 'Mese succ. ▶', payload: String(monthOffset + 1) }, monthNav)
+    .text({ text: `${ICONS.previous} Mese prec.`, payload: String(monthOffset - 1) }, monthNav)
+    .text({ text: `Mese succ. ${ICONS.following}`, payload: String(monthOffset + 1) }, monthNav)
 })
 
 async function monthNav(ctx: Context & { match: string }) {
@@ -226,7 +226,7 @@ async function calendarioCommandHandler(ctx: Context) {
   } catch (err) {
     console.error('Failed to handle /calendario:', err)
     await ctx.replyWithRichMessage({
-      markdown: '⚠️ Non sono riuscito a recuperare i tornei, riprova più tardi.'
+      markdown: `${ICONS.warning} Non sono riuscito a recuperare i tornei, riprova più tardi.`
     })
   }
 }

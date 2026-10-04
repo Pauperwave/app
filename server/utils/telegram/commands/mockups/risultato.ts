@@ -5,6 +5,7 @@ import { Menu } from '@grammyjs/menu'
 
 import { answerLoadError } from '../callbackErrors'
 import { showRichStep, twoColumnFactsTable } from './richStepHelpers'
+import { ICONS } from '../../icons'
 
 // MOCKUP: no live-write flow yet (docs/architecture/telegram-bot.md); Commander is set at round
 // start via /tavolo
@@ -111,7 +112,7 @@ function killButton(state: ResultState, name: string, index: number) {
   const isPicked = (state.killMask & bit) !== 0
   const nextState = { ...state, killMask: state.killMask ^ bit }
   return {
-    text: `${isPicked ? '💀' : '⬜'} ${name}`,
+    text: `${isPicked ? ICONS.skull : ICONS.unselected} ${name}`,
     style: isPicked ? 'danger' as const : undefined,
     callback_data: `${KILL_TOGGLE_PREFIX}${encodeResultState(nextState)}`
   }
@@ -130,12 +131,12 @@ function killsRichMessage(state: ResultState): InputRichMessage {
 
   return {
     blocks: [
-      { type: 'paragraph', text: '💀 Chi hai eliminato?\n\nTocca per selezionare/deselezionare, poi conferma.' },
+      { type: 'paragraph', text: `${ICONS.skull} Chi hai eliminato?\n\nTocca per selezionare/deselezionare, poi conferma.` },
       ...buttonRows,
       {
         type: 'buttons',
         buttons: [{
-          text: '➡️ Conferma uccisioni',
+          text: `${ICONS.next} Conferma uccisioni`,
           style: 'primary',
           callback_data: `${KILL_CONFIRM_PREFIX}${encodeResultState({ ...state, killsConfirmed: true })}`
         }]
@@ -162,7 +163,7 @@ function pickRichMessage(
     const isSelected = selectedIndex === index
     return {
       // ⭐ not ✅, which means "completed"/"registered" elsewhere (tournaments/line.ts)
-      text: `${isSelected ? '⭐' : ''} ${label}`.trim(),
+      text: `${isSelected ? ICONS.selected : ''} ${label}`.trim(),
       style: isSelected ? 'success' as const : undefined,
       callback_data: `${pickPrefix}${encodeResultState(buildPickedState(index))}`
     }
@@ -179,7 +180,7 @@ function pickRichMessage(
     blocks.push({
       type: 'buttons',
       buttons: [{
-        text: '➡️ Conferma',
+        text: `${ICONS.next} Conferma`,
         style: 'primary',
         callback_data: `${confirmPrefix}${encodeResultState(confirmedState)}`
       }]
@@ -190,7 +191,7 @@ function pickRichMessage(
 
 function positionRichMessage(state: ResultState): InputRichMessage {
   return pickRichMessage(
-    '🏅 Posizione finale\n\nChe piazzamento hai fatto al tavolo?',
+    `${ICONS.medal} Posizione finale\n\nChe piazzamento hai fatto al tavolo?`,
     POSITION_LABELS,
     state.position !== null ? state.position - 1 : null,
     POSITION_PICK_PREFIX,
@@ -202,7 +203,7 @@ function positionRichMessage(state: ResultState): InputRichMessage {
 
 function deckVoteRichMessage(state: ResultState): InputRichMessage {
   return pickRichMessage(
-    '🃏 Voto del mazzo (2️⃣ punti)\n\nA chi lo assegni?',
+    `${ICONS.card} Voto del mazzo (${ICONS.two} punti)\n\nA chi lo assegni?`,
     MOCK_OPPONENTS,
     state.deckVoteIndex,
     DECK_VOTE_PICK_PREFIX,
@@ -215,7 +216,7 @@ function deckVoteRichMessage(state: ResultState): InputRichMessage {
 
 function playVoteRichMessage(state: ResultState): InputRichMessage {
   return pickRichMessage(
-    '🎬 Voto della giocata (1️⃣ punto)\n\nA chi lo assegni?',
+    `${ICONS.playVote} Voto della giocata (${ICONS.one} punto)\n\nA chi lo assegni?`,
     MOCK_OPPONENTS,
     state.playVoteIndex,
     PLAY_VOTE_PICK_PREFIX,
@@ -231,10 +232,10 @@ function playVoteRichMessage(state: ResultState): InputRichMessage {
 function summaryTableBlock(state: ResultState, caption: string) {
   const kills = killedNames(state.killMask)
   return twoColumnFactsTable(caption, [
-    ['🏅 Posizionamento', `${state.position}°`],
-    ['💀 Uccisioni', kills.length ? kills.join(', ') : 'Nessuna'],
-    ['🃏 Voto mazzo', MOCK_OPPONENTS[state.deckVoteIndex ?? 0] ?? '-'],
-    ['🎬 Voto giocata', MOCK_OPPONENTS[state.playVoteIndex ?? 0] ?? '-']
+    [`${ICONS.medal} Posizionamento`, `${state.position}°`],
+    [`${ICONS.skull} Uccisioni`, kills.length ? kills.join(', ') : 'Nessuna'],
+    [`${ICONS.card} Voto mazzo`, MOCK_OPPONENTS[state.deckVoteIndex ?? 0] ?? '-'],
+    [`${ICONS.playVote} Voto giocata`, MOCK_OPPONENTS[state.playVoteIndex ?? 0] ?? '-']
   ])
 }
 
@@ -288,10 +289,10 @@ function scoreSummaryTableBlock(
         { text: 'Categoria', is_header: true as const, align: 'left' as const, valign: 'middle' as const },
         { text: 'Punti', is_header: true as const, align: 'center' as const, valign: 'middle' as const }
       ],
-      row('🏅 Posizionamento', positionPoints),
-      row('💀 Uccisioni', killPoints),
-      row('🃏 Voti mazzo', deckVotePoints),
-      row('🎬 Voti giocata', playVotePoints),
+      row(`${ICONS.medal} Posizionamento`, positionPoints),
+      row(`${ICONS.skull} Uccisioni`, killPoints),
+      row(`${ICONS.card} Voti mazzo`, deckVotePoints),
+      row(`${ICONS.playVote} Voti giocata`, playVotePoints),
       [
         { text: { type: 'bold' as const, text: 'Totale' }, align: 'left' as const, valign: 'middle' as const },
         { text: { type: 'bold' as const, text: `${totalPoints} pt` }, align: 'center' as const, valign: 'middle' as const }
@@ -315,19 +316,19 @@ function editState(state: ResultState): ResultState {
 function finalRichMessage(state: ResultState): InputRichMessage {
   return {
     blocks: [
-      { type: 'heading', size: 3, text: '🧾 Riepilogo risultato' },
+      { type: 'heading', size: 3, text: `${ICONS.receipt} Riepilogo risultato` },
       summaryTableBlock(state, 'Risultato inviato'),
       { type: 'paragraph', text: 'Confermi?' },
       {
         type: 'buttons',
         buttons: [
           {
-            text: '✅ Conferma',
+            text: `${ICONS.success} Conferma`,
             style: 'success',
             callback_data: `${FINAL_CONFIRM_PREFIX}${encodeResultState(state)}`
           },
           {
-            text: '✏️ Modifica',
+            text: `${ICONS.edit} Modifica`,
             style: 'danger',
             callback_data: `${FINAL_EDIT_PREFIX}${encodeResultState(editState(state))}`
           }

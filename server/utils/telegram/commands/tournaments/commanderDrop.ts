@@ -15,6 +15,7 @@ import {
   dropAlreadyDoneRichMessage, dropAskRichMessage, dropCancelledRichMessage,
   dropConfirmRichMessage, dropDoneRichMessage, isLastRound
 } from './commanderPodMessages'
+import { ICONS } from '../../icons'
 
 // /drop: the same confirmation the post-result prompt leads to, but reachable any time — with the
 // same rules (a Commander pod being played, result already entered, not the last round).
@@ -24,7 +25,7 @@ async function dropCommandHandler(ctx: Context) {
 
   const pod = await fetchLivePod(associateUuid)
   if (!pod) {
-    await ctx.reply('🪑 Nessun tavolo Commander aperto per te: il drop si fa durante un torneo Commander.')
+    await ctx.reply(`${ICONS.table} Nessun tavolo Commander aperto per te: il drop si fa durante un torneo Commander.`)
     return
   }
   if (pod.myDropped) {
@@ -32,11 +33,11 @@ async function dropCommandHandler(ctx: Context) {
     return
   }
   if (isLastRound(pod)) {
-    await ctx.reply('🏁 Questo è l\'ultimo round del torneo: non serve droppare.')
+    await ctx.reply(`${ICONS.finishFlag} Questo è l'ultimo round del torneo: non serve droppare.`)
     return
   }
   if (pod.myPosition === null) {
-    await ctx.reply('✍️ Prima inserisci il tuo risultato (/tavolo), poi potrai droppare.')
+    await ctx.reply(`${ICONS.write} Prima inserisci il tuo risultato (/tavolo), poi potrai droppare.`)
     return
   }
   await ctx.replyWithRichMessage(dropConfirmRichMessage(pod))

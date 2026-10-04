@@ -178,7 +178,7 @@ async function iscrizioniCommandHandler(ctx: Context) {
     await ctx.replyWithRichMessage({ blocks }, { reply_markup: iscrizioniMenu })
   } catch {
     await ctx.replyWithRichMessage({
-      markdown: '⚠️ Non sono riuscito a recuperare i tuoi tornei, riprova più tardi.'
+      markdown: `${ICONS.warning} Non sono riuscito a recuperare i tuoi tornei, riprova più tardi.`
     })
   }
 }

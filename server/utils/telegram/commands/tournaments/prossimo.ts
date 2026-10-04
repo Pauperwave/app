@@ -49,26 +49,26 @@ function cachedFetchNextTournament(ctx: Context): Promise<NextTournamentRow | nu
 function nextTournamentMessage(
   row: NextTournamentRow | null, stageNumber: number | null
 ): FormattedString {
-  if (!row || !row.starts_at) return new FormattedString('🎲 Nessun torneo in programma al momento.')
+  if (!row || !row.starts_at) return new FormattedString(`${ICONS.dice} Nessun torneo in programma al momento.`)
 
   const date = formatTournamentDateTime(row.starts_at)
   const header = tournamentHeader(row.status, row.name, stageNumber)
   const location = row.location?.name ? `\n${ICONS.location} ${row.location.name}` : ''
 
-  return fmt`🎲 ${FormattedString.b('Prossimo torneo')}\n\n${header}\n${ICONS.date} ${date}${location}\n\n👇🏻 Tocca per i dettagli`
+  return fmt`${ICONS.dice} ${FormattedString.b('Prossimo torneo')}\n\n${header}\n${ICONS.date} ${date}${location}\n\n${ICONS.pointDown} Tocca per i dettagli`
 }
 
 // Markdown twin of nextTournamentMessage, for the Rich Message reply only: detail.ts's "back"
 // button still needs the FormattedString version to edit a plain text message
 function nextTournamentMarkdown(row: NextTournamentRow | null, stageNumber: number | null): string {
-  if (!row || !row.starts_at) return '🎲 Nessun torneo in programma al momento.'
+  if (!row || !row.starts_at) return `${ICONS.dice} Nessun torneo in programma al momento.`
 
   const date = formatTournamentDateTime(row.starts_at)
   const stage = stageLabel(stageNumber)
   const location = row.location?.name ? `\n\n${ICONS.location} ${row.location.name}` : ''
 
   // \n\n, not \n: in Rich Message markdown mode a single \n is a soft break (see core.ts)
-  return `## 🎲 Prossimo torneo\n\n${statusIcon(row.status)} **${row.name}**${stage}\n\n${ICONS.date} ${date}${location}`
+  return `## ${ICONS.dice} Prossimo torneo\n\n${statusIcon(row.status)} **${row.name}**${stage}\n\n${ICONS.date} ${date}${location}`
 }
 
 async function fetchNextTournamentWithStage(
@@ -124,7 +124,7 @@ async function prossimoCommandHandler(ctx: Context) {
   } catch (err) {
     console.error('Failed to handle /prossimo:', err)
     await ctx.replyWithRichMessage({
-      markdown: '⚠️ Non sono riuscito a recuperare il prossimo torneo, riprova più tardi.'
+      markdown: `${ICONS.warning} Non sono riuscito a recuperare il prossimo torneo, riprova più tardi.`
     })
   }
 }

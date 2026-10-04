@@ -24,6 +24,7 @@ import {
   killsRichMessage, parseKillTarget, positionRichMessage, resultFactsFor, scoreSummaryTableBlock,
   voteRichMessage, voteTypeOf, votesReceivedTableBlock, waitingForOthersRichMessage
 } from './commanderPodMessages'
+import { ICONS } from '../../icons'
 
 type Next = () => Promise<void>
 
@@ -206,11 +207,11 @@ async function handleFinalRefresh(ctx: Context, next: Next) {
 
     const pending = await fetchPendingSeatNames(pod)
     if (pending.length) {
-      await ctx.answerCallbackQuery({ text: `⏳ Mancano ancora: ${pending.join(', ')}` })
+      await ctx.answerCallbackQuery({ text: `${ICONS.pending} Mancano ancora: ${pending.join(', ')}` })
       return
     }
     await Promise.all([
-      editRichMessage(ctx, { blocks: [{ type: 'paragraph', text: '✅ Tutti hanno finito.' }] }),
+      editRichMessage(ctx, { blocks: [{ type: 'paragraph', text: `${ICONS.success} Tutti hanno finito.` }] }),
       ctx.answerCallbackQuery()
     ])
     await sendFollowUpTables(ctx, pod)

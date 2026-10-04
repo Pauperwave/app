@@ -1,6 +1,7 @@
 // server\utils\telegram\commands\cards\wantedList.ts
 import { InlineKeyboard } from 'grammy'
 import { escapeHtml } from './priceCard'
+import { ICONS } from '../../icons'
 
 // Pure part of /cercate: the page of wanted cards, the confirm screen and the callbacks that move
 // between them
@@ -89,7 +90,7 @@ export function buildWantedListText(rows: WantedListRow[], page: number, total: 
   const pages = pageCount(total)
 
   return [
-    `🃏 <b>Le mie carte cercate</b> (${total})`,
+    `${ICONS.card} <b>Le mie carte cercate</b> (${total})`,
     rows.map((row, index) => describeRow(row, first + index + 1)).join('\n'),
     pages > 1 ? `Pagina ${page + 1} di ${pages}` : null
   ].filter(part => part !== null).join('\n\n')
@@ -105,7 +106,7 @@ export function buildWantedListKeyboard(
 
   rows.forEach((row, index) => {
     keyboard.text(
-      `🗑 ${first + index + 1}`,
+      `${ICONS.trash} ${first + index + 1}`,
       encodeWantedListCallback({ action: 'ask', id: row.id, page })
     )
     if ((index + 1) % 4 === 0) keyboard.row()
@@ -114,8 +115,8 @@ export function buildWantedListKeyboard(
   const pages = pageCount(total)
   if (pages > 1) {
     keyboard.row()
-    if (page > 0) keyboard.text('◀', encodeWantedListCallback({ action: 'list', id: null, page: page - 1 }))
-    if (page < pages - 1) keyboard.text('▶', encodeWantedListCallback({ action: 'list', id: null, page: page + 1 }))
+    if (page > 0) keyboard.text(ICONS.previous, encodeWantedListCallback({ action: 'list', id: null, page: page - 1 }))
+    if (page < pages - 1) keyboard.text(ICONS.following, encodeWantedListCallback({ action: 'list', id: null, page: page + 1 }))
   }
 
   return keyboard
@@ -128,6 +129,6 @@ export function buildRemoveConfirmText(row: WantedListRow): string {
 
 export function buildRemoveConfirmKeyboard(row: WantedListRow, page: number): InlineKeyboard {
   return new InlineKeyboard()
-    .text('🗑 Sì, togli', encodeWantedListCallback({ action: 'remove', id: row.id, page }))
-    .text('↩️ No', encodeWantedListCallback({ action: 'list', id: null, page }))
+    .text(`${ICONS.trash} Sì, togli`, encodeWantedListCallback({ action: 'remove', id: row.id, page }))
+    .text(`${ICONS.back} No`, encodeWantedListCallback({ action: 'list', id: null, page }))
 }

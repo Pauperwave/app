@@ -3,12 +3,13 @@ import type { Context } from 'grammy'
 import { InlineKeyboard } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 import { registerDeepLink } from '../deepLinks'
+import { ICONS } from '../icons'
 
 // Not a @grammyjs/menu Menu: one static button opening a Mini App needs no submenu/dynamic features
 // (like core.ts's statusKeyboard)
 function turniKeyboard(): InlineKeyboard {
   const siteUrl = useRuntimeConfig().public.siteUrl
-  return new InlineKeyboard().webApp('🔢 Apri contatore turni', `${siteUrl}/telegram/turni`)
+  return new InlineKeyboard().webApp(`${ICONS.numbers} Apri contatore turni`, `${siteUrl}/telegram/turni`)
 }
 
 // MTG rule: when time runs out (50 minutes) and the game isn't over, the current turn plus 5 more
@@ -16,7 +17,7 @@ function turniKeyboard(): InlineKeyboard {
 // lives in the page (app/pages/telegram/turni.vue) and resets when it is closed.
 async function turniCommandHandler(ctx: Context) {
   await ctx.replyWithRichMessage(
-    { markdown: '⏱️ Quando scade il tempo, usa questo contatore per tenere traccia dei 5 turni aggiuntivi.' },
+    { markdown: `${ICONS.stopwatch} Quando scade il tempo, usa questo contatore per tenere traccia dei 5 turni aggiuntivi.` },
     { reply_markup: turniKeyboard() }
   )
 }

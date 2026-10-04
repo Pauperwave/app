@@ -163,7 +163,7 @@ function eventDetailBlocks(event: EventRow): InputRichMessage['blocks'] {
   ]
   if (linkButtons.length) blocks.push({ type: 'buttons', buttons: linkButtons })
 
-  if (event.organizer?.name) blocks.push({ type: 'paragraph', text: `🏢 Organizzatore: ${event.organizer.name}` })
+  if (event.organizer?.name) blocks.push({ type: 'paragraph', text: `${ICONS.organizer} Organizzatore: ${event.organizer.name}` })
 
   return blocks
 }
@@ -235,7 +235,7 @@ async function eventiCommandHandler(ctx: Context) {
     await ctx.replyWithRichMessage({ blocks }, { reply_markup: eventiMenu })
   } catch {
     await ctx.replyWithRichMessage({
-      markdown: '⚠️ Non sono riuscito a recuperare gli eventi, riprova più tardi.'
+      markdown: `${ICONS.warning} Non sono riuscito a recuperare gli eventi, riprova più tardi.`
     })
   }
 }

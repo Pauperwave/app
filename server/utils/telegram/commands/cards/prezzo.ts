@@ -32,8 +32,9 @@ import {
 
 import { fetchCardtraderPrice } from '../../../priceRefresh'
 import { resolveCardTraderBlueprint } from '../../../cardTrader'
+import { ICONS } from '../../icons'
 
-const NOT_FOUND_TEXT = '🤔 Non trovo questa carta. Scrivi il nome inglese, es. /prezzo Lightning Bolt.'
+const NOT_FOUND_TEXT = `${ICONS.thinking} Non trovo questa carta. Scrivi il nome inglese, es. /prezzo Lightning Bolt.`
 const USAGE_TEXT = 'Scrivi il nome della carta per scegliere la stampa, es. /prezzo Lightning Bolt.'
 
 // Telegram shows at most 50 inline results
@@ -114,9 +115,9 @@ async function prezzoCommandHandler(ctx: Context) {
     return
   }
 
-  await ctx.reply(`🃏 Scegli la stampa di «${query}» per vederne il prezzo.`, {
+  await ctx.reply(`${ICONS.card} Scegli la stampa di «${query}» per vederne il prezzo.`, {
     reply_markup: new InlineKeyboard()
-      .switchInlineCurrent('🔎 Scegli la stampa', `${PRICE_INLINE_PREFIX} ${query}`)
+      .switchInlineCurrent(`${ICONS.searchPrint} Scegli la stampa`, `${PRICE_INLINE_PREFIX} ${query}`)
   })
 }
 

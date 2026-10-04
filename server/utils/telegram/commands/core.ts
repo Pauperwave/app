@@ -33,7 +33,7 @@ export function encodeHelpBtn(payload: string): string {
 // buttons
 function startBlocks(): InputRichMessage['blocks'] {
   return [
-    { type: 'paragraph', text: 'Ciao! Sono il bot di Pauperwave 👋🏻' },
+    { type: 'paragraph', text: `Ciao! Sono il bot di Pauperwave ${ICONS.wave}` },
     {
       type: 'paragraph',
       text: 'Scrivimi la tua email da socio (quella con cui ti sei tesserato) per collegare il tuo account '
@@ -51,9 +51,9 @@ function startBlocks(): InputRichMessage['blocks'] {
       ]
     },
     { type: 'paragraph', text: 'Usa /collegamento per verificare se questa chat è già collegata a un socio.' },
-    { type: 'buttons', buttons: [{ text: '🔗 Collegamento', callback_data: encodeHelpBtn('collegamento') }] },
+    { type: 'buttons', buttons: [{ text: `${ICONS.link} Collegamento`, callback_data: encodeHelpBtn('collegamento') }] },
     { type: 'paragraph', text: 'Oppure usa subito /help per vedere quelli pubblici, funzionano già senza.' },
-    { type: 'buttons', buttons: [{ text: '📖 Help', callback_data: encodeHelpBtn('help') }] }
+    { type: 'buttons', buttons: [{ text: `${ICONS.help} Help`, callback_data: encodeHelpBtn('help') }] }
   ]
 }
 
@@ -64,12 +64,12 @@ type Blocks = NonNullable<InputRichMessage['blocks']>
 // "/command" mentions)
 const HELP_SECTIONS: Record<HelpTopic, () => Blocks> = {
   generale: () => [
-    { type: 'paragraph', text: { type: 'bold', text: '⚙️ Generale' } },
+    { type: 'paragraph', text: { type: 'bold', text: `${ICONS.settings} Generale` } },
     {
       type: 'paragraph',
       text: '/start — avvia il bot\n/help — mostra questo messaggio\n/status — mostra lo stato corrente del bot'
     },
-    { type: 'buttons', buttons: [{ text: '🟢 Status', callback_data: encodeHelpBtn('status') }] }
+    { type: 'buttons', buttons: [{ text: `${ICONS.online} Status`, callback_data: encodeHelpBtn('status') }] }
   ],
 
   classifiche: () => [
@@ -89,11 +89,11 @@ const HELP_SECTIONS: Record<HelpTopic, () => Blocks> = {
       buttons: [
         { text: `${ICONS.calendar} Calendario`, callback_data: encodeHelpBtn('calendario') },
         { text: `${ICONS.trophy} Leghe`, callback_data: encodeHelpBtn('leghe') },
-        { text: '⏭️ Prossimo', callback_data: encodeHelpBtn('prossimo') }
+        { text: `${ICONS.skipNext} Prossimo`, callback_data: encodeHelpBtn('prossimo') }
       ]
     },
 
-    { type: 'paragraph', text: { type: 'bold', text: '🏟️ Durante un torneo' } },
+    { type: 'paragraph', text: { type: 'bold', text: `${ICONS.stadium} Durante un torneo` } },
     {
       type: 'paragraph',
       text: '/tavolo — il tuo tavolo, gli avversari del turno e il comandante; da qui inserisci il risultato\n'
@@ -103,8 +103,8 @@ const HELP_SECTIONS: Record<HelpTopic, () => Blocks> = {
     {
       type: 'buttons',
       buttons: [
-        { text: '🪑 Tavolo', callback_data: encodeHelpBtn('tavolo') },
-        { text: '🔢 Turni', callback_data: encodeHelpBtn('turni') }
+        { text: `${ICONS.table} Tavolo`, callback_data: encodeHelpBtn('tavolo') },
+        { text: `${ICONS.numbers} Turni`, callback_data: encodeHelpBtn('turni') }
       ]
     }
   ],
@@ -128,7 +128,7 @@ const HELP_SECTIONS: Record<HelpTopic, () => Blocks> = {
       buttons: [
         { text: `${ICONS.card} Prezzo`, callback_data: encodeHelpBtn('prezzo') },
         { text: `${ICONS.wanted} Cercate`, callback_data: encodeHelpBtn('cercate') },
-        { text: '📥 Importa', callback_data: encodeHelpBtn('importa') }
+        { text: `${ICONS.import} Importa`, callback_data: encodeHelpBtn('importa') }
       ]
     }
   ],
@@ -142,15 +142,15 @@ const HELP_SECTIONS: Record<HelpTopic, () => Blocks> = {
     {
       type: 'buttons',
       buttons: [
-        { text: '🎲 Dado', callback_data: encodeHelpBtn('dado') },
-        { text: '🪙 Moneta', callback_data: encodeHelpBtn('moneta') },
-        { text: '🔢 Tira', callback_data: encodeHelpBtn('tira') }
+        { text: `${ICONS.dice} Dado`, callback_data: encodeHelpBtn('dado') },
+        { text: `${ICONS.coin} Moneta`, callback_data: encodeHelpBtn('moneta') },
+        { text: `${ICONS.numbers} Tira`, callback_data: encodeHelpBtn('tira') }
       ]
     }
   ],
 
   account: () => [
-    { type: 'paragraph', text: { type: 'bold', text: '👤 Account' } },
+    { type: 'paragraph', text: { type: 'bold', text: `${ICONS.account} Account` } },
     {
       type: 'paragraph',
       text: '/collegamento — verifica se questa chat è collegata a un socio\n'
@@ -160,28 +160,28 @@ const HELP_SECTIONS: Record<HelpTopic, () => Blocks> = {
     {
       type: 'buttons',
       buttons: [
-        { text: '🔗 Collegamento', callback_data: encodeHelpBtn('collegamento') },
-        { text: '🔓 Scollegamento', callback_data: encodeHelpBtn('scollegamento') },
+        { text: `${ICONS.link} Collegamento`, callback_data: encodeHelpBtn('collegamento') },
+        { text: `${ICONS.unlink} Scollegamento`, callback_data: encodeHelpBtn('scollegamento') },
         { text: `${ICONS.membershipCard} Tessera`, callback_data: encodeHelpBtn('tessera') }
       ]
     },
 
-    { type: 'paragraph', text: { type: 'bold', text: '💬 Supporto' } },
+    { type: 'paragraph', text: { type: 'bold', text: `${ICONS.support} Supporto` } },
     { type: 'paragraph', text: '/supporto — inoltra un messaggio allo staff' },
-    { type: 'buttons', buttons: [{ text: '💬 Supporto', callback_data: encodeHelpBtn('supporto') }] }
+    { type: 'buttons', buttons: [{ text: `${ICONS.support} Supporto`, callback_data: encodeHelpBtn('supporto') }] }
   ]
 }
 
 const TOPIC_NAMES = HELP_TOPICS.join(', ')
 
 const HELP_TOPIC_BUTTONS: Record<HelpTopic, string> = {
-  generale: '⚙️ Generale',
+  generale: `${ICONS.settings} Generale`,
   classifiche: `${ICONS.trophy} Classifiche`,
   tornei: `${ICONS.medal} Tornei`,
   iscrizioni: `${ICONS.ticket} Iscrizioni`,
   carte: `${ICONS.card} Carte`,
   dadi: `${ICONS.dice} Dadi`,
-  account: '👤 Account'
+  account: `${ICONS.account} Account`
 }
 
 const HELP_BUTTONS_PER_ROW = 3
@@ -192,7 +192,7 @@ const HELP_BUTTONS_PER_ROW = 3
 function helpKeyboard(active: HelpView): InlineKeyboard {
   const buttons = [
     ...HELP_TOPICS.map(topic => ({ view: topic as HelpView, label: HELP_TOPIC_BUTTONS[topic] })),
-    { view: 'all' as HelpView, label: '📖 Tutto' }
+    { view: 'all' as HelpView, label: `${ICONS.help} Tutto` }
   ]
 
   const keyboard = new InlineKeyboard()
@@ -291,10 +291,10 @@ function updatedLabel(isoDate: string): string | null {
 // rolls over
 function statusText(): string {
   const { gitCommitSha, gitCommitDate } = useRuntimeConfig().public
-  const lines = ['🟢 Bot operativo.']
+  const lines = [`${ICONS.online} Bot operativo.`]
 
   if (gitCommitSha) {
-    lines.push(`🏷️ ${gitCommitSha.slice(0, 7)}`)
+    lines.push(`${ICONS.tag} ${gitCommitSha.slice(0, 7)}`)
     if (gitCommitDate) {
       lines.push(`${ICONS.date} ${formatTelegramDate(gitCommitDate, 'd MMMM yyyy \'alle\' HH:mm', { locale: it })}`)
 
@@ -312,7 +312,7 @@ const STATUS_REFRESH_DATA = 'statusrefresh'
 // Plain grammy InlineKeyboard, not @grammyjs/menu: one static refresh button needs no
 // submenu/dynamic features and avoids the registration-order gotcha (see registerHelpButtonHandler)
 function statusKeyboard(): InlineKeyboard {
-  return new InlineKeyboard().text('🔄 Aggiorna', STATUS_REFRESH_DATA)
+  return new InlineKeyboard().text(`${ICONS.refresh} Aggiorna`, STATUS_REFRESH_DATA)
 }
 
 // Extracted for reuse by t.me/<bot>?start=status (deepLinks.ts)
@@ -328,7 +328,7 @@ async function handleStatusRefresh(ctx: Context, next: () => Promise<void>) {
 
   try {
     await ctx.editMessageText({ markdown: statusText() }, { reply_markup: statusKeyboard() })
-    await ctx.answerCallbackQuery({ text: '✅ Aggiornato.' })
+    await ctx.answerCallbackQuery({ text: `${ICONS.success} Aggiornato.` })
   } catch (err) {
     await answerEditError(ctx, err, 'Nessuna versione più recente disponibile.')
   }

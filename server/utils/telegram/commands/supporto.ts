@@ -2,6 +2,7 @@
 import type { Bot, Context } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
 import { registerDeepLink } from '../deepLinks'
+import { ICONS } from '../icons'
 
 // ForceReply makes the next message reply to this one: matching its text recognizes a support
 // message with no server-side state (like linking.ts)
@@ -41,7 +42,7 @@ async function notifySuperAdminsOfSupportRequest(
   const sender = associateName ?? (username ? `@${username}` : `chat ${chatId}`)
   const from = associateUuid ? `${sender} (socio collegato)` : sender
 
-  const text = `🆘 Richiesta di supporto da ${from}:\n\n${message}\n\nRispondi a questo messaggio per rispondere al socio.`
+  const text = `${ICONS.sos} Richiesta di supporto da ${from}:\n\n${message}\n\nRispondi a questo messaggio per rispondere al socio.`
 
   const results = await Promise.allSettled(
     (chatIds ?? []).map(async (adminChatId) => {
@@ -93,10 +94,10 @@ async function relaySupportReplyIfMatched(ctx: Context, next: () => Promise<void
   }
 
   try {
-    await sendTelegramMessage(thread.member_chat_id, `💬 Risposta dallo staff:\n\n${ctx.message.text}`)
-    await ctx.reply('✅ Risposta inoltrata al socio.')
+    await sendTelegramMessage(thread.member_chat_id, `${ICONS.support} Risposta dallo staff:\n\n${ctx.message.text}`)
+    await ctx.reply(`${ICONS.success} Risposta inoltrata al socio.`)
   } catch {
-    await ctx.reply('⚠️ Non sono riuscito a inoltrare la risposta, riprova più tardi.')
+    await ctx.reply(`${ICONS.warning} Non sono riuscito a inoltrare la risposta, riprova più tardi.`)
   }
 }
 
@@ -130,11 +131,11 @@ export function registerSupportoCommand(bot: Bot, commands: CommandGroup<Context
     try {
       await notifySuperAdminsOfSupportRequest(ctx.chat.id, ctx.from?.username, ctx.message.text)
       await ctx.replyWithRichMessage({
-        markdown: '✅ Messaggio inoltrato allo staff, ti risponderanno appena possibile.'
+        markdown: `${ICONS.success} Messaggio inoltrato allo staff, ti risponderanno appena possibile.`
       })
     } catch {
       await ctx.replyWithRichMessage({
-        markdown: '⚠️ Non sono riuscito a inoltrare il messaggio, riprova più tardi.'
+        markdown: `${ICONS.warning} Non sono riuscito a inoltrare il messaggio, riprova più tardi.`
       })
     }
   })

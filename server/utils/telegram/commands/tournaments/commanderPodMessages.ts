@@ -7,6 +7,7 @@ import type { InputRichMessage } from 'grammy/types'
 
 import { twoColumnFactsTable } from '../mockups/richStepHelpers'
 import type { fetchPodScoreSummary, LivePod } from './commanderPodData'
+import { ICONS } from '../../icons'
 
 // ─── Callback payload prefixes ──────────────────────────────────────────────
 export const POS_PICK_PREFIX = 'cmdpospk:'
@@ -64,13 +65,13 @@ export const POSITIONS = [1, 2, 3, 4]
 export function positionRichMessage(pod: LivePod): InputRichMessage {
   const seatCount = pod.opponents.length + 1
   const blocks: InputRichMessage['blocks'] = [
-    { type: 'paragraph', text: '🏅 Che piazzamento hai fatto al tavolo?' },
+    { type: 'paragraph', text: `${ICONS.medal} Che piazzamento hai fatto al tavolo?` },
     {
       type: 'buttons',
       buttons: POSITIONS.filter(position => position <= seatCount).map((position) => {
         const isSelected = pod.myPosition === position
         return {
-          text: `${isSelected ? '⭐ ' : ''}${position}°`,
+          text: `${isSelected ? `${ICONS.selected} ` : ''}${position}°`,
           style: isSelected ? 'success' as const : undefined,
           callback_data: `${POS_PICK_PREFIX}${pod.pairingUuid}:${position}`
         }
@@ -80,7 +81,7 @@ export function positionRichMessage(pod: LivePod): InputRichMessage {
   if (pod.myPosition !== null) {
     blocks.push({
       type: 'buttons',
-      buttons: [{ text: '➡️ Conferma', style: 'primary', callback_data: `${POS_CONFIRM_PREFIX}${pod.pairingUuid}` }]
+      buttons: [{ text: `${ICONS.next} Conferma`, style: 'primary', callback_data: `${POS_CONFIRM_PREFIX}${pod.pairingUuid}` }]
     })
   }
   return { blocks }
@@ -94,7 +95,7 @@ export function killsRichMessage(pod: LivePod): InputRichMessage {
   const buttons = targets.map((target) => {
     const isPicked = pod.myKilledUuids.includes(killTargetUuid(pod, target))
     return {
-      text: `${isPicked ? '💀' : '⬜'} ${killTargetName(pod, target)}`,
+      text: `${isPicked ? ICONS.skull : ICONS.unselected} ${killTargetName(pod, target)}`,
       style: isPicked ? 'danger' as const : undefined,
       callback_data: `${KILL_TOGGLE_PREFIX}${pod.pairingUuid}:${target}`
     }
@@ -105,12 +106,12 @@ export function killsRichMessage(pod: LivePod): InputRichMessage {
   }
   return {
     blocks: [
-      { type: 'paragraph', text: '💀 Chi hai eliminato?\n\nTocca per selezionare/deselezionare, poi conferma.' },
+      { type: 'paragraph', text: `${ICONS.skull} Chi hai eliminato?\n\nTocca per selezionare/deselezionare, poi conferma.` },
       ...buttonRows,
       {
         type: 'buttons',
         buttons: [{
-          text: '➡️ Conferma uccisioni',
+          text: `${ICONS.next} Conferma uccisioni`,
           style: 'primary',
           callback_data: `${KILL_CONFIRM_PREFIX}${pod.pairingUuid}`
         }]
@@ -121,8 +122,8 @@ export function killsRichMessage(pod: LivePod): InputRichMessage {
 
 export function voteRichMessage(pod: LivePod, voteType: 'brew' | 'play'): InputRichMessage {
   const heading = voteType === 'brew'
-    ? '🃏 Voto del mazzo (2 punti)\n\nA chi lo assegni?'
-    : '🎬 Voto della giocata (1 punto)\n\nA chi lo assegni?'
+    ? `${ICONS.card} Voto del mazzo (2 punti)\n\nA chi lo assegni?`
+    : `${ICONS.playVote} Voto della giocata (1 punto)\n\nA chi lo assegni?`
   const currentUuid = voteType === 'brew' ? pod.myVoteByType.brew : pod.myVoteByType.play
   const typeChar = voteTypeChar(voteType)
 
@@ -133,7 +134,7 @@ export function voteRichMessage(pod: LivePod, voteType: 'brew' | 'play'): InputR
     return {
       type: 'buttons',
       buttons: [{
-        text: `${isSelected ? '⭐ ' : ''}${opponent.name}`,
+        text: `${isSelected ? `${ICONS.selected} ` : ''}${opponent.name}`,
         style: isSelected ? 'success' as const : undefined,
         callback_data: `${VOTE_PICK_PREFIX}${pod.pairingUuid}:${typeChar}:${index}`
       }]
@@ -147,7 +148,7 @@ export function voteRichMessage(pod: LivePod, voteType: 'brew' | 'play'): InputR
     blocks.push({
       type: 'buttons',
       buttons: [{
-        text: '➡️ Conferma',
+        text: `${ICONS.next} Conferma`,
         style: 'primary',
         callback_data: `${VOTE_CONFIRM_PREFIX}${pod.pairingUuid}:${typeChar}`
       }]
@@ -175,10 +176,10 @@ export function resultFactsFor(pod: LivePod): [label: string, value: string][] {
     ? (pod.opponents.find(o => o.playerUuid === uuid)?.name ?? '?')
     : '-'
   return [
-    ['🏅 Posizionamento', pod.myPosition ? `${pod.myPosition}°` : '-'],
-    ['💀 Uccisioni', killed.length ? killed.join(', ') : 'Nessuna'],
-    ['🃏 Voto mazzo', voteLabel(pod.myVoteByType.brew)],
-    ['🎬 Voto giocata', voteLabel(pod.myVoteByType.play)]
+    [`${ICONS.medal} Posizionamento`, pod.myPosition ? `${pod.myPosition}°` : '-'],
+    [`${ICONS.skull} Uccisioni`, killed.length ? killed.join(', ') : 'Nessuna'],
+    [`${ICONS.card} Voto mazzo`, voteLabel(pod.myVoteByType.brew)],
+    [`${ICONS.playVote} Voto giocata`, voteLabel(pod.myVoteByType.play)]
   ]
 }
 
@@ -187,14 +188,14 @@ export function resultFactsFor(pod: LivePod): [label: string, value: string][] {
 export function finalRichMessage(pod: LivePod): InputRichMessage {
   return {
     blocks: [
-      { type: 'heading', size: 3, text: '🧾 Riepilogo risultato' },
+      { type: 'heading', size: 3, text: `${ICONS.receipt} Riepilogo risultato` },
       twoColumnFactsTable('Da confermare', resultFactsFor(pod)),
       { type: 'paragraph', text: 'Confermi?' },
       {
         type: 'buttons',
         buttons: [
-          { text: '✅ Conferma', style: 'success', callback_data: `${FINAL_CONFIRM_PREFIX}${pod.pairingUuid}` },
-          { text: '✏️ Modifica', style: 'danger', callback_data: `${FINAL_EDIT_PREFIX}${pod.pairingUuid}` }
+          { text: `${ICONS.success} Conferma`, style: 'success', callback_data: `${FINAL_CONFIRM_PREFIX}${pod.pairingUuid}` },
+          { text: `${ICONS.edit} Modifica`, style: 'danger', callback_data: `${FINAL_EDIT_PREFIX}${pod.pairingUuid}` }
         ]
       }
     ]
@@ -211,13 +212,13 @@ export function waitingForOthersRichMessage(
     blocks: [
       {
         type: 'paragraph',
-        text: `⏳ Mancano ancora: ${pendingNames.join(', ')}.\n\nQuando avranno inserito posizione e voti, `
+        text: `${ICONS.pending} Mancano ancora: ${pendingNames.join(', ')}.\n\nQuando avranno inserito posizione e voti, `
           + 'premi Aggiorna per ricevere i riepiloghi dei voti e del punteggio.'
       },
       {
         type: 'buttons',
         buttons: [{
-          text: '🔄 Aggiorna',
+          text: `${ICONS.refresh} Aggiorna`,
           callback_data: `${FINAL_REFRESH_PREFIX}${pod.pairingUuid}`
         }]
       }
@@ -241,7 +242,7 @@ export function dropAskRichMessage(pod: LivePod): InputRichMessage {
       },
       {
         type: 'buttons',
-        buttons: [{ text: '🚪 Droppa dal torneo', style: 'danger', callback_data: `${DROP_ASK_PREFIX}${pod.pairingUuid}` }]
+        buttons: [{ text: `${ICONS.door} Droppa dal torneo`, style: 'danger', callback_data: `${DROP_ASK_PREFIX}${pod.pairingUuid}` }]
       }
     ]
   }
@@ -257,8 +258,8 @@ export function dropConfirmRichMessage(pod: LivePod): InputRichMessage {
       {
         type: 'buttons',
         buttons: [
-          { text: '✅ Sì, droppa', style: 'danger', callback_data: `${DROP_CONFIRM_PREFIX}${pod.pairingUuid}` },
-          { text: '↩️ Annulla', callback_data: `${DROP_CANCEL_PREFIX}${pod.pairingUuid}` }
+          { text: `${ICONS.success} Sì, droppa`, style: 'danger', callback_data: `${DROP_CONFIRM_PREFIX}${pod.pairingUuid}` },
+          { text: `${ICONS.back} Annulla`, callback_data: `${DROP_CANCEL_PREFIX}${pod.pairingUuid}` }
         ]
       }
     ]
@@ -266,16 +267,16 @@ export function dropConfirmRichMessage(pod: LivePod): InputRichMessage {
 }
 
 export function dropCancelledRichMessage(): InputRichMessage {
-  return { blocks: [{ type: 'paragraph', text: '👍 Nessun drop: resti nel torneo.' }] }
+  return { blocks: [{ type: 'paragraph', text: `${ICONS.thumbsUp} Nessun drop: resti nel torneo.` }] }
 }
 
 export function dropAlreadyDoneRichMessage(pod: LivePod): InputRichMessage {
   return {
     blocks: [
-      { type: 'paragraph', text: '🚪 Hai già droppato: non verrai inserito nei tavoli dai prossimi round.' },
+      { type: 'paragraph', text: `${ICONS.door} Hai già droppato: non verrai inserito nei tavoli dai prossimi round.` },
       {
         type: 'buttons',
-        buttons: [{ text: '↩️ Annulla drop', callback_data: `${DROP_UNDO_PREFIX}${pod.pairingUuid}` }]
+        buttons: [{ text: `${ICONS.back} Annulla drop`, callback_data: `${DROP_UNDO_PREFIX}${pod.pairingUuid}` }]
       }
     ]
   }
@@ -286,11 +287,11 @@ export function dropDoneRichMessage(pod: LivePod): InputRichMessage {
     blocks: [
       {
         type: 'paragraph',
-        text: '🚪 Hai droppato dal torneo: non verrai inserito nei tavoli dai prossimi round.'
+        text: `${ICONS.door} Hai droppato dal torneo: non verrai inserito nei tavoli dai prossimi round.`
       },
       {
         type: 'buttons',
-        buttons: [{ text: '↩️ Annulla drop', callback_data: `${DROP_UNDO_PREFIX}${pod.pairingUuid}` }]
+        buttons: [{ text: `${ICONS.back} Annulla drop`, callback_data: `${DROP_UNDO_PREFIX}${pod.pairingUuid}` }]
       }
     ]
   }
@@ -354,10 +355,10 @@ export function scoreSummaryTableBlock(score: PodScore) {
         { text: 'Categoria', is_header: true as const, align: 'left' as const, valign: 'middle' as const },
         { text: 'Punti', is_header: true as const, align: 'center' as const, valign: 'middle' as const }
       ],
-      row('🏅 Posizionamento', score?.scoreRank ?? 0),
-      row('💀 Uccisioni', score?.killScore ?? 0),
-      row('🃏 Voti mazzo', score?.brewScore ?? 0),
-      row('🎬 Voti giocata', score?.playScore ?? 0),
+      row(`${ICONS.medal} Posizionamento`, score?.scoreRank ?? 0),
+      row(`${ICONS.skull} Uccisioni`, score?.killScore ?? 0),
+      row(`${ICONS.card} Voti mazzo`, score?.brewScore ?? 0),
+      row(`${ICONS.playVote} Voti giocata`, score?.playScore ?? 0),
       [
         { text: { type: 'bold' as const, text: 'Totale' }, align: 'left' as const, valign: 'middle' as const },
         {

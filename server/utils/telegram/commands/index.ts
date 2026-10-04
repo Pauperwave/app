@@ -27,8 +27,9 @@ import { registerCommanderReportHandlers } from './tournaments/commanderReport'
 import { registerDropCommand } from './tournaments/commanderDrop'
 import { registerLinkingHandler } from './account/linking'
 import { syncTelegramUsername } from '../usernameSync'
+import { ICONS } from '../icons'
 
-const UNKNOWN_MESSAGE_TEXT = '🤔 Non ho capito questo messaggio. Usa /help per vedere i comandi disponibili.'
+const UNKNOWN_MESSAGE_TEXT = `${ICONS.thinking} Non ho capito questo messaggio. Usa /help per vedere i comandi disponibili.`
 
 // Single CommandGroup (@grammyjs/commands) shared by every register*Command: Telegram's "/" picker
 // (setCommands, below) is derived from it, so the two can't drift
@@ -81,7 +82,7 @@ export function registerCommands(bot: Bot) {
     if (ctx.msg.via_bot?.id === ctx.me.id) return
 
     return ctx.reply(UNKNOWN_MESSAGE_TEXT, {
-      reply_markup: new InlineKeyboard().text('📖 Help', encodeHelpBtn('help'))
+      reply_markup: new InlineKeyboard().text(`${ICONS.help} Help`, encodeHelpBtn('help'))
     })
   })
 

@@ -1,6 +1,7 @@
 // server\utils\telegram\commands\cards\importSummary.ts
 import type { DecklistEntry } from '#shared/utils/wantedCards/decklist'
 import { escapeHtml } from './priceCard'
+import { ICONS } from '../../icons'
 
 // Pure part of the card list import: what happened to each pasted line and the message that says it
 
@@ -57,12 +58,12 @@ export function buildImportSummary(outcomes: ImportOutcome[], skippedLines: numb
 
   const parts = [
     added.length
-      ? `✅ <b>Aggiunte ${added.length}</b> alle tue cercate`
-      : '🤷 <b>Nessuna carta aggiunta</b>',
+      ? `${ICONS.success} <b>Aggiunte ${added.length}</b> alle tue cercate`
+      : `${ICONS.shrug} <b>Nessuna carta aggiunta</b>`,
     section('', added, describe),
-    section('ℹ️ <b>Già nel tuo elenco</b>', already, describe),
-    section('❌ <b>Non trovate</b>', notFound, outcome => escapeHtml(outcome.entry.raw)),
-    section('⚠️ <b>Errore, riprova</b>', failed, describe),
+    section(`${ICONS.info} <b>Già nel tuo elenco</b>`, already, describe),
+    section(`${ICONS.failure} <b>Non trovate</b>`, notFound, outcome => escapeHtml(outcome.entry.raw)),
+    section(`${ICONS.warning} <b>Errore, riprova</b>`, failed, describe),
     skippedLines > 0
       ? `Ho letto solo le prime righe: ne ho ignorate ${skippedLines} oltre il limite.`
       : null

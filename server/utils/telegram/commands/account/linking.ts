@@ -1,5 +1,6 @@
 // server\utils\telegram\commands\account\linking.ts
 import type { Bot, Context } from 'grammy'
+import { ICONS } from '../../icons'
 
 // No conversation state: Nitro is serverless, so an in-memory "waiting for email" flag wouldn't
 // survive a cold start. Any plain-text message that looks like an email is treated as a linking
@@ -103,7 +104,7 @@ async function linkChat(
 
   if (associateError) throw associateError
   if (!associate) {
-    return '❌ Nessun tesseramento approvato trovato con questa email. '
+    return `${ICONS.failure} Nessun tesseramento approvato trovato con questa email. `
       + 'Controlla di averla scritta correttamente, oppure contatta un admin.'
   }
 
@@ -112,7 +113,7 @@ async function linkChat(
   // the link
   const existingChatId = await resolveChatIdByAssociateUuid(associate.uuid)
   if (existingChatId !== null && existingChatId !== chatId) {
-    return '⚠️ Questa email è già collegata a un\'altra chat. '
+    return `${ICONS.warning} Questa email è già collegata a un'altra chat. `
       + 'Se è la tua email e hai perso l\'accesso a quella chat, contatta un admin per scollegarla.'
   }
 
@@ -129,7 +130,7 @@ async function linkChat(
 
   if (linkError) throw linkError
 
-  return `✅ Collegato come ${associate.first_name}! D'ora in poi i comandi personalizzati useranno il tuo account.`
+  return `${ICONS.success} Collegato come ${associate.first_name}! D'ora in poi i comandi personalizzati useranno il tuo account.`
 }
 
 export function registerLinkingHandler(bot: Bot) {
@@ -147,18 +148,18 @@ export function registerLinkingHandler(bot: Bot) {
     try {
       allowed = await recordLinkAttempt(chatId)
     } catch {
-      await ctx.reply('⚠️ Errore nel collegamento, riprova più tardi.')
+      await ctx.reply(`${ICONS.warning} Errore nel collegamento, riprova più tardi.`)
       return
     }
     if (!allowed) {
       // Limits aren't interpolated: "1 tentativo ogni 1 minuti" reads wrong, and a generic text
       // survives changes
-      await ctx.reply('⚠️ Troppi tentativi di collegamento. Riprova tra qualche minuto.')
+      await ctx.reply(`${ICONS.warning} Troppi tentativi di collegamento. Riprova tra qualche minuto.`)
       return
     }
 
     const reply = await linkChat(chatId, text.toLowerCase(), ctx.from?.username ?? null)
-      .catch(() => '⚠️ Errore nel collegamento, riprova più tardi.')
+      .catch(() => `${ICONS.warning} Errore nel collegamento, riprova più tardi.`)
 
     await ctx.reply(reply)
   })

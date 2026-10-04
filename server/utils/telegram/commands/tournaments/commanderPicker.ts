@@ -9,6 +9,7 @@ import type { InlineQueryResultArticle, InputRichMessage } from 'grammy/types'
 import { resolveAssociateUuidByChatId } from '../account/linking'
 import { fetchCommanderHistory, fetchLivePod, type LivePod } from './commanderPodData'
 import { replyWithLiveCommanderPod } from './commanderPod'
+import { ICONS } from '../../icons'
 
 // The live pod of whoever wrote in this chat; null (after telling them) when they have none open
 async function fetchOwnPodOrReply(ctx: Context): Promise<LivePod | null> {
@@ -59,8 +60,8 @@ function cardImageUrl(card: ScryfallCard): string | null {
   return card.image_uris?.art_crop ?? card.card_faces?.[0]?.image_uris?.art_crop ?? null
 }
 
-const COMMANDER_MESSAGE_PREFIX = '🎴 Comandante: '
-const SECOND_COMMANDER_MESSAGE_PREFIX = '🎴 Secondo comandante: '
+const COMMANDER_MESSAGE_PREFIX = `${ICONS.commanderCard} Comandante: `
+const SECOND_COMMANDER_MESSAGE_PREFIX = `${ICONS.commanderCard} Secondo comandante: `
 // An inline query starting with "+" searches the cards compatible with the commander already set.
 const SECOND_COMMANDER_QUERY_PREFIX = '+'
 const MAX_SECOND_COMMANDER_RESULTS = 20
@@ -209,8 +210,8 @@ export function registerCommanderPickerHandlers(bot: Bot) {
     blocks.push({
       type: 'paragraph',
       text: exactPartner
-        ? `✅ Comandanti impostati per questo turno: ${name} + ${exactPartner}`
-        : `✅ Comandante impostato per questo turno: ${name}`
+        ? `${ICONS.success} Comandanti impostati per questo turno: ${name} + ${exactPartner}`
+        : `${ICONS.success} Comandante impostato per questo turno: ${name}`
     })
     await ctx.replyWithRichMessage({ blocks })
 
@@ -221,7 +222,7 @@ export function registerCommanderPickerHandlers(bot: Bot) {
     if (!exactPartner && secondKind && hasCompatibleCards) {
       await ctx.reply(`Questo comandante può avere ${secondKind}. Vuoi impostarlo?`, {
         reply_markup: new InlineKeyboard()
-          .switchInlineCurrent('🎴 Imposta secondo comandante', `${SECOND_COMMANDER_QUERY_PREFIX} `)
+          .switchInlineCurrent(`${ICONS.commanderCard} Imposta secondo comandante`, `${SECOND_COMMANDER_QUERY_PREFIX} `)
       })
     }
 
@@ -243,7 +244,7 @@ export function registerCommanderPickerHandlers(bot: Bot) {
     const name = ctx.message.text.slice(SECOND_COMMANDER_MESSAGE_PREFIX.length)
     const partnerRules = await loadPartnerRules()
     if (!partnerRules?.rules.getAllowedPartners(pod.myCommander1Name).includes(name)) {
-      await ctx.reply(`⚠️ ${name} non è compatibile con ${pod.myCommander1Name}.`)
+      await ctx.reply(`${ICONS.warning} ${name} non è compatibile con ${pod.myCommander1Name}.`)
       return
     }
 
@@ -260,7 +261,7 @@ export function registerCommanderPickerHandlers(bot: Bot) {
     if (artUrl) blocks.push({ type: 'photo', photo: { type: 'photo', media: artUrl } })
     blocks.push({
       type: 'paragraph',
-      text: `✅ Comandanti impostati per questo turno: ${pod.myCommander1Name} + ${name}`
+      text: `${ICONS.success} Comandanti impostati per questo turno: ${pod.myCommander1Name} + ${name}`
     })
     await ctx.replyWithRichMessage({ blocks })
     await replyWithLiveCommanderPod(ctx)

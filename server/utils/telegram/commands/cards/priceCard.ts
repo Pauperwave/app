@@ -197,7 +197,7 @@ export function buildPriceKeyboard(
   for (const language of LANGUAGES) {
     const active = languageChosen && state.language === language
     keyboard.text(
-      `${active ? '✅ ' : ''}${LANGUAGE_LABELS[language]}`,
+      `${active ? `${ICONS.success} ` : ''}${LANGUAGE_LABELS[language]}`,
       encodePriceState({ ...state, language })
     )
   }

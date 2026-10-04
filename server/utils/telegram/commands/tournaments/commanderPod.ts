@@ -11,6 +11,7 @@ import { registerDeepLink } from '../../deepLinks'
 import { showRichStep } from '../mockups/richStepHelpers'
 import { fetchLivePod, type LivePod } from './commanderPodData'
 import { positionRichMessage } from './commanderPodMessages'
+import { ICONS } from '../../icons'
 
 // ─── Menu (entry point from /tavolo) ────────────────────────────────────────
 // autoAnswer/onMenuOutdated: false, like tavoloMenu (mockups/tavolo.ts): every .dynamic() reads
@@ -19,9 +20,9 @@ export const commanderPodMenu = new Menu<Context>('cmdpod', {
   autoAnswer: false,
   onMenuOutdated: false
 }).dynamic((_ctx, range) => {
-  range.switchInlineCurrent('🎴 Imposta comandante', '')
+  range.switchInlineCurrent(`${ICONS.commanderCard} Imposta comandante`, '')
   range.row()
-  range.text('✍️ Inserisci risultato', async (ctx) => {
+  range.text(`${ICONS.write} Inserisci risultato`, async (ctx) => {
     const pod = await requirePod(ctx)
     if (pod) await showRichStep(ctx, positionRichMessage(pod))
   })
@@ -55,7 +56,7 @@ export async function replyWithLiveCommanderPod(ctx: Context): Promise<boolean> 
   const pod = await fetchLivePod(associateUuid)
   if (!pod) return false
 
-  const place = pod.tableNumber === null ? '🪑 Il tuo tavolo' : `🪑 Tavolo ${pod.tableNumber}`
+  const place = pod.tableNumber === null ? `${ICONS.table} Il tuo tavolo` : `${ICONS.table} Tavolo ${pod.tableNumber}`
   const usernames = await fetchTelegramUsernames(pod.opponents.map(o => o.associateUuid))
   const opponents = pod.opponents.map(o => ({
     name: o.name,

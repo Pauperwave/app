@@ -151,10 +151,10 @@ function tournamentDetailBlocks(row: DatedTournamentRow): InputRichMessage['bloc
     ]
   })
 
-  if (row.organizer?.name) blocks.push({ type: 'paragraph', text: `🏢 Organizzatore: ${row.organizer.name}` })
+  if (row.organizer?.name) blocks.push({ type: 'paragraph', text: `${ICONS.organizer} Organizzatore: ${row.organizer.name}` })
   if (row.contact_name) {
     const phone = row.contact_phone ? ` (${row.contact_phone})` : ''
-    blocks.push({ type: 'paragraph', text: `☎️ Referente: ${row.contact_name}${phone}` })
+    blocks.push({ type: 'paragraph', text: `${ICONS.phone} Referente: ${row.contact_name}${phone}` })
   }
   if (row.entry_fee !== null) blocks.push({ type: 'paragraph', text: `${ICONS.fee} Quota: ${row.entry_fee} €` })
   if (row.prizes) blocks.push({ type: 'paragraph', text: `${ICONS.trophy} Premi: ${row.prizes}` })
@@ -228,7 +228,7 @@ async function handleCancelRegistration(
     // Overwrite needed before ctx.menu.update() re-renders the button, see perContextCache.ts
     memoize.set(ctx, 'registration', Promise.resolve(null))
     ctx.menu.update()
-    await ctx.answerCallbackQuery({ text: '✅ Iscrizione annullata.' })
+    await ctx.answerCallbackQuery({ text: `${ICONS.success} Iscrizione annullata.` })
   } catch {
     await ctx.answerCallbackQuery({ text: 'Errore durante l\'annullamento, riprova più tardi.', show_alert: true })
   }
@@ -260,7 +260,7 @@ async function handleRegister(
     // Overwrite needed before ctx.menu.update() re-renders the button, see perContextCache.ts
     memoize.set(ctx, 'registration', Promise.resolve('registered'))
     ctx.menu.update()
-    await ctx.answerCallbackQuery({ text: '✅ Iscrizione confermata!' })
+    await ctx.answerCallbackQuery({ text: `${ICONS.success} Iscrizione confermata!` })
   } catch {
     await ctx.answerCallbackQuery({ text: 'Errore durante l\'iscrizione, riprova più tardi.', show_alert: true })
   }
@@ -301,11 +301,11 @@ export const torneoMenu = new Menu<Context>('t', {
       // associateUuid is already resolved above (registration is only non-null when it was truthy)
       const linkedAssociateUuid = associateUuid
       range.text(
-        { text: '❌ Annulla iscrizione', payload },
+        { text: `${ICONS.failure} Annulla iscrizione`, payload },
         ctx => handleCancelRegistration(ctx, uuid, linkedAssociateUuid)
       )
     } else if (tournament.status === 'registration_open') {
-      range.text({ text: '➕ Iscriviti', payload }, ctx => handleRegister(ctx, uuid, associateUuid))
+      range.text({ text: `${ICONS.register} Iscriviti`, payload }, ctx => handleRegister(ctx, uuid, associateUuid))
     }
   }
 

@@ -8,12 +8,13 @@ import { Menu } from '@grammyjs/menu'
 
 import { openRisultato, risultatoMenu } from './risultato'
 import { registerDeepLink } from '../../deepLinks'
+import { ICONS } from '../../icons'
 
 const MOCK_TABLE = { number: 7, opponents: ['Marco Rossi', 'Giulia Bianchi', 'Luca Verdi'] }
 
 function demoMarkdown(): string {
   const lines = MOCK_TABLE.opponents.map(name => `- ${name}`)
-  return `## 🪑 Tavolo ${MOCK_TABLE.number} (demo)\n\nGiochi con:\n${lines.join('\n')}\n\n`
+  return `## ${ICONS.table} Tavolo ${MOCK_TABLE.number} (demo)\n\nGiochi con:\n${lines.join('\n')}\n\n`
     + '_Dati di esempio — nessuna scrittura reale, vedi il tavolo vero con /tavolo._'
 }
 
@@ -22,7 +23,7 @@ function demoMarkdown(): string {
 const demoMenu = new Menu<Context>('cmddemo', {
   autoAnswer: false,
   onMenuOutdated: false
-}).submenu({ text: '✍️ Inserisci risultati (demo)', payload: '' }, 'ris', openRisultato)
+}).submenu({ text: `${ICONS.write} Inserisci risultati (demo)`, payload: '' }, 'ris', openRisultato)
 
 async function commanderDemoCommandHandler(ctx: Context) {
   await ctx.replyWithRichMessage({ markdown: demoMarkdown() }, { reply_markup: demoMenu })

@@ -13,9 +13,10 @@ import { WANT_CALLBACK_PREFIX, decodeWantState, wantedLanguageOf, type PriceLang
 import { fetchScryfallCard } from './scryfall'
 
 import { resolveCardTraderBlueprint } from '../../../cardTrader'
+import { ICONS } from '../../icons'
 
-const NOT_FOUND_TEXT = '🤔 Non trovo più questa carta.'
-const ALREADY_WANTED_TEXT = 'ℹ️ È già nel tuo elenco.'
+const NOT_FOUND_TEXT = `${ICONS.thinking} Non trovo più questa carta.`
+const ALREADY_WANTED_TEXT = `${ICONS.info} È già nel tuo elenco.`
 
 const LANGUAGE_LABELS: Record<PriceLanguage, string> = { all: 'qualsiasi lingua', it: 'ITA', en: 'ENG' }
 
@@ -79,7 +80,7 @@ async function handleWantButton(ctx: Context, next: () => Promise<void>) {
 
     const finish = choice.foil ? ' · foil' : ''
     await ctx.answerCallbackQuery({
-      text: `✅ Aggiunta alle tue cercate:\n${card.name} (${card.set.toUpperCase()}) · ${LANGUAGE_LABELS[state.language]}${finish}`,
+      text: `${ICONS.success} Aggiunta alle tue cercate:\n${card.name} (${card.set.toUpperCase()}) · ${LANGUAGE_LABELS[state.language]}${finish}`,
       show_alert: true
     })
   } catch (err) {
