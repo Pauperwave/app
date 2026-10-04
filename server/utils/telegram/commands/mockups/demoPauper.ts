@@ -2,6 +2,7 @@
 import type { InputRichMessage } from 'grammy/types'
 import { MATCH_OUTCOMES } from '#shared/utils/tournaments/matchReport'
 import { twoColumnFactsTable } from './richStepHelpers'
+import { disputedNoticeText } from '../tournaments/matchNotices'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
 // The 1v1 (Pauper) result entry of matchReport.ts with a made-up table and opponent: same steps
@@ -27,13 +28,13 @@ interface DemoOpenCallback {
 }
 
 interface DemoStepCallback {
-  action: 'summary' | 'send'
+  action: 'summary' | 'send' | 'dispute'
   outcomeIndex: number
 }
 
 export type DemoPauperCallback = DemoOpenCallback | DemoStepCallback
 
-// "demop:open", "demop:open:2", "demop:summary:2", "demop:send:2"
+// "demop:open", "demop:open:2", "demop:summary:2", "demop:send:2", "demop:dispute:2"
 export function encodeDemoPauperCallback(callback: DemoPauperCallback): string {
   const base = `${DEMO_PAUPER_PREFIX}${callback.action}`
   return callback.outcomeIndex === null ? base : `${base}:${callback.outcomeIndex}`
@@ -56,7 +57,7 @@ export function decodeDemoPauperCallback(data: string): DemoPauperCallback | nul
   const isValidIndex = /^\d+$/.test(rawIndex) && outcomeIndex < MATCH_OUTCOMES.length
   if (!isValidIndex) return null
 
-  if (action === 'open' || action === 'summary' || action === 'send') {
+  if (action === 'open' || action === 'summary' || action === 'send' || action === 'dispute') {
     return { action, outcomeIndex }
   }
   return null
@@ -66,6 +67,7 @@ export function decodeDemoPauperCallback(data: string): DemoPauperCallback | nul
 export function demoPauperStepMessage(callback: DemoPauperCallback): InputRichMessage {
   if (callback.action === 'open') return demoPauperPickMessage(callback.outcomeIndex)
   if (callback.action === 'summary') return demoPauperSummaryMessage(callback.outcomeIndex)
+  if (callback.action === 'dispute') return demoPauperDisputeMessage(callback.outcomeIndex)
   return demoPauperDoneMessage(callback.outcomeIndex)
 }
 
@@ -156,6 +158,32 @@ export function demoPauperDoneMessage(outcomeIndex: number): InputRichMessage {
         type: 'paragraph',
         text: `${ICONS.success} Risultato registrato: ${outcomeLabel(outcomeIndex)}\n\n`
           + `In un torneo vero avviserei ${MOCK_MATCH.opponent}: se contesta, decide l'organizzatore.`
+      },
+      {
+        type: 'buttons',
+        buttons: [{
+          text: `${ICONS.failure} Contesta come ${MOCK_MATCH.opponent}`,
+          style: 'danger',
+          callback_data: encodeDemoPauperCallback({ action: 'dispute', outcomeIndex })
+        }]
+      },
+      { type: 'paragraph', text: EXAMPLE_NOTE }
+    ]
+  }
+}
+
+// What the opponent sees after tapping "Non è corretto" on the result, and what the player who
+// entered it would then be told
+export function demoPauperDisputeMessage(outcomeIndex: number): InputRichMessage {
+  return {
+    blocks: [
+      {
+        type: 'paragraph',
+        text: `${ICONS.warning} Risultato contestato (${outcomeLabel(outcomeIndex)}): l'organizzatore lo verificherà.`
+      },
+      {
+        type: 'paragraph',
+        text: `Chi ha inserito il risultato riceverebbe: ${disputedNoticeText(MOCK_MATCH.opponent, MOCK_MATCH.roundNumber)}`
       },
       { type: 'paragraph', text: EXAMPLE_NOTE }
     ]

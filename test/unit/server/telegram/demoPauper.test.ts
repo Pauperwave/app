@@ -45,7 +45,8 @@ describe('demo Pauper callbacks', () => {
       { action: 'open', outcomeIndex: null },
       { action: 'open', outcomeIndex: 2 },
       { action: 'summary', outcomeIndex: 0 },
-      { action: 'send', outcomeIndex: MATCH_OUTCOMES.length - 1 }
+      { action: 'send', outcomeIndex: MATCH_OUTCOMES.length - 1 },
+      { action: 'dispute', outcomeIndex: 1 }
     ]
     for (const callback of callbacks) {
       expect(decodeDemoPauperCallback(encodeDemoPauperCallback(callback))).toEqual(callback)
@@ -98,6 +99,19 @@ describe('demo Pauper messages', () => {
   it('confirms the registration of the score without writing anything', () => {
     const text = messageText(demoPauperStepMessage({ action: 'send', outcomeIndex: 1 }))
     expect(text).toContain(`Risultato registrato: ${MATCH_OUTCOMES[1]?.label}`)
+    expect(text).toContain('nessuna scrittura reale')
+  })
+
+  it('lets the tester dispute the result as the opponent, keeping the score', () => {
+    const message = demoPauperStepMessage({ action: 'send', outcomeIndex: 2 })
+    expect(buttonData(message)).toEqual(['demop:dispute:2'])
+    expect(plain(buttonsOf(message)[0]?.text)).toContain('Contesta come Aurelio Varchetta')
+  })
+
+  it('shows the dispute to the opponent and what the other player would be told', () => {
+    const text = messageText(demoPauperStepMessage({ action: 'dispute', outcomeIndex: 1 }))
+    expect(text).toContain(`Risultato contestato (${MATCH_OUTCOMES[1]?.label})`)
+    expect(text).toContain('Aurelio Varchetta ha contestato il risultato del Round 2')
     expect(text).toContain('nessuna scrittura reale')
   })
 
