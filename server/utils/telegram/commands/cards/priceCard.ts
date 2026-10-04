@@ -35,8 +35,8 @@ export interface PriceCardtrader {
   url: string | null
 }
 
-// 'pending': CardTrader hasn't been asked yet (an inline result can't wait for it), a language
-// button press fetches it
+// 'pending': CardTrader hasn't been asked yet (an inline result can't wait for it), the bot edits
+// the message once the printing is picked; a language button press fetches it too
 export type PriceCardtraderState = PriceCardtrader | 'pending' | null
 
 // The card art rides on a text message as a link preview: a text message can't hold a photo, and
@@ -173,7 +173,7 @@ export function buildPriceText(
   const cardtraderLabel = `CardTrader (NM, ${LANGUAGE_NAMES[state.language]})`
   let cardtraderLine = `${cardtraderLabel}: non disponibile`
   if (cardtrader === 'pending') {
-    cardtraderLine = 'CardTrader: scegli una lingua qui sotto per controllarlo'
+    cardtraderLine = `${cardtraderLabel}: controllo in corso…`
   } else if (cardtrader) {
     cardtraderLine = `${cardtraderLabel}: ${formatPrice(cardtrader.price, 'nessuna offerta')}`
   }
@@ -190,13 +190,12 @@ export function buildPriceText(
 export function buildPriceKeyboard(
   printing: PricePrinting,
   state: PriceState,
-  cardtraderUrl: string | null,
-  languageChosen = true
+  cardtraderUrl: string | null
 ): InlineKeyboard {
   const keyboard = new InlineKeyboard()
 
   for (const language of LANGUAGES) {
-    const active = languageChosen && state.language === language
+    const active = state.language === language
     keyboard.text(
       `${active ? `${ICONS.success} ` : ''}${LANGUAGE_LABELS[language]}`,
       encodePriceState({ ...state, language })

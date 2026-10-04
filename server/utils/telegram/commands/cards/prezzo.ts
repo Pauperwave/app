@@ -178,7 +178,7 @@ async function handlePriceInlineQuery(ctx: Context, next: () => Promise<void>) {
           parse_mode: 'HTML',
           link_preview_options: artPreview(printing.imageUrl)
         },
-        reply_markup: buildPriceKeyboard(printing, state, null, false)
+        reply_markup: buildPriceKeyboard(printing, state, null)
       }
     })
 
@@ -199,27 +199,49 @@ async function handlePriceButton(ctx: Context, next: () => Promise<void>) {
   }
 
   try {
-    const printing = await fetchPrinting(state.scryfallId)
-    if (!printing) {
+    if (!await editPriceMessage(ctx, state)) {
       await ctx.answerCallbackQuery({ text: NOT_FOUND_TEXT, show_alert: true })
       return
     }
 
-    const cardtrader = await fetchCardtrader(printing, state)
-    await ctx.editMessageText(buildPriceText(printing, state, cardtrader), {
-      parse_mode: 'HTML',
-      link_preview_options: artPreview(printing.imageUrl),
-      reply_markup: buildPriceKeyboard(printing, state, cardtrader?.url ?? null)
-    })
     await ctx.answerCallbackQuery()
   } catch (err) {
     await answerEditError(ctx, err)
   }
 }
 
+// False when the printing no longer exists on Scryfall
+async function editPriceMessage(ctx: Context, state: PriceState): Promise<boolean> {
+  const printing = await fetchPrinting(state.scryfallId)
+  if (!printing) return false
+
+  const cardtrader = await fetchCardtrader(printing, state)
+  await ctx.editMessageText(buildPriceText(printing, state, cardtrader), {
+    parse_mode: 'HTML',
+    link_preview_options: artPreview(printing.imageUrl),
+    reply_markup: buildPriceKeyboard(printing, state, cardtrader?.url ?? null)
+  })
+  return true
+}
+
+// The inline result is posted with "Tutte" already active but without CardTrader, which an inline
+// result can't wait for: once the player has picked it, the message is edited with the price.
+// Needs inline feedback enabled for the bot in BotFather (/setinlinefeedback).
+async function handleChosenPrice(ctx: Context, next: () => Promise<void>) {
+  const chosen = ctx.chosenInlineResult
+  if (!chosen?.query.startsWith(PRICE_INLINE_PREFIX)) return next()
+
+  try {
+    await editPriceMessage(ctx, { scryfallId: chosen.result_id, language: 'all', foil: false })
+  } catch (err) {
+    console.error('CardTrader price after the inline pick failed:', err)
+  }
+}
+
 export function registerPrezzoCommand(bot: Bot, commands: CommandGroup<Context>) {
   // Before the commander picker's catch-all inline handler, which answers every other query
   bot.on('inline_query', handlePriceInlineQuery)
+  bot.on('chosen_inline_result', handleChosenPrice)
   bot.on('callback_query:data', handlePriceButton)
   bot.on('message:text', handlePriceNameReply)
   commands.command(

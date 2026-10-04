@@ -146,10 +146,9 @@ describe('buildPriceText', () => {
     expect(text).toContain('CardTrader (NM, tutte le lingue): non disponibile')
   })
 
-  it('invites to pick a language while CardTrader is still pending', () => {
+  it('says CardTrader is being checked while it is still pending', () => {
     const text = buildPriceText(makePrinting(), baseState, 'pending')
-    expect(text).toContain('scegli una lingua')
-    expect(text).not.toContain('CardTrader (NM')
+    expect(text).toContain('CardTrader (NM, tutte le lingue): controllo in corso')
   })
 
   it('escapes HTML in card and set names', () => {
@@ -167,9 +166,11 @@ describe('buildPriceKeyboard', () => {
     expect(texts.filter(text => text.startsWith('✅'))).toHaveLength(1)
   })
 
-  it('marks no language before one has been chosen', () => {
-    const keyboard = buildPriceKeyboard(makePrinting(), baseState, null, false)
-    expect(buttonTexts(keyboard).some(text => text.startsWith('✅'))).toBe(false)
+  it('has "Tutte" active in the default state', () => {
+    const keyboard = buildPriceKeyboard(makePrinting(), baseState, null)
+    const active = buttonTexts(keyboard).filter(text => text.startsWith('✅'))
+    expect(active).toHaveLength(1)
+    expect(active[0]).toContain('Tutte')
   })
 
   it('flips the foil flag when the toggle is pressed and keeps the language', () => {
