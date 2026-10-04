@@ -75,7 +75,7 @@ const viewModeItems = computed<TabsItem[]>(() => [
 ])
 
 const {
-  route, router, table,
+  table,
   editingAssociate, editModalOpen,
   editingNumberAssociate, numberModalOpen,
   renewingAssociate, renewModalOpen,
@@ -162,88 +162,9 @@ const {
 // Also matches the Telegram nickname, read live from the bot-link map
 const globalFilterFn = createAssociatesGlobalFilterFn(uuid => telegramUsernames.value?.get(uuid))
 
-// Wires the sidebar links (/associates?status=pending|active|to_renew) to the membership_status
-// column filter. "pending_renewal" filters a different column entirely: it isn't a
-// membership_status value but derives from pauperwave_associate_membership_events (see the
-// has_pending_renewal column below), so the two filters are mutually exclusive.
-//
-// Replaces columnFilters.value wholesale instead of calling column.setFilterValue() on columns from
-// table.value?.tableApi (still done by requests.vue, which has no has_pending_renewal column to
-// race against): that mutates TanStack's internal state while UTable's v-model:column-filters
-// controls the same state declaratively. Switching status=pending_renewal -> status=active left the
-// table showing only the pending-renewal row: the second setFilterValue call (clearing
-// has_pending_renewal) lost the race against UTable's prop-watcher re-syncing from the still-stale
-// columnFilters ref. Assigning columnFilters.value makes it the one source of truth
-function applyMembershipStatusFilterFromQuery() {
-  const status = route.query.status
-  if (status === 'pending_renewal') {
-    columnFilters.value = [{ id: 'has_pending_renewal', value: true }]
-  } else if (typeof status === 'string') {
-    columnFilters.value = [{ id: 'membership_status', value: status }]
-  } else {
-    columnFilters.value = []
-  }
-}
-
-// No longer needs nextTick to wait for UTable to mount — columnFilters is a
-// plain ref this page owns, not something read off table.value?.tableApi.
-onMounted(applyMembershipStatusFilterFromQuery)
-watch(() => route.query.status, applyMembershipStatusFilterFromQuery)
-
-// Real counts per membership status, for the tabs above the table (they replace the
-// old static sidebar links). No 'pending' here anymore — rosterAssociates never
-// contains pending requests in the first place.
-const associatesStatusCounts = computed(() => {
-  const counts = { active: 0, to_renew: 0, expired: 0 }
-  for (const associate of rosterAssociates.value) {
-    if (associate.membership_status in counts) {
-      counts[associate.membership_status as keyof typeof counts]++
-    }
-  }
-  return counts
-})
-
-// Rendered via the generic StatusFilterGroup (also used by wanted-cards), not UTabs: toggle buttons
-// filter the table below rather than switching views. `count` is optional per item
-// (StatusFilterGroup shows the nested UBadge only when set). Icons reused from
-// MEMBERSHIP_STATUS_BADGE_CONFIG (the single source for status icons, like transactions' typeTabs),
-// icon-only below `lg` via StatusFilterGroup's icon prop
-const statusTabs = computed(() => [
-  { label: t('associate.tabs.all'), value: 'all' as const, count: undefined },
-  {
-    label: t('associate.tabs.active'),
-    value: 'active' as const,
-    count: associatesStatusCounts.value.active,
-    icon: MEMBERSHIP_STATUS_BADGE_CONFIG.active.icon
-  },
-  {
-    label: t('associate.tabs.pendingRenewal'),
-    value: 'pending_renewal' as const,
-    count: pendingRenewalUuids.value?.size,
-    icon: ICONS.calendarRenew
-  },
-  {
-    label: t('associate.tabs.toRenew'),
-    value: 'to_renew' as const,
-    count: associatesStatusCounts.value.to_renew,
-    icon: MEMBERSHIP_STATUS_BADGE_CONFIG.to_renew.icon
-  },
-  {
-    label: t('associate.tabs.expired'),
-    value: 'expired' as const,
-    count: associatesStatusCounts.value.expired,
-    icon: MEMBERSHIP_STATUS_BADGE_CONFIG.expired.icon
-  }
-])
-
-const activeStatusTab = computed({
-  get: () => (typeof route.query.status === 'string' ? route.query.status : 'all'),
-  set: (value: string | number) => {
-    router.replace({ query: { ...route.query, status: value === 'all' ? undefined : value } })
-  }
-})
-
-const columnFilters = ref<{ id: string, value: unknown }[]>([])
+const { columnFilters, statusTabs, activeStatusTab } = useAssociatesStatusTabs(
+  rosterAssociates, pendingRenewalUuids
+)
 
 const columnVisibility = ref({
   // Always "approved" here now that pending/rejected requests live on their
@@ -291,7 +212,7 @@ const columns: TableColumn<Associate>[] = [
     cell: ({ row }) => h(MembershipStatusBadge, { status: row.original.membership_status })
   },
   // Purely accessorFn-derived (no real pauperwave_associates column): backs the "Richieste (di
-  // rinnovo)" tab's column filter (applyMembershipStatusFilterFromQuery above), and doubles as an
+  // rinnovo)" tab's column filter (useAssociatesStatusTabs.ts), and doubles as an
   // at-a-glance badge on every other tab
   {
     id: 'has_pending_renewal',
