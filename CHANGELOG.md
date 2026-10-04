@@ -1,6 +1,64 @@
 # Changelog
 
 
+## v0.14.0
+
+[compare changes](https://github.com/Pauperwave/app/compare/v0.13.0...v0.14.0)
+
+### Enhancements
+
+- **bot:** ✨ the cercate button uses a magnifying glass instead of a plus ([d1e4a78e](https://github.com/Pauperwave/app/commit/d1e4a78e))
+- **bot:** ✨ the tornei help topic uses a medal instead of a die ([46ec4f78](https://github.com/Pauperwave/app/commit/46ec4f78))
+- **bot:** ✨ the dadi help topic uses a die instead of a slot machine ([65ef3189](https://github.com/Pauperwave/app/commit/65ef3189))
+- **turni:** ✨ the reset turns button is red ([926f2e5f](https://github.com/Pauperwave/app/commit/926f2e5f))
+- **turni:** ✨ the next turn button is yellow ([cdab4e35](https://github.com/Pauperwave/app/commit/cdab4e35))
+- **bot:** ✨ /prezzo without a name asks for it and reads the reply as the card name ([f1885bf0](https://github.com/Pauperwave/app/commit/f1885bf0))
+- **bot:** ✨ the price message states the language and variant it is showing ([8cc1df44](https://github.com/Pauperwave/app/commit/8cc1df44))
+- **bot:** ✨ the price message opens with Tutte active and fills in CardTrader once the printing is picked ([cc81f7ac](https://github.com/Pauperwave/app/commit/cc81f7ac))
+- **bot:** ✨ the price message is a rich message with the language and foil buttons under their labels ([acc71d4f](https://github.com/Pauperwave/app/commit/acc71d4f))
+- **bot:** ✨ shorter descriptions for /prezzo, /importa and /tira in the command menu ([8eb7df6f](https://github.com/Pauperwave/app/commit/8eb7df6f))
+- **bot:** ✨ one unlabeled row of language and foil buttons in the price message, the wanted-card button back under it, card art as a photo block ([2357e456](https://github.com/Pauperwave/app/commit/2357e456))
+- **bot:** ✨ the inline price result goes without art and the first edit adds the card photo ([ce6a907f](https://github.com/Pauperwave/app/commit/ce6a907f))
+- **bot:** ✨ back to the HTML price message with the card art preview, filters in one inline row at the bottom, store names bold and underlined ([66dd0bc1](https://github.com/Pauperwave/app/commit/66dd0bc1))
+- **bot:** ✨ the inline price search starts with € instead of $ ([5ba178de](https://github.com/Pauperwave/app/commit/5ba178de))
+- **bot:** ✨ the price message knows if the card is already among your wanted cards and offers found and remove ([eea68751](https://github.com/Pauperwave/app/commit/eea68751))
+- **bot:** ✨ hidden /test with buttons that prefill the price search ([7fdceaf4](https://github.com/Pauperwave/app/commit/7fdceaf4))
+- **bot:** ✨ /cercate opens a card's actions with mark as found and remove, and the empty list names the € search ([2101a299](https://github.com/Pauperwave/app/commit/2101a299))
+- **bot:** ✨ the commander search needs the # prefix and a query with no prefix gets hints ([2c8b557f](https://github.com/Pauperwave/app/commit/2c8b557f))
+- **bot:** ✨ /help opens on the Tornei section by default ([21da27c0](https://github.com/Pauperwave/app/commit/21da27c0))
+- **bot:** ✨ /cercate shows each card's mana cost between its number and its name ([357a98fc](https://github.com/Pauperwave/app/commit/357a98fc))
+- **bot:** ✨ the hidden /demo tries the result entry of Commander and Pauper with example data ([5dc330ea](https://github.com/Pauperwave/app/commit/5dc330ea))
+- **deploy:** ✨ tell the super admins on Telegram when a production deployment finishes ([322081f8](https://github.com/Pauperwave/app/commit/322081f8))
+- **bot:** ✨ a t.me link opens a tournament's detail with the registration button, copied from the tournaments menu ([4f7bfba1](https://github.com/Pauperwave/app/commit/4f7bfba1))
+- **deploy:** ✨ the deploy notice drops the deployment link and shows the commit in a monospace block ([08925608](https://github.com/Pauperwave/app/commit/08925608))
+- **bot:** ✨ /menzioni shows the player's special mentions and /crediti says who made the bot ([92f3f727](https://github.com/Pauperwave/app/commit/92f3f727))
+- **deploy:** ✨ the deploy notice shows the branch and hash as inline code and the message as plain text ([b0c95b7a](https://github.com/Pauperwave/app/commit/b0c95b7a))
+- **bot:** ✨ /crediti lists the data sources as bullets with links to the platforms ([c189642e](https://github.com/Pauperwave/app/commit/c189642e))
+
+### Fixes
+
+- **turni:** 🐛 the mini app's clock offset uses the middle of the round trip, not the arrival time ([c9a87dc6](https://github.com/Pauperwave/app/commit/c9a87dc6))
+- **bot:** 🐛 drop the card art photo block, an inline result rejects it and the whole result list failed ([951140df](https://github.com/Pauperwave/app/commit/951140df))
+- **bot:** 🐛 an imported card saved without a CardMarket price gets a second try right away ([ff47b891](https://github.com/Pauperwave/app/commit/ff47b891))
+
+### Refactors
+
+- **bot:** ♻️ every emoji in the bot's messages and buttons comes from ICONS ([cd7aa598](https://github.com/Pauperwave/app/commit/cd7aa598))
+- **bot:** ♻️ import the bot's ICONS through the ~~ alias instead of relative paths ([6e4b7de5](https://github.com/Pauperwave/app/commit/6e4b7de5))
+
+### Documentation
+
+- 📝 drop the hidden /commanderdemo from the bot command table ([a4487d6c](https://github.com/Pauperwave/app/commit/a4487d6c))
+
+### Chore
+
+- **scripts:** 🔧 check:emoji flags emoji written inline in server/, run in CI ([7b9f09ea](https://github.com/Pauperwave/app/commit/7b9f09ea))
+- **turni:** 🔧 log the event timer's round trip, offsets and event-to-shown delay ([3edfce4c](https://github.com/Pauperwave/app/commit/3edfce4c))
+
+### ❤️ Contributors
+
+- Emanuele Nardi ([@emanuelenardi](https://github.com/emanuelenardi))
+
 ## v0.13.0
 
 [compare changes](https://github.com/Pauperwave/app/compare/v0.12.0...v0.13.0)
