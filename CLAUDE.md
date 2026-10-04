@@ -17,6 +17,7 @@ pnpm typecheck        # nuxt typecheck (vue-tsc)
 pnpm check:paths      # verify every app/server/shared source file has a correct path header
 pnpm check:paths:fix  # insert/correct those headers in place
 pnpm check:components # flag template tags that resolve to no component (needs .nuxt/components.d.ts)
+pnpm check:emoji      # flag emoji written inline in server/ instead of taken from the bot's ICONS
 pnpm test             # vitest run
 pnpm test:watch       # vitest --watch
 pnpm test:coverage    # vitest run --coverage
@@ -120,6 +121,8 @@ Another distinct auto-import collision confirmed 2026-09-14 in `app/components/t
 
 ### Icons
 `app/utils/icons.ts`'s `ICONS` constant is the single source of truth for *every* icon string literal used anywhere in the app (`i-lucide-*`, `i-simple-icons-*`, `i-circle-flags-*`), including single-use ones — not just duplicated icons. Before adding a raw `'i-lucide-...'` string anywhere, check `ICONS` for an existing entry to reuse, and add a new one there rather than leaving the literal inline. Enforced repo-wide as of 2026-08-29 (a sweep centralized every remaining raw literal, including a project convention that this applies even to icons used exactly once — dedup-identical-only doesn't apply to this file).
+
+The Telegram bot has its own `server/utils/telegram/icons.ts` with the same rule for emoji: every emoji in a message, button label or toast comes from it, never inline (`` `${ICONS.membershipCard} Tessera` ``, not `'🪪 Tessera'`). Import it with a relative path, since `server/utils/telegram/` is not auto-imported.
 
 ### Shared row-actions composables
 Table/grid "right-click context menu" wiring has three small shared composables in `app/composables/`, extracted after the same code was independently duplicated across multiple `use<Domain>RowActions.ts`/`use<Domain>ContextMenu.ts` files:
