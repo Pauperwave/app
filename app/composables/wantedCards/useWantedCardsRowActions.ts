@@ -7,8 +7,13 @@ import type { DropdownMenuItem } from '@nuxt/ui'
 import type { WantedCard, WantedCardStatus } from '~/types'
 
 // Everything about "row actions" (status change, edit, delete), shared by the table's and the
-// grid's context menus, plus the state of the two modals they open
-export function useWantedCardsRowActions() {
+// grid's context menus, plus the state of the two modals they open. "Refresh prices" acts on the
+// whole selection when the right-clicked card is part of it, and says how many cards it will do
+// (`refreshSelection` is the bulk refresh of useWantedCardsBulkActions.ts).
+export function useWantedCardsRowActions(
+  selectedCards: Ref<WantedCard[]>,
+  refreshSelection: (cards: WantedCard[]) => Promise<void>
+) {
   const { t } = useI18n()
   const toast = useToast()
   const undoable = useUndoableAction()
@@ -148,6 +153,9 @@ export function useWantedCardsRowActions() {
   // regardless of ownership (see migration 20260807190720 and docs/TODO.md)
   function rowContextMenuItems(card: WantedCard): DropdownMenuItem[] {
     const manageable = canManage(card)
+    const targets = contextMenuTargets(card, selectedCards.value)
+    const refreshable = targets.filter(canRefreshPrices)
+    const refreshLabel = t('wantedCard.contextMenu.refreshPrices')
 
     const statusItems: DropdownMenuItem[] = manageable
       ? WANTED_CARD_STATUSES
@@ -185,10 +193,13 @@ export function useWantedCardsRowActions() {
         onSelect: () => openCardTraderSearch(card)
       },
       {
-        label: t('wantedCard.contextMenu.refreshPrices'),
+        label: targets.length > 1 ? withCount(refreshLabel, refreshable.length) : refreshLabel,
         icon: ICONS.refresh,
-        disabled: !isStaff.value || !card.scryfallId || !card.setCode,
-        onSelect: () => refreshCardPrices(card)
+        disabled: !isStaff.value || refreshable.length === 0,
+        onSelect: () => {
+          if (targets.length > 1) return refreshSelection(refreshable)
+          return refreshCardPrices(card)
+        }
       },
       { type: 'separator' },
       {

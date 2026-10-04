@@ -78,7 +78,7 @@ export function useWantedCardsBulkActions(selection: Selection<number>) {
   }
 
   async function bulkRefreshPrices(cards: WantedCard[]) {
-    const eligible = cards.filter(card => card.scryfallId && card.setCode)
+    const eligible = cards.filter(canRefreshPrices)
     if (!eligible.length) return
 
     selection.clear()

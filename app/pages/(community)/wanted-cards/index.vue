@@ -72,16 +72,11 @@ function isColorTabActive(value: WantedCardColorFilter): boolean {
 // ---- Row selection, row actions & bulk actions -----------------------------
 const selection = useSelection<number>()
 
-const {
-  rowContextMenuItems,
-  onRowContextmenu,
-  tableContextMenuItems,
-  editingCard,
-  editModalOpen,
-  deletingCard,
-  deleteConfirmOpen,
-  confirmDelete
-} = useWantedCardsRowActions()
+// Selected cards resolved against the currently filtered set, not the full
+// unfiltered data — a card hidden by the active status/language/treatment
+// filter shouldn't be actionable even if it stayed selected from before.
+const selectedCards = computed(() =>
+  filteredCards.value.filter(card => selection.isSelected(card.id)))
 
 const {
   pendingAction,
@@ -93,11 +88,17 @@ const {
   bulkCopyNames
 } = useWantedCardsBulkActions(selection)
 
-// Selected cards resolved against the currently filtered set, not the full
-// unfiltered data — a card hidden by the active status/language/treatment
-// filter shouldn't be actionable even if it stayed selected from before.
-const selectedCards = computed(() =>
-  filteredCards.value.filter(card => selection.isSelected(card.id)))
+// The context menu's "refresh prices" acts on the selection when the clicked card is part of it
+const {
+  rowContextMenuItems,
+  onRowContextmenu,
+  tableContextMenuItems,
+  editingCard,
+  editModalOpen,
+  deletingCard,
+  deleteConfirmOpen,
+  confirmDelete
+} = useWantedCardsRowActions(selectedCards, bulkRefreshPrices)
 
 // ---- Table configuration: columns, grouping, sorting, column visibility ---
 const { columns, columnHeaders } = useWantedCardsTableColumns(selection, rowContextMenuItems)
