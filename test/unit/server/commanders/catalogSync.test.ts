@@ -13,10 +13,10 @@ import {
   selectNewCards,
   summarizeCatalog,
   type ExistingCatalog,
-  type ScryfallCard
+  type CatalogCard
 } from '../../../../server/utils/commanders/catalogSync'
 
-function card(overrides: Partial<ScryfallCard> = {}): ScryfallCard {
+function card(overrides: Partial<CatalogCard> = {}): CatalogCard {
   return { id: 'id-1', name: 'Atraxa, Praetors\' Voice', layout: 'normal', ...overrides }
 }
 
@@ -31,7 +31,7 @@ function catalog(overrides: Partial<ExistingCatalog> = {}): ExistingCatalog {
 }
 
 describe('partnerTypeFor', () => {
-  const typeFor = (overrides: Partial<ScryfallCard>, typeLine = 'Legendary Creature') =>
+  const typeFor = (overrides: Partial<CatalogCard>, typeLine = 'Legendary Creature') =>
     partnerTypeFor(card(overrides), typeLine, overrides.keywords ?? [])
 
   it('tells "Partner with" from a plain Partner', () => {
@@ -283,7 +283,7 @@ describe('fetchCommanderCards', () => {
   })
 
   // Answers each URL with its page: { data, next }
-  function stubPages(pages: Record<string, { data: ScryfallCard[], next?: string }>) {
+  function stubPages(pages: Record<string, { data: CatalogCard[], next?: string }>) {
     const requested: string[] = []
     vi.stubGlobal('$fetch', async (url: string) => {
       requested.push(url)

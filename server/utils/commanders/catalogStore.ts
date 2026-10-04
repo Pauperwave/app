@@ -3,7 +3,7 @@
 // what mtg_commanders holds, backfill release dates, insert the new cards.
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '#shared/utils/types/database'
-import { buildInsertRows, type ExistingCatalog, type ScryfallCard } from './catalogSync'
+import { buildInsertRows, type ExistingCatalog, type CatalogCard } from './catalogSync'
 
 type Supabase = SupabaseClient<Database>
 
@@ -30,7 +30,7 @@ export async function fetchCatalogRows(supabase: Supabase) {
 export async function backfillReleasedDates(
   supabase: Supabase,
   rowsNeedingReleasedAt: ExistingCatalog['rowsNeedingReleasedAt'],
-  allFetchedCards: ScryfallCard[]
+  allFetchedCards: CatalogCard[]
 ): Promise<number> {
   if (rowsNeedingReleasedAt.length === 0) return 0
 
@@ -57,7 +57,7 @@ export async function backfillReleasedDates(
 // Returns the names of the cards inserted
 export async function insertNewCards(
   supabase: Supabase,
-  newCards: ScryfallCard[]
+  newCards: CatalogCard[]
 ): Promise<string[]> {
   if (newCards.length === 0) return []
 

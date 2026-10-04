@@ -2,7 +2,7 @@
 <!-- One kind of vote (brew or play) in the player report's votes table: who the player gave it to
      and who gave it to them. The points of the votes received sit outside the table's lines. -->
 <script setup lang="ts">
-import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/useLiveCommanderStandings'
+import type { LiveCommanderStanding } from '~/utils/tournaments/liveCommanderStandings'
 
 defineProps<{
   icon: string

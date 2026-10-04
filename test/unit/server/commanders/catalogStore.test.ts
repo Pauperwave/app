@@ -5,7 +5,7 @@ import {
   fetchCatalogRows,
   insertNewCards
 } from '../../../../server/utils/commanders/catalogStore'
-import type { ScryfallCard } from '../../../../server/utils/commanders/catalogSync'
+import type { CatalogCard } from '../../../../server/utils/commanders/catalogSync'
 import { createFakeSupabase, fakeCreateError, opsNamed } from '../fakeSupabase'
 
 beforeEach(() => {
@@ -16,7 +16,7 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-const scryfallCard = (id: string, name: string): ScryfallCard => ({ id, name, layout: 'normal' })
+const scryfallCard = (id: string, name: string): CatalogCard => ({ id, name, layout: 'normal' })
 
 describe('fetchCatalogRows', () => {
   it('reads one page when the catalog is smaller than a page', async () => {

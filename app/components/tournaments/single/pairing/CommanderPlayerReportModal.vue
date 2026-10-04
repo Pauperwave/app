@@ -1,7 +1,7 @@
 <!-- app\components\tournaments\single\pairing\CommanderPlayerReportModal.vue -->
 <!-- One player's "pagella": a card per round (ReportRoundCard.vue) and the grand total. -->
 <script setup lang="ts">
-import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/useLiveCommanderStandings'
+import type { LiveCommanderStanding } from '~/utils/tournaments/liveCommanderStandings'
 
 const { tournamentUuid, standings, player } = defineProps<{
   tournamentUuid: string

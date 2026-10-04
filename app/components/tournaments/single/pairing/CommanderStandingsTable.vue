@@ -3,7 +3,7 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import type { SortingState } from '@tanstack/vue-table'
-import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/useLiveCommanderStandings'
+import type { LiveCommanderStanding } from '~/utils/tournaments/liveCommanderStandings'
 
 const { tournamentUuid, standings } = defineProps<{
   tournamentUuid: string

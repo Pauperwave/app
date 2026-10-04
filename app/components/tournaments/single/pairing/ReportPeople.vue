@@ -1,7 +1,7 @@
 <!-- app\components\tournaments\single\pairing\ReportPeople.vue -->
 <!-- People as small AssociateTags, or "Nessuno" when empty — for the player report. -->
 <script setup lang="ts">
-import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/useLiveCommanderStandings'
+import type { LiveCommanderStanding } from '~/utils/tournaments/liveCommanderStandings'
 
 const { people } = defineProps<{
   people: LiveCommanderStanding[]

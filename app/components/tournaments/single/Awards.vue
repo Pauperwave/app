@@ -3,7 +3,7 @@
      useLiveCommanderStandings.ts directly (already final once the tournament has ended) rather
      than a separate standings+victimCounts pair. -->
 <script setup lang="ts">
-import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/useLiveCommanderStandings'
+import type { LiveCommanderStanding } from '~/utils/tournaments/liveCommanderStandings'
 
 const { tournamentUuid, standings } = defineProps<{
   tournamentUuid: string

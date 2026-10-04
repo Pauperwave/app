@@ -2,7 +2,7 @@
 <!-- One round of a player's "pagella": the deck, placement and kills, the votes given and received,
      and the round's total. -->
 <script setup lang="ts">
-import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/useLiveCommanderStandings'
+import type { LiveCommanderStanding } from '~/utils/tournaments/liveCommanderStandings'
 import type { ReportRoundWithDeck } from '~/composables/tournaments/pairing/useCommanderPlayerReport'
 
 const { reportRound, peopleByPlayerUuid } = defineProps<{

@@ -5,7 +5,7 @@
      Skips league's developer-view-only per-category points breakdown (kills/brew/play/placement
      icons): this app has no such dev-mode toggle to gate it. -->
 <script setup lang="ts">
-import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/useLiveCommanderStandings'
+import type { LiveCommanderStanding } from '~/utils/tournaments/liveCommanderStandings'
 
 const { standings, isEnded } = defineProps<{
   standings: LiveCommanderStanding[]

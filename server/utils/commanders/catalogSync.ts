@@ -27,25 +27,25 @@ export function buildSearchUrl(dateFrom?: string | null): string {
   return `https://api.scryfall.com/cards/search?${params.toString()}`
 }
 
-export interface ScryfallImageUris {
+export interface CatalogImageUris {
   normal?: string
   large?: string
   art_crop?: string
 }
 
-export interface ScryfallCardFace {
-  image_uris?: ScryfallImageUris
+export interface CatalogCardFace {
+  image_uris?: CatalogImageUris
   mana_cost?: string
   type_line?: string
   oracle_text?: string
 }
 
-export interface ScryfallCard {
+export interface CatalogCard {
   id: string
   name: string
   released_at?: string
-  image_uris?: ScryfallImageUris
-  card_faces?: ScryfallCardFace[]
+  image_uris?: CatalogImageUris
+  card_faces?: CatalogCardFace[]
   mana_cost?: string
   cmc?: number
   color_identity?: string[]
@@ -57,8 +57,8 @@ export interface ScryfallCard {
   layout: string
 }
 
-export interface ScryfallSearchPage {
-  data: ScryfallCard[]
+export interface CatalogSearchPage {
+  data: CatalogCard[]
   has_more: boolean
   next_page?: string
 }
@@ -91,9 +91,9 @@ export function planCatalogSync(
 // (same name, new id) is skipped, and so is a same-name printing repeated within this batch
 // (Un-sets, promos).
 export function selectNewCards(
-  fetched: ScryfallCard[],
+  fetched: CatalogCard[],
   existing: Pick<ExistingCatalog, 'scryfallIds' | 'names'>
-): ScryfallCard[] {
+): CatalogCard[] {
   const seenNames = new Set<string>()
 
   return fetched.filter((card) => {
@@ -106,7 +106,7 @@ export function selectNewCards(
 }
 
 export function partnerTypeFor(
-  card: ScryfallCard,
+  card: CatalogCard,
   typeLine: string,
   keywords: string[]
 ): string | null {
@@ -120,7 +120,7 @@ export function partnerTypeFor(
   return null
 }
 
-export function partnerTargetName(card: ScryfallCard): string | null {
+export function partnerTargetName(card: CatalogCard): string | null {
   const match = /Partner with ([^(]+)\(/.exec(card.oracle_text ?? '')
   return match?.[1]?.trim() ?? null
 }
@@ -154,7 +154,7 @@ export interface MappedRow {
 }
 
 // A double-faced card keeps its images on its faces, a single-faced one on the card itself
-export function frontImages(card: ScryfallCard) {
+export function frontImages(card: CatalogCard) {
   const front = card.card_faces?.[0]?.image_uris
 
   return {
@@ -164,7 +164,7 @@ export function frontImages(card: ScryfallCard) {
   }
 }
 
-export function backFace(card: ScryfallCard) {
+export function backFace(card: CatalogCard) {
   const back = card.card_faces?.[1]
 
   return {
@@ -178,7 +178,7 @@ export function backFace(card: ScryfallCard) {
 }
 
 export function mapCard(
-  card: ScryfallCard,
+  card: CatalogCard,
   syncedAt: string = new Date().toISOString()
 ): MappedRow {
   const frontFace = card.card_faces?.[0]
@@ -209,7 +209,7 @@ export function mapCard(
 
 // The rows to insert: "Partner with" always targets a card of the same release pass, so the
 // target's id is looked up by name among the batch
-export function buildInsertRows(newCards: ScryfallCard[], syncedAt?: string) {
+export function buildInsertRows(newCards: CatalogCard[], syncedAt?: string) {
   const mapped = newCards.map(card => mapCard(card, syncedAt))
   const idByName = new Map(mapped.map(row => [row.card_name, row.scryfall_id]))
 
@@ -251,16 +251,16 @@ export function summarizeCatalog(rows: CatalogRow[], today: string): ExistingCat
   return summary
 }
 
-function pageHasNewCards(cards: ScryfallCard[], existing: ExistingCatalog): boolean {
+function pageHasNewCards(cards: CatalogCard[], existing: ExistingCatalog): boolean {
   return cards.some(card => !existing.scryfallIds.has(card.id) && !existing.names.has(card.name))
 }
 
 // $fetch is typed against Nitro's routes: a plain URL string sent it into "excessive stack depth"
 // once the page's own next_page fed the next call, so the call is typed by hand
-function fetchSearchPage(url: string): Promise<ScryfallSearchPage> {
+function fetchSearchPage(url: string): Promise<CatalogSearchPage> {
   const fetchJson = $fetch as unknown as (
     url: string, options: { headers: Record<string, string> }
-  ) => Promise<ScryfallSearchPage>
+  ) => Promise<CatalogSearchPage>
 
   return fetchJson(url, {
     headers: { 'User-Agent': SCRYFALL_USER_AGENT, 'Accept': 'application/json' }
@@ -278,8 +278,8 @@ export async function fetchCommanderCards(
   existing: ExistingCatalog,
   earlyStop: boolean,
   pause: () => Promise<unknown> = waitBetweenRequests
-): Promise<{ cards: ScryfallCard[], scanned: number }> {
-  const cards: ScryfallCard[] = []
+): Promise<{ cards: CatalogCard[], scanned: number }> {
+  const cards: CatalogCard[] = []
   let consecutiveKnownPages = 0
   let url: string | undefined = startUrl
 

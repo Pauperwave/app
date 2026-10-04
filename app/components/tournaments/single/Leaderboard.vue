@@ -1,6 +1,6 @@
 <!-- app\components\tournaments\single\Leaderboard.vue -->
 <script setup lang="ts">
-import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/useLiveCommanderStandings'
+import type { LiveCommanderStanding } from '~/utils/tournaments/liveCommanderStandings'
 import type { LiveSwissStanding } from '~/composables/tournaments/pairing/useLiveSwissStandings'
 
 // Only Commander and 1v1 Swiss tournaments have a real final standing so far.

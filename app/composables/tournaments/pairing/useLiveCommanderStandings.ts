@@ -6,7 +6,6 @@
 // "live" relative to the open round (before advance_commander_round persists into
 // tournament_standings), not to an unsaved edit.
 // The scoring itself is buildLiveCommanderStandings (utils/tournaments/liveCommanderStandings.ts).
-export type { LiveCommanderStanding } from '~/utils/tournaments/liveCommanderStandings'
 
 export function useLiveCommanderStandings(tournamentUuid: MaybeRefOrGetter<string>) {
   const { data: registrations } = useTournamentRegistrationsQuery(tournamentUuid)

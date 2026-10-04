@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { describe, expect, it } from 'vitest'
 import { useTournamentAwards } from '~/composables/tournaments/prizes/useTournamentAwards'
 import type { TournamentAwardKind } from '~/composables/tournaments/prizes/useTournamentAwards'
-import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/useLiveCommanderStandings'
+import type { LiveCommanderStanding } from '~/utils/tournaments/liveCommanderStandings'
 
 function makeStanding(overrides: Partial<LiveCommanderStanding>): LiveCommanderStanding {
   return {

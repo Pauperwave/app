@@ -2,7 +2,7 @@
 <!-- Header of a round in the player report: the round in bold, the table in grey. Hovering the
      table lists the other players at it, and picking one opens their own report. -->
 <script setup lang="ts">
-import type { LiveCommanderStanding } from '~/composables/tournaments/pairing/useLiveCommanderStandings'
+import type { LiveCommanderStanding } from '~/utils/tournaments/liveCommanderStandings'
 
 defineProps<{
   roundNumber: number

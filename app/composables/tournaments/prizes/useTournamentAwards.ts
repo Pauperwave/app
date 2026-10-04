@@ -2,7 +2,7 @@
 // Ported from league's useTournamentAwards.ts, adapted to LiveCommanderStanding's fields instead of
 // a separate standings+victimCounts pair (useLiveCommanderStandings.ts folds "times killed" into
 // the same row, see its `deaths` field). Tiebreaks and ex aequo: ADR-052, docs/PROGRESS.md
-import type { LiveCommanderStanding } from '../pairing/useLiveCommanderStandings'
+import type { LiveCommanderStanding } from '~/utils/tournaments/liveCommanderStandings'
 
 export type TournamentAwardKind = 'victim' | 'killer' | 'brewer' | 'player'
 

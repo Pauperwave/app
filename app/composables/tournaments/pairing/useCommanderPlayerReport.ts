@@ -4,7 +4,7 @@
 import { buildCommanderPlayerReport } from '#shared/utils/tournaments/commanderPlayerReport'
 import type { PlayerReportRound } from '#shared/utils/tournaments/commanderPlayerReport'
 import type { CommanderDeckNames } from '~/composables/tournaments/rounds/useCommanderDecksByUuidsQuery'
-import type { LiveCommanderStanding } from './useLiveCommanderStandings'
+import type { LiveCommanderStanding } from '~/utils/tournaments/liveCommanderStandings'
 
 export type ReportRoundWithDeck = PlayerReportRound & {
   /** The commanders of the deck used that round, once loaded. */
