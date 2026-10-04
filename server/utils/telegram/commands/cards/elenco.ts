@@ -10,8 +10,8 @@ import { artPreview } from './priceCard'
 import {
   WANTED_LIST_CALLBACK_PREFIX,
   WANTED_LIST_PAGE_SIZE,
-  buildRemoveConfirmKeyboard,
-  buildRemoveConfirmText,
+  buildRowActionsKeyboard,
+  buildRowActionsText,
   buildWantedListKeyboard,
   buildWantedListText,
   decodeWantedListCallback,
@@ -20,9 +20,9 @@ import {
 } from './wantedList'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
-// /cercate: the associate's own active wanted cards (status 'searching'), a page at a time, with a
-// two-step removal. Removal is a soft delete like the site's, so an admin can restore it from the
-// trash. Changing a request's status from here is left for later.
+// /cercate: the associate's own active wanted cards (status 'searching'), a page at a time. A
+// number opens that card's actions: mark it found, or remove it. Removal is a soft delete like the
+// site's, so an admin can restore it from the trash.
 
 const COLUMNS = 'id, card_name, set_code, language, treatment, copies, cardmarket_price, image_url'
 const PRIVATE_ONLY_TEXT = 'Apri /cercate in privato con me: l\'elenco è personale.'
@@ -127,10 +127,18 @@ async function handleListButton(ctx: Context, next: () => Promise<void>) {
 
       if (callback.action === 'ask' && row) {
         view = {
-          text: buildRemoveConfirmText(row),
-          keyboard: buildRemoveConfirmKeyboard(row, callback.page),
+          text: buildRowActionsText(row),
+          keyboard: buildRowActionsKeyboard(row, callback.page),
           imageUrl: row.image_url
         }
+      } else if (callback.action === 'found' && row) {
+        const { error } = await supabase
+          .from('pauperwave_wanted_cards')
+          .update({ status: 'found', updated_by: associateUuid })
+          .eq('id', row.id)
+          .eq('player_associate_uuid', associateUuid)
+        if (error) throw error
+        toast = `${ICONS.found} Segnata come trovata.`
       } else if (callback.action === 'remove' && row) {
         const { error } = await supabase
           .from('pauperwave_wanted_cards')

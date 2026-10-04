@@ -1,6 +1,6 @@
 // server\utils\telegram\commands\cards\wantedList.ts
 import { InlineKeyboard } from 'grammy'
-import { escapeHtml } from './priceCard'
+import { PRICE_INLINE_PREFIX, escapeHtml } from './priceCard'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
 // Pure part of /cercate: the page of wanted cards, the confirm screen and the callbacks that move
@@ -20,7 +20,7 @@ export interface WantedListRow {
 export const WANTED_LIST_PAGE_SIZE = 8
 export const WANTED_LIST_CALLBACK_PREFIX = 'cer:'
 
-type WantedListAction = 'list' | 'ask' | 'remove'
+type WantedListAction = 'list' | 'ask' | 'found' | 'remove'
 
 export interface WantedListCallback {
   action: WantedListAction
@@ -29,10 +29,11 @@ export interface WantedListCallback {
   id: number | null
 }
 
-const ACTION_CODES: Record<WantedListAction, string> = { list: 'l', ask: 'r', remove: 'x' }
+const ACTION_CODES: Record<WantedListAction, string> = { list: 'l', ask: 'r', found: 'f', remove: 'x' }
 const euroFormatter = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
 
-// "cer:l:<page>" shows a page, "cer:r:<id>:<page>" asks to remove one, "cer:x:<id>:<page>" does it
+// "cer:l:<page>" shows a page, "cer:r:<id>:<page>" opens the actions of one card, "cer:f:<id>:<page>"
+// marks it found and "cer:x:<id>:<page>" removes it
 export function encodeWantedListCallback(callback: WantedListCallback): string {
   const code = ACTION_CODES[callback.action]
   return callback.action === 'list'
@@ -83,7 +84,7 @@ export function pageCount(total: number): number {
 
 export function buildWantedListText(rows: WantedListRow[], page: number, total: number): string {
   if (total === 0) {
-    return 'Non stai cercando nessuna carta. Cercane una con @bot $ nome carta, o incolla un elenco con /importa.'
+    return `Non stai cercando nessuna carta. Cercane una con @bot ${PRICE_INLINE_PREFIX} nome carta, o incolla un elenco con /importa.`
   }
 
   const first = page * WANTED_LIST_PAGE_SIZE
@@ -106,7 +107,7 @@ export function buildWantedListKeyboard(
 
   rows.forEach((row, index) => {
     keyboard.text(
-      `${ICONS.trash} ${first + index + 1}`,
+      String(first + index + 1),
       encodeWantedListCallback({ action: 'ask', id: row.id, page })
     )
     if ((index + 1) % 4 === 0) keyboard.row()
@@ -122,13 +123,15 @@ export function buildWantedListKeyboard(
   return keyboard
 }
 
-export function buildRemoveConfirmText(row: WantedListRow): string {
+export function buildRowActionsText(row: WantedListRow): string {
   const set = row.set_code ? ` (${row.set_code.toUpperCase()})` : ''
-  return `Togliere <b>${escapeHtml(row.card_name)}</b>${set} dalle tue carte cercate?`
+  return `Cosa vuoi fare con <b>${escapeHtml(row.card_name)}</b>${set}?`
 }
 
-export function buildRemoveConfirmKeyboard(row: WantedListRow, page: number): InlineKeyboard {
+export function buildRowActionsKeyboard(row: WantedListRow, page: number): InlineKeyboard {
   return new InlineKeyboard()
-    .text(`${ICONS.trash} Sì, togli`, encodeWantedListCallback({ action: 'remove', id: row.id, page }))
-    .text(`${ICONS.back} No`, encodeWantedListCallback({ action: 'list', id: null, page }))
+    .text(`${ICONS.found} Segna come trovata`, encodeWantedListCallback({ action: 'found', id: row.id, page }))
+    .text(`${ICONS.trash} Togli`, encodeWantedListCallback({ action: 'remove', id: row.id, page }))
+    .row()
+    .text(`${ICONS.back} Indietro`, encodeWantedListCallback({ action: 'list', id: null, page }))
 }

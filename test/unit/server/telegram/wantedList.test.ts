@@ -2,7 +2,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   WANTED_LIST_PAGE_SIZE,
-  buildRemoveConfirmKeyboard,
+  buildRowActionsKeyboard,
+  buildRowActionsText,
   buildWantedListKeyboard,
   buildWantedListText,
   decodeWantedListCallback,
@@ -37,6 +38,7 @@ describe('wanted list callbacks', () => {
     for (const callback of [
       { action: 'list' as const, id: null, page: 2 },
       { action: 'ask' as const, id: 41, page: 0 },
+      { action: 'found' as const, id: 41, page: 1 },
       { action: 'remove' as const, id: 41, page: 3 }
     ]) {
       expect(decodeWantedListCallback(encodeWantedListCallback(callback))).toEqual(callback)
@@ -65,15 +67,17 @@ describe('buildWantedListText', () => {
   })
 
   it('points to the ways of adding a card when the list is empty', () => {
-    expect(buildWantedListText([], 0, 0)).toContain('/importa')
+    const text = buildWantedListText([], 0, 0)
+    expect(text).toContain('/importa')
+    expect(text).toContain('@bot € nome carta')
   })
 })
 
 describe('buildWantedListKeyboard', () => {
-  it('has one remove button per row, numbered like the list', () => {
+  it('has one button per row, numbered like the list', () => {
     expect(buttons(buildWantedListKeyboard([row(10), row(11)], 0, 2))).toEqual([
-      { text: '🗑 1', data: 'cer:r:10:0' },
-      { text: '🗑 2', data: 'cer:r:11:0' }
+      { text: '1', data: 'cer:r:10:0' },
+      { text: '2', data: 'cer:r:11:0' }
     ])
   })
 
@@ -82,16 +86,25 @@ describe('buildWantedListKeyboard', () => {
     const total = WANTED_LIST_PAGE_SIZE * 2 + 1
     const labels = (page: number) => buttons(buildWantedListKeyboard(rows, page, total))
       .map(button => button.text)
-    expect(labels(0)).toEqual(['🗑 1', '▶'])
-    expect(labels(1)).toEqual(['🗑 9', '◀', '▶'])
-    expect(labels(2)).toEqual(['🗑 17', '◀'])
+    expect(labels(0)).toEqual(['1', '▶'])
+    expect(labels(1)).toEqual(['9', '◀', '▶'])
+    expect(labels(2)).toEqual(['17', '◀'])
   })
 })
 
-describe('remove confirmation', () => {
-  it('confirms with the row id and cancels back to the same page', () => {
-    const data = buttons(buildRemoveConfirmKeyboard(row(7), 2)).map(button => button.data)
-    expect(data).toEqual(['cer:x:7:2', 'cer:l:2'])
+describe('card actions', () => {
+  it('offers found and remove for the row, and goes back to the same page', () => {
+    const data = buttons(buildRowActionsKeyboard(row(7), 2)).map(button => button.data)
+    expect(data).toEqual(['cer:f:7:2', 'cer:x:7:2', 'cer:l:2'])
+  })
+
+  it('names the card and its set in the question', () => {
+    expect(buildRowActionsText(row(7, { card_name: 'Lightning Bolt', set_code: 'm10' })))
+      .toBe('Cosa vuoi fare con <b>Lightning Bolt</b> (M10)?')
+  })
+
+  it('escapes HTML in the card name', () => {
+    expect(buildRowActionsText(row(7, { card_name: 'A <b>' }))).toContain('A &lt;b&gt;')
   })
 })
 
