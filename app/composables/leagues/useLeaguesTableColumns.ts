@@ -1,9 +1,8 @@
 // app\composables\leagues\useLeaguesTableColumns.ts
 import { h } from 'vue'
-import type { Row } from '@tanstack/vue-table'
 import {
-  BadgesFormatBadge, EditIconButton, ImageOffPlaceholder, LeaguesRulesetBadge,
-  UBadge, UIcon, UProgress
+  BadgesFormatBadge, EditIconButton, ImageOffPlaceholder, LeaguesRulesetBadge, LeaguesStatusBadge,
+  UBadge, UProgress
 } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { League } from '~/types'
@@ -11,25 +10,6 @@ import type { Selection } from '~/composables/useSelection'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
 
 // A group-header row's status cell: expand chevron, status badge, league count.
-function statusGroupHeaderCell(row: Row<League>, status: League['status'], label: string) {
-  return h('button', {
-    type: 'button',
-    class: 'flex items-center gap-1.5 font-medium cursor-pointer',
-    onClick: () => row.toggleExpanded()
-  }, [
-    h(UIcon, {
-      name: row.getIsExpanded() ? ICONS.chevronDown : ICONS.chevronRight,
-      class: 'size-4'
-    }),
-    h(UBadge, {
-      color: leagueStatusColor(status),
-      variant: 'subtle',
-      icon: LEAGUE_STATUS_ICONS[status]
-    }, () => label),
-    h(UBadge, { color: 'neutral', variant: 'subtle', size: 'sm' }, () => String(row.subRows.length))
-  ])
-}
-
 // Same shape as useTournamentsTableColumns.ts: selection/onEdit are threaded through, since that
 // state (useSelection.ts/useLeaguesRowActions.ts) is owned by the page
 export function useLeaguesTableColumns(
@@ -78,13 +58,13 @@ export function useLeaguesTableColumns(
       cell: ({ row, getValue }) => {
         if (row.getIsGrouped()) {
           const status = getValue<League['status']>()
-          return statusGroupHeaderCell(row, status, t(`league.status.${status}`))
+          return groupHeaderCell(row, h(UBadge, {
+            color: leagueStatusColor(status),
+            variant: 'subtle',
+            icon: LEAGUE_STATUS_ICONS[status]
+          }, () => t(`league.status.${status}`)))
         }
-        return h(UBadge, {
-          color: leagueStatusColor(row.original.status),
-          variant: 'subtle',
-          icon: LEAGUE_STATUS_ICONS[row.original.status]
-        }, () => t(`league.status.${row.original.status}`))
+        return h(LeaguesStatusBadge, { league: row.original })
       }
     },
     {

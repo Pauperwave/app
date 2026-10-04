@@ -1,37 +1,15 @@
 // app\composables\events\useEventsTableColumns.ts
-// fallow-ignore-file code-duplication -- mirrors
-// useLeaguesTableColumns.ts's status-badge/select/actions column shape on purpose
+// fallow-ignore-file code-duplication -- mirrors useLeaguesTableColumns.ts's column shape
 import { h } from 'vue'
 import { differenceInCalendarDays } from 'date-fns'
-import type { Row } from '@tanstack/vue-table'
 import {
-  BadgesLocationBadge, BadgesOrganizerBadge, EditIconButton, ImageOffPlaceholder,
-  UBadge, UIcon, UProgress
+  BadgesLocationBadge, BadgesOrganizerBadge, EditIconButton, EventsStatusBadge, ImageOffPlaceholder,
+  UBadge, UProgress
 } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { Event } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
-
-// A group-header row's status cell: expand chevron, status badge, event count.
-function statusGroupHeaderCell(row: Row<Event>, status: Event['status'], label: string) {
-  return h('button', {
-    type: 'button',
-    class: 'flex items-center gap-1.5 font-medium cursor-pointer',
-    onClick: () => row.toggleExpanded()
-  }, [
-    h(UIcon, {
-      name: row.getIsExpanded() ? ICONS.chevronDown : ICONS.chevronRight,
-      class: 'size-4'
-    }),
-    h(UBadge, {
-      color: eventStatusColor(status),
-      variant: 'subtle',
-      icon: EVENT_STATUS_ICONS[status]
-    }, () => label),
-    h(UBadge, { color: 'neutral', variant: 'subtle', size: 'sm' }, () => String(row.subRows.length))
-  ])
-}
 
 // selection/onEdit are threaded through, since that state (useSelection.ts/useEventsRowActions.ts)
 // is owned by the page (like useLeaguesTableColumns.ts)
@@ -81,13 +59,13 @@ export function useEventsTableColumns(
       cell: ({ row, getValue }) => {
         if (row.getIsGrouped()) {
           const status = getValue<Event['status']>()
-          return statusGroupHeaderCell(row, status, t(`event.status.${status}`))
+          return groupHeaderCell(row, h(UBadge, {
+            color: eventStatusColor(status),
+            variant: 'subtle',
+            icon: EVENT_STATUS_ICONS[status]
+          }, () => t(`event.status.${status}`)))
         }
-        return h(UBadge, {
-          color: eventStatusColor(row.original.status),
-          variant: 'subtle',
-          icon: EVENT_STATUS_ICONS[row.original.status]
-        }, () => t(`event.status.${row.original.status}`))
+        return h(EventsStatusBadge, { event: row.original })
       }
     },
     {

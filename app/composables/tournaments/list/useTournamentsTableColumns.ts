@@ -2,33 +2,15 @@
 // fallow-ignore-file code-duplication -- status-badge column mirrors useEventsTableColumns.ts
 import { h } from 'vue'
 import { format } from 'date-fns'
-import type { Row } from '@tanstack/vue-table'
 import {
   BadgesEventBadge, BadgesFormatBadge, BadgesLeagueBadge, BadgesOrganizerBadge,
   EditIconButton, ImageOffPlaceholder, TournamentsEntryFeeBadge,
-  TournamentsLocationChangeBadge, TournamentsStageLabel, UBadge, UIcon
+  TournamentsLocationChangeBadge, TournamentsStageLabel, TournamentsStatusBadge
 } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import type { Tournament } from '~/types'
 import type { Selection } from '~/composables/useSelection'
 import DateWithRelativeTooltip from '~/components/ui/DateWithRelativeTooltip.vue'
-
-// Shared by the three groupable columns (league/format/location): a group-header row's cell (expand
-// chevron, group label, tournament count), beside each column's leaf-row badge cell
-function groupHeaderCell(row: Row<Tournament>, label: string) {
-  return h('button', {
-    type: 'button',
-    class: 'flex items-center gap-1.5 font-medium cursor-pointer',
-    onClick: () => row.toggleExpanded()
-  }, [
-    h(UIcon, {
-      name: row.getIsExpanded() ? ICONS.chevronDown : ICONS.chevronRight,
-      class: 'size-4'
-    }),
-    h('span', label),
-    h(UBadge, { color: 'neutral', variant: 'subtle', size: 'sm' }, () => String(row.subRows.length))
-  ])
-}
 
 // The league column's leaf cell: the league badge, or nothing for a tournament outside any league
 function leagueBadge(tournament: Tournament) {
@@ -125,11 +107,7 @@ export function useTournamentsTableColumns(
           const status = getValue<Tournament['status']>()
           return groupHeaderCell(row, t(`tournament.status.${status}`))
         }
-        return h(UBadge, {
-          color: tournamentStatusColor(row.original.status),
-          variant: 'subtle',
-          icon: TOURNAMENT_STATUS_ICONS[row.original.status]
-        }, () => t(`tournament.status.${row.original.status}`))
+        return h(TournamentsStatusBadge, { tournament: row.original })
       }
     },
     {
