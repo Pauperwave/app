@@ -9,12 +9,14 @@ import {
   decodeWantedListCallback,
   encodeWantedListCallback,
   pageCount,
+  priceStateOf,
   type WantedListRow
 } from '../../../../server/utils/telegram/commands/cards/wantedList'
 
 function row(id: number, overrides: Partial<WantedListRow> = {}): WantedListRow {
   return {
     id,
+    scryfall_id: null,
     card_name: `Card ${id}`,
     set_code: 'm10',
     language: null,
@@ -107,6 +109,25 @@ describe('card actions', () => {
   it('offers found and remove for the row, and goes back to the same page', () => {
     const data = buttons(buildRowActionsKeyboard(row(7), 2)).map(button => button.data)
     expect(data).toEqual(['cer:f:7:2', 'cer:x:7:2', 'cer:l:2'])
+  })
+
+  it('adds the store links between the actions and the back button', () => {
+    const keyboard = buildRowActionsKeyboard(row(7), 2, {
+      cardmarketUrl: 'https://cm.test',
+      cardtraderUrl: null,
+      scryfallUrl: 'https://scryfall.test'
+    })
+    const lines = keyboard.inline_keyboard.map(line => line.map(button => button.text))
+    expect(lines).toHaveLength(3)
+    expect(lines[1]).toEqual(['CardMarket', 'Scryfall'])
+  })
+
+  it('prices the row as its language and finish', () => {
+    const id = '11111111-1111-1111-1111-111111111111'
+    expect(priceStateOf(row(7, { language: 'it', treatment: ['foil'] }), id))
+      .toEqual({ scryfallId: id, language: 'it', foil: true })
+    expect(priceStateOf(row(7, { language: 'de' }), id))
+      .toEqual({ scryfallId: id, language: 'all', foil: false })
   })
 
   it('names the card and its set in the question', () => {

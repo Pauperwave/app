@@ -6,7 +6,8 @@ import type { CommandGroup } from '@grammyjs/commands'
 import { answerLoadError } from '../callbackErrors'
 import { NOT_LINKED_MESSAGE, resolveAssociateUuidByChatId } from '../account/linking'
 import { registerDeepLink } from '../../deepLinks'
-import { artPreview } from './priceCard'
+import { artPreview, buildPriceText, cardmarketUrlFor } from './priceCard'
+import { fetchCardtrader, fetchPrinting } from './prezzo'
 import {
   WANTED_LIST_CALLBACK_PREFIX,
   WANTED_LIST_PAGE_SIZE,
@@ -16,6 +17,7 @@ import {
   buildWantedListText,
   decodeWantedListCallback,
   pageCount,
+  priceStateOf,
   type WantedListRow
 } from './wantedList'
 import { ICONS } from '~~/server/utils/telegram/icons'
@@ -24,7 +26,7 @@ import { ICONS } from '~~/server/utils/telegram/icons'
 // number opens that card's actions: mark it found, or remove it. Removal is a soft delete like the
 // site's, so an admin can restore it from the trash.
 
-const COLUMNS = 'id, card_name, set_code, language, treatment, copies, cardmarket_price, image_url'
+const COLUMNS = 'id, scryfall_id, card_name, set_code, language, treatment, copies, cardmarket_price, image_url'
 const PRIVATE_ONLY_TEXT = 'Apri /cercate in privato con me: l\'elenco è personale.'
 
 type Supabase = ReturnType<typeof telegramServiceSupabaseClient>
@@ -95,6 +97,38 @@ async function fetchOwnRow(supabase: Supabase, associateUuid: string, id: number
   return data as WantedListRow | null
 }
 
+// The card's detail: the same prices as the "€ name" message for the row's printing, language and
+// finish. Without a printing to look up (or if Scryfall fails) it falls back to the plain question.
+async function buildRowDetail(row: WantedListRow, page: number) {
+  const fallback = {
+    text: buildRowActionsText(row),
+    keyboard: buildRowActionsKeyboard(row, page),
+    imageUrl: row.image_url
+  }
+  if (!row.scryfall_id) return fallback
+
+  try {
+    const printing = await fetchPrinting(row.scryfall_id)
+    if (!printing) return fallback
+
+    const state = priceStateOf(row, row.scryfall_id)
+    const cardtrader = await fetchCardtrader(printing, state)
+
+    return {
+      text: buildPriceText(printing, state, cardtrader),
+      keyboard: buildRowActionsKeyboard(row, page, {
+        cardmarketUrl: cardmarketUrlFor(printing, state.language),
+        cardtraderUrl: cardtrader?.url ?? null,
+        scryfallUrl: printing.scryfallUrl
+      }),
+      imageUrl: printing.imageUrl ?? row.image_url
+    }
+  } catch (err) {
+    console.error('/cercate price lookup failed:', err)
+    return fallback
+  }
+}
+
 async function handleListButton(ctx: Context, next: () => Promise<void>) {
   const data = ctx.callbackQuery?.data
   if (!data?.startsWith(WANTED_LIST_CALLBACK_PREFIX)) return next()
@@ -126,11 +160,7 @@ async function handleListButton(ctx: Context, next: () => Promise<void>) {
       const row = await fetchOwnRow(supabase, associateUuid, callback.id)
 
       if (callback.action === 'ask' && row) {
-        view = {
-          text: buildRowActionsText(row),
-          keyboard: buildRowActionsKeyboard(row, callback.page),
-          imageUrl: row.image_url
-        }
+        view = await buildRowDetail(row, callback.page)
       } else if (callback.action === 'found' && row) {
         const { error } = await supabase
           .from('pauperwave_wanted_cards')

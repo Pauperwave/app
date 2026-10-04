@@ -76,13 +76,13 @@ async function findPrintings(query: string): Promise<PricePrinting[]> {
   return sortByCardmarketPrice((search?.data ?? []).map(toPrinting))
 }
 
-async function fetchPrinting(scryfallId: string): Promise<PricePrinting | null> {
+export async function fetchPrinting(scryfallId: string): Promise<PricePrinting | null> {
   const card = await fetchScryfallCard(scryfallId)
   return card ? toPrinting(card) : null
 }
 
 // Null when CardTrader can't be asked (no token) or fails: the message then says "non disponibile"
-async function fetchCardtrader(
+export async function fetchCardtrader(
   printing: PricePrinting,
   state: PriceState
 ): Promise<PriceCardtrader | null> {

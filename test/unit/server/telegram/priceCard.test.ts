@@ -6,6 +6,7 @@ import {
   buildPriceKeyboard,
   buildPriceText,
   canToggleFoil,
+  cardmarketUrlFor,
   decodeFoundState,
   decodePriceState,
   decodeRemoveState,
@@ -252,5 +253,23 @@ describe('buildPriceKeyboard for a card already among the wanted ones', () => {
     const data = encodePriceState(baseState)
     expect(decodeFoundState(data)).toBeNull()
     expect(decodeRemoveState(data)).toBeNull()
+  })
+})
+
+describe('cardmarketUrlFor', () => {
+  const url = 'https://www.cardmarket.com/en/Magic/Products/Singles/Set/Card?referrer=scryfall'
+
+  it('keeps the link as is for any language', () => {
+    expect(cardmarketUrlFor(makePrinting({ cardmarketUrl: url }), 'all')).toBe(url)
+  })
+
+  it('adds the CardMarket language id to the query', () => {
+    const printing = makePrinting({ cardmarketUrl: url })
+    expect(cardmarketUrlFor(printing, 'en')).toBe(`${url}&language=1`)
+    expect(cardmarketUrlFor(printing, 'it')).toBe(`${url}&language=5`)
+  })
+
+  it('has no link when the printing has none', () => {
+    expect(cardmarketUrlFor(makePrinting({ cardmarketUrl: null }), 'it')).toBeNull()
   })
 })

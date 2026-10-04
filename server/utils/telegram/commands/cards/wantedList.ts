@@ -1,6 +1,6 @@
 // server\utils\telegram\commands\cards\wantedList.ts
 import { InlineKeyboard } from 'grammy'
-import { PRICE_INLINE_PREFIX } from './priceCard'
+import { PRICE_INLINE_PREFIX, type PriceState } from './priceCard'
 import { escapeHtml } from '../../html'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
@@ -9,6 +9,7 @@ import { ICONS } from '~~/server/utils/telegram/icons'
 
 export interface WantedListRow {
   id: number
+  scryfall_id: string | null
   card_name: string
   set_code: string | null
   language: string | null
@@ -135,10 +136,34 @@ export function buildRowActionsText(row: WantedListRow): string {
   return `Cosa vuoi fare con <b>${escapeHtml(row.card_name)}</b>${set}?`
 }
 
-export function buildRowActionsKeyboard(row: WantedListRow, page: number): InlineKeyboard {
-  return new InlineKeyboard()
+// The price message's filters for this row: its language (any other than ITA/ENG is priced as "all")
+// and finish
+export function priceStateOf(row: WantedListRow, scryfallId: string): PriceState {
+  const language = row.language === 'it' || row.language === 'en' ? row.language : 'all'
+  return { scryfallId, language, foil: row.treatment.includes('foil') }
+}
+
+export interface RowStoreLinks {
+  cardmarketUrl: string | null
+  cardtraderUrl: string | null
+  scryfallUrl: string
+}
+
+export function buildRowActionsKeyboard(
+  row: WantedListRow,
+  page: number,
+  links: RowStoreLinks | null = null
+): InlineKeyboard {
+  const keyboard = new InlineKeyboard()
     .text(`${ICONS.found} Segna come trovata`, encodeWantedListCallback({ action: 'found', id: row.id, page }))
     .text(`${ICONS.trash} Togli`, encodeWantedListCallback({ action: 'remove', id: row.id, page }))
     .row()
-    .text(`${ICONS.back} Indietro`, encodeWantedListCallback({ action: 'list', id: null, page }))
+
+  if (links) {
+    if (links.cardmarketUrl) keyboard.url('CardMarket', links.cardmarketUrl)
+    if (links.cardtraderUrl) keyboard.url('CardTrader', links.cardtraderUrl)
+    keyboard.url('Scryfall', links.scryfallUrl).row()
+  }
+
+  return keyboard.text(`${ICONS.back} Indietro`, encodeWantedListCallback({ action: 'list', id: null, page }))
 }

@@ -145,6 +145,19 @@ export function effectiveFoil(printing: PricePrinting, state: PriceState): boole
   return isFoilForced(printing) || (state.foil && canToggleFoil(printing))
 }
 
+// CardMarket's own language ids, for the `language` query parameter of its product pages
+const CARDMARKET_LANGUAGE_IDS: Record<Exclude<PriceLanguage, 'all'>, number> = { en: 1, it: 5 }
+
+// The page opens already filtered to the chosen language (the price shown can't be: Scryfall's isn't)
+export function cardmarketUrlFor(printing: PricePrinting, language: PriceLanguage): string | null {
+  if (!printing.cardmarketUrl) return null
+  if (language === 'all') return printing.cardmarketUrl
+
+  const url = new URL(printing.cardmarketUrl)
+  url.searchParams.set('language', String(CARDMARKET_LANGUAGE_IDS[language]))
+  return url.toString()
+}
+
 export function cardmarketPriceOf(printing: PricePrinting, foil: boolean): number | null {
   return foil ? printing.cardmarketFoilPrice : printing.cardmarketPrice
 }
@@ -249,7 +262,8 @@ export function buildPriceKeyboard(
   }
 
   keyboard.row()
-  if (printing.cardmarketUrl) keyboard.url('CardMarket', printing.cardmarketUrl)
+  const cardmarketUrl = cardmarketUrlFor(printing, state.language)
+  if (cardmarketUrl) keyboard.url('CardMarket', cardmarketUrl)
   if (cardtraderUrl) keyboard.url('CardTrader', cardtraderUrl)
   keyboard.url('Scryfall', printing.scryfallUrl)
 
