@@ -70,6 +70,12 @@ function languageLabel(language: string | null): string | null {
   return language ? language.toUpperCase() : null
 }
 
+// Scryfall resolves an exact-name search with a single hit straight to the card page
+function scryfallUrl(row: WantedListRow): string {
+  const set = row.set_code ? ` set:${row.set_code}` : ''
+  return `https://scryfall.com/search?q=${encodeURIComponent(`!"${row.card_name}"${set}`)}`
+}
+
 function describeRow(row: WantedListRow, position: number): string {
   const details = [
     row.set_code ? `(${row.set_code.toUpperCase()})` : null,
@@ -82,7 +88,7 @@ function describeRow(row: WantedListRow, position: number): string {
   // The mana cost sits between the number and the name, when the card has one
   const cost = row.mana_cost ? `${escapeHtml(formatManaCost(row.mana_cost))} ` : ''
 
-  return `${position}. ${cost}<b>${escapeHtml(row.card_name)}</b> ${details.join(' · ')}`.trimEnd()
+  return `${position}. ${cost}<b><a href="${escapeHtml(scryfallUrl(row))}">${escapeHtml(row.card_name)}</a></b> ${details.join(' · ')}`.trimEnd()
 }
 
 export function pageCount(total: number): number {

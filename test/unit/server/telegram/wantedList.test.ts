@@ -58,18 +58,24 @@ describe('buildWantedListText', () => {
   it('numbers the rows across pages and shows the details', () => {
     const detailed = row(1, { language: 'it', treatment: ['foil'], copies: 2, cardmarket_price: 1.5 })
     const text = buildWantedListText([detailed], 1, WANTED_LIST_PAGE_SIZE + 1)
-    expect(text).toContain(`${WANTED_LIST_PAGE_SIZE + 1}. <b>Card 1</b> (M10) · ×2 · IT · foil · CM`)
+    expect(text).toContain(`${WANTED_LIST_PAGE_SIZE + 1}. <b><a href=`)
+    expect(text).toContain('>Card 1</a></b> (M10) · ×2 · IT · foil · CM')
     expect(text).toContain('Pagina 2 di 2')
   })
 
   it('puts the mana cost between the number and the name', () => {
     const text = buildWantedListText([row(1, { mana_cost: '{2}{R}' })], 0, 1)
-    expect(text).toContain('1. 2🔴 <b>Card 1</b>')
+    expect(text).toContain('1. 2R <b><a href=')
   })
 
   it('leaves the cost out for a card without one', () => {
     const text = buildWantedListText([row(1, { mana_cost: null })], 0, 1)
-    expect(text).toContain('1. <b>Card 1</b>')
+    expect(text).toContain('1. <b><a href=')
+  })
+
+  it('links the name to a Scryfall search for that exact card and set', () => {
+    const text = buildWantedListText([row(1)], 0, 1)
+    expect(text).toContain('href="https://scryfall.com/search?q=!%22Card%201%22%20set%3Am10"')
   })
 
   it('escapes HTML in a card name', () => {
