@@ -172,7 +172,7 @@ async function handlePriceInlineQuery(ctx: Context, next: () => Promise<void>) {
         title: buildInlineTitle(printing),
         description: buildInlineDescription(printing),
         thumbnail_url: printing.thumbnailUrl ?? undefined,
-        input_message_content: { rich_message: buildPriceMessage(printing, state, 'pending') },
+        input_message_content: { rich_message: buildPriceMessage(printing, state, 'pending', false) },
         reply_markup: buildPriceKeyboard(printing, state, null)
       }
     })
@@ -211,7 +211,7 @@ async function editPriceMessage(ctx: Context, state: PriceState): Promise<boolea
   if (!printing) return false
 
   const cardtrader = await fetchCardtrader(printing, state)
-  await ctx.editMessageText(buildPriceMessage(printing, state, cardtrader), {
+  await ctx.editMessageText(buildPriceMessage(printing, state, cardtrader, true), {
     reply_markup: buildPriceKeyboard(printing, state, cardtrader?.url ?? null)
   })
   return true

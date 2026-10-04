@@ -163,11 +163,14 @@ export function buildInlineDescription(printing: PricePrinting): string {
   return `${printing.setName} · ${prices.length ? prices.join(' · ') : 'nessun prezzo CardMarket'}`
 }
 
-// The language and foil buttons sit inside the message, in one row between the card and its prices
+// The language and foil buttons sit inside the message, in one row between the card and its prices.
+// The art is a photo block by URL: a posted message accepts it when edited, but an inline result
+// is rejected whole, so the inline result goes without (withArt: false) and the first edit adds it.
 export function buildPriceMessage(
   printing: PricePrinting,
   state: PriceState,
-  cardtrader: PriceCardtraderState
+  cardtrader: PriceCardtraderState,
+  withArt: boolean
 ): InputRichMessageWithoutUpload {
   const foil = effectiveFoil(printing, state)
 
@@ -199,8 +202,12 @@ export function buildPriceMessage(
     })
   }
 
-  // No card art: an inline result only accepts already uploaded files, a Scryfall URL is rejected
-  const blocks: Blocks = [
+  const blocks: Blocks = []
+  if (withArt && printing.imageUrl) {
+    blocks.push({ type: 'photo', photo: { type: 'photo', media: printing.imageUrl } })
+  }
+
+  blocks.push(
     {
       type: 'paragraph',
       text: [
@@ -210,7 +217,7 @@ export function buildPriceMessage(
     },
     { type: 'buttons', buttons: filterButtons },
     { type: 'paragraph', text: [cardmarketLine, '\n', cardtraderLine] }
-  ]
+  )
 
   return { blocks }
 }

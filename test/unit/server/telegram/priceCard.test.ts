@@ -12,6 +12,7 @@ import {
   encodePriceState,
   escapeHtml,
   sortByCardmarketPrice,
+  type PriceCardtraderState,
   type PricePrinting,
   type PriceState
 } from '../../../../server/utils/telegram/commands/cards/priceCard'
@@ -38,7 +39,17 @@ function makePrinting(overrides: Partial<PricePrinting> = {}): PricePrinting {
 
 const baseState: PriceState = { scryfallId: ID, language: 'all', foil: false }
 
-type Message = ReturnType<typeof buildPriceMessage>
+// Without art by default, like the inline result
+function priceMessage(
+  printing: PricePrinting,
+  state: PriceState,
+  cardtrader: PriceCardtraderState,
+  withArt = false
+) {
+  return buildPriceMessage(printing, state, cardtrader, withArt)
+}
+
+type Message = ReturnType<typeof priceMessage>
 type Block = NonNullable<Message['blocks']>[number]
 type ButtonsBlock = Extract<Block, { type: 'buttons' }>
 type Button = ButtonsBlock['buttons'][number]
@@ -149,7 +160,7 @@ describe('inline printing list', () => {
 
 describe('buildPriceMessage text', () => {
   it('shows both prices for the default state', () => {
-    const message = buildPriceMessage(makePrinting(), baseState, { price: 0.4, url: null })
+    const message = priceMessage(makePrinting(), baseState, { price: 0.4, url: null })
     const text = messageText(message)
     expect(text).toContain('Lightning Bolt')
     expect(text).toContain('Magic 2010 · M10 #146')
@@ -159,52 +170,62 @@ describe('buildPriceMessage text', () => {
   })
 
   it('uses the foil price when foil is on', () => {
-    const text = messageText(buildPriceMessage(makePrinting(), { ...baseState, foil: true }, null))
+    const text = messageText(priceMessage(makePrinting(), { ...baseState, foil: true }, null))
     expect(text).toMatch(/CardMarket: 1,50\s€/)
   })
 
   it('says foil on the set line only for a foil-only printing, which has no toggle', () => {
     const foilOnly = makePrinting({ finishes: ['foil'] })
-    expect(messageText(buildPriceMessage(foilOnly, baseState, null))).toContain('M10 #146 · foil')
-    expect(messageText(buildPriceMessage(makePrinting(), baseState, null))).not.toContain('· foil')
+    expect(messageText(priceMessage(foilOnly, baseState, null))).toContain('M10 #146 · foil')
+    expect(messageText(priceMessage(makePrinting(), baseState, null))).not.toContain('· foil')
   })
 
   it('has no Lingua or Variante labels', () => {
-    const text = messageText(buildPriceMessage(makePrinting(), baseState, null))
+    const text = messageText(priceMessage(makePrinting(), baseState, null))
     expect(text).not.toContain('Lingua')
     expect(text).not.toContain('Variante')
   })
 
-  it('carries no photo block, which an inline result rejects when it is a URL', () => {
-    const message = buildPriceMessage(makePrinting(), baseState, null)
+  it('opens with the card art once it is asked for', () => {
+    const message = priceMessage(makePrinting(), baseState, null, true)
+    expect(blocksOf(message)[0]?.type).toBe('photo')
+  })
+
+  it('leaves the art out for an inline result, which rejects a photo URL', () => {
+    const message = priceMessage(makePrinting(), baseState, null)
+    expect(blocksOf(message).some(block => block.type === 'photo')).toBe(false)
+  })
+
+  it('has no photo block for a printing without an image', () => {
+    const message = priceMessage(makePrinting({ imageUrl: null }), baseState, null, true)
     expect(blocksOf(message).some(block => block.type === 'photo')).toBe(false)
   })
 
   it('notes that CardMarket cannot be filtered by language', () => {
-    const message = buildPriceMessage(makePrinting(), { ...baseState, language: 'it' }, { price: 0.9, url: null })
+    const message = priceMessage(makePrinting(), { ...baseState, language: 'it' }, { price: 0.9, url: null })
     expect(messageText(message)).toContain('(non filtrabile per lingua)')
     expect(messageText(message)).toContain('CardTrader (NM, italiano)')
   })
 
   it('reports missing prices without a number', () => {
     const printing = makePrinting({ cardmarketPrice: null })
-    const text = messageText(buildPriceMessage(printing, baseState, { price: null, url: null }))
+    const text = messageText(priceMessage(printing, baseState, { price: null, url: null }))
     expect(text).toContain('CardMarket: non disponibile')
     expect(text).toContain('nessuna offerta')
   })
 
   it('says CardTrader is unavailable when it could not be queried', () => {
-    const text = messageText(buildPriceMessage(makePrinting(), baseState, null))
+    const text = messageText(priceMessage(makePrinting(), baseState, null))
     expect(text).toContain('CardTrader (NM, tutte le lingue): non disponibile')
   })
 
   it('says CardTrader is being checked while it is still pending', () => {
-    const text = messageText(buildPriceMessage(makePrinting(), baseState, 'pending'))
+    const text = messageText(priceMessage(makePrinting(), baseState, 'pending'))
     expect(text).toContain('CardTrader (NM, tutte le lingue): controllo in corso')
   })
 
   it('keeps card and set names as plain text, with no HTML escaping', () => {
-    const text = messageText(buildPriceMessage(makePrinting({ name: 'Fire <&> Ice' }), baseState, null))
+    const text = messageText(priceMessage(makePrinting({ name: 'Fire <&> Ice' }), baseState, null))
     expect(text).toContain('Fire <&> Ice')
     expect(escapeHtml('a<b')).toBe('a&lt;b')
   })
@@ -212,7 +233,7 @@ describe('buildPriceMessage text', () => {
 
 describe('buildPriceMessage buttons', () => {
   it('puts the languages and the foil toggle in a single row', () => {
-    const rows = filterRows(buildPriceMessage(makePrinting(), baseState, null))
+    const rows = filterRows(priceMessage(makePrinting(), baseState, null))
     expect(rows).toHaveLength(1)
     const texts = rows[0]?.buttons.map(button => plain(button.text)) ?? []
     expect(texts).toHaveLength(4)
@@ -223,32 +244,32 @@ describe('buildPriceMessage buttons', () => {
   })
 
   it('keeps the wanted-card action out of the message', () => {
-    const message = buildPriceMessage(makePrinting(), baseState, null)
+    const message = priceMessage(makePrinting(), baseState, null)
     expect(buttonTexts(message).some(text => text.includes('cercate'))).toBe(false)
   })
 
   it('marks the active language and keeps the others pressable', () => {
-    const message = buildPriceMessage(makePrinting(), { ...baseState, language: 'it' }, null)
+    const message = priceMessage(makePrinting(), { ...baseState, language: 'it' }, null)
     const texts = buttonTexts(message)
     expect(texts.some(text => text.startsWith('✅') && text.includes('ITA'))).toBe(true)
     expect(texts.filter(text => text.startsWith('✅'))).toHaveLength(1)
   })
 
   it('has "Tutte" active in the default state', () => {
-    const active = buttonTexts(buildPriceMessage(makePrinting(), baseState, null))
+    const active = buttonTexts(priceMessage(makePrinting(), baseState, null))
       .filter(text => text.startsWith('✅'))
     expect(active).toHaveLength(1)
     expect(active[0]).toContain('Tutte')
   })
 
   it('flips the foil flag when the toggle is pressed and keeps the language', () => {
-    const message = buildPriceMessage(makePrinting(), { ...baseState, language: 'en' }, null)
+    const message = priceMessage(makePrinting(), { ...baseState, language: 'en' }, null)
     const toggle = buttonsOf(message).find(button => plain(button.text).includes('Foil'))
     expect(decodePriceState(callbackOf(toggle))).toEqual({ scryfallId: ID, language: 'en', foil: true })
   })
 
   it('hides the foil toggle when the finish cannot be chosen', () => {
-    const message = buildPriceMessage(makePrinting({ finishes: ['nonfoil'] }), baseState, null)
+    const message = priceMessage(makePrinting({ finishes: ['nonfoil'] }), baseState, null)
     expect(buttonTexts(message).some(text => text.includes('Foil'))).toBe(false)
   })
 })
