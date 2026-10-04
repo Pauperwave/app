@@ -11,6 +11,7 @@ import { registerLegheCommand } from './tournaments/leghe'
 import { registerProssimoCommand } from './tournaments/prossimo'
 import { registerIscrizioniCommand } from './tournaments/iscrizioni'
 import { registerSupportoCommand } from './supporto'
+import { registerTestCommand } from './test'
 import { registerDiceCommands } from './dice'
 import { registerPrezzoCommand } from './cards/prezzo'
 import { registerCercateHandlers } from './cards/cercate'
@@ -51,6 +52,7 @@ export function registerCommands(bot: Bot) {
   registerProssimoCommand(bot, commands)
   registerIscrizioniCommand(bot, commands)
   registerSupportoCommand(bot, commands)
+  registerTestCommand(bot)
   registerDiceCommands(commands)
   registerPrezzoCommand(bot, commands)
   registerCercateHandlers(bot)
