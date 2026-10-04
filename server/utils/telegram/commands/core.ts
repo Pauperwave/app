@@ -79,7 +79,7 @@ const HELP_SECTIONS: Record<HelpTopic, () => Blocks> = {
   ],
 
   tornei: () => [
-    { type: 'paragraph', text: { type: 'bold', text: '🎲 Tornei e leghe' } },
+    { type: 'paragraph', text: { type: 'bold', text: `${ICONS.medal} Tornei e leghe` } },
     {
       type: 'paragraph',
       text: '/eventi — prossimi eventi\n/calendario — prossimi tornei\n/leghe — leghe attive\n/prossimo — il prossimo torneo'
@@ -177,7 +177,7 @@ const TOPIC_NAMES = HELP_TOPICS.join(', ')
 const HELP_TOPIC_BUTTONS: Record<HelpTopic, string> = {
   generale: '⚙️ Generale',
   classifiche: `${ICONS.trophy} Classifiche`,
-  tornei: '🎲 Tornei',
+  tornei: `${ICONS.medal} Tornei`,
   iscrizioni: `${ICONS.ticket} Iscrizioni`,
   carte: `${ICONS.card} Carte`,
   dadi: '🎰 Dadi',
