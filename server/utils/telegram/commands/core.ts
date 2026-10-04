@@ -8,6 +8,7 @@ import type { CommandGroup } from '@grammyjs/commands'
 import { ICONS } from '~~/server/utils/telegram/icons'
 import { answerEditError } from './callbackErrors'
 import { resolveDeepLink } from '../deepLinks'
+import { HELP_BTN_PREFIX, encodeHelpBtn } from '../helpButton'
 import {
   HELP_TOPICS,
   decodeHelpTopicCallback,
@@ -22,12 +23,6 @@ import {
 // category (like calendario.ts's per-tournament button, not a Menu reply_markup). Handled by a
 // plain bot.on('callback_query:data') (helpbtn: prefix) reusing each command's deep-link handler
 // (deepLinks.ts).
-const HELP_BTN_PREFIX = 'helpbtn:'
-
-// Exported so other commands can send a button opening one of these deep links
-export function encodeHelpBtn(payload: string): string {
-  return `${HELP_BTN_PREFIX}${payload}`
-}
 
 // blocks, not markdown (see helpBlocks), so its four mentioned commands can carry quick-launch
 // buttons
@@ -68,14 +63,14 @@ const HELP_SECTIONS: Record<HelpTopic, () => Blocks> = {
     {
       type: 'paragraph',
       text: '/start — avvia il bot\n/help — mostra questo messaggio\n/status — mostra lo stato corrente del bot\n'
-        + '/crediti — chi ha realizzato il bot\n/dona — sostieni lo sviluppo del bot e del sito'
+        + '/crediti — chi ha realizzato il bot\n/sostieni — sostieni lo sviluppo del bot e del sito'
     },
     {
       type: 'buttons',
       buttons: [
         { text: `${ICONS.online} Status`, callback_data: encodeHelpBtn('status') },
         { text: `${ICONS.credits} Crediti`, callback_data: encodeHelpBtn('crediti') },
-        { text: `${ICONS.heart} Dona`, callback_data: encodeHelpBtn('dona') }
+        { text: `${ICONS.heart} Sostieni`, callback_data: encodeHelpBtn('sostieni') }
       ]
     }
   ],

@@ -3,7 +3,8 @@ import type { Bot, Context } from 'grammy'
 import { InlineKeyboard } from 'grammy'
 import { CommandGroup } from '@grammyjs/commands'
 
-import { registerCoreCommands, registerHelpButtonHandler, encodeHelpBtn } from './core'
+import { registerCoreCommands, registerHelpButtonHandler } from './core'
+import { encodeHelpBtn } from '../helpButton'
 import { registerClassificheCommand } from './standings/classifiche'
 import { registerEventiCommand } from './events/eventi'
 import { registerCalendarioCommand } from './tournaments/calendario'
@@ -22,7 +23,7 @@ import { registerTurniCommand } from './turni'
 import { registerTesseraCommand } from './account/tessera'
 import { registerMenzioniCommand } from './account/menzioni'
 import { registerCreditiCommand } from './crediti'
-import { registerDonaCommand } from './dona'
+import { registerSostieniCommand } from './sostieni'
 import { registerCollegamentoCommand } from './account/collegamento'
 import { registerTavoloCommand } from './mockups/tavolo'
 import { registerRisultatoMenu } from './mockups/risultato'
@@ -66,7 +67,7 @@ export function registerCommands(bot: Bot) {
   registerTesseraCommand(commands)
   registerMenzioniCommand(commands)
   registerCreditiCommand(commands)
-  registerDonaCommand(commands)
+  registerSostieniCommand(commands)
   registerCollegamentoCommand(commands)
   registerCommanderReportHandlers(bot)
   registerDropCommand(commands)

@@ -3484,7 +3484,7 @@
         "help": "Elenco dei comandi, con i bottoni per lanciarli",
         "status": "Verifica che il bot sia attivo",
         "crediti": "Chi ha realizzato il bot e da dove vengono carte e prezzi",
-        "dona": "Sostieni lo sviluppo del bot e del sito con una donazione su PayPal",
+        "sostieni": "Sostieni lo sviluppo del bot e del sito con una donazione su PayPal",
         "classifiche": "Classifiche per formato, con il link a quella completa sul sito",
         "eventi": "Prossimi eventi, con data, luogo e organizzatore",
         "calendario": "Tornei del mese raggruppati per giorno",
