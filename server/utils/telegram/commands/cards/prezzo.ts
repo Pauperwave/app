@@ -12,7 +12,7 @@ import {
   PRICE_INLINE_PREFIX,
   buildInlineDescription,
   buildInlineTitle,
-  buildPriceLinks,
+  buildPriceKeyboard,
   buildPriceMessage,
   decodePriceState,
   effectiveFoil,
@@ -173,7 +173,7 @@ async function handlePriceInlineQuery(ctx: Context, next: () => Promise<void>) {
         description: buildInlineDescription(printing),
         thumbnail_url: printing.thumbnailUrl ?? undefined,
         input_message_content: { rich_message: buildPriceMessage(printing, state, 'pending') },
-        reply_markup: buildPriceLinks(printing, null)
+        reply_markup: buildPriceKeyboard(printing, state, null)
       }
     })
 
@@ -212,7 +212,7 @@ async function editPriceMessage(ctx: Context, state: PriceState): Promise<boolea
 
   const cardtrader = await fetchCardtrader(printing, state)
   await ctx.editMessageText(buildPriceMessage(printing, state, cardtrader), {
-    reply_markup: buildPriceLinks(printing, cardtrader?.url ?? null)
+    reply_markup: buildPriceKeyboard(printing, state, cardtrader?.url ?? null)
   })
   return true
 }

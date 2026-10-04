@@ -9,6 +9,7 @@ import { ICONS } from '~~/server/utils/telegram/icons'
 
 type Blocks = NonNullable<InputRichMessageWithoutUpload['blocks']>
 type RichText = Extract<Blocks[number], { type: 'paragraph' }>['text']
+type Buttons = Extract<Blocks[number], { type: 'buttons' }>['buttons']
 
 export type PriceLanguage = 'all' | 'it' | 'en'
 
@@ -162,7 +163,7 @@ export function buildInlineDescription(printing: PricePrinting): string {
   return `${printing.setName} · ${prices.length ? prices.join(' · ') : 'nessun prezzo CardMarket'}`
 }
 
-// The filter buttons sit inside the message, right under their "Lingua:" and "Variante:" labels
+// The language and foil buttons sit inside the message, in one row between the card and its prices
 export function buildPriceMessage(
   printing: PricePrinting,
   state: PriceState,
@@ -184,63 +185,56 @@ export function buildPriceMessage(
     cardtraderLine = [cardtraderLabel, formatPrice(cardtrader.price, 'nessuna offerta')]
   }
 
-  const blocks: Blocks = [
+  // A foil-only printing has no toggle to show it, so the set line says it
+  const finishNote = isFoilForced(printing) ? ' · foil' : ''
+
+  const filterButtons: Buttons = LANGUAGES.map(language => ({
+    text: `${state.language === language ? `${ICONS.success} ` : ''}${LANGUAGE_LABELS[language]}`,
+    callback_data: encodePriceState({ ...state, language })
+  }))
+  if (canToggleFoil(printing)) {
+    filterButtons.push({
+      text: `${ICONS.foil} Foil: ${state.foil ? 'sì' : 'no'}`,
+      callback_data: encodePriceState({ ...state, foil: !state.foil })
+    })
+  }
+
+  const blocks: Blocks = []
+  if (printing.imageUrl) {
+    blocks.push({ type: 'photo', photo: { type: 'photo', media: printing.imageUrl } })
+  }
+
+  blocks.push(
     {
       type: 'paragraph',
       text: [
         { type: 'bold', text: `${ICONS.card} ${printing.name}` },
-        `\n${printing.setName} · ${printing.set.toUpperCase()} #${printing.collectorNumber}`
+        `\n${printing.setName} · ${printing.set.toUpperCase()} #${printing.collectorNumber}${finishNote}`
       ]
     },
-    { type: 'paragraph', text: 'Lingua:' },
-    {
-      type: 'buttons',
-      buttons: LANGUAGES.map(language => ({
-        text: `${state.language === language ? `${ICONS.success} ` : ''}${LANGUAGE_LABELS[language]}`,
-        callback_data: encodePriceState({ ...state, language })
-      }))
-    }
-  ]
-
-  if (canToggleFoil(printing)) {
-    blocks.push(
-      { type: 'paragraph', text: 'Variante:' },
-      {
-        type: 'buttons',
-        buttons: [{
-          text: `${ICONS.foil} Foil: ${state.foil ? 'sì' : 'no'}`,
-          callback_data: encodePriceState({ ...state, foil: !state.foil })
-        }]
-      }
-    )
-  } else {
-    blocks.push({ type: 'paragraph', text: `Variante: ${foil ? 'foil' : 'normale'}` })
-  }
-
-  blocks.push(
-    { type: 'paragraph', text: [cardmarketLine, '\n', cardtraderLine] },
-    // Saves this printing with the chosen language and finish as a wanted card
-    {
-      type: 'buttons',
-      buttons: [{
-        text: `${ICONS.wanted} Aggiungi alle mie cercate`,
-        callback_data: encodeWantState(state)
-      }]
-    }
+    { type: 'buttons', buttons: filterButtons },
+    { type: 'paragraph', text: [cardmarketLine, '\n', cardtraderLine] }
   )
 
   return { blocks }
 }
 
-// The links stay in a real inline keyboard: Telegram only hands the bot the posted inline message
-// (chosen_inline_result.inline_message_id) when one is attached
-export function buildPriceLinks(
+// Below the message, not in it: the wanted-card action and the links. A real inline keyboard also
+// has to be attached for Telegram to hand the bot the posted inline message
+// (chosen_inline_result.inline_message_id).
+export function buildPriceKeyboard(
   printing: PricePrinting,
+  state: PriceState,
   cardtraderUrl: string | null
 ): InlineKeyboard {
   const keyboard = new InlineKeyboard()
+
+  // Saves this printing with the chosen language and finish as a wanted card
+  keyboard.text(`${ICONS.wanted} Aggiungi alle mie cercate`, encodeWantState(state)).row()
+
   if (printing.cardmarketUrl) keyboard.url('CardMarket', printing.cardmarketUrl)
   if (cardtraderUrl) keyboard.url('CardTrader', cardtraderUrl)
   keyboard.url('Scryfall', printing.scryfallUrl)
+
   return keyboard
 }

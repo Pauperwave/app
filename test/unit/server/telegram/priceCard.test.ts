@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildInlineDescription,
   buildInlineTitle,
-  buildPriceLinks,
+  buildPriceKeyboard,
   buildPriceMessage,
   canToggleFoil,
   decodePriceState,
@@ -73,12 +73,9 @@ function callbackOf(button: Button | undefined): string {
   return button && 'callback_data' in button ? button.callback_data : ''
 }
 
-// The button row that directly follows the paragraph with this label
-function rowAfter(message: Message, label: string): string[] {
-  const blocks = blocksOf(message)
-  const index = blocks.findIndex(block => block.type === 'paragraph' && plain(block.text) === label)
-  const next = blocks[index + 1]
-  return next?.type === 'buttons' ? next.buttons.map(button => plain(button.text)) : []
+// The language and foil buttons are one row of the message
+function filterRows(message: Message): ButtonsBlock[] {
+  return blocksOf(message).filter((block): block is ButtonsBlock => block.type === 'buttons')
 }
 
 describe('price callback state', () => {
@@ -166,11 +163,23 @@ describe('buildPriceMessage text', () => {
     expect(text).toMatch(/CardMarket: 1,50\s€/)
   })
 
-  it('names the variant when there is no toggle to show it', () => {
-    const nonfoilOnly = makePrinting({ finishes: ['nonfoil'] })
-    expect(messageText(buildPriceMessage(nonfoilOnly, baseState, null))).toContain('Variante: normale')
+  it('says foil on the set line only for a foil-only printing, which has no toggle', () => {
     const foilOnly = makePrinting({ finishes: ['foil'] })
-    expect(messageText(buildPriceMessage(foilOnly, baseState, null))).toContain('Variante: foil')
+    expect(messageText(buildPriceMessage(foilOnly, baseState, null))).toContain('M10 #146 · foil')
+    expect(messageText(buildPriceMessage(makePrinting(), baseState, null))).not.toContain('· foil')
+  })
+
+  it('has no Lingua or Variante labels', () => {
+    const text = messageText(buildPriceMessage(makePrinting(), baseState, null))
+    expect(text).not.toContain('Lingua')
+    expect(text).not.toContain('Variante')
+  })
+
+  it('opens with the card art when the printing has one', () => {
+    const withArt = buildPriceMessage(makePrinting(), baseState, null)
+    expect(blocksOf(withArt)[0]?.type).toBe('photo')
+    const withoutArt = buildPriceMessage(makePrinting({ imageUrl: null }), baseState, null)
+    expect(blocksOf(withoutArt).some(block => block.type === 'photo')).toBe(false)
   })
 
   it('notes that CardMarket cannot be filtered by language', () => {
@@ -204,18 +213,20 @@ describe('buildPriceMessage text', () => {
 })
 
 describe('buildPriceMessage buttons', () => {
-  it('puts the language row right under its label', () => {
-    const row = rowAfter(buildPriceMessage(makePrinting(), baseState, null), 'Lingua:')
-    expect(row).toHaveLength(3)
-    expect(row[0]).toContain('Tutte')
-    expect(row[1]).toContain('ITA')
-    expect(row[2]).toContain('ENG')
+  it('puts the languages and the foil toggle in a single row', () => {
+    const rows = filterRows(buildPriceMessage(makePrinting(), baseState, null))
+    expect(rows).toHaveLength(1)
+    const texts = rows[0]?.buttons.map(button => plain(button.text)) ?? []
+    expect(texts).toHaveLength(4)
+    expect(texts[0]).toContain('Tutte')
+    expect(texts[1]).toContain('ITA')
+    expect(texts[2]).toContain('ENG')
+    expect(texts[3]).toContain('Foil')
   })
 
-  it('puts the foil toggle right under its label', () => {
-    const row = rowAfter(buildPriceMessage(makePrinting(), baseState, null), 'Variante:')
-    expect(row).toHaveLength(1)
-    expect(row[0]).toContain('Foil')
+  it('keeps the wanted-card action out of the message', () => {
+    const message = buildPriceMessage(makePrinting(), baseState, null)
+    expect(buttonTexts(message).some(text => text.includes('cercate'))).toBe(false)
   })
 
   it('marks the active language and keeps the others pressable', () => {
@@ -238,23 +249,36 @@ describe('buildPriceMessage buttons', () => {
     expect(decodePriceState(callbackOf(toggle))).toEqual({ scryfallId: ID, language: 'en', foil: true })
   })
 
-  it('offers to save the printing as a wanted card with the current filters', () => {
-    const message = buildPriceMessage(makePrinting(), { ...baseState, language: 'it', foil: true }, null)
-    const add = buttonsOf(message).find(button => plain(button.text).includes('cercate'))
-    expect(decodeWantState(callbackOf(add))).toEqual({ scryfallId: ID, language: 'it', foil: true })
-  })
-
   it('hides the foil toggle when the finish cannot be chosen', () => {
     const message = buildPriceMessage(makePrinting({ finishes: ['nonfoil'] }), baseState, null)
     expect(buttonTexts(message).some(text => text.includes('Foil'))).toBe(false)
   })
 })
 
-describe('buildPriceLinks', () => {
-  function linkTexts(cardtraderUrl: string | null) {
-    const keyboard = buildPriceLinks(makePrinting(), cardtraderUrl)
-    return keyboard.inline_keyboard.flat().map(button => button.text)
+describe('buildPriceKeyboard', () => {
+  function keyboardOf(state: PriceState, cardtraderUrl: string | null) {
+    return buildPriceKeyboard(makePrinting(), state, cardtraderUrl)
   }
+
+  function linkTexts(cardtraderUrl: string | null) {
+    return keyboardOf(baseState, cardtraderUrl).inline_keyboard.flat()
+      .filter(button => 'url' in button)
+      .map(button => button.text)
+  }
+
+  it('offers to save the printing as a wanted card with the current filters', () => {
+    const state: PriceState = { ...baseState, language: 'it', foil: true }
+    const add = keyboardOf(state, null).inline_keyboard.flat()
+      .find(button => button.text.includes('cercate'))
+    const data = add && 'callback_data' in add ? add.callback_data : ''
+    expect(decodeWantState(data)).toEqual({ scryfallId: ID, language: 'it', foil: true })
+  })
+
+  it('puts the wanted-card action above the links', () => {
+    const rows = keyboardOf(baseState, null).inline_keyboard
+    expect(rows[0]?.[0]?.text).toContain('cercate')
+    expect(rows[1]?.map(button => button.text)).toEqual(['CardMarket', 'Scryfall'])
+  })
 
   it('adds the CardTrader link only when it is known', () => {
     expect(linkTexts(null)).not.toContain('CardTrader')
@@ -266,7 +290,8 @@ describe('buildPriceLinks', () => {
   })
 
   it('skips the CardMarket link when the printing has none', () => {
-    const keyboard = buildPriceLinks(makePrinting({ cardmarketUrl: null }), null)
-    expect(keyboard.inline_keyboard.flat().map(button => button.text)).toEqual(['Scryfall'])
+    const keyboard = buildPriceKeyboard(makePrinting({ cardmarketUrl: null }), baseState, null)
+    const links = keyboard.inline_keyboard.flat().filter(button => 'url' in button)
+    expect(links.map(button => button.text)).toEqual(['Scryfall'])
   })
 })
