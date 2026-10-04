@@ -1,7 +1,6 @@
 // server\utils\telegram\commands\cards\wantedList.ts
 import { InlineKeyboard } from 'grammy'
 import { PRICE_INLINE_PREFIX } from './priceCard'
-import { formatManaCost } from './manaCost'
 import { escapeHtml } from '../../html'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
@@ -11,8 +10,6 @@ import { ICONS } from '~~/server/utils/telegram/icons'
 export interface WantedListRow {
   id: number
   card_name: string
-  // Scryfall notation like "{2}{R}", null for a land or a card with no cost
-  mana_cost: string | null
   set_code: string | null
   language: string | null
   treatment: string[]
@@ -85,10 +82,7 @@ function describeRow(row: WantedListRow, position: number): string {
     row.cardmarket_price !== null ? `CM ${euroFormatter.format(row.cardmarket_price)}` : null
   ].filter(detail => detail !== null)
 
-  // The mana cost sits between the number and the name, when the card has one
-  const cost = row.mana_cost ? `${escapeHtml(formatManaCost(row.mana_cost))} ` : ''
-
-  return `${position}. ${cost}<b><a href="${escapeHtml(scryfallUrl(row))}">${escapeHtml(row.card_name)}</a></b> ${details.join(' · ')}`.trimEnd()
+  return `${position}. <b><a href="${escapeHtml(scryfallUrl(row))}">${escapeHtml(row.card_name)}</a></b> ${details.join(' · ')}`.trimEnd()
 }
 
 export function pageCount(total: number): number {
