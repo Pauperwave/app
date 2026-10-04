@@ -90,6 +90,14 @@ export const ICONS = {
   pointDown: '👇🏻',
   stopwatch: '⏱️',
   application: '📋',
+  // Mana symbols in a card's cost
+  manaWhite: '⚪',
+  manaBlue: '🔵',
+  manaBlack: '⚫',
+  manaRed: '🔴',
+  manaGreen: '🟢',
+  manaColorless: '💎',
+  manaSnow: '❄️',
   // Prev / next page buttons
   previous: '◀',
   following: '▶'

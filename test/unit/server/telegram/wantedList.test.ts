@@ -64,7 +64,7 @@ describe('buildWantedListText', () => {
 
   it('puts the mana cost between the number and the name', () => {
     const text = buildWantedListText([row(1, { mana_cost: '{2}{R}' })], 0, 1)
-    expect(text).toContain('1. {2}{R} <b>Card 1</b>')
+    expect(text).toContain('1. 2🔴 <b>Card 1</b>')
   })
 
   it('leaves the cost out for a card without one', () => {

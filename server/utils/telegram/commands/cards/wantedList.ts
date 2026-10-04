@@ -1,6 +1,7 @@
 // server\utils\telegram\commands\cards\wantedList.ts
 import { InlineKeyboard } from 'grammy'
 import { PRICE_INLINE_PREFIX } from './priceCard'
+import { formatManaCost } from './manaCost'
 import { escapeHtml } from '../../html'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
@@ -79,7 +80,7 @@ function describeRow(row: WantedListRow, position: number): string {
   ].filter(detail => detail !== null)
 
   // The mana cost sits between the number and the name, when the card has one
-  const cost = row.mana_cost ? `${escapeHtml(row.mana_cost)} ` : ''
+  const cost = row.mana_cost ? `${escapeHtml(formatManaCost(row.mana_cost))} ` : ''
 
   return `${position}. ${cost}<b>${escapeHtml(row.card_name)}</b> ${details.join(' · ')}`.trimEnd()
 }
