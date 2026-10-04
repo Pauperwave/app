@@ -5,7 +5,7 @@
      needed at this app's scale) + the commander catalog (mana cost/color identity). -->
 <script setup lang="ts">
 import type { TableColumn, TabsItem } from '@nuxt/ui'
-import { USkeleton, MagicManaCost, NuxtLink } from '#components'
+import { USkeleton, MagicCardHoverPreview, MagicManaCost, NuxtLink } from '#components'
 
 const { t } = useI18n()
 const { can } = useUserRole()
@@ -23,6 +23,7 @@ interface CommanderRow {
   manaCost: string | null
   cmc: number | null
   colorIdentity: string[]
+  imageUrl: string | null
   artCropUrl: string | null
   playerCount: number
   matchCount: number
@@ -39,6 +40,7 @@ const allRows = computed<CommanderRow[]>(() => allNames.value.map((name) => {
     manaCost: catalogRow?.manaCost ?? null,
     cmc: catalogRow?.cmc ?? null,
     colorIdentity: catalogRow?.colorIdentity ?? [],
+    imageUrl: catalogRow?.imageUrl ?? null,
     artCropUrl: catalogRow?.artCropUrl ?? null,
     playerCount: agg?.playerCount ?? 0,
     matchCount: agg?.matchCount ?? 0,
@@ -54,6 +56,10 @@ const viewModeItems = computed<TabsItem[]>(() => [
   { label: t('commander.views.dense'), value: 'dense', icon: ICONS.gridDense },
   { label: t('commander.views.grid'), value: 'grid', icon: ICONS.grid }
 ])
+
+function commanderPath(name: string): string {
+  return `/statistics/commanders/${slugify(name)}`
+}
 
 const search = ref('')
 const filteredRows = computed(() => {
@@ -93,10 +99,12 @@ const columns: TableColumn<CommanderRow>[] = [
   {
     accessorKey: 'name',
     header: ({ column }) => sortableHeader(t('commander.index.nameColumn'), column),
+    // The card follows the pointer over the name; the link inside still opens the page itself
+    // (a table row ignores clicks on links), the rest of the row opens it through @select below
     cell: ({ row }) => h(
-      NuxtLink,
-      { to: `/statistics/commanders/${slugify(row.original.name)}`, class: 'hover:underline' },
-      () => row.original.name
+      MagicCardHoverPreview,
+      { imageUrl: row.original.imageUrl, alt: row.original.name },
+      () => h(NuxtLink, { to: commanderPath(row.original.name), class: 'hover:underline' }, () => row.original.name)
     )
   },
   statColumn('playerCount', t('deck.statsPlayers')),
@@ -171,7 +179,9 @@ const isLoading = statsLoading
         :data="filteredRows"
         :columns="columns"
         :sorting="[{ id: 'name', desc: false }]"
+        :ui="{ tr: 'cursor-pointer' }"
         sticky="header"
+        @select="(_event, row) => navigateTo(commanderPath(row.original.name))"
       >
         <template #empty>
           <EmptyState :message="t('commander.index.emptyList')" />
