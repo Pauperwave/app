@@ -8,6 +8,12 @@ import {
 // safety net for a connection that dropped without noticing
 const SAFETY_POLL_MS = 60_000
 
+// Temporary: console numbers to tell a clock offset error from the Realtime-then-refetch delay.
+// Remove once the delay is understood.
+function debugLog(step: string, values: Record<string, number | null | undefined>) {
+  console.info(`[event-timer] ${step}`, values)
+}
+
 type EventTimerStatus = RoundTimerStatus | 'loading' | 'unavailable'
 
 // Follows the event's round timer for the table the player sits at (read-only: only the organizer
@@ -38,15 +44,24 @@ export function useEventTimer() {
 
     try {
       const requestedAtMs = Date.now()
+      const requestedAtPerf = performance.now()
       const response = await $fetch<RoundTimerResponse>('/api/telegram/round-timer', {
         method: 'POST',
         body: { initData }
       })
+      const receivedAtMs = Date.now()
       status.value = response.status
       snapshot.value = response.snapshot
       // The server stamped its clock mid-request: compare it with the midpoint of the round trip,
       // not with the arrival time, or a slow response makes the timer lag by half of it
-      clockOffsetMs.value = response.serverNowMs - (requestedAtMs + Date.now()) / 2
+      clockOffsetMs.value = response.serverNowMs - (requestedAtMs + receivedAtMs) / 2
+      // Temporary measurement of the timer delay, see debugLog
+      debugLog('refresh', {
+        roundTripMs: Math.round(performance.now() - requestedAtPerf),
+        midpointOffsetMs: Math.round(clockOffsetMs.value),
+        arrivalOffsetMs: Math.round(response.serverNowMs - receivedAtMs),
+        remaining: resolved.value?.remainingSeconds
+      })
       if (response.tournamentUuid !== null && response.roundNumber !== null) {
         listenTo(response.tournamentUuid, response.roundNumber)
       }
@@ -83,10 +98,18 @@ export function useEventTimer() {
         },
         (payload) => {
           // The filter takes one column: the round is checked here
-          const row = payload.new as { round_number?: number }
+          const row = payload.new as { round_number?: number, updated_at?: string }
           if (row.round_number !== roundNumber) return
+          const eventAtPerf = performance.now()
+          debugLog('event', {
+            writeToEventMs: row.updated_at
+              ? Math.round(Date.now() + clockOffsetMs.value - Date.parse(row.updated_at))
+              : null
+          })
           telegramHaptic()?.impactOccurred('medium')
-          refresh()
+          refresh().then(() => {
+            debugLog('shown', { eventToShownMs: Math.round(performance.now() - eventAtPerf) })
+          })
         }
       )
       .subscribe((subscription) => {
