@@ -179,7 +179,7 @@ export function registerImportaHandlers(bot: Bot, commands: CommandGroup<Context
 
   commands.command(
     'importa',
-    'Importa un elenco di carte da cercare — incollalo dopo il comando',
+    'Importa un elenco di carte da cercare',
     async (ctx) => {
       try {
         await importaCommandHandler(ctx)

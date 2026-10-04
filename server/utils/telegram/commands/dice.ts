@@ -45,5 +45,5 @@ registerDeepLink('tira', tiraCommandHandler)
 export function registerDiceCommands(commands: CommandGroup<Context>) {
   commands.command('dado', 'Tira un dado a 6 facce', dadoCommandHandler)
   commands.command('moneta', 'Testa o croce', monetaCommandHandler)
-  commands.command('tira', 'Tira un dado — es. /tira 20 (default d20)', tiraCommandHandler)
+  commands.command('tira', 'Tira un dado', tiraCommandHandler)
 }

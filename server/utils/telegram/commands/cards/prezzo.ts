@@ -239,7 +239,7 @@ export function registerPrezzoCommand(bot: Bot, commands: CommandGroup<Context>)
   bot.on('message:text', handlePriceNameReply)
   commands.command(
     'prezzo',
-    'Prezzo di una carta su CardMarket e CardTrader — es. /prezzo Lightning Bolt',
+    'Prezzo di una carta su CardMarket e CardTrader',
     prezzoCommandHandler
   )
 }
