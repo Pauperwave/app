@@ -1,20 +1,5 @@
 <!-- app\pages\(community)\associate\[slug].vue -->
 <script setup lang="ts">
-// fallow-ignore-file code-duplication -- header skeleton mirrors other detail pages
-import { format, parseISO } from 'date-fns'
-
-interface DetailField {
-  icon: string
-  label: string
-  value: string
-}
-
-interface ConsentField {
-  icon: string
-  label: string
-  value: boolean
-}
-
 const route = useRoute()
 const { t } = useI18n()
 const { data: associates, isLoading: loading } = useAssociatesQuery()
@@ -23,26 +8,6 @@ const { breadcrumbItems } = useBreadcrumbs()
 const associate = computed(() => (associates.value ?? [])
   .find(item => slugify(`${item.first_name} ${item.last_name}`) === route.params.slug))
 
-// The reverse of players/[playerId]/index.vue's "Vedi la scheda associato" link: not every
-// associate has a linked player row (players are created on the first tesseramento-adjacent login,
-// not at signup), so this can be null
-const { data: players } = usePlayersQuery()
-
-// Linked to the bot but with no Telegram username: there is no profile to link to.
-const { data: telegramLinks } = useAssociateTelegramUsernamesQuery()
-const hasNoTelegramUsername = computed(() => {
-  const current = associate.value
-  return !!current
-    && !current.has_no_telegram
-    && !!telegramLinks.value?.has(current.uuid)
-    && !telegramLinks.value.get(current.uuid)
-})
-const player = computed(() => players.value?.find(
-  item => item.associate_uuid === associate.value?.uuid) ?? null)
-
-const { data: membershipEvents, isLoading: membershipEventsLoading }
-  = useAssociateMembershipEventsQuery(() => associate.value?.uuid)
-
 useSeoMeta({
   title: () => associate.value
     ? `${associate.value.first_name} ${associate.value.last_name}`
@@ -50,100 +15,9 @@ useSeoMeta({
 })
 
 const editModalOpen = ref(false)
-
-const avatar = computed(() => associate.value
-  ? generatePlayerAvatar(associate.value.id)
-  : undefined)
-
-function formatDate(dateString?: string | null): string {
-  if (!dateString) return ''
-  try {
-    return format(parseISO(dateString), 'dd/MM/yyyy')
-  } catch {
-    return ''
-  }
-}
-
-const anagraficaFields = computed<DetailField[]>(() => !associate.value
-  ? []
-  : [
-    { icon: ICONS.player, label: t('associate.columns.firstName'), value: associate.value.first_name },
-    { icon: ICONS.player, label: t('associate.columns.lastName'), value: associate.value.last_name },
-    { icon: ICONS.idCard, label: t('associate.columns.taxCode'), value: associate.value.tax_code || '—' },
-    { icon: ICONS.cake, label: t('associate.columns.bornDate'), value: formatDate(associate.value.born_date) || '—' },
-    { icon: ICONS.mapPin, label: t('associate.columns.bornLocation'), value: associate.value.born_location || '—' },
-    { icon: ICONS.map, label: t('associate.columns.bornProvince'), value: associate.value.born_province || '—' },
-    { icon: ICONS.flag, label: t('associate.columns.bornState'), value: associate.value.born_state || '—' }
-  ])
-
-const contattiFields = computed<DetailField[]>(() => !associate.value
-  ? []
-  : [
-    { icon: ICONS.mail, label: t('associate.columns.emailAddress'), value: associate.value.email_address },
-    // Same formatting as the table's phoneNumberColumn (formatPhoneNumber.ts)
-    // — the raw column stores E.164 ("+393203522674"), unreadable as-is.
-    { icon: ICONS.phone, label: t('associate.columns.phoneNumber'), value: formatPhoneNumber(associate.value.phone_number) || '—' },
-    { icon: ICONS.mapPin, label: t('associate.columns.residencyAddress'), value: associate.value.residency_address },
-    { icon: ICONS.hash, label: t('associate.columns.residencyHouseNumber'), value: associate.value.residency_house_number || '—' },
-    { icon: ICONS.building, label: t('associate.columns.residencyCity'), value: associate.value.residency_city },
-    { icon: ICONS.map, label: t('associate.columns.residencyProvince'), value: associate.value.residency_province },
-    { icon: ICONS.mailbox, label: t('associate.columns.residencyCap'), value: associate.value.residency_cap }
-  ])
-
-// pauperwave_associate_number/membership_status/associate_type don't go through this list: all
-// three render as their real badge component
-// (AssociateNumberBadge/MembershipStatusBadge/AssociateTypeBadge) in the card's #before slot, like
-// the table
-const tesseramentoFields = computed<DetailField[]>(() => !associate.value
-  ? []
-  : [
-    { icon: ICONS.calendar, label: t('associate.columns.requestDate'), value: formatDate(associate.value.request_date) || '—' },
-    { icon: ICONS.calendarCheck, label: t('associate.columns.associationDate'), value: formatDate(associate.value.association_date) || '—' },
-    { icon: ICONS.creditCard, label: t('associate.columns.lastRenewalDate'), value: formatDate(associate.value.latest_renewal_date) || '—' }
-  ])
-
-// Boolean values, not yes/no strings: rendered via <ConsentBadge>, the component also used by the
-// table's consent_data/consent_social/has_read_statute/has_acknowledged_surveillance_notice columns
-// (useAssociatesTableColumns.ts, associates/index.vue)
-const consensiFields = computed<ConsentField[]>(() => !associate.value
-  ? []
-  : [
-    { icon: ICONS.shieldCheck, label: t('associate.columns.consentData'), value: associate.value.consent_data },
-    { icon: ICONS.share, label: t('associate.columns.consentSocial'), value: associate.value.consent_social },
-    { icon: ICONS.rules, label: t('associate.columns.hasReadStatute'), value: associate.value.has_read_statute },
-    { icon: ICONS.show, label: t('associate.columns.hasAcknowledgedSurveillanceNotice'), value: associate.value.has_acknowledged_surveillance_notice }
-  ])
-
-// Transactions history, filtered client-side out of the cached query /transactions uses: no
-// per-associate endpoint, as the whole table is already fetched and small (like
-// useAssociatesTableColumns.ts resolving updated_by/created_by client-side)
-const {
-  data: transactions,
-  isLoading: transactionsLoading,
-  isPending: transactionsPending
-} = useTransactionsQuery()
-const associateTransactions = computed(() => (transactions.value ?? [])
-  .filter(transaction => transaction.associate?.uuid === associate.value?.uuid))
-
-const amountFormatter = AMOUNT_FORMATTER
-
-// The league-relative stage numbering /transactions and /tournaments show
-// (assignTournamentStageNumbers), reused rather than re-derived and deduped against the
-// 'tournaments' key by Pinia Colada if either page is open
-const { data: allTournaments } = useTournamentsQuery()
-const tournamentsByUuid = computed(() =>
-  new Map((allTournaments.value ?? []).map(tournament => [tournament.uuid, tournament])))
-
-// Read-only summary, not the full /transactions table columns (useTransactionsTableColumns.ts): no
-// selection/grouping/row-actions, as this is a per-associate history in a bigger detail page, not a
-// management surface
-const { columns: associateTransactionsColumns } = useAssociateTransactionsTableColumns(
-  tournamentsByUuid, amountFormatter
-)
 </script>
 
 <template>
-  <!-- fallow-ignore-file code-duplication -- see the top-of-file comment -->
   <UDashboardPanel id="associate-detail">
     <template #header>
       <UDashboardNavbar
@@ -189,139 +63,10 @@ const { columns: associateTransactionsColumns } = useAssociateTransactionsTableC
       />
 
       <div v-else class="flex flex-col gap-4">
-        <UCard>
-          <div class="flex flex-wrap items-center gap-4">
-            <UAvatar
-              :src="avatar"
-              :alt="`${associate.first_name} ${associate.last_name}`"
-              size="3xl"
-              :ui="{ root: 'size-24', fallback: 'text-2xl' }"
-            />
-            <div class="flex-1 min-w-0">
-              <h2 class="text-xl font-semibold truncate">
-                {{ associate.first_name }} {{ associate.last_name }}
-              </h2>
-              <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
-                <MembershipStatusBadge :status="associate.membership_status" />
-                <AssociateNumberBadge :number="associate.pauperwave_associate_number" />
-                <AssociateTypeBadge :type="associate.associate_type" />
-                <UBadge
-                  v-if="associate.has_no_telegram"
-                  :label="$t('associate.noTelegram.badge')"
-                  :icon="ICONS.noTelegram"
-                  color="error"
-                  variant="subtle"
-                />
-                <UBadge
-                  v-else-if="hasNoTelegramUsername"
-                  :label="$t('associate.noTelegramUsername.badge')"
-                  :icon="ICONS.telegramNoUsername"
-                  color="warning"
-                  variant="subtle"
-                />
-              </div>
-
-              <NuxtLink
-                v-if="player?.first_name && player?.last_name"
-                :to="`/players/${slugify(`${player.first_name} ${player.last_name}`)}`"
-                class="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-1.5"
-              >
-                <UIcon :name="ICONS.gameplay" class="size-4" />
-                {{ $t('associate.detail.viewPlayerProfile') }}
-              </NuxtLink>
-            </div>
-          </div>
-        </UCard>
-
-        <div class="grid gap-4 sm:grid-cols-2">
-          <DetailCard
-            :title="$t('associate.detail.sections.anagrafica')"
-            :fields="anagraficaFields"
-          />
-
-          <DetailCard
-            :title="$t('associate.detail.sections.contatti')"
-            :fields="contattiFields"
-          />
-
-          <DetailCard
-            :title="$t('associate.detail.sections.tesseramento')"
-            :fields="tesseramentoFields"
-          >
-            <template #before>
-              <div class="flex justify-between items-center gap-4">
-                <dt class="flex items-center gap-1.5 text-muted">
-                  <UIcon :name="ICONS.badgeCheck" class="size-4 shrink-0" /> {{ $t('associate.columns.membershipStatus') }}
-                </dt>
-                <dd>
-                  <MembershipStatusBadge :status="associate.membership_status" />
-                </dd>
-              </div>
-              <div class="flex justify-between items-center gap-4">
-                <dt class="flex items-center gap-1.5 text-muted">
-                  <UIcon :name="ICONS.idCard" class="size-4 shrink-0" /> {{ $t('associate.columns.pauperwaveAssociateNumber') }}
-                </dt>
-                <dd>
-                  <AssociateNumberBadge :number="associate.pauperwave_associate_number" />
-                </dd>
-              </div>
-              <div class="flex justify-between items-center gap-4">
-                <dt class="flex items-center gap-1.5 text-muted">
-                  <UIcon :name="ICONS.tag" class="size-4 shrink-0" /> {{ $t('associate.columns.associateType') }}
-                </dt>
-                <dd>
-                  <AssociateTypeBadge :type="associate.associate_type" />
-                </dd>
-              </div>
-            </template>
-          </DetailCard>
-
-          <DetailCard
-            :title="$t('associate.detail.sections.consensi')"
-            :fields="[]"
-          >
-            <template #before>
-              <div
-                v-for="field in consensiFields"
-                :key="field.label"
-                class="flex justify-between items-center gap-4"
-              >
-                <dt class="flex items-center gap-1.5 text-muted">
-                  <UIcon :name="field.icon" class="size-4 shrink-0" /> {{ field.label }}
-                </dt>
-                <dd>
-                  <ConsentBadge :value="field.value" />
-                </dd>
-              </div>
-            </template>
-          </DetailCard>
-        </div>
-
-        <UCard :ui="{ header: 'font-semibold' }">
-          <template #header>
-            {{ $t('associate.detail.sections.membershipHistory') }}
-          </template>
-
-          <USkeleton v-if="membershipEventsLoading" class="h-24 w-full" />
-          <AssociatesSingleMembershipTimeline v-else :events="membershipEvents ?? []" />
-        </UCard>
-
-        <UCard :ui="{ header: 'font-semibold' }">
-          <template #header>
-            {{ $t('associate.detail.sections.transactions') }}
-          </template>
-
-          <ListSkeleton v-if="transactionsPending" :columns="associateTransactionsColumns.length" />
-          <p v-else-if="!associateTransactions.length" class="text-sm text-muted py-4 text-center">
-            {{ $t('associate.detail.transactionsEmpty') }}
-          </p>
-          <UTable
-            v-else
-            :data="associateTransactions"
-            :columns="associateTransactionsColumns"
-            :loading="transactionsLoading"
-          />
-        </UCard>
+        <AssociatesSingleHeaderCard :associate="associate" />
+        <AssociatesSingleDetailGrid :associate="associate" />
+        <AssociatesSingleMembershipHistoryCard :associate-uuid="associate.uuid" />
+        <AssociatesSingleTransactionsCard :associate-uuid="associate.uuid" />
       </div>
     </template>
   </UDashboardPanel>

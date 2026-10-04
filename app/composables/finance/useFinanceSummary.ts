@@ -7,13 +7,9 @@ import type { Transaction } from '~/types'
 export * from './financeSummaryTypes'
 
 export function useFinanceSummary(transactions: Ref<Transaction[]>, year: Ref<number>) {
-  // Same 'tournaments' Pinia Colada key as /tournaments and the transactions table's Evento column;
-  // stageNumber comes pre-computed (assignTournamentStageNumbers)
-  const { data: tournamentsData } = useTournamentsQuery()
-  const tournamentsByUuid = computed(() =>
-    new Map((tournamentsData.value ?? []).map(tournament => [tournament.uuid, tournament])))
+  const tournamentsByUuid = useTournamentsByUuid()
 
-  // Same reasoning as tournamentsByUuid above, for byEvent's startDate column
+  // The same lookup for the events, for byEvent's startDate column
   const { data: eventsData } = useEventsQuery()
   const eventsByUuid = computed(() =>
     new Map((eventsData.value ?? []).map(event => [event.uuid, event])))

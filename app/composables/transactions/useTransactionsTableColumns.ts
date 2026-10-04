@@ -46,11 +46,7 @@ export function useTransactionsTableColumns(
 
   const amountFormatter = AMOUNT_FORMATTER
 
-  // Reuses the league-relative stage numbering /tournaments shows (assignTournamentStageNumbers)
-  // instead of re-deriving it; Pinia Colada dedupes the fetch on the 'tournaments' key
-  const { data: allTournaments } = useTournamentsQuery()
-  const tournamentsByUuid = computed(() =>
-    new Map((allTournaments.value ?? []).map(tournament => [tournament.uuid, tournament])))
+  const tournamentsByUuid = useTournamentsByUuid()
 
   // Earliest renewal_year on record per associate: an Association Fee is a "Nuovo tesseramento" if
   // its year is the earliest, else a "Rinnovo". Full history (not just latest_renewal_year), like
