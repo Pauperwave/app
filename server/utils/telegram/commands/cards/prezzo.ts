@@ -10,11 +10,10 @@ import { registerDeepLink } from '../../deepLinks'
 import {
   PRICE_CALLBACK_PREFIX,
   PRICE_INLINE_PREFIX,
-  artPreview,
   buildInlineDescription,
   buildInlineTitle,
-  buildPriceKeyboard,
-  buildPriceText,
+  buildPriceLinks,
+  buildPriceMessage,
   decodePriceState,
   effectiveFoil,
   sortByCardmarketPrice,
@@ -173,12 +172,8 @@ async function handlePriceInlineQuery(ctx: Context, next: () => Promise<void>) {
         title: buildInlineTitle(printing),
         description: buildInlineDescription(printing),
         thumbnail_url: printing.thumbnailUrl ?? undefined,
-        input_message_content: {
-          message_text: buildPriceText(printing, state, 'pending'),
-          parse_mode: 'HTML',
-          link_preview_options: artPreview(printing.imageUrl)
-        },
-        reply_markup: buildPriceKeyboard(printing, state, null)
+        input_message_content: { rich_message: buildPriceMessage(printing, state, 'pending') },
+        reply_markup: buildPriceLinks(printing, null)
       }
     })
 
@@ -216,10 +211,8 @@ async function editPriceMessage(ctx: Context, state: PriceState): Promise<boolea
   if (!printing) return false
 
   const cardtrader = await fetchCardtrader(printing, state)
-  await ctx.editMessageText(buildPriceText(printing, state, cardtrader), {
-    parse_mode: 'HTML',
-    link_preview_options: artPreview(printing.imageUrl),
-    reply_markup: buildPriceKeyboard(printing, state, cardtrader?.url ?? null)
+  await ctx.editMessageText(buildPriceMessage(printing, state, cardtrader), {
+    reply_markup: buildPriceLinks(printing, cardtrader?.url ?? null)
   })
   return true
 }
