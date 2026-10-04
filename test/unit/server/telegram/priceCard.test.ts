@@ -6,7 +6,9 @@ import {
   buildPriceKeyboard,
   buildPriceText,
   canToggleFoil,
+  decodeFoundState,
   decodePriceState,
+  decodeRemoveState,
   decodeWantState,
   effectiveFoil,
   encodePriceState,
@@ -210,5 +212,47 @@ describe('buildPriceKeyboard', () => {
     expect(without).not.toContain('CardTrader')
     expect(withLink).toContain('CardTrader')
     expect(withLink).toContain('Scryfall')
+  })
+})
+
+describe('buildPriceKeyboard for a card already among the wanted ones', () => {
+  function rowsOf(printing = makePrinting(), state = baseState) {
+    return buildPriceKeyboard(printing, state, null, true).inline_keyboard
+  }
+
+  function dataOf(button: { text: string } | undefined) {
+    return button && 'callback_data' in button ? String(button.callback_data) : ''
+  }
+
+  it('says the card is already there instead of offering to add it', () => {
+    const texts = rowsOf().flat().map(button => button.text)
+    expect(texts.some(text => text.includes('già presente nelle tue carte cercate'))).toBe(true)
+    expect(texts.some(text => text.includes('Aggiungi'))).toBe(false)
+  })
+
+  it('puts found and remove side by side under the label', () => {
+    const rows = rowsOf()
+    expect(rows[1]?.[0]?.text).toContain('già presente')
+    expect(rows[2]?.map(button => button.text.replace(/^\S+\s/, ''))).toEqual(['Segna come trovata', 'Rimuovi'])
+  })
+
+  it('acts on the finish actually priced, also for a foil-only printing', () => {
+    const foilOnly = makePrinting({ finishes: ['foil'] })
+    const actionRow = rowsOf(foilOnly, { ...baseState, language: 'it' })[2]
+    expect(decodeFoundState(dataOf(actionRow?.[0]))).toEqual({ scryfallId: ID, language: 'it', foil: true })
+    expect(decodeRemoveState(dataOf(actionRow?.[1]))).toEqual({ scryfallId: ID, language: 'it', foil: true })
+  })
+
+  it('keeps the add button when the card is not wanted yet', () => {
+    const texts = buildPriceKeyboard(makePrinting(), baseState, null).inline_keyboard.flat()
+      .map(button => button.text)
+    expect(texts.some(text => text.includes('Aggiungi alle mie carte cercate'))).toBe(true)
+    expect(texts.some(text => text.includes('Rimuovi'))).toBe(false)
+  })
+
+  it('keeps found and remove under their own callback prefixes', () => {
+    const data = encodePriceState(baseState)
+    expect(decodeFoundState(data)).toBeNull()
+    expect(decodeRemoveState(data)).toBeNull()
   })
 })

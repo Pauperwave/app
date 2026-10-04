@@ -6,7 +6,9 @@ import type { InlineQueryResultArticle } from 'grammy/types'
 import type { ScryfallCard } from '#shared/types/scryfall'
 
 import { answerEditError } from '../callbackErrors'
+import { resolveAssociateUuidByChatId } from '../account/linking'
 import { registerDeepLink } from '../../deepLinks'
+import { findActiveWantedCard } from './wantedLookup'
 import {
   PRICE_CALLBACK_PREFIX,
   PRICE_INLINE_PREFIX,
@@ -18,6 +20,7 @@ import {
   decodePriceState,
   effectiveFoil,
   sortByCardmarketPrice,
+  wantedLanguageOf,
   type PriceCardtrader,
   type PricePrinting,
   type PriceState
@@ -210,16 +213,46 @@ async function handlePriceButton(ctx: Context, next: () => Promise<void>) {
   }
 }
 
-// False when the printing no longer exists on Scryfall
-async function editPriceMessage(ctx: Context, state: PriceState): Promise<boolean> {
+// Whether whoever opened the message already has this printing, language and finish among their
+// wanted cards. A chat not linked to an associate, or a failed lookup, just shows the add button.
+async function isAmongWantedCards(
+  ctx: Context,
+  printing: PricePrinting,
+  state: PriceState
+): Promise<boolean> {
+  if (!ctx.from) return false
+
+  try {
+    const associateUuid = await resolveAssociateUuidByChatId(ctx.from.id)
+    if (!associateUuid) return false
+
+    const row = await findActiveWantedCard(
+      telegramServiceSupabaseClient(),
+      associateUuid,
+      printing.id,
+      { language: wantedLanguageOf(state.language), foil: effectiveFoil(printing, state) }
+    )
+    return row !== null
+  } catch (err) {
+    console.error('Wanted card lookup for the price message failed:', err)
+    return false
+  }
+}
+
+// Renders the price message again for this state, with the wanted-card buttons that fit it. False
+// when the printing no longer exists on Scryfall.
+export async function editPriceMessage(ctx: Context, state: PriceState): Promise<boolean> {
   const printing = await fetchPrinting(state.scryfallId)
   if (!printing) return false
 
-  const cardtrader = await fetchCardtrader(printing, state)
+  const [cardtrader, wanted] = await Promise.all([
+    fetchCardtrader(printing, state),
+    isAmongWantedCards(ctx, printing, state)
+  ])
   await ctx.editMessageText(buildPriceText(printing, state, cardtrader), {
     parse_mode: 'HTML',
     link_preview_options: artPreview(printing.imageUrl),
-    reply_markup: buildPriceKeyboard(printing, state, cardtrader?.url ?? null)
+    reply_markup: buildPriceKeyboard(printing, state, cardtrader?.url ?? null, wanted)
   })
   return true
 }

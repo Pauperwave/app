@@ -64,6 +64,7 @@ export const ICONS = {
   support: '💬',
   tag: '🏷️',
   refresh: '🔄',
+  found: '🎉',
   organizer: '🏢',
   write: '✍️',
   skull: '💀',

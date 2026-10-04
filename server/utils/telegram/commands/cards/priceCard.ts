@@ -48,6 +48,8 @@ export function artPreview(imageUrl: string | null) {
 
 export const PRICE_CALLBACK_PREFIX = 'prz:'
 export const WANT_CALLBACK_PREFIX = 'prw:'
+export const FOUND_CALLBACK_PREFIX = 'prf:'
+export const REMOVE_CALLBACK_PREFIX = 'prd:'
 export const PRICE_INLINE_PREFIX = '€'
 
 const LANGUAGES: PriceLanguage[] = ['all', 'it', 'en']
@@ -85,6 +87,15 @@ export function encodeWantState(state: PriceState): string {
   return encodeState(WANT_CALLBACK_PREFIX, state)
 }
 
+// Once the card is among the wanted ones, "found" and "remove" act on that row under their own prefix
+export function encodeFoundState(state: PriceState): string {
+  return encodeState(FOUND_CALLBACK_PREFIX, state)
+}
+
+export function encodeRemoveState(state: PriceState): string {
+  return encodeState(REMOVE_CALLBACK_PREFIX, state)
+}
+
 // Null for anything malformed: callback_data is client-controlled, never trusted blindly
 function decodeState(prefix: string, data: string): PriceState | null {
   if (!data.startsWith(prefix)) return null
@@ -107,6 +118,14 @@ export function decodePriceState(data: string): PriceState | null {
 
 export function decodeWantState(data: string): PriceState | null {
   return decodeState(WANT_CALLBACK_PREFIX, data)
+}
+
+export function decodeFoundState(data: string): PriceState | null {
+  return decodeState(FOUND_CALLBACK_PREFIX, data)
+}
+
+export function decodeRemoveState(data: string): PriceState | null {
+  return decodeState(REMOVE_CALLBACK_PREFIX, data)
 }
 
 // A printing with no nonfoil finish can only be priced as foil, like the wanted-cards price refresh
@@ -191,12 +210,17 @@ export function buildPriceText(
   ].join('\n')
 }
 
+// `wanted`: the card is already among the associate's wanted ones, so the add button gives way to a
+// "already there" label with "found" and "remove" next to it
 export function buildPriceKeyboard(
   printing: PricePrinting,
   state: PriceState,
-  cardtraderUrl: string | null
+  cardtraderUrl: string | null,
+  wanted = false
 ): InlineKeyboard {
   const keyboard = new InlineKeyboard()
+  // The wanted row is looked up by the finish actually priced, which a foil-only printing forces
+  const wantState = { ...state, foil: effectiveFoil(printing, state) }
 
   for (const language of LANGUAGES) {
     const active = state.language === language
@@ -213,8 +237,19 @@ export function buildPriceKeyboard(
     )
   }
 
-  // Saves this printing with the chosen language and finish as a wanted card
-  keyboard.row().text(`${ICONS.wanted} Aggiungi alle mie cercate`, encodeWantState(state))
+  if (wanted) {
+    // The label is a button too: pressing it explains, through the add handler's own toast
+    keyboard.row().text(
+      `${ICONS.success} Carta già presente nelle tue carte cercate`,
+      encodeWantState(wantState)
+    )
+    keyboard.row()
+      .text(`${ICONS.found} Segna come trovata`, encodeFoundState(wantState))
+      .text(`${ICONS.trash} Rimuovi`, encodeRemoveState(wantState))
+  } else {
+    // Saves this printing with the chosen language and finish as a wanted card
+    keyboard.row().text(`${ICONS.wanted} Aggiungi alle mie carte cercate`, encodeWantState(state))
+  }
 
   keyboard.row()
   if (printing.cardmarketUrl) keyboard.url('CardMarket', printing.cardmarketUrl)

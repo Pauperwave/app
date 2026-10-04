@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildWantedCardRow,
+  findWantedMatch,
   isAlreadyWanted,
   isFoilOnlyPrinting,
   wantedChoiceFor,
@@ -117,5 +118,22 @@ describe('isAlreadyWanted', () => {
 
   it('is false with nothing saved yet', () => {
     expect(isAlreadyWanted([], { language: null, foil: false })).toBe(false)
+  })
+})
+
+describe('findWantedMatch', () => {
+  const rows = [
+    { id: 1, language: 'it', treatment: ['foil'] },
+    { id: 2, language: null, treatment: [] }
+  ]
+
+  it('returns the row for the same language and finish', () => {
+    expect(findWantedMatch(rows, { language: 'it', foil: true })?.id).toBe(1)
+    expect(findWantedMatch(rows, { language: null, foil: false })?.id).toBe(2)
+  })
+
+  it('returns nothing for another language or finish', () => {
+    expect(findWantedMatch(rows, { language: 'en', foil: true })).toBeUndefined()
+    expect(findWantedMatch(rows, { language: 'it', foil: false })).toBeUndefined()
   })
 })

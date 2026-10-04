@@ -82,15 +82,22 @@ interface ExistingWantedCard {
   treatment: string[]
 }
 
-// The same printing, language and finish already searched for by this associate: a second row
-// would only duplicate it (copies aren't compared, a repeat doesn't add up)
+// The row for the same printing, language and finish already searched for by this associate: a
+// second row would only duplicate it (copies aren't compared, a repeat doesn't add up)
+export function findWantedMatch<T extends ExistingWantedCard>(
+  existing: T[],
+  choice: Pick<WantedCardChoice, 'language' | 'foil'>
+): T | undefined {
+  const treatment = wantedTreatmentOf(choice.foil)
+
+  return existing.find(row => row.language === choice.language
+    && row.treatment.length === treatment.length
+    && row.treatment.every(value => treatment.includes(value)))
+}
+
 export function isAlreadyWanted(
   existing: ExistingWantedCard[],
   choice: Pick<WantedCardChoice, 'language' | 'foil'>
 ): boolean {
-  const treatment = wantedTreatmentOf(choice.foil)
-
-  return existing.some(row => row.language === choice.language
-    && row.treatment.length === treatment.length
-    && row.treatment.every(value => treatment.includes(value)))
+  return findWantedMatch(existing, choice) !== undefined
 }
