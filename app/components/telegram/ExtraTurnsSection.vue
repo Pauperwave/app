@@ -95,6 +95,7 @@ const emit = defineEmits<{
       <UButton
         size="xl"
         block
+        color="warning"
         class="h-16 text-lg"
         @click="emit('action')"
       >
