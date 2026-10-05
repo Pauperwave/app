@@ -12,11 +12,10 @@ import { findActiveWantedCard } from './wantedLookup'
 import {
   PRICE_CALLBACK_PREFIX,
   PRICE_INLINE_PREFIX,
-  artPreview,
   buildInlineDescription,
   buildInlineTitle,
-  buildPriceKeyboard,
-  buildPriceText,
+  buildPriceRichMessage,
+  buildWantedKeyboard,
   decodePriceState,
   effectiveFoil,
   sortByCardmarketPrice,
@@ -177,11 +176,9 @@ async function handlePriceInlineQuery(ctx: Context, next: () => Promise<void>) {
         description: buildInlineDescription(printing),
         thumbnail_url: printing.thumbnailUrl ?? undefined,
         input_message_content: {
-          message_text: buildPriceText(printing, state, 'pending'),
-          parse_mode: 'HTML',
-          link_preview_options: artPreview(printing.imageUrl)
+          rich_message: buildPriceRichMessage(printing, state, 'pending', 'inline')
         },
-        reply_markup: buildPriceKeyboard(printing, state, null)
+        reply_markup: buildWantedKeyboard(printing, state)
       }
     })
 
@@ -249,10 +246,8 @@ export async function editPriceMessage(ctx: Context, state: PriceState): Promise
     fetchCardtrader(printing, state),
     isAmongWantedCards(ctx, printing, state)
   ])
-  await ctx.editMessageText(buildPriceText(printing, state, cardtrader), {
-    parse_mode: 'HTML',
-    link_preview_options: artPreview(printing.imageUrl),
-    reply_markup: buildPriceKeyboard(printing, state, cardtrader?.url ?? null, wanted)
+  await ctx.editMessageText(buildPriceRichMessage(printing, state, cardtrader, 'inline'), {
+    reply_markup: buildWantedKeyboard(printing, state, wanted)
   })
   return true
 }

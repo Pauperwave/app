@@ -3,9 +3,8 @@ import { describe, expect, it } from 'vitest'
 import {
   buildInlineDescription,
   buildInlineTitle,
-  buildPriceKeyboard,
   buildPriceRichMessage,
-  buildPriceText,
+  buildWantedKeyboard,
   canToggleFoil,
   cardmarketUrlFor,
   decodeFoundState,
@@ -40,10 +39,6 @@ function makePrinting(overrides: Partial<PricePrinting> = {}): PricePrinting {
 }
 
 const baseState: PriceState = { scryfallId: ID, language: 'all', foil: false }
-
-function buttonTexts(keyboard: ReturnType<typeof buildPriceKeyboard>) {
-  return keyboard.inline_keyboard.flat().map(button => button.text)
-}
 
 describe('price callback state', () => {
   it('round-trips through callback_data', () => {
@@ -114,114 +109,139 @@ describe('inline printing list', () => {
   })
 })
 
-describe('buildPriceText', () => {
+type RichBlocks = NonNullable<ReturnType<typeof buildPriceRichMessage>['blocks']>
+type Cardtrader = Parameters<typeof buildPriceRichMessage>[2]
+type Kind = Parameters<typeof buildPriceRichMessage>[3]
+
+function blocksOf(
+  printing = makePrinting(),
+  state = baseState,
+  cardtrader: Cardtrader = null,
+  kind: Kind = 'inline'
+): RichBlocks {
+  return buildPriceRichMessage(printing, state, cardtrader, kind).blocks ?? []
+}
+
+// The paragraphs' text with the formatting stripped, one entry per paragraph
+function linesOf(blocks: RichBlocks): string[] {
+  const flatten = (text: unknown): string => {
+    if (typeof text === 'string') return text
+    if (Array.isArray(text)) return text.map(flatten).join('')
+    if (text && typeof text === 'object' && 'text' in text) return flatten(text.text)
+    return ''
+  }
+  return blocks.flatMap(block => block.type === 'paragraph' ? [flatten(block.text)] : [])
+}
+
+function buttonRows(blocks: RichBlocks) {
+  return blocks.flatMap(block => block.type === 'buttons' ? [block.buttons] : [])
+}
+
+function callbackOf(button: object | undefined) {
+  return button && 'callback_data' in button ? String(button.callback_data) : ''
+}
+
+describe('buildPriceRichMessage text', () => {
   it('shows both prices for the default state', () => {
-    const text = buildPriceText(makePrinting(), baseState, { price: 0.4, url: null })
-    expect(text).toContain('<b>Lightning Bolt</b>')
-    expect(text).toContain('Magic 2010 · M10 #146 · normale')
-    expect(text).toMatch(/<b><u>CardMarket<\/u><\/b>: <b>0,25\s€<\/b>/)
-    expect(text).toMatch(/<b><u>CardTrader<\/u><\/b> \(NM, tutte le lingue\): <b>0,40\s€<\/b>/)
-    expect(text).not.toContain('non filtrabile')
+    const lines = linesOf(blocksOf(makePrinting(), baseState, { price: 0.4, url: null }))
+    expect(lines[0]).toContain('Lightning Bolt')
+    expect(lines[1]).toBe('Magic 2010 · M10 #146 · normale')
+    expect(lines[2]).toMatch(/^CardMarket: 0,25\s€$/)
+    expect(lines[3]).toMatch(/^CardTrader \(NM, tutte le lingue\): 0,40\s€$/)
   })
 
   it('uses the foil price and says the finish', () => {
-    const text = buildPriceText(makePrinting(), { ...baseState, foil: true }, null)
-    expect(text).toContain('M10 #146 · foil')
-    expect(text).toMatch(/<b><u>CardMarket<\/u><\/b>: <b>1,50\s€<\/b>/)
+    const lines = linesOf(blocksOf(makePrinting(), { ...baseState, foil: true }))
+    expect(lines[1]).toContain('M10 #146 · foil')
+    expect(lines[2]).toMatch(/^CardMarket: 1,50\s€$/)
   })
 
   it('notes that CardMarket cannot be filtered by language', () => {
-    const text = buildPriceText(makePrinting(), { ...baseState, language: 'it' }, { price: 0.9, url: null })
-    expect(text).toContain('(non filtrabile per lingua)')
-    expect(text).toContain('<b><u>CardTrader</u></b> (NM, italiano)')
+    const lines = linesOf(blocksOf(makePrinting(), { ...baseState, language: 'it' }, { price: 0.9, url: null }))
+    expect(lines[2]).toContain('(non filtrabile per lingua)')
+    expect(lines[3]).toContain('CardTrader (NM, italiano)')
   })
 
   it('reports missing prices without a number', () => {
     const printing = makePrinting({ cardmarketPrice: null })
-    const text = buildPriceText(printing, baseState, { price: null, url: null })
-    expect(text).toContain('<b><u>CardMarket</u></b>: non disponibile')
-    expect(text).toContain('nessuna offerta')
+    const lines = linesOf(blocksOf(printing, baseState, { price: null, url: null }))
+    expect(lines[2]).toBe('CardMarket: non disponibile')
+    expect(lines[3]).toContain('nessuna offerta')
   })
 
   it('says CardTrader is unavailable when it could not be queried', () => {
-    const text = buildPriceText(makePrinting(), baseState, null)
-    expect(text).toContain('<b><u>CardTrader</u></b> (NM, tutte le lingue): non disponibile')
+    expect(linesOf(blocksOf())[3]).toBe('CardTrader (NM, tutte le lingue): non disponibile')
   })
 
   it('says CardTrader is being checked while it is still pending', () => {
-    const text = buildPriceText(makePrinting(), baseState, 'pending')
-    expect(text).toContain('<b><u>CardTrader</u></b> (NM, tutte le lingue): controllo in corso')
-  })
-
-  it('escapes HTML in card and set names', () => {
-    const text = buildPriceText(makePrinting({ name: 'Fire <&> Ice' }), baseState, null)
-    expect(text).toContain('Fire &lt;&amp;&gt; Ice')
+    expect(linesOf(blocksOf(makePrinting(), baseState, 'pending'))[3]).toContain('controllo in corso')
   })
 })
 
-describe('buildPriceKeyboard', () => {
+describe('buildPriceRichMessage filters', () => {
+  function filterTexts(printing = makePrinting(), state = baseState) {
+    return (buttonRows(blocksOf(printing, state))[0] ?? []).map(button => String(button.text))
+  }
+
+  it('puts the languages and the foil toggle in the first buttons block', () => {
+    const texts = filterTexts()
+    expect(texts).toHaveLength(4)
+    expect(texts[3]).toContain('Foil')
+  })
+
   it('marks the active language and keeps the others pressable', () => {
-    const keyboard = buildPriceKeyboard(makePrinting(), { ...baseState, language: 'it' }, null)
-    const texts = buttonTexts(keyboard)
-    expect(texts.some(text => text.startsWith('✅') && text.includes('ITA'))).toBe(true)
+    const texts = filterTexts(makePrinting(), { ...baseState, language: 'it' })
     expect(texts.filter(text => text.startsWith('✅'))).toHaveLength(1)
-  })
-
-  it('puts the languages and the foil toggle in the first row', () => {
-    const keyboard = buildPriceKeyboard(makePrinting(), baseState, null)
-    const firstRow = keyboard.inline_keyboard[0]?.map(button => button.text) ?? []
-    expect(firstRow).toHaveLength(4)
-    expect(firstRow[3]).toContain('Foil')
-  })
-
-  it('puts the wanted-card action below the filters and above the links', () => {
-    const rows = buildPriceKeyboard(makePrinting(), baseState, null).inline_keyboard
-    expect(rows[1]?.[0]?.text).toContain('cercate')
-    expect(rows[2]?.map(button => button.text)).toEqual(['CardMarket', 'Scryfall'])
+    expect(texts.some(text => text.startsWith('✅') && text.includes('ITA'))).toBe(true)
   })
 
   it('has "Tutte" active in the default state', () => {
-    const keyboard = buildPriceKeyboard(makePrinting(), baseState, null)
-    const active = buttonTexts(keyboard).filter(text => text.startsWith('✅'))
+    const active = filterTexts().filter(text => text.startsWith('✅'))
     expect(active).toHaveLength(1)
     expect(active[0]).toContain('Tutte')
   })
 
   it('flips the foil flag when the toggle is pressed and keeps the language', () => {
-    const keyboard = buildPriceKeyboard(makePrinting(), { ...baseState, language: 'en' }, null)
-    const toggle = keyboard.inline_keyboard.flat().find(button => button.text.includes('Foil'))
-    const data = toggle && 'callback_data' in toggle ? toggle.callback_data : ''
-    expect(decodePriceState(data)).toEqual({ scryfallId: ID, language: 'en', foil: true })
-  })
-
-  it('offers to save the printing as a wanted card with the current filters', () => {
-    const keyboard = buildPriceKeyboard(makePrinting(), { ...baseState, language: 'it', foil: true }, null)
-    const add = keyboard.inline_keyboard.flat().find(button => button.text.includes('cercate'))
-    const data = add && 'callback_data' in add ? add.callback_data : ''
-    expect(decodeWantState(data)).toEqual({ scryfallId: ID, language: 'it', foil: true })
+    const row = buttonRows(blocksOf(makePrinting(), { ...baseState, language: 'en' }))[0] ?? []
+    const toggle = row.find(button => String(button.text).includes('Foil'))
+    expect(decodePriceState(callbackOf(toggle))).toEqual({ scryfallId: ID, language: 'en', foil: true })
   })
 
   it('hides the foil toggle when the finish cannot be chosen', () => {
-    const keyboard = buildPriceKeyboard(makePrinting({ finishes: ['nonfoil'] }), baseState, null)
-    expect(buttonTexts(keyboard).some(text => text.includes('Foil'))).toBe(false)
+    const texts = filterTexts(makePrinting({ finishes: ['nonfoil'] }))
+    expect(texts.some(text => text.includes('Foil'))).toBe(false)
   })
 
-  it('adds the CardTrader link only when it is known', () => {
-    const without = buttonTexts(buildPriceKeyboard(makePrinting(), baseState, null))
-    const withLink = buttonTexts(buildPriceKeyboard(makePrinting(), baseState, 'https://www.cardtrader.com/en/cards/1'))
-    expect(without).not.toContain('CardTrader')
-    expect(withLink).toContain('CardTrader')
-    expect(withLink).toContain('Scryfall')
+  it('has no filters in the detail kind', () => {
+    const rows = buttonRows(blocksOf(makePrinting(), baseState, null, 'detail'))
+    expect(rows).toHaveLength(1)
+    expect(rows[0]?.map(button => button.text)).toEqual(['CardMarket', 'Scryfall'])
   })
 })
 
-describe('buildPriceKeyboard for a card already among the wanted ones', () => {
-  function rowsOf(printing = makePrinting(), state = baseState) {
-    return buildPriceKeyboard(printing, state, null, true).inline_keyboard
-  }
+describe('buildPriceRichMessage store links', () => {
+  it('adds the CardTrader link only when it is known', () => {
+    const links = (cardtrader: Cardtrader) =>
+      buttonRows(blocksOf(makePrinting(), baseState, cardtrader)).at(-1)?.map(button => button.text)
+    expect(links(null)).toEqual(['CardMarket', 'Scryfall'])
+    expect(links('pending')).toEqual(['CardMarket', 'Scryfall'])
+    expect(links({ price: 1, url: 'https://www.cardtrader.com/en/cards/1' }))
+      .toEqual(['CardMarket', 'CardTrader', 'Scryfall'])
+  })
+})
 
-  function dataOf(button: { text: string } | undefined) {
-    return button && 'callback_data' in button ? String(button.callback_data) : ''
+describe('buildWantedKeyboard', () => {
+  it('offers to save the printing as a wanted card with the current filters', () => {
+    const keyboard = buildWantedKeyboard(makePrinting(), { ...baseState, language: 'it', foil: true })
+    expect(keyboard.inline_keyboard).toHaveLength(1)
+    const add = keyboard.inline_keyboard.flat().find(button => button.text.includes('cercate'))
+    expect(decodeWantState(callbackOf(add))).toEqual({ scryfallId: ID, language: 'it', foil: true })
+  })
+})
+
+describe('buildWantedKeyboard for a card already among the wanted ones', () => {
+  function rowsOf(printing = makePrinting(), state = baseState) {
+    return buildWantedKeyboard(printing, state, true).inline_keyboard
   }
 
   it('says the card is already there instead of offering to add it', () => {
@@ -232,19 +252,19 @@ describe('buildPriceKeyboard for a card already among the wanted ones', () => {
 
   it('puts found and remove side by side under the label', () => {
     const rows = rowsOf()
-    expect(rows[1]?.[0]?.text).toContain('già presente')
-    expect(rows[2]?.map(button => button.text.replace(/^\S+\s/, ''))).toEqual(['Segna come trovata', 'Rimuovi'])
+    expect(rows[0]?.[0]?.text).toContain('già presente')
+    expect(rows[1]?.map(button => button.text.replace(/^\S+\s/, ''))).toEqual(['Segna come trovata', 'Rimuovi'])
   })
 
   it('acts on the finish actually priced, also for a foil-only printing', () => {
     const foilOnly = makePrinting({ finishes: ['foil'] })
-    const actionRow = rowsOf(foilOnly, { ...baseState, language: 'it' })[2]
-    expect(decodeFoundState(dataOf(actionRow?.[0]))).toEqual({ scryfallId: ID, language: 'it', foil: true })
-    expect(decodeRemoveState(dataOf(actionRow?.[1]))).toEqual({ scryfallId: ID, language: 'it', foil: true })
+    const actionRow = rowsOf(foilOnly, { ...baseState, language: 'it' })[1]
+    expect(decodeFoundState(callbackOf(actionRow?.[0]))).toEqual({ scryfallId: ID, language: 'it', foil: true })
+    expect(decodeRemoveState(callbackOf(actionRow?.[1]))).toEqual({ scryfallId: ID, language: 'it', foil: true })
   })
 
   it('keeps the add button when the card is not wanted yet', () => {
-    const texts = buildPriceKeyboard(makePrinting(), baseState, null).inline_keyboard.flat()
+    const texts = buildWantedKeyboard(makePrinting(), baseState).inline_keyboard.flat()
       .map(button => button.text)
     expect(texts.some(text => text.includes('Aggiungi alle mie carte cercate'))).toBe(true)
     expect(texts.some(text => text.includes('Rimuovi'))).toBe(false)
@@ -275,29 +295,15 @@ describe('cardmarketUrlFor', () => {
   })
 })
 
-describe('buildPriceRichMessage', () => {
-  const state: PriceState = { scryfallId: ID, language: 'it', foil: false }
-
-  it('puts the card art first and the store links in a buttons block', () => {
-    const printing = makePrinting({
-      imageUrl: 'https://img.test/a.jpg',
-      cardmarketUrl: 'https://cm.test/p?x=1'
-    })
-    const blocks = buildPriceRichMessage(printing, state, { price: 2, url: 'https://ct.test' }).blocks ?? []
-
-    expect(blocks[0]).toMatchObject({ type: 'photo' })
-    expect(blocks.at(-1)).toEqual({
-      type: 'buttons',
-      buttons: [
-        { text: 'CardMarket', url: 'https://cm.test/p?x=1&language=5' },
-        { text: 'CardTrader', url: 'https://ct.test' },
-        { text: 'Scryfall', url: printing.scryfallUrl }
-      ]
-    })
+describe('buildPriceRichMessage art', () => {
+  it('puts the card art first in the detail kind only', () => {
+    const printing = makePrinting({ imageUrl: 'https://img.test/a.jpg' })
+    expect(blocksOf(printing, baseState, null, 'detail')[0]).toMatchObject({ type: 'photo' })
+    expect(blocksOf(printing, baseState, null, 'inline').some(block => block.type === 'photo')).toBe(false)
   })
 
   it('has no photo block without art', () => {
-    const blocks = buildPriceRichMessage(makePrinting({ imageUrl: null }), state, null).blocks ?? []
+    const blocks = blocksOf(makePrinting({ imageUrl: null }), baseState, null, 'detail')
     expect(blocks.some(block => block.type === 'photo')).toBe(false)
   })
 })

@@ -119,7 +119,7 @@ async function buildRowDetail(row: WantedListRow, page: number): Promise<View> {
     const cardtrader = await fetchCardtrader(printing, state)
 
     const withArt = { ...printing, imageUrl: printing.imageUrl ?? row.image_url }
-    return { rich: buildPriceRichMessage(withArt, state, cardtrader), keyboard }
+    return { rich: buildPriceRichMessage(withArt, state, cardtrader, 'detail'), keyboard }
   } catch (err) {
     console.error('/cercate price lookup failed:', err)
     return fallback

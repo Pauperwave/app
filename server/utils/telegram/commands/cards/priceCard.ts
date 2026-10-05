@@ -1,13 +1,11 @@
 // server\utils\telegram\commands\cards\priceCard.ts
 import { InlineKeyboard } from 'grammy'
-import type { InputRichMessage } from 'grammy/types'
+import type { InputMessageContent } from 'grammy/types'
 import { isFoilOnlyPrinting } from '#shared/utils/wantedCards/wantedCardRow'
-import { escapeHtml } from '../../html'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
 // Pure part of /prezzo: the filter state carried in callback_data, the inline result of each
-// printing and the message built from them. Messages are HTML: an inline message can't be a rich
-// message, and plain HTML text is edited the same way whoever sent it.
+// printing and the rich message built from them.
 
 export type PriceLanguage = 'all' | 'it' | 'en'
 
@@ -163,14 +161,6 @@ export function cardmarketPriceOf(printing: PricePrinting, foil: boolean): numbe
   return foil ? printing.cardmarketFoilPrice : printing.cardmarketPrice
 }
 
-// The store names stand out in the message, bold and underlined
-const STORE_NAME_CARDMARKET = '<b><u>CardMarket</u></b>'
-const STORE_NAME_CARDTRADER = '<b><u>CardTrader</u></b>'
-
-function formatPrice(price: number | null, emptyText: string): string {
-  return price === null ? emptyText : `<b>${euroFormatter.format(price)}</b>`
-}
-
 // Cheapest printing first, printings with no CardMarket price last (ties keep Scryfall's order)
 export function sortByCardmarketPrice(printings: PricePrinting[]): PricePrinting[] {
   const rank = (printing: PricePrinting) => printing.cardmarketPrice ?? Number.POSITIVE_INFINITY
@@ -201,91 +191,58 @@ function cardtraderCondition(state: PriceState): string {
   return `(NM, ${LANGUAGE_NAMES[state.language]})`
 }
 
-export function buildPriceText(
+// Keyboard under the price message. The language and foil filters live inside the rich message;
+// this one carries the wanted-card actions. `wanted`: the card is already among the associate's
+// wanted ones, so the add button gives way to an "already there" label with "found" and "remove"
+// next to it.
+export function buildWantedKeyboard(
   printing: PricePrinting,
   state: PriceState,
-  cardtrader: PriceCardtraderState
-): string {
-  const foil = effectiveFoil(printing, state)
-  const finish = foil ? 'foil' : 'normale'
-
-  const cardmarketLine = `${STORE_NAME_CARDMARKET}: `
-    + formatPrice(cardmarketPriceOf(printing, foil), 'non disponibile')
-    + cardmarketNote(state)
-
-  const cardtraderLabel = `${STORE_NAME_CARDTRADER} ${cardtraderCondition(state)}`
-  let cardtraderLine = `${cardtraderLabel}: non disponibile`
-  if (cardtrader === 'pending') {
-    cardtraderLine = `${cardtraderLabel}: controllo in corso…`
-  } else if (cardtrader) {
-    cardtraderLine = `${cardtraderLabel}: ${formatPrice(cardtrader.price, 'nessuna offerta')}`
-  }
-
-  return [
-    `${ICONS.card} <b>${escapeHtml(printing.name)}</b>`,
-    `${escapeHtml(printing.setName)} · ${printing.set.toUpperCase()} #${printing.collectorNumber} · ${finish}`,
-    cardmarketLine,
-    cardtraderLine
-  ].join('\n')
-}
-
-// `wanted`: the card is already among the associate's wanted ones, so the add button gives way to a
-// "already there" label with "found" and "remove" next to it
-export function buildPriceKeyboard(
-  printing: PricePrinting,
-  state: PriceState,
-  cardtraderUrl: string | null,
   wanted = false
 ): InlineKeyboard {
-  const keyboard = new InlineKeyboard()
   // The wanted row is looked up by the finish actually priced, which a foil-only printing forces
   const wantState = { ...state, foil: effectiveFoil(printing, state) }
 
-  for (const language of LANGUAGES) {
-    const active = state.language === language
-    keyboard.text(
-      `${active ? `${ICONS.success} ` : ''}${LANGUAGE_LABELS[language]}`,
-      encodePriceState({ ...state, language })
-    )
-  }
-
-  if (canToggleFoil(printing)) {
-    keyboard.text(
-      `${ICONS.foil} Foil: ${state.foil ? 'sì' : 'no'}`,
-      encodePriceState({ ...state, foil: !state.foil })
-    )
-  }
-
-  if (wanted) {
-    // The label is a button too: pressing it explains, through the add handler's own toast
-    keyboard.row().text(
-      `${ICONS.success} Carta già presente nelle tue carte cercate`,
-      encodeWantState(wantState)
-    )
-    keyboard.row()
-      .text(`${ICONS.found} Segna come trovata`, encodeFoundState(wantState))
-      .text(`${ICONS.trash} Rimuovi`, encodeRemoveState(wantState))
-  } else {
+  if (!wanted) {
     // Saves this printing with the chosen language and finish as a wanted card
-    keyboard.row().text(`${ICONS.wanted} Aggiungi alle mie carte cercate`, encodeWantState(state))
+    return new InlineKeyboard().text(`${ICONS.wanted} Aggiungi alle mie carte cercate`, encodeWantState(state))
   }
 
-  keyboard.row()
-  const cardmarketUrl = cardmarketUrlFor(printing, state.language)
-  if (cardmarketUrl) keyboard.url('CardMarket', cardmarketUrl)
-  if (cardtraderUrl) keyboard.url('CardTrader', cardtraderUrl)
-  keyboard.url('Scryfall', printing.scryfallUrl)
-
-  return keyboard
+  return new InlineKeyboard()
+    // The label is a button too: pressing it explains, through the add handler's own toast
+    .text(`${ICONS.success} Carta già presente nelle tue carte cercate`, encodeWantState(wantState))
+    .row()
+    .text(`${ICONS.found} Segna come trovata`, encodeFoundState(wantState))
+    .text(`${ICONS.trash} Rimuovi`, encodeRemoveState(wantState))
 }
 
-// Rich message of the same price view, for a message the bot sends itself (an inline one can't carry
-// the photo): card art on top, store links as buttons inside the message. Callers add the keyboard.
+function filterButtons(printing: PricePrinting, state: PriceState) {
+  const languages = LANGUAGES.map(language => ({
+    text: `${state.language === language ? `${ICONS.success} ` : ''}${LANGUAGE_LABELS[language]}`,
+    callback_data: encodePriceState({ ...state, language })
+  }))
+  if (!canToggleFoil(printing)) return languages
+
+  return [
+    ...languages,
+    { text: `${ICONS.foil} Foil: ${state.foil ? 'sì' : 'no'}`, callback_data: encodePriceState({ ...state, foil: !state.foil }) }
+  ]
+}
+
+// 'inline': the message of an inline result, which can't carry a photo but holds the language and foil
+// filters. 'detail': a message the bot sends itself, with the card art on top and no filters.
+export type PriceMessageKind = 'inline' | 'detail'
+
+// The rich message type an inline result accepts: only already uploaded files, no new ones
+type InlineRichMessage = Extract<InputMessageContent, { rich_message: unknown }>['rich_message']
+
+// Callers add the keyboard (the wanted-card actions)
 export function buildPriceRichMessage(
   printing: PricePrinting,
   state: PriceState,
-  cardtrader: PriceCardtraderState
-): InputRichMessage {
+  cardtrader: PriceCardtraderState,
+  kind: PriceMessageKind
+): InlineRichMessage {
   const foil = effectiveFoil(printing, state)
   const finish = foil ? 'foil' : 'normale'
   const storeName = (name: string) => ({ type: 'bold' as const, text: { type: 'underline' as const, text: name } })
@@ -297,15 +254,16 @@ export function buildPriceRichMessage(
   if (cardtrader === 'pending') cardtraderValue = 'controllo in corso…'
   else if (cardtrader) cardtraderValue = price(cardtrader.price, 'nessuna offerta')
 
-  const buttons = [
-    ...(printing.cardmarketUrl ? [{ text: 'CardMarket', url: cardmarketUrlFor(printing, state.language) ?? printing.cardmarketUrl }] : []),
+  const cardmarketUrl = cardmarketUrlFor(printing, state.language)
+  const storeLinks = [
+    ...(cardmarketUrl ? [{ text: 'CardMarket', url: cardmarketUrl }] : []),
     ...(cardtrader && cardtrader !== 'pending' && cardtrader.url ? [{ text: 'CardTrader', url: cardtrader.url }] : []),
     { text: 'Scryfall', url: printing.scryfallUrl }
   ]
 
   return {
     blocks: [
-      ...(printing.imageUrl
+      ...(kind === 'detail' && printing.imageUrl
         ? [{ type: 'photo' as const, photo: { type: 'photo' as const, media: printing.imageUrl } }]
         : []),
       { type: 'paragraph', text: [`${ICONS.card} `, { type: 'bold', text: printing.name }] },
@@ -318,7 +276,8 @@ export function buildPriceRichMessage(
         type: 'paragraph',
         text: [storeName('CardTrader'), ` ${cardtraderCondition(state)}: `, cardtraderValue]
       },
-      { type: 'buttons', buttons }
+      ...(kind === 'inline' ? [{ type: 'buttons' as const, buttons: filterButtons(printing, state) }] : []),
+      { type: 'buttons', buttons: storeLinks }
     ]
   }
 }
