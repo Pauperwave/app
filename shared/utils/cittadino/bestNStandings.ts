@@ -10,15 +10,18 @@ export interface BestNPlacement {
   playerName: string
   eventUuid: string
   rank: number
+  // Already-scored result (real data); when absent, points come from the rank scale
+  points?: number
 }
 
-// Snake_case row returned by both mock endpoints (server/api/cittadino.ts,
+// Snake_case row returned by the standings endpoints (server/api/cittadino.ts,
 // server/api/standings/[format].get.ts)
 export interface PlacementRow {
   player_uuid: string
   player_name: string
   event_uuid: string
   rank: number
+  points?: number
 }
 
 export function toBestNPlacement(row: PlacementRow): BestNPlacement {
@@ -26,7 +29,8 @@ export function toBestNPlacement(row: PlacementRow): BestNPlacement {
     playerUuid: row.player_uuid,
     playerName: row.player_name,
     eventUuid: row.event_uuid,
-    rank: row.rank
+    rank: row.rank,
+    points: row.points
   }
 }
 
@@ -66,7 +70,7 @@ export function groupBestNByPlayer<
     entry.results.push({
       eventUuid: placement.eventUuid,
       rank: placement.rank,
-      points: pointsForRank(placement.rank),
+      points: placement.points ?? pointsForRank(placement.rank),
       counted: false,
       ...extraFields?.(placement)
     } as Result)

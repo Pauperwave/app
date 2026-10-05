@@ -471,6 +471,7 @@ export interface FormatStandingPlacement {
   playerName: string
   eventUuid: string
   rank: number
+  points?: number
 }
 
 export interface FormatStandingResult {

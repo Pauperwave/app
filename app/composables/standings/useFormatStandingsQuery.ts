@@ -10,6 +10,8 @@ interface FormatStandingsResultRow {
   player_name: string
   event_uuid: string
   rank: number
+  // Present on real data (Commander); mock formats are scored from the rank
+  points?: number
 }
 
 interface FormatStandingsLeagueSummary {
@@ -27,7 +29,7 @@ interface FormatStandingsPayload {
   results: FormatStandingsResultRow[]
 }
 
-// Same points-by-rank scale across every format for a consistent mock; see
+// Points-by-rank scale for the mock formats (real results carry their own points); see
 // server/api/standings/[format].get.ts for why the rest (counted-results, top-cutoff, calendar) is
 // per-league
 const POINTS_BY_RANK = [25, 18, 15, 12, 10, 8, 6, 4, 2]
@@ -40,8 +42,8 @@ function pointsForRank(rank: number): number {
   return POINTS_BY_RANK[rank - 1] ?? MIN_POINTS
 }
 
-// Backed by mock data (no Supabase table yet, see server/api/standings/[format].get.ts), shared by
-// every /standings/<format> page. `selectedLeague` is null until a tab is picked: the endpoint
+// Commander is backed by real data, the other formats by mock data (see
+// server/api/standings/[format].get.ts); shared by every /standings/<format> page. `selectedLeague` is null until a tab is picked: the endpoint
 // resolves a missing/unknown league to the current one (like useCittadinoQuery.ts's
 // `selectedEdition`)
 export function useFormatStandingsQuery(

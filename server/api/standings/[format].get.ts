@@ -1,8 +1,9 @@
 // server\api\standings\[format].get.ts
 
-// Mock data for the per-format standings pages (/standings/commander, /premodern, /pauper), like
-// server/api/cittadino.ts: no Supabase table yet, raw placements only (points and ordering are
-// computed in useFormatStandingsQuery.ts). Replaced by a real query once league data exists.
+// Per-format standings pages (/standings/<format>). Commander reads real data
+// (server/utils/commanderStandings.ts); Premodern and Pauper are still mock, like
+// server/api/cittadino.ts: raw placements only (points and ordering are computed in
+// useFormatStandingsQuery.ts).
 //
 // Unlike Cittadino's yearly editions, each format runs several seasonal leagues a year, and
 // counted-results and top-cutoff are per LEAGUE, not per format. Seeded per league so the matrix is
@@ -207,6 +208,12 @@ function buildLeagueStandings(format: string, league: FormatLeague) {
 
 export default defineEventHandler((event) => {
   const format = getRouterParam(event, 'format') ?? ''
+
+  // Commander is backed by real data; the other formats are still mock
+  if (format === 'commander') {
+    return fetchCommanderStandings(event, String(getQuery(event).league ?? ''))
+  }
+
   const leagues = LEAGUES[format]
 
   if (!leagues) {

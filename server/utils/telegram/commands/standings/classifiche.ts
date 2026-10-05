@@ -40,6 +40,7 @@ interface FormatStandingsPayload {
     player_name: string
     event_uuid: string
     rank: number
+    points?: number
   }[]
 }
 

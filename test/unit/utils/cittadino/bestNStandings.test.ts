@@ -9,6 +9,13 @@ describe('toBestNPlacement', () => {
       playerUuid: 'p1', playerName: 'Alice', eventUuid: 'e1', rank: 2
     })
   })
+
+  it('carries over the already-scored points when present', () => {
+    const row: PlacementRow = {
+      player_uuid: 'p1', player_name: 'Alice', event_uuid: 'e1', rank: 2, points: 22
+    }
+    expect(toBestNPlacement(row).points).toBe(22)
+  })
 })
 
 describe('groupBestNByPlayer', () => {
@@ -30,6 +37,16 @@ describe('groupBestNByPlayer', () => {
     expect(alice.results).toHaveLength(2)
     expect(alice.resultsByEvent.e1?.points).toBe(10)
     expect(alice.resultsByEvent.e2?.points).toBe(5)
+  })
+
+  it('uses the placement\'s own points over the rank scale when provided', () => {
+    const groups = groupBestNByPlayer(
+      [{ playerUuid: 'p1', playerName: 'Alice', eventUuid: 'e1', rank: 1, points: 22 }],
+      pointsForRank,
+      10
+    )
+
+    expect(groups[0]!.resultsByEvent.e1?.points).toBe(22)
   })
 
   it('only counts the best N results, dropping the rest', () => {
