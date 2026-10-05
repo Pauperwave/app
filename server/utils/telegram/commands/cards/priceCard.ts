@@ -268,6 +268,7 @@ export function buildPriceRichMessage(
         : []),
       { type: 'paragraph', text: [`${ICONS.card} `, { type: 'bold', text: printing.name }] },
       { type: 'paragraph', text: `${printing.setName} · ${printing.set.toUpperCase()} #${printing.collectorNumber} · ${finish}` },
+      ...(kind === 'inline' ? [{ type: 'buttons' as const, buttons: filterButtons(printing, state) }] : []),
       {
         type: 'paragraph',
         text: [storeName('CardMarket'), ': ', price(cardmarketPriceOf(printing, foil), 'non disponibile'), cardmarketNote(state)]
@@ -276,7 +277,6 @@ export function buildPriceRichMessage(
         type: 'paragraph',
         text: [storeName('CardTrader'), ` ${cardtraderCondition(state)}: `, cardtraderValue]
       },
-      ...(kind === 'inline' ? [{ type: 'buttons' as const, buttons: filterButtons(printing, state) }] : []),
       { type: 'buttons', buttons: storeLinks }
     ]
   }
