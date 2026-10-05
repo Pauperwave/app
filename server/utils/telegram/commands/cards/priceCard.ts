@@ -51,6 +51,8 @@ export const WANT_CALLBACK_PREFIX = 'prw:'
 export const FOUND_CALLBACK_PREFIX = 'prf:'
 export const REMOVE_CALLBACK_PREFIX = 'prd:'
 export const PRICE_INLINE_PREFIX = '€'
+// Demo: the same search as a gallery of big card images, whose pick posts the same price message
+export const PRICE_GALLERY_PREFIX = '€€'
 
 const LANGUAGES: PriceLanguage[] = ['all', 'it', 'en']
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/

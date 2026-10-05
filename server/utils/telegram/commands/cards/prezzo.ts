@@ -2,7 +2,7 @@
 import type { Bot, Context } from 'grammy'
 import { InlineKeyboard } from 'grammy'
 import type { CommandGroup } from '@grammyjs/commands'
-import type { InlineQueryResultArticle } from 'grammy/types'
+import type { InlineQueryResultArticle, InlineQueryResultPhoto } from 'grammy/types'
 import type { ScryfallCard } from '#shared/types/scryfall'
 
 import { answerEditError } from '../callbackErrors'
@@ -11,6 +11,7 @@ import { registerDeepLink } from '../../deepLinks'
 import { findActiveWantedCard } from './wantedLookup'
 import {
   PRICE_CALLBACK_PREFIX,
+  PRICE_GALLERY_PREFIX,
   PRICE_INLINE_PREFIX,
   buildInlineDescription,
   buildInlineTitle,
@@ -144,14 +145,49 @@ async function handlePriceNameReply(ctx: Context, next: () => Promise<void>) {
   await offerPrintingPicker(ctx, text)
 }
 
+// One inline result per printing: an article with a small thumbnail, or in the gallery demo a
+// photo result (big image), which Telegram lays out as a grid. Both post the same price message.
+function buildInlineResult(printing: PricePrinting, gallery: boolean) {
+  const state: PriceState = { scryfallId: printing.id, language: 'all', foil: false }
+  const common = {
+    id: printing.id,
+    title: buildInlineTitle(printing),
+    description: buildInlineDescription(printing),
+    input_message_content: {
+      rich_message: buildPriceRichMessage(printing, state, 'pending', 'inline')
+    },
+    reply_markup: buildWantedKeyboard(printing, state)
+  }
+
+  if (!gallery) {
+    const article: InlineQueryResultArticle = {
+      type: 'article',
+      thumbnail_url: printing.thumbnailUrl ?? undefined,
+      ...common
+    }
+    return article
+  }
+
+  if (!printing.imageUrl) return null
+  const photo: InlineQueryResultPhoto = {
+    type: 'photo',
+    photo_url: printing.imageUrl,
+    thumbnail_url: printing.thumbnailUrl ?? printing.imageUrl,
+    ...common
+  }
+  return photo
+}
+
 // Inline mode, "€ <name>": one result per printing. The posted message already carries the
 // CardMarket price (known from Scryfall) and the filter buttons; CardTrader is fetched on a press,
-// since an inline result can't wait for it.
+// since an inline result can't wait for it. "€€ <name>" is the gallery demo.
 async function handlePriceInlineQuery(ctx: Context, next: () => Promise<void>) {
   const raw = ctx.inlineQuery?.query ?? ''
   if (!raw.startsWith(PRICE_INLINE_PREFIX)) return next()
 
-  const query = raw.slice(PRICE_INLINE_PREFIX.length).trim()
+  const gallery = raw.startsWith(PRICE_GALLERY_PREFIX)
+  const prefix = gallery ? PRICE_GALLERY_PREFIX : PRICE_INLINE_PREFIX
+  const query = raw.slice(prefix.length).trim()
   if (query.length < MIN_QUERY_LENGTH) {
     await ctx.answerInlineQuery([], { cache_time: 0 })
     return
@@ -164,23 +200,10 @@ async function handlePriceInlineQuery(ctx: Context, next: () => Promise<void>) {
     console.error('Price inline search failed:', err)
   }
 
-  const results: InlineQueryResultArticle[] = printings
+  const results = printings
+    .map(printing => buildInlineResult(printing, gallery))
+    .filter(result => result !== null)
     .slice(0, MAX_INLINE_RESULTS)
-    .map((printing) => {
-      const state: PriceState = { scryfallId: printing.id, language: 'all', foil: false }
-
-      return {
-        type: 'article',
-        id: printing.id,
-        title: buildInlineTitle(printing),
-        description: buildInlineDescription(printing),
-        thumbnail_url: printing.thumbnailUrl ?? undefined,
-        input_message_content: {
-          rich_message: buildPriceRichMessage(printing, state, 'pending', 'inline')
-        },
-        reply_markup: buildWantedKeyboard(printing, state)
-      }
-    })
 
   await ctx.answerInlineQuery(results, { cache_time: results.length ? INLINE_CACHE_SECONDS : 0 })
 }
