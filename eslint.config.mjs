@@ -1,6 +1,7 @@
 // @ts-check
 import withNuxt from './.nuxt/eslint.config.mjs'
 import stylistic from '@stylistic/eslint-plugin'
+import betterTailwindcss from 'eslint-plugin-better-tailwindcss'
 
 export default withNuxt(
   {
@@ -76,6 +77,22 @@ export default withNuxt(
       // (Vue 3.5 reactive props destructure); this rule predates that
       // pattern and misfires even when a default is present.
       'vue/require-default-prop': 'off'
+    }
+  },
+  {
+    plugins: {
+      'better-tailwindcss': betterTailwindcss
+    },
+    files: ['**/*.vue', '**/*.ts'],
+    rules: {
+      // `size-[18px]` is written `size-4.5`
+      'better-tailwindcss/enforce-canonical-classes': 'error'
+    },
+    settings: {
+      'better-tailwindcss': {
+        entryPoint: 'app/assets/css/main.css',
+        rootFontSize: 16
+      }
     }
   },
   {

@@ -108,6 +108,7 @@
     "changelogen": "^0.6.2",
     "cross-env": "^10.1.0",
     "eslint": "^10.11.0",
+    "eslint-plugin-better-tailwindcss": "^4.9.0",
     "fallow": "^3.30.0",
     "happy-dom": "^20.14.5",
     "rimraf": "^6.1.3",
