@@ -27,7 +27,7 @@ Rules:
 | `wantedCards/useWantedCardsQuery.ts` | `['wanted-cards']` | `useWantedCardsMutations.ts` |
 | `associates/useAssociatesQuery.ts` | `['associates']` | `useAssociatesMutations.ts` |
 | `associates/useAssociateRenewalsQuery.ts` | `['associate-renewals']` | — (written via `associates/renew.post.ts`/`approve-renewal.post.ts`, invalidates this key) |
-| `associates/useAssociateTelegramUsernamesQuery.ts` | `['associate-telegram-usernames']` | read-only (kept fresh by `useAssociateTelegramLinksRealtime.ts`; staff-only RLS, everyone else gets an empty map) |
+| `associates/useAssociateTelegramUsernamesQuery.ts` | `['associate-telegram-usernames']` | read-only (kept fresh by `useAssociateTelegramLinksRealtime.ts`; staff-only RLS; disabled for everyone else, so anon on the public rankings never queries the table) |
 | `associates/useMyTelegramLinkQuery.ts` | `['telegram-my-link']` | read-only (`GET /api/telegram/my-link`, for `/telegram-bot`; excluded from persistence, per-user) |
 | `associates/useAssociateMembershipEventsQuery.ts` | `['associate-membership-events', associateUuid]` | — (append-only log, written as a side effect of other associate mutations) |
 | `associates/useAssociatesGeocodesQuery.ts` | `['associate-geocodes']` | read-only (written by `scripts/geocode-associates.mjs`, not from the app) |
