@@ -5,7 +5,7 @@
 // survive h3/Nitro's request dispatcher.
 export const HOST_ROUTE_MAP: Record<string, string> = {
   'cittadino.pauperwave.org': 'https://app.pauperwave.org/classifiche/cittadino',
-  'commander.pauperwave.org': 'https://app.pauperwave.org/classifiche/commander',
+  'edh.pauperwave.org': 'https://app.pauperwave.org/classifiche/commander',
   'premodern.pauperwave.org': 'https://app.pauperwave.org/classifiche/premodern',
   'pauper.pauperwave.org': 'https://app.pauperwave.org/classifiche/pauper',
   'tesseramento.pauperwave.org': 'https://app.pauperwave.org/tesseramento',

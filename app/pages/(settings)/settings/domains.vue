@@ -50,7 +50,7 @@ const domains = computed<DomainRow[]>(() => [
   { host: 'pauperwave.org', purpose: t('settings.domains.rows.root'), status: 'planned', route: null },
   { host: 'app.pauperwave.org', purpose: t('settings.domains.rows.app'), status: 'live', route: '/' },
   { host: 'cittadino.pauperwave.org', purpose: t('settings.domains.rows.cittadino'), status: 'live', route: '/classifiche/cittadino' },
-  { host: 'commander.pauperwave.org', purpose: t('settings.domains.rows.commander'), status: 'live', route: '/classifiche/commander' },
+  { host: 'edh.pauperwave.org', purpose: t('settings.domains.rows.commander'), status: 'live', route: '/classifiche/commander' },
   { host: 'premodern.pauperwave.org', purpose: t('settings.domains.rows.premodern'), status: 'live', route: '/classifiche/premodern' },
   { host: 'pauper.pauperwave.org', purpose: t('settings.domains.rows.pauper'), status: 'live', route: '/classifiche/pauper' },
   { host: 'calendario.pauperwave.org', purpose: t('settings.domains.rows.calendario'), status: 'live', route: '/calendario' },

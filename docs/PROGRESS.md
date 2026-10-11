@@ -138,7 +138,7 @@ Mappa decisa il 2026-08-09, **corretta il 2026-08-10** sulla colonna Auth delle 
 |---|---|---|
 | `app.pauperwave.org` | il gestionale, cioè questa applicazione | sì |
 | `cittadino.pauperwave.org` | classifica del Campionato Cittadino, sola lettura | no |
-| `commander.pauperwave.org` | classifica Commander, sola lettura | no |
+| `edh.pauperwave.org` | classifica Commander, sola lettura (rinominato da `commander.` il 2026-10-11) | no |
 | `premodern.pauperwave.org` | classifica Premodern, sola lettura | no |
 | `pauper.pauperwave.org` | classifica Pauper, sola lettura | no |
 | `eventi.pauperwave.org` | calendario eventi pubblico, con ICS scaricabile (`docs/TODO.md`) | no |
