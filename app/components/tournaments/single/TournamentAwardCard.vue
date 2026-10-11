@@ -62,7 +62,7 @@ const statLabel = computed(() =>
 
     <div class="absolute inset-0 bg-linear-to-b from-black/70 via-transparent to-black/90" />
 
-    <div class="absolute top-3 left-3 right-3 space-y-1">
+    <div class="absolute top-3 inset-x-3  space-y-1">
       <div class="inline-flex items-center gap-1.5 bg-black/60 rounded-full px-2 py-1">
         <UIcon
           :name="icon"
@@ -76,7 +76,7 @@ const statLabel = computed(() =>
       </p>
     </div>
 
-    <div class="absolute bottom-0 left-0 right-0 flex flex-col gap-1 p-3 pb-7">
+    <div class="absolute bottom-0 inset-x-0  flex flex-col gap-1 p-3 pb-7">
       <AssociateTag
         v-for="winner in winners"
         :key="winner.playerUuid"

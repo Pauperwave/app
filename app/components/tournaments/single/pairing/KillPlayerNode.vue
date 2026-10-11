@@ -74,7 +74,7 @@ const hasStats = computed(() => data.killCount > 0 || data.deathCount > 0)
     id="source"
     type="source"
     :position="Position.Bottom"
-    class="w-3! h-3! bg-error-500! border-2! border-white!"
+    class="size-3!  bg-error-500! border-2! border-white!"
   />
 
   <div
@@ -82,7 +82,7 @@ const hasStats = computed(() => data.killCount > 0 || data.deathCount > 0)
     :class="selected ? 'border-primary-500 shadow-primary-500/20 shadow-lg' : 'border-default hover:border-muted'"
     :style="{ width: data.width }"
   >
-    <div class="flex items-center gap-2 px-2 py-2">
+    <div class="flex items-center gap-2 p-2 ">
       <UAvatar :src="generatePlayerAvatar(data.player.value)" :alt="data.player.label" />
       <p class="text-xs font-semibold whitespace-nowrap">
         {{ data.player.label }}
@@ -94,6 +94,6 @@ const hasStats = computed(() => data.killCount > 0 || data.deathCount > 0)
     id="target"
     type="target"
     :position="Position.Top"
-    class="w-3! h-3! bg-neutral-400! border-2! border-white!"
+    class="size-3!  bg-neutral-400! border-2! border-white!"
   />
 </template>

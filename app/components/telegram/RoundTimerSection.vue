@@ -32,10 +32,10 @@ const isRotated = useLocalStorage('telegram-timer-rotated', false)
 
 <template>
   <section class="flex-2 min-h-0 flex flex-col w-full">
-    <div class="relative flex-1 min-h-0 flex items-center justify-center [container-type:size]">
+    <div class="relative flex-1 min-h-0 flex items-center justify-center @container-size">
       <p
-        class="text-[length:min(28vw,10rem)] leading-none font-bold tabular-nums"
-        :class="isRotated && 'portrait:[writing-mode:vertical-rl] portrait:text-[length:min(34cqh,90cqw)]'"
+        class="text-[min(28vw,10rem)] leading-none font-bold tabular-nums"
+        :class="isRotated && 'portrait:[writing-mode:vertical-rl] portrait:text-[min(34cqh,90cqw)]'"
       >
         {{ label }}
       </p>

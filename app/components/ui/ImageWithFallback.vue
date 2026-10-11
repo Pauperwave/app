@@ -15,7 +15,7 @@ const { src, alt, loading = false } = defineProps<Props>()
     v-if="src"
     :src="src"
     :alt="alt"
-    class="w-full h-full object-cover object-top"
+    class="size-full  object-cover object-top"
     loading="lazy"
   >
   <div v-else-if="loading" class="flex items-center justify-center h-full">

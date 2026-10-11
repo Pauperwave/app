@@ -59,7 +59,7 @@ function resetAll() {
             @remove-kill="(killer, victim) => emit('removeKill', killer, victim)"
           />
           <template #fallback>
-            <div class="h-[420px] flex items-center justify-center text-muted">
+            <div class="h-105 flex items-center justify-center text-muted">
               <UIcon :name="ICONS.loading" class="animate-spin size-6" />
             </div>
           </template>

@@ -65,7 +65,7 @@ const columns = computed(() => Math.max(1, Math.ceil(Math.sqrt(pairingsForRound.
     <!-- border-dashed on the grid + each cell: visible construction lines so the layout
          (columns/rows actually assigned) can be inspected directly -->
     <div
-      class="h-full w-full grid gap-2 p-4 border border-dashed border-default"
+      class="size-full  grid gap-2 p-4 border border-dashed border-default"
       :style="{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`, gridAutoRows: '1fr' }"
     >
       <!-- [container-type:size] per cell (not on the page root): cqmin scales to each table's
@@ -86,7 +86,7 @@ const columns = computed(() => Math.max(1, Math.ceil(Math.sqrt(pairingsForRound.
           <span
             v-for="player in tablePlayers(pairing)"
             :key="player.uuid"
-            class="text-[17cqmin] font-semibold leading-tight whitespace-nowrap overflow-hidden text-ellipsis"
+            class="text-[17cqmin] font-semibold leading-tight truncate  "
           >
             {{ player.surname }} <span class="text-muted font-normal">{{ player.initial }}</span>
           </span>

@@ -72,14 +72,14 @@ const lastClickShiftKey = ref(false)
 
         <div
           v-if="!loading && tournament"
-          class="absolute top-1 left-1 flex flex-col items-center justify-center rounded bg-default/90 backdrop-blur-sm border border-default w-8 h-8 shrink-0"
+          class="absolute top-1 left-1 flex flex-col items-center justify-center rounded bg-default/90 backdrop-blur-sm border border-default size-8  shrink-0"
         >
           <span class="text-xs font-bold leading-none">{{ dayPart(tournament.startDate) }}</span>
           <span class="text-[8px] uppercase text-muted">{{ monthPart(tournament.startDate) }}</span>
         </div>
         <USkeleton
           v-else
-          class="absolute top-1 left-1 w-8 h-8 rounded"
+          class="absolute top-1 left-1 size-8  rounded"
           :ui="{ base: 'bg-black' }"
         />
 

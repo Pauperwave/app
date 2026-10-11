@@ -53,7 +53,7 @@ useHead({
 </script>
 
 <template>
-  <div class="h-full w-full flex flex-col gap-2 text-center">
+  <div class="size-full  flex flex-col gap-2 text-center">
     <template v-if="eventTimer.isLoading.value" />
 
     <TelegramRoundTimerSection

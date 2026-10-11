@@ -101,7 +101,7 @@ defineExpose({ focus: () => rootEl.value?.focus() })
           :loading="isLoading"
           size="sm"
         />
-        <div v-else class="h-full w-full flex flex-col items-center justify-center gap-1.5 p-2 text-warning">
+        <div v-else class="size-full  flex flex-col items-center justify-center gap-1.5 p-2 text-warning">
           <UAvatar
             size="lg"
             :src="avatarUrl || generatePlayerAvatar(playerUuid ?? `${name} ${surname}`)"

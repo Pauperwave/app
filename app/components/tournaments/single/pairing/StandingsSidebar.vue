@@ -103,7 +103,7 @@ async function handleCopyStandings() {
                 class="flex items-center justify-center rounded-full font-bold shrink-0"
                 :class="[
                   isTopPlayer(index) ? 'bg-warning/20 text-warning' : 'bg-primary/20 text-primary',
-                  isFullscreen ? 'w-10 h-10 text-xl' : 'w-5 h-5 text-xs'
+                  isFullscreen ? 'size-10  text-xl' : 'size-5  text-xs'
                 ]"
               >
                 {{ index + 1 }}

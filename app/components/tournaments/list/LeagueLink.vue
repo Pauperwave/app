@@ -21,8 +21,8 @@ const { league, leagueUuid } = defineProps<{
     <button
       v-if="league && leagueUuid"
       type="button"
-      class="block w-full text-start p-0 m-0 border-0 bg-transparent leading-4
-        text-xs text-muted hover:text-default cursor-pointer truncate"
+      class="block w-full text-start p-0 m-0 border-0 bg-transparent text-xs/4
+         text-muted hover:text-default cursor-pointer truncate"
       @click.stop="navigateTo(`/leagues/${leagueUuid}`)"
     >
       {{ league }}

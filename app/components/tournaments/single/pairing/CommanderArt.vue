@@ -13,7 +13,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div class="relative h-full w-full overflow-hidden bg-muted">
+  <div class="relative size-full  overflow-hidden bg-muted">
     <ImageWithFallback
       :src="artUrl"
       :alt="t('tournament.single.commanderModal.artAlt', { name: cardName })"
@@ -22,7 +22,7 @@ const { t } = useI18n()
 
     <div v-if="artUrl" class="absolute inset-0 bg-linear-to-b from-transparent to-[#171717]">
       <div
-        class="absolute bottom-0 left-0 right-0 flex items-end justify-between gap-1"
+        class="absolute bottom-0 inset-x-0  flex items-end justify-between gap-1"
         :class="size === 'sm' ? 'p-2' : 'p-3'"
       >
         <h4

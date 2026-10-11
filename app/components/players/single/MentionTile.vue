@@ -49,7 +49,7 @@ const ICON_CLASSES: Record<Props['color'], string> = {
         <p class="text-xs uppercase text-muted">
           {{ label }}
         </p>
-        <p class="text-2xl font-semibold leading-tight">
+        <p class="text-2xl/tight font-semibold ">
           {{ count }}
         </p>
       </div>

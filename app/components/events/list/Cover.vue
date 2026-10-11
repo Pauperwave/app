@@ -66,14 +66,14 @@ async function confirmImage(imageUrl: string, cardName: string | null, artist: s
 
     <div
       v-if="!loading && event"
-      class="absolute top-2 left-2 flex flex-col items-center justify-center rounded-lg bg-default/90 backdrop-blur-sm border border-default w-12 h-12 shrink-0"
+      class="absolute top-2 left-2 flex flex-col items-center justify-center rounded-lg bg-default/90 backdrop-blur-sm border border-default size-12  shrink-0"
     >
       <span class="text-base font-bold leading-none">{{ dayPart(event.startDate) }}</span>
       <span class="text-[10px] uppercase text-muted">{{ monthPart(event.startDate) }}</span>
     </div>
     <USkeleton
       v-else
-      class="absolute top-2 left-2 w-12 h-12 rounded-lg"
+      class="absolute top-2 left-2 size-12  rounded-lg"
       :ui="{ base: 'bg-black' }"
     />
 
@@ -82,7 +82,7 @@ async function confirmImage(imageUrl: string, cardName: string | null, artist: s
          the other missing) -->
     <div
       v-if="!loading && event"
-      class="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2"
+      class="absolute bottom-2 inset-x-2  flex items-center justify-between gap-2"
     >
       <!-- variant="solid": a bare subtle badge on an arbitrary photo isn't legible for every
            status color (see TournamentsListCover.vue). @click.stop because StatusChangeBadge's

@@ -38,7 +38,7 @@ const { t } = useI18n()
           :surname="playerNameParts(seat.player).surname"
           :associate-uuid="seat.player.value"
           size="md"
-          class="min-w-0 text-left break-words"
+          class="min-w-0 text-left wrap-break-word"
         />
         <TelegramStatusIcon :associate-uuid="seat.player.value" />
       </div>

@@ -17,11 +17,11 @@ defineProps<{ event: Event }>()
       format="webp"
       width="768"
       height="384"
-      class="w-full h-full object-cover"
+      class="size-full  object-cover"
     />
     <ImageOffPlaceholder
       v-else
-      class="w-full h-full"
+      class="size-full "
       icon-class="size-12"
     />
 
@@ -38,7 +38,7 @@ defineProps<{ event: Event }>()
       class="absolute top-4 inset-e-4"
     />
 
-    <h2 class="absolute bottom-0 left-0 right-0 p-4 text-xl font-bold text-white truncate">
+    <h2 class="absolute bottom-0 inset-x-0  p-4 text-xl font-bold text-white truncate">
       {{ event.name }}
     </h2>
   </div>

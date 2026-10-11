@@ -71,14 +71,14 @@ const dateRangeTooltip = computed(() => {
       :text="dateRangeTooltip ?? undefined"
       :disabled="!dateRangeTooltip"
     >
-      <div class="absolute top-2 left-2 flex flex-col items-center justify-center rounded-lg bg-default/90 backdrop-blur-sm border border-default w-12 h-12 shrink-0">
+      <div class="absolute top-2 left-2 flex flex-col items-center justify-center rounded-lg bg-default/90 backdrop-blur-sm border border-default size-12  shrink-0">
         <span class="text-base font-bold leading-none">{{ dayPart(chipDate) }}</span>
         <span class="text-[10px] uppercase text-muted">{{ monthPart(chipDate) }}</span>
       </div>
     </UTooltip>
     <USkeleton
       v-else-if="loading"
-      class="absolute top-2 left-2 w-12 h-12 rounded-lg"
+      class="absolute top-2 left-2 size-12  rounded-lg"
       :ui="{ base: 'bg-black' }"
     />
 

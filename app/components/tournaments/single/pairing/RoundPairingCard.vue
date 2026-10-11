@@ -202,7 +202,7 @@ const drawTooltip = computed(() => {
             :surname="playerNameParts(player).surname"
             :associate-uuid="associateUuidFor(player.value)"
             size="md"
-            class="min-w-0 break-words"
+            class="min-w-0 wrap-break-word"
             :class="droppedFor(player.value) && 'opacity-60 line-through'"
           />
           <TelegramStatusIcon :associate-uuid="associateUuidFor(player.value)" />

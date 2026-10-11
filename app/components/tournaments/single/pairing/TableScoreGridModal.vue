@@ -102,7 +102,7 @@ function cellClass(row: number, col: number): string {
                 <div
                   v-if="grid[row]?.[col]"
                   draggable="true"
-                  class="w-full h-full flex items-center gap-1.5 px-1.5 cursor-grab active:cursor-grabbing"
+                  class="size-full  flex items-center gap-1.5 px-1.5 cursor-grab active:cursor-grabbing"
                   @dragstart="handleDragStart(row, col)"
                   @dragend="handleDragEnd"
                 >

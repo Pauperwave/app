@@ -84,11 +84,11 @@ function clear() {
           format="webp"
           width="640"
           height="128"
-          class="w-full h-full object-cover"
+          class="size-full  object-cover"
         />
         <div
           v-else
-          class="w-full h-full flex flex-col items-center justify-center gap-1 text-muted bg-elevated"
+          class="size-full  flex flex-col items-center justify-center gap-1 text-muted bg-elevated"
         >
           <UIcon :name="ICONS.image" class="size-6" />
           <span class="text-sm">{{ t('magic.cardArtPicker.placeholder') }}</span>

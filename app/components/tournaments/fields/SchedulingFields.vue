@@ -36,7 +36,7 @@ function updateTime(
     <div class="flex gap-2">
       <StartDatePickerField
         v-model:start-date="startDate"
-        class="flex-[2]"
+        class="flex-2"
         :label="$t('tournament.addModal.fields.startDate')"
         :formatted-start-date="formattedStartDate"
         :highlighted-dates="highlightedDates"

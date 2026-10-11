@@ -10,7 +10,7 @@ const { value } = defineProps<{ value: boolean }>()
 <template>
   <UBadge
     variant="subtle"
-    class="w-[60px]"
+    class="w-15"
     :color="value ? 'success' : 'error'"
     :icon="value ? ICONS.success : ICONS.clear"
     :label="value ? $t('common.yes') : $t('common.no')"
