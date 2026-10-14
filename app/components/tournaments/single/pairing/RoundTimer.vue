@@ -13,10 +13,7 @@
      click drives the whole sequence.  - Persists phase + start timestamp to localStorage keyed by
      round number, so a refresh resumes exactly where it left off, cascading through any phases that
      fully elapsed while the page was closed. - Supports pause/resume, reset and fullscreen mode. -
-     Emits `expired` once, when the "round" phase ends (turns begins).  TODO: `durationMinutes` is a
-     hardcoded default (75, league's fallback) as there is no per-tournament round-duration column.
-     When this timer must sync with the Telegram app, design the real duration source and sync
-     mechanism there, not just a DB column. -->
+     Emits `expired` once, when the "round" phase ends (turns begins). -->
 <script setup lang="ts">
 const props = defineProps<{
   /** Published with the timer state so the Telegram Mini App can follow it. */
