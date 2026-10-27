@@ -3,6 +3,41 @@
 
 One entry per **notable** commit, newest first, grouped by date. Each entry: the commit subject (gitmoji convention), then what/why bullets. Not every commit gets an entry anymore (see ADR-010 in `PROGRESS.md`) — mechanical ones (`style`, `chore`, trivial `refactor`) are skipped here; the complete raw index (every commit, auto-generated) lives in the root `CHANGELOG.md` via `changelogen`, never edited by hand. This file complements `PROGRESS.md` (curated ADRs and per-area status): the changelog is the annotated commit trail, `PROGRESS.md` is the distilled history — fold important outcomes there, keep the play-by-play here.
 
+## 2026-10-14 — Audit, and the round-timer TODO goes
+
+- `docs(tournaments): 📝 drop the stale round-duration TODO from RoundTimer`: the duration has come from the tournament's `round_duration_minutes` for a while.
+- `docs(audits)`: full application audit (`audits/2026-10-14-full-application-audit.md`): gates, fallow, dependencies, BFF surface, Supabase advisors. Flagged, nothing fixed: unused player write policies on votes/kills/results, anon-executable SECURITY DEFINER RPCs, the `check-associate` email oracle, `cors: true` on `/api/**`, unranged queries on per-event tables.
+- `docs`: test counts in `testing.md`, the standings and notifications rows in `api.md`, the Classifiche notes in `site/README.md` and the data-fetching note in `CLAUDE.md` brought in line with the code.
+
+## 2026-10-11 — Commander ranking on real data, public rankings fixed, the EDH domain
+
+- `feat(standings): ✨ the Commander standings read the real league data, scored from each event's player_score`: `server/utils/commanderStandings.ts` feeds `/standings/commander`; Premodern, Pauper and Cittadino stay on example data.
+- `fix(standings): 🐛 the public rankings no longer query the Telegram links table as anon, which threw permission denied`.
+- `feat(domains): ✨ the Commander ranking moves from commander.pauperwave.org to edh.pauperwave.org`.
+- `build(lint): 🔧 enforce canonical tailwind classes`, then `style(ui)` rewrote the classes in canonical form.
+
+## 2026-10-05 — Bot: rich price and wanted-card messages, 1v1 table card, /sostieni; v0.15.0
+
+- `feat(bot): ✨ the € price message is a rich message with the language and foil buttons inside it`; a card in `/cercate` shows its prices like the € search, with the CardMarket link filtered by language, and opens as a rich message with the art on top and the store links as buttons.
+- `feat(bot): ✨ a 1v1 table is announced and shown as the same card, with the result and timer buttons`; the messages to the other player name who acted (`fix`); the Pauper demo lets you dispute the result as the opponent.
+- `feat(bot): ✨ /dona becomes /sostieni`, with a PayPal button and a button to write to the support.
+- `feat(players): ✨ special mentions count the tournaments won, from one tournament_award_winners view` (ADR-057); `chore(db)` drops `player_vote_decks` and trims `player_stats` to what the statistics tiles use.
+- `feat(turni): ✨ the turns screen shows the players' first names` instead of Io and Avversario.
+- `feat(login): ✨ a phone sees a notice that the dashboard is not optimized for it`, with a "Naviga comunque" button.
+- `feat(wanted-cards): ✨ refresh prices from the context menu acts on the whole selection and shows how many cards`; `feat(commanders): ✨` the commander and deck pages link to the commander's EDHREC page.
+- `chore(release): 🔖 v0.15.0`.
+
+## 2026-10-04 — Bot menzioni/crediti and deploy notice, a refactor sweep with tests; v0.13.0–v0.14.0
+
+- `feat(bot): ✨ /menzioni shows the player's special mentions and /crediti says who made the bot`; `/help` opens on the Tornei section; the commander search needs the `#` prefix; a `t.me` link opens a tournament's detail with the registration button.
+- `feat(bot): ✨ the hidden /demo tries the result entry of Commander and Pauper with example data`.
+- `feat(deploy): ✨ tell the super admins on Telegram when a production deployment finishes` (`server/api/internal/deploy-notice.post.ts`, secret-guarded, production deployments only).
+- `refactor(bot): ♻️ every emoji in the bot's messages and buttons comes from ICONS`, enforced by `chore(scripts): check:emoji`, run in CI.
+- `fix(turni): 🐛 the mini app's clock offset uses the middle of the round trip, not the arrival time`.
+- Refactor sweep, each piece with its own tests: the live Commander standings builder, the commander catalog sync (rules, database access, handler), the Commander result wizard's callbacks, the tesseramento wizard flow, the associates roster filters and page cards, the permissions table, the finance summaries and the rulesets tabs.
+- `ci: 👷 fail the build on a component tag that resolves to nothing` (`check:components`).
+- `chore(release): 🔖 v0.13.0`, `v0.14.0`.
+
 ## 2026-10-03 — Telegram: card prices and wanted cards, the turns Mini App follows the event clock, the bot info page; v0.10.0
 
 - `feat(bot): ✨ /prezzo`: a card's price on CardMarket and CardTrader, picking the printing through the inline mode (`@bot $ card`, one row per printing), with ITA/ENG and foil filters.
