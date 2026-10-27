@@ -48,8 +48,8 @@
 |---|---|---|---|
 | `server/api/check-associate.post.ts` | `POST` | Supabase (real) | Checks if an email exists in `pauperwave_associates` before `login.vue` calls `signInWithOtp`. Predates the BFF pattern above — uses `@supabase/supabase-js`'s `createClient` directly with `useRuntimeConfig(event).supabase.secretKey` instead of `serverSupabaseServiceRole`, since it runs unauthenticated, pre-login (no session for `serverSupabase*` helpers to read). |
 | `server/api/cittadino.ts` | `GET` | Mock | Static placements — no `tournament_standings`-equivalent table exists yet ([issue #2](https://github.com/Pauperwave/app/issues/2)). |
-| `server/api/standings/[format].get.ts` | `GET` | Mock | Same reason as `cittadino.ts` above. |
-| `server/api/notifications.ts` | `GET` | Mock | Hardcoded array of fake notifications — no backing table. |
+| `server/api/standings/[format].get.ts` | `GET` | Mixed | `commander` reads the real league data (`server/utils/commanderStandings.ts`, scored from each event's `player_score`); `premodern` and `pauper` are still mock, for the same reason as `cittadino.ts` above. |
+| `server/api/notifications.ts` | `GET` | Stub | Returns an empty array — no backing table. |
 | `server/api/dev/test-login.post.ts` | `POST` | Supabase (real) | Dev-only (404s in production, `import.meta.dev` compiled away) — mints a real session for a designated test associate so browser automation can reach authenticated routes without a magic-link round trip. |
 | `server/api/telegram/webhook.post.ts` | `POST` | grammY bot | Telegram's webhook target for the bot — see `docs/architecture/telegram-bot.md`. |
 | `server/api/telegram/round-timer.post.ts` | `POST` | Supabase (real) | The event round timer for the turns Mini App: validates Telegram's signed `initData` (`server/utils/telegram/webAppAuth.ts`), resolves the caller's linked associate and live table, returns the `tournament_round_timers` snapshot and the server clock. |
