@@ -35,13 +35,19 @@ const associateTypeOptions = useAssociateTypeOptions()
 </script>
 
 <template>
-  <UPageCard v-if="submitted" :title="$t('tesseramento.successTitle')">
+  <UPageCard v-if="submitted">
+    <template #title>
+      <h1>{{ $t('tesseramento.successTitle') }}</h1>
+    </template>
     <p class="text-muted">
       {{ $t('tesseramento.successDescription') }}
     </p>
   </UPageCard>
 
-  <UPageCard v-else-if="kind === 'renewal'" :title="$t('tesseramento.renewal.title')">
+  <UPageCard v-else-if="kind === 'renewal'">
+    <template #title>
+      <h1>{{ $t('tesseramento.renewal.title') }}</h1>
+    </template>
     <TesseramentoRenewalStep
       :first-name="renewalName.firstName"
       :last-name="renewalName.lastName"
@@ -50,13 +56,19 @@ const associateTypeOptions = useAssociateTypeOptions()
     />
   </UPageCard>
 
-  <UPageCard v-else-if="kind === 'blocked'" :title="$t('tesseramento.blockedTitle')">
+  <UPageCard v-else-if="kind === 'blocked'">
+    <template #title>
+      <h1>{{ $t('tesseramento.blockedTitle') }}</h1>
+    </template>
     <p class="text-muted">
       {{ $t('tesseramento.blockedDescription') }}
     </p>
   </UPageCard>
 
-  <UPageCard v-else :title="$t('tesseramento.title')">
+  <UPageCard v-else>
+    <template #title>
+      <h1>{{ $t('tesseramento.title') }}</h1>
+    </template>
     <!-- disabled: a purely visual progress indicator: even with `linear`, Reka UI's Stepper
          lets a click jump forward one step or back to any completed one, bypassing goNext()'s
          per-step validation. Navigation is only driven by currentStep from the Avanti/Indietro
