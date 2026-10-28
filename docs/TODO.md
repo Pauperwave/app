@@ -19,3 +19,13 @@ Reported as "3 secondi di ritardo nel timer". Not reproduced at runtime; the lik
 
 - **Reproduce first**: run a round with the organizer's timer and the Telegram Mini App side by side and measure the gap.
 - **Publish path**: `useRoundTimerEngine.ts` sends an integer `elapsedSeconds` (up to 0.999 s lost), and `server/api/tournament-rounds/timer.post.ts` takes `now` only after the auth round trip, so every millisecond before that line pushes `phase_started_at` later. Consider publishing the organizer's own start timestamp instead of an elapsed count.
+
+## Playwright e2e: set up Docker and local Supabase (2026-10-28)
+
+`test/e2e/` has no specs yet. The authenticated flows need a safe database, so the plan is a local Supabase (`supabase start`, built from `supabase/migrations`), which needs Docker. Docker is not installed on this machine.
+
+- **Install Docker** and check that `supabase start` brings the local stack up.
+- **Seed script** for the local database (associates, a pending request, a tournament, a wanted card).
+- **Auth fixture**: mint a session with the admin `generateLink` instead of the OTP email, stored as a Playwright `storageState` in a `setup` project in `playwright.config.ts`.
+- **First specs**, from `plans/2026-08-18-testing-coverage-plan.md` tier 5: login to `/associates`, approve a pending request, create an Association Fee transaction, change a wanted-card status.
+- **Public pages smoke spec** (`/login`, `/tesseramento`, `/calendario`, `/classifiche/*`) does not need Docker.
