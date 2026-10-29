@@ -1,5 +1,4 @@
 // server\utils\telegram\commands\tournaments\iscriviti.ts
-import { startOfDay } from 'date-fns'
 import type { Bot, Context } from 'grammy'
 import type { InputRichMessage } from 'grammy/types'
 import type { CommandGroup } from '@grammyjs/commands'
@@ -53,14 +52,15 @@ function decodeButton(data: string): { action: ButtonAction, tournamentUuid: str
 }
 
 async function fetchOpenTournaments(associateUuid: string): Promise<OpenTournament[]> {
+  const now = new Date().toISOString()
   const { data, error } = await publicSupabaseClient()
     .from('tournaments')
     .select('uuid, name, starts_at, league_uuid, location:locations(name), organizer:organizations(type)')
     .is('deleted_at', null)
     .eq('status', 'registration_open')
-    // From the start of today, not now: a tournament that already began tonight can still be joined
-    // at a later round
-    .gte('starts_at', zonedRomeTimeToInstant(startOfDay(nowInRome())).toISOString())
+    // Until it ends, not until it starts: a tournament already under way can be joined at a later
+    // round. Without an end time it falls back to the start time.
+    .or(`ends_at.gte.${now},and(ends_at.is.null,starts_at.gte.${now})`)
     .order('starts_at', { ascending: true })
   if (error) throw error
 
