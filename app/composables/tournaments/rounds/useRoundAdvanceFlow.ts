@@ -5,6 +5,8 @@
 // autoOpenAdvancePreview watcher, differing only in which mutation (Commander vs Swiss) is called.
 // Each caller owns its mutation composable and nextRoundSeedPlayers/allXEntered; only this shell is
 // shared.
+import { startRoundPreCountdown } from '~/composables/tournaments/rounds/useRoundTimerEngine'
+
 type AdvanceMutation = ReturnType<typeof useRoundLifecycleMutation<{
   currentRoundNumber: number
   associateOrder?: string[]
@@ -39,6 +41,7 @@ export function useRoundAdvanceFlow(options: {
   async function onAdvanceConfirm(associateOrder: string[], tableSizes?: number[]) {
     try {
       await advance.mutateAsync({ currentRoundNumber: roundNumber, associateOrder, tableSizes })
+      startRoundPreCountdown(roundNumber + 1)
       advancePreviewOpen.value = false
     } catch { /* toasted by the mutation's own onError */ }
   }

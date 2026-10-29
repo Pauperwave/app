@@ -7,6 +7,7 @@
 import type { ComputedRef } from 'vue'
 import type { AcceptancePickerItem } from '~/components/tournaments/single/AcceptancePicker.vue'
 import type { Tournament, TablePlayer } from '~/types'
+import { startRoundPreCountdown } from '~/composables/tournaments/rounds/useRoundTimerEngine'
 
 export function useTournamentLifecycleFlow(options: {
   tournamentUuid: MaybeRefOrGetter<string>
@@ -134,6 +135,7 @@ export function useTournamentLifecycleFlow(options: {
   ) {
     try {
       await startRoundOne.mutateAsync({ associateOrder, tableSizes, shuffleSeed })
+      startRoundPreCountdown(1)
       podsModalOpen.value = false
     } catch {
       // Toasted by useTournamentRoundsMutations' onError
@@ -143,6 +145,7 @@ export function useTournamentLifecycleFlow(options: {
   async function onSwissPodsConfirm(associateOrder: string[], shuffleSeed: number | null) {
     try {
       await startRoundOneSwiss.mutateAsync({ associateOrder, shuffleSeed })
+      startRoundPreCountdown(1)
       podsModalOpen.value = false
     } catch {
       // Toasted by useTournamentSwissRoundsMutations' onError

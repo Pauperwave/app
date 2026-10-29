@@ -9,6 +9,24 @@ const TURNS_TIMER_MINUTES = 15
 // from /settings' Timer section)
 const DEFAULT_PRE_TIMER_MINUTES = 3
 
+function roundTimerStorageKeys(round: number) {
+  return {
+    phase: `round-timer-phase-${round}`,
+    start: `round-timer-start-${round}`,
+    bonus: `round-timer-bonus-${round}`
+  }
+}
+
+// Starts the "pre" countdown of a round as if Avvia were pressed now. The engine restores this on
+// mount (onMounted), so the round's RoundTimer runs as soon as it is shown. Writes what the
+// useLocalStorage refs below read back: the raw phase string, String(number) for the rest.
+export function startRoundPreCountdown(round: number) {
+  const keys = roundTimerStorageKeys(round)
+  localStorage.setItem(keys.phase, 'pre')
+  localStorage.setItem(keys.start, String(Date.now()))
+  localStorage.setItem(keys.bonus, '0')
+}
+
 export function useRoundTimerEngine(options: {
   tournamentUuid: MaybeRefOrGetter<string>
   round: number
@@ -32,14 +50,15 @@ export function useRoundTimerEngine(options: {
   onUnmounted(stopLoop)
 
   /** Which of the 3 phases (or the terminal "ended" state) is currently active. */
-  const phase = useLocalStorage<RoundTimerPhase>(`round-timer-phase-${options.round}`, 'pre')
+  const storageKeys = roundTimerStorageKeys(options.round)
+  const phase = useLocalStorage<RoundTimerPhase>(storageKeys.phase, 'pre')
 
   /**
    * The Unix timestamp (ms) at which the *current phase* was last started or resumed. Persisted to
    * localStorage so a refresh restores the running state. Null before the first start and once
    * "ended". /
    */
-  const startTime = useLocalStorage<number | null>(`round-timer-start-${options.round}`, null)
+  const startTime = useLocalStorage<number | null>(storageKeys.start, null)
 
   /** Seconds elapsed in the current phase, accounting for pauses. */
   const elapsed = ref(0)
@@ -48,7 +67,7 @@ export function useRoundTimerEngine(options: {
   const isRunning = ref(false)
 
   /** Extra minutes added to the "round" phase only (e.g. time extensions). */
-  const timeBonus = useLocalStorage<number>(`round-timer-bonus-${options.round}`, 0)
+  const timeBonus = useLocalStorage<number>(storageKeys.bonus, 0)
 
   /**
    * This phase's total duration in minutes (fixed for pre/turns, configurable + bonus for round).
