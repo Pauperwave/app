@@ -29,3 +29,10 @@ Reported as "3 secondi di ritardo nel timer". Not reproduced at runtime; the lik
 - **Auth fixture**: mint a session with the admin `generateLink` instead of the OTP email, stored as a Playwright `storageState` in a `setup` project in `playwright.config.ts`.
 - **First specs**, from `plans/2026-08-18-testing-coverage-plan.md` tier 5: login to `/associates`, approve a pending request, create an Association Fee transaction, change a wanted-card status.
 - **Public pages smoke spec** (`/login`, `/tesseramento`, `/calendario`, `/classifiche/*`) does not need Docker.
+
+## Payments still linked to two cleaned-up tournaments (2026-10-29)
+
+Two stale tournaments were ended and their registrations deleted on the production database: Premodern of 2026-09-16 (`defbf2ed-c26c-4e34-ba2a-f159d140f1a1`) and Pauper of 2026-09-23 (`99e39f47-34b2-4219-b7a3-badb02c47e2f`). They had no rounds, pairings or results, only payments, which were left alone on purpose.
+
+- **16 payments** in `pauperwave_payments` point at the Premodern and **26** at the Pauper, so they still feed the `finance` report and the statistics.
+- **Decide** whether they stay (real money received), get detached (`tournament_uuid` to null) or get deleted. Nothing to do until the user decides.
