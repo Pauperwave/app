@@ -1,4 +1,5 @@
 // server\utils\telegram\commands\tournaments\iscriviti.ts
+import { startOfDay } from 'date-fns'
 import type { Bot, Context } from 'grammy'
 import type { InputRichMessage } from 'grammy/types'
 import type { CommandGroup } from '@grammyjs/commands'
@@ -57,8 +58,9 @@ async function fetchOpenTournaments(associateUuid: string): Promise<OpenTourname
     .select('uuid, name, starts_at, league_uuid, location:locations(name), organizer:organizations(type)')
     .is('deleted_at', null)
     .eq('status', 'registration_open')
-    // A past tournament can still be marked open, like prossimo.ts
-    .gte('starts_at', new Date().toISOString())
+    // From the start of today, not now: a tournament that already began tonight can still be joined
+    // at a later round
+    .gte('starts_at', zonedRomeTimeToInstant(startOfDay(nowInRome())).toISOString())
     .order('starts_at', { ascending: true })
   if (error) throw error
 
