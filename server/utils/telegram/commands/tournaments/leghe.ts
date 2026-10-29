@@ -59,6 +59,7 @@ async function fetchLeagueTournaments(leagueUuid: string): Promise<LeagueTournam
     .select('uuid, name, starts_at, status, location:locations(name)')
     .eq('league_uuid', leagueUuid)
     .is('deleted_at', null)
+    .neq('status', 'external')
     .order('starts_at', { ascending: true })
 
   if (error) throw error
@@ -136,6 +137,7 @@ async function legheBlocks(ctx: Context): Promise<InputRichMessage['blocks']> {
     .select('league_uuid, status')
     .in('league_uuid', leagueUuids)
     .is('deleted_at', null)
+    .neq('status', 'external')
 
   if (error) throw error
   const { totals, completed } = tournamentProgressByLeague(tournaments as LeagueTournamentRow[])

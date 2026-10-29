@@ -53,18 +53,12 @@ const { data: eventsData, isLoading: loadingEvents } = useEventsQuery()
 const { data: tournamentsData, isLoading: loadingTournaments } = useTournamentsQuery()
 const loading = computed(() => loadingEvents.value || loadingTournaments.value)
 
-// External (shop-organized, e.g. Magman) tournaments are hidden from this public calendar by
-// default, like tournaments/index.vue's showExternal toggle
-const showExternal = ref(false)
-
-// Draft tournaments are always excluded, with no toggle: unlike "external" (a real tournament
-// organized by someone else), a draft is not ready to be public. useTournamentsQuery() has no
-// status filter (only deleted_at) and status is only used for the badge/isPast check
-// (calendar/card/Base.vue), so drafts would otherwise be fully visible here, including on the
-// unauthenticated calendario.pauperwave.org route
+// Draft tournaments are not ready to be public, and external ones (shop-organized, e.g. Magman) are
+// not Pauperwave's. useTournamentsQuery() has no status filter (only deleted_at) and status is only
+// used for the badge/isPast check (calendar/card/Base.vue), so both would otherwise be fully
+// visible here, including on the unauthenticated calendario.pauperwave.org route
 const visibleTournamentsData = computed(() => (tournamentsData.value ?? [])
-  .filter(tournament => tournament.status !== 'draft')
-  .filter(tournament => showExternal.value || tournament.status !== 'external'))
+  .filter(tournament => tournament.status !== 'draft' && tournament.status !== 'external'))
 
 interface EventCard {
   kind: 'event'
@@ -242,25 +236,6 @@ const filteredCards = computed(() => selectedCity.value === 'all'
         />
         <StatusFilterGroup v-else v-model="selectedCity" :items="cityItems" />
       </div>
-
-      <!-- External (shop-organized, not Pauperwave) tournaments are hidden by default (see
-           showExternal above): this toggles the filter back on, like
-           tournaments/list/FiltersBar.vue's icon-only toggle -->
-      <UTooltip
-        :text="$t(showExternal
-          ? 'event.calendarHideExternal'
-          : 'event.calendarShowExternal')"
-      >
-        <UButton
-          :icon="showExternal ? ICONS.hide : ICONS.show"
-          color="neutral"
-          variant="outline"
-          :aria-label="$t(showExternal
-            ? 'event.calendarHideExternal'
-            : 'event.calendarShowExternal')"
-          @click="showExternal = !showExternal"
-        />
-      </UTooltip>
     </div>
 
     <div v-if="loading" class="flex items-center justify-center py-12">

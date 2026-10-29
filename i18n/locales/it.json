@@ -1139,8 +1139,6 @@
     "openPublicLink": "Apri il calendario pubblico",
     "calendarAllCities": "Tutte",
     "calendarToday": "Oggi",
-    "calendarShowExternal": "Mostra tornei esterni",
-    "calendarHideExternal": "Nascondi tornei esterni",
     "calendarTour": {
       "startButton": "Tour guidato",
       "steps": {
