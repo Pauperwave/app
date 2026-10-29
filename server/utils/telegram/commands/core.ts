@@ -139,8 +139,7 @@ const HELP_SECTIONS: Record<HelpTopic, () => Blocks> = {
     { type: 'paragraph', text: { type: 'bold', text: `${ICONS.account} Account` } },
     {
       type: 'paragraph',
-      text: '/collegamento — verifica se questa chat è collegata a un socio\n'
-        + '/scollegamento — scollega questa chat dal tuo profilo socio\n'
+      text: '/collegamento — verifica se questa chat è collegata a un socio, o scollegala\n'
         + '/tessera — stato del tuo tesseramento\n'
         + '/menzioni — le tue menzioni speciali: carnefice, vittima, master brewer e player (serve il collegamento)'
     },
@@ -148,7 +147,6 @@ const HELP_SECTIONS: Record<HelpTopic, () => Blocks> = {
       type: 'buttons',
       buttons: [
         { text: `${ICONS.link} Collegamento`, callback_data: encodeHelpBtn('collegamento') },
-        { text: `${ICONS.unlink} Scollegamento`, callback_data: encodeHelpBtn('scollegamento') },
         { text: `${ICONS.membershipCard} Tessera`, callback_data: encodeHelpBtn('tessera') },
         { text: `${ICONS.medal} Menzioni`, callback_data: encodeHelpBtn('menzioni') }
       ]

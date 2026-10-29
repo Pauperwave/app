@@ -35,8 +35,7 @@ Il collegamento associa la tua chat Telegram al tuo profilo socio, così il bot 
 
 | Comando | Cosa fa |
 |---|---|
-| `/collegamento` | Dice se questa chat è collegata e a quale socio |
-| `/scollegamento` | Scollega la chat dal tuo profilo |
+| `/collegamento` | Dice se questa chat è collegata e a quale socio; il bottone **Scollega** toglie il collegamento |
 
 Un solo socio per chat e una sola chat per socio: collegandone una nuova, quella vecchia viene sostituita.
 
@@ -59,7 +58,7 @@ Dal dettaglio di un torneo puoi iscriverti o disiscriverti con un bottone, se se
 | Comando | Accesso | Cosa fa |
 |---|---|---|
 | `/tessera` | Collegato | Stato del tuo tesseramento: attivo, in scadenza o da rinnovare |
-| `/collegamento`, `/scollegamento` | Tutti | Vedi [Collegare il tuo account](#-collegare-il-tuo-account) |
+| `/collegamento` | Tutti | Vedi [Collegare il tuo account](#-collegare-il-tuo-account) |
 
 ### 🧰 Utilità
 

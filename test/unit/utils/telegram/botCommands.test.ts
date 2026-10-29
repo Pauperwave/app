@@ -32,9 +32,9 @@ describe('the commands catalog', () => {
     expect(new Set(names).size).toBe(names.length)
   })
 
-  it('links every command except the ones that leave the tournament or unlink the chat', () => {
+  it('links every command except the one that leaves the tournament', () => {
     const withoutLink = commands.filter(command => botCommandUrl(command) === null)
-    expect(withoutLink.map(command => command.name).sort()).toEqual(['drop', 'scollegamento'])
+    expect(withoutLink.map(command => command.name)).toEqual(['drop'])
   })
 
   it('has a description for every command and a title and explanation for every group', () => {

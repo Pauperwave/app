@@ -3453,7 +3453,7 @@
         "email": "Scrivigli, in privato, l'indirizzo email con cui sei registrato come socio.",
         "done": "Se corrisponde a un socio approvato, la chat viene collegata."
       },
-      "note": "Un solo socio per chat e una sola chat per socio. Il comando /collegamento mostra lo stato, /scollegamento lo toglie."
+      "note": "Un solo socio per chat e una sola chat per socio. Il comando /collegamento mostra lo stato e ha il bottone per scollegare la chat."
     },
     "commands": {
       "title": "Comandi",
@@ -3489,8 +3489,7 @@
         "iscrizioni": "I tornei a cui sei iscritto",
         "tessera": "Stato del tuo tesseramento",
         "menzioni": "Le tue menzioni speciali: carnefice, vittima, master brewer e player, con i mazzi",
-        "collegamento": "Verifica se la chat è collegata a un socio",
-        "scollegamento": "Scollega la chat dal tuo profilo",
+        "collegamento": "Verifica se la chat è collegata a un socio, con il bottone per scollegarla",
         "tavolo": "Il tuo tavolo, gli avversari del turno e il comandante; da qui inserisci il risultato",
         "drop": "Lascia il torneo Commander dopo aver inserito il risultato",
         "turni": "Timer del round e contatore dei turni aggiuntivi, in una mini app",

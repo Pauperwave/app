@@ -4,6 +4,7 @@ import type { CommandGroup } from '@grammyjs/commands'
 
 import { resolveAssociateUuidByChatId } from './linking'
 import { registerDeepLink } from '../../deepLinks'
+import { encodeHelpBtn } from '../../helpButton'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
 interface AssociateIdentity {
@@ -47,8 +48,15 @@ async function collegamentoCommandHandler(ctx: Context) {
 
     const lines = [`${ICONS.success} Questa chat è collegata${name ? ` a ${name}` : ''}.`]
     if (email) lines.push(email)
-    // \n\n, not \n: see core.ts on Rich Message markdown
-    await ctx.replyWithRichMessage({ markdown: lines.join('\n\n') })
+    await ctx.replyWithRichMessage({
+      blocks: [
+        { type: 'paragraph', text: lines.join('\n') },
+        {
+          type: 'buttons',
+          buttons: [{ text: `${ICONS.unlink} Scollega`, callback_data: encodeHelpBtn('scollegamento') }]
+        }
+      ]
+    })
   } catch {
     await ctx.replyWithRichMessage({
       markdown: `${ICONS.warning} Non sono riuscito a verificare il collegamento, riprova più tardi.`
@@ -58,9 +66,9 @@ async function collegamentoCommandHandler(ctx: Context) {
 
 registerDeepLink('collegamento', collegamentoCommandHandler)
 
-// Opposite of /collegamento: removes this chat's row from pauperwave_associate_telegram_links (the
-// table linkChat() upserts into). Extracted for reuse by t.me/<bot>?start=scollegamento
-// (deepLinks.ts)
+// Opposite of /collegamento, reached from its "Scollega" button (helpbtn:) rather than a command of
+// its own: removes this chat's row from pauperwave_associate_telegram_links (the table linkChat()
+// upserts into)
 async function scollegamentoCommandHandler(ctx: Context) {
   if (!ctx.chat?.id) return
 
@@ -92,5 +100,4 @@ registerDeepLink('scollegamento', scollegamentoCommandHandler)
 
 export function registerCollegamentoCommand(commands: CommandGroup<Context>) {
   commands.command('collegamento', 'Verifica se questa chat è collegata a un socio', collegamentoCommandHandler)
-  commands.command('scollegamento', 'Scollega questa chat dal tuo profilo socio', scollegamentoCommandHandler)
 }
