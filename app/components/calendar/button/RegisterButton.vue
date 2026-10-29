@@ -9,6 +9,7 @@
      server/api/tournament-registrations/self-*.post.ts -->
 <script setup lang="ts">
 import type { Tournament } from '~/types'
+import { acceptsRegistrations } from '#shared/utils/tournaments/registrationStatus'
 
 interface Props {
   tournament?: Tournament | null
@@ -42,7 +43,7 @@ const isPending = computed(() => selfRegister.isLoading.value || selfUnregister.
 // Can always leave a 'registered' row, but can only join a tournament
 // whose registrations are actually open — same rule enforced server-side
 // in self-register.post.ts.
-const canRegister = computed(() => tournament?.status === 'registration_open')
+const canRegister = computed(() => !!tournament && acceptsRegistrations(tournament.status))
 
 // Shop organizers (Magman etc.) are reference-only — Pauperwave doesn't run
 // their registrations, so no Iscriviti/Disiscriviti at all, same rule

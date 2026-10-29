@@ -49,6 +49,27 @@ export async function fetchStageNumbers(leagueUuids?: string[]): Promise<Map<str
   return stageNumbers
 }
 
+// How many rounds a tournament has started (the highest started round number), so a latecomer can
+// be told. Created-but-unstarted rounds don't count.
+export async function fetchStartedRounds(tournamentUuids: string[]): Promise<Map<string, number>> {
+  const supabase = telegramServiceSupabaseClient()
+
+  const { data, error } = await supabase
+    .from('tournament_rounds')
+    .select('tournament_uuid, round_number')
+    .in('tournament_uuid', tournamentUuids)
+    .in('status', ['in_progress', 'completed'])
+
+  if (error) throw error
+
+  const startedRounds = new Map<string, number>()
+  for (const row of data) {
+    const highest = startedRounds.get(row.tournament_uuid) ?? 0
+    startedRounds.set(row.tournament_uuid, Math.max(highest, row.round_number))
+  }
+  return startedRounds
+}
+
 export type RegistrationStatus = 'registered' | 'checked_in' | null
 
 export async function fetchRegistrationStatus(

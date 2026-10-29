@@ -4,7 +4,7 @@ import type { InputRichMessage } from 'grammy/types'
 import type { CommandGroup } from '@grammyjs/commands'
 
 import { personalIcon, stageLabel, formatTournamentDateTime } from './line'
-import { fetchRegistrationStatuses, fetchStageNumbers } from './queries'
+import { fetchRegistrationStatuses, fetchStageNumbers, fetchStartedRounds } from './queries'
 import type { RegistrationStatus } from './queries'
 import {
   CANCEL_REFUSED_TEXT, TOURNAMENT_FULL_TEXT, cancelTournamentRegistration, isExternalOrganizer,
@@ -14,6 +14,7 @@ import { NOT_LINKED_MESSAGE, requireLinkedAssociate, resolveAssociateUuidByChatI
 import { answerEditError, requireChatId } from '../callbackErrors'
 import { encodeHelpBtn } from '../../helpButton'
 import { registerDeepLink } from '../../deepLinks'
+import { REGISTRATION_STATUSES } from '#shared/utils/tournaments/registrationStatus'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
 interface RawTournamentRow {
@@ -31,6 +32,8 @@ export interface OpenTournament {
   startsAt: string
   locationName: string | null
   stageNumber: number | null
+  // Rounds already started: above 0 the player would join a tournament under way
+  startedRounds: number
   registration: RegistrationStatus
 }
 
@@ -57,7 +60,7 @@ async function fetchOpenTournaments(associateUuid: string): Promise<OpenTourname
     .from('tournaments')
     .select('uuid, name, starts_at, league_uuid, location:locations(name), organizer:organizations(type)')
     .is('deleted_at', null)
-    .eq('status', 'registration_open')
+    .in('status', REGISTRATION_STATUSES)
     // Until it ends, not until it starts: a tournament already under way can be joined at a later
     // round. Without an end time it falls back to the start time.
     .or(`ends_at.gte.${now},and(ends_at.is.null,starts_at.gte.${now})`)
@@ -72,9 +75,10 @@ async function fetchOpenTournaments(associateUuid: string): Promise<OpenTourname
   if (!rows.length) return []
 
   const leagueUuids = [...new Set(rows.map(row => row.league_uuid).filter(uuid => uuid !== null))]
-  const [statuses, stageNumbers] = await Promise.all([
+  const [statuses, stageNumbers, startedRounds] = await Promise.all([
     fetchRegistrationStatuses(rows.map(row => row.uuid), associateUuid),
-    fetchStageNumbers(leagueUuids)
+    fetchStageNumbers(leagueUuids),
+    fetchStartedRounds(rows.map(row => row.uuid))
   ])
 
   return rows.map(row => ({
@@ -83,6 +87,7 @@ async function fetchOpenTournaments(associateUuid: string): Promise<OpenTourname
     startsAt: row.starts_at,
     locationName: row.location?.name ?? null,
     stageNumber: stageNumbers.get(row.uuid) ?? null,
+    startedRounds: startedRounds.get(row.uuid) ?? 0,
     registration: statuses.get(row.uuid) ?? null
   }))
 }
@@ -96,6 +101,11 @@ function tournamentButton(tournament: OpenTournament, onlyOne: boolean) {
     text: `${ICONS.register} ${onlyOne ? 'Conferma iscrizione' : 'Iscriviti'}`,
     callback_data: `${REGISTER_PREFIX}${tournament.uuid}`
   }
+}
+
+function startedRoundsWarning(startedRounds: number): string {
+  const rounds = startedRounds === 1 ? 'è già stato avviato 1 round' : `sono già stati avviati ${startedRounds} round`
+  return `Il torneo è già iniziato: ${rounds}.`
 }
 
 export function iscrivitiBlocks(tournaments: OpenTournament[]): InputRichMessage['blocks'] {
@@ -130,6 +140,10 @@ export function iscrivitiBlocks(tournaments: OpenTournament[]): InputRichMessage
     blocks.push({ type: 'paragraph', text: `${ICONS.date} ${formatTournamentDateTime(tournament.startsAt)}` })
     if (tournament.locationName) {
       blocks.push({ type: 'paragraph', text: `${ICONS.location} ${tournament.locationName}` })
+    }
+
+    if (tournament.startedRounds > 0 && tournament.registration === null) {
+      blocks.push({ type: 'paragraph', text: `${ICONS.warning} ${startedRoundsWarning(tournament.startedRounds)}` })
     }
 
     // The registration can't be cancelled after the check-in (see registration.ts), so no button

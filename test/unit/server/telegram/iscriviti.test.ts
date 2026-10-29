@@ -14,6 +14,7 @@ function makeTournament(overrides: Partial<OpenTournament> = {}): OpenTournament
     startsAt: '2026-11-06T19:00:00Z',
     locationName: null,
     stageNumber: null,
+    startedRounds: 0,
     registration: null,
     ...overrides
   }
@@ -63,6 +64,16 @@ describe('iscrivitiBlocks', () => {
       text: expect.stringContaining('Annulla iscrizione'),
       callback_data: 'annulla:0b6b4d3a-8a0e-4b6a-9c3e-5d2f4a1b7c90'
     })
+  })
+
+  it('warns a latecomer how many rounds have already started', () => {
+    const blocks = iscrivitiBlocks([makeTournament({ startedRounds: 2 })]) ?? []
+
+    expect(JSON.stringify(blocks)).toContain('sono già stati avviati 2 round')
+  })
+
+  it('does not warn when the tournament has not started', () => {
+    expect(JSON.stringify(iscrivitiBlocks([makeTournament()]))).not.toContain('già iniziato')
   })
 
   it('has no button once the player has checked in', () => {

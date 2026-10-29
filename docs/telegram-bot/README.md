@@ -49,7 +49,7 @@ Un solo socio per chat e una sola chat per socio: collegandone una nuova, quella
 | `/calendario` | Tutti | Tornei del mese raggruppati per giorno, con la tappa di lega |
 | `/leghe` | Tutti | Leghe attive, con tornei giocati e date |
 | `/prossimo` | Tutti | Il prossimo torneo con iscrizioni aperte o in corso |
-| `/iscriviti` | Collegato | Iscrizione rapida: mostra i tornei con le iscrizioni aperte, con un bottone per iscriverti (con un solo torneo il bottone è la conferma) o per annullare l'iscrizione |
+| `/iscriviti` | Collegato | Iscrizione rapida: mostra i tornei con le iscrizioni aperte o già in corso (con un avviso sui round già avviati), con un bottone per iscriverti (con un solo torneo il bottone è la conferma) o per annullare l'iscrizione |
 | `/iscrizioni` | Collegato | I tornei a cui sei iscritto (✅ iscritto, 🎯 check-in fatto) |
 
 Dal dettaglio di un torneo puoi iscriverti o disiscriverti con un bottone, se sei collegato.

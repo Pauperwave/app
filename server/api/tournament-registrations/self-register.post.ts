@@ -4,6 +4,8 @@
 // associateUuid comes from the session (resolveAuditAssociateUuid), never the body. A BFF endpoint
 // despite the player_own_registration RLS policies, to reuse register_tournament_players' atomic
 // get-or-create (a raw insert fails for a first-time registrant with no players row).
+import { acceptsRegistrations } from '#shared/utils/tournaments/registrationStatus'
+
 export default defineEventHandler(async (event) => {
   const { tournamentUuid, associateUuid, supabase } = await parseSelfRegistrationRequest(event)
 
@@ -20,7 +22,7 @@ export default defineEventHandler(async (event) => {
   }
   // Shop organizers (Magman etc.) are reference-only: Pauperwave doesn't run their registrations,
   // same rule as RegisterButton.vue and the Telegram bot's isExternalOrganizer
-  if (tournament.status !== 'registration_open' || tournament.organizer?.type === 'shop') {
+  if (!acceptsRegistrations(tournament.status) || tournament.organizer?.type === 'shop') {
     throw createError({
       statusCode: 400,
       statusMessage: 'Le iscrizioni per questo torneo non sono aperte'

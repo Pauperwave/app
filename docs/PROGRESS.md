@@ -587,6 +587,14 @@ Contestualmente, rimosso il banner di avviso giallo ("Questa tabella non è anco
 
 **Conseguenze:** il calcolo è in tempo reale e costa pochi millisecondi (4,5 ms su 18 abbinamenti, 42 uccisioni, 138 voti): se un giorno la pagina rallentasse si può rivalutare una view materializzata. Se la classifica dei premi cambia (spareggi, regole), la view e `useTournamentAwards.ts` vanno aggiornate insieme. Le colonne di `player_stats` sulle uccisioni e sui voti non servono più alle menzioni; la view `player_vote_decks` non è più letta da nessuno e si toglie con una migrazione dopo il deploy di questo codice.
 
+### ADR-058 — Ci si può iscrivere a un torneo già iniziato, con un avviso sui round avviati (2026-10-29)
+
+**Contesto:** un giocatore che arriva in ritardo (il torneo è alle 20:30, sono le 20:35, si è al secondo turno) voleva potersi iscrivere comunque. Ma avviare il round 1 (`start-round-one`) porta il torneo da `registration_open` a `in_progress`, e sia il bot (`torneoMenu`) sia l'API `self-register` accettavano solo `registration_open`: un torneo avviato non era iscrivibile, e il filtro per data di `/iscriviti` (prima "dall'ora di inizio", poi "dall'inizio di oggi") nascondeva o mostrava i tornei sbagliati.
+
+**Decisione:** le iscrizioni restano accettate anche con il torneo `in_progress`. La regola è una sola, `acceptsRegistrations` (`shared/utils/tournaments/registrationStatus.ts`), usata dal bot, da `self-register.post.ts` e da `RegisterButton.vue`. `/iscriviti` elenca i tornei `registration_open` e `in_progress` **fino alla loro fine** (`ends_at`, o `starts_at` se manca), non fino all'inizio, e per quelli già avviati mostra un avviso con i round avviati. La funzione `register_tournament_players` non controlla lo stato, quindi non serve nessuna migrazione.
+
+**Conseguenze:** chi si iscrive a torneo avviato entra in `tournament_registrations`, ma non ha abbinamenti nei round già creati: l'organizzatore lo inserisce dal turno successivo. Il bot non lo fa da solo. L'avviso è solo in `/iscriviti`; il dettaglio del torneo (`torneoMenu`) iscrive senza avvisare. Un torneo `in_progress` rimasto aperto oltre `ends_at` sparisce da `/iscriviti` anche se è ancora in corso.
+
 ## Vedi anche
 
 - `docs/architecture/database.md` — schema, RLS, migrazioni

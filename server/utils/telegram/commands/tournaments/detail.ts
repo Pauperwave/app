@@ -27,6 +27,7 @@ import { registerDeepLinkPrefix } from '../../deepLinks'
 import { navigateBack, getBackResolver } from '../../menuNav'
 import { createPerContextCache } from '../../perContextCache'
 import { TOURNAMENT_LINK_PREFIX, isTournamentUuid } from '#shared/utils/telegram/tournamentLink'
+import { acceptsRegistrations } from '#shared/utils/tournaments/registrationStatus'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
 export interface LocationRow {
@@ -284,7 +285,7 @@ export const torneoMenu = new Menu<Context>('t', {
         { text: `${ICONS.failure} Annulla iscrizione`, payload },
         ctx => handleCancelRegistration(ctx, uuid, linkedAssociateUuid)
       )
-    } else if (tournament.status === 'registration_open') {
+    } else if (acceptsRegistrations(tournament.status)) {
       range.text({ text: `${ICONS.register} Iscriviti`, payload }, ctx => handleRegister(ctx, uuid, associateUuid))
     }
   }
