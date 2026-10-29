@@ -57,6 +57,8 @@ async function fetchOpenTournaments(associateUuid: string): Promise<OpenTourname
     .select('uuid, name, starts_at, league_uuid, location:locations(name), organizer:organizations(type)')
     .is('deleted_at', null)
     .eq('status', 'registration_open')
+    // A past tournament can still be marked open, like prossimo.ts
+    .gte('starts_at', new Date().toISOString())
     .order('starts_at', { ascending: true })
   if (error) throw error
 
