@@ -1,6 +1,5 @@
 // server\utils\telegram\commands\sostieni.ts
-import type { Context } from 'grammy'
-import type { CommandGroup } from '@grammyjs/commands'
+import type { Bot, Context } from 'grammy'
 import type { InputRichMessage } from 'grammy/types'
 
 import { registerDeepLink } from '../deepLinks'
@@ -44,6 +43,8 @@ async function sostieniCommandHandler(ctx: Context) {
 
 registerDeepLink('sostieni', sostieniCommandHandler)
 
-export function registerSostieniCommand(commands: CommandGroup<Context>) {
-  commands.command('sostieni', 'Sostieni lo sviluppo del bot e del sito', sostieniCommandHandler)
+// bot.command(), not commands.command(): it stays out of the "/" picker and out of /help, like the
+// other hidden commands
+export function registerSostieniCommand(bot: Bot) {
+  bot.command('sostieni', sostieniCommandHandler)
 }

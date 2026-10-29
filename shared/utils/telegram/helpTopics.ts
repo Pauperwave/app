@@ -44,6 +44,5 @@ export const HELP_TOPICS = [
   'tornei',
   'iscrizioni',
   'carte',
-  'dadi',
   'account'
 ] as const

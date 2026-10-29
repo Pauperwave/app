@@ -1,6 +1,5 @@
 // server\utils\telegram\commands\dice.ts
-import type { Context } from 'grammy'
-import type { CommandGroup } from '@grammyjs/commands'
+import type { Bot, Context } from 'grammy'
 import { registerDeepLink } from '../deepLinks'
 import { ICONS } from '~~/server/utils/telegram/icons'
 
@@ -42,8 +41,10 @@ async function tiraCommandHandler(ctx: Context) {
 
 registerDeepLink('tira', tiraCommandHandler)
 
-export function registerDiceCommands(commands: CommandGroup<Context>) {
-  commands.command('dado', 'Tira un dado a 6 facce', dadoCommandHandler)
-  commands.command('moneta', 'Testa o croce', monetaCommandHandler)
-  commands.command('tira', 'Tira un dado', tiraCommandHandler)
+// bot.command(), not commands.command(): they stay out of the "/" picker and out of /help, like the
+// other hidden commands
+export function registerDiceCommands(bot: Bot) {
+  bot.command('dado', dadoCommandHandler)
+  bot.command('moneta', monetaCommandHandler)
+  bot.command('tira', tiraCommandHandler)
 }

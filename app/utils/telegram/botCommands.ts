@@ -47,8 +47,7 @@ export const TELEGRAM_BOT_COMMAND_GROUPS: BotCommandGroup[] = [
       { name: 'start', requiresLink: false, startPayload: '' },
       { name: 'help', requiresLink: false },
       { name: 'status', requiresLink: false },
-      { name: 'crediti', requiresLink: false },
-      { name: 'sostieni', requiresLink: false }
+      { name: 'crediti', requiresLink: false }
     ]
   },
   {
@@ -60,7 +59,6 @@ export const TELEGRAM_BOT_COMMAND_GROUPS: BotCommandGroup[] = [
     id: 'tournaments',
     helpTopic: 'tornei',
     commands: [
-      { name: 'eventi', requiresLink: false },
       { name: 'calendario', requiresLink: false },
       { name: 'leghe', requiresLink: false },
       { name: 'prossimo', requiresLink: false },
@@ -81,15 +79,6 @@ export const TELEGRAM_BOT_COMMAND_GROUPS: BotCommandGroup[] = [
       { name: 'prezzo', requiresLink: false },
       { name: 'cercate', requiresLink: true },
       { name: 'importa', requiresLink: true }
-    ]
-  },
-  {
-    id: 'dice',
-    helpTopic: 'dadi',
-    commands: [
-      { name: 'dado', requiresLink: false },
-      { name: 'moneta', requiresLink: false },
-      { name: 'tira', requiresLink: false }
     ]
   },
   {

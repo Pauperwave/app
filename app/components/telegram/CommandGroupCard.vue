@@ -13,7 +13,6 @@ const groupIcons: Record<string, string> = {
   tournaments: ICONS.battle,
   registrations: ICONS.ticket,
   cards: ICONS.cardSearch,
-  dice: ICONS.dice,
   account: ICONS.player
 }
 </script>

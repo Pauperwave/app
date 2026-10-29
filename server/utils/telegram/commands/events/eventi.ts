@@ -3,7 +3,6 @@ import { it } from 'date-fns/locale'
 
 import type { Bot, Context } from 'grammy'
 import type { InputRichMessage } from 'grammy/types'
-import type { CommandGroup } from '@grammyjs/commands'
 import { Menu } from '@grammyjs/menu'
 
 import { answerLoadError } from '../callbackErrors'
@@ -242,12 +241,14 @@ async function eventiCommandHandler(ctx: Context) {
 
 registerDeepLink('eventi', eventiCommandHandler)
 
-export function registerEventiCommand(bot: Bot, commands: CommandGroup<Context>) {
+export function registerEventiCommand(bot: Bot) {
   eventiMenu.register(eventoMenu)
   bot.use(eventiMenu)
 
   // Registered before bot.use(commands), like calendario.ts's handleCalendarioOpenButton
   bot.on('callback_query:data', handleEvOpenButton)
 
-  commands.command('eventi', 'Prossimi eventi', eventiCommandHandler)
+  // bot.command(), not commands.command(): it stays out of the "/" picker and out of /help, like the
+  // other hidden commands
+  bot.command('eventi', eventiCommandHandler)
 }

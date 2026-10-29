@@ -21,10 +21,10 @@ Funziona con qualunque account Telegram. Alcune funzioni richiedono di collegare
 ## 🚀 Per iniziare
 
 1. Apri [@PauperwaveBot](https://t.me/PauperwaveBot) e premi **Avvia** (`/start`).
-2. `/help` mostra tutti i comandi, con i bottoni per lanciarli al volo. Sotto il messaggio ci sono i bottoni per passare a una sola sezione (e tornare a "Tutto"); equivale a `/help <argomento>`: `generale`, `classifiche`, `tornei`, `iscrizioni`, `carte`, `dadi` o `account` (anche `supporto`).
+2. `/help` mostra tutti i comandi, con i bottoni per lanciarli al volo. Sotto il messaggio ci sono i bottoni per passare a una sola sezione (e tornare a "Tutto"); equivale a `/help <argomento>`: `generale`, `classifiche`, `tornei`, `iscrizioni`, `carte` o `account` (anche `supporto`).
 3. I comandi marcati *(collegato)* qui sotto funzionano solo dopo il collegamento.
 
-I comandi di consultazione (classifiche, eventi, calendario, leghe, prezzi, dadi) sono pubblici: non serve essere soci.
+I comandi di consultazione (classifiche, calendario, leghe, prezzi) sono pubblici: non serve essere soci.
 
 ## 🔗 Collegare il tuo account
 
@@ -47,7 +47,6 @@ Un solo socio per chat e una sola chat per socio: collegandone una nuova, quella
 | Comando | Accesso | Cosa fa |
 |---|---|---|
 | `/classifiche` | Tutti | Classifiche per formato: Pauper, Commander, Premodern e Cittadino, a pagine, con il link alla classifica completa sul sito |
-| `/eventi` | Tutti | Prossimi eventi, con dettaglio (data, luogo, organizzatore) |
 | `/calendario` | Tutti | Tornei del mese raggruppati per giorno, con la tappa di lega |
 | `/leghe` | Tutti | Leghe attive, con tornei giocati e date |
 | `/prossimo` | Tutti | Il prossimo torneo con iscrizioni aperte o in corso |
@@ -67,11 +66,10 @@ Dal dettaglio di un torneo puoi iscriverti o disiscriverti con un bottone, se se
 | Comando | Cosa fa |
 |---|---|
 | `/turni` | Si apre come una piccola app dentro Telegram. Se sei collegato e siedi a un tavolo in corso, mostra il **conto alla rovescia del timer dell'evento**, lo stesso dell'organizzatore (non puoi fermarlo tu); quando parte la fase dei turni compare il contatore dei 5 turni aggiuntivi. Altrimenti c'è un timer a 50 minuti tutto tuo. Con il telefono in verticale, il bottone in alto a destra ruota il numero di 90° per renderlo più grande e leggibile da lontano (la scelta resta memorizzata) |
-| `/dado` | Un dado a 6 facce, animato |
-| `/moneta` | Testa o croce |
-| `/tira [facce]` | Un dado a N facce, per esempio `/tira 20` (se non indichi le facce, 20) |
 | `/status` | Verifica che il bot sia attivo |
 | `/supporto` | Scrivi allo staff: vedi [Aiuto e segnalazioni](#-aiuto-e-segnalazioni) |
+
+Non compaiono nell'elenco ma funzionano se li scrivi: `/eventi` (prossimi eventi), `/sostieni` (donazione su PayPal), `/dado`, `/moneta` e `/tira [facce]` (dadi e monete).
 
 ## 🃏 Le carte
 

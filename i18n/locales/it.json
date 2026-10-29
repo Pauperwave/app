@@ -3464,19 +3464,17 @@
       "groupDescriptions": {
         "general": "I comandi di base: avviare il bot, vedere cosa sa fare e controllare che sia attivo.",
         "rankings": "Le classifiche per formato, con il link a quella completa sul sito.",
-        "tournaments": "Eventi, calendario, leghe e il prossimo torneo; mentre giochi, il tuo tavolo con gli avversari, il risultato, il drop e il timer del round.",
+        "tournaments": "Calendario, leghe e il prossimo torneo; mentre giochi, il tuo tavolo con gli avversari, il risultato, il drop e il timer del round.",
         "registrations": "I tornei a cui sei iscritto.",
         "cards": "Il prezzo di una carta su CardMarket e CardTrader, e la lista delle carte che cerchi: da vedere, importare e togliere.",
-        "dice": "Per decidere chi comincia: un dado, la moneta o un dado a più facce.",
         "account": "Il tuo profilo di socio, con tesseramento e collegamento della chat, e il contatto diretto con lo staff."
       },
       "groups": {
         "general": "Generale",
         "rankings": "Classifiche",
-        "tournaments": "Eventi e tornei",
+        "tournaments": "Tornei e leghe",
         "registrations": "Le mie iscrizioni",
         "cards": "Carte",
-        "dice": "Dadi",
         "account": "Account e supporto"
       },
       "items": {
@@ -3484,9 +3482,7 @@
         "help": "Elenco dei comandi, con i bottoni per lanciarli",
         "status": "Verifica che il bot sia attivo",
         "crediti": "Chi ha realizzato il bot e da dove vengono carte e prezzi",
-        "sostieni": "Sostieni lo sviluppo del bot e del sito con una donazione su PayPal",
         "classifiche": "Classifiche per formato, con il link a quella completa sul sito",
-        "eventi": "Prossimi eventi, con data, luogo e organizzatore",
         "calendario": "Tornei del mese raggruppati per giorno",
         "leghe": "Leghe attive, con tornei giocati e date",
         "prossimo": "Il prossimo torneo con iscrizioni aperte o in corso",
@@ -3501,9 +3497,6 @@
         "prezzo": "Prezzo di una carta su CardMarket e CardTrader, scegliendo la stampa",
         "cercate": "Le carte che cerchi: le vedi, le segni come trovate o le togli",
         "importa": "Incolla un elenco di carte da cercare, per esempio 1 Erode (SOS) 15",
-        "dado": "Un dado a 6 facce, animato",
-        "moneta": "Testa o croce",
-        "tira": "Un dado a N facce, per esempio /tira 20",
         "supporto": "Scrivi allo staff: il messaggio viene inoltrato"
       }
     },

@@ -63,14 +63,13 @@ const HELP_SECTIONS: Record<HelpTopic, () => Blocks> = {
     {
       type: 'paragraph',
       text: '/start — avvia il bot\n/help — mostra questo messaggio\n/status — mostra lo stato corrente del bot\n'
-        + '/crediti — chi ha realizzato il bot\n/sostieni — sostieni lo sviluppo del bot e del sito'
+        + '/crediti — chi ha realizzato il bot'
     },
     {
       type: 'buttons',
       buttons: [
         { text: `${ICONS.online} Status`, callback_data: encodeHelpBtn('status') },
-        { text: `${ICONS.credits} Crediti`, callback_data: encodeHelpBtn('crediti') },
-        { text: `${ICONS.heart} Sostieni`, callback_data: encodeHelpBtn('sostieni') }
+        { text: `${ICONS.credits} Crediti`, callback_data: encodeHelpBtn('crediti') }
       ]
     }
   ],
@@ -85,7 +84,7 @@ const HELP_SECTIONS: Record<HelpTopic, () => Blocks> = {
     { type: 'paragraph', text: { type: 'bold', text: `${ICONS.medal} Tornei e leghe` } },
     {
       type: 'paragraph',
-      text: '/eventi — prossimi eventi\n/calendario — prossimi tornei\n/leghe — leghe attive\n/prossimo — il prossimo torneo'
+      text: '/calendario — prossimi tornei\n/leghe — leghe attive\n/prossimo — il prossimo torneo'
     },
     {
       type: 'buttons',
@@ -136,22 +135,6 @@ const HELP_SECTIONS: Record<HelpTopic, () => Blocks> = {
     }
   ],
 
-  dadi: () => [
-    { type: 'paragraph', text: { type: 'bold', text: `${ICONS.dice} Dadi` } },
-    {
-      type: 'paragraph',
-      text: '/dado — un dado a 6 facce (animato)\n/moneta — testa o croce\n/tira [facce] — un dado a N facce (default 20)'
-    },
-    {
-      type: 'buttons',
-      buttons: [
-        { text: `${ICONS.dice} Dado`, callback_data: encodeHelpBtn('dado') },
-        { text: `${ICONS.coin} Moneta`, callback_data: encodeHelpBtn('moneta') },
-        { text: `${ICONS.numbers} Tira`, callback_data: encodeHelpBtn('tira') }
-      ]
-    }
-  ],
-
   account: () => [
     { type: 'paragraph', text: { type: 'bold', text: `${ICONS.account} Account` } },
     {
@@ -185,7 +168,6 @@ const HELP_TOPIC_BUTTONS: Record<HelpTopic, string> = {
   tornei: `${ICONS.medal} Tornei`,
   iscrizioni: `${ICONS.ticket} Iscrizioni`,
   carte: `${ICONS.card} Carte`,
-  dadi: `${ICONS.dice} Dadi`,
   account: `${ICONS.account} Account`
 }
 
