@@ -27,6 +27,7 @@ Master index of all project documentation.
 | `PROJECT_ANALYSIS.md` | Initial codebase audit (stack, routing, auth flow, data-fetching conventions) — **dated snapshot, several claims superseded by `PROGRESS.md`'s ADRs, see its own header note** | Onboarding (with caveats) |
 | `PROGRESS.md` | Backward-looking curated changelog + architecture decisions (ADRs) — the most current architectural source of truth | Architecture history |
 | `CHANGELOG.md` | Curated commit trail, grouped by date, with "what/why" for notable commits — not every commit, see the auto-generated root `CHANGELOG.md` for the complete raw index | Architecture history |
+| `FEATURES.md` | Funzionalità dei tornei decise a parole (iscrizione tardiva, drop senza risultato), con lo stato di ciascuna | Roadmap |
 | `BACKLOG.md` | Pointer only — committed work items live in [GitHub Issues + the "App" project](https://github.com/orgs/Pauperwave/projects/2) since 2026-08-22, not here | Roadmap (pointer) |
 | `TODO.md` | Pointer only — scratch notes/open questions also live in [GitHub Issues + the "App" project](https://github.com/orgs/Pauperwave/projects/2) since 2026-08-22, not here | Roadmap (pointer) |
 | `audits/2026-08-05-fallow-dupes-review.md` | `fallow:dupes` findings and why each was deferred or dismissed as premature | Process |
