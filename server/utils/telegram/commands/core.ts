@@ -113,8 +113,17 @@ const HELP_SECTIONS: Record<HelpTopic, () => Blocks> = {
 
   iscrizioni: () => [
     { type: 'paragraph', text: { type: 'bold', text: `${ICONS.ticket} Le mie iscrizioni` } },
-    { type: 'paragraph', text: '/iscrizioni — i tornei a cui sei iscritto' },
-    { type: 'buttons', buttons: [{ text: `${ICONS.ticket} Iscrizioni`, callback_data: encodeHelpBtn('iscrizioni') }] }
+    {
+      type: 'paragraph',
+      text: '/iscriviti — iscriviti a un torneo con le iscrizioni aperte\n/iscrizioni — i tornei a cui sei iscritto'
+    },
+    {
+      type: 'buttons',
+      buttons: [
+        { text: `${ICONS.register} Iscriviti`, callback_data: encodeHelpBtn('iscriviti') },
+        { text: `${ICONS.ticket} Iscrizioni`, callback_data: encodeHelpBtn('iscrizioni') }
+      ]
+    }
   ],
 
   carte: () => [

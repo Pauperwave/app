@@ -11,6 +11,7 @@ import { registerCalendarioCommand } from './tournaments/calendario'
 import { registerLegheCommand } from './tournaments/leghe'
 import { registerProssimoCommand } from './tournaments/prossimo'
 import { registerIscrizioniCommand } from './tournaments/iscrizioni'
+import { registerIscrivitiCommand } from './tournaments/iscriviti'
 import { registerSupportoCommand } from './supporto'
 import { registerTestCommand } from './test'
 import { registerInlineHints } from './inlineHints'
@@ -56,6 +57,7 @@ export function registerCommands(bot: Bot) {
   registerLegheCommand(bot, commands)
   registerProssimoCommand(bot, commands)
   registerIscrizioniCommand(bot, commands)
+  registerIscrivitiCommand(bot, commands)
   registerSupportoCommand(bot, commands)
   registerTestCommand(bot)
   registerDiceCommands(bot)

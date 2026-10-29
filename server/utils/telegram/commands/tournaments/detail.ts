@@ -16,6 +16,10 @@ import type { MenuFlavor } from '@grammyjs/menu'
 import { formatTournamentDateTime, statusIcon, stageLabel } from './line'
 import { fetchRegistrationStatus, fetchStageNumbers } from './queries'
 import type { RegistrationStatus } from './queries'
+import {
+  CANCEL_REFUSED_TEXT, TOURNAMENT_FULL_TEXT, cancelTournamentRegistration, isExternalOrganizer,
+  registerForTournament
+} from './registration'
 import { NOT_LINKED_MESSAGE } from '../account/linking'
 import { answerLoadError, requireChatId } from '../callbackErrors'
 import { mapsUrl, googleCalendarUrl } from '../events/eventLinks'
@@ -165,11 +169,6 @@ function tournamentDetailBlocks(row: DatedTournamentRow): InputRichMessage['bloc
   return blocks
 }
 
-// Shop organizers (Magman etc.) are listed for visibility only: registration is their own business
-function isExternalOrganizer(row: DatedTournamentRow): boolean {
-  return row.organizer?.type === 'shop'
-}
-
 // Origin of a detail view opened from a t.me link: there is no list to go back to
 const LINK_ORIGIN = 'd'
 
@@ -209,27 +208,11 @@ async function handleCancelRegistration(
   ctx: Context & MenuFlavor, tournamentUuid: string, linkedAssociateUuid: string
 ) {
   try {
-    const supabase = telegramServiceSupabaseClient()
-    const { data: existing, error: findError } = await supabase
-      .from('tournament_registrations')
-      .select('uuid, status, players!inner(associate_uuid)')
-      .eq('tournament_uuid', tournamentUuid)
-      .eq('players.associate_uuid', linkedAssociateUuid)
-      .maybeSingle()
-    if (findError) throw findError
-
-    if (!existing || existing.status !== 'registered') {
-      await ctx.answerCallbackQuery({
-        text: existing?.status === 'checked_in'
-          ? 'Non puoi annullare l\'iscrizione dopo il check-in.'
-          : 'Non risulti iscritto a questo torneo.',
-        show_alert: true
-      })
+    const outcome = await cancelTournamentRegistration(tournamentUuid, linkedAssociateUuid)
+    if (outcome !== 'cancelled') {
+      await ctx.answerCallbackQuery({ text: CANCEL_REFUSED_TEXT[outcome], show_alert: true })
       return
     }
-
-    const { error } = await supabase.from('tournament_registrations').delete().eq('uuid', existing.uuid)
-    if (error) throw error
 
     // Overwrite needed before ctx.menu.update() re-renders the button, see perContextCache.ts
     memoize.set(ctx, 'registration', Promise.resolve(null))
@@ -249,19 +232,10 @@ async function handleRegister(
     return
   }
   try {
-    const supabase = telegramServiceSupabaseClient()
-    if (await tournamentIsFull(supabase, tournamentUuid)) {
-      await ctx.answerCallbackQuery({
-        text: 'Posti esauriti: il torneo ha raggiunto il numero massimo di iscritti.',
-        show_alert: true
-      })
+    if (await registerForTournament(tournamentUuid, associateUuid) === 'full') {
+      await ctx.answerCallbackQuery({ text: TOURNAMENT_FULL_TEXT, show_alert: true })
       return
     }
-    const { error } = await supabase.rpc('register_tournament_players', {
-      p_tournament_uuid: tournamentUuid,
-      p_associate_uuids: [associateUuid]
-    })
-    if (error) throw error
 
     // Overwrite needed before ctx.menu.update() re-renders the button, see perContextCache.ts
     memoize.set(ctx, 'registration', Promise.resolve('registered'))

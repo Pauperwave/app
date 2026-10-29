@@ -70,7 +70,10 @@ export const TELEGRAM_BOT_COMMAND_GROUPS: BotCommandGroup[] = [
   {
     id: 'registrations',
     helpTopic: 'iscrizioni',
-    commands: [{ name: 'iscrizioni', requiresLink: true }]
+    commands: [
+      { name: 'iscriviti', requiresLink: true },
+      { name: 'iscrizioni', requiresLink: true }
+    ]
   },
   {
     id: 'cards',

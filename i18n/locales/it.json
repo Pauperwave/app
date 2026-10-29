@@ -3465,7 +3465,7 @@
         "general": "I comandi di base: avviare il bot, vedere cosa sa fare e controllare che sia attivo.",
         "rankings": "Le classifiche per formato, con il link a quella completa sul sito.",
         "tournaments": "Calendario, leghe e il prossimo torneo; mentre giochi, il tuo tavolo con gli avversari, il risultato, il drop e il timer del round.",
-        "registrations": "I tornei a cui sei iscritto.",
+        "registrations": "Iscriverti ai tornei con le iscrizioni aperte e vedere quelli a cui sei iscritto.",
         "cards": "Il prezzo di una carta su CardMarket e CardTrader, e la lista delle carte che cerchi: da vedere, importare e togliere.",
         "account": "Il tuo profilo di socio, con tesseramento e collegamento della chat, e il contatto diretto con lo staff."
       },
@@ -3486,6 +3486,7 @@
         "calendario": "Tornei del mese raggruppati per giorno",
         "leghe": "Leghe attive, con tornei giocati e date",
         "prossimo": "Il prossimo torneo con iscrizioni aperte o in corso",
+        "iscriviti": "Iscriviti a un torneo con le iscrizioni aperte, o annulla l'iscrizione",
         "iscrizioni": "I tornei a cui sei iscritto",
         "tessera": "Stato del tuo tesseramento",
         "menzioni": "Le tue menzioni speciali: carnefice, vittima, master brewer e player, con i mazzi",
